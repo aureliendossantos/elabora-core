@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { createRequire } from 'node:module';
 import type { Browser, CDPSession, Page } from 'playwright-core';
 import type { Block, Diagnostic, ObjectTests, Screen } from '@elabora/format';
 import { screenBlocks } from '@elabora/core/project/load';
@@ -10,7 +11,7 @@ import { build } from './build.ts';
 import type { BuildResult } from './build.ts';
 import { startServer } from './emulator/server.ts';
 import type { PackageFiles } from './emulator/server.ts';
-import { browserIdentity, launchMotionBrowsers } from './emulator/browser.ts';
+import { browserIdentity, launchMotionBrowsers, openedBrowserIdentity } from './emulator/browser.ts';
 import type { BrowserIdentity } from './emulator/electron.ts';
 import type { ReadyReport } from './emulator/page-globals.ts';
 import { loadProjectFromDir } from './project-reader.ts';
@@ -22,6 +23,11 @@ import type { Project } from '@elabora/core/project/model';
 import { escapeHtml } from '@elabora/core/util/html';
 import { codeInfo } from '@elabora/core/diagnostics/codes';
 import { pageStyleConflicts, styleConflictDiagnostics, type StyleConflict } from './style-cascade.ts';
+import { codeVersion } from './code-version.ts';
+import { fitKey, readKeptFit, screenRenders, writeKeptFit } from './fit-cache.ts';
+import type { FitCourse } from './fit-cache.ts';
+
+const require = createRequire(import.meta.url);
 
 export interface PreviewOptions {
   port?: number;
@@ -398,6 +404,8 @@ export interface ScreenFit {
   // A slide that scrolls (reference size): what compact feedback (quiz feedbackStyle) would save,
   // quiz by quiz.
   feedback?: { block: string; px: number }[];
+  // Unchanged since it was measured at this date (ISO): the fit kept then (fit-cache.ts).
+  reused?: string;
 }
 
 export interface MeasuredContrast {
@@ -412,132 +420,240 @@ export interface MeasuredContrast {
 
 export type FitResult =
   | { ok: true; mode: 'scroll' | 'slides'; sizes: (FitSize & { screens: ScreenFit[] })[]; browser?: BrowserIdentity; diagnostics?: undefined }
-  | { ok: false; diagnostics: Diagnostic[]; mode?: undefined; sizes?: undefined };
+  | { ok: false; diagnostics: Diagnostic[]; error?: string; mode?: undefined; sizes?: undefined };
 
-export async function measureFit(dir: string | null, { pkgDir, sizes }: { pkgDir?: string; sizes?: FitSize[] } = {}): Promise<FitResult> {
-  const folder = await packageFolder(dir, pkgDir, 'elabora-fit-');
-  if ('diagnostics' in folder) return { ok: false, diagnostics: folder.diagnostics };
-  const server = await startServer();
-  server.addPackage('fit', folder.root, folder.files);
+export interface FitOptions {
+  pkgDir?: string;
+  sizes?: FitSize[];
+  // Only these screens (default: every screen of the course).
+  screens?: string[];
+  // Measure again the screens unchanged since their last measure (course folders: a screen whose
+  // key is unchanged, fit-cache.ts, is given as kept, with reused).
+  fresh?: boolean;
+}
+
+// Screens measured side by side: each page renders in a process of its own (Elabora's Electron: a
+// worker per page), never in the background. Two: their captures share the GPU, and more pages wait
+// on each other's (four took longer than one on a ten-core Mac).
+const FIT_PAGES = Math.min(2, os.availableParallelism());
+
+export async function measureFit(dir: string | null, options: FitOptions = {}): Promise<FitResult> {
+  if (!options.pkgDir && !dir) throw new Error('Give a course folder or pkgDir, a built package.');
+  // Built once, and only when a screen is measured.
+  const building: { folder?: ReturnType<typeof packageFolder> } = {};
+  try {
+    return await fitScreens(dir, options, () => (building.folder ??= packageFolder(dir, options.pkgDir, 'elabora-fit-')));
+  } finally {
+    const made = await building.folder;
+    if (made && !('diagnostics' in made) && made.temporary) fs.rmSync(made.temporary, { recursive: true, force: true });
+  }
+}
+
+async function fitScreens(dir: string | null, { pkgDir, sizes, screens, fresh = false }: FitOptions, built: () => ReturnType<typeof packageFolder>): Promise<FitResult> {
+  const only = screens?.length ? screens : undefined;
+  // A course folder: each screen rendered (renderScreen) for its key. A package, or a course that
+  // does not render: measured, never kept.
+  const project = pkgDir || !dir ? null : loadProjectFromDir(dir);
+  const renders = project ? screenRenders(project) : null;
+  let course: FitCourse;
+  if (renders) course = renders;
+  else {
+    const made = await built();
+    if ('diagnostics' in made) return { ok: false, diagnostics: made.diagnostics };
+    course = packageCourse(made.root);
+  }
+  const mode = course.presentation.mode || 'scroll';
+  const fitSizes = { ...FIT_DEFAULTS, ...(course.presentation.fit || {}) };
+  const fit: FitSize[] = sizes || (mode === 'slides' ? [{ role: 'reference', size: fitSizes.reference }, { role: 'minimum', size: fitSizes.minimum }] : [{ role: 'reference', size: fitSizes.reference }]);
+  const unknown = (only ?? []).filter((id) => !course.ids.includes(id));
+  if (unknown.length) return { ok: false, diagnostics: [], error: `Unknown screen${unknown.length > 1 ? 's' : ''} ${unknown.map((id) => `"${id}"`).join(', ')}. Screens: ${course.ids.join(', ')}` };
+  const ids = only ? course.ids.filter((id) => only.includes(id)) : course.ids;
+
   const browsers = launchMotionBrowsers({ rendering: 'gpu' });
+  let server: Awaited<ReturnType<typeof startServer>> | null = null;
+  let blank: Page | null = null;
   try {
     const browser = await browsers.for(false);
-    // The course settings: presentation mode and fit sizes.
-    const probe = await browser.newPage();
-    await probe.goto(`${server.base}/pkg/fit/index.html`);
-    await probe.waitForFunction(() => window.__elabora);
-    const presentation = await probe.evaluate(() => window.__elabora.course.presentation || {});
-    await probe.close();
-    const mode = presentation.mode || 'scroll';
-    const fitSizes = { ...FIT_DEFAULTS, ...(presentation.fit || {}) };
-    const fit: FitSize[] = sizes || (mode === 'slides' ? [{ role: 'reference', size: fitSizes.reference }, { role: 'minimum', size: fitSizes.minimum }] : [{ role: 'reference', size: fitSizes.reference }]);
-    const results: (FitSize & { screens: ScreenFit[] })[] = [];
-    for (const size of fit) {
-      const [width, height] = size.size.split('x').map(Number);
-      const page = await browser.newPage({ viewport: { width, height }, reducedMotion: 'reduce' });
-      await page.addInitScript(() => { window.ELABORA_TEST = { virtualTime: true }; }); // narrated screens hold still
-      await page.goto(`${server.base}/pkg/fit/index.html`);
-      await page.waitForFunction(() => window.__elabora);
-      // Free navigation and every step shown: all screens visited and complete. The preview
-      // banner does not exist in an LMS.
-      const ids = await page.evaluate(openAllScreens);
-      const screens: ScreenFit[] = [];
-      for (const id of ids) {
-        await page.evaluate((screen) => {
-          window.__elabora.go(screen);
-          window.__elabora.revealAll();
-          const active = document.activeElement;
-          if (active instanceof HTMLElement || active instanceof SVGElement) active.blur();
-        }, id);
-        const ready = await page.evaluate(() => window.__elabora.ready());
-        await page.waitForTimeout(ready.objects.length ? 1200 : 80); // auto-height objects resize after their first frames
-        const before = await page.evaluate(blockBoxes);
-        const initial = await page.evaluate(() => {
-          const root = document.documentElement;
-          const main = document.getElementById('t-main');
-          if (!main) throw new Error('the player has no #t-main');
-          // The player's bars that stay in the window (D58) hide what scrolls under them.
-          const stuck = (selector: string) => { const bar = document.querySelector<HTMLElement>(selector); return bar && !bar.hidden && getComputedStyle(bar).position === 'sticky' ? bar.getBoundingClientRect().height : 0; };
-          const fold = innerHeight - Math.max(stuck('.t-bar--bottom'), stuck('.t-bar--controls'));
-          const overflow = Math.max(0, Math.round(root.scrollHeight - innerHeight));
-          const style = getComputedStyle(main);
-          const room = main.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
-          const below = overflow ? [...main.querySelectorAll<HTMLElement>('.t-block')]
-            .filter((node) => !node.parentElement?.closest('.t-block') && node.getBoundingClientRect().bottom > fold + 1)
-            .map((node) => node.dataset.block) : [];
-          return { screen: window.__elabora.screen, overflow, spare: overflow ? 0 : Math.max(0, Math.round(room - (main.querySelector<HTMLElement>('.t-screen')?.offsetHeight ?? 0))), below, windows: Math.round((root.scrollHeight / innerHeight) * 10) / 10 };
-        });
-        // Once everything is answered (tallest feedback of every activity, concealed blocks shown),
-        // nothing may move: blocks that grow or move are a layout shift.
-        const styles = size.role === 'reference' ? await page.evaluate(pageStyleConflicts) : [];
-        const feedback = mode === 'slides' && size.role === 'reference' && initial.overflow
-          ? (await page.evaluate(() => window.__elabora.feedbackRooms())).map((room) => ({ block: room.block, px: room.full - room.compact })).filter((room) => room.px > 4)
-          : [];
-        const { changed } = mode === 'slides' ? await page.evaluate(() => window.__elabora.showAnswered()) : { changed: [] };
-        let shift: ScreenFit['shift'] | null = null;
-        if (changed.length) {
-          await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-          const after = await page.evaluate(blockBoxes);
-          const grew: { block: string; px: number }[] = []; const moved: string[] = []; let px = 0;
-          for (const [id, box] of Object.entries(after)) {
-            const previous = before[id];
-            if (!previous) continue;
-            const growth = box.h - previous.h; const offset = box.y - previous.y;
-            if (Math.abs(growth) > 1) grew.push({ block: id, px: growth });
-            else if (Math.abs(offset) > 1) moved.push(id);
-            px = Math.max(px, Math.abs(growth), Math.abs(offset));
-          }
-          const overflowAfter = await page.evaluate(() => Math.max(0, Math.round(document.documentElement.scrollHeight - innerHeight)));
-          if (grew.length || moved.length || overflowAfter > initial.overflow) shift = { px, grew, moved, overflow: overflowAfter };
-          if (size.role === 'reference') {
-            const seen = new Set(styles.map((conflict) => `${conflict.kind}\u0000${conflict.componentRule}\u0000${conflict.themeRule}`));
-            styles.push(...(await page.evaluate(pageStyleConflicts)).filter((conflict) => !seen.has(`${conflict.kind}\u0000${conflict.componentRule}\u0000${conflict.themeRule}`)));
-          }
-        }
-        // Text over a backdrop, an image or a gradient: contrast measured against the pixels behind it
-        // (in scroll presentation, window by window down the page).
-        const contrast = size.role === 'reference' ? await measureContrast(page, mode === 'scroll') : [];
-        screens.push({ ...initial, ...(shift ? { shift } : {}), ...(contrast.length ? { contrast } : {}), ...(styles.length ? { styles } : {}), ...(feedback.length ? { feedback } : {}) });
-      }
-      results.push({ ...size, screens });
-      await page.close();
-      // Scroll pages, at the reference size: once more with animations on, down each page by a quarter
-      // of a window. Scroll-driven animations (a fade as text leaves, a block rising into place) set
-      // what text looks like at each position: text is read in the middle of the window (20 to
-      // 80 % of its height), and must be readable there at least once (an entrance may still be
-      // fading in when it enters the middle; text kept faint is reported).
-      if (mode === 'scroll' && size.role === 'reference') {
-        const moving = await (await browsers.for(true)).newPage({ viewport: { width, height }, reducedMotion: 'no-preference' });
-        await moving.addInitScript(() => { window.ELABORA_TEST = { virtualTime: true }; });
-        await moving.goto(`${server.base}/pkg/fit/index.html`);
-        await moving.waitForFunction(() => window.__elabora);
-        await moving.evaluate(openAllScreens);
-        // Only when a stylesheet animates with the scroll (theme and components are served with the package).
-        const scrollDriven = await moving.evaluate(() => {
-          // Style rules have cssRules too (nesting): their own declarations are read first.
-          const rules = (list: CSSRuleList): boolean => [...list].some((rule) => {
-            if (rule instanceof CSSImportRule) return !!rule.styleSheet && rules(rule.styleSheet.cssRules);
-            if (rule instanceof CSSStyleRule && !['', 'auto'].includes(rule.style.getPropertyValue('animation-timeline').trim())) return true;
-            return 'cssRules' in rule && rules((rule as CSSGroupingRule).cssRules);
-          });
-          return [...document.styleSheets].some((sheet) => { try { return rules(sheet.cssRules); } catch { return false; } });
-        });
-        for (const screen of scrollDriven ? screens : []) {
-          await moving.evaluate((id) => { window.__elabora.go(id ?? ''); window.__elabora.revealAll(); (document.activeElement as HTMLElement | null)?.blur?.(); }, screen.screen);
-          await moving.evaluate(() => window.__elabora.ready());
-          const known = new Set((screen.contrast || []).map((found) => `${found.block}\u0000${found.text}`));
-          const scrolled = (await measureContrast(moving, true, { top: 0.2, bottom: 0.8 }, { keep: 'best', stride: 0.25 })).filter((found) => !known.has(`${found.block}\u0000${found.text}`)).map((found): MeasuredContrast => ({ ...found, scrolled: true }));
-          if (scrolled.length) screen.contrast = [...(screen.contrast || []), ...scrolled];
-        }
-        await moving.close();
-      }
+    // The browser's version (Elabora's Electron tells it once a page is open): from the page the
+    // first screen is measured in, when one is.
+    const [width, height] = fit[0].size.split('x').map(Number);
+    if (!browserIdentity(browser).version) blank = await browser.newPage({ viewport: { width, height }, reducedMotion: 'reduce' });
+    const identity = await openedBrowserIdentity(browser);
+    const code = codeVersion();
+    const results = fit.map((size) => ({ ...size, screens: new Array<ScreenFit>(ids.length) }));
+    const jobs: FitJob[] = [];
+    for (const [s, size] of fit.entries()) for (const [i, id] of ids.entries()) {
+      const render = renders?.renders.get(id);
+      const key = project && render ? fitKey({ render, code, browser: identity, size: size.size, role: size.role, mode }) : null;
+      const kept = project && key && !fresh ? readKeptFit<ScreenFit>(project.root, size.size, size.role, id) : null;
+      if (kept && kept.key === key) results[s].screens[i] = { ...kept.fit, reused: kept.at };
+      else jobs.push({ s, i, size, id, key });
     }
-    return { ok: true, mode, sizes: results, browser: browserIdentity(browser) };
+    if (jobs.length) {
+      const made = await built();
+      if ('diagnostics' in made) return { ok: false, diagnostics: made.diagnostics };
+      server = await startServer();
+      server.addPackage('fit', made.root, made.files);
+      const base = server.base;
+      const queue = [...jobs];
+      const opened = new Map<string, number>(); // window size → pages of the workers
+      await Promise.all(Array.from({ length: Math.min(FIT_PAGES, jobs.length) }, async () => {
+        // A page per window size and motion setting; its screens are visited one after the other.
+        // A worker takes the screens of a size it has a page for first, else of the size the fewest
+        // workers have a page for (slides: one worker per size).
+        const pages = new Map<string, Promise<Page>>();
+        const pageFor = (size: FitSize, motion: boolean): Promise<Page> => {
+          const id = `${size.size}${motion ? 'm' : ''}`;
+          let page = pages.get(id);
+          if (!page) {
+            if (!motion) opened.set(size.size, (opened.get(size.size) ?? 0) + 1);
+            const ready = !motion && size.size === fit[0].size ? blank : null;
+            if (ready) blank = null;
+            page = (async () => fitPage(await browsers.for(motion), base, size.size, motion, ready))();
+            pages.set(id, page);
+          }
+          return page;
+        };
+        const next = (): FitJob | undefined => {
+          if (!queue.length) return undefined;
+          let index = queue.findIndex((job) => pages.has(job.size.size));
+          if (index < 0) {
+            const fewest = Math.min(...queue.map((job) => opened.get(job.size.size) ?? 0));
+            index = queue.findIndex((job) => (opened.get(job.size.size) ?? 0) === fewest);
+          }
+          return queue.splice(index, 1)[0];
+        };
+        try {
+          for (let job = next(); job; job = next()) {
+            const screen = await measureScreen(await pageFor(job.size, false), job.id, job.size, mode);
+            // Scroll pages, at the reference size: once more with animations on (scrolledContrast).
+            if (mode === 'scroll' && job.size.role === 'reference') await scrolledContrast(await pageFor(job.size, true), screen);
+            results[job.s].screens[job.i] = screen;
+            if (project && job.key) writeKeptFit<ScreenFit>(project.root, job.size.size, job.size.role, job.id, { key: job.key, at: new Date().toISOString(), fit: screen });
+          }
+        } finally {
+          await Promise.allSettled([...pages.values()].map(async (page) => (await page).close()));
+        }
+      }));
+    }
+    return { ok: true, mode, sizes: results, browser: identity };
   } finally {
+    await blank?.close().catch(() => {});
     await browsers.close();
-    await server.close();
-    if (folder.temporary) fs.rmSync(folder.temporary, { recursive: true, force: true });
+    await server?.close();
   }
+}
+
+interface FitJob { s: number; i: number; size: FitSize; id: string; key: string | null }
+
+// The course data of a built package (elabora/course.js).
+function packageCourse(root: string): FitCourse {
+  const text = fs.readFileSync(path.join(root, 'elabora', 'course.js'), 'utf8');
+  const data: { presentation?: FitCourse['presentation']; screens?: { id: string }[] } = JSON.parse(text.slice(text.indexOf('=') + 1).trim().replace(/;$/, ''));
+  return { presentation: data.presentation || {}, ids: (data.screens || []).map((screen) => screen.id) };
+}
+
+// A page of the package at a window size, every screen visited and complete (free navigation, every
+// step shown); the preview banner does not exist in an LMS.
+async function fitPage(browser: Browser, base: string, size: string, motion: boolean, opened: Page | null = null): Promise<Page> {
+  const [width, height] = size.split('x').map(Number);
+  const page = opened ?? await browser.newPage({ viewport: { width, height }, reducedMotion: motion ? 'no-preference' : 'reduce' });
+  await page.addInitScript(() => { window.ELABORA_TEST = { virtualTime: true }; }); // narrated screens hold still
+  await page.goto(`${base}/pkg/fit/index.html`);
+  await page.waitForFunction(() => window.__elabora);
+  await page.evaluate(openAllScreens);
+  return page;
+}
+
+// One screen at one size, animations off: room, layout shift, styles, contrast.
+async function measureScreen(page: Page, id: string, size: FitSize, mode: string): Promise<ScreenFit> {
+  await page.evaluate((screen) => {
+    window.__elabora.go(screen);
+    window.__elabora.revealAll();
+    const active = document.activeElement;
+    if (active instanceof HTMLElement || active instanceof SVGElement) active.blur();
+  }, id);
+  const ready = await page.evaluate(() => window.__elabora.ready());
+  await page.waitForTimeout(ready.objects.length ? 1200 : 80); // auto-height objects resize after their first frames
+  const before = await page.evaluate(blockBoxes);
+  const initial = await page.evaluate(() => {
+    const root = document.documentElement;
+    const main = document.getElementById('t-main');
+    if (!main) throw new Error('the player has no #t-main');
+    // The player's bars that stay in the window (D58) hide what scrolls under them.
+    const stuck = (selector: string) => { const bar = document.querySelector<HTMLElement>(selector); return bar && !bar.hidden && getComputedStyle(bar).position === 'sticky' ? bar.getBoundingClientRect().height : 0; };
+    const fold = innerHeight - Math.max(stuck('.t-bar--bottom'), stuck('.t-bar--controls'));
+    const overflow = Math.max(0, Math.round(root.scrollHeight - innerHeight));
+    const style = getComputedStyle(main);
+    const room = main.clientHeight - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    const below = overflow ? [...main.querySelectorAll<HTMLElement>('.t-block')]
+      .filter((node) => !node.parentElement?.closest('.t-block') && node.getBoundingClientRect().bottom > fold + 1)
+      .map((node) => node.dataset.block) : [];
+    return { screen: window.__elabora.screen, overflow, spare: overflow ? 0 : Math.max(0, Math.round(room - (main.querySelector<HTMLElement>('.t-screen')?.offsetHeight ?? 0))), below, windows: Math.round((root.scrollHeight / innerHeight) * 10) / 10 };
+  });
+  // Once everything is answered (tallest feedback of every activity, concealed blocks shown),
+  // nothing may move: blocks that grow or move are a layout shift.
+  const styles = size.role === 'reference' ? await page.evaluate(pageStyleConflicts) : [];
+  const feedback = mode === 'slides' && size.role === 'reference' && initial.overflow
+    ? (await page.evaluate(() => window.__elabora.feedbackRooms())).map((room) => ({ block: room.block, px: room.full - room.compact })).filter((room) => room.px > 4)
+    : [];
+  const { changed } = mode === 'slides' ? await page.evaluate(() => window.__elabora.showAnswered()) : { changed: [] };
+  let shift: ScreenFit['shift'] | null = null;
+  if (changed.length) {
+    await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    const after = await page.evaluate(blockBoxes);
+    const grew: { block: string; px: number }[] = []; const moved: string[] = []; let px = 0;
+    for (const [block, box] of Object.entries(after)) {
+      const previous = before[block];
+      if (!previous) continue;
+      const growth = box.h - previous.h; const offset = box.y - previous.y;
+      if (Math.abs(growth) > 1) grew.push({ block, px: growth });
+      else if (Math.abs(offset) > 1) moved.push(block);
+      px = Math.max(px, Math.abs(growth), Math.abs(offset));
+    }
+    const overflowAfter = await page.evaluate(() => Math.max(0, Math.round(document.documentElement.scrollHeight - innerHeight)));
+    if (grew.length || moved.length || overflowAfter > initial.overflow) shift = { px, grew, moved, overflow: overflowAfter };
+    if (size.role === 'reference') {
+      const seen = new Set(styles.map((conflict) => `${conflict.kind}\u0000${conflict.componentRule}\u0000${conflict.themeRule}`));
+      styles.push(...(await page.evaluate(pageStyleConflicts)).filter((conflict) => !seen.has(`${conflict.kind}\u0000${conflict.componentRule}\u0000${conflict.themeRule}`)));
+    }
+  }
+  // Text over a backdrop, an image or a gradient: contrast measured against the pixels behind it
+  // (in scroll presentation, window by window down the page).
+  const contrast = size.role === 'reference' ? await measureContrast(page, mode === 'scroll') : [];
+  return { ...initial, ...(shift ? { shift } : {}), ...(contrast.length ? { contrast } : {}), ...(styles.length ? { styles } : {}), ...(feedback.length ? { feedback } : {}) };
+}
+
+// A scroll page once more with animations on, down the page by a quarter of a window. Scroll-driven
+// animations (a fade as text leaves, a block rising into place) set what text looks like at each
+// position: text is read in the middle of the window (20 to 80 % of its height), and must be
+// readable there at least once (an entrance may still be fading in when it enters the middle; text
+// kept faint is reported). Only the windows where a scroll-driven animation applies to that middle
+// are read: elsewhere the page shows what the first measure read.
+const SCROLLED_BAND: Band = { top: 0.2, bottom: 0.8 };
+async function scrolledContrast(moving: Page, screen: ScreenFit): Promise<void> {
+  await moving.evaluate((id) => { window.__elabora.go(id ?? ''); window.__elabora.revealAll(); (document.activeElement as HTMLElement | null)?.blur?.(); }, screen.screen);
+  await moving.evaluate(() => window.__elabora.ready());
+  if (!(await moving.evaluate(scrollDrivenIn, null))) return;
+  const known = new Set((screen.contrast || []).map((found) => `${found.block}\u0000${found.text}`));
+  const scrolled = (await measureContrast(moving, true, SCROLLED_BAND, { keep: 'best', stride: 0.25, known, scrollDriven: true })).filter((found) => !known.has(`${found.block}\u0000${found.text}`)).map((found): MeasuredContrast => ({ ...found, scrolled: true }));
+  if (scrolled.length) screen.contrast = [...(screen.contrast || []), ...scrolled];
+}
+
+// In the page: whether an animation that follows the scroll (a scroll or view timeline) is running,
+// on an element in this band of the window (any band: null). An element without a box (display:
+// contents) counts as everywhere.
+function scrollDrivenIn(band: Band | null): boolean {
+  const top = band ? innerHeight * band.top : -Infinity;
+  const bottom = band ? innerHeight * band.bottom : Infinity;
+  return document.getAnimations().some((animation) => {
+    if (!animation.timeline || animation.timeline instanceof DocumentTimeline) return false;
+    const target = animation.effect instanceof KeyframeEffect ? animation.effect.target : null;
+    if (!target || !band) return true;
+    const box = target.getBoundingClientRect();
+    if (!box.width && !box.height) return true;
+    return box.bottom > top && box.top < bottom && box.right > 0 && box.left < innerWidth;
+  });
 }
 
 // ── Measured contrast ────────────────────────────────────────────────
@@ -555,7 +671,11 @@ interface Band { top: number; bottom: number }
 // keep: "worst", the lowest ratio of an element over the windows (what does not move); "best", the
 // highest (with animations on: text that a scroll-driven entrance shows as it reaches the middle of
 // the window is read then; text never readable there is reported). stride: share of a window.
-async function measureContrast(page: Page, wholePage = false, band: Band = { top: 0, bottom: 1 }, { keep = 'worst', stride: share = 0.85 }: { keep?: 'worst' | 'best'; stride?: number } = {}): Promise<MeasuredContrast[]> {
+// With "best", text once readable is not read again, nor text already reported (known): neither can
+// be reported any more. scrollDriven: only the windows where a scroll-driven animation applies to
+// the band.
+interface ContrastOptions { keep?: 'worst' | 'best'; stride?: number; known?: ReadonlySet<string>; scrollDriven?: boolean }
+async function measureContrast(page: Page, wholePage = false, band: Band = { top: 0, bottom: 1 }, { keep = 'worst', stride: share = 0.85, known, scrollDriven = false }: ContrastOptions = {}): Promise<MeasuredContrast[]> {
   const tops: (number | null)[] = wholePage ? await page.evaluate((share) => {
     const end = Math.max(0, document.documentElement.scrollHeight - innerHeight);
     const stride = Math.max(160, Math.round(innerHeight * share));
@@ -565,47 +685,72 @@ async function measureContrast(page: Page, wholePage = false, band: Band = { top
     return out;
   }, share) : [null];
   const found = new Map<string, MeasuredContrast>();
+  const settled = new Set<string>(known);
   for (const top of tops) {
     if (top !== null) await page.evaluate((y) => { scrollTo(0, y); }, top);
-    for (const measured of await contrastInWindow(page, band)) {
+    if (scrollDriven && !(await page.evaluate(scrollDrivenIn, band))) continue;
+    for (const measured of await contrastInWindow(page, band, keep === 'best' ? settled : undefined)) {
       const key = `${measured.block}\u0000${measured.text}`;
-      const known = found.get(key);
-      if (!known || (keep === 'worst' ? measured.ratio < known.ratio : measured.ratio > known.ratio)) found.set(key, measured);
+      const before = found.get(key);
+      if (!before || (keep === 'worst' ? measured.ratio < before.ratio : measured.ratio > before.ratio)) found.set(key, measured);
+      if (keep === 'best' && measured.ratio >= measured.need) settled.add(key);
     }
   }
   if (wholePage) await page.evaluate(() => { scrollTo(0, 0); });
   return [...found.values()].filter((measured) => measured.ratio < measured.need);
 }
-async function contrastInWindow(page: Page, band: Band): Promise<MeasuredContrast[]> {
+// skip: text (block and text) not to read.
+async function contrastInWindow(page: Page, band: Band, skip?: ReadonlySet<string>): Promise<MeasuredContrast[]> {
   // With animations on, transitions are settled first: those of a state change (a screen, a step), and
   // the colour transitions that removing HIDE_TEXT starts (.t-btn: color .2s) after the last window,
   // or the text is read still fading in, more or less depending on timing.
   await page.evaluate(() => { for (const animation of document.getAnimations()) if (animation instanceof CSSTransition) animation.finish(); });
   await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-  const runs = await page.evaluate(textRuns, band);
+  const runs = (await page.evaluate(textRuns, band)).filter((run) => !skip?.has(`${run.block}\u0000${run.text}`));
   if (!runs.length) return [];
   const style = await page.addStyleTag({ content: HIDE_TEXT });
   await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-  const png = await windowPng(page);
+  const pixels = await windowPixels(page);
   await style.evaluate((node) => { node.parentNode?.removeChild(node); });
-  return page.evaluate(contrastBehind, { png, runs });
+  return contrastBehind(pixels, runs);
 }
 
-// The window as a PNG in base64, for reading its pixels: Chrome encodes it for speed (lossless,
-// larger), six times faster than its default compression on a textured page, which a measure down
-// a long page pays window after window.
-const devtools = new WeakMap<Page, Promise<CDPSession>>();
-async function windowPng(page: Page): Promise<string> {
-  let session = devtools.get(page);
-  if (!session) {
-    session = page.context().newCDPSession(page);
-    devtools.set(page, session);
+// The window's pixels, captured at half its size (a CSS pixel in four: the backgrounds text is read
+// against are smooth at that scale, and a capture costs a quarter) and decoded here. Chrome encodes
+// the PNG for speed (lossless, larger). The capture comes through a DevTools session of its own:
+// Chrome's needs the window size Playwright emulates (else it captures the headless window's own);
+// Elabora's Electron is not emulated and draws at the screen's pixel ratio, which the scale asked
+// for then allows for (device: device pixels per CSS pixel, learnt from the first capture).
+const CONTRAST_SCALE = 0.5;
+interface Pixels { width: number; height: number; data: Uint8Array; scale: number }
+const capturing = new WeakMap<Page, Promise<{ session: CDPSession; device: number | null }>>();
+async function windowPixels(page: Page): Promise<Pixels> {
+  const view = await page.evaluate(() => ({ x: scrollX, y: scrollY, width: innerWidth, height: innerHeight }));
+  let capture = capturing.get(page);
+  if (!capture) {
+    capture = (async () => {
+      const session = await page.context().newCDPSession(page);
+      const browser = page.context().browser();
+      if (!browser || browserIdentity(browser).engine !== 'electron') await session.send('Emulation.setDeviceMetricsOverride', { width: view.width, height: view.height, deviceScaleFactor: 1, mobile: false });
+      return { session, device: null };
+    })();
+    capturing.set(page, capture);
   }
-  try {
-    return (await (await session).send('Page.captureScreenshot', { format: 'png', optimizeForSpeed: true })).data;
-  } catch {
-    return (await page.screenshot({ fullPage: false })).toString('base64');
-  }
+  const state = await capture;
+  const asked = CONTRAST_SCALE / (state.device ?? 1);
+  const { data } = await state.session.send('Page.captureScreenshot', { format: 'png', optimizeForSpeed: true, clip: { x: view.x, y: view.y, width: view.width, height: view.height, scale: asked } });
+  const image = readPng(Buffer.from(data, 'base64'));
+  const scale = image.width / view.width;
+  state.device ??= scale / asked;
+  return { ...image, scale };
+}
+
+// pngjs: an optional dependency of @elabora/node, installed with the command line and the app.
+interface PngModule { PNG: { sync: { read(data: Buffer): { width: number; height: number; data: Buffer } } } }
+function readPng(png: Buffer): { width: number; height: number; data: Uint8Array } {
+  let pngjs: PngModule;
+  try { pngjs = require('pngjs'); } catch { throw new Error('pngjs is not installed: npm install pngjs'); }
+  return pngjs.PNG.sync.read(png);
 }
 
 type Rgba = [number, number, number, number];
@@ -620,7 +765,7 @@ interface TextRun {
   rects: Rect[];
 }
 
-// In the page: visible text of the window, grouped by element.
+// In the page: visible text of the band of the window, grouped by element.
 function textRuns(band: Band = { top: 0, bottom: 1 }): TextRun[] {
   const out = new Map<Element, TextRun>();
   // Any CSS colour (rgb(), color(srgb …) from color-mix(), …) to 0–255 RGBA, through a canvas.
@@ -650,11 +795,8 @@ function textRuns(band: Band = { top: 0, bottom: 1 }): TextRun[] {
     const data = node.textContent ?? '';
     if (!data.trim()) continue;
     const element = node.parentElement;
-    if (!element || element.closest('.t-backdrop, .t-sr-only, [aria-hidden="true"], [inert], [aria-disabled="true"], :disabled, script, style')) continue;
-    // Not rendered: closed disclosures (content-visibility), hidden or fully transparent elements.
-    if (element.checkVisibility && !element.checkVisibility({ visibilityProperty: true, opacityProperty: true })) continue;
-    const style = getComputedStyle(element);
-    if (style.visibility !== 'visible' || parseFloat(style.opacity) === 0) continue;
+    if (!element) continue;
+    // Where the text is first (layout is done): text outside the band is not looked at further.
     range.selectNodeContents(node);
     const inBar = !!element.closest('.t-bar');
     const top = Math.max(innerHeight * band.top, inBar ? 0 : ceiling);
@@ -662,6 +804,11 @@ function textRuns(band: Band = { top: 0, bottom: 1 }): TextRun[] {
     const rects = [...range.getClientRects()].filter((rect) => rect.width > 2 && rect.height > 2 && rect.bottom > top && rect.top < bottom && rect.right > 0 && rect.left < innerWidth)
       .map((rect): Rect => [Math.max(0, rect.left), Math.max(top, rect.top), Math.min(innerWidth, rect.right), Math.min(bottom, rect.bottom)]);
     if (!rects.length) continue;
+    if (element.closest('.t-backdrop, .t-sr-only, [aria-hidden="true"], [inert], [aria-disabled="true"], :disabled, script, style')) continue;
+    // Not rendered: closed disclosures (content-visibility), hidden or fully transparent elements.
+    if (element.checkVisibility && !element.checkVisibility({ visibilityProperty: true, opacityProperty: true })) continue;
+    const style = getComputedStyle(element);
+    if (style.visibility !== 'visible' || parseFloat(style.opacity) === 0) continue;
     let run = out.get(element);
     if (!run) {
       const size = parseFloat(style.fontSize);
@@ -678,44 +825,34 @@ function textRuns(band: Band = { top: 0, bottom: 1 }): TextRun[] {
   return [...out.values()].map((run) => ({ ...run, text: run.text.replace(/\s+/g, ' ').trim().slice(0, 48) }));
 }
 
-// In the page: contrast of every run against the captured pixels behind it (text made transparent).
-async function contrastBehind({ png, runs }: { png: string; runs: TextRun[] }): Promise<MeasuredContrast[]> {
-  const image = new Image();
-  image.src = `data:image/png;base64,${png}`;
-  await image.decode();
-  const canvas = document.createElement('canvas');
-  canvas.width = image.width; canvas.height = image.height;
-  const context = canvas.getContext('2d', { willReadFrequently: true });
-  if (!context) return [];
-  context.drawImage(image, 0, 0);
-  const scale = image.width / innerWidth;
-  const data = context.getImageData(0, 0, image.width, image.height).data;
+// Contrast of every run against the captured pixels behind it (text made transparent), sampled every
+// 2 CSS px.
+const LINEAR = Float64Array.from({ length: 256 }, (_, value) => { const x = value / 255; return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
+function contrastBehind({ width, height, data, scale }: Pixels, runs: TextRun[]): MeasuredContrast[] {
   const linear = (value: number) => { const x = value / 255; return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; };
-  const luminance = (red: number, green: number, blue: number) => 0.2126 * linear(red) + 0.7152 * linear(green) + 0.0722 * linear(blue);
+  const step = Math.max(1, Math.round(2 * scale));
   const out: MeasuredContrast[] = [];
   for (const run of runs) {
-    const ratios: number[] = [];
-    const behind: [number, number, number][] = [];
+    const behind: number[] = [];
     for (const [x0, y0, x1, y1] of run.rects) {
-      for (let y = Math.floor(y0 * scale); y < Math.min(image.height, y1 * scale); y += 2) {
-        for (let x = Math.floor(x0 * scale); x < Math.min(image.width, x1 * scale); x += 2) {
-          const i = (y * image.width + x) * 4;
-          behind.push([data[i], data[i + 1], data[i + 2]]);
-        }
+      for (let y = Math.floor(y0 * scale); y < Math.min(height, y1 * scale); y += step) {
+        for (let x = Math.floor(x0 * scale); x < Math.min(width, x1 * scale); x += step) behind.push((y * width + x) * 4);
       }
     }
     if (!behind.length) continue;
     const [red, green, blue, alpha] = run.fg;
-    for (const [backRed, backGreen, backBlue] of behind) {
+    const ratios = new Float64Array(behind.length);
+    for (const [n, i] of behind.entries()) {
+      const backRed = data[i], backGreen = data[i + 1], backBlue = data[i + 2];
+      const l2 = 0.2126 * LINEAR[backRed] + 0.7152 * LINEAR[backGreen] + 0.0722 * LINEAR[backBlue];
       // Semi-transparent text: its colour over this pixel.
-      const textRed = red * alpha + backRed * (1 - alpha), textGreen = green * alpha + backGreen * (1 - alpha), textBlue = blue * alpha + backBlue * (1 - alpha);
-      const l1 = luminance(textRed, textGreen, textBlue), l2 = luminance(backRed, backGreen, backBlue);
-      ratios.push((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05));
+      const l1 = alpha === 1 ? 0.2126 * LINEAR[red] + 0.7152 * LINEAR[green] + 0.0722 * LINEAR[blue]
+        : 0.2126 * linear(red * alpha + backRed * (1 - alpha)) + 0.7152 * linear(green * alpha + backGreen * (1 - alpha)) + 0.0722 * linear(blue * alpha + backBlue * (1 - alpha));
+      ratios[n] = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
     }
-    ratios.sort((p, q) => p - q);
+    ratios.sort();
     const ratio = ratios[Math.floor(ratios.length * 0.1)];
-    const need = run.large ? 3 : 4.5;
-    out.push({ block: run.block, text: run.text, ratio: Math.round(ratio * 100) / 100, need });
+    out.push({ block: run.block, text: run.text, ratio: Math.round(ratio * 100) / 100, need: run.large ? 3 : 4.5 });
   }
   return out;
 }

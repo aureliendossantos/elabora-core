@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import * as esbuild from 'esbuild';
-import { ROOT, copyExample, addViewProbe, addListProbe, addLateProbe, addDrawProbe } from '../helpers.ts';
+import { ROOT, copyExample, readJSON, writeJSON, addViewProbe, addListProbe, addLateProbe, addDrawProbe } from '../helpers.ts';
 import { replayObject, screenshot } from '@elabora/node/preview';
 import { testObject } from '@elabora/node/objects/test';
 import { launchBrowser } from '@elabora/node/emulator/browser';
@@ -328,4 +328,45 @@ test('dry frames skip draws, track what they leave stale until drawn again, and 
   } finally {
     await browser.close();
   }
+});
+
+test('an object unchanged since its last run is not run again; a change to it or to the theme runs it, and so does force', { timeout: 180000 }, async () => {
+  const dir = copyExample();
+  addDrawProbe(dir, [{ name: 'counts', steps: [{ action: 'step', frames: 20 }, { action: 'expect-state', state: { frame: 21 } }] }]); // the mount draws the first frame
+  const first = await testObject(dir, 'draw-probe');
+  assert.equal(first.gates.behaviour, 'passed', JSON.stringify(first.diagnostics));
+  assert.equal(first.reused, undefined);
+  const recorded = JSON.parse(fs.readFileSync(path.join(dir, 'objects/draw-probe/object.gates.json'), 'utf8'));
+  const begin = Date.now();
+  const again = await testObject(dir, 'draw-probe');
+  assert.deepEqual(again.reused, { at: recorded.at });
+  assert.deepEqual({ ...again, reused: undefined }, { ...first, reused: undefined });
+  assert.ok(Date.now() - begin < 5000, `${Date.now() - begin} ms`);
+  // The theme's tokens, which props may be bound to: it runs again.
+  const course = readJSON(dir, 'course.json');
+  course.theme.tokens = { ...course.theme.tokens, 'color.primary': '#7a1f3d' };
+  writeJSON(dir, 'course.json', course);
+  assert.equal((await testObject(dir, 'draw-probe')).reused, undefined);
+  assert.ok((await testObject(dir, 'draw-probe')).reused);
+  // Its own folder.
+  fs.appendFileSync(path.join(dir, 'objects/draw-probe/object.js'), '\n// revu\n');
+  assert.equal((await testObject(dir, 'draw-probe')).reused, undefined);
+  assert.equal((await testObject(dir, 'draw-probe', { force: true })).reused, undefined);
+});
+
+test('--update-snapshots removes the baselines of states no test names, and none when object.tests.json does not read', { timeout: 180000 }, async () => {
+  const dir = copyExample();
+  addDrawProbe(dir, [{ name: 'colour', steps: [{ action: 'step', frames: 20 }, { action: 'snapshot', name: 'end' }] }]);
+  const snapshots = path.join(dir, 'objects/draw-probe/__snapshots__');
+  fs.mkdirSync(snapshots, { recursive: true });
+  fs.writeFileSync(path.join(snapshots, 'renamed--gone-darwin.png'), '');
+  const first = await testObject(dir, 'draw-probe', { updateSnapshots: true });
+  assert.deepEqual(first.snapshots?.removed, ['renamed--gone-darwin.png']);
+  const baselines = fs.readdirSync(snapshots);
+  assert.ok(baselines.length === 1 && baselines[0].startsWith('colour--end-'), JSON.stringify(baselines));
+  // An agent's half-written tests file: nothing is removed.
+  fs.writeFileSync(path.join(dir, 'objects/draw-probe/object.tests.json'), '{ "tests": [');
+  const broken = await testObject(dir, 'draw-probe', { updateSnapshots: true });
+  assert.equal(broken.snapshots, undefined);
+  assert.deepEqual(fs.readdirSync(snapshots), baselines);
 });

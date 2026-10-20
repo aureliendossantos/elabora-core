@@ -70,10 +70,13 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       objects). One contact sheet. Several shots share one build and one browser;
                                                       --out names one image, so several shots are refused with it (exit code 2):
                                                       --out-dir gets one file each
-  fit [dir] [--reference 1600x900] [--minimum 1280x720] [--json]
+  fit [dir] [--screen <id>,…] [--reference 1600x900] [--minimum 1280x720] [--fresh] [--json]
                                                       Measure every slide (all steps shown) at the fit sizes: what scrolls, by how
                                                       much, and what moves once its activities are answered. In scroll presentation:
-                                                      the length of each page and the contrast of its text, down the whole page
+                                                      the length of each page and the contrast of its text, down the whole page.
+                                                      A screen unchanged since its last measure (its files, the theme, components,
+                                                      objects, Elabora, the browser) is not measured again: its fit is reused
+                                                      (--fresh measures every screen again)
   inspect <package.zip>                               Read any SCORM package: manifest, files, size
   diff <old.report.json> <new.report.json> [--profile a,b]
                                                       What an update does to learners in progress, LMS by LMS
@@ -248,11 +251,15 @@ const screenshot = defineCommand({
 
 const fit = defineCommand({
   name: 'fit',
-  flags: { reference: 'string', minimum: 'string', json: 'boolean' },
+  flags: { screen: 'list', reference: 'string', minimum: 'string', fresh: 'boolean', json: 'boolean' },
   async run({ positionals: [dir = '.'], flags }) {
     const { measureFit, fitDiagnostics } = await import('@elabora/node/preview');
-    const result = await measureFit(dir, { sizes: fitSizes(flags.reference, flags.minimum) });
-    if (!result.ok) { printDiagnostics(result.diagnostics, { json: flags.json }); return 1; }
+    const result = await measureFit(dir, { sizes: fitSizes(flags.reference, flags.minimum), screens: flags.screen, fresh: flags.fresh });
+    if (!result.ok) {
+      if (result.error) { if (flags.json) printJson({ ok: false, error: result.error }); else console.error(`✘ ${result.error}`); return 2; }
+      printDiagnostics(result.diagnostics, { json: flags.json });
+      return 1;
+    }
     const diagnostics = fitDiagnostics(result);
     if (flags.json) { printJson({ ...result, diagnostics }); return 0; }
     const slides = result.mode === 'slides';
@@ -262,12 +269,15 @@ const fit = defineCommand({
       const fitting = size.screens.filter((s) => !s.overflow).length;
       console.log(slides ? `${size.size.replace('x', '×')} (${size.role}): ${fitting}/${size.screens.length} screens fit` : `${size.size.replace('x', '×')} (${size.role}): ${size.screens.length} pages`);
       for (const s of size.screens) {
-        if (!slides) console.log(`  ${s.contrast?.length ? '✘' : '✔'} ${(s.screen ?? '').padEnd(width)}  ${s.windows <= 1 ? 'one window' : `${s.windows} windows long`}`);
-        else console.log(`  ${s.overflow ? (size.role === 'reference' ? '✘' : '·') : '✔'} ${(s.screen ?? '').padEnd(width)}  ${s.overflow ? `+${s.overflow} px${s.below.length ? `, below the fold: ${s.below.join(', ')}` : ''}` : `fits, ${s.spare} px to spare`}`);
+        const reused = s.reused ? ` (unchanged since ${s.reused}: reused)` : '';
+        if (!slides) console.log(`  ${s.contrast?.length ? '✘' : '✔'} ${(s.screen ?? '').padEnd(width)}  ${s.windows <= 1 ? 'one window' : `${s.windows} windows long`}${reused}`);
+        else console.log(`  ${s.overflow ? (size.role === 'reference' ? '✘' : '·') : '✔'} ${(s.screen ?? '').padEnd(width)}  ${s.overflow ? `+${s.overflow} px${s.below.length ? `, below the fold: ${s.below.join(', ')}` : ''}` : `fits, ${s.spare} px to spare`}${reused}`);
         for (const c of s.contrast || []) console.log(`    ✘ ${''.padEnd(width)}  contrast ${c.ratio}:1 < ${c.need}:1 — ${c.block ? `${c.block}: ` : ''}"${c.text}"${c.scrolled ? ' (as the page scrolls)' : ''}`);
         if (s.shift) console.log(`    ${size.role === 'reference' ? '✘' : '·'} ${''.padEnd(width)}  answering moves it: ${[...s.shift.grew.map((g) => `${g.block} ${g.px > 0 ? '+' : ''}${g.px} px`), ...(s.shift.moved.length ? [`${s.shift.moved.length} block(s) move`] : [])].join(', ')}${s.shift.overflow > s.overflow ? `, then scrolls by ${s.shift.overflow} px` : ''}`);
       }
     }
+    const reused = result.sizes.flatMap((size) => size.screens).filter((s) => s.reused).length;
+    if (reused) console.log(`\n${reused} measure(s) reused: those screens are unchanged since then. --fresh measures them again.`);
     return 0;
   }
 });

@@ -46,11 +46,11 @@ export const replayObject = defineTool({
 
 export const testObject = defineTool({
   name: 'elabora_test_object',
-  description: 'Run the automated gates of a free object in a browser: smoke, behaviour tests, budgets, visual snapshots, accessibility. Slow (tens of seconds). A full run is recorded in object.gates.json for the proof dossier.',
-  inputSchema: objectSchema({ id: SLUG, updateSnapshots: { type: 'boolean', description: 'Accept new visual baselines (only when the visual change is intended).' }, only: { type: 'string', description: 'Run only the behaviour tests whose name contains this text (not recorded).' } }, ['id']),
+  description: 'Run the automated gates of a free object in a browser: smoke, behaviour tests, budgets, visual snapshots, accessibility. Tens of seconds; an object unchanged since its last full run on this computer (its folder, the theme tokens and fonts, the language, the Elabora code, the browser) is not run again: its result comes back at once with reused (force runs it). A full run is recorded in object.gates.json for the proof dossier. updateSnapshots also removes the baselines of states no test names any more, and lists those kept for other browsers and systems.',
+  inputSchema: objectSchema({ id: SLUG, updateSnapshots: { type: 'boolean', description: 'Accept new visual baselines (only when the visual change is intended).' }, only: { type: 'string', description: 'Run only the behaviour tests whose name contains this text (not recorded).' }, force: { type: 'boolean', description: 'Run the gates even when nothing changed since the last run.' } }, ['id']),
   async handler(args, { root }) {
     const objectTests = await import('@elabora/node/objects/test');
-    const result = await objectTests.testObject(root, args.id, { updateSnapshots: !!args.updateSnapshots, only: args.only || null });
-    return textResult({ ok: result.ok, browser: result.browser, gates: result.gates, diagnostics: result.diagnostics });
+    const result = await objectTests.testObject(root, args.id, { updateSnapshots: !!args.updateSnapshots, only: args.only || null, force: !!args.force });
+    return textResult({ ok: result.ok, ...(result.reused ? { reused: `unchanged since ${result.reused.at}, not run again (force runs it)` } : {}), browser: result.browser, gates: result.gates, ...(result.snapshots ? { snapshots: result.snapshots } : {}), diagnostics: result.diagnostics });
   }
 });

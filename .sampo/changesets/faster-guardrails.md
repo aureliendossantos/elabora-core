@@ -1,0 +1,9 @@
+---
+npm/elabora: minor (Changed)
+npm/@elabora/node: minor (Changed)
+npm/@elabora/cli: minor (Changed)
+---
+
+Fit checks and free-object tests are fast enough to run again after a small edit. `elabora fit` keeps each screen's measure in the course's `.elabora/cache/fit/`, keyed by the screen as the player shows it (its files, the theme, the components, the objects it places, the outline), the Elabora code, the browser, the system, the size and the presentation: an unchanged screen is reused and says so (`reused`), and `--fresh` measures it again. `fit --screen <id>,…` (MCP `elabora_check_fit` `screens`, `fresh`) measures only those screens. Contrast is read from a capture at half scale decoded in Node, two screens are measured side by side, and the second pass down scroll pages, with animations on, only reads the windows where a scroll- or view-timeline animation applies, and no longer reads text once it was readable there: on a copy of medieval-charts a full fit takes about 10 s instead of 150 s, a fit after editing one page about 5 s, and one with nothing changed under a second. In Chrome, the contrast capture now covers the whole window (it used to stop at the headless window's own height).
+
+`elabora object test` gives the result of the last full run again, at once, when nothing the gates depend on changed since (the object folder, the theme tokens and fonts, the language, the Elabora code and the tools it runs objects with, the browser and the system) (« unchanged since <date>, not run again »), in under a second; `--force` (MCP `force`) runs it. With Elabora's browser, behaviour tests run in parallel pages, their mounts one at a time so that the boot time stays measured alone. `--update-snapshots` removes the baselines of states no test names any more, for every engine, and lists those it keeps for other browsers and systems.

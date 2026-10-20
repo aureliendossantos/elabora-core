@@ -32,6 +32,11 @@ const identities = new WeakMap<Browser, BrowserIdentity>();
 export function browserIdentity(browser: Browser): BrowserIdentity {
   return identities.get(browser) ?? { engine: browser.browserType().name(), version: browser.version() };
 }
+// The same, with the version of Elabora's Electron, which a worker tells once started (a page opened).
+export async function openedBrowserIdentity(browser: Browser): Promise<BrowserIdentity> {
+  if (!browserIdentity(browser).version) await (await browser.newPage()).close();
+  return browserIdentity(browser);
+}
 
 // A worker's environment (its own temporary user data) and its command line.
 function workerEnv(folder: string, headed: boolean): Record<string, string> {

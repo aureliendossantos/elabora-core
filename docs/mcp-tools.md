@@ -163,10 +163,12 @@ See a screen while designing, in well under a second: a look server kept warm fo
 
 ### `elabora_check_fit`
 
-Measure every screen with all its steps in a real browser at the fit sizes of the course (presentation.fit: reference 1600×900, minimum 1280×720 by default) and say which slides scroll, by how many px, which blocks end below the fold, and what moves once the activities are answered (layout shift), plus text too faint against what is behind it. In scroll presentation (pages of any length) nothing has to fit: it gives the length of each page and the contrast of its text, down the whole page. Seconds, not a full elabora test.
+Measure every screen with all its steps in a real browser at the fit sizes of the course (presentation.fit: reference 1600×900, minimum 1280×720 by default) and say which slides scroll, by how many px, which blocks end below the fold, and what moves once the activities are answered (layout shift), plus text too faint against what is behind it. In scroll presentation (pages of any length) nothing has to fit: it gives the length of each page and the contrast of its text, down the whole page. A screen unchanged since its last measure (its files, the theme, components, objects, Elabora, the browser) is not measured again: its fit comes back with reused (its date); fresh measures every screen again. About a second per slide and a few seconds per scroll page measured; after a change, pass screens: the ones it touched.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
+| `screens` | string[] |  | Only these screens (default: every screen). |
+| `fresh` | boolean |  | Measure again the screens unchanged since their last measure. |
 | `reference` | string |  |  |
 | `minimum` | string |  |  |
 | `language` | string |  | A BCP 47 tag: en, de, pt-BR. |
@@ -769,13 +771,14 @@ Write one file of a free object: object.manifest.json, object.js, object.tests.j
 
 ### `elabora_test_object`
 
-Run the automated gates of a free object in a browser: smoke, behaviour tests, budgets, visual snapshots, accessibility. Slow (tens of seconds). A full run is recorded in object.gates.json for the proof dossier.
+Run the automated gates of a free object in a browser: smoke, behaviour tests, budgets, visual snapshots, accessibility. Tens of seconds; an object unchanged since its last full run on this computer (its folder, the theme tokens and fonts, the language, the Elabora code, the browser) is not run again: its result comes back at once with reused (force runs it). A full run is recorded in object.gates.json for the proof dossier. updateSnapshots also removes the baselines of states no test names any more, and lists those kept for other browsers and systems.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `id` | string | yes |  |
 | `updateSnapshots` | boolean |  | Accept new visual baselines (only when the visual change is intended). |
 | `only` | string |  | Run only the behaviour tests whose name contains this text (not recorded). |
+| `force` | boolean |  | Run the gates even when nothing changed since the last run. |
 
 ### `elabora_write_plan`
 

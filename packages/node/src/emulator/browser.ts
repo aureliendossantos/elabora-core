@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 import type { Browser, BrowserType, LaunchOptions } from 'playwright-core';
 import { errorMessage } from '../util/values.ts';
 import { findElectronRuntime, launchElectron } from './electron.ts';
-export { browserIdentity } from './electron.ts';
+export { browserIdentity, openedBrowserIdentity } from './electron.ts';
 
 const require = createRequire(import.meta.url);
 

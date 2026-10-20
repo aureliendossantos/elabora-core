@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import crypto from 'node:crypto';
+import { version as esbuildVersion } from 'esbuild';
 import { createRequire } from 'node:module';
 import type { Browser, CDPSession, Frame, Page } from 'playwright-core';
 import type { Diagnostic, ObjectTest, ObjectTestContext, ObjectTestSafeArea, ObjectTestStep, ObjectTestView } from '@elabora/format';
@@ -11,11 +13,14 @@ import { validateData } from '@elabora/player/data-schema';
 import { loadProjectFromDir } from '../project-reader.ts';
 import { compileObjectCode, objectFrameHtml, objectTestHostBundle, runtimeFiles, vendorThree, bundleErrorMessage, ELABORA_VERSION } from '../bundles.ts';
 import { startServer } from '../emulator/server.ts';
-import { browserIdentity, launchBrowser } from '../emulator/browser.ts';
+import { browserIdentity, launchBrowser, openedBrowserIdentity } from '../emulator/browser.ts';
 import type { BrowserIdentity } from '../emulator/electron.ts';
 import { loadAxe, axeViolations } from '../util/axe.ts';
 import { isRecord, errorMessage } from '../util/values.ts';
-import { writeGatesRecord } from './gates-record.ts';
+import { codeVersion } from '../code-version.ts';
+import { fileHash } from '@elabora/core/project/files';
+import { inputsHash, objectFingerprint, readKeptRun, recordedAt, writeGatesRecord, writeKeptRun } from './gates-record.ts';
+import type { ObjectTestInputs } from './gates-record.ts';
 import type { DryReport } from '@elabora/player/object-protocol';
 import type { HostCall, HostDefinition, HostEvent, HostStarted, SafeArea } from './host-api.ts';
 
@@ -55,6 +60,9 @@ export interface ObjectTestOptions {
   only?: string | null; // run the behaviour tests whose name contains this text (a partial run is not recorded)
   stallMs?: number;
   allFrames?: boolean; // draw every frame of every run (slower; the verdicts are the same)
+  // Run the gates even when nothing they depend on changed since the last full run on this computer
+  // (default: its result is given again, with reused).
+  force?: boolean;
 }
 
 // What the object's frame measured (renderer.info, WebGL contexts: values from the frame, unchecked),
@@ -84,12 +92,18 @@ export interface ObjectTestResult {
   gates: ObjectGates;
   diagnostics: Diagnostic[];
   browser?: BrowserIdentity;
+  // Nothing the gates depend on changed since the full run of this date on this computer: its result,
+  // not run again (force runs it).
+  reused?: { at: string };
+  // With updateSnapshots: the baselines of states no test names any more, removed; and the baselines
+  // kept for other browsers and systems (another engine's, another platform's), which their runs use.
+  snapshots?: { removed: string[]; kept: string[] };
 }
 
 // The object did not answer a call in time.
 class StuckError extends Error {}
 
-export async function testObject(projectDir: string, objectId: string, { updateSnapshots = false, browser: browserName = 'chromium', headed = false, only = null, stallMs = STALL_MS, allFrames = false }: ObjectTestOptions = {}): Promise<ObjectTestResult> {
+export async function testObject(projectDir: string, objectId: string, { updateSnapshots = false, browser: browserName = 'chromium', headed = false, only = null, stallMs = STALL_MS, allFrames = false, force = false }: ObjectTestOptions = {}): Promise<ObjectTestResult> {
   const project = loadProjectFromDir(projectDir);
   const object = project.objects.get(objectId);
   const manifest = object?.manifest;
@@ -101,13 +115,37 @@ export async function testObject(projectDir: string, objectId: string, { updateS
   let browser: Browser | undefined;
   const finish = (): ObjectTestResult => ({ object: objectId, ok: !reporter.errors.length, gates, diagnostics: reporter.items, ...(browser ? { browser: browserIdentity(browser) } : {}) });
 
+  // Course fonts are staged with the object so tests render with the real typography.
+  const fonts = (project.course?.theme?.fonts || []).map((font) => ({ family: font.family, src: font.src, weight: font.weight || '400', style: font.style || 'normal', ...(font.unicodeRange ? { unicodeRange: font.unicodeRange } : {}) }));
+  const tokens: Record<string, string | number> = resolveTokens(project.course);
+  const language = manifest.language || project.course?.language || 'en';
+  // What the verdicts depend on beyond the object folder; a full run whose folder and inputs are
+  // those of now, on this browser, is not run again.
+  const inputs: ObjectTestInputs = {
+    tokens, fonts: fonts.map((font) => ({ ...font, hash: fileHash(project.files, font.src) })), language: `${language}|${project.course?.language || 'en'}`, code: codeVersion(), platform: `${process.platform}-${process.arch}`, browser: `${browserName}${headed ? ' headed' : ''}`,
+    tools: testTools(!!manifest.requires?.three)
+  };
+  const kept = !force && !updateSnapshots && !only && !allFrames ? readKeptRun<ObjectTestResult>(project.root, objectId) : null;
+  if (kept && kept.inputs === inputsHash(inputs) && kept.fingerprint === objectFingerprint(objectDir) && recordedAt(objectDir) === kept.at) {
+    const opened = await launchBrowser(browserName, { headed });
+    try {
+      const identity = await openedBrowserIdentity(opened);
+      if (kept.browser && identity.engine === kept.browser.engine && identity.version === kept.browser.version) return { ...kept.result, reused: { at: kept.at } };
+    } finally {
+      await opened.close();
+    }
+  }
+
   // Stage the object, its frame and a host page in a temporary folder served over HTTP.
   const stage = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-object-'));
   const write = (rel: string, content: string | Uint8Array) => { fs.mkdirSync(path.dirname(path.join(stage, rel)), { recursive: true }); fs.writeFileSync(path.join(stage, rel), content); };
   let code: string;
   try { code = await compileObjectCode(objectDir, { minify: false }); } catch (error) {
     reporter.emit('E_OBJECT_PARSE', { file: `${file}/object.js`, target: objectId, message: bundleErrorMessage(error) });
-    return finish();
+    const failed = finish();
+    await browser?.close();
+    fs.rmSync(stage, { recursive: true, force: true });
+    return failed;
   }
   write(`objects/${objectId}/object.js`, code);
   write(`objects/${objectId}/frame.html`, objectFrameHtml(manifest, { language: project.course?.language || 'en' }));
@@ -117,11 +155,8 @@ export async function testObject(projectDir: string, objectId: string, { updateS
   write('test-host.js', await objectTestHostBundle());
   write('test.html', `<!doctype html><html lang="en"><head><meta charset="utf-8"><link rel="icon" href="data:,"><title>Object test</title><style>body{margin:0;background:#fff}#box{width:960px;height:600px}#box iframe{width:100%;height:100%;border:0;display:block}</style></head><body><div id="box"></div><script src="test-host.js"></script></body></html>`);
 
-  // Course fonts are staged with the object so tests render with the real typography.
-  const fonts = (project.course?.theme?.fonts || []).map((font) => ({ family: font.family, src: font.src, weight: font.weight || '400', style: font.style || 'normal', ...(font.unicodeRange ? { unicodeRange: font.unicodeRange } : {}) }));
   for (const font of fonts) if (fs.existsSync(path.join(project.root, font.src))) write(font.src, fs.readFileSync(path.join(project.root, font.src)));
   const defaults: Record<string, unknown> = Object.fromEntries(Object.entries(manifest.props?.properties || {}).map(([name, prop]) => [name, prop.default]));
-  const tokens: Record<string, string | number> = resolveTokens(project.course);
   for (const [name, prop] of Object.entries(manifest.props?.properties || {})) {
     const token = prop['x-token'];
     if (token && tokens[token] !== undefined) defaults[name] = tokens[token];
@@ -133,9 +168,14 @@ export async function testObject(projectDir: string, objectId: string, { updateS
 
   const server = await startServer();
   server.addPackage('object', stage);
-  browser = await launchBrowser(browserName, { headed });
+  browser ??= await launchBrowser(browserName, { headed });
   const openedBrowser = browser;
   const snapshotEngine = browserIdentity(browser).engine;
+  // Tests run side by side in Elabora's Electron, which opens a worker of its own for each page. The
+  // pages of one Chrome (or Firefox, WebKit) share the process that draws their WebGL, which already
+  // spreads one test over the cores: side by side they took longer, and a page not in front was not
+  // drawn as it would be (a snapshot differed). There they run one at a time.
+  const atOnce = snapshotEngine === 'electron' ? TEST_PAGES : 1;
   const snapshotDir = path.join(objectDir, '__snapshots__');
   // A decoration runs behind every screen for the whole session: smaller default budgets.
   const decoration = manifest.pedagogicalRole === 'decoration';
@@ -177,7 +217,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
     const begin = Date.now();
     await page.evaluate(([width, height]) => { const box = document.getElementById('box'); if (box) { box.style.width = `${width}px`; box.style.height = `${height}px`; } }, size);
     const start = {
-      def, props, strings: { ...manifestStrings, ...(strings || {}) }, tokens, fonts, language: locale || manifest.language || project.course?.language || 'en', seed, reducedMotion, savedState,
+      def, props, strings: { ...manifestStrings, ...(strings || {}) }, tokens, fonts, language: locale || language, seed, reducedMotion, savedState,
       safeArea: safeArea ? { top: 0, right: 0, bottom: 0, left: 0, ...safeArea } : null, decorative: decoration, context, view
     };
     const ready: Mounted = await bounded(page, page.evaluate((options) => window.__startHost(options), start), 'mount')
@@ -259,12 +299,15 @@ export async function testObject(projectDir: string, objectId: string, { updateS
   };
 
   // ── Gates 3 and 5: a behaviour test and its snapshots ──
-  interface TestRun { failures: string[]; visual: Reporter; snapshots: number; bootMs: number | null; stuck: boolean; redo: Redo | null }
-  const runTest = async (test: ObjectTest, skip: Skip): Promise<TestRun> => {
+  interface TestRun { failures: string[]; visual: Reporter; snapshots: number; recorded: boolean; bootMs: number | null; stuck: boolean; redo: Redo | null }
+  // The object mounted for a test: mounts run one at a time, so that each boot time is measured
+  // with nothing else running; the tests then run side by side.
+  type Host = Awaited<ReturnType<typeof openHost>>;
+  const mountTest = (test: ObjectTest): Promise<Host> => openHost({ ...defaults, ...(test.props || {}) }, { seed: test.seed ?? 1, reducedMotion: !!test.reducedMotion, size: test.size || [960, 600], safeArea: test.safeArea || null, context: test.context || null, view: test.view || null, strings: test.strings || null, locale: test.locale || null });
+  const runTest = async (test: ObjectTest, skip: Skip, { page, errors, ready, bootMs }: Host): Promise<TestRun> => {
     const failures: string[] = [];
     const visual = createReporter();
-    const run: TestRun = { failures, visual, snapshots: 0, bootMs: null, stuck: false, redo: null };
-    const { page, errors, ready, bootMs } = await openHost({ ...defaults, ...(test.props || {}) }, { seed: test.seed ?? 1, reducedMotion: !!test.reducedMotion, size: test.size || [960, 600], safeArea: test.safeArea || null, context: test.context || null, view: test.view || null, strings: test.strings || null, locale: test.locale || null });
+    const run: TestRun = { failures, visual, snapshots: 0, recorded: false, bootMs: null, stuck: false, redo: null };
     if (!ready.ok) failures.push(`mount failed: ${ready.error}`);
     else run.bootMs = bootMs;
     // Dry, the frames are drawn from the last frame of the last step that runs frames before each
@@ -331,6 +374,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
             const png = await capture(page, updateSnapshots || !baseline);
             if (skip) await setDry(page, skip);
             const comparison = compareSnapshot(baseline, path.join(snapshotDir, name), png, { update: updateSnapshots });
+            if (comparison.status === 'created') run.recorded = true;
             if (comparison.status === 'different') visual.emit('E_GATE_VISUAL', { file: `${file}/__snapshots__/${name}`, target: objectId, measured: `${comparison.ratio.toFixed(3)} %`, limit: '0.1 %', message: `Snapshot "${step.name}" of test "${test.name}" differs from its baseline.` });
           }
         } catch (error) {
@@ -348,6 +392,8 @@ export async function testObject(projectDir: string, objectId: string, { updateS
     }
   };
 
+  // Whether this run may be given again for an unchanged object (writeKeptRun).
+  let keepable = true;
   try {
     // Draws skipped by dry runs: all of them, then for an object whose own textures are reused,
     // those on the canvas only.
@@ -367,6 +413,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
     if (smoke.accessibility) gates.accessibility = smoke.accessibility;
     gates.smoke = smoke.found.items.some((diagnostic) => diagnostic.code === 'E_GATE_SMOKE') ? 'failed' : 'passed';
     const stuck = smoke.stuck;
+    if (stuck) keepable = false;
 
     // An object stuck in the smoke test would be stuck in each test: they are not run.
     const tests = stuck ? [] : (object.tests?.tests || []).filter((test) => !only || test.name.includes(only));
@@ -375,17 +422,34 @@ export async function testObject(projectDir: string, objectId: string, { updateS
     let snapshots = 0;
     let snapshotFailures = 0;
     const testResults: NonNullable<ObjectGates['tests']> = [];
-    for (const test of tests) {
+    // Tests run side by side, a few at a time (atOnce), in the order of object.tests.json; a run done
+    // again (redo) goes to a later batch. The results keep that order.
+    const kept: (TestRun | undefined)[] = [];
+    let queue: { index: number; skip: Skip }[] = tests.map((test, index) => {
       // A run that records baselines draws every frame.
       const records = updateSnapshots || test.steps.some((step, i) => step.action === 'snapshot' && !snapshotFiles(snapshotDir, `${slug(test.name)}--${slug(step.name || `step-${i + 1}`)}`, snapshotEngine).baseline);
-      let run = await runTest(test, records ? false : skipping);
       frames.tests[test.name] = records && skipping ? `${FRAMES_DRAWN.false} (records baselines)` : FRAMES_DRAWN[String(records ? false : skipping)];
-      while (run.redo !== null) {
+      return { index, skip: records ? false : skipping };
+    });
+    while (queue.length) {
+      const batch = queue.slice(0, atOnce);
+      queue = queue.slice(atOnce);
+      const hosts: Host[] = [];
+      for (const job of batch) hosts.push(await mountTest(tests[job.index]));
+      const runs = await Promise.all(batch.map((job, i) => runTest(tests[job.index], job.skip, hosts[i])));
+      for (const [i, run] of runs.entries()) {
+        const { index } = batch[i];
+        if (run.redo === null) { kept[index] = run; continue; }
         const { skip, why } = run.redo;
         if (skip) skipping = skip;
-        frames.tests[test.name] = `${FRAMES_DRAWN[String(skip)]} (${why})`;
-        run = await runTest(test, skip);
+        frames.tests[tests[index].name] = `${FRAMES_DRAWN[String(skip)]} (${why})`;
+        queue.push({ index, skip });
       }
+    }
+    for (const [index, test] of tests.entries()) {
+      const run = kept[index];
+      if (!run) continue;
+      if (run.stuck || run.recorded) keepable = false;
       if (run.bootMs !== null) boots.push(run.bootMs);
       snapshots += run.snapshots;
       snapshotFailures += run.visual.items.length;
@@ -404,6 +468,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
       const bootMs = sorted[Math.floor((sorted.length - 1) / 2)];
       gates.perf = { ...gates.perf, bootMs, bootSamples: boots };
       const measured = `${bootMs} ms (median of ${boots.length})`;
+      if (bootMs > HARD_BOOT_MS) keepable = false;
       if (bootMs > HARD_BOOT_MS) reporter.emit('E_GATE_BUDGET', { target: objectId, measured, limit: `${HARD_BOOT_MS} ms`, message: `Boot takes ${bootMs} ms: close to the 15 s after which the player gives up and shows the text version.` });
       else if (bootMs > budgets.bootMsMax) reporter.emit('W_GATE_BOOT_SLOW', { target: objectId, measured, limit: `${budgets.bootMsMax} ms`, message: `Boot takes ${bootMs} ms (software WebGL here, as on machines without a GPU): learners see the loading indicator meanwhile.` });
     }
@@ -414,16 +479,66 @@ export async function testObject(projectDir: string, objectId: string, { updateS
     fs.rmSync(stage, { recursive: true, force: true });
   }
   reporter.emit('I_GATE_HUMAN_PENDING', { target: objectId });
-  const result = finish();
+  // Baselines no test names any more: only when object.tests.json was read (a file that does not
+  // parse names no test, and every baseline would go).
+  const named = Array.isArray(object.tests?.tests) ? object.tests.tests.flatMap((test) => test.steps.flatMap((step, i) => (step.action === 'snapshot' ? [`${slug(test.name)}--${slug(step.name || `step-${i + 1}`)}`] : []))) : null;
+  const result: ObjectTestResult = { ...finish(), ...(updateSnapshots && !only && named ? { snapshots: pruneSnapshots(snapshotDir, named, snapshotEngine) } : {}) };
   if (!only) {
-    writeGatesRecord(objectDir, {
+    const record = writeGatesRecord(objectDir, {
       object: objectId, version: manifest.version, elabora: ELABORA_VERSION, at: new Date().toISOString(), ok: result.ok, browser: result.browser,
       gates: Object.fromEntries(Object.entries(gates).filter((entry): entry is [string, string] => typeof entry[1] === 'string')),
       perf: gates.perf || null, tests: (gates.tests || []).map((test) => ({ name: test.name, ok: test.ok }))
     });
+    // Not kept: a run that wrote baselines (it compared nothing with them: the next one does), nor
+    // one an object stuck in a call or a boot near the timeout failed, which a loaded computer may cause.
+    if (!updateSnapshots && keepable) writeKeptRun<ObjectTestResult>(project.root, { object: objectId, fingerprint: record.fingerprint, inputs: inputsHash(inputs), browser: result.browser ?? null, at: record.at, result });
   }
   return result;
 }
+
+// The baselines of the snapshots named by the tests (stems), for every engine and system, are kept;
+// any other PNG of the folder is a state no test names any more, and is removed. Returned: what was
+// removed, and the baselines of other engines and systems than this run's (Chromium's -darwin.png
+// next to Electron's -electron-darwin.png), which their runs still compare with.
+export function pruneSnapshots(snapshotDir: string, stems: readonly string[], engine: string): { removed: string[]; kept: string[] } {
+  const out = { removed: [] as string[], kept: [] as string[] };
+  if (!fs.existsSync(snapshotDir)) return out;
+  const own = new Set(stems.map((stem) => snapshotFiles(snapshotDir, stem, engine).name));
+  const named = new Set(stems);
+  for (const name of fs.readdirSync(snapshotDir).sort()) {
+    if (!name.endsWith('.png')) continue;
+    const stem = snapshotStem(name, named);
+    if (stem === null) { fs.rmSync(path.join(snapshotDir, name), { force: true }); out.removed.push(name); }
+    else if (!own.has(name)) out.kept.push(name);
+  }
+  return out;
+}
+
+// The test state a baseline file is of: <stem>.png (legacy), <stem>-<platform>.png (Chromium) or
+// <stem>-<engine>-<platform>.png; null when no named stem fits.
+const PLATFORM = '(?:aix|android|cygwin|darwin|freebsd|haiku|linux|netbsd|openbsd|sunos|win32)';
+const SUFFIXES = [new RegExp(`-${PLATFORM}\\.png$`), new RegExp(`-(?:electron|firefox|webkit)-${PLATFORM}\\.png$`), /\.png$/];
+function snapshotStem(name: string, stems: ReadonlySet<string>): string | null {
+  for (const suffix of SUFFIXES) {
+    const stem = suffix.test(name) ? name.replace(suffix, '') : null;
+    if (stem !== null && stems.has(stem)) return stem;
+  }
+  return null;
+}
+
+// What runs the gates beside Elabora's own code (codeVersion): the bundler of the object's code, the
+// three.js it may import, and the optional packages without which a gate is not run (axe-core) or
+// snapshots are not compared (pngjs, pixelmatch).
+function testTools(three: boolean): Record<string, string | boolean> {
+  const sha = (data: string | Buffer) => crypto.createHash('sha256').update(data).digest('hex').slice(0, 16);
+  const present = (name: string) => { try { require.resolve(name); return true; } catch { return false; } };
+  const axe = loadAxe();
+  return { esbuild: esbuildVersion, three: three ? sha(Object.values(vendorThree())[0]) : false, axe: axe ? sha(axe) : false, compare: present('pngjs') && present('pixelmatch') };
+}
+
+// Behaviour tests run at the same time in Elabora's Electron: each page is a worker drawing in
+// software (SwiftShader).
+const TEST_PAGES = Math.max(1, Math.min(4, Math.floor(os.availableParallelism() / 2)));
 
 // Draws skipped by a run: none (every frame drawn), all, or those on the canvas only.
 type Skip = false | 'all' | 'canvas';

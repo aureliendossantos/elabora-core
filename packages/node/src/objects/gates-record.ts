@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { isRecord } from '../util/values.ts';
+import { projectDataDir } from '../data-dir.ts';
+import { canonicalJSON } from '@elabora/core/util/json';
 
 // Result of the last full run of the automated gates (2–6), kept next to the object so the proof
 // dossier can tell "passed on <date>" from "not run" or "stale". Committed with the course: the
@@ -66,4 +68,53 @@ export function gatesStatus(dir: string): GatesStatus {
   };
   if (record.fingerprint !== objectFingerprint(dir)) return { ...base, status: 'stale' };
   return { ...base, status: record.ok ? 'passed' : 'failed' };
+}
+
+// ── A run kept on this computer, to skip an unchanged object ──
+// What a run's verdicts depend on beyond the object folder (its fingerprint): what the course gives
+// it (theme tokens, fonts and their files, language), the code that runs the gates (codeVersion),
+// the browser and the system. Machine-local, so it is kept in the project's data, not in the record
+// committed with the course: another computer, another browser or another core runs the gates again.
+export interface ObjectTestInputs {
+  tokens: Record<string, string | number>;
+  fonts: { family: string; src: string; weight: string; style: string; unicodeRange?: string; hash: string | null }[];
+  language: string;
+  code: string;
+  platform: string;
+  browser: string; // the browser asked (chromium, electron, firefox…), and headed
+  tools: Record<string, string | boolean>; // esbuild, three.js, axe-core, the snapshot comparison
+}
+
+export interface KeptTestRun<Result> {
+  object: string;
+  fingerprint: string; // objectFingerprint after the run
+  inputs: string; // hash of ObjectTestInputs
+  browser: { engine: string; version: string } | null;
+  at: string; // the run's date, as object.gates.json records it
+  result: Result;
+}
+
+export const inputsHash = (inputs: ObjectTestInputs): string => `sha256:${crypto.createHash('sha256').update(canonicalJSON(inputs)).digest('hex')}`;
+
+const keptRunFile = (projectDir: string, objectId: string) => path.join(projectDataDir(projectDir), 'cache', 'objects', `${objectId}.json`);
+
+export function readKeptRun<Result>(projectDir: string, objectId: string): KeptTestRun<Result> | null {
+  try {
+    const value: unknown = JSON.parse(fs.readFileSync(keptRunFile(projectDir, objectId), 'utf8'));
+    return isRecord(value) && value.object === objectId && typeof value.fingerprint === 'string' && typeof value.inputs === 'string' && typeof value.at === 'string' && isRecord(value.result) ? value as unknown as KeptTestRun<Result> : null;
+  } catch { return null; }
+}
+
+export function writeKeptRun<Result>(projectDir: string, run: KeptTestRun<Result>): void {
+  const file = keptRunFile(projectDir, run.object);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, `${JSON.stringify(run)}\n`);
+}
+
+// The date of the record committed with the course, when it still describes the object folder.
+export function recordedAt(dir: string): string | null {
+  try {
+    const record: unknown = JSON.parse(fs.readFileSync(path.join(dir, GATES_FILE), 'utf8'));
+    return isRecord(record) && typeof record.at === 'string' && record.fingerprint === objectFingerprint(dir) ? record.at : null;
+  } catch { return null; }
 }
