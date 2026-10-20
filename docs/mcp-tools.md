@@ -145,7 +145,7 @@ The vetted free fonts shipped with Elabora (available offline): family, category
 
 ### `elabora_look`
 
-See a screen while designing, in well under a second: a look server kept warm for the course (one browser, no build; started by the first look, stopped after 15 minutes without one) renders it from the files as they are, as learners will see it, with the player's header and footer and its free objects (3D included). Objects an edit did not touch keep running. Look after every visual change; keep elabora_check_fit, elabora_preview_screenshot, elabora_test_object and elabora_test_package as the final checks. Says whether a slide fits at this size, how long a page is, and where every block is. Also gives a page that follows the looks and the files, to open in a browser pane (in-app browsers included: its free objects show there).
+See a screen while designing, in well under a second: a look server kept warm for the course (one browser, no build; started by the first look, stopped after 15 minutes without one) renders it from the files as they are, as learners will see it, with the player's header and footer and its free objects (3D included). Objects an edit did not touch keep running. Look after every visual change; keep elabora_check_fit, elabora_preview_screenshot, elabora_test_object and elabora_test_package as the final checks. Says whether a slide fits at this size, how long a page is, and where every block is. To inspect: scroll (the window at a position, or a sheet down the page), block (a close-up, scale 2), act (drive a free object from inside its frame), with what moves and what cannot finish. Also gives a page that follows the looks and the files, to open in a browser pane (in-app browsers included: its free objects show there).
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -160,6 +160,11 @@ See a screen while designing, in well under a second: a look server kept warm fo
 | `language` | string |  | A translation of the course (default: its language). |
 | `viewport` | boolean |  | Only the window (default: the whole page). |
 | `motion` | boolean |  | Animations on (default: reduced motion, transitions settled). |
+| `scroll` | string[] |  | The window scrolled to a position, animations on: px ("1800"), a percentage of the page ("100%"), or a block's id (the block in view). Several positions (or sheet on a screen without a timeline, default 0/25/50/75/100%): a contact sheet down the page, to see scroll-driven animations build up. |
+| `block` | string |  | A close-up of this block (cropped to its box with a small margin; PNG by default up to 2 megapixels, else JPEG), scrolled into view unless scroll says where. With scroll, block or motion the note says what moves: visible/clipped/outside, the animations and transitions of each block in the window (or of this block), their timeline (time, scroll, view) and progress, and the scroll-driven ones that CANNOT FINISH because the page ends before their range. |
+| `scale` | 1 \| 2 |  | The close-up drawn at twice its size (2) to read fine detail. |
+| `act` | string[] |  | Drive the free object of block from inside its frame, in order, before the capture: "click:&lt;text&gt;" (a button, link, text or label named so), "click:role=&lt;role&gt;[name=&lt;name&gt;]", "key:&lt;key&gt;" (Enter, ArrowRight, a), "drag:x,y-&gt;x,y" (0 to 1 across the object). The note gives the object's state and the events it emitted; a missing target names what the frame offers. Explore with it; keep an interaction worth keeping in object.tests.json (elabora_test_object). |
+| `type` | "jpeg" \| "png" |  | Image format (default: JPEG; PNG for a close-up up to 2 megapixels). |
 
 ### `elabora_check_fit`
 

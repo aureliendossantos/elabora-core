@@ -49,7 +49,8 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
   preview [dir] [--port 4807] [--profile <id>]        Live preview (standalone and in the LMS emulator): pages reload after each
                                                       rebuild; free objects show in the in-app browsers of agent apps
   look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|answered] [--step <n>] [--layer <id>]
-       [--at <moment> | --sheet] [--viewport] [--motion] [--language <code>] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
+       [--at <moment> | --sheet] [--scroll <px|N%|block>,…] [--block <id> [--scale 2] [--act <action>]…] [--viewport] [--motion]
+       [--language <code>] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
                                                       See a screen while designing, in well under a second: a look server kept warm
                                                       for the course (one browser, no build) renders it from the files as they are,
                                                       with the player's header and footer; free objects an edit did not touch keep
@@ -60,7 +61,19 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       its caption shown), l2:end, l2:imprimante (a word), l2:imprimante+0.3s,
                                                       1.5s@2, step2:end, 12.5 (seconds). --sheet: a contact sheet, one capture per
                                                       mark of its timeline (start, each block that comes or goes, each cue, each
-                                                      step's end), captioned with the anchor and what happens
+                                                      step's end), captioned with the anchor and what happens; on a screen without a
+                                                      timeline, the page down its length (0, 25, 50, 75, 100 % or --scroll's).
+                                                      --scroll: the window there, animations on (px, % of the page, or a block's id);
+                                                      several: a sheet down the page. --block: a close-up of the block (PNG up to 2
+                                                      Mpx, else JPEG; in view unless --scroll says where), --scale 2 drawn twice as
+                                                      large. With --scroll, --block or --motion it says what moves: each block in
+                                                      the window (or the block) visible, clipped or outside, its animations and
+                                                      transitions, their timeline and progress, and the scroll-driven ones that
+                                                      CANNOT FINISH (the page ends before their range). --act (repeatable) drives
+                                                      the free object of --block from inside its frame before the capture:
+                                                      click:<text>, click:role=<role>[name=<n>], key:<key>, drag:x,y->x,y (0-1 across
+                                                      the object); it reports the object's state and events, and the object keeps
+                                                      that state until the screen changes
   screenshot [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial,answered] [--step <n>] [--layer <id>]
              [--at 0,2000,4000|l1,l2:end | --scroll 0,25%,50%,1800] [--motion] [--viewport] [--out shot.png | --out-dir <dir>]
                                                       Render screens to PNG once images and free objects are ready. answered: every

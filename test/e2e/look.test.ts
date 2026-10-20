@@ -10,7 +10,7 @@ import { preview } from '@elabora/node/preview';
 import { startServer } from '@elabora/node/emulator/server';
 import { build } from '@elabora/node/build';
 import { launchBrowser } from '@elabora/node/emulator/browser';
-import { ROOT, copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, copyExample, readJSON, writeFixture, writeJSON } from '../helpers.ts';
 
 // Looking while designing (docs/architecture/rendering.md, Looking while designing): a warm look after an
 // edit takes well under 2 s and keeps the free objects the edit did not touch; free objects show in
@@ -202,4 +202,131 @@ test('elabora preview: free objects show in a browser pane that refuses opaque f
   await page.waitForFunction(() => window.__elabora);
   assert.equal(await page.evaluate(() => window.__elabora.screen), OBJECT_SCREEN);
   assert.equal(await page.evaluate(() => document.querySelector('#t-main h1')?.textContent), 'Simulation (rebuilt)');
+});
+
+// Inspecting (elabora look --scroll, --block, --act): a long page "chemin" with a figure that stays in
+// the window (sticky), an entrance driven by the scroll that finishes, and one that cannot (the last
+// block, whose view() range ends once it has left the window: the page ends first); a free object of
+// the DOM only on "accueil", a button that switches it on.
+const INSPECT = { page: 'chemin', sticky: 'chemin-schema', done: 'chemin-regle', stuck: 'chemin-last', object: 'accueil-switch' };
+function addInspectionProbes(dir: string): void {
+  writeFixture(dir, 'theme/theme.css', [
+    `.t-block[data-block="${INSPECT.sticky}"] { position: sticky; top: 4rem; z-index: 5; background: #fff; }`,
+    '@keyframes probe-in { from { opacity: 0; rotate: -8deg; } to { opacity: 1; rotate: 0deg; } }',
+    `.t-block[data-block="${INSPECT.done}"] { animation: probe-in linear both; animation-timeline: view(); animation-range: entry 0% cover 30%; }`,
+    `.t-block[data-block="${INSPECT.stuck}"] { animation: probe-in linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }`,
+    ''
+  ].join('\n'));
+  const course = readJSON(dir, 'course.json');
+  course.theme.stylesheet = 'theme/theme.css';
+  writeJSON(dir, 'course.json', course);
+  const page = readJSON(dir, `screens/${INSPECT.page}.json`);
+  for (let n = 1; n <= 8; n++) page.blocks.push({ id: `chemin-filler-${n}`, type: 'text', props: { markdown: 'Le paquet traverse le réseau. '.repeat(16) } });
+  page.blocks.push({ id: INSPECT.stuck, type: 'callout', props: { variant: 'info', markdown: 'La dernière étape.' } });
+  writeJSON(dir, `screens/${INSPECT.page}.json`, page);
+
+  writeFixture(dir, 'objects/switch-probe/object.manifest.json', {
+    manifestVersion: '0.1', id: 'switch-probe', version: '1.0.0', title: 'Interrupteur',
+    planRefs: { objectives: ['OBJ-1'], items: ['ITEM-2'] }, pedagogicalRole: 'visualisation',
+    props: { type: 'object', properties: {} },
+    language: 'fr', strings: { on: { text: 'Allumer', description: 'Bouton' } },
+    state: { type: 'object', properties: { on: { type: 'boolean' } } },
+    events: [{ name: 'switched', description: 'Allumé.', payload: { type: 'object', properties: { on: { type: 'boolean' } }, required: ['on'] } }], budgets: {},
+    a11y: { description: 'Un interrupteur.', keyboard: 'Tab atteint son bouton.', motion: { pausable: true, respectsReducedMotion: true } },
+    sandbox: { network: 'none' }
+  });
+  writeFixture(dir, 'objects/switch-probe/object.js', [
+    'export function mount(container, ctx) {',
+    '  let on = false;',
+    "  const button = document.createElement('button');",
+    "  button.type = 'button';",
+    "  button.textContent = ctx.t('on');",
+    "  button.addEventListener('click', () => { on = true; button.style.background = '#0a0'; ctx.host.emit('switched', { on }); });",
+    '  container.appendChild(button);',
+    '  return { getState: () => ({ on }), setState() {}, dispose() {} };',
+    '}',
+    ''
+  ].join('\n'));
+  writeFixture(dir, 'objects/switch-probe/object.notes.md', 'Sonde des tests : un bouton qui allume.\n');
+  const home = readJSON(dir, 'screens/accueil.json');
+  home.blocks.push({ id: INSPECT.object, type: 'free-object', props: { object: 'switch-probe', title: 'Interrupteur', aspectRatio: '16:9', textAlternative: 'Un bouton qui allume.' } });
+  writeJSON(dir, 'screens/accueil.json', home);
+}
+
+const pngSize = (png: Buffer) => ({ width: png.readUInt32BE(16), height: png.readUInt32BE(20) });
+
+test('look: a block at a scroll position, a page down its length, a close-up, what moves and what cannot finish', { timeout: 180000 }, async (t) => {
+  const dir = copyExample();
+  addInspectionProbes(dir);
+  const looker = await startLooker(dir, { live: false });
+  t.after(async () => { await looker.close(); fs.rmSync(dir, { recursive: true, force: true }); });
+
+  // The end of the page: the last entrance cannot finish, it says how it stays.
+  const end = await looker.look({ screen: INSPECT.page, scroll: ['100%'] });
+  assert.ok(end.ok, JSON.stringify(end));
+  assert.equal(end.type, 'jpeg');
+  assert.ok(end.motion && end.motion.motion, 'animations on');
+  assert.equal(end.motion.scroll.top, end.motion.scroll.max);
+  assert.ok(end.scrolled && end.scrolled[0].top === end.motion.scroll.max && end.scrolled[0].top > 1000, JSON.stringify(end.scrolled));
+  const stuck = end.motion.blocks.find((block) => block.id === INSPECT.stuck);
+  assert.ok(stuck && stuck.visibility === 'visible', JSON.stringify(end.motion.blocks));
+  const [entrance] = stuck.animations;
+  assert.equal(entrance.name, 'probe-in');
+  assert.equal(entrance.timeline, 'view');
+  assert.ok(entrance.cannotFinish && entrance.atEnd !== undefined && entrance.atEnd !== null && entrance.atEnd < 0.9, JSON.stringify(entrance));
+  const opacity = entrance.stuck?.find((property) => property.property === 'opacity');
+  assert.ok(opacity && Number(opacity.value) < 1 && opacity.to === '1', JSON.stringify(entrance.stuck));
+  assert.deepEqual(end.motion.unfinished.map((entry) => entry.block), [INSPECT.stuck]);
+  // The entrance higher up finishes.
+  const done = await looker.look({ screen: INSPECT.page, scroll: [INSPECT.done] });
+  assert.ok(done.ok && done.motion, JSON.stringify(done));
+  const finishing = done.motion.blocks.find((block) => block.id === INSPECT.done)?.animations[0];
+  assert.ok(finishing && finishing.timeline === 'view' && finishing.atEnd === 1 && !finishing.cannotFinish, JSON.stringify(finishing));
+  // Blocks stay in px of the page, wherever the window is.
+  assert.deepEqual(done.blocks.find((block) => block.id === INSPECT.stuck)?.rect, end.blocks.find((block) => block.id === INSPECT.stuck)?.rect);
+
+  // The sticky figure is in the window down the whole page.
+  for (const position of ['0', '50%', '100%']) {
+    const shot = await looker.look({ screen: INSPECT.page, scroll: [position] });
+    assert.ok(shot.ok && shot.motion, JSON.stringify(shot));
+    assert.equal(shot.motion.blocks.find((block) => block.id === INSPECT.sticky)?.visibility, 'visible', `${position}: ${JSON.stringify(shot.motion.blocks.map((block) => [block.id, block.visibility]))}`);
+  }
+
+  // Down the page: one sheet, five stops by default.
+  const sheet = await looker.look({ screen: INSPECT.page, sheet: true });
+  assert.ok(sheet.ok, JSON.stringify(sheet));
+  assert.equal(sheet.type, 'png');
+  assert.deepEqual(sheet.scrolled?.map((stop) => stop.label.replace(/^\d+ px /, '')), ['(0 %)', '(25 %)', '(50 %)', '(75 %)', '(100 %)']);
+  assert.deepEqual(sheet.motion?.unfinished.map((entry) => entry.block), [INSPECT.stuck]);
+  // Of one block: its close-up where the window shows it, the window elsewhere.
+  const blockSheet = await looker.look({ screen: INSPECT.page, sheet: true, block: INSPECT.done });
+  assert.ok(blockSheet.ok && blockSheet.scrolled?.length === 5 && blockSheet.motion?.blocks.length === 1, JSON.stringify(blockSheet));
+
+  // A close-up at twice its size, scrolled into view: its image is twice the part of the page.
+  const close = await looker.look({ screen: INSPECT.page, block: INSPECT.done, scale: 2 });
+  assert.ok(close.ok && close.clip, JSON.stringify(close));
+  assert.equal(close.type, 'png');
+  const block = close.blocks.find((each) => each.id === INSPECT.done)!.rect;
+  assert.ok(close.clip.width >= block.width && close.clip.width <= block.width + 34, JSON.stringify({ clip: close.clip, block }));
+  assert.deepEqual(pngSize(close.image), { width: close.clip.width * 2, height: close.clip.height * 2 });
+  assert.equal(close.motion?.blocks.length, 1);
+  const unknown = await looker.look({ screen: INSPECT.page, block: 'nowhere' });
+  assert.ok(!unknown.ok && /No block "nowhere" on screen "chemin"\. Blocks: chemin-intro, /.test(unknown.error), JSON.stringify(unknown));
+});
+
+test('look --act: a click by text inside a free object changes its state; a missing target names what the frame offers', { timeout: 180000 }, async (t) => {
+  const dir = copyExample();
+  addInspectionProbes(dir);
+  const looker = await startLooker(dir, { live: false });
+  t.after(async () => { await looker.close(); fs.rmSync(dir, { recursive: true, force: true }); });
+
+  const missing = await looker.look({ screen: 'accueil', block: INSPECT.object, act: ['click:Éteindre'] });
+  assert.ok(!missing.ok && /^click:Éteindre: nothing in the frame matches\. The frame offers buttons: "Allumer"\.$/.test(missing.error), JSON.stringify(missing));
+  const clicked = await looker.look({ screen: 'accueil', block: INSPECT.object, act: ['click:Allumer'] });
+  assert.ok(clicked.ok && clicked.act, JSON.stringify(clicked));
+  assert.deepEqual(clicked.act, { actions: ['click:Allumer'], state: { on: true }, events: [{ name: 'switched', payload: { on: true } }] });
+  const bad = await looker.look({ screen: 'accueil', block: 'accueil-situation', act: ['key:Enter'] });
+  assert.ok(!bad.ok && /is not a free object/.test(bad.error), JSON.stringify(bad));
+  const alone = await looker.look({ screen: 'accueil', act: ['key:Enter'] });
+  assert.ok(!alone.ok && /give block too/.test(alone.error), JSON.stringify(alone));
 });

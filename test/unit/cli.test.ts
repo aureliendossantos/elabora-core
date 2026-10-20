@@ -693,3 +693,21 @@ test('MCP instructions: the plan is written with elabora_write_plan, versions ar
     assert.doesNotMatch(instructions, /1%/, 'the quota threshold has one source: the elabora-narration skill');
   } finally { await client.close(); }
 });
+
+test('look --act: actions keep their commas (a repeat flag) and are read before any browser', async () => {
+  const { parseArguments } = await import('@elabora/cli/arguments');
+  const { parseLookAction } = await import('@elabora/node/look-client');
+  const { flags } = parseArguments(['--act', 'click:Greco, north-east', '--act=drag:0.2,0.5->0.8,0.5', '--scroll', '0,50%'], { act: 'repeat', scroll: 'list' });
+  assert.deepEqual(flags, { act: ['click:Greco, north-east', 'drag:0.2,0.5->0.8,0.5'], scroll: ['0', '50%'] });
+  assert.deepEqual(flags.act?.map(parseLookAction), [
+    { kind: 'click', source: 'click:Greco, north-east', text: 'Greco, north-east' },
+    { kind: 'drag', source: 'drag:0.2,0.5->0.8,0.5', from: [0.2, 0.5], to: [0.8, 0.5] }
+  ]);
+  assert.deepEqual(parseLookAction('click:role=button[name=Sail]'), { kind: 'click', source: 'click:role=button[name=Sail]', role: 'button', name: 'Sail' });
+  assert.deepEqual(parseLookAction('key:Enter'), { kind: 'key', source: 'key:Enter', key: 'Enter' });
+  assert.match((parseLookAction('drag:0.2,0.5->1.4,0.5') as { error: string }).error, /^Action "drag:0\.2,0\.5->1\.4,0\.5": click:<text>/);
+  const run = await elabora(['look', COURSES[0].dir, '--act', 'tap:here']);
+  assert.equal(run.status, 2);
+  assert.match(run.stderr, /^Action "tap:here": /);
+  assert.deepEqual(await elabora(['look', COURSES[0].dir, '--act', 'key:Enter']), { status: 2, stdout: '', stderr: '--act drives the free object of a block: give --block <id>.\n' });
+});

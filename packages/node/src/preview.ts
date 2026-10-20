@@ -26,6 +26,7 @@ import { pageStyleConflicts, styleConflictDiagnostics, type StyleConflict } from
 import { codeVersion } from './code-version.ts';
 import { fitKey, readKeptFit, screenRenders, writeKeptFit } from './fit-cache.ts';
 import type { FitCourse } from './fit-cache.ts';
+import { scrollFilmstrip, scrollStops } from './scroll-strip.ts';
 
 const require = createRequire(import.meta.url);
 
@@ -270,19 +271,9 @@ async function shoot(browser: Browser, page: Page, screen: string, shot: Shot, g
     if (shot.scroll?.length) {
       // Down the page: each position resolved against the scrollable length, captured once the
       // scroll-driven animations and the objects (one frame to hear where they are, a few to draw) follow.
-      const end = await page.evaluate(() => Math.max(0, document.documentElement.scrollHeight - innerHeight));
-      const tops = shot.scroll.map((position) => {
-        const percent = typeof position === 'string' && /^\d+(\.\d+)?%$/.test(position.trim()) ? parseFloat(position) / 100 : null;
-        const px = percent !== null ? end * percent : Number(position);
-        if (!Number.isFinite(px)) throw new Error(`Scroll position "${position}": give px or a percentage of the page ("40%").`);
-        return Math.round(Math.min(end, Math.max(0, px)));
-      });
-      const frames: ShotFrame[] = [];
-      for (const top of tops) {
-        await page.evaluate((y) => new Promise((resolve) => { scrollTo(0, y); requestAnimationFrame(() => requestAnimationFrame(resolve)); }), top);
-        await page.waitForTimeout(ready.objects.length ? 450 : 120);
-        frames.push({ ms: 0, png: await page.screenshot({ fullPage: false }), label: `${top} px${end ? ` (${Math.round((top / end) * 100)} %)` : ''}` });
-      }
+      const stops = await scrollStops(page, shot.scroll);
+      const tops = stops.map((stop) => stop.top);
+      const frames = await scrollFilmstrip(page, stops, { settleMs: ready.objects.length ? 450 : 120 });
       await page.evaluate(() => { scrollTo(0, 0); });
       return { ...base, scroll: tops, at: frames.map((frame) => frame.ms), frames, png: await contactSheet(browser, frames, `${screen} — ${group.width}×${group.height} — scrolled`) };
     }
@@ -369,8 +360,8 @@ export async function contactSheet(browser: Browser, frames: ShotFrame[], title:
 }
 
 // One shot (the former single-screenshot API, used by component previews and the MCP tool).
-export async function screenshot(dir: string, { screen, width = 1600, height = 900, fullPage = true, layer, step, state, at, motion }: Shot = {}): Promise<ShotResult | { ok: false; diagnostics: Diagnostic[]; error?: undefined }> {
-  const result = await capture(dir, [{ screen, width, height, fullPage, layer, step, state, at, motion }]);
+export async function screenshot(dir: string, { screen, width = 1600, height = 900, fullPage = true, layer, step, state, at, scroll, motion }: Shot = {}): Promise<ShotResult | { ok: false; diagnostics: Diagnostic[]; error?: undefined }> {
+  const result = await capture(dir, [{ screen, width, height, fullPage, layer, step, state, at, scroll, motion }]);
   if (!result.shots) return result;
   return result.shots[0];
 }
