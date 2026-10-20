@@ -1,4 +1,5 @@
-import { behaviorOf } from '../components/registry.ts';
+import { analysisOf, behaviorOf } from '../components/registry.ts';
+import type { ComponentDescriptor } from '../components/registry.ts';
 import { screenBlocks, resolveBlockProps } from '../project/load.ts';
 import { valuesOfKind } from '../components/props.ts';
 import type { Block, Screen } from '../project/model.ts';
@@ -21,6 +22,21 @@ const BREAKING_TYPES = new Set(['accordion', 'button', 'video', 'audio']);
 
 const words = (value: unknown) => text(value).replace(/[#*_`>\[\]()!-]/g, ' ').split(/\s+/).filter(Boolean).length;
 
+// Words the learner does not read on the page: props a template binds only in attributes that a screen
+// reader says (alt, aria-label…), by their last key (alt, items.*.alt). An image's alt is not reading.
+const UNREAD_ATTRS = new Set(['alt', 'aria-label', 'aria-description', 'aria-roledescription', 'title']);
+const unreadCache = new WeakMap<ComponentDescriptor, Set<string>>();
+function unreadKeys(component: ComponentDescriptor): Set<string> {
+  let keys = unreadCache.get(component);
+  if (keys) return keys;
+  const refs = analysisOf(component)?.refs ?? [];
+  const leaf = (path: string) => path.split('.').at(-1)!;
+  const shown = new Set(refs.filter((ref) => !(ref.where === 'attr' && ref.attr && UNREAD_ATTRS.has(ref.attr))).map((ref) => leaf(ref.path)));
+  keys = new Set(refs.filter((ref) => ref.where === 'attr' && ref.attr && UNREAD_ATTRS.has(ref.attr)).map((ref) => leaf(ref.path)).filter((key) => !shown.has(key)));
+  unreadCache.set(component, keys);
+  return keys;
+}
+
 // Blocks the learner sees on the screen itself (layers are opened by events).
 function shownBlocks(data: Screen, file: string): Block[] {
   return [...screenBlocks(data, file)].filter((location) => !location.layer && location.block !== null && location.block !== undefined).map((location) => location.block);
@@ -36,7 +52,10 @@ export function checkScreenPedagogy(ctx: CourseCheckContext, screen: ScreenFile)
   const wordsOf = (block: Block): number => {
     const component = registry.get(block.type);
     if (!component) return 0;
-    if (!component.builtin && !component.root) return valuesOfKind(component.schema, resolveBlockProps(block, planIndex, registry), ['text', 'markdown']).reduce((sum, found) => sum + words(found.value), 0);
+    if (!component.builtin && !component.root) {
+      const unread = unreadKeys(component);
+      return valuesOfKind(component.schema, resolveBlockProps(block, planIndex, registry), ['text', 'markdown']).filter((found) => !unread.has(found.path.split('/').at(-1)!)).reduce((sum, found) => sum + words(found.value), 0);
+    }
     const props = fieldsOf(block.props);
     const locked = props.textRef ? byId(planIndex.texts, props.textRef)?.text : null;
     let count = words(props.markdown || locked || props.text || props.stem || props.prompt);

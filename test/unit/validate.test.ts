@@ -554,6 +554,28 @@ test('text density follows the presentation: a slide is read at once, a scroll p
   assert.match(found[0].message, /^Screen "chemin" shows about \d+ words\.$/);
 });
 
+test('text density: a component\'s alternative text is not reading, its caption is', () => {
+  const dir = copyExample();
+  const words = (count: number) => Array.from({ length: count }, (_, index) => `mot${index}`).join(' ');
+  fs.mkdirSync(path.join(dir, 'components/figure-caption'), { recursive: true });
+  writeJSON(dir, 'components/figure-caption/component.json', { $schema: 'https://elabora.studio/schemas/0.1/component.schema.json', id: 'figure-caption', title: 'Figure', version: '1.0.0', level: 'block', category: 'media', description: 'Une image et sa légende.',
+    props: { type: 'object', additionalProperties: false, required: ['image', 'alt', 'caption'], properties: {
+      image: { type: 'string', 'x-kind': 'asset' }, alt: { type: 'string', 'x-translatable': true }, caption: { type: 'string', 'x-translatable': true } } } });
+  fs.writeFileSync(path.join(dir, 'components/figure-caption/template.html'), '<figure class="figure-caption"><img src="{{image}}" alt="{{alt}}"><figcaption>{{caption}}</figcaption></figure>\n');
+  fs.writeFileSync(path.join(dir, 'components/figure-caption/component.css'), '.figure-caption { margin: 0; }\n');
+  const screen = readJSON(dir, 'screens/chemin.json');
+  // 440 words in a row, then a figure: 5 words of caption keep the stretch under 450, its 30 words of alt do not count.
+  for (let n = 1; n <= 4; n++) screen.blocks.push({ id: `chemin-long-${n}`, type: 'text', props: { markdown: words(110) } });
+  screen.blocks.push({ id: 'chemin-figure', type: 'figure-caption', props: { image: 'assets/images/chemin-impression.svg', alt: words(30), caption: words(5) } });
+  writeJSON(dir, 'screens/chemin.json', screen);
+  const density = () => validateDir(dir).diagnostics.filter((d) => d.code === 'W_TEXT_DENSITY' && d.target === 'chemin');
+  assert.deepEqual(density(), []);
+  // A caption is read: 15 words of it take the stretch past 450.
+  screen.blocks.at(-1).props.caption = words(15);
+  writeJSON(dir, 'screens/chemin.json', screen);
+  assert.match(density()[0]?.message ?? '', /455 words to read in a row/);
+});
+
 test('step settings: only for steps of the screen after the first; opening once answered needs an activity above', () => {
   const dir = copyExample();
   const screen = readJSON(dir, 'screens/chemin.json');

@@ -1,5 +1,8 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
+import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
+import { projectDataDir } from '@elabora/node/data-dir';
 import { agentRulesNote, syncAgentRules } from '@elabora/node/agent-rules';
 import { detectAuthor } from '@elabora/node/journal/author';
 import { ArgumentError, parseArguments } from '../arguments.ts';
@@ -13,10 +16,13 @@ const HELP = `  tools skills [<name> [<reference>]] [--json]         List bundle
   tools guide [--json]                               Agent workflows, transport choices and human decisions (no course needed)
   tools list [<tool>] [--read-only] [--tools <name>,…] [--json]
                                                       Discover agent operations and their JSON input schemas (no course needed)
-  tools call <tool> [dir] [--from <arguments.json>|-] [--read-only] [--json]
-                                                      Call the same operation as MCP, with the same validation and result.
-                                                      Arguments default to {}; - reads JSON from stdin. Always prints one
-                                                      JSON tool result (content, isError); exit 0 success, 1 refused, 2 bad input`;
+  tools call <tool> [dir] [--args '<json>' | --from <arguments.json>|-] [--read-only] [--raw]
+                                                      Call the same operation as MCP, with the same validation. Arguments
+                                                      default to {}: --args takes them inline, --from from a file (- reads
+                                                      stdin). Prints the tool's own JSON (its text when it answers in text);
+                                                      images go to files under the course's .elabora/look/, their paths in
+                                                      "images". --raw prints the MCP result (content, isError) instead.
+                                                      Exit 0 success, 1 refused, 2 bad input`;
 
 const list = defineCommand({
   name: 'tools list',
@@ -63,32 +69,66 @@ const guide = defineCommand({
 });
 
 // Parse inside this adapter so malformed flags, input files and JSON also have a machine-readable
-// result. Diagnostics and rules notes go to stderr; stdout is always a single JSON document.
+// result. Diagnostics and rules notes go to stderr; stdout is one document: the tool's JSON (or text),
+// or with --raw the MCP result itself.
 const call = {
   name: 'tools call',
   async run(argv: readonly string[]) {
+    let raw = argv.includes('--raw');
+    let root = path.resolve('.');
     try {
       const { callAgentTool } = await import('../agent-tools.ts');
-      const { positionals: [name, dir = '.', ...extra], flags } = parseArguments(argv, { from: 'string', json: 'boolean', 'read-only': 'boolean' });
-      if (!name || extra.length) throw new ArgumentError('Usage: elabora tools call <tool> [dir] [--from <arguments.json>|-] [--read-only]');
+      const { positionals: [name, dir = '.', ...extra], flags } = parseArguments(argv, { from: 'string', args: 'string', json: 'boolean', raw: 'boolean', 'read-only': 'boolean' });
+      raw = !!flags.raw;
+      if (!name || extra.length) throw new ArgumentError(`Usage: elabora tools call <tool> [dir] [--args '<json>' | --from <arguments.json>|-] [--read-only] [--raw]`);
+      if (flags.args !== undefined && flags.from) throw new ArgumentError('Give the arguments with --args or with --from, not both.');
       let args: unknown = {};
-      if (flags.from) {
-        try { args = JSON.parse(fs.readFileSync(flags.from === '-' ? 0 : flags.from, 'utf8')); }
+      if (flags.args !== undefined || flags.from) {
+        try { args = JSON.parse(flags.args ?? fs.readFileSync(flags.from === '-' ? 0 : flags.from!, 'utf8')); }
         catch (error) { throw new ArgumentError(`Cannot read tool arguments: ${errorMessage(error)}`); }
       }
-      const root = path.resolve(dir);
-      if (fs.existsSync(path.join(root, 'course.json'))) {
+      root = path.resolve(dir);
+      const course = fs.existsSync(path.join(root, 'course.json'));
+      if (course) {
         const note = flags['read-only'] ? agentRulesNote(root) : syncAgentRules(root);
         if (note) process.stderr.write(`${note}\n`);
       }
       const result = await callAgentTool(name, args, { root, author: detectAuthor() }, { readOnly: flags['read-only'] });
-      printJson(result);
+      printResult(result, raw, course ? path.join(projectDataDir(root), 'look') : path.join(os.tmpdir(), 'elabora-tools'), name);
       return result.isError ? 1 : 0;
     } catch (error) {
-      printJson(errorResult({ error: errorMessage(error) }));
+      printResult(errorResult({ error: errorMessage(error) }), raw);
       return error instanceof ArgumentError ? 2 : 1;
     }
   }
 };
+
+// The tool's own answer rather than the MCP envelope (JSON inside text inside JSON): one text is
+// printed as the JSON it holds, or as text; images are written to files, and a text with images is
+// printed with their paths under "images".
+function printResult(result: CallToolResult, raw: boolean, folder?: string, tool = 'tool'): void {
+  if (raw) { printJson(result); return; }
+  const texts: unknown[] = [];
+  const images: string[] = [];
+  const stamp = new Date().toISOString().replace(/[-:]/g, '').replace('T', '-').slice(0, 15);
+  for (const item of result.content) {
+    if (item.type === 'text') {
+      try { texts.push(JSON.parse(item.text)); } catch { texts.push(item.text); }
+    } else if (item.type === 'image' && folder) {
+      fs.mkdirSync(folder, { recursive: true });
+      const file = path.join(folder, `${tool.replace(/^elabora_/, '')}-${stamp}-${images.length + 1}.${item.mimeType === 'image/jpeg' ? 'jpg' : 'png'}`);
+      fs.writeFileSync(file, Buffer.from(item.data, 'base64'));
+      images.push(file);
+    }
+  }
+  if (!images.length && texts.length === 1) {
+    if (typeof texts[0] === 'string') process.stdout.write(texts[0].endsWith('\n') ? texts[0] : `${texts[0]}\n`);
+    else printJson(texts[0]);
+    return;
+  }
+  const [only] = texts;
+  if (texts.length === 1 && only && typeof only === 'object' && !Array.isArray(only)) printJson({ ...only, images });
+  else printJson({ ...(texts.length === 1 ? { text: only } : texts.length ? { texts } : {}), images });
+}
 
 export const toolCommands: CommandGroup = { title: 'Agent operations (shared with MCP)', help: HELP, commands: [skills, guide, list, call], subcommandUsage: { tools: 'Usage: elabora tools skills|guide|list|call …' } };

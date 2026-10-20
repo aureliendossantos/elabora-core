@@ -473,8 +473,11 @@ Agent operations (shared with MCP)
   tools guide [--json]                               Agent workflows, transport choices and human decisions (no course needed)
   tools list [<tool>] [--read-only] [--tools <name>,…] [--json]
                                                       Discover agent operations and their JSON input schemas (no course needed)
-  tools call <tool> [dir] [--from <arguments.json>|-] [--read-only] [--json]
-                                                      Call the same operation as MCP, with the same validation and result.
-                                                      Arguments default to {}; - reads JSON from stdin. Always prints one
-                                                      JSON tool result (content, isError); exit 0 success, 1 refused, 2 bad input
+  tools call <tool> [dir] [--args '<json>' | --from <arguments.json>|-] [--read-only] [--raw]
+                                                      Call the same operation as MCP, with the same validation. Arguments
+                                                      default to {}: --args takes them inline, --from from a file (- reads
+                                                      stdin). Prints the tool's own JSON (its text when it answers in text);
+                                                      images go to files under the course's .elabora/look/, their paths in
+                                                      "images". --raw prints the MCP result (content, isError) instead.
+                                                      Exit 0 success, 1 refused, 2 bad input
 

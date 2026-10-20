@@ -58,7 +58,7 @@ fs.writeFileSync('docs/cli.md', c);
 // The agent operations (MCP tools, and elabora tools call): description and arguments.
 const typeOf = (v: JsonSchema): string => v.enum ? v.enum.map((e) => JSON.stringify(e)).join(' \\| ') : v.type === 'array' ? `${v.items && typeof v.items === 'object' && !Array.isArray(v.items) ? typeOf(v.items as JsonSchema) : 'any'}[]` : Array.isArray(v.type) ? v.type.join(' \\| ') : v.type || (v.oneOf || v.anyOf ? 'one of several' : 'object');
 const tools = listAgentTools();
-let m = `# Agent tools\n\nGenerated from the agent operation catalogue (\`packages/cli/src/agent-tools.ts\`) by \`npm run docs\`. The same ${tools.length} operations are MCP tools (\`elabora mcp <course>\`) and shell calls (\`elabora tools call <tool> <course> --from arguments.json\`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.\n`;
+let m = `# Agent tools\n\nGenerated from the agent operation catalogue (\`packages/cli/src/agent-tools.ts\`) by \`npm run docs\`. The same ${tools.length} operations are MCP tools (\`elabora mcp <course>\`) and shell calls (\`elabora tools call <tool> <course> --args '<json>'\`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.\n`;
 for (const [title, read] of [['Reading', true], ['Writing', false]] as const) {
   m += `\n## ${title}\n`;
   for (const tool of tools.filter((t) => t.annotations.readOnlyHint === read)) {

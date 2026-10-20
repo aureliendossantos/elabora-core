@@ -15,7 +15,7 @@ export const importMediaTool = defineTool({
   description: 'Import media files (absolute paths: a generated or downloaded image, a recording, a video) into assets/. Each becomes a web master: MP4 H.264/AAC, M4A or WebP (SVG as is), downscaled to the high preset, metadata such as GPS positions removed; the original is not copied. Returns the path under assets/ to put in asset props (without "assets/"). Waits for the conversion unless wait is false; elabora_media_status follows jobs.',
   inputSchema: objectSchema({
     files: { type: 'array', items: { type: 'string' }, minItems: 1, description: 'Absolute paths of the files to import.' },
-    to: { type: 'string', description: 'Folder under assets/ (default by kind: assets/video, assets/audio, assets/images).' },
+    to: { type: 'string', description: 'Folder under assets/, with or without the prefix ("images/maps" is assets/images/maps; default by kind: assets/video, assets/audio, assets/images).' },
     name: { type: 'string', description: 'File name without extension (one file only; default: the original name, made portable).' },
     wait: { type: 'boolean', description: 'Wait for the conversions (default true).' }
   }, ['files']),

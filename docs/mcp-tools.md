@@ -1,6 +1,6 @@
 # Agent tools
 
-Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `npm run docs`. The same 93 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --from arguments.json`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
+Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `npm run docs`. The same 93 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
 
 ## Reading
 
@@ -602,7 +602,7 @@ Import media files (absolute paths: a generated or downloaded image, a recording
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `files` | string[] | yes | Absolute paths of the files to import. |
-| `to` | string |  | Folder under assets/ (default by kind: assets/video, assets/audio, assets/images). |
+| `to` | string |  | Folder under assets/, with or without the prefix ("images/maps" is assets/images/maps; default by kind: assets/video, assets/audio, assets/images). |
 | `name` | string |  | File name without extension (one file only; default: the original name, made portable). |
 | `wait` | boolean |  | Wait for the conversions (default true). |
 

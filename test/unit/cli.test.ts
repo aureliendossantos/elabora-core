@@ -293,23 +293,36 @@ test('CLI agent operations: MCP discovery, read results, validation and errors a
     assert.equal(listed.status, 0);
     assert.deepEqual(JSON.parse(listed.stdout), asPrinted(await client.listTools()));
     const args = { language: 'en', screen: 'chemin' };
-    const read = await elabora(['tools', 'call', 'elabora_translation_table', dir, '--from', '-'], ROOT, { input: JSON.stringify(args) });
+    const read = await elabora(['tools', 'call', 'elabora_translation_table', dir, '--from', '-', '--raw'], ROOT, { input: JSON.stringify(args) });
     assert.equal(read.status, 0);
     assert.deepEqual(JSON.parse(read.stdout), asPrinted(await client.callTool({ name: 'elabora_translation_table', arguments: args })));
     for (const [name, args] of [['elabora_translate_text', { language: 'en', texts: [] }], ['elabora_nothing', {}]] as const) {
-      const run = await elabora(['tools', 'call', name, dir, '--from', '-'], ROOT, { input: JSON.stringify(args) });
+      const run = await elabora(['tools', 'call', name, dir, '--from', '-', '--raw'], ROOT, { input: JSON.stringify(args) });
       assert.equal(run.status, 1);
       assert.deepEqual(JSON.parse(run.stdout), asPrinted(await client.callTool({ name, arguments: args })));
     }
-    const malformed = await elabora(['tools', 'call', 'elabora_overview', dir, '--from', '-'], ROOT, { input: '{' });
+    const malformed = await elabora(['tools', 'call', 'elabora_overview', dir, '--from', '-', '--raw'], ROOT, { input: '{' });
     assert.equal(malformed.status, 2);
     assert.equal(JSON.parse(malformed.stdout).isError, true);
-    const flag = await elabora(['tools', 'call', 'elabora_overview', dir, '--jsn']);
+    const flag = await elabora(['tools', 'call', 'elabora_overview', dir, '--jsn', '--raw']);
     assert.equal(flag.status, 2);
     assert.match(JSON.parse(flag.stdout).content[0].text, /Unknown option/);
-    const missing = await elabora(['tools', 'call', 'elabora_overview', path.join(dir, 'absent')]);
+    const missing = await elabora(['tools', 'call', 'elabora_overview', path.join(dir, 'absent'), '--raw']);
     assert.equal(missing.status, 1);
     assert.match(JSON.parse(missing.stdout).content[0].text, /no course.json/);
+    // Without --raw: the tool's own JSON, arguments inline, and errors as { error }.
+    const plain = await elabora(['tools', 'call', 'elabora_translation_table', dir, '--args', JSON.stringify(args)]);
+    assert.equal(plain.status, 0);
+    assert.deepEqual(JSON.parse(plain.stdout), await callJSON(client, 'elabora_translation_table', args));
+    const both = await elabora(['tools', 'call', 'elabora_overview', dir, '--args', '{}', '--from', '-'], ROOT, { input: '{}' });
+    assert.equal(both.status, 2);
+    assert.match(JSON.parse(both.stdout).error, /not both/);
+    const unknown = await elabora(['tools', 'call', 'elabora_nothing', dir]);
+    assert.equal(unknown.status, 1);
+    assert.equal(typeof JSON.parse(unknown.stdout).error, 'string');
+    const overview = await elabora(['tools', 'call', 'elabora_overview', dir]);
+    assert.equal(overview.status, 0);
+    assert.match(overview.stdout, /^# /);
   } finally { await client.close(); fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
@@ -325,7 +338,7 @@ test('CLI agent edits are journaled, visible to MCP and undoable; read-only refu
     assert.equal(fs.existsSync(path.join(dir, 'translations/en.xlf')), false);
     const run = await elabora(['tools', 'call', 'elabora_translate_text', dir, '--from', argsFile], ROOT, { author: 'agent:shell-test' });
     assert.equal(run.status, 0);
-    const editResult = JSON.parse(JSON.parse(run.stdout).content[0].text);
+    const editResult = JSON.parse(run.stdout);
     assert.ok(editResult.change.id);
     assert.equal((await callJSON(client, 'elabora_translation_table', { language: 'en' })).progress.translated, 1);
     await callJSON(client, 'elabora_undo', { change: editResult.change.id });

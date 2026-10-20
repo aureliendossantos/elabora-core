@@ -42,9 +42,11 @@ export async function importMedia(projectDir: string, inputPath: string, options
   const tools = options.tools ?? (mediaKindOfPath(input) === 'vector' ? undefined : await findMediaTools());
   const info = await probeMedia(input, { tools });
   const plan = masterPlan(info, { webp: tools?.webp ?? true, importing: true });
-  const folder = (options.to ?? MEDIA_FOLDERS[info.kind]).replace(/\/+$/, '');
-  if (!isSafeRelativePath(folder) || !(folder === 'assets' || folder.startsWith('assets/'))) {
-    throw new Error(`Media go under assets/: "${options.to}" is not a folder of assets/.`);
+  // --to names a folder of assets/, with or without the prefix: "images" is assets/images.
+  const given = (options.to ?? MEDIA_FOLDERS[info.kind]).replace(/^\.\//, '').replace(/\/+$/, '');
+  const folder = given === 'assets' || given.startsWith('assets/') ? given : `assets/${given}`;
+  if (!given || given.split('/').includes('..') || !isSafeRelativePath(folder)) {
+    throw new Error(`Media go under assets/: give a folder of it, such as "images" or "assets/images" (not "${options.to}").`);
   }
   const extension = plan.extension ?? normaliseExtension(extensionOf(input));
   const queue = options.queue ?? getMediaQueue(root, { tools });

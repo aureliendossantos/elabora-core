@@ -16,11 +16,11 @@ Use connected MCP tools when available. Otherwise use the CLI; do not try to con
 ```sh
 elabora tools guide --json
 elabora tools list elabora_translate_text --json
-elabora tools call elabora_translation_table . --from table-arguments.json
+elabora tools call elabora_translation_table . --args '{"language": "en"}'
 elabora tools call elabora_translate_text . --from translations.json
 ```
 
-`--from -` reads the same JSON from stdin. With no input it sends `{}`. `tools call` always writes one JSON tool result to stdout: `content` contains text and/or images, `isError: true` means failure. Results with `ok: false` also set `isError: true`. JSON text content is itself encoded in the text block, exactly as over MCP. Rules notes go to stderr. Exit codes: 0 success, 1 refused/failed operation, 2 malformed command or unreadable/invalid JSON input. `--read-only` limits discovery and invocation to read tools and does not update course rules.
+`--args` takes the arguments inline, `--from <file>` from a file and `--from -` from stdin. With neither it sends `{}`. `tools call` prints the tool's own JSON to stdout, or its text when the tool answers in text (`elabora_overview`, `elabora_docs`). Images are written to files under the course's `.elabora/look/`, and their paths are listed in `images`. A refusal is printed as the tool's error, usually `{ "error": … }`. `--raw` prints the MCP tool result itself instead: `content` with text and/or images, and `isError: true` for a failure, also set for results with `ok: false`. Rules notes go to stderr. Exit codes: 0 success, 1 refused/failed operation, 2 malformed command or unreadable/invalid JSON input. `--read-only` limits discovery and invocation to read tools and does not update course rules.
 
 ## Workflow coverage and intentional differences
 

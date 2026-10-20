@@ -196,6 +196,15 @@ test('probe: kinds, codecs, rotation, faststart, location; cached by path, size 
   removeProject(dir);
 });
 
+test('import --to: a folder of assets/, named with or without its prefix', async () => {
+  const dir = project();
+  const queue = new MediaQueue(dir, {});
+  assert.equal((await importMedia(dir, fixture('Logo.svg'), { queue, to: 'images/logos', name: 'Marque' })).path, 'assets/images/logos/marque.svg');
+  assert.equal((await importMedia(dir, fixture('Logo.svg'), { queue, to: 'assets/images/', name: 'Marque' })).path, 'assets/images/marque.svg');
+  await assert.rejects(importMedia(dir, fixture('Logo.svg'), { queue, to: 'images/../../elsewhere' }), /such as "images" or "assets\/images"/);
+  await queue.wait();
+});
+
 test('import: masters in a web format, metadata gone, originals never copied', async (t) => {
   if (!tools) return t.skip(NO_FFMPEG);
   const dir = project();
