@@ -5,6 +5,7 @@ import type { ReadyReport } from './emulator/page-globals.ts';
 import type { ImageType } from './preview.ts';
 import type { BrowserIdentity } from './emulator/electron.ts';
 import type { StyleConflict } from './style-cascade.ts';
+import type { MotionReport } from './motion-report.ts';
 import { projectDataDir } from './data-dir.ts';
 import { codeVersion } from './code-version.ts';
 
@@ -29,8 +30,39 @@ export interface LookRequest {
   language?: string; // a translation (default: the course language)
   full?: boolean; // the whole page (default), or the window
   motion?: boolean; // animations on (default: reduced motion, transitions settled)
-  // JPEG by default: designed pages (textures, gradients) take seconds to encode as PNG.
+  // The window scrolled to a position, animations on: px ("1800"), a percentage of the page ("100%"),
+  // or a block's id (the block in view). Several, or with sheet on a screen without a timeline: a
+  // filmstrip down the page (default 0, 25, 50, 75 and 100 %).
+  scroll?: string[];
+  // A close-up: the capture cropped to this block (with a small margin), in view (scrolled to it
+  // unless scroll says where). With scroll, motion or block, the result says what moves (motion).
+  block?: string;
+  scale?: 1 | 2; // a close-up drawn at twice its size
+  // Actions played in order inside the frame of the free object block before the capture (parseLookAction).
+  act?: string[];
+  // JPEG by default (PNG for a close-up): designed pages (textures, gradients) take seconds to encode as PNG.
   type?: ImageType;
+}
+
+// An action on a free object (elabora look --act): click:<text>, click:role=<role>[name=<name>],
+// key:<key> (Playwright's names: Enter, ArrowRight, a), drag:x,y->x,y (0 to 1 across the object).
+export type LookAction =
+  | { kind: 'click'; source: string; text?: string; role?: string; name?: string }
+  | { kind: 'key'; source: string; key: string }
+  | { kind: 'drag'; source: string; from: [number, number]; to: [number, number] };
+
+export function parseLookAction(source: string): LookAction | { error: string } {
+  const [, kind = '', rest = ''] = /^([a-z]+):(.*)$/s.exec(source.trim()) ?? [];
+  if (kind === 'click' && rest.trim()) {
+    const role = /^role=([a-z]+)(?:\[name=(.+)\])?$/.exec(rest.trim());
+    if (role) return { kind, source, role: role[1], ...(role[2] ? { name: role[2] } : {}) };
+    return { kind, source, text: rest.trim() };
+  }
+  if (kind === 'key' && rest.trim()) return { kind, source, key: rest.trim() };
+  const share = '(0|1|0?\\.\\d+|1\\.0+)';
+  const drag = new RegExp(`^${share},${share}->${share},${share}$`).exec(rest.replace(/\s+/g, ''));
+  if (kind === 'drag' && drag) return { kind, source, from: [Number(drag[1]), Number(drag[2])], to: [Number(drag[3]), Number(drag[4])] };
+  return { error: `Action "${source}": click:<text>, click:role=<role>[name=<name>], key:<key> or drag:x,y->x,y (0 to 1 across the object).` };
 }
 
 export type LookResult =
@@ -55,6 +87,14 @@ export type LookResult =
     blocks: BlockLayout[];
     // With sheet: the marks captured, in the order of the sheet.
     marks?: { time: number; label: string }[];
+    // Down the page (scroll, sheet): where the window stood, px from the top, for each capture.
+    scrolled?: { top: number; label: string }[];
+    // A close-up: the part of the page captured (px of the page) and its scale.
+    clip?: { x: number; y: number; width: number; height: number; scale: number };
+    // What moves and where the blocks are in the window (scroll, block, motion: motion-report.ts).
+    motion?: MotionReport;
+    // After act: the object's state (getState) and the events it emitted during the actions.
+    act?: { actions: string[]; state: unknown; events: { name: string; payload: unknown }[] };
     // Component rules the theme overrides, theme rules a component overrides (style-cascade.ts,
     // D32), as the page shows the screen: W_STYLE_COMPONENT_OVERRIDDEN, W_STYLE_THEME_UNDER_COMPONENT.
     styles: StyleConflict[];

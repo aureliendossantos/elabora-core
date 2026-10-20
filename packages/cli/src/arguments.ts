@@ -1,12 +1,12 @@
 // Command-line arguments: positionals, and the flags a command declares. A boolean flag takes no
 // value; a string or list flag takes the next argument (or --name=value), and a list splits it
-// on commas and adds what each repetition gives; an optional flag takes the next argument when there is one (not a flag), else it is
+// on commas and adds what each repetition gives (a repeat flag does not split: its values may hold commas); an optional flag takes the next argument when there is one (not a flag), else it is
 // true. Undeclared flags are errors, so a mistyped flag is never silently ignored.
 
-export type FlagKind = 'boolean' | 'string' | 'list' | 'optional';
+export type FlagKind = 'boolean' | 'string' | 'list' | 'repeat' | 'optional';
 export type FlagSpecs = Readonly<Record<string, FlagKind>>;
 
-type FlagValue<Kind extends FlagKind> = Kind extends 'boolean' ? boolean : Kind extends 'list' ? string[] | undefined : Kind extends 'optional' ? string | true | undefined : string | undefined;
+type FlagValue<Kind extends FlagKind> = Kind extends 'boolean' ? boolean : Kind extends 'list' | 'repeat' ? string[] | undefined : Kind extends 'optional' ? string | true | undefined : string | undefined;
 export type FlagValues<Specs extends FlagSpecs> = { [Name in keyof Specs]: FlagValue<Specs[Name]> };
 
 export interface ParsedArguments<Specs extends FlagSpecs> {
@@ -38,7 +38,7 @@ export function parseArguments<Specs extends FlagSpecs>(argv: readonly string[],
     else if (kind === 'optional') { values[name] = true; continue; }
     else throw new ArgumentError(`--${name} needs a value`);
     // A list flag given again adds to it (--review-origin a --review-origin b).
-    values[name] = kind === 'list' ? [...((values[name] as string[] | undefined) ?? []), ...splitList(value)] : value;
+    values[name] = kind === 'list' || kind === 'repeat' ? [...((values[name] as string[] | undefined) ?? []), ...(kind === 'list' ? splitList(value) : [value])] : value;
   }
   return { positionals, flags: values as FlagValues<Specs> };
 }
