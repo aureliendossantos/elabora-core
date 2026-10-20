@@ -27,6 +27,7 @@ import { codeVersion } from './code-version.ts';
 import { fitKey, readKeptFit, screenRenders, writeKeptFit } from './fit-cache.ts';
 import type { FitCourse } from './fit-cache.ts';
 import { scrollFilmstrip, scrollStops } from './scroll-strip.ts';
+import { measureMotion } from './motion-report.ts';
 
 const require = createRequire(import.meta.url);
 
@@ -395,6 +396,9 @@ export interface ScreenFit {
   // A slide that scrolls (reference size): what compact feedback (quiz feedbackStyle) would save,
   // quiz by quiz.
   feedback?: { block: string; px: number }[];
+  // Scroll pages, at the reference size: animations driven by the scroll that have not reached their
+  // end when the page is scrolled to the bottom (motion-report.ts), atEnd their progress there.
+  unfinished?: { block: string | null; name: string; target: string; atEnd: number | null }[];
   // Unchanged since it was measured at this date (ISO): the fit kept then (fit-cache.ts).
   reused?: string;
 }
@@ -626,6 +630,9 @@ async function scrolledContrast(moving: Page, screen: ScreenFit): Promise<void> 
   await moving.evaluate((id) => { window.__elabora.go(id ?? ''); window.__elabora.revealAll(); (document.activeElement as HTMLElement | null)?.blur?.(); }, screen.screen);
   await moving.evaluate(() => window.__elabora.ready());
   if (!(await moving.evaluate(scrollDrivenIn, null))) return;
+  // What the scroll cannot finish, down the whole page (W_SCROLL_ANIMATION_UNFINISHED).
+  const { unfinished } = await measureMotion(moving, { scope: 'page' });
+  if (unfinished.length) screen.unfinished = unfinished;
   const known = new Set((screen.contrast || []).map((found) => `${found.block}\u0000${found.text}`));
   const scrolled = (await measureContrast(moving, true, SCROLLED_BAND, { keep: 'best', stride: 0.25, known, scrollDriven: true })).filter((found) => !known.has(`${found.block}\u0000${found.text}`)).map((found): MeasuredContrast => ({ ...found, scrolled: true }));
   if (scrolled.length) screen.contrast = [...(screen.contrast || []), ...scrolled];
@@ -864,6 +871,9 @@ export function fitDiagnostics(fit: FitResult | null | undefined): Diagnostic[] 
   if (!fit?.ok) return [];
   const out: Diagnostic[] = styleConflictDiagnostics(fit.sizes.filter((size) => size.role === 'reference').flatMap((size) => size.screens.map((screen) => ({ screen: screen.screen ?? '', conflicts: screen.styles ?? [] }))));
   for (const size of fit.sizes) for (const screen of size.screens) {
+    for (const stuck of size.role === 'reference' ? screen.unfinished || [] : []) {
+      out.push({ code: 'W_SCROLL_ANIMATION_UNFINISHED', severity: 'warning', target: screen.screen, message: `Screen "${screen.screen}"${stuck.block ? `, ${stuck.block}` : ''}: the animation "${stuck.name}" of ${stuck.target} ${stuck.atEnd === null ? 'has not started' : `stops at ${Math.round(stuck.atEnd * 100)} %`} when the page is scrolled to the bottom.`, rule: 'F1' });
+    }
     for (const contrast of size.role === 'reference' ? screen.contrast || [] : []) {
       out.push({ code: 'W_TEXT_CONTRAST_MEASURED', severity: 'warning', target: screen.screen, message: `Screen "${screen.screen}"${contrast.block ? `, ${contrast.block}` : ''}: "${contrast.text}" reaches ${contrast.ratio}:1 against what is behind it (needs ${contrast.need}:1)${contrast.scrolled ? ', as the page scrolls, with its animations' : ''}.`, rule: 'F1' });
     }

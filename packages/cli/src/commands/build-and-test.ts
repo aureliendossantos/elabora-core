@@ -171,7 +171,7 @@ const test = defineCommand({
         for (const d of result.diagnostics.filter((d) => d.code === 'E_GATE_A11Y' || d.code === 'W_RENDER_OVERFLOW')) console.log(`  ${d.code === 'W_RENDER_OVERFLOW' ? 'warning W_RENDER_OVERFLOW ' : ''}${d.message}`);
         if (result.fit?.mode === 'slides') for (const size of result.fit.sizes) console.log(`Slides at ${size.size.replace('x', '×')} (${size.role}): ${size.screens.filter((s) => !s.overflow).length}/${size.screens.length} fit.`);
         else if (result.fit?.mode === 'scroll') console.log(`Pages (scroll presentation): text contrast measured down ${result.fit.sizes[0]?.screens.length ?? 0} page(s).`);
-        for (const d of result.diagnostics.filter((d) => ['W_SLIDE_OVERFLOW', 'I_SLIDE_OVERFLOW_MINIMUM', 'W_SLIDE_SHIFT', 'W_TEXT_CONTRAST_MEASURED'].includes(d.code))) console.log(`  ${d.severity} ${d.code} ${d.message}`);
+        for (const d of result.diagnostics.filter((d) => ['W_SLIDE_OVERFLOW', 'I_SLIDE_OVERFLOW_MINIMUM', 'W_SLIDE_SHIFT', 'W_TEXT_CONTRAST_MEASURED', 'W_SCROLL_ANIMATION_UNFINISHED'].includes(d.code))) console.log(`  ${d.severity} ${d.code} ${d.message}`);
         console.log(`\n${result.ok ? '✔' : '✘'} ${result.runs.filter((run) => run.ok).length}/${result.runs.length} runs passed.${reportPath ? ` Results added to ${path.basename(reportPath)}.` : ''}`);
       }
       return result.ok ? 0 : 1;
@@ -283,8 +283,9 @@ const fit = defineCommand({
       console.log(slides ? `${size.size.replace('x', '×')} (${size.role}): ${fitting}/${size.screens.length} screens fit` : `${size.size.replace('x', '×')} (${size.role}): ${size.screens.length} pages`);
       for (const s of size.screens) {
         const reused = s.reused ? ` (unchanged since ${s.reused}: reused)` : '';
-        if (!slides) console.log(`  ${s.contrast?.length ? '✘' : '✔'} ${(s.screen ?? '').padEnd(width)}  ${s.windows <= 1 ? 'one window' : `${s.windows} windows long`}${reused}`);
+        if (!slides) console.log(`  ${s.contrast?.length || s.unfinished?.length ? '✘' : '✔'} ${(s.screen ?? '').padEnd(width)}  ${s.windows <= 1 ? 'one window' : `${s.windows} windows long`}${reused}`);
         else console.log(`  ${s.overflow ? (size.role === 'reference' ? '✘' : '·') : '✔'} ${(s.screen ?? '').padEnd(width)}  ${s.overflow ? `+${s.overflow} px${s.below.length ? `, below the fold: ${s.below.join(', ')}` : ''}` : `fits, ${s.spare} px to spare`}${reused}`);
+        for (const u of s.unfinished || []) console.log(`    ✘ ${''.padEnd(width)}  animation "${u.name}" ${u.atEnd === null ? 'never starts' : `stops at ${Math.round(u.atEnd * 100)} %`} at the end of the page — ${u.block ? `${u.block}: ` : ''}${u.target}`);
         for (const c of s.contrast || []) console.log(`    ✘ ${''.padEnd(width)}  contrast ${c.ratio}:1 < ${c.need}:1 — ${c.block ? `${c.block}: ` : ''}"${c.text}"${c.scrolled ? ' (as the page scrolls)' : ''}`);
         if (s.shift) console.log(`    ${size.role === 'reference' ? '✘' : '·'} ${''.padEnd(width)}  answering moves it: ${[...s.shift.grew.map((g) => `${g.block} ${g.px > 0 ? '+' : ''}${g.px} px`), ...(s.shift.moved.length ? [`${s.shift.moved.length} block(s) move`] : [])].join(', ')}${s.shift.overflow > s.overflow ? `, then scrolls by ${s.shift.overflow} px` : ''}`);
       }

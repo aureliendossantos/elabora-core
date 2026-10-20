@@ -613,6 +613,30 @@ test('fit on scroll pages: a second pass with animations on finds text a scroll-
   assert.ok(fitDiagnostics(fit).some((d) => d.code === 'W_TEXT_CONTRAST_MEASURED' && /as the page scrolls/.test(d.message)));
 });
 
+test('fit on scroll pages: a scroll-driven animation that the end of the page leaves unfinished is reported, one that finishes is not', { timeout: 240000 }, async () => {
+  const dir = copyExample();
+  const page = readJSON(dir, 'screens/chemin.json');
+  for (let n = 1; n <= 6; n++) page.blocks.push({ id: `chemin-filler-${n}`, type: 'text', props: { markdown: 'Le paquet traverse le réseau. '.repeat(14) } });
+  page.blocks.push({ id: 'chemin-last', type: 'callout', props: { variant: 'info', markdown: 'La dernière étape.' } });
+  writeJSON(dir, 'screens/chemin.json', page);
+  // The last block's range ends once it has left the window, which the end of the page never lets it do.
+  fs.mkdirSync(path.join(dir, 'theme'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'theme/theme.css'), ['@keyframes rise { from { opacity: 0; translate: 0 2rem; } to { opacity: 1; translate: 0 0; } }',
+    '[data-block="chemin-regle"] { animation: rise linear both; animation-timeline: view(); animation-range: entry 0% cover 30%; }',
+    '[data-block="chemin-last"] { animation: rise linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }', ''].join('\n'));
+  const course = readJSON(dir, 'course.json');
+  course.theme.stylesheet = 'theme/theme.css';
+  writeJSON(dir, 'course.json', course);
+  const fit = await measureFit(dir);
+  assert.ok(fit.ok, JSON.stringify(fit.diagnostics));
+  const unfinished = fit.sizes[0].screens.find((screen) => screen.screen === 'chemin')?.unfinished || [];
+  assert.deepEqual(unfinished.map((entry) => entry.block), ['chemin-last'], JSON.stringify(unfinished));
+  assert.ok((unfinished[0].atEnd ?? 0) < 1);
+  const found = fitDiagnostics(fit).filter((d) => d.code === 'W_SCROLL_ANIMATION_UNFINISHED');
+  assert.equal(found.length, 1);
+  assert.match(found[0].message, /chemin-last: the animation "rise" of .* stops at \d+ % when the page is scrolled to the bottom/);
+});
+
 test('assets: a contact sheet of what the generators wrote', { timeout: 120000 }, async () => {
   const sample = path.resolve(import.meta.dirname, '../../examples/medieval-charts');
   const png = await assetsSheet(sample, [{ generator: 'generators/figures.mjs', description: 'Figures', outputs: ['images/wind-rose.svg', 'images/to-ocean.svg', 'images/missing.svg'] }], { surface: '#F4EBD6' });
