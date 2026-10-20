@@ -1,0 +1,108 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/lms-profile.schema.json",
+  "id": "successfactors",
+  "name": "SAP SuccessFactors Learning (2H 2026)",
+  "documentedAt": "2026-10",
+  "sources": [
+    {
+      "title": "SAP SuccessFactors Learning content implementation guide (2611)",
+      "url": "https://help.sap.com/doc/fe0d730664ce418e8bd7d69919d9eaa1/2611/en-US/LRN_Content_Impl_en.pdf"
+    },
+    {
+      "title": "KBA 2294748: How to increase the size of the content import and timeout settings",
+      "url": "https://userapps.support.sap.com/sap/support/knowledge/en/2294748"
+    },
+    {
+      "title": "KBA 2622763: File size error when importing content",
+      "url": "https://userapps.support.sap.com/sap/support/knowledge/en/2622763"
+    },
+    {
+      "title": "KBA 2428881: Legacy SCORM import failed (Error 502)",
+      "url": "https://userapps.support.sap.com/sap/support/knowledge/en/2428881"
+    },
+    {
+      "title": "KBA 2984975: Courses may fail to load or display error messages",
+      "url": "https://userapps.support.sap.com/sap/support/knowledge/en/2984975"
+    }
+  ],
+  "standards": {
+    "scorm12": true,
+    "scorm2004": [
+      "2nd",
+      "4th"
+    ],
+    "sequencing": true,
+    "multiSco": true,
+    "cmi5": false,
+    "xapi": false,
+    "lti13": null,
+    "aicc": true
+  },
+  "launch": {
+    "default": "popup-chain",
+    "modes": [
+      "popup-chain",
+      "popup",
+      "iframe"
+    ],
+    "apiDiscovery": [
+      "parents",
+      "opener",
+      "top.opener",
+      "top.opener.opener"
+    ]
+  },
+  "datamodel": {
+    "suspendDataMax": {
+      "scorm12": 64000,
+      "scorm2004": 4000
+    },
+    "suspendDataEnforcement": null,
+    "lessonLocationMax": 255,
+    "masteryOverridesStatus": null,
+    "objectivesNeedPreexistingIds": true
+  },
+  "exit": {
+    "needsExplicitFinish": true,
+    "logoutEndsLmsSession": true
+  },
+  "session": {
+    "keepalivePingSeconds": 300
+  },
+  "browser": {
+    "unloadHeaderSent": null,
+    "thirdPartyCookiesRequired": false,
+    "knownBugs": [
+      "Leaving the structure page kills the SCORM API."
+    ]
+  },
+  "packaging": {
+    "maxZipMB": null,
+    "maxFiles": null,
+    "asciiFilenames": true,
+    "schemaversionRequired": true,
+    "oneStandardPerZip": false
+  },
+  "update": {
+    "family": "lms-versioning",
+    "notes": "Revisions: old online content becomes inaccessible; a structure change does not trigger the assistant."
+  },
+  "harness": {
+    "autocommitSeconds": null,
+    "syncCommits": true
+  },
+  "toMeasure": [
+    "/datamodel/suspendDataMax/scorm12",
+    "/datamodel/suspendDataMax/scorm2004",
+    "/datamodel/suspendDataEnforcement",
+    "/standards/lti13"
+  ],
+  "notes": [
+    "Documented suspend_data limits are the reverse of the specifications (1.2 = 64,000; 2004 = 4,000): to be measured.",
+    "Content launched in a popup by default; the API lives in the opener chain (up to top.opener.opener). The content must never open its own window.",
+    "cmi.core.exit = logout ends the LMS session: never use it.",
+    "No cross-DNS SCORM API; Proxlet WAR or cookie-based cross-domain solutions only.",
+    "No published package size limit: the content import accepts files up to the tenant's CONTENT IMPORT maximumFileSizeKB (System Configuration), which an administrator sets; the legacy SCORM import stops at LMS_ADMIN fileUploadMaxSize (10 MB in KBA 2428881).",
+    "Files over 1,800 MB are not cached by Akamai and not supported in iContent (KBA 2984975): keep each media file under that size."
+  ]
+}

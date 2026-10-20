@@ -1,0 +1,355 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "world",
+  "title": "A map with no top",
+  "covers": [
+    "ITEM-1",
+    "ITEM-2",
+    "ITEM-3"
+  ],
+  "layout": "folio",
+  "layoutProps": {
+    "eyebrow": "Lesson 1 · Two ways to draw the world"
+  },
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "world-hook",
+      "type": "text",
+      "slot": "lead",
+      "style": "initial",
+      "props": {
+        "textRef": "TXT-1"
+      }
+    },
+    {
+      "id": "world-chart",
+      "type": "layered-figure",
+      "props": {
+        "base": "images/chart-whole.svg",
+        "alt": "A portolan chart of the Mediterranean and the Black Sea on a calfskin: rhumb lines in three colours, harbour names written inland at every angle, a wind rose, a scale of miles. The whole sea is tilted, Italy lying almost flat.",
+        "still": true,
+        "ratio": 1.96,
+        "labels": [
+          {
+            "text": "Maiorica",
+            "x": 34.4,
+            "y": 52,
+            "angle": -74,
+            "tone": "name-rubric"
+          },
+          {
+            "text": "Barchelona",
+            "x": 33.1,
+            "y": 45.3,
+            "angle": -139,
+            "tone": "name-rubric"
+          },
+          {
+            "text": "Marsilia",
+            "x": 37.4,
+            "y": 36.4,
+            "angle": -99,
+            "tone": "name-rubric"
+          },
+          {
+            "text": "Janua",
+            "x": 42.6,
+            "y": 30.5,
+            "angle": -84,
+            "tone": "name-rubric"
+          },
+          {
+            "text": "Venecia",
+            "x": 47.5,
+            "y": 24.9,
+            "angle": -129,
+            "tone": "name-rubric"
+          },
+          {
+            "text": "Napoli",
+            "x": 51.8,
+            "y": 41.6,
+            "angle": -59,
+            "tone": "name-rubric"
+          },
+          {
+            "text": "Callari",
+            "x": 44.4,
+            "y": 50.3,
+            "angle": -99,
+            "tone": "name"
+          },
+          {
+            "text": "Tunisi",
+            "x": 46.8,
+            "y": 59,
+            "angle": 131,
+            "tone": "name-rubric"
+          },
+          {
+            "text": "Wind rose",
+            "x": 59.1,
+            "y": 94.6
+          },
+          {
+            "text": "Scale of miles",
+            "x": 31.6,
+            "y": 94.6
+          },
+          {
+            "text": "Rhumb lines",
+            "x": 82,
+            "y": 88
+          },
+          {
+            "text": "No north?",
+            "x": 55,
+            "y": 2.5,
+            "tone": "bubble-below"
+          },
+          {
+            "text": "Italy is lying down!",
+            "x": 56.5,
+            "y": 46.5,
+            "tone": "bubble-below"
+          },
+          {
+            "text": "Names in every direction!",
+            "x": 44.5,
+            "y": 66,
+            "tone": "bubble-below"
+          }
+        ],
+        "caption": "The chart on the wall, redrawn: Majorca, about 1375. By the end of the course, you will answer each of the visitor's puzzles."
+      },
+      "slot": "figure"
+    },
+    {
+      "id": "world-h-book",
+      "type": "heading",
+      "style": "rubric",
+      "props": {
+        "text": "The world as a book",
+        "level": 2
+      }
+    },
+    {
+      "id": "world-isidore",
+      "type": "gloss",
+      "props": {
+        "markdown": "Around 630, Isidore of Seville summed up the known world in a diagram any student could draw from memory. An **O**, the Ocean, encircles the land. Inside it, a **T** of waters divides the land into three parts: the Mediterranean is the stem, the Don and the Nile are the arms. Asia, the largest part, fills the upper half.",
+        "gloss": "Isidore's *Etymologiae*, an encyclopaedia read all through the Middle Ages."
+      }
+    },
+    {
+      "id": "world-to",
+      "type": "layered-figure",
+      "props": {
+        "base": "images/to-ocean.svg",
+        "alt": "A T-O world map: a ring of ocean round a disc divided by a T of waters into Asia above, Europe bottom left and Africa bottom right, with Jerusalem at the crossing and Paradise at the top.",
+        "baseReveal": "sweep",
+        "size": "compact",
+        "layers": [
+          {
+            "asset": "images/to-asia.svg",
+            "reveal": "fade"
+          },
+          {
+            "asset": "images/to-europe.svg",
+            "reveal": "fade"
+          },
+          {
+            "asset": "images/to-africa.svg",
+            "reveal": "fade"
+          },
+          {
+            "asset": "images/to-tee.svg",
+            "reveal": "wipe"
+          },
+          {
+            "asset": "images/to-jerusalem.svg",
+            "reveal": "drop"
+          },
+          {
+            "asset": "images/to-paradise.svg",
+            "reveal": "drop"
+          }
+        ],
+        "labels": [
+          {
+            "text": "Oriens · East",
+            "x": 50,
+            "y": 6
+          },
+          {
+            "text": "Ocean",
+            "x": 12,
+            "y": 9
+          },
+          {
+            "text": "Paradise",
+            "x": 50,
+            "y": 26.5,
+            "tone": "italic"
+          },
+          {
+            "text": "Asia",
+            "x": 26,
+            "y": 32
+          },
+          {
+            "text": "Jerusalem",
+            "x": 50,
+            "y": 38.5,
+            "tone": "rubric"
+          },
+          {
+            "text": "Don",
+            "x": 24,
+            "y": 43.5
+          },
+          {
+            "text": "Nile",
+            "x": 76,
+            "y": 43.5
+          },
+          {
+            "text": "Europe",
+            "x": 28,
+            "y": 66
+          },
+          {
+            "text": "Africa",
+            "x": 72,
+            "y": 66
+          },
+          {
+            "text": "Mediterranean",
+            "x": 56.5,
+            "y": 72,
+            "angle": 90
+          }
+        ],
+        "caption": "Isidore's T-O diagram, redrawn. East is at the top: the side of the rising sun, where medieval Christians placed the Garden of Eden."
+      }
+    },
+    {
+      "id": "world-orient",
+      "type": "callout",
+      "style": "rubric",
+      "props": {
+        "title": "Where “orienting” comes from",
+        "markdown": "To orient a map once meant to turn it towards the *orient*, the east. North at the top became the habit only centuries later."
+      }
+    },
+    {
+      "id": "world-check",
+      "type": "quiz",
+      "props": {
+        "stem": "A visitor asks why the world map in the first room has the east at the top. What do you answer?",
+        "mode": "single",
+        "scored": false,
+        "options": [
+          {
+            "id": "b",
+            "text": "Medieval compasses pointed east, so every map was drawn that way",
+            "correct": false,
+            "feedback": "A compass needle points north, then as now. World maps were not drawn with a compass at all."
+          },
+          {
+            "id": "a",
+            "text": "East is where the sun rises and Paradise lies: the story starts there",
+            "correct": true,
+            "feedback": "Yes: a mappa mundi is read from the east, like a story from its beginning."
+          },
+          {
+            "id": "c",
+            "text": "It was drawn for the pilgrims sailing east towards the Holy Land",
+            "correct": false,
+            "feedback": "Pilgrims could not steer by it: it shows the meaning of the world, not its distances."
+          }
+        ]
+      }
+    },
+    {
+      "id": "world-hereford",
+      "type": "gloss",
+      "props": {
+        "markdown": "The great world maps of the thirteenth century fill the T-O with everything a learned Christian knew. On the **Hereford map**, drawn around 1300, **Jerusalem** sits at the centre and Paradise at the top, among cities and rivers, scenes from the Bible and the animals and peoples of distant lands. It is a book in one picture, made to be read and meditated, not a guide to any road.",
+        "gloss": "Hereford Cathedral, England. Its Mediterranean is a narrow ribbon: the map shows *what* the world holds, not *where*."
+      }
+    },
+    {
+      "id": "world-hereford-detail",
+      "type": "layered-figure",
+      "props": {
+        "base": "images/hereford-detail-africa.jpg",
+        "alt": "Detail of the Hereford map south of the Nile: a river in blue, people with faces on their chests or shoulders, a basilisk, a lion, beasts and their red and black labels, beside a band of dark ocean.",
+        "still": true,
+        "ratio": 0.61,
+        "size": "full",
+        "caption": "South of the Nile on the Hereford map: people with faces on their chests, a basilisk and other beasts. Detail, from a printed reproduction."
+      }
+    },
+    {
+      "id": "world-h-sea",
+      "type": "heading",
+      "style": "rubric",
+      "props": {
+        "text": "The sea as a network",
+        "level": 2
+      }
+    },
+    {
+      "id": "world-definition",
+      "type": "text",
+      "style": "lead",
+      "props": {
+        "textRef": "TXT-2"
+      }
+    },
+    {
+      "id": "world-diptych",
+      "type": "diptych",
+      "width": "wide",
+      "props": {
+        "leaves": [
+          {
+            "eyebrow": "For readers and pilgrims",
+            "title": "Mappa mundi",
+            "image": "images/leaf-mappa.svg",
+            "imageAlt": "A round world map: a ring of ocean, three parts divided by a T of waters, a city at the centre and a golden island at the top.",
+            "body": "**Purpose**: to show the world's history and what it means.\n\n**At the top**: the east, and Paradise.\n\n**Made from**: books: the Bible, Roman geographers, travellers' tales.\n\n**Used**: in churches and libraries, to read and to meditate."
+          },
+          {
+            "eyebrow": "For pilots",
+            "title": "Portolan chart",
+            "image": "images/leaf-portolan.svg",
+            "imageAlt": "A corner of a sea chart: the coast of Spain and the Balearic Islands, harbour names written across the land, and black, green and red lines radiating from two points.",
+            "body": "**Purpose**: to sail from one harbour to the next.\n\n**At the top**: nothing: you turn the chart.\n\n**Made from**: compass bearings and the miles between harbours.\n\n**Used**: on board, at the chart table, with a ruler and dividers."
+          }
+        ]
+      }
+    },
+    {
+      "id": "world-atlas",
+      "type": "image",
+      "props": {
+        "asset": "images/catalan-atlas-1375-europe.jpg",
+        "alt": "Four panels of the Catalan Atlas on vellum: Europe, the Mediterranean and North Africa criss-crossed by rhumb lines, a wind rose in the Atlantic, the names of the north written upside down, kings and caravans in Africa.",
+        "caption": "A real one: the Catalan Atlas, drawn in Majorca in 1375 (Bibliothèque nationale de France). Its rhumb lines and harbour names share the vellum with kings, caravans and marvels."
+      },
+      "width": "wide"
+    },
+    {
+      "id": "world-purposes",
+      "type": "callout",
+      "style": "rubric",
+      "props": {
+        "title": "Two jobs, not old and new",
+        "markdown": "The two kinds of map were made in the same centuries, for different readers. Neither is a clumsy draft of the other: the Catalan Atlas above sets a sea chart and a world of kings and marvels side by side."
+      }
+    }
+  ]
+}

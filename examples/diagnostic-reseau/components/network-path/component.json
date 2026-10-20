@@ -1,0 +1,97 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "network-path",
+  "title": "Chemin d'impression",
+  "version": "1.0.0",
+  "level": "block",
+  "category": "content",
+  "description": "Une chaîne ordonnée d’équipements, horizontale sur ordinateur et verticale sur mobile.",
+  "instructions": "Renseignez les équipements dans l’ordre du chemin. Les numéros et les flèches suivent cet ordre automatiquement.",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "steps",
+      "caption"
+    ],
+    "properties": {
+      "caption": {
+        "type": "string",
+        "title": "Légende",
+        "minLength": 1,
+        "maxLength": 240,
+        "x-translatable": true
+      },
+      "steps": {
+        "type": "array",
+        "title": "Équipements",
+        "minItems": 2,
+        "maxItems": 8,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "label"
+          ],
+          "properties": {
+            "label": {
+              "type": "string",
+              "title": "Équipement",
+              "minLength": 1,
+              "maxLength": 80,
+              "x-translatable": true
+            },
+            "detail": {
+              "type": "string",
+              "title": "Précision",
+              "maxLength": 120,
+              "x-translatable": true
+            },
+            "highlight": {
+              "type": "boolean",
+              "title": "Mettre en évidence",
+              "default": false,
+              "x-group": "design"
+            }
+          }
+        }
+      }
+    }
+  },
+  "fallback": [
+    {
+      "type": "text",
+      "props": {
+        "markdown": "{{#steps}}{{@number}}. **{{label}}**{{#detail}} — {{detail}}{{/detail}}\n{{/steps}}\n{{caption}}"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "title": "Le chemin d'une impression",
+      "props": {
+        "caption": "Le chemin suivi par une demande d'impression.",
+        "steps": [
+          {
+            "label": "Poste",
+            "detail": "de Marc"
+          },
+          {
+            "label": "Commutateur"
+          },
+          {
+            "label": "Routeur"
+          },
+          {
+            "label": "Pare-feu",
+            "highlight": true
+          },
+          {
+            "label": "Serveur",
+            "detail": "d'impression"
+          }
+        ]
+      }
+    }
+  ]
+}

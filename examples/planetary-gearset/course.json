@@ -1,0 +1,167 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "planetary-gearset",
+  "title": "Planetary gearsets: one gearset, many ratios",
+  "description": "20-minute module for application engineers: read a planetary gearset, compute its ratios with the Willis equation and configure it for a requirement on a 3D test bench.",
+  "language": "en",
+  "version": "1.1.0",
+  "durationMinutes": 20,
+  "sections": [
+    {
+      "id": "discover",
+      "title": "Discover",
+      "screens": [
+        "intro",
+        "anatomy",
+        "practice"
+      ]
+    },
+    {
+      "id": "practise",
+      "title": "Practise",
+      "screens": [
+        "lab",
+        "hoist"
+      ]
+    },
+    {
+      "id": "prove",
+      "title": "Prove it",
+      "screens": [
+        "assessment",
+        "assessment-2",
+        "assessment-3",
+        "results"
+      ]
+    }
+  ],
+  "variables": [],
+  "theme": {
+    "cascade": "components-over-theme",
+    "tokens": {
+      "color.primary": "#0F2A47",
+      "color.onPrimary": "#FFFFFF",
+      "color.accent": "#C2571A",
+      "color.surface": "#F7F5F0",
+      "color.text": "#16202B",
+      "color.muted": "#4A5663",
+      "color.success": "#1C7340",
+      "color.error": "#B42318",
+      "color.focus": "#1D5FD1",
+      "font.body": "\"Inter\", \"Segoe UI\", system-ui, -apple-system, Roboto, sans-serif",
+      "font.heading": "\"Space Grotesk\", \"Inter\", \"Segoe UI\", system-ui, sans-serif",
+      "radius": 12
+    },
+    "custom": {
+      "color.blueprint": "#0B2440",
+      "color.blueprint-line": "#8FB8E3",
+      "color.copper": "#C2571A",
+      "color.steel": "#A9B6C3",
+      "color.graphite": "#46525E",
+      "color.carrier": "#2F6DB0",
+      "color.paper": "#FFFFFF",
+      "color.card": "#FFFFFF",
+      "space.section": "56px",
+      "shadow.card": "0 1px 2px rgba(11,36,64,.06), 0 8px 24px rgba(11,36,64,.08)"
+    },
+    "stylesheet": "theme/theme.css",
+    "fonts": [
+      {
+        "family": "Inter",
+        "src": "theme/fonts/inter-latin-wght.woff2",
+        "weight": "100 900"
+      },
+      {
+        "family": "Space Grotesk",
+        "src": "theme/fonts/space-grotesk-latin-wght.woff2",
+        "weight": "300 700"
+      }
+    ],
+    "styles": {
+      "text": {
+        "lead": "Large introductory paragraph",
+        "legend": "Numbered legend of a figure (numbers match the markers)"
+      },
+      "callout": {
+        "rule": "Key rule on a dark blueprint card",
+        "on-dark": "Callout on a dark band (hero, stage): light text on a translucent panel"
+      },
+      "image": {
+        "bare": "No frame: for figures that bring their own background"
+      }
+    }
+  },
+  "presentation": {
+    "mode": "slides",
+    "contentWidth": 720,
+    "wideWidth": 1160,
+    "fit": {
+      "reference": "1600x900",
+      "minimum": "1280x720"
+    }
+  },
+  "navigation": {
+    "mode": "linear",
+    "lockUntilComplete": true
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "logo",
+          "enabled": false
+        },
+        {
+          "id": "title"
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "outline"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "completion": {
+    "reportAs": "passed-incomplete",
+    "masteryScore": 70
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  }
+}

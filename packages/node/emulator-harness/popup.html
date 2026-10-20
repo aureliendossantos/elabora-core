@@ -1,0 +1,7 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>LMS structure window</title></head>
+<body><p>Structure window (SuccessFactors-like): it opens the content in another window.</p>
+<script>
+  const src = new URLSearchParams(location.search).get('src');
+  window.__content = window.open(src, 'elabora-content');
+</script></body></html>

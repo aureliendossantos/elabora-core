@@ -1,0 +1,177 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "orbits",
+  "title": "Lower is faster",
+  "covers": [
+    "ITEM-2"
+  ],
+  "layout": "split",
+  "layoutProps": {
+    "balance": "figure",
+    "figure": "stack"
+  },
+  "blocks": [
+    {
+      "id": "orbits-earth",
+      "type": "image",
+      "slot": "figure",
+      "style": "bare",
+      "props": {
+        "asset": "images/orbits-earth.svg",
+        "alt": "The Earth, drawn to the same scale as the three orbits around it.",
+        "caption": "Orbits to scale: select 1, 2, then 3. Arrows show the speed, trails one hour of flight."
+      }
+    },
+    {
+      "id": "orbits-hot-1",
+      "type": "hotspot",
+      "slot": "figure",
+      "props": {
+        "marker": "1",
+        "label": "Orbit 1: Space Station",
+        "x": 62.2,
+        "y": 46.1,
+        "accent": "color.servicer"
+      }
+    },
+    {
+      "id": "orbits-flight-1",
+      "type": "orbit-flight",
+      "slot": "figure",
+      "step": 2,
+      "props": {
+        "craft": "images/orbit-1-craft.svg",
+        "trail": "images/orbit-1-trail.svg",
+        "at": 32,
+        "sweep": 232.3,
+        "alt": "Orbit 1, the Space Station, hugs the Earth. In one hour it flies almost two thirds of a lap, and its speed arrow is the longest."
+      }
+    },
+    {
+      "id": "orbits-hot-2",
+      "type": "hotspot",
+      "slot": "figure",
+      "step": 2,
+      "props": {
+        "marker": "2",
+        "label": "Orbit 2: GPS",
+        "x": 23.2,
+        "y": 33.2,
+        "accent": "color.orbit"
+      }
+    },
+    {
+      "id": "orbits-flight-2",
+      "type": "orbit-flight",
+      "slot": "figure",
+      "step": 3,
+      "props": {
+        "craft": "images/orbit-2-craft.svg",
+        "trail": "images/orbit-2-trail.svg",
+        "at": 148,
+        "sweep": 30.1,
+        "alt": "Orbit 2, GPS, lies far out. In one hour it covers only a twelfth of a lap, with a short speed arrow."
+      }
+    },
+    {
+      "id": "orbits-hot-3",
+      "type": "hotspot",
+      "slot": "figure",
+      "step": 3,
+      "props": {
+        "marker": "3",
+        "label": "Orbit 3: geostationary",
+        "x": 79.4,
+        "y": 87.6,
+        "accent": "color.client"
+      }
+    },
+    {
+      "id": "orbits-flight-3",
+      "type": "orbit-flight",
+      "slot": "figure",
+      "step": 4,
+      "props": {
+        "craft": "images/orbit-3-craft.svg",
+        "trail": "images/orbit-3-trail.svg",
+        "at": -52,
+        "sweep": 15,
+        "alt": "Orbit 3, geostationary, is the farthest. In one hour it covers a twenty-fourth of a lap, with the shortest speed arrow."
+      }
+    },
+    {
+      "id": "orbits-iss",
+      "type": "stat-card",
+      "slot": "body",
+      "step": 2,
+      "props": {
+        "label": "Space Station",
+        "value": "7.66",
+        "unit": "km/s",
+        "body": "420 km up. One lap: 93 min.",
+        "marker": "1",
+        "accent": "color.servicer"
+      }
+    },
+    {
+      "id": "orbits-gps",
+      "type": "stat-card",
+      "slot": "body",
+      "step": 3,
+      "props": {
+        "label": "GPS",
+        "value": "3.87",
+        "unit": "km/s",
+        "body": "20,200 km up. One lap: 11 h 58 min.",
+        "marker": "2",
+        "accent": "color.orbit"
+      }
+    },
+    {
+      "id": "orbits-geo",
+      "type": "stat-card",
+      "slot": "body",
+      "step": 4,
+      "props": {
+        "label": "Geostationary",
+        "value": "3.07",
+        "unit": "km/s",
+        "body": "35,786 km up. One lap: 23 h 56 min.",
+        "marker": "3",
+        "accent": "color.client"
+      }
+    },
+    {
+      "id": "orbits-rule",
+      "type": "callout",
+      "slot": "body",
+      "style": "rule",
+      "step": 4,
+      "props": {
+        "variant": "important",
+        "title": "Gravity sets the speed",
+        "textRef": "TXT-2"
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "select-orbit-1",
+      "description": "The first marker shows the Space Station's orbit, then its card.",
+      "on": { "type": "click", "target": "orbits-hot-1" },
+      "do": [ { "type": "reveal-step", "step": 2 } ]
+    },
+    {
+      "id": "select-orbit-2",
+      "description": "The second marker shows the GPS orbit, then its card.",
+      "on": { "type": "click", "target": "orbits-hot-2" },
+      "do": [ { "type": "reveal-step", "step": 3 } ]
+    },
+    {
+      "id": "select-orbit-3",
+      "description": "The third marker shows the geostationary orbit, its card and the rule.",
+      "on": { "type": "click", "target": "orbits-hot-3" },
+      "do": [ { "type": "reveal-step", "step": 4 } ]
+    }
+  ]
+}

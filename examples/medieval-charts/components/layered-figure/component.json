@@ -1,0 +1,199 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "layered-figure",
+  "title": "Figure in layers",
+  "description": "A figure that assembles itself as it scrolls into view: a base image, then layers drawn over it one after the other (fading, sweeping round, dropping in), and labels set over the figure at given positions (words, or harbour names written from a point at any angle, as on a chart). Square or wide, full size or compact beside the reading column. Without scroll-driven animations, with reduced motion, or set to show at once, it shows complete.",
+  "instructions": "Draw every layer in the same frame as the base (generators). Labels are words: keep them short, and place them in % of the figure (x from the left, y from the top).",
+  "category": "content",
+  "version": "1.3.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "base",
+      "alt"
+    ],
+    "properties": {
+      "base": {
+        "type": "string",
+        "x-kind": "asset",
+        "description": "The base image (first layer)."
+      },
+      "alt": {
+        "type": "string",
+        "maxLength": 250,
+        "x-translatable": true,
+        "description": "Text alternative of the whole figure."
+      },
+      "baseReveal": {
+        "enum": [
+          "fade",
+          "sweep",
+          "drop",
+          "wipe"
+        ],
+        "default": "fade",
+        "x-group": "design",
+        "description": "How the base image appears (see layers)."
+      },
+      "still": {
+        "type": "boolean",
+        "default": false,
+        "x-group": "design",
+        "description": "true: shown complete at once (a figure at the top of a page), without assembling as it scrolls."
+      },
+      "ratio": {
+        "type": "number",
+        "minimum": 0.5,
+        "maximum": 3,
+        "default": 1,
+        "x-group": "design",
+        "description": "Width ÷ height of the figure and of every layer (1: square; 1.96 for the chart on its skin)."
+      },
+      "size": {
+        "enum": [
+          "full",
+          "compact"
+        ],
+        "default": "full",
+        "x-group": "design",
+        "description": "full: as large as the block allows; compact: small enough to see whole with the text around it."
+      },
+      "layers": {
+        "type": "array",
+        "maxItems": 8,
+        "default": [],
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "asset"
+          ],
+          "properties": {
+            "asset": {
+              "type": "string",
+              "x-kind": "asset"
+            },
+            "reveal": {
+              "enum": [
+                "fade",
+                "sweep",
+                "drop",
+                "wipe"
+              ],
+              "default": "fade",
+              "x-group": "design",
+              "description": "fade: appears; sweep: drawn round like a compass; drop: falls into place; wipe: drawn from top to bottom."
+            }
+          }
+        }
+      },
+      "labels": {
+        "type": "array",
+        "maxItems": 16,
+        "default": [],
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "text",
+            "x",
+            "y"
+          ],
+          "properties": {
+            "text": {
+              "type": "string",
+              "maxLength": 40,
+              "x-translatable": true
+            },
+            "x": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Horizontal position, in % of the figure."
+            },
+            "y": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Vertical position, in % of the figure."
+            },
+            "tone": {
+              "enum": [
+                "ink",
+                "rubric",
+                "italic",
+                "name",
+                "name-rubric",
+                "bubble",
+                "bubble-below"
+              ],
+              "default": "ink",
+              "x-group": "design",
+              "description": "ink: small capitals; rubric: small capitals in red; italic: an aside; name and name-rubric: a harbour name as written on a chart, in black or red, starting at its point (x, y) and running at its angle; bubble and bubble-below: someone's words in a speech bubble above or below its point, the tail pointing at it (angle ignored)."
+            },
+            "angle": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180,
+              "default": 0,
+              "description": "Rotation of the label in degrees, clockwise (90: reads downwards, along a river; beyond ±90 a name reads upside down, as on a chart read from every side)."
+            }
+          }
+        }
+      },
+      "caption": {
+        "type": "string",
+        "x-kind": "markdown",
+        "maxLength": 300,
+        "x-translatable": true
+      }
+    }
+  },
+  "fallback": [
+    {
+      "type": "image",
+      "props": {
+        "asset": "{{base}}",
+        "alt": "{{alt}}"
+      }
+    },
+    {
+      "$if": "labels",
+      "type": "text",
+      "props": {
+        "markdown": "{{#labels}}- {{text}}\n{{/labels}}"
+      }
+    },
+    {
+      "$if": "caption",
+      "type": "text",
+      "props": {
+        "markdown": "{{caption}}"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "title": "T-O map",
+      "props": {
+        "base": "images/to-ocean.svg",
+        "alt": "A T-O map",
+        "layers": [
+          {
+            "asset": "images/to-tee.svg",
+            "reveal": "drop"
+          }
+        ],
+        "labels": [
+          {
+            "text": "Asia",
+            "x": 50,
+            "y": 28
+          }
+        ]
+      }
+    }
+  ]
+}

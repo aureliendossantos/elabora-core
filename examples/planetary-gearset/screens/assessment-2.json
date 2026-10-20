@@ -1,0 +1,18 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "assessment-2",
+  "title": "Check your skills: 2 of 3",
+  "covers": [
+    "ITEM-6"
+  ],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "assessment-calc",
+      "type": "numeric",
+      "props": {
+        "questionRef": "Q-2"
+      }
+    }
+  ]
+}

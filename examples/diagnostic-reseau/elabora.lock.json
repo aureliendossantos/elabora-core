@@ -1,0 +1,23 @@
+{
+  "format": "elabora-lock/1",
+  "next": 13,
+  "keys": {
+    "screen:accueil": "0",
+    "screen:chemin": "1",
+    "screen:premier-reflexe": "2",
+    "screen:simulation": "3",
+    "screen:evaluation": "4",
+    "screen:bilan": "5",
+    "decision:reflexe-choix": "6",
+    "object:simulation-scene": "7",
+    "block:simulation-bravo": "8",
+    "quiz:evaluation-q1": "9",
+    "quiz:evaluation-q2": "a",
+    "var:bonsReflexes": "b",
+    "var:indiceVu": "c"
+  },
+  "components": {
+    "network-path": "1.0.0",
+    "support-ticket": "1.0.0"
+  }
+}

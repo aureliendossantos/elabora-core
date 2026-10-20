@@ -1,0 +1,77 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "intro",
+  "title": "One gearset, many ratios",
+  "covers": [
+    "ITEM-1"
+  ],
+  "layout": "hero",
+  "blocks": [
+    {
+      "id": "intro-hook",
+      "type": "text",
+      "slot": "lead",
+      "style": "lead",
+      "props": {
+        "textRef": "TXT-1"
+      }
+    },
+    {
+      "id": "intro-goals",
+      "type": "callout",
+      "slot": "lead",
+      "props": {
+        "variant": "info",
+        "title": "In the next 20 minutes",
+        "markdown": "1. Read the four members of a planetary gearset.\n2. Compute any of its ratios with a single equation.\n3. Configure a 3D test bench, then a hoist drive for a customer."
+      },
+      "style": "on-dark"
+    },
+    {
+      "id": "intro-gearset",
+      "type": "image",
+      "slot": "media",
+      "style": "bare",
+      "props": {
+        "asset": "images/gearset-hero.svg",
+        "alt": "Front view of a planetary gearset: a copper sun gear in the centre, three steel planet gears on a blue carrier, all inside a dark ring gear."
+      }
+    },
+    {
+      "id": "intro-reduce",
+      "type": "ratio-card",
+      "step": 2,
+      "slot": "cards",
+      "props": {
+        "label": "Reduce",
+        "value": "÷ 3.6",
+        "body": "Ring held, the sun drives the carrier.",
+        "accent": "color.copper"
+      }
+    },
+    {
+      "id": "intro-speed-up",
+      "type": "ratio-card",
+      "step": 2,
+      "slot": "cards",
+      "props": {
+        "label": "Speed up",
+        "value": "× 3.6",
+        "body": "Ring held, the carrier drives the sun.",
+        "accent": "color.carrier"
+      }
+    },
+    {
+      "id": "intro-reverse",
+      "type": "ratio-card",
+      "step": 2,
+      "slot": "cards",
+      "props": {
+        "label": "Reverse",
+        "value": "− 2.6",
+        "body": "Carrier held, the sun drives the ring.",
+        "accent": "color.error"
+      }
+    }
+  ]
+}

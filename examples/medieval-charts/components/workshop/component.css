@@ -1,0 +1,57 @@
+/* Scrolling workshop: the figure stays in view while the stages scroll past; each stage, as it
+   reaches the middle of the window, inks its layer. Named view timelines of the stages are shared
+   with the figure through timeline-scope. Without them, or with reduced motion: the finished figure
+   beside the stages. */
+.mc-workshop { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); gap: 3.5rem; align-items: start; }
+.mc-workshop-figure { position: sticky; top: max(5rem, calc(50svh - 12rem)); }
+.mc-workshop-stage { position: relative; aspect-ratio: 1316 / 671; filter: drop-shadow(0 22px 26px color-mix(in srgb, var(--t-color-vellum-shadow) 30%, transparent)); }
+.mc-workshop-stage { container-type: inline-size; }
+.mc-workshop-base, .mc-workshop-layer { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* Labels over the figure: harbour names written from their point at any angle, or short notes. */
+.mc-workshop-label { position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); rotate: calc(var(--angle, 0) * 1deg); white-space: nowrap; line-height: 1;
+  font-style: italic; font-weight: 600; font-size: clamp(.78rem, 2.1cqi, 1.12rem); color: var(--t-color-ink);
+  text-shadow: 0 0 .45em var(--t-color-vellum-light), 0 0 .25em var(--t-color-vellum-light), 0 0 .12em var(--t-color-vellum-light), 0 0 .05em var(--t-color-vellum-light); }
+.mc-workshop-label--name, .mc-workshop-label--name-rubric { translate: 0 -50%; transform-origin: 0 50%; padding-left: .4em; }
+.mc-workshop-label--name-rubric { color: color-mix(in srgb, var(--t-primary) 74%, var(--t-color-ink)); }
+.mc-workshop-label--note { translate: -50% -50%; font-weight: 600; font-size: clamp(.74rem, 1.8cqi, 1rem); color: var(--t-color-ink); }
+.mc-workshop-steps { list-style: none; margin: 0; padding: 18svh 0 26svh; display: grid; counter-reset: mc-stage; }
+.mc-workshop-step { counter-increment: mc-stage; min-height: 62svh; display: grid; align-content: center; }
+.mc-workshop-card { position: relative; padding: 1.6rem 1.7rem 1.5rem; background: color-mix(in srgb, var(--t-color-vellum-light) 88%, transparent); border-radius: 3px;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-color-sepia) 30%, transparent), 0 18px 34px -24px var(--t-color-vellum-shadow); }
+.mc-workshop-card::before { content: counter(mc-stage, upper-roman); display: block; margin-bottom: .3rem; color: var(--t-primary); font-variant-caps: all-small-caps; font-size: 1.35rem; letter-spacing: .12em; font-weight: 600; }
+.mc-workshop-title { margin: 0 0 .5rem; font-size: 1.6rem; line-height: 1.15; }
+.mc-workshop-body p { margin: 0; }
+
+@supports (animation-timeline: view()) and (timeline-scope: --mc-s1) {
+  @media (prefers-reduced-motion: no-preference) {
+    .mc-workshop { timeline-scope: --mc-s1, --mc-s2, --mc-s3, --mc-s4, --mc-s5, --mc-s6; }
+    .mc-workshop-step:nth-child(1) { view-timeline: --mc-s1 block; }
+    .mc-workshop-step:nth-child(2) { view-timeline: --mc-s2 block; }
+    .mc-workshop-step:nth-child(3) { view-timeline: --mc-s3 block; }
+    .mc-workshop-step:nth-child(4) { view-timeline: --mc-s4 block; }
+    .mc-workshop-step:nth-child(5) { view-timeline: --mc-s5 block; }
+    .mc-workshop-step:nth-child(6) { view-timeline: --mc-s6 block; }
+    /* Preserve the start and first fifth; finish inking at 60% of each range. */
+    .mc-workshop-layer { animation: mc-ink linear(0, .2 20%, .325 30%, .5 40%, .725 50%, 1 60%, 1) both; animation-range: cover 32% cover 50%; }
+    .mc-workshop-layer:nth-of-type(2) { animation-timeline: --mc-s1; }
+    .mc-workshop-layer:nth-of-type(3) { animation-timeline: --mc-s2; }
+    .mc-workshop-layer:nth-of-type(4) { animation-timeline: --mc-s3; }
+    .mc-workshop-layer:nth-of-type(5) { animation-timeline: --mc-s4; }
+    .mc-workshop-layer:nth-of-type(6) { animation-timeline: --mc-s5; }
+    .mc-workshop-layer:nth-of-type(7) { animation-timeline: --mc-s6; }
+    .mc-workshop-label { animation: mc-ink linear(0, .2 20%, .325 30%, .5 40%, .725 50%, 1 60%, 1) both; animation-range: cover 32% cover 50%; }
+    .mc-workshop-label--s1 { animation-timeline: --mc-s1; } .mc-workshop-label--s2 { animation-timeline: --mc-s2; } .mc-workshop-label--s3 { animation-timeline: --mc-s3; }
+    .mc-workshop-label--s4 { animation-timeline: --mc-s4; } .mc-workshop-label--s5 { animation-timeline: --mc-s5; } .mc-workshop-label--s6 { animation-timeline: --mc-s6; }
+    .mc-workshop-card { animation: mc-focus linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
+  }
+}
+@keyframes mc-ink { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mc-focus { 0% { opacity: .72; translate: 0 1.5rem; } 32%, 68% { opacity: 1; translate: 0 0; } 100% { opacity: .72; translate: 0 -1rem; } }
+
+@container (max-width: 860px) {
+  .mc-workshop { grid-template-columns: 1fr; gap: 0; }
+  .mc-workshop-figure { top: 0; z-index: 1; padding: .75rem 0 1.25rem; background: linear-gradient(var(--t-surface) 82%, color-mix(in srgb, var(--t-surface) 0%, transparent)); }
+  .mc-workshop-steps { padding: 4svh 0 12svh; }
+  .mc-workshop-step { min-height: 56svh; }
+  .mc-workshop-card { padding: 1.25rem 1.2rem; }
+}

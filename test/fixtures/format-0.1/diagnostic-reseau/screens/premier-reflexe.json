@@ -1,0 +1,27 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "premier-reflexe",
+  "title": "Premier réflexe",
+  "covers": ["ITEM-3"],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    { "id": "reflexe-choix", "type": "decision", "props": {
+      "prompt": "Marc attend au téléphone. Il est 9 h 10. **Par quoi commencez-vous ?**",
+      "objective": "OBJ-2",
+      "options": [
+        { "id": "a", "label": "Redémarrer le serveur d'impression : c'est souvent lui qui bloque.", "feedback": "Le redémarrage coupe les impressions de tout le bâtiment pendant cinq minutes, et la panne de Marc persiste : vous avez sauté quatre étapes." },
+        { "id": "b", "label": "Vérifier que le poste de Marc est bien connecté au réseau.", "correct": true, "feedback": "Bon réflexe : vous partez du début du chemin. Le poste a une adresse IP valide, vous pouvez passer au commutateur." },
+        { "id": "c", "label": "Transférer le ticket au niveau 2 : c'est urgent.", "feedback": "Le niveau 2 vous renvoie le ticket une heure plus tard en demandant le diagnostic du chemin. Marc rate l'échéance de midi." }
+      ]
+    } }
+  ],
+  "layers": [
+    { "id": "rappel-regle", "title": "Rappel : la règle SUP-NET-04", "blocks": [
+      { "id": "rappel-texte", "type": "text", "props": { "markdown": "Partez toujours du **poste**, puis remontez le chemin dans l'ordre. Cette règle évite de couper un service pour rien." } }
+    ] }
+  ],
+  "events": [
+    { "id": "reflexe-bon", "description": "Compter les bons réflexes pour le bilan.", "on": { "type": "decision.selected", "target": "reflexe-choix", "option": "b" }, "do": [ { "type": "increment-variable", "variable": "bonsReflexes", "by": 1 } ] },
+    { "id": "reflexe-serveur", "description": "Rappeler la règle si l'apprenant commence par le serveur.", "on": { "type": "decision.selected", "target": "reflexe-choix", "option": "a" }, "do": [ { "type": "show-layer", "layer": "rappel-regle" } ] }
+  ]
+}

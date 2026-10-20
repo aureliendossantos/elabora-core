@@ -1,0 +1,32 @@
+<!-- Headless quiz: the player binds the hooks (data-t-…): selection, scoring, feedback, saved state. -->
+<fieldset class="pg-cq t-quiz" data-t-group>
+  <div class="t-quiz-stem t-text" data-t-stem>{{stem}}</div>
+  <ul class="pg-cq-legend" data-if="legend">
+    <li class="pg-cq-key" data-each="legend">
+      <svg class="pg-cq-symbol" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+        <g data-if="symbol == 'held'">
+          <defs><pattern id="pg-hatch-{{@id}}" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0V5" stroke="currentColor" stroke-width="2"/></pattern></defs>
+          <rect x="3" y="3" width="22" height="22" rx="4" fill="url(#pg-hatch-{{@id}})" stroke="currentColor" stroke-width="2"/>
+        </g>
+        <g data-if="symbol == 'input'" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+          <path d="M5 18A10 10 0 0 1 22 9"/><path d="M15 7L22 9L21 16" stroke-linejoin="round"/>
+        </g>
+        <circle data-if="symbol == 'output'" cx="14" cy="14" r="10" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="5 4"/>
+      </svg>
+      <span>{{label}}</span>
+    </li>
+  </ul>
+  <div class="pg-cq-options">
+    <div class="pg-cq-card" data-each="options">
+      <label class="pg-cq-option" data-t-option="{{id}}">
+        <input class="pg-cq-input" data-t-input>
+        <img class="pg-cq-figure" data-if="figure" src="{{figure}}" alt="">
+        <span class="pg-cq-text">{{text}}</span>
+        <span class="pg-cq-flag" data-t-flag></span>
+      </label>
+      <div class="pg-cq-feedback t-text" data-t-option-feedback="{{id}}"></div>
+    </div>
+  </div>
+  <button type="button" class="t-btn t-btn--primary t-quiz-submit" data-t-submit></button>
+  <div class="t-feedback" data-t-feedback></div>
+</fieldset>

@@ -1,0 +1,89 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/lms-profile.schema.json",
+  "id": "scorm-cloud",
+  "name": "SCORM Cloud (Rustici) — reference test environment",
+  "documentedAt": "2026-10",
+  "sources": [
+    {
+      "title": "SCORM Cloud plans",
+      "url": "https://rusticisoftware.com/products/scorm-cloud/pricing/"
+    },
+    {
+      "title": "SCORM Cloud Release 11/11/2024 (unload)",
+      "url": "https://support.scorm.com/hc/en-us/articles/30836282226075-SCORM-Cloud-Release-11-11-2024"
+    },
+    {
+      "title": "Error importing a course to SCORM Cloud (trial accounts)",
+      "url": "https://support.scorm.com/hc/en-us/articles/206163536-Error-Importing-a-course-to-SCORM-Cloud"
+    }
+  ],
+  "standards": {
+    "scorm12": true,
+    "scorm2004": [
+      "2nd",
+      "3rd",
+      "4th"
+    ],
+    "sequencing": true,
+    "multiSco": true,
+    "cmi5": true,
+    "xapi": true,
+    "lti13": true,
+    "aicc": true
+  },
+  "launch": {
+    "default": "iframe",
+    "modes": [
+      "iframe",
+      "popup"
+    ],
+    "apiDiscovery": [
+      "parents",
+      "opener"
+    ]
+  },
+  "datamodel": {
+    "suspendDataMax": {
+      "scorm12": 64000,
+      "scorm2004": 64000
+    },
+    "suspendDataEnforcement": null,
+    "lessonLocationMax": 255,
+    "masteryOverridesStatus": false
+  },
+  "exit": {
+    "needsExplicitFinish": false
+  },
+  "session": {
+    "autocommitSeconds": 10
+  },
+  "browser": {
+    "unloadHeaderSent": null,
+    "thirdPartyCookiesRequired": false,
+    "knownBugs": []
+  },
+  "packaging": {
+    "maxZipMB": null,
+    "maxFiles": null,
+    "asciiFilenames": false,
+    "schemaversionRequired": false,
+    "oneStandardPerZip": false
+  },
+  "update": {
+    "family": "lms-versioning",
+    "notes": "New versions are created on re-import; registrations keep their version."
+  },
+  "harness": {
+    "autocommitSeconds": 10,
+    "syncCommits": true
+  },
+  "toMeasure": [
+    "/datamodel/suspendDataMax/scorm12",
+    "/datamodel/suspendDataEnforcement"
+  ],
+  "notes": [
+    "Free Trial tier: 10 recyclable registrations, API included. Use it as the smoke test of the pyramid, not as the only target.",
+    "Player settings (Player*) catalogue LMS quirks.",
+    "No package size limit on paid accounts; a trial account has 100 MB of extracted space for all its courses (support article of 2019)."
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "gloss",
+  "title": "Text with a gloss",
+  "description": "A paragraph with a note in the margin, as scribes glossed manuscripts: on wide windows the note sits in the right margin, level with the text; on narrow ones it follows the text, indented.",
+  "instructions": "Keep the gloss to one or two sentences: a word explained, a source, an aside. The paragraph must read without it.",
+  "category": "content",
+  "version": "1.0.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["markdown", "gloss"],
+    "properties": {
+      "markdown": { "type": "string", "x-kind": "markdown", "x-translatable": true, "description": "The paragraph." },
+      "gloss": { "type": "string", "x-kind": "markdown", "maxLength": 280, "x-translatable": true, "description": "The note in the margin." }
+    }
+  },
+  "fallback": [
+    { "type": "text", "props": { "markdown": "{{markdown}}" } },
+    { "type": "callout", "props": { "variant": "info", "markdown": "{{gloss}}" } }
+  ],
+  "examples": [
+    { "title": "A word explained", "props": { "markdown": "Pilots carried a **portolano**, a book of sailing directions from harbour to harbour.", "gloss": "*Portolano*: from the Italian *porto*, harbour. The charts took the name much later." } }
+  ]
+}

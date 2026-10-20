@@ -1,0 +1,37 @@
+/* Component "stat-card" — cascade layer elabora.components. Colours from tokens. */
+.t-block--stat-card .or-stat {
+  position: relative;
+  height: 100%;
+  padding: 1rem 1.25rem 1.125rem;
+  border-radius: calc(var(--t-radius) + 4px);
+  border: 1px solid color-mix(in srgb, var(--stat-accent) 30%, transparent);
+  background:
+    radial-gradient(90% 120% at 100% 0%, color-mix(in srgb, var(--stat-accent) 16%, transparent), transparent 65%),
+    color-mix(in srgb, var(--t-color-panel) 84%, transparent);
+  box-shadow: 0 0 2rem color-mix(in srgb, var(--stat-accent) 10%, transparent), 0 1rem 2.5rem rgba(0, 0, 0, .35);
+  overflow: hidden;
+}
+.t-block--stat-card .or-stat-label {
+  display: flex; align-items: center; gap: 0.5rem;
+  margin: 0 0 0.375rem;
+  font-size: 0.8125rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--t-muted);
+}
+.t-block--stat-card .or-stat-marker {
+  flex: none; display: grid; place-items: center;
+  width: 1.375rem; height: 1.375rem; border-radius: 50%;
+  font: 700 0.75rem/1 var(--t-font-heading); letter-spacing: 0;
+  color: var(--t-surface); background: var(--t-text);
+}
+.t-block--stat-card .or-stat-value {
+  margin: 0;
+  font: 600 clamp(2rem, 3.2vw, 2.75rem)/1.05 var(--t-font-heading);
+  letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--stat-accent);
+  text-shadow: 0 0 1.5rem color-mix(in srgb, var(--stat-accent) 45%, transparent);
+}
+.t-block--stat-card .or-stat-unit { margin-left: 0.375rem; font-size: 0.5em; font-weight: 500; letter-spacing: 0; color: var(--t-text); }
+/* The sentence is a .t-text: its tighter line height is in theme/theme.css, whose .t-text rule wins
+   over component stylesheets. */
+.t-block--stat-card .or-stat-body { margin-top: 0.5rem; font-size: 0.9375rem; color: color-mix(in srgb, var(--t-text) 86%, transparent); }

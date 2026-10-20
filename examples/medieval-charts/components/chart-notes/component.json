@@ -1,0 +1,154 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "chart-notes",
+  "title": "Chart with notes",
+  "description": "A large figure with numbered markers set on it: selecting a marker shows its note under the figure (a question someone asked about that spot, and its answer). Markers already read carry a gilt dot. Arrow keys move from one marker to the next.",
+  "instructions": "Two to six markers, each with a short label of a few words where it sits on the figure (x and y in % of the figure). Keep each note to two or three sentences. Exploring them is optional unless an event requires it.",
+  "category": "interaction",
+  "version": "1.0.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "image",
+      "alt",
+      "notes"
+    ],
+    "properties": {
+      "image": {
+        "type": "string",
+        "x-kind": "asset",
+        "description": "The figure, drawn without words."
+      },
+      "alt": {
+        "type": "string",
+        "maxLength": 250,
+        "x-translatable": true,
+        "description": "Text alternative of the figure."
+      },
+      "ratio": {
+        "type": "number",
+        "minimum": 0.5,
+        "maximum": 3,
+        "default": 1.96,
+        "x-group": "design",
+        "description": "Width ÷ height of the figure."
+      },
+      "notes": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 6,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "x",
+            "y",
+            "marker",
+            "title",
+            "body"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{0,23}$"
+            },
+            "x": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Horizontal position of the marker, in % of the figure."
+            },
+            "y": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Vertical position of the marker, in % of the figure."
+            },
+            "marker": {
+              "type": "string",
+              "maxLength": 32,
+              "x-translatable": true,
+              "description": "Label of the marker on the figure."
+            },
+            "title": {
+              "type": "string",
+              "maxLength": 90,
+              "x-translatable": true,
+              "description": "Heading of the note."
+            },
+            "body": {
+              "type": "string",
+              "x-kind": "markdown",
+              "x-translatable": true
+            }
+          }
+        }
+      },
+      "caption": {
+        "type": "string",
+        "x-kind": "markdown",
+        "maxLength": 300,
+        "x-translatable": true
+      }
+    }
+  },
+  "fallback": [
+    {
+      "type": "image",
+      "props": {
+        "asset": "{{image}}",
+        "alt": "{{alt}}"
+      }
+    },
+    {
+      "type": "accordion",
+      "props": {
+        "items": {
+          "$each": "notes",
+          "as": {
+            "id": "{{id}}",
+            "title": "{{marker}}: {{title}}",
+            "markdown": "{{body}}"
+          }
+        }
+      }
+    },
+    {
+      "$if": "caption",
+      "type": "text",
+      "props": {
+        "markdown": "{{caption}}"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "title": "Two notes on the chart",
+      "props": {
+        "image": "images/chart-whole.svg",
+        "alt": "A portolan chart of the Mediterranean on its calfskin",
+        "notes": [
+          {
+            "id": "north",
+            "x": 52,
+            "y": 8,
+            "marker": "No north?",
+            "title": "“There is no north on this map”",
+            "body": "The chart lies flat on the table and turns with the course."
+          },
+          {
+            "id": "italy",
+            "x": 50,
+            "y": 38,
+            "marker": "Italy lying down",
+            "title": "“Italy is lying down”",
+            "body": "The chart follows the compass."
+          }
+        ]
+      }
+    }
+  ]
+}

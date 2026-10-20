@@ -1,0 +1,88 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/lms-profile.schema.json",
+  "id": "moodle",
+  "name": "Moodle 4.5–5.2 (mod_scorm)",
+  "documentedAt": "2026-09",
+  "sources": [
+    {
+      "title": "Moodle SCORM settings",
+      "url": "https://docs.moodle.org/en/SCORM_settings"
+    },
+    {
+      "title": "Moodle SCORM FAQ",
+      "url": "https://docs.moodle.org/en/SCORM_FAQ"
+    },
+    {
+      "title": "MDL-89642 (error 101, data loss in Chrome popups)",
+      "url": "https://tracker.moodle.org/browse/MDL-89642"
+    }
+  ],
+  "standards": {
+    "scorm12": true,
+    "scorm2004": [],
+    "sequencing": false,
+    "multiSco": true,
+    "cmi5": "plugin",
+    "xapi": "plugin",
+    "lti13": true,
+    "aicc": true
+  },
+  "launch": {
+    "default": "iframe",
+    "modes": [
+      "iframe",
+      "popup"
+    ],
+    "apiDiscovery": [
+      "parents",
+      "opener"
+    ]
+  },
+  "datamodel": {
+    "suspendDataMax": {
+      "scorm12": 4096,
+      "scorm2004": null
+    },
+    "suspendDataEnforcement": "reject",
+    "lessonLocationMax": 255,
+    "masteryOverridesStatus": true
+  },
+  "exit": {
+    "needsExplicitFinish": false
+  },
+  "session": {
+    "autocommitSeconds": 60
+  },
+  "browser": {
+    "unloadHeaderSent": null,
+    "thirdPartyCookiesRequired": false,
+    "knownBugs": [
+      "MDL-89642: package calling LMSFinish in unload loses data in Chrome popup mode (error 101)",
+      "MDL-89616",
+      "MDL-86874"
+    ]
+  },
+  "packaging": {
+    "maxZipMB": null,
+    "maxFiles": null,
+    "asciiFilenames": false,
+    "schemaversionRequired": false,
+    "oneStandardPerZip": false
+  },
+  "update": {
+    "family": "auto-update",
+    "notes": "External packages can be updated automatically; re-attempt options apply."
+  },
+  "harness": {
+    "autocommitSeconds": 60,
+    "syncCommits": true
+  },
+  "toMeasure": [
+    "/datamodel/suspendDataEnforcement"
+  ],
+  "notes": [
+    "scorm12standard = true by default: 4,096 characters of suspend_data enforced.",
+    "Mastery score overrides lesson_status: send a score consistent with the status.",
+    "SCORM 2004 support is partial and marked won't fix: target SCORM 1.2."
+  ]
+}

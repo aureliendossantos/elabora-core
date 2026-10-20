@@ -1,0 +1,77 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "lab",
+  "title": "Gearbox lab: meet three requirements",
+  "covers": [
+    "ITEM-4"
+  ],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "lab-brief",
+      "type": "text",
+      "props": {
+        "markdown": "The bench holds the 30/78 gearset of the previous screen, driven at 1,000 rpm. For each requirement, **predict** the configuration with the Willis equation first, then run the bench to check. Every run counts: aim to meet each requirement at the first run."
+      },
+      "slot": "brief"
+    },
+    {
+      "id": "lab-bench",
+      "type": "free-object",
+      "props": {
+        "object": "planetary-lab",
+        "title": "3D test bench of a planetary gearset",
+        "aspectRatio": "fill",
+        "narrowAspectRatio": "auto",
+        "minHeight": 420,
+        "scored": true,
+        "weight": 2,
+        "props": {
+          "instruction": "Choose the held member and the member the motor drives, then run the bench. The third member is the output.",
+          "gearset": "30-78",
+          "inputRpm": 1000,
+          "requirement1": "ring-sun",
+          "requirement2": "ring-carrier",
+          "requirement3": "carrier-sun"
+        },
+        "textAlternative": "**Text version of the test bench.** The gearset has a 30-tooth sun, three 24-tooth planets on a carrier, and a 78-tooth ring. A motor turns at 1,000 rpm. You choose which member is held by a brake and which member the motor drives; the third member is the output, and the bench measures its speed and direction.\n\nFor each requirement, write down the held member and the driven member, then check with $Z_s\\,n_s + Z_r\\,n_r = (Z_s + Z_r)\\,n_c$.\n\n1. Electric-drive reducer: the output must turn 3.6 times slower than the motor, in the same direction.\n2. Wind-turbine speed-up: the output must turn 3.6 times faster than the motor, in the same direction.\n3. Reverse gear: the output must turn the other way, 2.6 times slower than the motor."
+      },
+      "slot": "stage"
+    }
+  ],
+  "events": [
+    {
+      "id": "lab-done",
+      "description": "Open the debrief table once the three requirements are met.",
+      "on": {
+        "type": "object.event",
+        "target": "lab-bench",
+        "name": "completed"
+      },
+      "do": [
+        {
+          "type": "show-layer",
+          "layer": "lab-debrief"
+        }
+      ]
+    }
+  ],
+  "layout": "stage",
+  "layers": [
+    {
+      "id": "lab-debrief",
+      "title": "Six configurations, one equation",
+      "blocks": [
+        {
+          "id": "lab-summary",
+          "type": "callout",
+          "props": {
+            "variant": "tip",
+            "title": "Six configurations, one equation",
+            "markdown": "| Held | Driven | Output | Ratio | Behaviour |\n|---|---|---|---|---|\n| Ring | Sun | Carrier | 3.6 : 1 | Strong reduction |\n| Sun | Ring | Carrier | 1.38 : 1 | Mild reduction |\n| Sun | Carrier | Ring | 0.72 : 1 | Mild overdrive |\n| Ring | Carrier | Sun | 0.28 : 1 | Strong overdrive |\n| Carrier | Sun | Ring | −2.6 : 1 | Reverse, reduction |\n| Carrier | Ring | Sun | −0.38 : 1 | Reverse, overdrive |\n\nThe carrier is always the slowest member when it is not held; holding it is the only way to reverse."
+          }
+        }
+      ]
+    }
+  ]
+}

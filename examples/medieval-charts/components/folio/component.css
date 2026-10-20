@@ -1,0 +1,57 @@
+/* Folio page: a tall opening band, then a reading column. Spacing in rem (size classes). The rose
+   turns a little as the page scrolls; the blocks of the page rise into place as they come into
+   view (scroll-driven animations, progressive: without them, or with reduced motion, all is there). */
+.mc-folio { position: relative; }
+.mc-folio-band {
+  position: relative; isolation: isolate; overflow: clip;
+  min-height: min(46rem, 78svh); display: grid; align-content: end;
+  padding: 7rem max(1.5rem, calc((100% - var(--t-wide-width)) / 2)) 4.75rem;
+}
+.mc-folio-copy { position: relative; max-width: 46rem; }
+.mc-folio-eyebrow { display: flex; align-items: center; gap: .9rem; margin: 0 0 1.1rem; color: var(--t-primary); font-variant-caps: all-small-caps; letter-spacing: .16em; font-size: 1.3rem; font-weight: 600; }
+.mc-folio-eyebrow::before { content: ""; width: 2.75rem; height: 1px; background: currentColor; }
+.mc-folio-rose {
+  position: absolute; z-index: -1; right: -14rem; top: 50%; width: min(76rem, 115vw); aspect-ratio: 1; translate: 0 -50%;
+  background: url(../../assets/images/hero-rose.svg) center / contain no-repeat;
+  -webkit-mask-image: radial-gradient(closest-side, #000 45%, transparent 100%); mask-image: radial-gradient(closest-side, #000 45%, transparent 100%);
+  opacity: .48;
+}
+.mc-folio--none .mc-folio-rose { display: none; }
+/* A figure in the band: beside the opening, in place of the rose. */
+.mc-folio-figure:not(:has(.t-block)) { display: none; }
+.mc-folio-band:has(.mc-folio-figure .t-block) { grid-template-columns: minmax(0, 27rem) minmax(0, 1fr); column-gap: clamp(2rem, 3vw, 3rem); align-items: center; align-content: center; padding-bottom: 5.5rem;
+  padding-right: 1.5rem; }
+.mc-folio-band:has(.mc-folio-figure .t-block) .mc-folio-rose { display: none; }
+.mc-folio-figure { position: relative; }
+.mc-folio--none .mc-folio-band { min-height: min(30rem, 56svh); }
+.mc-folio-cue { position: absolute; left: 50%; bottom: 1.4rem; width: 1px; height: 3.25rem; background: linear-gradient(color-mix(in srgb, var(--t-color-sepia) 70%, transparent), transparent); }
+.mc-folio-cue::after { content: ""; position: absolute; left: -2px; top: 0; width: 5px; height: 5px; rotate: 45deg; background: var(--t-color-vermilion); animation: mc-cue 2.4s cubic-bezier(.4, 0, .2, 1) infinite; }
+@keyframes mc-cue { from { translate: 0 0; opacity: 0; } 20% { opacity: 1; } to { translate: 0 2.9rem; opacity: 0; } }
+
+.mc-folio-body.t-slot { gap: 2.5rem; padding: 1.5rem 1.5rem 7rem; }
+.mc-folio-body > .t-block { width: 100%; max-width: var(--t-content-width); margin-inline: auto; justify-self: center; }
+.mc-folio-body > .t-block.t-w-wide { max-width: var(--t-wide-width); }
+.mc-folio-body > .t-block--heading { margin-top: 2.25rem; }
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .mc-folio-rose { animation: mc-folio-turn linear both; animation-timeline: scroll(root); animation-range: 0 120vh; }
+    .mc-folio-cue { animation: mc-folio-fade linear both; animation-timeline: scroll(root); animation-range: 0 30vh; }
+    .mc-folio-copy { animation: mc-folio-lift linear both; animation-timeline: scroll(root); animation-range: 0 90vh; }
+    /* Preserve the delayed entrance and first fifth; finish the rise at 60%. */
+    .mc-folio-body > .t-block:not(.t-block--free-object):not(.t-block--workshop) { animation: mc-rise linear(0, .2 20%, .325 30%, .5 40%, .725 50%, 1 60%, 1) both; animation-timeline: view(); animation-range: entry 8svh entry 38svh; }
+  }
+}
+@keyframes mc-folio-turn { from { rotate: 0deg; } to { rotate: 28deg; } }
+@keyframes mc-folio-fade { to { opacity: 0; } }
+@keyframes mc-folio-lift { to { translate: 0 -2.5rem; opacity: .8; } }
+@keyframes mc-rise { from { opacity: 0; translate: 0 2.4rem; } to { opacity: 1; translate: 0 0; } }
+
+@container (max-width: 760px) {
+  .mc-folio-band { min-height: auto; padding: 4.5rem 1rem 3.25rem; }
+  .mc-folio-rose { top: 1rem; right: -45%; width: 95%; translate: none; opacity: .2; }
+  .mc-folio-body.t-slot { padding: 1rem .9rem 5rem; gap: 2rem; }
+  .mc-folio-cue { display: none; }
+  .mc-folio-band:has(.mc-folio-figure .t-block) { grid-template-columns: 1fr; row-gap: 2rem; padding-bottom: 2.5rem; }
+  .mc-folio-figure { margin-right: 0; }
+}

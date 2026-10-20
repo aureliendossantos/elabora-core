@@ -1,0 +1,131 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "gallery",
+  "title": "Ready for the visitors?",
+  "covers": [
+    "ITEM-6"
+  ],
+  "layout": "folio",
+  "layoutProps": {
+    "eyebrow": "Before the gallery opens",
+    "ornament": "none"
+  },
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "gallery-lead",
+      "type": "text",
+      "slot": "lead",
+      "style": "lead",
+      "props": {
+        "markdown": "Five questions visitors ask in front of the charts. Could you answer them? Take your time: the lessons stay open in the outline, and you can try again once you have seen your score."
+      }
+    },
+    {
+      "id": "gallery-q1",
+      "type": "quiz",
+      "props": {
+        "questionRef": "Q-1"
+      }
+    },
+    {
+      "id": "gallery-q2",
+      "type": "quiz",
+      "props": {
+        "questionRef": "Q-2"
+      }
+    },
+    {
+      "id": "gallery-q3",
+      "type": "quiz",
+      "props": {
+        "questionRef": "Q-3"
+      }
+    },
+    {
+      "id": "gallery-q4-figure",
+      "type": "image",
+      "props": {
+        "asset": "images/scale-dividers.svg",
+        "alt": "A scale of miles of six divisions, black and blank in turn, each divided in fifths by dots. A pair of brass dividers stands on it, one point at the left end of the scale, the other halfway through the fourth division: three and a half divisions."
+      }
+    },
+    {
+      "id": "gallery-q4",
+      "type": "numeric",
+      "props": {
+        "questionRef": "Q-4"
+      }
+    },
+    {
+      "id": "gallery-q5",
+      "type": "quiz",
+      "props": {
+        "questionRef": "Q-5"
+      }
+    },
+    {
+      "id": "gallery-results",
+      "type": "results",
+      "width": "wide",
+      "props": {
+        "allowRetry": true,
+        "passedMessage": "You are ready for the gallery. When a visitor asks whether the chart got it wrong, you know the answer: **it is not a picture of the world, it is a tool to cross it.**",
+        "failedMessage": "Look back at the workshop and the chart table, then try again: rhumb lines for the wind, dividers and scale for the miles, and a chart with no top."
+      }
+    },
+    {
+      "id": "gallery-h-back",
+      "type": "heading",
+      "style": "rubric",
+      "props": {
+        "text": "Back to the visitor",
+        "level": 2
+      }
+    },
+    {
+      "id": "gallery-back-intro",
+      "type": "text",
+      "props": {
+        "markdown": "Remember the frown on opening night? Here is the chart again, with the visitor's three puzzles. Think of your answer to each, then select it to compare."
+      }
+    },
+    {
+      "id": "gallery-callback",
+      "type": "chart-notes",
+      "width": "wide",
+      "props": {
+        "image": "images/chart-whole.svg",
+        "alt": "The portolan chart from the opening of the course: the Mediterranean and the Black Sea on a calfskin, tilted, with rhumb lines, harbour names written at every angle, a wind rose and a scale of miles.",
+        "ratio": 1.96,
+        "notes": [
+          {
+            "id": "north",
+            "x": 54,
+            "y": 8,
+            "marker": "No north?",
+            "title": "“There is no north on this map”",
+            "body": "It was never meant to hang on a wall. On board, the chart lies flat on the table and the pilot turns it to face the course, so it needs no top. Every wind rose still shows the north, by its Tramontana point."
+          },
+          {
+            "id": "names",
+            "x": 24,
+            "y": 60,
+            "marker": "Names every way",
+            "title": "“The names run in every direction”",
+            "body": "Each harbour is written inland, at right angles to the coast, so the coastline itself stays clear. Turn the chart and the names of the coast ahead read the right way up."
+          },
+          {
+            "id": "italy",
+            "x": 55,
+            "y": 31,
+            "marker": "Italy lying down",
+            "title": "“Italy is lying down”",
+            "body": "The whole sea is turned about 9° from a modern map. The leading explanation: the chart was built from compass bearings, and the compass then pointed several degrees east of true north. Steered by compass, the chart still brings a ship to the right harbour."
+          }
+        ],
+        "caption": "So, did they get it wrong? No: the chart answers a pilot's questions, which way and how far, better than any map of its time."
+      }
+    }
+  ]
+}

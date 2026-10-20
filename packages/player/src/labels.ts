@@ -1,0 +1,184 @@
+import { formatMessage } from './message.ts';
+
+// Player labels, in ICU message syntax ({n}, plurals). Courses override any label with course.ui.
+// A language without labels here uses English: give every label in course.ui.
+const LABELS = {
+  fr: {
+    skip: 'Aller au contenu', menu: 'Sommaire', quit: 'Quitter', next: 'Suivant', previous: 'Précédent', continue: 'Continuer',
+    progress: 'Progression', screenOf: 'Écran {n} sur {total}', locked: "Terminez l'activité de cet écran pour continuer.",
+    submit: 'Valider', tryAgain: 'Ce n’est pas encore ça. {n, plural, one {Il vous reste # essai.} other {Il vous reste # essais.}}', correct: 'Bonne réponse.', incorrect: 'Réponse incorrecte.',
+    yourAnswer: 'Votre réponse', correctAnswer: 'Bonne réponse', yourScore: 'Votre score', status: 'Statut',
+    status_passed: 'Réussi', status_failed: 'Non réussi', status_completed: 'Terminé', status_incomplete: 'En cours',
+    retry: "Recommencer l'évaluation", close: 'Fermer', textVersion: 'Version texte', transcript: 'Transcription', pauseAnimation: 'Mettre en pause l’animation', playAnimation: 'Lire l’animation',
+    generated: 'Contenu généré par IA', standalone: 'Aperçu hors LMS : la progression n’est enregistrée que dans cet onglet.',
+    sessionEnded: 'Votre progression est enregistrée. Vous pouvez fermer cette fenêtre.', sessionRestored: 'Cette page a été restaurée après la fin de la session : relancez le module depuis la plateforme pour continuer.',
+    webEndedKept: 'Votre progression est enregistrée dans ce navigateur. Vous pouvez fermer cette page.', webEndedNotKept: 'Vous avez quitté le module. Rien n’est enregistré : vous pouvez fermer cette page.',
+    quitConfirm: 'Quitter le module ? Votre progression est enregistrée.', objectError: "L'activité interactive n'a pas pu se charger. Utilisez la version texte ci-dessous.", objectLoading: 'Chargement de l’activité…', explore: 'Explorez cet écran pour continuer.',
+    chosen: 'Choisi', menuLocked: 'pas encore disponible', completed: 'terminé',
+    colon: ' : ', expectedValue: 'Valeur attendue', numberInvalid: 'Saisissez un nombre, par exemple 12,5.',
+    narration: 'Narration', play: 'Lecture', pause: 'Pause', replayStep: 'Rejouer l’étape', seek: 'Position', captions: 'Sous-titres', speed: 'Vitesse', mute: 'Muet', stopAtSteps: 'M’arrêter à chaque étape', playNarration: 'Écouter l’écran', timelineTime: '{m, plural, =0 {} one {# minute } other {# minutes }}{s, plural, one {# seconde} other {# secondes}}', timelineValue: '{time} sur {total}, étape {step} sur {steps}', listen: 'Écoutez l’écran jusqu’au bout pour continuer.', generatedVoice: 'Voix générée par IA',
+    settings: 'Réglages de lecture', more: 'Plus d’options', stepOf: 'étape {step} sur {steps}', stepHeading: 'Étape {n}', stopAtStepsHint: 'La lecture attend « Continuer » à la fin de chaque étape, même sur les écrans qui avancent seuls.',
+    shortcuts: 'Raccourcis clavier', shortcutPlay: 'Lecture ou pause', shortcutReplay: 'Rejouer l’étape', shortcutCaptions: 'Sous-titres', shortcutSeek: 'Reculer ou avancer de 5 secondes (sur la barre)', shortcutStep: 'Étape précédente ou suivante (sur la barre)', shortcutEnds: 'Début, ou point atteint (sur la barre)', shortcutList: 'Cette liste (sur la barre)', stepEnded: 'Fin de l’étape {n}. Continuez quand vous êtes prêt.', onScreen: 'À l’écran',
+    credits: 'Crédits',
+    progressKept: 'Votre progression reste dans ce navigateur.', clearProgress: 'Effacer ma progression', clearProgressConfirm: 'Effacer votre progression dans ce module et recommencer au début ?', clearProgressYes: 'Effacer', cancel: 'Annuler',
+    resources: 'Ressources', link: 'Lien', aiMark: 'IA', display: 'Affichage', textSize: 'Taille du texte', textNormal: 'Normale', textLarge: 'Grande', textLarger: 'Très grande', largerCaptions: 'Sous-titres plus grands', language: 'Langue', glossary: 'Glossaire', about: 'IA et crédits', aiHeading: 'Intelligence artificielle', generatedImages: 'Images générées par IA', generatedVideos: 'Vidéos générées par IA', generatedAudio: 'Sons générés par IA', download: 'Télécharger', openInTab: 'Ouvrir dans un nouvel onglet', opensInTab: 's’ouvre dans un nouvel onglet', preview: 'Aperçu', previewUnavailable: 'Ce navigateur n’affiche pas l’aperçu : téléchargez le fichier pour le lire.', searchGlossary: 'Rechercher un terme', glossaryCount: '{n, plural, =0 {Aucun terme trouvé} one {# terme} other {# termes}}', volume: 'Volume', unmute: 'Activer le son', normalSpeed: 'normale', firstScreen: 'C’est le premier écran.', lastScreen: 'C’est le dernier écran.', quote: '« {text} »', fileInfo: '{type} · {size}'
+  },
+  en: {
+    skip: 'Skip to content', menu: 'Contents', quit: 'Exit', next: 'Next', previous: 'Previous', continue: 'Continue',
+    progress: 'Progress', screenOf: 'Screen {n} of {total}', locked: 'Complete the activity on this screen to continue.',
+    submit: 'Submit', tryAgain: 'Not quite. {n, plural, one {# attempt left.} other {# attempts left.}}', correct: 'Correct.', incorrect: 'Incorrect.',
+    yourAnswer: 'Your answer', correctAnswer: 'Correct answer', yourScore: 'Your score', status: 'Status',
+    status_passed: 'Passed', status_failed: 'Not passed', status_completed: 'Completed', status_incomplete: 'In progress',
+    retry: 'Retake the assessment', close: 'Close', textVersion: 'Text version', transcript: 'Transcript', pauseAnimation: 'Pause the animation', playAnimation: 'Play the animation',
+    generated: 'AI-generated content', standalone: 'Preview outside an LMS: progress is only kept in this tab.',
+    sessionEnded: 'Your progress is saved. You can close this window.', sessionRestored: 'This page was restored after the session ended: relaunch the course from the platform to continue.',
+    webEndedKept: 'Your progress is saved in this browser. You can close this page.', webEndedNotKept: 'You have left the course. Nothing is saved: you can close this page.',
+    quitConfirm: 'Exit the course? Your progress is saved.', objectError: 'The interactive activity could not load. Use the text version below.', objectLoading: 'Loading the activity…', explore: 'Explore this screen to continue.',
+    chosen: 'Chosen', menuLocked: 'not available yet', completed: 'completed',
+    colon: ': ', expectedValue: 'Expected value', numberInvalid: 'Enter a number, for example 12.5.',
+    narration: 'Narration', play: 'Play', pause: 'Pause', replayStep: 'Replay the step', seek: 'Position', captions: 'Captions', speed: 'Speed', mute: 'Mute', stopAtSteps: 'Stop at each step', playNarration: 'Listen to the screen', timelineTime: '{m, plural, =0 {} one {# minute } other {# minutes }}{s, plural, one {# second} other {# seconds}}', timelineValue: '{time} of {total}, step {step} of {steps}', listen: 'Listen to the screen to the end to continue.', generatedVoice: 'AI-generated voice',
+    settings: 'Playback settings', more: 'More options', stepOf: 'step {step} of {steps}', stepHeading: 'Step {n}', stopAtStepsHint: 'Playback waits for Continue at the end of each step, even on screens that go on by themselves.',
+    shortcuts: 'Keyboard shortcuts', shortcutPlay: 'Play or pause', shortcutReplay: 'Replay the step', shortcutCaptions: 'Captions', shortcutSeek: 'Back or forward 5 seconds (on the bar)', shortcutStep: 'Previous or next step (on the bar)', shortcutEnds: 'Start, or the point reached (on the bar)', shortcutList: 'This list (on the bar)', stepEnded: 'End of step {n}. Continue when you are ready.', onScreen: 'On screen',
+    credits: 'Credits',
+    progressKept: 'Your progress stays in this browser.', clearProgress: 'Clear my progress', clearProgressConfirm: 'Clear your progress in this course and start again from the beginning?', clearProgressYes: 'Clear', cancel: 'Cancel',
+    resources: 'Resources', link: 'Link', aiMark: 'AI', display: 'Display', textSize: 'Text size', textNormal: 'Normal', textLarge: 'Large', textLarger: 'Larger', largerCaptions: 'Larger captions', language: 'Language', glossary: 'Glossary', about: 'AI and credits', aiHeading: 'Artificial intelligence', generatedImages: 'AI-generated images', generatedVideos: 'AI-generated videos', generatedAudio: 'AI-generated sounds', download: 'Download', openInTab: 'Open in a new tab', opensInTab: 'opens in a new tab', preview: 'Preview', previewUnavailable: 'This browser shows no preview: download the file to read it.', searchGlossary: 'Search for a term', glossaryCount: '{n, plural, =0 {No term found} one {# term} other {# terms}}', volume: 'Volume', unmute: 'Unmute', normalSpeed: 'normal', firstScreen: 'This is the first screen.', lastScreen: 'This is the last screen.', quote: '“{text}”', fileInfo: '{type} · {size}'
+  },
+  de: {
+    skip: 'Zum Inhalt springen', menu: 'Inhalt', quit: 'Beenden', next: 'Weiter', previous: 'Zurück', continue: 'Fortfahren',
+    progress: 'Fortschritt', screenOf: 'Seite {n} von {total}', locked: 'Schließen Sie die Aktivität auf dieser Seite ab, um fortzufahren.',
+    submit: 'Bestätigen', tryAgain: 'Noch nicht ganz. {n, plural, one {Sie haben noch # Versuch.} other {Sie haben noch # Versuche.}}', correct: 'Richtig.', incorrect: 'Falsch.',
+    yourAnswer: 'Ihre Antwort', correctAnswer: 'Richtige Antwort', yourScore: 'Ihr Ergebnis', status: 'Status',
+    status_passed: 'Bestanden', status_failed: 'Nicht bestanden', status_completed: 'Abgeschlossen', status_incomplete: 'In Bearbeitung',
+    retry: 'Test wiederholen', close: 'Schließen', textVersion: 'Textversion', transcript: 'Transkript', pauseAnimation: 'Animation anhalten', playAnimation: 'Animation abspielen',
+    generated: 'KI-generierter Inhalt', standalone: 'Vorschau außerhalb einer Lernplattform: Der Fortschritt bleibt nur in diesem Tab gespeichert.',
+    sessionEnded: 'Ihr Fortschritt ist gespeichert. Sie können dieses Fenster schließen.', sessionRestored: 'Diese Seite wurde nach dem Ende der Sitzung wiederhergestellt: Starten Sie den Kurs erneut über die Plattform, um fortzufahren.',
+    webEndedKept: 'Ihr Fortschritt ist in diesem Browser gespeichert. Sie können diese Seite schließen.', webEndedNotKept: 'Sie haben den Kurs verlassen. Nichts wird gespeichert: Sie können diese Seite schließen.',
+    quitConfirm: 'Kurs beenden? Ihr Fortschritt ist gespeichert.', objectError: 'Die interaktive Aktivität konnte nicht geladen werden. Nutzen Sie die Textversion unten.', objectLoading: 'Aktivität wird geladen…', explore: 'Erkunden Sie diese Seite, um fortzufahren.',
+    chosen: 'Gewählt', menuLocked: 'noch nicht verfügbar', completed: 'abgeschlossen',
+    colon: ': ', expectedValue: 'Erwarteter Wert', numberInvalid: 'Geben Sie eine Zahl ein, zum Beispiel 12,5.',
+    narration: 'Sprechertext', play: 'Abspielen', pause: 'Pause', replayStep: 'Schritt wiederholen', seek: 'Position', captions: 'Untertitel', speed: 'Geschwindigkeit', mute: 'Stumm', stopAtSteps: 'Nach jedem Schritt anhalten', playNarration: 'Seite anhören', timelineTime: '{m, plural, =0 {} one {# Minute } other {# Minuten }}{s, plural, one {# Sekunde} other {# Sekunden}}', timelineValue: '{time} von {total}, Schritt {step} von {steps}', listen: 'Hören Sie die Seite bis zum Ende an, um fortzufahren.', generatedVoice: 'KI-generierte Stimme',
+    settings: 'Wiedergabeeinstellungen', more: 'Weitere Optionen', stepOf: 'Schritt {step} von {steps}', stepHeading: 'Schritt {n}', stopAtStepsHint: 'Die Wiedergabe wartet am Ende jedes Schritts auf „Fortfahren“, auch auf Seiten, die von selbst weitergehen.',
+    shortcuts: 'Tastenkürzel', shortcutPlay: 'Abspielen oder Pause', shortcutReplay: 'Schritt wiederholen', shortcutCaptions: 'Untertitel', shortcutSeek: '5 Sekunden zurück oder vor (auf der Leiste)', shortcutStep: 'Vorheriger oder nächster Schritt (auf der Leiste)', shortcutEnds: 'Anfang oder erreichter Punkt (auf der Leiste)', shortcutList: 'Diese Liste (auf der Leiste)', stepEnded: 'Ende von Schritt {n}. Fahren Sie fort, wenn Sie bereit sind.', onScreen: 'Auf dem Bildschirm',
+    credits: 'Nachweise',
+    progressKept: 'Ihr Fortschritt bleibt in diesem Browser.', clearProgress: 'Meinen Fortschritt löschen', clearProgressConfirm: 'Ihren Fortschritt in diesem Modul löschen und von vorne beginnen?', clearProgressYes: 'Löschen', cancel: 'Abbrechen',
+    resources: 'Materialien', link: 'Link', aiMark: 'KI', display: 'Anzeige', textSize: 'Textgröße', textNormal: 'Normal', textLarge: 'Groß', textLarger: 'Sehr groß', largerCaptions: 'Größere Untertitel', language: 'Sprache', glossary: 'Glossar', about: 'KI und Nachweise', aiHeading: 'Künstliche Intelligenz', generatedImages: 'KI-generierte Bilder', generatedVideos: 'KI-generierte Videos', generatedAudio: 'KI-generierte Töne', download: 'Herunterladen', openInTab: 'In neuem Tab öffnen', opensInTab: 'öffnet sich in einem neuen Tab', preview: 'Vorschau', previewUnavailable: 'Dieser Browser zeigt keine Vorschau: Laden Sie die Datei herunter, um sie zu lesen.', searchGlossary: 'Begriff suchen', glossaryCount: '{n, plural, =0 {Kein Begriff gefunden} one {# Begriff} other {# Begriffe}}', volume: 'Lautstärke', unmute: 'Ton einschalten', normalSpeed: 'normal', firstScreen: 'Dies ist die erste Seite.', lastScreen: 'Dies ist die letzte Seite.', quote: '„{text}“', fileInfo: '{type} · {size}'
+  },
+  es: {
+    skip: 'Ir al contenido', menu: 'Índice', quit: 'Salir', next: 'Siguiente', previous: 'Anterior', continue: 'Continuar',
+    progress: 'Progreso', screenOf: 'Pantalla {n} de {total}', locked: 'Completa la actividad de esta pantalla para continuar.',
+    submit: 'Enviar', tryAgain: 'Todavía no. {n, plural, one {Te queda # intento.} other {Te quedan # intentos.}}', correct: 'Correcto.', incorrect: 'Incorrecto.',
+    yourAnswer: 'Tu respuesta', correctAnswer: 'Respuesta correcta', yourScore: 'Tu puntuación', status: 'Estado',
+    status_passed: 'Aprobado', status_failed: 'No aprobado', status_completed: 'Completado', status_incomplete: 'En curso',
+    retry: 'Repetir la evaluación', close: 'Cerrar', textVersion: 'Versión en texto', transcript: 'Transcripción', pauseAnimation: 'Pausar la animación', playAnimation: 'Reproducir la animación',
+    generated: 'Contenido generado por IA', standalone: 'Vista previa fuera de una plataforma: el progreso solo se guarda en esta pestaña.',
+    sessionEnded: 'Tu progreso está guardado. Puedes cerrar esta ventana.', sessionRestored: 'Esta página se restauró después de terminar la sesión: vuelve a abrir el curso desde la plataforma para continuar.',
+    webEndedKept: 'Tu progreso se ha guardado en este navegador. Puedes cerrar esta página.', webEndedNotKept: 'Has salido del curso. No se guarda nada: puedes cerrar esta página.',
+    quitConfirm: '¿Salir del curso? Tu progreso está guardado.', objectError: 'No se pudo cargar la actividad interactiva. Usa la versión en texto de abajo.', objectLoading: 'Cargando la actividad…', explore: 'Explora esta pantalla para continuar.',
+    chosen: 'Elegida', menuLocked: 'aún no disponible', completed: 'completada',
+    colon: ': ', expectedValue: 'Valor esperado', numberInvalid: 'Escribe un número, por ejemplo 12,5.',
+    narration: 'Narración', play: 'Reproducir', pause: 'Pausa', replayStep: 'Repetir el paso', seek: 'Posición', captions: 'Subtítulos', speed: 'Velocidad', mute: 'Silenciar', stopAtSteps: 'Detenerme en cada paso', playNarration: 'Escuchar la pantalla', timelineTime: '{m, plural, =0 {} one {# minuto } other {# minutos }}{s, plural, one {# segundo} other {# segundos}}', timelineValue: '{time} de {total}, paso {step} de {steps}', listen: 'Escucha la pantalla hasta el final para continuar.', generatedVoice: 'Voz generada por IA',
+    settings: 'Ajustes de reproducción', more: 'Más opciones', stepOf: 'paso {step} de {steps}', stepHeading: 'Paso {n}', stopAtStepsHint: 'La reproducción espera «Continuar» al final de cada paso, incluso en las pantallas que avanzan solas.',
+    shortcuts: 'Atajos de teclado', shortcutPlay: 'Reproducir o pausar', shortcutReplay: 'Repetir el paso', shortcutCaptions: 'Subtítulos', shortcutSeek: 'Retroceder o avanzar 5 segundos (en la barra)', shortcutStep: 'Paso anterior o siguiente (en la barra)', shortcutEnds: 'Inicio, o el punto alcanzado (en la barra)', shortcutList: 'Esta lista (en la barra)', stepEnded: 'Fin del paso {n}. Continúa cuando estés listo.', onScreen: 'En pantalla',
+    credits: 'Créditos',
+    progressKept: 'Tu progreso se queda en este navegador.', clearProgress: 'Borrar mi progreso', clearProgressConfirm: '¿Borrar tu progreso en este curso y empezar de nuevo desde el principio?', clearProgressYes: 'Borrar', cancel: 'Cancelar',
+    resources: 'Recursos', link: 'Enlace', aiMark: 'IA', display: 'Visualización', textSize: 'Tamaño del texto', textNormal: 'Normal', textLarge: 'Grande', textLarger: 'Muy grande', largerCaptions: 'Subtítulos más grandes', language: 'Idioma', glossary: 'Glosario', about: 'IA y créditos', aiHeading: 'Inteligencia artificial', generatedImages: 'Imágenes generadas por IA', generatedVideos: 'Vídeos generados por IA', generatedAudio: 'Sonidos generados por IA', download: 'Descargar', openInTab: 'Abrir en una pestaña nueva', opensInTab: 'se abre en una pestaña nueva', preview: 'Vista previa', previewUnavailable: 'Este navegador no muestra la vista previa: descarga el archivo para leerlo.', searchGlossary: 'Buscar un término', glossaryCount: '{n, plural, =0 {Ningún término encontrado} one {# término} other {# términos}}', volume: 'Volumen', unmute: 'Activar el sonido', normalSpeed: 'normal', firstScreen: 'Es la primera pantalla.', lastScreen: 'Es la última pantalla.', quote: '«{text}»', fileInfo: '{type} · {size}'
+  },
+  it: {
+    skip: 'Vai al contenuto', menu: 'Indice', quit: 'Esci', next: 'Avanti', previous: 'Indietro', continue: 'Continua',
+    progress: 'Avanzamento', screenOf: 'Schermata {n} di {total}', locked: 'Completa l’attività di questa schermata per continuare.',
+    submit: 'Conferma', tryAgain: 'Non ancora. {n, plural, one {Ti resta # tentativo.} other {Ti restano # tentativi.}}', correct: 'Corretto.', incorrect: 'Non corretto.',
+    yourAnswer: 'La tua risposta', correctAnswer: 'Risposta corretta', yourScore: 'Il tuo punteggio', status: 'Stato',
+    status_passed: 'Superato', status_failed: 'Non superato', status_completed: 'Completato', status_incomplete: 'In corso',
+    retry: 'Ripeti la verifica', close: 'Chiudi', textVersion: 'Versione testuale', transcript: 'Trascrizione', pauseAnimation: 'Metti in pausa l’animazione', playAnimation: 'Riproduci l’animazione',
+    generated: 'Contenuto generato dall’IA', standalone: 'Anteprima fuori da una piattaforma: i progressi restano solo in questa scheda.',
+    sessionEnded: 'I tuoi progressi sono salvati. Puoi chiudere questa finestra.', sessionRestored: 'Questa pagina è stata ripristinata dopo la fine della sessione: riavvia il corso dalla piattaforma per continuare.',
+    webEndedKept: 'I tuoi progressi sono salvati in questo browser. Puoi chiudere questa pagina.', webEndedNotKept: 'Sei uscito dal corso. Non viene salvato nulla: puoi chiudere questa pagina.',
+    quitConfirm: 'Uscire dal corso? I tuoi progressi sono salvati.', objectError: 'Impossibile caricare l’attività interattiva. Usa la versione testuale qui sotto.', objectLoading: 'Caricamento dell’attività…', explore: 'Esplora questa schermata per continuare.',
+    chosen: 'Scelta', menuLocked: 'non ancora disponibile', completed: 'completato',
+    colon: ': ', expectedValue: 'Valore atteso', numberInvalid: 'Inserisci un numero, ad esempio 12,5.',
+    narration: 'Narrazione', play: 'Riproduci', pause: 'Pausa', replayStep: 'Riascolta il passo', seek: 'Posizione', captions: 'Sottotitoli', speed: 'Velocità', mute: 'Disattiva audio', stopAtSteps: 'Fermati a ogni passo', playNarration: 'Ascolta la schermata', timelineTime: '{m, plural, =0 {} one {# minuto } other {# minuti }}{s, plural, one {# secondo} other {# secondi}}', timelineValue: '{time} di {total}, passo {step} di {steps}', listen: 'Ascolta la schermata fino alla fine per continuare.', generatedVoice: 'Voce generata dall’IA',
+    settings: 'Impostazioni di riproduzione', more: 'Altre opzioni', stepOf: 'passo {step} di {steps}', stepHeading: 'Passo {n}', stopAtStepsHint: 'La riproduzione aspetta «Continua» alla fine di ogni passo, anche nelle schermate che avanzano da sole.',
+    shortcuts: 'Scorciatoie da tastiera', shortcutPlay: 'Riproduci o metti in pausa', shortcutReplay: 'Riascolta il passo', shortcutCaptions: 'Sottotitoli', shortcutSeek: 'Indietro o avanti di 5 secondi (sulla barra)', shortcutStep: 'Passo precedente o successivo (sulla barra)', shortcutEnds: 'Inizio, o il punto raggiunto (sulla barra)', shortcutList: 'Questo elenco (sulla barra)', stepEnded: 'Fine del passo {n}. Continua quando sei pronto.', onScreen: 'Sullo schermo',
+    credits: 'Crediti',
+    progressKept: 'I tuoi progressi restano in questo browser.', clearProgress: 'Cancella i miei progressi', clearProgressConfirm: 'Cancellare i tuoi progressi in questo corso e ricominciare dall’inizio?', clearProgressYes: 'Cancella', cancel: 'Annulla',
+    resources: 'Risorse', link: 'Collegamento', aiMark: 'IA', display: 'Visualizzazione', textSize: 'Dimensione del testo', textNormal: 'Normale', textLarge: 'Grande', textLarger: 'Molto grande', largerCaptions: 'Sottotitoli più grandi', language: 'Lingua', glossary: 'Glossario', about: 'IA e crediti', aiHeading: 'Intelligenza artificiale', generatedImages: 'Immagini generate dall’IA', generatedVideos: 'Video generati dall’IA', generatedAudio: 'Suoni generati dall’IA', download: 'Scarica', openInTab: 'Apri in una nuova scheda', opensInTab: 'si apre in una nuova scheda', preview: 'Anteprima', previewUnavailable: 'Questo browser non mostra l’anteprima: scarica il file per leggerlo.', searchGlossary: 'Cerca un termine', glossaryCount: '{n, plural, =0 {Nessun termine trovato} one {# termine} other {# termini}}', volume: 'Volume', unmute: 'Riattiva l’audio', normalSpeed: 'normale', firstScreen: 'È la prima schermata.', lastScreen: 'È l’ultima schermata.', quote: '«{text}»', fileInfo: '{type} · {size}'
+  },
+  nl: {
+    skip: 'Naar de inhoud', menu: 'Inhoud', quit: 'Afsluiten', next: 'Volgende', previous: 'Vorige', continue: 'Doorgaan',
+    progress: 'Voortgang', screenOf: 'Scherm {n} van {total}', locked: 'Rond de activiteit op dit scherm af om verder te gaan.',
+    submit: 'Bevestigen', tryAgain: 'Nog niet helemaal. {n, plural, one {Je hebt nog # poging.} other {Je hebt nog # pogingen.}}', correct: 'Goed.', incorrect: 'Onjuist.',
+    yourAnswer: 'Je antwoord', correctAnswer: 'Juiste antwoord', yourScore: 'Je score', status: 'Status',
+    status_passed: 'Geslaagd', status_failed: 'Niet geslaagd', status_completed: 'Voltooid', status_incomplete: 'Bezig',
+    retry: 'Toets opnieuw maken', close: 'Sluiten', textVersion: 'Tekstversie', transcript: 'Transcriptie', pauseAnimation: 'Animatie pauzeren', playAnimation: 'Animatie afspelen',
+    generated: 'Door AI gegenereerde inhoud', standalone: 'Voorbeeld buiten een leerplatform: de voortgang wordt alleen in dit tabblad bewaard.',
+    sessionEnded: 'Je voortgang is opgeslagen. Je kunt dit venster sluiten.', sessionRestored: 'Deze pagina is hersteld nadat de sessie was beëindigd: start de cursus opnieuw vanuit het platform om verder te gaan.',
+    webEndedKept: 'Je voortgang is opgeslagen in deze browser. Je kunt deze pagina sluiten.', webEndedNotKept: 'Je hebt de cursus verlaten. Er wordt niets opgeslagen: je kunt deze pagina sluiten.',
+    quitConfirm: 'De cursus afsluiten? Je voortgang is opgeslagen.', objectError: 'De interactieve activiteit kon niet worden geladen. Gebruik de tekstversie hieronder.', objectLoading: 'Activiteit wordt geladen…', explore: 'Verken dit scherm om verder te gaan.',
+    chosen: 'Gekozen', menuLocked: 'nog niet beschikbaar', completed: 'voltooid',
+    colon: ': ', expectedValue: 'Verwachte waarde', numberInvalid: 'Voer een getal in, bijvoorbeeld 12,5.',
+    narration: 'Gesproken tekst', play: 'Afspelen', pause: 'Pauze', replayStep: 'Stap opnieuw afspelen', seek: 'Positie', captions: 'Ondertiteling', speed: 'Snelheid', mute: 'Dempen', stopAtSteps: 'Na elke stap stoppen', playNarration: 'Scherm beluisteren', timelineTime: '{m, plural, =0 {} one {# minuut } other {# minuten }}{s, plural, one {# seconde} other {# seconden}}', timelineValue: '{time} van {total}, stap {step} van {steps}', listen: 'Luister het scherm helemaal af om verder te gaan.', generatedVoice: 'Door AI gegenereerde stem',
+    settings: 'Afspeelinstellingen', more: 'Meer opties', stepOf: 'stap {step} van {steps}', stepHeading: 'Stap {n}', stopAtStepsHint: 'Het afspelen wacht aan het eind van elke stap op ‘Doorgaan’, ook op schermen die vanzelf verdergaan.',
+    shortcuts: 'Sneltoetsen', shortcutPlay: 'Afspelen of pauzeren', shortcutReplay: 'Stap opnieuw afspelen', shortcutCaptions: 'Ondertiteling', shortcutSeek: '5 seconden terug of vooruit (op de balk)', shortcutStep: 'Vorige of volgende stap (op de balk)', shortcutEnds: 'Begin, of het bereikte punt (op de balk)', shortcutList: 'Deze lijst (op de balk)', stepEnded: 'Einde van stap {n}. Ga verder wanneer je klaar bent.', onScreen: 'Op het scherm',
+    credits: 'Credits',
+    progressKept: 'Je voortgang blijft in deze browser.', clearProgress: 'Mijn voortgang wissen', clearProgressConfirm: 'Je voortgang in deze cursus wissen en opnieuw beginnen?', clearProgressYes: 'Wissen', cancel: 'Annuleren',
+    resources: 'Bronnen', link: 'Link', aiMark: 'AI', display: 'Weergave', textSize: 'Tekstgrootte', textNormal: 'Normaal', textLarge: 'Groot', textLarger: 'Heel groot', largerCaptions: 'Grotere ondertitels', language: 'Taal', glossary: 'Woordenlijst', about: 'AI en credits', aiHeading: 'Kunstmatige intelligentie', generatedImages: 'Door AI gegenereerde afbeeldingen', generatedVideos: 'Door AI gegenereerde video’s', generatedAudio: 'Door AI gegenereerde geluiden', download: 'Downloaden', openInTab: 'Openen in een nieuw tabblad', opensInTab: 'opent in een nieuw tabblad', preview: 'Voorbeeld', previewUnavailable: 'Deze browser toont geen voorbeeld: download het bestand om het te lezen.', searchGlossary: 'Zoek een term', glossaryCount: '{n, plural, =0 {Geen term gevonden} one {# term} other {# termen}}', volume: 'Volume', unmute: 'Geluid aan', normalSpeed: 'normaal', firstScreen: 'Dit is het eerste scherm.', lastScreen: 'Dit is het laatste scherm.', quote: '‘{text}’', fileInfo: '{type} · {size}'
+  },
+  pt: {
+    skip: 'Ir para o conteúdo', menu: 'Índice', quit: 'Sair', next: 'Avançar', previous: 'Voltar', continue: 'Continuar',
+    progress: 'Progresso', screenOf: 'Página {n} de {total}', locked: 'Conclua a atividade desta página para continuar.',
+    submit: 'Enviar', tryAgain: 'Ainda não. {n, plural, one {Resta # tentativa.} other {Restam # tentativas.}}', correct: 'Correto.', incorrect: 'Incorreto.',
+    yourAnswer: 'Sua resposta', correctAnswer: 'Resposta correta', yourScore: 'Sua pontuação', status: 'Situação',
+    status_passed: 'Aprovado', status_failed: 'Não aprovado', status_completed: 'Concluído', status_incomplete: 'Em andamento',
+    retry: 'Refazer a avaliação', close: 'Fechar', textVersion: 'Versão em texto', transcript: 'Transcrição', pauseAnimation: 'Pausar a animação', playAnimation: 'Reproduzir a animação',
+    generated: 'Conteúdo gerado por IA', standalone: 'Pré-visualização fora de uma plataforma: o progresso fica salvo apenas nesta aba.',
+    sessionEnded: 'Seu progresso está salvo. Você pode fechar esta janela.', sessionRestored: 'Esta página foi restaurada depois do fim da sessão: abra o curso novamente pela plataforma para continuar.',
+    webEndedKept: 'O seu progresso foi guardado neste navegador. Pode fechar esta página.', webEndedNotKept: 'Saiu do curso. Nada é guardado: pode fechar esta página.',
+    quitConfirm: 'Sair do curso? Seu progresso está salvo.', objectError: 'Não foi possível carregar a atividade interativa. Use a versão em texto abaixo.', objectLoading: 'Carregando a atividade…', explore: 'Explore esta página para continuar.',
+    chosen: 'Escolhida', menuLocked: 'ainda não disponível', completed: 'concluído',
+    colon: ': ', expectedValue: 'Valor esperado', numberInvalid: 'Digite um número, por exemplo 12,5.',
+    narration: 'Narração', play: 'Reproduzir', pause: 'Pausar', replayStep: 'Repetir a etapa', seek: 'Posição', captions: 'Legendas', speed: 'Velocidade', mute: 'Silenciar', stopAtSteps: 'Parar a cada etapa', playNarration: 'Ouvir a tela', timelineTime: '{m, plural, =0 {} one {# minuto } other {# minutos }}{s, plural, one {# segundo} other {# segundos}}', timelineValue: '{time} de {total}, etapa {step} de {steps}', listen: 'Ouça a tela até o fim para continuar.', generatedVoice: 'Voz gerada por IA',
+    settings: 'Configurações de reprodução', more: 'Mais opções', stepOf: 'etapa {step} de {steps}', stepHeading: 'Etapa {n}', stopAtStepsHint: 'A reprodução espera «Continuar» no fim de cada etapa, mesmo nas telas que avançam sozinhas.',
+    shortcuts: 'Atalhos de teclado', shortcutPlay: 'Reproduzir ou pausar', shortcutReplay: 'Repetir a etapa', shortcutCaptions: 'Legendas', shortcutSeek: 'Voltar ou avançar 5 segundos (na barra)', shortcutStep: 'Etapa anterior ou seguinte (na barra)', shortcutEnds: 'Início, ou o ponto alcançado (na barra)', shortcutList: 'Esta lista (na barra)', stepEnded: 'Fim da etapa {n}. Continue quando estiver pronto.', onScreen: 'Na tela',
+    credits: 'Créditos',
+    progressKept: 'O seu progresso fica neste navegador.', clearProgress: 'Apagar o meu progresso', clearProgressConfirm: 'Apagar o seu progresso neste curso e recomeçar do início?', clearProgressYes: 'Apagar', cancel: 'Cancelar',
+    resources: 'Recursos', link: 'Ligação', aiMark: 'IA', display: 'Exibição', textSize: 'Tamanho do texto', textNormal: 'Normal', textLarge: 'Grande', textLarger: 'Muito grande', largerCaptions: 'Legendas maiores', language: 'Idioma', glossary: 'Glossário', about: 'IA e créditos', aiHeading: 'Inteligência artificial', generatedImages: 'Imagens geradas por IA', generatedVideos: 'Vídeos gerados por IA', generatedAudio: 'Sons gerados por IA', download: 'Baixar', openInTab: 'Abrir em uma nova aba', opensInTab: 'abre em uma nova aba', preview: 'Pré-visualização', previewUnavailable: 'Este navegador não mostra a pré-visualização: baixe o arquivo para lê-lo.', searchGlossary: 'Buscar um termo', glossaryCount: '{n, plural, =0 {Nenhum termo encontrado} one {# termo} other {# termos}}', volume: 'Volume', unmute: 'Ativar o som', normalSpeed: 'normal', firstScreen: 'Esta é a primeira página.', lastScreen: 'Esta é a última página.', quote: '“{text}”', fileInfo: '{type} · {size}'
+  }
+};
+
+// In scroll presentation a screen is a page: the labels that name it say so.
+const PAGE_LABELS: Readonly<Record<string, Readonly<Partial<Record<keyof typeof LABELS.en, string>>>>> = {
+  fr: { screenOf: 'Page {n} sur {total}', locked: "Terminez l'activité de cette page pour continuer.", explore: 'Parcourez cette page pour continuer.', firstScreen: 'C’est la première page.', lastScreen: 'C’est la dernière page.' },
+  en: { screenOf: 'Page {n} of {total}', locked: 'Complete the activity on this page to continue.', explore: 'Explore this page to continue.', firstScreen: 'This is the first page.', lastScreen: 'This is the last page.' },
+  de: { screenOf: 'Seite {n} von {total}', locked: 'Schließen Sie die Aktivität auf dieser Seite ab, um fortzufahren.', explore: 'Erkunden Sie diese Seite, um fortzufahren.', firstScreen: 'Dies ist die erste Seite.', lastScreen: 'Dies ist die letzte Seite.' },
+  es: { screenOf: 'Página {n} de {total}', locked: 'Completa la actividad de esta página para continuar.', explore: 'Explora esta página para continuar.', firstScreen: 'Es la primera página.', lastScreen: 'Es la última página.' },
+  it: { screenOf: 'Pagina {n} di {total}', locked: 'Completa l’attività di questa pagina per continuare.', explore: 'Esplora questa pagina per continuare.', firstScreen: 'È la prima pagina.', lastScreen: 'È l’ultima pagina.' },
+  nl: { screenOf: 'Pagina {n} van {total}', locked: 'Rond de activiteit op deze pagina af om verder te gaan.', explore: 'Verken deze pagina om verder te gaan.', firstScreen: 'Dit is de eerste pagina.', lastScreen: 'Dit is de laatste pagina.' },
+  pt: { screenOf: 'Página {n} de {total}', locked: 'Conclua a atividade desta página para continuar.', explore: 'Explore esta página para continuar.', firstScreen: 'Esta é a primeira página.', lastScreen: 'Esta é a última página.' }
+};
+
+export type LabelKey = keyof typeof LABELS.en;
+
+// Every label of the player, and the labels a template asks for by id (data-t-label), which may
+// not exist.
+export type Labels = Readonly<Record<LabelKey, string>> & { readonly [label: string]: string | undefined };
+
+// Every language gives every label.
+const BY_LANGUAGE: Readonly<Record<string, Readonly<Record<LabelKey, string>>>> = LABELS;
+
+// The labels of a course: its language (English for others), the page wording in scroll
+// presentation, then the course's own (course.ui).
+export function labelsFor(language: string, overrides: Readonly<Record<string, string>> = {}, presentation: string = 'slides'): Labels {
+  const code = (language || 'en').slice(0, 2);
+  const base = BY_LANGUAGE[code] || LABELS.en;
+  const pages = presentation === 'scroll' ? PAGE_LABELS[BY_LANGUAGE[code] ? code : 'en'] : {};
+  return { ...LABELS.en, ...base, ...pages, ...overrides };
+}
+
+export const labelKeys = (): string[] => Object.keys(LABELS.en);
+
+export const labelLanguages = (): string[] => Object.keys(LABELS);
+
+// A label with its values ({n}, plurals), in the course language.
+export function formatLabel(label: string, values: Readonly<Record<string, unknown>>, locale = 'en'): string {
+  return formatMessage(label, values, locale);
+}

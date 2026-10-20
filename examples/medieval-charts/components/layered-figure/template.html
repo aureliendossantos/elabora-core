@@ -1,0 +1,8 @@
+<figure class="mc-layers mc-layers--{{size}} mc-layers--still-{{still}}">
+  <div class="mc-layers-stage" style="--ratio: {{ratio}}">
+    <img class="mc-layers-base mc-reveal--{{baseReveal}}" src="{{base}}" alt="{{alt}}">
+    <img data-each="layers" class="mc-layers-layer mc-reveal--{{reveal}}" src="{{asset}}" alt="">
+    <span data-each="labels" class="mc-layers-label mc-layers-label--{{tone}}" style="--x: {{x}}; --y: {{y}}; --angle: {{angle}}">{{text}}</span>
+  </div>
+  <figcaption class="mc-layers-caption" data-if="caption">{{caption | inline}}</figcaption>
+</figure>

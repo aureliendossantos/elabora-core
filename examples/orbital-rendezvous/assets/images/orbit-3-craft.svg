@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" width="520" height="520">
+<defs>
+  <marker id="oc-a3" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#B9A7FF"/></marker>
+</defs>
+<circle cx="260" cy="260" r="226" fill="none" stroke="#B9A7FF" stroke-opacity=".35" stroke-width="1.2" stroke-dasharray="2 5"/>
+<line x1="399.1" y1="438.1" x2="420" y2="421.8" stroke="#B9A7FF" stroke-width="2.6" marker-end="url(#oc-a3)"/>
+<circle cx="399.1" cy="438.1" r="5.5" fill="#B9A7FF" stroke="#060A16" stroke-width="2"/>
+</svg>

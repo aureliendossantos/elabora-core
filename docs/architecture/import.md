@@ -1,0 +1,21 @@
+# Importing Storyline and Rise modules
+
+How Storyline 360 and Rise 360 modules are read into one model and converted into Elabora modules, with a report of every loss (beta, D47). Part of the [architecture](../architecture.md), the contract every change follows.
+
+A module made with Storyline 360 or Rise 360 becomes an Elabora module: its blocks, layers, events and variables, its media copied, a draft plan, and its report. Elabora never traces a slide: it reads it (decision D47).
+
+| Part | Role |
+|---|---|
+| `@elabora/core` `import/model.ts` | One model for every source: sections of pages, items in the source's terms (a text with its fonts and size, an image, a question…, or a `fallback` or `unsupported` feature), boxes on a slide, start times, hidden items, layers, triggers with conditions and actions, variables |
+| `import/storyline-source.ts` | The `.story` (an OPC package of XML parts): `story/story.xml` (scenes, variables, quizzes, the media registry, matched to `story/media/` by MD5, else by size), each slide part (`loc` boxes, `zOrder`, plain and `Document` texts, pictures, buttons, questions and their `scoreData`, layers and feedback layers, `trigLst` triggers and `trigCond` conditions) |
+| `import/storyline-published.ts` | A publication's `html5/data/js/` (`parseProvidedData`: the `globalProvideData` wrapping): `data.js` (scenes, slides, variables, questions with their right answers, assets), `frame.js` (scene titles, notes), each slide (layers, objects with their boxes, `vartext` as HTML or blocks of spans, `imagelib`, events and action groups, the timeline's show times); the player's own triggers and variables left out |
+| `import/rise.ts` | A Rise export's course JSON (`findRiseCourse`: the four ways it is embedded; `readRiseLocale`), its lessons, sections, blocks and quiz lessons; media found by their crushed key, src or key |
+| `import/layout.ts` | A slide's reading order: a recursive XY cut (bands, then columns), or the author's focus order when a reader gives one; its visual title; its backgrounds |
+| `import/convert.ts` | The model as files (`course.json`, `plan.json`, `screens/*.json`), the media to copy, the vetted fonts to add, and the report; `choices` take the report's decisions otherwise |
+| `import/report.ts` | The report's shape (`elabora-import-report/1`) and words, in French or English |
+| `@elabora/node` `import/source.ts` | A ZIP (`ZipReader`) or a folder read alike: paths, small texts read whole, media copied by streams and hashed in chunks; nothing outside the source is reachable |
+| `import/index.ts` | `detectImport(file)` (by content: `story/story.xml`, `html5/data/js/data.js`, a Rise player page; an Elabora archive or folder told apart), `importCourse({ file, dir?, … })`: the module written into `dir`, or built in the library's staging folder and moved into place, its fonts added as `elabora font add` does (journaled `add_font` changes), `import-report.json`, then validated; `brief` and `defaultLanguage` (the app's « Nouveau module », D51), `replace: <project id>` (imported again in its place, history and sources kept, `replaceWithStaged`) |
+
+- **Inputs**: a `.story`; a publication, a folder or its zip (the course may sit in a folder of the zip), or its `story.html`; a Rise export, web, SCORM or xAPI, zipped or not. A Storyline block inside a Rise export is reported, not imported.
+- **What is never taken**: Articulate's code, media whose original path is in Articulate's folders (the Content Library, its textures) and Storyline characters (a note marks the place), the source's font files (fonts without a web licence Elabora knows become vetted fonts, a decision per family), the author's JavaScript.
+- **The CLI**: `elabora import <file> [dir] [--title] [--id] [--lang] [--choose <decision>=<choice>,…] [--json]`. No MCP tool: the MCP server works on one course and importing makes another; agents run the command. The app calls `importCourse` from « Nouveau module » and shows the report (its sentence, its decisions with their choices; `choices` runs it again).

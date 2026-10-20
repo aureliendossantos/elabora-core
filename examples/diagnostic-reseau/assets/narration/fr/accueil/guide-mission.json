@@ -1,0 +1,159 @@
+{
+  "screen": "accueil",
+  "line": "guide-mission",
+  "language": "fr",
+  "textHash": "sha256:6dec27f31c04ce3764289168064a6d01a288ea50c19c69eeb56d470835290392",
+  "duration": 6.881,
+  "provider": "pocket-tts",
+  "voice": "claire",
+  "generated": true,
+  "audioHash": "sha256:2a7601c5791d962de7032f54fe5ddb2a7060ca9cac6870cc0dddec034c49440e",
+  "createdAt": "2026-10-08T20:20:38Z",
+  "take": 1,
+  "spokenHash": "sha256:6dec27f31c04ce3764289168064a6d01a288ea50c19c69eeb56d470835290392",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Claire » d’après un enregistrement du corpus CML-TTS (Frederico S. Oliveira, Edresson Casanova, Arnaldo Candido Junior, Anderson S. Soares, Arlindo R. Galvão Filho ; CEIA, Université fédérale de Goiás), https://openslr.org/146/, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/) ; enregistrement nettoyé par Kyutai, puis transformé en voix de synthèse.",
+  "model": "pocket-tts/french_24l@d29db79",
+  "text": "Vous prenez en charge cet appel. Avant d'intervenir sur un équipement, repérez le trajet de la demande et choisissez les vérifications utiles.",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Vous",
+      "start": 0.06,
+      "end": 0.201,
+      "score": 0.977
+    },
+    {
+      "text": "prenez",
+      "start": 0.201,
+      "end": 0.455,
+      "score": 1
+    },
+    {
+      "text": "en",
+      "start": 0.461,
+      "end": 0.542,
+      "score": 1
+    },
+    {
+      "text": "charge",
+      "start": 0.542,
+      "end": 0.836,
+      "score": 0.984
+    },
+    {
+      "text": "cet",
+      "start": 0.843,
+      "end": 1.003,
+      "score": 0.999
+    },
+    {
+      "text": "appel",
+      "start": 1.003,
+      "end": 1.338,
+      "score": 0.954
+    },
+    {
+      "text": "Avant",
+      "start": 1.785,
+      "end": 1.986,
+      "score": 0.94
+    },
+    {
+      "text": "d'",
+      "start": 1.986,
+      "end": 2.046,
+      "score": 0.606
+    },
+    {
+      "text": "intervenir",
+      "start": 2.046,
+      "end": 2.501,
+      "score": 0.991
+    },
+    {
+      "text": "sur",
+      "start": 2.508,
+      "end": 2.662,
+      "score": 0.953
+    },
+    {
+      "text": "un",
+      "start": 2.668,
+      "end": 2.762,
+      "score": 1
+    },
+    {
+      "text": "équipement",
+      "start": 2.788,
+      "end": 3.244,
+      "score": 0.964
+    },
+    {
+      "text": "repérez",
+      "start": 3.671,
+      "end": 4.046,
+      "score": 0.96
+    },
+    {
+      "text": "le",
+      "start": 4.052,
+      "end": 4.133,
+      "score": 1
+    },
+    {
+      "text": "trajet",
+      "start": 4.133,
+      "end": 4.393,
+      "score": 0.985
+    },
+    {
+      "text": "de",
+      "start": 4.393,
+      "end": 4.454,
+      "score": 1
+    },
+    {
+      "text": "la",
+      "start": 4.454,
+      "end": 4.554,
+      "score": 1
+    },
+    {
+      "text": "demande",
+      "start": 4.554,
+      "end": 4.929,
+      "score": 1
+    },
+    {
+      "text": "et",
+      "start": 5.216,
+      "end": 5.316,
+      "score": 1
+    },
+    {
+      "text": "choisissez",
+      "start": 5.316,
+      "end": 5.778,
+      "score": 0.994
+    },
+    {
+      "text": "les",
+      "start": 5.778,
+      "end": 5.878,
+      "score": 0.998
+    },
+    {
+      "text": "vérifications",
+      "start": 5.878,
+      "end": 6.453,
+      "score": 0.989
+    },
+    {
+      "text": "utiles",
+      "start": 6.48,
+      "end": 6.815,
+      "score": 1
+    }
+  ]
+}

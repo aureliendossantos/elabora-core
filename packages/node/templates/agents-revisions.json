@@ -1,0 +1,50 @@
+{
+  "$comment": "Every version of templates/course/AGENTS.md (the rules for agents a course is given), oldest first: its revision, the first 16 hex digits of the SHA-256 of its text, its date. The last is the current template. npm run gen appends a revision when the template changes (scripts/gen-agent-rules.ts); never edit or remove one: a course whose AGENTS.md is one of them was not edited, and Elabora updates it (docs/decisions.md D34).",
+  "revisions": [
+    {
+      "revision": 1,
+      "sha": "40295d1969acb424",
+      "date": "2026-10-13"
+    },
+    {
+      "revision": 2,
+      "sha": "b35028027808683b",
+      "date": "2026-10-15"
+    },
+    {
+      "revision": 3,
+      "sha": "afcf2d092c0049b7",
+      "date": "2026-10-15"
+    },
+    {
+      "revision": 4,
+      "sha": "b4f437aba985562f",
+      "date": "2026-10-16"
+    },
+    {
+      "revision": 5,
+      "sha": "12cd5a05c8253f54",
+      "date": "2026-10-16"
+    },
+    {
+      "revision": 6,
+      "sha": "9f29badf87179179",
+      "date": "2026-10-17"
+    },
+    {
+      "revision": 7,
+      "sha": "e0aba7ef27e29d2a",
+      "date": "2026-10-17"
+    },
+    {
+      "revision": 8,
+      "sha": "8eab71e78483cce9",
+      "date": "2026-10-18"
+    },
+    {
+      "revision": 9,
+      "sha": "40999d0521960c5e",
+      "date": "2026-10-19"
+    }
+  ]
+}

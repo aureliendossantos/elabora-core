@@ -1,0 +1,34 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "diagnostic-reseau",
+  "title": "Diagnostiquer une panne d'impression réseau",
+  "description": "Module de 15 minutes pour les techniciens support de niveau 1 : suivre le chemin des paquets pour trouver l'équipement en panne.",
+  "language": "fr",
+  "version": "1.0.0",
+  "durationMinutes": 15,
+  "sections": [
+    { "id": "decouvrir", "title": "Découvrir", "screens": ["accueil", "chemin"] },
+    { "id": "pratiquer", "title": "Pratiquer", "screens": ["premier-reflexe", "simulation"] },
+    { "id": "valider", "title": "Valider", "screens": ["evaluation", "bilan"] }
+  ],
+  "variables": [
+    { "id": "bonsReflexes", "type": "number", "default": 0, "minimum": 0, "maximum": 10, "description": "Nombre de bons réflexes choisis dans le scénario." },
+    { "id": "indiceVu", "type": "boolean", "default": false, "description": "L'apprenant a eu besoin d'un indice dans la simulation." }
+  ],
+  "theme": {
+    "tokens": {
+      "color.primary": "#12355B",
+      "color.onPrimary": "#FFFFFF",
+      "color.accent": "#C2410C",
+      "color.surface": "#FFFFFF",
+      "color.text": "#1F2933",
+      "color.muted": "#52606D",
+      "color.focus": "#2563EB",
+      "radius": 8
+    }
+  },
+  "navigation": { "mode": "linear", "lockUntilComplete": true },
+  "completion": { "reportAs": "passed-incomplete", "masteryScore": 70 },
+  "tracking": { "exitAfterCompletion": "suspend", "recordInteractions": true, "heartbeatSeconds": 60 }
+}

@@ -1,0 +1,215 @@
+{
+  "note": "The voices of Pocket TTS, kept by hand: each recording pinned by URL and SHA-256, its licence and the credit modules give it. scripts/pocket-voices.ts makes voices.json and the embeddings from it (docs/decisions.md D25).",
+  "voices": [
+    {
+      "id": "estelle",
+      "name": "Estelle",
+      "language": "fr",
+      "gender": "female",
+      "description": {
+        "fr": "femme, voix aiguë, débit naturel",
+        "en": "woman, high voice, natural pace"
+      },
+      "licence": "CC0-1.0",
+      "source": "Kyutai, enregistrement de l’équipe publié en CC0 (kyutai/tts-voices, unmute-prod-website)",
+      "credit": {
+        "fr": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Estelle » d’après un enregistrement de Kyutai (CC0), https://huggingface.co/kyutai/tts-voices.",
+        "en": "Synthetic voice: Kyutai’s Pocket TTS (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), in KevinAHM’s ONNX conversion. Voice “Estelle” from a recording by Kyutai (CC0), https://huggingface.co/kyutai/tts-voices."
+      },
+      "bundle": "french_24l",
+      "recording": {
+        "url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/unmute-prod-website/developpeuse-3.wav",
+        "sha256": "d14dc373ead723bc818d8970d271b876aa02833673cabd97aea859444a8cdc3a"
+      }
+    },
+    {
+      "id": "claire",
+      "name": "Claire",
+      "language": "fr",
+      "gender": "female",
+      "description": {
+        "fr": "femme, voix médium, débit vif",
+        "en": "woman, mid voice, brisk pace"
+      },
+      "licence": "CC-BY-4.0",
+      "source": "lecteur du corpus CML-TTS (LibriVox), CC-BY 4.0 (kyutai/tts-voices, cml-tts/fr)",
+      "credit": {
+        "fr": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Claire » d’après un enregistrement du corpus CML-TTS (Frederico S. Oliveira, Edresson Casanova, Arnaldo Candido Junior, Anderson S. Soares, Arlindo R. Galvão Filho ; CEIA, Université fédérale de Goiás), https://openslr.org/146/, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/) ; enregistrement nettoyé par Kyutai, puis transformé en voix de synthèse.",
+        "en": "Synthetic voice: Kyutai’s Pocket TTS (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), in KevinAHM’s ONNX conversion. Voice “Claire” from a recording of the CML-TTS corpus (Frederico S. Oliveira, Edresson Casanova, Arnaldo Candido Junior, Anderson S. Soares, Arlindo R. Galvão Filho; CEIA, Federal University of Goiás), https://openslr.org/146/, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/); the recording cleaned by Kyutai, then made into a synthetic voice."
+      },
+      "bundle": "french_24l",
+      "recording": {
+        "url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/cml-tts/fr/2465_1943_000152-0002_enhanced.wav",
+        "sha256": "edddf5c6c9a8a80c21fa755e5111d1341adc0e26a010afa10f920aa5cff80810"
+      }
+    },
+    {
+      "id": "henri",
+      "name": "Henri",
+      "language": "fr",
+      "gender": "male",
+      "description": {
+        "fr": "homme, voix claire, débit naturel",
+        "en": "man, light voice, natural pace"
+      },
+      "licence": "CC0-1.0",
+      "source": "Kyutai, enregistrement de l’équipe publié en CC0 (kyutai/tts-voices, unmute-prod-website)",
+      "credit": {
+        "fr": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Henri » d’après un enregistrement de Kyutai (CC0), https://huggingface.co/kyutai/tts-voices.",
+        "en": "Synthetic voice: Kyutai’s Pocket TTS (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), in KevinAHM’s ONNX conversion. Voice “Henri” from a recording by Kyutai (CC0), https://huggingface.co/kyutai/tts-voices."
+      },
+      "bundle": "french_24l",
+      "recording": {
+        "url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/unmute-prod-website/fabieng-enhanced-v2.wav",
+        "sha256": "582d2d93dfdceb439eeb8d59751f6635f0cb63532229811a59e603a1cffeb4a1"
+      }
+    },
+    {
+      "id": "remy",
+      "name": "Rémy",
+      "language": "fr",
+      "gender": "male",
+      "description": {
+        "fr": "homme, voix médium, débit vif",
+        "en": "man, mid voice, brisk pace"
+      },
+      "licence": "CC0-1.0",
+      "source": "don de voix au projet Unmute de Kyutai, pour la synthèse vocale, CC0 (kyutai/tts-voices, voice-donations)",
+      "credit": {
+        "fr": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Rémy » d’après un enregistrement donné au projet Unmute de Kyutai (CC0), https://huggingface.co/kyutai/tts-voices.",
+        "en": "Synthetic voice: Kyutai’s Pocket TTS (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), in KevinAHM’s ONNX conversion. Voice “Rémy” from a recording donated to Kyutai’s Unmute project (CC0), https://huggingface.co/kyutai/tts-voices."
+      },
+      "bundle": "french_24l",
+      "recording": {
+        "url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/2181_enhanced.wav",
+        "sha256": "d97bf4947a527b4210f7c32dc69975416189bd74dd6706d2b04b515b2295c121"
+      }
+    },
+    {
+      "id": "jerome",
+      "name": "Jérôme",
+      "language": "fr",
+      "gender": "male",
+      "description": {
+        "fr": "homme, voix médium, débit vif",
+        "en": "man, mid voice, brisk pace"
+      },
+      "licence": "CC0-1.0",
+      "source": "don de voix au projet Unmute de Kyutai, pour la synthèse vocale, CC0 (kyutai/tts-voices, voice-donations)",
+      "credit": {
+        "fr": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Jérôme » d’après un enregistrement donné au projet Unmute de Kyutai (CC0), https://huggingface.co/kyutai/tts-voices.",
+        "en": "Synthetic voice: Kyutai’s Pocket TTS (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), in KevinAHM’s ONNX conversion. Voice “Jérôme” from a recording donated to Kyutai’s Unmute project (CC0), https://huggingface.co/kyutai/tts-voices."
+      },
+      "bundle": "french_24l",
+      "recording": {
+        "url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/Karti_enhanced.wav",
+        "sha256": "28273ad54f4b4f718685dcd5c9b3efb28b3998707842fa68a25e579b685f2c2c"
+      }
+    },
+    {
+      "id": "grace",
+      "name": "Grace",
+      "language": "en",
+      "gender": "female",
+      "description": {
+        "fr": "femme, voix médium, débit naturel",
+        "en": "woman, mid voice, natural pace"
+      },
+      "licence": "CC0-1.0",
+      "source": "don de voix au projet Unmute de Kyutai, pour la synthèse vocale, CC0 (kyutai/tts-voices, voice-donations)",
+      "credit": {
+        "fr": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Grace » d’après un enregistrement donné au projet Unmute de Kyutai (CC0), https://huggingface.co/kyutai/tts-voices.",
+        "en": "Synthetic voice: Kyutai’s Pocket TTS (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), in KevinAHM’s ONNX conversion. Voice “Grace” from a recording donated to Kyutai’s Unmute project (CC0), https://huggingface.co/kyutai/tts-voices."
+      },
+      "bundle": "english_2026-04",
+      "recording": {
+        "url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/4b70_enhanced.wav",
+        "sha256": "0e8f632268790dba4df10d814ae4324a731e9baa701191c73b2e30abd99b891b"
+      }
+    },
+    {
+      "id": "nora",
+      "name": "Nora",
+      "language": "en",
+      "gender": "female",
+      "description": {
+        "fr": "femme, voix médium, débit naturel",
+        "en": "woman, mid voice, natural pace"
+      },
+      "licence": "CC0-1.0",
+      "source": "don de voix au projet Unmute de Kyutai, pour la synthèse vocale, CC0 (kyutai/tts-voices, voice-donations)",
+      "credit": {
+        "fr": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Nora » d’après un enregistrement donné au projet Unmute de Kyutai (CC0), https://huggingface.co/kyutai/tts-voices.",
+        "en": "Synthetic voice: Kyutai’s Pocket TTS (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), in KevinAHM’s ONNX conversion. Voice “Nora” from a recording donated to Kyutai’s Unmute project (CC0), https://huggingface.co/kyutai/tts-voices."
+      },
+      "bundle": "english_2026-04",
+      "recording": {
+        "url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/3973_enhanced.wav",
+        "sha256": "694eacb2d4201356f85c968da305ee931e04dc46804a1bbec70aca3184c755db"
+      }
+    },
+    {
+      "id": "iris",
+      "name": "Iris",
+      "language": "en",
+      "gender": "female",
+      "description": {
+        "fr": "femme, voix aiguë, débit naturel",
+        "en": "woman, high voice, natural pace"
+      },
+      "licence": "CC0-1.0",
+      "source": "don de voix au projet Unmute de Kyutai, pour la synthèse vocale, CC0 (kyutai/tts-voices, voice-donations)",
+      "credit": {
+        "fr": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Iris » d’après un enregistrement donné au projet Unmute de Kyutai (CC0), https://huggingface.co/kyutai/tts-voices.",
+        "en": "Synthetic voice: Kyutai’s Pocket TTS (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), in KevinAHM’s ONNX conversion. Voice “Iris” from a recording donated to Kyutai’s Unmute project (CC0), https://huggingface.co/kyutai/tts-voices."
+      },
+      "bundle": "english_2026-04",
+      "recording": {
+        "url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/erihppas_enhanced.wav",
+        "sha256": "11cce21262e896082aaeff5b7a0e18408f20768bc6fb68d51cb460cb8a2a0f75"
+      }
+    },
+    {
+      "id": "owen",
+      "name": "Owen",
+      "language": "en",
+      "gender": "male",
+      "description": {
+        "fr": "homme, voix grave, débit vif",
+        "en": "man, low voice, brisk pace"
+      },
+      "licence": "CC0-1.0",
+      "source": "don de voix au projet Unmute de Kyutai, pour la synthèse vocale, CC0 (kyutai/tts-voices, voice-donations)",
+      "credit": {
+        "fr": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Owen » d’après un enregistrement donné au projet Unmute de Kyutai (CC0), https://huggingface.co/kyutai/tts-voices.",
+        "en": "Synthetic voice: Kyutai’s Pocket TTS (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), in KevinAHM’s ONNX conversion. Voice “Owen” from a recording donated to Kyutai’s Unmute project (CC0), https://huggingface.co/kyutai/tts-voices."
+      },
+      "bundle": "english_2026-04",
+      "recording": {
+        "url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/Curlinvictus_enhanced.wav",
+        "sha256": "14bbee01e0454ef55401efafdc03b73fcd5b41a85b496780de1ee7490a888211"
+      }
+    },
+    {
+      "id": "felix",
+      "name": "Felix",
+      "language": "en",
+      "gender": "male",
+      "description": {
+        "fr": "homme, voix claire, débit naturel",
+        "en": "man, light voice, natural pace"
+      },
+      "licence": "CC0-1.0",
+      "source": "don de voix au projet Unmute de Kyutai, pour la synthèse vocale, CC0 (kyutai/tts-voices, voice-donations)",
+      "credit": {
+        "fr": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Felix » d’après un enregistrement donné au projet Unmute de Kyutai (CC0), https://huggingface.co/kyutai/tts-voices.",
+        "en": "Synthetic voice: Kyutai’s Pocket TTS (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), in KevinAHM’s ONNX conversion. Voice “Felix” from a recording donated to Kyutai’s Unmute project (CC0), https://huggingface.co/kyutai/tts-voices."
+      },
+      "bundle": "english_2026-04",
+      "recording": {
+        "url": "https://huggingface.co/kyutai/tts-voices/resolve/323332d33f997de8394f24a193e1a76df720e01a/voice-donations/Arjun_Z_enhanced.wav",
+        "sha256": "73b0266c6a463b8e5b61b7b77fbbb3da8fb75add564bb238790fe0af937de943"
+      }
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "format": "elabora-lock/1",
+  "next": 18,
+  "keys": {
+    "screen:intro": "0",
+    "screen:anatomy": "1",
+    "screen:lab": "2",
+    "screen:hoist": "3",
+    "screen:assessment": "4",
+    "quiz:anatomy-practice": "5",
+    "object:lab-bench": "6",
+    "block:lab-summary": "7",
+    "decision:hoist-choice": "8",
+    "quiz:assessment-q1": "9",
+    "quiz:assessment-q2": "a",
+    "quiz:assessment-q3": "b",
+    "numeric:anatomy-your-turn": "c",
+    "numeric:assessment-calc": "d",
+    "screen:practice": "e",
+    "screen:assessment-2": "f",
+    "screen:assessment-3": "g",
+    "screen:results": "h"
+  },
+  "components": {
+    "config-quiz": "1.0.0",
+    "figure-split": "1.0.0",
+    "hero": "1.0.0",
+    "ratio-card": "1.0.0",
+    "stage": "1.0.0"
+  }
+}

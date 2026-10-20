@@ -1,0 +1,15 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "Clicking the target completes the activity",
+      "steps": [
+        { "action": "step", "frames": 10 },
+        { "action": "snapshot", "name": "initial" },
+        { "action": "click", "object": "target" },
+        { "action": "expect-event", "name": "completed", "payload": { "score": 1 } },
+        { "action": "expect-state", "state": { "done": true, "clicks": 1 } }
+      ]
+    }
+  ]
+}

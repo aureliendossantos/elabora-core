@@ -1,0 +1,180 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/plan-version.schema.json",
+  "version": 1,
+  "date": "2026-10-05",
+  "contentHash": "sha256:b5ffde4768039d52b7cf1c440edfc844f414ac44f865ed54b9a27e269cf2fcdd",
+  "plan": {
+    "id": "PLAN-HELIOS-NET-V1",
+    "title": "Diagnostiquer une panne d'impression réseau",
+    "businessGoal": "Réduire de 30 % les tickets « impression impossible » transférés du niveau 1 au niveau 2.",
+    "audience": {
+      "role": "Techniciens support de niveau 1",
+      "priorKnowledge": "low"
+    },
+    "sources": [
+      {
+        "id": "SRC-1",
+        "title": "Procédure interne SUP-NET-04 : diagnostic des pannes d'impression",
+        "type": "procédure interne",
+        "version": "2026-05"
+      }
+    ],
+    "objectives": [
+      {
+        "id": "OBJ-1",
+        "statement": "Identifier le rôle des cinq équipements du chemin d'impression : poste, commutateur, routeur, pare-feu et serveur d'impression.",
+        "bloom": "understand",
+        "sources": [
+          "SRC-1"
+        ]
+      },
+      {
+        "id": "OBJ-2",
+        "statement": "Localiser l'équipement défaillant en suivant le chemin des paquets dans l'ordre, en moins de trois tentatives.",
+        "bloom": "apply",
+        "criterion": "2 diagnostics réussis sur 3",
+        "sources": [
+          "SRC-1"
+        ]
+      }
+    ],
+    "items": [
+      {
+        "id": "ITEM-1",
+        "kind": "intro",
+        "title": "Le ticket de Marc",
+        "objectives": [],
+        "description": "Mise en situation : Marc, du service comptable, ne peut plus imprimer.",
+        "lockedTexts": [
+          {
+            "id": "TXT-1",
+            "text": "Lundi, 9 h 05. Marc, du service comptable, vous appelle : il doit imprimer les bulletins de paie avant midi et l'imprimante ne répond plus. Vous allez l'aider en suivant la procédure **SUP-NET-04**."
+          }
+        ]
+      },
+      {
+        "id": "ITEM-2",
+        "kind": "exposition",
+        "title": "Le chemin d'une impression",
+        "objectives": [
+          "OBJ-1"
+        ],
+        "sources": [
+          "SRC-1"
+        ],
+        "description": "Les cinq équipements traversés par une demande d'impression et la règle de diagnostic.",
+        "lockedTexts": [
+          {
+            "id": "TXT-2",
+            "text": "Suivez toujours le chemin dans l'ordre : **poste → commutateur → routeur → pare-feu → serveur d'impression**. Ne sautez aucune étape, même si vous pensez connaître la cause."
+          }
+        ]
+      },
+      {
+        "id": "ITEM-3",
+        "kind": "practice",
+        "title": "Premier réflexe",
+        "objectives": [
+          "OBJ-2"
+        ],
+        "description": "Décision : par où commencer le diagnostic."
+      },
+      {
+        "id": "ITEM-4",
+        "kind": "scenario",
+        "title": "Simulation : trouver l'équipement défaillant",
+        "objectives": [
+          "OBJ-2"
+        ],
+        "description": "Simulation 3D du réseau : l'apprenant inspecte les équipements dans l'ordre jusqu'à trouver la panne."
+      },
+      {
+        "id": "ITEM-5",
+        "kind": "assessment",
+        "title": "Évaluation",
+        "objectives": [
+          "OBJ-1",
+          "OBJ-2"
+        ],
+        "questions": [
+          {
+            "id": "Q-1",
+            "mode": "single",
+            "objectives": [
+              "OBJ-1"
+            ],
+            "bloom": "understand",
+            "stem": "Le poste de Marc obtient une adresse IP, mais aucune page ne sort. Quel équipement **filtre** les flux entre le réseau des bureaux et celui des serveurs ?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Le commutateur",
+                "correct": false,
+                "feedback": "Le commutateur relie les postes d'un même étage ; il ne filtre pas les flux entre réseaux."
+              },
+              {
+                "id": "b",
+                "text": "Le pare-feu",
+                "correct": true,
+                "feedback": "Oui : le pare-feu applique les règles de filtrage entre le réseau des bureaux et celui des serveurs."
+              },
+              {
+                "id": "c",
+                "text": "Le routeur",
+                "correct": false,
+                "feedback": "Le routeur oriente les paquets entre réseaux, mais ce n'est pas lui qui applique les règles de filtrage."
+              }
+            ]
+          },
+          {
+            "id": "Q-2",
+            "mode": "single",
+            "objectives": [
+              "OBJ-2"
+            ],
+            "bloom": "apply",
+            "stem": "Le poste et le commutateur répondent correctement. Selon la procédure, quel équipement contrôlez-vous ensuite ?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Le serveur d'impression",
+                "correct": false,
+                "feedback": "C'est la dernière étape : contrôler le serveur maintenant ferait sauter deux équipements du chemin."
+              },
+              {
+                "id": "b",
+                "text": "Le routeur",
+                "correct": true,
+                "feedback": "Oui : on suit le chemin dans l'ordre, et le routeur vient juste après le commutateur."
+              },
+              {
+                "id": "c",
+                "text": "Le pare-feu",
+                "correct": false,
+                "feedback": "Le pare-feu vient après le routeur : vérifiez d'abord le routeur pour ne sauter aucune étape."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ITEM-6",
+        "kind": "summary",
+        "title": "À retenir",
+        "objectives": [],
+        "description": "Bilan, score et règle de diagnostic."
+      }
+    ],
+    "spacing": [
+      "J+2",
+      "J+7",
+      "J+30"
+    ],
+    "waivers": []
+  },
+  "validation": {
+    "by": "Claire Martin, Hélios Énergie (client fictif)",
+    "date": "2026-10-05",
+    "reference": "Storyboard v3 validé par courriel"
+  }
+}

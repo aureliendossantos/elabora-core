@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1/blocks/text.schema.json",
+  "title": "text block props",
+  "description": "Rich text in the Elabora Markdown subset.",
+  "x-category": "content",
+  "x-ai-instructions": "Short paragraphs, conversational 'you' (E6), no decorative anecdotes (E1). Keep a screen under about 250 words (E3). When the plan has a locked text, use textRef instead of copying it.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "markdown": { "$ref": "../defs.schema.json#/$defs/markdown", "description": "Text content. Use markdown or textRef, not both.", "x-translatable": true },
+    "textRef": { "$ref": "../defs.schema.json#/$defs/planId", "description": "Id of a validated text of the plan: the block shows the plan's wording, and rewording it writes the plan." }
+  }
+}

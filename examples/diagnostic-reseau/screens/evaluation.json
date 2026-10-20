@@ -1,0 +1,12 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "evaluation",
+  "title": "Évaluation",
+  "covers": ["ITEM-5"],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    { "id": "evaluation-intro", "type": "text", "props": { "markdown": "Deux questions pour vérifier que vous savez appliquer la procédure. Vous avez un seul essai par question." } },
+    { "id": "evaluation-q1", "type": "quiz", "props": { "questionRef": "Q-1" } },
+    { "id": "evaluation-q2", "type": "quiz", "props": { "questionRef": "Q-2" } }
+  ]
+}

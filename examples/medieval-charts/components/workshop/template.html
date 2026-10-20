@@ -1,0 +1,18 @@
+<!-- Reading order: the figure (its text alternative describes the finished chart), then the stages. -->
+<div class="mc-workshop">
+  <div class="mc-workshop-figure">
+    <div class="mc-workshop-stage">
+      <img class="mc-workshop-base" src="{{base}}" alt="{{alt}}">
+      <img data-each="stages" class="mc-workshop-layer" src="{{layer}}" alt="">
+      <span data-each="labels" class="mc-workshop-label mc-workshop-label--{{tone}} mc-workshop-label--s{{stage}}" style="--x: {{x}}; --y: {{y}}; --angle: {{angle}}">{{text}}</span>
+    </div>
+  </div>
+  <ol class="mc-workshop-steps">
+    <li data-each="stages" class="mc-workshop-step">
+      <div class="mc-workshop-card">
+        <h3 class="mc-workshop-title" data-t-heading>{{title}}</h3>
+        <div class="mc-workshop-body t-text">{{body}}</div>
+      </div>
+    </li>
+  </ol>
+</div>

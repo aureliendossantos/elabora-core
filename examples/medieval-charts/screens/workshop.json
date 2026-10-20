@@ -1,0 +1,242 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "workshop",
+  "title": "Building the sea, harbour by harbour",
+  "covers": [
+    "ITEM-4"
+  ],
+  "layout": "folio",
+  "layoutProps": {
+    "eyebrow": "Lesson 2 · In the chart-maker's workshop"
+  },
+  "completeWhen": "interactions-done",
+  "steps": {
+    "2": {
+      "label": "Test yourself"
+    },
+    "3": {
+      "opens": "answered"
+    }
+  },
+  "blocks": [
+    {
+      "id": "workshop-lead",
+      "type": "text",
+      "slot": "lead",
+      "style": "initial",
+      "props": {
+        "markdown": "Majorca, around 1375. A workshop in Palma takes an order from a Venetian captain: a chart of the whole Mediterranean and the Black Sea. His pilots will steer by it out of sight of land, where a misplaced harbour can cost a ship. There is no survey and no coordinates: only pilots' books, older charts, and the courses and miles sailors report."
+      }
+    },
+    {
+      "id": "workshop-h-stages",
+      "type": "heading",
+      "style": "rubric",
+      "props": {
+        "text": "From skin to chart, in six stages",
+        "level": 2
+      }
+    },
+    {
+      "id": "workshop-stages",
+      "type": "workshop",
+      "width": "wide",
+      "props": {
+        "base": "images/ws-skin.svg",
+        "alt": "A portolan chart on a calfskin: rhumb lines radiating from sixteen points round a circle, Majorca, Cagliari and Marseille joined by a triangle of bearings, coasts, harbour names across the land, coloured islands, a scale and a wind rose.",
+        "stages": [
+          {
+            "title": "Prick the hidden circle",
+            "body": "The work starts on a single calfskin, scraped and dried into vellum; the animal's neck stays on the west side. With dividers, the chart-maker draws a large circle that will never be inked, and pricks **sixteen points** evenly round it. On surviving charts, the pinholes are still there.",
+            "layer": "images/ws-circle.svg"
+          },
+          {
+            "title": "Rule the rhumb lines",
+            "body": "From the centre and each of the sixteen points, lines run in thirty-two directions across the skin: **black** for the eight principal winds, **green** for the half-winds, **red** for the quarter-winds. Lines of one direction are parallel: wherever you are, a line of your course is never far.",
+            "layer": "images/ws-rhumbs.svg"
+          },
+          {
+            "title": "Fix the harbours",
+            "body": "Historians reconstruct the next step like this. Prick Majorca. A pilot's book says Cagliari lies **Levante, 450 miles** from it: lay a ruler along a black Levante line, open the dividers to 450 miles on the scale, and prick Cagliari. Do the same for Marseille. Then **check**: another pilot puts Cagliari *Scirocco*, 450 miles from Marseille. The red line lands on the same pinprick: the triangle closes.",
+            "layer": "images/ws-plot.svg"
+          },
+          {
+            "title": "Draw the coasts",
+            "body": "Harbour after harbour, each one checked against several others, the pinpricks grow into a net. Only then does the chart-maker ink the coast from one to the next, drawing the capes and bays a sailor must know larger than life.",
+            "layer": "images/ws-coasts.svg"
+          },
+          {
+            "title": "Write the names",
+            "body": "Hundreds of harbours are written in, across the land and at right angles to the coast, so that the coastline itself stays clear: the great harbours in **red**, the others in black. To read them, you turn the chart round on the table. A portolan chart has no top.",
+            "layer": "images/ws-names.svg"
+          },
+          {
+            "title": "Add the scale and the colours",
+            "body": "Last come a **scale of miles**, divided in fifties and tens, the bright colours of the islands, and in richer charts wind roses, flags and kings. A cross often marks the east point of the rose: the way to the Holy Land.",
+            "layer": "images/ws-finish.svg"
+          }
+        ],
+        "labels": [
+          {
+            "text": "Maiorica",
+            "x": 34.4,
+            "y": 52,
+            "angle": -150,
+            "stage": 3,
+            "tone": "name-rubric"
+          },
+          {
+            "text": "Callari",
+            "x": 44.4,
+            "y": 50.3,
+            "angle": -99,
+            "stage": 3,
+            "tone": "name"
+          },
+          {
+            "text": "Marsilia",
+            "x": 37.4,
+            "y": 36.4,
+            "angle": -99,
+            "stage": 3,
+            "tone": "name-rubric"
+          },
+          {
+            "text": "Levante · 450 miles",
+            "x": 39.6,
+            "y": 53.6,
+            "angle": -5,
+            "stage": 3
+          },
+          {
+            "text": "Barchelona",
+            "x": 33.1,
+            "y": 45.3,
+            "angle": -139,
+            "stage": 5,
+            "tone": "name-rubric"
+          },
+          {
+            "text": "Janua",
+            "x": 42.6,
+            "y": 30.5,
+            "angle": -84,
+            "stage": 5,
+            "tone": "name-rubric"
+          },
+          {
+            "text": "Venecia",
+            "x": 47.5,
+            "y": 24.9,
+            "angle": -129,
+            "stage": 5,
+            "tone": "name-rubric"
+          },
+          {
+            "text": "Napoli",
+            "x": 51.8,
+            "y": 41.6,
+            "angle": -59,
+            "stage": 5,
+            "tone": "name-rubric"
+          },
+          {
+            "text": "Tunisi",
+            "x": 46.8,
+            "y": 59,
+            "angle": 131,
+            "stage": 5,
+            "tone": "name-rubric"
+          }
+        ]
+      }
+    },
+    {
+      "id": "workshop-plot-check",
+      "type": "quiz",
+      "props": {
+        "stem": "The workshop has pricked Cagliari from Majorca. A report from Marseille, checked on the chart, puts it about **40 miles further south**. What does the chart-maker do?",
+        "mode": "single",
+        "scored": false,
+        "options": [
+          {
+            "id": "a",
+            "text": "Keep the first pinprick: the first report always wins",
+            "correct": false,
+            "feedback": "One report can be wrong. A pinprick nobody has checked is how a coast slides out of place."
+          },
+          {
+            "id": "b",
+            "text": "Ink both positions and let the pilot choose at sea",
+            "correct": false,
+            "feedback": "A chart with two Cagliaris would be useless out of sight of land: the workshop settles it before any ink."
+          },
+          {
+            "id": "c",
+            "text": "Check a third report and set Cagliari where the reports agree best",
+            "correct": true,
+            "feedback": "Yes: each harbour is checked against several others, so one bad report cannot pull the coast out of shape."
+          }
+        ]
+      },
+      "step": 2
+    },
+    {
+      "id": "workshop-tilt",
+      "type": "gloss",
+      "props": {
+        "markdown": "Lay a modern map over the finished chart and the whole Mediterranean seems **turned about 9° anticlockwise**. The chart is not careless. The usual explanation: it was built from compass bearings, and the compass of the time pointed several degrees east of true north. Draw every bearing with the compass's north at the top, and the whole sea turns the other way. Steering by the same compass, a pilot still reaches the right harbour.",
+        "gloss": "Historians still debate how the first charts were compiled, and how closely the tilt matches the compass of the day. Take this as the leading explanation, not a settled fact."
+      },
+      "step": 3
+    },
+    {
+      "id": "workshop-tilt-figure",
+      "type": "layered-figure",
+      "width": "wide",
+      "props": {
+        "base": "images/tilt-modern.svg",
+        "alt": "Two outlines of the Mediterranean at the same scale: a dashed modern map, true north up, and the chart in ink, turned about 9° anticlockwise. In a corner, a dashed needle points to true north, a red compass needle about 9° east of it.",
+        "ratio": 2,
+        "layers": [
+          {
+            "asset": "images/tilt-chart.svg",
+            "reveal": "fade"
+          },
+          {
+            "asset": "images/tilt-needles.svg",
+            "reveal": "drop"
+          }
+        ],
+        "labels": [
+          {
+            "text": "The chart",
+            "x": 66,
+            "y": 5,
+            "tone": "rubric"
+          },
+          {
+            "text": "A modern map",
+            "x": 90,
+            "y": 23,
+            "tone": "italic"
+          },
+          {
+            "text": "True north",
+            "x": 90,
+            "y": 70,
+            "tone": "italic"
+          },
+          {
+            "text": "Compass north",
+            "x": 90,
+            "y": 64.5,
+            "tone": "rubric"
+          }
+        ],
+        "caption": "Dashed: a modern map, true north at the top. Ink: the chart, drawn with the compass's north at the top. The compass then pointed several degrees east, so the whole sea turns the other way."
+      },
+      "step": 3
+    }
+  ]
+}

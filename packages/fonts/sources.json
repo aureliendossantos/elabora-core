@@ -1,0 +1,248 @@
+{
+  "about": "The vetted fonts of Elabora, kept by hand. npm run fonts downloads each package at its version, checks it against the npm registry, copies its files of the subsets below (with their unicode ranges) and its licence into files/ and writes catalogue.json. A language listed by a subset is written with the subsets up to that one: latin-ext languages need latin too. npm run fonts -- --check lists newer versions; -- --update moves to them. Only SIL OFL 1.1 or Apache 2.0 licences: ask the maintainers before adding another one.",
+  "subsets": [
+    { "name": "latin", "languages": ["ca", "da", "de", "en", "es", "fi", "fr", "ga", "gl", "id", "is", "it", "ms", "nb", "nl", "nn", "no", "pt", "sq", "sv", "sw"] },
+    { "name": "latin-ext", "languages": ["az", "bs", "cs", "cy", "dsb", "eo", "et", "haw", "hr", "hsb", "hu", "lt", "lv", "mi", "mt", "pl", "ro", "se", "sk", "sl", "tk", "tr", "uz"] }
+  ],
+  "pangrams": {
+    "de": "Victor jagt zwölf Boxkämpfer quer über den großen Sylter Deich.",
+    "en": "The quick brown fox jumps over the lazy dog.",
+    "es": "El veloz murciélago hindú comía feliz cardillo y kiwi.",
+    "fr": "Voix ambiguë d’un cœur qui, au zéphyr, préfère les jattes de kiwis.",
+    "it": "Ma la volpe col suo balzo ha raggiunto il quieto Fido.",
+    "nl": "Pa’s wijze lynx bezag vroom het fikse aquaduct.",
+    "pt": "Luís argüia à Júlia que «brações, fé, chá, óxido, pôr, zângão» eram palavras do português.",
+    "cs": "Příliš žluťoučký kůň úpěl ďábelské ódy.",
+    "hu": "Árvíztűrő tükörfúrógép.",
+    "pl": "Pchnąć w tę łódź jeża lub ośm skrzyń fig.",
+    "ro": "Înjurând pițigăiat, zoofobul comandă vexat whisky și tequila.",
+    "tr": "Pijamalı hasta yağız şoföre çabucak güvendi."
+  },
+  "families": [
+    {
+      "id": "eb-garamond", "family": "EB Garamond", "category": "serif", "style": "old-style",
+      "package": "@fontsource-variable/eb-garamond", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"EB Garamond\", Garamond, \"Iowan Old Style\", \"Palatino Linotype\", Georgia, serif",
+      "use": "Old-style Garamond for long reading: history, humanities, literature. Fine italics.",
+      "pairs": ["Source Sans 3", "Cinzel"],
+      "specimen": { "en": "Letters copied by hand, page after page", "fr": "Des lettres copiées à la main, page après page" }
+    },
+    {
+      "id": "libre-baskerville", "family": "Libre Baskerville", "category": "serif", "style": "transitional",
+      "package": "@fontsource-variable/libre-baskerville", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"Libre Baskerville\", Baskerville, \"Baskerville Old Face\", Georgia, serif",
+      "use": "Baskerville drawn for screens: sturdy body text with a classic, serious voice (law, finance, history).",
+      "pairs": ["Source Sans 3", "Montserrat"],
+      "specimen": { "en": "A clear argument in a classic face", "fr": "Un raisonnement clair dans une forme classique" }
+    },
+    {
+      "id": "lora", "family": "Lora", "category": "serif", "style": "contemporary",
+      "package": "@fontsource-variable/lora", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"Lora\", Georgia, \"Times New Roman\", serif",
+      "use": "Contemporary serif with calligraphic curves: warm body text for stories, case studies, soft skills.",
+      "pairs": ["Open Sans", "Montserrat"],
+      "specimen": { "en": "Every case begins with a story", "fr": "Chaque cas commence par une histoire" }
+    },
+    {
+      "id": "source-serif-4", "family": "Source Serif 4", "category": "serif", "style": "transitional",
+      "package": "@fontsource-variable/source-serif-4", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"Source Serif 4\", \"Iowan Old Style\", Georgia, serif",
+      "use": "Adobe's text serif: neutral and very readable at small sizes, nine weights. Pairs with Source Sans 3.",
+      "pairs": ["Source Sans 3", "Inter"],
+      "specimen": { "en": "Read the procedure, then apply it", "fr": "Lisez la procédure, puis appliquez-la" }
+    },
+    {
+      "id": "merriweather", "family": "Merriweather", "category": "serif", "style": "screen",
+      "package": "@fontsource-variable/merriweather", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"Merriweather\", Georgia, \"Times New Roman\", serif",
+      "use": "Serif designed for screens: large x-height, sturdy at small sizes. The heaviest files of the list.",
+      "pairs": ["Open Sans", "Lato"],
+      "specimen": { "en": "Designed to be read on screens", "fr": "Dessinée pour être lue à l’écran" }
+    },
+    {
+      "id": "playfair-display", "family": "Playfair Display", "category": "serif", "style": "didone",
+      "package": "@fontsource-variable/playfair-display", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["heading"],
+      "stack": "\"Playfair Display\", Didot, \"Bodoni MT\", Georgia, serif",
+      "use": "High-contrast display serif for titles and quotes; set the text in a sans.",
+      "pairs": ["Source Sans 3", "Lato"],
+      "specimen": { "en": "The Art of Asking Good Questions", "fr": "L’art de poser les bonnes questions" }
+    },
+    {
+      "id": "fraunces", "family": "Fraunces", "category": "serif", "style": "soft",
+      "package": "@fontsource-variable/fraunces", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["heading"],
+      "stack": "\"Fraunces\", \"Iowan Old Style\", Georgia, serif",
+      "use": "Soft old-style display serif with character: friendly, editorial headings.",
+      "pairs": ["Inter", "Figtree"],
+      "specimen": { "en": "Curious minds learn faster", "fr": "Les esprits curieux apprennent plus vite" }
+    },
+    {
+      "id": "inter", "family": "Inter", "category": "sans-serif", "style": "neo-grotesque",
+      "package": "@fontsource-variable/inter", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"Inter\", system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "use": "Neutral interface sans with a tall x-height: software, data, technical courses.",
+      "pairs": ["Source Serif 4", "Space Grotesk"],
+      "specimen": { "en": "Configure the settings, then confirm", "fr": "Configurez les réglages, puis confirmez" }
+    },
+    {
+      "id": "roboto", "family": "Roboto", "category": "sans-serif", "style": "neo-grotesque",
+      "package": "@fontsource-variable/roboto", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"Roboto\", system-ui, -apple-system, \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+      "use": "Google's workhorse sans: familiar and compact, a full range of weights.",
+      "pairs": ["Merriweather", "Oswald"],
+      "specimen": { "en": "Five steps to a safer workplace", "fr": "Cinq étapes pour un poste de travail plus sûr" }
+    },
+    {
+      "id": "open-sans", "family": "Open Sans", "category": "sans-serif", "style": "humanist",
+      "package": "@fontsource-variable/open-sans", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"Open Sans\", \"Segoe UI\", system-ui, -apple-system, Arial, sans-serif",
+      "use": "Friendly, very legible humanist sans: a safe default for corporate courses.",
+      "pairs": ["Merriweather", "Lora"],
+      "specimen": { "en": "Welcome to your onboarding", "fr": "Bienvenue dans votre parcours d’intégration" }
+    },
+    {
+      "id": "source-sans-3", "family": "Source Sans 3", "category": "sans-serif", "style": "humanist",
+      "package": "@fontsource-variable/source-sans-3", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"Source Sans 3\", \"Segoe UI\", system-ui, -apple-system, Arial, sans-serif",
+      "use": "Adobe's humanist sans: clear and light files. Pairs with Source Serif 4 and the display serifs.",
+      "pairs": ["Source Serif 4", "Playfair Display"],
+      "specimen": { "en": "Key points to remember", "fr": "Les points clés à retenir" }
+    },
+    {
+      "id": "lato", "family": "Lato", "category": "sans-serif", "style": "humanist",
+      "package": "@fontsource/lato", "version": "5.3.0", "weights": { "normal": [400, 700, 900], "italic": [400, 700] },
+      "for": ["body", "heading"],
+      "stack": "\"Lato\", \"Segoe UI\", system-ui, -apple-system, Arial, sans-serif",
+      "use": "Warm, semi-rounded humanist sans. Static files: regular, bold and black, with italics.",
+      "pairs": ["Merriweather", "Playfair Display"],
+      "specimen": { "en": "Your progress is saved", "fr": "Votre progression est enregistrée" }
+    },
+    {
+      "id": "atkinson-hyperlegible-next", "family": "Atkinson Hyperlegible Next", "category": "sans-serif", "style": "accessible",
+      "package": "@fontsource-variable/atkinson-hyperlegible-next", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"Atkinson Hyperlegible Next\", Verdana, \"Segoe UI\", system-ui, sans-serif",
+      "use": "Drawn by the Braille Institute for low-vision readers: letters that cannot be mistaken for one another (I l 1, O 0).",
+      "pairs": ["Lora", "Source Serif 4"],
+      "specimen": { "en": "Il1 O0: every letter stands apart", "fr": "Il1 O0 : chaque lettre se distingue" }
+    },
+    {
+      "id": "ibm-plex-sans", "family": "IBM Plex Sans", "category": "sans-serif", "style": "grotesque",
+      "package": "@fontsource-variable/ibm-plex-sans", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"IBM Plex Sans\", \"Helvetica Neue\", Arial, system-ui, sans-serif",
+      "use": "Corporate grotesque with engineered details: IT, industry, technical procedures.",
+      "pairs": ["JetBrains Mono", "Source Serif 4"],
+      "specimen": { "en": "Check the logs before you restart", "fr": "Vérifiez les journaux avant de redémarrer" }
+    },
+    {
+      "id": "space-grotesk", "family": "Space Grotesk", "category": "sans-serif", "style": "grotesque",
+      "package": "@fontsource-variable/space-grotesk", "version": "5.3.0", "styles": ["normal"],
+      "for": ["heading"],
+      "stack": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "use": "Grotesque with quirky details: science and technology headings. No italic.",
+      "pairs": ["Inter", "JetBrains Mono"],
+      "specimen": { "en": "Orbital rendezvous in three burns", "fr": "Rendez-vous orbital en trois poussées" }
+    },
+    {
+      "id": "montserrat", "family": "Montserrat", "category": "sans-serif", "style": "geometric",
+      "package": "@fontsource-variable/montserrat", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"Montserrat\", \"Century Gothic\", \"Avenir Next\", system-ui, sans-serif",
+      "use": "Wide geometric sans inspired by urban signage: bold headings and short texts.",
+      "pairs": ["Lora", "Open Sans"],
+      "specimen": { "en": "Lead with clarity", "fr": "Diriger avec clarté" }
+    },
+    {
+      "id": "poppins", "family": "Poppins", "category": "sans-serif", "style": "geometric",
+      "package": "@fontsource/poppins", "version": "5.3.0", "weights": { "normal": [400, 500, 600, 700], "italic": [400] },
+      "for": ["body", "heading"],
+      "stack": "\"Poppins\", \"Avenir Next\", \"Century Gothic\", system-ui, sans-serif",
+      "use": "Round geometric sans, popular in modern brands. Static files from 400 to 700, light.",
+      "pairs": ["Lora", "Open Sans"],
+      "specimen": { "en": "Ready for the final quiz?", "fr": "Prêt pour le quiz final ?" }
+    },
+    {
+      "id": "figtree", "family": "Figtree", "category": "sans-serif", "style": "geometric",
+      "package": "@fontsource-variable/figtree", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"Figtree\", \"Avenir Next\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "use": "Clean, friendly geometric sans with the lightest files of the list.",
+      "pairs": ["Fraunces", "Lora"],
+      "specimen": { "en": "Simple steps, clear results", "fr": "Des étapes simples, des résultats clairs" }
+    },
+    {
+      "id": "nunito", "family": "Nunito", "category": "sans-serif", "style": "rounded",
+      "package": "@fontsource-variable/nunito", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["body", "heading"],
+      "stack": "\"Nunito\", \"Avenir Next Rounded\", \"Arial Rounded MT Bold\", system-ui, sans-serif",
+      "use": "Rounded sans, soft and friendly: onboarding, wellbeing, young learners.",
+      "pairs": ["Caveat", "Lora"],
+      "specimen": { "en": "Let’s learn together", "fr": "Apprenons ensemble" }
+    },
+    {
+      "id": "jetbrains-mono", "family": "JetBrains Mono", "category": "monospace", "style": "monospace",
+      "package": "@fontsource-variable/jetbrains-mono", "version": "5.3.0", "styles": ["normal", "italic"],
+      "for": ["mono"],
+      "stack": "\"JetBrains Mono\", ui-monospace, SFMono-Regular, Menlo, Consolas, \"Liberation Mono\", monospace",
+      "use": "Monospace for code, commands and data, with distinct 0 O and 1 l I.",
+      "pairs": ["Inter", "IBM Plex Sans"],
+      "specimen": { "en": "const total = price * 1.2; // VAT", "fr": "const total = prix * 1.2; // TVA" }
+    },
+    {
+      "id": "oswald", "family": "Oswald", "category": "display", "style": "condensed",
+      "package": "@fontsource-variable/oswald", "version": "5.3.0", "styles": ["normal"],
+      "for": ["heading"],
+      "stack": "\"Oswald\", \"Arial Narrow\", \"Roboto Condensed\", Impact, sans-serif",
+      "use": "Condensed sans for strong headings, labels and key figures. No italic.",
+      "pairs": ["Roboto", "Source Sans 3"],
+      "specimen": { "en": "Safety first: three rules", "fr": "La sécurité d’abord : trois règles" }
+    },
+    {
+      "id": "bebas-neue", "family": "Bebas Neue", "category": "display", "style": "condensed capitals",
+      "package": "@fontsource/bebas-neue", "version": "5.3.0", "weights": { "normal": [400] },
+      "for": ["display"],
+      "stack": "\"Bebas Neue\", \"Arial Narrow\", Impact, sans-serif",
+      "use": "Condensed capitals for posters, big numbers and section openers. One weight, capitals only.",
+      "pairs": ["Open Sans", "Roboto"],
+      "specimen": { "en": "CHAPTER 02 — IN THE FIELD", "fr": "CHAPITRE 02 — SUR LE TERRAIN" }
+    },
+    {
+      "id": "caveat", "family": "Caveat", "category": "handwriting", "style": "handwriting",
+      "package": "@fontsource-variable/caveat", "version": "5.3.0", "styles": ["normal"],
+      "for": ["display"],
+      "stack": "\"Caveat\", \"Segoe Print\", \"Bradley Hand\", cursive",
+      "use": "Casual handwriting for annotations and notes in the margin; never for body text.",
+      "pairs": ["Nunito", "Lato"],
+      "specimen": { "en": "Note: check this before the quiz!", "fr": "Note : à revoir avant le quiz !" }
+    },
+    {
+      "id": "cinzel", "family": "Cinzel", "category": "display", "style": "roman capitals",
+      "package": "@fontsource-variable/cinzel", "version": "5.3.0", "styles": ["normal"],
+      "for": ["heading"],
+      "stack": "\"Cinzel\", \"Trajan Pro\", Optima, Georgia, serif",
+      "use": "Classical Roman capitals (lowercase as small capitals): antiquity, history, ceremonial titles.",
+      "pairs": ["EB Garamond", "Lora"],
+      "specimen": { "en": "SPQR · The Roman Republic", "fr": "SPQR · La République romaine" }
+    },
+    {
+      "id": "unifrakturmaguntia", "family": "UnifrakturMaguntia", "category": "display", "style": "blackletter",
+      "package": "@fontsource/unifrakturmaguntia", "version": "5.3.0", "weights": { "normal": [400] },
+      "for": ["display"],
+      "stack": "\"UnifrakturMaguntia\", \"Old English Text MT\", serif",
+      "use": "Blackletter (Fraktur) for medieval titles and initials; never for body text.",
+      "pairs": ["EB Garamond"],
+      "specimen": { "en": "The Charter of the Free Town", "fr": "La charte de la ville franche" }
+    }
+  ]
+}

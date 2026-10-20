@@ -1,0 +1,80 @@
+{
+  "format": "elabora-generated/1",
+  "assets": {
+    "images/burn-phasing.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:ed722b4c02927a6767fb4b50a7be309f20e0844a86688ea059bb7b90016b2e27",
+      "outputHash": "sha256:0588614afbe467a781a55978d4a176fe64384b15c7060366f53f9e2fcd0666cd"
+    },
+    "images/burn-prograde.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:ed722b4c02927a6767fb4b50a7be309f20e0844a86688ea059bb7b90016b2e27",
+      "outputHash": "sha256:7d7a71ef5e6302cabc64342faac1f55856389e6980edc22af0003b145f77cd11"
+    },
+    "images/burn-radial.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:ed722b4c02927a6767fb4b50a7be309f20e0844a86688ea059bb7b90016b2e27",
+      "outputHash": "sha256:191d97e51b19a35ea3187003df3b57ebf77235317e3ded85353e16feba2abbb1"
+    },
+    "images/burn-retrograde.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:ed722b4c02927a6767fb4b50a7be309f20e0844a86688ea059bb7b90016b2e27",
+      "outputHash": "sha256:1e1fde23e3656acfb6ba407bd981221813ccb3ccf0151c315b0485ad4e367741"
+    },
+    "images/orbit-1-craft.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:ed722b4c02927a6767fb4b50a7be309f20e0844a86688ea059bb7b90016b2e27",
+      "outputHash": "sha256:ea679bf522d9863dc7670cda62dadf885a30efcca7d9bc6c87a46cf0b7f75371"
+    },
+    "images/orbit-1-trail.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:ed722b4c02927a6767fb4b50a7be309f20e0844a86688ea059bb7b90016b2e27",
+      "outputHash": "sha256:4ca9fa3600ac2f99d0bbcf5768dc1b941477b7720ae275743866862edbbb8d60"
+    },
+    "images/orbit-2-craft.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:ed722b4c02927a6767fb4b50a7be309f20e0844a86688ea059bb7b90016b2e27",
+      "outputHash": "sha256:55e1f7432f1c52a0933bfdd30ebd44f1e5db59b877c7e62c6504d590151c7fd0"
+    },
+    "images/orbit-2-trail.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:ed722b4c02927a6767fb4b50a7be309f20e0844a86688ea059bb7b90016b2e27",
+      "outputHash": "sha256:28c6cbda652b3924c5ab1b02772193d0a7ba0719ce1b287d1aef8e954380aaa1"
+    },
+    "images/orbit-3-craft.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:ed722b4c02927a6767fb4b50a7be309f20e0844a86688ea059bb7b90016b2e27",
+      "outputHash": "sha256:9fd8a9485cafae1b5c9e2e52a94790edc3ae5103dcfc30c486ce7accc2f2d32b"
+    },
+    "images/orbit-3-trail.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:ed722b4c02927a6767fb4b50a7be309f20e0844a86688ea059bb7b90016b2e27",
+      "outputHash": "sha256:b91d4c7b8d1205370f55ba4da2e365416c288d92fcd6ed2c02b0fc8635c11bb3"
+    },
+    "images/orbits-earth.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:ed722b4c02927a6767fb4b50a7be309f20e0844a86688ea059bb7b90016b2e27",
+      "outputHash": "sha256:1a5c6c732a1666a27480f57584f444f372fbc408b7f02aac7a87c72f84bfa4d3"
+    },
+    "images/sky-far.svg": {
+      "generator": "generators/sky.mjs",
+      "inputsHash": "sha256:a99d0cfe43bd84c6c89b27993f2dc5c37b540cbfcf7ef080c9e574b974bf712d",
+      "outputHash": "sha256:f11687cb08b519a898c1ac1c9afcc5aa99625a06fcb5f870d94f2979972decbd"
+    },
+    "images/sky-glint-a.svg": {
+      "generator": "generators/sky.mjs",
+      "inputsHash": "sha256:a99d0cfe43bd84c6c89b27993f2dc5c37b540cbfcf7ef080c9e574b974bf712d",
+      "outputHash": "sha256:81cc8ea58e2169037b925515c37218423856307ade305d759b5b505941ac2670"
+    },
+    "images/sky-glint-b.svg": {
+      "generator": "generators/sky.mjs",
+      "inputsHash": "sha256:a99d0cfe43bd84c6c89b27993f2dc5c37b540cbfcf7ef080c9e574b974bf712d",
+      "outputHash": "sha256:a0cabef39a3799fff565096dd99f5c3da87896ce693f45dc17b8f504bcaa714d"
+    },
+    "images/sky-near.svg": {
+      "generator": "generators/sky.mjs",
+      "inputsHash": "sha256:a99d0cfe43bd84c6c89b27993f2dc5c37b540cbfcf7ef080c9e574b974bf712d",
+      "outputHash": "sha256:9899e75902f55a5bcbfc259247c34a6154eb2ac4a2c7653a29b5718180f6d449"
+    }
+  }
+}

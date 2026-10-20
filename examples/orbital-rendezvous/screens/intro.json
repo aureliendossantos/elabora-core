@@ -1,0 +1,30 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "intro",
+  "title": "Slow down to catch up",
+  "covers": ["ITEM-1"],
+  "layout": "cosmos-hero",
+  "blocks": [
+    { "id": "intro-hook", "type": "text", "slot": "lead", "style": "lead", "props": { "textRef": "TXT-1" } },
+    {
+      "id": "intro-goals", "type": "callout", "slot": "side", "style": "glass",
+      "props": {
+        "variant": "info",
+        "title": "In the next 15 minutes",
+        "markdown": "1. See why a lower orbit is a faster orbit.\n2. Predict what a burn does to your orbit, and size a phasing burn.\n3. Fly three rendezvous in a 3D lab around the Earth."
+      }
+    },
+    {
+      "id": "intro-iss", "type": "stat-card", "slot": "cards", "step": 2,
+      "props": { "label": "Speed of the ISS", "value": "7.66", "unit": "km/s", "body": "Fast enough to circle the Earth in 93 minutes.", "accent": "color.orbit" }
+    },
+    {
+      "id": "intro-geo", "type": "stat-card", "slot": "cards", "step": 2,
+      "props": { "label": "Speed of a geostationary satellite", "value": "3.07", "unit": "km/s", "body": "Higher up, slower: one lap a day.", "accent": "color.client" }
+    },
+    {
+      "id": "intro-gain", "type": "stat-card", "slot": "cards", "step": 2,
+      "props": { "label": "Gained per orbit", "value": "17", "unit": "km", "body": "For each m/s of **braking**, 500 km up.", "accent": "color.servicer" }
+    }
+  ]
+}

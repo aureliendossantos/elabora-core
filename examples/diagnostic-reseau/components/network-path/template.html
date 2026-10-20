@@ -1,0 +1,12 @@
+<figure class="network-path">
+  <ol class="network-path__steps" role="list">
+    <li class="network-path__step" data-each="steps">
+      <span class="network-path__number" data-highlight="{{highlight}}" aria-hidden="true">{{@number}}</span>
+      <div class="network-path__equipment">
+        <span class="network-path__label">{{label}}</span>
+        <span class="network-path__detail" data-if="detail">{{detail}}</span>
+      </div>
+    </li>
+  </ol>
+  <figcaption class="network-path__caption">{{caption}}</figcaption>
+</figure>

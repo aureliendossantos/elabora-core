@@ -1,0 +1,71 @@
+/* A figure in layers, assembled as it scrolls into view; labels placed in % of the figure. */
+@property --mc-sweep { syntax: '<angle>'; inherits: false; initial-value: 360deg; }
+@property --mc-wipe { syntax: '<percentage>'; inherits: false; initial-value: 100%; }
+.mc-layers { margin: 0; display: grid; justify-items: center; gap: 1rem; }
+.mc-layers-stage { position: relative; width: min(100%, calc(36rem * var(--ratio, 1))); aspect-ratio: var(--ratio, 1); container-type: inline-size; }
+.mc-layers--compact .mc-layers-stage { width: min(100%, calc(25rem * var(--ratio, 1))); }
+.mc-layers-base, .mc-layers-layer { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mc-reveal--sweep { -webkit-mask-image: conic-gradient(#000 var(--mc-sweep), transparent 0); mask-image: conic-gradient(#000 var(--mc-sweep), transparent 0); }
+.mc-reveal--wipe { clip-path: inset(0 0 calc(100% - var(--mc-wipe)) 0); }
+.mc-layers-label {
+  position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); translate: -50% -50%; rotate: calc(var(--angle, 0) * 1deg); white-space: nowrap;
+  font-variant-caps: all-small-caps; letter-spacing: .09em; font-size: clamp(.95rem, calc(3.6cqi / var(--ratio, 1)), 1.35rem); font-weight: 600; line-height: 1; color: var(--t-color-ink);
+  text-shadow: 0 0 .4em var(--t-color-vellum-light), 0 0 .2em var(--t-color-vellum-light), 0 0 .08em var(--t-color-vellum-light);
+}
+.mc-layers-label--rubric { color: var(--t-primary); }
+.mc-layers-label--italic { font-variant-caps: normal; letter-spacing: 0; font-style: italic; font-weight: 500; color: var(--t-color-ink-soft); }
+/* On a phone a wide figure is narrow: the floor of .95rem would run its labels past the figure's edge and
+   into one another. Below 360px (a phone; rem would move with the player's root size) they follow the figure down
+   to .7rem; names and bubbles keep their own size. */
+@container (max-width: 360px) { .mc-layers-label { font-size: max(.7rem, calc(3.6cqi / var(--ratio, 1))); } }
+/* A harbour name as the chart-makers wrote it: from its point, inland, at any angle. */
+.mc-layers-label--name, .mc-layers-label--name-rubric { translate: 0 -50%; transform-origin: 0 50%; padding-left: .45em; font-variant-caps: normal; letter-spacing: .01em; font-style: italic; font-weight: 600; font-size: clamp(.8rem, 1.6cqi, 1.1rem); }
+.mc-layers-label--name-rubric { color: color-mix(in srgb, var(--t-primary) 74%, var(--t-color-ink)); }
+.mc-layers-label--name, .mc-layers-label--name-rubric { text-shadow: 0 0 .45em var(--t-color-vellum-light), 0 0 .25em var(--t-color-vellum-light), 0 0 .12em var(--t-color-vellum-light), 0 0 .05em var(--t-color-vellum-light); }
+/* Someone's words in a speech bubble, its tail pointing at (x, y): above the point, or below it. */
+.mc-layers-label--bubble, .mc-layers-label--bubble-below {
+  rotate: none; translate: -50% calc(-100% - .62em); padding: .42em .8em .46em; border-radius: .9em;
+  font-variant-caps: normal; letter-spacing: 0; font-style: italic; font-weight: 600; font-size: clamp(.7rem, calc(4.2cqi / var(--ratio, 1)), 1.25rem); color: var(--t-color-ink);
+  text-shadow: none; background: var(--t-color-vellum-light); border: 1.5px solid color-mix(in srgb, var(--t-color-sepia) 70%, transparent);
+  box-shadow: 0 10px 22px -12px var(--t-color-vellum-shadow);
+}
+.mc-layers-label--bubble-below { translate: -50% .62em; }
+.mc-layers-label--bubble::after, .mc-layers-label--bubble-below::after {
+  content: ""; position: absolute; left: 50%; width: .8em; height: .8em; background: inherit; border: inherit; border-width: 0 1.5px 1.5px 0;
+  top: 100%; translate: -50% -50%; rotate: 45deg;
+}
+.mc-layers-label--bubble-below::after { top: 0; border-width: 1.5px 0 0 1.5px; }
+.mc-layers-caption { max-width: 34rem; text-align: center; font-style: italic; font-size: 1.02rem; line-height: 1.45; color: var(--t-color-ink-soft); text-wrap: balance; }
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .mc-layers-stage { view-timeline: --mc-figure block; }
+    /* Keep each layer's start and first fifth; accelerate to complete at 60%. */
+    .mc-layers-base, .mc-layers-layer, .mc-layers-label { animation-timeline: --mc-figure; animation-fill-mode: both; animation-timing-function: linear(0, .2 20%, .325 30%, .5 40%, .725 50%, 1 60%, 1); animation-duration: auto; }
+    .mc-reveal--fade { animation-name: mc-fade; }
+    .mc-reveal--sweep { animation-name: mc-sweep; }
+    .mc-reveal--drop { animation-name: mc-drop; }
+    .mc-reveal--wipe { animation-name: mc-wipe; }
+    .mc-layers-base { animation-range: entry 30% cover 38%; }
+    .mc-layers-layer { animation-range: cover calc(30% + var(--mc-i, 0) * 3.5%) cover calc(38% + var(--mc-i, 0) * 3.5%); }
+    .mc-layers-layer:nth-of-type(2) { --mc-i: 0; } .mc-layers-layer:nth-of-type(3) { --mc-i: 1; } .mc-layers-layer:nth-of-type(4) { --mc-i: 2; }
+    .mc-layers-layer:nth-of-type(5) { --mc-i: 3; } .mc-layers-layer:nth-of-type(6) { --mc-i: 4; } .mc-layers-layer:nth-of-type(7) { --mc-i: 5; }
+    .mc-layers-layer:nth-of-type(8) { --mc-i: 6; } .mc-layers-layer:nth-of-type(9) { --mc-i: 7; }
+    .mc-layers-label--name, .mc-layers-label--name-rubric, .mc-layers-label--bubble, .mc-layers-label--bubble-below { animation-name: mc-fade !important; }
+    .mc-layers-label { animation-name: mc-label; animation-range: cover calc(34% + var(--mc-i, 0) * 1%) cover calc(40% + var(--mc-i, 0) * 1%); }
+    .mc-layers-label:nth-of-type(2) { --mc-i: 1; } .mc-layers-label:nth-of-type(3) { --mc-i: 2; } .mc-layers-label:nth-of-type(4) { --mc-i: 3; }
+    .mc-layers-label:nth-of-type(5) { --mc-i: 4; } .mc-layers-label:nth-of-type(6) { --mc-i: 5; } .mc-layers-label:nth-of-type(7) { --mc-i: 6; }
+    .mc-layers-label:nth-of-type(8) { --mc-i: 7; } .mc-layers-label:nth-of-type(9) { --mc-i: 8; } .mc-layers-label:nth-of-type(10) { --mc-i: 9; }
+    .mc-layers-label:nth-of-type(11) { --mc-i: 10; } .mc-layers-label:nth-of-type(12) { --mc-i: 11; }
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .mc-layers--still-true .mc-layers-base, .mc-layers--still-true .mc-layers-layer, .mc-layers--still-true .mc-layers-label { animation: none !important; }
+  }
+}
+@keyframes mc-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mc-sweep { from { --mc-sweep: 0deg; } to { --mc-sweep: 360deg; } }
+@keyframes mc-wipe { from { --mc-wipe: 0%; } to { --mc-wipe: 100%; } }
+@keyframes mc-drop { from { opacity: 0; translate: 0 -6%; scale: 1.06; } to { opacity: 1; translate: 0 0; scale: 1; } }
+@keyframes mc-label { from { opacity: 0; translate: -50% -20%; } to { opacity: 1; translate: -50% -50%; } }

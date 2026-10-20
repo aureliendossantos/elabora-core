@@ -1,0 +1,80 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/lms-profile.schema.json",
+  "id": "unknown",
+  "name": "Unknown LMS (no LMS chosen: strictest documented behaviour)",
+  "documentedAt": "2026-10",
+  "sources": [],
+  "standards": {
+    "scorm12": true,
+    "scorm2004": [],
+    "sequencing": false,
+    "multiSco": false,
+    "cmi5": false,
+    "xapi": false,
+    "lti13": false,
+    "aicc": null
+  },
+  "launch": {
+    "default": "iframe",
+    "modes": [
+      "iframe",
+      "popup",
+      "popup-chain",
+      "nested-iframe"
+    ],
+    "apiDiscovery": [
+      "parents",
+      "opener",
+      "top.opener",
+      "top.opener.opener"
+    ]
+  },
+  "datamodel": {
+    "suspendDataMax": {
+      "scorm12": 4096,
+      "scorm2004": 4000
+    },
+    "suspendDataEnforcement": "reject",
+    "lessonLocationMax": 255,
+    "masteryOverridesStatus": true
+  },
+  "exit": {
+    "needsExplicitFinish": true
+  },
+  "session": {
+    "autocommitSeconds": 60
+  },
+  "browser": {
+    "unloadHeaderSent": false,
+    "thirdPartyCookiesRequired": false,
+    "knownBugs": []
+  },
+  "packaging": {
+    "maxZipMB": null,
+    "maxFiles": null,
+    "maxCompressionRatio": null,
+    "asciiFilenames": true,
+    "schemaversionRequired": true,
+    "oneStandardPerZip": true,
+    "forbiddenExtensions": [
+      ".php",
+      ".asp",
+      ".aspx",
+      ".jsp",
+      ".exe"
+    ]
+  },
+  "update": {
+    "family": "replace-loses-progress",
+    "notes": "Assume the worst: replacing the package loses progress."
+  },
+  "harness": {
+    "autocommitSeconds": 60,
+    "syncCommits": true
+  },
+  "toMeasure": [],
+  "notes": [
+    "Lowest common denominator: SCORM 1.2 single SCO, no sequencing, no popup opened by the content, 4,096 characters of suspend_data.",
+    "No package size, file count or compression limit is assumed: they differ too much between LMSs (100 MB to 4 GB). The build warns with the documented LMSs a package would exceed (W_PACKAGE_TOO_LARGE_FOR_SOME_LMS and the like) until the course names its LMS (course.json delivery.lms)."
+  ]
+}

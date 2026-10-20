@@ -1,0 +1,188 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "orbital-rendezvous",
+  "title": "Slow down to catch up: orbital rendezvous",
+  "description": "15-minute module for new mission operators: why lower orbits are faster, what a burn does to an orbit, the phasing rule of thumb, and a 3D phasing lab around the Earth.",
+  "language": "en",
+  "version": "1.0.0",
+  "durationMinutes": 15,
+  "sections": [
+    {
+      "id": "discover",
+      "title": "Discover",
+      "screens": [
+        "intro",
+        "orbits"
+      ]
+    },
+    {
+      "id": "practise",
+      "title": "Practise",
+      "screens": [
+        "burns",
+        "lab"
+      ]
+    },
+    {
+      "id": "prove",
+      "title": "Prove it",
+      "screens": [
+        "assessment"
+      ]
+    }
+  ],
+  "variables": [],
+  "theme": {
+    "cascade": "components-over-theme",
+    "tokens": {
+      "color.primary": "#8CCBFF",
+      "color.onPrimary": "#04101F",
+      "color.accent": "#FFA24C",
+      "color.surface": "#060A16",
+      "color.text": "#E8EEF7",
+      "color.muted": "#9DAAC0",
+      "color.success": "#5EE09A",
+      "color.error": "#FF7A7A",
+      "color.focus": "#FFD36B",
+      "font.body": "\"Inter\", \"Segoe UI\", system-ui, -apple-system, Roboto, sans-serif",
+      "font.heading": "\"Space Grotesk\", \"Inter\", \"Segoe UI\", system-ui, sans-serif",
+      "radius": 14,
+      "player.top.background": "#02040B",
+      "player.top.text": "#E8EEF7",
+      "player.bottom.background": "#02040B",
+      "player.bottom.text": "#E8EEF7"
+    },
+    "custom": {
+      "color.void": "#02040B",
+      "color.nebula": "#3A2C86",
+      "color.nebula-warm": "#7A2E5C",
+      "color.nebula-cool": "#0F5470",
+      "color.star": "#FFFFFF",
+      "color.star-warm": "#FFD9A8",
+      "color.star-cool": "#B8D8FF",
+      "color.atmosphere": "#4FA8FF",
+      "color.ocean": "#0A2E57",
+      "color.ocean-deep": "#041A36",
+      "color.land": "#3E6B4A",
+      "color.land-dry": "#A78B5C",
+      "color.ice": "#EAF3FB",
+      "color.city": "#FFC46B",
+      "color.orbit": "#8CCBFF",
+      "color.servicer": "#FFA24C",
+      "color.client": "#B9A7FF",
+      "color.panel": "#0B1226",
+      "shadow.glow": "0 0 0 1px rgba(140,203,255,.16), 0 18px 50px rgba(0,0,0,.45)"
+    },
+    "stylesheet": "theme/theme.css",
+    "fonts": [
+      {
+        "family": "Inter",
+        "src": "theme/fonts/inter-latin-wght.woff2",
+        "weight": "100 900"
+      },
+      {
+        "family": "Space Grotesk",
+        "src": "theme/fonts/space-grotesk-latin-wght.woff2",
+        "weight": "300 700"
+      }
+    ],
+    "styles": {
+      "text": {
+        "lead": "Large introductory paragraph",
+        "legend": "Numbered legend of a figure (numbers match the markers)"
+      },
+      "callout": {
+        "rule": "The one rule to remember, on a glowing glass card",
+        "glass": "Translucent panel that lets the starfield through"
+      },
+      "image": {
+        "bare": "No frame: for figures drawn on the starfield"
+      }
+    },
+    "backdrop": {
+      "layers": [
+        "nebula",
+        "far",
+        "near",
+        "glint-a",
+        "glint-b"
+      ]
+    }
+  },
+  "presentation": {
+    "mode": "slides",
+    "contentWidth": 720,
+    "wideWidth": 1240,
+    "fit": {
+      "reference": "1600x900",
+      "minimum": "1280x720"
+    }
+  },
+  "navigation": {
+    "mode": "linear",
+    "lockUntilComplete": true
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "logo",
+          "enabled": false
+        },
+        {
+          "id": "title"
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "language"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "outline"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "completion": {
+    "reportAs": "passed-incomplete",
+    "masteryScore": 70
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  }
+}

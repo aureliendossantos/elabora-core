@@ -1,0 +1,9 @@
+# LF everywhere, Windows included: builds, hashes and tests compare bytes.
+* text=auto eol=lf
+*.png binary
+*.woff2 binary
+*.mp4 binary
+*.mov binary
+*.zip binary
+*.docx binary
+*.pptx binary

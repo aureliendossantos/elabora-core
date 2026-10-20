@@ -1,0 +1,73 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "planetary-lab",
+  "version": "1.0.0",
+  "title": "Planetary gearset test bench",
+  "planRefs": { "objectives": ["OBJ-2", "OBJ-3"], "items": ["ITEM-4"] },
+  "pedagogicalRole": "simulation-decision",
+  "requires": { "three": "r186" },
+  "props": {
+    "type": "object",
+    "properties": {
+      "instruction": { "type": "string", "maxLength": 200, "default": "Meet each requirement: choose the held member and the member the motor drives, then run the bench.", "description": "Instruction shown at the top of the control panel", "x-group": "Content", "x-control": "textarea", "x-translatable": true },
+      "gearset": { "type": "string", "enum": ["30-78", "24-72", "20-52"], "default": "30-78", "description": "Tooth counts: sun - ring (the planets are sized automatically)", "x-group": "Gearset", "x-control": "select" },
+      "inputRpm": { "type": "integer", "minimum": 100, "maximum": 3000, "multipleOf": 50, "default": 1000, "description": "Motor speed shown on the bench, in rpm", "x-group": "Gearset", "x-control": "slider" },
+      "requirement1": { "type": "string", "enum": ["ring-sun", "sun-ring", "sun-carrier", "ring-carrier", "carrier-sun", "carrier-ring"], "default": "ring-sun", "description": "Requirement 1: the configuration (held - driven) whose ratio the learner must reproduce", "x-group": "Requirements", "x-control": "select" },
+      "requirement2": { "type": "string", "enum": ["ring-sun", "sun-ring", "sun-carrier", "ring-carrier", "carrier-sun", "carrier-ring"], "default": "ring-carrier", "description": "Requirement 2", "x-group": "Requirements", "x-control": "select" },
+      "requirement3": { "type": "string", "enum": ["ring-sun", "sun-ring", "sun-carrier", "ring-carrier", "carrier-sun", "carrier-ring"], "default": "carrier-sun", "description": "Requirement 3", "x-group": "Requirements", "x-control": "select" },
+      "showRatio": { "type": "boolean", "default": true, "description": "Show the ratio next to the measured speeds", "x-group": "Help", "x-control": "toggle" },
+      "animationSpeed": { "type": "number", "minimum": 0.25, "maximum": 2, "multipleOf": 0.25, "default": 1, "description": "Animation speed of the gears", "x-group": "Animation", "x-control": "slider" },
+      "sunColor": { "type": "string", "format": "color", "default": "#C2571A", "description": "Sun gear colour (charter)", "x-group": "Style", "x-control": "color", "x-token": "color.accent", "x-object-id": "sun" },
+      "carrierColor": { "type": "string", "format": "color", "default": "#2F6DB0", "description": "Carrier colour", "x-group": "Style", "x-control": "color", "x-object-id": "carrier" },
+      "ringColor": { "type": "string", "format": "color", "default": "#46525E", "description": "Ring gear colour", "x-group": "Style", "x-control": "color", "x-object-id": "ring" },
+      "planetColor": { "type": "string", "format": "color", "default": "#A9B6C3", "description": "Planet gear colour", "x-group": "Style", "x-control": "color" },
+      "stageColor": { "type": "string", "format": "color", "default": "#0F2A47", "description": "Background of the 3D view (charter)", "x-group": "Style", "x-control": "color", "x-token": "color.primary" }
+    },
+    "required": ["instruction", "gearset", "requirement1", "requirement2", "requirement3"]
+  },
+  "objects": [
+    { "id": "sun", "label": "Sun gear", "selectable": true },
+    { "id": "carrier", "label": "Carrier", "selectable": true },
+    { "id": "ring", "label": "Ring gear", "selectable": true }
+  ],
+  "state": {
+    "type": "object",
+    "properties": {
+      "held": { "type": "string", "enum": ["sun", "carrier", "ring"], "description": "Member held by the brake" },
+      "input": { "type": "string", "enum": ["sun", "carrier", "ring"], "description": "Member driven by the motor" },
+      "step": { "type": "integer", "minimum": 0, "maximum": 3, "description": "Index of the current requirement (3 = all met)" },
+      "runs": { "type": "array", "items": { "type": "integer", "minimum": 0 }, "description": "Bench runs used for each requirement" },
+      "ran": { "type": "boolean", "description": "The bench has run the current configuration" }
+    },
+    "required": ["held", "input", "step", "runs", "ran"]
+  },
+  "persistState": { "enabled": true, "maxLength": 120 },
+  "events": [
+    {
+      "name": "bench_run",
+      "description": "The learner runs the bench with a configuration while a requirement is open.",
+      "payload": { "type": "object", "properties": { "requirement": { "type": "integer" }, "config": { "type": "string" }, "correct": { "type": "boolean" } }, "required": ["requirement", "config", "correct"] },
+      "tracking": { "interaction": { "type": "choice", "objective": "OBJ-3", "responseField": "config", "correctField": "correct" } }
+    },
+    {
+      "name": "requirement_met",
+      "description": "A requirement is met; the next one opens.",
+      "payload": { "type": "object", "properties": { "requirement": { "type": "integer" }, "runs": { "type": "integer" } }, "required": ["requirement", "runs"] }
+    },
+    {
+      "name": "completed",
+      "description": "All three requirements are met.",
+      "payload": { "type": "object", "properties": { "score": { "type": "number", "minimum": 0, "maximum": 1 } }, "required": ["score"] },
+      "tracking": { "score": { "field": "score" }, "completion": true }
+    }
+  ],
+  "budgets": { "drawCallsMax": 150, "trianglesMax": 300000, "texturePxMax": 2048, "assetsMbMax": 8, "bootMsMax": 3000, "fpsMin": 30, "webglContexts": 1 },
+  "a11y": {
+    "description": "Three-quarter 3D view of a planetary gearset on a test bench: a copper sun gear in the centre, three steel planet gears on a blue carrier, inside a dark ring gear. The held member shows a red brake, the driven member an orange motor arrow, the output a green arrow; all gears turn at their computed speeds.",
+    "keyboard": "Tab reaches the controls. Choose the held member and the driven member with the arrow keys in each group, then press Run the bench. Shortcuts when the bench has focus: H holds the selected member, M puts the motor on it, R runs the bench, P pauses the animation.",
+    "dragAlternative": "Dragging rotates the view; the View buttons give the same angles without dragging.",
+    "motion": { "pausable": true, "respectsReducedMotion": true }
+  },
+  "sandbox": { "network": "none", "permissions": [] }
+}

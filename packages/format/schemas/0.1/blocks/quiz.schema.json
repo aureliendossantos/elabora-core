@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1/blocks/quiz.schema.json",
+  "title": "quiz block props",
+  "description": "A single- or multiple-choice question with elaborated feedback. Either reuse a validated plan question (questionRef) or write the question inline (stem, mode, options) for non-locked practice.",
+  "x-category": "assessment",
+  "x-ai-instructions": "Prefer questionRef when the plan has the question. Inline items: 3 plausible options (C1), no 'all/none of the above', no unflagged negation, homogeneous option length, elaborated feedback for every option explaining why (D1), contextualised at the objective's Bloom level (C2).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "questionRef": { "$ref": "../defs.schema.json#/$defs/planId", "description": "Id of a plan question. When set, do not set stem, mode or options." },
+    "stem": { "$ref": "../defs.schema.json#/$defs/markdown", "x-translatable": true },
+    "mode": { "enum": ["single", "multiple"] },
+    "options": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "text", "correct"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]{1,8}$" },
+          "text": { "type": "string", "minLength": 1, "maxLength": 500, "x-translatable": true },
+          "correct": { "type": "boolean" },
+          "feedback": { "$ref": "../defs.schema.json#/$defs/markdown", "x-translatable": true }
+        }
+      }
+    },
+    "objective": { "$ref": "../defs.schema.json#/$defs/planId", "description": "Plan objective measured. Taken from the plan question when questionRef is used." },
+    "scored": { "type": "boolean", "default": true, "description": "Counts in the course score." },
+    "weight": { "type": "number", "minimum": 0.1, "maximum": 10, "default": 1 },
+    "attempts": { "type": "integer", "minimum": 1, "maximum": 5, "default": 1, "description": "Tries before the answer is final." },
+    "showCorrectAnswer": { "type": "boolean", "default": true, "description": "After the last try, highlight the correct options." },
+    "feedbackStyle": { "enum": ["full", "compact"], "default": "full", "description": "How the feedback of the options chosen is shown under the question. full: each option's text in bold, then its feedback. compact: its feedback only, the option being marked where it is (screen readers still hear its text first): about half the room an answered question reserves on a slide, so that two questions fit side by side. With several options' feedback at once (multiple choice), each keeps its text." }
+  }
+}

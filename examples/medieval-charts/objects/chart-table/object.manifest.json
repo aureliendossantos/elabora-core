@@ -1,0 +1,923 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "chart-table",
+  "version": "2.2.0",
+  "title": "Chart table",
+  "planRefs": {
+    "objectives": [
+      "OBJ-3"
+    ],
+    "items": [
+      "ITEM-5"
+    ]
+  },
+  "pedagogicalRole": "practice",
+  "requires": {
+    "three": "r186"
+  },
+  "props": {
+    "type": "object",
+    "properties": {
+      "voyages": {
+        "type": "array",
+        "title": "Voyages",
+        "minItems": 1,
+        "maxItems": 6,
+        "items": {
+          "type": "object",
+          "title": "Voyage",
+          "properties": {
+            "from": {
+              "type": "string",
+              "title": "From",
+              "description": "Departure harbour",
+              "enum": [
+                "lisbon",
+                "seville",
+                "ceuta",
+                "almeria",
+                "cartagena",
+                "valencia",
+                "barcelona",
+                "marseille",
+                "genoa",
+                "pisa",
+                "naples",
+                "messina",
+                "palermo",
+                "cagliari",
+                "palma",
+                "venice",
+                "ancona",
+                "ragusa",
+                "otranto",
+                "modon",
+                "candia",
+                "constantinople",
+                "caffa",
+                "tana",
+                "trebizond",
+                "laiazzo",
+                "famagusta",
+                "acre",
+                "alexandria",
+                "tripoli",
+                "tunis",
+                "bugia",
+                "algiers",
+                "oran"
+              ],
+              "x-control": "select"
+            },
+            "to": {
+              "type": "string",
+              "title": "To",
+              "description": "Destination harbour, another harbour of the chart",
+              "enum": [
+                "lisbon",
+                "seville",
+                "ceuta",
+                "almeria",
+                "cartagena",
+                "valencia",
+                "barcelona",
+                "marseille",
+                "genoa",
+                "pisa",
+                "naples",
+                "messina",
+                "palermo",
+                "cagliari",
+                "palma",
+                "venice",
+                "ancona",
+                "ragusa",
+                "otranto",
+                "modon",
+                "candia",
+                "constantinople",
+                "caffa",
+                "tana",
+                "trebizond",
+                "laiazzo",
+                "famagusta",
+                "acre",
+                "alexandria",
+                "tripoli",
+                "tunis",
+                "bugia",
+                "algiers",
+                "oran"
+              ],
+              "x-control": "select"
+            }
+          },
+          "required": [
+            "from",
+            "to"
+          ]
+        },
+        "default": [
+          {
+            "from": "palma",
+            "to": "cagliari"
+          },
+          {
+            "from": "genoa",
+            "to": "barcelona"
+          },
+          {
+            "from": "palermo",
+            "to": "naples"
+          }
+        ],
+        "description": "The voyages to lay, in order (one to six), each from one harbour of the chart to another. When you change them, change the text version of the block too.",
+        "x-group": "Voyages",
+        "x-control": "list"
+      },
+      "required": {
+        "type": "integer",
+        "title": "Voyages to complete",
+        "minimum": 1,
+        "maximum": 6,
+        "default": 2,
+        "description": "How many voyages, from the first, complete the table and count in its score. Any voyages after them stay open as optional extra voyages.",
+        "x-group": "Voyages",
+        "x-control": "slider"
+      },
+      "guided": {
+        "type": "boolean",
+        "title": "Guide the first voyage",
+        "default": true,
+        "description": "On the first voyage, each step appears only once the one before is right (the wind, then the distance, then Set sail), a wrong wind says which way to turn, and the scale strip shows the distance to match.",
+        "x-group": "Voyages",
+        "x-control": "toggle"
+      },
+      "tolerance": {
+        "type": "integer",
+        "title": "Tolerance (%)",
+        "minimum": 5,
+        "maximum": 20,
+        "default": 10,
+        "description": "How far off the distance may be, in % of the true distance, for a landfall",
+        "x-group": "Voyages",
+        "x-control": "slider"
+      },
+      "brassColor": {
+        "type": "string",
+        "format": "color",
+        "title": "Brass",
+        "default": "#C79A45",
+        "description": "Brass of the dividers and of the ruler's edge",
+        "x-group": "Materials",
+        "x-control": "color",
+        "x-object-id": "dividers"
+      },
+      "woodColor": {
+        "type": "string",
+        "format": "color",
+        "title": "Boxwood",
+        "default": "#9C6B3A",
+        "description": "Boxwood of the ruler",
+        "x-group": "Materials",
+        "x-control": "color",
+        "x-object-id": "ruler"
+      },
+      "steelColor": {
+        "type": "string",
+        "format": "color",
+        "title": "Steel",
+        "default": "#8C8F94",
+        "description": "Steel points of the dividers",
+        "x-group": "Materials",
+        "x-control": "color"
+      },
+      "hullColor": {
+        "type": "string",
+        "format": "color",
+        "title": "Hull",
+        "default": "#6B4423",
+        "description": "Timber of the ship's hull and mast",
+        "x-group": "Materials",
+        "x-control": "color",
+        "x-object-id": "ship"
+      }
+    }
+  },
+  "language": "en",
+  "strings": {
+    "panelLabel": {
+      "text": "Ship's log",
+      "description": "Accessible name of the control panel"
+    },
+    "logTitle": {
+      "text": "Ship's log",
+      "description": "Eyebrow of the panel once every voyage is done",
+      "maxLength": 24
+    },
+    "voyage": {
+      "text": "Voyage {i} of {n}",
+      "description": "Eyebrow of the panel",
+      "maxLength": 24
+    },
+    "voyageOptional": {
+      "text": "Voyage {i} of {n} · optional",
+      "description": "Eyebrow of the panel on an optional extra voyage",
+      "maxLength": 32
+    },
+    "route": {
+      "text": "Sail from {from} to {to}",
+      "description": "Title of the panel: the voyage to lay, between two harbours (modern names)",
+      "maxLength": 60
+    },
+    "allDoneTitle": {
+      "text": "{n, plural, =1 {One voyage, one landfall} =2 {Two voyages, two landfalls} =3 {Three voyages, three landfalls} other {# voyages, # landfalls}}",
+      "description": "Title of the panel once every voyage is done",
+      "maxLength": 60
+    },
+    "windLegend": {
+      "text": "1. Choose the wind",
+      "description": "Label of the eight wind buttons",
+      "maxLength": 32
+    },
+    "windOption": {
+      "text": "{name}, {direction}",
+      "description": "Accessible name of a wind button"
+    },
+    "dividersLabel": {
+      "text": "2. Open the dividers",
+      "description": "Label of the distance slider",
+      "maxLength": 32
+    },
+    "milesValue": {
+      "text": "{miles, plural, =0 {Closed} one {# mile} other {# miles}}",
+      "description": "Distance the dividers are open to",
+      "maxLength": 16
+    },
+    "divisions": {
+      "text": "{div} divisions of {unit} miles",
+      "description": "The same distance on the scale bar of the chart",
+      "maxLength": 40
+    },
+    "sail": {
+      "text": "Set sail",
+      "description": "Button: sail along the ruler for the distance of the dividers",
+      "maxLength": 16
+    },
+    "underSail": {
+      "text": "Under sail…",
+      "description": "Sail button while the ship sails",
+      "maxLength": 16
+    },
+    "next": {
+      "text": "Next voyage",
+      "description": "Button: go to the next voyage",
+      "maxLength": 16
+    },
+    "rulerLaid": {
+      "text": "The ruler is laid along {wind}.",
+      "description": "Status after choosing a wind"
+    },
+    "noWind": {
+      "text": "Choose a wind first: the ruler is laid from {from} along it.",
+      "description": "Feedback: sail without a wind"
+    },
+    "noMiles": {
+      "text": "Open the dividers to the distance first.",
+      "description": "Feedback: sail with closed dividers"
+    },
+    "sailing": {
+      "text": "Under sail along the rhumb line…",
+      "description": "Status while the ship sails"
+    },
+    "right": {
+      "text": "Landfall at {to}: {wind}, {miles} miles. Well steered.",
+      "description": "Feedback: right wind and distance"
+    },
+    "turnClockwise": {
+      "text": "Your ruler passes to the left of {to}: choose a wind further clockwise.",
+      "description": "Feedback: the destination lies clockwise of the chosen wind"
+    },
+    "turnAnticlockwise": {
+      "text": "Your ruler passes to the right of {to}: choose a wind further anticlockwise.",
+      "description": "Feedback: the destination lies anticlockwise of the chosen wind"
+    },
+    "short": {
+      "text": "Right wind, but you stop about {gap} miles short of {to}: open the dividers wider.",
+      "description": "Feedback: distance too short"
+    },
+    "long": {
+      "text": "Right wind, but you sail about {gap} miles past {to}: close the dividers a little.",
+      "description": "Feedback: distance too long"
+    },
+    "allDone": {
+      "text": "{n, plural, =1 {The voyage is done.} =2 {Both voyages are done.} =3 {All three voyages are done.} other {All # voyages are done.}}",
+      "description": "Added to the feedback after the last voyage"
+    },
+    "requiredDone": {
+      "text": "{n, plural, =1 {The voyage is done: the table is yours.} =2 {Both voyages are done: the table is yours.} other {# voyages are done: the table is yours.}}{extra, plural, =0 {} one { One more voyage is open, if you enjoy it.} other { # more voyages are open, if you enjoy them.}}",
+      "description": "Added to the feedback when the voyages that complete the table are done and optional ones remain"
+    },
+    "logItem": {
+      "text": "{i}. {from} to {to}{state, select, done {: done} open {: in progress} optional {: optional} other {}}",
+      "description": "One line of the log of voyages"
+    },
+    "wind_tramontana": {
+      "text": "Tramontana",
+      "description": "Name of the wind blowing from the north (Mediterranean wind names)",
+      "maxLength": 12
+    },
+    "dir_tramontana": {
+      "text": "north",
+      "description": "Direction of Tramontana, in words",
+      "maxLength": 16
+    },
+    "wind_greco": {
+      "text": "Greco",
+      "description": "Name of the wind blowing from the north-east (Mediterranean wind names)",
+      "maxLength": 12
+    },
+    "dir_greco": {
+      "text": "north-east",
+      "description": "Direction of Greco, in words",
+      "maxLength": 16
+    },
+    "wind_levante": {
+      "text": "Levante",
+      "description": "Name of the wind blowing from the east (Mediterranean wind names)",
+      "maxLength": 12
+    },
+    "dir_levante": {
+      "text": "east",
+      "description": "Direction of Levante, in words",
+      "maxLength": 16
+    },
+    "wind_scirocco": {
+      "text": "Scirocco",
+      "description": "Name of the wind blowing from the south-east (Mediterranean wind names)",
+      "maxLength": 12
+    },
+    "dir_scirocco": {
+      "text": "south-east",
+      "description": "Direction of Scirocco, in words",
+      "maxLength": 16
+    },
+    "wind_ostro": {
+      "text": "Ostro",
+      "description": "Name of the wind blowing from the south (Mediterranean wind names)",
+      "maxLength": 12
+    },
+    "dir_ostro": {
+      "text": "south",
+      "description": "Direction of Ostro, in words",
+      "maxLength": 16
+    },
+    "wind_libeccio": {
+      "text": "Libeccio",
+      "description": "Name of the wind blowing from the south-west (Mediterranean wind names)",
+      "maxLength": 12
+    },
+    "dir_libeccio": {
+      "text": "south-west",
+      "description": "Direction of Libeccio, in words",
+      "maxLength": 16
+    },
+    "wind_ponente": {
+      "text": "Ponente",
+      "description": "Name of the wind blowing from the west (Mediterranean wind names)",
+      "maxLength": 12
+    },
+    "dir_ponente": {
+      "text": "west",
+      "description": "Direction of Ponente, in words",
+      "maxLength": 16
+    },
+    "wind_maestro": {
+      "text": "Maestro",
+      "description": "Name of the wind blowing from the north-west (Mediterranean wind names)",
+      "maxLength": 12
+    },
+    "dir_maestro": {
+      "text": "north-west",
+      "description": "Direction of Maestro, in words",
+      "maxLength": 16
+    },
+    "port_lisbon": {
+      "text": "Lisbona",
+      "description": "Name of Lisbon as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_lisbon": {
+      "text": "Lisbon",
+      "description": "Modern name of Lisbon, in the panel",
+      "maxLength": 24
+    },
+    "port_seville": {
+      "text": "Sibilia",
+      "description": "Name of Seville as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_seville": {
+      "text": "Seville",
+      "description": "Modern name of Seville, in the panel",
+      "maxLength": 24
+    },
+    "port_ceuta": {
+      "text": "Septa",
+      "description": "Name of Ceuta as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_ceuta": {
+      "text": "Ceuta",
+      "description": "Modern name of Ceuta, in the panel",
+      "maxLength": 24
+    },
+    "port_almeria": {
+      "text": "Almeria",
+      "description": "Name of Almería as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_almeria": {
+      "text": "Almería",
+      "description": "Modern name of Almería, in the panel",
+      "maxLength": 24
+    },
+    "port_cartagena": {
+      "text": "Cartagenia",
+      "description": "Name of Cartagena as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_cartagena": {
+      "text": "Cartagena",
+      "description": "Modern name of Cartagena, in the panel",
+      "maxLength": 24
+    },
+    "port_valencia": {
+      "text": "Valencia",
+      "description": "Name of Valencia as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_valencia": {
+      "text": "Valencia",
+      "description": "Modern name of Valencia, in the panel",
+      "maxLength": 24
+    },
+    "port_barcelona": {
+      "text": "Barchelona",
+      "description": "Name of Barcelona as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_barcelona": {
+      "text": "Barcelona",
+      "description": "Modern name of Barcelona, in the panel",
+      "maxLength": 24
+    },
+    "port_marseille": {
+      "text": "Marsilia",
+      "description": "Name of Marseille as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_marseille": {
+      "text": "Marseille",
+      "description": "Modern name of Marseille, in the panel",
+      "maxLength": 24
+    },
+    "port_genoa": {
+      "text": "Janua",
+      "description": "Name of Genoa as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_genoa": {
+      "text": "Genoa",
+      "description": "Modern name of Genoa, in the panel",
+      "maxLength": 24
+    },
+    "port_pisa": {
+      "text": "Pisa",
+      "description": "Name of Pisa as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_pisa": {
+      "text": "Pisa",
+      "description": "Modern name of Pisa, in the panel",
+      "maxLength": 24
+    },
+    "port_naples": {
+      "text": "Napoli",
+      "description": "Name of Naples as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_naples": {
+      "text": "Naples",
+      "description": "Modern name of Naples, in the panel",
+      "maxLength": 24
+    },
+    "port_messina": {
+      "text": "Mesina",
+      "description": "Name of Messina as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_messina": {
+      "text": "Messina",
+      "description": "Modern name of Messina, in the panel",
+      "maxLength": 24
+    },
+    "port_palermo": {
+      "text": "Palermo",
+      "description": "Name of Palermo as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_palermo": {
+      "text": "Palermo",
+      "description": "Modern name of Palermo, in the panel",
+      "maxLength": 24
+    },
+    "port_cagliari": {
+      "text": "Callari",
+      "description": "Name of Cagliari as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_cagliari": {
+      "text": "Cagliari",
+      "description": "Modern name of Cagliari, in the panel",
+      "maxLength": 24
+    },
+    "port_palma": {
+      "text": "Maiorica",
+      "description": "Name of Majorca as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_palma": {
+      "text": "Majorca",
+      "description": "Modern name of Majorca, in the panel",
+      "maxLength": 24
+    },
+    "port_venice": {
+      "text": "Venecia",
+      "description": "Name of Venice as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_venice": {
+      "text": "Venice",
+      "description": "Modern name of Venice, in the panel",
+      "maxLength": 24
+    },
+    "port_ancona": {
+      "text": "Ancona",
+      "description": "Name of Ancona as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_ancona": {
+      "text": "Ancona",
+      "description": "Modern name of Ancona, in the panel",
+      "maxLength": 24
+    },
+    "port_ragusa": {
+      "text": "Ragusa",
+      "description": "Name of Ragusa (Dubrovnik) as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_ragusa": {
+      "text": "Ragusa (Dubrovnik)",
+      "description": "Modern name of Ragusa (Dubrovnik), in the panel",
+      "maxLength": 24
+    },
+    "port_otranto": {
+      "text": "Otranto",
+      "description": "Name of Otranto as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_otranto": {
+      "text": "Otranto",
+      "description": "Modern name of Otranto, in the panel",
+      "maxLength": 24
+    },
+    "port_modon": {
+      "text": "Modon",
+      "description": "Name of Modon (Methoni) as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_modon": {
+      "text": "Modon (Methoni)",
+      "description": "Modern name of Modon (Methoni), in the panel",
+      "maxLength": 24
+    },
+    "port_candia": {
+      "text": "Candia",
+      "description": "Name of Candia (Crete) as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_candia": {
+      "text": "Candia (Crete)",
+      "description": "Modern name of Candia (Crete), in the panel",
+      "maxLength": 24
+    },
+    "port_constantinople": {
+      "text": "Constantinopoli",
+      "description": "Name of Constantinople as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_constantinople": {
+      "text": "Constantinople",
+      "description": "Modern name of Constantinople, in the panel",
+      "maxLength": 24
+    },
+    "port_caffa": {
+      "text": "Caffa",
+      "description": "Name of Caffa (Crimea) as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_caffa": {
+      "text": "Caffa (Crimea)",
+      "description": "Modern name of Caffa (Crimea), in the panel",
+      "maxLength": 24
+    },
+    "port_tana": {
+      "text": "La Tana",
+      "description": "Name of La Tana (Azov) as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_tana": {
+      "text": "La Tana (Azov)",
+      "description": "Modern name of La Tana (Azov), in the panel",
+      "maxLength": 24
+    },
+    "port_trebizond": {
+      "text": "Trapesonda",
+      "description": "Name of Trebizond as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_trebizond": {
+      "text": "Trebizond",
+      "description": "Modern name of Trebizond, in the panel",
+      "maxLength": 24
+    },
+    "port_laiazzo": {
+      "text": "Layaso",
+      "description": "Name of Laiazzo (Ayas) as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_laiazzo": {
+      "text": "Laiazzo (Ayas)",
+      "description": "Modern name of Laiazzo (Ayas), in the panel",
+      "maxLength": 24
+    },
+    "port_famagusta": {
+      "text": "Famagosta",
+      "description": "Name of Famagusta (Cyprus) as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_famagusta": {
+      "text": "Famagusta (Cyprus)",
+      "description": "Modern name of Famagusta (Cyprus), in the panel",
+      "maxLength": 24
+    },
+    "port_acre": {
+      "text": "Acri",
+      "description": "Name of Acre as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_acre": {
+      "text": "Acre",
+      "description": "Modern name of Acre, in the panel",
+      "maxLength": 24
+    },
+    "port_alexandria": {
+      "text": "Alexandria",
+      "description": "Name of Alexandria as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_alexandria": {
+      "text": "Alexandria",
+      "description": "Modern name of Alexandria, in the panel",
+      "maxLength": 24
+    },
+    "port_tripoli": {
+      "text": "Tripoli",
+      "description": "Name of Tripoli as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_tripoli": {
+      "text": "Tripoli",
+      "description": "Modern name of Tripoli, in the panel",
+      "maxLength": 24
+    },
+    "port_tunis": {
+      "text": "Tunisi",
+      "description": "Name of Tunis as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_tunis": {
+      "text": "Tunis",
+      "description": "Modern name of Tunis, in the panel",
+      "maxLength": 24
+    },
+    "port_bugia": {
+      "text": "Bugia",
+      "description": "Name of Bugia (Béjaïa) as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_bugia": {
+      "text": "Bugia (Béjaïa)",
+      "description": "Modern name of Bugia (Béjaïa), in the panel",
+      "maxLength": 24
+    },
+    "port_algiers": {
+      "text": "Alger",
+      "description": "Name of Algiers as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_algiers": {
+      "text": "Algiers",
+      "description": "Modern name of Algiers, in the panel",
+      "maxLength": 24
+    },
+    "port_oran": {
+      "text": "Oran",
+      "description": "Name of Oran as written on the chart (medieval spelling)",
+      "maxLength": 18
+    },
+    "place_oran": {
+      "text": "Oran",
+      "description": "Modern name of Oran, in the panel",
+      "maxLength": 24
+    }
+  },
+  "objects": [
+    {
+      "id": "sheet",
+      "label": "The chart on its skin",
+      "selectable": true
+    },
+    {
+      "id": "ruler",
+      "label": "Ruler",
+      "selectable": true
+    },
+    {
+      "id": "dividers",
+      "label": "Dividers",
+      "selectable": true
+    },
+    {
+      "id": "ship",
+      "label": "Ship",
+      "selectable": true
+    }
+  ],
+  "state": {
+    "type": "object",
+    "properties": {
+      "voyage": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 6,
+        "description": "Index of the open voyage (the number of voyages once all are done)"
+      },
+      "wind": {
+        "type": "string",
+        "enum": [
+          "",
+          "tramontana",
+          "greco",
+          "levante",
+          "scirocco",
+          "ostro",
+          "libeccio",
+          "ponente",
+          "maestro"
+        ],
+        "description": "Wind chosen for the open voyage"
+      },
+      "miles": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 800,
+        "description": "Distance the dividers are open to"
+      },
+      "attempts": {
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "description": "Times the learner set sail on each voyage",
+        "maxItems": 6
+      },
+      "sailing": {
+        "type": "boolean",
+        "description": "The ship is sailing"
+      }
+    },
+    "required": [
+      "voyage",
+      "wind",
+      "miles",
+      "attempts",
+      "sailing"
+    ]
+  },
+  "persistState": {
+    "enabled": true,
+    "maxLength": 120
+  },
+  "events": [
+    {
+      "name": "voyage",
+      "description": "The learner set sail on an open voyage: wind, distance and whether the ship made landfall.",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "voyage": {
+            "type": "integer"
+          },
+          "from": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "wind": {
+            "type": "string"
+          },
+          "miles": {
+            "type": "integer"
+          },
+          "correct": {
+            "type": "boolean"
+          },
+          "attempt": {
+            "type": "integer"
+          },
+          "answer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "voyage",
+          "from",
+          "to",
+          "wind",
+          "miles",
+          "correct",
+          "attempt",
+          "answer"
+        ]
+      },
+      "tracking": {
+        "interaction": {
+          "type": "performance",
+          "objective": "OBJ-3",
+          "responseField": "answer",
+          "correctField": "correct"
+        }
+      }
+    },
+    {
+      "name": "completed",
+      "description": "The voyages that complete the table (the first `required` ones) made landfall. Score: 1 for a voyage right at the first attempt, 0.75 at the second, 0.5 at the third, 0.25 after; the mean over those voyages.",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "score"
+        ]
+      },
+      "tracking": {
+        "completion": true,
+        "score": {
+          "field": "score"
+        }
+      }
+    }
+  ],
+  "budgets": {
+    "drawCallsMax": 40,
+    "trianglesMax": 60000,
+    "texturePxMax": 4096,
+    "assetsMbMax": 1,
+    "bootMsMax": 3000,
+    "fpsMin": 30,
+    "webglContexts": 1
+  },
+  "a11y": {
+    "description": "A medieval sea chart of the Mediterranean and the Black Sea on a calfskin, seen from above at an angle on the page. It unrolls as you scroll to it, then its black, green and red rhumb lines spread from sixteen points round a hidden circle and its coasts and red and black harbour names are inked in. For each voyage, the two harbours are ringed; the ruler is laid from the first along the wind you choose, the dividers open beside it, and the ship sails along the ruler for that distance, leaving a dotted wake. Under the distance slider, a strip copies the chart's scale of miles and marks the span of the dividers on it.",
+    "keyboard": "Tab reaches the panel: the wind buttons (arrow keys move round them), the distance slider (arrow keys, 10 miles a step), Set sail and Next voyage. Shortcuts: 1 to 8 choose the winds from north clockwise, + and − change the distance by 10 miles, ] and [ by 50, S sets sail, N opens the next voyage.",
+    "dragAlternative": "Nothing needs dragging: every action is a button or the slider.",
+    "motion": {
+      "pausable": false,
+      "respectsReducedMotion": true
+    }
+  },
+  "sandbox": {
+    "network": "none",
+    "permissions": []
+  }
+}

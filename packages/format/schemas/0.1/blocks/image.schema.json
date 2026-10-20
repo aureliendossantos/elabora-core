@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1/blocks/image.schema.json",
+  "title": "image block props",
+  "description": "An image from the assets folder.",
+  "x-category": "content",
+  "x-ai-instructions": "Only images with an instructional function (E1). Write alt as the information the image carries, not its file name. Mark purely decorative images decorative: true. Generated images must be marked generated: true (AI Act art. 50).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["asset"],
+  "properties": {
+    "asset": { "$ref": "../defs.schema.json#/$defs/assetPath" },
+    "alt": { "type": "string", "maxLength": 250, "description": "Text alternative. Required unless decorative is true.", "x-translatable": true },
+    "decorative": { "type": "boolean", "default": false, "description": "True only if the image carries no information." },
+    "caption": { "type": "string", "maxLength": 300, "x-translatable": true },
+    "generated": { "type": "boolean", "default": false, "description": "True if produced by an AI model; the player shows a mark and the build report lists it." },
+    "inline": { "type": "boolean", "default": false, "description": "SVG only: the drawing goes into the page instead of an <img>, so that the draw effect of a timing traces its strokes and the theme's CSS and currentColor reach its shapes. Sanitized when it is built: no script, no event handler, no link or reference out of the drawing; its ids prefixed with the block's, its own <style> scoped to it. Named by alt (role img), or hidden when decorative. Keep it for figures that need it: an inline drawing is part of the page's weight." }
+  }
+}

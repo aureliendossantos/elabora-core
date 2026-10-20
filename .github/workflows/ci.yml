@@ -1,0 +1,76 @@
+name: CI
+
+# Linux and Windows on every push to main, every pull request and every release (Release core calls
+# this workflow); macOS (minutes count ten times on private repositories, and development happens on
+# a Mac) weekly and when CI itself is dispatched. Windows runs the typecheck and the unit suite.
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md', 'docs/**']
+  pull_request:
+    paths-ignore: ['**.md', 'docs/**']
+  schedule:
+    - cron: '0 4 * * 1'
+  workflow_dispatch:
+  workflow_call:
+
+concurrency:
+  # github.workflow is the caller's name when Release core calls this workflow: its run never cancels
+  # main's CI, nor is cancelled by it.
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        # github.workflow is the caller's name in a workflow_call: a dispatched release adds no macOS.
+        os: ${{ fromJSON((github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.workflow == 'CI')) && '["ubuntu-latest","windows-latest","macos-latest"]' || '["ubuntu-latest","windows-latest"]') }}
+    steps:
+      - name: Keep line endings as committed
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.action == 'closed' && github.event.pull_request.merge_commit_sha || github.sha }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      # ffmpeg: the GPL builds of BtbN/FFmpeg-Builds (libx264, libwebp, zimg) on Linux and
+      # Windows, Homebrew on macOS. Google Chrome and Microsoft Edge are already installed on the
+      # runners (test/e2e/edge.test.ts compares them).
+      - name: ffmpeg (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          curl -sSL -o ffmpeg.tar.xz https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-linux64-gpl-9.0.tar.xz
+          mkdir -p "$RUNNER_TEMP/ffmpeg" && tar -xJf ffmpeg.tar.xz -C "$RUNNER_TEMP/ffmpeg" --strip-components=1 && rm ffmpeg.tar.xz
+          echo "$RUNNER_TEMP/ffmpeg/bin" >> "$GITHUB_PATH"
+      - name: ffmpeg (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-win64-gpl-9.0.zip -OutFile ffmpeg.zip
+          Expand-Archive ffmpeg.zip -DestinationPath "$env:RUNNER_TEMP"
+          Remove-Item ffmpeg.zip
+          $bin = (Get-ChildItem "$env:RUNNER_TEMP" -Directory -Filter 'ffmpeg-*').FullName + '\bin'
+          Add-Content -Path $env:GITHUB_PATH -Value $bin
+      - name: ffmpeg (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ffmpeg
+      - run: ffmpeg -hide_banner -version
+
+      - run: npm run typecheck
+      - run: npm run release:check
+      - run: npm test
+      # Windows: the browser suites pass on a Windows 11 machine (24 of 24 on 7 Oct 2026) but three
+      # canvas tests time out on GitHub's Windows runners: they run on Linux and macOS here.
+      - run: npm run test:e2e
+        if: runner.os != 'Windows'
+      - run: npm run test:matrix
+        if: runner.os != 'Windows'

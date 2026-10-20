@@ -1,0 +1,42 @@
+---
+name: elabora-free-objects
+description: Write an Elabora free object (governed custom code such as a three.js simulation) that authors can edit without code and that passes the contract's automated gates. Use only when no native block can do the job and the request is explicit.
+---
+
+# Free objects: contract first, tests first
+
+A free object lives in `objects/<id>/`: `object.manifest.json` (contract), `object.tests.json` (behaviour), `object.js` (code), `object.notes.md` (2–3 sentences for the client). Scaffold with `elabora_create_object` (or `elabora object new`).
+
+## Order of work
+1. **Manifest**: every setting an author may change is a prop with `default`, `description` (course language), `title`, `x-group`, `x-control` (it must fit the type: `select` with an enum, `slider` with minimum and maximum, `color` with `format: "color"`); movable parts declare `x-object-id`. Values of an enum are for the code (`parefeu`): word each for the editor with `x-enum-labels` in the manifest's language (`{ "parefeu": "Pare-feu" }`, keys are values of the enum), on a prop or on a list's field; blocks and translations reword them with `props.enumLabels`. Declare `objects` (stable ids), `state` (compact), `events` with `tracking` (interaction, score, completion), `a11y`. `planRefs` name the plan's objectives and items the object serves: keep them true to the plan, which says what the course teaches.
+   - **Lists, not numbered props**: a setting that repeats is one prop `{ "type": "array", "x-control": "list", "minItems": 1, "maxItems": 6, "items": { "type": "object", "title": "Voyage", "properties": { "from": { "type": "string", "title": "From", "enum": […] }, "to": { … } }, "required": ["from", "to"] }, "default": [{ "from": "palma", "to": "cagliari" }] }`. Each field has a `type` and a `title`; items take no other field. Lists of simple values work too (`"items": { "type": "number" }`). Mark words `x-translatable`. The code reads `ctx.props.voyages` and keeps working with any length between the bounds (state arrays sized to the maximum).
+   - **Colours**: never a literal in the code. A colour of the course identity binds to a token (`x-token: "color.accent"`); a **material** of the scene (brass, wood, steel, a hull) is a colour prop with a literal default and no token (`"brassColor": { "type": "string", "format": "color", "default": "#C79A45", "title": "Brass", "x-group": "Materials", "x-control": "color" }`): do not add a custom token per shade. A colour you draw **text** in names its background with `x-text-on` (a colour prop or a token): the validator keeps 4.5:1 whatever authors pick. Apply colour props in `update()` too (`material.color.set(...)`), so authors see them change.
+2. **Tests**: sequences of `step`, `click {object}`, `key`, `set-props`, `set-state`, `set-view`, then `expect-state`, `expect-event`, `snapshot`. Test props and `set-props` are checked against the manifest like a block's (lists included): give one test a list of another length than the default.
+3. **Code**: `export function mount(container, ctx)` returning `{ update, getState, setState, dispose }` (optionally `pause`, `resume`). Return fast (boot budget 3 s, timeout 15 s, software WebGL on GPU-less machines): spread heavy work over the first frames with `host.onFrame`. In tests (`ctx.testMode`) draw every frame and pick with raycasting, not `readPixels`: the gates draw only the frames before snapshots, and run again with every frame drawn a test whose object draws only on change or reads its drawing back (same verdict, slower).
+4. **Look as you code**: `elabora look . --screen <screen that places it>` (MCP `elabora_look`) shows it on its page in well under a second once warm, drawn with the GPU: saving `object.js`, its manifest or an asset restarts it, other edits leave it running; the console errors of the frame come back with the image. `--viewport` for the window only, `--size 375x812` for phones. To use it with the mouse, open the page `elabora look . --url` prints in a browser pane (the in-app browser of your agent app included: free objects show there, from a second port of the server, as in `elabora preview .`). Never write a Playwright script to see or drive an object: interactions belong in `object.tests.json`, which the gates and `elabora object replay` play.
+5. Run `elabora object test . <id>` (MCP `elabora_test_object`) until every gate passes, then look at it where learners meet it: `elabora object replay . <id> --test <name>` (MCP `elabora_replay_object`) replays a test in the course page and returns a contact sheet; `--only <name>` reruns one test while you iterate (the full run is recorded in `object.gates.json` for the proof dossier). Accept new snapshots only for intended visual changes.
+
+## Size and look
+- The block sets the shape: `aspectRatio` (ratios, `auto`, `fill`), `narrowAspectRatio` under 640 px, `minHeight`, `maxHeight`. For phones, stack your UI under 640 px of container width and call `host.requestHeight(px)` with the height you need (block `narrowAspectRatio: "auto"`).
+- Use the theme: `--t-*` CSS variables (charter and custom tokens) and the course fonts are in the frame; build controls with the UI kit (`t-ui-panel`, `t-ui-card`, `t-ui-btn--primary`, `t-ui-seg`, `t-ui-meter`, `t-ui-status`, `t-ui-badge`) so the object looks native. Never overwrite `className` of kit elements.
+- Test the narrow layout with a test `size: [375, 860]`.
+- **Safe area**: when the layout floats text over your object, `ctx.safeArea` gives the covered px from each edge (and `host.onSafeArea` its changes): keep the subject of the scene, labels and controls out of it. Tests set `safeArea` or `set-safe-area`.
+- **Words**: no sentence in the code. Declare every visible word in the manifest `strings` (with `language` and a description for translators) and read it with `ctx.t('key', { n, gap })`; ICU plurals `{n, plural, one {# orbit} other {# orbits}}`; pass numbers pre-formatted when you need a fixed precision. Blocks reword strings with `props.strings`; translations write there.
+- **On a scroll page**: `ctx.view` and `host.onView` say where the frame is in the window (`visible`, `ratio`, `progress`, `entry`, `exit`): make the object appear as the learner scrolls to it from `entry` (one way: what appeared stays), parallax from `progress`, nothing under `ctx.reducedMotion`; render only when visible or when something changed. Tests set `view` and step `set-view` to snapshot the entrance.
+- **Decorations** (`pedagogicalRole: "decoration"`, for `theme.backdrop.object`): no events, no state, no controls, small budgets; follow the course with `ctx.context` / `host.onContext`; render a still frame under reduced motion.
+
+## The host API (`ctx`)
+- `ctx.props` (values), `ctx.tokens` (theme), `ctx.objects` (labels), `ctx.locale`, `ctx.reducedMotion`, `ctx.testMode`, `ctx.savedState`, `ctx.safeArea`, `ctx.t(key, values)` and `ctx.strings`, `ctx.context` (decorations).
+- `ctx.host.onFrame((dt, frame) => …)` for all animation and time; `host.random()`; `host.now()`; `host.requestHeight(px)`; `host.onSafeArea(fn)`; `host.onContext(fn)`; `host.onView(fn)` (`ctx.view`).
+- `host.emit(name, payload)` only for declared events.
+- `host.asset(id)` → ArrayBuffer of a declared asset (no network).
+- three.js: `host.registerRenderer(renderer)`, `host.registerCamera(camera)`, `host.registerObject(id, mesh)` (enables test clicks, budgets, click-to-edit).
+
+## Forbidden (validator errors)
+`fetch`, `XMLHttpRequest`, `WebSocket`, `localStorage`, `window.parent`/`top`/`opener`, `eval`, dynamic `import()`, external URLs, `Math.random`, `Date.now`, `new Date()`, `performance.now`, `requestAnimationFrame`, `setTimeout`/`setInterval`. Hard-coded colours in the code are warnings (`W_OBJECT_LITERAL_COLOR`): make them colour props (a token for the identity, a literal default for a material).
+
+## Accessibility
+Real DOM controls for every action (buttons usable with Tab/Enter), a status line with `role="status"`, a pause control for motion longer than 5 s, `reducedMotion` respected, and a full `textAlternative` on the block.
+
+## Imports
+`import * as THREE from 'three'`; addons `three/addons/loaders/GLTFLoader.js` and `three/addons/controls/OrbitControls.js`; relative files. See skill `threejs-r186`.

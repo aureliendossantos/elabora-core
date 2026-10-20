@@ -1,0 +1,47 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "hero",
+  "title": "Hero band",
+  "description": "Opening screen: a full-width blueprint band with the title, a lead text and a figure, then a row of cards overlapping the band and free content below. Stacks on narrow screens.",
+  "category": "layout",
+  "version": "1.0.0",
+  "level": "screen",
+  "fullBleed": true,
+  "slots": [
+    {
+      "id": "lead",
+      "label": "Lead text",
+      "default": true,
+      "accepts": [
+        "text",
+        "callout",
+        "heading"
+      ]
+    },
+    {
+      "id": "media",
+      "label": "Figure",
+      "accepts": [
+        "image",
+        "free-object",
+        "video"
+      ],
+      "maxBlocks": 1
+    },
+    {
+      "id": "cards",
+      "label": "Cards",
+      "description": "Two to four short cards: ratio cards, or callouts.",
+      "accepts": [
+        "ratio-card",
+        "callout",
+        "text"
+      ],
+      "maxBlocks": 4
+    },
+    {
+      "id": "body",
+      "label": "Below the band"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+/* Ratio card — cascade layer elabora.components. The accent is a theme token chosen per card. */
+.t-block--ratio-card { height: 100%; }
+.pg-ratio {
+  height: 100%;
+  padding: 1.25rem 1.375rem 1.375rem;
+  border-radius: calc(var(--t-radius) + 4px);
+  border-top: 5px solid var(--ratio-accent, var(--t-accent));
+  background: var(--t-color-card, var(--t-surface));
+  box-shadow: var(--t-shadow-card, none);
+}
+.pg-ratio-label { margin: 0; font: 700 0.8125rem/1.3 var(--t-font-heading); letter-spacing: .08em; text-transform: uppercase; color: var(--t-muted); }
+.pg-ratio-value { margin: 0.25rem 0 0.625rem; font: 700 clamp(2.5rem, 4.4vw, 3.375rem)/1 var(--t-font-heading); letter-spacing: -.03em; color: var(--ratio-accent, var(--t-accent)); }

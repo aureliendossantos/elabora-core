@@ -1,0 +1,57 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "diagnostic-reseau",
+  "version": "1.0.0",
+  "title": "Diagnostic réseau en 3D",
+  "planRefs": { "objectives": ["OBJ-2"], "items": ["ITEM-4"] },
+  "pedagogicalRole": "simulation-decision",
+  "requires": { "three": "r186" },
+  "props": {
+    "type": "object",
+    "properties": {
+      "instruction": { "type": "string", "maxLength": 200, "default": "Repérez l'équipement qui bloque les paquets.", "description": "Consigne affichée au-dessus de la scène", "x-group": "Contenu", "x-control": "textarea", "x-translatable": true },
+      "failingDevice": { "type": "string", "enum": ["commutateur", "routeur", "parefeu", "serveur"], "default": "parefeu", "description": "Équipement en panne dans ce scénario", "x-group": "Scénario", "x-control": "select" },
+      "packetSpeed": { "type": "number", "minimum": 0.25, "maximum": 2, "multipleOf": 0.25, "default": 1, "description": "Vitesse des paquets", "x-group": "Animation", "x-control": "slider" },
+      "accentColor": { "type": "string", "format": "color", "default": "#C2410C", "description": "Couleur d'accent (charte)", "x-group": "Style", "x-control": "color", "x-token": "color.accent" },
+      "primaryColor": { "type": "string", "format": "color", "default": "#12355B", "description": "Couleur des équipements (charte)", "x-group": "Style", "x-control": "color", "x-token": "color.primary" },
+      "showLabels": { "type": "boolean", "default": true, "description": "Afficher le nom des équipements", "x-group": "Aide", "x-control": "toggle" },
+      "hintAfterErrors": { "type": "integer", "minimum": 1, "maximum": 5, "default": 2, "description": "Nombre d'erreurs avant d'afficher un indice", "x-group": "Aide", "x-control": "number" },
+      "routerPosition": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3, "default": [0, 0, 0], "description": "Décalage du routeur dans la scène", "x-group": "Scène", "x-control": "vec3-gizmo", "x-object-id": "routeur" }
+    },
+    "required": ["instruction", "failingDevice"]
+  },
+  "objects": [
+    { "id": "poste", "label": "Poste de Marc", "selectable": true },
+    { "id": "commutateur", "label": "Commutateur", "selectable": true },
+    { "id": "routeur", "label": "Routeur", "selectable": true },
+    { "id": "parefeu", "label": "Pare-feu", "selectable": true },
+    { "id": "serveur", "label": "Serveur d'impression", "selectable": true }
+  ],
+  "state": {
+    "type": "object",
+    "properties": {
+      "inspected": { "type": "array", "items": { "type": "string" }, "maxItems": 5, "description": "Équipements déjà contrôlés, dans l'ordre" },
+      "attempts": { "type": "integer", "minimum": 0, "description": "Équipements sains signalés à tort" },
+      "found": { "type": "boolean" },
+      "hint": { "type": "boolean" }
+    },
+    "required": ["inspected", "attempts", "found", "hint"]
+  },
+  "persistState": { "enabled": true, "maxLength": 160 },
+  "events": [
+    { "name": "device_inspected", "description": "L'apprenant contrôle un équipement.", "payload": { "type": "object", "properties": { "device": { "type": "string" }, "inOrder": { "type": "boolean" }, "faulty": { "type": "boolean" } }, "required": ["device", "inOrder", "faulty"] },
+      "tracking": { "interaction": { "type": "choice", "objective": "OBJ-2", "responseField": "device", "correctField": "inOrder" } } },
+    { "name": "hint_shown", "description": "Un indice s'affiche après plusieurs erreurs.", "payload": { "type": "object", "properties": {} } },
+    { "name": "completed", "description": "L'équipement en panne est trouvé.", "payload": { "type": "object", "properties": { "score": { "type": "number", "minimum": 0, "maximum": 1 }, "attempts": { "type": "integer" } }, "required": ["score"] },
+      "tracking": { "score": { "field": "score" }, "completion": true } }
+  ],
+  "budgets": { "drawCallsMax": 150, "trianglesMax": 300000, "texturePxMax": 2048, "assetsMbMax": 8, "bootMsMax": 3000, "fpsMin": 30, "webglContexts": 1 },
+  "a11y": {
+    "description": "Schéma 3D d'un réseau de cinq équipements alignés : poste de Marc, commutateur, routeur, pare-feu et serveur d'impression. Des paquets lumineux circulent du poste vers le serveur et s'arrêtent à l'équipement en panne.",
+    "keyboard": "Tab parcourt les équipements dans l'ordre du chemin, Entrée ou Espace contrôle l'équipement sélectionné, P met l'animation en pause.",
+    "dragAlternative": "Aucun glisser-déposer : un clic ou Entrée suffit.",
+    "motion": { "pausable": true, "respectsReducedMotion": true }
+  },
+  "sandbox": { "network": "none", "permissions": [] }
+}

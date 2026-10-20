@@ -1,0 +1,18 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "chemin",
+  "title": "Le chemin d'une impression",
+  "covers": ["ITEM-2"],
+  "blocks": [
+    { "id": "chemin-intro", "type": "text", "props": { "markdown": "Quand Marc clique sur **Imprimer**, sa demande traverse cinq équipements avant d'atteindre l'imprimante. Si un seul est en panne, rien ne sort." } },
+    { "id": "chemin-schema", "type": "image", "width": "wide", "props": { "asset": "images/chemin-impression.svg", "alt": "Schéma du chemin : poste de Marc, puis commutateur d'étage, routeur, pare-feu et enfin serveur d'impression relié à l'imprimante.", "caption": "Le chemin suivi par une demande d'impression." } },
+    { "id": "chemin-regle", "type": "callout", "props": { "variant": "important", "title": "La règle SUP-NET-04", "textRef": "TXT-2" } },
+    { "id": "chemin-roles", "type": "accordion", "props": { "items": [
+      { "id": "poste", "title": "Le poste", "markdown": "L'ordinateur de Marc. Il doit être connecté au réseau et avoir une adresse IP valide." },
+      { "id": "commutateur", "title": "Le commutateur", "markdown": "Il relie les postes d'un même étage. Un voyant éteint sur le port de Marc signale un câble débranché." },
+      { "id": "routeur", "title": "Le routeur", "markdown": "Il oriente les paquets entre le réseau des bureaux et celui des serveurs." },
+      { "id": "pare-feu", "title": "Le pare-feu", "markdown": "Il filtre les flux entre réseaux. Une règle mal configurée peut bloquer l'impression." },
+      { "id": "serveur", "title": "Le serveur d'impression", "markdown": "Il reçoit les demandes et les transmet à l'imprimante. Une file d'attente bloquée arrête toutes les impressions." }
+    ] } }
+  ]
+}

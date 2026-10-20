@@ -1,0 +1,775 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "Requirement 1 met at the first run",
+      "safeArea": {
+        "left": 300
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 20
+        },
+        {
+          "action": "snapshot",
+          "name": "initial"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "1"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "dv": -3,
+            "orbits": 1,
+            "running": false,
+            "step": 0
+          }
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "running": true
+          }
+        },
+        {
+          "action": "step",
+          "frames": 400
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "requirement": 1,
+            "plan": "-3.0x1",
+            "correct": true
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "step": 1,
+            "runs": [
+              1,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "rendezvous"
+        },
+        {
+          "action": "step",
+          "frames": 120
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "running": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Prograde towards a client ahead: the gap grows (Gemini 4)",
+      "steps": [
+        {
+          "action": "key",
+          "key": "p"
+        },
+        {
+          "action": "key",
+          "key": "p"
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 400
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "requirement": 1,
+            "plan": "+1.0x1",
+            "correct": false
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "step": 0,
+            "runs": [
+              1,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "action": "step",
+          "frames": 120
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "running": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "Three requirements with the cheapest manoeuvres: full score",
+      "props": {
+        "secondsPerOrbit": 2
+      },
+      "steps": [
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "1"
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 300
+        },
+        {
+          "action": "key",
+          "key": "p"
+        },
+        {
+          "action": "key",
+          "key": "p"
+        },
+        {
+          "action": "key",
+          "key": "p"
+        },
+        {
+          "action": "key",
+          "key": "p"
+        },
+        {
+          "action": "key",
+          "key": "3"
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 560
+        },
+        {
+          "action": "key",
+          "key": "p"
+        },
+        {
+          "action": "key",
+          "key": "p"
+        },
+        {
+          "action": "key",
+          "key": "p"
+        },
+        {
+          "action": "key",
+          "key": "p"
+        },
+        {
+          "action": "key",
+          "key": "2"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "dv": 1,
+            "orbits": 2,
+            "step": 2
+          }
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 330
+        },
+        {
+          "action": "expect-event",
+          "name": "completed",
+          "payload": {
+            "score": 1
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "step": 3,
+            "runs": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 330
+        },
+        {
+          "action": "expect-no-event"
+        }
+      ]
+    },
+    {
+      "name": "Two requirements in another order: the card, the state and the score follow the list",
+      "props": {
+        "secondsPerOrbit": 2,
+        "requirements": [
+          {
+            "gap": -34,
+            "orbits": 2,
+            "budget": 2.5
+          },
+          {
+            "gap": 51,
+            "orbits": 1,
+            "budget": 8
+          }
+        ]
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 20
+        },
+        {
+          "action": "snapshot",
+          "name": "two-requirements"
+        },
+        {
+          "action": "key",
+          "key": "p"
+        },
+        {
+          "action": "key",
+          "key": "p"
+        },
+        {
+          "action": "key",
+          "key": "2"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "dv": 1,
+            "orbits": 2,
+            "step": 0,
+            "runs": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 330
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "requirement": 1,
+            "plan": "+1.0x2",
+            "correct": true
+          }
+        },
+        {
+          "action": "expect-event",
+          "name": "requirement_met",
+          "payload": {
+            "requirement": 1,
+            "runs": 1
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "step": 1,
+            "runs": [
+              1,
+              0
+            ]
+          }
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "1"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "dv": -3,
+            "orbits": 1,
+            "step": 1
+          }
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 300
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "requirement": 2,
+            "plan": "-3.0x1",
+            "correct": true
+          }
+        },
+        {
+          "action": "expect-event",
+          "name": "completed",
+          "payload": {
+            "score": 1
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "step": 2,
+            "runs": [
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 300
+        },
+        {
+          "action": "expect-no-event"
+        }
+      ]
+    },
+    {
+      "name": "Rendezvous over budget does not meet requirement 2",
+      "props": {
+        "secondsPerOrbit": 2
+      },
+      "steps": [
+        {
+          "action": "set-state",
+          "state": {
+            "dv": -1.5,
+            "orbits": 2,
+            "step": 1,
+            "runs": [
+              1,
+              0,
+              0
+            ],
+            "running": false
+          }
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 450
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "requirement": 2,
+            "plan": "-1.5x2",
+            "correct": false
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "step": 1,
+            "runs": [
+              1,
+              1,
+              0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Resume: saved progress is restored",
+      "props": {
+        "secondsPerOrbit": 2
+      },
+      "steps": [
+        {
+          "action": "set-state",
+          "state": {
+            "dv": 1,
+            "orbits": 2,
+            "step": 2,
+            "runs": [
+              1,
+              2,
+              0
+            ],
+            "running": false
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "dv": 1,
+            "orbits": 2,
+            "step": 2
+          }
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 330
+        },
+        {
+          "action": "expect-event",
+          "name": "completed",
+          "payload": {
+            "score": 0.92
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "step": 3,
+            "runs": [
+              1,
+              2,
+              1
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings and safe area apply without remounting, with the prediction help",
+      "safeArea": {
+        "left": 300
+      },
+      "props": {
+        "showPrediction": true
+      },
+      "steps": [
+        {
+          "action": "set-props",
+          "props": {
+            "requirements": [
+              {
+                "gap": 34,
+                "orbits": 1,
+                "budget": 8
+              },
+              {
+                "gap": 51,
+                "orbits": 3,
+                "budget": 2.5
+              },
+              {
+                "gap": -34,
+                "orbits": 2,
+                "budget": 2.5
+              }
+            ],
+            "exaggeration": 60
+          }
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "step",
+          "frames": 30
+        },
+        {
+          "action": "set-safe-area",
+          "safeArea": {
+            "left": 0
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "prediction"
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 400
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "requirement": 1,
+            "plan": "-2.0x1",
+            "correct": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reduced motion: the result is shown at once",
+      "reducedMotion": true,
+      "steps": [
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "requirement": 1,
+            "correct": true
+          }
+        },
+        {
+          "action": "step",
+          "frames": 120
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "running": false,
+            "step": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phone width: panel under the view",
+      "size": [
+        375,
+        860
+      ],
+      "steps": [
+        {
+          "action": "step",
+          "frames": 20
+        },
+        {
+          "action": "snapshot",
+          "name": "narrow"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 400
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "requirement": 1,
+            "correct": true
+          }
+        }
+      ]
+    }
+  ]
+}

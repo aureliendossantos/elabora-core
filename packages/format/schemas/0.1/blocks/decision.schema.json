@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1/blocks/decision.schema.json",
+  "title": "decision block props",
+  "description": "A choice in a scenario. Consequences are defined by events (decision.selected with option), for example show a layer or go to another screen. Use it for branching scenarios (guardrail B3).",
+  "x-category": "scenario",
+  "x-ai-instructions": "Realistic situation, plausible options, consequences shown rather than told (D3). Add one event per option or one event per outcome.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["prompt", "options"],
+  "properties": {
+    "prompt": { "$ref": "../defs.schema.json#/$defs/markdown", "x-translatable": true },
+    "options": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]{1,8}$" },
+          "label": { "type": "string", "minLength": 1, "maxLength": 300, "x-translatable": true },
+          "feedback": { "$ref": "../defs.schema.json#/$defs/markdown", "description": "Optional inline consequence shown after the choice.", "x-translatable": true },
+          "correct": { "type": "boolean", "description": "Optional: marks the best choice for tracking and scoring." }
+        }
+      }
+    },
+    "objective": { "$ref": "../defs.schema.json#/$defs/planId" },
+    "scored": { "type": "boolean", "default": false, "description": "Counts in the course score (needs at least one option with correct)." },
+    "weight": { "type": "number", "minimum": 0.1, "maximum": 10, "default": 1 },
+    "allowChange": { "type": "boolean", "default": false, "description": "Let the learner choose again after seeing the consequence." }
+  }
+}

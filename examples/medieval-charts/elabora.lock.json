@@ -1,0 +1,39 @@
+{
+  "format": "elabora-lock/1",
+  "next": 24,
+  "keys": {
+    "screen:world": "0",
+    "screen:workshop": "1",
+    "screen:chart-table": "2",
+    "screen:gallery": "3",
+    "quiz:world-check": "4",
+    "quiz:workshop-check": "5",
+    "visit:table-rose#tramontana": "6",
+    "visit:table-rose#greco": "7",
+    "visit:table-rose#levante": "8",
+    "visit:table-rose#scirocco": "9",
+    "visit:table-rose#ostro": "a",
+    "visit:table-rose#libeccio": "b",
+    "visit:table-rose#ponente": "c",
+    "visit:table-rose#maestro": "d",
+    "object:table-lab": "e",
+    "quiz:gallery-q1": "f",
+    "quiz:gallery-q2": "g",
+    "quiz:gallery-q3": "h",
+    "numeric:gallery-q4": "i",
+    "quiz:gallery-q5": "j",
+    "quiz:workshop-plot-check": "k",
+    "visit:gallery-callback#north": "l",
+    "visit:gallery-callback#names": "m",
+    "visit:gallery-callback#italy": "n"
+  },
+  "components": {
+    "chart-notes": "1.0.0",
+    "diptych": "1.1.0",
+    "folio": "1.2.0",
+    "gloss": "1.0.0",
+    "layered-figure": "1.3.0",
+    "wind-rose": "1.0.0",
+    "workshop": "1.2.0"
+  }
+}

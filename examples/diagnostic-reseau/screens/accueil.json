@@ -1,0 +1,70 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "accueil",
+  "title": "Le ticket de Marc",
+  "covers": [
+    "ITEM-1"
+  ],
+  "blocks": [
+    {
+      "id": "accueil-situation",
+      "type": "text",
+      "props": {
+        "textRef": "TXT-1"
+      }
+    },
+    {
+      "id": "accueil-illustration",
+      "type": "support-ticket",
+      "width": "wide",
+      "props": {
+        "reference": "Ticket n° 4127",
+        "priority": "Priorité haute",
+        "subject": "Impossible d'imprimer les bulletins de paie",
+        "requester": "Demandeur : Marc — service comptable, 2e étage",
+        "timing": "Ouvert lundi à 9 h 05 · Échéance : 12 h 00"
+      },
+      "timing": {
+        "in": {
+          "at": {
+            "line": "marc-appel",
+            "word": "impression"
+          },
+          "effect": "rise"
+        }
+      }
+    },
+    {
+      "id": "accueil-objectifs",
+      "type": "callout",
+      "props": {
+        "variant": "info",
+        "title": "Dans ce module",
+        "markdown": "Vous allez apprendre à **localiser l'équipement en panne** en suivant le chemin d'une impression, puis vous entraîner sur une simulation."
+      },
+      "timing": {
+        "in": {
+          "at": {
+            "line": "guide-mission",
+            "word": "trajet"
+          },
+          "effect": "fade"
+        }
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "marc-appel",
+        "speaker": "marc",
+        "text": "Bonjour, c'est Marc. J'ai lancé l'impression, mais aucune feuille ne sort. Pouvez-vous m'aider à trouver ce qui bloque ?"
+      },
+      {
+        "id": "guide-mission",
+        "speaker": "guide",
+        "text": "Vous prenez en charge cet appel. Avant d'intervenir sur un équipement, repérez le trajet de la demande et choisissez les vérifications utiles."
+      }
+    ]
+  }
+}

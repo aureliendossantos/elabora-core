@@ -1,0 +1,35 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "__ID__",
+  "version": "0.1.0",
+  "title": "__TITLE__",
+  "planRefs": { "objectives": [] },
+  "pedagogicalRole": "practice",
+  "requires": { "three": "r186" },
+  "props": {
+    "type": "object",
+    "properties": {
+      "instruction": { "type": "string", "maxLength": 200, "default": "Instruction shown to the learner.", "description": "Instruction shown above the object", "x-group": "Content", "x-control": "textarea", "x-translatable": true },
+      "accentColor": { "type": "string", "format": "color", "default": "#C2410C", "description": "Accent colour (charter)", "x-group": "Style", "x-control": "color", "x-token": "color.accent" }
+    },
+    "required": ["instruction"]
+  },
+  "objects": [{ "id": "target", "label": "Target", "selectable": true }],
+  "state": {
+    "type": "object",
+    "properties": { "done": { "type": "boolean" }, "clicks": { "type": "integer", "minimum": 0 } },
+    "required": ["done", "clicks"]
+  },
+  "persistState": { "enabled": true, "maxLength": 60 },
+  "events": [
+    { "name": "completed", "description": "The learner finished the activity.", "payload": { "type": "object", "properties": { "score": { "type": "number", "minimum": 0, "maximum": 1 } }, "required": ["score"] }, "tracking": { "score": { "field": "score" }, "completion": true } }
+  ],
+  "budgets": { "drawCallsMax": 150, "trianglesMax": 300000, "texturePxMax": 2048, "assetsMbMax": 8, "bootMsMax": 3000, "fpsMin": 30, "webglContexts": 1 },
+  "a11y": {
+    "description": "Describe what is shown, for screen readers.",
+    "keyboard": "Describe how to operate it with the keyboard only.",
+    "motion": { "pausable": true, "respectsReducedMotion": true }
+  },
+  "sandbox": { "network": "none", "permissions": [] }
+}

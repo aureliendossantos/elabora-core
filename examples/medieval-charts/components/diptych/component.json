@@ -1,0 +1,101 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "diptych",
+  "title": "Diptych",
+  "description": "Two leaves side by side, hinged in the middle like a diptych, to compare two things point by point: a miniature, an eyebrow, a title and a short text on each. The leaves open flat as the diptych scrolls into view; on narrow windows they stack.",
+  "instructions": "Write both texts in the same order (purpose, orientation, construction, use…) so the eye can go across.",
+  "category": "content",
+  "version": "1.1.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "leaves"
+    ],
+    "properties": {
+      "leaves": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "eyebrow",
+            "title",
+            "image",
+            "imageAlt",
+            "body"
+          ],
+          "properties": {
+            "eyebrow": {
+              "type": "string",
+              "maxLength": 40,
+              "x-translatable": true
+            },
+            "title": {
+              "type": "string",
+              "maxLength": 60,
+              "x-translatable": true
+            },
+            "image": {
+              "type": "string",
+              "x-kind": "asset"
+            },
+            "imageAlt": {
+              "type": "string",
+              "maxLength": 200,
+              "x-translatable": true
+            },
+            "body": {
+              "type": "string",
+              "x-kind": "markdown",
+              "x-translatable": true
+            }
+          }
+        }
+      }
+    }
+  },
+  "fallback": [
+    {
+      "$each": "leaves",
+      "type": "image",
+      "props": {
+        "asset": "{{image}}",
+        "alt": "{{imageAlt}}"
+      }
+    },
+    {
+      "$each": "leaves",
+      "type": "text",
+      "props": {
+        "markdown": "**{{eyebrow}}: {{title}}**\n\n{{body}}"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "title": "Map and chart",
+      "props": {
+        "leaves": [
+          {
+            "eyebrow": "For the faithful",
+            "title": "Mappa mundi",
+            "image": "images/leaf-mappa.svg",
+            "imageAlt": "A round world map",
+            "body": "A picture of the world's history."
+          },
+          {
+            "eyebrow": "For pilots",
+            "title": "Portolan chart",
+            "image": "images/leaf-portolan.svg",
+            "imageAlt": "A corner of a sea chart",
+            "body": "A tool to steer by."
+          }
+        ]
+      }
+    }
+  ]
+}

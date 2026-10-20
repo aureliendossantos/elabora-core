@@ -1,0 +1,11 @@
+<fieldset class="t-quiz" data-t-group>
+  <div class="t-quiz-stem t-text" data-t-stem>{{stem}}</div>
+  <div class="t-options">
+    <label class="t-option" data-each="options" data-t-option="{{id}}">
+      <input data-t-input>
+      <span class="t-option-text">{{text}}</span>
+    </label>
+  </div>
+  <button type="button" class="t-btn t-btn--primary t-quiz-submit" data-t-submit></button>
+  <div class="t-feedback" data-t-feedback></div>
+</fieldset>

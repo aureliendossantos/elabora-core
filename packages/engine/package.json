@@ -1,0 +1,21 @@
+{
+  "name": "@elabora/engine",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Elabora editing session for the desktop app: project in memory, commands as journaled changes, incremental validation, file watching, batches and undo, media jobs, backups schedule, and a transport-neutral message protocol.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@elabora/format": "0.1.0",
+    "@elabora/core": "0.1.0",
+    "@elabora/node": "0.1.0"
+  }
+}

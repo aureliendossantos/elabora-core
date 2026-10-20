@@ -1,0 +1,77 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/lms-profile.schema.json",
+  "id": "rise-up",
+  "name": "Rise Up",
+  "documentedAt": "2026-09",
+  "sources": [
+    {
+      "title": "SCORM sur Rise Up : compatibilité, suivi de progression",
+      "url": "https://helpdesk.riseup.ai/hc/fr/articles/33353469495058-SCORM-sur-Rise-Up-Compatibilit%C3%A9-suivi-de-progression"
+    }
+  ],
+  "standards": {
+    "scorm12": true,
+    "scorm2004": [
+      "2nd",
+      "3rd",
+      "4th"
+    ],
+    "sequencing": null,
+    "multiSco": false,
+    "cmi5": null,
+    "xapi": null,
+    "lti13": true,
+    "aicc": null
+  },
+  "launch": {
+    "default": "iframe",
+    "modes": [
+      "iframe"
+    ],
+    "apiDiscovery": [
+      "parents"
+    ]
+  },
+  "datamodel": {
+    "suspendDataMax": {
+      "scorm12": null,
+      "scorm2004": null
+    },
+    "suspendDataEnforcement": null,
+    "lessonLocationMax": null,
+    "masteryOverridesStatus": null,
+    "scoreFormula": "round(100*(raw-min)/(max-min))"
+  },
+  "exit": {
+    "needsExplicitFinish": null
+  },
+  "session": {},
+  "browser": {
+    "unloadHeaderSent": null,
+    "thirdPartyCookiesRequired": false,
+    "knownBugs": []
+  },
+  "packaging": {
+    "maxZipMB": 1024,
+    "maxFiles": null,
+    "asciiFilenames": true,
+    "schemaversionRequired": null,
+    "oneStandardPerZip": null
+  },
+  "update": {
+    "family": "in-place-if-same-structure",
+    "notes": "Identical structure required, otherwise a new training must be created; suspend_data is reused when the structure is identical."
+  },
+  "harness": {
+    "autocommitSeconds": null,
+    "syncCommits": true
+  },
+  "toMeasure": [
+    "/datamodel/suspendDataMax/scorm12",
+    "/standards/cmi5"
+  ],
+  "notes": [
+    "Avoid popups; send final status and score when decided.",
+    "No accents in file names."
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "results",
+  "title": "Your result",
+  "covers": [
+    "ITEM-6"
+  ],
+  "completeWhen": "viewed",
+  "blocks": [
+    {
+      "id": "assessment-results",
+      "type": "results",
+      "props": {
+        "allowRetry": true,
+        "passedMessage": "You can read, compute and configure a simple planetary gearset. Next step: compound sets, where two gearsets share members.",
+        "failedMessage": "Go back to the worked example and the lab table, then retry: each question maps to one of them."
+      }
+    }
+  ]
+}

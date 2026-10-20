@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" width="520" height="520">
+<defs>
+  <radialGradient id="oe-earth" cx="38%" cy="32%" r="78%"><stop offset="0" stop-color="#2965a3"/><stop offset=".55" stop-color="#0A2E57"/><stop offset="1" stop-color="#041A36"/></radialGradient>
+  <radialGradient id="oe-night" cx="78%" cy="80%" r="70%"><stop offset="0" stop-color="#060A16" stop-opacity=".8"/><stop offset="1" stop-color="#060A16" stop-opacity="0"/></radialGradient>
+  <filter id="oe-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+</defs>
+<circle cx="260" cy="260" r="38.2" fill="none" stroke="#4FA8FF" stroke-width="4" opacity=".55" filter="url(#oe-glow)"/>
+  <circle cx="260" cy="260" r="34.2" fill="url(#oe-earth)"/>
+  <circle cx="260" cy="260" r="34.2" fill="url(#oe-night)"/>
+  <circle cx="260" cy="260" r="35" fill="none" stroke="#4FA8FF" stroke-width="1.4" opacity=".8"/>
+</svg>

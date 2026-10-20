@@ -1,0 +1,19 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "assessment",
+  "title": "Check your planning",
+  "covers": ["ITEM-6"],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    { "id": "assessment-calc", "type": "numeric", "width": "half", "props": { "questionRef": "Q-1" } },
+    { "id": "assessment-next", "type": "quiz", "width": "half", "props": { "questionRef": "Q-2" } },
+    {
+      "id": "assessment-results", "type": "results", "width": "wide",
+      "props": {
+        "allowRetry": true,
+        "passedMessage": "You can size a phasing manoeuvre and predict what each burn does. Keep the rule handy: **brake to gain, then burn back at the same point.**",
+        "failedMessage": "Go back to the rule of thumb and the lab, then try the questions again: brake to gain about $3\\,T\\,\\Delta v$ per orbit, then burn back at the same point."
+      }
+    }
+  ]
+}

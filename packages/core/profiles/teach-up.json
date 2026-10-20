@@ -1,0 +1,72 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/lms-profile.schema.json",
+  "id": "teach-up",
+  "name": "Teach Up (import)",
+  "documentedAt": "2026-09",
+  "sources": [
+    {
+      "title": "Insérer un module SCORM",
+      "url": "https://support.teachup.com/fr/ins%C3%A9rer-un"
+    }
+  ],
+  "standards": {
+    "scorm12": true,
+    "scorm2004": null,
+    "sequencing": null,
+    "multiSco": null,
+    "cmi5": null,
+    "xapi": null,
+    "lti13": null,
+    "aicc": null
+  },
+  "launch": {
+    "default": "new-tab",
+    "modes": [
+      "iframe",
+      "popup"
+    ],
+    "apiDiscovery": [
+      "parents",
+      "opener"
+    ]
+  },
+  "datamodel": {
+    "suspendDataMax": {
+      "scorm12": null,
+      "scorm2004": null
+    },
+    "suspendDataEnforcement": null,
+    "lessonLocationMax": null,
+    "masteryOverridesStatus": null
+  },
+  "exit": {},
+  "session": {},
+  "browser": {
+    "unloadHeaderSent": null,
+    "thirdPartyCookiesRequired": null,
+    "knownBugs": []
+  },
+  "packaging": {
+    "maxZipMB": 100,
+    "maxFiles": null,
+    "asciiFilenames": null,
+    "schemaversionRequired": null,
+    "oneStandardPerZip": null
+  },
+  "update": {
+    "family": null
+  },
+  "harness": {
+    "autocommitSeconds": null,
+    "syncCommits": true
+  },
+  "toMeasure": [
+    "/standards/scorm2004",
+    "/datamodel/suspendDataMax/scorm12",
+    "/update/family"
+  ],
+  "notes": [
+    "Smallest documented package cap (100 MB): watch 3D assets.",
+    "Packages over 100 MB are refused, and the limit may be lower depending on the subscription."
+  ]
+}

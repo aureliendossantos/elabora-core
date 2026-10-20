@@ -1,0 +1,27 @@
+{
+  "format": "elabora-lock/1",
+  "next": 12,
+  "keys": {
+    "screen:intro": "0",
+    "screen:orbits": "1",
+    "screen:burns": "2",
+    "screen:lab": "3",
+    "screen:assessment": "4",
+    "quiz:burns-practice": "5",
+    "object:lab-sim": "6",
+    "numeric:assessment-calc": "7",
+    "quiz:assessment-next": "8",
+    "visit:orbits-hot-1": "9",
+    "visit:orbits-hot-2": "a",
+    "visit:orbits-hot-3": "b"
+  },
+  "components": {
+    "cosmos-hero": "1.0.0",
+    "hotspot": "1.0.0",
+    "maneuver-quiz": "1.0.0",
+    "mission": "1.0.0",
+    "orbit-flight": "1.0.0",
+    "split": "1.1.0",
+    "stat-card": "1.0.0"
+  }
+}

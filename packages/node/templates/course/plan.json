@@ -1,0 +1,17 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/plan.schema.json",
+  "id": "PLAN-__PLANID__",
+  "title": "__TITLE__",
+  "businessGoal": "",
+  "audience": { "role": "", "priorKnowledge": "low" },
+  "sources": [],
+  "objectives": [
+    { "id": "OBJ-1", "statement": "__TEXT_OBJECTIVE__" }
+  ],
+  "items": [
+    { "id": "ITEM-1", "kind": "intro", "title": "__TEXT_INTRODUCTION__", "objectives": [] },
+    { "id": "ITEM-2", "kind": "practice", "title": "__TEXT_PRACTICE__", "objectives": ["OBJ-1"] }
+  ],
+  "spacing": [],
+  "waivers": []
+}

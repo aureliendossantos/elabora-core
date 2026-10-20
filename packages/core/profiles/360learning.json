@@ -1,0 +1,79 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/lms-profile.schema.json",
+  "id": "360learning",
+  "name": "360Learning",
+  "documentedAt": "2026-09-15",
+  "sources": [
+    {
+      "title": "Create a course by importing an eLearning file",
+      "url": "https://support.360learning.com/hc/en-us/articles/38322663301268-Create-a-course-by-importing-an-eLearning-file"
+    }
+  ],
+  "standards": {
+    "scorm12": true,
+    "scorm2004": [
+      "2nd",
+      "3rd",
+      "4th"
+    ],
+    "sequencing": null,
+    "multiSco": false,
+    "cmi5": true,
+    "xapi": "discouraged",
+    "lti13": true,
+    "aicc": true
+  },
+  "launch": {
+    "default": "iframe",
+    "modes": [
+      "iframe"
+    ],
+    "apiDiscovery": [
+      "parents"
+    ]
+  },
+  "datamodel": {
+    "suspendDataMax": {
+      "scorm12": 4096,
+      "scorm2004": 64000
+    },
+    "suspendDataEnforcement": "accept",
+    "lessonLocationMax": 255,
+    "masteryOverridesStatus": null
+  },
+  "exit": {
+    "needsExplicitFinish": null
+  },
+  "session": {},
+  "browser": {
+    "unloadHeaderSent": null,
+    "thirdPartyCookiesRequired": false,
+    "knownBugs": []
+  },
+  "packaging": {
+    "maxZipMB": null,
+    "maxUnzippedMB": 4096,
+    "maxFiles": 50000,
+    "maxCompressionRatio": 200,
+    "asciiFilenames": null,
+    "schemaversionRequired": null,
+    "oneStandardPerZip": null
+  },
+  "update": {
+    "family": "replace-loses-progress",
+    "notes": "Replacing the package loses progress; suspend_data of non-completed learners is erased."
+  },
+  "harness": {
+    "autocommitSeconds": null,
+    "syncCommits": true
+  },
+  "toMeasure": [
+    "/datamodel/suspendDataEnforcement"
+  ],
+  "notes": [
+    "xAPI courses are excluded from OPCO funding reports: deliver SCORM or cmi5 to French clients.",
+    "cmi5 recommended by the vendor but without preview; launchMethod AnyWindow.",
+    "Connected (dispatch) packages refused.",
+    "Package limits: 4 GB once extracted, 50,000 files, compression ratio 200; no limit on the size of the ZIP itself."
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "providers": {
+    "elevenlabs": {
+      "billed": "credits",
+      "priceSettings": [],
+      "listMultipliers": ["voice_rate"],
+      "source": "GET /v1/models model_rates.character_cost_multiplier: a character costs that many credits at list price; a library voice's rate (GET /v1/voices/{id} sharing.rate) multiplies it",
+      "note": "Measured on a Starter plan, 13 October 2026: the request kind (a line or a dialogue), stability and the other voice settings, language_code, previous_text and next_text (not billed), the output format, the endpoint with or without timestamps and a premade or library voice at rate 1 do not change the share billed, so no setting is a price setting."
+    }
+  },
+  "periods": [
+    {
+      "id": "elevenlabs/eleven_v4/starter/2026-09-28",
+      "provider": "elevenlabs",
+      "model": "eleven_v4",
+      "plan": "starter",
+      "start": "2026-09-28T00:00:00Z",
+      "end": "2026-10-13T07:00:00Z",
+      "list": [{ "rates": { "characters": 1 } }],
+      "discount": {
+        "rate": 0.725,
+        "announcedEnd": "2026-10-13T07:00:00Z",
+        "source": "The launch discount, announced as 72 % « until October 12 »: $0.08 → $0.022 per 1,000 characters (https://www.eesel.ai/blog/eleven-v4-pricing, https://pricingsaas.com/companies/elevenlabs/diffs/2026D273); the account's history shows it until 2026-10-13T01:09:33Z and the full price from 07:27:07Z, so it ended at midnight Pacific time. GET /v1/models cost_discount_multiplier said 1 once it had ended; whether it said the discount while it ran is not known."
+      },
+      "source": "Eleven v4 launched on 28 September 2026 (the hour is not known); list price as GET /v1/models says it."
+    },
+    {
+      "id": "elevenlabs/eleven_v4/starter/2026-10-13",
+      "provider": "elevenlabs",
+      "model": "eleven_v4",
+      "plan": "starter",
+      "start": "2026-10-13T07:00:00Z",
+      "end": null,
+      "list": [{ "rates": { "characters": 1 } }],
+      "discount": null,
+      "source": "GET /v1/models character_cost_multiplier 1, cost_discount_multiplier 1, read on 2026-10-13."
+    },
+    {
+      "id": "elevenlabs/eleven_v4_turbo/starter/2026-09-28",
+      "provider": "elevenlabs",
+      "model": "eleven_v4_turbo",
+      "plan": "starter",
+      "start": "2026-09-28T00:00:00Z",
+      "end": "2026-10-13T07:00:00Z",
+      "list": [{ "rates": { "characters": 0.5 } }],
+      "discount": {
+        "rate": 0.725,
+        "announcedEnd": "2026-10-13T07:00:00Z",
+        "source": "The launch discount on v4 and v4 Turbo: $0.04 → $0.011 per 1,000 characters for Turbo (https://www.eesel.ai/blog/eleven-v4-pricing); its end as Eleven v4's, not measured on Turbo."
+      },
+      "source": "Eleven v4 Turbo launched with Eleven v4 on 28 September 2026."
+    },
+    {
+      "id": "elevenlabs/eleven_v4_turbo/starter/2026-10-13",
+      "provider": "elevenlabs",
+      "model": "eleven_v4_turbo",
+      "plan": "starter",
+      "start": "2026-10-13T07:00:00Z",
+      "end": null,
+      "list": [{ "rates": { "characters": 0.5 } }],
+      "discount": null,
+      "source": "GET /v1/models character_cost_multiplier 0.5, cost_discount_multiplier 1, read on 2026-10-13."
+    },
+    {
+      "id": "elevenlabs/eleven_v3/starter/2026-10-13",
+      "provider": "elevenlabs",
+      "model": "eleven_v3",
+      "plan": "starter",
+      "start": null,
+      "end": null,
+      "list": [{ "rates": { "characters": 1 } }],
+      "discount": null,
+      "source": "GET /v1/models character_cost_multiplier 1, cost_discount_multiplier 1, read on 2026-10-13; when this price started is not known."
+    },
+    {
+      "id": "elevenlabs/eleven_multilingual_v2/starter/2026-10-13",
+      "provider": "elevenlabs",
+      "model": "eleven_multilingual_v2",
+      "plan": "starter",
+      "start": null,
+      "end": null,
+      "list": [{ "rates": { "characters": 1 } }],
+      "discount": null,
+      "source": "GET /v1/models character_cost_multiplier 1, cost_discount_multiplier 1, read on 2026-10-13; when this price started is not known."
+    },
+    {
+      "id": "elevenlabs/scribe_v2/starter/2026-10-15",
+      "provider": "elevenlabs",
+      "model": "scribe_v2",
+      "plan": "starter",
+      "start": null,
+      "end": null,
+      "list": [{ "rates": { "seconds": 5.5 } }],
+      "discount": null,
+      "source": "Speech to text, 330 credits a minute of audio (https://elevenlabs.io/pricing, its FAQ, read on 2026-10-15); the API pricing page says $0.22 an hour of audio instead, with hours included in each plan (https://elevenlabs.io/pricing/api). Which one a subscription's key is billed is not known: not measured on 2026-10-15, the key used for measurements lacking the speech_to_text permission (refused, nothing charged). When this price started is not known."
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "stat-card",
+  "title": "Stat card",
+  "description": "One figure that matters, large, with its unit, a short label and an optional sentence. The marker number links the card to a numbered marker in a figure next to it.",
+  "instructions": "Keep the label to a few words and the value to a number (format it for the course language). Put the unit in unit, not in value. Use marker only when a figure on the same screen shows the same number.",
+  "category": "content",
+  "version": "1.0.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["label", "value"],
+    "properties": {
+      "label": { "type": "string", "minLength": 1, "maxLength": 48, "x-translatable": true, "description": "What the figure measures, in a few words." },
+      "value": { "type": "string", "minLength": 1, "maxLength": 12, "x-translatable": true, "description": "The figure, formatted for the course language." },
+      "unit": { "type": "string", "maxLength": 16, "x-translatable": true, "description": "Unit shown after the figure." },
+      "body": { "type": "string", "x-kind": "markdown", "maxLength": 240, "x-translatable": true, "description": "One short sentence of context." },
+      "marker": { "type": "string", "pattern": "^[1-9]$", "description": "Number of the matching marker in a figure on the same screen." },
+      "accent": { "type": "string", "x-kind": "token", "x-token-prefix": "color.", "x-group": "design", "default": "color.orbit", "description": "Colour of the figure and of the glow." }
+    }
+  },
+  "fallback": [
+    { "type": "text", "props": { "markdown": "**{{label}}: {{value}} {{unit}}**{{#body}}\n\n{{body}}{{/body}}" } }
+  ],
+  "examples": [
+    { "title": "Orbital speed", "props": { "label": "International Space Station", "value": "7.66", "unit": "km/s", "body": "One lap in 93 minutes.", "marker": "1", "accent": "color.servicer" } },
+    { "title": "Without marker", "props": { "label": "Gained per orbit", "value": "17", "unit": "km", "body": "For each m/s you brake, at 500 km.", "accent": "color.accent" } }
+  ]
+}

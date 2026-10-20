@@ -1,0 +1,15 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "cosmos-hero",
+  "title": "Cosmic hero",
+  "description": "Opening screen on the starfield: a very large title and a lead text, a side column for goals, a row of cards at the bottom, and the limb of a planet rising behind the cards with an orbital sunrise. Stacks on narrow screens.",
+  "category": "layout",
+  "version": "1.0.0",
+  "level": "screen",
+  "fullBleed": true,
+  "slots": [
+    { "id": "lead", "label": "Lead text", "default": true, "accepts": ["text", "callout", "heading"] },
+    { "id": "side", "label": "Side column", "description": "Goals or a short key message.", "accepts": ["callout", "text", "stat-card"], "maxBlocks": 2 },
+    { "id": "cards", "label": "Cards", "description": "Two to four stat cards (or short callouts) over the planet.", "accepts": ["stat-card", "callout", "text"], "maxBlocks": 4 }
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "anatomy",
+  "title": "Anatomy and the Willis equation",
+  "covers": [
+    "ITEM-2"
+  ],
+  "layout": "figure-split",
+  "completeWhen": "viewed",
+  "blocks": [
+    {
+      "id": "anatomy-figure",
+      "type": "image",
+      "slot": "figure",
+      "style": "bare",
+      "props": {
+        "asset": "images/anatomy-planetary.svg",
+        "alt": "Front view of the gearset with numbered markers: 1 on the sun at the centre, 2 on a planet, 3 on a carrier arm linking the planet pins, 4 on the ring."
+      }
+    },
+    {
+      "id": "anatomy-members",
+      "type": "text",
+      "slot": "figure",
+      "style": "legend",
+      "props": {
+        "markdown": "1. **Sun**: the central gear, 30 teeth.\n2. **Planets**: three 24-tooth gears that mesh with the sun and the ring at once, and spin on pins.\n3. **Carrier**: holds the planet pins. When it turns, the planets orbit the sun.\n4. **Ring**: the outer gear, 78 internal teeth.\n\nOnly the sun, the carrier and the ring take power in or out; the planets pass it on."
+      }
+    },
+    {
+      "id": "anatomy-rule",
+      "type": "callout",
+      "step": 2,
+      "style": "rule",
+      "props": {
+        "variant": "important",
+        "title": "The rule and the equation",
+        "textRef": "TXT-2"
+      }
+    },
+    {
+      "id": "anatomy-derivation",
+      "type": "accordion",
+      "step": 2,
+      "props": {
+        "allowMultiple": false,
+        "items": [
+          {
+            "id": "why",
+            "title": "Optional: where does the equation come from?",
+            "markdown": "Ride on the carrier. From there, the planet pins stand still, so the sun, the planets and the ring form an ordinary gear train. Through the planets, the ring turns the other way, $Z_s/Z_r$ times as fast as the sun:\n\n$$\\frac{n_r - n_c}{n_s - n_c} = -\\frac{Z_s}{Z_r}$$\n\nMultiply out and you get $Z_s\\,n_s + Z_r\\,n_r = (Z_s + Z_r)\\,n_c$: the Willis equation (Robert Willis, 1841)."
+          }
+        ]
+      }
+    }
+  ]
+}

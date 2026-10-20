@@ -1,0 +1,9 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/plan-notes.schema.json",
+  "notes": [
+    {
+      "target": "text:TXT-2",
+      "text": "Formulation plus directe ; la règle ne change pas."
+    }
+  ]
+}

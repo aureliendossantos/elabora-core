@@ -1,0 +1,80 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "support-ticket",
+  "title": "Ticket de support",
+  "version": "1.0.0",
+  "level": "block",
+  "category": "content",
+  "description": "Un ticket de support avec référence, priorité, objet, demandeur et échéance.",
+  "instructions": "Renseignez les champs du ticket. Le texte se réorganise automatiquement sur les petits écrans.",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "reference",
+      "priority",
+      "subject",
+      "requester",
+      "timing"
+    ],
+    "properties": {
+      "reference": {
+        "type": "string",
+        "title": "Référence",
+        "minLength": 1,
+        "maxLength": 80,
+        "x-translatable": true
+      },
+      "priority": {
+        "type": "string",
+        "title": "Priorité",
+        "minLength": 1,
+        "maxLength": 60,
+        "x-translatable": true
+      },
+      "subject": {
+        "type": "string",
+        "title": "Objet",
+        "minLength": 1,
+        "maxLength": 200,
+        "x-translatable": true
+      },
+      "requester": {
+        "type": "string",
+        "title": "Demandeur",
+        "minLength": 1,
+        "maxLength": 200,
+        "x-translatable": true
+      },
+      "timing": {
+        "type": "string",
+        "title": "Ouverture et échéance",
+        "minLength": 1,
+        "maxLength": 200,
+        "x-translatable": true
+      }
+    }
+  },
+  "fallback": [
+    {
+      "type": "callout",
+      "props": {
+        "variant": "info",
+        "title": "{{reference}}",
+        "markdown": "**{{priority}}**\n\n**{{subject}}**\n\n{{requester}}\n\n{{timing}}"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "title": "Le ticket de Marc",
+      "props": {
+        "reference": "Ticket n° 4127",
+        "priority": "Priorité haute",
+        "subject": "Impossible d'imprimer les bulletins de paie",
+        "requester": "Demandeur : Marc — service comptable, 2e étage",
+        "timing": "Ouvert lundi à 9 h 05 · Échéance : 12 h 00"
+      }
+    }
+  ]
+}

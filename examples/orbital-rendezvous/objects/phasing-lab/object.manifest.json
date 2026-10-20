@@ -1,0 +1,581 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "phasing-lab",
+  "version": "3.0.0",
+  "title": "Phasing lab",
+  "planRefs": {
+    "objectives": [
+      "OBJ-2",
+      "OBJ-3"
+    ],
+    "items": [
+      "ITEM-5"
+    ]
+  },
+  "pedagogicalRole": "simulation-decision",
+  "requires": {
+    "three": "r186"
+  },
+  "props": {
+    "type": "object",
+    "properties": {
+      "instruction": {
+        "type": "string",
+        "maxLength": 200,
+        "default": "Choose the first burn and the number of phasing orbits, then execute. The lab burns back at the same point.",
+        "description": "Instruction shown at the top of the control panel",
+        "x-group": "Content",
+        "x-control": "textarea",
+        "x-translatable": true
+      },
+      "requirements": {
+        "type": "array",
+        "title": "Requirements",
+        "minItems": 1,
+        "maxItems": 6,
+        "items": {
+          "type": "object",
+          "title": "Requirement",
+          "properties": {
+            "gap": {
+              "type": "number",
+              "title": "Distance to the client (km)",
+              "description": "Distance to the client in km (positive: the client is ahead; negative: it is behind)",
+              "minimum": -150,
+              "maximum": 150,
+              "multipleOf": 1,
+              "default": 34,
+              "x-control": "number"
+            },
+            "orbits": {
+              "type": "integer",
+              "title": "Most phasing orbits",
+              "description": "Most phasing orbits allowed",
+              "minimum": 1,
+              "maximum": 3,
+              "default": 2,
+              "x-control": "select"
+            },
+            "budget": {
+              "type": "number",
+              "title": "Propellant (m/s)",
+              "description": "Propellant for both burns, in m/s",
+              "minimum": 1,
+              "maximum": 20,
+              "multipleOf": 0.5,
+              "default": 4,
+              "x-control": "number"
+            }
+          },
+          "required": [
+            "gap",
+            "orbits",
+            "budget"
+          ]
+        },
+        "default": [
+          {
+            "gap": 51,
+            "orbits": 1,
+            "budget": 8
+          },
+          {
+            "gap": 51,
+            "orbits": 3,
+            "budget": 2.5
+          },
+          {
+            "gap": -34,
+            "orbits": 2,
+            "budget": 2.5
+          }
+        ],
+        "description": "The requirements to meet, in order (one to six), each a distance to the client, the most phasing orbits allowed and the propellant for both burns. When you change them, change the text version of the block too.",
+        "x-group": "Requirements",
+        "x-control": "list"
+      },
+      "tolerance": {
+        "type": "number",
+        "minimum": 0.5,
+        "maximum": 5,
+        "multipleOf": 0.5,
+        "default": 2,
+        "description": "Distance to the client, in km, at which the rendezvous counts as met",
+        "x-group": "Requirements",
+        "x-control": "slider"
+      },
+      "showPrediction": {
+        "type": "boolean",
+        "default": false,
+        "description": "Show the path and the predicted final gap before executing (for novices: it removes the need to calculate)",
+        "x-group": "Help",
+        "x-control": "toggle"
+      },
+      "exaggeration": {
+        "type": "integer",
+        "minimum": 10,
+        "maximum": 80,
+        "default": 40,
+        "description": "How many times the distance between the two craft is magnified in the 3D view (the plot is at true scale)",
+        "x-group": "View",
+        "x-control": "slider"
+      },
+      "secondsPerOrbit": {
+        "type": "number",
+        "minimum": 2,
+        "maximum": 12,
+        "multipleOf": 0.5,
+        "default": 5,
+        "description": "Duration of one simulated orbit on screen, in seconds",
+        "x-group": "Animation",
+        "x-control": "slider"
+      },
+      "servicerColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#FFA24C",
+        "description": "Colour of your servicer and of its path",
+        "x-group": "Style",
+        "x-control": "color",
+        "x-token": "color.servicer",
+        "x-object-id": "servicer"
+      },
+      "clientColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#B9A7FF",
+        "description": "Colour of the client satellite",
+        "x-group": "Style",
+        "x-control": "color",
+        "x-token": "color.client",
+        "x-object-id": "client"
+      },
+      "orbitColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#8CCBFF",
+        "description": "Colour of the circular orbit",
+        "x-group": "Style",
+        "x-control": "color",
+        "x-token": "color.orbit"
+      },
+      "atmosphereColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#4FA8FF",
+        "description": "Colour of the atmosphere glow",
+        "x-group": "Style",
+        "x-control": "color",
+        "x-token": "color.atmosphere",
+        "x-object-id": "earth"
+      }
+    },
+    "required": [
+      "instruction",
+      "requirements"
+    ]
+  },
+  "language": "en",
+  "strings": {
+    "requirement": {
+      "text": "Requirement {i} of {total}",
+      "description": "Eyebrow of the mission card"
+    },
+    "allMet": {
+      "text": "All requirements met",
+      "description": "Title of the mission card once all are met"
+    },
+    "freeFlight": {
+      "text": "Free flight",
+      "description": "Eyebrow of the mission card once all are met"
+    },
+    "catchUp": {
+      "text": "Catch the client",
+      "description": "Title of a requirement where the client is ahead"
+    },
+    "letCatch": {
+      "text": "Let the client catch up",
+      "description": "Title of a requirement where the client is behind"
+    },
+    "briefAhead": {
+      "text": "The client is {gap} km ahead. Meet it within {orbits, plural, one {# orbit} other {# orbits}}, with at most {budget} m/s of propellant for both burns.",
+      "description": "Text of the mission card; gap and budget are formatted numbers"
+    },
+    "briefBehind": {
+      "text": "The client is {gap} km behind you. Let it catch up within {orbits, plural, one {# orbit} other {# orbits}}, with at most {budget} m/s of propellant for both burns.",
+      "description": "Text of the mission card"
+    },
+    "freeBrief": {
+      "text": "Try any manoeuvre: nothing is scored any more.",
+      "description": "Text of the mission card once all are met"
+    },
+    "firstBurn": {
+      "text": "First burn",
+      "description": "Label of the burn slider"
+    },
+    "burnRetrograde": {
+      "text": "{dv} m/s retrograde (braking)",
+      "description": "Value of the burn slider"
+    },
+    "burnPrograde": {
+      "text": "{dv} m/s prograde (accelerating)",
+      "description": "Value of the burn slider"
+    },
+    "burnNone": {
+      "text": "No burn",
+      "description": "Value of the burn slider at zero"
+    },
+    "retrograde": {
+      "text": "◀ Retrograde",
+      "description": "Left end of the burn slider (keep the arrow)",
+      "maxLength": 20
+    },
+    "prograde": {
+      "text": "Prograde ▶",
+      "description": "Right end of the burn slider (keep the arrow)",
+      "maxLength": 20
+    },
+    "phasingOrbits": {
+      "text": "Phasing orbits",
+      "description": "Legend of the orbit choice"
+    },
+    "propellant": {
+      "text": "Propellant",
+      "description": "Meter label"
+    },
+    "bothBurns": {
+      "text": "both burns",
+      "description": "Small text under the propellant meter"
+    },
+    "propellantUse": {
+      "text": "{used} of {budget} m/s",
+      "description": "Value of the propellant meter"
+    },
+    "client": {
+      "text": "Client",
+      "description": "Meter label: where the client is"
+    },
+    "gapAlongside": {
+      "text": "alongside",
+      "description": "Where the client is: next to you"
+    },
+    "gapAhead": {
+      "text": "{gap} km ahead",
+      "description": "Where the client is"
+    },
+    "gapBehind": {
+      "text": "{gap} km behind",
+      "description": "Where the client is"
+    },
+    "execute": {
+      "text": "Execute the manoeuvre",
+      "description": "Main button",
+      "maxLength": 32
+    },
+    "running": {
+      "text": "Manoeuvre in progress…",
+      "description": "Main button while flying",
+      "maxLength": 32
+    },
+    "ready": {
+      "text": "Set the first burn and the number of phasing orbits, then execute.",
+      "description": "Status line before a manoeuvre"
+    },
+    "reduced": {
+      "text": "Animation off (reduced motion): each manoeuvre shows its result at once.",
+      "description": "Status line under reduced motion"
+    },
+    "burn1Retrograde": {
+      "text": "Burn 1, retrograde: the far side of your orbit drops.",
+      "description": "Status line during the first burn"
+    },
+    "burn1Prograde": {
+      "text": "Burn 1, prograde: the far side of your orbit rises.",
+      "description": "Status line during the first burn"
+    },
+    "burn1None": {
+      "text": "No burn: you stay on the circular orbit.",
+      "description": "Status line when the burn is zero"
+    },
+    "coast": {
+      "text": "Phasing orbit {lap} of {orbits}.",
+      "description": "Status line while coasting"
+    },
+    "burn2": {
+      "text": "Burn 2 at the same point: back on the circular orbit.",
+      "description": "Status line during the second burn"
+    },
+    "met": {
+      "text": "Requirement {i} met: the client is {where} at the end.",
+      "description": "Result; where is a gapAhead, gapBehind or gapAlongside text"
+    },
+    "final": {
+      "text": "At the end the client is {where}.",
+      "description": "Result of a missed requirement, followed by the reason"
+    },
+    "whyNoBurn": {
+      "text": "Without a burn both craft keep the same period, so the gap does not change.",
+      "description": "Reason of a miss"
+    },
+    "whyPrograde": {
+      "text": "You burned prograde: you climbed, each lap took longer and the gap grew.",
+      "description": "Reason of a miss"
+    },
+    "whyRetrograde": {
+      "text": "You burned retrograde: you dropped, each lap took less time and you moved further ahead.",
+      "description": "Reason of a miss"
+    },
+    "tooLittle": {
+      "text": "Not enough drift: burn more, or fly more orbits.",
+      "description": "Reason of a miss, followed by the rule"
+    },
+    "tooMuch": {
+      "text": "Too much drift: you overshot. Burn less, or fly fewer orbits.",
+      "description": "Reason of a miss, followed by the rule"
+    },
+    "rule": {
+      "text": "At 500 km, each m/s gains about 17 km per orbit.",
+      "description": "Rule of thumb recalled after a miss"
+    },
+    "overBudget": {
+      "text": "You met the client, but the two burns cost {cost} m/s and the budget is {budget} m/s. Spread a smaller burn over more orbits.",
+      "description": "Reason of a miss"
+    },
+    "tooLong": {
+      "text": "You met the client, but this requirement allows at most {orbits, plural, one {# phasing orbit} other {# phasing orbits}}.",
+      "description": "Reason of a miss"
+    },
+    "allDone": {
+      "text": "Every requirement is met. The lab stays open: try any manoeuvre.",
+      "description": "Status line at the end"
+    },
+    "predicted": {
+      "text": "Predicted: the client {where} at the end.",
+      "description": "Prediction help (where is a gap text)"
+    },
+    "pause": {
+      "text": "Pause",
+      "description": "Button",
+      "maxLength": 12
+    },
+    "resume": {
+      "text": "Resume",
+      "description": "Button",
+      "maxLength": 12
+    },
+    "view": {
+      "text": "View",
+      "description": "Accessible name of the view button, before the view name"
+    },
+    "view34": {
+      "text": "3/4 view",
+      "description": "View button",
+      "maxLength": 14
+    },
+    "viewAbove": {
+      "text": "From above",
+      "description": "View button",
+      "maxLength": 14
+    },
+    "plotTitle": {
+      "text": "Relative position, true scale",
+      "description": "Title of the plot"
+    },
+    "plotAlong": {
+      "text": "along the orbit, km",
+      "description": "Horizontal axis of the plot"
+    },
+    "plotAltitude": {
+      "text": "altitude, km",
+      "description": "Vertical axis of the plot"
+    },
+    "you": {
+      "text": "You",
+      "description": "Tag of your servicer in 3D",
+      "maxLength": 10
+    },
+    "clientTag": {
+      "text": "Client",
+      "description": "Tag of the client satellite in 3D",
+      "maxLength": 10
+    },
+    "scale": {
+      "text": "In 3D, the distance between the craft is magnified {k} times.",
+      "description": "Note under the plot"
+    }
+  },
+  "objects": [
+    {
+      "id": "earth",
+      "label": "Earth",
+      "selectable": true
+    },
+    {
+      "id": "servicer",
+      "label": "Servicer (you)",
+      "selectable": true
+    },
+    {
+      "id": "client",
+      "label": "Client satellite",
+      "selectable": true
+    }
+  ],
+  "state": {
+    "type": "object",
+    "properties": {
+      "dv": {
+        "type": "number",
+        "minimum": -5,
+        "maximum": 5,
+        "description": "First burn selected, in m/s (negative: retrograde)"
+      },
+      "orbits": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 3,
+        "description": "Phasing orbits selected"
+      },
+      "step": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 6,
+        "description": "Index of the current requirement (the number of requirements once all are met)"
+      },
+      "runs": {
+        "type": "array",
+        "items": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "description": "Manoeuvres executed for each requirement",
+        "maxItems": 6
+      },
+      "running": {
+        "type": "boolean",
+        "description": "A manoeuvre is being flown"
+      }
+    },
+    "required": [
+      "dv",
+      "orbits",
+      "step",
+      "runs",
+      "running"
+    ]
+  },
+  "persistState": {
+    "enabled": true,
+    "maxLength": 120
+  },
+  "events": [
+    {
+      "name": "manoeuvre",
+      "description": "A manoeuvre has been flown for an open requirement.",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "requirement": {
+            "type": "integer"
+          },
+          "plan": {
+            "type": "string"
+          },
+          "dv": {
+            "type": "number"
+          },
+          "orbits": {
+            "type": "integer"
+          },
+          "finalGap": {
+            "type": "number"
+          },
+          "correct": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "requirement",
+          "plan",
+          "dv",
+          "orbits",
+          "finalGap",
+          "correct"
+        ]
+      },
+      "tracking": {
+        "interaction": {
+          "type": "choice",
+          "objective": "OBJ-3",
+          "responseField": "plan",
+          "correctField": "correct"
+        }
+      }
+    },
+    {
+      "name": "requirement_met",
+      "description": "A requirement is met; the next one opens.",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "requirement": {
+            "type": "integer"
+          },
+          "runs": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "requirement",
+          "runs"
+        ]
+      }
+    },
+    {
+      "name": "completed",
+      "description": "Every requirement is met.",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "score"
+        ]
+      },
+      "tracking": {
+        "score": {
+          "field": "score"
+        },
+        "completion": true
+      }
+    }
+  ],
+  "budgets": {
+    "drawCallsMax": 60,
+    "trianglesMax": 120000,
+    "texturePxMax": 2048,
+    "assetsMbMax": 1,
+    "bootMsMax": 3000,
+    "fpsMin": 30,
+    "webglContexts": 1
+  },
+  "a11y": {
+    "description": "Three-quarter view of the Earth from space, with day and night sides, clouds and a thin atmosphere. A circular orbit 500 km up carries your servicer (orange) and the client satellite (violet). When you execute a manoeuvre, the servicer fires at the burn point, flies the phasing orbits below or above the circle, then fires again at the same point; a plot shows its true position relative to the client, along the orbit and in altitude.",
+    "keyboard": "Tab reaches the controls: the burn slider (arrow keys, 0.5 m/s steps), the orbits group (arrow keys) and Execute. Shortcuts: R adds 0.5 m/s retrograde, P adds 0.5 m/s prograde, 1 to 3 set the orbits, X executes, Space pauses.",
+    "dragAlternative": "Dragging the view turns the camera around the Earth; the View button switches between the same angles without dragging.",
+    "motion": {
+      "pausable": true,
+      "respectsReducedMotion": true
+    }
+  },
+  "sandbox": {
+    "network": "none",
+    "permissions": []
+  }
+}

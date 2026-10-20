@@ -1,0 +1,9 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "intro",
+  "title": "__TITLE__",
+  "covers": ["ITEM-1"],
+  "blocks": [
+    { "id": "intro-text", "type": "text", "props": { "markdown": "__TEXT_INTRO__" } }
+  ]
+}

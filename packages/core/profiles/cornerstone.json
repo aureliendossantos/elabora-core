@@ -1,0 +1,87 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/lms-profile.schema.json",
+  "id": "cornerstone",
+  "name": "Cornerstone (release 26.2)",
+  "documentedAt": "2026-09-18",
+  "sources": [
+    {
+      "title": "Cornerstone 26.2 — SCORM 2004 4th edition",
+      "url": "https://help.csod.com/help/csod_0/Content/0_Whats_New/262/Learning/LMS_support_for_SCORM_2004_4th_Edition.htm"
+    },
+    {
+      "title": "Cornerstone general minimum requirements",
+      "url": "https://help.csod.com/help/csod_0/Content/General_Minimum_Requirements.htm"
+    },
+    {
+      "title": "Modify an online course",
+      "url": "https://help.csod.com/help/csod_0/Content/Content/Content_Uploader/Online_Course_Versioning/Modify_an_Online_Course.htm"
+    }
+  ],
+  "standards": {
+    "scorm12": true,
+    "scorm2004": [
+      "3rd",
+      "4th"
+    ],
+    "sequencing": true,
+    "multiSco": true,
+    "cmi5": false,
+    "xapi": true,
+    "lti13": "partners-only",
+    "aicc": true
+  },
+  "launch": {
+    "default": "iframe",
+    "modes": [
+      "iframe",
+      "popup",
+      "new-tab"
+    ],
+    "apiDiscovery": [
+      "parents",
+      "opener"
+    ]
+  },
+  "datamodel": {
+    "suspendDataMax": {
+      "scorm12": null,
+      "scorm2004": null
+    },
+    "suspendDataEnforcement": null,
+    "lessonLocationMax": null,
+    "masteryOverridesStatus": null
+  },
+  "exit": {
+    "needsExplicitFinish": null
+  },
+  "session": {},
+  "browser": {
+    "unloadHeaderSent": null,
+    "thirdPartyCookiesRequired": true,
+    "knownBugs": []
+  },
+  "packaging": {
+    "maxZipMB": 2048,
+    "maxFiles": null,
+    "asciiFilenames": null,
+    "schemaversionRequired": null,
+    "oneStandardPerZip": true
+  },
+  "update": {
+    "family": "lms-versioning",
+    "notes": "Modify if only whitelisted manifest fields change (title, description, duration, mastery score); otherwise Reversion (Replace or Append)."
+  },
+  "harness": {
+    "autocommitSeconds": null,
+    "syncCommits": true
+  },
+  "toMeasure": [
+    "/datamodel/suspendDataMax/scorm12",
+    "/datamodel/lessonLocationMax",
+    "/exit/needsExplicitFinish"
+  ],
+  "notes": [
+    "Third-party cookies must be allowed on *.csod.com: test with cookies blocked and document the iOS / private browsing risk.",
+    "One standard per ZIP."
+  ]
+}

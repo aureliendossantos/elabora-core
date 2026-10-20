@@ -1,0 +1,183 @@
+{
+  "screen": "chemin",
+  "line": "chemin-diagnostic",
+  "language": "fr",
+  "textHash": "sha256:2965b6e399475d4d9dc56f709224c9d97cccf1ed402ff15e4204099ed1ad4662",
+  "duration": 7.878,
+  "provider": "pocket-tts",
+  "voice": "claire",
+  "generated": true,
+  "audioHash": "sha256:10834613578550f27befe0afacd00302ccfd7bd98e0cc05adaa3dd78dcac7d05",
+  "createdAt": "2026-10-08T20:21:40Z",
+  "take": 1,
+  "spokenHash": "sha256:2965b6e399475d4d9dc56f709224c9d97cccf1ed402ff15e4204099ed1ad4662",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Claire » d’après un enregistrement du corpus CML-TTS (Frederico S. Oliveira, Edresson Casanova, Arnaldo Candido Junior, Anderson S. Soares, Arlindo R. Galvão Filho ; CEIA, Université fédérale de Goiás), https://openslr.org/146/, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/) ; enregistrement nettoyé par Kyutai, puis transformé en voix de synthèse.",
+  "model": "pocket-tts/french_24l@d29db79",
+  "text": "Pour trouver où la demande s'arrête, contrôlez chaque maillon en progressant depuis le poste. Même si vous avez une intuition, vérifiez les équipements qui le précèdent.",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Pour",
+      "start": 0.06,
+      "end": 0.234,
+      "score": 1
+    },
+    {
+      "text": "trouver",
+      "start": 0.241,
+      "end": 0.535,
+      "score": 1
+    },
+    {
+      "text": "où",
+      "start": 0.541,
+      "end": 0.635,
+      "score": 0.992
+    },
+    {
+      "text": "la",
+      "start": 0.642,
+      "end": 0.736,
+      "score": 1
+    },
+    {
+      "text": "demande",
+      "start": 0.742,
+      "end": 1.016,
+      "score": 0.999
+    },
+    {
+      "text": "s'",
+      "start": 1.022,
+      "end": 1.062,
+      "score": 0.876
+    },
+    {
+      "text": "arrête",
+      "start": 1.062,
+      "end": 1.437,
+      "score": 0.991
+    },
+    {
+      "text": "contrôlez",
+      "start": 1.824,
+      "end": 2.205,
+      "score": 0.869
+    },
+    {
+      "text": "chaque",
+      "start": 2.205,
+      "end": 2.446,
+      "score": 0.963
+    },
+    {
+      "text": "maillon",
+      "start": 2.446,
+      "end": 2.726,
+      "score": 0.913
+    },
+    {
+      "text": "en",
+      "start": 2.726,
+      "end": 2.827,
+      "score": 0.931
+    },
+    {
+      "text": "progressant",
+      "start": 2.827,
+      "end": 3.302,
+      "score": 0.982
+    },
+    {
+      "text": "depuis",
+      "start": 3.308,
+      "end": 3.508,
+      "score": 0.999
+    },
+    {
+      "text": "le",
+      "start": 3.508,
+      "end": 3.622,
+      "score": 0.999
+    },
+    {
+      "text": "poste",
+      "start": 3.628,
+      "end": 3.943,
+      "score": 1
+    },
+    {
+      "text": "Même",
+      "start": 4.531,
+      "end": 4.691,
+      "score": 0.999
+    },
+    {
+      "text": "si",
+      "start": 4.691,
+      "end": 4.791,
+      "score": 0.996
+    },
+    {
+      "text": "vous",
+      "start": 4.791,
+      "end": 4.931,
+      "score": 0.998
+    },
+    {
+      "text": "avez",
+      "start": 4.931,
+      "end": 5.092,
+      "score": 0.994
+    },
+    {
+      "text": "une",
+      "start": 5.092,
+      "end": 5.192,
+      "score": 0.998
+    },
+    {
+      "text": "intuition",
+      "start": 5.192,
+      "end": 5.647,
+      "score": 1
+    },
+    {
+      "text": "vérifiez",
+      "start": 6.234,
+      "end": 6.609,
+      "score": 0.874
+    },
+    {
+      "text": "les",
+      "start": 6.615,
+      "end": 6.729,
+      "score": 0.993
+    },
+    {
+      "text": "équipements",
+      "start": 6.736,
+      "end": 7.096,
+      "score": 0.981
+    },
+    {
+      "text": "qui",
+      "start": 7.096,
+      "end": 7.217,
+      "score": 1
+    },
+    {
+      "text": "le",
+      "start": 7.217,
+      "end": 7.331,
+      "score": 0.999
+    },
+    {
+      "text": "précèdent",
+      "start": 7.337,
+      "end": 7.812,
+      "score": 0.947
+    }
+  ]
+}

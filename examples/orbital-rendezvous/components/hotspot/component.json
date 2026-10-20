@@ -1,0 +1,28 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "hotspot",
+  "title": "Hotspot",
+  "description": "A numbered marker placed over a figure that the learner selects to reveal what it points at (a click event; usually reveal-step). It pulses while it is the next thing to select, then stays as a plain marker.",
+  "instructions": "Place it in a stacked figure (layout split with figure: stack), in the same step as the figure part it points at, and give it a click event, usually { \"type\": \"reveal-step\", \"step\": <next step> }. x and y are the marker's centre in % of the figure width and height (from the figure's generator). The label names what selecting it shows and contains the marker number.",
+  "category": "interaction",
+  "version": "1.0.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["marker", "label", "x", "y"],
+    "properties": {
+      "marker": { "type": "string", "pattern": "^[1-9]$", "description": "Number shown on the marker; the matching stat card or text uses the same number." },
+      "label": { "type": "string", "minLength": 3, "maxLength": 60, "x-translatable": true, "description": "Accessible name of the button: what selecting it shows, with the marker number (Orbit 1: Space Station)." },
+      "x": { "type": "number", "minimum": 0, "maximum": 100, "description": "Horizontal centre of the marker, in % of the figure width." },
+      "y": { "type": "number", "minimum": 0, "maximum": 100, "description": "Vertical centre of the marker, in % of the figure height." },
+      "accent": { "type": "string", "x-kind": "token", "x-token-prefix": "color.", "x-group": "design", "default": "color.text", "description": "Colour of the pulse around the marker." }
+    }
+  },
+  "fallback": [
+    { "type": "button", "props": { "label": "{{label}}" } }
+  ],
+  "examples": [
+    { "title": "First orbit", "props": { "marker": "1", "label": "Orbit 1: Space Station", "x": 62.2, "y": 46.1, "accent": "color.servicer" } }
+  ]
+}

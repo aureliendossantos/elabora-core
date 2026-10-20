@@ -1,0 +1,89 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "burns",
+  "title": "Burn backwards to move forwards",
+  "covers": [
+    "ITEM-3",
+    "ITEM-4"
+  ],
+  "layout": "split",
+  "layoutProps": {
+    "balance": "activity"
+  },
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "burns-figure",
+      "type": "image",
+      "slot": "figure",
+      "style": "bare",
+      "props": {
+        "asset": "images/burn-phasing.svg",
+        "alt": "A circular orbit seen from above. The servicer fires backwards at the burn point (1); its new path dips inside the circle on the far side (2). The arc to the client just ahead (3) is the gap it closes in one orbit."
+      }
+    },
+    {
+      "id": "burns-legend",
+      "type": "text",
+      "slot": "figure",
+      "style": "legend",
+      "props": {
+        "markdown": "1. Retrograde burn at the burn point.\n2. The far side drops: lower, so faster.\n3. Back at 1 one orbit later, closer to the client."
+      }
+    },
+    {
+      "id": "burns-explain",
+      "type": "text",
+      "slot": "figure",
+      "props": {
+        "textRef": "TXT-3"
+      }
+    },
+    {
+      "id": "burns-rule",
+      "type": "callout",
+      "slot": "body",
+      "style": "rule",
+      "props": {
+        "variant": "important",
+        "title": "Phasing rule of thumb",
+        "textRef": "TXT-4"
+      }
+    },
+    {
+      "id": "burns-practice",
+      "type": "maneuver-quiz",
+      "slot": "body",
+      "props": {
+        "stem": "You fly **50 km behind** the client satellite, in the same circular orbit. Which first burn starts closing the gap?",
+        "mode": "single",
+        "scored": false,
+        "attempts": 1,
+        "objective": "OBJ-1",
+        "options": [
+          {
+            "id": "a",
+            "text": "Prograde, towards the client",
+            "correct": false,
+            "figure": "images/burn-prograde.svg",
+            "feedback": "This is the instinct Gemini 4 followed. The far side rises, each lap takes longer and the client pulls further ahead: about 17 km more per orbit for each m/s."
+          },
+          {
+            "id": "b",
+            "text": "Retrograde, away from the client",
+            "correct": true,
+            "figure": "images/burn-retrograde.svg",
+            "feedback": "Right: the far side drops, your laps get shorter and you gain on the client, about 17 km per orbit for each m/s at 500 km."
+          },
+          {
+            "id": "c",
+            "text": "Radial, down towards the Earth",
+            "correct": false,
+            "figure": "images/burn-radial.svg",
+            "feedback": "A radial burn reshapes the orbit but leaves its period almost unchanged: you trace a loop and, one orbit later, you are back where you started, still 50 km behind."
+          }
+        ]
+      }
+    }
+  ]
+}

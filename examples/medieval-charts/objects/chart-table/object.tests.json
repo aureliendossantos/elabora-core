@@ -1,0 +1,1038 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "The chart appears as the page scrolls to it",
+      "view": {
+        "visible": true,
+        "ratio": 0.05,
+        "progress": 0.05,
+        "entry": 0,
+        "exit": 0
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 30
+        },
+        {
+          "action": "snapshot",
+          "name": "rolled"
+        },
+        {
+          "action": "set-view",
+          "view": {
+            "ratio": 0.6,
+            "progress": 0.33,
+            "entry": 0.6
+          }
+        },
+        {
+          "action": "step",
+          "frames": 150
+        },
+        {
+          "action": "snapshot",
+          "name": "unrolling"
+        },
+        {
+          "action": "set-view",
+          "view": {
+            "ratio": 1,
+            "progress": 0.5,
+            "entry": 1
+          }
+        },
+        {
+          "action": "step",
+          "frames": 360
+        },
+        {
+          "action": "snapshot",
+          "name": "drawn"
+        },
+        {
+          "action": "set-view",
+          "view": {
+            "ratio": 0.2,
+            "progress": 0.92,
+            "entry": 1,
+            "exit": 0.8
+          }
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "voyage": 0
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "stays-drawn"
+        }
+      ]
+    },
+    {
+      "name": "The first voyage is guided step by step",
+      "steps": [
+        {
+          "action": "step",
+          "frames": 360
+        },
+        {
+          "action": "key",
+          "key": "3"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "snapshot",
+          "name": "guided-halfway"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "wind": "levante",
+            "miles": 200
+          }
+        },
+        {
+          "action": "key",
+          "key": "s"
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "expect-no-event",
+          "name": "voyage"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "miles": 450
+          }
+        },
+        {
+          "action": "step",
+          "frames": 30
+        },
+        {
+          "action": "snapshot",
+          "name": "guided-ready"
+        },
+        {
+          "action": "key",
+          "key": "s"
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-event",
+          "name": "voyage",
+          "payload": {
+            "voyage": 1,
+            "correct": true,
+            "attempt": 1
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "guided-landfall"
+        }
+      ]
+    },
+    {
+      "name": "Voyage 1 right at the first attempt",
+      "steps": [
+        {
+          "action": "step",
+          "frames": 360
+        },
+        {
+          "action": "key",
+          "key": "3"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "wind": "levante",
+            "miles": 450
+          }
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "snapshot",
+          "name": "ruler-and-dividers"
+        },
+        {
+          "action": "key",
+          "key": "s"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "sailing": true
+          }
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-event",
+          "name": "voyage",
+          "payload": {
+            "voyage": 1,
+            "wind": "levante",
+            "miles": 450,
+            "correct": true,
+            "attempt": 1
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "landfall"
+        }
+      ]
+    },
+    {
+      "name": "A wrong wind and short dividers say what to change",
+      "steps": [
+        {
+          "action": "step",
+          "frames": 360
+        },
+        {
+          "action": "key",
+          "key": "2"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "s"
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-event",
+          "name": "voyage",
+          "payload": {
+            "voyage": 1,
+            "wind": "greco",
+            "correct": false,
+            "attempt": 1
+          }
+        },
+        {
+          "action": "key",
+          "key": "3"
+        },
+        {
+          "action": "key",
+          "key": "["
+        },
+        {
+          "action": "key",
+          "key": "["
+        },
+        {
+          "action": "key",
+          "key": "s"
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-event",
+          "name": "voyage",
+          "payload": {
+            "voyage": 1,
+            "wind": "levante",
+            "miles": 350,
+            "correct": false,
+            "attempt": 2
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "voyage": 0,
+            "attempts": [
+              2,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "s"
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-event",
+          "name": "voyage",
+          "payload": {
+            "correct": true,
+            "attempt": 3
+          }
+        },
+        {
+          "action": "expect-no-event",
+          "name": "completed"
+        }
+      ],
+      "props": {
+        "guided": false
+      }
+    },
+    {
+      "name": "Two voyages complete the table, the third is optional",
+      "steps": [
+        {
+          "action": "step",
+          "frames": 360
+        },
+        {
+          "action": "key",
+          "key": "3"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "s"
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-event",
+          "name": "voyage",
+          "payload": {
+            "voyage": 1,
+            "correct": true
+          }
+        },
+        {
+          "action": "key",
+          "key": "n"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "voyage": 1,
+            "wind": "",
+            "miles": 0
+          }
+        },
+        {
+          "action": "step",
+          "frames": 120
+        },
+        {
+          "action": "key",
+          "key": "6"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "s"
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-event",
+          "name": "voyage",
+          "payload": {
+            "voyage": 2,
+            "wind": "libeccio",
+            "miles": 550,
+            "correct": true
+          }
+        },
+        {
+          "action": "expect-event",
+          "name": "completed",
+          "payload": {
+            "score": 1
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "voyage": 1
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "required-done"
+        },
+        {
+          "action": "key",
+          "key": "n"
+        },
+        {
+          "action": "step",
+          "frames": 120
+        },
+        {
+          "action": "key",
+          "key": "1"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "s"
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-event",
+          "name": "voyage",
+          "payload": {
+            "voyage": 3,
+            "wind": "tramontana",
+            "miles": 250,
+            "correct": true
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "voyage": 3
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "all-done"
+        }
+      ]
+    },
+    {
+      "name": "Resumes at the voyage reached",
+      "steps": [
+        {
+          "action": "set-state",
+          "state": {
+            "voyage": 2,
+            "wind": "tramontana",
+            "miles": 200,
+            "attempts": [
+              1,
+              2,
+              0
+            ],
+            "sailing": false
+          }
+        },
+        {
+          "action": "step",
+          "frames": 360
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "voyage": 2,
+            "wind": "tramontana",
+            "miles": 200,
+            "attempts": [
+              1,
+              2,
+              0
+            ]
+          }
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "s"
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-event",
+          "name": "completed",
+          "payload": {
+            "score": 0.92
+          }
+        }
+      ],
+      "props": {
+        "required": 3
+      }
+    },
+    {
+      "name": "Narrow: the log goes under the chart",
+      "size": [
+        375,
+        860
+      ],
+      "steps": [
+        {
+          "action": "step",
+          "frames": 360
+        },
+        {
+          "action": "key",
+          "key": "3"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "snapshot",
+          "name": "narrow"
+        }
+      ]
+    },
+    {
+      "name": "Reduced motion: drawn at once",
+      "reducedMotion": true,
+      "view": {
+        "visible": true,
+        "ratio": 0.1,
+        "progress": 0.1,
+        "entry": 0.05
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "snapshot",
+          "name": "reduced"
+        }
+      ]
+    },
+    {
+      "name": "A block lists its own voyages and recolours the brass",
+      "props": {
+        "voyages": [
+          {
+            "from": "tunis",
+            "to": "palermo"
+          },
+          {
+            "from": "candia",
+            "to": "alexandria"
+          }
+        ]
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 360
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "voyage": 0,
+            "attempts": [
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "action": "key",
+          "key": "2"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "brassColor": "#D9D4C7"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "snapshot",
+          "name": "pewter-tools"
+        },
+        {
+          "action": "key",
+          "key": "s"
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-event",
+          "name": "voyage",
+          "payload": {
+            "voyage": 1,
+            "from": "tunis",
+            "to": "palermo",
+            "wind": "greco",
+            "miles": 250,
+            "correct": true
+          }
+        },
+        {
+          "action": "key",
+          "key": "n"
+        },
+        {
+          "action": "step",
+          "frames": 120
+        },
+        {
+          "action": "key",
+          "key": "4"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "s"
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-event",
+          "name": "voyage",
+          "payload": {
+            "voyage": 2,
+            "from": "candia",
+            "to": "alexandria",
+            "wind": "scirocco",
+            "miles": 500,
+            "correct": true
+          }
+        },
+        {
+          "action": "expect-event",
+          "name": "completed",
+          "payload": {
+            "score": 1
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "voyage": 2,
+            "attempts": [
+              1,
+              1
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Unguided, all voyages required",
+      "props": {
+        "guided": false,
+        "required": 3
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 360
+        },
+        {
+          "action": "key",
+          "key": "3"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "]"
+        },
+        {
+          "action": "key",
+          "key": "s"
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-event",
+          "name": "voyage",
+          "payload": {
+            "voyage": 1,
+            "correct": true
+          }
+        },
+        {
+          "action": "expect-no-event",
+          "name": "completed"
+        }
+      ]
+    }
+  ]
+}

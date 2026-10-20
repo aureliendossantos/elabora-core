@@ -1,0 +1,226 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "diagnostic-reseau",
+  "title": "Diagnostiquer une panne d'impression réseau",
+  "description": "Module de 15 minutes pour les techniciens support de niveau 1 : suivre le chemin des paquets pour trouver l'équipement en panne.",
+  "language": "fr",
+  "version": "1.0.0",
+  "durationMinutes": 15,
+  "sections": [
+    {
+      "id": "decouvrir",
+      "title": "Découvrir",
+      "screens": [
+        "accueil",
+        "chemin"
+      ]
+    },
+    {
+      "id": "pratiquer",
+      "title": "Pratiquer",
+      "screens": [
+        "premier-reflexe",
+        "simulation"
+      ]
+    },
+    {
+      "id": "valider",
+      "title": "Valider",
+      "screens": [
+        "evaluation",
+        "bilan"
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "id": "bonsReflexes",
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 10,
+      "description": "Nombre de bons réflexes choisis dans le scénario."
+    },
+    {
+      "id": "indiceVu",
+      "type": "boolean",
+      "default": false,
+      "description": "L'apprenant a eu besoin d'un indice dans la simulation."
+    }
+  ],
+  "theme": {
+    "cascade": "components-over-theme",
+    "tokens": {
+      "color.primary": "#12355B",
+      "color.onPrimary": "#FFFFFF",
+      "color.accent": "#C2410C",
+      "color.surface": "#FFFFFF",
+      "color.text": "#1F2933",
+      "color.muted": "#52606D",
+      "color.focus": "#2563EB",
+      "radius": 8
+    }
+  },
+  "navigation": {
+    "mode": "linear",
+    "lockUntilComplete": true
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "logo",
+          "options": {
+            "asset": "images/logo-helios.svg",
+            "alt": "Hélios"
+          }
+        },
+        {
+          "id": "title"
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "outline"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "resources": [
+    {
+      "id": "fiche-reflexe",
+      "title": "Fiche réflexe : panne d'impression réseau",
+      "description": "Les cinq équipements à vérifier, dans l'ordre, et qui appeler.",
+      "asset": "resources/fiche-reflexe-impression.pdf"
+    },
+    {
+      "id": "equipements",
+      "title": "Équipements du siège",
+      "description": "Emplacements, adresses IP et responsables (tableur).",
+      "asset": "resources/equipements-siege.csv"
+    }
+  ],
+  "glossary": [
+    {
+      "id": "commutateur",
+      "term": "Commutateur",
+      "definition": "Équipement qui relie les postes d'un même étage et leur transmet les paquets qui leur sont destinés.",
+      "variants": [
+        "switch"
+      ]
+    },
+    {
+      "id": "routeur",
+      "term": "Routeur",
+      "definition": "Équipement qui oriente les paquets d'un réseau à l'autre, par exemple du réseau des bureaux vers celui des serveurs."
+    },
+    {
+      "id": "pare-feu",
+      "term": "Pare-feu",
+      "definition": "Équipement qui filtre les flux entre réseaux selon des règles : une règle mal écrite peut bloquer l'impression.",
+      "variants": [
+        "firewall"
+      ]
+    },
+    {
+      "id": "serveur-impression",
+      "term": "Serveur d'impression",
+      "definition": "Serveur qui reçoit les demandes d'impression et les transmet aux imprimantes, dans l'ordre de sa file d'attente."
+    },
+    {
+      "id": "adresse-ip",
+      "term": "Adresse IP",
+      "definition": "Numéro qui identifie un appareil sur le réseau. Sans adresse valide, le poste ne peut joindre aucun serveur.",
+      "variants": [
+        "IP"
+      ]
+    },
+    {
+      "id": "paquet",
+      "term": "Paquet",
+      "definition": "Petit morceau de données qui voyage sur le réseau. Une demande d'impression part en plusieurs paquets.",
+      "variants": [
+        "paquets"
+      ]
+    },
+    {
+      "id": "file-attente",
+      "term": "File d'attente",
+      "definition": "Liste des impressions en attente sur le serveur. Une demande bloquée en tête arrête toutes celles qui la suivent.",
+      "variants": [
+        "spouleur"
+      ]
+    }
+  ],
+  "credits": [
+    "Scénario, textes et illustrations : exemple Elabora, sous CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/"
+  ],
+  "completion": {
+    "reportAs": "passed-incomplete",
+    "masteryScore": 70
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  },
+  "speakers": [
+    {
+      "id": "guide",
+      "name": "Claire, votre guide",
+      "voices": {
+        "fr": {
+          "provider": "pocket-tts",
+          "voice": "claire"
+        }
+      }
+    },
+    {
+      "id": "marc",
+      "name": "Marc",
+      "voices": {
+        "fr": {
+          "provider": "pocket-tts",
+          "voice": "henri"
+        }
+      }
+    }
+  ],
+  "narration": {
+    "advance": "learner",
+    "seek": "seen"
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "medieval-charts",
+  "title": "Drawing the sea: how medieval chart-makers worked",
+  "description": "12-minute module for the volunteer guides of a gallery of medieval charts: world maps and sea charts, how a portolan chart was made, and laying a course on one at a 3D chart table.",
+  "language": "en",
+  "version": "1.0.0",
+  "durationMinutes": 12,
+  "sections": [
+    {
+      "id": "maps",
+      "title": "Two ways to draw the world",
+      "screens": [
+        "world"
+      ]
+    },
+    {
+      "id": "craft",
+      "title": "The chart-maker's workshop",
+      "screens": [
+        "workshop",
+        "chart-table"
+      ]
+    },
+    {
+      "id": "readiness",
+      "title": "Before the gallery opens",
+      "screens": [
+        "gallery"
+      ]
+    }
+  ],
+  "variables": [],
+  "theme": {
+    "cascade": "components-over-theme",
+    "tokens": {
+      "color.primary": "#982D1B",
+      "color.onPrimary": "#FFF8EA",
+      "color.accent": "#24467F",
+      "color.surface": "#F4EBD6",
+      "color.text": "#2A1F14",
+      "color.muted": "#67533A",
+      "color.success": "#2C6638",
+      "color.error": "#A3261A",
+      "color.focus": "#1F58B8",
+      "font.body": "\"EB Garamond\", Garamond, \"Iowan Old Style\", Georgia, serif",
+      "font.heading": "\"EB Garamond\", Garamond, \"Iowan Old Style\", Georgia, serif",
+      "radius": 6,
+      "player.top.background": "#FAF4E6",
+      "player.top.text": "#2A1F14",
+      "player.bottom.background": "#FAF4E6",
+      "player.progress": "#8A6A40",
+      "player.radius": 6
+    },
+    "custom": {
+      "font.chart": "\"UnifrakturMaguntia\", \"EB Garamond\", Georgia, serif",
+      "color.ink": "#2A1F14",
+      "color.ink-soft": "#4B3925",
+      "color.sepia": "#8A6A40",
+      "color.vellum": "#F4EBD6",
+      "color.vellum-light": "#FAF4E6",
+      "color.vellum-deep": "#E8D9B8",
+      "color.vellum-edge": "#C8B084",
+      "color.vellum-shadow": "#5B4424",
+      "color.gold": "#B8892F",
+      "color.gold-light": "#E3C47E",
+      "color.vermilion": "#B5391F",
+      "color.verdigris": "#3B7A62",
+      "color.lapis": "#24467F",
+      "color.rhumb-wind": "#2A1F14",
+      "color.rhumb-half": "#3B7A62",
+      "color.rhumb-quarter": "#B5391F",
+      "color.night": "#1D150C",
+      "color.candle": "#FFF2DC",
+      "shadow.leaf": "0 1px 0 rgba(255,250,235,.7) inset, 0 18px 40px -18px rgba(70,45,10,.35)"
+    },
+    "stylesheet": "theme/theme.css",
+    "fonts": [
+      {
+        "family": "EB Garamond",
+        "src": "theme/fonts/eb-garamond-latin-wght.woff2",
+        "weight": "400 800"
+      },
+      {
+        "family": "EB Garamond",
+        "src": "theme/fonts/eb-garamond-latin-wght-italic.woff2",
+        "weight": "400 800",
+        "style": "italic"
+      },
+      {
+        "family": "UnifrakturMaguntia",
+        "src": "theme/fonts/unifraktur-maguntia-latin.woff2",
+        "weight": "400"
+      }
+    ],
+    "styles": {
+      "text": {
+        "initial": "Opening paragraph with an illuminated initial",
+        "lead": "Large introductory paragraph",
+        "quote": "A visitor's words, set like a quotation in the margin of a manuscript"
+      },
+      "callout": {
+        "rubric": "The idea to remember, ruled in red like a rubric"
+      },
+      "heading": {
+        "rubric": "Section heading with a red rubric number line"
+      }
+    },
+    "backdrop": {
+      "layers": [
+        "grain",
+        "network",
+        "candle"
+      ]
+    }
+  },
+  "presentation": {
+    "mode": "scroll",
+    "contentWidth": 680,
+    "wideWidth": 1180
+  },
+  "navigation": {
+    "mode": "free",
+    "lockUntilComplete": true
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "logo",
+          "enabled": false
+        },
+        {
+          "id": "title"
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "language"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "outline"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "display",
+          "enabled": false
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "position": "page",
+      "items": [
+        {
+          "id": "controls"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "completion": {
+    "reportAs": "passed-incomplete",
+    "masteryScore": 80
+  },
+  "credits": [
+    "Catalan Atlas, Abraham Cresques, Majorca, 1375 (Bibliothèque nationale de France): public domain, via Wikimedia Commons https://commons.wikimedia.org/wiki/File:1375_Atlas_Catalan,_Europe_01.jpg",
+    "Hereford map, about 1300, detail from a printed reproduction: public domain, via Wikimedia Commons https://commons.wikimedia.org/wiki/File:Hereford_Mappa_Mundi_Detail_Africa.jpg",
+    "Charts, T-O map and wind roses redrawn for this course."
+  ],
+  "ui": {
+    "screenOf": "Lesson {n} of {total}",
+    "locked": "Complete the activity on this page to continue.",
+    "explore": "Read every wind of the rose to continue."
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  }
+}

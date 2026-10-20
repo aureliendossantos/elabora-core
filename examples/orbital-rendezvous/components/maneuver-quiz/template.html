@@ -1,0 +1,14 @@
+<!-- Headless quiz: the player binds the hooks (data-t-…): selection, scoring, feedback, saved state. -->
+<fieldset class="or-mq t-quiz" data-t-group>
+  <div class="t-quiz-stem t-text" data-t-stem>{{stem}}</div>
+  <div class="or-mq-options">
+    <label class="or-mq-option" data-each="options" data-t-option="{{id}}">
+      <input class="or-mq-input" data-t-input>
+      <img class="or-mq-figure" data-if="figure" src="{{figure}}" alt="">
+      <span class="or-mq-text">{{text}}</span>
+      <span class="or-mq-flag" data-t-flag></span>
+    </label>
+  </div>
+  <button type="button" class="t-btn t-btn--primary t-quiz-submit" data-t-submit></button>
+  <div class="t-feedback" data-t-feedback></div>
+</fieldset>

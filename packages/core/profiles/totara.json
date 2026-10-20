@@ -1,0 +1,81 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/lms-profile.schema.json",
+  "id": "totara",
+  "name": "Totara 20",
+  "documentedAt": "2026-09",
+  "sources": [
+    {
+      "title": "Totara 20 SCORM activity settings",
+      "url": "https://totara.help/totara-20/docs/scorm-activity-settings"
+    },
+    {
+      "title": "Totara SCORM activity",
+      "url": "https://totara.help/docs/add-a-scorm-activity"
+    }
+  ],
+  "standards": {
+    "scorm12": true,
+    "scorm2004": [],
+    "sequencing": false,
+    "multiSco": null,
+    "cmi5": null,
+    "xapi": "plugin",
+    "lti13": null,
+    "aicc": true
+  },
+  "launch": {
+    "default": "iframe",
+    "modes": [
+      "iframe",
+      "popup"
+    ],
+    "apiDiscovery": [
+      "parents",
+      "opener"
+    ]
+  },
+  "datamodel": {
+    "suspendDataMax": {
+      "scorm12": 4096,
+      "scorm2004": null
+    },
+    "suspendDataEnforcement": "reject",
+    "lessonLocationMax": 255,
+    "masteryOverridesStatus": true
+  },
+  "exit": {
+    "needsExplicitFinish": false
+  },
+  "session": {
+    "autocommitSeconds": 60
+  },
+  "browser": {
+    "unloadHeaderSent": null,
+    "thirdPartyCookiesRequired": false,
+    "knownBugs": []
+  },
+  "packaging": {
+    "maxZipMB": null,
+    "maxFiles": null,
+    "asciiFilenames": false,
+    "schemaversionRequired": false,
+    "oneStandardPerZip": false
+  },
+  "update": {
+    "family": "auto-update",
+    "notes": "Inherits Moodle mod_scorm behaviour."
+  },
+  "harness": {
+    "autocommitSeconds": 60,
+    "syncCommits": true
+  },
+  "toMeasure": [
+    "/datamodel/suspendDataEnforcement",
+    "/standards/cmi5",
+    "/standards/lti13"
+  ],
+  "notes": [
+    "\"SCORM 1.2 standard\" mode: 4,096 characters.",
+    "Mastery score overrides the status."
+  ]
+}

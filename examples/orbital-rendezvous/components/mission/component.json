@@ -1,0 +1,15 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "mission",
+  "title": "Mission stage",
+  "description": "A full-window stage for a 3D scene drawn on the course sky, without a frame. On wide screens the title and the brief float over the top left of the stage, where the scene leaves the sky free; on narrow screens they sit above it.",
+  "instructions": "Put one free object with aspectRatio fill in the stage, and a brief of two or three sentences. The object should leave the left third of its view free for the brief (phasing-lab does).",
+  "category": "layout",
+  "version": "1.0.0",
+  "level": "screen",
+  "fullBleed": true,
+  "slots": [
+    { "id": "brief", "label": "Brief", "default": true, "accepts": ["text", "callout"], "maxBlocks": 2 },
+    { "id": "stage", "label": "Stage", "accepts": ["free-object", "image", "video"], "maxBlocks": 1 }
+  ]
+}

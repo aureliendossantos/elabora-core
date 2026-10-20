@@ -1,0 +1,15 @@
+<div class="mc-rose" data-t-tabs>
+  <div class="mc-rose-dial">
+    <img class="mc-rose-figure" src="{{rose}}" alt="{{alt}}">
+    <div class="mc-rose-tabs">
+      <button data-each="winds" type="button" class="mc-rose-tab" data-t-tab="{{id}}">{{name}}</button>
+    </div>
+  </div>
+  <div class="mc-rose-panels">
+    <section data-each="winds" class="mc-rose-panel" data-t-panel="{{id}}">
+      <p class="mc-rose-direction">{{direction}}</p>
+      <h3 class="mc-rose-name" data-t-heading>{{name}}</h3>
+      <div class="mc-rose-body t-text">{{body}}</div>
+    </section>
+  </div>
+</div>

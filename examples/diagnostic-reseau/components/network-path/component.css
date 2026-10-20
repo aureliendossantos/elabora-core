@@ -1,0 +1,112 @@
+.t-block--network-path {
+  --path-border: #E1E7EF;
+  container-type: inline-size;
+}
+.t-block--network-path .network-path {
+  margin: 0;
+  padding: 1.75rem 1.25rem 1.25rem;
+  border: 1px solid var(--path-border);
+  border-radius: var(--t-radius);
+  background: var(--t-color-surface);
+}
+.t-block--network-path .network-path__steps {
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.t-block--network-path .network-path__step {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+}
+.t-block--network-path .network-path__number {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 4.75rem;
+  height: 4.75rem;
+  border-radius: 12px;
+  color: var(--t-color-on-primary);
+  background: var(--t-color-primary);
+  font-size: 1.875rem;
+  font-weight: 700;
+}
+.t-block--network-path .network-path__number[data-highlight="true"] {
+  background: var(--t-color-accent);
+}
+.t-block--network-path .network-path__equipment {
+  display: grid;
+  gap: .25rem;
+  min-width: 0;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.t-block--network-path .network-path__label {
+  color: var(--t-color-text);
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+.t-block--network-path .network-path__detail {
+  color: var(--t-color-muted);
+  font-size: 1rem;
+}
+.t-block--network-path .network-path__step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 2.375rem;
+  left: calc(50% + 2.375rem);
+  right: calc(-50% - 1rem + 2.375rem);
+  border-top: 2px dashed var(--t-color-muted);
+}
+.t-block--network-path .network-path__step:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: calc(2.375rem - 3px);
+  right: calc(-50% - 1rem + 2.375rem);
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 6px solid var(--t-color-muted);
+}
+.t-block--network-path .network-path__caption {
+  margin-top: 1.5rem;
+  color: var(--t-color-muted);
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+@container (max-width: 720px) {
+  .t-block--network-path .network-path { padding: 1.25rem; }
+  .t-block--network-path .network-path__steps { flex-direction: column; gap: 1.5rem; }
+  .t-block--network-path .network-path__step {
+    flex: 0 0 auto;
+    flex-direction: row;
+    text-align: left;
+  }
+  .t-block--network-path .network-path__step:not(:last-child)::after {
+    top: 4.75rem;
+    bottom: -1.5rem;
+    left: 2.375rem;
+    right: auto;
+    border-top: 0;
+    border-left: 2px dashed var(--t-color-muted);
+  }
+  .t-block--network-path .network-path__step:not(:last-child)::before {
+    top: auto;
+    bottom: -1.5rem;
+    left: calc(2.375rem - 3px);
+    right: auto;
+    border-top: 6px solid var(--t-color-muted);
+    border-bottom: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+  }
+  .t-block--network-path .network-path__caption { text-align: left; }
+}

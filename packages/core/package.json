@@ -1,0 +1,25 @@
+{
+  "name": "@elabora/core",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Elabora core logic without I/O: project model, validation, components, compilation plan, edit operations.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@elabora/format": "0.1.0",
+    "@elabora/player": "0.1.0",
+    "acorn": "^8.15.0",
+    "acorn-walk": "^8.3.4",
+    "markdown-it": "15.0.2",
+    "parse5": "8.0.1",
+    "temml": "0.13.5"
+  }
+}

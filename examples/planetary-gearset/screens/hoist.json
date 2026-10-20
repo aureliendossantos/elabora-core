@@ -1,0 +1,175 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "hoist",
+  "title": "Design decision: the hoist drive",
+  "covers": [
+    "ITEM-5"
+  ],
+  "layout": "figure-split",
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "hoist-figure",
+      "type": "image",
+      "props": {
+        "asset": "images/hoist-drive.svg",
+        "alt": "Hoist drive with numbered parts: 1 the motor, 2 a planetary stage whose held member is still to choose, 3 the drum, 4 the load hanging from the rope. An arrow shows the lifting direction."
+      },
+      "style": "bare",
+      "slot": "figure"
+    },
+    {
+      "id": "hoist-brief",
+      "type": "text",
+      "props": {
+        "markdown": "A customer orders a hoist drive. The motor (1) turns at **1,450 rpm**. The drum (3) must turn at **about 360 rpm**, in the **same direction** as the motor, to lift the 2-tonne load (4).\n\nYou have one planetary stage (2): a **24-tooth sun** and a **72-tooth ring**. The test bench will measure the drum before the drive ships."
+      }
+    },
+    {
+      "id": "hoist-choice",
+      "type": "decision",
+      "step": 2,
+      "props": {
+        "prompt": "**Which configuration do you send to the test bench?**",
+        "objective": "OBJ-3",
+        "scored": true,
+        "options": [
+          {
+            "id": "a",
+            "label": "Hold the ring, drive the sun, take the drum off the carrier",
+            "correct": true
+          },
+          {
+            "id": "b",
+            "label": "Hold the sun, drive the ring, take the drum off the carrier"
+          },
+          {
+            "id": "c",
+            "label": "Hold the carrier, drive the sun, take the drum off the ring"
+          }
+        ]
+      }
+    }
+  ],
+  "layers": [
+    {
+      "id": "hoist-bench-a",
+      "title": "Test bench: ring held",
+      "blocks": [
+        {
+          "id": "hoist-gauge-a",
+          "type": "image",
+          "props": {
+            "asset": "images/bench-ring-held.svg",
+            "alt": "Bench gauge: the drum turns at 363 rpm, inside the 340 to 380 rpm target band, in the lifting direction. Result accepted."
+          },
+          "style": "bare"
+        },
+        {
+          "id": "hoist-result-a",
+          "type": "callout",
+          "props": {
+            "variant": "tip",
+            "title": "Within target",
+            "markdown": "$24 \\times 1450 + 72 \\times 0 = 96\\,n_c$, so the drum turns at **363 rpm**, in the same direction as the motor. The 4 : 1 reduction also multiplies the motor torque by about four, minus the losses."
+          }
+        }
+      ]
+    },
+    {
+      "id": "hoist-bench-b",
+      "title": "Test bench: sun held",
+      "blocks": [
+        {
+          "id": "hoist-gauge-b",
+          "type": "image",
+          "props": {
+            "asset": "images/bench-sun-held.svg",
+            "alt": "Bench gauge: the drum turns at 1,088 rpm, far above the 340 to 380 rpm target band, in the lifting direction. Result rejected."
+          },
+          "style": "bare"
+        },
+        {
+          "id": "hoist-result-b",
+          "type": "callout",
+          "props": {
+            "variant": "warning",
+            "title": "Three times too fast",
+            "markdown": "$72 \\times 1450 = 96\\,n_c$ gives **1,088 rpm**. Holding the sun gives the mildest reduction (1.33 : 1): the load would rise three times faster than specified, with a third of the torque.\n\nTo reach 360 rpm you need the strongest reduction: hold the **ring**, drive the **sun**, take the output from the **carrier** (4 : 1)."
+          }
+        }
+      ]
+    },
+    {
+      "id": "hoist-bench-c",
+      "title": "Test bench: carrier held",
+      "blocks": [
+        {
+          "id": "hoist-gauge-c",
+          "type": "image",
+          "props": {
+            "asset": "images/bench-carrier-held.svg",
+            "alt": "Bench gauge: the drum turns at 483 rpm, above the 340 to 380 rpm target band, and in the lowering direction. Result rejected."
+          },
+          "style": "bare"
+        },
+        {
+          "id": "hoist-result-c",
+          "type": "callout",
+          "props": {
+            "variant": "warning",
+            "title": "The drum turns the wrong way",
+            "markdown": "With the carrier held, $24 \\times 1450 + 72\\,n_r = 0$ gives $n_r = -483$ rpm: pressing LIFT lowers the load, and too fast.\n\nTo lift at 360 rpm, hold the **ring**, drive the **sun** and take the output from the **carrier** (4 : 1, same direction)."
+          }
+        }
+      ]
+    }
+  ],
+  "events": [
+    {
+      "id": "hoist-show-a",
+      "description": "Show the bench result of the correct configuration.",
+      "on": {
+        "type": "decision.selected",
+        "target": "hoist-choice",
+        "option": "a"
+      },
+      "do": [
+        {
+          "type": "show-layer",
+          "layer": "hoist-bench-a"
+        }
+      ]
+    },
+    {
+      "id": "hoist-show-b",
+      "description": "Show the bench result when the sun is held.",
+      "on": {
+        "type": "decision.selected",
+        "target": "hoist-choice",
+        "option": "b"
+      },
+      "do": [
+        {
+          "type": "show-layer",
+          "layer": "hoist-bench-b"
+        }
+      ]
+    },
+    {
+      "id": "hoist-show-c",
+      "description": "Show the bench result when the carrier is held.",
+      "on": {
+        "type": "decision.selected",
+        "target": "hoist-choice",
+        "option": "c"
+      },
+      "do": [
+        {
+          "type": "show-layer",
+          "layer": "hoist-bench-c"
+        }
+      ]
+    }
+  ]
+}

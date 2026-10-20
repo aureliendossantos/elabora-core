@@ -1,0 +1,102 @@
+/* Kestrel Drives theme for Elabora — cascade layer elabora.theme, after the player and the component
+   stylesheets: its rules win over both, whatever their specificity (docs/design.md).
+   Every colour is a token (course.json theme.tokens and theme.custom): change it there and the
+   player, the layouts, the free objects and the generated figures follow. No text in this file. */
+
+/* ── Page ─────────────────────────────────────────────────────────── */
+body {
+  background:
+    linear-gradient(color-mix(in srgb, var(--t-color-blueprint-line) 10%, transparent) 1px, transparent 1px) 0 0 / 32px 32px,
+    linear-gradient(90deg, color-mix(in srgb, var(--t-color-blueprint-line) 10%, transparent) 1px, transparent 1px) 0 0 / 32px 32px,
+    var(--t-surface);
+  font-feature-settings: "cv11", "ss01";
+}
+h1, h2, h3, h4 { letter-spacing: -.015em; }
+.t-course-title { font-family: var(--t-font-heading); font-weight: 600; }
+.t-banner { background: color-mix(in srgb, var(--t-color-copper) 9%, var(--t-surface)); }
+
+/* ── Titles and text ──────────────────────────────────────────────── */
+.t-screen-title { font-size: clamp(1.875rem, 3.6vw, 2.75rem); line-height: 1.08; margin-bottom: 1.125rem; }
+/* Titles that a layout sets apart. The rule above wins over component stylesheets, so a layout's
+   own title is styled here: the large title of the hero band, the head of the stage where the
+   title shares one row with the brief on wide screens. */
+.t-layout--hero .pg-hero-title .t-screen-title {
+  margin: 0 0 1.125rem;
+  font-size: clamp(2.375rem, 5.4vw, 4.125rem);
+  line-height: 1.02;
+  letter-spacing: -.025em;
+  color: var(--t-on-primary);
+}
+@container (min-width: 900px) {
+  .t-layout--stage .pg-stage-head .t-screen-title { margin: 0; }
+}
+.t-block h2 { font-size: 1.5rem; margin-top: 0.625rem; }
+.t-text { line-height: 1.62; }
+.t-s-lead .t-text { font-size: clamp(1.125rem, 1.6vw, 1.3125rem); line-height: 1.55; }
+
+/* Legend of a figure: the numbers match the markers drawn in the figure. */
+.t-s-legend ol { list-style: none; counter-reset: legend; margin: 0; padding: 0; display: grid; gap: 0.625rem; }
+.t-s-legend li { counter-increment: legend; position: relative; padding-left: 2.5rem; min-height: 28px; }
+.t-s-legend li::before {
+  content: counter(legend);
+  position: absolute; left: 0; top: 0;
+  width: 28px; height: 28px; border-radius: 50%;
+  display: grid; place-items: center;
+  font: 700 0.875rem/1 var(--t-font-heading);
+  color: var(--t-color-paper); background: var(--t-text);
+}
+.t-s-legend p { margin: 0.75rem 0 0; color: var(--t-muted); font-size: 0.9375rem; }
+
+/* ── Cards: callouts, activities, results ─────────────────────────── */
+.t-callout, .t-quiz, .t-decision, .t-results, .t-accordion details {
+  background: var(--t-color-card);
+  border: 0;
+  border-radius: calc(var(--t-radius) + 4px);
+  box-shadow: var(--t-shadow-card);
+}
+.t-callout { border-left: 5px solid var(--t-primary); padding: 1rem 1.25rem; }
+.t-callout--important { border-left-color: var(--t-color-copper); }
+.t-callout--tip { border-left-color: var(--t-success); }
+.t-callout--warning { border-left-color: var(--t-error); }
+.t-callout-title { font-family: var(--t-font-heading); font-size: 1.0625rem; }
+.t-quiz { padding: 1.25rem 1.375rem; }
+.t-decision { padding: 1.25rem 1.375rem; }
+.t-choice { background: var(--t-color-card); }
+.t-choice:hover { border-color: var(--t-primary); }
+.t-accordion details { padding: 0.5rem 1.125rem; }
+
+/* Rule card: dark blueprint, for the one thing to remember. */
+.t-s-rule .t-callout {
+  border-left: 0;
+  padding: 1.375rem 1.625rem;
+  color: var(--t-on-primary);
+  background:
+    linear-gradient(color-mix(in srgb, var(--t-color-blueprint-line) 10%, transparent) 1px, transparent 1px) 0 0 / 24px 24px,
+    linear-gradient(90deg, color-mix(in srgb, var(--t-color-blueprint-line) 10%, transparent) 1px, transparent 1px) 0 0 / 24px 24px,
+    var(--t-color-blueprint);
+}
+.t-s-rule .t-callout-title { color: color-mix(in srgb, var(--t-color-copper) 55%, var(--t-on-primary)); text-transform: uppercase; letter-spacing: .08em; font-size: 0.8125rem; }
+.t-s-rule .t-text strong { color: var(--t-on-primary); }
+.t-s-rule math { color: var(--t-on-primary); }
+.t-s-rule .t-math-display { margin: 0.375rem 0; padding: 0.625rem 0; border-block: 1px solid color-mix(in srgb, var(--t-color-blueprint-line) 30%, transparent); }
+
+/* Callout on a dark band (hero, stage): a translucent panel with light text. */
+.t-s-on-dark .t-callout {
+  border-left-color: var(--t-color-copper);
+  box-shadow: none;
+  color: color-mix(in srgb, var(--t-on-primary) 88%, var(--t-color-blueprint));
+  background: color-mix(in srgb, var(--t-on-primary) 7%, transparent);
+}
+.t-s-on-dark .t-callout-title { color: var(--t-on-primary); }
+
+/* Figures that bring their own background. */
+.t-s-bare .t-figure img { border-radius: 0; }
+
+/* ── Free objects ─────────────────────────────────────────────────── */
+.t-object-frame { border: 0; box-shadow: var(--t-shadow-card); }
+/* On the dark band of the stage layout, a deeper shadow. */
+.t-layout--stage .pg-stage .t-object-frame { box-shadow: 0 30px 60px rgba(0, 0, 0, .35); }
+
+/* ── Layers ───────────────────────────────────────────────────────── */
+.t-dialog { border-radius: calc(var(--t-radius) + 6px); }
+.t-dialog-title { font-family: var(--t-font-heading); }

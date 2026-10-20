@@ -1,0 +1,21 @@
+{
+  "name": "@elabora/format",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The Elabora course format: normative JSON Schemas (2020-12), TypeScript types and the schema registry.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./package.json": "./package.json",
+    "./schemas/*": "./schemas/*",
+    "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "^3.0.1"
+  }
+}

@@ -1,0 +1,125 @@
+/* Vellum theme for the Aldermoor sample — cascade layer elabora.theme, after the player and the
+   components: its rules win over both (docs/design.md). Every colour is a token of course.json; no
+   words in this file. The figures come from generators/, the fonts from theme/fonts (OFL).
+
+   A long scrolling page on a skin of vellum: iron-gall ink, rubrics in red, gilded initials. The
+   backdrop (theme.backdrop) adds the grain of the skin, a faint network of rhumb lines that turns a
+   little as the learner scrolls down the page and moves on at each section, and a candle's warmth
+   that breathes. Scroll-driven animations are progressive: without them, or with reduced motion,
+   everything is simply there. */
+
+/* ── Page and backdrop ──────────────────────────────────────────────── */
+html { background: var(--t-surface); scrollbar-color: color-mix(in srgb, var(--t-color-sepia) 60%, transparent) transparent; }
+body { background: transparent; font-size: 1.1875rem; line-height: 1.62; font-variant-numeric: oldstyle-nums proportional-nums; font-kerning: normal; font-feature-settings: "liga", "dlig" 0; -webkit-font-smoothing: antialiased; }
+::selection { background: color-mix(in srgb, var(--t-color-gold-light) 70%, transparent); color: var(--t-color-ink); }
+
+.t-backdrop-layer[data-layer="grain"] { background: url(../assets/images/bg-grain.svg) 0 0 / 360px 360px; opacity: .55; mix-blend-mode: multiply; }
+.t-backdrop-layer[data-layer="network"] {
+  inset: -30vmax;
+  background: url(../assets/images/bg-network.svg) center / 2400px 1600px no-repeat;
+  opacity: .075;
+  transition: translate 2.6s cubic-bezier(.3, .1, .2, 1), opacity 2.6s ease;
+}
+.t-backdrop[data-section="craft"] .t-backdrop-layer[data-layer="network"] { translate: -9vw 4vh; }
+.t-backdrop[data-section="readiness"] .t-backdrop-layer[data-layer="network"] { translate: 7vw -5vh; opacity: .055; }
+.t-backdrop-layer[data-layer="candle"] {
+  background:
+    radial-gradient(ellipse 60% 55% at 12% 0%, color-mix(in srgb, var(--t-color-gold-light) 34%, transparent), transparent 70%),
+    radial-gradient(ellipse 70% 60% at 100% 100%, color-mix(in srgb, var(--t-color-vellum-edge) 30%, transparent), transparent 72%);
+  animation: mc-breathe 9s ease-in-out infinite alternate;
+}
+@keyframes mc-breathe { from { opacity: .75; } to { opacity: 1; } }
+@supports (animation-timeline: scroll()) {
+  .t-backdrop-layer[data-layer="network"] { animation: mc-drift linear both; animation-timeline: scroll(root); }
+  @keyframes mc-drift { from { rotate: -4deg; } to { rotate: 7deg; } }
+}
+
+/* ── The player: its colours are the player.* tokens of course.json; only the title's small capitals here ── */
+.t-course-title { font-weight: 500; font-variant-caps: all-small-caps; letter-spacing: .1em; font-size: 1.15rem; }
+.t-btn { border-radius: 3px; font-weight: 600; letter-spacing: .01em; transition: background-color .2s, color .2s, border-color .2s, box-shadow .2s; }
+.t-btn--primary { background: var(--t-primary); border-color: var(--t-primary); box-shadow: 0 1px 0 rgba(255, 250, 235, .35) inset, 0 6px 16px -10px var(--t-color-vellum-shadow); }
+.t-btn--primary:hover { background: color-mix(in srgb, var(--t-primary) 86%, var(--t-color-ink)); }
+.t-btn--secondary { background: transparent; border-color: color-mix(in srgb, var(--t-primary) 55%, transparent); }
+
+/* ── Type ───────────────────────────────────────────────────────────── */
+h1, h2, h3, h4 { font-weight: 500; letter-spacing: -.005em; text-wrap: balance; color: var(--t-color-ink); }
+.t-text p, .t-text li { text-wrap: pretty; hanging-punctuation: first; }
+.t-text strong { font-weight: 650; }
+.t-text em { font-style: italic; }
+.t-text a { color: var(--t-primary); text-decoration-thickness: 1px; text-underline-offset: .15em; }
+.t-block--heading h2 { font-size: clamp(1.9rem, 3vw, 2.4rem); line-height: 1.12; margin: 0; }
+.t-block--heading h3 { font-size: 1.5rem; margin: 0; }
+
+/* Rubric headings: a red rule and a lozenge above, as rubricators marked a new part. */
+.t-s-rubric h2, .t-s-rubric h3 { position: relative; padding-top: 1.6rem; }
+.t-s-rubric h2::before, .t-s-rubric h3::before { content: ""; position: absolute; left: 0; top: 0; width: 3.25rem; height: 1px; background: var(--t-color-vermilion); }
+.t-s-rubric h2::after, .t-s-rubric h3::after { content: ""; position: absolute; left: 3.6rem; top: -3px; width: 7px; height: 7px; rotate: 45deg; background: var(--t-color-gold); }
+
+/* Opening paragraph with an illuminated initial: a gilded letter on a lapis ground, framed in
+   gold, with a diaper of tiny dots, as in a manuscript. */
+.t-s-initial .t-text, .t-s-lead .t-text { font-size: 1.32rem; line-height: 1.55; color: var(--t-color-ink-soft); }
+.t-s-initial .t-text > p:first-child::first-letter {
+  float: left; margin: .1em .18em 0 0; padding: .1em .2em .02em; font-family: var(--t-font-heading); font-size: 3.4em; line-height: .86; font-weight: 600;
+  color: var(--t-color-gold-light);
+  background:
+    radial-gradient(circle at 25% 25%, color-mix(in srgb, var(--t-color-gold-light) 55%, transparent) 0 1px, transparent 1.6px) 0 0 / .32em .32em,
+    radial-gradient(circle at 75% 75%, color-mix(in srgb, var(--t-color-gold-light) 35%, transparent) 0 1px, transparent 1.6px) 0 0 / .32em .32em,
+    var(--t-color-lapis);
+  box-shadow: 0 0 0 2px var(--t-color-gold), 0 0 0 3px var(--t-color-ink), 0 10px 22px -12px var(--t-color-vellum-shadow);
+  border-radius: 2px;
+}
+.t-s-quote .t-text { font-style: italic; font-size: 1.3rem; color: var(--t-color-ink-soft); border-left: 2px solid var(--t-color-vermilion); padding-left: 1.25rem; }
+
+/* Rubric callout: the idea to remember, in a ruled frame with a red head. */
+.t-s-rubric .t-callout, .t-callout.t-s-rubric { position: relative; padding: 1.4rem 1.6rem 1.35rem; border: 0; border-radius: 2px; background: color-mix(in srgb, var(--t-color-vellum-light) 70%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-color-sepia) 35%, transparent), 0 0 0 5px color-mix(in srgb, var(--t-color-vellum-light) 40%, transparent), 0 0 0 6px color-mix(in srgb, var(--t-color-sepia) 22%, transparent); }
+.t-s-rubric .t-callout-title { color: var(--t-primary); font-variant-caps: all-small-caps; letter-spacing: .1em; font-size: 1.2rem; font-weight: 600; margin-bottom: .35rem; }
+.t-s-rubric .t-callout .t-text { font-size: 1.22rem; }
+
+/* ── Activities ─────────────────────────────────────────────────────── */
+.t-quiz { position: relative; padding: 1.6rem 1.75rem 1.5rem; border: 0; border-radius: 3px; background: color-mix(in srgb, var(--t-color-vellum-light) 82%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-color-sepia) 32%, transparent), var(--t-shadow-leaf); }
+.t-quiz::before { content: ""; position: absolute; left: 1.75rem; top: 0; width: 3rem; height: 3px; background: var(--t-color-vermilion); }
+.t-quiz-stem { font-weight: 500; font-size: 1.28rem; line-height: 1.42; margin-bottom: 1rem; }
+.t-quiz-stem strong { font-weight: 650; }
+.t-options { gap: .45rem; }
+.t-option { align-items: center; padding: .7rem .9rem; border-color: color-mix(in srgb, var(--t-color-sepia) 30%, transparent); border-radius: 3px; background: color-mix(in srgb, var(--t-color-vellum-light) 70%, transparent); transition: background-color .2s, border-color .2s; }
+.t-option:hover { border-color: color-mix(in srgb, var(--t-color-sepia) 60%, transparent); background: var(--t-color-vellum-light); }
+.t-option input { accent-color: var(--t-color-ink); margin: 0; }
+.t-option.is-selected { border-color: var(--t-color-ink); background: var(--t-color-vellum-light); }
+.t-option.is-correct { border-color: var(--t-success); background: color-mix(in srgb, var(--t-success) 9%, var(--t-color-vellum-light)); }
+.t-option.is-wrong { border-color: var(--t-error); background: color-mix(in srgb, var(--t-error) 7%, var(--t-color-vellum-light)); }
+.t-feedback { padding-top: .85rem; border-top: 1px dashed color-mix(in srgb, var(--t-color-sepia) 40%, transparent); }
+.t-feedback-head { font-variant-caps: all-small-caps; letter-spacing: .08em; font-size: 1.15rem; font-weight: 650; }
+.t-feedback-item { font-style: italic; }
+.t-numeric-input { border-radius: 3px; border-color: color-mix(in srgb, var(--t-color-sepia) 55%, transparent); background: var(--t-color-vellum-light); font-variant-numeric: lining-nums tabular-nums; }
+
+/* Results: the score under a red wax seal. */
+.t-results { position: relative; padding: 2rem 2rem 1.75rem 8.5rem; border-radius: 3px; background: color-mix(in srgb, var(--t-color-vellum-light) 82%, transparent); box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-color-sepia) 32%, transparent), var(--t-shadow-leaf); min-height: 9rem; }
+.t-results::before { content: ""; position: absolute; left: 2rem; top: 1.75rem; width: 5rem; height: 5rem; border-radius: 47% 53% 50% 50% / 52% 48% 52% 48%;
+  background: radial-gradient(circle at 38% 34%, color-mix(in srgb, var(--t-color-vermilion) 70%, var(--t-color-vellum-light)), var(--t-color-vermilion) 45%, color-mix(in srgb, var(--t-color-vermilion) 70%, var(--t-color-ink)));
+  box-shadow: inset 0 0 0 .55rem color-mix(in srgb, var(--t-color-vermilion) 85%, var(--t-color-ink)), inset 0 0 0 .62rem color-mix(in srgb, var(--t-color-vermilion) 60%, var(--t-color-vellum-light)), 0 6px 14px -6px var(--t-color-vellum-shadow); }
+.t-results::after { content: ""; position: absolute; left: 3.75rem; top: 3.5rem; width: 1.5rem; height: 1.5rem; background: conic-gradient(from 45deg, transparent 0 25%, color-mix(in srgb, var(--t-color-vermilion) 55%, var(--t-color-ink)) 0 50%, transparent 0 75%, color-mix(in srgb, var(--t-color-vermilion) 55%, var(--t-color-ink)) 0); border-radius: 50%; opacity: .55; }
+.t-score { font-size: 1.6rem; font-weight: 500; }
+@container (max-width: 640px) { .t-results { padding: 6.5rem 1.4rem 1.4rem; } .t-results::before { left: 1.4rem; top: 1.2rem; } .t-results::after { left: 3.15rem; top: 2.95rem; } }
+
+/* ── Free object: the chart lies on the page ────────────────────────── */
+.t-object-frame { background: transparent; border: 0; box-shadow: none; }
+.t-text-alt { font-size: 1rem; color: var(--t-color-ink-soft); }
+.t-text-alt summary { cursor: pointer; font-variant-caps: all-small-caps; letter-spacing: .08em; color: var(--t-primary); }
+
+/* ── The folio layout's own type (player hooks: the theme's place) ───── */
+.t-layout--folio .t-screen-title { font-size: clamp(2.9rem, 5.2vw, 5.1rem); line-height: 1.02; font-weight: 500; letter-spacing: -.015em; max-width: 15ch; margin: 0 0 1.6rem; color: var(--t-color-ink); }
+.t-layout--folio .mc-folio-lead .t-text { max-width: 36rem; }
+
+@media (max-width: 760px) {
+  body { font-size: 1.125rem; }
+  .t-quiz { padding: 1.3rem 1.15rem 1.2rem; }
+  .t-quiz::before { left: 1.15rem; }
+  .t-s-initial .t-text, .t-s-lead .t-text { font-size: 1.2rem; }
+}
+
+/* Continue in the page: a ruled divider across the column, the button set on the rule. */
+.t-continue { position: relative; padding-block: 1.25rem 0.5rem; }
+.t-continue::before { content: ""; position: absolute; left: 0; right: 0; top: 2.6rem; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--t-color-sepia) 55%, transparent) 15%, color-mix(in srgb, var(--t-color-sepia) 55%, transparent) 85%, transparent); }
+.t-continue-btn { position: relative; min-width: 14rem; padding-inline: 2rem; font-variant-caps: all-small-caps; letter-spacing: .14em; font-size: 1.25rem; box-shadow: 0 0 0 0.75rem var(--t-surface), 0 8px 18px -10px var(--t-color-vellum-shadow); }

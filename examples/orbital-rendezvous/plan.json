@@ -1,0 +1,239 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/plan.schema.json",
+  "id": "PLAN-ASTER-RDV-V1",
+  "title": "Slow down to catch up: orbital rendezvous",
+  "businessGoal": "Cut the phasing errors made by new mission operators of Aster Orbital Services (fictional client) in their first simulator campaign, before they assist the flight dynamics team on a satellite-servicing mission.",
+  "audience": {
+    "role": "New mission operators of a satellite-servicing company: engineers and technicians who will monitor rendezvous manoeuvres",
+    "priorKnowledge": "medium",
+    "notes": "Know speed, distance and time, and have seen a satellite orbit diagram. Have never planned an orbital manoeuvre; most expect that thrusting towards a target brings them closer."
+  },
+  "sources": [
+    {
+      "id": "SRC-1",
+      "title": "Curtis, Orbital Mechanics for Engineering Students, 4th edition, chapters 2, 6 and 7 (circular orbits, phasing manoeuvres, relative motion)",
+      "type": "textbook"
+    },
+    {
+      "id": "SRC-2",
+      "title": "Fehse, Automated Rendezvous and Docking of Spacecraft, Cambridge University Press, 2003, chapter 3 (phasing and relative trajectories)",
+      "type": "textbook"
+    },
+    {
+      "id": "SRC-3",
+      "title": "NASA, Gemini program mission reports: Gemini 4 (June 1965) and Gemini 6A/7 (December 1965)",
+      "type": "historical record"
+    },
+    {
+      "id": "SRC-4",
+      "title": "AOS-FD-07, Aster Orbital Services flight dynamics handbook: phasing rules of thumb",
+      "type": "internal handbook (fictional)",
+      "version": "2026-06"
+    }
+  ],
+  "objectives": [
+    {
+      "id": "OBJ-1",
+      "statement": "Predict how a prograde or a retrograde burn changes the altitude of the far side of the orbit, the period and the position relative to a spacecraft flying the same orbit.",
+      "bloom": "understand",
+      "criterion": "Correct prediction on a rendezvous situation",
+      "sources": [
+        "SRC-1",
+        "SRC-2"
+      ]
+    },
+    {
+      "id": "OBJ-2",
+      "statement": "Calculate the burn of a phasing manoeuvre that closes a given along-track gap in a given number of orbits, with the rule of thumb Δx ≈ 3 T Δv.",
+      "bloom": "apply",
+      "criterion": "Burn within 5 % of the expected value",
+      "sources": [
+        "SRC-1",
+        "SRC-4"
+      ]
+    },
+    {
+      "id": "OBJ-3",
+      "statement": "Plan a two-burn phasing manoeuvre that meets a gap, time and propellant requirement, and check it on a simulated orbit.",
+      "bloom": "analyze",
+      "criterion": "3 simulated rendezvous requirements out of 3 met",
+      "sources": [
+        "SRC-2",
+        "SRC-4"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "ITEM-1",
+      "kind": "intro",
+      "title": "Slow down to catch up",
+      "objectives": [],
+      "sources": [
+        "SRC-3"
+      ],
+      "description": "Hook: in 1965, Gemini 4 thrusted towards its rocket stage and watched it drift away; six months later Gemini 6A caught Gemini 7 from below. Goals of the module and three numbers that frame it.",
+      "lockedTexts": [
+        {
+          "id": "TXT-1",
+          "text": "In June 1965, Gemini 4 commander Jim McDivitt tried to fly alongside the rocket stage that had just released his capsule. He pointed at it and fired his thrusters towards it. The stage drifted away: every push made the gap wider, and the crew gave up to save propellant. Six months later, Gemini 6A caught Gemini 7 by doing the opposite: it flew **below** its target, where orbits are faster, and climbed only at the end."
+        }
+      ]
+    },
+    {
+      "id": "ITEM-2",
+      "kind": "exposition",
+      "title": "Lower is faster",
+      "objectives": [
+        "OBJ-1"
+      ],
+      "sources": [
+        "SRC-1"
+      ],
+      "description": "Circular orbital speed and period as functions of the radius, with three reference orbits: the International Space Station (420 km), GPS (20,200 km) and geostationary (35,786 km).",
+      "lockedTexts": [
+        {
+          "id": "TXT-2",
+          "text": "In a circular orbit, gravity alone sets your speed. The closer you are to the Earth, the faster you must fly to stay in orbit, and the shorter each lap:\n\n$$v = \\sqrt{\\frac{\\mu}{r}} \\qquad T = 2\\pi\\sqrt{\\frac{a^{3}}{\\mu}}$$\n\n$r$ is your distance from the centre of the Earth, $a$ the semi-major axis of the orbit (its radius, for a circle) and $\\mu = 398\\,600~\\mathrm{km^3/s^2}$ the gravitational parameter of the Earth."
+        }
+      ]
+    },
+    {
+      "id": "ITEM-3",
+      "kind": "demonstration",
+      "title": "Burn backwards to move forwards",
+      "objectives": [
+        "OBJ-1",
+        "OBJ-2"
+      ],
+      "sources": [
+        "SRC-1",
+        "SRC-4"
+      ],
+      "description": "What a tangential burn does to the orbit (the far side moves, the period changes), the phasing rule of thumb Δx ≈ 3 T Δv and the second burn that stops the drift. Worked example: 1 m/s at 500 km gains about 17 km per orbit.",
+      "lockedTexts": [
+        {
+          "id": "TXT-3",
+          "text": "A burn changes the **far side** of your orbit, not the point where you are. Burn forwards (prograde): the far side rises, each lap takes longer and you drift **behind**. Burn backwards (retrograde): the far side drops, each lap takes less time and you drift **ahead**. One orbit later you are back at the burn point, at the same altitude, but no longer at the same place along the orbit."
+        },
+        {
+          "id": "TXT-4",
+          "text": "In a near-circular orbit of period $T$, a retrograde burn $\\Delta v$ moves you ahead of a neighbour by about\n\n$$\\Delta x \\approx 3\\,T\\,\\Delta v \\text{ per orbit}$$\n\nand a prograde burn moves you back by as much. At 500 km, where $T = 5\\,676$ s, 1 m/s gains about 17 km per orbit. Once the gap is closed, burn the same $\\Delta v$ the other way, at the same point: you are back on the circular orbit and the drift stops."
+        }
+      ]
+    },
+    {
+      "id": "ITEM-4",
+      "kind": "practice",
+      "title": "Your turn: the first burn",
+      "objectives": [
+        "OBJ-1"
+      ],
+      "description": "Unscored practice right after the rule: the servicer flies 50 km behind the client satellite in the same circular orbit. Which first burn closes the gap? Prograde, retrograde or radial, with feedback on each."
+    },
+    {
+      "id": "ITEM-5",
+      "kind": "scenario",
+      "title": "Phasing lab",
+      "objectives": [
+        "OBJ-2",
+        "OBJ-3"
+      ],
+      "sources": [
+        "SRC-2",
+        "SRC-4"
+      ],
+      "description": "3D simulation of a servicer and a client satellite in a 500 km circular orbit. Three requirements in a row: close a 51 km gap in one orbit; close it again with less than 2.5 m/s of propellant; let a client 34 km behind catch up within 2 orbits on the same budget. The learner chooses the first burn and the number of phasing orbits, runs the manoeuvre and reads the final gap. Scored."
+    },
+    {
+      "id": "ITEM-6",
+      "kind": "assessment",
+      "title": "Check your planning",
+      "objectives": [
+        "OBJ-1",
+        "OBJ-2"
+      ],
+      "questions": [
+        {
+          "id": "Q-1",
+          "mode": "numeric",
+          "objectives": [
+            "OBJ-2"
+          ],
+          "bloom": "apply",
+          "stem": "The client satellite is **85 km ahead** of your servicer, in the same circular orbit at 500 km (period 94.6 min). You plan **two** phasing orbits. What retrograde burn must the first burn give, in m/s?",
+          "answer": 2.5,
+          "tolerance": {
+            "percent": 5
+          },
+          "unit": "m/s",
+          "feedback": {
+            "correct": "Right: $\\Delta v = \\dfrac{\\Delta x}{3\\,T\\,N} = \\dfrac{85\\,000}{3 \\times 5\\,676 \\times 2} \\approx 2.5$ m/s, retrograde. Two orbits later, at the same point, burn 2.5 m/s prograde to stop the drift.",
+            "incorrect": "Start from $\\Delta x \\approx 3\\,T\\,\\Delta v$ per orbit, in metres and seconds: over $N$ orbits, $\\Delta v = \\Delta x / (3\\,T\\,N)$."
+          },
+          "misconceptions": [
+            {
+              "id": "no-factor-3",
+              "value": 7.49,
+              "tolerance": {
+                "absolute": 0.1
+              },
+              "feedback": "You used $\\Delta x = T\\,\\Delta v$. The drift per orbit is three times larger: in relative terms, a burn changes your period three times more than your speed, and the difference adds up over the whole orbit."
+            },
+            {
+              "id": "one-orbit",
+              "value": 4.99,
+              "tolerance": {
+                "absolute": 0.1
+              },
+              "feedback": "This burn closes 85 km in a single orbit. With two phasing orbits, each orbit only has to gain 42.5 km: divide by the number of orbits."
+            },
+            {
+              "id": "minutes",
+              "value": 149.8,
+              "tolerance": {
+                "absolute": 2
+              },
+              "feedback": "Write the period in seconds: 94.6 min = 5,676 s. The burn is in metres per second and the gap in metres."
+            }
+          ]
+        },
+        {
+          "id": "Q-2",
+          "mode": "single",
+          "objectives": [
+            "OBJ-1"
+          ],
+          "bloom": "understand",
+          "stem": "After two phasing orbits on a lower orbit, your servicer is back at the burn point, **300 m behind** the client satellite. What do you do now?",
+          "options": [
+            {
+              "id": "a",
+              "text": "Burn prograde by as much as the first burn",
+              "correct": true,
+              "feedback": "Right: this raises the far side back to the client's altitude. Your period is the client's again, so the drift stops 300 m behind it, ready for the final approach."
+            },
+            {
+              "id": "b",
+              "text": "Do nothing: the gap is almost closed",
+              "correct": false,
+              "feedback": "On the lower orbit you keep gaining about $3\\,T\\,\\Delta v$ per orbit: one orbit later you would be kilometres ahead of the client."
+            },
+            {
+              "id": "c",
+              "text": "Burn retrograde to brake before the client",
+              "correct": false,
+              "feedback": "Braking lowers the far side even more and shortens your period: you would gain faster and overshoot the client."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "spacing": [
+    "D+3: two phasing calculations by email",
+    "D+10: one relative-motion plot to read",
+    "D+30: first simulator campaign debrief"
+  ],
+  "waivers": []
+}

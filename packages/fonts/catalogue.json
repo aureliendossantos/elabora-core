@@ -1,0 +1,2402 @@
+{
+  "format": "elabora-fonts/2",
+  "generated": "by npm run fonts from sources.json: do not edit",
+  "subsets": [
+    {
+      "name": "latin",
+      "languages": [
+        "ca",
+        "da",
+        "de",
+        "en",
+        "es",
+        "fi",
+        "fr",
+        "ga",
+        "gl",
+        "id",
+        "is",
+        "it",
+        "ms",
+        "nb",
+        "nl",
+        "nn",
+        "no",
+        "pt",
+        "sq",
+        "sv",
+        "sw"
+      ]
+    },
+    {
+      "name": "latin-ext",
+      "languages": [
+        "az",
+        "bs",
+        "cs",
+        "cy",
+        "dsb",
+        "eo",
+        "et",
+        "haw",
+        "hr",
+        "hsb",
+        "hu",
+        "lt",
+        "lv",
+        "mi",
+        "mt",
+        "pl",
+        "ro",
+        "se",
+        "sk",
+        "sl",
+        "tk",
+        "tr",
+        "uz"
+      ]
+    }
+  ],
+  "pangrams": {
+    "de": "Victor jagt zwölf Boxkämpfer quer über den großen Sylter Deich.",
+    "en": "The quick brown fox jumps over the lazy dog.",
+    "es": "El veloz murciélago hindú comía feliz cardillo y kiwi.",
+    "fr": "Voix ambiguë d’un cœur qui, au zéphyr, préfère les jattes de kiwis.",
+    "it": "Ma la volpe col suo balzo ha raggiunto il quieto Fido.",
+    "nl": "Pa’s wijze lynx bezag vroom het fikse aquaduct.",
+    "pt": "Luís argüia à Júlia que «brações, fé, chá, óxido, pôr, zângão» eram palavras do português.",
+    "cs": "Příliš žluťoučký kůň úpěl ďábelské ódy.",
+    "hu": "Árvíztűrő tükörfúrógép.",
+    "pl": "Pchnąć w tę łódź jeża lub ośm skrzyń fig.",
+    "ro": "Înjurând pițigăiat, zoofobul comandă vexat whisky și tequila.",
+    "tr": "Pijamalı hasta yağız şoföre çabucak güvendi."
+  },
+  "bytes": 3590057,
+  "families": [
+    {
+      "id": "eb-garamond",
+      "family": "EB Garamond",
+      "category": "serif",
+      "style": "old-style",
+      "use": "Old-style Garamond for long reading: history, humanities, literature. Fine italics.",
+      "stack": "\"EB Garamond\", Garamond, \"Iowan Old Style\", \"Palatino Linotype\", Georgia, serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Source Sans 3",
+        "Cinzel"
+      ],
+      "specimen": {
+        "en": "Letters copied by hand, page after page",
+        "fr": "Des lettres copiées à la main, page après page"
+      },
+      "variable": true,
+      "weights": [
+        400,
+        500,
+        600,
+        700,
+        800
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/eb-garamond/eb-garamond-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400 800",
+          "style": "normal",
+          "bytes": 44336,
+          "hash": "sha256:88603384163d301aebd5bd769832a8bfe3c9004ec24178417b9817f0ad32c63b"
+        },
+        {
+          "path": "files/eb-garamond/eb-garamond-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400 800",
+          "style": "normal",
+          "bytes": 113928,
+          "hash": "sha256:f8d3fa06e20989a938972165406a1b731cdc7fe33ff2b0b6798c75aa63709901"
+        },
+        {
+          "path": "files/eb-garamond/eb-garamond-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400 800",
+          "style": "italic",
+          "bytes": 47940,
+          "hash": "sha256:c664773f7e1d42d36326aa457becf7674236168c74cf7d74e87e5778ef7640f9"
+        },
+        {
+          "path": "files/eb-garamond/eb-garamond-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400 800",
+          "style": "italic",
+          "bytes": 88576,
+          "hash": "sha256:fa866520f8b7fb646ebc730fd0d3cbf8945db74d92f25fdd6fee486808652fdf"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/eb-garamond/OFL.txt",
+        "bytes": 4519,
+        "hash": "sha256:f03c8eda63076cd52317dcd40aa04db8472d4cb592dfaafa385129dfdafc7f9c",
+        "copyright": "Copyright 2017 The EB Garamond Project Authors (https://github.com/octaviopardo/EBGaramond12) EBGaramond-Italic[wght].ttf: Copyright 2017 The EB Garamond Project Authors (https://github.com/octaviopardo/EBGaramond12)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 299299,
+      "source": {
+        "package": "@fontsource-variable/eb-garamond",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/eb-garamond/-/eb-garamond-5.3.0.tgz",
+        "integrity": "sha512-656OJsA9Vv24yhqRZFEzXnzS2AYgKdEILLgHJYLzzXndgcWFKfSXFqzbRI5/6Yk1Yt7UfWrUeppE5nRQPQMwlQ==",
+        "page": "https://fontsource.org/fonts/eb-garamond",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v33",
+        "lastModified": "2026-06-30"
+      }
+    },
+    {
+      "id": "libre-baskerville",
+      "family": "Libre Baskerville",
+      "category": "serif",
+      "style": "transitional",
+      "use": "Baskerville drawn for screens: sturdy body text with a classic, serious voice (law, finance, history).",
+      "stack": "\"Libre Baskerville\", Baskerville, \"Baskerville Old Face\", Georgia, serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Source Sans 3",
+        "Montserrat"
+      ],
+      "specimen": {
+        "en": "A clear argument in a classic face",
+        "fr": "Un raisonnement clair dans une forme classique"
+      },
+      "variable": true,
+      "weights": [
+        400,
+        500,
+        600,
+        700
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/libre-baskerville/libre-baskerville-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400 700",
+          "style": "normal",
+          "bytes": 33872,
+          "hash": "sha256:22219fb90e3b9bd28debd1825fe8d9a0154a0e31f8b3fa601ac1a0a5aa5e6d1b"
+        },
+        {
+          "path": "files/libre-baskerville/libre-baskerville-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400 700",
+          "style": "normal",
+          "bytes": 35468,
+          "hash": "sha256:8f7537ce3a6c1c0d0e93a9530432df13953312d378713a059e9a6cf0d0cde8b9"
+        },
+        {
+          "path": "files/libre-baskerville/libre-baskerville-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400 700",
+          "style": "italic",
+          "bytes": 31244,
+          "hash": "sha256:1203eb6186789060d1376ca7ab20734b179e241c85ddc2d84502c818afb63210"
+        },
+        {
+          "path": "files/libre-baskerville/libre-baskerville-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400 700",
+          "style": "italic",
+          "bytes": 35228,
+          "hash": "sha256:890c2ae602dfc42b941667f13dcb5ddb196a31e8d7aa76cea20f2afaa7531eff"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/libre-baskerville/OFL.txt",
+        "bytes": 4541,
+        "hash": "sha256:8490e863633e537100d6d18755d994ea30b0b44741876a17809d28becf45ce11",
+        "copyright": "Copyright 2012 The Libre Baskerville Project Authors (https://github.com/impallari/Libre-Baskerville) LibreBaskerville-Italic[wght].ttf: Copyright 2012 The Libre Baskerville Project Authors (https://github.com/impallari/Libre-Baskerville)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 140353,
+      "source": {
+        "package": "@fontsource-variable/libre-baskerville",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/libre-baskerville/-/libre-baskerville-5.3.0.tgz",
+        "integrity": "sha512-lIjXwDhcdr0OxSdzlAU4G7Tnny1LhgAiPFdp3/PjwRMqYt2JLU6pQiLwz/M5lRBs/kRtHwxknPUqRt37AnqPFg==",
+        "page": "https://fontsource.org/fonts/libre-baskerville",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v24",
+        "lastModified": "2025-11-20"
+      }
+    },
+    {
+      "id": "lora",
+      "family": "Lora",
+      "category": "serif",
+      "style": "contemporary",
+      "use": "Contemporary serif with calligraphic curves: warm body text for stories, case studies, soft skills.",
+      "stack": "\"Lora\", Georgia, \"Times New Roman\", serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Open Sans",
+        "Montserrat"
+      ],
+      "specimen": {
+        "en": "Every case begins with a story",
+        "fr": "Chaque cas commence par une histoire"
+      },
+      "variable": true,
+      "weights": [
+        400,
+        500,
+        600,
+        700
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/lora/lora-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400 700",
+          "style": "normal",
+          "bytes": 37788,
+          "hash": "sha256:ddb8c66035104e233fc024669183aad3738b6daa16deee2ebb1241bd0f98ace1"
+        },
+        {
+          "path": "files/lora/lora-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400 700",
+          "style": "normal",
+          "bytes": 20088,
+          "hash": "sha256:2a2d9c22c9863086a23f5013fede1428585321812b25f2662542c39d02967c5e"
+        },
+        {
+          "path": "files/lora/lora-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400 700",
+          "style": "italic",
+          "bytes": 40772,
+          "hash": "sha256:d824d807d4d832d12c87932d0b8ec1314dcfd502157a56dee6bb04cf8a3768ae"
+        },
+        {
+          "path": "files/lora/lora-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400 700",
+          "style": "italic",
+          "bytes": 21128,
+          "hash": "sha256:45f989df83f3a9f40007d2ecdea98bff248c8767a1a0bbe60e94fb37b605ecee"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/lora/OFL.txt",
+        "bytes": 4563,
+        "hash": "sha256:948aed765160f7b974105606c21994715a171f89fca48e57bf1e0a23aca0bef1",
+        "copyright": "Copyright 2011 The Lora Project Authors (https://github.com/cyrealtype/Lora-Cyrillic), with Reserved Font Name \"Lora\". Lora-Italic[wght].ttf: Copyright 2011 The Lora Project Authors (https://github.com/cyrealtype/Lora-Cyrillic), with Reserved Font Name \"Lora\".",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 124339,
+      "source": {
+        "package": "@fontsource-variable/lora",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/lora/-/lora-5.3.0.tgz",
+        "integrity": "sha512-2ph8KiZ8Bn141hWuC3ErtpJ+Ui8p2MJQn8TJNRSRmLmnCIOCtHfiBM9R7WLRPeUG/q6hXyHOxWQ8DvRSX+ixvQ==",
+        "page": "https://fontsource.org/fonts/lora",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v37",
+        "lastModified": "2025-09-11"
+      }
+    },
+    {
+      "id": "source-serif-4",
+      "family": "Source Serif 4",
+      "category": "serif",
+      "style": "transitional",
+      "use": "Adobe's text serif: neutral and very readable at small sizes, nine weights. Pairs with Source Sans 3.",
+      "stack": "\"Source Serif 4\", \"Iowan Old Style\", Georgia, serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Source Sans 3",
+        "Inter"
+      ],
+      "specimen": {
+        "en": "Read the procedure, then apply it",
+        "fr": "Lisez la procédure, puis appliquez-la"
+      },
+      "variable": true,
+      "weights": [
+        200,
+        300,
+        400,
+        500,
+        600,
+        700,
+        800,
+        900
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/source-serif-4/source-serif-4-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "200 900",
+          "style": "normal",
+          "bytes": 50824,
+          "hash": "sha256:c1df4596be5029233ed2afbb8b2f6ea20784b3fb1aa5d6b5c6519ccd85eb3dfb"
+        },
+        {
+          "path": "files/source-serif-4/source-serif-4-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "200 900",
+          "style": "normal",
+          "bytes": 42040,
+          "hash": "sha256:41529a5b38008d9ea01e28ec18693a714a3216669ee477d83a5b9db999369625"
+        },
+        {
+          "path": "files/source-serif-4/source-serif-4-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "200 900",
+          "style": "italic",
+          "bytes": 51516,
+          "hash": "sha256:663e7ef3037a56dce81dfc33f68c1e6445995ffd8887991b3c0b68a7689c9da5"
+        },
+        {
+          "path": "files/source-serif-4/source-serif-4-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "200 900",
+          "style": "italic",
+          "bytes": 44260,
+          "hash": "sha256:515639854d3566c43860d2005770645c590df8b43a0144c70fe2566c33015ede"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/source-serif-4/OFL.txt",
+        "bytes": 4314,
+        "hash": "sha256:18aabf190848725e2576eefb5c29ba06aac1029d02132252a7f312eac2e50cf3",
+        "copyright": "Google Inc.",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 192954,
+      "source": {
+        "package": "@fontsource-variable/source-serif-4",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/source-serif-4/-/source-serif-4-5.3.0.tgz",
+        "integrity": "sha512-9vch9WqxjaaA+1o9Ur8pOgIGbCYLjRReOUel23A6lOpD1syptgjtkORevvNmldJ5kGXQL29onQUqI5Ltz0s3bQ==",
+        "page": "https://fontsource.org/fonts/source-serif-4",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v14",
+        "lastModified": "2025-09-11"
+      }
+    },
+    {
+      "id": "merriweather",
+      "family": "Merriweather",
+      "category": "serif",
+      "style": "screen",
+      "use": "Serif designed for screens: large x-height, sturdy at small sizes. The heaviest files of the list.",
+      "stack": "\"Merriweather\", Georgia, \"Times New Roman\", serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Open Sans",
+        "Lato"
+      ],
+      "specimen": {
+        "en": "Designed to be read on screens",
+        "fr": "Dessinée pour être lue à l’écran"
+      },
+      "variable": true,
+      "weights": [
+        300,
+        400,
+        500,
+        600,
+        700,
+        800,
+        900
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/merriweather/merriweather-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "300 900",
+          "style": "normal",
+          "bytes": 97548,
+          "hash": "sha256:4fbe8dd9c23b1fd62a988bb8a69b8e692d810f773d9ef6ebca2ba2760c7b11ee"
+        },
+        {
+          "path": "files/merriweather/merriweather-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "300 900",
+          "style": "normal",
+          "bytes": 74960,
+          "hash": "sha256:8ca0880997847953a13964d6769b6712c57aa2dc2f881f4e6e805719791daed8"
+        },
+        {
+          "path": "files/merriweather/merriweather-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "300 900",
+          "style": "italic",
+          "bytes": 100572,
+          "hash": "sha256:caa1da88ecea68d5d4b79881792675c76e691f5141ae3fef85bd472920436053"
+        },
+        {
+          "path": "files/merriweather/merriweather-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "300 900",
+          "style": "italic",
+          "bytes": 78260,
+          "hash": "sha256:f11472cb2bef38bdb05eb91911e9672e8e45dd80756cb87a7f316ac9ec910e1f"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/merriweather/OFL.txt",
+        "bytes": 4611,
+        "hash": "sha256:aa677c3f7682d9c4f7aa48fae3f3b9d0f8d70ac6ab47b9bc20a9cc2879e15af0",
+        "copyright": "Copyright 2024 The Merriweather Project Authors (https://github.com/EbenSorkin/Merriweather4) with Reserved Font Name \"Merriweather\". Merriweather-Italic[opsz,wdth,wght].ttf: Copyright 2024 The Merriweather Project Authors (https://github.com/EbenSorkin/Merriweather4) with Reserved Font Name \"Merriweather\".",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 355951,
+      "source": {
+        "package": "@fontsource-variable/merriweather",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/merriweather/-/merriweather-5.3.0.tgz",
+        "integrity": "sha512-wK7S4NtPXWUWll/sZCdub93pqSCnFkpKFbnoOE8fh+9Ut6JFjgkc9UlBxHJ0RVMkDpoWwGwMwYYTMvd3G9aAXA==",
+        "page": "https://fontsource.org/fonts/merriweather",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v33",
+        "lastModified": "2025-09-02"
+      }
+    },
+    {
+      "id": "playfair-display",
+      "family": "Playfair Display",
+      "category": "serif",
+      "style": "didone",
+      "use": "High-contrast display serif for titles and quotes; set the text in a sans.",
+      "stack": "\"Playfair Display\", Didot, \"Bodoni MT\", Georgia, serif",
+      "for": [
+        "heading"
+      ],
+      "pairs": [
+        "Source Sans 3",
+        "Lato"
+      ],
+      "specimen": {
+        "en": "The Art of Asking Good Questions",
+        "fr": "L’art de poser les bonnes questions"
+      },
+      "variable": true,
+      "weights": [
+        400,
+        500,
+        600,
+        700,
+        800,
+        900
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/playfair-display/playfair-display-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400 900",
+          "style": "normal",
+          "bytes": 38404,
+          "hash": "sha256:e0c764a8e9e1cce92163c55bac4b2ad6cd4cf8c696ce2289ab5c41565e65b7e2"
+        },
+        {
+          "path": "files/playfair-display/playfair-display-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400 900",
+          "style": "normal",
+          "bytes": 21140,
+          "hash": "sha256:42898ad49a6b23f32b109243e1df596edf831015ed685f429e4dafbb181d599d"
+        },
+        {
+          "path": "files/playfair-display/playfair-display-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400 900",
+          "style": "italic",
+          "bytes": 38804,
+          "hash": "sha256:54af24bd0f911f0fd7399d5445ea2023ff501d6a69f2d728f1213072f977ab14"
+        },
+        {
+          "path": "files/playfair-display/playfair-display-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400 900",
+          "style": "italic",
+          "bytes": 23380,
+          "hash": "sha256:b9dff4aec6d8ef27af595330c808c455fcc3ff46881642aa6028ed4e27a96f89"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/playfair-display/OFL.txt",
+        "bytes": 4630,
+        "hash": "sha256:c052aafd2a71e90bcee6e69f475029d430a10d548c08ffcae350171f0e9668b1",
+        "copyright": "Copyright 2017 The Playfair Display Project Authors (https://github.com/clauseggers/Playfair-Display), with Reserved Font Name \"Playfair Display\". PlayfairDisplay-Italic[wght].ttf: Copyright 2017 The Playfair Display Project Authors (https://github.com/clauseggers/Playfair-Display), with Reserved Font Name \"Playfair Display\".",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 126358,
+      "source": {
+        "package": "@fontsource-variable/playfair-display",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/playfair-display/-/playfair-display-5.3.0.tgz",
+        "integrity": "sha512-IHdzTvE8eGIXHteZql7KXoqdc3Gfm+Zs1u4XlSC3MeplkwviT3sx/P6gI0tLwg/xIYLF4ZJYveZ5V+bl9cnDwA==",
+        "page": "https://fontsource.org/fonts/playfair-display",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v40",
+        "lastModified": "2025-09-11"
+      }
+    },
+    {
+      "id": "fraunces",
+      "family": "Fraunces",
+      "category": "serif",
+      "style": "soft",
+      "use": "Soft old-style display serif with character: friendly, editorial headings.",
+      "stack": "\"Fraunces\", \"Iowan Old Style\", Georgia, serif",
+      "for": [
+        "heading"
+      ],
+      "pairs": [
+        "Inter",
+        "Figtree"
+      ],
+      "specimen": {
+        "en": "Curious minds learn faster",
+        "fr": "Les esprits curieux apprennent plus vite"
+      },
+      "variable": true,
+      "weights": [
+        100,
+        200,
+        300,
+        400,
+        500,
+        600,
+        700,
+        800,
+        900
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/fraunces/fraunces-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "100 900",
+          "style": "normal",
+          "bytes": 36620,
+          "hash": "sha256:7f9d191d999336d3b9790afa72e1358e50a13b06d4f289341e92a311967a80f9"
+        },
+        {
+          "path": "files/fraunces/fraunces-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "100 900",
+          "style": "normal",
+          "bytes": 33584,
+          "hash": "sha256:a21ecfbf41fbc393e24ef9b7e38532a27e8da5e0a074aa7d66802d1b5ccec2f0"
+        },
+        {
+          "path": "files/fraunces/fraunces-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "100 900",
+          "style": "italic",
+          "bytes": 45656,
+          "hash": "sha256:bceec2ef4d549efbc8df0194a8d5280b6a64c3e399244dffccd9ea1bd9ad6db7"
+        },
+        {
+          "path": "files/fraunces/fraunces-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "100 900",
+          "style": "italic",
+          "bytes": 40528,
+          "hash": "sha256:877bcc2fd1be299c950d0971578336818ca5818e1e956f12e0d8c6736436ca45"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/fraunces/OFL.txt",
+        "bytes": 4504,
+        "hash": "sha256:cd3384cafac6f2bddc3955273958a2e029f97027c8037ac539ef5744a77b579e",
+        "copyright": "Copyright 2020 The Fraunces Project Authors (github.com/undercasetype/Fraunces) Fraunces-Italic[SOFT,WONK,opsz,wght].ttf: Copyright 2020 The Fraunces Project Authors (github.com/undercasetype/Fraunces)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 160892,
+      "source": {
+        "package": "@fontsource-variable/fraunces",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/fraunces/-/fraunces-5.3.0.tgz",
+        "integrity": "sha512-9BYGySn4AHEJdgp9Z28tQ3X+laJMEOITXkQarZXeloWQZDq5oOvXJ3kDA8c7MGIfpogIaZfjrQBqmda8POOCKA==",
+        "page": "https://fontsource.org/fonts/fraunces",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v38",
+        "lastModified": "2025-09-10"
+      }
+    },
+    {
+      "id": "inter",
+      "family": "Inter",
+      "category": "sans-serif",
+      "style": "neo-grotesque",
+      "use": "Neutral interface sans with a tall x-height: software, data, technical courses.",
+      "stack": "\"Inter\", system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Source Serif 4",
+        "Space Grotesk"
+      ],
+      "specimen": {
+        "en": "Configure the settings, then confirm",
+        "fr": "Configurez les réglages, puis confirmez"
+      },
+      "variable": true,
+      "weights": [
+        100,
+        200,
+        300,
+        400,
+        500,
+        600,
+        700,
+        800,
+        900
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/inter/inter-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "100 900",
+          "style": "normal",
+          "bytes": 48256,
+          "hash": "sha256:3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62"
+        },
+        {
+          "path": "files/inter/inter-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "100 900",
+          "style": "normal",
+          "bytes": 85068,
+          "hash": "sha256:34b9c504cab7a73e37b746343a449132e56cf7b5481af2cb81dc74dcff25c956"
+        },
+        {
+          "path": "files/inter/inter-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "100 900",
+          "style": "italic",
+          "bytes": 51832,
+          "hash": "sha256:7291b5970da2237441273c03b424a504b70b18f09791473fab99687dcc314720"
+        },
+        {
+          "path": "files/inter/inter-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "100 900",
+          "style": "italic",
+          "bytes": 91900,
+          "hash": "sha256:71254244ccb1ec21e14db3480fef6f6826d1136dc4aca1c7d3ca7ce31294fcce"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/inter/OFL.txt",
+        "bytes": 4477,
+        "hash": "sha256:3b0a5fca3d17942cde889069889dedbbbd075e9b599968c82a95f4d944e9b345",
+        "copyright": "Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter) Inter-Italic[opsz,wght].ttf: Copyright 2016 The Inter Project Authors (https://github.com/rsms/inter)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 281533,
+      "source": {
+        "package": "@fontsource-variable/inter",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/inter/-/inter-5.3.0.tgz",
+        "integrity": "sha512-OupL48va4JNofb97w6NYeF9S7W/kHNKM0Er8Dem5nqi4jeOLrVJDoE8tZEpnMJmtkvNbB1EIPPwHcdkF6b1oUA==",
+        "page": "https://fontsource.org/fonts/inter",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v20",
+        "lastModified": "2025-09-10"
+      }
+    },
+    {
+      "id": "roboto",
+      "family": "Roboto",
+      "category": "sans-serif",
+      "style": "neo-grotesque",
+      "use": "Google's workhorse sans: familiar and compact, a full range of weights.",
+      "stack": "\"Roboto\", system-ui, -apple-system, \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Merriweather",
+        "Oswald"
+      ],
+      "specimen": {
+        "en": "Five steps to a safer workplace",
+        "fr": "Cinq étapes pour un poste de travail plus sûr"
+      },
+      "variable": true,
+      "weights": [
+        100,
+        200,
+        300,
+        400,
+        500,
+        600,
+        700,
+        800,
+        900
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/roboto/roboto-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "100 900",
+          "style": "normal",
+          "bytes": 43136,
+          "hash": "sha256:1404ca348bd75ef836f4dd8b6f2cc719458642d1237c368296b2fc652dca47dc"
+        },
+        {
+          "path": "files/roboto/roboto-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "100 900",
+          "style": "normal",
+          "bytes": 29392,
+          "hash": "sha256:cedb374b05a35034cf96db185db4eeb8f8ce49e1a56197673702ff11b5533d6e"
+        },
+        {
+          "path": "files/roboto/roboto-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "100 900",
+          "style": "italic",
+          "bytes": 47208,
+          "hash": "sha256:14f23757c6b41b4b6c0b967ca3fa74ff47a868728158373461c4e6e4b6368f19"
+        },
+        {
+          "path": "files/roboto/roboto-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "100 900",
+          "style": "italic",
+          "bytes": 31820,
+          "hash": "sha256:7f21d061a9de1ea78a858938ff3b8e677869656b10bad470fc6039f8f3daf329"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/roboto/OFL.txt",
+        "bytes": 4512,
+        "hash": "sha256:84044c09058803d87a241bd28abb4ce30a433d7db9c27a04da3efad6a0ca539c",
+        "copyright": "Copyright 2011 The Roboto Project Authors (https://github.com/googlefonts/roboto-classic) Roboto-Italic[wdth,wght].ttf: Copyright 2011 The Roboto Project Authors (https://github.com/googlefonts/roboto-classic)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 156068,
+      "source": {
+        "package": "@fontsource-variable/roboto",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/roboto/-/roboto-5.3.0.tgz",
+        "integrity": "sha512-BoaaZiQf8fgtxv07KXkTwx1bKz/EoqIlTXq2OOKKXINxp6qXWdnlChqV+hSaDANS49yyUASFl3OVBMMDTCIHFA==",
+        "page": "https://fontsource.org/fonts/roboto",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v51",
+        "lastModified": "2026-02-19"
+      }
+    },
+    {
+      "id": "open-sans",
+      "family": "Open Sans",
+      "category": "sans-serif",
+      "style": "humanist",
+      "use": "Friendly, very legible humanist sans: a safe default for corporate courses.",
+      "stack": "\"Open Sans\", \"Segoe UI\", system-ui, -apple-system, Arial, sans-serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Merriweather",
+        "Lora"
+      ],
+      "specimen": {
+        "en": "Welcome to your onboarding",
+        "fr": "Bienvenue dans votre parcours d’intégration"
+      },
+      "variable": true,
+      "weights": [
+        300,
+        400,
+        500,
+        600,
+        700,
+        800
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/open-sans/open-sans-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "300 800",
+          "style": "normal",
+          "bytes": 48320,
+          "hash": "sha256:d8e4fe0452aa2076429a9bb5d8757d00a994dd95986cf950e9a1a371b9a072a0"
+        },
+        {
+          "path": "files/open-sans/open-sans-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "300 800",
+          "style": "normal",
+          "bytes": 35156,
+          "hash": "sha256:d5bab8e28732fe3d10dcef4f77b9c248605bbb2a87d289a2539251ceafab536a"
+        },
+        {
+          "path": "files/open-sans/open-sans-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "300 800",
+          "style": "italic",
+          "bytes": 50216,
+          "hash": "sha256:186836b74ceac07b2764c07c0379420e3014efb30fe918461c235e0ef6cbc4a2"
+        },
+        {
+          "path": "files/open-sans/open-sans-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "300 800",
+          "style": "italic",
+          "bytes": 37752,
+          "hash": "sha256:a6fa0e8ac2a665c121a19c2e2434fb286e3afdef7b9288739a73c7cb6849108c"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/open-sans/OFL.txt",
+        "bytes": 4508,
+        "hash": "sha256:9e7f12fafee50a9b4f7b3004c0fa58990805620d9debb0daf7f75de0d3ad5548",
+        "copyright": "Copyright 2020 The Open Sans Project Authors (https://github.com/googlefonts/opensans) OpenSans-Italic[wdth,wght].ttf: Copyright 2020 The Open Sans Project Authors (https://github.com/googlefonts/opensans)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 175952,
+      "source": {
+        "package": "@fontsource-variable/open-sans",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/open-sans/-/open-sans-5.3.0.tgz",
+        "integrity": "sha512-VOfhZfLIOBVa6K/dTEu7scqQXYdGa4jBX8quFpQ0S6574B+W2EOBJf9PkqyVtMEI7WWIWNEbpvPc3vY1mN2mmQ==",
+        "page": "https://fontsource.org/fonts/open-sans",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v44",
+        "lastModified": "2025-09-16"
+      }
+    },
+    {
+      "id": "source-sans-3",
+      "family": "Source Sans 3",
+      "category": "sans-serif",
+      "style": "humanist",
+      "use": "Adobe's humanist sans: clear and light files. Pairs with Source Serif 4 and the display serifs.",
+      "stack": "\"Source Sans 3\", \"Segoe UI\", system-ui, -apple-system, Arial, sans-serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Source Serif 4",
+        "Playfair Display"
+      ],
+      "specimen": {
+        "en": "Key points to remember",
+        "fr": "Les points clés à retenir"
+      },
+      "variable": true,
+      "weights": [
+        200,
+        300,
+        400,
+        500,
+        600,
+        700,
+        800,
+        900
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/source-sans-3/source-sans-3-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "200 900",
+          "style": "normal",
+          "bytes": 28740,
+          "hash": "sha256:7a19a7027e125257d310c6dbd78ae3a30b5ea1e3794d60b12bb28227a003bfda"
+        },
+        {
+          "path": "files/source-sans-3/source-sans-3-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "200 900",
+          "style": "normal",
+          "bytes": 60088,
+          "hash": "sha256:a85a7459bdb3cdc1136751e151a506bae653fc29ada3ca86237477df6f1b59e6"
+        },
+        {
+          "path": "files/source-sans-3/source-sans-3-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "200 900",
+          "style": "italic",
+          "bytes": 28532,
+          "hash": "sha256:9a15dafc2c2b2414aaa9d6c30830d9aab4361329d8495b1574633603b994b411"
+        },
+        {
+          "path": "files/source-sans-3/source-sans-3-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "200 900",
+          "style": "italic",
+          "bytes": 59496,
+          "hash": "sha256:6fe10a66ec416f77a26309b645471d032ad8175063bb605b886e9b7e57efaaa8"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/source-sans-3/OFL.txt",
+        "bytes": 4314,
+        "hash": "sha256:18aabf190848725e2576eefb5c29ba06aac1029d02132252a7f312eac2e50cf3",
+        "copyright": "Google Inc.",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 181170,
+      "source": {
+        "package": "@fontsource-variable/source-sans-3",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/source-sans-3/-/source-sans-3-5.3.0.tgz",
+        "integrity": "sha512-dpi0GZk7EQe2tYpg6Q0Fx0OmUgnuGu+0rHPgtXqtKhglYmJuP7jZ12Mu1uN+NfRaJRY1Emn8AQJEWzmoZ4wa9g==",
+        "page": "https://fontsource.org/fonts/source-sans-3",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v19",
+        "lastModified": "2025-09-05"
+      }
+    },
+    {
+      "id": "lato",
+      "family": "Lato",
+      "category": "sans-serif",
+      "style": "humanist",
+      "use": "Warm, semi-rounded humanist sans. Static files: regular, bold and black, with italics.",
+      "stack": "\"Lato\", \"Segoe UI\", system-ui, -apple-system, Arial, sans-serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Merriweather",
+        "Playfair Display"
+      ],
+      "specimen": {
+        "en": "Your progress is saved",
+        "fr": "Votre progression est enregistrée"
+      },
+      "variable": false,
+      "weights": [
+        400,
+        700,
+        900
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/lato/lato-latin-400-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400",
+          "style": "normal",
+          "bytes": 23580,
+          "hash": "sha256:918b7dc3e2e2d015c16ce08b57bcb64d2253bafc1707658f361e72865498e537"
+        },
+        {
+          "path": "files/lato/lato-latin-ext-400-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400",
+          "style": "normal",
+          "bytes": 5612,
+          "hash": "sha256:8b9fc9737043f88c1a9a7195c27a239bd329cc33d928ffb67736c61ae7a1dbbd"
+        },
+        {
+          "path": "files/lato/lato-latin-700-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "700",
+          "style": "normal",
+          "bytes": 23040,
+          "hash": "sha256:c447dd7677b419db7b21dbdfc6277c7816a913ffda76fd2e52702df538de0e49"
+        },
+        {
+          "path": "files/lato/lato-latin-ext-700-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "700",
+          "style": "normal",
+          "bytes": 5552,
+          "hash": "sha256:3a5797f440bc67b59830cad81e59a71011e35cb45ed7f747b61a69b0a9b0d6ae"
+        },
+        {
+          "path": "files/lato/lato-latin-900-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "900",
+          "style": "normal",
+          "bytes": 22504,
+          "hash": "sha256:08664859baab5ed98f0bf818ed77e38464ff1826dc6406d5ecbd651409afbd92"
+        },
+        {
+          "path": "files/lato/lato-latin-ext-900-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "900",
+          "style": "normal",
+          "bytes": 5640,
+          "hash": "sha256:e266d64fae0958748c289b2288e29991b4b8386eb4935517c4544a2478cfb703"
+        },
+        {
+          "path": "files/lato/lato-latin-400-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400",
+          "style": "italic",
+          "bytes": 24408,
+          "hash": "sha256:bca1d88ada544d9c80872d4da27133fab6d347361fa26e932b47ec9559088fd0"
+        },
+        {
+          "path": "files/lato/lato-latin-ext-400-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400",
+          "style": "italic",
+          "bytes": 5776,
+          "hash": "sha256:077a69d5b698467f49de34980815c848fecb40e35f4b3969b42a703b8b916953"
+        },
+        {
+          "path": "files/lato/lato-latin-700-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "700",
+          "style": "italic",
+          "bytes": 24448,
+          "hash": "sha256:6c84348296ebe2e2a0830c3962eb02156419d9bc76371c2eadaf7329d827d550"
+        },
+        {
+          "path": "files/lato/lato-latin-ext-700-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "700",
+          "style": "italic",
+          "bytes": 5792,
+          "hash": "sha256:72373c5fe499b7b978e186b6550ee6c4a8dc0c9b77fb46a4d76a572c1986466e"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/lato/OFL.txt",
+        "bytes": 6074,
+        "hash": "sha256:9648253641ec1d1f8ba2fbe8997909f7bfc48cc38537946f6272321788465b84",
+        "copyright": "Copyright (c) 2010-2011 by tyPoland Lukasz Dziedzic (team@latofonts.com) with Reserved Font Name \"Lato\". Licensed under the SIL Open Font License, Version 1.1. Lato-HairlineItalic.ttf: Copyright (c) 2010-2011 by tyPoland Lukasz Dziedzic (team@latofonts.com) with Reserved Font Name \"Lato\". Licensed under the SIL Open Font License, Version 1.1. Lato-Light.ttf: Copyright (c) 2010-2011 by tyPoland Lukasz Dziedzic (team@latofonts.com) with Reserved Font Name \"Lato\". Licensed under the SIL Open Font License, Version 1.1. Lato-LightItalic.ttf: Copyright (c) 2010-2011 by tyPoland Lukasz Dziedzic (team@latofonts.com) with Reserved Font Name \"Lato\". Licensed under the SIL Open Font License, Version 1.1. Lato-Regular.ttf: Copyright (c) 2010-2011 by tyPoland Lukasz Dziedzic (team@latofonts.com) with Reserved Font Name \"Lato\". Licensed under the SIL Open Font License, Version 1.1. Lato-Italic.ttf: Copyright (c) 2010-2011 by tyPoland Lukasz Dziedzic (team@latofonts.com) with Reserved Font Name \"Lato\". Licensed under the SIL Open Font License, Version 1.1. Lato-Bold.ttf: Copyright (c) 2010-2011 by tyPoland Lukasz Dziedzic (team@latofonts.com) with Reserved Font Name \"Lato\". Licensed under the SIL Open Font License, Version 1.1. Lato-BoldItalic.ttf: Copyright (c) 2010-2011 by tyPoland Lukasz Dziedzic (team@latofonts.com) with Reserved Font Name \"Lato\". Licensed under the SIL Open Font License, Version 1.1. Lato-Black.ttf: Copyright (c) 2010-2011 by tyPoland Lukasz Dziedzic (team@latofonts.com) with Reserved Font Name \"Lato\". Licensed under the SIL Open Font License, Version 1.1. Lato-BlackItalic.ttf: Copyright (c) 2010-2011 by tyPoland Lukasz Dziedzic (team@latofonts.com) with Reserved Font Name \"Lato\". Licensed under the SIL Open Font License, Version 1.1.",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 152426,
+      "source": {
+        "package": "@fontsource/lato",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource/lato/-/lato-5.3.0.tgz",
+        "integrity": "sha512-0WhF/4rhrw+ErIyneKvhHn2YAl+xf8GDtllgOgOzDmeaSlLQtjpChXaQOpWhG2BchQW0WJy2zLV12Hdg0ndOMw==",
+        "page": "https://fontsource.org/fonts/lato",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v25",
+        "lastModified": "2025-09-16"
+      }
+    },
+    {
+      "id": "atkinson-hyperlegible-next",
+      "family": "Atkinson Hyperlegible Next",
+      "category": "sans-serif",
+      "style": "accessible",
+      "use": "Drawn by the Braille Institute for low-vision readers: letters that cannot be mistaken for one another (I l 1, O 0).",
+      "stack": "\"Atkinson Hyperlegible Next\", Verdana, \"Segoe UI\", system-ui, sans-serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Lora",
+        "Source Serif 4"
+      ],
+      "specimen": {
+        "en": "Il1 O0: every letter stands apart",
+        "fr": "Il1 O0 : chaque lettre se distingue"
+      },
+      "variable": true,
+      "weights": [
+        200,
+        300,
+        400,
+        500,
+        600,
+        700,
+        800
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/atkinson-hyperlegible-next/atkinson-hyperlegible-next-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "200 800",
+          "style": "normal",
+          "bytes": 33996,
+          "hash": "sha256:18b2a1a39a2fa298b0ba5390aca68462669826c90925656f1c1f6796e0e1bbaf"
+        },
+        {
+          "path": "files/atkinson-hyperlegible-next/atkinson-hyperlegible-next-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "200 800",
+          "style": "normal",
+          "bytes": 19092,
+          "hash": "sha256:7dae0c6c66af1aec82e096186aeb1f0e6fa36ab8061ed65422f2b7daf4dd93f3"
+        },
+        {
+          "path": "files/atkinson-hyperlegible-next/atkinson-hyperlegible-next-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "200 800",
+          "style": "italic",
+          "bytes": 37644,
+          "hash": "sha256:4a5037bfaf6680f40147407407ec09fa42925774bde809a579283d27f9f08106"
+        },
+        {
+          "path": "files/atkinson-hyperlegible-next/atkinson-hyperlegible-next-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "200 800",
+          "style": "italic",
+          "bytes": 20132,
+          "hash": "sha256:c0c8da569118e5b2c17032c4f1d0e293271e478fb50d869aefd08fcffdf2042b"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/atkinson-hyperlegible-next/OFL.txt",
+        "bytes": 4599,
+        "hash": "sha256:474a034e99845062f661855caaa505880d0e9009deddc2727a92795eab374955",
+        "copyright": "Copyright 2020-2024 The Atkinson Hyperlegible Next Project Authors (https://github.com/googlefonts/atkinson-hyperlegible-next) AtkinsonHyperlegibleNext-Italic[wght].ttf: Copyright 2020-2024 The Atkinson Hyperlegible Next Project Authors (https://github.com/googlefonts/atkinson-hyperlegible-next)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 115463,
+      "source": {
+        "package": "@fontsource-variable/atkinson-hyperlegible-next",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/atkinson-hyperlegible-next/-/atkinson-hyperlegible-next-5.3.0.tgz",
+        "integrity": "sha512-UnLzNUy1RWoLDfydAatP4NaRm99X/WbQEph7q/PymJnCFIOOwKOx3pBmp5ys8trO0dM+CKGuJgeZP9fAR4mQpA==",
+        "page": "https://fontsource.org/fonts/atkinson-hyperlegible-next",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v7",
+        "lastModified": "2025-09-05"
+      }
+    },
+    {
+      "id": "ibm-plex-sans",
+      "family": "IBM Plex Sans",
+      "category": "sans-serif",
+      "style": "grotesque",
+      "use": "Corporate grotesque with engineered details: IT, industry, technical procedures.",
+      "stack": "\"IBM Plex Sans\", \"Helvetica Neue\", Arial, system-ui, sans-serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "JetBrains Mono",
+        "Source Serif 4"
+      ],
+      "specimen": {
+        "en": "Check the logs before you restart",
+        "fr": "Vérifiez les journaux avant de redémarrer"
+      },
+      "variable": true,
+      "weights": [
+        100,
+        200,
+        300,
+        400,
+        500,
+        600,
+        700
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/ibm-plex-sans/ibm-plex-sans-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "100 700",
+          "style": "normal",
+          "bytes": 45712,
+          "hash": "sha256:e2291e842cf5af167122a22881a740c7f2dda7716f1e8cd76680264f4a859470"
+        },
+        {
+          "path": "files/ibm-plex-sans/ibm-plex-sans-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "100 700",
+          "style": "normal",
+          "bytes": 30964,
+          "hash": "sha256:d160e20920ae4d6556518d352d3af27a74e9b0de3d8fe17b1c1044fc75aa2f81"
+        },
+        {
+          "path": "files/ibm-plex-sans/ibm-plex-sans-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "100 700",
+          "style": "italic",
+          "bytes": 50184,
+          "hash": "sha256:4363757d2695c7633f98472855849f7c30528eba869d7968ee35b58c87cf14c1"
+        },
+        {
+          "path": "files/ibm-plex-sans/ibm-plex-sans-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "100 700",
+          "style": "italic",
+          "bytes": 33900,
+          "hash": "sha256:bf44b77cc751203b2f0ce95c048a9d8f984313f84b58106c7c4410ca50314016"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/ibm-plex-sans/OFL.txt",
+        "bytes": 4429,
+        "hash": "sha256:d0283623ef57e722fd0eb688a8041589670c608ab780cd3612d06ba6f153d3fd",
+        "copyright": "Copyright 2019 IBM Corp. All rights reserved. IBMPlexSans-Italic[wdth,wght].ttf: Copyright 2019 IBM Corp. All rights reserved.",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 165189,
+      "source": {
+        "package": "@fontsource-variable/ibm-plex-sans",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/ibm-plex-sans/-/ibm-plex-sans-5.3.0.tgz",
+        "integrity": "sha512-agG8tXFEo0hD9+J7npa4vbbWult52eMLVaQ6WQRlhs/iCAojrMAoejru85W9HTVXHfyUj96KM7gp/KGAS87XaQ==",
+        "page": "https://fontsource.org/fonts/ibm-plex-sans",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v23",
+        "lastModified": "2025-09-08"
+      }
+    },
+    {
+      "id": "space-grotesk",
+      "family": "Space Grotesk",
+      "category": "sans-serif",
+      "style": "grotesque",
+      "use": "Grotesque with quirky details: science and technology headings. No italic.",
+      "stack": "\"Space Grotesk\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "for": [
+        "heading"
+      ],
+      "pairs": [
+        "Inter",
+        "JetBrains Mono"
+      ],
+      "specimen": {
+        "en": "Orbital rendezvous in three burns",
+        "fr": "Rendez-vous orbital en trois poussées"
+      },
+      "variable": true,
+      "weights": [
+        300,
+        400,
+        500,
+        600,
+        700
+      ],
+      "styles": [
+        "normal"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/space-grotesk/space-grotesk-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "300 700",
+          "style": "normal",
+          "bytes": 22288,
+          "hash": "sha256:0640890476fc1198ab4de571fb658de443c4d85b66466ec09534a8737ab1ce9d"
+        },
+        {
+          "path": "files/space-grotesk/space-grotesk-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "300 700",
+          "style": "normal",
+          "bytes": 18940,
+          "hash": "sha256:952dddb45d2f96f71cbf3b7f510b24379afc3c89ea02fcf89d377b45d62c0166"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/space-grotesk/OFL.txt",
+        "bytes": 4401,
+        "hash": "sha256:18a4de52385f6b988782639d5d0cc1326e5a8c2de9a7f01d7b20d9aedcc60943",
+        "copyright": "Copyright 2020 The Space Grotesk Project Authors (https://github.com/floriankarsten/space-grotesk)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 45629,
+      "source": {
+        "package": "@fontsource-variable/space-grotesk",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/space-grotesk/-/space-grotesk-5.3.0.tgz",
+        "integrity": "sha512-2IxmvfB08i9vnGB3Ym/AXvhRE+8XOjWMXIyDum03c+tPwH0FUoMNQfGpU8NXPxjbws0Vvss3AH0Zqt4oJBBAdw==",
+        "page": "https://fontsource.org/fonts/space-grotesk",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v22",
+        "lastModified": "2025-09-05"
+      }
+    },
+    {
+      "id": "montserrat",
+      "family": "Montserrat",
+      "category": "sans-serif",
+      "style": "geometric",
+      "use": "Wide geometric sans inspired by urban signage: bold headings and short texts.",
+      "stack": "\"Montserrat\", \"Century Gothic\", \"Avenir Next\", system-ui, sans-serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Lora",
+        "Open Sans"
+      ],
+      "specimen": {
+        "en": "Lead with clarity",
+        "fr": "Diriger avec clarté"
+      },
+      "variable": true,
+      "weights": [
+        100,
+        200,
+        300,
+        400,
+        500,
+        600,
+        700,
+        800,
+        900
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/montserrat/montserrat-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "100 900",
+          "style": "normal",
+          "bytes": 37956,
+          "hash": "sha256:06b16db7a969135d48d38c49183be7fb88d4452e2a3011957c7851941f4e4879"
+        },
+        {
+          "path": "files/montserrat/montserrat-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "100 900",
+          "style": "normal",
+          "bytes": 70688,
+          "hash": "sha256:54d9a78b7ff60b689ad9f3017ffac8547b5d871afec733f6c1c3ae36577ee504"
+        },
+        {
+          "path": "files/montserrat/montserrat-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "100 900",
+          "style": "italic",
+          "bytes": 39632,
+          "hash": "sha256:0eb22e3d769a66a92dbd82e3aefa5740e5bc21afa4485f62f92b22656d49182a"
+        },
+        {
+          "path": "files/montserrat/montserrat-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "100 900",
+          "style": "italic",
+          "bytes": 74892,
+          "hash": "sha256:9f7c3dc0c1fdbc8b09d53d1beb4aca048a5aff376ac5423878e03e83e89a7fe8"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/montserrat/OFL.txt",
+        "bytes": 4509,
+        "hash": "sha256:f429f739351287574c0c3175a9222bb3e49c7cad3f568a04f2c08d74c107724e",
+        "copyright": "Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat) Montserrat-Italic[wght].ttf: Copyright 2011 The Montserrat Project Authors (https://github.com/JulietaUla/Montserrat)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 227677,
+      "source": {
+        "package": "@fontsource-variable/montserrat",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/montserrat/-/montserrat-5.3.0.tgz",
+        "integrity": "sha512-7PaZoxaxrWLAyrhO46v65An9LhUhfkTExWLhfbywYZCnZEgg/W1rEHnlNmZKjNZ3nJTVYyicqxlJt10z/26yTA==",
+        "page": "https://fontsource.org/fonts/montserrat",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v31",
+        "lastModified": "2025-09-05"
+      }
+    },
+    {
+      "id": "poppins",
+      "family": "Poppins",
+      "category": "sans-serif",
+      "style": "geometric",
+      "use": "Round geometric sans, popular in modern brands. Static files from 400 to 700, light.",
+      "stack": "\"Poppins\", \"Avenir Next\", \"Century Gothic\", system-ui, sans-serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Lora",
+        "Open Sans"
+      ],
+      "specimen": {
+        "en": "Ready for the final quiz?",
+        "fr": "Prêt pour le quiz final ?"
+      },
+      "variable": false,
+      "weights": [
+        400,
+        500,
+        600,
+        700
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/poppins/poppins-latin-400-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400",
+          "style": "normal",
+          "bytes": 7884,
+          "hash": "sha256:7d93459d86585bfcdbb7e0376056226adb25821ee54b96236fe2123e9560929f"
+        },
+        {
+          "path": "files/poppins/poppins-latin-ext-400-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400",
+          "style": "normal",
+          "bytes": 5644,
+          "hash": "sha256:0b1fcab42c18b69bcfe9ce4799fcbff5af1621c53ffcfdc4723c6f5ec4ee3ffb"
+        },
+        {
+          "path": "files/poppins/poppins-latin-500-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "500",
+          "style": "normal",
+          "bytes": 7748,
+          "hash": "sha256:cd36de204aca2d5fa263a731f7c20009b5e3d754ba1f1e03c33e93a48f3e7446"
+        },
+        {
+          "path": "files/poppins/poppins-latin-ext-500-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "500",
+          "style": "normal",
+          "bytes": 5484,
+          "hash": "sha256:af5fda16a19169e029a132374616728e1bf326d90bef5a552395c5053e21cd0f"
+        },
+        {
+          "path": "files/poppins/poppins-latin-600-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "600",
+          "style": "normal",
+          "bytes": 8000,
+          "hash": "sha256:f4e80d9dfd374d02989b87a27b5ed4cb78fbb177c27f1478e9a8b0afb7513149"
+        },
+        {
+          "path": "files/poppins/poppins-latin-ext-600-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "600",
+          "style": "normal",
+          "bytes": 5524,
+          "hash": "sha256:bb1f2d582e7fba586ab70c91ef062d3becaf78b887654953863521b73665d171"
+        },
+        {
+          "path": "files/poppins/poppins-latin-700-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "700",
+          "style": "normal",
+          "bytes": 7816,
+          "hash": "sha256:9338e65fc077355c7a87ae0d64cc101e23b9bf8ad78ae65f0f319c857311b526"
+        },
+        {
+          "path": "files/poppins/poppins-latin-ext-700-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "700",
+          "style": "normal",
+          "bytes": 5432,
+          "hash": "sha256:ccfd87f69ef00d811da3d06488cec4e79ec99d289cfbcbe4be42031cecae775a"
+        },
+        {
+          "path": "files/poppins/poppins-latin-400-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400",
+          "style": "italic",
+          "bytes": 8668,
+          "hash": "sha256:50d0c1742d80ac71f4cde20e8c04d41a24806af342831f479938b527fbff0972"
+        },
+        {
+          "path": "files/poppins/poppins-latin-ext-400-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400",
+          "style": "italic",
+          "bytes": 5964,
+          "hash": "sha256:1e91b430ebe5aa347934e70dcd76ca3c594e34d41d14ba3e2f1a7e1dcbc0cfc6"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/poppins/OFL.txt",
+        "bytes": 6175,
+        "hash": "sha256:5c4a92c8f8ce0ab211f4c72889d82383c9644546115d9ba39a4f2d5b8f37014b",
+        "copyright": "Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-ThinItalic.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-ExtraLight.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-ExtraLightItalic.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-Light.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-LightItalic.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-Regular.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-Italic.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-Medium.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-MediumItalic.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-SemiBold.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-SemiBoldItalic.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-Bold.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-BoldItalic.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-ExtraBold.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-ExtraBoldItalic.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-Black.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins) Poppins-BlackItalic.ttf: Copyright 2020 The Poppins Project Authors (https://github.com/itfoundry/Poppins)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 74339,
+      "source": {
+        "package": "@fontsource/poppins",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource/poppins/-/poppins-5.3.0.tgz",
+        "integrity": "sha512-cms1nM7U6SN8epIV1WMVOV8VsA645aSm3wHfzIQnkk188U341ThbJGSl2Sv54V29gnDbT2arMPfLzvVIIVCceQ==",
+        "page": "https://fontsource.org/fonts/poppins",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v24",
+        "lastModified": "2025-09-16"
+      }
+    },
+    {
+      "id": "figtree",
+      "family": "Figtree",
+      "category": "sans-serif",
+      "style": "geometric",
+      "use": "Clean, friendly geometric sans with the lightest files of the list.",
+      "stack": "\"Figtree\", \"Avenir Next\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Fraunces",
+        "Lora"
+      ],
+      "specimen": {
+        "en": "Simple steps, clear results",
+        "fr": "Des étapes simples, des résultats clairs"
+      },
+      "variable": true,
+      "weights": [
+        300,
+        400,
+        500,
+        600,
+        700,
+        800,
+        900
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/figtree/figtree-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "300 900",
+          "style": "normal",
+          "bytes": 20156,
+          "hash": "sha256:4ba7d3d096695818fe0686be4f1e82c6b05134e18a22260336130335027462dd"
+        },
+        {
+          "path": "files/figtree/figtree-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "300 900",
+          "style": "normal",
+          "bytes": 10280,
+          "hash": "sha256:bf7828e2c258cffcfa50a048ee388a36b95bc16b452e8d36fa797635dbe15965"
+        },
+        {
+          "path": "files/figtree/figtree-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "300 900",
+          "style": "italic",
+          "bytes": 20928,
+          "hash": "sha256:7242fa62d13d46172816b266f03c027999faa3755a52c2124bc2c440f6f4b983"
+        },
+        {
+          "path": "files/figtree/figtree-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "300 900",
+          "style": "italic",
+          "bytes": 10376,
+          "hash": "sha256:a0cc105b3241fe952fd58ba226633f8ba733b16fd5419affbda6c8cc5c627a0b"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/figtree/OFL.txt",
+        "bytes": 4498,
+        "hash": "sha256:ee23e6c84000126692e112ff067b456470493349f993ceaa8b4d3766dd6fad5d",
+        "copyright": "Copyright 2022 The Figtree Project Authors (https://github.com/erikdkennedy/figtree) Figtree-Italic[wght].ttf: Copyright 2022 The Figtree Project Authors (https://github.com/erikdkennedy/figtree)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 66238,
+      "source": {
+        "package": "@fontsource-variable/figtree",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/figtree/-/figtree-5.3.0.tgz",
+        "integrity": "sha512-VRVodD7OiG7apQwE8/2fMjaqpY/a0qRJqL5HtYj8CKIVps+9amaFcdfKmDIf7iqYQx6iPLlArVXAfKeIZmVcNQ==",
+        "page": "https://fontsource.org/fonts/figtree",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v9",
+        "lastModified": "2025-09-11"
+      }
+    },
+    {
+      "id": "nunito",
+      "family": "Nunito",
+      "category": "sans-serif",
+      "style": "rounded",
+      "use": "Rounded sans, soft and friendly: onboarding, wellbeing, young learners.",
+      "stack": "\"Nunito\", \"Avenir Next Rounded\", \"Arial Rounded MT Bold\", system-ui, sans-serif",
+      "for": [
+        "body",
+        "heading"
+      ],
+      "pairs": [
+        "Caveat",
+        "Lora"
+      ],
+      "specimen": {
+        "en": "Let’s learn together",
+        "fr": "Apprenons ensemble"
+      },
+      "variable": true,
+      "weights": [
+        200,
+        300,
+        400,
+        500,
+        600,
+        700,
+        800,
+        900
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/nunito/nunito-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "200 900",
+          "style": "normal",
+          "bytes": 39128,
+          "hash": "sha256:ba344451eab25b217a165363b1982048a5e5830a0daf36577973955a04cac793"
+        },
+        {
+          "path": "files/nunito/nunito-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "200 900",
+          "style": "normal",
+          "bytes": 35588,
+          "hash": "sha256:2c8d792869818ecb253a46bc3c63c7013df7aac2f69291c3c85e5cdc94160960"
+        },
+        {
+          "path": "files/nunito/nunito-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "200 900",
+          "style": "italic",
+          "bytes": 41760,
+          "hash": "sha256:6cfcc3786d5ba3b5c3a41797f95272e57f4290ccbd283a4bfd0033a3d857e64c"
+        },
+        {
+          "path": "files/nunito/nunito-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "200 900",
+          "style": "italic",
+          "bytes": 39072,
+          "hash": "sha256:1bb48a49c837d76a727223515b78eb2a14eaab783563be84b0718f338c56c846"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/nunito/OFL.txt",
+        "bytes": 4491,
+        "hash": "sha256:40991bfa02ac620aae16dc527f3c47765a25e43f270d4c301ee6ab663a8d9015",
+        "copyright": "Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito) Nunito-Italic[wght].ttf: Copyright 2014 The Nunito Project Authors (https://github.com/googlefonts/nunito)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 160039,
+      "source": {
+        "package": "@fontsource-variable/nunito",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/nunito/-/nunito-5.3.0.tgz",
+        "integrity": "sha512-tw0ch7evIDSwoeUy+0XzocYHfbRWLeCRPJy22KgbrLjDLAbNw/fErBiil10Ssrs3Sjr55zaZrr36a975j8cBkQ==",
+        "page": "https://fontsource.org/fonts/nunito",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v32",
+        "lastModified": "2025-09-16"
+      }
+    },
+    {
+      "id": "jetbrains-mono",
+      "family": "JetBrains Mono",
+      "category": "monospace",
+      "style": "monospace",
+      "use": "Monospace for code, commands and data, with distinct 0 O and 1 l I.",
+      "stack": "\"JetBrains Mono\", ui-monospace, SFMono-Regular, Menlo, Consolas, \"Liberation Mono\", monospace",
+      "for": [
+        "mono"
+      ],
+      "pairs": [
+        "Inter",
+        "IBM Plex Sans"
+      ],
+      "specimen": {
+        "en": "const total = price * 1.2; // VAT",
+        "fr": "const total = prix * 1.2; // TVA"
+      },
+      "variable": true,
+      "weights": [
+        100,
+        200,
+        300,
+        400,
+        500,
+        600,
+        700,
+        800
+      ],
+      "styles": [
+        "normal",
+        "italic"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/jetbrains-mono/jetbrains-mono-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "100 800",
+          "style": "normal",
+          "bytes": 40404,
+          "hash": "sha256:18be452724bfdc236c074ca94a249a7f41a86752c7d04ab258ce9ed5651f6a7e"
+        },
+        {
+          "path": "files/jetbrains-mono/jetbrains-mono-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "100 800",
+          "style": "normal",
+          "bytes": 15196,
+          "hash": "sha256:79bfdab9ba467e26eea4122e6f2567e188dd8a09a8c730d501fc487c4ab99c6e"
+        },
+        {
+          "path": "files/jetbrains-mono/jetbrains-mono-latin-wght-italic.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "100 800",
+          "style": "italic",
+          "bytes": 42964,
+          "hash": "sha256:a8afa085e9ca5e53434e2ee918ba6b65c7dd4dda56509976b36591478c99d62e"
+        },
+        {
+          "path": "files/jetbrains-mono/jetbrains-mono-latin-ext-wght-italic.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "100 800",
+          "style": "italic",
+          "bytes": 16520,
+          "hash": "sha256:60652c78382d7e5021ce4c3ed8985fc41d8f3d1b1a3bedcec2a44ed8979fe5eb"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/jetbrains-mono/OFL.txt",
+        "bytes": 4524,
+        "hash": "sha256:403581b69dac5cff4079205e01c6b467e56af449ecbd7247693ddb1baafa005b",
+        "copyright": "Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono) JetBrainsMono-Italic[wght].ttf: Copyright 2020 The JetBrains Mono Project Authors (https://github.com/JetBrains/JetBrainsMono)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 119608,
+      "source": {
+        "package": "@fontsource-variable/jetbrains-mono",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/jetbrains-mono/-/jetbrains-mono-5.3.0.tgz",
+        "integrity": "sha512-F32xpS2NsGYoQi2ADSkKTgpJj7ozajsGgDJ8woTnqjmIB+dxDIqImjl4pXZVEExu8UFZ2ndhmX18EBS/hdz3Lw==",
+        "page": "https://fontsource.org/fonts/jetbrains-mono",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v24",
+        "lastModified": "2025-09-11"
+      }
+    },
+    {
+      "id": "oswald",
+      "family": "Oswald",
+      "category": "display",
+      "style": "condensed",
+      "use": "Condensed sans for strong headings, labels and key figures. No italic.",
+      "stack": "\"Oswald\", \"Arial Narrow\", \"Roboto Condensed\", Impact, sans-serif",
+      "for": [
+        "heading"
+      ],
+      "pairs": [
+        "Roboto",
+        "Source Sans 3"
+      ],
+      "specimen": {
+        "en": "Safety first: three rules",
+        "fr": "La sécurité d’abord : trois règles"
+      },
+      "variable": true,
+      "weights": [
+        200,
+        300,
+        400,
+        500,
+        600,
+        700
+      ],
+      "styles": [
+        "normal"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/oswald/oswald-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "200 700",
+          "style": "normal",
+          "bytes": 28488,
+          "hash": "sha256:bd73278ee0c50041b91b4c03d1229e35b501637f46b6409e7da2d3a758446ea5"
+        },
+        {
+          "path": "files/oswald/oswald-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "200 700",
+          "style": "normal",
+          "bytes": 23952,
+          "hash": "sha256:7989ccc7770f5aeffa67e088bcd3b294d42fae2f8b0eca3c3c51b953d1f735cc"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/oswald/OFL.txt",
+        "bytes": 4388,
+        "hash": "sha256:23916cdee678823c3c517c699cb2e043088de0d46c959eeaa168b54bb84534df",
+        "copyright": "Copyright 2016 The Oswald Project Authors (https://github.com/googlefonts/OswaldFont)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 56828,
+      "source": {
+        "package": "@fontsource-variable/oswald",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/oswald/-/oswald-5.3.0.tgz",
+        "integrity": "sha512-sSZzcTeaQGNyZbTVlS4tNNHElK38UktFLqKd6NQDLFCBV27320rQC3kXSZVytYm1PPjKmPxqVaGwqj7LEKUWQw==",
+        "page": "https://fontsource.org/fonts/oswald",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v57",
+        "lastModified": "2025-09-11"
+      }
+    },
+    {
+      "id": "bebas-neue",
+      "family": "Bebas Neue",
+      "category": "display",
+      "style": "condensed capitals",
+      "use": "Condensed capitals for posters, big numbers and section openers. One weight, capitals only.",
+      "stack": "\"Bebas Neue\", \"Arial Narrow\", Impact, sans-serif",
+      "for": [
+        "display"
+      ],
+      "pairs": [
+        "Open Sans",
+        "Roboto"
+      ],
+      "specimen": {
+        "en": "CHAPTER 02 — IN THE FIELD",
+        "fr": "CHAPITRE 02 — SUR LE TERRAIN"
+      },
+      "variable": false,
+      "weights": [
+        400
+      ],
+      "styles": [
+        "normal"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/bebas-neue/bebas-neue-latin-400-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400",
+          "style": "normal",
+          "bytes": 13768,
+          "hash": "sha256:a7c90c89240c134f7fdd33d40c000ec90b79d675ea53e8cc5a6d423c073de412"
+        },
+        {
+          "path": "files/bebas-neue/bebas-neue-latin-ext-400-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400",
+          "style": "normal",
+          "bytes": 8928,
+          "hash": "sha256:16c95ce45a2922f52551d38d565d14c92cf257b8f219c89613407d81fdd21a39"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/bebas-neue/OFL.txt",
+        "bytes": 4391,
+        "hash": "sha256:66c436339f7490c1a99e4f6a7b8aef5c176676edfd071a31638e7d54c1b0aeda",
+        "copyright": "Copyright 2019 The Bebas Neue Project Authors (https://github.com/dharmatype/Bebas-Neue)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 27087,
+      "source": {
+        "package": "@fontsource/bebas-neue",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource/bebas-neue/-/bebas-neue-5.3.0.tgz",
+        "integrity": "sha512-nCxMEb9Bg9sjNWm9TIOsvHKDMLRUfEZPWpLgYu6m9KavZZVSA/WoHzI5wROwqA+eNwEi/PNBAcB5Co7HA3S0Cw==",
+        "page": "https://fontsource.org/fonts/bebas-neue",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v16",
+        "lastModified": "2025-09-16"
+      }
+    },
+    {
+      "id": "caveat",
+      "family": "Caveat",
+      "category": "handwriting",
+      "style": "handwriting",
+      "use": "Casual handwriting for annotations and notes in the margin; never for body text.",
+      "stack": "\"Caveat\", \"Segoe Print\", \"Bradley Hand\", cursive",
+      "for": [
+        "display"
+      ],
+      "pairs": [
+        "Nunito",
+        "Lato"
+      ],
+      "specimen": {
+        "en": "Note: check this before the quiz!",
+        "fr": "Note : à revoir avant le quiz !"
+      },
+      "variable": true,
+      "weights": [
+        400,
+        500,
+        600,
+        700
+      ],
+      "styles": [
+        "normal"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/caveat/caveat-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400 700",
+          "style": "normal",
+          "bytes": 74932,
+          "hash": "sha256:891951df5e8b5b0f0bc760d31375405e795c666b5add70437de12d4a6482b33f"
+        },
+        {
+          "path": "files/caveat/caveat-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400 700",
+          "style": "normal",
+          "bytes": 29472,
+          "hash": "sha256:f626b95c1efa95cf6b7c9b043d3bbe8862b6abbe5f55a082102f33f7de2fd4f9"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/caveat/OFL.txt",
+        "bytes": 4384,
+        "hash": "sha256:163a2b400e16916ad3196296c946c526d0efce6baf22a2164269ffc62fb9f671",
+        "copyright": "Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 108788,
+      "source": {
+        "package": "@fontsource-variable/caveat",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/caveat/-/caveat-5.3.0.tgz",
+        "integrity": "sha512-Q3mjghoYIlXgwqBPJKZ4q6f3zu921Gq7UU76r9Z+NAmhapHfX130GIFpOCYf8vt2SIcgCi9RHDT7anfJKg/kiA==",
+        "page": "https://fontsource.org/fonts/caveat",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v23",
+        "lastModified": "2025-09-05"
+      }
+    },
+    {
+      "id": "cinzel",
+      "family": "Cinzel",
+      "category": "display",
+      "style": "roman capitals",
+      "use": "Classical Roman capitals (lowercase as small capitals): antiquity, history, ceremonial titles.",
+      "stack": "\"Cinzel\", \"Trajan Pro\", Optima, Georgia, serif",
+      "for": [
+        "heading"
+      ],
+      "pairs": [
+        "EB Garamond",
+        "Lora"
+      ],
+      "specimen": {
+        "en": "SPQR · The Roman Republic",
+        "fr": "SPQR · La République romaine"
+      },
+      "variable": true,
+      "weights": [
+        400,
+        500,
+        600,
+        700,
+        800,
+        900
+      ],
+      "styles": [
+        "normal"
+      ],
+      "subsets": [
+        "latin",
+        "latin-ext"
+      ],
+      "files": [
+        {
+          "path": "files/cinzel/cinzel-latin-wght-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400 900",
+          "style": "normal",
+          "bytes": 25904,
+          "hash": "sha256:09941fb1c169c38fd414536b37690057fc01b3117a5c63dd6571186540c8f370"
+        },
+        {
+          "path": "files/cinzel/cinzel-latin-ext-wght-normal.woff2",
+          "subset": "latin-ext",
+          "unicodeRange": "U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF",
+          "weight": "400 900",
+          "style": "normal",
+          "bytes": 14540,
+          "hash": "sha256:8fc2606f8ae6c569f444e138dba052d9a6e3f0657f9031796503bbb94eced600"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/cinzel/OFL.txt",
+        "bytes": 4382,
+        "hash": "sha256:f5a242cf68ad6ebd0603b3359a74c593ca080318a681035be5296ba2c6b04ae6",
+        "copyright": "Copyright 2020 The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel)",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 44826,
+      "source": {
+        "package": "@fontsource-variable/cinzel",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource-variable/cinzel/-/cinzel-5.3.0.tgz",
+        "integrity": "sha512-eFcU0TwaAP5QESF2pV8VoOPJJXJ6sSGm/6mXMwqTdMBPAJMaLhfa6oISHuOtFeddsoHP9RYm4Io0j1j3mNEz2Q==",
+        "page": "https://fontsource.org/fonts/cinzel",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v26",
+        "lastModified": "2025-09-10"
+      }
+    },
+    {
+      "id": "unifrakturmaguntia",
+      "family": "UnifrakturMaguntia",
+      "category": "display",
+      "style": "blackletter",
+      "use": "Blackletter (Fraktur) for medieval titles and initials; never for body text.",
+      "stack": "\"UnifrakturMaguntia\", \"Old English Text MT\", serif",
+      "for": [
+        "display"
+      ],
+      "pairs": [
+        "EB Garamond"
+      ],
+      "specimen": {
+        "en": "The Charter of the Free Town",
+        "fr": "La charte de la ville franche"
+      },
+      "variable": false,
+      "weights": [
+        400
+      ],
+      "styles": [
+        "normal"
+      ],
+      "subsets": [
+        "latin"
+      ],
+      "files": [
+        {
+          "path": "files/unifrakturmaguntia/unifrakturmaguntia-latin-400-normal.woff2",
+          "subset": "latin",
+          "unicodeRange": "U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD",
+          "weight": "400",
+          "style": "normal",
+          "bytes": 26512,
+          "hash": "sha256:a467466874b50cd9ffbe10e5caccd9b261f2bc2252bcfa7d160c744ed9da6f15"
+        }
+      ],
+      "license": {
+        "id": "OFL-1.1",
+        "path": "files/unifrakturmaguntia/OFL.txt",
+        "bytes": 4539,
+        "hash": "sha256:e8605adc7f5c2ff7feada3b0920156ced20a96f7e65e6f65bcc077f2af106ea5",
+        "copyright": "Copyright (c) 2010 j. 'mach' wust (j.mach.wust@gmail.com) with Reserved Font Name UnifrakturMaguntia. Copyright (c) 2009 Peter Wiegel (wiegel@peter-wiegel.de). This Font Software is licensed under the SIL Open Font License, Version 1.1.",
+        "url": "https://openfontlicense.org"
+      },
+      "bytes": 31051,
+      "source": {
+        "package": "@fontsource/unifrakturmaguntia",
+        "version": "5.3.0",
+        "tarball": "https://registry.npmjs.org/@fontsource/unifrakturmaguntia/-/unifrakturmaguntia-5.3.0.tgz",
+        "integrity": "sha512-z8NGOUeAu0T534Z8tEyuNbuUZsUiRoQKzg3gRB5sb2o2DipxEqmYQqHdlwxsbN0gpwhgcClKrCuB/AhVeY2UOQ==",
+        "page": "https://fontsource.org/fonts/unifrakturmaguntia",
+        "upstream": "https://github.com/google/fonts",
+        "fontVersion": "v22",
+        "lastModified": "2025-09-02"
+      }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+Équipement,Emplacement,Adresse IP,Responsable
+Commutateur étage 2,Baie 2B,10.2.0.2,Support niveau 1
+Routeur du siège,Salle serveurs,10.0.0.1,Équipe réseau
+Pare-feu,Salle serveurs,10.0.0.254,Équipe réseau
+Serveur d’impression,Salle serveurs,10.0.10.20,Équipe systèmes

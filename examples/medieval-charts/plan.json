@@ -1,0 +1,408 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/plan.schema.json",
+  "id": "PLAN-ALDERMOOR-CHARTS-V1",
+  "title": "Drawing the sea: how medieval chart-makers worked",
+  "businessGoal": "Prepare the volunteer guides of the Aldermoor Maritime Museum (fictional client) to explain its new gallery of medieval charts before it opens: how a sea chart differs from a world map, how chart-makers built it, and how sailors used it.",
+  "audience": {
+    "role": "Volunteer gallery guides: retired teachers, former sailors and history students",
+    "priorKnowledge": "low",
+    "notes": "At ease with a modern map and with compass directions. Most expect old maps to be clumsy versions of modern ones, and have never laid a course on a chart with a ruler and dividers. They will answer visitors' questions standing in front of the charts."
+  },
+  "sources": [
+    {
+      "id": "SRC-1",
+      "title": "Tony Campbell, \"Portolan Charts from the Late Thirteenth Century to 1500\", in J. B. Harley and David Woodward (eds), The History of Cartography, vol. 1, University of Chicago Press, 1987, chapter 19",
+      "type": "book-chapter"
+    },
+    {
+      "id": "SRC-2",
+      "title": "David Woodward, \"Medieval Mappaemundi\", in J. B. Harley and David Woodward (eds), The History of Cartography, vol. 1, University of Chicago Press, 1987, chapter 18",
+      "type": "book-chapter"
+    },
+    {
+      "id": "SRC-3",
+      "title": "Ramon J. Pujades i Bataller, Les cartes portolanes: la representació medieval d'una mar solcada, Institut Cartogràfic de Catalunya, 2007",
+      "type": "book"
+    },
+    {
+      "id": "SRC-4",
+      "title": "Roel Nicolai, The Enigma of the Origin of Portolan Charts, Brill, 2016 (accuracy of the charts and their rotation)",
+      "type": "book"
+    }
+  ],
+  "objectives": [
+    {
+      "id": "OBJ-1",
+      "statement": "Tell a mappa mundi from a portolan chart by its purpose, its orientation and the way it was made, and explain to a visitor why a T-O map puts east at the top.",
+      "bloom": "understand",
+      "criterion": "All the features of a chart sorted correctly in one question; one correct explanation",
+      "sources": [
+        "SRC-1",
+        "SRC-2"
+      ]
+    },
+    {
+      "id": "OBJ-2",
+      "statement": "Explain how a chart-maker built a portolan chart from compass bearings and distances, and use it to explain two features of the charts: the tilt of the Mediterranean and the names written across the land.",
+      "bloom": "understand",
+      "criterion": "Two correct explanations out of two",
+      "sources": [
+        "SRC-1",
+        "SRC-3",
+        "SRC-4"
+      ]
+    },
+    {
+      "id": "OBJ-3",
+      "statement": "Lay a course between two harbours on a portolan chart: name the wind to steer from its rhumb lines, and measure the distance in miles against the scale.",
+      "bloom": "apply",
+      "criterion": "Two voyages with the right wind and a distance within 10 % (the first guided); one distance read from the scale",
+      "sources": [
+        "SRC-1",
+        "SRC-3"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "ITEM-1",
+      "kind": "intro",
+      "title": "A map with no top",
+      "objectives": [],
+      "sources": [
+        "SRC-1"
+      ],
+      "lockedTexts": [
+        {
+          "id": "TXT-1",
+          "text": "On the opening night of the gallery, a visitor stops in front of a chart drawn in Majorca around 1375 and frowns: “There is no north on this map, the names run in every direction, and Italy is lying down. Did they get it wrong?” They did not. Medieval Europe drew the world in two very different ways, for two very different readers, and the chart on the wall is a working tool, made for sailors and accurate enough to steer by."
+        }
+      ],
+      "description": "Hook: a visitor's question in front of a chart from Majorca. The chart is shown at once, redrawn so it can be read, with the visitor's three puzzles in speech bubbles (no north, names in every direction, Italy lying down), then the two ways medieval Europe drew the world."
+    },
+    {
+      "id": "ITEM-2",
+      "kind": "exposition",
+      "title": "The world as a book",
+      "objectives": [
+        "OBJ-1"
+      ],
+      "sources": [
+        "SRC-2"
+      ],
+      "description": "Mappae mundi, kept short: the T-O diagram of Isidore of Seville (the Ocean, the three parts of the world, east at the top) and the Hereford map (about 1300, Jerusalem at the centre), with a detail of its peoples and beasts south of the Nile. Where \"orienting\" a map comes from. An ungraded check on why east is at the top."
+    },
+    {
+      "id": "ITEM-3",
+      "kind": "exposition",
+      "title": "The sea as a network",
+      "objectives": [
+        "OBJ-1"
+      ],
+      "sources": [
+        "SRC-1"
+      ],
+      "lockedTexts": [
+        {
+          "id": "TXT-2",
+          "text": "A portolan chart is a sea chart of the Mediterranean and the Black Sea, drawn on a single skin of vellum from the late thirteenth century onwards. It traces the coasts in remarkable detail, names hundreds of harbours and is criss-crossed by rhumb lines radiating from wind roses. It has no grid of latitude and longitude: as far as historians can tell, it was built from compass bearings and estimated distances between harbours."
+        }
+      ],
+      "description": "What a portolan chart is, compared with a mappa mundi on purpose, orientation, construction and use. The two are different jobs of the same centuries, not old and new: the Catalan Atlas (Majorca, 1375), shown as it survives, combines them."
+    },
+    {
+      "id": "ITEM-4",
+      "kind": "demonstration",
+      "title": "In the chart-maker's workshop",
+      "objectives": [
+        "OBJ-2"
+      ],
+      "sources": [
+        "SRC-1",
+        "SRC-3",
+        "SRC-4"
+      ],
+      "description": "Six stages of making a chart, as a figure that builds up while the learner reads: the hidden circle, the rhumb lines in three colours, harbours fixed by bearing and distance and checked against a third (Majorca, Cagliari, Marseille), the coasts, the names (a few written out in full), the scale and the colours. An ungraded check on a report that disagrees. Why the Mediterranean is tilted, drawn over a modern map, given as the leading explanation with the debate stated."
+    },
+    {
+      "id": "ITEM-5",
+      "kind": "practice",
+      "title": "At the chart table",
+      "objectives": [
+        "OBJ-3"
+      ],
+      "sources": [
+        "SRC-1",
+        "SRC-3"
+      ],
+      "description": "Two voyages on a 3D chart, the first guided step by step and the second on one's own, and an optional third: choose the wind whose rhumb lines lead from one harbour to the other, open the dividers to the distance read against the scale of miles, and sail. Wind names are used as names of directions, not of the weather on the day. The eight winds and where their names come from stay on the page as an optional reference."
+    },
+    {
+      "id": "ITEM-6",
+      "kind": "assessment",
+      "title": "Ready for the gallery",
+      "objectives": [
+        "OBJ-1",
+        "OBJ-2",
+        "OBJ-3"
+      ],
+      "sources": [
+        "SRC-1",
+        "SRC-2",
+        "SRC-4"
+      ],
+      "description": "Five questions visitors ask in front of the charts, and the score. Then the opening chart again: the learner answers the visitor's three puzzles.",
+      "questions": [
+        {
+          "id": "Q-1",
+          "mode": "multiple",
+          "objectives": [
+            "OBJ-1"
+          ],
+          "bloom": "understand",
+          "stem": "A visitor points at a chart in the gallery. Which features tell you it is a **portolan chart** rather than a mappa mundi? Select every one that applies.",
+          "options": [
+            {
+              "id": "b",
+              "text": "Jerusalem at the centre and east at the top",
+              "correct": false,
+              "feedback": "That is a mappa mundi: a picture of the world's history and faith, read from the top, where the east and Paradise lie."
+            },
+            {
+              "id": "a",
+              "text": "Lines radiating across the sea from wind roses",
+              "correct": true,
+              "feedback": "Yes: the rhumb lines are the chart's working grid, for laying courses."
+            },
+            {
+              "id": "e",
+              "text": "Scenes from the Bible and the monsters of distant lands",
+              "correct": false,
+              "feedback": "Those fill the mappae mundi, which are encyclopaedias in pictures. A chart keeps the sea clear."
+            },
+            {
+              "id": "d",
+              "text": "A scale of miles",
+              "correct": true,
+              "feedback": "Yes: distances are measured with dividers against the scale. A mappa mundi has none."
+            },
+            {
+              "id": "c",
+              "text": "Hundreds of harbour names along the coasts",
+              "correct": true,
+              "feedback": "Yes: a chart names every harbour a pilot might need, written across the land."
+            }
+          ],
+          "feedback": {
+            "correct": "Exactly: rhumb lines, harbour names and a scale make a working sea chart.",
+            "incorrect": "Look for what a pilot needs: lines to steer by, harbours and a scale."
+          }
+        },
+        {
+          "id": "Q-2",
+          "mode": "single",
+          "objectives": [
+            "OBJ-2"
+          ],
+          "bloom": "understand",
+          "stem": "Compared with a modern map, the Mediterranean on a portolan chart is turned about 9° anticlockwise. What is the explanation historians most often give?",
+          "options": [
+            {
+              "id": "b",
+              "text": "The skin shrank unevenly while it dried in the chart-maker's workshop",
+              "correct": false,
+              "feedback": "Skins do shrink a little, but unevenly, not by turning a whole sea by the same angle."
+            },
+            {
+              "id": "d",
+              "text": "They copied Ptolemy's coordinates, which put every coast too far north",
+              "correct": false,
+              "feedback": "The charts use no coordinates at all; Ptolemy's Geography reached Latin Europe only around 1400."
+            },
+            {
+              "id": "a",
+              "text": "It follows the compass, which then pointed several degrees east of true north",
+              "correct": true,
+              "feedback": "Right: the chart follows the compass, so a pilot steering by compass still reaches the right harbour. How the charts were compiled is still debated, but this is the leading explanation."
+            },
+            {
+              "id": "c",
+              "text": "Chart-makers lifted the east, towards Jerusalem and the Garden of Eden",
+              "correct": false,
+              "feedback": "That is the logic of a mappa mundi, not of a chart for pilots."
+            }
+          ]
+        },
+        {
+          "id": "Q-3",
+          "mode": "single",
+          "objectives": [
+            "OBJ-2"
+          ],
+          "bloom": "understand",
+          "stem": "Why are the harbour names written across the land, at right angles to the coast?",
+          "options": [
+            {
+              "id": "c",
+              "text": "To show how far inland each town lies, the longest names furthest away",
+              "correct": false,
+              "feedback": "The length of a name says nothing about distance: distances come from the scale."
+            },
+            {
+              "id": "a",
+              "text": "To keep the coast clear on a chart read from every side: it has no top",
+              "correct": true,
+              "feedback": "Right: you turn the chart, not your head, and the coast itself stays readable."
+            },
+            {
+              "id": "b",
+              "text": "To show which way the wind blows when you enter each of the harbours",
+              "correct": false,
+              "feedback": "Winds are read from the rhumb lines and the wind roses, not from the names."
+            },
+            {
+              "id": "d",
+              "text": "Because the scribes of the chart workshops wrote from bottom to top",
+              "correct": false,
+              "feedback": "They wrote left to right, as we do: the names simply follow the coast round."
+            }
+          ]
+        },
+        {
+          "id": "Q-4",
+          "mode": "numeric",
+          "objectives": [
+            "OBJ-3"
+          ],
+          "bloom": "apply",
+          "stem": "You open your dividers between two harbours, then lay them on the scale bar, as in the picture: one point at the start of the scale. Each division is 50 miles. How far apart are the harbours?",
+          "answer": 175,
+          "tolerance": {
+            "absolute": 0
+          },
+          "unit": "miles",
+          "feedback": {
+            "correct": "Right: three and a half divisions, 3.5 × 50 = 175 miles.",
+            "incorrect": "Multiply the number of divisions by the miles in each: 3.5 × 50."
+          },
+          "misconceptions": [
+            {
+              "id": "divisions",
+              "value": 3.5,
+              "tolerance": {
+                "absolute": 0
+              },
+              "feedback": "That is the number of divisions. Each one is worth 50 miles."
+            },
+            {
+              "id": "whole-divisions",
+              "value": 150,
+              "tolerance": {
+                "absolute": 0
+              },
+              "feedback": "You counted three divisions. The dividers span half a division more: 25 miles."
+            },
+            {
+              "id": "hundreds",
+              "value": 350,
+              "tolerance": {
+                "absolute": 0
+              },
+              "feedback": "Each division is 50 miles, not 100."
+            }
+          ]
+        },
+        {
+          "id": "Q-5",
+          "mode": "single",
+          "objectives": [
+            "OBJ-3"
+          ],
+          "bloom": "apply",
+          "stem": "Leaving Valencia for Majorca, you lay your ruler between the two harbours. The rhumb line that runs parallel to it is ruled in black and points towards the rising sun. Which wind do you steer by?",
+          "options": [
+            {
+              "id": "b",
+              "text": "Ponente",
+              "correct": false,
+              "feedback": "Ponente is the wind of the setting sun: you would sail west, away from Majorca."
+            },
+            {
+              "id": "c",
+              "text": "Greco",
+              "correct": false,
+              "feedback": "Greco is north-east: the line would lead you to Catalonia's coast, not to Majorca."
+            },
+            {
+              "id": "d",
+              "text": "Scirocco",
+              "correct": false,
+              "feedback": "Scirocco is south-east: the line would pass well south of Majorca."
+            },
+            {
+              "id": "a",
+              "text": "Levante",
+              "correct": true,
+              "feedback": "Right: black lines are the eight principal winds, and Levante is the wind of the rising sun, the east."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "spacing": [
+    "D+2: explain one chart of the gallery to a peer",
+    "D+7: answer three visitor questions by email",
+    "D+21: first tour, observed by the curator"
+  ],
+  "waivers": [],
+  "decided": [
+    {
+      "topic": "motion",
+      "label": "Scroll reveal timing",
+      "choice": "Keep delayed starts; accelerate the end of entrance reveals.",
+      "why": "The author wants the final diptych fully open before the page ends. CSS entrances keep their ranges and first 20%, then accelerate to finish at 60%; reduced-motion and phone fallbacks stay complete.",
+      "items": [
+        "ITEM-1",
+        "ITEM-2",
+        "ITEM-3",
+        "ITEM-4",
+        "ITEM-5",
+        "ITEM-6"
+      ]
+    },
+    {
+      "topic": "audience",
+      "label": "Showcase visitors",
+      "choice": "Pages a curious visitor can skim with pleasure",
+      "why": "Also for the Elabora showcase: the chart first and again at the end, short history, a guided voyage then one alone, the third optional; the winds' etymologies optional.",
+      "items": [
+        "ITEM-1",
+        "ITEM-2",
+        "ITEM-5",
+        "ITEM-6"
+      ]
+    },
+    {
+      "topic": "certainty",
+      "label": "Historical certainty",
+      "choice": "Compilation and tilt given as the leading explanation, with the debate stated",
+      "why": "Campbell and later research leave the compass account of the tilt open: lesson 2 says so, its plotting stage is a reconstruction, Q-2 asks for the usual explanation.",
+      "items": [
+        "ITEM-4",
+        "ITEM-6"
+      ]
+    },
+    {
+      "topic": "quizzes",
+      "label": "Answer positions",
+      "choice": "Right answers in varied positions",
+      "why": "Every question had its right answer first, which rewards position rather than understanding.",
+      "items": [
+        "ITEM-1",
+        "ITEM-4",
+        "ITEM-6"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "split",
+  "title": "Figure and explanation",
+  "description": "The title across the top, a figure column (figure, legend, short text) and an explanation column side by side. Stacks on narrow screens, figure first.",
+  "category": "layout",
+  "version": "1.1.0",
+  "level": "screen",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "balance": {
+        "enum": [
+          "figure",
+          "activity"
+        ],
+        "default": "figure",
+        "x-group": "design",
+        "description": "figure: a wider figure column; activity: a wider explanation column, for an activity next to the figure."
+      },
+      "figure": {
+        "enum": [
+          "column",
+          "stack"
+        ],
+        "default": "column",
+        "x-group": "design",
+        "description": "column: the figure's blocks one under the other; stack: drawn over each other in one square frame, for a figure built in steps (an image with its caption first, then orbit flights and hotspots)."
+      }
+    }
+  },
+  "slots": [
+    {
+      "id": "figure",
+      "label": "Figure column",
+      "accepts": [
+        "image",
+        "text",
+        "callout",
+        "math",
+        "orbit-flight",
+        "hotspot"
+      ],
+      "maxBlocks": 8
+    },
+    {
+      "id": "body",
+      "label": "Explanation",
+      "default": true
+    }
+  ]
+}

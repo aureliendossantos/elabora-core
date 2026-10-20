@@ -1,0 +1,51 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "assessment-3",
+  "title": "Check your skills: 3 of 3",
+  "covers": [
+    "ITEM-6"
+  ],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "assessment-q3",
+      "type": "config-quiz",
+      "props": {
+        "questionRef": "Q-3",
+        "legend": [
+          {
+            "symbol": "held",
+            "label": "Held member"
+          },
+          {
+            "symbol": "input",
+            "label": "Driven by the motor"
+          },
+          {
+            "symbol": "output",
+            "label": "Output"
+          }
+        ],
+        "options": [
+          {
+            "id": "a",
+            "figure": "images/config-sun-carrier.svg"
+          },
+          {
+            "id": "b",
+            "figure": "images/config-ring-carrier.svg"
+          },
+          {
+            "id": "c",
+            "figure": "images/config-ring-sun.svg"
+          },
+          {
+            "id": "d",
+            "figure": "images/config-carrier-ring.svg"
+          }
+        ]
+      },
+      "width": "wide"
+    }
+  ]
+}

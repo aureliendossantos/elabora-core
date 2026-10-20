@@ -1,0 +1,25 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "assessment",
+  "title": "Check your skills: 1 of 3",
+  "covers": [
+    "ITEM-6"
+  ],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "assessment-intro",
+      "type": "text",
+      "props": {
+        "markdown": "Three questions, one attempt each, one per screen. Keep the Willis equation at hand: $Z_s\\,n_s + Z_r\\,n_r = (Z_s + Z_r)\\,n_c$."
+      }
+    },
+    {
+      "id": "assessment-q1",
+      "type": "quiz",
+      "props": {
+        "questionRef": "Q-1"
+      }
+    }
+  ]
+}

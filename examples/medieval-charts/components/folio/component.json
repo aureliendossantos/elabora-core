@@ -1,0 +1,80 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "folio",
+  "title": "Folio page",
+  "description": "A long scrolling page opened like a folio: a tall band with an eyebrow, a large title and an opening paragraph, beside either a wind rose turning slowly behind them as the learner scrolls or a figure (the object the page is about), then the body of the page in a reading column (wide blocks run wider).",
+  "instructions": "One folio per lesson. Put one or two blocks in the lead (an opening paragraph, style initial) and, when the page is about one picture, that figure in the figure slot: it takes the place of the rose. Everything else goes in the body, in reading order.",
+  "category": "layout",
+  "version": "1.2.0",
+  "level": "screen",
+  "fullBleed": true,
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "eyebrow"
+    ],
+    "properties": {
+      "eyebrow": {
+        "type": "string",
+        "maxLength": 60,
+        "x-translatable": true,
+        "description": "Short line above the title: the lesson and its theme."
+      },
+      "ornament": {
+        "enum": [
+          "rose",
+          "none"
+        ],
+        "default": "rose",
+        "x-group": "design",
+        "description": "rose: a wind rose and its rhumb lines behind the title; none: the band alone."
+      }
+    }
+  },
+  "slots": [
+    {
+      "id": "lead",
+      "label": "Opening",
+      "description": "The opening paragraph, under the title.",
+      "accepts": [
+        "text",
+        "callout"
+      ],
+      "maxBlocks": 2
+    },
+    {
+      "id": "figure",
+      "label": "Figure",
+      "description": "A figure beside the opening, in place of the rose: what the page is about, seen at once.",
+      "accepts": [
+        "layered-figure",
+        "image"
+      ],
+      "maxBlocks": 1
+    },
+    {
+      "id": "body",
+      "label": "Page",
+      "default": true
+    }
+  ],
+  "examples": [
+    {
+      "title": "Lesson opening",
+      "props": {
+        "eyebrow": "Lesson 1 · Two ways to draw the world"
+      },
+      "blocks": [
+        {
+          "id": "specimen-lead",
+          "type": "text",
+          "slot": "lead",
+          "props": {
+            "markdown": "Medieval Europe drew the world in two very different ways, for two very different readers."
+          }
+        }
+      ]
+    }
+  ]
+}

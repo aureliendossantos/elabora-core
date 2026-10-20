@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 300" role="img" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">
+  <rect width="800" height="300" fill="#F3EADB"/>
+  <rect x="60" y="40" width="680" height="220" rx="14" fill="#FFFFFF" stroke="#E6D6BB" stroke-width="2"/>
+  <rect x="60" y="40" width="680" height="56" rx="14" fill="#12355B"/>
+  <rect x="60" y="80" width="680" height="16" fill="#12355B"/>
+  <text x="90" y="76" font-size="22" font-weight="700" fill="#FFFFFF">Ticket n° 4127</text>
+  <rect x="560" y="54" width="150" height="30" rx="15" fill="#C2410C"/>
+  <text x="635" y="75" font-size="16" font-weight="700" fill="#FFFFFF" text-anchor="middle">Priorité haute</text>
+  <text x="90" y="136" font-size="24" font-weight="700" fill="#1F2933">Impossible d'imprimer les bulletins de paie</text>
+  <text x="90" y="172" font-size="18" fill="#52606D">Demandeur : Marc — service comptable, 2e étage</text>
+  <text x="90" y="202" font-size="18" fill="#52606D">Ouvert lundi à 9 h 05 · Échéance : 12 h 00</text>
+  <circle cx="680" cy="196" r="34" fill="#E6D6BB"/>
+  <circle cx="680" cy="186" r="13" fill="#12355B"/>
+  <path d="M656 222 q24 -28 48 0" fill="#12355B"/>
+</svg>

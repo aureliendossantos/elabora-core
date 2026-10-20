@@ -1,0 +1,365 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1/block.schema.json",
+  "title": "Block",
+  "description": "A block placed on a screen, a layer or in a slot of a component instance. id identifies it in the whole course. type is a built-in type (the native catalogue, props in blocks/<type>.schema.json) or the id of a course component (components/<id>/component.json declares its props).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "props"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "defs.schema.json#/$defs/slug"
+    },
+    "type": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,47}$",
+      "description": "Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, decision, free-object, results, stack) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props."
+    },
+    "props": {
+      "type": "object"
+    },
+    "blocks": {
+      "type": "array",
+      "description": "Blocks placed in the slots of this component instance (each picks its slot with slot; without slot, the default slot). Only for components that declare slots.",
+      "items": {
+        "$ref": "block.schema.json"
+      }
+    },
+    "hidden": {
+      "type": "boolean",
+      "default": false,
+      "description": "Initial state: hidden blocks are shown later by a show-block action."
+    },
+    "step": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 12,
+      "default": 1,
+      "description": "Step of the screen that reveals this block (blocks of the screen, not those nested in a component or in a layer). Next, labelled Continue while steps remain, reveals the following step before leaving the screen: below the previous ones in scroll presentation, in their reserved place in slides. Activities of a step must be done before Continue when navigation.lockUntilComplete is set. A screen visited before shows all its steps."
+    },
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "description": "When the block appears (in) and leaves (out) on the screen's timeline, and how: anchored to the narration's lines and words (\"in\": { \"at\": { \"line\": \"l2\", \"word\": \"imprimante\" }, \"effect\": \"rise\" }), or in seconds on a screen without narration. Without in, it shows from the start of its step; without out, until the end of the screen. A timed block keeps its place while it is not there (nothing moves around it), stays out of reach of the keyboard and of screen readers until it shows, and is recomputed when learners seek: what is seen is a function of the time. Blocks of the screen and of its components' slots (the contents of a stack follow one another); not in layers.",
+      "properties": {
+        "in": { "$ref": "defs.schema.json#/$defs/moment" },
+        "out": { "$ref": "defs.schema.json#/$defs/moment" }
+      }
+    },
+    "width": {
+      "enum": [
+        "full",
+        "wide",
+        "half"
+      ],
+      "default": "full",
+      "description": "Layout hint in the default column layout. Two consecutive half blocks sit side by side on wide screens and stack on small ones. Inside a layout slot, the layout CSS decides."
+    },
+    "slot": {
+      "$ref": "defs.schema.json#/$defs/slug",
+      "description": "Slot that receives this block: a slot of the screen layout for blocks of the screen, a slot of the component instance for blocks inside its blocks. Reading order follows the template, then the block order."
+    },
+    "style": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,31}$",
+      "description": "Named style declared for this type: in course.json theme.styles.<type> or in the component's styles (also those of its parents)."
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Note for reviewers and authors; never shown to learners."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "heading"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/heading.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "text"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/text.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "image"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/image.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "video"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/video.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "audio"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/audio.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "callout"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/callout.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "button"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/button.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "accordion"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/accordion.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "math"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/math.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "quiz"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/quiz.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "numeric"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/numeric.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "decision"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/decision.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "free-object"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/free-object.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "results"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/results.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "stack"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/stack.schema.json"
+          }
+        }
+      }
+    }
+  ]
+}

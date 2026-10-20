@@ -1,0 +1,89 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/lms-profile.schema.json",
+  "id": "workday",
+  "name": "Workday Learning",
+  "documentedAt": "2026-10",
+  "sources": [
+    {
+      "title": "Workday packaged content",
+      "url": "https://doc.workday.com/admin-guide/en-us/human-capital-management/learning/learning-content/packaged-content/hfx1625670674607.html"
+    },
+    {
+      "title": "Workday packaged content limits",
+      "url": "https://doc.workday.com/admin-guide/en-us/human-capital-management/learning/learning-content/packaged-content/jgo1522169899445.html"
+    }
+  ],
+  "standards": {
+    "scorm12": true,
+    "scorm2004": [
+      "2nd",
+      "3rd",
+      "4th"
+    ],
+    "sequencing": null,
+    "multiSco": null,
+    "cmi5": false,
+    "xapi": false,
+    "lti13": false,
+    "aicc": true
+  },
+  "launch": {
+    "default": "popup",
+    "modes": [
+      "popup"
+    ],
+    "apiDiscovery": [
+      "parents",
+      "opener"
+    ]
+  },
+  "datamodel": {
+    "suspendDataMax": {
+      "scorm12": null,
+      "scorm2004": null
+    },
+    "suspendDataEnforcement": null,
+    "lessonLocationMax": null,
+    "masteryOverridesStatus": null
+  },
+  "exit": {
+    "needsExplicitFinish": null
+  },
+  "session": {
+    "maxSessionHours": 18,
+    "inactivityTimeoutHours": 4
+  },
+  "browser": {
+    "unloadHeaderSent": null,
+    "thirdPartyCookiesRequired": false,
+    "knownBugs": []
+  },
+  "packaging": {
+    "maxZipMB": 2048,
+    "maxUnzippedMB": 20480,
+    "maxFiles": 100000,
+    "asciiFilenames": null,
+    "schemaversionRequired": null,
+    "oneStandardPerZip": null
+  },
+  "update": {
+    "family": null,
+    "notes": "Behaviour of a replaced SCORM package not documented (media lessons keep completions)."
+  },
+  "harness": {
+    "autocommitSeconds": null,
+    "syncCommits": true
+  },
+  "toMeasure": [
+    "/datamodel/suspendDataMax/scorm12",
+    "/datamodel/lessonLocationMax",
+    "/update/family",
+    "/standards/multiSco",
+    "/exit/needsExplicitFinish"
+  ],
+  "notes": [
+    "Three statuses: Not Started, In Progress, Completed; grade only if Provide Course Grade.",
+    "SCORM is not cross-domain (only AICC HACP is).",
+    "Uploads are limited to 2 GB by default for new tenants. With Increase Maximum Upload Size (Edit Tenant Setup - HCM), a ZIP of up to 4 GB goes through Drive or the Learning file picker and up to 20 GB through the Media Import service, but uploads over 2 GB are not scanned for viruses."
+  ]
+}

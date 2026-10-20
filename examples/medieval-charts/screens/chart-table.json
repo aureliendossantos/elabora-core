@@ -1,0 +1,142 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "chart-table",
+  "title": "Lay a course",
+  "covers": [
+    "ITEM-5"
+  ],
+  "layout": "folio",
+  "layoutProps": {
+    "eyebrow": "Lesson 3 · At the chart table"
+  },
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "table-lead",
+      "type": "text",
+      "slot": "lead",
+      "style": "initial",
+      "props": {
+        "markdown": "To lay a course is to plan a crossing before you leave harbour: which way to steer, and how far to sail before land should rise ahead. Out of sight of the coast, with current and wind pushing the ship aside, that plan is what brings the right harbour up on the bow. The chart lies flat on a table, with two tools: a **ruler** for the direction and a pair of **dividers** for the miles."
+      }
+    },
+    {
+      "id": "table-h-lab",
+      "type": "heading",
+      "style": "rubric",
+      "props": {
+        "text": "Your turn at the chart table",
+        "level": 2
+      }
+    },
+    {
+      "id": "table-lab-intro",
+      "type": "text",
+      "props": {
+        "markdown": "**Choose the wind** whose rhumb lines lead from the first harbour to the second: the ruler is laid along it. Here the eight names of the winds are names of *directions*: to steer Levante is to head east, towards the rising sun, whatever the weather blows that day. Then **open the dividers** until their far point reaches the harbour, read their span on the scale, and set sail. The first voyage is guided, the second is yours, and a third waits if you enjoy it."
+      }
+    },
+    {
+      "id": "table-lab",
+      "type": "free-object",
+      "width": "wide",
+      "props": {
+        "object": "chart-table",
+        "title": "3D chart table: a portolan chart of the Mediterranean on vellum, with a ruler, a pair of dividers and a ship",
+        "aspectRatio": "3:2",
+        "narrowAspectRatio": "auto",
+        "minHeight": 560,
+        "scored": false,
+        "props": {
+          "required": 2,
+          "guided": true
+        },
+        "textAlternative": "**Text version of the chart table.** The chart is a portolan chart of the Mediterranean and the Black Sea, turned 9° anticlockwise like the medieval ones. Its scale of miles has six divisions of 50 miles. Bearings below are measured clockwise from the chart's north.\n\n1. Guided: from **Majorca** (Maiorica) to **Cagliari** (Callari), in Sardinia. Cagliari lies at 85°, a little north of east: steer Levante. It is nine divisions of the scale away: 450 miles.\n2. From **Genoa** (Janua) to **Barcelona** (Barchelona): Barcelona lies at 231°, a little west of south-west, eleven divisions away.\n3. Optional: from **Palermo** to **Naples** (Napoli): Naples lies at 6°, almost due north, five divisions away.\n\nFor the second and third voyages, name the wind to steer among the eight winds, and give the distance in miles."
+      }
+    },
+    {
+      "id": "table-debrief",
+      "type": "callout",
+      "style": "rubric",
+      "props": {
+        "title": "One method, every voyage",
+        "markdown": "Ruler for the wind, dividers for the miles. At sea, the pilot would still allow for current and leeway, look out for the coast before the miles ran out, and close the last of them by eye."
+      }
+    },
+    {
+      "id": "table-h-winds",
+      "type": "heading",
+      "style": "rubric",
+      "props": {
+        "text": "Where the winds get their names",
+        "level": 2
+      }
+    },
+    {
+      "id": "table-winds-intro",
+      "type": "text",
+      "props": {
+        "markdown": "Mediterranean sailors named each direction after the wind that blows from it, in a mixture of Italian, Latin, Greek and Arabic. Select any wind on the rose to see where its name comes from."
+      }
+    },
+    {
+      "id": "table-rose",
+      "type": "wind-rose",
+      "width": "wide",
+      "props": {
+        "rose": "images/wind-rose.svg",
+        "alt": "A wind rose of thirty-two points: eight long points in gold and blue for the principal winds, green points for the half-winds, small red points for the quarter-winds, and a red cross on the east point.",
+        "winds": [
+          {
+            "id": "tramontana",
+            "name": "Tramontana",
+            "direction": "North",
+            "body": "*Tra montana*, “across the mountains”: for an Italian sailor, the north wind comes over the Alps. The north point of later roses carries a fleur-de-lis."
+          },
+          {
+            "id": "greco",
+            "name": "Greco",
+            "direction": "North-east",
+            "body": "The wind from **Greece**, as seen from the middle of the sea, where these names took shape."
+          },
+          {
+            "id": "levante",
+            "name": "Levante",
+            "direction": "East",
+            "body": "The wind of the **rising** sun, from *levare*, to rise. Its point often carries a cross, towards the Holy Land."
+          },
+          {
+            "id": "scirocco",
+            "name": "Scirocco",
+            "direction": "South-east",
+            "body": "From the Arabic word for the east, *sharq*: the hot wind that blows off the deserts."
+          },
+          {
+            "id": "ostro",
+            "name": "Ostro",
+            "direction": "South",
+            "body": "From *auster*, the Latin name of the south wind."
+          },
+          {
+            "id": "libeccio",
+            "name": "Libeccio",
+            "direction": "South-west",
+            "body": "The wind from **Libya**, through the Greek name of the south-west wind, *lips*."
+          },
+          {
+            "id": "ponente",
+            "name": "Ponente",
+            "direction": "West",
+            "body": "The wind of the **setting** sun, from *ponere*, to set down."
+          },
+          {
+            "id": "maestro",
+            "name": "Maestro",
+            "direction": "North-west",
+            "body": "The “master” wind: the strong north-wester that the French call the mistral."
+          }
+        ]
+      }
+    }
+  ]
+}

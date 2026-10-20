@@ -1,0 +1,54 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "Diagnostic dans l'ordre : panne trouvée sans écart",
+      "steps": [
+        { "action": "step", "frames": 30 },
+        { "action": "snapshot", "name": "initial" },
+        { "action": "click", "object": "poste" },
+        { "action": "expect-event", "name": "device_inspected", "payload": { "device": "poste", "inOrder": true, "faulty": false } },
+        { "action": "click", "object": "commutateur" },
+        { "action": "click", "object": "routeur" },
+        { "action": "click", "object": "parefeu" },
+        { "action": "expect-event", "name": "completed", "payload": { "score": 1, "attempts": 0 } },
+        { "action": "expect-state", "state": { "found": true, "attempts": 0, "inspected": ["poste", "commutateur", "routeur", "parefeu"] } },
+        { "action": "step", "frames": 30 },
+        { "action": "snapshot", "name": "panne-trouvee" }
+      ]
+    },
+    {
+      "name": "Hors procédure : indice après deux écarts",
+      "props": { "hintAfterErrors": 2 },
+      "steps": [
+        { "action": "click", "object": "serveur" },
+        { "action": "expect-event", "name": "device_inspected", "payload": { "device": "serveur", "inOrder": false } },
+        { "action": "expect-state", "state": { "attempts": 1, "hint": false, "found": false } },
+        { "action": "key", "key": "Tab" },
+        { "action": "click", "object": "parefeu" },
+        { "action": "expect-event", "name": "hint_shown" },
+        { "action": "expect-state", "state": { "attempts": 2, "hint": true, "found": false } }
+      ]
+    },
+    {
+      "name": "Les réglages s'appliquent sans remontage",
+      "steps": [
+        { "action": "set-props", "props": { "failingDevice": "routeur", "showLabels": false } },
+        { "action": "click", "object": "poste" },
+        { "action": "click", "object": "commutateur" },
+        { "action": "click", "object": "routeur" },
+        { "action": "expect-event", "name": "completed" },
+        { "action": "expect-state", "state": { "found": true } }
+      ]
+    },
+    {
+      "name": "Reprise : l'état sauvegardé est restauré",
+      "steps": [
+        { "action": "set-state", "state": { "inspected": ["poste", "commutateur"], "attempts": 1, "found": false, "hint": false } },
+        { "action": "click", "object": "routeur" },
+        { "action": "expect-state", "state": { "inspected": ["poste", "commutateur", "routeur"], "attempts": 1 } },
+        { "action": "expect-no-event", "name": "completed" }
+      ]
+    }
+  ]
+}

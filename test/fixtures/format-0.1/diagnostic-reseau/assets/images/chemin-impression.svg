@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 240" role="img" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif">
+  <rect width="900" height="240" fill="#FFFFFF"/>
+  <g stroke="#9DB0C6" stroke-width="4" stroke-dasharray="10 8">
+    <line x1="130" y1="110" x2="230" y2="110"/><line x1="310" y1="110" x2="410" y2="110"/>
+    <line x1="490" y1="110" x2="590" y2="110"/><line x1="670" y1="110" x2="770" y2="110"/>
+  </g>
+  <g font-size="17" fill="#1F2933" text-anchor="middle">
+    <rect x="50" y="70" width="80" height="80" rx="12" fill="#12355B"/><text x="90" y="185">Poste</text><text x="90" y="207" fill="#52606D" font-size="15">de Marc</text>
+    <rect x="230" y="70" width="80" height="80" rx="12" fill="#1E4C7A"/><text x="270" y="185">Commutateur</text>
+    <rect x="410" y="70" width="80" height="80" rx="12" fill="#1E4C7A"/><text x="450" y="185">Routeur</text>
+    <rect x="590" y="70" width="80" height="80" rx="12" fill="#C2410C"/><text x="630" y="185">Pare-feu</text>
+    <rect x="770" y="70" width="80" height="80" rx="12" fill="#1E4C7A"/><text x="810" y="185">Serveur</text><text x="810" y="207" fill="#52606D" font-size="15">d'impression</text>
+  </g>
+  <g fill="#FFFFFF" font-size="30" font-weight="700" text-anchor="middle">
+    <text x="90" y="121">1</text><text x="270" y="121">2</text><text x="450" y="121">3</text><text x="630" y="121">4</text><text x="810" y="121">5</text>
+  </g>
+</svg>

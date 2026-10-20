@@ -1,0 +1,19 @@
+/* One hour of flight. --flown goes from 0 to --sweep when the block's step is revealed: the craft
+   layer turns back by what is left to fly (it starts where the trail begins) and the trail is unmasked
+   from its start up to the craft. Revealed by a step only: on a visited screen it is drawn at once. */
+@property --flown { syntax: "<number>"; inherits: true; initial-value: 0; }
+
+.t-block--orbit-flight { pointer-events: none; }
+.t-block--orbit-flight .or-flight {
+  position: relative; aspect-ratio: 1;
+  --flown: var(--sweep);
+  transition: --flown 2s cubic-bezier(0.25, 0.1, 0.35, 1) 0.35s;
+}
+.t-block--orbit-flight[data-t-pending] .or-flight { --flown: 0; }
+.t-block--orbit-flight .or-flight img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.t-block--orbit-flight .or-flight-craft { rotate: calc((var(--sweep) - var(--flown)) * 1deg); }
+/* Conic angles turn clockwise from 12 o'clock; the figure's turn counter-clockwise from 3 o'clock. */
+.t-block--orbit-flight .or-flight-trail {
+  mask-image: conic-gradient(from calc((90 - var(--at) + var(--sweep) - var(--flown) - 3) * 1deg),
+    var(--t-text) calc((var(--flown) + 6) * 1deg), transparent 0);
+}

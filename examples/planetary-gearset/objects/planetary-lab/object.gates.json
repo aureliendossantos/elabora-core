@@ -1,0 +1,64 @@
+{
+  "object": "planetary-lab",
+  "version": "1.0.0",
+  "elabora": "0.1.0",
+  "at": "2026-10-05T18:31:22.473Z",
+  "ok": true,
+  "gates": {
+    "smoke": "passed",
+    "behaviour": "passed",
+    "budget": "passed",
+    "visual": "passed",
+    "accessibility": "passed"
+  },
+  "perf": {
+    "drawCalls": 67,
+    "triangles": 61412,
+    "textures": 5,
+    "geometries": 37,
+    "maxTextureSize": 8192,
+    "webglContexts": 1,
+    "bootMs": 1366,
+    "bootSamples": [
+      3413,
+      1517,
+      1313,
+      1366,
+      1330,
+      1467,
+      1353,
+      1620
+    ]
+  },
+  "tests": [
+    {
+      "name": "Requirement 1 met at the first run",
+      "ok": true
+    },
+    {
+      "name": "Wrong configuration: feedback and no progress",
+      "ok": true
+    },
+    {
+      "name": "All three requirements: completed with full score",
+      "ok": true
+    },
+    {
+      "name": "Settings apply without remounting",
+      "ok": true
+    },
+    {
+      "name": "Resume: saved progress is restored",
+      "ok": true
+    },
+    {
+      "name": "Reduced motion: the bench measures without animating",
+      "ok": true
+    },
+    {
+      "name": "Phone width: panel under the view",
+      "ok": true
+    }
+  ],
+  "fingerprint": "sha256:c045c662ae0eb67d0bc1ecffbb2105842dc1116278c871e2a9780aefdfa3d8f1"
+}

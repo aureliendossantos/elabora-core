@@ -1,0 +1,27 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "ratio-card",
+  "title": "Ratio card",
+  "description": "A key ratio as a large figure, with its label and the configuration that gives it. Two to four side by side, for example in the cards slot of the hero layout.",
+  "instructions": "Keep the label to one or two words and the body to one sentence. The value is a figure with its operator (÷ 3.6, × 3.6, − 2.6). Pick a different accent per card in a row.",
+  "category": "content",
+  "version": "1.0.0",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["label", "value", "body"],
+    "properties": {
+      "label": { "type": "string", "minLength": 1, "maxLength": 40, "x-translatable": true, "description": "Short label above the figure." },
+      "value": { "type": "string", "minLength": 1, "maxLength": 16, "x-translatable": true, "description": "The figure, with its operator." },
+      "body": { "type": "string", "x-kind": "markdown", "minLength": 1, "maxLength": 300, "x-translatable": true, "description": "One sentence: the configuration that gives this ratio." },
+      "accent": { "type": "string", "x-kind": "token", "x-token-prefix": "color.", "x-group": "design", "default": "color.copper", "description": "Colour of the figure and of the top edge (a colour token of the theme)." }
+    }
+  },
+  "fallback": [
+    { "type": "text", "props": { "markdown": "**{{label}}: {{value}}**\n\n{{body}}" } }
+  ],
+  "examples": [
+    { "title": "Reduction", "props": { "label": "Reduce", "value": "÷ 3.6", "body": "Ring held, the sun drives the carrier.", "accent": "color.copper" } },
+    { "title": "Reverse", "props": { "label": "Reverse", "value": "− 2.6", "body": "Carrier held, the sun drives the ring.", "accent": "color.error" } }
+  ]
+}

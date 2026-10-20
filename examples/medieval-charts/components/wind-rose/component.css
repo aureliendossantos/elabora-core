@@ -1,0 +1,39 @@
+/* Wind rose: the winds as tabs round the dial, a red needle pointing at the one selected, its
+   panel beside the rose (under it on narrow windows). Winds already read carry a gilt dot. */
+.mc-rose { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 2.5rem 3.5rem; align-items: center; }
+.mc-rose-dial { position: relative; width: min(100%, 31rem); aspect-ratio: 1; justify-self: center; container-type: inline-size; --needle: 0deg; }
+.mc-rose-figure { position: absolute; inset: 17%; width: 66%; height: 66%; }
+.mc-rose-dial::after { content: ""; position: absolute; left: calc(50% - 1px); top: 21%; width: 2px; height: 29%; transform-origin: 50% 100%; rotate: var(--needle);
+  background: linear-gradient(var(--t-color-vermilion), color-mix(in srgb, var(--t-color-vermilion) 30%, transparent)); border-radius: 2px; transition: rotate .7s cubic-bezier(.3, .1, .2, 1.2); pointer-events: none; }
+.mc-rose-tabs { position: absolute; inset: 0; }
+.mc-rose-tab {
+  position: absolute; left: 50%; top: 50%; --a: 0deg;
+  transform: translate(-50%, -50%) rotate(var(--a)) translateY(-44cqi) rotate(calc(-1 * var(--a)));
+  min-height: 44px; min-width: 44px; padding: .35rem .8rem; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--t-color-sepia) 45%, transparent);
+  background: var(--t-color-vellum-light); color: var(--t-color-ink); font: inherit; font-variant-caps: all-small-caps; letter-spacing: .08em; font-size: 1.12rem; font-weight: 600; cursor: pointer;
+  box-shadow: 0 6px 14px -10px var(--t-color-vellum-shadow); transition: background-color .2s, color .2s, border-color .2s;
+}
+.mc-rose-tab:hover { border-color: var(--t-color-ink); }
+.mc-rose-tab[aria-selected="true"] { background: var(--t-color-ink); color: var(--t-color-vellum-light); border-color: var(--t-color-ink); }
+.mc-rose-tab[data-t-visited]::after { content: ""; position: absolute; right: -.15rem; top: -.15rem; width: .6rem; height: .6rem; border-radius: 50%; background: var(--t-color-gold); box-shadow: 0 0 0 2px var(--t-color-vellum-light); }
+.mc-rose-tab:nth-child(1) { --a: 0deg; } .mc-rose-tab:nth-child(2) { --a: 45deg; } .mc-rose-tab:nth-child(3) { --a: 90deg; } .mc-rose-tab:nth-child(4) { --a: 135deg; }
+.mc-rose-tab:nth-child(5) { --a: 180deg; } .mc-rose-tab:nth-child(6) { --a: 225deg; } .mc-rose-tab:nth-child(7) { --a: 270deg; } .mc-rose-tab:nth-child(8) { --a: 315deg; }
+.mc-rose:has(.mc-rose-tab:nth-child(2)[aria-selected="true"]) .mc-rose-dial { --needle: 45deg; }
+.mc-rose:has(.mc-rose-tab:nth-child(3)[aria-selected="true"]) .mc-rose-dial { --needle: 90deg; }
+.mc-rose:has(.mc-rose-tab:nth-child(4)[aria-selected="true"]) .mc-rose-dial { --needle: 135deg; }
+.mc-rose:has(.mc-rose-tab:nth-child(5)[aria-selected="true"]) .mc-rose-dial { --needle: 180deg; }
+.mc-rose:has(.mc-rose-tab:nth-child(6)[aria-selected="true"]) .mc-rose-dial { --needle: 225deg; }
+.mc-rose:has(.mc-rose-tab:nth-child(7)[aria-selected="true"]) .mc-rose-dial { --needle: 270deg; }
+.mc-rose:has(.mc-rose-tab:nth-child(8)[aria-selected="true"]) .mc-rose-dial { --needle: 315deg; }
+.mc-rose-panels { min-height: 15rem; }
+.mc-rose-direction { margin: 0; color: var(--t-primary); font-variant-caps: all-small-caps; letter-spacing: .14em; font-size: 1.2rem; font-weight: 600; }
+.mc-rose-name { margin: .1rem 0 .7rem; font-size: clamp(2.4rem, 4vw, 3.2rem); line-height: 1; }
+.mc-rose-body { font-size: 1.2rem; }
+.mc-rose-panel:not([hidden]) { animation: mc-panel .45s ease both; }
+@keyframes mc-panel { from { opacity: 0; translate: 0 .6rem; } to { opacity: 1; translate: 0 0; } }
+@container (max-width: 820px) {
+  .mc-rose { grid-template-columns: 1fr; gap: 1.5rem; }
+  .mc-rose-dial { width: min(100%, 22rem); }
+  .mc-rose-tab { font-size: .98rem; padding: .25rem .55rem; transform: translate(-50%, -50%) rotate(var(--a)) translateY(-41cqi) rotate(calc(-1 * var(--a))); }
+  .mc-rose-panels { min-height: 0; }
+}

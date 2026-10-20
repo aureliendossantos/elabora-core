@@ -1,0 +1,41 @@
+/* Hotspot: a marker over a stacked figure. The block covers the figure; only the button takes clicks. */
+.t-block--hotspot { pointer-events: none; }
+.t-block--hotspot .or-hot { position: relative; aspect-ratio: 1; }
+.t-block--hotspot .or-hot-button {
+  position: absolute; left: calc(var(--x) * 1%); top: calc(var(--y) * 1%); translate: -50% -50%;
+  display: grid; place-items: center; width: 2.75rem; height: 2.75rem; padding: 0; border: 0; border-radius: 50%;
+  background: none; cursor: pointer; pointer-events: auto;
+}
+.t-block--hotspot .or-hot-marker {
+  position: relative; display: grid; place-items: center; width: 1.625rem; height: 1.625rem; border-radius: 50%;
+  background: var(--t-text); color: var(--t-surface);
+  font: 700 0.875rem/1 var(--t-font-heading); font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 0.1875rem color-mix(in srgb, var(--t-surface) 70%, transparent);
+  transition: scale 0.2s ease;
+}
+.t-block--hotspot .or-hot-button:hover .or-hot-marker { scale: 1.12; }
+.t-block--hotspot .or-hot-button:focus-visible { outline: 3px solid var(--t-focus); outline-offset: 0; }
+
+/* The next marker to select (its step is the latest shown) calls for a click: a ring that breathes out. */
+.t-block--hotspot[data-t-current] .or-hot-marker::before,
+.t-block--hotspot[data-t-current] .or-hot-marker::after {
+  content: ""; position: absolute; inset: -0.25rem; border-radius: 50%;
+  border: 2px solid var(--hot-accent); opacity: 0; pointer-events: none;
+  animation: or-hot-call 2.4s ease-out infinite;
+}
+.t-block--hotspot[data-t-current] .or-hot-marker::after { animation-delay: 1.2s; }
+.t-block--hotspot[data-t-current] .or-hot-marker { box-shadow: 0 0 0 0.1875rem color-mix(in srgb, var(--hot-accent) 55%, transparent), 0 0 1.25rem color-mix(in srgb, var(--hot-accent) 60%, transparent); }
+@keyframes or-hot-call {
+  0% { opacity: 0.9; scale: 1; }
+  100% { opacity: 0; scale: 2.1; }
+}
+/* Without motion, the next marker keeps a still, brighter ring. */
+@media (prefers-reduced-motion: reduce) {
+  .t-block--hotspot[data-t-current] .or-hot-marker::before { opacity: 1; scale: 1.45; animation: none; }
+}
+
+/* Selected markers stay as plain labels of the figure. */
+.t-block--hotspot:not([data-t-current]) .or-hot-marker { background: color-mix(in srgb, var(--t-text) 88%, transparent); }
+
+/* A new marker appears once the previous orbit has flown. */
+.t-block--hotspot[data-t-revealed] { transition-delay: 2.2s; }

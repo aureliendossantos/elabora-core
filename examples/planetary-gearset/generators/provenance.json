@@ -1,0 +1,65 @@
+{
+  "format": "elabora-generated/1",
+  "assets": {
+    "images/anatomy-planetary.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:85fcc06785b425b91f84f4f558c43724cf381e78688db915ad6adc012335f287",
+      "outputHash": "sha256:c55c5f3dc2f0fd9e192f645332a86ac2644581ceeed5bc8755357e85194be624"
+    },
+    "images/bench-carrier-held.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:85fcc06785b425b91f84f4f558c43724cf381e78688db915ad6adc012335f287",
+      "outputHash": "sha256:85f092654e9221e0aad358fe993ba71d10be96eeb5b1787065f412b94a10eb4c"
+    },
+    "images/bench-ring-held.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:85fcc06785b425b91f84f4f558c43724cf381e78688db915ad6adc012335f287",
+      "outputHash": "sha256:8e914b50edc9a08623f6f13f1e6cf1fdb0a574842221078b65f64915c84fec3e"
+    },
+    "images/bench-sun-held.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:85fcc06785b425b91f84f4f558c43724cf381e78688db915ad6adc012335f287",
+      "outputHash": "sha256:fd3fdf801d26093127d2aa02af3f4c3f5f7827913bcf735cc981c8f15ee05493"
+    },
+    "images/config-carrier-ring.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:85fcc06785b425b91f84f4f558c43724cf381e78688db915ad6adc012335f287",
+      "outputHash": "sha256:ccff2e81bd18ce0537fea8c233120b5af32e87b85c8f58f9a164d9aba51355af"
+    },
+    "images/config-carrier-sun.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:85fcc06785b425b91f84f4f558c43724cf381e78688db915ad6adc012335f287",
+      "outputHash": "sha256:d2491df32b92742a7fa7882b4c7aa1521585da69c4219068c30872b99cf00fca"
+    },
+    "images/config-ring-carrier.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:85fcc06785b425b91f84f4f558c43724cf381e78688db915ad6adc012335f287",
+      "outputHash": "sha256:272e7f169d885da612596a6f747b0fca0ad3c8a64cf4742fefefff05934e64a1"
+    },
+    "images/config-ring-sun.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:85fcc06785b425b91f84f4f558c43724cf381e78688db915ad6adc012335f287",
+      "outputHash": "sha256:e783d9e97b3b03639bbb20fa85b58c3b83f387b9c86bf70e7ce3b9230196b874"
+    },
+    "images/config-sun-carrier.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:85fcc06785b425b91f84f4f558c43724cf381e78688db915ad6adc012335f287",
+      "outputHash": "sha256:148076ad6211a876cdd3f6dac1e53e253e5fb95a9cd4575588bae05b58e60c52"
+    },
+    "images/config-sun-ring.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:85fcc06785b425b91f84f4f558c43724cf381e78688db915ad6adc012335f287",
+      "outputHash": "sha256:effaaad5de4d553cc7d8705276c89eddec4151cf284651972212bc2128e1432e"
+    },
+    "images/gearset-hero.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:85fcc06785b425b91f84f4f558c43724cf381e78688db915ad6adc012335f287",
+      "outputHash": "sha256:bfa3bc392cca08c2b2b68391912ec3c2f0607af10967cebbac974c36ff5ad885"
+    },
+    "images/hoist-drive.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:85fcc06785b425b91f84f4f558c43724cf381e78688db915ad6adc012335f287",
+      "outputHash": "sha256:9681fb98736da6691163c3756b6decbf5f999f8ef65ccca4c5c0a6b503a8b698"
+    }
+  }
+}

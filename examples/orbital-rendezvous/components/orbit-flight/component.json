@@ -1,0 +1,25 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "orbit-flight",
+  "title": "Orbit flight",
+  "description": "One orbit of a stacked figure: its ring and craft, and the trail of one hour of flight. When its step is revealed, the craft flies that hour around the Earth and the trail draws behind it (still, fully drawn, under reduced motion or when the screen is visited again).",
+  "instructions": "Use the craft and trail layers of generators/figures.mjs and its values: at (angle of the craft, degrees counter-clockwise from 3 o'clock) and sweep (angle flown in one hour). All layers of the figure share the same square frame centred on the Earth. The alt text says what the orbit shows; the trail is decoration.",
+  "category": "content",
+  "version": "1.0.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["craft", "trail", "at", "sweep", "alt"],
+    "properties": {
+      "craft": { "type": "string", "x-kind": "asset", "description": "Layer with the orbit ring, the craft and its speed arrow (square, centred on the Earth)." },
+      "trail": { "type": "string", "x-kind": "asset", "description": "Layer with the trail of one hour of flight, ending at the craft." },
+      "at": { "type": "number", "minimum": -360, "maximum": 360, "description": "Angle of the craft in the figure, degrees counter-clockwise from 3 o'clock." },
+      "sweep": { "type": "number", "exclusiveMinimum": 0, "maximum": 360, "description": "Angle flown in one hour, degrees." },
+      "alt": { "type": "string", "minLength": 10, "maxLength": 250, "x-translatable": true, "description": "What this orbit shows (height, distance flown in one hour, speed)." }
+    }
+  },
+  "examples": [
+    { "title": "Space Station", "props": { "craft": "images/orbit-1-craft.svg", "trail": "images/orbit-1-trail.svg", "at": 32, "sweep": 232.3, "alt": "Orbit 1, the Space Station, hugs the Earth. In one hour it flies almost two thirds of a lap, and its speed arrow is the longest." } }
+  ]
+}

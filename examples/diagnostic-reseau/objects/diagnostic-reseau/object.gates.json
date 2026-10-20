@@ -1,0 +1,49 @@
+{
+  "object": "diagnostic-reseau",
+  "version": "1.0.0",
+  "elabora": "0.1.0",
+  "at": "2026-10-05T18:30:18.820Z",
+  "ok": true,
+  "gates": {
+    "smoke": "passed",
+    "behaviour": "passed",
+    "budget": "passed",
+    "visual": "passed",
+    "accessibility": "passed"
+  },
+  "perf": {
+    "drawCalls": 21,
+    "triangles": 2312,
+    "textures": 6,
+    "geometries": 8,
+    "maxTextureSize": 8192,
+    "webglContexts": 1,
+    "bootMs": 460,
+    "bootSamples": [
+      2132,
+      469,
+      423,
+      457,
+      460
+    ]
+  },
+  "tests": [
+    {
+      "name": "Diagnostic dans l'ordre : panne trouvée sans écart",
+      "ok": true
+    },
+    {
+      "name": "Hors procédure : indice après deux écarts",
+      "ok": true
+    },
+    {
+      "name": "Les réglages s'appliquent sans remontage",
+      "ok": true
+    },
+    {
+      "name": "Reprise : l'état sauvegardé est restauré",
+      "ok": true
+    }
+  ],
+  "fingerprint": "sha256:9f90284024e5e16717758b49ef531b5796497a3b6ae87e088a973d75e7e02fc3"
+}

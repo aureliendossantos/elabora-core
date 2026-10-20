@@ -1,0 +1,265 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/plan-version.schema.json",
+  "version": 1,
+  "date": "2026-10-05",
+  "note": "With CR-001: the Willis equation typeset (TXT-2), Q-2 a numeric question.",
+  "contentHash": "sha256:7e83d8af3e25898aac3200f295bdbfea9804056b49b1924f697eb457fbc0ac1f",
+  "plan": {
+    "id": "PLAN-KESTREL-PGS-V1",
+    "title": "Planetary gearsets: one gearset, many ratios",
+    "businessGoal": "Halve the gearbox configuration errors found in design reviews of application engineers during their first six months at Kestrel Drives (fictional client).",
+    "audience": {
+      "role": "Junior application engineers and senior technicians who size drive trains",
+      "priorKnowledge": "medium",
+      "notes": "Know spur gear ratios (driven teeth over driving teeth). Have never configured an epicyclic gear train."
+    },
+    "sources": [
+      {
+        "id": "SRC-1",
+        "title": "Budynas and Nisbett, Shigley's Mechanical Engineering Design, 11th edition, chapter 13 (gear trains)",
+        "type": "textbook"
+      },
+      {
+        "id": "SRC-2",
+        "title": "ISO 1122-1:1998, Vocabulary of gear terms, Part 1: definitions related to geometry",
+        "type": "standard"
+      },
+      {
+        "id": "SRC-3",
+        "title": "KD-GB-02, Kestrel Drives design guide: planetary stages",
+        "type": "internal design guide (fictional)",
+        "version": "2026-03"
+      }
+    ],
+    "objectives": [
+      {
+        "id": "OBJ-1",
+        "statement": "Identify the sun, the planets, the carrier and the ring of a planetary gearset, and state which members can be the input, the output or the held member.",
+        "bloom": "understand",
+        "criterion": "Correct identification on an assembly description",
+        "sources": [
+          "SRC-2"
+        ]
+      },
+      {
+        "id": "OBJ-2",
+        "statement": "Calculate the output speed and direction of a simple planetary gearset from the tooth counts, the held member and the input speed, with the Willis equation.",
+        "bloom": "apply",
+        "criterion": "2 calculations out of 2 within 2 %",
+        "sources": [
+          "SRC-1"
+        ]
+      },
+      {
+        "id": "OBJ-3",
+        "statement": "Choose the held member and the input that meet a speed and direction requirement, and justify the choice with the resulting ratio.",
+        "bloom": "analyze",
+        "criterion": "3 lab requirements out of 3 met, and the hoist drive configured correctly",
+        "sources": [
+          "SRC-1",
+          "SRC-3"
+        ]
+      }
+    ],
+    "items": [
+      {
+        "id": "ITEM-1",
+        "kind": "intro",
+        "title": "One gearset, many ratios",
+        "objectives": [],
+        "description": "Hook: the same compact gearset reduces speed, increases it or reverses it, depending on which member is held. Applications: automatic transmissions, wind turbines, electric drives.",
+        "lockedTexts": [
+          {
+            "id": "TXT-1",
+            "text": "A planetary gearset fits in the space of a single gear, yet it can **reduce** speed, **increase** it or **reverse** it. Automatic transmissions, wind turbines and compact electric drives all rely on it. What decides the ratio is not the gears you buy: it is **which member you hold**."
+          }
+        ]
+      },
+      {
+        "id": "ITEM-2",
+        "kind": "demonstration",
+        "title": "Anatomy and the Willis equation",
+        "objectives": [
+          "OBJ-1",
+          "OBJ-2"
+        ],
+        "sources": [
+          "SRC-1",
+          "SRC-2"
+        ],
+        "description": "The four members and their tooth counts (30-tooth sun, 24-tooth planets, 78-tooth ring). The configuration rule and the Willis equation, then a worked example with the ring held.",
+        "lockedTexts": [
+          {
+            "id": "TXT-2",
+            "text": "**Hold one member, drive another, take the output from the third.** Whatever the configuration, the speeds obey the Willis equation:\n\n$$Z_s\\,n_s + Z_r\\,n_r = (Z_s + Z_r)\\,n_c$$\n\n$Z$ is a number of teeth and $n$ a speed in rpm, negative when the member turns the other way; $s$, $r$ and $c$ stand for sun, ring and carrier. A held member has a speed of zero."
+          }
+        ]
+      },
+      {
+        "id": "ITEM-3",
+        "kind": "practice",
+        "title": "Your turn: sun held",
+        "objectives": [
+          "OBJ-2"
+        ],
+        "description": "Unscored practice question right after the worked example: same gearset, sun held, ring driven at 1,000 rpm; two attempts."
+      },
+      {
+        "id": "ITEM-4",
+        "kind": "scenario",
+        "title": "Gearbox lab",
+        "objectives": [
+          "OBJ-2",
+          "OBJ-3"
+        ],
+        "sources": [
+          "SRC-3"
+        ],
+        "description": "3D test bench of the 30/78 gearset. Three requirements in a row (3.6:1 reduction, 3.6 times speed-up, reverse at 2.6:1). The learner chooses the held member and the input, runs the bench and reads the output speed. Scored."
+      },
+      {
+        "id": "ITEM-5",
+        "kind": "scenario",
+        "title": "Design decision: the hoist drive",
+        "objectives": [
+          "OBJ-3"
+        ],
+        "sources": [
+          "SRC-3"
+        ],
+        "description": "Transfer to another gearset (24-tooth sun, 72-tooth ring): a 1,450 rpm motor must turn a hoist drum at about 360 rpm in the lifting direction. Three configurations, consequences shown as test bench results. Scored."
+      },
+      {
+        "id": "ITEM-6",
+        "kind": "assessment",
+        "title": "Assessment",
+        "objectives": [
+          "OBJ-1",
+          "OBJ-2",
+          "OBJ-3"
+        ],
+        "questions": [
+          {
+            "id": "Q-1",
+            "mode": "single",
+            "objectives": [
+              "OBJ-1"
+            ],
+            "bloom": "understand",
+            "stem": "You open the cover of a planetary stage. Three small gears turn on pins, and the pins are fixed to a plate. Which member is that plate?",
+            "options": [
+              {
+                "id": "a",
+                "text": "The carrier",
+                "correct": true,
+                "feedback": "Right: the carrier holds the planet pins. When it turns, the planets orbit around the sun."
+              },
+              {
+                "id": "b",
+                "text": "The sun gear",
+                "correct": false,
+                "feedback": "The sun is the toothed gear at the centre: the planets mesh with it, they are not mounted on it."
+              },
+              {
+                "id": "c",
+                "text": "The ring gear",
+                "correct": false,
+                "feedback": "The ring is the outer gear with internal teeth: the planets mesh inside it, they are not mounted on it."
+              }
+            ]
+          },
+          {
+            "id": "Q-2",
+            "mode": "numeric",
+            "objectives": [
+              "OBJ-2"
+            ],
+            "bloom": "apply",
+            "stem": "A planetary stage has a 20-tooth sun and a 60-tooth ring. The ring is held and the sun is driven at 2,000 rpm. At what speed does the carrier turn? Give a negative value if it turns the other way.",
+            "answer": 500,
+            "tolerance": {
+              "absolute": 2
+            },
+            "unit": "rpm",
+            "feedback": {
+              "correct": "Right: $20 \\times 2000 + 60 \\times 0 = 80\\,n_c$, so $n_c = 500$ rpm, positive: same direction as the sun. The ratio is $1 + 60/20 = 4$.",
+              "incorrect": "Write the Willis equation with $n_r = 0$: $Z_s\\,n_s = (Z_s + Z_r)\\,n_c$, then solve for $n_c$."
+            },
+            "misconceptions": [
+              {
+                "id": "fixed-axis",
+                "value": 666.67,
+                "tolerance": {
+                  "absolute": 2
+                },
+                "feedback": "$2000 \\times 20/60$ treats the sun and the ring as a fixed-axis pair. With the ring held, the carrier moves too, so the ratio is $1 + 60/20 = 4$."
+              },
+              {
+                "id": "reversed",
+                "value": -666.67,
+                "tolerance": {
+                  "absolute": 2
+                },
+                "feedback": "The output only reverses when the carrier is held. Here the ring is held and the carrier is the output: $20 \\times 2000 = 80\\,n_c$."
+              },
+              {
+                "id": "inverted",
+                "value": 8000,
+                "tolerance": {
+                  "absolute": 5
+                },
+                "feedback": "You multiplied by the ratio instead of dividing: with the ring held, the carrier is the slowest member."
+              }
+            ]
+          },
+          {
+            "id": "Q-3",
+            "mode": "multiple",
+            "objectives": [
+              "OBJ-3"
+            ],
+            "bloom": "analyze",
+            "stem": "A machine needs an output that turns **faster** than its input and **in the same direction**. Which configurations of a simple planetary gearset meet this requirement? Select every correct answer.",
+            "options": [
+              {
+                "id": "a",
+                "text": "Sun held, carrier driven, output on the ring",
+                "correct": true,
+                "feedback": "This one meets it: nr = (Zs + Zr)/Zr × nc, a factor above 1 with a positive sign. It is a mild overdrive."
+              },
+              {
+                "id": "b",
+                "text": "Ring held, carrier driven, output on the sun",
+                "correct": true,
+                "feedback": "This one meets it: ns = (Zs + Zr)/Zs × nc, a large factor with a positive sign. It is the speed-up stage of many wind turbines."
+              },
+              {
+                "id": "c",
+                "text": "Ring held, sun driven, output on the carrier",
+                "correct": false,
+                "feedback": "This is the strongest reduction: nc = Zs/(Zs + Zr) × ns, slower than the input."
+              },
+              {
+                "id": "d",
+                "text": "Carrier held, ring driven, output on the sun",
+                "correct": false,
+                "feedback": "The sun does turn faster, but the minus sign in ns = −(Zr/Zs) × nr means it turns the other way."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "spacing": [
+      "D+3: two ratio calculations by email",
+      "D+14: one configuration case",
+      "D+30: check in the first design review"
+    ],
+    "waivers": []
+  },
+  "validation": {
+    "by": "Sample approver (fictional), Kestrel Drives",
+    "date": "2026-10-05",
+    "reference": "elabora-core sample course, CR-001, not a real client approval"
+  }
+}

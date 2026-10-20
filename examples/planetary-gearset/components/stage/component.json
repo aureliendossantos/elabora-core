@@ -1,0 +1,31 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "stage",
+  "title": "Dark stage",
+  "description": "A full-width dark band for a simulation, a 3D scene or a video, with the title and the brief above it and room for a debrief below.",
+  "category": "layout",
+  "version": "1.0.0",
+  "level": "screen",
+  "fullBleed": true,
+  "slots": [
+    {
+      "id": "brief",
+      "label": "Brief",
+      "default": true
+    },
+    {
+      "id": "stage",
+      "label": "Stage",
+      "accepts": [
+        "free-object",
+        "image",
+        "video"
+      ],
+      "maxBlocks": 1
+    },
+    {
+      "id": "after",
+      "label": "After the stage"
+    }
+  ]
+}

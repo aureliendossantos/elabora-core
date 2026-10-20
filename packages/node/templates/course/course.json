@@ -1,0 +1,20 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "__ID__",
+  "title": "__TITLE__",
+  "language": "__LANG__",
+  "version": "0.1.0",
+  "sections": [
+    { "id": "introduction", "title": "__TEXT_INTRODUCTION__", "screens": ["intro"] }
+  ],
+  "variables": [],
+  "theme": { "cascade": "components-over-theme" },
+  "navigation": { "mode": "linear", "lockUntilComplete": true },
+  "player": {
+    "top": { "items": [{ "id": "logo", "enabled": false }, { "id": "title" }, { "id": "progress" }, { "id": "spacer" }, { "id": "resources" }, { "id": "glossary" }, { "id": "credits" }, { "id": "exit" }] },
+    "bottom": { "items": [{ "id": "outline" }, { "id": "controls" }, { "id": "spacer" }, { "id": "previous" }, { "id": "next" }] }
+  },
+  "completion": { "reportAs": "completed-incomplete" },
+  "tracking": { "exitAfterCompletion": "suspend", "recordInteractions": true, "heartbeatSeconds": 60 }
+}

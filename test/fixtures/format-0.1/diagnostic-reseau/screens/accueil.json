@@ -1,0 +1,11 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "accueil",
+  "title": "Le ticket de Marc",
+  "covers": ["ITEM-1"],
+  "blocks": [
+    { "id": "accueil-situation", "type": "text", "props": { "textRef": "TXT-1" } },
+    { "id": "accueil-illustration", "type": "image", "width": "wide", "props": { "asset": "images/ticket-marc.svg", "alt": "Ticket de support n° 4127 : « Impossible d'imprimer les bulletins de paie », priorité haute, ouvert à 9 h 05 par Marc, service comptable." } },
+    { "id": "accueil-objectifs", "type": "callout", "props": { "variant": "info", "title": "Dans ce module", "markdown": "Vous allez apprendre à **localiser l'équipement en panne** en suivant le chemin d'une impression, puis vous entraîner sur une simulation." } }
+  ]
+}

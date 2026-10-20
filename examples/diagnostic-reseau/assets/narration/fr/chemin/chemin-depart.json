@@ -1,0 +1,177 @@
+{
+  "screen": "chemin",
+  "line": "chemin-depart",
+  "language": "fr",
+  "textHash": "sha256:2a878ec54b94c05cef5df96c643e8c15c7af5837d0ed8d0da0d1af76b00fd816",
+  "duration": 6.868,
+  "provider": "pocket-tts",
+  "voice": "claire",
+  "generated": true,
+  "audioHash": "sha256:905b5cd9ac06005f8e9264c233b34d441f14a7c95f358c0727b7f37e0cd3a0b2",
+  "createdAt": "2026-10-08T20:20:57Z",
+  "take": 1,
+  "spokenHash": "sha256:2a878ec54b94c05cef5df96c643e8c15c7af5837d0ed8d0da0d1af76b00fd816",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Claire » d’après un enregistrement du corpus CML-TTS (Frederico S. Oliveira, Edresson Casanova, Arnaldo Candido Junior, Anderson S. Soares, Arlindo R. Galvão Filho ; CEIA, Université fédérale de Goiás), https://openslr.org/146/, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/) ; enregistrement nettoyé par Kyutai, puis transformé en voix de synthèse.",
+  "model": "pocket-tts/french_24l@d29db79",
+  "text": "Regardez le schéma de gauche à droite. La demande part de l'ordinateur de Marc. Le commutateur la fait circuler sur le réseau de l'étage.",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Regardez",
+      "start": 0.16,
+      "end": 0.521,
+      "score": 0.957
+    },
+    {
+      "text": "le",
+      "start": 0.521,
+      "end": 0.615,
+      "score": 0.998
+    },
+    {
+      "text": "schéma",
+      "start": 0.621,
+      "end": 0.895,
+      "score": 0.983
+    },
+    {
+      "text": "de",
+      "start": 0.941,
+      "end": 1.035,
+      "score": 0.999
+    },
+    {
+      "text": "gauche",
+      "start": 1.061,
+      "end": 1.302,
+      "score": 0.976
+    },
+    {
+      "text": "à",
+      "start": 1.302,
+      "end": 1.362,
+      "score": 1
+    },
+    {
+      "text": "droite",
+      "start": 1.362,
+      "end": 1.716,
+      "score": 0.991
+    },
+    {
+      "text": "La",
+      "start": 2.103,
+      "end": 2.197,
+      "score": 0.999
+    },
+    {
+      "text": "demande",
+      "start": 2.223,
+      "end": 2.537,
+      "score": 1
+    },
+    {
+      "text": "part",
+      "start": 2.543,
+      "end": 2.703,
+      "score": 0.995
+    },
+    {
+      "text": "de",
+      "start": 2.703,
+      "end": 2.783,
+      "score": 0.988
+    },
+    {
+      "text": "l'",
+      "start": 2.783,
+      "end": 2.843,
+      "score": 0.831
+    },
+    {
+      "text": "ordinateur",
+      "start": 2.843,
+      "end": 3.304,
+      "score": 0.981
+    },
+    {
+      "text": "de",
+      "start": 3.304,
+      "end": 3.418,
+      "score": 1
+    },
+    {
+      "text": "Marc",
+      "start": 3.424,
+      "end": 3.718,
+      "score": 0.921
+    },
+    {
+      "text": "Le",
+      "start": 4.105,
+      "end": 4.199,
+      "score": 0.999
+    },
+    {
+      "text": "commutateur",
+      "start": 4.205,
+      "end": 4.7,
+      "score": 0.819
+    },
+    {
+      "text": "la",
+      "start": 4.706,
+      "end": 4.806,
+      "score": 0.999
+    },
+    {
+      "text": "fait",
+      "start": 4.806,
+      "end": 4.966,
+      "score": 0.999
+    },
+    {
+      "text": "circuler",
+      "start": 4.966,
+      "end": 5.386,
+      "score": 0.935
+    },
+    {
+      "text": "sur",
+      "start": 5.386,
+      "end": 5.507,
+      "score": 0.999
+    },
+    {
+      "text": "le",
+      "start": 5.507,
+      "end": 5.621,
+      "score": 0.997
+    },
+    {
+      "text": "réseau",
+      "start": 5.627,
+      "end": 5.827,
+      "score": 0.979
+    },
+    {
+      "text": "de",
+      "start": 5.827,
+      "end": 5.907,
+      "score": 0.999
+    },
+    {
+      "text": "l'",
+      "start": 5.907,
+      "end": 5.967,
+      "score": 0.884
+    },
+    {
+      "text": "étage",
+      "start": 5.967,
+      "end": 6.321,
+      "score": 0.952
+    }
+  ]
+}

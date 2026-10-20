@@ -1,0 +1,170 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "chemin",
+  "title": "Le chemin d'une impression",
+  "covers": [
+    "ITEM-2"
+  ],
+  "blocks": [
+    {
+      "id": "chemin-intro",
+      "type": "text",
+      "props": {
+        "markdown": "Quand Marc clique sur **Imprimer**, sa demande part en [paquets](glossary:paquet) et traverse cinq équipements avant d'atteindre l'imprimante. Si un seul est en panne, rien ne sort."
+      }
+    },
+    {
+      "id": "chemin-schema",
+      "type": "network-path",
+      "width": "wide",
+      "props": {
+        "caption": "Le chemin suivi par une demande d'impression.",
+        "steps": [
+          {
+            "label": "Poste",
+            "detail": "de Marc"
+          },
+          {
+            "label": "Commutateur"
+          },
+          {
+            "label": "Routeur"
+          },
+          {
+            "label": "Pare-feu",
+            "highlight": true
+          },
+          {
+            "label": "Serveur",
+            "detail": "d'impression"
+          }
+        ]
+      },
+      "timing": {
+        "in": {
+          "at": {
+            "line": "chemin-depart",
+            "word": "schéma"
+          },
+          "effect": "wipe",
+          "duration": 0.8
+        }
+      }
+    },
+    {
+      "id": "chemin-reseaux-pile",
+      "type": "stack",
+      "props": {
+        "transition": "crossfade"
+      },
+      "blocks": [
+        {
+          "id": "chemin-etage",
+          "type": "callout",
+          "props": {
+            "variant": "info",
+            "title": "Réseau de l'étage",
+            "markdown": "Le **poste** de Marc et le **commutateur** de l'étage."
+          },
+          "timing": {
+            "in": {
+              "at": {
+                "line": "chemin-depart",
+                "word": "ordinateur"
+              },
+              "effect": "fade"
+            }
+          }
+        },
+        {
+          "id": "chemin-serveurs",
+          "type": "callout",
+          "props": {
+            "variant": "info",
+            "title": "Réseau des serveurs",
+            "markdown": "Le **routeur**, le **pare-feu** et le **serveur d'impression**."
+          },
+          "timing": {
+            "in": {
+              "at": {
+                "line": "chemin-reseaux",
+                "word": "routeur"
+              },
+              "effect": "fade"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "chemin-regle",
+      "type": "callout",
+      "props": {
+        "variant": "important",
+        "title": "La règle SUP-NET-04",
+        "textRef": "TXT-2"
+      },
+      "timing": {
+        "in": {
+          "at": {
+            "line": "chemin-diagnostic",
+            "word": "contrôlez"
+          },
+          "effect": "rise"
+        }
+      }
+    },
+    {
+      "id": "chemin-roles",
+      "type": "accordion",
+      "props": {
+        "items": [
+          {
+            "id": "poste",
+            "title": "Le poste",
+            "markdown": "L'ordinateur de Marc. Il doit être connecté au réseau et avoir une [adresse IP](glossary:adresse-ip) valide."
+          },
+          {
+            "id": "commutateur",
+            "title": "Le commutateur",
+            "markdown": "Il relie les postes d'un même étage. Un voyant éteint sur le port de Marc signale un câble débranché."
+          },
+          {
+            "id": "routeur",
+            "title": "Le routeur",
+            "markdown": "Il oriente les [paquets](glossary:paquet) entre le réseau des bureaux et celui des serveurs."
+          },
+          {
+            "id": "pare-feu",
+            "title": "Le pare-feu",
+            "markdown": "Il filtre les flux entre réseaux. Une règle mal configurée peut bloquer l'impression."
+          },
+          {
+            "id": "serveur",
+            "title": "Le serveur d'impression",
+            "markdown": "Il reçoit les demandes et les transmet à l'imprimante. Une [file d'attente](glossary:file-attente) bloquée arrête toutes les impressions."
+          }
+        ]
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "chemin-depart",
+        "speaker": "guide",
+        "text": "Regardez le schéma de gauche à droite. La demande part de l'ordinateur de Marc. Le commutateur la fait circuler sur le réseau de l'étage."
+      },
+      {
+        "id": "chemin-reseaux",
+        "speaker": "guide",
+        "text": "Le routeur dirige ensuite les paquets vers le réseau des serveurs. Le pare-feu décide quels flux peuvent passer. Le serveur d'impression reçoit enfin la demande."
+      },
+      {
+        "id": "chemin-diagnostic",
+        "speaker": "guide",
+        "text": "Pour trouver où la demande s'arrête, contrôlez chaque maillon en progressant depuis le poste. Même si vous avez une intuition, vérifiez les équipements qui le précèdent."
+      }
+    ]
+  }
+}

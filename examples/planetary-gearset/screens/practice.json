@@ -1,0 +1,102 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "practice",
+  "title": "Worked example, then your turn",
+  "covers": [
+    "ITEM-3"
+  ],
+  "layout": "figure-split",
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "practice-equation",
+      "type": "callout",
+      "slot": "figure",
+      "style": "rule",
+      "props": {
+        "variant": "important",
+        "title": "Keep at hand",
+        "markdown": "$$Z_s\\,n_s + Z_r\\,n_r = (Z_s + Z_r)\\,n_c$$\n\nSun: $Z_s = 30$ teeth. Ring: $Z_r = 78$ teeth. A speed is negative when the member turns the other way."
+      }
+    },
+    {
+      "id": "practice-figure",
+      "type": "image",
+      "slot": "figure",
+      "style": "bare",
+      "props": {
+        "asset": "images/anatomy-planetary.svg",
+        "alt": "The same gearset: 1 the sun, 2 a planet, 3 the carrier, 4 the ring."
+      }
+    },
+    {
+      "id": "anatomy-example-title",
+      "type": "heading",
+      "props": {
+        "text": "Worked example: ring held",
+        "level": 2
+      }
+    },
+    {
+      "id": "anatomy-example",
+      "type": "text",
+      "props": {
+        "markdown": "The ring is held ($n_r = 0$) and a motor drives the sun at 1,000 rpm.\n\n1. Write the equation: $30 \\times 1000 + 78 \\times 0 = 108\\,n_c$\n2. Solve: $n_c = 30\\,000 / 108 \\approx 278$ rpm\n3. Read the sign: positive, so the carrier turns **in the same direction**, 3.6 times slower than the sun."
+      }
+    },
+    {
+      "id": "anatomy-your-turn",
+      "type": "numeric",
+      "step": 2,
+      "props": {
+        "stem": "**Your turn.** Same gearset, but now the **sun** is held and the motor drives the **ring** at 1,000 rpm. At what speed does the carrier turn? Give a negative value if it turns the other way.",
+        "answer": 722.2,
+        "tolerance": {
+          "absolute": 1.5
+        },
+        "unit": "rpm",
+        "objective": "OBJ-2",
+        "scored": false,
+        "attempts": 2,
+        "feedback": {
+          "correct": "Right: $30 \\times 0 + 78 \\times 1000 = 108\\,n_c$, so $n_c = 78\\,000 / 108 \\approx 722$ rpm, positive. Holding the sun gives a mild reduction (1.38 : 1).",
+          "incorrect": "Put $n_s = 0$ in the Willis equation: $78 \\times 1000 = 108\\,n_c$, then divide by 108."
+        },
+        "misconceptions": [
+          {
+            "id": "inverted",
+            "value": 1384.6,
+            "tolerance": {
+              "absolute": 2
+            },
+            "feedback": "That is $108 / 78 \\times 1000$: the ratio is upside down. With the sun held, the carrier turns slower than the ring."
+          },
+          {
+            "id": "carrier-held",
+            "value": -384.6,
+            "tolerance": {
+              "absolute": 2
+            },
+            "feedback": "$-30/78 \\times 1000$ is what the ring would do if the **carrier** were held. Here the carrier is the output."
+          },
+          {
+            "id": "carrier-held-sign",
+            "value": 384.6,
+            "tolerance": {
+              "absolute": 2
+            },
+            "feedback": "$30/78 \\times 1000$ mixes up the members: the sun is held, so it does not appear in the product. Use $78 \\times 1000 = 108\\,n_c$."
+          },
+          {
+            "id": "ring-held",
+            "value": 277.8,
+            "tolerance": {
+              "absolute": 2
+            },
+            "feedback": "278 rpm is the worked example, where the **ring** is held. Here the sun is held and the ring is driven."
+          }
+        ]
+      }
+    }
+  ]
+}

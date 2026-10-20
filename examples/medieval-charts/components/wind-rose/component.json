@@ -1,0 +1,35 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "wind-rose",
+  "title": "Wind rose",
+  "description": "A wind rose with its winds as tabs around the dial: selecting a wind turns the rose to it and shows its panel (direction, name, where the name comes from). Winds already read are marked. Arrow keys move round the rose.",
+  "instructions": "Eight winds, in order clockwise from the north. Keep each panel to two or three sentences.",
+  "category": "interaction",
+  "version": "1.0.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["rose", "alt", "winds"],
+    "properties": {
+      "rose": { "type": "string", "x-kind": "asset", "description": "The rose, drawn without words." },
+      "alt": { "type": "string", "maxLength": 250, "x-translatable": true },
+      "winds": {
+        "type": "array", "minItems": 8, "maxItems": 8,
+        "items": {
+          "type": "object", "additionalProperties": false, "required": ["id", "name", "direction", "body"],
+          "properties": {
+            "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,23}$" },
+            "name": { "type": "string", "maxLength": 24, "x-translatable": true },
+            "direction": { "type": "string", "maxLength": 32, "x-translatable": true },
+            "body": { "type": "string", "x-kind": "markdown", "x-translatable": true }
+          }
+        }
+      }
+    }
+  },
+  "fallback": [
+    { "type": "image", "props": { "asset": "{{rose}}", "alt": "{{alt}}" } },
+    { "type": "accordion", "props": { "items": { "$each": "winds", "as": { "id": "{{id}}", "title": "{{name}}: {{direction}}", "markdown": "{{body}}" } } } }
+  ]
+}

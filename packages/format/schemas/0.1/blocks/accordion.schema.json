@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1/blocks/accordion.schema.json",
+  "title": "accordion block props",
+  "description": "Expandable panels for optional detail. Revealing content is not practice (guardrail B2).",
+  "x-category": "structure",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "markdown"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]{1,24}$" },
+          "title": { "type": "string", "minLength": 1, "maxLength": 200, "x-translatable": true },
+          "markdown": { "$ref": "../defs.schema.json#/$defs/markdown", "x-translatable": true }
+        }
+      }
+    },
+    "allowMultiple": { "type": "boolean", "default": true, "description": "Allow several panels open at once." }
+  }
+}

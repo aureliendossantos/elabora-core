@@ -1,0 +1,83 @@
+{
+  "object": "chart-table",
+  "version": "2.2.0",
+  "elabora": "0.1.0",
+  "at": "2026-10-19T23:49:48.672Z",
+  "ok": true,
+  "browser": {
+    "engine": "chromium",
+    "version": "154.0.8037.99"
+  },
+  "gates": {
+    "smoke": "passed",
+    "behaviour": "passed",
+    "budget": "passed",
+    "visual": "passed",
+    "accessibility": "passed"
+  },
+  "perf": {
+    "drawCalls": 14,
+    "triangles": 5234,
+    "textures": 5,
+    "geometries": 14,
+    "maxTextureSize": 8192,
+    "webglContexts": 1,
+    "bootMs": 1043,
+    "bootSamples": [
+      3203,
+      1388,
+      999,
+      1028,
+      1043,
+      1087,
+      1037,
+      1038,
+      1252,
+      1037,
+      1139
+    ]
+  },
+  "tests": [
+    {
+      "name": "The chart appears as the page scrolls to it",
+      "ok": true
+    },
+    {
+      "name": "The first voyage is guided step by step",
+      "ok": true
+    },
+    {
+      "name": "Voyage 1 right at the first attempt",
+      "ok": true
+    },
+    {
+      "name": "A wrong wind and short dividers say what to change",
+      "ok": true
+    },
+    {
+      "name": "Two voyages complete the table, the third is optional",
+      "ok": true
+    },
+    {
+      "name": "Resumes at the voyage reached",
+      "ok": true
+    },
+    {
+      "name": "Narrow: the log goes under the chart",
+      "ok": true
+    },
+    {
+      "name": "Reduced motion: drawn at once",
+      "ok": true
+    },
+    {
+      "name": "A block lists its own voyages and recolours the brass",
+      "ok": true
+    },
+    {
+      "name": "Unguided, all voyages required",
+      "ok": true
+    }
+  ],
+  "fingerprint": "sha256:78af3402819db4121ea0b28985fa9443367b25126798f28b629718647ed25c46"
+}

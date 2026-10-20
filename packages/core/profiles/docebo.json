@@ -1,0 +1,89 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/lms-profile.schema.json",
+  "id": "docebo",
+  "name": "Docebo",
+  "documentedAt": "2026-09-03",
+  "sources": [
+    {
+      "title": "Uploading and managing SCORM as training material",
+      "url": "https://help.docebo.com/hc/en-us/articles/360020128479-Uploading-and-managing-SCORM-as-training-material"
+    }
+  ],
+  "standards": {
+    "scorm12": true,
+    "scorm2004": [
+      "3rd"
+    ],
+    "sequencing": false,
+    "multiSco": null,
+    "cmi5": false,
+    "xapi": true,
+    "lti13": true,
+    "aicc": true
+  },
+  "launch": {
+    "default": "nested-iframe",
+    "modes": [
+      "nested-iframe",
+      "iframe",
+      "popup"
+    ],
+    "apiDiscovery": [
+      "parents",
+      "opener"
+    ],
+    "iframeAllow": "clipboard-read; clipboard-write"
+  },
+  "datamodel": {
+    "suspendDataMax": {
+      "scorm12": 4096,
+      "scorm2004": 64000
+    },
+    "suspendDataEnforcement": null,
+    "lessonLocationMax": 255,
+    "masteryOverridesStatus": null
+  },
+  "exit": {
+    "needsExplicitFinish": null,
+    "completionOnlyOnClose": null
+  },
+  "session": {},
+  "browser": {
+    "unloadHeaderSent": null,
+    "thirdPartyCookiesRequired": true,
+    "knownBugs": [
+      "Without third-party cookies the course stays \"not started\"."
+    ]
+  },
+  "packaging": {
+    "maxZipMB": 1024,
+    "maxFiles": null,
+    "asciiFilenames": true,
+    "schemaversionRequired": null,
+    "oneStandardPerZip": null,
+    "forbiddenExtensions": [
+      ".php",
+      ".asp",
+      ".aspx",
+      ".jsp",
+      ".exe"
+    ]
+  },
+  "update": {
+    "family": "in-place-if-same-structure",
+    "notes": "Same SCORM version required; a structural change loses progress; 30–60 min propagation."
+  },
+  "harness": {
+    "autocommitSeconds": null,
+    "syncCommits": true
+  },
+  "toMeasure": [
+    "/datamodel/suspendDataEnforcement",
+    "/packaging/forbiddenExtensions"
+  ],
+  "notes": [
+    "Theater and inline modes add one iframe level; every ancestor iframe needs allow=\"clipboard-read; clipboard-write\" for clipboard access.",
+    "Single completion update.",
+    "No file count limit: Docebo \"strongly suggests\" at most 15,000 files, it does not refuse more."
+  ]
+}

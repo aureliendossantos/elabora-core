@@ -1,0 +1,10 @@
+<div class="t-accordion">
+  <details data-each="items" data-if="allowMultiple">
+    <summary>{{title}}</summary>
+    <div class="t-text">{{markdown}}</div>
+  </details>
+  <details data-each="items" data-if="!allowMultiple" name="t-acc-{{@id}}">
+    <summary>{{title}}</summary>
+    <div class="t-text">{{markdown}}</div>
+  </details>
+</div>

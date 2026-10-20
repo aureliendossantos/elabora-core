@@ -1,0 +1,28 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "figure-split",
+  "title": "Figure and explanation",
+  "description": "A figure with its legend on one side (it stays in view while the learner scrolls), the explanation and the activities on the other. Stacks on narrow screens, figure first.",
+  "category": "layout",
+  "version": "1.0.0",
+  "level": "screen",
+  "slots": [
+    {
+      "id": "figure",
+      "label": "Figure and legend",
+      "accepts": [
+        "image",
+        "text",
+        "math",
+        "callout",
+        "free-object"
+      ],
+      "maxBlocks": 4
+    },
+    {
+      "id": "body",
+      "label": "Explanation and activities",
+      "default": true
+    }
+  ]
+}

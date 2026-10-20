@@ -1,0 +1,165 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "workshop",
+  "title": "Scrolling workshop",
+  "description": "A figure that builds up while the learner reads: the figure stays in view (beside the text on wide windows, at the top on narrow ones) and each stage of the text, as it scrolls past, adds its layer and its labels (harbour names, a bearing). Without scroll-driven animations, or with reduced motion, the figure shows complete beside the stages.",
+  "instructions": "Two to six stages. Draw every layer in the frame of the base image; the stage's text must explain what its layer adds. Labels are words over the figure, placed in % of it and tied to the stage that inks them: keep them few and short.",
+  "category": "content",
+  "version": "1.2.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "base",
+      "alt",
+      "stages"
+    ],
+    "properties": {
+      "base": {
+        "type": "string",
+        "x-kind": "asset",
+        "description": "What the figure shows before the first stage."
+      },
+      "alt": {
+        "type": "string",
+        "maxLength": 250,
+        "x-translatable": true,
+        "description": "Text alternative of the finished figure."
+      },
+      "stages": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 6,
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "title",
+            "body",
+            "layer"
+          ],
+          "properties": {
+            "title": {
+              "type": "string",
+              "maxLength": 60,
+              "x-translatable": true
+            },
+            "body": {
+              "type": "string",
+              "x-kind": "markdown",
+              "x-translatable": true
+            },
+            "layer": {
+              "type": "string",
+              "x-kind": "asset",
+              "description": "What this stage adds to the figure."
+            }
+          }
+        }
+      },
+      "labels": {
+        "type": "array",
+        "maxItems": 12,
+        "default": [],
+        "description": "Words over the figure, each appearing with its stage.",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "text",
+            "x",
+            "y",
+            "stage"
+          ],
+          "properties": {
+            "text": {
+              "type": "string",
+              "maxLength": 40,
+              "x-translatable": true
+            },
+            "x": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Horizontal position, in % of the figure."
+            },
+            "y": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "Vertical position, in % of the figure."
+            },
+            "stage": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 6,
+              "description": "The stage (from 1) whose layer the label goes with."
+            },
+            "angle": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180,
+              "default": 0,
+              "description": "Rotation in degrees, clockwise."
+            },
+            "tone": {
+              "enum": [
+                "name",
+                "name-rubric",
+                "note"
+              ],
+              "default": "note",
+              "x-group": "design",
+              "description": "name and name-rubric: a harbour name written from its point (x, y), in black or red; note: a short italic note centred on its point."
+            }
+          }
+        }
+      }
+    }
+  },
+  "fallback": [
+    {
+      "type": "image",
+      "props": {
+        "asset": "{{base}}",
+        "alt": "{{alt}}"
+      }
+    },
+    {
+      "$each": "stages",
+      "type": "text",
+      "props": {
+        "markdown": "**{{title}}**\n\n{{body}}"
+      }
+    },
+    {
+      "$if": "labels",
+      "type": "text",
+      "props": {
+        "markdown": "{{#labels}}- {{text}}\n{{/labels}}"
+      }
+    }
+  ],
+  "examples": [
+    {
+      "title": "Two stages",
+      "props": {
+        "base": "images/ws-skin.svg",
+        "alt": "A chart in the making",
+        "stages": [
+          {
+            "title": "Prick the circle",
+            "body": "Sixteen points round a hidden circle.",
+            "layer": "images/ws-circle.svg"
+          },
+          {
+            "title": "Rule the lines",
+            "body": "Thirty-two directions from each point.",
+            "layer": "images/ws-rhumbs.svg"
+          }
+        ]
+      }
+    }
+  ]
+}

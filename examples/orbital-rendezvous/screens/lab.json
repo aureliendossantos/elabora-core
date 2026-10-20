@@ -1,0 +1,88 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "lab",
+  "title": "Phasing lab",
+  "covers": [
+    "ITEM-5"
+  ],
+  "layout": "mission",
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "lab-brief",
+      "type": "text",
+      "slot": "brief",
+      "props": {
+        "markdown": "Your servicer and the client fly the same circular orbit, 500 km up. For each requirement, **predict** the first burn and the number of phasing orbits with $\\Delta x \\approx 3\\,T\\,\\Delta v$, then execute: the lab flies the manoeuvre and burns back at the same point. Aim to meet each requirement at the first try."
+      }
+    },
+    {
+      "id": "lab-sim",
+      "type": "free-object",
+      "slot": "stage",
+      "props": {
+        "object": "phasing-lab",
+        "title": "3D phasing lab: your servicer and the client satellite in orbit around the Earth",
+        "aspectRatio": "fill",
+        "narrowAspectRatio": "auto",
+        "minHeight": 460,
+        "scored": true,
+        "weight": 2,
+        "props": {
+          "instruction": "Choose the first burn and the number of phasing orbits, then execute. The lab burns back at the same point.",
+          "requirements": [
+            {
+              "gap": 51,
+              "orbits": 1,
+              "budget": 8
+            },
+            {
+              "gap": 51,
+              "orbits": 3,
+              "budget": 2.5
+            },
+            {
+              "gap": -34,
+              "orbits": 2,
+              "budget": 2.5
+            }
+          ]
+        },
+        "textAlternative": "**Text version of the lab.** Your servicer and the client satellite fly the same circular orbit, 500 km up (period 5,676 s). You choose a first burn between 5 m/s retrograde and 5 m/s prograde, in steps of 0.5 m/s, and 1, 2 or 3 phasing orbits. The servicer burns, flies the phasing orbits, then burns the same amount the other way at the same point. Both burns count in the propellant used. The rendezvous is met when the client is within 2 km at the end.\n\nFor each requirement, write down your burn and your number of orbits, then check with $\\Delta x \\approx 3\\,T\\,\\Delta v$ per orbit (about 17 km per orbit for each m/s).\n\n1. The client is 51 km ahead. Meet it within 1 orbit, with at most 8 m/s of propellant.\n2. The client is 51 km ahead. Meet it within 3 orbits, with at most 2.5 m/s of propellant.\n3. The client is 34 km behind you. Let it catch up within 2 orbits, with at most 2.5 m/s of propellant."
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "lab-done",
+      "description": "Open the debrief once the three requirements are met.",
+      "on": {
+        "type": "object.event",
+        "target": "lab-sim",
+        "name": "completed"
+      },
+      "do": [
+        {
+          "type": "show-layer",
+          "layer": "lab-debrief"
+        }
+      ]
+    }
+  ],
+  "layers": [
+    {
+      "id": "lab-debrief",
+      "title": "Three rendezvous, one rule",
+      "presentation": "panel",
+      "blocks": [
+        {
+          "id": "lab-summary",
+          "type": "text",
+          "props": {
+            "markdown": "| Requirement | First burn | Orbits | Propellant |\n|---|---|---|---|\n| 51 km ahead, 1 orbit | 3 m/s retrograde | 1 | 6 m/s |\n| 51 km ahead, 2.5 m/s | 1 m/s retrograde | 3 | 2 m/s |\n| 34 km behind, 2 orbits | 1 m/s prograde | 2 | 2 m/s |\n\nThe same gap costs three times less propellant over three orbits than over one: **time buys propellant**. That is why real rendezvous take hours, sometimes days."
+          }
+        }
+      ]
+    }
+  ]
+}

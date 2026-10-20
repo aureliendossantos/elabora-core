@@ -1,0 +1,20 @@
+[git]
+default_branch = "main"
+# scripts/release.ts tags each release once, v<version> (short_tags: the root package). The other
+# packages are private and never published, so their tag format is never used.
+tag_format = "{package_name}-v{version}"
+short_tags = "elabora"
+
+[github]
+repository = "aureliendossantos/elabora-core"
+
+[changesets]
+tags = ["Added", "Changed", "Fixed", "Security"]
+
+[changelog]
+show_commit_hash = true
+show_acknowledgments = false
+
+[packages]
+# One package release train. The course format/schema version remains independent.
+fixed = [["npm/elabora", "npm/@elabora/format", "npm/@elabora/player", "npm/@elabora/fonts", "npm/@elabora/core", "npm/@elabora/node", "npm/@elabora/engine", "npm/@elabora/cli"]]

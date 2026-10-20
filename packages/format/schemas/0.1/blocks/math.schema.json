@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1/blocks/math.schema.json",
+  "title": "math block props",
+  "description": "A displayed equation in LaTeX, rendered as MathML at build time: native to browsers, read by screen readers, no script at runtime. For maths inside sentences, write $…$ in any Markdown text.",
+  "x-category": "content",
+  "x-ai-instructions": "LaTeX maths (temml, close to KaTeX). Keep words out of the equation: put them in caption or in text blocks so they can be translated. Use \\text{} only for short unit labels.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tex"
+  ],
+  "properties": {
+    "tex": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000,
+      "description": "LaTeX source, without $ delimiters.",
+      "x-kind": "tex"
+    },
+    "caption": {
+      "$ref": "../defs.schema.json#/$defs/markdown",
+      "x-translatable": true,
+      "description": "What the equation means, shown under it."
+    },
+    "label": {
+      "type": "string",
+      "maxLength": 20,
+      "description": "Equation number shown at the right, for example (1)."
+    }
+  }
+}

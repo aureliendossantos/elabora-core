@@ -1,0 +1,456 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "Requirement 1 met at the first run",
+      "steps": [
+        {
+          "action": "step",
+          "frames": 20
+        },
+        {
+          "action": "snapshot",
+          "name": "initial"
+        },
+        {
+          "action": "click",
+          "object": "ring"
+        },
+        {
+          "action": "key",
+          "key": "h"
+        },
+        {
+          "action": "click",
+          "object": "sun"
+        },
+        {
+          "action": "key",
+          "key": "m"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "held": "ring",
+            "input": "sun",
+            "ran": false
+          }
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "expect-event",
+          "name": "bench_run",
+          "payload": {
+            "requirement": 1,
+            "config": "ring-sun",
+            "correct": true
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "step": 1,
+            "runs": [
+              1,
+              0,
+              0
+            ],
+            "ran": true
+          }
+        },
+        {
+          "action": "step",
+          "frames": 90
+        },
+        {
+          "action": "snapshot",
+          "name": "reducer-running"
+        }
+      ]
+    },
+    {
+      "name": "Wrong configuration: feedback and no progress",
+      "steps": [
+        {
+          "action": "click",
+          "object": "sun"
+        },
+        {
+          "action": "key",
+          "key": "h"
+        },
+        {
+          "action": "click",
+          "object": "ring"
+        },
+        {
+          "action": "key",
+          "key": "m"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "expect-event",
+          "name": "bench_run",
+          "payload": {
+            "requirement": 1,
+            "config": "sun-ring",
+            "correct": false
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "step": 0,
+            "runs": [
+              1,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "action": "click",
+          "object": "carrier"
+        },
+        {
+          "action": "key",
+          "key": "m"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "held": "sun",
+            "input": "carrier",
+            "ran": false
+          }
+        },
+        {
+          "action": "expect-no-event"
+        }
+      ]
+    },
+    {
+      "name": "All three requirements: completed with full score",
+      "steps": [
+        {
+          "action": "click",
+          "object": "ring"
+        },
+        {
+          "action": "key",
+          "key": "h"
+        },
+        {
+          "action": "click",
+          "object": "sun"
+        },
+        {
+          "action": "key",
+          "key": "m"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "click",
+          "object": "carrier"
+        },
+        {
+          "action": "key",
+          "key": "m"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "expect-event",
+          "name": "bench_run",
+          "payload": {
+            "requirement": 2,
+            "config": "ring-carrier",
+            "correct": true
+          }
+        },
+        {
+          "action": "click",
+          "object": "carrier"
+        },
+        {
+          "action": "key",
+          "key": "h"
+        },
+        {
+          "action": "click",
+          "object": "sun"
+        },
+        {
+          "action": "key",
+          "key": "m"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "expect-event",
+          "name": "completed",
+          "payload": {
+            "score": 1
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "step": 3,
+            "runs": [
+              1,
+              1,
+              1
+            ]
+          }
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "snapshot",
+          "name": "reverse-running"
+        },
+        {
+          "action": "click",
+          "object": "ring"
+        },
+        {
+          "action": "key",
+          "key": "m"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "expect-no-event"
+        }
+      ]
+    },
+    {
+      "name": "Settings apply without remounting",
+      "props": {
+        "showRatio": false
+      },
+      "steps": [
+        {
+          "action": "set-props",
+          "props": {
+            "gearset": "24-72",
+            "inputRpm": 1450,
+            "requirement1": "sun-carrier"
+          }
+        },
+        {
+          "action": "click",
+          "object": "carrier"
+        },
+        {
+          "action": "key",
+          "key": "m"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "held": "sun",
+            "input": "carrier"
+          }
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "expect-event",
+          "name": "bench_run",
+          "payload": {
+            "requirement": 1,
+            "config": "sun-carrier",
+            "correct": true
+          }
+        },
+        {
+          "action": "step",
+          "frames": 30
+        },
+        {
+          "action": "snapshot",
+          "name": "other-gearset"
+        }
+      ]
+    },
+    {
+      "name": "Resume: saved progress is restored",
+      "steps": [
+        {
+          "action": "set-state",
+          "state": {
+            "held": "ring",
+            "input": "carrier",
+            "step": 2,
+            "runs": [
+              1,
+              2,
+              0
+            ],
+            "ran": false
+          }
+        },
+        {
+          "action": "click",
+          "object": "carrier"
+        },
+        {
+          "action": "key",
+          "key": "h"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "held": "carrier",
+            "input": "ring"
+          }
+        },
+        {
+          "action": "click",
+          "object": "sun"
+        },
+        {
+          "action": "key",
+          "key": "m"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "expect-event",
+          "name": "completed",
+          "payload": {
+            "score": 0.92
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "step": 3,
+            "runs": [
+              1,
+              2,
+              1
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reduced motion: the bench measures without animating",
+      "reducedMotion": true,
+      "steps": [
+        {
+          "action": "click",
+          "object": "ring"
+        },
+        {
+          "action": "key",
+          "key": "h"
+        },
+        {
+          "action": "click",
+          "object": "sun"
+        },
+        {
+          "action": "key",
+          "key": "m"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "expect-event",
+          "name": "bench_run",
+          "payload": {
+            "correct": true
+          }
+        },
+        {
+          "action": "step",
+          "frames": 120
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "ran": true,
+            "step": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phone width: panel under the view",
+      "size": [
+        375,
+        860
+      ],
+      "steps": [
+        {
+          "action": "step",
+          "frames": 20
+        },
+        {
+          "action": "click",
+          "object": "ring"
+        },
+        {
+          "action": "key",
+          "key": "h"
+        },
+        {
+          "action": "click",
+          "object": "sun"
+        },
+        {
+          "action": "key",
+          "key": "m"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "expect-event",
+          "name": "bench_run",
+          "payload": {
+            "requirement": 1,
+            "config": "ring-sun",
+            "correct": true
+          }
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "snapshot",
+          "name": "narrow"
+        }
+      ]
+    }
+  ]
+}

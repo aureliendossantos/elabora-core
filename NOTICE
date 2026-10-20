@@ -1,0 +1,22 @@
+Elabora core
+Copyright 2026 the Elabora authors.
+
+This product includes fonts under the SIL Open Font License 1.1 (packages/fonts/files/<id>/OFL.txt,
+with the copyright of each font), taken from the Fontsource npm packages: see packages/fonts/README.md.
+
+This product includes three.js r186 (https://threejs.org), MIT License,
+Copyright © 2010-2026 three.js authors (vendor/three-LICENSE.txt).
+
+The sample course examples/orbital-rendezvous includes the 3D simplex noise of webgl-noise
+(https://github.com/ashima/webgl-noise), MIT License, Copyright (C) 2011 by Ashima Arts (Simplex noise),
+Copyright (C) 2011-2016 by Stefan Gustavson (Classic noise and others): the notice and licence are in
+objects/phasing-lab/noise.js and at the end of the object's built object.js.
+
+The LMS emulator uses scorm-again (MIT) and playwright-core (Apache-2.0) at test time;
+accessibility checks use axe-core (MPL-2.0) at test time. They are not shipped in course packages.
+
+The sample projects in examples/ are released under CC0 1.0 for their original content
+(texts, plans, figures, generators, components, objects): see examples/<id>/LICENSE.md, which lists
+what is not CC0. The narration of examples/diagnostic-reseau was made with Pocket TTS by Kyutai
+(model weights CC-BY 4.0, ONNX conversion by KevinAHM); the credit in each line's sidecar
+(assets/narration/**/*.json) travels with the audio.

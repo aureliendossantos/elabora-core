@@ -1,0 +1,38 @@
+/* Screen layout "split" — cascade layer elabora.components. */
+.t-layout--split .or-split {
+  display: grid; gap: 1rem 3rem; align-items: center;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  grid-template-areas: "title title" "figure body";
+}
+.t-layout--split .or-split--activity {
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); grid-template-rows: auto 1fr; align-items: start;
+  grid-template-areas: "title body" "figure body";
+}
+.t-layout--split .or-split-title { grid-area: title; }
+/* The title has no margin of its own here (the grid gap spaces it): set in theme/theme.css, which
+   styles every screen title and wins over component stylesheets. */
+.t-layout--split .or-split-figure { grid-area: figure; }
+.t-layout--split .or-split-body { grid-area: body; }
+/* A figure built in steps: every block in the same square frame, the first one (an image with its
+   caption) setting the height. */
+.t-layout--split .or-split-figure--stack { --frame: 29rem; display: grid; justify-items: center; align-items: start; }
+.t-layout--split .or-split-figure--stack > .t-block { grid-area: 1 / 1; width: min(100%, var(--frame)); margin: 0; }
+.t-layout--split .or-split-figure--stack > .t-block > .t-figure { margin: 0; }
+/* Its explanation follows: the text of a step fades in once the figure has moved, the rest after. */
+.t-layout--split .or-split-figure--stack ~ .or-split-body > .t-block[data-t-revealed] { transition-delay: 1.4s; }
+.t-layout--split .or-split-figure--stack ~ .or-split-body > .t-block:not(.t-block--stat-card)[data-t-revealed] { transition-delay: 2.4s; }
+.t-layout--split .or-split-figure .t-figure img { width: 100%; max-height: 29rem; object-fit: contain; }
+.t-layout--split .or-split--activity .or-split-figure .t-figure img { max-height: 15rem; }
+/* Stat cards in the explanation column sit side by side. */
+.t-layout--split .or-split-body:has(> .t-block--stat-card) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.t-layout--split .or-split-body > .t-block:not(.t-block--stat-card) { grid-column: 1 / -1; }
+@container (max-width: 820px) {
+  .t-layout--split .or-split, .t-layout--split .or-split--activity { grid-template-columns: 1fr; grid-template-areas: "title" "figure" "body"; }
+  .t-layout--split .or-split-body:has(> .t-block--stat-card) { grid-template-columns: 1fr; }
+}
+/* Short windows (1280×720): smaller figures leave room for the text next to them. */
+@media (max-height: 760px) {
+  .t-layout--split .or-split-figure .t-figure img { max-height: 24rem; }
+  .t-layout--split .or-split-figure--stack { --frame: 24rem; }
+  .t-layout--split .or-split--activity .or-split-figure .t-figure img { max-height: 11.5rem; }
+}
