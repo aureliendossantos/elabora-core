@@ -142,6 +142,31 @@ test('scroll pages: fit gives their length and measures contrast down the whole 
   assert.ok(!diagnostics.some((d) => /^(W|I)_SLIDE_/.test(d.code)), JSON.stringify(diagnostics));
 });
 
+test('fit keeps each screen\'s measure: unchanged screens are reused, an edited one is measured again, and fresh measures all', { timeout: 240000 }, async () => {
+  const dir = copyExample();
+  const first = await measureFit(dir);
+  assert.ok(first.ok, JSON.stringify(first.diagnostics));
+  const screens = first.sizes[0].screens;
+  assert.ok(screens.length > 2 && screens.every((screen) => !screen.reused));
+  const again = await measureFit(dir);
+  assert.ok(again.ok);
+  assert.ok(again.sizes[0].screens.every((screen) => screen.reused), 'nothing changed: every measure is reused');
+  assert.deepEqual(again.sizes[0].screens.map(({ reused: _reused, ...fit }) => fit), screens, 'the measures kept are those made');
+  // One screen edited: it alone is measured again.
+  const accueil = readJSON(dir, 'screens/accueil.json');
+  accueil.blocks.find((block: { type: string }) => block.type === 'callout').props.markdown += ' Encore une phrase.';
+  writeJSON(dir, 'screens/accueil.json', accueil);
+  const edited = await measureFit(dir);
+  assert.ok(edited.ok);
+  assert.deepEqual(edited.sizes[0].screens.filter((screen) => !screen.reused).map((screen) => screen.screen), ['accueil']);
+  // Only the screens asked for; fresh measures them even unchanged.
+  const one = await measureFit(dir, { screens: ['chemin'], fresh: true });
+  assert.ok(one.ok);
+  assert.deepEqual(one.sizes[0].screens.map((screen) => [screen.screen, !!screen.reused]), [['chemin', false]]);
+  const unknown = await measureFit(dir, { screens: ['nowhere'] });
+  assert.ok(!unknown.ok && /Unknown screen "nowhere"\. Screens: accueil, /.test(unknown.error ?? ''), JSON.stringify(unknown));
+});
+
 test('scroll pages: a free object hears where its frame is as the learner scrolls (host.onView)', { timeout: 180000 }, async () => {
   const dir = copyExample();
   addViewProbe(dir);

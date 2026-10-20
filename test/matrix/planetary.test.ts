@@ -30,7 +30,7 @@ test('the planetary slides fit at 1600×900, and steps reveal with Continue', { 
   const { startServer } = await import('@elabora/node/emulator/server');
   const { launchBrowser } = await import('@elabora/node/emulator/browser');
   const src = path.resolve(import.meta.dirname, '../../examples/planetary-gearset');
-  const fit = await measureFit(src, { sizes: [{ role: 'reference', size: '1600x900' }] });
+  const fit = await measureFit(src, { sizes: [{ role: 'reference', size: '1600x900' }], fresh: true }); // the sample itself: measured, never reused
   assert.ok(fit.ok);
   assert.equal(fit.mode, 'slides');
   const ref = fit.sizes.find((z) => z.role === 'reference');

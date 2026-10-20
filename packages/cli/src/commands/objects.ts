@@ -5,8 +5,9 @@ import { defineCommand, printDiagnostics, printJson } from './command.ts';
 import type { CommandGroup } from './command.ts';
 
 const HELP = `  object new [dir] <id> [--title <t>] [--objectives OBJ-1,OBJ-2]
-  object test [dir] <id> [--update-snapshots] [--browser chromium|electron|chrome|msedge|playwright|firefox|webkit] [--only <test name>]
-                                                      Gates 2–6 of the free-object contract (result kept in object.gates.json)
+  object test [dir] <id> [--update-snapshots] [--browser chromium|electron|chrome|msedge|playwright|firefox|webkit] [--only <test name>] [--force]
+                                                      Gates 2–6 of the free-object contract (result kept in object.gates.json);
+                                                      an object unchanged since its last run here is not run again (--force runs it)
   object replay [dir] <id> [--test <name>] [--block <id>] [--size 1600x900] [--out sheet.png] [--json]
                                                       Replay a test of object.tests.json in the built course, on the page that
                                                       places the object, in real time: a contact sheet of its snapshot steps,
@@ -31,18 +32,21 @@ const create = defineCommand({
 
 const test = defineCommand({
   name: 'object test',
-  flags: { 'update-snapshots': 'boolean', browser: 'string', only: 'string', json: 'boolean' },
+  flags: { 'update-snapshots': 'boolean', browser: 'string', only: 'string', force: 'boolean', json: 'boolean' },
   async run({ positionals, flags }) {
     const { dir, id } = folderAndId(positionals);
     if (!id) { console.error(USAGE); return 2; }
     const { testObject } = await import('@elabora/node/objects/test');
-    const result = await testObject(dir, id, { updateSnapshots: flags['update-snapshots'], browser: flags.browser || 'chromium', only: flags.only || null });
+    const result = await testObject(dir, id, { updateSnapshots: flags['update-snapshots'], browser: flags.browser || 'chromium', only: flags.only || null, force: flags.force });
     if (flags.json) printJson(result);
+    else if (result.reused) console.log(`${result.ok ? '✔' : '✘'} ${id} — unchanged since ${result.reused.at}, not run again: ${Object.entries(result.gates).filter((entry) => typeof entry[1] === 'string').map(([gate, status]) => `${gate} ${status}`).join(', ')}.${result.ok ? '' : `\n${result.diagnostics.filter((d) => d.severity === 'error').map((d) => `  ${d.code} ${d.message}`).join('\n')}`}\n  --force runs it again.`);
     else {
       printDiagnostics(result.diagnostics);
       for (const [gate, status] of Object.entries(result.gates)) if (typeof status === 'string') console.log(`gate ${gate.padEnd(14)} ${status}`);
       const performance = result.gates.perf;
       if (performance?.bootMs != null) console.log(`boot           ${performance.bootMs} ms (median of ${(performance.bootSamples ?? []).length})`);
+      if (result.snapshots?.removed.length) console.log(`snapshots      removed, no test names their state any more: ${result.snapshots.removed.join(', ')}`);
+      if (result.snapshots?.kept.length) console.log(`snapshots      kept for other browsers and systems, whose runs compare with them: ${result.snapshots.kept.join(', ')}`);
       console.log(`\n${result.ok ? '✔' : '✘'} ${id}${flags.only ? ` (only tests matching "${flags.only}": not recorded)` : ` — recorded in objects/${id}/object.gates.json`}`);
     }
     return result.ok ? 0 : 1;

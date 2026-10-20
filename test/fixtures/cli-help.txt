@@ -276,10 +276,13 @@ Build and test
                                                       objects). One contact sheet. Several shots share one build and one browser;
                                                       --out names one image, so several shots are refused with it (exit code 2):
                                                       --out-dir gets one file each
-  fit [dir] [--reference 1600x900] [--minimum 1280x720] [--json]
+  fit [dir] [--screen <id>,…] [--reference 1600x900] [--minimum 1280x720] [--fresh] [--json]
                                                       Measure every slide (all steps shown) at the fit sizes: what scrolls, by how
                                                       much, and what moves once its activities are answered. In scroll presentation:
-                                                      the length of each page and the contrast of its text, down the whole page
+                                                      the length of each page and the contrast of its text, down the whole page.
+                                                      A screen unchanged since its last measure (its files, the theme, components,
+                                                      objects, Elabora, the browser) is not measured again: its fit is reused
+                                                      (--fresh measures every screen again)
   inspect <package.zip>                               Read any SCORM package: manifest, files, size
   diff <old.report.json> <new.report.json> [--profile a,b]
                                                       What an update does to learners in progress, LMS by LMS
@@ -409,8 +412,9 @@ Components
 
 Free objects
   object new [dir] <id> [--title <t>] [--objectives OBJ-1,OBJ-2]
-  object test [dir] <id> [--update-snapshots] [--browser chromium|electron|chrome|msedge|playwright|firefox|webkit] [--only <test name>]
-                                                      Gates 2–6 of the free-object contract (result kept in object.gates.json)
+  object test [dir] <id> [--update-snapshots] [--browser chromium|electron|chrome|msedge|playwright|firefox|webkit] [--only <test name>] [--force]
+                                                      Gates 2–6 of the free-object contract (result kept in object.gates.json);
+                                                      an object unchanged since its last run here is not run again (--force runs it)
   object replay [dir] <id> [--test <name>] [--block <id>] [--size 1600x900] [--out sheet.png] [--json]
                                                       Replay a test of object.tests.json in the built course, on the page that
                                                       places the object, in real time: a contact sheet of its snapshot steps,

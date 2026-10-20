@@ -14,13 +14,13 @@ const SIZE = { type: 'string', pattern: '^[1-9][0-9]{2,3}x[1-9][0-9]{2,3}$' } as
 export const checkFit = defineTool({
   name: 'elabora_check_fit',
   readOnly: true,
-  description: 'Measure every screen with all its steps in a real browser at the fit sizes of the course (presentation.fit: reference 1600×900, minimum 1280×720 by default) and say which slides scroll, by how many px, which blocks end below the fold, and what moves once the activities are answered (layout shift), plus text too faint against what is behind it. In scroll presentation (pages of any length) nothing has to fit: it gives the length of each page and the contrast of its text, down the whole page. Seconds, not a full elabora test.',
-  inputSchema: objectSchema({ reference: SIZE, minimum: SIZE, language: LANGUAGE, allowMissing: { type: 'boolean', description: 'With language: check the draft, leaving missing/stale texts in the source language.' } }),
+  description: 'Measure every screen with all its steps in a real browser at the fit sizes of the course (presentation.fit: reference 1600×900, minimum 1280×720 by default) and say which slides scroll, by how many px, which blocks end below the fold, and what moves once the activities are answered (layout shift), plus text too faint against what is behind it. In scroll presentation (pages of any length) nothing has to fit: it gives the length of each page and the contrast of its text, down the whole page. A screen unchanged since its last measure (its files, the theme, components, objects, Elabora, the browser) is not measured again: its fit comes back with reused (its date); fresh measures every screen again. About a second per slide and a few seconds per scroll page measured; after a change, pass screens: the ones it touched.',
+  inputSchema: objectSchema({ screens: { type: 'array', items: SLUG, minItems: 1, maxItems: 200, description: 'Only these screens (default: every screen).' }, fresh: { type: 'boolean', description: 'Measure again the screens unchanged since their last measure.' }, reference: SIZE, minimum: SIZE, language: LANGUAGE, allowMissing: { type: 'boolean', description: 'With language: check the draft, leaving missing/stale texts in the source language.' } }),
   async handler(args, { root }) {
     const { measureFit, fitDiagnostics } = await import('@elabora/node/preview');
     return withCourseLanguage(root, args, async (dir) => {
-      const result = await measureFit(dir, { sizes: fitSizes(args.reference, args.minimum) });
-      if (!result.ok) return errorResult({ diagnostics: result.diagnostics?.filter((d) => d.severity === 'error') });
+      const result = await measureFit(dir, { sizes: fitSizes(args.reference, args.minimum), screens: args.screens, fresh: !!args.fresh });
+      if (!result.ok) return errorResult(result.error ? { error: result.error } : { diagnostics: result.diagnostics?.filter((d) => d.severity === 'error') });
       return textResult({ ...result, ...(args.language ? { language: args.language } : {}), diagnostics: fitDiagnostics(result) });
     });
   }
