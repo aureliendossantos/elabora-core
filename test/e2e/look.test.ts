@@ -298,6 +298,9 @@ test('look: a block at a scroll position, a page down its length, a close-up, wh
   assert.equal(sheet.type, 'png');
   assert.deepEqual(sheet.scrolled?.map((stop) => stop.label.replace(/^\d+ px /, '')), ['(0 %)', '(25 %)', '(50 %)', '(75 %)', '(100 %)']);
   assert.deepEqual(sheet.motion?.unfinished.map((entry) => entry.block), [INSPECT.stuck]);
+  // Of one block: its close-up where the window shows it, the window elsewhere.
+  const blockSheet = await looker.look({ screen: INSPECT.page, sheet: true, block: INSPECT.done });
+  assert.ok(blockSheet.ok && blockSheet.scrolled?.length === 5 && blockSheet.motion?.blocks.length === 1, JSON.stringify(blockSheet));
 
   // A close-up at twice its size, scrolled into view: its image is twice the part of the page.
   const close = await looker.look({ screen: INSPECT.page, block: INSPECT.done, scale: 2 });

@@ -40,7 +40,7 @@ export interface LookRequest {
   scale?: 1 | 2; // a close-up drawn at twice its size
   // Actions played in order inside the frame of the free object block before the capture (parseLookAction).
   act?: string[];
-  // JPEG by default (PNG for a close-up): designed pages (textures, gradients) take seconds to encode as PNG.
+  // JPEG by default (PNG for a close-up up to 2 megapixels): designed pages (textures, gradients) take seconds to encode as PNG.
   type?: ImageType;
 }
 

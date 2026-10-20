@@ -64,15 +64,16 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       step's end), captioned with the anchor and what happens; on a screen without a
                                                       timeline, the page down its length (0, 25, 50, 75, 100 % or --scroll's).
                                                       --scroll: the window there, animations on (px, % of the page, or a block's id);
-                                                      several: a sheet down the page. --block: a close-up of the block (PNG, in view
-                                                      unless --scroll says where), --scale 2 drawn twice as large. With --scroll,
-                                                      --block or --motion it says what moves: each block in the window (or the block)
-                                                      visible, clipped or outside, its animations and transitions, their timeline
-                                                      and progress, and the scroll-driven ones that CANNOT FINISH (the page ends
-                                                      before their range). --act (repeatable) drives the free object of --block from
-                                                      inside its frame before the capture: click:<text>, click:role=<role>[name=<n>],
-                                                      key:<key>, drag:x,y->x,y (0-1 across the object); it reports the object's state
-                                                      and events, and the object keeps that state until the screen changes
+                                                      several: a sheet down the page. --block: a close-up of the block (PNG up to 2
+                                                      Mpx, else JPEG; in view unless --scroll says where), --scale 2 drawn twice as
+                                                      large. With --scroll, --block or --motion it says what moves: each block in
+                                                      the window (or the block) visible, clipped or outside, its animations and
+                                                      transitions, their timeline and progress, and the scroll-driven ones that
+                                                      CANNOT FINISH (the page ends before their range). --act (repeatable) drives
+                                                      the free object of --block from inside its frame before the capture:
+                                                      click:<text>, click:role=<role>[name=<n>], key:<key>, drag:x,y->x,y (0-1 across
+                                                      the object); it reports the object's state and events, and the object keeps
+                                                      that state until the screen changes
   screenshot [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial,answered] [--step <n>] [--layer <id>]
              [--at 0,2000,4000|l1,l2:end | --scroll 0,25%,50%,1800] [--motion] [--viewport] [--out shot.png | --out-dir <dir>]
                                                       Render screens to PNG once images and free objects are ready. answered: every

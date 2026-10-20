@@ -159,6 +159,7 @@ export async function startLooker(dir: string, { port = 0, live = true }: Looker
     }
     if (actions.length && !request.block) return { ok: false, error: 'act drives the free object of a block: give block too.' };
     if (actions.length && downThePage) return { ok: false, error: 'act plays once, before one capture: not with a sheet or several scroll positions.' };
+    if (marks && (request.block || actions.length || request.scale)) return { ok: false, error: `A sheet of a timed screen captures the window at each mark: not with block, act or scale (look at a mark with at).` };
     if (request.scale !== undefined && request.scale !== 1 && request.scale !== 2) return { ok: false, error: `scale is 1 or 2 (not ${String(request.scale)}).` };
     if (marks) at = { time: marks[0].time };
     else if (request.at) {
@@ -210,7 +211,7 @@ export async function startLooker(dir: string, { port = 0, live = true }: Looker
     const blocks = await tab.evaluate(() => (window as LookWindow).__elaboraCanvas.layout().blocks);
     const styles = await tab.evaluate(pageStyleConflicts).catch(() => []);
     const objects = ready?.objects ?? [];
-    const type = request.type ?? (request.block ? 'png' : 'jpeg');
+    let type: 'png' | 'jpeg' = request.type ?? 'jpeg';
     const scale = request.scale ?? 1;
     let image: Buffer;
     let report: MotionReport | undefined;
@@ -223,6 +224,8 @@ export async function startLooker(dir: string, { port = 0, live = true }: Looker
       if (!box) throw new Error(`Block "${block}" is not in the window at ${await tab.evaluate(() => Math.round(scrollY))} px: scroll to it (--scroll ${block}).`);
       const scroll = await tab.evaluate(() => ({ x: Math.round(scrollX), y: Math.round(scrollY) }));
       clip = { x: box.x + scroll.x, y: box.y + scroll.y, width: box.width, height: box.height, scale };
+      // PNG for a close-up, unless it is larger than 2 megapixels (a wide block at scale 2: several MB, more than agents' image inputs take).
+      type = request.type ?? (box.width * box.height * scale * scale <= 2_000_000 ? 'png' : 'jpeg');
       return captureClip(tab, box, { scale, type });
     };
     if (request.block && !blocks.some((block) => block.id === request.block)) return { ok: false, error: `No block "${request.block}" on screen "${screen}". Blocks: ${blocks.map((block) => block.id).join(', ')}` };
@@ -230,7 +233,9 @@ export async function startLooker(dir: string, { port = 0, live = true }: Looker
       if (downThePage) {
         if (metrics.overflow <= 0 && !positions.length) throw new Error(`Screen "${screen}" has no timeline (no narration, no timed block, no cue) and does not scroll at ${width}×${height}: a sheet shows the marks of a timeline, or a page down its length.`);
         const stops = await scrollStops(tab, positions.length ? positions : ['0%', '25%', '50%', '75%', '100%']);
-        const frames = await scrollFilmstrip(tab, stops, { settleMs: objects.length ? 450 : 120, capture: request.block ? () => closeUp(request.block!) : () => tab.screenshot({ type: 'jpeg', quality: 85 }) });
+        // The block where the window shows it; the window where it does not.
+        const windowShot = () => tab.screenshot({ type: 'jpeg', quality: 85 });
+        const frames = await scrollFilmstrip(tab, stops, { settleMs: objects.length ? 450 : 120, capture: request.block ? async () => (await closeUpClip(tab, request.block!) ? closeUp(request.block!) : windowShot()) : windowShot });
         scrolled = stops;
         report = await measureMotion(tab, request.block ? { block: request.block } : { scope: 'page' });
         return contactSheet(tab.context().browser()!, frames, `${screen}${request.block ? ` — ${request.block}` : ''}: down the page${view.language ? ` (${view.language})` : ''}`);
@@ -247,10 +252,14 @@ export async function startLooker(dir: string, { port = 0, live = true }: Looker
         const failure = await playActions(tab, frame, actions);
         if (failure) throw new Error(failure);
         await settle(tab, { min: 300, max: 1500 });
+        // A click scrolls what it clicks into view.
+        scrolled = [{ ...stop, top: await tab.evaluate(() => Math.round(scrollY)) }];
         acted = await tab.evaluate(async ({ id, before: seen, sources }) => {
           const host = (window as LookWindow).__elaboraCanvas.objectHost(id) as ObjectHost | undefined;
           let state: unknown = null;
-          try { state = await host?.getState(); } catch (error) { state = { error: String(error) }; }
+          // An object that never answers (its start failed) must not hold the look server.
+          const late = new Promise((resolve) => setTimeout(() => resolve({ error: 'the object did not answer getState in 3 s' }), 3000));
+          try { state = host ? await Promise.race([host.getState(), late]) : null; } catch (error) { state = { error: String(error) }; }
           return { actions: sources, state, events: host ? host.emitted.slice(seen) : [] };
         }, { id: request.block!, before, sources: actions.map((action) => action.source) });
       }

@@ -161,10 +161,10 @@ See a screen while designing, in well under a second: a look server kept warm fo
 | `viewport` | boolean |  | Only the window (default: the whole page). |
 | `motion` | boolean |  | Animations on (default: reduced motion, transitions settled). |
 | `scroll` | string[] |  | The window scrolled to a position, animations on: px ("1800"), a percentage of the page ("100%"), or a block's id (the block in view). Several positions (or sheet on a screen without a timeline, default 0/25/50/75/100%): a contact sheet down the page, to see scroll-driven animations build up. |
-| `block` | string |  | A close-up of this block (cropped to its box with a small margin, PNG by default), scrolled into view unless scroll says where. With scroll, block or motion the note says what moves: visible/clipped/outside, the animations and transitions of each block in the window (or of this block), their timeline (time, scroll, view) and progress, and the scroll-driven ones that CANNOT FINISH because the page ends before their range. |
+| `block` | string |  | A close-up of this block (cropped to its box with a small margin; PNG by default up to 2 megapixels, else JPEG), scrolled into view unless scroll says where. With scroll, block or motion the note says what moves: visible/clipped/outside, the animations and transitions of each block in the window (or of this block), their timeline (time, scroll, view) and progress, and the scroll-driven ones that CANNOT FINISH because the page ends before their range. |
 | `scale` | 1 \| 2 |  | The close-up drawn at twice its size (2) to read fine detail. |
 | `act` | string[] |  | Drive the free object of block from inside its frame, in order, before the capture: "click:&lt;text&gt;" (a button, link, text or label named so), "click:role=&lt;role&gt;[name=&lt;name&gt;]", "key:&lt;key&gt;" (Enter, ArrowRight, a), "drag:x,y-&gt;x,y" (0 to 1 across the object). The note gives the object's state and the events it emitted; a missing target names what the frame offers. Explore with it; keep an interaction worth keeping in object.tests.json (elabora_test_object). |
-| `type` | "jpeg" \| "png" |  | Image format (default: JPEG, PNG for a close-up). |
+| `type` | "jpeg" \| "png" |  | Image format (default: JPEG; PNG for a close-up up to 2 megapixels). |
 
 ### `elabora_check_fit`
 

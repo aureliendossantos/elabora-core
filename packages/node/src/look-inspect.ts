@@ -17,6 +17,7 @@ function cdp(page: Page): Promise<CDPSession> {
   if (!session) {
     session = page.context().newCDPSession(page);
     devtools.set(page, session);
+    session.catch(() => devtools.delete(page));
   }
   return session;
 }
@@ -57,6 +58,8 @@ export async function captureClip(page: Page, clip: LayoutRect, { scale = 1, typ
     // A PNG's width is in its header (bytes 16 to 19).
     ratio = shoot({ x: 0, y: 0, width: 8, height: 8 }, 1, 'png').then((png) => Math.max(1, png.readUInt32BE(16) / 8));
     screenRatios.set(page, ratio);
+    // Measured again next time when it failed.
+    ratio.catch(() => screenRatios.delete(page));
   }
   return shoot(clip, scale / await ratio, type);
 }
@@ -87,6 +90,9 @@ export async function playActions(page: Page, frame: Frame, actions: readonly Lo
         const box = await iframe.boundingBox();
         if (!box) return `${action.source}: the object's frame is not drawn.`;
         const at = (x: number, y: number) => [box.x + x * box.width, box.y + y * box.height] as const;
+        const shown = await page.evaluate(() => ({ width: innerWidth, height: innerHeight }));
+        const outside = [action.from, action.to].find(([x, y]) => { const [left, top] = at(x, y); return left < 0 || top < 0 || left >= shown.width || top >= shown.height; });
+        if (outside) return `${action.source}: ${outside.join(',')} of the object is outside the window at this scroll: scroll so that part shows (scroll: a px position).`;
         await page.mouse.move(...at(action.from[0], action.from[1]));
         await page.mouse.down();
         await page.mouse.move(...at(action.to[0], action.to[1]), { steps: 12 });
