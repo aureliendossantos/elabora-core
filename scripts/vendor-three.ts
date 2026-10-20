@@ -2,10 +2,17 @@
 // Output: vendor/three-r186.js (IIFE) exposing self.ELABORA_THREE = { THREE, addons }.
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
-const threeDir = path.dirname(new URL(import.meta.resolve('three/package.json')).pathname);
+// three's exports do not include ./package.json: walk up from its entry point to its folder.
+let threeDir = path.dirname(fileURLToPath(import.meta.resolve('three')));
+while (!fs.existsSync(path.join(threeDir, 'package.json')) || JSON.parse(fs.readFileSync(path.join(threeDir, 'package.json'), 'utf8')).name !== 'three') {
+  const parent = path.dirname(threeDir);
+  if (parent === threeDir) throw new Error('three is not installed: npm ci');
+  threeDir = parent;
+}
 const threePkg = JSON.parse(fs.readFileSync(path.join(threeDir, 'package.json'), 'utf8'));
 if (threePkg.version !== '0.186.0') throw new Error(`three ${threePkg.version} installed; Elabora 0.1 pins 0.186.0 (r186).`);
 const entry = `
