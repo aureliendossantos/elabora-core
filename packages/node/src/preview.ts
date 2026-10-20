@@ -718,10 +718,13 @@ async function contrastInWindow(page: Page, band: Band, skip?: ReadonlySet<strin
 // the PNG for speed (lossless, larger). The capture comes through a DevTools session of its own:
 // Chrome's needs the window size Playwright emulates (else it captures the headless window's own);
 // Elabora's Electron is not emulated and draws at the screen's pixel ratio, which the scale asked
-// for then allows for (device: device pixels per CSS pixel, learnt from the first capture).
+// for then allows for (device: device pixels per CSS pixel). The ratio is learnt once per page from
+// a capture of 100 CSS pixels (its width is in the PNG's header, bytes 16 to 19, and is exact to a
+// hundredth), so every window is read at half scale whatever the screen.
 const CONTRAST_SCALE = 0.5;
+const RATIO_PROBE = 100;
 interface Pixels { width: number; height: number; data: Uint8Array; scale: number }
-const capturing = new WeakMap<Page, Promise<{ session: CDPSession; device: number | null }>>();
+const capturing = new WeakMap<Page, Promise<{ session: CDPSession; device: number }>>();
 async function windowPixels(page: Page): Promise<Pixels> {
   const view = await page.evaluate(() => ({ x: scrollX, y: scrollY, width: innerWidth, height: innerHeight }));
   let capture = capturing.get(page);
@@ -730,17 +733,18 @@ async function windowPixels(page: Page): Promise<Pixels> {
       const session = await page.context().newCDPSession(page);
       const browser = page.context().browser();
       if (!browser || browserIdentity(browser).engine !== 'electron') await session.send('Emulation.setDeviceMetricsOverride', { width: view.width, height: view.height, deviceScaleFactor: 1, mobile: false });
-      return { session, device: null };
+      const { data } = await session.send('Page.captureScreenshot', { format: 'png', optimizeForSpeed: true, clip: { x: view.x, y: view.y, width: RATIO_PROBE, height: RATIO_PROBE, scale: 1 } });
+      return { session, device: Math.max(1, Buffer.from(data, 'base64').readUInt32BE(16) / RATIO_PROBE) };
     })();
     capturing.set(page, capture);
+    // Learnt again next time when it failed.
+    capture.catch(() => capturing.delete(page));
   }
   const state = await capture;
-  const asked = CONTRAST_SCALE / (state.device ?? 1);
+  const asked = CONTRAST_SCALE / state.device;
   const { data } = await state.session.send('Page.captureScreenshot', { format: 'png', optimizeForSpeed: true, clip: { x: view.x, y: view.y, width: view.width, height: view.height, scale: asked } });
   const image = readPng(Buffer.from(data, 'base64'));
-  const scale = image.width / view.width;
-  state.device ??= scale / asked;
-  return { ...image, scale };
+  return { ...image, scale: image.width / view.width };
 }
 
 // pngjs: an optional dependency of @elabora/node, installed with the command line and the app.
