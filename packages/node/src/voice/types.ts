@@ -22,7 +22,18 @@ export interface VoiceInfo {
   preview?: string;
   rate?: number;
   noticeDays?: number | null;     // a library voice its owner removes stays usable this long
+  // How the service made it: a professional clone that passed its quality check (high), another
+  // professional clone, one of the service's own (premade), designed from words (designed), an
+  // instant clone of a short recording (instant), a famous voice licensed (iconic).
+  quality?: VoiceQuality;
+  // What it is ready for, by model (@elabora/core narration/voice-fit): the languages the service
+  // checked it speaks well with that model ([]: trained for it, no language checked), or 'failed':
+  // its training for the model failed. A model not named: the voice was not trained for it.
+  models?: Readonly<Record<string, readonly string[] | 'failed'>>;
+  users?: number;                 // people who added it to their voices (the library's)
 }
+
+export type VoiceQuality = 'high' | 'professional' | 'premade' | 'designed' | 'instant' | 'iconic';
 
 // Searching a voice service's voices (ElevenLabs: its library of thousands, and the account's own).
 export interface VoiceQuery {

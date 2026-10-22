@@ -1,8 +1,9 @@
 import { narrationWords } from '@elabora/core/narration/words';
 import { playsDirections, withoutDirections } from '@elabora/core/narration/directions';
+import { DEFAULT_VOICE_MODEL } from '@elabora/core/narration/voice-fit';
 import { VoiceError } from '../provider.ts';
 import type { SynthesisRequest, SynthesisResult, VoiceProvider, DialogueRequest, DialogueResult } from '../provider.ts';
-import type { VoiceAccount, VoiceInfo, VoiceQuery, VoiceSearchResult, VoiceGender } from '../types.ts';
+import type { VoiceAccount, VoiceInfo, VoiceQuery, VoiceSearchResult, VoiceGender, VoiceQuality } from '../types.ts';
 import { quotaPercent, shareOf } from '@elabora/core/ai/quota';
 import type { Quota } from '@elabora/core/ai/quota';
 import { generation, pcmSamples, request } from './api.ts';
@@ -20,7 +21,7 @@ import { chargedShare, keyId, noteSpent, quotaOf, readQuota, readSubscription, r
 // directions.
 
 export const PROVIDER = 'elevenlabs';
-export const DEFAULT_MODEL = 'eleven_v4';
+export const DEFAULT_MODEL = DEFAULT_VOICE_MODEL;
 export const SAMPLE_RATE = 24000;
 const OUTPUT = `pcm_${SAMPLE_RATE}`;
 
@@ -47,17 +48,42 @@ export const textFor = (text: string, model: string): string => playsDirections(
 
 const known = new Map<string, VoiceInfo>();
 
+interface VerifiedLanguage { language: string; model_id?: string | null; preview_url?: string | null }
+
 interface AccountVoice {
   voice_id: string; name: string; category?: string; description?: string | null; preview_url?: string | null;
-  labels?: Record<string, string>; sharing?: { rate?: number | null; notice_period?: number | null } | null;
+  labels?: Record<string, string>; sharing?: { rate?: number | null; notice_period?: number | null; category?: string | null } | null;
   fine_tuning?: { state?: Record<string, string> } | null;
+  high_quality_base_model_ids?: string[] | null;
+  verified_languages?: VerifiedLanguage[] | null;
 }
 
 interface LibraryVoice {
   voice_id: string; public_owner_id: string; name: string; accent?: string; gender?: string; age?: string; descriptive?: string; use_case?: string;
   language?: string; locale?: string; description?: string | null; preview_url?: string | null; rate?: number | null; notice_period?: number | null; category?: string;
-  verified_languages?: { language: string; preview_url?: string | null }[] | null;
+  verified_languages?: VerifiedLanguage[] | null; cloned_by_count?: number | null;
 }
+
+// The models a voice is ready for (VoiceInfo.models, @elabora/core narration/voice-fit): the languages
+// the service checked it in, by model; for the account's voices, also the models it was trained for
+// (high_quality_base_model_ids, fine_tuning « fine_tuned ») and those whose training failed. The
+// service's own variants of a model (_exp, _eval, _hq, _post_trained, test_…, speech to speech, the
+// flash aliases) are left out: no author chooses them.
+const internalModel = (model: string): boolean => !/^eleven_[a-z0-9_]+$/.test(model) || /(?:_exp|_eval|_hq|_post_trained)$|_sts_|^eleven_v2(?:_5)?_flash$/.test(model);
+
+function modelsOf(verified: readonly VerifiedLanguage[] | null | undefined, trained: readonly string[] = [], training: Readonly<Record<string, string>> = {}): Record<string, string[] | 'failed'> | undefined {
+  const models: Record<string, string[] | 'failed'> = {};
+  for (const entry of verified ?? []) {
+    if (!entry.model_id || internalModel(entry.model_id) || !entry.language) continue;
+    const languages = (models[entry.model_id] ??= []) as string[];
+    if (!languages.includes(entry.language)) languages.push(entry.language);
+  }
+  for (const model of [...trained, ...Object.keys(training).filter((model) => training[model] === 'fine_tuned')]) if (!internalModel(model)) models[model] ??= [];
+  for (const [model, state] of Object.entries(training)) if (state === 'failed' && !internalModel(model)) models[model] ??= 'failed';
+  return Object.keys(models).length ? models : undefined;
+}
+
+const QUALITIES: Readonly<Record<string, VoiceQuality>> = { high_quality: 'high', professional: 'professional', premade: 'premade', generated: 'designed', cloned: 'instant', famous: 'iconic' };
 
 const genderOf = (value: string | undefined): VoiceGender | null => value === 'female' || value === 'male' ? value : null;
 
@@ -79,6 +105,11 @@ function fromAccount(voice: AccountVoice): VoiceInfo {
     ...(typeof voice.sharing?.rate === 'number' ? { rate: voice.sharing.rate } : {}),
     ...(voice.sharing && 'notice_period' in voice.sharing ? { noticeDays: voice.sharing.notice_period ?? null } : {})
   };
+  // A library voice the account added keeps the library's rating (sharing.category).
+  const quality = QUALITIES[voice.category === 'professional' && voice.sharing?.category ? voice.sharing.category : voice.category ?? ''];
+  if (quality) info.quality = quality;
+  const models = modelsOf(voice.verified_languages, voice.high_quality_base_model_ids ?? [], voice.fine_tuning?.state ?? {});
+  if (models) info.models = models;
   known.set(info.id, info);
   rememberVoiceRate(info.id, info.rate);
   return info;
@@ -97,6 +128,11 @@ function fromLibrary(voice: LibraryVoice, language?: string): VoiceInfo {
     ...(typeof voice.rate === 'number' ? { rate: voice.rate } : {}),
     noticeDays: voice.notice_period ?? null
   };
+  const quality = QUALITIES[voice.category ?? ''];
+  if (quality) info.quality = quality;
+  const models = modelsOf(voice.verified_languages);
+  if (models) info.models = models;
+  if (typeof voice.cloned_by_count === 'number' && voice.cloned_by_count > 0) info.users = voice.cloned_by_count;
   known.set(info.id, info);
   rememberVoiceRate(info.id, info.rate);
   return info;

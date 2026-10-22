@@ -10,11 +10,13 @@ import type { AddressInfo } from 'node:net';
 import { copyExample, readJSON, writeJSON, codes, ROOT } from '../helpers.ts';
 import { narrate, hasFfmpeg } from '../narration.ts';
 import { lineDirections, maskDirections, withoutDirections, playsDirections } from '@elabora/core/narration/directions';
+import { modelName, voiceFit, voiceModel } from '@elabora/core/narration/voice-fit';
 import { narrationWords, lineWordTimes } from '@elabora/core/narration/words';
 import { captionChunks, estimatedDuration } from '@elabora/core/narration/timing';
 import { applyPronunciations, narrationLines } from '@elabora/core/narration/narration';
 import { toXliff, readXliff } from '@elabora/core/i18n/xliff';
 import { generateNarration, estimateNarration, setSpeakerVoice, voiceTakes, voiceProvider, VoiceError, setSessionKey } from '@elabora/node/voice/index';
+import type { VoiceInfo } from '@elabora/node/voice/index';
 import { splitDialogue, synthesize, wordsFromAlignment, speechBounds, SAMPLE_RATE } from '@elabora/node/voice/elevenlabs/index';
 import { COST_BOOK } from '@elabora/core/ai/cost-ledger.generated';
 import { chargedShare, expectedCharge, recordCharge, forgetQuota, noteSpent, remember, keyId } from '@elabora/node/voice/elevenlabs/costs';
@@ -83,8 +85,17 @@ before(async () => {
       if (forbid && url.startsWith(forbid)) return answer(response, 401, { detail: { status: 'missing_permissions', message: `The API key you used is missing the permission ${forbid.includes('voices') ? 'voices_read' : 'text_to_speech'} to execute this operation.` } });
       if (url === '/v1/user') return answer(response, 200, { subscription: { tier: 'starter', character_count: 1200, character_limit: limit, next_character_count_reset_unix: 1794431996 } });
       if (url === '/v1/models') return answer(response, 200, [{ model_id: 'eleven_v4', model_rates: { character_cost_multiplier: 1 } }, { model_id: 'eleven_v4_turbo', model_rates: { character_cost_multiplier: 0.5 } }]);
-      if (url.startsWith('/v2/voices')) return answer(response, 200, { voices: [{ voice_id: 'acc0unt0voice0000001', name: 'Nadia - Calm narrator', category: 'cloned', labels: { gender: 'female', language: 'fr', accent: 'parisian', age: 'middle_aged', use_case: 'narrative_story' } }] });
-      if (url.startsWith('/v1/shared-voices')) return answer(response, 200, { voices: [{ voice_id: 'library0voice0000002', public_owner_id: 'owner1', name: 'Marc - Support agent', gender: 'male', age: 'young', accent: 'standard', use_case: 'conversational', language: 'fr', descriptive: 'casual', rate: 2, notice_period: 730, preview_url: 'https://example.invalid/marc.mp3' }], has_more: true, total_count: 1441 });
+      if (url.startsWith('/v2/voices')) return answer(response, 200, { voices: [
+        { voice_id: 'acc0unt0voice0000001', name: 'Nadia - Calm narrator', category: 'cloned', labels: { gender: 'female', language: 'fr', accent: 'parisian', age: 'middle_aged', use_case: 'narrative_story' } },
+        // A library voice the account added, whose training failed for Eleven v4 (as ElevenLabs says it).
+        { voice_id: 'acc0unt0clara0000003', name: 'Clara - Modulated', category: 'professional', labels: { gender: 'female', language: 'fr' }, sharing: { category: 'high_quality' },
+          high_quality_base_model_ids: ['eleven_multilingual_v2', 'eleven_turbo_v2_5'], fine_tuning: { state: { eleven_multilingual_v2: 'fine_tuned', eleven_turbo_v2_5: 'failed', eleven_v4: 'failed', eleven_v4_exp: 'failed', eleven_v2_5_flash: 'fine_tuned' } },
+          verified_languages: [{ language: 'fr', model_id: 'eleven_multilingual_v2' }, { language: 'fr', model_id: 'eleven_multilingual_sts_v2' }] },
+        { voice_id: 'prem0bella000000004', name: 'Bella - Bright', category: 'premade', labels: { gender: 'female', language: 'en' }, high_quality_base_model_ids: ['eleven_multilingual_v2'], fine_tuning: { state: {} }, verified_languages: [] }
+      ] });
+      if (url.startsWith('/v1/shared-voices')) return answer(response, 200, { voices: [{ voice_id: 'library0voice0000002', public_owner_id: 'owner1', name: 'Marc - Support agent', gender: 'male', age: 'young', accent: 'standard', use_case: 'conversational', language: 'fr', descriptive: 'casual', rate: 2, notice_period: 730, preview_url: 'https://example.invalid/marc.mp3',
+        category: 'high_quality', cloned_by_count: 793595,
+        verified_languages: [{ language: 'fr', model_id: 'eleven_v4' }, { language: 'fr', model_id: 'eleven_v4_eval' }, { language: 'en', model_id: 'eleven_multilingual_v2' }, { language: 'fr', model_id: 'eleven_multilingual_v2' }, { language: 'fr', model_id: 'test_m2' }] }], has_more: true, total_count: 1441 });
       const voice = /^\/v1\/voices\/([^/?]+)$/.exec(url);
       if (voice) return voice[1] === 'acc0unt0voice0000001' ? answer(response, 200, { voice_id: voice[1], name: 'Nadia - Calm narrator', category: 'cloned', labels: { gender: 'female', language: 'fr' } }) : answer(response, 404, { detail: { status: 'voice_not_found', message: 'A voice with this ID was not found.' } });
       const tts = /^\/v1\/text-to-speech\/([^/]+)\/with-timestamps\?output_format=pcm_24000$/.exec(url);
@@ -209,9 +220,22 @@ test('elevenlabs: voices searched and looked up, the account read with its key m
   const provider = voiceProvider('elevenlabs');
   assert.ok(provider.paid);
   const found = await provider.search!({ provider: 'elevenlabs', language: 'fr' });
-  assert.deepEqual(found.voices.map((v) => [v.id, v.owner, v.multilingual]), [['acc0unt0voice0000001', 'account', true], ['library0voice0000002', 'library', true]]);
-  assert.equal(found.voices[1].rate, 2);
-  assert.equal(found.voices[1].preview, 'https://example.invalid/marc.mp3');
+  assert.deepEqual(found.voices.map((v) => [v.id, v.owner, v.multilingual]), [['acc0unt0voice0000001', 'account', true], ['acc0unt0clara0000003', 'account', true], ['library0voice0000002', 'library', true]]);
+  const [nadia, clara, marc] = found.voices as [VoiceInfo, VoiceInfo, VoiceInfo];
+  assert.equal(marc.rate, 2);
+  assert.equal(marc.preview, 'https://example.invalid/marc.mp3');
+  // What each voice is ready for, by model; the service's own variants left out.
+  assert.deepEqual([nadia.quality, clara.quality, marc.quality], ['instant', 'high', 'high'], 'a library voice the account added keeps its rating');
+  assert.equal(nadia.models, undefined, 'nothing said: nothing known');
+  assert.deepEqual(clara.models, { eleven_multilingual_v2: ['fr'], eleven_turbo_v2_5: [], eleven_v4: 'failed' }, 'a model it was trained for wins over a failed training');
+  assert.deepEqual(marc.models, { eleven_v4: ['fr'], eleven_multilingual_v2: ['en', 'fr'] });
+  assert.equal(marc.users, 793595);
+  assert.deepEqual([voiceFit(marc, 'eleven_v4', 'fr-FR'), voiceFit(marc, 'eleven_v4', 'en'), voiceFit(clara, 'eleven_v4', 'fr'), voiceFit(clara, 'eleven_turbo_v2_5', 'fr'), voiceFit(clara, 'eleven_v3', 'fr'), voiceFit(nadia, 'eleven_v4', 'fr')],
+    ['ready', 'other-languages', 'failed', 'trained', 'untrained', null]);
+  const bella = (await provider.search!({ provider: 'elevenlabs', scope: 'account' })).voices.find((voice) => voice.id === 'prem0bella000000004')!;
+  assert.equal(bella.quality, 'premade');
+  assert.equal(voiceFit(bella, voiceModel({ provider: 'elevenlabs', settings: {} })!, 'en'), 'untrained', 'a default voice not trained for Eleven v4 says so');
+  assert.deepEqual([modelName('eleven_v4'), modelName('eleven_v4_turbo'), modelName('eleven_v3_conversational'), modelName('eleven_turbo_v2_5'), voiceModel({ provider: 'local', settings: {} })], ['Eleven v4', 'Eleven v4 Turbo', 'Eleven v3 Conversational', 'Eleven Turbo v2.5', null]);
   assert.ok(found.more && found.total > 1000);
   const shared = seen.find((s) => s.url.startsWith('/v1/shared-voices'))!;
   assert.match(shared.url, /language=fr/);
@@ -626,7 +650,7 @@ test('engine: the app gives the key in memory, reads the account, searches voice
     await assert.rejects(session.voiceAccount({}), (error: { code?: string }) => error.code === 'E_VOICE_KEY_MISSING');
     assert.deepEqual(session.setVoiceKey(KEY), { key: 'sk_…mnop' });
     assert.equal((await session.voiceAccount({})).keySource, 'app');
-    assert.equal((await session.voiceSearch({ provider: 'elevenlabs', text: 'marc' })).voices.length, 2);
+    assert.equal((await session.voiceSearch({ provider: 'elevenlabs', text: 'marc' })).voices.length, 4, 'the imitation answers every voice, whatever the words');
     await session.setSpeakerVoice({ speaker: 'leila', voice: 'acc0unt0voice0000001', provider: 'elevenlabs' });
     await session.setSpeakerVoice({ speaker: 'marc', voice: 'acc0unt0voice0000001', provider: 'elevenlabs' });
     const estimate = await session.voiceEstimate({ screen: 'accueil' });

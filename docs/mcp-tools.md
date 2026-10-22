@@ -275,7 +275,7 @@ The takes of a generated narration line kept on this computer (never in the cour
 
 ### `elabora_voice_search`
 
-Searches ElevenLabs voices (needs the author's key): the account's own voices, then the library's thousands, most used first. Each has its id, name, language (its accent: any voice speaks every language of Eleven v4), gender, accent, age, use case, a preview URL to hear it free, and rate (2: twice the credits). Propose two or three to the author with their previews; set the chosen one with elabora_voice_set { provider: "elevenlabs", name }. Free: it spends no credits.
+Searches ElevenLabs voices (needs the author's key): the account's own voices, then the library's thousands, most used first. Each has its id, name, language (its accent: any voice speaks every language of Eleven v4), gender, accent, age, use case, a preview URL to hear it free, rate (2: twice the credits), quality (high: a professional clone that passed ElevenLabs' quality check; professional, premade, designed, instant, iconic) and models: by model, the languages ElevenLabs checked the voice speaks well with it, or "failed" when its training for that model failed; a model not named was not trained for it (it still speaks, less like the voice and less expressive). Prefer voices whose models.eleven_v4 (the default model) includes the course's language. Propose two or three to the author with their previews; set the chosen one with elabora_voice_set { provider: "elevenlabs", name }. Free: it spends no credits.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|

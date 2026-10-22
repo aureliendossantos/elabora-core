@@ -52,5 +52,7 @@ export { lineAnchor, narrationLines, narrationTextHash, spokenText, spokenTextOf
 export type { Narration, NarrationLine, NarrationAudio, NarrationLineInfo, NarrationLineStatus, NarrationCause, ScreenTiming, ScreenTimedLine, Pronunciation } from './narration/narration.ts';
 export { lineDirections, hasDirections, maskDirections, withoutDirections, outsideDirections, playsDirections, DIRECTION_MAX } from './narration/directions.ts';
 export type { Direction } from './narration/directions.ts';
+export { voiceFit, voiceModel, modelName, DEFAULT_VOICE_MODEL } from './narration/voice-fit.ts';
+export type { VoiceFit } from './narration/voice-fit.ts';
 export { narrationTiming, captionCues, captionChunks, narrationVtt, vttTime, clockTime, estimatedDuration, pauseOf, DEFAULT_PAUSE, STEP_GAP, CHARACTERS_PER_SECOND } from './narration/timing.ts';
 export type { NarrationTiming, TimedLine, TimedLineInput, Segment, CaptionCue } from './narration/timing.ts';

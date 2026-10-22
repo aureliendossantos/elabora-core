@@ -3,6 +3,7 @@ import path from 'node:path';
 import { listVoices, localVoices, voiceProviders, voiceProvider, generateNarration, estimateNarration, setSpeakerVoice, voiceTakes, disposeVoiceProviders, writeKeyFile, removeKeyFile, resolveKey, maskKey, keyFile, KEY_ENV } from '@elabora/node/voice/index';
 import type { VoiceEstimate, VoiceInfo, VoiceQuery } from '@elabora/node/voice/index';
 import { disposeAligner } from '@elabora/node/align/index';
+import { DEFAULT_VOICE_MODEL, modelName, voiceFit } from '@elabora/core/narration/voice-fit';
 import type { VoiceProgress } from '@elabora/node/voice/index';
 import { defineCommand, printJson, reportingFailures } from './command.ts';
 import { uninstallCommand } from './downloads.ts';
@@ -39,10 +40,12 @@ const HELP = `  voice list [--language <lang>] [--json]           The voices a n
                                                       The takes of a line kept on this computer: which one is its audio,
                                                       which can be put back (--take)
   voice search [words] [--language <lang>] [--gender female|male] [--age young|middle_aged|old] [--accent <a>]
-               [--use-case <u>] [--mine|--library] [--page <n>] [--json]
+               [--use-case <u>] [--mine|--library] [--model <m>] [--page <n>] [--json]
                                                       ElevenLabs voices (D29): the account's own, then the library's
                                                       thousands, most used first; each with its accent, age, use, a
-                                                      recording to hear it (free) and its price over the model's
+                                                      recording to hear it (free), its price over the model's, its
+                                                      quality and whether it is ready for the model (Eleven v4 unless
+                                                      --model) in the language: prefer « checked in <lang> »
   voice estimate [dir] <screen> [--line <id,…>] [--all] [--dialogue] [--language <lang>] [--json]
                                                       What generating would cost before anything is spent: the share of
                                                       the monthly quota, characters and credits per line (about, at most),
@@ -282,7 +285,7 @@ const estimate = defineCommand({
 
 const search = defineCommand({
   name: 'voice search',
-  flags: { language: 'string', gender: 'string', age: 'string', accent: 'string', 'use-case': 'string', mine: 'boolean', library: 'boolean', page: 'string', json: 'boolean' },
+  flags: { language: 'string', gender: 'string', age: 'string', accent: 'string', 'use-case': 'string', mine: 'boolean', library: 'boolean', model: 'string', page: 'string', json: 'boolean' },
   run: ({ positionals, flags }) => reportingFailures(async () => {
     const provider = voiceProvider('elevenlabs');
     const query: VoiceQuery = {
@@ -294,7 +297,15 @@ const search = defineCommand({
     const result = await provider.search!(query);
     if (flags.json) { printJson(result); return 0; }
     if (!result.voices.length) { console.log('No ElevenLabs voice matches.'); return 0; }
-    const line = (voice: VoiceInfo) => `  ${voice.id}  ${voice.name.slice(0, 44).padEnd(44)} ${(voice.gender ?? '').padEnd(6)} ${voice.language} ${[voice.labels?.accent, voice.labels?.age, voice.labels?.useCase].filter(Boolean).join(' · ')}${voice.rate && voice.rate !== 1 ? ` · ×${voice.rate} credits` : ''} · ${voice.owner}`;
+    // Whether it is ready for the model, in the language searched (else its own): @elabora/core narration/voice-fit.
+    const model = flags.model || DEFAULT_VOICE_MODEL;
+    const ready = (voice: VoiceInfo) => {
+      const language = query.language ?? voice.language;
+      const fit = voiceFit(voice, model, language);
+      const checked = fit === 'other-languages' && Array.isArray(voice.models?.[model]) ? (voice.models[model] as string[]).join(', ') : '';
+      return fit && `${modelName(model)}: ${{ ready: `checked in ${language}`, trained: 'trained', 'other-languages': `checked in ${checked}, not ${language}`, failed: 'training failed', untrained: 'not checked' }[fit]}`;
+    };
+    const line = (voice: VoiceInfo) => `  ${voice.id}  ${voice.name.slice(0, 44).padEnd(44)} ${(voice.gender ?? '').padEnd(6)} ${voice.language} ${[voice.labels?.accent, voice.labels?.age, voice.labels?.useCase].filter(Boolean).join(' · ')}${voice.rate && voice.rate !== 1 ? ` · ×${voice.rate} credits` : ''} · ${voice.owner}${voice.quality ? ` (${voice.quality})` : ''}${ready(voice) ? ` · ${ready(voice)}` : ''}`;
     for (const voice of result.voices) console.log(line(voice));
     console.log(`  ${result.voices.length} shown of ${result.total}${result.more ? ` (--page ${(query.page ?? 0) + 1} for more)` : ''}. Hear one: its preview in --json. Choose: elabora voice set <speaker> <id> --provider elevenlabs --name "<name>".`);
     return 0;
