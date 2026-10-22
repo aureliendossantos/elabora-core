@@ -232,6 +232,11 @@ test('elevenlabs: voices searched and looked up, the account read with its key m
   assert.equal(marc.users, 793595);
   assert.deepEqual([voiceFit(marc, 'eleven_v4', 'fr-FR'), voiceFit(marc, 'eleven_v4', 'en'), voiceFit(clara, 'eleven_v4', 'fr'), voiceFit(clara, 'eleven_turbo_v2_5', 'fr'), voiceFit(clara, 'eleven_v3', 'fr'), voiceFit(nadia, 'eleven_v4', 'fr')],
     ['ready', 'other-languages', 'failed', 'trained', 'untrained', null]);
+  // The best voices for Eleven v4 in French: the library asked for high quality, those checked with it in French kept.
+  const best = await provider.search!({ provider: 'elevenlabs', language: 'fr', quality: 'high', readyFor: 'eleven_v4' });
+  assert.deepEqual(best.voices.map((voice) => voice.id), ['library0voice0000002'], 'Nadia says nothing of v4, Clara failed it');
+  assert.match(seen.filter((s) => s.url.startsWith('/v1/shared-voices')).at(-1)!.url, /category=high_quality/);
+  assert.deepEqual((await provider.search!({ provider: 'elevenlabs', language: 'en', readyFor: 'eleven_v4' })).voices, [], 'checked in French only');
   const bella = (await provider.search!({ provider: 'elevenlabs', scope: 'account' })).voices.find((voice) => voice.id === 'prem0bella000000004')!;
   assert.equal(bella.quality, 'premade');
   assert.equal(voiceFit(bella, voiceModel({ provider: 'elevenlabs', settings: {} })!, 'en'), 'untrained', 'a default voice not trained for Eleven v4 says so');

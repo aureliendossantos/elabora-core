@@ -286,6 +286,8 @@ Searches ElevenLabs voices (needs the author's key): the account's own voices, t
 | `accent` | string |  | parisian, quebec, standard, british, american… |
 | `useCase` | string |  | narrative_story, conversational, informative_educational, characters_animation, advertisement… |
 | `scope` | "all" \| "account" \| "library" |  |  |
+| `quality` | "high" |  | Only professional clones that passed ElevenLabs' quality check. |
+| `readyFor` | string |  | Only voices ElevenLabs checked with this model (eleven_v4) in the language. With quality "high": the best voices for that model. |
 | `page` | integer |  |  |
 
 ### `elabora_voice_estimate`

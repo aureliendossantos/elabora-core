@@ -188,12 +188,14 @@ Voices (generated narration)
                                                       The takes of a line kept on this computer: which one is its audio,
                                                       which can be put back (--take)
   voice search [words] [--language <lang>] [--gender female|male] [--age young|middle_aged|old] [--accent <a>]
-               [--use-case <u>] [--mine|--library] [--model <m>] [--page <n>] [--json]
+               [--use-case <u>] [--mine|--library] [--model <m>] [--high-quality] [--ready] [--page <n>] [--json]
                                                       ElevenLabs voices (D29): the account's own, then the library's
                                                       thousands, most used first; each with its accent, age, use, a
                                                       recording to hear it (free), its price over the model's, its
                                                       quality and whether it is ready for the model (Eleven v4 unless
-                                                      --model) in the language: prefer « checked in <lang> »
+                                                      --model) in the language: prefer « checked in <lang> ».
+                                                      --high-quality: professional clones that passed ElevenLabs'
+                                                      check only; --ready: those checked with the model in the language
   voice estimate [dir] <screen> [--line <id,…>] [--all] [--dialogue] [--language <lang>] [--json]
                                                       What generating would cost before anything is spent: the share of
                                                       the monthly quota, characters and credits per line (about, at most),

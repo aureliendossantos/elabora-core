@@ -98,6 +98,8 @@ export const searchVoicesTool = defineTool({
     accent: { type: 'string', description: 'parisian, quebec, standard, british, american…' },
     useCase: { type: 'string', description: 'narrative_story, conversational, informative_educational, characters_animation, advertisement…' },
     scope: { enum: ['all', 'account', 'library'] },
+    quality: { enum: ['high'], description: 'Only professional clones that passed ElevenLabs\' quality check.' },
+    readyFor: { type: 'string', description: 'Only voices ElevenLabs checked with this model (eleven_v4) in the language. With quality "high": the best voices for that model.' },
     page: { type: 'integer', minimum: 0 }
   }),
   async handler(args) {

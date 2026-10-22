@@ -40,12 +40,14 @@ const HELP = `  voice list [--language <lang>] [--json]           The voices a n
                                                       The takes of a line kept on this computer: which one is its audio,
                                                       which can be put back (--take)
   voice search [words] [--language <lang>] [--gender female|male] [--age young|middle_aged|old] [--accent <a>]
-               [--use-case <u>] [--mine|--library] [--model <m>] [--page <n>] [--json]
+               [--use-case <u>] [--mine|--library] [--model <m>] [--high-quality] [--ready] [--page <n>] [--json]
                                                       ElevenLabs voices (D29): the account's own, then the library's
                                                       thousands, most used first; each with its accent, age, use, a
                                                       recording to hear it (free), its price over the model's, its
                                                       quality and whether it is ready for the model (Eleven v4 unless
-                                                      --model) in the language: prefer « checked in <lang> »
+                                                      --model) in the language: prefer « checked in <lang> ».
+                                                      --high-quality: professional clones that passed ElevenLabs'
+                                                      check only; --ready: those checked with the model in the language
   voice estimate [dir] <screen> [--line <id,…>] [--all] [--dialogue] [--language <lang>] [--json]
                                                       What generating would cost before anything is spent: the share of
                                                       the monthly quota, characters and credits per line (about, at most),
@@ -285,14 +287,15 @@ const estimate = defineCommand({
 
 const search = defineCommand({
   name: 'voice search',
-  flags: { language: 'string', gender: 'string', age: 'string', accent: 'string', 'use-case': 'string', mine: 'boolean', library: 'boolean', model: 'string', page: 'string', json: 'boolean' },
+  flags: { language: 'string', gender: 'string', age: 'string', accent: 'string', 'use-case': 'string', mine: 'boolean', library: 'boolean', model: 'string', 'high-quality': 'boolean', ready: 'boolean', page: 'string', json: 'boolean' },
   run: ({ positionals, flags }) => reportingFailures(async () => {
     const provider = voiceProvider('elevenlabs');
     const query: VoiceQuery = {
       provider: 'elevenlabs', ...(positionals.length ? { text: positionals.join(' ') } : {}), ...(flags.language ? { language: flags.language } : {}),
       ...(flags.gender ? { gender: flags.gender as VoiceQuery['gender'] } : {}), ...(flags.age ? { age: flags.age as VoiceQuery['age'] } : {}),
       ...(flags.accent ? { accent: flags.accent } : {}), ...(flags['use-case'] ? { useCase: flags['use-case'] } : {}),
-      scope: flags.mine ? 'account' : flags.library ? 'library' : 'all', ...(flags.page ? { page: Number(flags.page) } : {})
+      scope: flags.mine ? 'account' : flags.library ? 'library' : 'all', ...(flags.page ? { page: Number(flags.page) } : {}),
+      ...(flags['high-quality'] ? { quality: 'high' as const } : {}), ...(flags.ready ? { readyFor: flags.model || DEFAULT_VOICE_MODEL } : {})
     };
     const result = await provider.search!(query);
     if (flags.json) { printJson(result); return 0; }

@@ -46,6 +46,8 @@ export interface VoiceQuery {
   useCase?: string;              // narrative_story, conversational, informative_educational, characters_animation…
   scope?: 'all' | 'account' | 'library';
   sort?: 'used' | 'trending' | 'recent';  // the library's order: most used in a year (default), trending, newest
+  quality?: 'high';              // only professional clones that passed the service's quality check
+  readyFor?: string;             // only voices the service checked with this model (eleven_v4) in the language (any, without one)
   page?: number;
   pageSize?: number;
 }

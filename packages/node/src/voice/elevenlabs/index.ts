@@ -1,6 +1,6 @@
 import { narrationWords } from '@elabora/core/narration/words';
 import { playsDirections, withoutDirections } from '@elabora/core/narration/directions';
-import { DEFAULT_VOICE_MODEL } from '@elabora/core/narration/voice-fit';
+import { DEFAULT_VOICE_MODEL, voiceFit } from '@elabora/core/narration/voice-fit';
 import { VoiceError } from '../provider.ts';
 import type { SynthesisRequest, SynthesisResult, VoiceProvider, DialogueRequest, DialogueResult } from '../provider.ts';
 import type { VoiceAccount, VoiceInfo, VoiceQuery, VoiceSearchResult, VoiceGender, VoiceQuality } from '../types.ts';
@@ -144,9 +144,16 @@ export async function searchVoices(query: VoiceQuery, signal?: AbortSignal): Pro
   const voices: VoiceInfo[] = [];
   let total = 0;
   let more = false;
+  // readyFor: checked with the model in the language (voice-fit « ready »); without a language, in any.
+  const ready = (voice: VoiceInfo) => {
+    if (!query.readyFor) return true;
+    const checked = voice.models?.[query.readyFor];
+    return Array.isArray(checked) && (query.language ? voiceFit(voice, query.readyFor, query.language) === 'ready' : checked.length > 0);
+  };
   const matches = (voice: VoiceInfo) => (!query.language || primary(voice.language) === primary(query.language) || voice.labels?.locale?.toLowerCase().startsWith(primary(query.language)))
     && (!query.gender || voice.gender === query.gender) && (!query.age || voice.labels?.age === query.age)
-    && (!query.accent || voice.labels?.accent === query.accent) && (!query.useCase || voice.labels?.useCase === query.useCase);
+    && (!query.accent || voice.labels?.accent === query.accent) && (!query.useCase || voice.labels?.useCase === query.useCase)
+    && (!query.quality || voice.quality === 'high') && ready(voice);
   if (scope !== 'library' && !query.page) {
     const params = new URLSearchParams({ page_size: '100', ...(query.text ? { search: query.text } : {}) });
     const answer = await request<{ voices: AccountVoice[] }>('GET', `/v2/voices?${params}`, { signal, what: 'list the account\'s voices' });
@@ -163,9 +170,12 @@ export async function searchVoices(query: VoiceQuery, signal?: AbortSignal): Pro
     if (query.age) params.set('age', query.age);
     if (query.accent) params.set('accent', query.accent);
     if (query.useCase) params.append('use_cases', query.useCase);
+    if (query.quality === 'high') params.set('category', 'high_quality');
     const answer = await request<{ voices: LibraryVoice[]; has_more: boolean; total_count?: number }>('GET', `/v1/shared-voices?${params}`, { signal, what: 'search the voice library' });
     const seen = new Set(voices.map((voice) => voice.id));
-    voices.push(...answer.voices.map((voice) => fromLibrary(voice, query.language)).filter((voice) => !seen.has(voice.id)));
+    // The library cannot be asked by model: those not checked with it are left out of the page (on
+    // 22 Oct 2026, 99 of the 100 most used high-quality French voices were checked with Eleven v4).
+    voices.push(...answer.voices.map((voice) => fromLibrary(voice, query.language)).filter((voice) => !seen.has(voice.id) && ready(voice)));
     total += answer.total_count ?? answer.voices.length;
     more = answer.has_more;
   }
