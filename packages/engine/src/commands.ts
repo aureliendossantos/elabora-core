@@ -53,6 +53,7 @@ export const COMMANDS: { readonly [Name in CommandName]: Runner<Name> } = {
   update_narration_line: edit.updateNarrationLine,
   move_narration_line: edit.moveNarrationLine,
   remove_narration_line: edit.removeNarrationLine,
+  remove_speaker: edit.removeSpeaker,
   set_narration_audio: setNarrationAudio,
   set_narration_words: edit.setNarrationWords,
   split_step: edit.splitStep,

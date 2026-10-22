@@ -1,5 +1,6 @@
-import type { Project, Screen } from '../project/model.ts';
-import { binaryFile, pathsUnder } from '../project/files.ts';
+import type { Course, Project, Screen } from '../project/model.ts';
+import { binaryFile, filesIn, pathsUnder } from '../project/files.ts';
+import { parseJSON } from '../util/json.ts';
 import type { FileHash, ProjectFiles } from '../project/files.ts';
 import { narrationLines, narrationAudioPath, narrationSidecarPath, readNarrationSidecar, NARRATION_DIR } from '../narration/narration.ts';
 import type { Narration, NarrationLine, NarrationAudio } from '../narration/narration.ts';
@@ -188,6 +189,47 @@ export function removeNarrationLine(context: CommandContext, { screen, line }: {
     }
     return {};
   });
+}
+
+export interface RemoveSpeakerArgs {
+  speaker: string;
+  to?: string; // the speaker who says its lines from now on; none: they are left without a speaker
+}
+
+// A speaker leaves the course (course.json speakers, its voice in every language) in one change; the
+// lines it says, on every screen, are said by another speaker (to), or by none. Their audio, made
+// with its voice, is then out of date (W_NARRATION_AUDIO_STALE) until generated again.
+export function removeSpeaker(context: CommandContext, { speaker, to }: RemoveSpeakerArgs): CommandOutput<{ lines: number; screens: string[] }> {
+  const draft = new Draft(context.files);
+  const course = draft.json<Course>('course.json');
+  const speakers = objectsIn(course.speakers);
+  const ids = speakers.map((candidate) => candidate.id).filter((id): id is string => typeof id === 'string');
+  if (!ids.includes(speaker)) throw new CommandError(`No speaker "${speaker}" in course.json (speakers: ${ids.join(', ') || 'none'}).`);
+  if (to !== undefined && (to === speaker || !ids.includes(to))) throw new CommandError(`The lines of "${speaker}" go to another speaker of course.json (${ids.filter((id) => id !== speaker).join(', ') || 'none'}), not "${to}".`);
+  const left = speakers.filter((candidate) => candidate.id !== speaker);
+  if (left.length) course.speakers = left as Course['speakers'];
+  else delete course.speakers;
+  draft.writeJson('course.json', course);
+  let lines = 0;
+  const screens: string[] = [];
+  for (const name of filesIn(context.files, 'screens').filter((candidate) => candidate.endsWith('.json'))) {
+    const file = `screens/${name}`;
+    const parsed = parseJSON(draft.text(file) ?? '');
+    if (parsed.error !== undefined || !isRecord(parsed.value)) continue;
+    const screen = parsed.value as Screen;
+    let said = 0;
+    for (const line of objectsIn(isRecord(screen.narration) ? screen.narration.lines : undefined)) {
+      if (line.speaker !== speaker) continue;
+      if (to) line.speaker = to;
+      else delete line.speaker;
+      said++;
+    }
+    if (!said) continue;
+    draft.writeJson(file, screen);
+    lines += said;
+    screens.push(name.slice(0, -'.json'.length));
+  }
+  return { files: draft.files(), result: { lines, screens } };
 }
 
 // The audio of a line from a file (a voice tool's M4A, or a recording: provider "recording", not

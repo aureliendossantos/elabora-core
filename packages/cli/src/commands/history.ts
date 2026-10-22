@@ -57,6 +57,7 @@ export function describeChange(change: ChangeLike): string {
     case 'update_narration_line': return `changed narration line ${of('line')} of ${of('screen')}`;
     case 'move_narration_line': return `moved narration line ${of('line')} of ${of('screen')}`;
     case 'remove_narration_line': return `removed narration line ${of('line')} of ${of('screen')}`;
+    case 'remove_speaker': return `removed speaker ${of('speaker')}${field(args, 'to') ? `, its lines to ${of('to')}` : ''}`;
     case 'set_narration_audio': return `set the voice of narration line ${of('line')} of ${of('screen')}`;
     case 'remove_block': return `removed block ${of('block')}`;
     case 'move_block': return `moved block ${of('block')}`;

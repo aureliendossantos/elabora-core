@@ -19,7 +19,7 @@ import type {
   CreateObjectArgs, WriteObjectFileArgs, CreateComponentArgs, ForkComponentArgs,
   WriteComponentFileArgs, MigrateComponentsArgs, AddLibraryComponentArgs, CommandDiagnostic, AddFontArgs, FontRequest, SettleImportReportArgs, AddResourceRequest,
   SetCaptionsArgs, UpsertLayerArgs, UpsertEventArgs, RenameArgs, DuplicateScreenArgs,
-  UpdateNarrationArgs, AddNarrationLineArgs, UpdateNarrationLineArgs, MoveNarrationLineArgs, NarrationAudioFileArgs, SetBlockTimingArgs, SetNarrationWordsArgs, SplitStepArgs, NarrationFromPlanArgs, KeepNarrationAudioArgs, SetPlanVoiceoverArgs,
+  UpdateNarrationArgs, AddNarrationLineArgs, UpdateNarrationLineArgs, MoveNarrationLineArgs, NarrationAudioFileArgs, RemoveSpeakerArgs, SetBlockTimingArgs, SetNarrationWordsArgs, SplitStepArgs, NarrationFromPlanArgs, KeepNarrationAudioArgs, SetPlanVoiceoverArgs,
   WritePlanArgs, SetPlanTextArgs, RevertPlanChangeArgs, CreatePlanVersionArgs, ApprovePlanArgs, RecordPlanSendArgs, SetPlanNoteArgs
 } from '@elabora/core/commands/index';
 import type { ScreenParts } from '@elabora/core/project/parts';
@@ -99,6 +99,8 @@ export interface CommandArgs {
   update_narration_line: UpdateNarrationLineArgs;
   move_narration_line: MoveNarrationLineArgs;
   remove_narration_line: { screen: string; line: string };
+  // A speaker leaves the course; its lines go to another speaker (to), or to none.
+  remove_speaker: RemoveSpeakerArgs;
   // The audio of a line from a file (a voice tool's M4A, or a recording: provider "recording").
   set_narration_audio: NarrationAudioFileArgs;
   // « Couper à une réplique »: the line and those after it in its step start the next step; later

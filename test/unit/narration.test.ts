@@ -209,6 +209,29 @@ test('narration edits: lines added, changed, moved and removed (with their audio
   assert.ok(screen.narration.lines.some((line: { id: string }) => line.id === 'l2'));
 });
 
+test('a speaker removed: its lines go to another speaker, or to none, in one undoable change', () => {
+  const dir = narrated({ audio: false });
+  const course = readJSON(dir, 'course.json');
+  course.speakers[1].voices = { fr: { provider: 'pocket-tts', voice: 'jean' } };
+  writeJSON(dir, 'course.json', course);
+  assert.throws(() => edit.removeSpeaker(dir, { speaker: 'personne' }), /No speaker "personne"/);
+  assert.throws(() => edit.removeSpeaker(dir, { speaker: 'marc', to: 'marc' }), /another speaker/);
+  const given = edit.removeSpeaker(dir, { speaker: 'marc', to: 'narratrice' });
+  assert.deepEqual([given.lines, given.screens], [1, ['accueil']]);
+  assert.deepEqual(readJSON(dir, 'course.json').speakers.map((speaker: { id: string }) => speaker.id), ['narratrice'], 'its voices go with it');
+  assert.equal(readJSON(dir, 'screens/accueil.json').narration.lines[2].speaker, 'narratrice');
+  assert.ok(!codes(validateDir(dir).diagnostics).includes('E_NARRATION_SPEAKER'));
+  undo(dir, given.change!.seq);
+  assert.equal(readJSON(dir, 'screens/accueil.json').narration.lines[2].speaker, 'marc', 'undone in one change');
+  assert.deepEqual(readJSON(dir, 'course.json').speakers[1].voices, { fr: { provider: 'pocket-tts', voice: 'jean' } });
+  // The last speaker: its lines are left without one.
+  edit.removeSpeaker(dir, { speaker: 'marc', to: 'narratrice' });
+  const left = edit.removeSpeaker(dir, { speaker: 'narratrice' });
+  assert.equal(left.lines, 1, 'l1 and l2 had no speaker');
+  assert.equal(readJSON(dir, 'course.json').speakers, undefined);
+  assert.ok(readJSON(dir, 'screens/accueil.json').narration.lines.every((line: { speaker?: string }) => line.speaker === undefined));
+});
+
 test('a renamed screen takes the audio of its lines along, their sidecars naming it', { skip: NO_FFMPEG }, () => {
   const dir = narrated();
   edit.rename(dir, { from: 'accueil', to: 'bienvenue' });

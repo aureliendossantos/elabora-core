@@ -254,6 +254,11 @@ export function removeNarrationLine(dir: string, args: { screen: string; line: s
   return runCommand(dir, { name: 'remove_narration_line', args, run: (context) => commands.removeNarrationLine(context, args) }, options);
 }
 
+// A speaker leaves the course; its lines go to another speaker, or to none.
+export function removeSpeaker(dir: string, args: commands.RemoveSpeakerArgs, options?: EditOptions) {
+  return runCommand(dir, { name: 'remove_speaker', args, run: (context) => commands.removeSpeaker(context, args) }, options);
+}
+
 // sources: the audio's bytes (or the path of a file holding them) by hash.
 export function setNarrationAudioChange(dir: string, args: commands.SetNarrationAudioArgs, sources: ReadonlyMap<string, Uint8Array | string>, options?: EditOptions) {
   return runCommand(dir, { name: 'set_narration_audio', args, run: (context) => commands.setNarrationAudio(context, args), sources }, options);
