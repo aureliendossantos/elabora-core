@@ -53,6 +53,8 @@ export function createTooltip(root: HTMLElement = document.body) {
     tip.style.left = `${Math.round(left)}px`;
     tip.style.top = `${Math.round(top)}px`;
     tip.dataset.side = top < box.top ? 'above' : 'below';
+    // It grows from its element, wherever the window's edges pushed it (player.css, « Motion »).
+    tip.style.transformOrigin = `${Math.round(Math.min(Math.max(0, centre - left), width))}px ${top < box.top ? height : 0}px`;
   }
 
   function show(anchor: HTMLElement, text: string, options: TipOptions & { x?: number } = {}) {
@@ -64,6 +66,14 @@ export function createTooltip(root: HTMLElement = document.body) {
     // Over a modal dialog (a layer, the PDF preview), the tooltip goes into it: the page under a modal
     // dialog is painted below it.
     const host = anchor.closest<HTMLDialogElement>('dialog[open]')?.matches(':modal') ? anchor.closest<HTMLDialogElement>('dialog[open]')! : root;
+    // A dialog still growing in (player.css, « Motion ») is, while it scales, what a fixed element in it
+    // is placed against: the tooltip waits for it to stand still.
+    const moving = host === root ? [] : host.getAnimations();
+    if (moving.length) {
+      owner = anchor;
+      void Promise.allSettled(moving.map((animation) => animation.finished)).then(() => { if (owner === anchor) show(anchor, text, options); });
+      return;
+    }
     if (tip.parentElement !== host) host.append(tip);
     owner = anchor;
     tip.textContent = text;

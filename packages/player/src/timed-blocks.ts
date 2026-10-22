@@ -28,8 +28,12 @@ export interface TimedBlocks {
 
 // A short fade replaces every effect under reduced motion.
 const REDUCED_SECONDS = 0.2;
-const EASE_IN = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
-const EASE_OUT = 'cubic-bezier(0.5, 0, 0.75, 0)';
+// An author's effect is a presentation the timeline plays, not the interface answering the learner
+// (player.css, « Motion »): it comes decelerating and leaves accelerating away, as in a slideshow,
+// since nobody waits on what leaves for good. Gentler than the interface's --t-ease-out, which would
+// spend an effect of a second in its first tenth.
+const ENTRANCE = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
+const EXIT = 'cubic-bezier(0.5, 0, 0.75, 0)';
 const DRAWN = 'path, line, polyline, polygon, circle, ellipse, rect';
 
 // The dash a shape is drawn with: as long as its longest subpath. A dash pattern starts again at
@@ -140,7 +144,7 @@ export function createTimedBlocks(root: ParentNode, blocks: readonly BlockData[]
     const reduced = reducedMotion && moment.effect !== 'none';
     const effect = reduced ? 'fade' : moment.effect;
     const duration = Math.max(1, lasts(moment) * 1000);
-    const options: KeyframeAnimationOptions = { duration, fill: 'both', easing: kind === 'in' ? EASE_IN : EASE_OUT };
+    const options: KeyframeAnimationOptions = { duration, fill: 'both', easing: kind === 'in' ? ENTRANCE : EXIT };
     const animations: Animation[] = [];
     const add = (target: Element, frames: Frames, extra: KeyframeAnimationOptions = {}) => {
       const animation = target.animate(frames, { ...options, ...extra });

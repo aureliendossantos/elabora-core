@@ -2,6 +2,22 @@
    This file is the cascade layer elabora.base: components (elabora.components) and the course
    stylesheet (elabora.theme) override it. Stable hooks for themes are documented in docs/design.md. */
 *, *::before, *::after { box-sizing: border-box; }
+/* Motion (the same rules as the Elabora app's design system, after Emil Kowalski's recipes): rare and
+   brief, it says where things come from and go, that a press was heard, and links two states instead
+   of swapping them; never to decorate. What a learner does a hundred times (changing screens, scrolling)
+   does not move. Curves: --t-ease-out for what comes or goes, --t-ease-in-out for what moves on screen,
+   --t-ease-drawer for sheets; ease for a fade that must be seen; never ease-in. What leaves goes the way
+   it came. Only opacity, translate and scale. Menus open at once and shrink back toward their button;
+   popovers, layers and the viewer grow and go back. --t-move multiplies every distance and scale: 0 when
+   the learner asks for less motion, so that only the fades stay. */
+:root {
+  --t-ease-out: cubic-bezier(.23, 1, .32, 1);
+  --t-ease-in-out: cubic-bezier(.77, 0, .175, 1);
+  --t-ease-drawer: cubic-bezier(.32, .72, 0, 1);
+  --t-dur-press: 160ms; --t-dur-tip: 200ms; --t-dur-pop: 200ms; --t-dur-modal: 250ms; --t-dur-drawer: 350ms; --t-dur-reveal: 400ms;
+  --t-move: 1;
+}
+@media (prefers-reduced-motion: reduce) { :root { --t-move: 0; } }
 /* Size classes. Sizes are in rem and 1rem follows the window, so a design keeps its proportions
    from the reference window down to laptops and stays readable on phones (docs/design.md):
    reference ≥ 1500×840 (designed at 1600×900): 1rem = the browser default (16 px);
@@ -66,7 +82,7 @@ h1[tabindex="-1"]:focus { outline: none; }
 dialog .t-block[data-t-concealed] { display: none; } /* layers scroll inside: no place to keep */
 [data-presentation="slides"] .t-block[data-t-pending],
 [data-presentation="slides"] .t-slot:has(> .t-block):not(:has(> .t-block:not([data-t-pending]))) { visibility: hidden; opacity: 0; }
-.t-block[data-t-revealed] { transition: opacity .4s ease, translate .4s ease; }
+.t-block[data-t-revealed] { transition: opacity var(--t-dur-reveal) ease, translate var(--t-dur-reveal) var(--t-ease-out); }
 /* Timed blocks (D28): before they come and after they go, hidden in their place (nothing moves). */
 /* The editor's phone width: the steps after the first, faded in their place (canvas view ghost). */
 .t-block[data-t-ghost] { opacity: .42; }
@@ -76,7 +92,7 @@ dialog .t-block[data-t-concealed] { display: none; } /* layers scroll inside: no
    (A stack is also a slot, which is a flex column: the grid has to outweigh it.) */
 .t-stack.t-slot { display: grid; gap: 0; }
 .t-stack.t-slot > .t-block { grid-area: 1 / 1; min-width: 0; }
-@starting-style { .t-block[data-t-revealed] { opacity: 0; translate: 0 .5rem; } }
+@starting-style { .t-block[data-t-revealed] { opacity: 0; translate: 0 calc(.5rem * var(--t-move)); } }
 /* A revealed step receives focus (screen readers read it); like the title, it is not a control. */
 .t-block[tabindex="-1"]:focus { outline: none; }
 .t-block { scroll-margin-block: calc(var(--t-bar-top, 0px) + 1.25rem) calc(var(--t-bar-bottom, 0px) + 1.25rem); }
@@ -138,6 +154,9 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; min-width: 44px; padding: 0 1.125rem; border-radius: var(--t-radius); border: 2px solid var(--t-primary); font: inherit; font-weight: 600; cursor: pointer; }
 .t-btn--primary { background: var(--t-primary); color: var(--t-on-primary); }
 .t-btn--secondary { background: var(--t-surface); color: var(--t-primary); }
+/* A button pressed gives a little under the finger: the press is heard. */
+:is(.t-btn, .t-nav-btn, .t-bar-btn, .t-icon-btn, .t-timeline-btn, .t-chip):not(:disabled):not([aria-disabled="true"]) { transition: scale var(--t-dur-press) var(--t-ease-out); }
+:is(.t-btn, .t-nav-btn, .t-bar-btn, .t-icon-btn, .t-timeline-btn, .t-chip):not(:disabled):not([aria-disabled="true"]):active { scale: calc(1 - .03 * var(--t-move)); }
 .t-btn[aria-disabled="true"] { opacity: .55; cursor: not-allowed; }
 
 .t-quiz { border: 1px solid color-mix(in srgb, var(--t-text) 16%, transparent); border-radius: var(--t-radius); padding: 1.125rem; margin: 0; }
@@ -178,9 +197,9 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-choice[aria-disabled="true"] { opacity: .6; cursor: not-allowed; }
 
 .t-object { margin: 0; }
-.t-object-frame { position: relative; width: 100%; border-radius: var(--t-radius); overflow: hidden; border: 1px solid color-mix(in srgb, var(--t-text) 14%, transparent); background: var(--t-surface); transition: height .2s ease; }
+.t-object-frame { position: relative; width: 100%; border-radius: var(--t-radius); overflow: hidden; border: 1px solid color-mix(in srgb, var(--t-text) 14%, transparent); background: var(--t-surface); transition: height var(--t-dur-pop) var(--t-ease-out); }
 /* Loading indicator, shown when an object takes more than a moment to start (machines without a GPU). */
-.t-object-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; color: var(--t-muted); font-size: 0.9375rem; pointer-events: none; animation: t-fade-in .3s ease both; }
+.t-object-loading { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; color: var(--t-muted); font-size: 0.9375rem; pointer-events: none; animation: t-fade-in var(--t-dur-pop) ease both; }
 .t-object-loading[hidden] { display: none; }
 .t-object-safe { position: absolute; inset: 0; visibility: hidden; pointer-events: none; padding: var(--t-safe-top, 0) var(--t-safe-right, 0) var(--t-safe-bottom, 0) var(--t-safe-left, 0); }
 .t-object-spinner { width: 2rem; height: 2rem; border-radius: 50%; border: 3px solid color-mix(in srgb, var(--t-primary) 22%, transparent); border-top-color: var(--t-primary); animation: t-spin .9s linear infinite; }
@@ -203,21 +222,40 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 
 .t-dialog { max-width: min(40rem, calc(100vw - 2rem)); border: 0; border-radius: calc(var(--t-radius) + 4px); padding: 1.5rem; color: var(--t-text); background: var(--t-surface); box-shadow: 0 20px 60px rgba(0,0,0,.25); }
 .t-dialog::backdrop { background: rgba(15, 23, 42, .45); }
+/* A layer, a modal one or a panel, and the viewer: they come and go with a movement. Their exits need
+   the dialog to stay drawn once closed (display, and overlay for the modal ones, the top layer); where
+   a browser cannot, they close at once. */
+.t-dialog, .t-viewer { transition: opacity var(--t-dur-modal) var(--t-ease-out), scale var(--t-dur-modal) var(--t-ease-out); }
+@starting-style { .t-dialog[open], .t-viewer[open] { opacity: 0; scale: calc(1 - .04 * var(--t-move)); } }
+.t-dialog::backdrop, .t-viewer::backdrop { transition: opacity var(--t-dur-modal) var(--t-ease-out); }
+@starting-style { .t-dialog[open]::backdrop, .t-viewer[open]::backdrop { opacity: 0; } }
+@supports (overlay: auto) {
+  .t-dialog, .t-viewer { transition: opacity var(--t-dur-modal) var(--t-ease-out), scale var(--t-dur-modal) var(--t-ease-out), display var(--t-dur-modal) allow-discrete, overlay var(--t-dur-modal) allow-discrete; }
+  .t-dialog:not([open]), .t-viewer:not([open]) { opacity: 0; scale: calc(1 - .04 * var(--t-move)); }
+  .t-dialog::backdrop, .t-viewer::backdrop { transition: opacity var(--t-dur-modal) var(--t-ease-out), display var(--t-dur-modal) allow-discrete, overlay var(--t-dur-modal) allow-discrete; }
+  .t-dialog:not([open])::backdrop, .t-viewer:not([open])::backdrop { opacity: 0; }
+}
 .t-dialog .t-blocks { grid-template-columns: 1fr; }
 .t-dialog-title { font-size: 1.3125rem; font-weight: 700; margin: 0 0 0.875rem; }
 .t-dialog-actions { display: flex; justify-content: flex-end; gap: 0.625rem; margin-top: 1.125rem; }
 /* Panel layer (presentation "panel"): over part of the screen, which stays usable; anchored to the
    screen area between the bars. On phones, a sheet at the bottom of the window. */
 .t-panel { position: absolute; inset: 1.25rem 1.25rem auto auto; z-index: 4; width: min(28rem, calc(100% - 2.5rem)); max-height: calc(100% - 2.5rem); overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: 1.25rem 1.375rem; border: 1px solid color-mix(in srgb, var(--t-text) 14%, transparent); border-radius: calc(var(--t-radius) + 4px); color: var(--t-text); background: var(--t-surface); box-shadow: 0 18px 48px rgba(15, 23, 42, .22); }
-.t-panel[open] { animation: t-panel-in .22s ease both; }
-@keyframes t-panel-in { from { opacity: 0; translate: 1rem 0; } }
+.t-panel { transition: opacity var(--t-dur-modal) var(--t-ease-out), translate var(--t-dur-modal) var(--t-ease-out), display var(--t-dur-modal) allow-discrete; }
+.t-panel:not([open]) { opacity: 0; translate: calc(1rem * var(--t-move)) 0; }
+@starting-style { .t-panel[open] { opacity: 0; translate: calc(1rem * var(--t-move)) 0; } }
+.t-panel:dir(rtl):not([open]) { translate: calc(-1rem * var(--t-move)) 0; }
+@starting-style { .t-panel[open]:dir(rtl) { translate: calc(-1rem * var(--t-move)) 0; } }
 .t-panel .t-blocks { grid-template-columns: 1fr; }
 .t-panel .t-block { max-width: none; }
 .t-panel .t-dialog-title:focus { outline: none; }
-@media (max-width: 760px) { .t-panel { position: fixed; inset: auto 0.75rem 0.75rem; width: auto; max-height: 70vh; max-height: 70dvh; } }
+@media (max-width: 760px) {
+  .t-panel { position: fixed; inset: auto 0.75rem 0.75rem; width: auto; max-height: 70vh; max-height: 70dvh; transition-duration: var(--t-dur-drawer); transition-timing-function: var(--t-ease-drawer); }
+  .t-panel:not([open]), .t-panel:dir(rtl):not([open]) { opacity: 1; translate: 0 calc(100% + 0.75rem); }
+  @starting-style { .t-panel[open], .t-panel[open]:dir(rtl) { opacity: 1; translate: 0 calc(100% + 0.75rem); } }
+}
 .t-ended { max-width: 40rem; margin: 15vh auto 0; text-align: center; }
 
-@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 
 /* A narrated slide's Continue: its place kept at the end of the screen, shown at the end of a step. */
 .t-continue--slot { align-items: flex-end; max-width: none; margin: 1rem 0 0; }
@@ -278,7 +316,8 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 /* The progress: a slim bar and its share, in the colour of the bar's text unless player.progress says otherwise. */
 .t-item--progress { gap: 0.625rem; flex: 0 1 11rem; min-width: 6rem; }
 .t-progress { flex: 1 1 auto; height: 6px; border-radius: 3px; background: color-mix(in srgb, currentColor 20%, transparent); overflow: hidden; }
-.t-progress-bar { height: 100%; width: 0; border-radius: inherit; background: var(--t-player-progress, currentColor); transition: width .3s ease; }
+.t-progress-bar { height: 100%; width: 100%; border-radius: inherit; translate: calc((var(--t-progress, 0) - 100) * 1%) 0; background: var(--t-player-progress, currentColor); transition: translate var(--t-dur-modal) var(--t-ease-out); }
+.t-progress-bar:dir(rtl) { translate: calc((100 - var(--t-progress, 0)) * 1%) 0; }
 .t-progress-value { min-width: 3.25em; font-size: 0.8125rem; font-weight: 600; font-variant-numeric: tabular-nums; opacity: .85; }
 
 /* Buttons of the bars: a ghost (the outline), a chip (Ressources, Glossaire, Quitter), an icon (IA et
@@ -334,6 +373,16 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-language-btn .t-icon:last-child svg { width: 0.875rem; height: 0.875rem; }
 .t-pop { position: absolute; inset-inline-end: 0; z-index: 7; width: max-content; min-width: 14rem; max-width: min(22rem, calc(100vw - 2rem)); padding: 0.375rem; border-radius: 14px; color: var(--t-text); background: var(--t-surface); box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-text) 9%, transparent), 0 12px 32px rgb(15 23 42 / .18); font-size: 0.9375rem; font-weight: 400; }
 .t-pop[hidden] { display: none; }
+/* A popover (Affichage, the language, the timeline's speeds and more) grows from its button and shrinks
+   back to it; a menu (the outline) opens at once and shrinks back. Their origin is their button's side,
+   written next to where they are placed. */
+.t-pop, .t-timeline-popup { transition: opacity var(--t-dur-pop) var(--t-ease-out), scale var(--t-dur-pop) var(--t-ease-out), display var(--t-dur-pop) allow-discrete; }
+:is(.t-pop, .t-timeline-popup)[hidden] { opacity: 0; scale: calc(1 - .05 * var(--t-move)); }
+@starting-style { :is(.t-pop, .t-timeline-popup):not([hidden]) { opacity: 0; scale: calc(1 - .05 * var(--t-move)); } }
+.t-bar--bottom :is(.t-pop, .t-timeline-popup) { transform-origin: bottom right; }
+.t-bar--top :is(.t-pop, .t-timeline-popup) { transform-origin: top right; }
+.t-bar--bottom .t-pop[data-align="start"], .t-bar--bottom :is(.t-pop, .t-timeline-popup):dir(rtl) { transform-origin: bottom left; }
+.t-bar--top .t-pop[data-align="start"], .t-bar--top :is(.t-pop, .t-timeline-popup):dir(rtl) { transform-origin: top left; }
 .t-pop[data-align="start"], .t-menu[data-align="start"] { inset-inline-start: 0; inset-inline-end: auto; }
 .t-pop[data-align="end"], .t-menu[data-align="end"] { inset-inline-start: auto; inset-inline-end: 0; }
 .t-bar--bottom .t-pop { bottom: calc(100% + 0.75rem); }
@@ -352,8 +401,8 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-display-size { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: 0; border-radius: 8px; font-family: var(--t-font-body); font-weight: 700; color: var(--t-primary); background: transparent; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--t-text) 16%, transparent); cursor: pointer; }
 .t-display-size--normal { font-size: 12px; } .t-display-size--large { font-size: 15px; } .t-display-size--larger { font-size: 18px; }
 .t-display-size[aria-checked="true"] { color: var(--t-on-primary); background: var(--t-primary); box-shadow: none; }
-.t-switch { position: relative; flex: none; width: 36px; height: 22px; padding: 0; border: 0; border-radius: 11px; background: color-mix(in srgb, var(--t-text) 22%, transparent); cursor: pointer; transition: background .15s ease; }
-.t-switch-knob { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(15 23 42 / .3); transition: translate .15s ease; }
+.t-switch { position: relative; flex: none; width: 36px; height: 22px; padding: 0; border: 0; border-radius: 11px; background: color-mix(in srgb, var(--t-text) 22%, transparent); cursor: pointer; transition: background var(--t-dur-press) ease; }
+.t-switch-knob { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(15 23 42 / .3); transition: translate var(--t-dur-press) var(--t-ease-out); }
 .t-switch[aria-checked="true"] { background: var(--t-primary); }
 .t-switch[aria-checked="true"] .t-switch-knob { translate: 14px 0; }
 .t-display-keys { display: grid; grid-template-columns: auto 1fr; gap: 0.375rem 0.75rem; margin: 0.25rem 0.75rem 0.5rem; font-size: 0.875rem; }
@@ -373,10 +422,14 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 
 /* The outline: a menu over the screen from its button, upwards in the bottom bar. */
 .t-item--outline { position: relative; }
-.t-menu { position: absolute; inset-inline-start: 0; z-index: 7; width: min(24rem, calc(100vw - 2rem)); max-height: calc(100vh - var(--t-bar-top, 0px) - var(--t-bar-bottom, 0px) - 2rem); max-height: calc(100dvh - var(--t-bar-top, 0px) - var(--t-bar-bottom, 0px) - 2rem); overflow-y: auto; padding: 0.375rem; border-radius: 14px; color: var(--t-text); background: var(--t-surface); box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-text) 9%, transparent), 0 12px 32px rgb(15 23 42 / .18); font-size: 0.9375rem; font-weight: 400; transition: opacity .16s ease, translate .16s ease; }
+.t-menu { position: absolute; inset-inline-start: 0; z-index: 7; width: min(24rem, calc(100vw - 2rem)); max-height: calc(100vh - var(--t-bar-top, 0px) - var(--t-bar-bottom, 0px) - 2rem); max-height: calc(100dvh - var(--t-bar-top, 0px) - var(--t-bar-bottom, 0px) - 2rem); overflow-y: auto; padding: 0.375rem; border-radius: 14px; color: var(--t-text); background: var(--t-surface); box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-text) 9%, transparent), 0 12px 32px rgb(15 23 42 / .18); font-size: 0.9375rem; font-weight: 400; }
 .t-bar--bottom .t-menu { bottom: calc(100% + 0.75rem); }
 .t-bar--top .t-menu { top: calc(100% + 0.75rem); }
-@starting-style { .t-bar--bottom .t-menu { opacity: 0; translate: 0 6px; } .t-bar--top .t-menu { opacity: 0; translate: 0 -6px; } }
+.t-menu[hidden] { opacity: 0; scale: calc(1 - .05 * var(--t-move)); transition: opacity var(--t-dur-pop) ease, scale var(--t-dur-pop) var(--t-ease-out), display var(--t-dur-pop) allow-discrete; }
+.t-bar--bottom .t-menu { transform-origin: bottom left; }
+.t-bar--top .t-menu { transform-origin: top left; }
+.t-bar--bottom .t-menu[data-align="end"], .t-bar--bottom .t-menu:dir(rtl) { transform-origin: bottom right; }
+.t-bar--top .t-menu[data-align="end"], .t-bar--top .t-menu:dir(rtl) { transform-origin: top right; }
 .t-menu-where { margin: 0.5rem 0.75rem 0.25rem; font-size: 0.8125rem; color: var(--t-muted); font-variant-numeric: tabular-nums; }
 .t-menu h2 { margin: 0.625rem 0.75rem 0.25rem; font-family: var(--t-font-body); font-size: 0.75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--t-muted); }
 .t-menu ul { list-style: none; margin: 0; padding: 0; }
@@ -392,22 +445,27 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-menu-text { min-width: 0; }
 
 /* The one tooltip: refusals, hints, the seek bar's quote, glossary definitions (WCAG 1.4.13). */
-.t-tip { position: fixed; z-index: 40; max-width: min(28rem, calc(100vw - 16px)); padding: 0.3125rem 0.625rem; border-radius: 8px; color: var(--t-pl-tip-fg); background: var(--t-pl-tip-bg); box-shadow: 0 4px 14px rgb(15 23 42 / .22); font: 600 0.8125rem/1.4 var(--t-font-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: opacity .12s ease; }
+.t-tip { position: fixed; z-index: 40; max-width: min(28rem, calc(100vw - 16px)); padding: 0.3125rem 0.625rem; border-radius: 8px; color: var(--t-pl-tip-fg); background: var(--t-pl-tip-bg); box-shadow: 0 4px 14px rgb(15 23 42 / .22); font: 600 0.8125rem/1.4 var(--t-font-body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: opacity var(--t-dur-tip) ease, scale var(--t-dur-tip) ease, display var(--t-dur-tip) allow-discrete; }
 .t-tip--wrap { width: max-content; max-width: min(22rem, calc(100vw - 16px)); white-space: normal; font-weight: 500; padding: 0.4375rem 0.75rem; }
-@starting-style { .t-tip { opacity: 0; } }
+.t-tip[hidden] { opacity: 0; scale: calc(1 - .03 * var(--t-move)); }
+@starting-style { .t-tip:not([hidden]) { opacity: 0; scale: calc(1 - .03 * var(--t-move)); } }
 
 /* Side panels: Resources, Glossary, « IA et crédits », the transcript. Over the screen from the end of
    the line, between the bars that stay in the window; a sheet from the bottom on phones. */
-.t-sheet { position: fixed; z-index: 8; inset-block: var(--t-bar-top, 0px) var(--t-bar-bottom, 0px); inset-inline-end: 0; display: flex; flex-direction: column; width: min(26.25rem, 100vw); color: var(--t-text); background: var(--t-surface); box-shadow: -1px 0 0 color-mix(in srgb, var(--t-text) 10%, transparent), -14px 0 32px rgb(15 23 42 / .1); font-family: var(--t-font-body); animation: t-sheet-in .22s ease both; }
-@keyframes t-sheet-in { from { opacity: 0; translate: 1.5rem 0; } }
+.t-sheet { position: fixed; z-index: 8; inset-block: var(--t-bar-top, 0px) var(--t-bar-bottom, 0px); inset-inline-end: 0; display: flex; flex-direction: column; width: min(26.25rem, 100vw); color: var(--t-text); background: var(--t-surface); box-shadow: -1px 0 0 color-mix(in srgb, var(--t-text) 10%, transparent), -14px 0 32px rgb(15 23 42 / .1); font-family: var(--t-font-body); transition: translate var(--t-dur-drawer) var(--t-ease-drawer), opacity var(--t-dur-drawer) var(--t-ease-drawer), display var(--t-dur-drawer) allow-discrete; }
+.t-sheet[hidden] { translate: 100% 0; }
+@starting-style { .t-sheet:not([hidden]) { translate: 100% 0; } }
+.t-sheet:dir(rtl)[hidden] { translate: -100% 0; }
+@starting-style { .t-sheet:dir(rtl):not([hidden]) { translate: -100% 0; } }
 .t-sheet-head { display: flex; align-items: center; gap: 0.5rem; flex: none; min-height: 3.75rem; padding: 0.5rem 0.75rem 0.5rem 1.625rem; box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--t-text) 9%, transparent); }
 .t-sheet-title { flex: 1; margin: 0; font-family: var(--t-font-body); font-size: 1.0625rem; font-weight: 700; color: var(--t-text); }
 .t-sheet-title:focus { outline: none; }
 .t-sheet-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0.75rem 1.125rem 1.5rem; }
 .t-sheet .t-icon-btn { color: var(--t-text); }
 @media (max-width: 760px) {
-  .t-sheet { inset: auto 0 0 0; width: auto; max-height: 78vh; max-height: 78dvh; border-radius: 16px 16px 0 0; box-shadow: 0 -10px 30px rgb(15 23 42 / .16); animation-name: t-sheet-up; }
-  @keyframes t-sheet-up { from { opacity: 0; translate: 0 2rem; } }
+  .t-sheet { inset: auto 0 0 0; width: auto; max-height: 78vh; max-height: 78dvh; border-radius: 16px 16px 0 0; box-shadow: 0 -10px 30px rgb(15 23 42 / .16); }
+  .t-sheet[hidden], .t-sheet:dir(rtl)[hidden] { translate: 0 100%; }
+  @starting-style { .t-sheet:not([hidden]), .t-sheet:dir(rtl):not([hidden]) { translate: 0 100%; } }
 }
 
 /* Resources: a list of files; a PDF opens in the preview, any other file downloads. */
@@ -422,8 +480,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-resource-action { display: inline-flex; color: var(--t-muted); }
 /* The preview of a PDF: over the module, its head with « Télécharger ». */
 .t-viewer { width: min(72rem, calc(100vw - 2.5rem)); height: calc(100vh - 2.5rem); height: calc(100dvh - 2.5rem); max-width: none; max-height: none; margin: auto; padding: 0; border: 0; border-radius: 14px; color: var(--t-text); background: var(--t-surface); box-shadow: 0 24px 64px rgb(15 23 42 / .32); overflow: hidden; font-family: var(--t-font-body); }
-.t-viewer[open] { display: flex; flex-direction: column; animation: t-viewer-in .2s ease both; }
-@keyframes t-viewer-in { from { opacity: 0; scale: .98; } }
+.t-viewer[open] { display: flex; flex-direction: column; }
 .t-viewer::backdrop { background: rgb(15 23 42 / .55); }
 .t-viewer-head { display: flex; align-items: center; gap: 1rem; flex: none; min-height: 4rem; padding: 0.625rem 0.75rem 0.625rem 1.5rem; box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--t-text) 10%, transparent); }
 .t-viewer-name { display: flex; flex-direction: column; flex: 1; min-width: 0; }
@@ -500,8 +557,9 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-timeline-seen { background: color-mix(in srgb, var(--t-pl-accent) 18%, var(--t-pl-bottom-bg)); }
 .t-timeline-played { background: var(--t-pl-accent); }
 .t-timeline-mark { position: absolute; top: -4px; width: 6px; height: 14px; transform: translateX(-3px); background: linear-gradient(to right, var(--t-pl-bottom-bg) 0 2px, color-mix(in srgb, var(--t-pl-bottom-fg) 40%, transparent) 2px 4px, var(--t-pl-bottom-bg) 4px); }
-.t-timeline-thumb { position: absolute; top: 50%; width: 18px; height: 18px; border-radius: 50%; background: var(--t-pl-accent); box-shadow: 0 0 0 3px var(--t-pl-bottom-bg), 0 1px 4px rgb(15 23 42 / .3); transform: translate(-50%, -50%); transition: width .12s ease, height .12s ease; }
-.t-timeline-seek:hover .t-timeline-thumb, .t-timeline-seek:active .t-timeline-thumb { width: 22px; height: 22px; }
+.t-timeline-thumb { position: absolute; top: 50%; width: 18px; height: 18px; border-radius: 50%; background: var(--t-pl-accent); box-shadow: 0 0 0 3px var(--t-pl-bottom-bg), 0 1px 4px rgb(15 23 42 / .3); transform: translate(-50%, -50%); transition: scale var(--t-dur-press) var(--t-ease-out); }
+.t-timeline-seek:active .t-timeline-thumb { scale: 1.22; }
+@media (hover: hover) and (pointer: fine) { .t-timeline-seek:hover .t-timeline-thumb { scale: 1.22; } }
 .t-timeline-time { flex: none; padding: 0 0.5rem 0 0.25rem; font-size: 0.875rem; font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap; opacity: .85; }
 .t-timeline-tools { display: inline-flex; align-items: center; gap: 0.125rem; margin-inline-start: 0.25rem; padding-inline-start: 0.625rem; box-shadow: inset 1px 0 0 color-mix(in srgb, var(--t-pl-bottom-fg) 14%, transparent); }
 .t-timeline-anchor { position: relative; display: inline-flex; }
@@ -509,7 +567,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 /* The volume's slider, above its button while the pointer or the focus is there (it moves nothing). */
 .t-timeline-volume { position: relative; display: inline-flex; }
 .t-timeline-volume[hidden] { display: none; }
-.t-timeline-volume-pop { position: absolute; bottom: calc(100% + 0.375rem); left: 50%; z-index: 7; display: flex; padding: 0.75rem 0.5rem; border-radius: 12px; background: var(--t-surface); box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-text) 9%, transparent), 0 8px 24px rgb(15 23 42 / .18); translate: -50% 4px; opacity: 0; visibility: hidden; transition: opacity .14s ease, translate .14s ease, visibility .14s; }
+.t-timeline-volume-pop { position: absolute; bottom: calc(100% + 0.375rem); left: 50%; z-index: 7; display: flex; padding: 0.75rem 0.5rem; border-radius: 12px; background: var(--t-surface); box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-text) 9%, transparent), 0 8px 24px rgb(15 23 42 / .18); translate: -50% calc(4px * var(--t-move)); opacity: 0; visibility: hidden; transition: opacity var(--t-dur-pop) var(--t-ease-out), translate var(--t-dur-pop) var(--t-ease-out), visibility var(--t-dur-pop); }
 .t-timeline-volume:hover .t-timeline-volume-pop, .t-timeline-volume:focus-within .t-timeline-volume-pop { opacity: 1; visibility: visible; translate: -50% 0; }
 .t-timeline-volume-range { width: 1.5rem; height: 6rem; margin: 0; writing-mode: vertical-lr; direction: rtl; accent-color: var(--t-pl-accent); cursor: pointer; }
 .t-timeline-more-menu .t-timeline-volume-pop { display: none; }
@@ -561,11 +619,12 @@ button.t-timeline-line:disabled { color: var(--t-muted); }
 .t-timeline-credits p { margin: 0 0 0.25rem; overflow-wrap: anywhere; }
 .t-timeline-credits a { color: inherit; }
 /* Sound refused before a gesture: one large Play button over the screen, inviting (Lin 27). */
-.t-timeline-start { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; width: 100%; padding: 1.5rem; border: 0; font: inherit; color: var(--t-pl-accent); background: color-mix(in srgb, var(--t-surface) 72%, transparent); cursor: pointer; animation: t-fade-in .2s ease both; }
-.t-timeline-start-circle { display: flex; align-items: center; justify-content: center; width: 6.5rem; height: 6.5rem; border-radius: 50%; color: var(--t-pl-on-accent); background: var(--t-pl-accent); box-shadow: 0 0 0 8px color-mix(in srgb, var(--t-pl-accent) 14%, transparent), 0 10px 28px rgb(15 23 42 / .28); transition: scale .16s ease, box-shadow .16s ease; }
+.t-timeline-start { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; width: 100%; padding: 1.5rem; border: 0; font: inherit; color: var(--t-pl-accent); background: color-mix(in srgb, var(--t-surface) 72%, transparent); cursor: pointer; animation: t-fade-in var(--t-dur-pop) ease both; }
+.t-timeline-start-circle { display: flex; align-items: center; justify-content: center; width: 6.5rem; height: 6.5rem; border-radius: 50%; color: var(--t-pl-on-accent); background: var(--t-pl-accent); box-shadow: 0 0 0 8px color-mix(in srgb, var(--t-pl-accent) 14%, transparent), 0 10px 28px rgb(15 23 42 / .28); transition: scale var(--t-dur-press) var(--t-ease-out); }
 .t-timeline-start-circle .t-icon { margin-inline-start: 0.375rem; }
 .t-timeline-start-circle .t-icon svg { width: 2.75rem; height: 2.75rem; }
-.t-timeline-start:hover .t-timeline-start-circle { scale: 1.05; box-shadow: 0 0 0 12px color-mix(in srgb, var(--t-pl-accent) 16%, transparent), 0 12px 32px rgb(15 23 42 / .3); }
+@media (hover: hover) and (pointer: fine) { .t-timeline-start:hover .t-timeline-start-circle { scale: calc(1 + .05 * var(--t-move)); } }
+.t-timeline-start:active .t-timeline-start-circle { scale: calc(1 - .03 * var(--t-move)); }
 .t-timeline-start-label { font-size: 1.3125rem; font-weight: 700; }
 .t-timeline-start:focus-visible { outline: none; }
 .t-timeline-start:focus-visible .t-timeline-start-circle { outline: 3px solid var(--t-focus); outline-offset: 4px; }
@@ -593,8 +652,20 @@ button.t-timeline-line:disabled { color: var(--t-muted); }
 /* The controls in the top bar: their popups open downward, and the captions stay over the bottom
    of the screen, above the bottom bar when there is one. */
 .t-bar--top .t-timeline-popup { bottom: auto; top: calc(100% + 0.625rem); }
-.t-bar--top .t-timeline-volume-pop { bottom: auto; top: calc(100% + 0.375rem); translate: -50% -4px; }
+.t-bar--top .t-timeline-volume-pop { bottom: auto; top: calc(100% + 0.375rem); translate: -50% calc(-4px * var(--t-move)); }
 .t-bar--top .t-timeline-volume:hover .t-timeline-volume-pop, .t-bar--top .t-timeline-volume:focus-within .t-timeline-volume-pop { translate: -50% 0; }
 .t-bar--top .t-timeline-band { position: fixed; bottom: calc(var(--t-bar-bottom, 0px) + 1.25rem); }
 /* A side panel open: captions stay in the room the screen has left. */
 @media (min-width: 761px) { #elabora-app:has(> .t-sheet:not([hidden])) .t-timeline-band { left: calc((100% - min(26.25rem, 100vw)) / 2); width: min(60%, 48rem); } }
+/* Less motion asked: what slides from an edge (a side sheet, a panel on a phone) fades in its place. */
+@media (prefers-reduced-motion: reduce) {
+  .t-sheet[hidden], .t-sheet:dir(rtl)[hidden], .t-panel:not([open]), .t-panel:dir(rtl):not([open]) { translate: none; opacity: 0; }
+  @starting-style { .t-sheet:not([hidden]), .t-sheet:dir(rtl):not([hidden]), .t-panel[open], .t-panel[open]:dir(rtl) { translate: none; opacity: 0; } }
+}
+/* Less motion asked: what the course's authors wrote (themes, components, a block's own CSS) is stilled
+   entirely, since the player cannot tell what in it moves; the player's own pieces keep their fades
+   (--t-move). A step's revealed blocks keep theirs too: with --t-move at 0 it moves nothing. */
+@media (prefers-reduced-motion: reduce) {
+  :is(#t-main, dialog.t-layer, .t-backdrop) :is(*, *::before, *::after) { animation: none !important; }
+  :is(#t-main, dialog.t-layer, .t-backdrop) :is(*:not(.t-block[data-t-revealed]), *::before, *::after) { transition: none !important; }
+}

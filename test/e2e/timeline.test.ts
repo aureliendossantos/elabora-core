@@ -174,6 +174,7 @@ test('dragging the playhead: the screen follows, a tooltip quotes the words, pla
     await page.mouse.up();
     const after = await timeline(page);
     assert.equal(after.playing, true, 'playback goes on from there');
+    await page.locator('.t-tip').waitFor({ state: 'hidden', timeout: 2000 });
     assert.equal(await page.locator('.t-tip').isHidden(), true);
     // The shortcuts: Shift+? on the bar, Escape closes them.
     await page.focus('.t-timeline-seek');
@@ -181,6 +182,7 @@ test('dragging the playhead: the screen follows, a tooltip quotes the words, pla
     assert.equal(await page.locator('.t-timeline-keys').isVisible(), true);
     assert.match(await page.locator('.t-timeline-keys').innerText(), /Ctrl\+Alt\+P[\s\S]*Lecture ou pause/);
     await page.keyboard.press('Escape');
+    await page.locator('.t-timeline-keys').waitFor({ state: 'hidden', timeout: 2000 });
     assert.equal(await page.locator('.t-timeline-keys').isHidden(), true);
   });
 });

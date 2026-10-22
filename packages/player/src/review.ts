@@ -52,7 +52,7 @@ function startBridge(origins: readonly string[]) {
   const style = document.createElement('style');
   style.dataset.elaboraReview = '';
   // The column moved into the room the page leaves (layout), and the block a comment points at (go).
-  style.textContent = `#elabora-app[data-elabora-review-shift] #t-main > .t-screen { translate: var(--elabora-review-shift) 0; transition: translate .25s ease; }
+  style.textContent = `#elabora-app[data-elabora-review-shift] #t-main > .t-screen { translate: var(--elabora-review-shift) 0; transition: translate var(--t-dur-modal, .25s) var(--t-ease-in-out, ease); }
 [data-elabora-review-target] { outline: 3px solid #2563eb; outline-offset: 4px; border-radius: 4px; animation: elabora-review-ping 0.6s ease-in-out 2; }
 @keyframes elabora-review-ping { 50% { outline-offset: 10px; outline-color: rgb(37 99 235 / 0.35); } }
 @media (prefers-reduced-motion: reduce) { [data-elabora-review-target] { animation: none; } #elabora-app[data-elabora-review-shift] #t-main > .t-screen { transition: none; } }`;

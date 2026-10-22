@@ -195,7 +195,7 @@ export function createChrome(course: CourseData, labels: Labels, { actions, tool
 
   function setProgress(percent: number, text: string) {
     if (!progress || !progressBar || !progressValue) return;
-    progressBar.style.width = `${percent}%`;
+    progressBar.style.setProperty('--t-progress', String(percent));
     progress.setAttribute('aria-valuenow', String(percent));
     progress.setAttribute('aria-valuetext', text);
     progressValue.textContent = text;

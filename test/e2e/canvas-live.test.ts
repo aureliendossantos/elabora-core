@@ -71,6 +71,7 @@ test('the live bars: panels, the outline, Previous and Next said to the host, th
     assert.ok(sheet && sheet.y >= 55 && sheet.y + sheet.height <= 829, `the panel between the bars (${JSON.stringify(sheet)})`);
     await page.click('.t-glossary-btn');
     assert.equal(await page.locator('.t-sheet[data-sheet="glossary"]').isVisible(), true);
+    await page.locator('.t-sheet[data-sheet="resources"]').waitFor({ state: 'hidden', timeout: 2000 }); // it fades out
     assert.equal(await page.locator('.t-sheet[data-sheet="resources"]').isVisible(), false);
     // A term of the screen shows its definition.
     await page.hover('#t-main a.t-term[data-term="paquet"]');
@@ -112,6 +113,7 @@ test('the live bars: panels, the outline, Previous and Next said to the host, th
     assert.equal(await page.locator('.t-sheet[data-sheet="glossary"]').isVisible(), true);
     await send({ type: 'elabora/open', protocol, panel: 'display' });
     assert.equal(await page.locator('.t-display-menu').isVisible(), true);
+    await page.locator('.t-sheet[data-sheet="glossary"]').waitFor({ state: 'hidden', timeout: 2000 }); // it fades out
     assert.equal(await page.locator('.t-sheet[data-sheet="glossary"]').isVisible(), false, 'one thing open at a time');
     // A version the canvas does not speak, a panel the course does not have.
     await post({ type: 'elabora/open', protocol: 'elabora-player-preview/2', panel: 'about' });

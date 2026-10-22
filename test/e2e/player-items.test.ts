@@ -176,6 +176,8 @@ test('« Affichage »: the screen\'s text larger in three steps without moving t
     await page.click('.t-display-menu .t-pop-item');
     assert.match(await page.locator('.t-display-keys').textContent() ?? '', /Ctrl\+Alt\+P/);
     await page.keyboard.press('Escape');
+    // It fades out (player.css, « Motion »: the fades stay when less motion is asked).
+    await page.locator('.t-display-menu').waitFor({ state: 'hidden', timeout: 2000 });
     assert.equal(await page.locator('.t-display-menu').isVisible(), false);
     await reload();
     assert.equal(await zoom(), '1.3');
