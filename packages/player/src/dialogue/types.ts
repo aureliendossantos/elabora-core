@@ -55,8 +55,35 @@ export interface DialogueSpeakerData {
   narrator?: boolean;
   // A theme colour token (color.accent).
   color?: string;
-  // Package paths: an SVG that follows the characters' convention, or pictures.
-  look?: { svg?: string; portrait?: string; expressions?: Record<string, string> };
+  // Package paths: an SVG that follows the characters' convention, or pictures. The compiler adds the
+  // SVG itself, sanitized (D33) with the class t-character (inline), and what its root declares
+  // (manifest): @elabora/player character/ mounts either.
+  look?: { svg?: string; portrait?: string; expressions?: Record<string, string>; inline?: string; manifest?: CharacterManifest };
+}
+
+// What a character's SVG root declares (docs/dialogues.md, characters): data-expressions,
+// data-default-expression, data-gestures (seconds) and data-portrait (the face's box, null without).
+export interface CharacterManifest {
+  expressions: string[];
+  defaultExpression: string;
+  gestures: Record<string, number>;
+  portrait: [number, number, number, number] | null;
+}
+
+// A line's voice in the package (filled by the compiler for every line of a dialogue, and for the
+// options when learnerVoice): its audio in the package's language, or the core's estimate.
+export interface LineVoiceData {
+  // The audio's path in the package (null: no audio in this language).
+  src: string | null;
+  // Seconds: the audio's, or the core's estimate.
+  duration: number;
+  // When each word is said, [text, start, end] in seconds from the start of the line (aligned, or estimated).
+  words: [string, number, number][];
+  // The mouth's envelope, one letter per 1/30 s: c (closed), s (small), o (open), w (wide). null:
+  // follow the words (open during a word, closed in silences over 250 ms).
+  mouth: string | null;
+  // No audio, or words not timed by alignment.
+  estimated: boolean;
 }
 
 export interface DialogueSceneData {
@@ -72,10 +99,15 @@ export interface DialogueLineData {
   expression?: string;
   cues?: DialogueCueData[];
   if?: DialogueCondition[];
+  // Its voice (the course data; the core's own tools leave it out).
+  voice?: LineVoiceData;
 }
 
 export interface DialogueCueData {
   at: { line?: string; word?: string; occurrence?: number; edge?: 'start' | 'end'; offset?: number };
+  // When the cue falls in its line, in seconds from the line's start, resolved by the compiler as the
+  // timeline's cues are (the course data; absent when the anchor names no word of the line).
+  time?: number;
   gesture?: string;
   expression?: string;
   do?: DialogueAction[];
@@ -130,6 +162,8 @@ export interface DialogueOptionData {
   if?: DialogueCondition[];
   unavailable: 'hide' | 'disable';
   unavailableText?: string;
+  // The learner's line said by the learner's voice (learnerVoice; the course data).
+  voice?: LineVoiceData;
 }
 
 export interface DialogueEndingData {
