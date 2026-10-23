@@ -504,3 +504,52 @@ test('a fork of dialogue with markup of its own keeps the behaviour', { timeout:
     await page.close();
   }
 });
+
+// The screen drives the dialogue: begins: event waits for start-dialogue, a button moves it to a node
+// (goto-dialogue), another starts it over (restart-dialogue, after the scored run: the scored run kept);
+// dialogue.node fires with its node. On a new visit, what its cues showed is shown again, at once.
+test('the screen\'s actions on a dialogue, and its presentation replayed on a new visit', { timeout: 180000 }, async () => {
+  const dir = dialogueCourse({ screens: ['appel', 'rencontre'] });
+  const file = path.join(dir, 'screens/rencontre.json');
+  const screen = JSON.parse(fs.readFileSync(file, 'utf8'));
+  screen.blocks[0].props.begins = 'event';
+  screen.blocks.push({ id: 'rencontre-fin', type: 'button', props: { label: 'Aller à la fin' } }, { id: 'rencontre-encore', type: 'button', props: { label: 'Encore' } });
+  screen.events = [
+    { id: 'demarre', on: { type: 'screen.enter' }, do: [{ type: 'start-dialogue', block: 'rencontre-marc' }] },
+    { id: 'saute', on: { type: 'click', target: 'rencontre-fin' }, do: [{ type: 'goto-dialogue', block: 'rencontre-marc', node: 'fin' }] },
+    { id: 'encore', on: { type: 'click', target: 'rencontre-encore' }, do: [{ type: 'restart-dialogue', block: 'rencontre-marc' }] },
+    { id: 'noeud', on: { type: 'dialogue.node', target: 'rencontre-marc', node: 'fin' }, do: [{ type: 'increment-variable', variable: 'bonsReflexes', by: 1 }] }
+  ];
+  fs.writeFileSync(file, JSON.stringify(screen, null, 2));
+  const b = await build(dir, { emit: 'dir', out: tmp('elabora-dialogue-events-'), writeLock: false, debug: true });
+  assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
+  const { server, browser } = await context();
+  server.addPackage('devents', b.dirPath);
+  const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  try {
+    await page.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
+    await page.goto(`${server.base}/pkg/devents/index.html`);
+    await page.waitForFunction(() => (window as DialogueWindow).__elabora);
+    // appel: its cue at « étage » shows the floor plan; a new visit shows it at once.
+    await page.evaluate(() => (window as DialogueWindow).__elabora.go('appel'));
+    await until(page, 'appel-marc', 'choosing');
+    assert.equal(await page.locator('[data-block="plan-etage"]').isVisible(), true);
+    await page.evaluate(() => (window as DialogueWindow).__elabora.go('rencontre'));
+    assert.equal((await state(page, 'rencontre-marc')).phase, 'playing', 'started by the screen');
+    await page.locator('[data-block="rencontre-fin"] button').click();
+    const ended = await until(page, 'rencontre-marc', 'ended');
+    assert.equal(ended.node, 'fin');
+    assert.equal(await page.evaluate(() => (window as DialogueWindow).__elabora.engine.getVar('bonsReflexes')), 1, 'dialogue.node with its node');
+    await page.locator('[data-block="rencontre-encore"] button').click();
+    const again = await state(page, 'rencontre-marc');
+    assert.deepEqual([again.phase, again.path.length, Array.isArray(again.scored)], ['playing', 0, true], 'started over, the scored run kept apart');
+    await page.evaluate(() => (window as DialogueWindow).__elabora.go('appel'));
+    assert.equal(await page.locator('[data-block="plan-etage"]').isVisible(), true, 'shown again on the new visit, at once');
+    assert.equal((await state(page, 'appel-marc')).phase, 'choosing', 'the thread at its decision, at once');
+    assert.deepEqual(errors, []);
+  } finally {
+    await page.close();
+  }
+});
