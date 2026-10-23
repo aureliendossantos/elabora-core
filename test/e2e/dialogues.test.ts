@@ -10,6 +10,7 @@ import { launchBrowser } from '@elabora/node/emulator/browser';
 import { testPackage } from '@elabora/node/emulator/run';
 import { build } from '@elabora/node/build';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
+import { forkComponent } from '@elabora/node/edit';
 import { startCanvasHost } from '@elabora/node/canvas/host';
 import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import { loadAxe, axeViolations } from '@elabora/node/util/axe';
@@ -457,5 +458,49 @@ test('voiced lines: the audio\'s own clock and ended event, muting, a refused au
     } finally {
       await page.close();
     }
+  }
+});
+
+// A fork changes the markup and keeps the behaviour: its own elements with the hooks, the thread, the
+// options, the score and the debrief all the same.
+test('a fork of dialogue with markup of its own keeps the behaviour', { timeout: 180000 }, async () => {
+  const dir = dialogueCourse({ screens: ['appel'] });
+  forkComponent(dir, { component: 'dialogue', id: 'dialogue-sobre' });
+  fs.writeFileSync(path.join(dir, 'components/dialogue-sobre/template.html'), [
+    '<article class="sobre" data-t-group aria-label="{{title}}">',
+    '  <p class="sobre-kicker">{{title}}</p>',
+    '  <div class="sobre-thread" data-t-log></div>',
+    '  <footer class="sobre-answers" data-t-options></footer>',
+    '</article>', ''
+  ].join('\n'));
+  const file = path.join(dir, 'screens/appel.json');
+  const screen = JSON.parse(fs.readFileSync(file, 'utf8'));
+  screen.blocks[0].type = 'dialogue-sobre';
+  fs.writeFileSync(file, JSON.stringify(screen, null, 2));
+  const b = await build(dir, { emit: 'dir', out: tmp('elabora-dialogue-fork-'), writeLock: false, debug: true });
+  assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
+  const { server, browser } = await context();
+  server.addPackage('dfork', b.dirPath);
+  const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  try {
+    await page.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
+    await page.goto(`${server.base}/pkg/dfork/index.html`);
+    await page.waitForFunction(() => (window as DialogueWindow).__elabora);
+    await page.evaluate(() => (window as DialogueWindow).__elabora.go('appel'));
+    for (const option of ['a', 'a', 'a']) { await until(page, 'appel-marc', 'choosing'); await choose(page, 'appel-marc', option); }
+    const ended = await until(page, 'appel-marc', 'ended');
+    assert.equal(ended.ending, 'maitrise');
+    const look = await page.evaluate(() => {
+      const wrap = document.querySelector('[data-block="appel-marc"]')!;
+      return { root: wrap.querySelector('.sobre')?.classList.contains('t-dialogue-root'), log: wrap.querySelector('.sobre-thread')?.getAttribute('role'), rows: wrap.querySelectorAll('.sobre-thread .t-dialogue-row').length, room: wrap.querySelector('.sobre-answers')?.getAttribute('aria-label'), end: !!wrap.querySelector('.sobre-answers .t-dialogue-endbar') };
+    });
+    assert.deepEqual(look, { root: true, log: 'log', rows: look.rows, room: 'Votre réponse', end: true });
+    assert.ok(look.rows > 8);
+    assert.equal(await page.evaluate(() => (window as DialogueWindow).__elabora.engine.getVar('bonsReflexes')), 1, 'dialogue.ended with its ending');
+    assert.deepEqual(errors, []);
+  } finally {
+    await page.close();
   }
 });
