@@ -21,6 +21,14 @@ import { buildTranslation } from '@elabora/node/translate';
 import { planDocument } from '@elabora/core/plan-document/model';
 import type { PlanDocument } from '@elabora/core/plan-document/model';
 import { PLAN_DOCUMENT_FORMATS, planDocumentPage, readPlanDocument, writePlanDocument } from '@elabora/node/plan-document';
+import { dialoguePage, writeDialogueExport, DIALOGUE_EXPORT_FORMATS } from '@elabora/node/dialogue-export';
+import type { DialogueExportFormat, ExportedDialogue } from '@elabora/node/dialogue-export';
+import { dialogueView } from '@elabora/core/dialogue/view';
+import type { DialogueView } from '@elabora/core/dialogue/view';
+import { findDialogue } from '@elabora/core/dialogue/project';
+import { playDialogue } from '@elabora/core/dialogue/play';
+import type { PlayReport } from '@elabora/core/dialogue/play';
+import { localDay } from '@elabora/core/util/local-day';
 import type { ExportedPlanDocument, PlanDocumentFormat } from '@elabora/node/plan-document';
 import type { ScreenParts } from '@elabora/core/project/parts';
 import { narrationView, timelineView, screenAt, timelineMarks } from '@elabora/core/narration/view';
@@ -410,6 +418,10 @@ export class Session {
       case 'planDocument': return this.planDocument(request.params?.date, request.params?.version);
       case 'planDocumentPage': return this.planDocumentPage(request.params?.date, request.params?.version);
       case 'exportPlanDocument': return this.exportPlanDocument(request.params);
+      case 'dialogue': return this.dialogue(request.params.block);
+      case 'dialoguePlay': return this.dialoguePlay(request.params);
+      case 'dialoguePage': return this.dialoguePage(request.params);
+      case 'exportDialogue': return this.exportDialogue(request.params);
       case 'effects': return this.effects();
       case 'transcribers': return this.transcribers(request.params.language);
       case 'transcribeRecording': return this.transcribeRecording(request.params);
@@ -701,6 +713,39 @@ export class Session {
     if (!exported.version) return exported;
     await this.run('record_plan_send', { version: exported.version, format: params.format, date: day });
     return { ...exported, sent: true };
+  }
+
+  // A dialogue for its editor (D61), from the project as the session holds it.
+  dialogue(block: string): DialogueView | null {
+    this.#assertOpen();
+    if (typeof block !== 'string') throw new EngineError('bad-request', 'dialogue takes block: a dialogue block id');
+    return dialogueView(this.#state.project, block);
+  }
+
+  dialoguePlay(params: { block: string; choices: string[] }): PlayReport {
+    this.#assertOpen();
+    const ref = typeof params?.block === 'string' ? findDialogue(this.#state.project, params.block) : null;
+    if (!ref) throw new EngineError('not-found', `No dialogue block "${String(params?.block)}"`);
+    if (!Array.isArray(params.choices) || params.choices.some((choice) => typeof choice !== 'string')) throw new EngineError('bad-request', 'dialoguePlay takes choices: option ids');
+    return playDialogue(this.#state.project, ref, params.choices);
+  }
+
+  dialoguePage(params: { block: string; date?: string }): { html: string; date: string; title: string } {
+    this.#assertOpen();
+    const ref = typeof params?.block === 'string' ? findDialogue(this.#state.project, params.block) : null;
+    if (!ref) throw new EngineError('not-found', `No dialogue block "${String(params?.block)}"`);
+    return { html: dialoguePage(this.#state.project, ref.id), date: typeof params.date === 'string' && params.date ? params.date : localDay(), title: typeof ref.props.title === 'string' ? ref.props.title : ref.id };
+  }
+
+  async exportDialogue(params: { block: string; format: DialogueExportFormat; file: string; date?: string }): Promise<ExportedDialogue> {
+    this.#assertOpen();
+    if (!DIALOGUE_EXPORT_FORMATS.includes(params?.format)) throw new EngineError('bad-request', 'exportDialogue takes a format: html or pdf');
+    if (typeof params.file !== 'string' || !path.isAbsolute(params.file)) throw new EngineError('bad-request', 'exportDialogue takes file: an absolute path');
+    try {
+      return await writeDialogueExport(this.#state.project, { block: params.block, to: params.format, out: params.file, ...(params.date ? { date: params.date } : {}) });
+    } catch (error) {
+      throw new EngineError('refused', error instanceof Error ? error.message : String(error));
+    }
   }
 
   // Recordings of several lines, each written through the queue as set_narration_audio.
@@ -1888,7 +1933,7 @@ const REQUEST_TYPES: Record<RequestType, true> = {
   renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, migrate: true, build: true, close: true, narration: true, voices: true,
   installVoices: true, setSpeakerVoice: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,
   setVoiceKey: true, voiceAccount: true, voiceSearch: true, voiceEstimate: true,
-  alignNarration: true, timeline: true, timelineAt: true, timelineMarks: true, narrationPeaks: true, importNarrationFiles: true, planVoiceover: true, planVersions: true, planDiff: true, planDocument: true, planDocumentPage: true, exportPlanDocument: true, effects: true, transcribeRecording: true, transcribers: true, transcriptionEstimate: true, transcribeLine: true
+  alignNarration: true, timeline: true, timelineAt: true, timelineMarks: true, narrationPeaks: true, importNarrationFiles: true, planVoiceover: true, planVersions: true, planDiff: true, planDocument: true, planDocumentPage: true, exportPlanDocument: true, dialogue: true, dialoguePlay: true, dialoguePage: true, exportDialogue: true, effects: true, transcribeRecording: true, transcribers: true, transcriptionEstimate: true, transcribeLine: true
 };
 
 // A voice tool's error, for the app: what was not found or not set is refused with its code.

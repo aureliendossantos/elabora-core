@@ -1,3 +1,5 @@
+import { dialogueData } from '../dialogue/data.ts';
+import { dialogueScript, scriptMarkdown, scriptWords } from '../dialogue/script.ts';
 import type { Event, Condition, Action } from '@elabora/format';
 import { planIndex, resolveBlockProps, screenOrder } from './load.ts';
 import { describePlanVersions, planVersionsView } from './plan-versions.ts';
@@ -99,6 +101,17 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
               L.push(`${indent}- ${tag}${agent ? '' : 'Décision : '}${short(p.prompt, 300)}`);
               for (const o of recordsOf(p.options)) L.push(`${indent}  - ${agent ? `\`${o.id}\` ` : ''}${o.label}${o.correct ? ' (best)' : ''}${o.feedback ? ` → _${short(o.feedback, agent ? 100 : 300)}_` : ''}`);
               break;
+            case 'dialogue': {
+              // D61: for agents a summary (elabora dialogue show prints it whole), for clients the script.
+              const data = dialogueData(p, { course: project.course });
+              const decisions = data.nodes.filter((node) => node.options.length).length;
+              if (agent) L.push(`${indent}- ${tag}dialogue **${data.title}** (${data.mode}, scoring ${data.scoring}${data.learner ? `, the learner plays ${data.learner}` : ''}): ${data.nodes.length} nodes, ${decisions} decisions${data.endings.length ? `, endings ${data.endings.map((ending) => ending.id).join(', ')}` : ''} — elabora dialogue show . ${b.id}`);
+              else {
+                const words = scriptWords(project.course?.language);
+                for (const lineText of scriptMarkdown(dialogueScript(data, { id: b.id, screen: id, words }), words).split('\n')) if (lineText.trim()) L.push(`${indent}  ${lineText}`);
+              }
+              break;
+            }
             case 'free-object': {
               const m = project.objects.get(textOf(p.object))?.manifest;
               L.push(`${indent}- ${tag}free object ${agent ? `\`${p.object}\`` : `« ${p.title} »`}${m ? ` — ${m.pedagogicalRole}, serves ${listOf(m.planRefs?.objectives).join(', ')}` : ''}`);
@@ -136,11 +149,18 @@ export function describeEvent(e: Event): string {
     'decision.selected': `when decision \`${on.target}\` gets option ${on.option ? `\`${on.option}\`` : 'any'}`,
     'object.event': `when object \`${on.target}\` emits ${on.name}${on.where ? ` where ${JSON.stringify(on.where)}` : ''}`,
     'variable.changed': `when \`${on.variable}\` changes`,
-    'layer.closed': `when layer \`${on.target}\` closes`
+    'layer.closed': `when layer \`${on.target}\` closes`,
+    'dialogue.started': `when dialogue \`${on.target}\` begins`,
+    'dialogue.node': `when dialogue \`${on.target}\` enters ${on.node ? `node \`${on.node}\`` : 'a node'}`,
+    'dialogue.line': `when dialogue \`${on.target}\` says ${on.line ? `line \`${on.line}\`` : 'a line'}`,
+    'dialogue.chosen': `when dialogue \`${on.target}\` gets ${on.option ? `option \`${on.node ? `${on.node}.` : ''}${on.option}\`` : on.node ? `a choice in \`${on.node}\`` : 'a choice'}`,
+    'dialogue.ended': `when dialogue \`${on.target}\` ends${on.ending ? ` on \`${on.ending}\`` : ''}`
   };
   const trig = triggers[on.type ?? ''] || on.type;
-  const cond = objectsIn(e.if).map((c: Condition) => (c.visited !== undefined ? `\`${c.visited}\`${c.name !== undefined ? ` (\`${c.name}\`)` : ''} visited` : `${c.variable} ${c.op} ${JSON.stringify(c.value)}`)).join(' and ');
-  const act = (list: Action[] | undefined) => objectsIn(list).map((a) => [a.type, a.screen, a.type === 'hide-layer' && a.layer === undefined ? '(the open layer)' : a.layer, a.block, a.variable, a.value !== undefined ? `= ${JSON.stringify(a.value)}` : '', a.by !== undefined ? `by ${a.by}` : '', a.props ? JSON.stringify(a.props) : ''].filter(Boolean).join(' ')).join('; ');
+  const cond = objectsIn(e.if).map((c: Condition) => (c.visited !== undefined ? `\`${c.visited}\`${c.name !== undefined ? ` (\`${c.name}\`)` : ''} visited`
+    : c.dialogue !== undefined ? `dialogue \`${c.dialogue}\` ${c.ending !== undefined ? `ended on ${c.ending}` : c.chosen !== undefined ? `chose ${c.chosen}` : c.score !== undefined ? `score ${c.score.op} ${c.score.value}` : c.done ? 'done' : 'not done'}`
+    : `${c.variable} ${c.op} ${JSON.stringify(c.value)}`)).join(' and ');
+  const act = (list: Action[] | undefined) => objectsIn(list).map((a) => [a.type, a.screen, a.type === 'hide-layer' && a.layer === undefined ? '(the open layer)' : a.layer, a.block, a.node, a.variable, a.value !== undefined ? `= ${JSON.stringify(a.value)}` : '', a.by !== undefined ? `by ${a.by}` : '', a.props ? JSON.stringify(a.props) : ''].filter(Boolean).join(' ')).join('; ');
   return `${trig}${cond ? ` if ${cond}` : ''} → ${act(e.do) || 'nothing'}${listOf(e.else).length ? ` else → ${act(e.else)}` : ''}`;
 }
 

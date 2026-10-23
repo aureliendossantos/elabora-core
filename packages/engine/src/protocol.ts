@@ -6,6 +6,9 @@ import type { Anchor } from '@elabora/format';
 import type { PlanApprovalState, PlanDiffView, PlanVersionsView } from '@elabora/core/project/plan-versions';
 import type { PlanDocument } from '@elabora/core/plan-document/model';
 import type { ExportedPlanDocument, PlanDocumentFormat } from '@elabora/node/plan-document-types';
+import type { ExportedDialogue, DialogueExportFormat } from '@elabora/node/dialogue-export-types';
+import type { DialogueView } from '@elabora/core/dialogue/view';
+import type { PlayReport } from '@elabora/core/dialogue/play';
 import type { RenderedScreen } from '@elabora/core/render/screen';
 import type { MigrationNote } from '@elabora/core/format/migrations/types';
 import type { PresetName } from '@elabora/core/media/presets';
@@ -19,7 +22,7 @@ import type {
   CreateObjectArgs, WriteObjectFileArgs, CreateComponentArgs, ForkComponentArgs,
   WriteComponentFileArgs, MigrateComponentsArgs, AddLibraryComponentArgs, CommandDiagnostic, AddFontArgs, FontRequest, SettleImportReportArgs, AddResourceRequest,
   SetCaptionsArgs, UpsertLayerArgs, UpsertEventArgs, RenameArgs, DuplicateScreenArgs,
-  UpdateNarrationArgs, AddNarrationLineArgs, UpdateNarrationLineArgs, MoveNarrationLineArgs, NarrationAudioFileArgs, RemoveSpeakerArgs, SetBlockTimingArgs, SetNarrationWordsArgs, SplitStepArgs, NarrationFromPlanArgs, KeepNarrationAudioArgs, SetPlanVoiceoverArgs,
+  UpdateNarrationArgs, AddNarrationLineArgs, UpdateNarrationLineArgs, MoveNarrationLineArgs, NarrationAudioFileArgs, RemoveSpeakerArgs, SetBlockTimingArgs, SetDialogueNodeArgs, RemoveDialogueNodeArgs, SetNarrationWordsArgs, SplitStepArgs, NarrationFromPlanArgs, KeepNarrationAudioArgs, SetPlanVoiceoverArgs,
   WritePlanArgs, SetPlanTextArgs, RevertPlanChangeArgs, CreatePlanVersionArgs, ApprovePlanArgs, RecordPlanSendArgs, SetPlanNoteArgs
 } from '@elabora/core/commands/index';
 import type { ScreenParts } from '@elabora/core/project/parts';
@@ -124,6 +127,9 @@ export interface CommandArgs {
   set_narration_words: SetNarrationWordsArgs;
   // When a block comes and goes on its screen's timeline (in, out: patches; null removes).
   set_block_timing: SetBlockTimingArgs;
+  // A node of a dialogue written whole (added after a node or first, or replaced in place), or removed (D61).
+  set_dialogue_node: SetDialogueNodeArgs;
+  remove_dialogue_node: RemoveDialogueNodeArgs;
   create_component: CreateComponentArgs;
   fork_component: ForkComponentArgs;
   write_component_file: WriteComponentFileArgs;
@@ -485,6 +491,17 @@ export interface Requests {
   // The document written to file (an absolute path): .docx, .html, or .pdf printed by Chromium here;
   // the send recorded on the version it shows (one change, record_plan_send). Never makes a version.
   exportPlanDocument: { params: { format: PlanDocumentFormat; file: string; date?: string; version?: number | 'current' }; result: ExportedPlanDocument };
+  // A dialogue block (D61) for its editor: its data (stage directions kept), its script, its map
+  // (placed by the core: nothing stored in the module) and its paths; null when there is no such block.
+  dialogue: { params: { block: string }; result: DialogueView | null };
+  // « Jouer un chemin »: the path of the choices given (option ids, one per decision met), its beats
+  // as text, its score, its ending and its duration; error says which choice was not offered.
+  dialoguePlay: { params: { block: string; choices: string[] }; result: PlayReport };
+  // The dialogue's script and map as one HTML page, fonts inline, for the app to print (as
+  // planDocumentPage), dated date (YYYY-MM-DD).
+  dialoguePage: { params: { block: string; date?: string }; result: { html: string; date: string; title: string } };
+  // The same written to file (an absolute path), .html or .pdf printed by Chromium here.
+  exportDialogue: { params: { block: string; format: DialogueExportFormat; file: string; date?: string }; result: ExportedDialogue };
   // The waveform of a narrated screen's lines (the Chronologie view): the loudest sample of each
   // slice, 0 to 255, perSecond slices a second (default 50); null: not narrated.
   narrationPeaks: { params: { screen: string; language?: string; perSecond?: number }; result: NarrationPeaks | null };

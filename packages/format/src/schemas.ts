@@ -101,6 +101,10 @@ export function compileInline(schema: JsonSchema | boolean): ValidateFunction {
 export function derefSchema(schema: JsonSchema): JsonSchema {
   const defs = SCHEMAS.defs.$defs ?? {};
   const shared = (ref: string) => defs[ref.split('/').pop() ?? ''];
+  // The schema's own definitions (a dialogue's line, node, option…), inlined too; a definition that
+  // contains itself keeps its $ref there.
+  const local = (schema.$defs ?? {}) as Record<string, unknown>;
+  const expanding = new Set<string>();
   const walk = (s: unknown): unknown => {
     if (Array.isArray(s)) return s.map(walk);
     if (!s || typeof s !== 'object') return s;
@@ -110,6 +114,13 @@ export function derefSchema(schema: JsonSchema): JsonSchema {
     }
     if (typeof $ref === 'string' && $ref.startsWith('#/$defs/') && shared($ref)) {
       return { ...(walk(shared($ref)) as object), ...(walk(rest) as object) };
+    }
+    const name = typeof $ref === 'string' && $ref.startsWith('#/$defs/') ? $ref.slice(8) : null;
+    if (name !== null && Object.hasOwn(local, name) && !expanding.has(name)) {
+      expanding.add(name);
+      const inlined = { ...(walk(local[name]) as object), ...(walk(rest) as object) };
+      expanding.delete(name);
+      return inlined;
     }
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(s)) if (k !== '$schema' && k !== '$id') out[k] = walk(v);

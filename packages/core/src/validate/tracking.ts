@@ -23,6 +23,8 @@ export function checkTracking(ctx: CourseCheckContext): void {
     if (behavior === 'quiz' || behavior === 'numeric') return props.scored !== false;
     if (behavior === 'decision' || behavior === 'object') return !!props.scored;
     if (behavior === 'predict') return fieldsOf(props.predict).scored === true;
+    // A dialogue is scored when its scoring counts something (its mode's default, D61).
+    if (behavior === 'dialogue') return (typeof props.scoring === 'string' ? props.scoring : props.mode === 'assessment' ? 'quality' : 'none') !== 'none';
     return false;
   });
   if (reportAs !== 'completed-incomplete' && !scored) reporter.emit('W_NO_SCORED_ITEMS', { file: 'course.json', path: '/completion/reportAs', message: `reportAs "${reportAs}" but no item is scored.` });

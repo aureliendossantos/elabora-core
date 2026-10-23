@@ -15,12 +15,12 @@ import corePackage from '../../package.json' with { type: 'json' };
 // components are the layouts of screens.
 //
 // Built-in components rendered by a template can be forked: the fork keeps the behaviour of its
-// root (quiz, numeric, decision, results: scoring, saved state, SCORM records and keyboard handling
+// root (quiz, numeric, decision, dialogue, results: scoring, saved state, SCORM records and keyboard handling
 // stay in the player) and replaces the markup. Video, audio and free objects are rendered by code.
 
 const VERSION = corePackage.version;
 
-export type Behavior = 'quiz' | 'numeric' | 'decision' | 'results' | 'object' | 'chart';
+export type Behavior = 'quiz' | 'numeric' | 'decision' | 'dialogue' | 'results' | 'object' | 'chart';
 
 export const BUILTINS: Readonly<Record<string, { title: string; render: 'template' | 'code'; behavior?: Behavior }>> = {
   heading: { title: 'Heading', render: 'template' },
@@ -35,6 +35,8 @@ export const BUILTINS: Readonly<Record<string, { title: string; render: 'templat
   quiz: { title: 'Choice question', render: 'template', behavior: 'quiz' },
   numeric: { title: 'Numeric question', render: 'template', behavior: 'numeric' },
   decision: { title: 'Decision', render: 'template', behavior: 'decision' },
+  // A branching conversation (D61): its walk is pure (@elabora/player dialogue/), the player renders it.
+  dialogue: { title: 'Dialogue', render: 'template', behavior: 'dialogue' },
   'free-object': { title: 'Free object', render: 'code', behavior: 'object' },
   results: { title: 'Results', render: 'template', behavior: 'results' },
   stack: { title: 'Stack', render: 'template' },
@@ -66,6 +68,8 @@ export const BEHAVIORS: Readonly<Record<Behavior, BehaviorHooks>> = {
   quiz: { required: ['stem', 'option', 'submit', 'feedback'], optional: ['group', 'input', 'option-feedback', 'flag'], each: { option: 'options' }, tags: { option: ['label'], submit: ['button'], input: ['input'] } },
   numeric: { required: ['stem', 'input', 'submit', 'feedback'], optional: ['group', 'input-label', 'unit', 'expected'], tags: { input: ['input'], submit: ['button'], 'input-label': ['label'] } },
   decision: { required: ['prompt', 'choice', 'feedback'], optional: ['group', 'choice-feedback'], each: { choice: 'options' }, tags: { choice: ['button'] } },
+  // The player fills the thread (log) and the options' room; the rest is optional.
+  dialogue: { required: ['log', 'options'], optional: ['group', 'stage', 'debrief', 'start'], tags: { start: ['button'] } },
   results: { required: [], anyOf: ['score', 'status', 'message'], optional: ['score', 'status', 'message', 'retry'], tags: { retry: ['button'] } },
   object: { required: [] },
   chart: { required: [] }
@@ -73,7 +77,7 @@ export const BEHAVIORS: Readonly<Record<Behavior, BehaviorHooks>> = {
 // Hooks any template may use: click (a button firing the screen event "click"), toggle/part
 // (disclosure), tabs/tab/panel (tabs), label (a player label, translated by the course language).
 export const PRIMITIVE_HOOKS = ['click', 'toggle', 'part', 'open', 'tabs', 'tab', 'panel', 'selected', 'label'];
-export const BUTTON_HOOKS = ['click', 'toggle', 'tab', 'submit', 'choice', 'retry'];
+export const BUTTON_HOOKS = ['click', 'toggle', 'tab', 'submit', 'choice', 'retry', 'start'];
 
 // A finding made while resolving a component, reported by the validator.
 export interface RegistryError {

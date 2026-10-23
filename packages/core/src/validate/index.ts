@@ -10,6 +10,7 @@ import { checkBlocks } from './blocks.ts';
 import { checkScreenNarration, checkNarrationAudio } from './narration.ts';
 import { checkScreenTiming, checkTimelineTimes } from './timeline.ts';
 import { checkEvents } from './events.ts';
+import { checkDialogues, checkSpeakerLooks } from './dialogue.ts';
 import { checkObjects, checkObjectUsage, checkScreenObjects, checkScreenBackdrop } from './objects.ts';
 import { checkTheme } from './theme.ts';
 import { checkPlayer } from './player.ts';
@@ -42,6 +43,8 @@ export const COURSE_CHECKS: readonly Check<CourseCheckContext>[] = [
   { name: 'screen-plan', scope: 'screen', run: checkScreenPlan },
   { name: 'blocks', scope: 'screen', run: checkBlocks },
   { name: 'events', scope: 'screen', readsOtherScreens: true, run: checkEvents },
+  { name: 'dialogues', scope: 'screen', run: checkDialogues },
+  { name: 'speaker-looks', scope: 'project', run: checkSpeakerLooks },
   { name: 'narration', scope: 'screen', run: checkScreenNarration },
   { name: 'narration-audio', scope: 'project', readsScreens: true, run: checkNarrationAudio },
   { name: 'timeline', scope: 'screen', run: checkScreenTiming },

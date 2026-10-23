@@ -108,6 +108,19 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
     taken.add(id);
     return id;
   };
+  // The characters of imported dialogues (course.json speakers), by their name in the source.
+  const speakers: Json[] = [];
+  const speakerIds = new Map<string, string>();
+  const speakerFor = (name: string): string => {
+    const known = speakerIds.get(name);
+    if (known) return known;
+    const base = slugify(name, 'personnage', 40);
+    let id = base;
+    for (let n = 2; [...speakerIds.values()].includes(id); n++) id = `${base}-${n}`;
+    speakerIds.set(name, id);
+    speakers.push({ id, name: clip(name, 60) });
+    return id;
+  };
   const mediaNames = new Set<string>();
   const mediaByPath = new Map<string, string>();
   const media: ConvertedMedia[] = [];
@@ -356,6 +369,8 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
       const text = blockNote(words, code, feature, detail);
       block.note = block.note ? clip(`${block.note} ${text}`, 500) : text;
     };
+    // Line ids are unique in the screen (D61): l1, l2… across its dialogues.
+    let lineCount = 0;
 
     // The blocks of one item, a stand-in for a feature without its block reported as such.
     const itemBlocks = (item: SourceItem, inLayer: boolean): Block[] => {
@@ -488,6 +503,33 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
           if (item.unit) props.unit = item.unit;
           if (item.scored === false) props.scored = false;
           return [newBlock('numeric', props, item)];
+        }
+        case 'dialogue': {
+          // A Rise scenario (D61): its contents become nodes, its answers options with where they go,
+          // « try again » a retry, the feedback a trainer's note, End Scenario the end.
+          const nodeIds = new Map<string, string>();
+          item.nodes.forEach((node, index) => nodeIds.set(node.ref, `n${index + 1}`));
+          const lineOf = (line: { speaker?: string; text: string }) => ({ id: `l${++lineCount}`, ...(line.speaker ? { speaker: speakerFor(line.speaker) } : {}), text: clip(line.text, 2000) });
+          const nodes = item.nodes.map((node, index) => {
+            const options = node.options.slice(0, 12).map((option, optionIndex) => ({
+              id: String.fromCharCode(97 + optionIndex), text: clip(option.text, 500),
+              ...(option.quality ? { quality: option.quality } : {}),
+              ...(option.feedback ? { feedback: option.feedback } : {}),
+              ...(option.to && 'node' in option.to && nodeIds.has(option.to.node) ? { next: nodeIds.get(option.to.node) } : {}),
+              ...(option.to && 'end' in option.to ? { end: true } : {}),
+              ...(option.to && 'retry' in option.to ? { retry: true } : {})
+            }));
+            const next = typeof node.next === 'string' && nodeIds.has(node.next) ? { next: nodeIds.get(node.next) } : node.next && typeof node.next === 'object' ? { end: true } : {};
+            return { id: nodeIds.get(node.ref) ?? `n${index + 1}`, ...(node.title ? { title: clip(node.title, 80) } : {}), ...(node.lines.length ? { lines: node.lines.map(lineOf) } : {}), ...(options.length ? { options } : {}), ...next };
+          });
+          if (!nodes.length) { counts.dropped++; lose('unsupported', 'dropped', label, where(), words === 'fr' ? 'vide' : 'empty'); return []; }
+          counts.kept++;
+          const block = newBlock('dialogue', { title: clip(item.title || (words === 'fr' ? 'Scénario' : 'Scenario'), 120), mode: 'practice', nodes }, item);
+          for (const missing of item.lost ?? []) {
+            note(block, 'feature', missing.feature, missing.detail);
+            lose('feature', 'dropped', missing.feature, where(block.id), missing.detail);
+          }
+          return [block];
         }
         case 'results':
           counts.kept++;
@@ -817,6 +859,7 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
     ...(source.description ? { description: clip(source.description, 1000) } : {}),
     sections,
     variables: courseVariables,
+    ...(speakers.length ? { speakers } : {}),
     theme: { cascade: 'components-over-theme' },
     presentation: { mode: choices.presentation },
     navigation: source.navigation === 'linear' ? { mode: 'linear', lockUntilComplete: true } : { mode: 'free', lockUntilComplete: false },

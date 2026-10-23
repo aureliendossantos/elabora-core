@@ -71,7 +71,7 @@ Write templates in reading order; heading order is checked through templates and
 
 ## 3. Behaviours (headless) and primitives
 
-A fork of `quiz`, `numeric`, `decision` or `results` keeps its **behaviour**: the player scores it, saves its state under the same key (`quiz:<id>`), records SCORM interactions, announces feedback and manages focus. The template only has to provide the hooks.
+A fork of `quiz`, `numeric`, `decision`, `dialogue` or `results` keeps its **behaviour**: the player scores it, saves its state under the same key (`quiz:<id>`), records SCORM interactions, announces feedback and manages focus. The template only has to provide the hooks.
 
 | Behaviour | Required hooks | Optional hooks |
 |---|---|---|
@@ -79,6 +79,7 @@ A fork of `quiz`, `numeric`, `decision` or `results` keeps its **behaviour**: th
 | `numeric` | `data-t-stem`, `data-t-input` (input), `data-t-submit`, `data-t-feedback` | `data-t-input-label` (label), `data-t-unit`, `data-t-expected`, `data-t-group` |
 | `decision` | `data-t-prompt`, `data-t-choice="{{id}}"` (button, repeated over `options`), `data-t-feedback` | `data-t-group` |
 | `results` | at least one of `data-t-score`, `data-t-status`, `data-t-message` | `data-t-retry` (button) |
+| `dialogue` | `data-t-log` (the thread the player fills), `data-t-options` (the options' room) | `data-t-group`, `data-t-stage` (style scene: the backdrop and the cast), `data-t-debrief` (the debrief card), `data-t-start` (button: the start card's, `begins: "click"`) |
 
 Empty hooks receive the player's labels in the course language (Submit, Your answer, Correct answer…): templates stay without words. For styling, options get `is-selected`, `is-correct`, `is-wrong`; the group gets `data-t-result="correct|incorrect"` (decision: the option id) and `data-t-final` once the answer is final.
 

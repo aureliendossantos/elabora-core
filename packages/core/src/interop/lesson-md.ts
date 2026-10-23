@@ -1,3 +1,5 @@
+import { dialogueData } from '../dialogue/data.ts';
+import { dialogueScript, scriptMarkdown, scriptWords } from '../dialogue/script.ts';
 import { schemaId } from '@elabora/format';
 import { planIndex, resolveBlockProps, screenOrder, readingOrder, screenLayout } from '../project/load.ts';
 import { getRegistry } from '../components/registry.ts';
@@ -107,6 +109,14 @@ export function lessonMdExport(project: Project): LessonMdExport {
           directive('note', { variant: 2 }, `${props.prompt}\n\n${recordsOf(props.options).map((option) => `- ${option.label}${option.feedback ? ` — ${oneLine(option.feedback)}` : ''}`).join('\n')}`);
           lose(id, block.id, 'decision interaction and its consequences (exported as a note)');
           break;
+        case 'dialogue': {
+          // D61: the script in Markdown; LESSON.md has no branching conversation.
+          const data = dialogueData(props, { course: project.course });
+          const words = scriptWords(project.course?.language);
+          directive('text', {}, scriptMarkdown(dialogueScript(data, { id: block.id, screen: id, words }), words));
+          lose(id, block.id, 'dialogue (exported as its script: its branches, score and state are lost)');
+          break;
+        }
         case 'free-object':
           directive('text', {}, `**${props.title}**\n\n${props.textAlternative}`);
           lose(id, block.id, `free object ${props.object} (code is not supported by LESSON.md; its text alternative is exported)`);

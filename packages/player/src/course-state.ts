@@ -381,6 +381,10 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
   }
   function conditionHolds(condition: Condition): boolean {
     if (condition.visited !== undefined) return condition.name !== undefined ? controlVisited(condition.visited, condition.name) : blockVisited(condition.visited);
+    // A dialogue's scored run (D61): read by the dialogue behaviour once it saves its progress
+    // (dialogue/run.ts eventConditionHolds); until then nothing holds.
+    if ('dialogue' in condition && condition.dialogue !== undefined) return false;
+    if (condition.variable === undefined) return false;
     const value = getVar(condition.variable);
     // Order comparisons keep JavaScript semantics whatever the types (the validator checks they agree).
     const left = value as number;

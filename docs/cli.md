@@ -235,6 +235,30 @@ exchange, cut back into lines (their pauses from it). Stage directions in bracke
 played by Eleven v4 voices and never shown.
 ```
 
+## Dialogues (branching conversations held in a block)
+
+```text
+dialogue show [dir] <block> [--json]                A dialogue block as a script: each node with its lines (name, stage
+                                                    direction, line), its options with their quality, points, effects and
+                                                    « then … » (where each one goes), their reply and feedback, then the
+                                                    endings. Stable text: it also serves diffs
+dialogue play [dir] <block> [--choose b,a,a] [--json]
+                                                    « Jouer un chemin »: the path of these choices (option ids, one for each
+                                                    decision met, retries included), its lines and notes, the ending, the
+                                                    score, the decisions and the duration (the lines' audio, else estimated
+                                                    from the text). Exit code 1 when a choice is not offered (it says which
+                                                    were)
+dialogue paths [dir] <block> [--limit <n>] [--json]
+                                                    Every path: how many, the best and worst score and points, the endings
+                                                    reached and never reached, the nodes never reached, and each path with
+                                                    its choices, ending, score and duration (2000 paths at most)
+dialogue export [dir] <block> --to html|pdf [--out <file>] [--date YYYY-MM-DD] [--json]
+                                                    The dialogue for the client: its map (every node and ending, placed by
+                                                    Elabora), then its script, as one page (html) or printed (pdf, by
+                                                    Elabora's or Google Chrome's Chromium); dist/<course>-<block>.<format>
+                                                    by default
+```
+
 ## Optional downloads (models downloaded once per computer)
 
 ```text

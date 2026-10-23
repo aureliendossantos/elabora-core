@@ -78,6 +78,12 @@ export interface PrintedPdf {
 // the command line and the app's « Exporter ▾ › PDF… » give the same file; else by Google Chrome,
 // Microsoft Edge or Playwright's Chromium (Page.printToPDF). Both finish with finishPlanPdf.
 export async function printPlanDocument(doc: PlanDocument, html = planDocumentPage(doc)): Promise<PrintedPdf> {
+  return printPage(html, doc.date, 'the plan', 'Export it as Word (--format docx) or as a page to print (--format html), or install Google Chrome.');
+}
+
+// Any page of Elabora's documents printed the same way (the plan, a dialogue's script and map), its
+// PDF dated `date` (YYYY-MM-DD) so the same page gives the same bytes.
+export async function printPage(html: string, date: string, what = 'the page', instead = 'Export it as a page to print (html), or install Google Chrome.'): Promise<PrintedPdf> {
   const failures: string[] = [];
   const runtime = findElectronRuntime();
   if (runtime) {
@@ -87,7 +93,7 @@ export async function printPlanDocument(doc: PlanDocument, html = planDocumentPa
       const file = path.join(folder, 'plan.html');
       fs.writeFileSync(file, html);
       const printed = await printWithElectron(require('playwright-core'), runtime, file, PLAN_PDF_ELECTRON, PLAN_PDF_WINDOW);
-      return { pdf: finishPlanPdf(printed.pdf, doc.date), browser: { engine: 'electron', version: printed.version } };
+      return { pdf: finishPlanPdf(printed.pdf, date), browser: { engine: 'electron', version: printed.version } };
     } catch (error) {
       failures.push(errorMessage(error).split('\n')[0]!);
     } finally {
@@ -103,14 +109,14 @@ export async function printPlanDocument(doc: PlanDocument, html = planDocumentPa
       await page.setContent(html, { waitUntil: 'load' });
       await page.evaluate('document.fonts.ready.then(() => undefined)');
       const pdf = await page.pdf(PLAN_PDF_PLAYWRIGHT);
-      return { pdf: finishPlanPdf(pdf, doc.date), browser: browserIdentity(browser) };
+      return { pdf: finishPlanPdf(pdf, date), browser: browserIdentity(browser) };
     } catch (error) {
       failures.push(errorMessage(error).split('\n')[0]!);
     } finally {
       await browser.close().catch(() => {});
     }
   }
-  throw new Error(`Cannot print the plan to PDF: ${failures.join('; ')}. Export it as Word (--format docx) or as a page to print (--format html), or install Google Chrome.`);
+  throw new Error(`Cannot print ${what} to PDF: ${failures.join('; ')}. ${instead}`);
 }
 
 export interface ExportPlanDocumentOptions extends PlanDocumentOptions {

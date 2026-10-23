@@ -18,11 +18,16 @@ const TRIGGER_TARGET: Readonly<Record<string, { test: (component: ComponentDescr
   // A trend in predict mode is submitted when the learner reveals the line (D60).
   'quiz.submitted': { test: (component, block) => component.behavior === 'quiz' || component.behavior === 'numeric' || isPredict(component.root, fieldsOf(block.props)), what: 'quiz, numeric or predicting trend block' },
   'decision.selected': { test: (component) => component.behavior === 'decision', what: 'decision block' },
-  'object.event': { test: (component) => component.behavior === 'object', what: 'free-object block' }
+  'object.event': { test: (component) => component.behavior === 'object', what: 'free-object block' },
+  'dialogue.started': { test: (component) => component.behavior === 'dialogue', what: 'dialogue block' },
+  'dialogue.node': { test: (component) => component.behavior === 'dialogue', what: 'dialogue block' },
+  'dialogue.line': { test: (component) => component.behavior === 'dialogue', what: 'dialogue block' },
+  'dialogue.chosen': { test: (component) => component.behavior === 'dialogue', what: 'dialogue block' },
+  'dialogue.ended': { test: (component) => component.behavior === 'dialogue', what: 'dialogue block' }
 };
 const ORDER_OPERATORS = ['gt', 'gte', 'lt', 'lte'];
 // Behaviours that make a block an activity a step can wait for (screen.steps opens "answered").
-const STEP_ACTIVITIES = new Set(['quiz', 'numeric', 'decision', 'object', 'predict']);
+const STEP_ACTIVITIES = new Set(['quiz', 'numeric', 'decision', 'dialogue', 'object', 'predict']);
 
 const controlNames = (controls: Map<string, unknown>) => [...controls.keys()].map((name) => name || '(unnamed)').join(', ');
 
@@ -60,6 +65,9 @@ export function checkEvents(ctx: CourseCheckContext, screen: ScreenFile): void {
         reporter.emit('E_EVENT_TARGET', { file, path: `${base}/on/name`, target: event.id, message: `Event "${event.id}": ${block.type} "${block.id}" has no control named "${on.name}" (controls: ${controlNames(blockControls(project, block)) || 'none'}).` });
       } else if (on.type === 'decision.selected' && on.option && !list(fieldsOf(block.props).options).some((option) => fieldsOf(option).id === on.option)) {
         reporter.emit('E_EVENT_TARGET', { file, path: `${base}/on/option`, target: event.id, message: `Event "${event.id}": decision "${block.id}" has no option "${on.option}".` });
+      } else if (on.type !== undefined && on.type.startsWith('dialogue.')) {
+        const problem = dialogueFilterProblem(block, on);
+        if (problem) reporter.emit('E_EVENT_TARGET', { file, path: `${base}/on/${problem.field}`, target: event.id, message: `Event "${event.id}": ${problem.message}` });
       } else if (on.type === 'object.event') {
         const manifest = byId(project.objects, fieldsOf(block.props).object)?.manifest;
         const declared = list(manifest?.events);
@@ -85,6 +93,13 @@ export function checkEvents(ctx: CourseCheckContext, screen: ScreenFile): void {
     list(event.if).forEach((condition, conditionIndex) => {
       if (condition === null || condition === undefined) return;
       const at = `${base}/if/${conditionIndex}`;
+      if (condition.dialogue !== undefined) {
+        const block = ctx.lastBlocks.get(condition.dialogue);
+        if (!block || registry.get(block.type)?.behavior !== 'dialogue') { reporter.emit('E_UNKNOWN_REFERENCE', { file, path: `${at}/dialogue`, target: event.id, message: `Condition on "${condition.dialogue}", which is not a dialogue block of the course.` }); return; }
+        const problem = dialogueFilterProblem(block, { ending: condition.ending, chosen: condition.chosen });
+        if (problem) reporter.emit('E_UNKNOWN_REFERENCE', { file, path: `${at}/${problem.field}`, target: event.id, message: `Condition on dialogue "${block.id}": ${problem.message}` });
+        return;
+      }
       if (condition.visited !== undefined) {
         const block = ctx.lastBlocks.get(condition.visited);
         const controls = block ? blockControls(project, block) : new Map<string, unknown>();
@@ -128,6 +143,14 @@ export function checkEvents(ctx: CourseCheckContext, screen: ScreenFile): void {
           if (!timed) reporter.emit('E_TIMELINE_CUE', { file, path: `${at}/type`, target: event.id, message: `${action.type}: screen "${screenId}" has no timeline (no narration, no timed block).` });
           else if (action.type === 'seek-timeline' && typeof action.to?.line === 'string' && !hasId(lines, action.to.line)) reporter.emit('E_TIMELINE_CUE', { file, path: `${at}/to/line`, target: event.id, message: `seek-timeline: no narration line "${action.to.line}" on screen "${screenId}" (lines: ${[...lines].join(', ') || 'none'}).` });
           break;
+        case 'start-dialogue':
+        case 'goto-dialogue':
+        case 'restart-dialogue': {
+          const block = byId(local, action.block);
+          if (!block || registry.get(block.type)?.behavior !== 'dialogue') { reporter.emit('E_ACTION_TARGET', { file, path: `${at}/block`, target: event.id, message: `${action.type}: "${action.block}" is not a dialogue block of screen "${screenId}".` }); break; }
+          if (action.type === 'goto-dialogue' && !list(fieldsOf(block.props).nodes).some((node) => fieldsOf(node).id === action.node)) reporter.emit('E_ACTION_TARGET', { file, path: `${at}/node`, target: event.id, message: `goto-dialogue: dialogue "${block.id}" has no node "${action.node}".` });
+          break;
+        }
         case 'play-media':
         case 'pause-media': {
           const block = byId(local, action.block);
@@ -193,8 +216,45 @@ export function checkEvents(ctx: CourseCheckContext, screen: ScreenFile): void {
     if (unreached.length) reporter.emit('E_STEP_UNREACHABLE', { file, path: '/continueRevealsSteps', target: screenId, message: `Continue does not reveal the steps of "${screenId}" and no reveal-step action reaches step ${unreached.join(', ')}: the learner would never see ${unreached.length > 1 ? 'them' : 'it'}.` });
   }
 
+  // Dialogues open layers too (their options' and cues' actions, D61).
+  for (const block of local.values()) if (registry.get(block.type)?.behavior === 'dialogue') for (const layer of dialogueLayers(block)) shownLayers.add(layer);
   list(data.layers).forEach((layer, i) => {
     if (layer === null || layer === undefined) return;
     if (!shownLayers.has(layer.id)) reporter.emit('W_UNREACHABLE_LAYER', { file, path: `/layers/${i}`, target: layer.id, message: `Layer "${layer.id}" is never shown by a show-layer action.` });
   });
+}
+
+// What a dialogue trigger or condition filters on, checked against the dialogue: its nodes, options,
+// lines and endings (D61).
+function dialogueFilterProblem(block: Block, filter: { node?: string; option?: string; line?: string; ending?: string; chosen?: string }): { field: string; message: string } | null {
+  const props = fieldsOf(block.props);
+  const nodes = list(props.nodes).map(fieldsOf);
+  const node = (id: unknown) => nodes.find((candidate) => candidate.id === id);
+  if (filter.node !== undefined && !node(filter.node)) return { field: 'node', message: `dialogue "${block.id}" has no node "${filter.node}".` };
+  if (filter.option !== undefined) {
+    const holders = filter.node !== undefined ? [node(filter.node)!] : nodes;
+    if (!holders.some((holder) => list(holder.options).some((option) => fieldsOf(option).id === filter.option))) return { field: 'option', message: `dialogue "${block.id}" has no option "${filter.option}"${filter.node !== undefined ? ` in node "${filter.node}"` : ''}.` };
+  }
+  if (filter.line !== undefined) {
+    const lines = nodes.flatMap((holder) => [...list(holder.lines), ...list(holder.options).flatMap((option) => list(fieldsOf(option).reply))]).map((line) => fieldsOf(line).id);
+    if (!lines.includes(filter.line)) return { field: 'line', message: `dialogue "${block.id}" has no line "${filter.line}".` };
+  }
+  if (filter.ending !== undefined && !list(props.endings).some((ending) => fieldsOf(ending).id === filter.ending)) return { field: 'ending', message: `dialogue "${block.id}" has no ending "${filter.ending}".` };
+  if (filter.chosen !== undefined) {
+    const [nodeId, option] = filter.chosen.split('.');
+    if (!list(node(nodeId)?.options).some((candidate) => fieldsOf(candidate).id === option)) return { field: 'chosen', message: `dialogue "${block.id}" has no option "${filter.chosen}" (node.option).` };
+  }
+  return null;
+}
+
+// The layers a dialogue's options and cues open.
+function dialogueLayers(block: Block): string[] {
+  const out: string[] = [];
+  const actions = (value: unknown) => { for (const action of list(value)) { const fields = fieldsOf(action); if (fields.type === 'show-layer' && typeof fields.layer === 'string') out.push(fields.layer); } };
+  const lines = (value: unknown) => { for (const line of list(value)) for (const cue of list(fieldsOf(line).cues)) actions(fieldsOf(cue).do); };
+  for (const node of list(fieldsOf(block.props).nodes)) {
+    lines(fieldsOf(node).lines);
+    for (const option of list(fieldsOf(node).options)) { actions(fieldsOf(option).do); lines(fieldsOf(option).reply); }
+  }
+  return out;
 }

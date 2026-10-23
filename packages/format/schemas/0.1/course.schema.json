@@ -89,7 +89,7 @@
       }
     },
     "speakers": {
-      "description": "The voices of the course's narration (screen narration lines name them): the name shown in captions and in the transcript, and the voice that speaks each language.",
+      "description": "The voices and characters of the course (narration lines and dialogue lines name them): the name shown in captions, the transcript and dialogue bubbles, the voice that speaks each language, and in dialogues their colour and look.",
       "type": "array",
       "maxItems": 40,
       "items": {
@@ -464,7 +464,7 @@
       "properties": {
         "id": {
           "$ref": "defs.schema.json#/$defs/slug",
-          "description": "Named by narration lines (speaker)."
+          "description": "Named by narration lines and dialogue lines (speaker), and by a dialogue's learner."
         },
         "name": {
           "type": "string",
@@ -472,6 +472,34 @@
           "maxLength": 60,
           "x-translatable": true,
           "description": "The name learners read in captions and in the transcript (Leïla, Narrator)."
+        },
+        "narrator": {
+          "type": "boolean",
+          "default": false,
+          "description": "A narrator rather than a character: in a dialogue (D61) its lines are said with its voice and shown as narration, centred, without a bubble or a portrait."
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^color\\.[A-Za-z][A-Za-z0-9.-]{0,47}$",
+          "x-kind": "token",
+          "x-token-prefix": "color.",
+          "description": "The theme colour of this character's name and bubble in a dialogue (a token: color.accent, or a custom color.* token), contrast-checked like the theme's."
+        },
+        "look": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "How the character is drawn in a dialogue (D61): an SVG that follows the characters' convention ({ \"svg\": \"personnages/marc.svg\" }: its root declares data-expressions, data-gestures and data-portrait, and the player animates its mouth, expressions and gestures), or pictures ({ \"portrait\": \"personnages/marc.webp\", \"expressions\": { \"inquiet\": \"personnages/marc-inquiet.webp\" } }). Expressions and gestures not declared here are warnings (W_DIALOGUE_LOOK). Without a look: the name and an initial.",
+          "properties": {
+            "svg": { "$ref": "defs.schema.json#/$defs/assetPath", "description": "An SVG of assets/ that follows the characters' convention (docs/dialogues.md)." },
+            "portrait": { "$ref": "defs.schema.json#/$defs/assetPath", "description": "A picture of the character's face (the neutral expression)." },
+            "expressions": {
+              "type": "object",
+              "description": "Pictures by expression name: the closed list of the faces the character may show.",
+              "propertyNames": { "pattern": "^[a-z][a-z0-9-]{0,31}$" },
+              "additionalProperties": { "$ref": "defs.schema.json#/$defs/assetPath" }
+            }
+          },
+          "not": { "required": ["svg", "portrait"] }
         },
         "voices": {
           "type": "object",

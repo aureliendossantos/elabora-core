@@ -30,6 +30,8 @@ export interface BlockPart {
   // block without controls cannot be clicked.
   controls: string[];
   options?: { id: string; label: string }[]; // a decision's
+  // A dialogue's nodes (with their options), lines and endings: what its triggers and conditions name (D61).
+  dialogue?: { nodes: { id: string; title: string; options: { id: string; label: string }[] }[]; lines: string[]; endings: { id: string; title: string }[] };
   object?: ObjectPart; // a free object's
 }
 
@@ -63,6 +65,7 @@ export function screenParts(project: Project, screenId: string): ScreenParts | n
     const behavior = behaviorOf(registry, block.type);
     const part: BlockPart = { id: block.id, type: block.type, layer: layer?.id ?? null, behavior, controls: [...blockControls(project, block).keys()] };
     if (behavior === 'decision') part.options = decisionOptions(block);
+    if (behavior === 'dialogue') part.dialogue = dialogueParts(block);
     if (behavior === 'object') {
       const object = objectPart(project, block);
       if (object) part.object = object;
@@ -83,6 +86,18 @@ export function screenParts(project: Project, screenId: string): ScreenParts | n
       advance: screen.narration.advance || project.course?.narration?.advance || 'learner', seek: screen.narration.seek || project.course?.narration?.seek || 'seen',
       lines: lines.map((line) => ({ id: String(line.id), speaker: typeof line.speaker === 'string' ? line.speaker : null, step: typeof line.step === 'number' ? line.step : 1, text: typeof line.text === 'string' ? line.text : '' }))
     } : null
+  };
+}
+
+function dialogueParts(block: Block): NonNullable<BlockPart['dialogue']> {
+  const props = isRecord(block.props) ? block.props : {};
+  const records = (value: unknown): Record<string, unknown>[] => (Array.isArray(value) ? value.filter(isRecord) : []);
+  const text = (value: unknown, fallback: string) => (typeof value === 'string' ? value : fallback);
+  const nodes = records(props.nodes).filter((node) => typeof node.id === 'string');
+  return {
+    nodes: nodes.map((node) => ({ id: String(node.id), title: text(node.title, String(node.id)), options: records(node.options).filter((option) => typeof option.id === 'string').map((option) => ({ id: String(option.id), label: text(option.label, text(option.text, String(option.id))) })) })),
+    lines: nodes.flatMap((node) => [...records(node.lines), ...records(node.options).flatMap((option) => records(option.reply))]).map((line) => line.id).filter((id): id is string => typeof id === 'string'),
+    endings: records(props.endings).filter((ending) => typeof ending.id === 'string').map((ending) => ({ id: String(ending.id), title: text(ending.title, String(ending.id)) }))
   };
 }
 

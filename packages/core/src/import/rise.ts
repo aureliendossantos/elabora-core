@@ -1,5 +1,5 @@
 import { htmlToMarkdown, htmlToText } from './html-markdown.ts';
-import type { SourceCourse, SourceSection, SourcePage, SourceItem, SourceMedia, SourceTrigger, ReaderLoss } from './model.ts';
+import type { SourceCourse, SourceSection, SourcePage, SourceItem, SourceMedia, SourceTrigger, ReaderLoss, SourceDialogueNode, SourceDialogueOption } from './model.ts';
 
 // Rise 360's exports (web, SCORM 1.2 and 2004, xAPI): the course is JSON, base64 in the player's
 // page or in a locale file beside it (docs/decisions.md D47). `findRiseCourse` finds it in the
@@ -293,13 +293,9 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
         return;
       }
       case 'scenario': {
-        const lines: string[] = [];
-        for (const scene of items) for (const slide of list(scene.slides)) {
-          const said = htmlToText(str(slide.description));
-          if (said) lines.push(said);
-          for (const response of list(slide.responses)) lines.push(`- ${htmlToText(str(response.description))}${str(response.feedback) ? ` — ${htmlToText(str(response.feedback))}` : ''}`);
-        }
-        push(page, { ref, kind: 'fallback', feature: 'Scénario (Rise scenario)', markdown: lines.join('\n\n'), detail: 'ses répliques et réponses en texte, sans embranchements' });
+        const dialogue = readScenario(block, items);
+        if (dialogue) push(page, { ref, kind: 'dialogue', ...dialogue });
+        else push(page, { ref, kind: 'unsupported', feature: 'Scénario (Rise scenario)', detail: 'vide' });
         return;
       }
       case 'storyline':
@@ -308,6 +304,78 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
       default:
         push(page, { ref, kind: 'unsupported', feature: `Rise ${feature}` });
     }
+  }
+
+  // Rise's scenario block (D61): scenes (items) of contents (slides). A content is a character's line
+  // (its description; a text content may hide the character: a narration), with its scene description
+  // for screen readers (a narration before it), and up to three answers (responses), each with its
+  // feedback and where it goes: the next content, another content or scene, try again, or the end
+  // (End Scenario). The scene's character speaks every line of the scene. Poses, backdrops and the
+  // marks of the newer format are read when they are there; poses and backdrops are not kept.
+  function readScenario(block: Json, scenes: Json[]): { title?: string; nodes: SourceDialogueNode[]; lost?: { feature: string; detail?: string }[] } | null {
+    const nodes: SourceDialogueNode[] = [];
+    const sceneFirst = new Map<string, string>();
+    const slideRefs = new Set<string>();
+    const lost: { feature: string; detail?: string }[] = [];
+    let poses = 0;
+    let backgrounds = 0;
+    const characterOf = (scene: Json): string => htmlToText(str(obj(scene.character).name) || str(scene.characterName) || str(obj(scene.character).title)) || 'Personnage';
+    const destination = (holder: Json): string | Json => {
+      for (const key of ['destination', 'goTo', 'goto', 'target', 'next', 'link']) {
+        const value = holder[key];
+        if (typeof value === 'string' && value) return value;
+        if (value && typeof value === 'object') return value as Json;
+      }
+      return '';
+    };
+    // Every content and scene first: an answer may go to one further on.
+    scenes.forEach((scene, sceneIndex) => list(scene.slides).forEach((slide, slideIndex) => {
+      const ref = str(slide.id) || `s${sceneIndex + 1}-${slideIndex + 1}`;
+      if (slideIndex === 0) sceneFirst.set(str(scene.id) || `scene-${sceneIndex}`, ref);
+      slideRefs.add(ref);
+    }));
+    scenes.forEach((scene, sceneIndex) => {
+      const character = characterOf(scene);
+      if (obj(scene.background).media || scene.background && typeof scene.background === 'string' || obj(scene.media).image) backgrounds++;
+      list(scene.slides).forEach((slide, slideIndex) => {
+        const ref = str(slide.id) || `s${sceneIndex + 1}-${slideIndex + 1}`;
+        if (str(slide.characterPose) || str(slide.pose) || obj(slide.character).pose) poses++;
+        const lines: SourceDialogueNode['lines'] = [];
+        const description = htmlToText(str(slide.sceneDescription) || str(slide.altText) || str(slide.accessibilityDescription));
+        if (description) lines.push({ text: description });
+        const said = htmlToText(str(slide.dialogue) || str(slide.description) || str(slide.text) || str(slide.title));
+        const hidden = slide.hideCharacter === true || slide.characterHidden === true || obj(slide.character).hidden === true;
+        if (said) lines.push(hidden ? { text: said } : { speaker: character, text: said });
+        const options: SourceDialogueOption[] = list(slide.responses).map((response) => {
+          if (str(response.pose) || str(response.characterPose)) poses++;
+          const text = htmlToText(str(response.description) || str(response.text) || str(response.title));
+          const feedback = htmlToMarkdown(str(response.feedback)) || htmlToMarkdown(str(obj(response.feedback).description));
+          const mark = str(response.correctness || response.type || response.status || (response.correct === true ? 'correct' : response.correct === false ? 'incorrect' : '')).toLowerCase();
+          const quality = mark === 'correct' ? 'good' : mark === 'neutral' ? 'ok' : mark === 'incorrect' || mark === 'wrong' ? 'bad' : undefined;
+          return { text: text || '…', ...(feedback ? { feedback } : {}), ...(quality ? { quality } : {}), to: target(destination(response)) };
+        });
+        nodes.push({ ref, ...(str(scene.title) && slideIndex === 0 ? { title: htmlToText(str(scene.title)) } : {}), lines, options });
+      });
+    });
+    // Where an answer goes: the next content (null: the node's way out), a content or a scene, try
+    // again, the end.
+    function target(value: string | Json): SourceDialogueOption['to'] {
+      const kind = (typeof value === 'string' ? value : str(value.type) || str(value.kind) || str(value.action)).toLowerCase();
+      const id = typeof value === 'string' ? value : str(value.id) || str(value.slideId) || str(value.contentId) || str(value.sceneId) || str(value.target);
+      if (/end/.test(kind)) return { end: true };
+      if (/retry|try|again|repeat/.test(kind)) return { retry: true };
+      if (id && (slideRefs.has(id) || sceneFirst.has(id))) return { node: id };
+      return null;
+    }
+    // Targets named by scene go to its first content.
+    for (const node of nodes) for (const option of node.options) {
+      if (option.to && 'node' in option.to && sceneFirst.has(option.to.node) && !slideRefs.has(option.to.node)) option.to = { node: sceneFirst.get(option.to.node)! };
+    }
+    if (!nodes.length) return null;
+    if (poses) lost.push({ feature: 'Poses du personnage (Rise scenario)', detail: `${poses}` });
+    if (backgrounds) lost.push({ feature: 'Arrière-plans de scène (Rise scenario)', detail: `${backgrounds}` });
+    const title = htmlToText(str(block.title));
+    return { ...(title ? { title } : {}), nodes, ...(lost.length ? { lost } : {}) };
   }
 
   function readQuestion(item: Json, page: SourcePage, ref: string, inQuiz: boolean) {

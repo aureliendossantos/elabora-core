@@ -1,6 +1,6 @@
 # Agent tools
 
-Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `npm run docs`. The same 93 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
+Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `npm run docs`. The same 99 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
 
 ## Reading
 
@@ -245,6 +245,32 @@ A timed screen's timeline as text, read without a capture: its steps (segments) 
 |---|---|---|---|
 | `screen` | string |  | A narrated screen (default: the list of narrated screens). |
 | `language` | string |  | A language of the course or of one of its translations (default: the course language). |
+
+### `elabora_dialogue_show`
+
+A dialogue block as a script, to reread what was written: each node with its lines (speaker, stage direction, line, cues), its options with quality, points, effects and where each goes (« then … »), their reply and feedback, then the endings. text is stable (it also serves diffs); script holds the same as data.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `block` | string | yes | A dialogue block (its id). |
+
+### `elabora_dialogue_play`
+
+« Jouer un chemin » without a preview: the path of these choices (option ids, one for each decision met, a retried option and the next one included) as the player plays it: its lines and notes, the ending, the score (0-100), points, the decisions and the duration (the lines' audio, else estimated). ok false when a choice is not offered (offered lists those that were). Check the best path and each mistake after writing a dialogue.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `block` | string | yes | A dialogue block (its id). |
+| `choose` | string[] |  | Option ids in order (default: none, the dialogue up to its first decision). |
+
+### `elabora_dialogue_paths`
+
+Every path of a dialogue block: how many, best and worst score and points, endings reached and never reached, nodes never reached, and each path with its choices, ending, score and duration (2000 at most; complete false past it). Run it after writing or changing a dialogue: an ending or node never reached, or a best score under 100, says what to fix.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `block` | string | yes | A dialogue block (its id). |
+| `limit` | integer |  | Paths at most (default 2000). |
 
 ### `elabora_voice_list`
 
@@ -701,6 +727,26 @@ When a block comes (in) and goes (out) on its screen's timeline, with an effect,
 | `in` | object \| null |  | A moment and its effect: { "at": &lt;anchor&gt;, "effect": "rise", "duration": 0.5, "direction": "left" }. Anchors: { "line": "l2" } (the line starts), { "line": "l2", "edge": "end" }, { "line": "l2", "word": "imprimante" } (the voice says that word; a few words work too; occurrence: 2 for its second time; offset: 0.3 seconds after, negative before); on a screen without narration { "seconds": 1.5 } from the start of the block's step ({ "seconds": 1.5, "step": 2 }); { "step": 2 } or { "step": 2, "edge": "end" }. Effects: none, fade (default), rise, slide, zoom, wipe, draw, or the theme's (course.json theme.effects). Fields set to null go back to their default; the whole moment null removes it. |
 | `out` | object \| null |  | A moment and its effect: { "at": &lt;anchor&gt;, "effect": "rise", "duration": 0.5, "direction": "left" }. Anchors: { "line": "l2" } (the line starts), { "line": "l2", "edge": "end" }, { "line": "l2", "word": "imprimante" } (the voice says that word; a few words work too; occurrence: 2 for its second time; offset: 0.3 seconds after, negative before); on a screen without narration { "seconds": 1.5 } from the start of the block's step ({ "seconds": 1.5, "step": 2 }); { "step": 2 } or { "step": 2, "edge": "end" }. Effects: none, fade (default), rise, slide, zoom, wipe, draw, or the theme's (course.json theme.effects). Fields set to null go back to their default; the whole moment null removes it. |
 
+### `elabora_set_dialogue_node`
+
+Write one node of a dialogue block whole, in one undoable change: a new node (after: a node id, first: at the start; default: at the end), or the node with the same id replaced in place (moved with after or first). A node: { "id", "title"?, "lines": [{ "id", "speaker"?, "text", "expression"?, "cues"? }], "prompt"?, "options": [{ "id", "text", "label"?, "quality", "reply"?, "feedback"?, "points"?, "next"?, "retry"?, … }], "next"?, "end"? } (elabora_get_schema dialogue). To add an option or a line, write its node again with it. The findings say what is left to fix (a next to a node that does not exist).
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `block` | string | yes | A dialogue block (its id). |
+| `node` | object | yes | The node, with its id. |
+| `after` | string |  | Add (or move) it after this node. |
+| `first` | boolean |  | Add (or move) it first. |
+
+### `elabora_remove_dialogue_node`
+
+Remove one node of a dialogue block, in one undoable change. What went to it (a next, an option's next, a start) is left for you to fix: the findings name it (E_DIALOGUE_TARGET).
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `block` | string | yes | A dialogue block (its id). |
+| `node` | string | yes | The node's id. |
+
 ### `elabora_voice_set`
 
 The voice of a speaker (course.json speakers[]) in a language: speakers[].voices[&lt;lang&gt;] = { provider, voice, name, settings }, its settings kept unless given. Lines of that speaker made with another voice become out of date (W_NARRATION_AUDIO_STALE): elabora_voice_generate makes them again. One undoable change. An ElevenLabs voice (elabora_voice_search): provider "elevenlabs", its name, and settings { model (eleven_v4 by default, the one that plays stage directions), stability, similarity (0 to 1; lower stability: more expressive) }. Choosing a voice costs nothing.
@@ -813,6 +859,15 @@ Write the plan's document, what the client reads, comments and signs, to dist/&l
 |---|---|---|---|
 | `format` | "docx" \| "pdf" \| "html" | yes | docx, pdf or html. |
 | `version` | string |  | V2, or current (the working copy). Default: the latest version. |
+
+### `elabora_dialogue_export`
+
+Write a dialogue block for the client to dist/&lt;course&gt;-&lt;block&gt;.&lt;to&gt;: its map (every node and ending, placed by Elabora), then its script (who says what, each option with its quality, where it goes and its note), in the course's language; html (one page) or pdf (needs a Chromium: Elabora's or Google Chrome). For when the author asks to send a dialogue for validation; the client also plays it in the Revue.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `block` | string | yes | A dialogue block (its id). |
+| `to` | "html" \| "pdf" | yes | html or pdf. |
 
 ### `elabora_build`
 

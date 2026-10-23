@@ -8,7 +8,8 @@ import type { Behavior } from '../components/registry.ts';
 import { pendingMigrations } from '../components/migrate.ts';
 import { blockControls, controlEntity } from '../components/controls.ts';
 import type { StateModel } from '@elabora/player/state-codec';
-import { isRecord, recordsOf, textOf, numberOr, isText } from './values.ts';
+import { isRecord, recordOf, recordsOf, textOf, numberOr, isText } from './values.ts';
+import { dialogueEntities } from '../dialogue/keys.ts';
 import { listOf, objectsIn } from '../util/values.ts';
 
 // elabora.lock.json gives every stateful element a short, permanent key (base 36 counter), and
@@ -35,12 +36,13 @@ export function readLock(project: Pick<Project, 'files'>): StateLock {
   return isStateLock(parsed.value) ? parsed.value : emptyLock();
 }
 
-// Learner state keys by lock entity (screen:<id>, quiz:<id>, var:<id>, visit:<id>#<name>…).
+// Learner state keys by lock entity (screen:<id>, quiz:<id>, var:<id>, visit:<id>#<name>, a dialogue's
+// dialogue:<id>, choice:<id>#<node>.<option> and ending:<id>#<ending>…).
 export type StateKeys = Record<string, string>;
 
 // Activities keep learner state under an entity named by their behaviour, so a fork of the quiz
 // block (an image quiz…) keeps learner state like a quiz.
-const ACTIVITY_STATE_PREFIX = { quiz: 'quiz', numeric: 'numeric', decision: 'decision', object: 'object', predict: 'predict' } as const;
+const ACTIVITY_STATE_PREFIX = { quiz: 'quiz', numeric: 'numeric', decision: 'decision', dialogue: 'dialogue', object: 'object', predict: 'predict' } as const;
 export type ActivityBehavior = keyof typeof ACTIVITY_STATE_PREFIX;
 const isActivity = (behavior: Behavior | 'predict' | null): behavior is ActivityBehavior => behavior !== null && behavior in ACTIVITY_STATE_PREFIX;
 export const activityEntity = (behavior: ActivityBehavior, blockId: string): string => `${ACTIVITY_STATE_PREFIX[behavior]}:${blockId}`;
@@ -68,6 +70,8 @@ function blockEntities(project: Pick<Project, 'components' | 'plan' | 'course'>,
   const entities: string[] = [];
   const behavior = instanceBehavior(getRegistry(project), block);
   if (isActivity(behavior)) entities.push(activityEntity(behavior, block.id));
+  // A dialogue's options and endings have keys of their own: its saved path names them (D61).
+  if (behavior === 'dialogue') entities.push(...dialogueEntities(block.id, recordOf(block.props)).slice(1));
   if (toggled.has(block.id)) entities.push(`block:${block.id}`);
   for (const name of blockControls(project, block).keys()) entities.push(controlEntity(block.id, name));
   return entities;
