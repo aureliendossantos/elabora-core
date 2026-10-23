@@ -16,6 +16,8 @@
 //   b: { blockKey: 0|1 } block visibility overrides (show-block / hide-block)
 //   p: { screenKey: step } screens left before their last step: the step reached (resumed there)
 //   w: visited control keys joined by "." (buttons, tabs and disclosures the learner has used)
+//   g: the language chosen in a package of several languages (D59)
+//   t: { dialogueKey: "p|r|e|f" } each dialogue's progress (D61, dialogue/state.ts)
 //
 // The strings this module writes are saved by LMSs: the encoding must never change for a given state.
 
@@ -57,6 +59,8 @@ export interface LearnerState {
   visits: Set<string>;
   // The language the learner chose in a package of several languages (D59).
   language?: string;
+  // Each dialogue's progress, as dialogue/state.ts encodes it (D61).
+  dialogues: Record<string, string>;
 }
 
 // The JSON written to suspend data. Fields are added in this order: the order is part of the format.
@@ -75,10 +79,11 @@ interface EncodedState {
   p?: Record<string, number>;
   w?: string;
   g?: string;
+  t?: Record<string, string>;
 }
 
 export function emptyState(): LearnerState {
-  return { visited: new Set(), completed: new Set(), quizzes: {}, numerics: {}, decisions: {}, vars: {}, objects: {}, objectsDone: {}, retakes: 0, visibility: {}, steps: {}, visits: new Set() };
+  return { visited: new Set(), completed: new Set(), quizzes: {}, numerics: {}, decisions: {}, vars: {}, objects: {}, objectsDone: {}, retakes: 0, visibility: {}, steps: {}, visits: new Set(), dialogues: {} };
 }
 
 // The fallbacks (|| [], || 0, || {}) accept states built by hand, without every field.
@@ -101,6 +106,7 @@ export function encodeState(state: LearnerState): string {
   if (Object.keys(state.steps || {}).length) encoded.p = { ...state.steps };
   if (state.visits?.size) encoded.w = [...state.visits].join('.');
   if (state.language) encoded.g = state.language;
+  if (Object.keys(state.dialogues || {}).length) encoded.t = { ...state.dialogues };
   return JSON.stringify(encoded);
 }
 
@@ -132,6 +138,7 @@ export function decodeState(text: string): LearnerState {
   for (const [key, value] of entriesOf(decoded.p)) if (typeof value === 'number' && Number.isInteger(value) && value > 0) state.steps[key] = value;
   if (decoded.w) for (const key of String(decoded.w).split('.')) if (key) state.visits.add(key);
   if (typeof decoded.g === 'string' && /^[A-Za-z0-9-]{2,16}$/.test(decoded.g)) state.language = decoded.g;
+  for (const [key, value] of entriesOf(decoded.t)) if (typeof value === 'string') state.dialogues[key] = value;
   return state;
 }
 
@@ -152,6 +159,8 @@ export interface StateModel {
   controls: string[];
   // The languages of a package of several languages (D59).
   languages?: string[];
+  // Dialogues (D61): the key of each one's progress and its longest progress (worstCaseDialogue).
+  dialogues?: { key: string; worst: string }[];
 }
 
 // Worst case: every screen visited and completed, every quiz answered with all options, every control visited,
@@ -171,6 +180,7 @@ export function worstCaseState(model: StateModel): LearnerState {
   for (const key of model.toggleableBlocks || []) state.visibility[key] = 1;
   for (const screen of model.steppedScreens || []) state.steps[screen.key] = screen.step;
   for (const key of model.controls || []) state.visits.add(key);
+  for (const dialogue of model.dialogues || []) state.dialogues[dialogue.key] = dialogue.worst;
   // A package of several languages keeps the one chosen (D59): the longest code.
   if (model.languages?.length) state.language = model.languages.reduce((longest, code) => (code.length > longest.length ? code : longest), '');
   state.retakes = 99;

@@ -393,7 +393,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     packageHash = await hashZip(zipPlan);
   }
 
-  const model = { ...buildStateModel(project, keys), ...(others.length ? { languages } : {}) };
+  const model = { ...buildStateModel(project, keys, lock), ...(others.length ? { languages } : {}) };
   const report = buildReport({
     project, course, plan, registry, profiles: targets, keys: stateKeys, target, web: web && share ? { progress: web.progress, navigation: web.navigation, noindex: web.noindex, url: share.head.url ?? null, image: share.image?.path ?? null, ...(review ? { review: { origins: review.origins } } : {}) } : null, suspendDataWorstCase: worstCaseLength(model), data,
     pkg: { sha256: packageHash, bytes: zipPlan.size, files: zipPlan.entries.length, uncompressedBytes: zipPlan.uncompressed },

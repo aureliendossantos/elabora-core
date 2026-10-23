@@ -1,0 +1,4 @@
+[
+  { "id": "marc", "name": "Marc", "color": "color.primary", "look": { "svg": "personnages/marc.svg" } },
+  { "id": "leila", "name": "Leïla", "color": "color.accent", "look": { "svg": "personnages/leila.svg" } }
+]

@@ -9,6 +9,8 @@
 //             data-t-unit, data-t-expected, data-t-group.
 //   decision  data-t-prompt, data-t-choice="<id>" (a <button> per option), data-t-feedback.
 //   results   data-t-score, data-t-status, data-t-message, data-t-retry (all optional).
+//   dialogue  data-t-log (the thread), data-t-options (the options' room); optional data-t-group,
+//             data-t-stage (style scene), data-t-debrief, data-t-start (begins click): dialogue/view.ts.
 // Any template: data-t-click (button firing the screen event "click"; ="<name>" names it), data-t-toggle="<part>"
 // with data-t-part="<part>" (disclosure; data-t-open shows it first), data-t-tabs with data-t-tab="<k>" and
 // data-t-panel="<k>" (tabs; data-t-selected picks the first), data-t-label="<label id>" (player label).
@@ -31,6 +33,8 @@ import type { Interaction } from './scorm12.ts';
 import { element, uniqueId } from './dom.ts';
 import { parseNumber, gradeNumeric, formatNumber } from './numeric.ts';
 import { createCharts } from './charts/behavior.ts';
+import { createDialogues } from './dialogue/view.ts';
+import type { DialogueHost } from './dialogue/view.ts';
 
 export interface BehaviorContext {
   courseState: CourseState;
@@ -46,6 +50,9 @@ export interface BehaviorContext {
   retake(): void;
   // The editor's canvas: what plays by itself (a chart's entrance) is shown at rest.
   still?: boolean;
+  // What the screen gives dialogues (D61): its narration to hold, its presentation actions, the
+  // learner's voice settings, the virtual clock of tests.
+  dialogueHost?: DialogueHost;
 }
 
 // Renders one possible outcome of an activity (dry run).
@@ -68,9 +75,11 @@ interface Control {
 // SCORM 1.2 responses and patterns name choices by letter: a, b, c…
 const letter = (index: number) => String.fromCharCode(97 + index);
 
-export function createBehaviors({ courseState, labels, language, formatLabel, announce, recordInteraction, trigger, retake, still = false }: BehaviorContext) {
+export function createBehaviors({ courseState, labels, language, formatLabel, announce, recordInteraction, trigger, retake, still = false, dialogueHost }: BehaviorContext) {
   // Charts and diagrams (D60): their own behaviour (charts/behavior.ts).
   const charts = createCharts({ courseState, labels, language, formatLabel, announce, recordInteraction, trigger, still });
+  // Branching dialogues (D61): their own behaviour (dialogue/view.ts).
+  const dialogues = createDialogues({ courseState, labels, language, formatLabel, announce, recordInteraction, trigger, still, host: dialogueHost });
   // Controls of each template root (bound before the slots are filled), and the refresh of each results block.
   const controlsOf = new WeakMap<Element, Control[]>();
   const refreshers = new WeakMap<Element, () => void>();
@@ -166,6 +175,7 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
   // calls this whenever blocks come into view.
   function noteShown(container: ParentNode) {
     charts.noteShown();
+    dialogues.noteShown();
     for (const wrap of container.querySelectorAll<HTMLElement>('.t-block[data-block]')) {
       const block = courseState.blockIndex.get(wrap.dataset.block ?? '')?.block;
       const controls = controlsOf.get(wrap);
@@ -438,6 +448,7 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
     if (hasBehavior(block, 'decision')) return decision(wrap, block, dry);
     if (hasBehavior(block, 'results')) return results(wrap, block, dry);
     if (hasBehavior(block, 'chart') || hasBehavior(block, 'predict')) return charts.bind(wrap, block, dry);
+    if (hasBehavior(block, 'dialogue')) { if (!dry) dialogues.bind(wrap, block); return undefined; }
     return undefined;
   }
 
@@ -445,6 +456,7 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
     primitives,
     noteShown,
     charts,
+    dialogues,
     // Binds the behaviour of an activity or results block to its markup (nothing for other blocks).
     bind(wrap: HTMLElement, block: BlockData): void { run(wrap, block, false); },
     // Dry run: the possible outcomes of an activity or results block (none for other blocks).

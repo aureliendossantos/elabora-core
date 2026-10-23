@@ -37,6 +37,9 @@ const PATHS = {
   image: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 16l-4.5-4.5-9.5 8"/>',
   textSize: '<path d="M3 18.5l5-13 5 13M4.8 14h6.4"/><path d="M14.5 18.5l3.2-8 3.3 8M15.6 16h4.2"/>',
   languages: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>',
+  note: '<path d="M5.5 4h13a1.5 1.5 0 0 1 1.5 1.5V14l-6 6H5.5A1.5 1.5 0 0 1 4 18.5v-13A1.5 1.5 0 0 1 5.5 4z"/><path d="M20 14h-4.5a1.5 1.5 0 0 0-1.5 1.5V20M8 9h8M8 12.5h4.5"/>',
+  half: '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" stroke="none"/>',
+  history: '<path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4v5h5M12 7.5V12l3 2"/>',
   keyboard: '<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M8 14h8"/>'
 } as const;
 

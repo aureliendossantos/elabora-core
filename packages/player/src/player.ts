@@ -8,7 +8,7 @@
 import { findScorm12API, createScorm12Adapter, createStandaloneAdapter, scorm12Duration, pad } from './scorm12.ts';
 import { createWebAdapter } from './web.ts';
 import type { Interaction, LmsAdapter } from './scorm12.ts';
-import { createCourseState, hasBehavior } from './course-state.ts';
+import { createCourseState, hasBehavior, flatBlocks } from './course-state.ts';
 import { createScreenView } from './screen-view.ts';
 import { labelsFor, formatLabel } from './labels.ts';
 import { element } from './dom.ts';
@@ -214,7 +214,8 @@ function mountBars() {
   document.title = course.title;
   // « Affichage » and « Langue »: their menus.
   const narrated = [...(course.player.top?.items ?? []), ...(course.player.bottom?.items ?? [])].some((item) => item.id === 'controls');
-  displayMenu = chrome.displayButton ? createDisplayMenu(chrome.displayButton, { labels, prefs: displayPrefs, narrated, onChange: (prefs) => { applyDisplay(app, prefs); saveDisplayPrefs(packageId, keep, prefs); } }) : null;
+  const dialogues = course.screens.some((screen) => [...flatBlocks(screen.blocks), ...(screen.layers ?? []).flatMap((layer) => flatBlocks(layer.blocks))].some((block) => hasBehavior(block, 'dialogue')));
+  displayMenu = chrome.displayButton ? createDisplayMenu(chrome.displayButton, { labels, prefs: displayPrefs, narrated, dialogues, onChange: (prefs) => { applyDisplay(app, prefs); saveDisplayPrefs(packageId, keep, prefs); } }) : null;
   languageMenu = chrome.languageButton && course.languages ? createLanguageMenu(chrome.languageButton, { labels, languages: course.languages, current: course.language, name: languageName, choose: (code) => { void switchLanguage(code); } }) : null;
   popovers = [displayMenu, languageMenu].filter((popover): popover is Popover => popover !== null);
   applyDisplay(app, displayPrefs);
@@ -625,6 +626,15 @@ const debugHooks = {
   get step() { return { revealed: view.revealed, steps: [...view.steps] }; },
   state: () => ({ screen: currentScreen()?.id, status: courseState.lmsStatus, score: courseState.score(), suspendData: courseState.encode() }),
   objectHost: (blockId: string) => view.objectHost(blockId),
+  // The dialogues of the current screen (D61): their state, « Suite », a choice, the virtual clock of tests.
+  dialogues: {
+    blocks: () => view.dialogues.blocks,
+    state: (blockId: string) => view.dialogues.state(blockId),
+    advance: (seconds: number) => view.dialogues.advance(seconds),
+    start: (blockId: string) => view.dialogues.start(blockId),
+    next: (blockId: string) => view.dialogues.next(blockId),
+    choose: (blockId: string, option: string) => view.dialogues.choose(blockId, option)
+  },
   // Resolves when the fonts are loaded, the images of the current screen decoded and its free
   // objects answered (or failed), and the layout has settled (reserved rooms measured again):
   // previews, screenshots and fit checks wait for it instead of a fixed delay.

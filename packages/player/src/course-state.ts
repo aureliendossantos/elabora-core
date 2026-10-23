@@ -5,8 +5,11 @@ import { emptyState, encodeState, decodeState } from './state-codec.ts';
 import type { NumericAnswer, QuizAnswer } from './state-codec.ts';
 import { gradeNumeric } from './numeric.ts';
 import { fieldOf } from './json.ts';
+import { openDialogue, scoredDone, scoredResult, eventConditionHolds } from './dialogue/run.ts';
+import type { DialogueRun, DialogueInteraction } from './dialogue/run.ts';
+import { encodeDialogueProgress, decodeDialogueProgress } from './dialogue/state.ts';
 import type {
-  Action, ActivityBlock, Behavior, BlockByBehavior, BlockData, Condition, CourseData, DecisionBlock, DecisionOption, LayerData, Misconception,
+  Action, ActivityBlock, Behavior, BlockByBehavior, BlockData, Condition, CourseData, DecisionBlock, DecisionOption, DialogueBlock, LayerData, Misconception,
   NumericBlock, ObjectBlock, PredictBlock, QuizBlock, ScreenData, Trigger, TriggerType, VariableData, VariableValue
 } from './course-data.ts';
 
@@ -22,7 +25,7 @@ export const behaviorOf = (block: BlockData): Behavior | null => block.behavior 
 export function hasBehavior<K extends Behavior>(block: BlockData, behavior: K): block is BlockByBehavior[K] {
   return behaviorOf(block) === behavior;
 }
-const ACTIVITIES = new Set<Behavior | null>(['quiz', 'numeric', 'decision', 'object', 'predict']);
+const ACTIVITIES = new Set<Behavior | null>(['quiz', 'numeric', 'decision', 'dialogue', 'object', 'predict']);
 export const isActivity = (block: BlockData): block is ActivityBlock => ACTIVITIES.has(behaviorOf(block));
 
 // Blocks of a list and the blocks placed in their slots, depth first.
@@ -32,7 +35,7 @@ export function flatBlocks(blocks: readonly BlockData[] | undefined, out: BlockD
 }
 
 // What changed, for onChange.
-export type ChangeKind = 'variable' | 'quiz' | 'numeric' | 'decision' | 'object' | 'object-state' | 'visibility' | 'visited' | 'step' | 'completion' | 'visit' | 'retake';
+export type ChangeKind = 'variable' | 'quiz' | 'numeric' | 'decision' | 'dialogue' | 'object' | 'object-state' | 'visibility' | 'visited' | 'step' | 'completion' | 'visit' | 'retake';
 
 export interface CourseStateOptions {
   // cmi.suspend_data saved by the previous sessions.
@@ -87,6 +90,17 @@ export interface TriggerInfo {
   edge?: 'start' | 'end';
   // timeline.ended: the layer whose timeline ended (D62); absent: the screen's.
   layer?: string;
+  // dialogue.node and dialogue.chosen: the node; dialogue.ended: the ending (null: the ending
+  // without title).
+  node?: string;
+  ending?: string | null;
+}
+
+// What saving a dialogue's progress changed: its scored run reached an end just now (the score and
+// the interactions of its decisions are final: recorded once).
+export interface DialogueSaved {
+  finished: boolean;
+  interactions: DialogueInteraction[];
 }
 
 export interface EventRun {
@@ -202,6 +216,43 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     changed('decision');
     return { option: block.props.options.find((option) => option.id === optionId) };
   }
+  // ── dialogues (D61): the progress of each, replayed by the pure walk (dialogue/) ──
+  // Runs are kept by block while their saved progress is the one they were opened from.
+  const dialogueRuns = new Map<string, { saved: string; run: DialogueRun }>();
+  const dialogueEnv = { variable: (id: string) => getVar(id) ?? undefined };
+  function dialogueRun(block: DialogueBlock): DialogueRun {
+    const saved = learner.dialogues[block.key] ?? '';
+    const kept = dialogueRuns.get(block.id);
+    if (kept && kept.saved === saved && kept.run.data === block.props) return kept.run;
+    const run = openDialogue(block.props, decodeDialogueProgress(saved, block.props.keys), dialogueEnv);
+    dialogueRuns.set(block.id, { saved, run });
+    return run;
+  }
+  const dialogueById = (blockId: string): DialogueBlock | null => {
+    const block = blockIndex.get(blockId)?.block;
+    return block && hasBehavior(block, 'dialogue') ? block : null;
+  };
+  // Saves a dialogue's progress (the behaviour moves its run: a choice, a return, a jump). The first
+  // run to an end is the only one scored: when it ends now, its interactions are returned once.
+  function saveDialogue(blockId: string, run: DialogueRun): DialogueSaved {
+    const block = dialogueById(blockId);
+    if (!block) return { finished: false, interactions: [] };
+    const before = dialogueRun(block);
+    const wasDone = scoredDone(before);
+    const saved = encodeDialogueProgress(run.progress, block.props.keys);
+    if (saved) learner.dialogues[block.key] = saved; else delete learner.dialogues[block.key];
+    dialogueRuns.set(block.id, { saved: learner.dialogues[block.key] ?? '', run });
+    changed('dialogue');
+    const finished = !wasDone && scoredDone(run);
+    return { finished, interactions: finished ? scoredResult(run).interactions : [] };
+  }
+  // A dialogue's score (0..1) once its first run reached an end; nothing to count counts as 1.
+  function dialogueScore(block: DialogueBlock): number {
+    const run = dialogueRun(block);
+    if (!scoredDone(run)) return 0;
+    return scoredResult(run).score ?? 1;
+  }
+
   // score: what the object reported (0..1, rounded to 2 decimals); anything else counts as 1.
   function completeObject(blockId: string, score?: unknown): void {
     const block = blockIndex.get(blockId)?.block;
@@ -265,6 +316,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     if (hasBehavior(block, 'decision')) return !!learner.decisions[block.key];
     if (hasBehavior(block, 'object')) return block.key in learner.objectsDone;
     if (hasBehavior(block, 'predict')) return predictState(block) !== null;
+    if (hasBehavior(block, 'dialogue')) return scoredDone(dialogueRun(block));
     return true;
   }
   // Answered at least once, right or wrong (a step that opens once answered); an object, once completed.
@@ -305,6 +357,8 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
       if ((hasBehavior(block, 'quiz') || hasBehavior(block, 'numeric')) && block.props.scored !== false) out.push(block);
       else if ((hasBehavior(block, 'decision') || hasBehavior(block, 'object')) && block.props.scored) out.push(block);
       else if (hasBehavior(block, 'predict') && block.props.predict.scored) out.push(block);
+      // A dialogue is scored when its scoring is not none (D61).
+      else if (hasBehavior(block, 'dialogue') && block.props.scoring !== 'none') out.push(block);
     }
     return out;
   }
@@ -314,6 +368,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     if (hasBehavior(block, 'decision')) { const option = block.props.options.find((candidate) => candidate.id === learner.decisions[block.key]); return option?.correct ? 1 : 0; }
     if (hasBehavior(block, 'object')) return learner.objectsDone[block.key] ?? 0;
     if (hasBehavior(block, 'predict')) { const guess = predictState(block); return guess !== null && predictClose(block, guess) ? 1 : 0; }
+    if (hasBehavior(block, 'dialogue')) return dialogueScore(block);
     return 0;
   }
   const weightOf = (block: ActivityBlock): number => (hasBehavior(block, 'predict') ? block.props.predict.weight : block.props.weight) || 1;
@@ -358,6 +413,8 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
       if (hasBehavior(block, 'numeric') || hasBehavior(block, 'predict')) delete learner.numerics[block.key];
       if (hasBehavior(block, 'decision')) delete learner.decisions[block.key];
       if (hasBehavior(block, 'object')) { delete learner.objectsDone[block.key]; delete learner.objects[block.key]; }
+      // A scored dialogue starts afresh: its first run to an end is scored again.
+      if (hasBehavior(block, 'dialogue')) { delete learner.dialogues[block.key]; dialogueRuns.delete(block.id); }
     }
     for (const screen of screens) if (activitiesOf(screen).some((block) => scoredBlocks.includes(block))) learner.completed.delete(screen.key);
     learner.retakes++;
@@ -380,13 +437,20 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     if (type === 'variable.changed' && on.variable !== info.variable) return false;
     if (type === 'timeline.reached' && info.event === undefined && (on.at?.line !== info.line || (on.at?.edge || 'start') !== info.edge)) return false;
     if (type === 'timeline.ended' && (on.layer ?? null) !== (info.layer ?? null)) return false;
+    // A dialogue's moments (D61): the node, option, line and ending they name.
+    if ((type === 'dialogue.node' || type === 'dialogue.chosen') && on.node !== undefined && on.node !== info.node) return false;
+    if (type === 'dialogue.chosen' && on.option !== undefined && on.option !== info.option) return false;
+    if (type === 'dialogue.line' && on.line !== undefined && on.line !== info.line) return false;
+    if (type === 'dialogue.ended' && on.ending !== undefined && on.ending !== (info.ending ?? null)) return false;
     return true;
   }
   function conditionHolds(condition: Condition): boolean {
     if (condition.visited !== undefined) return condition.name !== undefined ? controlVisited(condition.visited, condition.name) : blockVisited(condition.visited);
-    // A dialogue's scored run (D61): read by the dialogue behaviour once it saves its progress
-    // (dialogue/run.ts eventConditionHolds); until then nothing holds.
-    if ('dialogue' in condition && condition.dialogue !== undefined) return false;
+    // A dialogue's scored run (D61): its ending, a choice, its score, whether it is done.
+    if ('dialogue' in condition && condition.dialogue !== undefined) {
+      const block = dialogueById(condition.dialogue);
+      return !!block && eventConditionHolds(dialogueRun(block), condition);
+    }
     if (condition.variable === undefined) return false;
     const value = getVar(condition.variable);
     // Order comparisons keep JavaScript semantics whatever the types (the validator checks they agree).
@@ -428,6 +492,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     answerPredict, predictState, predictClose,
     chooseDecision, decisionOf: (block: DecisionBlock): string | null => learner.decisions[block.key] || null,
     completeObject, objectDone: (block: ObjectBlock): boolean => block.key in learner.objectsDone, saveObjectState, objectSavedState,
+    dialogueRun, saveDialogue,
     blockVisible, setBlockVisible,
     visitControl, controlVisited, blockVisited,
     visit, markComplete, screenComplete, refreshScreenCompletion, activitiesOf, activityDone, activityAnswered, savedStep, saveStep,
