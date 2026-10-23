@@ -18,6 +18,14 @@ export interface PlayedStep {
   kind: 'line' | 'choice' | 'feedback' | 'retry' | 'jump' | 'end' | 'decision';
   node: string;
   text: string;
+  // What the step is, for a reader that words it itself (the app's « Jouer un chemin »): the line
+  // said (line, with role, and option for a reaction), the option chosen (choice, feedback, retry;
+  // auto: taken by itself, a fallback), the ending reached (end).
+  line?: string;
+  role?: 'character' | 'learner' | 'narration';
+  option?: string;
+  auto?: true;
+  ending?: string | null;
 }
 
 export interface PlayedDecision {
@@ -39,6 +47,8 @@ export interface PlayReport {
   // Why the path stopped: a choice not offered (the options that were), or choices left over.
   error: string | null;
   offered: string[];
+  // The node whose options are offered (null once ended, or when a choice was refused).
+  waiting: string | null;
   ended: boolean;
   ending: { id: string; title: string | null } | null;
   scoring: string;
@@ -60,19 +70,19 @@ function describeSteps(data: DialogueData, walk: DialogueWalk): PlayedStep[] {
   for (const beat of walk.beats) {
     if (beat.type === 'line') {
       const who = beat.line.speaker ? data.speakers[beat.line.speaker]?.name ?? beat.line.speaker : null;
-      steps.push({ kind: 'line', node: beat.node, text: beat.role === 'narration' ? `(${withoutDirections(beat.line.text)})` : `${who}: ${withoutDirections(beat.line.text)}` });
+      steps.push({ kind: 'line', node: beat.node, text: beat.role === 'narration' ? `(${withoutDirections(beat.line.text)})` : `${who}: ${withoutDirections(beat.line.text)}`, line: beat.line.id, role: beat.role, ...(beat.option ? { option: beat.option } : {}) });
     } else if (beat.type === 'choice') {
       const node = data.nodes.find((candidate) => candidate.id === beat.node);
       const index = node?.options.findIndex((candidate) => candidate.id === beat.option) ?? -1;
       const option = node?.options[index];
-      steps.push({ kind: 'choice', node: beat.node, text: beat.auto ? `${learner} (by itself): ${option?.text ?? beat.option}` : `▸ ${learner} chooses ${letterOf(index)} [${beat.option}]: « ${option?.text ?? ''} »${option?.quality ? ` (${option.quality}${option.points ? `, ${option.points > 0 ? '+' : ''}${option.points}` : ''})` : option?.points ? ` (${option.points > 0 ? '+' : ''}${option.points})` : ''}` });
+      steps.push({ kind: 'choice', node: beat.node, option: beat.option, ...(beat.auto ? { auto: true as const } : {}), text: beat.auto ? `${learner} (by itself): ${option?.text ?? beat.option}` : `▸ ${learner} chooses ${letterOf(index)} [${beat.option}]: « ${option?.text ?? ''} »${option?.quality ? ` (${option.quality}${option.points ? `, ${option.points > 0 ? '+' : ''}${option.points}` : ''})` : option?.points ? ` (${option.points > 0 ? '+' : ''}${option.points})` : ''}` });
     } else if (beat.type === 'feedback') {
-      steps.push({ kind: 'feedback', node: beat.node, text: `Feedback: ${(optionOf(data, beat.node, beat.option)?.feedback ?? '').replace(/\s*\n\s*/g, ' ')}` });
-    } else if (beat.type === 'retry') steps.push({ kind: 'retry', node: beat.node, text: '↺ the same options again' });
+      steps.push({ kind: 'feedback', node: beat.node, option: beat.option, text: `Feedback: ${(optionOf(data, beat.node, beat.option)?.feedback ?? '').replace(/\s*\n\s*/g, ' ')}` });
+    } else if (beat.type === 'retry') steps.push({ kind: 'retry', node: beat.node, option: beat.option, text: '↺ the same options again' });
     else if (beat.type === 'jump') steps.push({ kind: 'jump', node: beat.node, text: `→ moved to ${beat.node}` });
     else if (beat.type === 'end') {
       const ending = data.endings.find((candidate) => candidate.id === beat.ending);
-      steps.push({ kind: 'end', node: walk.node, text: `■ End${ending ? ` « ${ending.title ?? ending.id} »` : ''}${beat.capped ? ' (stopped: the decisions cap or a loop without decision)' : ''}` });
+      steps.push({ kind: 'end', node: walk.node, ending: beat.ending, text: `■ End${ending ? ` « ${ending.title ?? ending.id} »` : ''}${beat.capped ? ' (stopped: the decisions cap or a loop without decision)' : ''}` });
     }
   }
   return steps;
@@ -108,6 +118,7 @@ export function playDialogue(project: Project, ref: DialogueBlockRef, choices: r
   const time = pathTime(project, ref, data, walk.beats, language);
   return {
     dialogue: ref.id, screen: ref.screen, choices: [...choices], ok: error === null, error, offered,
+    waiting: !error && walk.status === 'choosing' ? walk.node : null,
     ended: walk.status === 'ended', ending: walk.status === 'ended' && walk.ending ? { id: walk.ending.id, title: walk.ending.title ?? null } : null,
     scoring: data.scoring, score: percent(data.scoring === 'none' ? result.quality : result.score), points: result.points, maxPoints: data.maxPoints,
     decisions: decisionsOf(data, walk), steps: describeSteps(data, walk), seconds: time.seconds, estimated: time.estimated

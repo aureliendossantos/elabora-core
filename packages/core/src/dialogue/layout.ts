@@ -86,20 +86,34 @@ export function dialogueMap(data: DialogueData, { words = SCRIPT_WORDS.en }: { w
   const targeted = new Set(edges.map((edge) => edge.to));
   const ids = [...data.nodes.map((node) => node.id), ...data.endings.map((ending) => `end:${ending.id}`), ...(targeted.has('end') ? ['end'] : [])];
 
-  // Layers: the distance from the start; nodes no path reaches after the others; endings after the
-  // last node that leads to them.
+  // Layers: the longest way from the start, once the edges that close a loop are set aside (those a
+  // walk from the start meets going back to a node it is still in), so that a branch that comes back
+  // to the trunk comes back forward, and only a loop or a retry is drawn going back; nodes no path
+  // reaches after the others; endings after the last node that leads to them.
   const rank = new Map<string, number>();
   const start = data.nodes.some((node) => node.id === data.start) ? data.start : data.nodes[0]?.id;
   if (start) {
+    const out = (id: string) => edges.filter((edge) => edge.from === id && edge.to !== id && !edge.to.startsWith('end'));
+    const state = new Map<string, 'open' | 'done'>();
+    const closing = new Set<(typeof edges)[number]>();
+    const stack: { id: string; next: number }[] = [{ id: start, next: 0 }];
+    state.set(start, 'open');
+    const order: string[] = [];
+    while (stack.length) {
+      const top = stack[stack.length - 1]!;
+      const leaving = out(top.id);
+      if (top.next >= leaving.length) { state.set(top.id, 'done'); order.push(top.id); stack.pop(); continue; }
+      const edge = leaving[top.next++]!;
+      const seen = state.get(edge.to);
+      if (seen === 'open') closing.add(edge);
+      else if (!seen) { state.set(edge.to, 'open'); stack.push({ id: edge.to, next: 0 }); }
+    }
+    // Finished last first: a node comes after every node that leads to it.
     rank.set(start, 0);
-    const queue = [start];
-    while (queue.length) {
-      const id = queue.shift()!;
-      for (const edge of edges) {
-        if (edge.from !== id || edge.to === id || edge.to.startsWith('end') || rank.has(edge.to)) continue;
-        rank.set(edge.to, rank.get(id)! + 1);
-        queue.push(edge.to);
-      }
+    for (const id of order.reverse()) {
+      const at = rank.get(id);
+      if (at === undefined) continue;
+      for (const edge of out(id)) if (!closing.has(edge)) rank.set(edge.to, Math.max(rank.get(edge.to) ?? 0, at + 1));
     }
   }
   let deepest = Math.max(-1, ...rank.values());
@@ -176,11 +190,12 @@ export function dialogueMap(data: DialogueData, { words = SCRIPT_WORDS.en }: { w
     let labelX: number;
     let labelY: number;
     if (edge.from === edge.to) {
-      // A retry: a small loop back to the node's own header.
-      const top = from.y + HEADER / 2;
-      d = `M ${sx} ${round(sy)} C ${sx + 34} ${round(sy)}, ${sx + 34} ${round(top)}, ${sx} ${round(top)}`;
-      labelX = sx + 30;
-      labelY = round((sy + top) / 2);
+      // A retry: a loop from the option's row back into the node's right edge, high in its header,
+      // above the way out that leaves from the header's middle.
+      const into = from.y + 10;
+      d = `M ${sx} ${round(sy)} C ${sx + 40} ${round(sy)}, ${sx + 40} ${round(into)}, ${sx} ${round(into)}`;
+      labelX = sx + 36;
+      labelY = round((sy + into) / 2);
     } else if (back) {
       const below = Math.max(from.y + from.height, to.y + to.height) + 22;
       d = `M ${sx} ${round(sy)} C ${sx + 70} ${round(sy)}, ${sx + 70} ${round(below)}, ${round((sx + tx) / 2)} ${round(below)} S ${tx - 70} ${round(ty)}, ${tx} ${round(ty)}`;

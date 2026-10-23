@@ -388,6 +388,14 @@ test('show, play and paths: the script, a path and every path, as agents read th
   assert.equal(played.points, 10);
   assert.deepEqual(played.decisions.map((decision) => [decision.node, decision.letter, decision.kept]), [['premiere-question', 'C', 'a'], ['ticket', 'A', null], ['escalade', 'A', null]]);
   assert.ok(played.seconds > 30 && played.estimated);
+  // The steps say what they are, for a reader that words them itself (the app's « Jouer un chemin »).
+  assert.deepEqual(played.steps.filter((step) => step.kind === 'choice').map((step) => [step.node, step.option]), [['premiere-question', 'c'], ['premiere-question', 'a'], ['ticket', 'a'], ['escalade', 'a']]);
+  assert.deepEqual(played.steps.find((step) => step.kind === 'line' && step.option === 'c'), { kind: 'line', node: 'premiere-question', line: 'm3', role: 'character', option: 'c', text: 'Marc: Euh… c\'est « Soleil2026 ». C\'est normal de le dire ?' });
+  assert.equal(played.steps.at(-1)?.ending, 'a-revoir');
+  assert.equal(played.waiting, null);
+  const waiting = playDialogue(project, ref, ['b']);
+  assert.equal(waiting.waiting, 'ticket');
+  assert.deepEqual(waiting.offered, ['a', 'b', 'c']);
   const refused = playDialogue(project, ref, ['b', 'z']);
   assert.equal(refused.ok, false);
   assert.deepEqual(refused.offered, ['a', 'b', 'c']);
@@ -407,7 +415,9 @@ test('the map: placed by layers, deterministic, dashed edges going back', () => 
   const map = dialogueMap(data);
   assert.deepEqual(map, dialogueMap(marc()), 'deterministic');
   const rank = (id: string) => map.nodes.find((node) => node.id === id)!.rank;
-  assert.deepEqual(['appel', 'premiere-question', 'routeur-redemarre', 'ticket', 'escalade', 'bilan', 'end:maitrise', 'end:a-revoir'].map(rank), [0, 1, 2, 2, 3, 4, 5, 5]);
+  // The branch through « Conséquence B » comes back to the ticket forward: only the retry goes back.
+  assert.deepEqual(['appel', 'premiere-question', 'routeur-redemarre', 'ticket', 'escalade', 'bilan', 'end:maitrise', 'end:a-revoir'].map(rank), [0, 1, 2, 3, 4, 5, 6, 6]);
+  assert.deepEqual(map.edges.filter((edge) => edge.back).map((edge) => `${edge.from}>${edge.to}`), ['premiere-question>premiere-question']);
   const retry = map.edges.find((edge) => edge.from === 'premiere-question' && edge.option === 'c')!;
   assert.equal(retry.to, 'premiere-question');
   assert.equal(retry.back, true);
