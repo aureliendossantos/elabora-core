@@ -75,9 +75,11 @@ test('charts: the entrance settles on the markup; the pointer and the keys point
     assert.equal(await chart.locator('.t-bars-value').first().textContent(), '62 %', 'the count lands on the written value');
     // The pointer: the nearest row stands, the others step back to 40 % (soothing, no bounce).
     await chart.locator('.t-bars-track[data-t-item="usb"]').hover();
-    await page.waitForTimeout(400);
     assert.equal(await chart.getAttribute('class').then((value) => value?.includes('is-focused')), true);
-    assert.ok(Math.abs(await opacity(page, '.t-block[data-block="origine"] .t-bars-label[data-t-item="web"]') - 0.4) < 0.02);
+    await page.waitForFunction(() => {
+      const label = document.querySelector('.t-block[data-block="origine"] .t-bars-label[data-t-item="web"]');
+      return !!label && Math.abs(Number(getComputedStyle(label).opacity) - 0.4) < 0.02;
+    }, null, { timeout: 5000 });
     assert.equal(await opacity(page, '.t-block[data-block="origine"] .t-bars-label[data-t-item="usb"]'), 1);
     // A row with a note shows it in the bubble.
     await chart.locator('.t-bars-track[data-t-item="mail"]').hover();
