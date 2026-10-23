@@ -197,7 +197,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-feedback-count { margin: 0 0 0.375rem; color: var(--t-muted); font-weight: 600; }
 
 /* Quiz: picture cards (images) and zones on a picture (image). */
-.t-options--images { grid-template-columns: repeat(auto-fill, minmax(min(100%, 11rem), 1fr)); }
+.t-options--images { grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.5rem), 1fr)); }
 .t-option--image { flex-direction: column; gap: 0.5rem; padding: 0.5rem; }
 .t-option-image { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: calc(var(--t-radius) * .75); background: color-mix(in srgb, var(--t-text) 5%, var(--t-surface)); }
 .t-option-row { display: flex; gap: 0.625rem; align-items: flex-start; padding: 0 0.25rem 0.25rem; }
@@ -216,8 +216,11 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-zone.is-wrong .t-zone-number { background: var(--t-error); color: var(--t-surface); border-color: var(--t-surface); }
 /* The zones' words stay hidden until the answer is final: they would give it away. */
 .t-zone-text { display: none; }
-[data-t-final] .t-zone-text { display: block; position: absolute; top: calc(100% + 4px); left: 50%; translate: -50% 0; width: max-content; max-width: 12rem; text-align: center; padding: 0.125rem 0.5rem; border-radius: calc(var(--t-radius) * .75); background: var(--t-surface); color: var(--t-text); font-size: 0.875rem; font-weight: 600; box-shadow: 0 1px 4px rgb(15 23 42 / .25); }
+/* Under its marker, leaning toward the middle of the picture so that it stays on it near an edge. */
+[data-t-final] .t-zone-text { display: block; position: absolute; top: calc(100% + 4px); left: 50%; translate: calc(var(--x, 0.5) * -100%) 0; width: max-content; max-width: 12rem; text-align: center; padding: 0.125rem 0.5rem; border-radius: calc(var(--t-radius) * .75); background: var(--t-surface); color: var(--t-text); font-size: 0.875rem; font-weight: 600; box-shadow: 0 1px 4px rgb(15 23 42 / .25); }
 .t-zone .t-option-flag { display: none; }
+/* The words under a zone near the bottom edge keep clear of the feedback. */
+[data-t-final] .t-quiz-picture { margin-bottom: 2.25rem; }
 
 /* Fill-in: a field, a list or a slot in the sentence; the words to place under it. */
 .t-fillin-text { line-height: 2.4; margin-bottom: 0.875rem; }
@@ -260,6 +263,8 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-sort-belongs { font-size: 0.875rem; font-weight: 600; color: var(--t-success); }
 /* The place an item left keeps its room. */
 .t-sort-ghost { visibility: hidden; }
+/* On a page that scrolls, nothing needs keeping still: the items to place close up. */
+#elabora-app:not([data-presentation="slides"]) .t-sort-ghost { display: none; }
 .t-sort-targets { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 0.75rem; }
 .t-sort--pairs .t-sort-targets { grid-template-columns: 1fr; }
 .t-sort-target { display: flex; flex-direction: column; gap: 0.5rem; padding: 0.5rem; border-radius: var(--t-radius); border: 2px dashed color-mix(in srgb, var(--t-text) 22%, transparent); transition: border-color var(--t-dur-place, 220ms) var(--t-ease-out), background var(--t-dur-place, 220ms) var(--t-ease-out); }
@@ -278,6 +283,8 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-sort-move { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border-radius: calc(var(--t-radius) * .75); border: 1px solid color-mix(in srgb, var(--t-text) 18%, transparent); background: var(--t-surface); color: var(--t-text); cursor: pointer; }
 .t-sort-move .t-icon svg { width: 20px; height: 20px; }
 .t-sort-move[aria-disabled="true"], .t-sort-move:disabled { opacity: .4; cursor: default; }
+/* On a phone the move buttons stand one above the other: the item keeps the width. */
+@media (max-width: 560px) { .t-sort-moves { flex-direction: column; } }
 
 /* Reflection: the field and its count, or a scale; then the expert's answer once saved. */
 .t-reflection-input { display: block; width: 100%; padding: 0.625rem 0.75rem; border-radius: var(--t-radius); border: 2px solid color-mix(in srgb, var(--t-text) 30%, transparent); background: var(--t-surface); color: var(--t-text); font: inherit; font-size: max(1em, 16px); line-height: 1.5; resize: vertical; }
