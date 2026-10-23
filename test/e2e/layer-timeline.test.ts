@@ -261,6 +261,8 @@ test('the editor\'s canvas: the layer shown at a moment of its timeline, its tim
     };
     let block = await blockAt(1);
     assert.deepEqual([block.timed?.state, block.hidden], ['before', true], 'at 0.5 s of the layer\'s timeline, before « poste »');
+    // Without the player's bars (the editor's Diapositive), no caption covers the layer while r1 is said, as none covers the screen.
+    assert.equal(await frame!.evaluate(() => document.querySelector('dialog.t-layer[data-layer="regle"] .t-timeline-band:not([hidden])')?.textContent ?? null), null, 'no caption over the layer in the bare canvas');
     const post = (view: Record<string, unknown>, id: number) => page.evaluate(({ view: sent, id: sentId, token }) => document.querySelector('iframe')!.contentWindow!.postMessage({ type: 'elabora/view', id: sentId, token, view: sent }, '*'), { view, id, token: host.token });
     await post({ at: { time: coming.at + 1 } }, 2);
     block = await blockAt(2);
