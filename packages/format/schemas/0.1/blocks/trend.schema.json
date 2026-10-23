@@ -78,6 +78,15 @@
       "default": 0,
       "description": "Decimals shown."
     },
+    "valueLabels": {
+      "enum": [
+        "ends",
+        "end",
+        "none"
+      ],
+      "default": "ends",
+      "description": "The values written on the line: ends, the first (in grey) and the last (at the line's head); end, the last only; none, neither. The pointer, the keys and the data table still give every value."
+    },
     "yMin": {
       "type": "number",
       "description": "Bottom of the scale. Default 0."

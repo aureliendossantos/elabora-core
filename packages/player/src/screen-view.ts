@@ -290,6 +290,8 @@ export function createScreenView(options: ScreenViewOptions) {
         cue: (event) => trigger('timeline.reached', { event }),
         ended: () => {
           if (screen !== shown) return;
+          // The voice is done: every chart at rest, whatever a rounding left of its last beat.
+          behaviors.charts.at(Infinity);
           courseState.visit(shown);
           options.afterReveal();
           trigger('timeline.ended', {});

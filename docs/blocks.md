@@ -326,6 +326,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | `points` | array | yes | The points, in order. x is a year or a number (spaced by value), or a word (evenly spaced). |
 | `unit` | string |  | Unit written after the values (min, kg, €). "%" writes percentages as the language does (62 %, 62%). |
 | `decimals` | integer |  | Decimals shown. Default 0. |
+| `valueLabels` | "ends" \| "end" \| "none" |  | The values written on the line: ends, the first (in grey) and the last (at the line's head); end, the last only; none, neither. The pointer, the keys and the data table still give every value. Default "ends". |
 | `yMin` | number |  | Bottom of the scale. Default 0. |
 | `yMax` | number |  | Top of the scale. Default a little above the largest value. |
 | `note` | object |  | What explains the change, written at a point of the line, shown when the line reaches it. |

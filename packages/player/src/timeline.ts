@@ -41,6 +41,8 @@ export const RATES = [0.75, 1, 1.25, 1.5, 2];
 // The learner's choices, one entry per course of the origin (an LMS serves many).
 const PREFS_KEY = 'elabora.timeline';
 const EPSILON = 1e-3;
+// A click this close to the end of the seek bar (CSS pixels) goes to the end.
+const END_SNAP_PX = 8;
 // Arrows move the playhead this many seconds.
 const ARROW_SECONDS = 5;
 
@@ -237,7 +239,9 @@ export function createTimeline(options: TimelineOptions) {
     audio.preservesPitch = true;
     audio.hidden = true;
     // The track ends a little after the last line (encoder padding): the timeline ends at its own end.
-    audio.addEventListener('ended', () => { if (playing) tick(); });
+    // Some browsers decode it a few milliseconds short: once it has run out, the step ends there too,
+    // rather than playing on forever just before its end.
+    audio.addEventListener('ended', () => { if (playing) tick(true, true); });
     // A page in the background gets no animation frames, but its audio plays on: the audio's own
     // clock events (4 to 66 a second) and a timer at the end of the step keep the timeline with it.
     audio.addEventListener('timeupdate', () => { if (playing) tick(); });
@@ -333,9 +337,10 @@ export function createTimeline(options: TimelineOptions) {
 
   // Reads the clock and moves the timeline to it: cues crossed fire, playback stops at the end of the
   // step reached. advancing false: only read where the clock is (a pause).
-  function tick(advancing = true): void {
+  function tick(advancing = true, trackEnded = false): void {
     if (disposed) return;
     let now = Math.min(duration, Math.max(0, clock.time()));
+    if (trackEnded) now = Math.max(now, frontierEnd());
     if (!advancing || now < t) { if (!advancing) { t = Math.min(now, frontierEnd()); afterMove(); } return; }
     const stop = frontierEnd();
     let stopped = false;
@@ -743,9 +748,11 @@ export function createTimeline(options: TimelineOptions) {
       run();
       render({ spoken: true });
     });
-    // The time under the pointer, within what may be reached.
+    // The time under the pointer, within what may be reached. The last few pixels are the end: it is
+    // reached by clicking towards it, not by hitting its very last pixel.
     const timeAt = (clientX: number) => {
       const box = track.getBoundingClientRect();
+      if (clientX >= box.right - END_SNAP_PX) return duration;
       return Math.max(0, Math.min(duration, ((clientX - box.left) / Math.max(1, box.width)) * duration));
     };
     const xOf = (at: number) => { const box = track.getBoundingClientRect(); return box.left + (duration > 0 ? (at / duration) * box.width : 0); };
@@ -757,7 +764,9 @@ export function createTimeline(options: TimelineOptions) {
     });
     seek.addEventListener('pointerleave', () => { if (!dragging && tooltip?.owner === seek) tooltip.hide(); });
     // Pointer: press and drag along the bar. The screen follows the playhead (nothing fires), the
-    // tooltip says the words said there; playback goes on from where it is let go.
+    // tooltip says the words said there. What was playing plays on from where it is let go, what was
+    // paused stays paused; let go at the end of what may play, it rests there (Play, not the bar,
+    // starts a screen over).
     const fromPointer = (event: PointerEvent) => {
       seekTo(timeAt(event.clientX));
       tooltip?.at(seek, xOf(t), quoteAt(t));
@@ -774,7 +783,7 @@ export function createTimeline(options: TimelineOptions) {
         seek.removeEventListener('pointermove', move); seek.removeEventListener('pointerup', up); seek.removeEventListener('pointercancel', up);
         dragging = false;
         if (tooltip?.owner === seek) tooltip.hide();
-        if (resume) play(); else render();
+        if (resume && t < frontierEnd() - EPSILON) play(); else render();
       };
       seek.addEventListener('pointermove', move);
       seek.addEventListener('pointerup', up);

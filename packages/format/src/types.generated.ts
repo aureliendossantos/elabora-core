@@ -1981,6 +1981,11 @@ export type TrendProps = {
    * @default 0
    */
   decimals?: number;
+  /**
+   * The values written on the line: ends, the first (in grey) and the last (at the line's head); end, the last only; none, neither. The pointer, the keys and the data table still give every value.
+   * @default 'ends'
+   */
+  valueLabels?: 'ends' | 'end' | 'none';
   /** Bottom of the scale. Default 0. */
   yMin?: number;
   /** Top of the scale. Default a little above the largest value. */

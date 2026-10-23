@@ -78,9 +78,11 @@ export const trend: ChartType = {
       const at = points[indexOf((props.note as Record<string, unknown>).x)];
       return `<div class="t-trend-note${at.px > W * 0.55 ? ' is-left' : ''}" style="left:${pct(at.px, W)}"${attrs({ 'data-t-at': at.id })}><span>${esc(str((props.note as Record<string, unknown>).text))}</span></div>`;
     })() : '';
-    const ends = `<span class="t-trend-start" style="left:${pct(first.px, W)};top:${pct(first.py, H)}">${esc(value(first.y))}</span>`
+    // The values written on the line (valueLabels): the first and the last, the last only, or none.
+    const labels = props.valueLabels === 'end' || props.valueLabels === 'none' ? props.valueLabels : 'ends';
+    const ends = (labels === 'ends' ? `<span class="t-trend-start" style="left:${pct(first.px, W)};top:${pct(first.py, H)}">${esc(value(first.y))}</span>` : '')
       + `<i class="t-trend-dot" style="left:${pct(last.px, W)};top:${pct(last.py, H)}"></i>`
-      + `<span class="t-trend-end" style="left:${pct(last.px, W)};top:${pct(last.py, H)}"${attrs({ 'data-t-num': last.y })}>${esc(value(last.y))}</span>`;
+      + (labels === 'none' ? '' : `<span class="t-trend-end" style="left:${pct(last.px, W)};top:${pct(last.py, H)}"${attrs({ 'data-t-num': last.y })}>${esc(value(last.y))}</span>`);
     const predict = props.mode === 'predict' && isRecord(props.predict) ? (() => {
       const from = indexOf(props.predict.from);
       if (from < 0 || from >= points.length - 1) return '';
