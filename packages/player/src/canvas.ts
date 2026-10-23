@@ -365,12 +365,15 @@ function timedLayer(current: Mounted, view: RenderView): boolean {
 const screenView = (current: Mounted, view: RenderView): RenderView => (timedLayer(current, view) ? { ...view, at: null } : view);
 
 // An open layer at a time or a line of its timeline; without one, at its end (as captures show it).
+// Its captions show where the screen's do: with the player's bars around the slide. The editor's
+// canvas without them (Diapositive) shows the slide uncovered, the layer's as the screen's.
 function showLayerMoment(current: Mounted, view: RenderView) {
   const layer = view.layer;
   const timeline = layer ? current.view.layerTimeline(layer) : null;
   if (!layer || !timeline) return;
-  if (view.at && 'time' in view.at) current.view.showLayerTime(layer, view.at.time);
-  else if (view.at) current.view.showLayerLine(layer, view.at.line, { edge: view.at.edge });
+  const captions = chromeMode !== 'none';
+  if (view.at && 'time' in view.at) current.view.showLayerTime(layer, view.at.time, { captions });
+  else if (view.at) current.view.showLayerLine(layer, view.at.line, { edge: view.at.edge, captions });
   else current.view.showLayerTime(layer, timeline.duration, { captions: false });
 }
 
