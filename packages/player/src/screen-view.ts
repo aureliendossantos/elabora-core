@@ -60,6 +60,8 @@ export interface ScreenViewOptions {
   // tooltip and where its side panels go (the transcript).
   timeline?: { host: HTMLElement | null; autoplay: boolean; virtual: boolean; prefs: TimelinePrefs; controls?: TimelineControls; tooltip?: Tooltip | null; sheetHost?: HTMLElement | null };
   afterTimeline?(): void;
+  // The editor's canvas: what plays by itself (a chart's entrance) is shown at rest.
+  still?: boolean;
 }
 
 // A block of the screen being updated in place: kept as it is, kept with its slots refilled, or new.
@@ -270,6 +272,8 @@ export function createScreenView(options: ScreenViewOptions) {
           if (focused instanceof HTMLElement && focused.closest('[data-t-pending]') && main.contains(focused)) timeline?.focusSeek();
         },
         moved: (time) => {
+          // Charts whose items come with the voice follow the playhead.
+          behaviors.charts.at(time);
           if (!timed) return;
           timed.apply(time);
           // Focus in a block its timing hid (a seek back before it came) goes to the seek bar.
@@ -333,6 +337,8 @@ export function createScreenView(options: ScreenViewOptions) {
   function startTimedBlocks(shown: ScreenData) {
     timed?.dispose();
     timed = null;
+    // Without a timeline, charts with beats play their entrance like the others.
+    behaviors.charts.at(timeline ? timeline.time : null);
     if (!timeline) return;
     const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     timed = createTimedBlocks(main, shown.blocks, { reducedMotion, onChange: (node) => { syncInert(node); behaviors.noteShown(main); } });
@@ -396,7 +402,7 @@ export function createScreenView(options: ScreenViewOptions) {
   // player places the blocks of each slot, then binds behaviours: what is scored, saved, announced
   // and keyboard-operable is never left to a template. Video, audio and free objects are code.
   const behaviors = createBehaviors({
-    courseState, labels, language: course.language, formatLabel: options.formatLabel, announce, recordInteraction, trigger, retake: options.retake
+    courseState, labels, language: course.language, formatLabel: options.formatLabel, announce, recordInteraction, trigger, retake: options.retake, still: options.still
   });
 
   // Screens: without layout, blocks stack in the reading column (.t-blocks). With a layout (a
@@ -432,7 +438,7 @@ export function createScreenView(options: ScreenViewOptions) {
   // of its tallest outcome (feedback, flags, messages), measured on hidden copies at the same width,
   // and grows inside that room. A template whose feedback floats over its content opts out with
   // data-t-reserve="off". Blocks concealed by events keep their place the same way (CSS).
-  const ROOM_BEHAVIORS = new Set<Behavior | null>(['quiz', 'numeric', 'decision', 'results']);
+  const ROOM_BEHAVIORS = new Set<Behavior | null>(['quiz', 'numeric', 'decision', 'results', 'predict']);
   const roomQueue: [HTMLElement, BlockData][] = [];
   // The reserved rooms of the screen, measured again by ready() (fit checks and captures measure the
   // final room, whatever was still loading when the screen was shown).

@@ -14,7 +14,7 @@ import { isRecord } from '../util/values.ts';
 // 140 to 200 to learn or remember: Carver's reading gears), and the pace of the narration's voice.
 export const READING_WORDS_PER_MINUTE = 150;
 // What an activity adds to the reading of its words: deciding, answering, trying.
-export const ACTIVITY_SECONDS: Readonly<Record<Behavior, number>> = { quiz: 45, numeric: 60, decision: 45, object: 90, results: 0 };
+export const ACTIVITY_SECONDS: Readonly<Record<Behavior, number>> = { quiz: 45, numeric: 60, decision: 45, object: 90, results: 0, chart: 0 };
 // A screen is never shorter than a glance.
 export const MIN_SCREEN_SECONDS = 10;
 

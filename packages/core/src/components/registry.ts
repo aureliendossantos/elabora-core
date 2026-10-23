@@ -19,7 +19,7 @@ import corePackage from '../../package.json' with { type: 'json' };
 
 const VERSION = corePackage.version;
 
-export type Behavior = 'quiz' | 'numeric' | 'decision' | 'results' | 'object';
+export type Behavior = 'quiz' | 'numeric' | 'decision' | 'results' | 'object' | 'chart';
 
 export const BUILTINS: Readonly<Record<string, { title: string; render: 'template' | 'code'; behavior?: Behavior }>> = {
   heading: { title: 'Heading', render: 'template' },
@@ -36,7 +36,20 @@ export const BUILTINS: Readonly<Record<string, { title: string; render: 'templat
   decision: { title: 'Decision', render: 'template', behavior: 'decision' },
   'free-object': { title: 'Free object', render: 'code', behavior: 'object' },
   results: { title: 'Results', render: 'template', behavior: 'results' },
-  stack: { title: 'Stack', render: 'template' }
+  stack: { title: 'Stack', render: 'template' },
+  // Charts and diagrams (D60): drawn by the core when the course is built (charts/), moved by the player.
+  'key-figures': { title: 'Key figures', render: 'code', behavior: 'chart' },
+  bars: { title: 'Bars', render: 'code', behavior: 'chart' },
+  donut: { title: 'Part of a whole', render: 'code', behavior: 'chart' },
+  trend: { title: 'Trend', render: 'code', behavior: 'chart' },
+  proportion: { title: 'Proportion', render: 'code', behavior: 'chart' },
+  'before-after': { title: 'Before and after', render: 'code', behavior: 'chart' },
+  levels: { title: 'Funnel or pyramid', render: 'code', behavior: 'chart' },
+  process: { title: 'Process', render: 'code', behavior: 'chart' },
+  cycle: { title: 'Cycle', render: 'code', behavior: 'chart' },
+  matrix: { title: '2 × 2 matrix', render: 'code', behavior: 'chart' },
+  milestones: { title: 'Milestones', render: 'code', behavior: 'chart' },
+  diagram: { title: 'Diagram', render: 'code', behavior: 'chart' }
 };
 
 export interface BehaviorHooks {
@@ -53,7 +66,8 @@ export const BEHAVIORS: Readonly<Record<Behavior, BehaviorHooks>> = {
   numeric: { required: ['stem', 'input', 'submit', 'feedback'], optional: ['group', 'input-label', 'unit', 'expected'], tags: { input: ['input'], submit: ['button'], 'input-label': ['label'] } },
   decision: { required: ['prompt', 'choice', 'feedback'], optional: ['group', 'choice-feedback'], each: { choice: 'options' }, tags: { choice: ['button'] } },
   results: { required: [], anyOf: ['score', 'status', 'message'], optional: ['score', 'status', 'message', 'retry'], tags: { retry: ['button'] } },
-  object: { required: [] }
+  object: { required: [] },
+  chart: { required: [] }
 };
 // Hooks any template may use: click (a button firing the screen event "click"), toggle/part
 // (disclosure), tabs/tab/panel (tabs), label (a player label, translated by the course language).

@@ -21,6 +21,8 @@ import type { NarrationLineInfo } from './narration.ts';
 import { captionChunks, estimatedDuration, pauseOf, STEP_GAP } from './timing.ts';
 import type { CaptionCue, Segment } from './timing.ts';
 import { translatedLineAnchors, translateAnchor } from '../i18n/anchors.ts';
+import { isChartType, chartItems } from '../charts/index.ts';
+import type { ChartItem } from '../charts/index.ts';
 
 // The effects of the player (block timing effect); a theme adds its own (course.json theme.effects).
 export const EFFECTS = ['none', 'fade', 'rise', 'slide', 'zoom', 'wipe', 'draw'] as const;
@@ -113,6 +115,27 @@ export interface CueInput {
   problem?: AnchorProblem;
 }
 
+// An item of a chart brought by the voice (D60), or the end of a chart's spotlight (item null).
+export interface BeatInput {
+  block: string;
+  item: string | null;
+  step: number;
+  anchor: Anchor;
+  path: string;
+  problem?: AnchorProblem;
+}
+
+export interface TimelineBeat {
+  block: string;
+  item: string | null;
+  time: number;
+  step: number;
+  anchor: Anchor;
+  estimated: boolean;
+  problem?: AnchorProblem;
+  path: string;
+}
+
 export interface TimelineLine {
   id: string;
   step: number;
@@ -165,6 +188,7 @@ export interface TimelineLayout {
   estimated: boolean;
   moments: TimelineMoment[];
   cues: TimelineCue[];
+  beats: TimelineBeat[];
   // The silence before each line, then after the last one (what a track lays out).
   gaps: number[];
 }
@@ -178,6 +202,7 @@ export interface LayoutInput {
   stepSeconds?: ReadonlyMap<number, number>;
   moments?: readonly MomentInput[];
   cues?: readonly CueInput[];
+  beats?: readonly BeatInput[];
   language?: string;
   // The silences a build wrote (before each line, then after the last): times follow them exactly.
   gaps?: readonly number[];
@@ -240,8 +265,10 @@ export function layoutTimeline(input: LayoutInput): TimelineLayout {
 
   const moments = (input.moments ?? []).map((moment) => ({ moment, placed: place(moment.anchor, moment.step) }));
   const cues = (input.cues ?? []).map((cue) => ({ cue, placed: place(cue.anchor, steps[0]) }));
+  const beats = (input.beats ?? []).map((beat) => ({ beat, placed: place(beat.anchor, beat.step) }));
   const resolvedMoments: TimelineMoment[] = [];
   const resolvedCues: TimelineCue[] = [];
+  const resolvedBeats: TimelineBeat[] = [];
   const lines = new Map<string, TimelineLine>();
   const segments: Segment[] = [];
   const gaps: number[] = [];
@@ -291,7 +318,18 @@ export function layoutTimeline(input: LayoutInput): TimelineLayout {
       resolvedCues.push(cue);
       contentEnd = Math.max(contentEnd, cue.time);
     }
+    const beatEndings: typeof beats = [];
+    for (const entry of beats) {
+      if (entry.placed.step !== step) continue;
+      if (entry.placed.endOfStep) { beatEndings.push(entry); continue; }
+      const found = entry.placed.time(layout);
+      const problem = found.problem ?? entry.beat.problem;
+      const beat: TimelineBeat = { block: entry.beat.block, item: entry.beat.item, time: ms(Math.max(0, found.time)), step, anchor: entry.beat.anchor, estimated: found.estimated, path: entry.beat.path, ...(problem ? { problem } : {}) };
+      resolvedBeats.push(beat);
+      contentEnd = Math.max(contentEnd, beat.time);
+    }
     let end = contentEnd;
+    for (const entry of beatEndings) resolvedBeats.push({ block: entry.beat.block, item: entry.beat.item, time: ms(contentEnd), step, anchor: entry.beat.anchor, estimated: false, path: entry.beat.path });
     for (const entry of endings) {
       const moment = resolveMoment(entry.moment, { time: contentEnd, estimated: false }, step);
       resolvedMoments.push(moment);
@@ -325,7 +363,8 @@ export function layoutTimeline(input: LayoutInput): TimelineLayout {
   return {
     lines: timed, segments, duration, estimated: timed.some((line) => line.estimated),
     moments: resolvedMoments.sort((a, b) => a.at - b.at || (a.kind === b.kind ? 0 : a.kind === 'out' ? -1 : 1)),
-    cues: resolvedCues.sort((a, b) => a.time - b.time), gaps
+    cues: resolvedCues.sort((a, b) => a.time - b.time),
+    beats: resolvedBeats.sort((a, b) => a.time - b.time), gaps
   };
 }
 
@@ -417,6 +456,33 @@ export function cuesOf(screen: Pick<Screen, 'events'>): CueInput[] {
   return out;
 }
 
+// The items of charts brought by the voice (D60): each item's at, then the end of the spotlight
+// (spotlightEnd, else the end of the line where the last item came).
+export function beatsOf(project: Project, screen: Pick<Screen, 'blocks'>): BeatInput[] {
+  const registry = getRegistry(project);
+  const out: BeatInput[] = [];
+  const walk = (blocks: readonly Block[] | undefined, step: number | null, path: string) => {
+    objectsIn(blocks).forEach((block, index) => {
+      const own = step ?? (typeof block.step === 'number' ? block.step : 1);
+      const here = `${path}/${index}`;
+      const root = registry.get(block.type)?.root;
+      if (root && isChartType(root) && isRecord(block.props)) {
+        const items = chartItems(root, block.props).filter((item) => item.at);
+        for (const item of items) out.push({ block: block.id, item: item.id, step: own, anchor: item.at!, path: `${here}/props${item.path}` });
+        if (items.length) {
+          const written = isRecord(block.props.spotlightEnd) ? block.props.spotlightEnd as Anchor : null;
+          const last = items.reduce<ChartItem | null>((latest, item) => item, null);
+          const end = written ?? (last?.at && typeof last.at.line === 'string' ? { line: last.at.line, edge: 'end' as const } : null);
+          if (end) out.push({ block: block.id, item: null, step: own, anchor: end, path: `${here}/props/spotlightEnd` });
+        }
+      }
+      walk(block.blocks, own, `${here}/blocks`);
+    });
+  };
+  walk((screen as Screen).blocks, null, '/blocks');
+  return out;
+}
+
 // Anchors of seek-timeline actions (they move the playhead; nothing is laid out for them).
 export function seekTargetsOf(screen: Pick<Screen, 'events'>): CueInput[] {
   const out: CueInput[] = [];
@@ -432,7 +498,7 @@ export function seekTargetsOf(screen: Pick<Screen, 'events'>): CueInput[] {
 export function isTimedScreen(project: Project, screen: Screen | null | undefined): boolean {
   if (!screen) return false;
   if (objectsIn(screen.narration?.lines).length) return true;
-  return momentsOf(project, screen).length > 0 || cuesOf(screen).length > 0;
+  return momentsOf(project, screen).length > 0 || cuesOf(screen).length > 0 || beatsOf(project, screen).length > 0;
 }
 
 export function screenTimeline(project: Project, screenId: string, { language, durations, gaps }: ScreenTimelineOptions = {}): ScreenTimeline | null {
@@ -451,13 +517,14 @@ export function screenTimeline(project: Project, screenId: string, { language, d
   };
   const moments = momentsOf(project, screen).map(translated);
   const cues = cuesOf(screen).map(translated);
+  const beats = beatsOf(project, screen).map(translated);
   const narrated = infos.length > 0;
-  if (!narrated && !moments.length && !cues.length) return null;
+  if (!narrated && !moments.length && !cues.length && !beats.length) return null;
   const source = objectsIn(screen.narration?.lines);
   const stepSeconds = new Map<number, number>();
   for (const [key, value] of Object.entries(isRecord(screen.steps) ? screen.steps : {})) if (isRecord(value) && typeof value.duration === 'number') stepSeconds.set(Number(key), value.duration);
   const layout = layoutTimeline({
-    narrated, language: lang, steps: screenSteps(screen), stepSeconds, moments, cues, gaps,
+    narrated, language: lang, steps: screenSteps(screen), stepSeconds, moments, cues, beats, gaps,
     lines: infos.map((info, index) => ({
       id: info.id, step: info.step, text: info.text ?? source[index]?.text ?? '', pauseBefore: info.pauseBefore,
       duration: durations?.get(info.id) ?? (info.status === 'ok' || info.status === 'stale' ? info.duration : null),
@@ -465,6 +532,18 @@ export function screenTimeline(project: Project, screenId: string, { language, d
     }))
   });
   return { ...layout, screen: screenId, language: lang, narrated, infos: new Map(infos.map((info) => [info.id, info])) };
+}
+
+// When the voice brings each item of a chart, and when it is done with them (D60).
+export function blockBeats(timeline: Pick<TimelineLayout, 'beats'>): Map<string, { items: Record<string, number>; end?: number }> {
+  const out = new Map<string, { items: Record<string, number>; end?: number }>();
+  for (const beat of timeline.beats) {
+    const entry = out.get(beat.block) ?? { items: {} };
+    if (beat.item === null) entry.end = beat.time;
+    else entry.items[beat.item] = beat.time;
+    out.set(beat.block, entry);
+  }
+  return out;
 }
 
 // The timing of each timed block: its in and out moments.

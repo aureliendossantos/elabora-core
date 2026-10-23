@@ -38,6 +38,12 @@ export function objectTestHostBundle(): Promise<string> {
   return bundle(path.join(PACKAGE_ROOT, 'src/objects/test-host.ts'), { minify: false });
 }
 
+// The charts' stylesheets (packages/player/src/charts/*.css), shared ones first, in a fixed order.
+function chartStyles(): string[] {
+  const files = fs.readdirSync(path.join(RUNTIME, 'charts')).filter((file) => file.endsWith('.css')).sort();
+  return ['charts.css', ...files.filter((file) => file !== 'charts.css')].map((file) => `charts/${file}`);
+}
+
 // The player files of every package, by path in the package.
 export async function runtimeFiles({ debug = false }: { debug?: boolean } = {}): Promise<Record<string, string>> {
   const banner = `/* Elabora player ${ELABORA_VERSION} — Apache-2.0 */\n`;
@@ -46,7 +52,8 @@ export async function runtimeFiles({ debug = false }: { debug?: boolean } = {}):
     'elabora/object-frame.js': banner + await bundle(path.join(RUNTIME, 'object-frame.ts'), { minify: !debug }),
     // The player stylesheet sits in the first cascade layer: the course's theme, component
     // stylesheets and overrides follow in the order of the course's cascade (elabora/theme.css).
-    'elabora/player.css': `${BASE_LAYER}\n@layer elabora.base {\n${fs.readFileSync(path.join(RUNTIME, 'player.css'), 'utf8')}\n}\n`
+    // Charts' styles (D60) come with it: charts.css, then each type's.
+    'elabora/player.css': `${BASE_LAYER}\n@layer elabora.base {\n${['player.css', ...chartStyles()].map((file) => fs.readFileSync(path.join(RUNTIME, file), 'utf8')).join('\n')}\n}\n`
   };
 }
 

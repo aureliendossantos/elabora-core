@@ -30,6 +30,7 @@ import type { Labels } from './labels.ts';
 import type { Interaction } from './scorm12.ts';
 import { element, uniqueId } from './dom.ts';
 import { parseNumber, gradeNumeric, formatNumber } from './numeric.ts';
+import { createCharts } from './charts/behavior.ts';
 
 export interface BehaviorContext {
   courseState: CourseState;
@@ -43,6 +44,8 @@ export interface BehaviorContext {
   trigger(type: TriggerType, info: TriggerInfo): void;
   // Takes the assessment again (the retry button of results).
   retake(): void;
+  // The editor's canvas: what plays by itself (a chart's entrance) is shown at rest.
+  still?: boolean;
 }
 
 // Renders one possible outcome of an activity (dry run).
@@ -65,7 +68,9 @@ interface Control {
 // SCORM 1.2 responses and patterns name choices by letter: a, b, c…
 const letter = (index: number) => String.fromCharCode(97 + index);
 
-export function createBehaviors({ courseState, labels, language, formatLabel, announce, recordInteraction, trigger, retake }: BehaviorContext) {
+export function createBehaviors({ courseState, labels, language, formatLabel, announce, recordInteraction, trigger, retake, still = false }: BehaviorContext) {
+  // Charts and diagrams (D60): their own behaviour (charts/behavior.ts).
+  const charts = createCharts({ courseState, labels, language, formatLabel, announce, recordInteraction, trigger, still });
   // Controls of each template root (bound before the slots are filled), and the refresh of each results block.
   const controlsOf = new WeakMap<Element, Control[]>();
   const refreshers = new WeakMap<Element, () => void>();
@@ -160,6 +165,7 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
   // selected tab (or open part) of a block in view, not in a pending step nor concealed. The player
   // calls this whenever blocks come into view.
   function noteShown(container: ParentNode) {
+    charts.noteShown();
     for (const wrap of container.querySelectorAll<HTMLElement>('.t-block[data-block]')) {
       const block = courseState.blockIndex.get(wrap.dataset.block ?? '')?.block;
       const controls = controlsOf.get(wrap);
@@ -431,12 +437,14 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
     if (hasBehavior(block, 'numeric')) return numeric(wrap, block, dry);
     if (hasBehavior(block, 'decision')) return decision(wrap, block, dry);
     if (hasBehavior(block, 'results')) return results(wrap, block, dry);
+    if (hasBehavior(block, 'chart') || hasBehavior(block, 'predict')) return charts.bind(wrap, block, dry);
     return undefined;
   }
 
   return {
     primitives,
     noteShown,
+    charts,
     // Binds the behaviour of an activity or results block to its markup (nothing for other blocks).
     bind(wrap: HTMLElement, block: BlockData): void { run(wrap, block, false); },
     // Dry run: the possible outcomes of an activity or results block (none for other blocks).

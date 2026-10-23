@@ -4,18 +4,30 @@ import type { BuiltinBlockType } from './types.generated.ts';
 import blockSchema from '../schemas/0.1/block.schema.json' with { type: 'json' };
 import blocksAccordionSchema from '../schemas/0.1/blocks/accordion.schema.json' with { type: 'json' };
 import blocksAudioSchema from '../schemas/0.1/blocks/audio.schema.json' with { type: 'json' };
+import blocksBarsSchema from '../schemas/0.1/blocks/bars.schema.json' with { type: 'json' };
+import blocksBeforeAfterSchema from '../schemas/0.1/blocks/before-after.schema.json' with { type: 'json' };
 import blocksButtonSchema from '../schemas/0.1/blocks/button.schema.json' with { type: 'json' };
 import blocksCalloutSchema from '../schemas/0.1/blocks/callout.schema.json' with { type: 'json' };
+import blocksCycleSchema from '../schemas/0.1/blocks/cycle.schema.json' with { type: 'json' };
 import blocksDecisionSchema from '../schemas/0.1/blocks/decision.schema.json' with { type: 'json' };
+import blocksDiagramSchema from '../schemas/0.1/blocks/diagram.schema.json' with { type: 'json' };
+import blocksDonutSchema from '../schemas/0.1/blocks/donut.schema.json' with { type: 'json' };
 import blocksFreeObjectSchema from '../schemas/0.1/blocks/free-object.schema.json' with { type: 'json' };
 import blocksHeadingSchema from '../schemas/0.1/blocks/heading.schema.json' with { type: 'json' };
 import blocksImageSchema from '../schemas/0.1/blocks/image.schema.json' with { type: 'json' };
+import blocksKeyFiguresSchema from '../schemas/0.1/blocks/key-figures.schema.json' with { type: 'json' };
+import blocksLevelsSchema from '../schemas/0.1/blocks/levels.schema.json' with { type: 'json' };
 import blocksMathSchema from '../schemas/0.1/blocks/math.schema.json' with { type: 'json' };
+import blocksMatrixSchema from '../schemas/0.1/blocks/matrix.schema.json' with { type: 'json' };
+import blocksMilestonesSchema from '../schemas/0.1/blocks/milestones.schema.json' with { type: 'json' };
 import blocksNumericSchema from '../schemas/0.1/blocks/numeric.schema.json' with { type: 'json' };
+import blocksProcessSchema from '../schemas/0.1/blocks/process.schema.json' with { type: 'json' };
+import blocksProportionSchema from '../schemas/0.1/blocks/proportion.schema.json' with { type: 'json' };
 import blocksQuizSchema from '../schemas/0.1/blocks/quiz.schema.json' with { type: 'json' };
 import blocksResultsSchema from '../schemas/0.1/blocks/results.schema.json' with { type: 'json' };
 import blocksStackSchema from '../schemas/0.1/blocks/stack.schema.json' with { type: 'json' };
 import blocksTextSchema from '../schemas/0.1/blocks/text.schema.json' with { type: 'json' };
+import blocksTrendSchema from '../schemas/0.1/blocks/trend.schema.json' with { type: 'json' };
 import blocksVideoSchema from '../schemas/0.1/blocks/video.schema.json' with { type: 'json' };
 import componentSchema from '../schemas/0.1/component.schema.json' with { type: 'json' };
 import courseSchema from '../schemas/0.1/course.schema.json' with { type: 'json' };
@@ -38,18 +50,30 @@ export type SchemaName =
   | 'block'
   | 'blocks/accordion'
   | 'blocks/audio'
+  | 'blocks/bars'
+  | 'blocks/before-after'
   | 'blocks/button'
   | 'blocks/callout'
+  | 'blocks/cycle'
   | 'blocks/decision'
+  | 'blocks/diagram'
+  | 'blocks/donut'
   | 'blocks/free-object'
   | 'blocks/heading'
   | 'blocks/image'
+  | 'blocks/key-figures'
+  | 'blocks/levels'
   | 'blocks/math'
+  | 'blocks/matrix'
+  | 'blocks/milestones'
   | 'blocks/numeric'
+  | 'blocks/process'
+  | 'blocks/proportion'
   | 'blocks/quiz'
   | 'blocks/results'
   | 'blocks/stack'
   | 'blocks/text'
+  | 'blocks/trend'
   | 'blocks/video'
   | 'component'
   | 'course'
@@ -69,18 +93,30 @@ export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
   block: blockSchema,
   'blocks/accordion': blocksAccordionSchema,
   'blocks/audio': blocksAudioSchema,
+  'blocks/bars': blocksBarsSchema,
+  'blocks/before-after': blocksBeforeAfterSchema,
   'blocks/button': blocksButtonSchema,
   'blocks/callout': blocksCalloutSchema,
+  'blocks/cycle': blocksCycleSchema,
   'blocks/decision': blocksDecisionSchema,
+  'blocks/diagram': blocksDiagramSchema,
+  'blocks/donut': blocksDonutSchema,
   'blocks/free-object': blocksFreeObjectSchema,
   'blocks/heading': blocksHeadingSchema,
   'blocks/image': blocksImageSchema,
+  'blocks/key-figures': blocksKeyFiguresSchema,
+  'blocks/levels': blocksLevelsSchema,
   'blocks/math': blocksMathSchema,
+  'blocks/matrix': blocksMatrixSchema,
+  'blocks/milestones': blocksMilestonesSchema,
   'blocks/numeric': blocksNumericSchema,
+  'blocks/process': blocksProcessSchema,
+  'blocks/proportion': blocksProportionSchema,
   'blocks/quiz': blocksQuizSchema,
   'blocks/results': blocksResultsSchema,
   'blocks/stack': blocksStackSchema,
   'blocks/text': blocksTextSchema,
+  'blocks/trend': blocksTrendSchema,
   'blocks/video': blocksVideoSchema,
   component: componentSchema,
   course: courseSchema,
@@ -98,4 +134,4 @@ export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
 };
 
 /** Built-in block types (the native catalogue), in the order of block.schema.json. */
-export const BLOCK_TYPES: readonly BuiltinBlockType[] = ['heading', 'text', 'image', 'video', 'audio', 'callout', 'button', 'accordion', 'math', 'quiz', 'numeric', 'decision', 'free-object', 'results', 'stack'];
+export const BLOCK_TYPES: readonly BuiltinBlockType[] = ['heading', 'text', 'image', 'video', 'audio', 'callout', 'button', 'accordion', 'math', 'quiz', 'numeric', 'decision', 'free-object', 'results', 'stack', 'key-figures', 'bars', 'donut', 'trend', 'proportion', 'before-after', 'levels', 'process', 'cycle', 'matrix', 'milestones', 'diagram'];
