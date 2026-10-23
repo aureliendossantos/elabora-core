@@ -5,6 +5,7 @@ import { planIndex, resolveBlockProps, screenOrder, readingOrder, screenLayout }
 import { getRegistry } from '../components/registry.ts';
 import { fallbackBlocks } from '../components/fallback.ts';
 import { isChartType, chartMarkdown } from '../charts/index.ts';
+import { fillInText, sortLines } from '../project/activity-text.ts';
 import { hasFile } from '../project/files.ts';
 import { basename } from '../util/paths.ts';
 import type { Project, Screen, Block } from '../project/model.ts';
@@ -127,6 +128,19 @@ export function lessonMdExport(project: Project): LessonMdExport {
         case 'math':
           directive('text', {}, `$$\n${props.tex}\n$$${props.caption ? `\n\n${props.caption}` : ''}`);
           lose(id, block.id, 'equation exported as LaTeX source in a text block');
+          break;
+        // D63's activities, as native text: LESSON.md has no blanks, sorting or open answer.
+        case 'fill-in':
+          directive('note', { variant: 2 }, `${props.stem ? `${props.stem}\n\n` : ''}${fillInText(props.markdown)}${recordOf(props.feedback).correct ? `\n\n${recordOf(props.feedback).correct}` : ''}`);
+          lose(id, block.id, 'fill-in interaction, its scoring and feedback (exported as a note: the sentence with its answers)');
+          break;
+        case 'sort':
+          directive('note', { variant: 2 }, `${props.stem ? `${props.stem}\n\n` : ''}${sortLines(props).join('\n')}${recordOf(props.feedback).correct ? `\n\n${recordOf(props.feedback).correct}` : ''}`);
+          lose(id, block.id, 'sort interaction and its scoring (exported as a note: its items and where they go)');
+          break;
+        case 'reflection':
+          directive('text', {}, `**${oneLine(props.prompt)}**${props.model ? `\n\n${props.model}` : ''}`);
+          lose(id, block.id, 'reflection field and its saved answers (exported as the prompt and the expert\'s answer)');
           break;
         case 'numeric':
           directive('note', { variant: 2 }, `${props.stem}\n\n**${props.answer}${props.unit ? ` ${props.unit}` : ''}**\n\n${recordOf(props.feedback).correct || ''}`);

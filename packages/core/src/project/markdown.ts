@@ -8,6 +8,8 @@ import { markdownToText } from '../compile/markdown.ts';
 import { getRegistry } from '../components/registry.ts';
 import { fallbackBlocks } from '../components/fallback.ts';
 import { isChartType, chartTable } from '../charts/index.ts';
+import { fillInText, sortLines } from './activity-text.ts';
+import { parseBlanks, replaceBlanks } from '@elabora/player/fill-in';
 import { recordOf, recordsOf, textOf } from '../compile/values.ts';
 import { listOf, objectsIn } from '../util/values.ts';
 
@@ -95,6 +97,33 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
               const tol = p.tolerance ? ('absolute' in tolerance ? ` ± ${tolerance.absolute}` : ` ± ${tolerance.percent} %`) : '';
               L.push(`${indent}- ${tag}${agent ? '' : 'Question : '}${short(p.stem, 300)} → **${p.answer}${tol}${p.unit ? ` ${p.unit}` : ''}**${p.objective ? ` (${p.objective})` : ''}${p.scored === false ? ' — not scored' : ''}`);
               for (const m of recordsOf(p.misconceptions)) L.push(`${indent}  - ${agent ? `\`${m.id}\` ` : ''}${m.value} — _${short(m.feedback, agent ? 100 : 300)}_`);
+              break;
+            }
+            // D63's activities: a fill-in as its sentence and its answers, a sort as its items and where they go.
+            case 'fill-in': {
+              const blanks = parseBlanks(p.markdown);
+              const distractors = Array.isArray(p.distractors) ? p.distractors.filter((word) => typeof word === 'string') : [];
+              if (agent) L.push(`${indent}- ${tag}fill-in (${p.presentation || 'typed'}, ${blanks.length} blank${blanks.length === 1 ? '' : 's'})${p.objective ? ` (${p.objective})` : ''}${p.scored === false ? ' — not scored' : ''}: ${short(replaceBlanks(p.markdown, (_, blank) => `[[${blank.answers.join('|')}]]`), 220)}${distractors.length ? ` · distractors ${distractors.join(', ')}` : ''}`);
+              else {
+                L.push(`${indent}- Texte à trous : ${p.stem ? short(p.stem, 300) : ''}${p.scored === false ? ' — not scored' : ''}`.trimEnd());
+                L.push(`${indent}  - ${fillInText(p.markdown).replace(/\s*\n\s*/g, ' ').trim()}`);
+                if (distractors.length) L.push(`${indent}  - Mots en trop : ${distractors.join(', ')}`);
+                const feedback = recordOf(p.feedback);
+                if (feedback.incorrect) L.push(`${indent}  - _${short(feedback.incorrect, 300)}_`);
+              }
+              break;
+            }
+            case 'sort': {
+              const lines = sortLines(p);
+              L.push(`${indent}- ${tag}${agent ? `sort (${p.presentation || 'pairs'}) ` : 'Classer : '}${short(p.stem, 300)}${p.objective ? ` (${p.objective})` : ''}${p.scored === false ? ' — not scored' : ''}`.trimEnd());
+              for (const line of lines) L.push(`${indent}  ${line.startsWith('- ') ? line : `- ${line}`}`);
+              break;
+            }
+            case 'reflection': {
+              const scale = recordOf(p.scale);
+              L.push(`${indent}- ${tag}${agent ? `reflection (${p.presentation || 'text'}${p.presentation === 'scale' ? ` ${scale.min ?? 1}–${scale.max ?? 5}` : `, ${p.maxLength ?? 500} characters`}${p.download ? ', download' : ''}) ` : 'Réflexion : '}${short(p.prompt, 300)}`);
+              if (p.presentation === 'scale' && (scale.minLabel || scale.maxLabel)) L.push(`${indent}  - ${scale.min ?? 1} ${scale.minLabel || ''} … ${scale.max ?? 5} ${scale.maxLabel || ''}`.replace(/\s+/g, ' '));
+              if (p.model) L.push(`${indent}  - ${agent ? 'model' : "Réponse d'expert"} : _${short(p.model, agent ? 160 : 1000)}_`);
               break;
             }
             case 'decision':

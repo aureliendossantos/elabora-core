@@ -272,11 +272,14 @@ export interface LayerData {
 // needs to score, save and record them; video, audio and free objects are rendered by code from
 // their props; every other block is HTML rendered from its component template.
 
-export type Behavior = 'quiz' | 'numeric' | 'decision' | 'dialogue' | 'object' | 'results' | 'chart' | 'predict';
+export type Behavior = 'quiz' | 'numeric' | 'fill-in' | 'sort' | 'reflection' | 'decision' | 'dialogue' | 'object' | 'results' | 'chart' | 'predict';
 
 export type BlockData =
   | QuizBlock
   | NumericBlock
+  | FillInBlock
+  | SortBlock
+  | ReflectionBlock
   | DecisionBlock
   | DialogueBlock
   | ObjectBlock
@@ -290,6 +293,9 @@ export type BlockData =
 export interface BlockByBehavior {
   quiz: QuizBlock;
   numeric: NumericBlock;
+  'fill-in': FillInBlock;
+  sort: SortBlock;
+  reflection: ReflectionBlock;
   decision: DecisionBlock;
   dialogue: DialogueBlock;
   object: ObjectBlock;
@@ -299,7 +305,7 @@ export interface BlockByBehavior {
 }
 
 // Blocks whose answers count: they have a key in the learner state.
-export type ActivityBlock = QuizBlock | NumericBlock | DecisionBlock | DialogueBlock | ObjectBlock | PredictBlock;
+export type ActivityBlock = QuizBlock | NumericBlock | FillInBlock | SortBlock | ReflectionBlock | DecisionBlock | DialogueBlock | ObjectBlock | PredictBlock;
 
 export interface BlockBase {
   id: string;
@@ -353,6 +359,26 @@ export interface NumericBlock extends BlockBase {
   behavior: 'numeric';
   key: string;
   props: NumericProps;
+}
+
+// Activities of D63: blanks to fill, items to place, a reflection. Their markup comes from their
+// template; the player builds the fields, lists and buttons in its hooks.
+export interface FillInBlock extends BlockBase {
+  behavior: 'fill-in';
+  key: string;
+  props: FillInProps;
+}
+
+export interface SortBlock extends BlockBase {
+  behavior: 'sort';
+  key: string;
+  props: SortProps;
+}
+
+export interface ReflectionBlock extends BlockBase {
+  behavior: 'reflection';
+  key: string;
+  props: ReflectionProps;
 }
 
 export interface DecisionBlock extends BlockBase {
@@ -446,6 +472,9 @@ export interface QuizProps {
   showCorrectAnswer: boolean;
   // compact: the feedback without the chosen option's text, which only screen readers hear.
   feedbackStyle?: 'compact';
+  // images: picture cards; image: zones on one picture, named « Zone n » until the answer is final
+  // (absent: text).
+  presentation?: 'images' | 'image';
   options: QuizOption[];
   questionRef?: string;
 }
@@ -481,6 +510,51 @@ export interface Misconception {
   value: number;
   tolerance: NumericTolerance | null;
   feedbackHtml: string;
+}
+
+// The rendered text holds a <span data-t-blank="n"> (n from 1) where each blank was; its answers are here.
+export interface FillInProps {
+  presentation: 'typed' | 'menus' | 'bank';
+  objective?: string;
+  scored: boolean;
+  weight: number;
+  attempts: number;
+  showCorrectAnswer: boolean;
+  ignoreAccents: boolean;
+  // Accepted answers (the first is shown after the last try) and, typed, the longest answer kept.
+  blanks: { answers: string[]; maxLength: number }[];
+  // menus: the words of each list (every blank's first answer once, and the distractors); bank: the
+  // words to place (every blank's first answer, and the distractors). In their fixed shuffled order.
+  words: string[];
+  feedback: { correctHtml: string; incorrectHtml: string };
+}
+
+export interface SortProps {
+  presentation: 'pairs' | 'categories' | 'order';
+  objective?: string;
+  scored: boolean;
+  weight: number;
+  attempts: number;
+  showCorrectAnswer: boolean;
+  // In the author's order (order: the right one); target: the index of the item's target (-1: none).
+  // The markup shows them in a fixed shuffled order.
+  items: { id: string; label: string; target: number }[];
+  targets: { id: string; label: string }[];
+  // The items' indices in the order they are shown at first (fixed at build time, never the right one).
+  shuffled: number[];
+  feedback: { correctHtml: string; incorrectHtml: string };
+}
+
+export interface ReflectionProps {
+  presentation: 'text' | 'scale';
+  objective?: string;
+  // The prompt as plain text: « Mes réponses » and the interaction's description.
+  prompt: string;
+  maxLength: number;
+  rows: number;
+  modelHtml: string;
+  download: boolean;
+  scale: { min: number; max: number; minLabel: string; maxLabel: string };
 }
 
 export interface DecisionProps {

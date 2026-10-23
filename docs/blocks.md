@@ -137,14 +137,17 @@ Template `packages/core/src/components/builtin/math.html`: fork it to change the
 
 ## `quiz` (assessment)
 
-A single- or multiple-choice question with elaborated feedback. Either reuse a validated plan question (questionRef) or write the question inline (stem, mode, options) for non-locked practice.
+A single- or multiple-choice question with elaborated feedback. Either reuse a validated plan question (questionRef) or write the question inline (stem, mode, options) for non-locked practice. presentation text lists the options; images shows them as picture cards (each option's image and alt); image places them as numbered zones on one picture (image, alt; each option's x and y), named « Zone 1 »… for screen readers until the answer is final.
 
-> Prefer questionRef when the plan has the question. Inline items: 3 plausible options (C1), no 'all/none of the above', no unflagged negation, homogeneous option length, elaborated feedback for every option explaining why (D1), contextualised at the objective's Bloom level (C2).
+> Prefer questionRef when the plan has the question. Inline items: 3 plausible options (C1), no 'all/none of the above', no unflagged negation, homogeneous option length, elaborated feedback for every option explaining why (D1), contextualised at the objective's Bloom level (C2). presentation images when the options are things to recognise by sight (a part, a sign, a screen), each picture with an alt that describes it without giving the answer away; image to find something on one picture (a component on a board, a field on a form): place each option's x and y (0 to 1 from the top left) on the thing, three to six zones, the stem saying what to find.
 
 Template `packages/core/src/components/builtin/quiz.html`: fork it to change the markup; the fork keeps the quiz behaviour and must provide `data-t-stem`, `data-t-option`, `data-t-submit`, `data-t-feedback`.
 
 | Prop | Type | Required | Description |
 |---|---|---|---|
+| `presentation` | "text" \| "images" \| "image" |  | text: the options as a list. images: a grid of picture cards, each option with its image and alt. image: one picture (image, alt) with the options as zones placed at their x and y. Default "text". |
+| `image` | assetPath |  | image: the picture the zones are placed on. |
+| `alt` | string |  | image: what the picture shows, without naming the zones' answers. |
 | `questionRef` | planId |  | Id of a plan question. When set, do not set stem, mode or options. |
 | `stem` | markdown |  |  |
 | `mode` | "single" \| "multiple" |  |  |
@@ -528,3 +531,65 @@ Rendered by code: cannot be forked; place it in a component slot.
 | `highlight` | string |  | Id of the node that carries the idea (an outcome): it takes the accent colour. |
 | `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
 | `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
+
+## `fill-in` (assessment)
+
+« Texte à trous »: a text with blanks the learner fills, typed, chosen from menus or placed from a bank of words. Blanks are written in the Markdown as [[answer|other accepted answer]]; the build turns them into blanks and keeps their answers out of the text. Scored by the share of its blanks right; correct when all are. After the last try the right answers show in place.
+
+> Use it to recall key terms, values or steps in their context (retrieval practice). Blank the word that carries the idea, never a trivial one, and keep one to three blanks per sentence and a dozen at most: the sentence must stay readable around them. Give every accepted spelling or synonym after | ([[DNS|serveur DNS]]). presentation typed (default) asks to produce the word: the strongest retrieval, for terms learners must write; menus gives a list per blank: recognition, quicker on phones, for words with tricky spellings; bank gives the words to place: easiest, for a first practice. With menus and bank add two or three plausible distractors (words of the same kind as the answers). Always write feedback.incorrect that explains the rule or the clue without giving the answers, and feedback.correct that says why.
+
+Template `packages/core/src/components/builtin/fill-in.html`: fork it to change the markup; the fork keeps the fill-in behaviour and must provide `data-t-stem`, `data-t-text`, `data-t-submit`, `data-t-feedback`.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `presentation` | "typed" \| "menus" \| "bank" |  | How the learner fills the blanks: typed (a field per blank), menus (a list per blank: every blank's answer and the distractors, in a fixed shuffled order), bank (the words to place: choose a word, then its blank; drag works too with a mouse). Switching it never changes the words. Default "typed". |
+| `stem` | markdown |  | Instruction or question above the text (Complétez la procédure.). |
+| `markdown` | markdown | yes | The text with its blanks: [[answer]] or [[answer\|other accepted\|another]]. The first answer is the one shown after the last try (and the word a bank or a menu offers). Translate the answers with their sentence. |
+| `distractors` | array |  | menus and bank: wrong words offered with the answers. |
+| `ignoreAccents` | boolean |  | typed: accept an answer written without its accents (« eleve » for « élève »). Case, spaces around the word and the form of quotes and apostrophes never count. Default false. |
+| `feedback` | activityFeedback |  |  |
+| `objective` | planId |  | Plan objective measured. |
+| `scored` | boolean |  | Counts in the course score (the share of its blanks right). Default true. |
+| `weight` | number |  |  Default 1. |
+| `attempts` | integer |  | Tries before the answers are final. Default 1. |
+| `showCorrectAnswer` | boolean |  | After the last try, show the right answer in each wrong blank. Default true. |
+
+## `sort` (assessment)
+
+« Classer »: items the learner places, by choosing an item then where it goes (a mouse may also drag): each with its match (pairs), into two to four categories (categories), or in order (order). Scored by the share of its items placed right; correct when all are. After the last try each item shows whether it was right, and where it belonged.
+
+> Use it to tell cases apart (categories: sort examples, and near misses, under the concepts they illustrate), to link two sets (pairs: a term and its definition, a symptom and its cause) or to order a procedure or a timeline (order). Four to eight items: fewer is a guess, more is a chore on a phone. pairs: as many targets as items, each target holding one; the last pair is then given by elimination, so prefer categories when there are more than five pairs. categories: two to four targets, each with at least one item, items written as cases from the learner's work rather than definitions. order: write the items in the right order, the player shows them shuffled; no targets. Keep items short (a few words, or an image with its alt). Always write feedback.incorrect that explains the rule that sorts them, and feedback.correct that says why.
+
+Template `packages/core/src/components/builtin/sort.html`: fork it to change the markup; the fork keeps the sort behaviour and must provide `data-t-stem`, `data-t-sort-item`, `data-t-submit`, `data-t-feedback`.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `presentation` | "pairs" \| "categories" \| "order" |  | pairs: each item goes to its own target, each target takes one item. categories: two to four targets, each taking several items. order: no targets, the items are put in order (written in the right order, shown shuffled). Default "pairs". |
+| `stem` | markdown |  | The instruction (Associez chaque symptôme à sa cause.). |
+| `items` | array |  | What the learner places, in the right order for order (they are shown in a fixed shuffled order). |
+| `targets` | array |  | pairs and categories: where items go (two to four categories; as many targets as items for pairs). |
+| `feedback` | activityFeedback |  |  |
+| `objective` | planId |  | Plan objective measured. |
+| `scored` | boolean |  | Counts in the course score (the share of its items placed right). Default true. |
+| `weight` | number |  |  Default 1. |
+| `attempts` | integer |  | Tries before the placements are final. Default 1. |
+| `showCorrectAnswer` | boolean |  | After the last try, each item placed wrong says where it belonged. Default true. |
+
+## `reflection` (assessment)
+
+« Réflexion »: a prompt the learner answers in their own words (text) or on a scale (scale). Never scored: it counts as answered once saved. Saving shows a confirmation and, when model is given, an expert's answer to compare with. With download, a button gives « Mes réponses », a text file of every reflection of the course made in the browser.
+
+> Use it to make learners connect the content to their own work (self-explanation, generative learning): ask about a situation they know (« Pensez à la dernière fois qu'un client… : qu'auriez-vous fait autrement ? »), not for a definition the text gives. One clear question per block, after the content it builds on; a few per module. text (default): give model, an expert's short answer written as an example to compare with, not as the right answer; keep maxLength near 500 (each character counts in the LMS's saved data, see E_SUSPEND_DATA_BUDGET). scale: a self-assessment (confidence, frequency, agreement) with minLabel and maxLabel saying what the ends mean; five points by default. Turn download on in modules whose reflections learners keep (a plan of action).
+
+Template `packages/core/src/components/builtin/reflection.html`: fork it to change the markup; the fork keeps the reflection behaviour and must provide `data-t-prompt`, `data-t-response`, `data-t-submit`, `data-t-feedback`.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `presentation` | "text" \| "scale" |  | text: the learner writes. scale: the learner picks a point from scale.min to scale.max. Default "text". |
+| `prompt` | markdown | yes | The question, tied to the learner's own experience. |
+| `maxLength` | integer |  | text: the longest answer, in characters. The build counts it in the LMS's saved data as a persisted string variable. Default 500. |
+| `rows` | integer |  | text: the height of the field, in lines. Default 4. |
+| `model` | markdown |  | An expert's answer, shown once the learner has saved theirs, to compare with. |
+| `download` | boolean |  | Offer « Mes réponses »: a text file of every reflection of the course and the learner's answers, made in the browser (nothing is sent). Default false. |
+| `scale` | object |  | scale: the points offered, and what their ends mean. |
+| `objective` | planId |  | Plan objective the reflection serves (recorded with its interaction). |

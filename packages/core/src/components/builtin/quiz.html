@@ -1,10 +1,29 @@
-<fieldset class="t-quiz" data-t-group>
+<fieldset class="t-quiz t-quiz--{{presentation}}" data-t-group>
   <div class="t-quiz-stem t-text" data-t-stem>{{stem}}</div>
-  <div class="t-options">
+  <div class="t-options" data-if="presentation == text">
     <label class="t-option" data-each="options" data-t-option="{{id}}">
       <input data-t-input>
       <span class="t-option-text">{{text}}</span>
     </label>
+  </div>
+  <div class="t-options t-options--images" data-if="presentation == images">
+    <label class="t-option t-option--image" data-each="options" data-t-option="{{id}}">
+      <img class="t-option-image" data-if="image" src="{{image}}" alt="{{alt}}">
+      <span class="t-option-row">
+        <input data-t-input>
+        <span class="t-option-text">{{text}}</span>
+      </span>
+    </label>
+  </div>
+  <div class="t-quiz-picture" data-if="presentation == image">
+    <img class="t-quiz-picture-image" src="{{image}}" alt="{{alt}}">
+    <div class="t-options t-options--zones">
+      <label class="t-option t-zone" data-each="options" data-t-option="{{id}}" style="--x: {{x}}; --y: {{y}}">
+        <input data-t-input>
+        <span class="t-zone-number" aria-hidden="true">{{@number}}</span>
+        <span class="t-option-text t-zone-text">{{text}}</span>
+      </label>
+    </div>
   </div>
   <button type="button" class="t-btn t-btn--primary t-quiz-submit" data-t-submit></button>
   <div class="t-feedback" data-t-feedback></div>

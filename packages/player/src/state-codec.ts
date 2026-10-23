@@ -16,6 +16,13 @@
 //   b: { blockKey: 0|1 } block visibility overrides (show-block / hide-block)
 //   p: { screenKey: step } screens left before their last step: the step reached (resumed there)
 //   w: visited control keys joined by "." (buttons, tabs and disclosures the learner has used)
+//   g: the language chosen in a package of several languages (D59)
+//   f: { fillInKey: [attempts, "answer 1", "answer 2", …] } fill-in answers (D63): one string per blank,
+//      in reading order, "" for a blank left empty; what was typed, or the word chosen or placed
+//   r: { sortKey: "placement|attempts" } sort placements (D63), one character per entry (base 36,
+//      "-" for nothing): pairs and categories, for each item in the author's order the index of the
+//      target it was placed in; order, for each position from the first the index of the item there
+//   e: { reflectionKey: "text" | number } saved reflections (D63): the text written, or the point of a scale
 //
 // The strings this module writes are saved by LMSs: the encoding must never change for a given state.
 
@@ -31,6 +38,18 @@ export interface QuizAnswer {
 
 export interface NumericAnswer {
   value: number | null;
+  attempts: number;
+}
+
+// One string per blank, "" when left empty.
+export interface FillInAnswer {
+  answers: string[];
+  attempts: number;
+}
+
+// sort.ts: per item the target index (pairs, categories), or per position the item index (order); -1: nothing.
+export interface SortAnswer {
+  placement: number[];
   attempts: number;
 }
 
@@ -57,6 +76,10 @@ export interface LearnerState {
   visits: Set<string>;
   // The language the learner chose in a package of several languages (D59).
   language?: string;
+  // Activities of D63, by block key: fill-in answers, sort placements, saved reflections (text, or a scale's point).
+  fillIns: Record<string, FillInAnswer>;
+  sorts: Record<string, SortAnswer>;
+  reflections: Record<string, string | number>;
 }
 
 // The JSON written to suspend data. Fields are added in this order: the order is part of the format.
@@ -75,10 +98,13 @@ interface EncodedState {
   p?: Record<string, number>;
   w?: string;
   g?: string;
+  f?: Record<string, (number | string)[]>;
+  r?: Record<string, string>;
+  e?: Record<string, string | number>;
 }
 
 export function emptyState(): LearnerState {
-  return { visited: new Set(), completed: new Set(), quizzes: {}, numerics: {}, decisions: {}, vars: {}, objects: {}, objectsDone: {}, retakes: 0, visibility: {}, steps: {}, visits: new Set() };
+  return { visited: new Set(), completed: new Set(), quizzes: {}, numerics: {}, decisions: {}, vars: {}, objects: {}, objectsDone: {}, retakes: 0, visibility: {}, steps: {}, visits: new Set(), fillIns: {}, sorts: {}, reflections: {} };
 }
 
 // The fallbacks (|| [], || 0, || {}) accept states built by hand, without every field.
@@ -101,6 +127,13 @@ export function encodeState(state: LearnerState): string {
   if (Object.keys(state.steps || {}).length) encoded.p = { ...state.steps };
   if (state.visits?.size) encoded.w = [...state.visits].join('.');
   if (state.language) encoded.g = state.language;
+  const fillIns: Record<string, (number | string)[]> = {};
+  for (const [key, answer] of Object.entries(state.fillIns || {})) fillIns[key] = [answer.attempts || 0, ...(answer.answers || []).map((text) => String(text ?? ''))];
+  if (Object.keys(fillIns).length) encoded.f = fillIns;
+  const sorts: Record<string, string> = {};
+  for (const [key, answer] of Object.entries(state.sorts || {})) sorts[key] = `${(answer.placement || []).map(placementChar).join('')}|${answer.attempts || 0}`;
+  if (Object.keys(sorts).length) encoded.r = sorts;
+  if (Object.keys(state.reflections || {}).length) encoded.e = { ...state.reflections };
   return JSON.stringify(encoded);
 }
 
@@ -132,8 +165,21 @@ export function decodeState(text: string): LearnerState {
   for (const [key, value] of entriesOf(decoded.p)) if (typeof value === 'number' && Number.isInteger(value) && value > 0) state.steps[key] = value;
   if (decoded.w) for (const key of String(decoded.w).split('.')) if (key) state.visits.add(key);
   if (typeof decoded.g === 'string' && /^[A-Za-z0-9-]{2,16}$/.test(decoded.g)) state.language = decoded.g;
+  for (const [key, value] of entriesOf(decoded.f)) {
+    if (!Array.isArray(value)) continue;
+    const [attempts, ...answers] = value;
+    state.fillIns[key] = { answers: answers.map((text) => (typeof text === 'string' ? text : '')), attempts: Number(attempts) || 0 };
+  }
+  for (const [key, value] of entriesOf(decoded.r)) {
+    const [written, attempts] = String(value).split('|');
+    state.sorts[key] = { placement: [...(written || '')].map((char) => (char === '-' ? -1 : parseInt(char, 36))).map((index) => (Number.isInteger(index) ? index : -1)), attempts: Number(attempts) || 0 };
+  }
+  for (const [key, value] of entriesOf(decoded.e)) if (typeof value === 'string' || (typeof value === 'number' && Number.isFinite(value))) state.reflections[key] = value;
   return state;
 }
+
+// A sort's placement entry: one base-36 character (items and targets are 12 at most), "-" for nothing.
+const placementChar = (index: number): string => (Number.isInteger(index) && index >= 0 && index < 36 ? index.toString(36) : '-');
 
 // Object.entries(value || {}): a missing field has no entries (a string field has its characters).
 const entriesOf = (value: unknown): [string, unknown][] => Object.entries(value || {});
@@ -152,6 +198,12 @@ export interface StateModel {
   controls: string[];
   // The languages of a package of several languages (D59).
   languages?: string[];
+  // Activities of D63. A fill-in's blanks: typed, the longest answer kept (maxLength); menus and bank,
+  // the longest word offered (longest). A sort's items. A reflection's text at its maxLength, or a
+  // scale's highest point.
+  fillIns?: { key: string; maxAttempts: number; blanks: ({ maxLength: number } | { longest: string })[] }[];
+  sorts?: { key: string; maxAttempts: number; items: number }[];
+  reflections?: { key: string; maxLength?: number; scaleMax?: number }[];
 }
 
 // Worst case: every screen visited and completed, every quiz answered with all options, every control visited,
@@ -173,6 +225,10 @@ export function worstCaseState(model: StateModel): LearnerState {
   for (const key of model.controls || []) state.visits.add(key);
   // A package of several languages keeps the one chosen (D59): the longest code.
   if (model.languages?.length) state.language = model.languages.reduce((longest, code) => (code.length > longest.length ? code : longest), '');
+  // Typed answers, like string variables, at their longest with every character escaped by JSON.
+  for (const fillIn of model.fillIns || []) state.fillIns[fillIn.key] = { attempts: fillIn.maxAttempts, answers: fillIn.blanks.map((blank) => ('longest' in blank ? blank.longest : '\\'.repeat(blank.maxLength))) };
+  for (const sort of model.sorts || []) state.sorts[sort.key] = { attempts: sort.maxAttempts, placement: Array.from({ length: sort.items }, () => 35) };
+  for (const reflection of model.reflections || []) state.reflections[reflection.key] = reflection.maxLength !== undefined ? '\\'.repeat(reflection.maxLength) : (reflection.scaleMax ?? 9);
   state.retakes = 99;
   return state;
 }

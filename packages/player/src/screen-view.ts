@@ -488,7 +488,7 @@ export function createScreenView(options: ScreenViewOptions) {
   // player places the blocks of each slot, then binds behaviours: what is scored, saved, announced
   // and keyboard-operable is never left to a template. Video, audio and free objects are code.
   const behaviors = createBehaviors({
-    courseState, labels, language: course.language, formatLabel: options.formatLabel, announce, recordInteraction, trigger, retake: options.retake, still: options.still
+    courseState, labels, language: course.language, formatLabel: options.formatLabel, announce, recordInteraction, trigger, retake: options.retake, still: options.still, courseTitle: course.title
   });
 
   // Screens: without layout, blocks stack in the reading column (.t-blocks). With a layout (a
@@ -524,7 +524,7 @@ export function createScreenView(options: ScreenViewOptions) {
   // of its tallest outcome (feedback, flags, messages), measured on hidden copies at the same width,
   // and grows inside that room. A template whose feedback floats over its content opts out with
   // data-t-reserve="off". Blocks concealed by events keep their place the same way (CSS).
-  const ROOM_BEHAVIORS = new Set<Behavior | null>(['quiz', 'numeric', 'decision', 'results', 'predict']);
+  const ROOM_BEHAVIORS = new Set<Behavior | null>(['quiz', 'numeric', 'fill-in', 'sort', 'reflection', 'decision', 'results', 'predict']);
   const roomQueue: [HTMLElement, BlockData][] = [];
   // The reserved rooms of the screen, measured again by ready() (fit checks and captures measure the
   // final room, whatever was still loading when the screen was shown).

@@ -9,6 +9,7 @@ import type { ComponentDescriptor } from '../components/registry.ts';
 import type { Block, Event, Plan } from '../project/model.ts';
 import { checkInstance, headingSequence } from './components.ts';
 import { checkChart } from './charts.ts';
+import { checkFillIn, checkSort, checkReflection, checkQuizPictures } from './activities.ts';
 import { isChartType } from '../charts/index.ts';
 import { objectPropErrors, blockEnumLabelErrors, textContrasts, TEXT_CONTRAST } from './object-props.ts';
 import { resolveTokens } from './theme.ts';
@@ -160,8 +161,18 @@ function checkBlock(ctx: CourseCheckContext, { block, component, path, file, scr
       checkQuizItem(ctx, question, place);
       for (const [i, option] of list(question.options).entries()) checkMarkdown(ctx, fieldsOf(option).feedback, place.file, props.questionRef ? '' : at(`options/${i}/feedback`), place.target);
       checkMarkdown(ctx, question.stem, file, at('stem'), id);
+      checkQuizPictures(ctx, { block, component, file, at }, props, question);
       break;
     }
+    case 'fill-in':
+      checkFillIn(ctx, { block, component, file, at }, props);
+      break;
+    case 'sort':
+      checkSort(ctx, { block, component, file, at }, props);
+      break;
+    case 'reflection':
+      checkReflection(ctx, { block, component, file, at }, props);
+      break;
     case 'decision': {
       const events = eventsOn(id);
       list(props.options).forEach((option, i) => {

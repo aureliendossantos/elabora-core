@@ -15,12 +15,12 @@ import corePackage from '../../package.json' with { type: 'json' };
 // components are the layouts of screens.
 //
 // Built-in components rendered by a template can be forked: the fork keeps the behaviour of its
-// root (quiz, numeric, decision, dialogue, results: scoring, saved state, SCORM records and keyboard handling
+// root (quiz, numeric, fill-in, sort, reflection, decision, dialogue, results: scoring, saved state, SCORM records and keyboard handling
 // stay in the player) and replaces the markup. Video, audio and free objects are rendered by code.
 
 const VERSION = corePackage.version;
 
-export type Behavior = 'quiz' | 'numeric' | 'decision' | 'dialogue' | 'results' | 'object' | 'chart';
+export type Behavior = 'quiz' | 'numeric' | 'fill-in' | 'sort' | 'reflection' | 'decision' | 'dialogue' | 'results' | 'object' | 'chart';
 
 export const BUILTINS: Readonly<Record<string, { title: string; render: 'template' | 'code'; behavior?: Behavior }>> = {
   heading: { title: 'Heading', render: 'template' },
@@ -34,6 +34,10 @@ export const BUILTINS: Readonly<Record<string, { title: string; render: 'templat
   math: { title: 'Equation', render: 'template' },
   quiz: { title: 'Choice question', render: 'template', behavior: 'quiz' },
   numeric: { title: 'Numeric question', render: 'template', behavior: 'numeric' },
+  // Activities of D63: blanks to fill, items to place, a reflection (the player builds their fields).
+  'fill-in': { title: 'Fill in the blanks', render: 'template', behavior: 'fill-in' },
+  sort: { title: 'Sort', render: 'template', behavior: 'sort' },
+  reflection: { title: 'Reflection', render: 'template', behavior: 'reflection' },
   decision: { title: 'Decision', render: 'template', behavior: 'decision' },
   // A branching conversation (D61): its walk is pure (@elabora/player dialogue/), the player renders it.
   dialogue: { title: 'Dialogue', render: 'template', behavior: 'dialogue' },
@@ -67,6 +71,11 @@ export interface BehaviorHooks {
 export const BEHAVIORS: Readonly<Record<Behavior, BehaviorHooks>> = {
   quiz: { required: ['stem', 'option', 'submit', 'feedback'], optional: ['group', 'input', 'option-feedback', 'flag'], each: { option: 'options' }, tags: { option: ['label'], submit: ['button'], input: ['input'] } },
   numeric: { required: ['stem', 'input', 'submit', 'feedback'], optional: ['group', 'input-label', 'unit', 'expected'], tags: { input: ['input'], submit: ['button'], 'input-label': ['label'] } },
+  // The build leaves a <span data-t-blank="n"> per blank in the text; the player builds the fields there.
+  'fill-in': { required: ['stem', 'text', 'submit', 'feedback'], optional: ['group', 'bank'], tags: { submit: ['button'] } },
+  // Items are buttons (choose, then choose where); a target holds the button that places there.
+  sort: { required: ['stem', 'sort-item', 'submit', 'feedback'], optional: ['group', 'pool', 'sort-target', 'place', 'zone'], each: { 'sort-item': 'items', 'sort-target': 'targets' }, tags: { 'sort-item': ['button'], place: ['button'], submit: ['button'] } },
+  reflection: { required: ['prompt', 'response', 'submit', 'feedback'], optional: ['group', 'model', 'download'], tags: { submit: ['button'], download: ['button'] } },
   decision: { required: ['prompt', 'choice', 'feedback'], optional: ['group', 'choice-feedback'], each: { choice: 'options' }, tags: { choice: ['button'] } },
   // The player fills the thread (log) and the options' room; the rest is optional.
   dialogue: { required: ['log', 'options'], optional: ['group', 'stage', 'debrief', 'start'], tags: { start: ['button'] } },
@@ -77,7 +86,7 @@ export const BEHAVIORS: Readonly<Record<Behavior, BehaviorHooks>> = {
 // Hooks any template may use: click (a button firing the screen event "click"), toggle/part
 // (disclosure), tabs/tab/panel (tabs), label (a player label, translated by the course language).
 export const PRIMITIVE_HOOKS = ['click', 'toggle', 'part', 'open', 'tabs', 'tab', 'panel', 'selected', 'label'];
-export const BUTTON_HOOKS = ['click', 'toggle', 'tab', 'submit', 'choice', 'retry', 'start'];
+export const BUTTON_HOOKS = ['click', 'toggle', 'tab', 'submit', 'choice', 'retry', 'start', 'sort-item', 'place', 'download'];
 
 // A finding made while resolving a component, reported by the validator.
 export interface RegistryError {

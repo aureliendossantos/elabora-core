@@ -17,8 +17,9 @@ import { explorePaths } from '@elabora/player/dialogue/paths';
 export const READING_WORDS_PER_MINUTE = 150;
 // What an activity adds to the reading of its words: deciding, answering, trying.
 // A prediction (a trend's predict mode) takes about as long as a choice: drawing, then reading the answer.
+// Filling blanks, placing items and writing a reflection (D63) take longer than choosing.
 // A dialogue is timed by its paths instead (dialogueSeconds).
-export const ACTIVITY_SECONDS: Readonly<Record<Behavior | 'predict', number>> = { quiz: 45, numeric: 60, decision: 45, dialogue: 0, object: 90, results: 0, chart: 0, predict: 40 };
+export const ACTIVITY_SECONDS: Readonly<Record<Behavior | 'predict', number>> = { quiz: 45, numeric: 60, 'fill-in': 60, sort: 75, reflection: 90, decision: 45, dialogue: 0, object: 90, results: 0, chart: 0, predict: 40 };
 // A screen is never shorter than a glance.
 export const MIN_SCREEN_SECONDS = 10;
 

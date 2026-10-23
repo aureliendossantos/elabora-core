@@ -1,0 +1,22 @@
+<div class="t-quiz t-sort t-sort--{{presentation}}" data-t-group>
+  <div class="t-quiz-stem t-text" data-if="stem" data-t-stem>{{stem}}</div>
+  <div class="t-sort-board">
+    <div class="t-sort-pool" data-t-pool>
+      <button type="button" class="t-sort-item" data-each="items" data-t-sort-item="{{id}}">
+        <img class="t-sort-image" data-if="image" src="{{image}}" alt="{{alt}}">
+        <span class="t-sort-text" data-if="text">{{text}}</span>
+      </button>
+    </div>
+    <div class="t-sort-targets" data-if="presentation != order">
+      <div class="t-sort-target" data-each="targets" data-t-sort-target="{{id}}">
+        <button type="button" class="t-sort-place" data-t-place>
+          <img class="t-sort-image" data-if="image" src="{{image}}" alt="{{alt}}">
+          <span class="t-sort-target-text" data-if="text">{{text}}</span>
+        </button>
+        <div class="t-sort-zone" data-t-zone></div>
+      </div>
+    </div>
+  </div>
+  <button type="button" class="t-btn t-btn--primary t-quiz-submit" data-t-submit></button>
+  <div class="t-feedback" data-t-feedback></div>
+</div>

@@ -20,7 +20,7 @@ export function checkTracking(ctx: CourseCheckContext): void {
   const scored = [...ctx.blocks.values()].some(({ block }) => {
     const props = resolveBlockProps(block, planIndex, registry);
     const behavior = instanceBehavior(registry, block);
-    if (behavior === 'quiz' || behavior === 'numeric') return props.scored !== false;
+    if (behavior === 'quiz' || behavior === 'numeric' || behavior === 'fill-in' || behavior === 'sort') return props.scored !== false;
     if (behavior === 'decision' || behavior === 'object') return !!props.scored;
     if (behavior === 'predict') return fieldsOf(props.predict).scored === true;
     // A dialogue is scored when its scoring counts something (its mode's default, D61).

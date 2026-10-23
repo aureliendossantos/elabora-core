@@ -233,7 +233,7 @@ function checkThemeEffects(ctx: CourseCheckContext): void {
 // Activities and blocks learners click (buttons, tabs, disclosures).
 function learnersUse(ctx: CourseCheckContext, block: Block): boolean {
   const behavior = ctx.registry.get(block.type)?.behavior;
-  if (behavior === 'quiz' || behavior === 'numeric' || behavior === 'decision' || behavior === 'object') return true;
+  if (behavior === 'quiz' || behavior === 'numeric' || behavior === 'fill-in' || behavior === 'sort' || behavior === 'reflection' || behavior === 'decision' || behavior === 'object') return true;
   return blockControls(ctx.project, block).size > 0;
 }
 

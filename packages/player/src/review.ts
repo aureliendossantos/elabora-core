@@ -450,7 +450,7 @@ function typing(target: EventTarget | null): boolean {
 }
 
 // The built-in kind of a block: its type, else the first built-in type of its lineage.
-const BUILT_IN = ['heading', 'text', 'image', 'video', 'audio', 'quiz', 'numeric', 'decision', 'results', 'free-object', 'accordion', 'button', 'callout', 'math', 'stack'];
+const BUILT_IN = ['heading', 'text', 'image', 'video', 'audio', 'quiz', 'numeric', 'fill-in', 'sort', 'reflection', 'decision', 'results', 'free-object', 'accordion', 'button', 'callout', 'math', 'stack'];
 function kindOf(block: BlockData | undefined): string {
   if (!block) return 'component';
   return [block.type, ...(block.lineage ?? [])].find((type) => BUILT_IN.includes(type)) ?? 'component';

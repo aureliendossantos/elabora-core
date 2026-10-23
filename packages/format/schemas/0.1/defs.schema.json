@@ -197,6 +197,22 @@
         }
       }
     },
+    "activityFeedback": {
+      "description": "Feedback of a fill-in or sort activity (guardrail D1): correct says why the answer holds, incorrect what to look at again. Shown under the activity once it is submitted; without incorrect feedback, W_ACTIVITY_NO_FEEDBACK.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "correct": {
+          "$ref": "#/$defs/markdown",
+          "x-translatable": true
+        },
+        "incorrect": {
+          "$ref": "#/$defs/markdown",
+          "x-translatable": true,
+          "description": "Shown while some answers are wrong: explain the rule or the clue, without giving the answers (they show in place after the last try)."
+        }
+      }
+    },
     "misconceptions": {
       "description": "Values learners get with a typical error, each with feedback that names the error. They are checked before the generic incorrect feedback.",
       "type": "array",
