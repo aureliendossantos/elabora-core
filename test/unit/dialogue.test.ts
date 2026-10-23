@@ -177,7 +177,21 @@ test('the first run is the only one scored: going back after the end, retry, res
   // After the end (practice: after-end), back to any decision before the final one is refused…
   assert.equal(canRevisit(run, 2), false, 'escalade is final');
   assert.equal(canRevisit(run, 0), false, 'nor before it');
-  assert.equal(canRestart(run), false);
+  // Starting over is a new run, not a revisit: it stays once the dialogue has ended.
+  assert.equal(canRestart(run), true, 'a final decision does not stop « Recommencer » after the end');
+  const again = restart(run);
+  assert.equal(again.walk.node, 'premiere-question');
+  assert.deepEqual(again.progress.scored, ['premiere-question.b~', 'premiere-question.a', 'ticket.a', 'escalade.a'], 'the scored run is kept');
+  // Before the end (anytime), a final decision closed on the path forbids starting over.
+  const finalTicket = (structuredClone(props.nodes) as { id: string; final?: boolean }[]).map(({ final, ...node }) => (node.id === 'ticket' ? { ...node, final: true } : node));
+  let midway = openDialogue(dialogueData({ ...structuredClone(props), revisit: 'anytime', nodes: finalTicket }));
+  midway = choose(midway, 'a');
+  assert.equal(canRestart(midway), true, 'nothing final closed yet');
+  midway = choose(midway, 'a');
+  assert.equal(canRestart(midway), false, 'ticket is final and closed, the dialogue goes on');
+  midway = choose(midway, 'a');
+  assert.equal(midway.walk.status, 'ended');
+  assert.equal(canRestart(midway), true);
   // …so without final decisions the learner explores, and the scored run stays.
   const open = dialogueData({ ...structuredClone(props), nodes: (structuredClone(props.nodes) as { final?: boolean }[]).map(({ final, ...node }) => node) });
   let explore = openDialogue(open);

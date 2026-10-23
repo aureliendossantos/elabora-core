@@ -148,7 +148,7 @@ One implementation, pure (no DOM, no Node), in `@elabora/player` `dialogue/`: th
 | `assessment` | `none`: no going back (`retry` options go on to the common way) | `debrief` | `quality` |
 | `exploration` | `anytime`: « Reprendre d'ici » from the first choice | `now` | `none` |
 
-Each setting stays changeable (`revisit: "retry"` alone gives « Choisir autrement » without going back after the end). A final decision cannot be revisited, nor anything before it.
+Each setting stays changeable (`revisit: "retry"` alone gives « Choisir autrement » without going back after the end). A final decision cannot be revisited, nor anything before it; once the dialogue has ended, « Recommencer » still starts it over, as a new run that leaves the scored run as it was.
 
 ## Score, completion, SCORM
 

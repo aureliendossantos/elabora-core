@@ -1432,7 +1432,7 @@ export type DialogueProps = {
    * @default 'practice'
    */
   mode?: 'practice' | 'assessment' | 'exploration';
-  /** How the learner may go back (default: the mode's). none: never (retry options continue instead). retry: « Choisir autrement » right after a consequence, and options with retry come back. after-end: retry, then « Reprendre d'ici » on any past choice and « Recommencer » once the first end is reached. anytime: « Reprendre d'ici » from the first choice. The first run to an end is the only one scored, whatever the policy; a final decision cannot be revisited, nor anything before it. */
+  /** How the learner may go back (default: the mode's). none: never (retry options continue instead). retry: « Choisir autrement » right after a consequence, and options with retry come back. after-end: retry, then « Reprendre d'ici » on any past choice and « Recommencer » once the first end is reached. anytime: « Reprendre d'ici » from the first choice. The first run to an end is the only one scored, whatever the policy; a final decision cannot be revisited, nor anything before it, but once the dialogue has ended « Recommencer » still starts a new run. */
   revisit?: 'none' | 'retry' | 'after-end' | 'anytime';
   /** What the dialogue's score (0 to 1, like any activity) is made of (default: the mode's). quality: good 1, ok 0.5, bad 0, the mean over the decisions met. points: the sum of the options' points over the highest sum a path can reach (computed on the graph). ending: the score of the ending reached. none: not scored. Scored dialogues count in the course score with weight, and record one choice interaction per decision of the first run. */
   scoring?: 'none' | 'quality' | 'points' | 'ending';

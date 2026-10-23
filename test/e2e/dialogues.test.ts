@@ -30,7 +30,7 @@ const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 type Any = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 type DialogueWindow = Window & typeof globalThis & { __elabora: Any; inserted?: { text: string; ink: string; role: string }[] };
 
-// open: the last decision of « appel » is not final (a final decision closes going back and starting over).
+// open: the last decision of « appel » is not final (a final decision closes going back; once the dialogue ends, starting over stays).
 const packages = new Map<string, Promise<string>>();
 function packageOf(presentation: 'slides' | 'scroll' = 'slides', { open = false }: { open?: boolean } = {}): Promise<string> {
   const key = `${presentation}${open ? '-open' : ''}`;
@@ -169,9 +169,10 @@ test('messaging in a slide: the thread, whole bubbles, the ink on the clock, cue
     for (const text of now) assert.ok(lines.some((row) => row.text === text), `inserted whole: ${text}`);
     assert.ok(inserted.filter((row) => row.role === 'character').every((row) => /^(Marc|Leïla) : /.test(row.text)), 'screen readers hear « Marc : … »');
 
-    // The end: endings found, the debrief; past a final decision, neither going back nor starting over.
+    // The end: endings found, the debrief; past a final decision, no going back, but starting over (a new run).
     assert.equal(await wrap.locator('.t-dialogue-count').innerText(), '1 fin découverte sur 2');
-    assert.equal(await wrap.locator('.t-dialogue-endbar .t-dialogue-action').filter({ hasText: /Recommencer|Revenir/ }).count(), 0);
+    assert.equal(await wrap.locator('.t-dialogue-endbar .t-dialogue-action').filter({ hasText: /Revenir/ }).count(), 0);
+    assert.equal(await wrap.locator('.t-dialogue-endbar .t-dialogue-action').filter({ hasText: 'Recommencer' }).count(), 1);
     assert.equal(await wrap.locator('.t-dialogue-resume:not([hidden])').count(), 0);
     // The debrief comes over the thread at the end; its toggle shows the thread again, and back.
     assert.equal(await wrap.locator('.t-dialogue-debrief-card').isVisible(), true);
