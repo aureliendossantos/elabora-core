@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import type { Frame, Page } from 'playwright-core';
+import type { Frame, Locator, Page } from 'playwright-core';
 import type { Diagnostic } from '@elabora/core/diagnostics/index';
 
 // No word timing at once in tests: a computer with the word aligner installed would time the test
@@ -17,6 +17,13 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 export const NO_MEDIA_CODECS = 'this browser cannot play H.264 or AAC (Playwright\'s Chromium has no proprietary codecs: install Google Chrome or Microsoft Edge)';
 export const playsMedia = (target: Page | Frame, type = 'video/mp4; codecs="avc1.64001E, mp4a.40.2"'): Promise<boolean> =>
   target.evaluate((mime) => document.createElement('video').canPlayType(mime) !== '', type);
+// Whether the player has closed a panel, a menu or a tooltip: its `hidden` attribute, which it sets
+// at once. Not whether the element has finished fading out: the fade runs on the page's animation
+// clock, which stands still while the browser has no frame to draw (a loaded computer, a page in
+// the background), so « not visible yet » says nothing about the player. Read the state, never wait
+// out the fade.
+export const isClosed = (target: Locator): Promise<boolean> => target.evaluate((element) => Boolean((element as HTMLElement).hidden));
+
 // Stable baseline: tests that reshape the course must not depend on later sample design edits.
 export const EXAMPLE = path.join(ROOT, 'test/fixtures/format-0.1/diagnostic-reseau');
 // URL of a source module of the repository, for import() in another process (Windows paths are not

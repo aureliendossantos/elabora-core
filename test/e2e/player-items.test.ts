@@ -9,7 +9,7 @@ import { launchBrowser } from '@elabora/node/emulator/browser';
 import { build } from '@elabora/node/build';
 import type { BuildOptions } from '@elabora/node/build';
 import * as edit from '@elabora/node/edit';
-import { ROOT, copyExample as copyCourse } from '../helpers.ts';
+import { ROOT, copyExample as copyCourse, isClosed } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { hasFfmpeg } from '../narration.ts';
 
@@ -176,9 +176,7 @@ test('« Affichage »: the screen\'s text larger in three steps without moving t
     await page.click('.t-display-menu .t-pop-item');
     assert.match(await page.locator('.t-display-keys').textContent() ?? '', /Ctrl\+Alt\+P/);
     await page.keyboard.press('Escape');
-    // It fades out (player.css, « Motion »: the fades stay when less motion is asked).
-    await page.locator('.t-display-menu').waitFor({ state: 'hidden', timeout: 2000 });
-    assert.equal(await page.locator('.t-display-menu').isVisible(), false);
+    assert.equal(await isClosed(page.locator('.t-display-menu')), true);
     await reload();
     assert.equal(await zoom(), '1.3');
   }, { target: 'web', web: { progress: 'local' } });
