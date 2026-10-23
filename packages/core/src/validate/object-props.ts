@@ -61,12 +61,16 @@ export function objectPropErrors(manifest: ObjectManifest, values: unknown): { p
 }
 
 // ── Editor controls ──────────────────────────────────────────────────
-// The types each control edits. A list (type array, items) is rows of fields; vec3-gizmo moves a
-// point of three numbers.
+// The types each control edits. A list (type array, items) is rows of fields; range is a low and a
+// high number on one scale; vec2, vec3 and vec3-gizmo are a point of two or three numbers.
 const CONTROL_TYPES: Readonly<Record<string, readonly string[]>> = {
   text: ['string'], textarea: ['string'], asset: ['string'], color: ['string'], select: ['string', 'number', 'integer'],
-  slider: ['number', 'integer'], number: ['number', 'integer'], toggle: ['boolean'], list: ['array'], 'vec3-gizmo': ['array']
+  slider: ['number', 'integer'], number: ['number', 'integer'], toggle: ['boolean'], list: ['array'],
+  range: ['array'], vec2: ['array'], vec3: ['array'], 'vec3-gizmo': ['array']
 };
+// How many numbers an array control edits.
+const NUMBERS: Readonly<Record<string, number>> = { range: 2, vec2: 2, vec3: 3, 'vec3-gizmo': 3 };
+const WORDS = ['', 'one', 'two', 'three'];
 
 // What does not fit between the x-control of a prop (or of the items and fields of a list) and its
 // type: path under the prop schema, and why.
@@ -80,9 +84,12 @@ export function controlProblems(prop: unknown): { path: string; message: string 
     else if (control === 'select' && !Array.isArray(schema.enum) && !(type === 'integer' && typeof schema.minimum === 'number' && typeof schema.maximum === 'number')) problems.push({ path, message: 'x-control "select" needs its choices: an enum, or an integer between a minimum and a maximum' });
     else if (control === 'slider' && (typeof schema.minimum !== 'number' || typeof schema.maximum !== 'number')) problems.push({ path, message: 'x-control "slider" needs a minimum and a maximum' });
     else if (control === 'color' && schema.format !== 'color') problems.push({ path, message: 'x-control "color" needs format "color" (#RRGGBB values)' });
-    else if (control === 'vec3-gizmo') {
+    else if (NUMBERS[control]) {
       const items = fieldsOf(schema.items);
-      if ((items.type !== 'number' && items.type !== 'integer') || schema.minItems !== 3 || schema.maxItems !== 3) problems.push({ path, message: 'x-control "vec3-gizmo" edits three numbers: items of type number, minItems and maxItems 3' });
+      const count = NUMBERS[control];
+      if ((items.type !== 'number' && items.type !== 'integer') || schema.minItems !== count || schema.maxItems !== count) problems.push({ path, message: `x-control "${control}" edits ${WORDS[count]} numbers: items of type number, minItems and maxItems ${count}` });
+      else if (control === 'range' && (typeof items.minimum !== 'number' || typeof items.maximum !== 'number')) problems.push({ path, message: 'x-control "range" needs its scale: items with a minimum and a maximum' });
+      else if (control === 'range' && Array.isArray(schema.default) && typeof schema.default[0] === 'number' && typeof schema.default[1] === 'number' && schema.default[0] > schema.default[1]) problems.push({ path, message: 'x-control "range" edits a low then a high value, and the default puts the high one first' });
     } else if (control === 'list' && !isRecord(schema.items)) problems.push({ path, message: 'x-control "list" needs items (a simple type, or an object with fields)' });
   };
   const schema = fieldsOf(prop);
