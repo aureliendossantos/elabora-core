@@ -1,5 +1,4 @@
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { narrationLines } from '@elabora/core/narration/narration';
@@ -7,7 +6,7 @@ import type { Project } from '@elabora/core/project/model';
 import { projectDataDir } from '../data-dir.ts';
 import { findMediaTools } from '../media/tools.ts';
 import type { MediaTools } from '../media/tools.ts';
-import { runFfmpeg } from '../media/encode.ts';
+import { decodeSamples } from './tracks.ts';
 import { writeFileAtomic } from '../util/fs.ts';
 import type { LinePeaks, NarrationPeaks } from './types.ts';
 
@@ -21,24 +20,16 @@ export type { LinePeaks, NarrationPeaks } from './types.ts';
 const RATE = 8000;
 
 async function peaksOf(file: string, perSecond: number, tools: MediaTools): Promise<Uint8Array> {
-  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-peaks-'));
-  try {
-    const raw = path.join(temp, 'line.f32');
-    await runFfmpeg(tools, ['-nostdin', '-v', 'error', '-y', '-i', file, '-map', '0:a:0', '-vn', '-ac', '1', '-ar', String(RATE), '-f', 'f32le', raw]);
-    const bytes = fs.readFileSync(raw);
-    const samples = new Float32Array(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength));
-    const slice = RATE / perSecond;
-    const peaks = new Uint8Array(Math.ceil(samples.length / slice));
-    for (let i = 0; i < peaks.length; i++) {
-      let peak = 0;
-      const end = Math.min(samples.length, Math.round((i + 1) * slice));
-      for (let s = Math.round(i * slice); s < end; s++) { const value = Math.abs(samples[s]); if (value > peak) peak = value; }
-      peaks[i] = Math.min(255, Math.round(peak * 255));
-    }
-    return peaks;
-  } finally {
-    fs.rmSync(temp, { recursive: true, force: true });
+  const samples = await decodeSamples(tools, file, RATE);
+  const slice = RATE / perSecond;
+  const peaks = new Uint8Array(Math.ceil(samples.length / slice));
+  for (let i = 0; i < peaks.length; i++) {
+    let peak = 0;
+    const end = Math.min(samples.length, Math.round((i + 1) * slice));
+    for (let s = Math.round(i * slice); s < end; s++) { const value = Math.abs(samples[s]); if (value > peak) peak = value; }
+    peaks[i] = Math.min(255, Math.round(peak * 255));
   }
+  return peaks;
 }
 
 export async function narrationPeaks(root: string, project: Project, screen: string, { language, perSecond = 50, tools }: { language?: string; perSecond?: number; tools?: MediaTools } = {}): Promise<NarrationPeaks | null> {

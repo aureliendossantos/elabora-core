@@ -252,7 +252,7 @@ test('the course: lock keys, compiled data, a valid fixture, rename keeps the ke
   assert.equal(block.key, keys['dialogue:appel-marc']);
   assert.equal(block.props.keys.choices['premiere-question.a'], keys['choice:appel-marc#premiere-question.a']);
   assert.deepEqual(Object.values(block.props.keys.bits).sort((a, b) => a - b), [0, 1, 2, 3, 4, 5, 6, 7]);
-  assert.equal(block.props.nodes[0].lines[0].text, 'Bonjour… plus rien ne marche au deuxième étage: ni l\'imprimante, ni le partage de fichiers.', 'stage directions left out of what learners read');
+  assert.equal(block.props.nodes[0].lines[0].text, 'Bonjour… plus rien ne marche au deuxième étage : ni l\'imprimante, ni le partage de fichiers.', 'stage directions left out of what learners read');
   assert.match(block.props.nodes[1].options[0].feedbackHtml ?? '', /^<p>Bon réflexe/);
   assert.equal(block.props.revisit, 'after-end', 'the mode\'s default resolved');
   assert.equal(block.props.maxPoints, 30);
@@ -321,7 +321,11 @@ test('validation: every dialogue code, with its place', () => {
   }
   assert.ok(byCode('E_DIALOGUE_TARGET').some((d) => d.path === '/blocks/0/props/start'));
   assert.ok(byCode('E_DIALOGUE_TARGET').some((d) => d.path === '/blocks/0/props/nodes/0/end'));
-  assert.ok(byCode('E_DIALOGUE_DUPLICATE_ID').some((d) => /line "y" has the id of a line of the screen's narration/.test(d.message)));
+  // A line id taken twice in the screen has one code, whatever holds the lines (D61, D62).
+  const lineDuplicates = validateDir(dir).diagnostics.filter((d) => d.code === 'E_NARRATION_LINE_DUPLICATE');
+  assert.ok(lineDuplicates.some((d) => d.path === '/blocks/0/props/nodes/2/lines/0/id' && /lines "y": in the screen's narration and in dialogue "bad"/.test(d.message)), JSON.stringify(lineDuplicates));
+  assert.ok(lineDuplicates.some((d) => d.path === '/blocks/0/props/nodes/0/lines/2/id'), 'a narration of the dialogue that takes the id of a voiced line');
+  assert.ok(!byCode('E_DIALOGUE_DUPLICATE_ID').some((d) => /line/.test(d.message)));
   assert.ok(byCode('E_DIALOGUE_DUPLICATE_ID').some((d) => d.path === '/blocks/0/props/nodes/1/id'));
   assert.ok(byCode('E_DIALOGUE_CUE').some((d) => d.path === '/blocks/0/props/nodes/0/lines/1/cues/0/at/word'));
   assert.ok(byCode('E_DIALOGUE_CUE').some((d) => d.path === '/blocks/0/props/nodes/0/lines/1/cues/1/at/line'));

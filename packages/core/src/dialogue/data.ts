@@ -3,10 +3,11 @@
 // elabora.lock.json and the highest sum of points its paths can reach. The compiler adds the HTML of
 // its Markdown; the core's tools keep the stage directions to print the script.
 
-import type { DialogueData, DialogueKeys, DialogueLineData, DialogueNodeData, DialogueOptionData, DialogueEndingData, DialogueCondition, DialogueCueData, DialogueAction, DialogueSceneData, DialogueSpeakerData, DialogueValue, DialogueRevisit, DialogueScoring, DialogueFeedback, DialogueMode } from '@elabora/player/dialogue/types';
+import type { DialogueData, DialogueKeys, DialogueLineData, DialogueNodeData, DialogueOptionData, DialogueEndingData, DialogueCondition, DialogueCueData, DialogueAction, DialogueSceneData, DialogueSpeakerData, DialogueValue, DialogueRevisit, DialogueScoring, DialogueFeedback, DialogueMode, LineVoiceData, CharacterManifest } from '@elabora/player/dialogue/types';
 import { explorePaths, maxPointsOf } from '@elabora/player/dialogue/paths';
 import type { DialogueEnv } from '@elabora/player/dialogue/walk';
 import { withoutDirections } from '../narration/directions.ts';
+import { narrationWords, findPhrase } from '../narration/words.ts';
 import { isRecord, recordOf, recordsOf, textOf, optionalTextOf } from '../compile/values.ts';
 import { objectsIn } from '../util/values.ts';
 import type { Course } from '../project/model.ts';
@@ -31,11 +32,17 @@ export interface DialogueDataOptions {
   // The HTML of a Markdown text (the compiler's renderer).
   markdown?: (text: string) => string;
   env?: DialogueEnv;
+  // The voice of each line (the compiler's: its audio in the package, or the estimate), and of each
+  // option the learner's voice says (learnerVoice; id "<node>.<option>"). text: as written, stage
+  // directions kept. The core's tools leave it out.
+  voice?: (line: { id: string; text: string; speaker?: string }) => LineVoiceData | undefined;
+  // The SVG of a speaker's look, sanitized for the page (the compiler's), with what its root declares.
+  look?: (speaker: string, svg: string) => { inline: string; manifest: CharacterManifest } | null;
 }
 
 export const emptyKeys = (): DialogueKeys => ({ choices: {}, bits: {}, endings: {} });
 
-export function dialogueData(props: Record<string, unknown>, { course, keys = emptyKeys(), assetPath = (name) => `assets/${name}`, directions = 'keep', markdown, env }: DialogueDataOptions = {}): DialogueData {
+export function dialogueData(props: Record<string, unknown>, { course, keys = emptyKeys(), assetPath = (name) => `assets/${name}`, directions = 'keep', markdown, env, voice, look }: DialogueDataOptions = {}): DialogueData {
   const mode = oneOf(props.mode, ['practice', 'assessment', 'exploration'] as const, 'practice');
   const defaults = MODE_DEFAULTS[mode];
   const text = (value: unknown) => (directions === 'strip' ? withoutDirections(textOf(value)) : textOf(value));
@@ -54,20 +61,27 @@ export function dialogueData(props: Record<string, unknown>, { course, keys = em
       ...(typeof cue.expression === 'string' ? { expression: cue.expression } : {}),
       ...(actions(cue.do) ? { do: actions(cue.do) } : {})
     }));
+    const id = textOf(value.id);
+    const said = voice?.({ id, text: textOf(value.text), ...(typeof value.speaker === 'string' ? { speaker: value.speaker } : {}) });
+    if (said) for (const cue of cues) cue.time = cueTime(cue.at, textOf(value.text), said, course?.language);
     return {
-      id: textOf(value.id), ...(typeof value.speaker === 'string' ? { speaker: value.speaker } : {}), text: text(value.text),
+      id, ...(typeof value.speaker === 'string' ? { speaker: value.speaker } : {}), text: text(value.text),
       ...(typeof value.expression === 'string' ? { expression: value.expression } : {}),
-      ...(cues.length ? { cues } : {}), ...(conditions(value.if) ? { if: conditions(value.if) } : {})
+      ...(cues.length ? { cues } : {}), ...(conditions(value.if) ? { if: conditions(value.if) } : {}),
+      ...(said ? { voice: said } : {})
     };
   };
   const end = (value: unknown): true | string | undefined => (value === true ? true : typeof value === 'string' ? value : undefined);
-  const option = (value: Record<string, unknown>): DialogueOptionData => {
+  const learnerVoice = props.learnerVoice === true && typeof props.learner === 'string';
+  const option = (value: Record<string, unknown>, node: string): DialogueOptionData => {
     const feedback = optionalTextOf(value.feedback);
+    // The learner's own line, said by their voice: its stage directions are for the voice alone.
+    const said = learnerVoice && typeof value.text === 'string' && value.fallback !== true ? voice?.({ id: `${node}.${textOf(value.id)}`, text: value.text, speaker: props.learner as string }) : undefined;
     const numbers = (record: unknown) => Object.fromEntries(Object.entries(recordOf(record)).filter(([, entry]) => typeof entry === 'number')) as Record<string, number>;
     const values = (record: unknown) => Object.fromEntries(Object.entries(recordOf(record)).filter(([, entry]) => isValue(entry))) as Record<string, DialogueValue>;
     return {
       id: textOf(value.id),
-      ...(typeof value.text === 'string' ? { text: value.text } : {}),
+      ...(typeof value.text === 'string' ? { text: learnerVoice ? text(value.text) : value.text } : {}),
       ...(typeof value.label === 'string' ? { label: value.label } : {}),
       ...(value.quality === 'good' || value.quality === 'ok' || value.quality === 'bad' ? { quality: value.quality } : {}),
       ...(typeof value.objective === 'string' ? { objective: value.objective } : {}),
@@ -84,7 +98,8 @@ export function dialogueData(props: Record<string, unknown>, { course, keys = em
       ...(value.fallback === true ? { fallback: true } : {}),
       ...(conditions(value.if) ? { if: conditions(value.if) } : {}),
       unavailable: value.unavailable === 'disable' ? 'disable' : 'hide',
-      ...(typeof value.unavailableText === 'string' ? { unavailableText: value.unavailableText } : {})
+      ...(typeof value.unavailableText === 'string' ? { unavailableText: value.unavailableText } : {}),
+      ...(said ? { voice: said } : {})
     };
   };
   const node = (value: Record<string, unknown>): DialogueNodeData => {
@@ -93,7 +108,7 @@ export function dialogueData(props: Record<string, unknown>, { course, keys = em
       id: textOf(value.id), ...(typeof value.title === 'string' ? { title: value.title } : {}), ...(typeof value.objective === 'string' ? { objective: value.objective } : {}),
       ...(value.final === true ? { final: true } : {}), ...(scene(value.scene) ? { scene: scene(value.scene) } : {}),
       lines: recordsOf(value.lines).map(line), ...(typeof value.prompt === 'string' ? { prompt: value.prompt } : {}),
-      options: recordsOf(value.options).map(option),
+      options: recordsOf(value.options).map((entry) => option(entry, textOf(value.id))),
       ...(next !== undefined ? { next } : {}), ...(end(value.end) !== undefined ? { end: end(value.end) } : {})
     };
   };
@@ -122,13 +137,13 @@ export function dialogueData(props: Record<string, unknown>, { course, keys = em
     nodes, endings: recordsOf(props.endings).map(ending),
     speakers: {}, keys, maxPoints: null
   };
-  data.speakers = speakersOf(data, course, assetPath);
+  data.speakers = speakersOf(data, course, assetPath, look);
   data.maxPoints = maxPointsOf(data, explorePaths(data, { env }));
   return data;
 }
 
 // The speakers a dialogue names (its learner, its lines, its cast), with their name, colour and look.
-function speakersOf(data: DialogueData, course: Course | null | undefined, assetPath: (name: string) => string): Record<string, DialogueSpeakerData> {
+function speakersOf(data: DialogueData, course: Course | null | undefined, assetPath: (name: string) => string, look?: DialogueDataOptions['look']): Record<string, DialogueSpeakerData> {
   const named = new Set<string>();
   if (data.learner) named.add(data.learner);
   const lines = (list: readonly DialogueLineData[]) => { for (const line of list) if (line.speaker) named.add(line.speaker); };
@@ -141,14 +156,29 @@ function speakersOf(data: DialogueData, course: Course | null | undefined, asset
   const out: Record<string, DialogueSpeakerData> = {};
   for (const speaker of objectsIn(course?.speakers)) {
     if (!named.has(speaker.id)) continue;
-    const look = isRecord(speaker.look) ? speaker.look : null;
-    const expressions = look && isRecord(look.expressions) ? Object.fromEntries(Object.entries(look.expressions).filter(([, file]) => typeof file === 'string').map(([name, file]) => [name, assetPath(file as string)])) : null;
+    const own = isRecord(speaker.look) ? speaker.look : null;
+    const expressions = own && isRecord(own.expressions) ? Object.fromEntries(Object.entries(own.expressions).filter(([, file]) => typeof file === 'string').map(([name, file]) => [name, assetPath(file as string)])) : null;
+    const drawn = own && typeof own.svg === 'string' ? look?.(speaker.id, own.svg) ?? null : null;
     out[speaker.id] = {
       name: speaker.name,
       ...(speaker.narrator === true ? { narrator: true } : {}),
       ...(typeof speaker.color === 'string' ? { color: speaker.color } : {}),
-      ...(look ? { look: { ...(typeof look.svg === 'string' ? { svg: assetPath(look.svg) } : {}), ...(typeof look.portrait === 'string' ? { portrait: assetPath(look.portrait) } : {}), ...(expressions && Object.keys(expressions).length ? { expressions } : {}) } } : {})
+      ...(own ? { look: { ...(typeof own.svg === 'string' ? { svg: assetPath(own.svg) } : {}), ...(typeof own.portrait === 'string' ? { portrait: assetPath(own.portrait) } : {}), ...(expressions && Object.keys(expressions).length ? { expressions } : {}), ...(drawn ? drawn : {}) } } : {})
     };
   }
   return Object.fromEntries(Object.keys(out).sort().map((id) => [id, out[id]]));
+}
+
+// When a cue falls in its line, in seconds from the line's start, as the timeline resolves an anchor
+// (narration/timeline.ts): the start of its words, or their end (edge end), shifted by offset; a
+// word the line does not say falls back to the line's start or end (E_DIALOGUE_CUE says so).
+export function cueTime(at: DialogueCueData['at'], text: string, voice: LineVoiceData, language?: string): number {
+  const offset = typeof at.offset === 'number' ? at.offset : 0;
+  const end = at.edge === 'end';
+  const clamp = (time: number) => Math.round(Math.max(0, Math.min(voice.duration, time)) * 1000) / 1000;
+  const found = typeof at.word === 'string' ? findPhrase(narrationWords(text, language), at.word, { occurrence: at.occurrence ?? 1, language }) : null;
+  const first = found ? voice.words[found.index] : undefined;
+  const last = found ? voice.words[found.index + found.count - 1] : undefined;
+  if (!first || !last) return clamp((end ? voice.duration : 0) + offset);
+  return clamp((end ? last[2] : first[1]) + offset);
 }

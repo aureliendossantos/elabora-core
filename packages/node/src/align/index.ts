@@ -9,6 +9,7 @@ import type { NarrationAudio } from '@elabora/core/narration/narration';
 import type { Project } from '@elabora/core/project/model';
 import { loadProjectFromDir } from '../project-reader.ts';
 import { setNarrationWords } from '../edit/index.ts';
+import { lineMouth, mouthWords } from '../narration/mouth.ts';
 import type { EditOptions } from '../edit/index.ts';
 import { findMediaTools } from '../media/tools.ts';
 import type { MediaTools } from '../media/tools.ts';
@@ -182,7 +183,9 @@ export async function alignNarration(dir: string, options: AlignOptions = {}, ed
         const aligned = await alignAudio(line.audio, line.text, language, { tools, signal: options.signal });
         if (!aligned) continue;
         result.aligner = aligned.aligner;
-        const seq = await writer.setNarrationWords({ screen: line.screen, line: line.line, language, words: aligned.words, aligner: aligned.aligner, ...(audioHash ? { audioHash } : {}) });
+        // The mouth's envelope follows the words newly timed (D61).
+        const mouth = await lineMouth(tools, line.audio, mouthWords(line.text, sidecar?.duration ?? 0, aligned.words, language)).catch(() => null);
+        const seq = await writer.setNarrationWords({ screen: line.screen, line: line.line, language, words: aligned.words, aligner: aligned.aligner, ...(audioHash ? { audioHash } : {}), ...(mouth !== null ? { mouth } : {}) });
         if (seq !== null) result.changes.push(seq);
         // The words the author heard and ignored for this take (D31) are not reported again.
         const project = writer.project();

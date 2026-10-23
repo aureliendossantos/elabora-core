@@ -468,7 +468,7 @@ export async function generateNarration(dir: string, options: GenerateOptions, e
     for (const [at, info] of run.entries()) {
       const line = said.lines[at];
       await keep(info, voices[at], takes[at], seed, { samples: line.samples, sampleRate: said.sampleRate, model: said.model, credit: said.credits[at], retries: 0, words: line.words }, { dialogue: id, seconds: seconds / run.length, cached: said.cached });
-      if (at > 0 && writer.updateLinePause && Math.abs((info.pauseBefore ?? -1) - line.gap) > 0.04) {
+      if (at > 0 && info.track.kind !== 'dialogue' && writer.updateLinePause && Math.abs((info.pauseBefore ?? -1) - line.gap) > 0.04) {
         const change = await writer.updateLinePause(screen, info.id, line.gap);
         if (change !== null) changes.push(change);
       }

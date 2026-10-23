@@ -18,6 +18,9 @@ import { controlsOf, controlEntity } from '../components/controls.ts';
 import { activityEntity, readLock } from './state-model.ts';
 import type { StateKeys, StateLock, ActivityBehavior } from './state-model.ts';
 import { dialogueData } from '../dialogue/data.ts';
+import { dialogueVoices } from '../dialogue/voices.ts';
+import type { PackagedLines } from '../dialogue/voices.ts';
+import { characterInline } from '../dialogue/character.ts';
 import { dialogueKeys } from '../dialogue/keys.ts';
 import { isRecord, recordOf, recordsOf, textOf, optionalTextOf, isText, isNumber, isOptional, numberOr, isJsonValue, jsonObjectOf } from './values.ts';
 import { objectsIn } from '../util/values.ts';
@@ -70,6 +73,9 @@ export interface CompileContext {
   // elabora.lock.json as the project has it: a dialogue's bit fields count the keys of options
   // removed since (dialogue/keys.ts).
   lock?: StateLock | null;
+  // The audio of each line of a dialogue the build ships (D61; none: the lines' voices from their
+  // sidecars, or estimated, without audio).
+  dialogueAudio?: PackagedLines;
 }
 
 // A screen's narration as the build laid it out: the package paths of its track and captions, and
@@ -89,9 +95,10 @@ export interface CompileOptions {
   delivery?: WebDelivery;
   // The languages of a package of several languages (D59): the language item shows with them.
   languages?: string[];
+  dialogueAudio?: PackagedLines;
 }
 
-export function createCompileContext(project: Project, keys: StateKeys, { assetPath = defaultAssetPath, fields = false, narration, delivery, languages }: CompileOptions = {}): CompileContext {
+export function createCompileContext(project: Project, keys: StateKeys, { assetPath = defaultAssetPath, fields = false, narration, delivery, languages, dialogueAudio }: CompileOptions = {}): CompileContext {
   const course = project.course;
   if (!course) throw new Error('The project has no course.json to compile.');
   const sectionOf = new Map<string, string>();
@@ -100,7 +107,7 @@ export function createCompileContext(project: Project, keys: StateKeys, { assetP
   const config = delivery?.navigation === 'free' ? withItemEnabled(playerConfig(course), 'outline') : playerConfig(course);
   const several = languages && languages.length > 1 ? languages : undefined;
   const player = shownPlayer(config, playerContent(project, { web: !!delivery, languages: several?.length ?? 1 }), { assetPath });
-  return { course, registry: getRegistry(project), planIndex: planIndex(project.plan), tokens: withPlayerTokens(resolveTokens(course)), keys, lock: readLock(project), sectionOf, assetPath, ...(fields ? { fields } : {}), ...(narration ? { narration } : {}), ...(delivery ? { delivery } : {}), player, glossary: glossaryOf(course), ...(several ? { languages: several } : {}) };
+  return { course, registry: getRegistry(project), planIndex: planIndex(project.plan), tokens: withPlayerTokens(resolveTokens(course)), keys, lock: readLock(project), sectionOf, assetPath, ...(fields ? { fields } : {}), ...(narration ? { narration } : {}), ...(delivery ? { delivery } : {}), player, glossary: glossaryOf(course), ...(several ? { languages: several } : {}), ...(dialogueAudio ? { dialogueAudio } : {}) };
 }
 
 // The course's glossary as the player reads it.
@@ -136,8 +143,8 @@ export interface CompiledScreen {
   objects: Map<string, ObjectDefinition>; // by object id
 }
 
-export function compileCourseData(project: Project, keys: StateKeys, { buildId, assetPath, narration, delivery, languages }: { buildId: string } & CompileOptions): CourseData {
-  const context = createCompileContext(project, keys, { assetPath, narration, delivery, languages });
+export function compileCourseData(project: Project, keys: StateKeys, { buildId, assetPath, narration, delivery, languages, dialogueAudio }: { buildId: string } & CompileOptions): CourseData {
+  const context = createCompileContext(project, keys, { assetPath, narration, delivery, languages, dialogueAudio });
   const usedObjects = new Map<string, ObjectDefinition>();
   // A listed screen without its file is reported by the validator (E_SCREEN_NOT_FOUND).
   const screens = screenOrder(project).filter(({ id }) => project.screens.has(id)).map(({ id }) => {
@@ -234,7 +241,7 @@ export function compileScreen(project: Project, screenId: string, context: Compi
     for (const [block, timing] of blockTimings(own)) timings.set(block, timing);
     for (const [block, beat] of blockBeats(own)) beats.set(block, beat);
   }
-  const scope: ScreenScope = { project, context, objects: new Map(), headingBefore, timings, beats };
+  const scope: ScreenScope = { project, screen: screenId, context, objects: new Map(), headingBefore, timings, beats };
   const compileBlocks = (blocks: Block[] | undefined): BlockData[] => objectsIn(blocks).map((block) => compileBlock(block, scope));
   const data: ScreenData = {
     id: screenId, key: context.keys[`screen:${screenId}`], section: context.sectionOf.get(screenId) ?? '', title: screen.title,
@@ -345,6 +352,7 @@ function emptyBlock(block: Block, placement: Partial<Pick<BlockData, 'hidden' | 
 // What compiling the blocks of one screen needs, and the free objects they place.
 interface ScreenScope {
   project: Project;
+  screen: string;
   context: CompileContext;
   objects: Map<string, ObjectDefinition>;
   // Level of the heading before each block (templates' relative headings follow it).
@@ -404,7 +412,7 @@ function compileBlock(block: Block, scope: ScreenScope): BlockData {
     case 'quiz': return { ...head, behavior: 'quiz', ...placement, key: activityKey('quiz'), ...rendered, props: quizProps(props), ...children };
     case 'numeric': return { ...head, behavior: 'numeric', ...placement, key: activityKey('numeric'), ...rendered, props: numericProps(props), ...children };
     case 'decision': return { ...head, behavior: 'decision', ...placement, key: activityKey('decision'), ...rendered, props: decisionProps(props), ...children };
-    case 'dialogue': return { ...head, behavior: 'dialogue', ...placement, key: activityKey('dialogue'), ...rendered, props: dialogueProps(block.id, props, context), ...children };
+    case 'dialogue': return { ...head, behavior: 'dialogue', ...placement, key: activityKey('dialogue'), ...rendered, props: dialogueProps(block.id, props, scope), ...children };
     case 'free-object': {
       // A free object without manifest (E_OBJECT_NOT_FOUND) shows nothing.
       const objectProps = objectBlockProps(props, scope);
@@ -468,11 +476,19 @@ function decisionProps(props: Record<string, unknown>): DecisionProps {
 }
 
 // A dialogue (D61): its graph for the walk, the stage directions left out of what learners read, its
-// Markdown as HTML, its speakers and its keys.
-function dialogueProps(blockId: string, props: Record<string, unknown>, context: CompileContext): DialogueProps {
+// Markdown as HTML, its speakers (their characters' SVG sanitized for the page), its keys, and the
+// voice of each line (its audio in the package, or the estimate) with its cues' times.
+function dialogueProps(blockId: string, props: Record<string, unknown>, scope: ScreenScope): DialogueProps {
+  const { context, project } = scope;
   const variables = new Map(objectsIn(context.course.variables).map((variable) => [variable.id, variable.default]));
   return dialogueData(props, {
     course: context.course, keys: dialogueKeys(blockId, context.keys, context.lock ?? null), assetPath: context.assetPath, directions: 'strip', markdown: (text) => renderMarkdown(text),
+    voice: dialogueVoices(project, scope.screen, { ...(context.dialogueAudio ? { packaged: context.dialogueAudio } : {}) }),
+    look: (speaker, svg) => {
+      const source = readText(project.files, `assets/${svg}`);
+      const drawn = source === null ? null : characterInline(source, speaker);
+      return drawn ? { inline: drawn.inline, manifest: drawn.manifest } : null;
+    },
     env: { variable: (id) => { const value = variables.get(id); return typeof value === 'number' || typeof value === 'boolean' || typeof value === 'string' ? value : undefined; } }
   });
 }

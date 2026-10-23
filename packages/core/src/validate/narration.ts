@@ -4,7 +4,7 @@ import { valuesOfKind } from '../components/props.ts';
 import type { Block } from '../project/model.ts';
 import { narrationLines, screenTiming, lineSpeaker } from '../narration/narration.ts';
 import type { NarrationLineInfo } from '../narration/narration.ts';
-import { voiceLinesOf, trackKey, trackLabel, timelineOf } from '../narration/voice-lines.ts';
+import { voiceLinesOf, trackKey, trackGroup, trackLabel, timelineOf } from '../narration/voice-lines.ts';
 import { lineDirections, playsDirections, withoutDirections } from '../narration/directions.ts';
 import { doubtfulWords, swallowedKey, SWALLOWED_SCORE } from '../narration/words.ts';
 import { fileHash } from '../project/files.ts';
@@ -38,7 +38,8 @@ export function checkScreenNarration(ctx: CourseCheckContext, screen: ScreenFile
     const first = seen.get(line.id);
     if (first !== undefined) reporter.emit('E_NARRATION_LINE_DUPLICATE', { file, path: `${at}/id`, target: id, details: { screen: id, line: line.id, tracks: [first, trackKey(track)] }, message: first === trackKey(track) ? `Screen "${id}" has two lines "${line.id}" in ${trackLabel(track)}.` : `Screen "${id}" has two lines "${line.id}": in ${trackLabel(trackOf(first))} and in ${trackLabel(track)} (ids are unique in the screen, every track counted).` });
     else seen.set(line.id, trackKey(track));
-    if (line.speaker !== undefined && !speakers.has(line.speaker)) reporter.emit('E_NARRATION_SPEAKER', { file, path: `${at}/speaker`, target: id, message: `Line "${line.id}" of screen "${id}": no speaker "${line.speaker}" in course.json speakers${speakers.size ? ` (${[...speakers].join(', ')})` : ''}.` });
+    // A dialogue's speakers are checked with the dialogue (E_DIALOGUE_SPEAKER).
+    if (line.speaker !== undefined && !speakers.has(line.speaker) && track.kind !== 'dialogue') reporter.emit('E_NARRATION_SPEAKER', { file, path: `${at}/speaker`, target: id, message: `Line "${line.id}" of screen "${id}": no speaker "${line.speaker}" in course.json speakers${speakers.size ? ` (${[...speakers].join(', ')})` : ''}.` });
     if (track.kind !== 'screen') continue;
     const step = typeof line.step === 'number' ? line.step : 1;
     if (step < previousStep) reporter.emit('E_NARRATION_STEP_ORDER', { file, path: `${at}/step`, target: id, message: `Line "${line.id}" of screen "${id}" is in step ${step}, after a line of step ${previousStep}.` });
@@ -123,18 +124,19 @@ export function checkNarrationAudio(ctx: CourseCheckContext): void {
     const lines = narrationLines(project, id);
     if (!lines) continue;
     const language = ctx.course.language;
-    // Missing audio, said once per track: a timeline runs silent until every line of it has its audio.
+    // Missing audio, said once per timeline (it runs silent until every line of it has its audio) or
+    // per dialogue.
     const tracks = new Map<string, NarrationLineInfo[]>();
-    for (const line of lines) tracks.set(trackKey(line.track), [...(tracks.get(trackKey(line.track)) ?? []), line]);
+    for (const line of lines) tracks.set(trackGroup(line.track), [...(tracks.get(trackGroup(line.track)) ?? []), line]);
     for (const own of tracks.values()) {
       const missing = own.filter((line) => line.status === 'missing');
       if (!missing.length) continue;
       const which = missing.map((line) => line.id).join(', ');
       const track = own[0].track;
-      const where = track.kind === 'screen' ? `screen "${id}"` : `${trackLabel(track)} (screen "${id}")`;
+      const where = track.kind === 'screen' ? `screen "${id}"` : track.kind === 'dialogue' ? `dialogue "${track.block}" (screen "${id}")` : `${trackLabel(track)} (screen "${id}")`;
       const runs = timelineOf(track) ? `its timeline runs silent, on estimated times` : 'its lines are silent';
       reporter.emit('W_NARRATION_AUDIO_MISSING', {
-        file, path: own[0].path.replace(/\/\d+$/, ''), target: id, measured: missing.length, details: { screen: id, track: trackKey(track), lines: missing.map((line) => line.id) },
+        file, path: track.kind === 'dialogue' ? own[0].path.replace(/\/nodes\/.*$/, '') : own[0].path.replace(/\/\d+$/, ''), target: id, measured: missing.length, details: { screen: id, track: trackGroup(track), lines: missing.map((line) => line.id) },
         message: missing.length === own.length
           ? `${where[0].toUpperCase()}${where.slice(1)} has no narration audio in ${language} yet (${which}): ${runs}.`
           : `${missing.length} of ${own.length} lines of ${where} have no audio in ${language} (${which}): ${runs}${timelineOf(track) ? ', until every line has its audio' : ''}.`

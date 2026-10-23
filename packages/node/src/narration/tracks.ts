@@ -146,6 +146,13 @@ export function decodePcm(tools: MediaTools, file: string): Promise<Buffer> {
   return run(tools, ['-nostdin', '-v', 'error', '-i', file, '-map', '0:a:0', '-vn', '-ac', '1', '-ar', String(SAMPLE_RATE), '-f', 's16le', '-acodec', 'pcm_s16le', 'pipe:1'], null);
 }
 
+// The audio of a file as float samples, mono, at rate samples a second (a line's waveform, its
+// mouth's envelope).
+export async function decodeSamples(tools: MediaTools, file: string, rate: number): Promise<Float32Array> {
+  const bytes = await run(tools, ['-nostdin', '-v', 'error', '-i', file, '-map', '0:a:0', '-vn', '-ac', '1', '-ar', String(rate), '-f', 'f32le', 'pipe:1'], null);
+  return new Float32Array(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength - (bytes.byteLength % 4)));
+}
+
 // Raw samples into an M4A track, written next to its place and moved there once complete.
 export async function encodeTrack(tools: MediaTools, pcm: Buffer, file: string): Promise<void> {
   const temp = `${file}.${process.pid}.tmp`;
