@@ -24,7 +24,7 @@ objects/<id>/…             compiled free objects and their frames
 | Exit | `cmi.core.exit = suspend` from the start; `""` after completion only if `exitAfterCompletion: normal`. Never `logout`. | 1 |
 | Quit | Visible button: commit, `LMSFinish`, end message. | 1 |
 | Status | `reportAs` pair; final status sent when decided; no regression; score 0–100 sent when every scored item is decided. | 13 |
-| Interactions | Quizzes and decisions as `choice` with letters; free-object events as declared (choices with non-letter responses become `performance`). | — |
+| Interactions | Quizzes and decisions as `choice` with letters; fill-ins one per blank (`fill-in` typed, `choice` from menus and words to place), sorts as `matching` (`1.a,2.c`) or `sequencing` (`b,a,c`), reflections as `fill-in` (255 characters, one line) or `likert`; free-object events as declared (choices with non-letter responses become `performance`). | — |
 | Time | `cmi.core.session_time` (HHHH:MM:SS.SS) at every commit. | 14 |
 | State | Compact keyed JSON; worst case checked at build against the strictest profile. | 3, 7 |
 
