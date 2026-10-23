@@ -1,5 +1,5 @@
-import { getSchema, derefSchema, BLOCK_TYPES, isBuiltinBlockType, SCHEMA_VERSION } from '@elabora/format';
-import type { BuiltinBlockType } from '@elabora/format';
+import { getSchema, derefSchema, BLOCK_TYPES, LAYOUT_TYPES, isBuiltinBlockType, isBuiltinLayoutType, isBuiltinType, SCHEMA_VERSION } from '@elabora/format';
+import type { BuiltinBlockType, BuiltinLayoutType } from '@elabora/format';
 import { parseTemplate, analyzeTemplate } from './template.ts';
 import type { ParsedTemplate, TemplateAnalysis } from './template.ts';
 import { BUILTIN_TEMPLATES } from './builtin-templates.generated.ts';
@@ -52,7 +52,20 @@ export const BUILTINS: Readonly<Record<string, { title: string; render: 'templat
   cycle: { title: 'Cycle', render: 'code', behavior: 'chart' },
   matrix: { title: '2 × 2 matrix', render: 'code', behavior: 'chart' },
   milestones: { title: 'Milestones', render: 'code', behavior: 'chart' },
-  diagram: { title: 'Diagram', render: 'code', behavior: 'chart' }
+  diagram: { title: 'Diagram', render: 'code', behavior: 'chart' },
+  // Starter blocks for scroll courses (D63): content and structure.
+  statement: { title: 'Statement', render: 'template' },
+  divider: { title: 'Divider', render: 'template' },
+  gallery: { title: 'Gallery', render: 'template' },
+  columns: { title: 'Columns', render: 'template' }
+};
+
+// Built-in screen layouts (D63): screen-level components shipped with Elabora, their props in
+// layouts/<id>.schema.json, their template in components/builtin/<id>.html, their stylesheet in the
+// player's (elabora.base, under the theme). A screen names one in layout as it names a course
+// layout; a course component may fork one (extends), as it forks a built-in block.
+export const BUILTIN_LAYOUTS: Readonly<Record<string, { title: string; fullBleed: boolean }>> = {
+  opening: { title: 'Opening', fullBleed: true }
 };
 
 export interface BehaviorHooks {
@@ -75,8 +88,14 @@ export const BEHAVIORS: Readonly<Record<Behavior, BehaviorHooks>> = {
   chart: { required: [] }
 };
 // Hooks any template may use: click (a button firing the screen event "click"), toggle/part
-// (disclosure), tabs/tab/panel (tabs), label (a player label, translated by the course language).
-export const PRIMITIVE_HOOKS = ['click', 'toggle', 'part', 'open', 'tabs', 'tab', 'panel', 'selected', 'label'];
+// (disclosure), tabs/tab/panel (tabs), label (a player label, translated by the course language),
+// bleed (on a root element: the block goes edge to edge, D63), compare/compare-label (a before and
+// after slider the player builds, its sides named by their labels).
+export const PRIMITIVE_HOOKS = ['click', 'toggle', 'part', 'open', 'tabs', 'tab', 'panel', 'selected', 'label', 'bleed', 'compare', 'compare-label'];
+// Hooks of screen layouts only (D63): what the player writes about the screen, from its labels.
+// section (the title of the screen's section), lesson (« Leçon 2 sur 6 »), duration (« 6 min », the
+// reading time the build computes for the screen).
+export const LAYOUT_HOOKS = ['section', 'lesson', 'duration'];
 export const BUTTON_HOOKS = ['click', 'toggle', 'tab', 'submit', 'choice', 'retry', 'start'];
 
 // A finding made while resolving a component, reported by the validator.
@@ -128,21 +147,24 @@ export interface ComponentDescriptor {
 export type Registry = Map<string, ComponentDescriptor>;
 
 const builtinCache = new Map<string, ComponentDescriptor>();
-function builtinDescriptor(id: BuiltinBlockType): ComponentDescriptor {
+function builtinDescriptor(id: BuiltinBlockType | BuiltinLayoutType): ComponentDescriptor {
   const cached = builtinCache.get(id);
   if (cached) return cached;
-  const b = BUILTINS[id];
-  const raw = getSchema(`blocks/${id}`);
+  const layout = isBuiltinLayoutType(id) ? BUILTIN_LAYOUTS[id] : null;
+  const b = layout ? { title: layout.title, render: 'template' as const, behavior: undefined } : BUILTINS[id];
+  const folder = layout ? 'layouts' : 'blocks';
+  const raw = getSchema(`${folder}/${id}`);
+  if (!raw) throw new Error(`Built-in schema ${folder}/${id}.schema.json missing: run npm run gen.`);
   const template = b.render === 'template' ? BUILTIN_TEMPLATES[id] : null;
   if (b.render === 'template' && template === undefined) throw new Error(`Built-in template ${id}.html missing: run npm run gen.`);
   // A built-in with slots declares them in its props schema (x-slots), as a component.json does.
   const slots = objectsIn(raw['x-slots'] as ComponentSlot[] | undefined);
   const d: ComponentDescriptor = {
     id, title: b.title, description: String(raw.description ?? ''), instructions: (raw['x-ai-instructions'] as string | undefined) || null, category: (raw['x-category'] as string | undefined) || 'content',
-    version: VERSION, level: 'block', builtin: true, render: b.render, behavior: b.behavior || null, root: id, parent: null, lineage: [id],
+    version: VERSION, level: layout ? 'screen' : 'block', builtin: true, render: b.render, behavior: b.behavior || null, root: id, parent: null, lineage: [id],
     schema: derefSchema(raw), template, templateFrom: template ? id : null, tpl: template ? parseTemplate(template) : null,
-    slots, defaultSlot: defaultSlotOf(slots), fallback: 'self', styles: {}, examples: [], fullBleed: false, css: null, cssChain: [], origin: null, migrations: null,
-    file: `schemas/${SCHEMA_VERSION}/blocks/${id}.schema.json`, templateFile: template ? `src/components/builtin/${id}.html` : null, forkable: b.render === 'template', errors: []
+    slots, defaultSlot: defaultSlotOf(slots), fallback: 'self', styles: {}, examples: [], fullBleed: layout?.fullBleed ?? false, css: null, cssChain: [], origin: null, migrations: null,
+    file: `schemas/${SCHEMA_VERSION}/${folder}/${id}.schema.json`, templateFile: template ? `src/components/builtin/${id}.html` : null, forkable: b.render === 'template', errors: []
   };
   builtinCache.set(id, d);
   return d;
@@ -177,6 +199,7 @@ export function componentHash(c: Pick<ComponentSource, 'manifest' | 'template' |
 export function buildRegistry(project: Pick<Project, 'components'>): Registry {
   const reg: Registry = new Map();
   for (const id of BLOCK_TYPES) reg.set(id, builtinDescriptor(id));
+  for (const id of LAYOUT_TYPES) reg.set(id, builtinDescriptor(id));
   const comps = project.components || new Map<string, ComponentSource>();
   const resolving = new Set<string>();
   const resolve = (id: string): ComponentDescriptor | null => {
@@ -192,7 +215,7 @@ export function buildRegistry(project: Pick<Project, 'components'>): Registry {
     const parentId = m.extends?.component || null;
     let parent: ComponentDescriptor | null = null;
     if (parentId) {
-      parent = isBuiltinBlockType(parentId) ? builtinDescriptor(parentId) : resolve(parentId);
+      parent = isBuiltinBlockType(parentId) || isBuiltinLayoutType(parentId) ? builtinDescriptor(parentId) : resolve(parentId);
       if (!parent) errors.push({ code: 'E_COMPONENT_EXTENDS', file, path: '/extends/component', message: `Component "${id}" extends "${parentId}", which does not exist.` });
       else if (parent.render === 'code') { errors.push({ code: 'E_COMPONENT_EXTENDS', file, path: '/extends/component', message: `"${parentId}" is rendered by code and cannot be forked: place it in a slot of your component instead.` }); parent = null; }
     }
@@ -221,7 +244,7 @@ export function buildRegistry(project: Pick<Project, 'components'>): Registry {
     return d;
   };
   for (const id of comps.keys()) {
-    if (isBuiltinBlockType(id)) continue; // reported by the validator (reserved name)
+    if (isBuiltinType(id)) continue; // reported by the validator (reserved name)
     resolve(id);
   }
   return reg;

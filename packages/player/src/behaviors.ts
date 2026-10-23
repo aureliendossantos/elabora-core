@@ -159,7 +159,30 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
         });
       });
     }
+    for (const box of findHooks(root, 'compare')) compare(box);
     syncVisited(root, owner);
+  }
+  // Before and after (data-t-compare, D63): a native range the player adds over the two images. Its
+  // value, where the line between them is (0 to 100), goes to --t-compare on the container (the
+  // stylesheet clips the second image there). The keyboard is the range's own (arrows, Home, End,
+  // Page Up and Down); it is named by the two sides' labels (data-t-compare-label), else Before and
+  // After, and says how much of each shows.
+  function compare(box: HTMLElement) {
+    if (box.querySelector(':scope > .t-compare-range')) return;
+    // The sides are the container's children, the first before, the last after.
+    const sides = [...box.children];
+    const labelOf = (side: Element | undefined) => side?.querySelector('[data-t-compare-label]')?.textContent?.trim() || '';
+    const before = labelOf(sides[0]) || labels.before;
+    const after = (sides.length > 1 ? labelOf(sides[sides.length - 1]) : '') || labels.after;
+    const range = element('input', { type: 'range', class: 't-compare-range', min: '0', max: '100', step: '1', value: '50', 'aria-label': formatLabel(labels.compare, { before, after }) }) as HTMLInputElement;
+    const set = () => {
+      const at = Number(range.value);
+      box.style.setProperty('--t-compare', `${at}%`);
+      range.setAttribute('aria-valuetext', formatLabel(labels.compareValue, { before, after, a: at, b: 100 - at }));
+    };
+    range.addEventListener('input', set);
+    set();
+    box.append(range);
   }
   // Tabs and disclosures count as visited once their content is shown, without a click: the
   // selected tab (or open part) of a block in view, not in a pending step nor concealed. The player

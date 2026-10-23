@@ -72,6 +72,10 @@ export const CODES = {
   W_DECISION_WITHOUT_CONSEQUENCE: { severity: 'warning', title: 'Decision without consequence', fix: 'Give each option feedback or an event (show a layer, go to a screen).', rule: 'D3' },
   W_UNREACHABLE_LAYER: { severity: 'warning', title: 'Layer never shown', fix: 'Add a show-layer action or remove the layer.' },
   W_COMPLETION_MISMATCH: { severity: 'warning', title: 'Screen completes before its activity', fix: 'Use completeWhen: "interactions-done" on screens with quizzes, decisions or free objects.' },
+  // Starter blocks (D63).
+  W_QUOTE_REPEATS: { severity: 'warning', title: 'Statement that repeats a text of its screen', fix: 'A statement (or a quotation) whose words are also in a text block of the screen reads twice, as a decorative pull quote does: say it once. Keep the statement for the one idea to remember and cut the sentence from the text, or keep the text and remove the statement.', rule: 'E4' },
+  W_COLUMNS_HIDDEN: { severity: 'warning', title: 'Block in a column that is not shown', fix: 'Columns with count 2 show the slots first and second only: move the block into one of them, or set count to 3.' },
+  E_GALLERY_COMPARE: { severity: 'error', title: 'Before and after without exactly two images', fix: 'A gallery in the compare presentation shows two images, the first before and the second after: keep two, or choose grid or mosaic for more.' },
 
   // ── Accessibility ──────────────────────────────────────────────────
   E_IMAGE_ALT_MISSING: { severity: 'error', title: 'Image without text alternative', fix: 'Write alt as the information the image carries, or set decorative: true if it carries none.', rule: 'F3' },

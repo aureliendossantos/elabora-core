@@ -3,10 +3,10 @@ import type { ErrorObject, ValidateFunction } from 'ajv/dist/2020.js';
 import formats from 'ajv-formats';
 import type { JsonSchema } from './json-schema.ts';
 import type { Block, BuiltinBlock, BuiltinBlockType } from './types.generated.ts';
-import { BLOCK_TYPES, SCHEMA_VERSION, SCHEMAS } from './schemas.generated.ts';
-import type { SchemaName } from './schemas.generated.ts';
+import { BLOCK_TYPES, LAYOUT_TYPES, SCHEMA_VERSION, SCHEMAS } from './schemas.generated.ts';
+import type { BuiltinLayoutType, SchemaName } from './schemas.generated.ts';
 
-export type { ErrorObject, SchemaName, ValidateFunction };
+export type { BuiltinLayoutType, ErrorObject, SchemaName, ValidateFunction };
 export { SCHEMA_VERSION };
 export const FORMAT = `elabora/${SCHEMA_VERSION}` as const;
 export const SCHEMA_BASE = `https://elabora.studio/schemas/${SCHEMA_VERSION}/` as const;
@@ -18,6 +18,18 @@ const builtinTypes: ReadonlySet<string> = new Set(BLOCK_TYPES);
 export function isBuiltinBlockType(type: unknown): type is BuiltinBlockType {
   return typeof type === 'string' && builtinTypes.has(type);
 }
+
+// Built-in screen layouts (layouts/<id>.schema.json): a screen's layout names one of them or a
+// screen-level course component.
+export { LAYOUT_TYPES };
+const builtinLayouts: ReadonlySet<string> = new Set(LAYOUT_TYPES);
+
+export function isBuiltinLayoutType(type: unknown): type is BuiltinLayoutType {
+  return typeof type === 'string' && builtinLayouts.has(type);
+}
+
+// A name Elabora ships, as a block type or a screen layout: course components cannot take it.
+export const isBuiltinType = (type: unknown): boolean => isBuiltinBlockType(type) || isBuiltinLayoutType(type);
 
 // The type of a block selects the schema of its props, so a block that passed validation with a
 // built-in type has the props of that type.

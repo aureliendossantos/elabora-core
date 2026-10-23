@@ -30,7 +30,7 @@ const TYPE_NAMES: Record<string, string> = {
 const PREFIXES: Record<string, string> = { ComponentManifest: 'Component', ObjectManifest: 'Object', ObjectTests: 'Object' };
 const PLACE_NAMES: Record<string, string> = { ObjectObject: 'ObjectPart', PlanItemLockedText: 'LockedText', PlanDecided: 'PlanDecision', PlanVersionSend: 'PlanSend' };
 // Order of the schemas in types.generated.ts; others follow by name.
-const ORDER = ['defs', 'course', 'plan', 'plan-version', 'plan-notes', 'screen', 'block', 'blocks/', 'event', 'component', 'object-manifest', 'object-tests', 'diagnostic', 'lms-profile'];
+const ORDER = ['defs', 'course', 'plan', 'plan-version', 'plan-notes', 'screen', 'block', 'blocks/', 'layouts/', 'event', 'component', 'object-manifest', 'object-tests', 'diagnostic', 'lms-profile'];
 
 // Keywords the generator understands. Any other keyword (except x-* annotations) stops it, rather
 // than producing a type that silently accepts too much.
@@ -89,7 +89,7 @@ function typesModule(files: SchemaFile[]): string {
   const declarations = new Map<string, Declaration>();
   let section = '';
 
-  const rootName = (file: SchemaFile) => TYPE_NAMES[file.name] ?? (file.name.startsWith('blocks/') ? `${pascal(file.name.slice('blocks/'.length))}Props` : pascal(file.name));
+  const rootName = (file: SchemaFile) => TYPE_NAMES[file.name] ?? (file.name.startsWith('blocks/') ? `${pascal(file.name.slice('blocks/'.length))}Props` : file.name.startsWith('layouts/') ? `${pascal(file.name.slice('layouts/'.length))}LayoutProps` : pascal(file.name));
   const defName = (file: SchemaFile, def: string) => TYPE_NAMES[`${file.name}#${def}`] ?? pascal(def);
 
   // The same name made from something else is a clash.
@@ -442,6 +442,8 @@ function schemasModule(files: SchemaFile[]): string {
   const block = files.find((f) => f.name === 'block');
   const dispatch = block && dispatchOf(block.schema);
   if (!dispatch) throw new Error('block.schema.json must dispatch props on type (allOf of if/then)');
+  // Built-in screen layouts: one schema each in layouts/, named by the layout.
+  const layouts = files.filter((f) => f.name.startsWith('layouts/')).map((f) => f.name.slice('layouts/'.length));
   const variable = (f: SchemaFile) => `${camel(f.name)}Schema`;
   const names = files.map((f) => `  | ${printValue(f.name)}`).join('\n');
   return `${HEADER}import type { JsonSchema } from './json-schema.ts';
@@ -460,6 +462,12 @@ ${files.map((f) => `  ${printKey(f.name)}: ${variable(f)}`).join(',\n')}
 
 /** Built-in block types (the native catalogue), in the order of block.schema.json. */
 export const BLOCK_TYPES: readonly BuiltinBlockType[] = [${dispatch.variants.map((v) => printValue(v.value)).join(', ')}];
+
+/** A built-in screen layout (layouts/<id>.schema.json). */
+export type BuiltinLayoutType = ${layouts.map(printValue).join(' | ') || 'never'};
+
+/** Built-in screen layouts, by name. */
+export const LAYOUT_TYPES: readonly BuiltinLayoutType[] = [${layouts.map(printValue).join(', ')}];
 `;
 }
 

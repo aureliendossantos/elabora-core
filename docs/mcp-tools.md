@@ -450,7 +450,7 @@ Edit a block by id (anywhere, slots included): props are merged (a prop set to n
 | `block` | string | yes |  |
 | `props` | object |  |  |
 | `hidden` | boolean |  |  |
-| `width` | "full" \| "wide" \| "half" |  |  |
+| `width` | "full" \| "wide" \| "half" \| "bleed" |  |  |
 | `note` | string |  |  |
 | `slot` | string \| null |  |  |
 | `style` | string \| null |  |  |

@@ -5,6 +5,9 @@ export {
   SCHEMA_BASE,
   BLOCK_TYPES,
   isBuiltinBlockType,
+  LAYOUT_TYPES,
+  isBuiltinLayoutType,
+  isBuiltinType,
   isBuiltinBlock,
   getAjv,
   getSchema,
@@ -14,6 +17,6 @@ export {
   derefSchema,
   simplifyErrors
 } from './schemas.ts';
-export type { SchemaName, SchemaError, ErrorObject, ValidateFunction } from './schemas.ts';
+export type { SchemaName, SchemaError, ErrorObject, ValidateFunction, BuiltinLayoutType } from './schemas.ts';
 export type { JsonSchema } from './json-schema.ts';
 export type * from './types.generated.ts';

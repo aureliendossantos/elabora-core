@@ -82,6 +82,13 @@ export function createScreenView(options: ScreenViewOptions) {
   let timed: TimedBlocks | null = null;
   const shownStep = () => (timeline ? Math.min(revealed, timeline.displayStep()) : revealed);
 
+  // Blocks that go edge to edge (width bleed, a template's data-t-bleed, D63) are as wide as the
+  // screen's area: #t-main without the window's scrollbar, which 100vw would count. Kept on #t-main as
+  // --t-page-width (its own CSS px: the learner's text size zooms it as a whole).
+  const pageWidth = () => main.style.setProperty('--t-page-width', `${main.clientWidth}px`);
+  pageWidth();
+  if (typeof ResizeObserver === 'function') new ResizeObserver(pageWidth).observe(main);
+
   // ── Steps ─────────────────────────────────────────────────────────────
   // Blocks of a screen may carry a step; Continue reveals the next one before leaving the screen.
   // A pending step takes no room in scroll presentation and keeps its place in slides (the view
@@ -513,10 +520,23 @@ export function createScreenView(options: ScreenViewOptions) {
     else {
       article.innerHTML = layout.html;
       behaviors.primitives(article, { id: shown.id });
+      layoutHooks(article, layout);
       const titleHost = article.querySelector('[data-title]');
       if (titleHost) titleHost.append(title); else article.prepend(title);
     }
     return article;
+  }
+  // What a layout says about its screen (D63), in the course's words: its section, its rank
+  // (« Leçon 2 sur 6 ») and its reading time (« 6 min », named for screen readers).
+  function layoutHooks(article: HTMLElement, layout: NonNullable<ScreenData['layout']>) {
+    const fill = (hook: string, write: (node: HTMLElement) => void) => { for (const node of article.querySelectorAll<HTMLElement>(`[data-t-${hook}]`)) if (!node.textContent?.trim()) write(node); };
+    const place = layout.place;
+    fill('section', (node) => { node.textContent = place?.section ?? ''; });
+    fill('lesson', (node) => { node.textContent = place ? options.formatLabel(labels.lessonOf, { n: place.n, total: place.total }) : ''; });
+    fill('duration', (node) => {
+      if (layout.minutes === undefined) return;
+      node.append(element('span', { class: 't-sr-only', text: `${labels.readingTime}${labels.colon}` }), options.formatLabel(labels.minutes, { n: layout.minutes }));
+    });
   }
 
   // ── Room for answers (slides) ─────────────────────────────────────────
@@ -666,6 +686,8 @@ export function createScreenView(options: ScreenViewOptions) {
     syncInert(wrap);
     if (block.html != null) {
       wrap.innerHTML = block.html;
+      // A template asks to go edge to edge from its root (an image band, D63), as width bleed does.
+      if (wrap.querySelector(':scope > [data-t-bleed]')) wrap.classList.add('t-w-bleed');
       // Behaviours bind before the slots are filled: hooks of nested blocks belong to those blocks.
       behaviors.primitives(wrap, block);
       behaviors.bind(wrap, block);
@@ -1233,6 +1255,9 @@ export function createScreenView(options: ScreenViewOptions) {
       const images = [...document.querySelectorAll<HTMLImageElement>('#t-main img, dialog img')];
       for (const image of images) image.loading = 'eager';
       await Promise.all(images.map((image) => (image.complete ? null : new Promise((resolve) => { image.addEventListener('load', resolve, { once: true }); image.addEventListener('error', resolve, { once: true }); setTimeout(resolve, timeout); }))));
+      // Loaded is not drawn: a large photograph (a band, a cover) is decoded first, or a capture of
+      // the whole page may find its place still empty.
+      await Promise.all(images.map((image) => (image.complete && image.naturalWidth ? image.decode().catch(() => {}) : null)));
       await Promise.race([document.fonts?.ready, new Promise((resolve) => setTimeout(resolve, timeout))]);
       await new Promise((resolve) => requestAnimationFrame(resolve));
       for (const fit of roomFits) fit();

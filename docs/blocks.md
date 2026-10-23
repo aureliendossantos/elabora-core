@@ -18,9 +18,9 @@ Template `packages/core/src/components/builtin/heading.html`: fork it to change 
 
 ## `text` (content)
 
-Rich text in the Elabora Markdown subset.
+Rich text in the Elabora Markdown subset, with an optional note in the margin (aside): beside the text on wide windows, after it, indented, on narrow ones.
 
-> Short paragraphs, conversational 'you' (E6), no decorative anecdotes (E1). Keep a screen under about 250 words (E3). When the plan has a locked text, use textRef instead of copying it.
+> Short paragraphs, conversational 'you' (E6), no decorative anecdotes (E1). Keep a screen under about 250 words (E3). When the plan has a locked text, use textRef instead of copying it. aside: a margin note of one or two sentences (a word explained, a source, a nuance); the text must read without it.
 
 Template `packages/core/src/components/builtin/text.html`: fork it to change the markup.
 
@@ -28,22 +28,30 @@ Template `packages/core/src/components/builtin/text.html`: fork it to change the
 |---|---|---|---|
 | `markdown` | markdown |  | Text content. Use markdown or textRef, not both. |
 | `textRef` | planId |  | Id of a validated text of the plan: the block shows the plan's wording, and rewording it writes the plan. |
+| `aside` | markdown |  | A note in the margin: beside the text on wide windows, after it, indented, on narrow ones; read after the text by screen readers. |
 
 ## `image` (content)
 
-An image from the assets folder.
+An image from the assets folder, in one of five presentations: centered (in the reading column, the default), wide (wider than the text), band (edge to edge, cropped to a height around its focal point), beside (a title and a text beside it, stacked on narrow screens) or over (a title and a text over it, edge to edge, on the theme's scrim).
 
-> Only images with an instructional function (E1). Write alt as the information the image carries, not its file name. Mark purely decorative images decorative: true. Generated images must be marked generated: true (AI Act art. 50).
+> Only images with an instructional function (E1): a figure that explains, a situation the learner will recognise, the object studied. Write alt as the information the image carries, not its file name; decorative: true only when it carries none. Generated images must be marked generated: true (AI Act art. 50). Presentations: centered for most figures; wide for a figure whose detail needs room (a map, a diagram); band to open or separate the parts of a long page, not as decoration between paragraphs; beside to explain one picture in a few sentences; over for a short title and one or two sentences on a photograph that sets the scene (the text must stay readable: elabora fit measures it). Give focus where the subject is when the image is cropped (band, over, beside on phones).
 
 Template `packages/core/src/components/builtin/image.html`: fork it to change the markup.
 
 | Prop | Type | Required | Description |
 |---|---|---|---|
+| `presentation` | "centered" \| "wide" \| "band" \| "beside" \| "over" |  | centered: in the reading column, as it is; wide: across the wide column; band: edge to edge of the window (of the slide in slides), cropped to height around focus; beside: title and markdown beside the image, which takes share of the width on side (stacked under it on narrow screens); over: title and markdown over the image, edge to edge, on the theme's scrim. Default "centered". |
 | `asset` | assetPath | yes |  |
 | `alt` | string |  | Text alternative. Required unless decorative is true. |
 | `decorative` | boolean |  | True only if the image carries no information. Default false. |
 | `caption` | string |  |  |
 | `generated` | boolean |  | True if produced by an AI model; the player shows a mark and the build report lists it. Default false. |
+| `focus` | focus |  | Where the subject is (0 to 1 across and down): crops keep it in view (band, over, beside on phones). |
+| `title` | string |  | beside and over: a heading for the text (it follows the page's headings). |
+| `markdown` | markdown |  | beside and over: the text that goes with the image. Over an image, keep it to one or two sentences. |
+| `side` | "start" \| "end" |  | beside: the side of the image (start: left in left-to-right languages). Default "start". |
+| `share` | "half" \| "third" \| "two-thirds" |  | beside: the share of the width the image takes. Default "half". |
+| `height` | "medium" \| "short" \| "tall" |  | band and over: how tall the image is (the crop keeps focus in view). Over grows with its text. Default "medium". |
 | `inline` | boolean |  | SVG only: the drawing goes into the page instead of an &lt;img&gt;, so that the draw effect of a timing traces its strokes and the theme's CSS and currentColor reach its shapes. Sanitized when it is built: no script, no event handler, no link or reference out of the drawing; its ids prefixed with the block's, its own &lt;style&gt; scoped to it. Named by alt (role img), or hidden when decorative. Keep it for figures that need it: an inline drawing is part of the page's weight. Default false. |
 
 ## `video` (content)
@@ -528,3 +536,95 @@ Rendered by code: cannot be forked; place it in a component slot.
 | `highlight` | string |  | Id of the node that carries the idea (an outcome): it takes the accent colour. |
 | `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
 | `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
+
+## `statement` (content)
+
+A statement (« Énoncé »): the one idea of a page to remember, set large. Presentations: statement (large text), ruled (between two rules), quote (a quotation mark before it) and image (over a picture, edge to edge, on the theme's scrim). With an author it is a quotation in every presentation: a figure with its blockquote and a caption naming the author, their role, and an optional round portrait.
+
+> One statement per page at most, for the idea the learner must keep (a rule, a principle, the takeaway of a case), in one or two sentences. Never repeat a sentence of the page as a pull quote: a statement whose words are also in a text block of the screen is reported (W_QUOTE_REPEATS); say it once, here or there. A quotation needs a real author (author, role) and the exact words. Use the image presentation only with a photograph that carries the idea, and keep the text short: elabora fit measures its contrast on the scrim. When the plan has a locked text, use textRef.
+
+Template `packages/core/src/components/builtin/statement.html`: fork it to change the markup.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `presentation` | "statement" \| "ruled" \| "quote" \| "image" |  | statement: large text; ruled: between two rules; quote: a quotation mark before it; image: over image, edge to edge of the window (of the slide in slides), on the theme's scrim. Default "statement". |
+| `markdown` | markdown |  | The statement, one or two sentences. Use markdown or textRef, not both. |
+| `textRef` | planId |  | Id of a validated text of the plan: the statement shows the plan's wording. |
+| `author` | string |  | Who said or wrote it: the statement becomes a quotation (figure, blockquote, caption). |
+| `role` | string |  | With author: who they are (their role, a book, a date). |
+| `portrait` | assetPath |  | With author: a portrait shown round beside the caption. Decorative: the caption names the person. |
+| `image` | assetPath |  | image presentation: the picture under the text. |
+| `alt` | string |  | image presentation: what the picture shows. Required unless decorative is true. |
+| `decorative` | boolean |  | image presentation: true when the picture carries no information beyond the text. Default false. |
+| `generated` | boolean |  | True if the picture or the portrait was produced by an AI model; the player shows a mark and the build report lists it. Default false. |
+| `focus` | focus |  | image presentation: where the subject of the picture is, kept in view when it is cropped. |
+| `align` | "center" \| "start" |  | Where the text sits: centred, or at the start of the line. Default "center". |
+
+## `divider` (structure)
+
+A divider (« Séparateur ») between the parts of a long page: line (a thin rule, a separator for screen readers), ornament (the theme's drawing, a small mark by default), number (the number of the part, counted on the page: 01, 02…) or space (room only). Decoration: screen readers skip it, except a line, which is an &lt;hr&gt;.
+
+> Use dividers to mark a pause between the parts of a long scroll page, where a heading would be too much; never one after every paragraph. A number divider opens each part of a page that has three or more (restart: true starts the count again). A part that has a name needs a heading, not a divider.
+
+Template `packages/core/src/components/builtin/divider.html`: fork it to change the markup.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `presentation` | "line" \| "ornament" \| "number" \| "space" |  | line: a thin rule; ornament: the theme's drawing (a small mark by default); number: the part's number, counted from the first number divider of the screen (01, 02…); space: room only. Default "line". |
+| `size` | "medium" \| "small" \| "large" |  | How much room it takes above and below. Default "medium". |
+| `restart` | boolean |  | number: count from 01 again here. Default false. |
+
+## `gallery` (content)
+
+A gallery (« Galerie »): several images shown together. Presentations: grid (in columns, cropped to one ratio), mosaic (in columns at their own proportions), carousel (one at a time; until the player has its sequence, it shows as a grid) and compare (exactly two images, the second over the first, with a slider to move between them: before and after).
+
+> Use a gallery when the images are read together: variants to compare, examples of one category, the steps of a result. Each image needs alt (what it shows that matters here) unless it is decorative, and a caption when the learner must tell the images apart. compare takes exactly two images of the same framing: the first is before (or left), the second after. Keep grids to 2 to 8 images; more belong in separate parts.
+
+Template `packages/core/src/components/builtin/gallery.html`: fork it to change the markup.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `presentation` | "grid" \| "mosaic" \| "carousel" \| "compare" |  | grid: columns of images cropped to ratio; mosaic: columns of images at their own proportions; carousel: one image at a time (shown as a grid for now); compare: two images, one over the other, and a slider between them. Default "grid". |
+| `images` | array | yes | The images, in reading order. |
+| `columns` | integer |  | grid and mosaic: columns on wide screens (fewer on narrow ones). Default 3. |
+| `ratio` | "4:3" \| "1:1" \| "3:2" \| "16:9" \| "3:4" |  | grid: the shape every image is cropped to, around its focus. Default "4:3". |
+| `caption` | string |  | A caption for the whole gallery. |
+| `generated` | boolean |  | True if images of the gallery were produced by an AI model; the player shows a mark and the build report lists it. Default false. |
+
+## `columns` (structure)
+
+Columns (« Colonnes »): two or three columns of blocks side by side (slots first, second, third), stacked in reading order on narrow screens. Use it for content read side by side: two cases compared, a figure and its explanation, three short points.
+
+> Columns for content the learner compares or reads together, each column short (a heading, a paragraph, an image). Reading order is first, then second, then third: write each column so it reads after the one before when they stack on a phone. Not for long text: a column narrower than about 45 characters is hard to read. With count 2, put nothing in third.
+
+Template `packages/core/src/components/builtin/columns.html`: fork it to change the markup.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `count` | 2 \| 3 |  | Two or three columns. Default 2. |
+| `widths` | "equal" \| "wide-start" \| "wide-end" |  | equal; wide-start: the first column is twice as wide; wide-end: the last column is twice as wide. Default "equal". |
+| `align` | "start" \| "center" |  | Vertical alignment of the columns: at their top, or centred on each other. Default "start". |
+
+# Built-in screen layouts
+
+Generated from `packages/format/schemas/0.1/layouts/`. A screen uses one with `"layout": "<id>"` and its `layoutProps`; blocks choose a slot with `slot` (docs/components.md).
+
+## `opening` (layout)
+
+An opening (« Ouverture »), a built-in screen layout: the head of a lesson, then its page. The head holds an eyebrow (the section and « Leçon 2 sur 6 » unless you write one), the screen's title, a lead and the reading time; presentations: title (the head alone, in the reading column), band (the title over an image edge to edge, on the theme's scrim), split (the title and the lead beside the image) and cover (the first view of the page: the image fills the window, the title over it). Its slots: question, a question asked before the lesson (a quiz or a reflection), and body, the page (the default slot), laid out as the default column.
+
+> One opening per lesson page, on the first screen of a lesson; the rest of the page goes in body. Leave eyebrow empty: the player writes the section and the lesson number. lead: one or two sentences that say what the learner will be able to do or why it matters, not a summary. An image must set the scene of the lesson (alt unless decorative); without one, use title. A pre-question in question primes the lesson: ask what the lesson answers, unscored. band and cover put the title over the image: elabora fit measures its contrast.
+
+Template `packages/core/src/components/builtin/opening.html`: fork it (a screen-level component that extends it) to change the markup. Slots: `question` (quiz, reflection), `body` (default).
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `presentation` | "title" \| "band" \| "split" \| "cover" |  | title: the head alone, in the reading column; band: the title over image, edge to edge, on the theme's scrim; split: the title and lead beside image; cover: image fills the first view of the page, the title over it. Default "title". |
+| `eyebrow` | string |  | A short line above the title. Empty: the player writes the section's title and « Leçon {n} sur {total} ». |
+| `lead` | markdown |  | One or two sentences under the title: what the lesson brings. |
+| `image` | assetPath |  | band, split and cover: the picture of the lesson. |
+| `alt` | string |  | What the picture shows. Required with an image unless decorative is true. |
+| `decorative` | boolean |  | True when the picture carries no information. Default false. |
+| `generated` | boolean |  | True if the picture was produced by an AI model; the player shows a mark and the build report lists it. Default false. |
+| `focus` | focus |  | Where the subject of the picture is, kept in view when it is cropped. |
+| `duration` | boolean |  | Show the reading time of the page (« 6 min »), computed by the build from its words, its media and its narration. Default true. |

@@ -6,7 +6,7 @@ import { CODES } from '@elabora/core/diagnostics/codes';
 import { RULES } from '@elabora/core/diagnostics/rules';
 import type { CodeInfo } from '@elabora/core/diagnostics/codes';
 import { listProfiles } from '@elabora/core/lms/profiles';
-import { getSchema, BLOCK_TYPES, SCHEMA_VERSION } from '@elabora/format/schemas';
+import { getSchema, BLOCK_TYPES, LAYOUT_TYPES, SCHEMA_VERSION } from '@elabora/format/schemas';
 import type { JsonSchema } from '@elabora/format';
 import { BUILTINS, BEHAVIORS } from '@elabora/core/components/registry';
 import { GROUPS } from '@elabora/cli/main';
@@ -43,6 +43,18 @@ for (const t of BLOCK_TYPES) {
   const bh = bi.behavior && BEHAVIORS[bi.behavior];
   const how = bi.render === 'code' ? 'Rendered by code: cannot be forked; place it in a component slot.' : `Template \`packages/core/src/components/builtin/${t}.html\`: fork it to change the markup${bh ? `; the fork keeps the ${bi.behavior} behaviour and must provide ${bh.required.length ? bh.required.map((h) => `\`data-t-${h}\``).join(', ') : `one of ${(bh.anyOf ?? []).map((h) => `\`data-t-${h}\``).join(', ')}`}` : ''}.`;
   b += `\n## \`${t}\` (${s['x-category']})\n\n${prose(s.description)}\n\n${s['x-ai-instructions'] ? `> ${prose(s['x-ai-instructions'])}\n\n` : ''}${how}\n\n| Prop | Type | Required | Description |\n|---|---|---|---|\n`;
+  for (const [k, property] of Object.entries(s.properties || {})) {
+    const v: JsonSchema = typeof property === 'boolean' ? {} : property;
+    const type = v.enum ? v.enum.map((e) => JSON.stringify(e)).join(' \\| ') : v.$ref ? v.$ref.split('/').pop() : v.type || 'object';
+    b += `| \`${k}\` | ${type} | ${(s.required || []).includes(k) ? 'yes' : ''} | ${cell(v.description || '')}${v.default !== undefined ? ` Default ${JSON.stringify(v.default)}.` : ''} |\n`;
+  }
+}
+// Built-in screen layouts (D63): a screen names one in layout; their slots are in their schema (x-slots).
+b += `\n# Built-in screen layouts\n\nGenerated from \`packages/format/schemas/${SCHEMA_VERSION}/layouts/\`. A screen uses one with \`"layout": "<id>"\` and its \`layoutProps\`; blocks choose a slot with \`slot\` (docs/components.md).\n`;
+for (const t of LAYOUT_TYPES) {
+  const s = getSchema(`layouts/${t}`);
+  const slots = (s['x-slots'] as { id: string; description?: string; default?: boolean; accepts?: string[] }[] | undefined) ?? [];
+  b += `\n## \`${t}\` (${s['x-category']})\n\n${prose(s.description)}\n\n${s['x-ai-instructions'] ? `> ${prose(s['x-ai-instructions'])}\n\n` : ''}Template \`packages/core/src/components/builtin/${t}.html\`: fork it (a screen-level component that extends it) to change the markup. Slots: ${slots.map((slot) => `\`${slot.id}\`${slot.default ? ' (default)' : ''}${slot.accepts ? ` (${slot.accepts.join(', ')})` : ''}`).join(', ')}.\n\n| Prop | Type | Required | Description |\n|---|---|---|---|\n`;
   for (const [k, property] of Object.entries(s.properties || {})) {
     const v: JsonSchema = typeof property === 'boolean' ? {} : property;
     const type = v.enum ? v.enum.map((e) => JSON.stringify(e)).join(' \\| ') : v.$ref ? v.$ref.split('/').pop() : v.type || 'object';

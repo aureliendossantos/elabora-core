@@ -692,6 +692,8 @@ function buildReport({ project, course, plan, registry, profiles, keys, suspendD
   });
   const generated: BuildReport['generatedMedia'] = [];
   for (const { block, screen } of iterateBlocks(project)) if (block.props?.generated) generated.push({ screen: screen.id, block: block.id, type: block.type });
+  // A layout's picture (an opening's, D63), named by its layout.
+  for (const [id, { data: screen }] of project.screens) if (screen.layout && screen.layoutProps?.generated === true) generated.push({ screen: id, block: 'layout', type: screen.layout });
   // A narration spoken by a generated voice (its lines' sidecars say so).
   for (const screen of data.screens) if (screen.narration?.generated && screen.narration.src) generated.push({ screen: screen.id, block: 'narration', type: 'voice' });
   // The dialogues said by a generated voice (D61): one entry per dialogue.

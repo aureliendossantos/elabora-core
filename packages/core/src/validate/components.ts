@@ -1,6 +1,6 @@
-import { validateSchema, compileInline, BLOCK_TYPES, isBuiltinBlockType } from '@elabora/format';
+import { validateSchema, compileInline, BLOCK_TYPES, isBuiltinBlockType, isBuiltinLayoutType } from '@elabora/format';
 import type { ValidateFunction, ErrorObject } from '@elabora/format';
-import { getRegistry, analysisOf, stylesOf, componentHash, BEHAVIORS, PRIMITIVE_HOOKS, BUTTON_HOOKS } from '../components/registry.ts';
+import { getRegistry, analysisOf, stylesOf, componentHash, BEHAVIORS, PRIMITIVE_HOOKS, LAYOUT_HOOKS, BUTTON_HOOKS } from '../components/registry.ts';
 import type { ComponentDescriptor } from '../components/registry.ts';
 import { CONTROL_NAME } from '../components/controls.ts';
 import { kindOf, renderTemplate } from '../components/template.ts';
@@ -66,7 +66,7 @@ export function checkComponents(ctx: CourseCheckContext): void {
   const { project, reporter, registry } = ctx;
   for (const source of project.components.values()) {
     const file = `components/${source.id}/component.json`;
-    if (isBuiltinBlockType(source.id)) { reporter.emit('E_COMPONENT_ID', { file, target: source.id, message: `"${source.id}" is a built-in type: fork it under another id (extends: { component: "${source.id}" }).` }); continue; }
+    if (isBuiltinBlockType(source.id) || isBuiltinLayoutType(source.id)) { reporter.emit('E_COMPONENT_ID', { file, target: source.id, message: `"${source.id}" is a built-in ${isBuiltinLayoutType(source.id) ? 'screen layout' : 'type'}: fork it under another id (extends: { component: "${source.id}" }).` }); continue; }
     if (!source.manifest) continue;
     for (const error of validateSchema('component', source.manifest)) reporter.emit('E_SCHEMA', { file, path: error.path, target: source.id, message: `${error.path || '/'}: ${error.message} (schema component)` });
     if (source.manifest.id && source.manifest.id !== source.id) reporter.emit('E_COMPONENT_ID', { file, path: '/id', target: source.id, message: `Component id "${source.manifest.id}" differs from its folder "${source.id}".` });
@@ -144,7 +144,7 @@ export function checkTemplate(ctx: Pick<CheckContext, 'project' | 'reporter'>, c
   const at = (line: number | null | undefined) => (line ? `line ${line}` : undefined);
   const report = (code: string, line: number | null | undefined, message: string) => reporter.emit(code, { file: templateFile, path: at(line), target: id, message });
   const behavior = component.behavior ? BEHAVIORS[component.behavior] : null;
-  const allowedHooks = new Set([...PRIMITIVE_HOOKS, ...(behavior ? [...behavior.required, ...behavior.optional || []] : [])]);
+  const allowedHooks = new Set([...PRIMITIVE_HOOKS, ...(component.level === 'screen' ? LAYOUT_HOOKS : []), ...(behavior ? [...behavior.required, ...behavior.optional || []] : [])]);
 
   for (const unknown of analysis.unknown) report('E_COMPONENT_TEMPLATE', unknown.line, 'error' in unknown && unknown.error ? `${unknown.where}: ${unknown.error}.` : `{{${unknown.path}}}${unknown.where === 'data-if' ? ' in data-if' : ''} is not a prop of ${id} (props: ${Object.keys(component.schema?.properties || {}).join(', ') || 'none'}).`);
   for (const each of analysis.badEach) report('E_COMPONENT_TEMPLATE', each.line, `data-each="${each.path}" needs a list prop.`);
@@ -182,7 +182,7 @@ export function checkTemplate(ctx: Pick<CheckContext, 'project' | 'reporter'>, c
     for (const hook of hooks) {
       // data-t-heading: a heading that follows the page (components/headings.ts), on h2 to h6.
       if (hook === 'heading') { if (!/^h[2-6]$/.test(tag)) report('E_COMPONENT_HOOK', line, `data-t-heading goes on a heading (<h2> to <h6>), not <${tag}>.`); continue; }
-      if (!allowedHooks.has(hook)) report('E_COMPONENT_HOOK', line, `data-t-${hook} is ${Object.values(BEHAVIORS).some((other) => other.required.includes(hook) || other.optional?.includes(hook)) ? `a hook of another behaviour than ${component.behavior || 'none'} (${id}${component.behavior ? ` forks ${component.root}` : ' has no behaviour'})` : 'not a known hook'}.`);
+      if (!allowedHooks.has(hook)) report('E_COMPONENT_HOOK', line, `data-t-${hook} is ${LAYOUT_HOOKS.includes(hook) ? 'a hook of screen layouts (level "screen")' : Object.values(BEHAVIORS).some((other) => other.required.includes(hook) || other.optional?.includes(hook)) ? `a hook of another behaviour than ${component.behavior || 'none'} (${id}${component.behavior ? ` forks ${component.root}` : ' has no behaviour'})` : 'not a known hook'}.`);
       const tags = behavior?.tags?.[hook];
       if (tags && !tags.includes(tag)) report('E_COMPONENT_HOOK', line, `data-t-${hook} goes on <${tags.join('> or <')}>, not <${tag}>.`);
       const value = attrs[`data-t-${hook}`];
@@ -216,6 +216,10 @@ export function checkTemplate(ctx: Pick<CheckContext, 'project' | 'reporter'>, c
     }
   }
   // Primitives.
+  // data-t-bleed asks for the whole width from the block's root: on an element at the top of the template.
+  const roots = new Set((component.tpl?.root.childNodes || []).map((node) => node.sourceCodeLocation?.startLine));
+  for (const hook of analysis.hooks.filter((x) => x.hook === 'bleed')) if (hook.within.length || !roots.has(hook.line)) report('E_COMPONENT_HOOK', hook.line, 'data-t-bleed goes on a root element of the template (the block goes edge to edge).');
+  for (const hook of analysis.hooks.filter((x) => x.hook === 'compare-label')) if (!hook.within.includes('compare')) report('E_COMPONENT_HOOK', hook.line, 'data-t-compare-label goes inside a data-t-compare element.');
   const parts = new Set(analysis.hooks.filter((hook) => hook.hook === 'part').map((hook) => hook.value));
   for (const hook of analysis.hooks.filter((x) => x.hook === 'toggle')) if (!parts.has(hook.value)) report('E_COMPONENT_HOOK', hook.line, `data-t-toggle="${hook.value}" has no data-t-part="${hook.value}".`);
   const panels = new Set(analysis.hooks.filter((hook) => hook.hook === 'panel').map((hook) => hook.value));
@@ -335,7 +339,7 @@ export function checkScreenComponents(ctx: CourseCheckContext, screen: ScreenFil
   let layout: ComponentDescriptor | null = null;
   if (data.layout) {
     layout = registry.get(data.layout) ?? null;
-    if (!layout) reporter.emit('E_UNKNOWN_REFERENCE', { file, path: '/layout', target: screenId, message: `Layout "${data.layout}" not found: it must be a screen-level component in components/ (${[...registry.values()].filter((x) => x.level === 'screen').map((x) => x.id).join(', ') || 'none'}).` });
+    if (!layout) reporter.emit('E_UNKNOWN_REFERENCE', { file, path: '/layout', target: screenId, message: `Layout "${data.layout}" not found: it must be a built-in layout or a screen-level component in components/ (${[...registry.values()].filter((x) => x.level === 'screen').map((x) => x.id).join(', ')}).` });
     else if (layout.level !== 'screen') { reporter.emit('E_COMPONENT_LEVEL', { file, path: '/layout', target: screenId, message: `${layout.id} is a block component, not a screen layout (level "screen").` }); layout = null; }
   }
   if (data.layoutProps && !layout) reporter.emit('E_COMPONENT_PROPS', { file, path: '/layoutProps', target: screenId, message: 'layoutProps without a layout.' });
@@ -343,6 +347,10 @@ export function checkScreenComponents(ctx: CourseCheckContext, screen: ScreenFil
     const props = resolveTextRefs(data.layoutProps || {}, planIndex);
     for (const error of propsErrors(layout, props).slice(0, 8)) reporter.emit('E_COMPONENT_PROPS', { file, path: `/layoutProps${error.path}`, target: screenId, message: `Layout ${layout.id}: ${error.path || 'props'} ${error.message}.` });
     checkKinds(ctx, layout.schema, props, file, '/layoutProps', screenId);
+    // A built-in layout's picture is named like an image block's (opening, D63).
+    const shown = isRecord(props) ? props : {};
+    if (layout.root === 'opening' && shown.image && shown.decorative !== true && !(typeof shown.alt === 'string' && shown.alt.trim())) reporter.emit('E_IMAGE_ALT_MISSING', { file, path: '/layoutProps/alt', target: screenId, message: `The picture of the opening of screen "${screenId}" has no alt text and is not marked decorative.` });
+    if (layout.root === 'opening' && shown.generated === true) reporter.emit('I_GENERATED_MEDIA', { file, path: '/layoutProps', target: screenId, message: `The opening of screen "${screenId}" shows an AI-generated picture.` });
   }
   checkSlots(ctx, { holder: screenId, component: layout, blocks: data.blocks, file, base: '/blocks', kind: 'screen' });
   list(data.layers).forEach((layer, i) => { if (layer !== null && layer !== undefined) checkSlots(ctx, { holder: layer.id, component: null, blocks: layer.blocks, file, base: `/layers/${i}/blocks`, kind: 'layer' }); });

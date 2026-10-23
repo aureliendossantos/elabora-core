@@ -1,0 +1,30 @@
+<!-- A carousel shows as a grid until the player has its sequence primitive (D63). -->
+<figure class="t-gallery t-gallery--{{presentation}}" data-if="presentation != compare" data-columns="{{columns}}" data-ratio="{{ratio}}">
+  <ul class="t-gallery-list" role="list">
+    <li class="t-gallery-item" data-each="images">
+      <figure class="t-figure" style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}">
+        <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+        <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+        <figcaption data-if="caption">{{caption}}</figcaption>
+      </figure>
+    </li>
+  </ul>
+  <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
+  <figcaption class="t-gallery-caption" data-if="caption">{{caption}}</figcaption>
+</figure>
+<figure class="t-gallery t-gallery--compare" data-if="presentation == compare">
+  <div class="t-compare" data-t-compare>
+    <div class="t-compare-side t-compare-before" data-each="images" data-if="@first" style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}">
+      <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+      <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+      <p class="t-compare-label" data-t-compare-label data-if="caption">{{caption}}</p>
+    </div>
+    <div class="t-compare-side t-compare-after" data-each="images" data-if="@last" style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}">
+      <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+      <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+      <p class="t-compare-label" data-t-compare-label data-if="caption">{{caption}}</p>
+    </div>
+  </div>
+  <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
+  <figcaption class="t-gallery-caption" data-if="caption">{{caption}}</figcaption>
+</figure>

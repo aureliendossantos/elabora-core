@@ -1,7 +1,7 @@
 import { dialogueData } from '../dialogue/data.ts';
 import { dialogueScript, scriptMarkdown, scriptWords } from '../dialogue/script.ts';
 import type { Event, Condition, Action } from '@elabora/format';
-import { planIndex, resolveBlockProps, screenOrder } from './load.ts';
+import { planIndex, resolveBlockProps, resolveTextRefs, screenOrder } from './load.ts';
 import { describePlanVersions, planVersionsView } from './plan-versions.ts';
 import type { Project, Block } from './model.ts';
 import { markdownToText } from '../compile/markdown.ts';
@@ -49,6 +49,12 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
       const covers = listOf(s.covers).map((c) => (agent ? c : `${c} ${pidx.items.get(c)?.title || ''}`.trim())).join(', ');
       L.push(`### ${agent ? `\`${s.id}\` — ` : ''}${s.title}`, '');
       L.push(`_${agent ? `covers ${covers} · completeWhen ${s.completeWhen || 'viewed'}${s.required === false ? ' · optional' : ''}${s.layout ? ` · layout ${s.layout}${s.layoutProps ? ` ${JSON.stringify(s.layoutProps)}` : ''}` : ''}${s.style ? ` · style ${s.style}` : ''}` : `Plan : ${covers}`}_`, '');
+      // An opening's head (D63): what the learner reads above the page.
+      if (reg.get(s.layout ?? '')?.root === 'opening') {
+        const head = recordOf(resolveTextRefs(s.layoutProps ?? {}, pidx));
+        if (head.eyebrow && !agent) L.push(`_${head.eyebrow}_`, '');
+        if (head.lead) L.push(agent ? `- opening lead: ${short(head.lead, 160)}` : short(head.lead, 2000), '');
+      }
       const blockLines = (blocks: Block[] | undefined, indent = ''): void => {
         for (const b of objectsIn(blocks)) {
           const d = reg.get(b.type);
@@ -78,9 +84,23 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
           }
           switch (root) {
             case 'heading': L.push(`${indent}- ${tag}**${p.text}**`); break;
-            case 'text': L.push(`${indent}- ${tag}${short(p.markdown, agent ? 160 : 2000)}`); break;
+            case 'text': L.push(`${indent}- ${tag}${short(p.markdown, agent ? 160 : 2000)}`); if (p.aside) L.push(`${indent}  - ${agent ? 'aside: ' : ''}_${short(p.aside, agent ? 120 : 600)}_`); break;
+            case 'statement': {
+              const by = [p.author, p.role].filter(Boolean).join(', ');
+              L.push(`${indent}- ${tag}${agent ? `statement${p.presentation && p.presentation !== 'statement' ? ` (${p.presentation})` : ''} ` : ''}« ${short(p.markdown, agent ? 160 : 600)} »${by ? ` — ${by}` : ''}`);
+              break;
+            }
+            case 'divider': if (agent) L.push(`${indent}- ${tag}divider (${p.presentation || 'line'})`); break;
+            case 'gallery':
+              L.push(`${indent}- ${tag}${agent ? `gallery (${p.presentation || 'grid'}): ` : ''}${recordsOf(p.images).map((image) => `${agent ? `\`${image.asset}\` ` : ''}${image.decorative ? '(decorative)' : `"${image.alt}"`}${image.caption ? ` — ${image.caption}` : ''}`).join(' · ')}`);
+              if (p.caption && !agent) L.push(`${indent}  _${p.caption}_`);
+              break;
+            case 'columns': if (agent) L.push(`${indent}- ${tag}columns (${p.count || 2}${p.widths && p.widths !== 'equal' ? `, ${p.widths}` : ''})`); break;
             case 'callout': L.push(`${indent}- ${tag}[${p.variant || 'info'}] ${p.title ? `**${p.title}** ` : ''}${short(p.markdown, agent ? 160 : 2000)}`); break;
-            case 'image': L.push(`${indent}- ${tag}${agent ? `\`${p.asset}\` ` : ''}image: ${p.decorative ? '(decorative)' : `"${p.alt}"`}${p.generated ? ' [AI-generated]' : ''}`); break;
+            case 'image':
+              L.push(`${indent}- ${tag}${agent ? `\`${p.asset}\` ` : ''}image${agent && p.presentation && p.presentation !== 'centered' ? ` (${p.presentation})` : ''}: ${p.decorative ? '(decorative)' : `"${p.alt}"`}${p.generated ? ' [AI-generated]' : ''}`);
+              if (p.title || p.markdown) L.push(`${indent}  - ${p.title ? `**${p.title}** ` : ''}${short(p.markdown, agent ? 160 : 2000)}`);
+              break;
             case 'video': case 'audio': L.push(`${indent}- ${tag}${b.type} "${p.title}"${p.decorative ? ' (decorative)' : ''}${p.generated ? ' [AI-generated]' : ''}`); break;
             case 'button': L.push(`${indent}- ${tag}button "${p.label}"`); break;
             case 'accordion': L.push(`${indent}- ${tag}accordion: ${recordsOf(p.items).map((i) => i.title).join(' · ')}`); break;

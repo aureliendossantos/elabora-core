@@ -1,4 +1,4 @@
-import { isBuiltinBlockType, schemaId } from '@elabora/format';
+import { isBuiltinType, schemaId } from '@elabora/format';
 import type { ComponentManifest, ComponentSlot, ComponentSource, Project, Screen } from '../project/model.ts';
 import type { ProjectFiles, SourceFile } from '../project/files.ts';
 import { getFile, pathsUnder } from '../project/files.ts';
@@ -18,7 +18,7 @@ const SCHEMA = schemaId('component');
 // A component id: a slug that is not a built-in type.
 export function checkComponentId(id: string | undefined): void {
   if (!SLUG.test(id || '')) throw new CommandError('id: lowercase letters, digits and hyphens, starting with a letter');
-  if (isBuiltinBlockType(id)) throw new CommandError(`"${id}" is a built-in type`);
+  if (isBuiltinType(id)) throw new CommandError(`"${id}" is a built-in type`);
 }
 
 type Created = CommandOutput<{ component: string; files: string[] }>;

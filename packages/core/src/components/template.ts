@@ -264,6 +264,12 @@ export function renderTemplate(tpl: ParsedTemplate, { props = {}, schema = null,
       const only = /^\s*\{\{[^{}]+\}\}\s*$/.test(a.value);
       let v = a.value.replace(INTERP, (_, p: string) => { const r = lookup(scope, p.trim()); return r.found ? attrValue(r.value, r.schema, assetPath) : ''; });
       if (a.name === 'class') v = v.replace(/\s+/g, ' ').trim();
+      // A custom property bound to a prop without value is left out (an image without focus), so
+      // that the stylesheet's var() falls back instead of reading an empty value.
+      if (a.name === 'style' && /--[\w-]+\s*:\s*(;|$)/.test(v)) {
+        v = v.split(';').map((declaration) => declaration.trim()).filter((declaration) => declaration && !/^--[\w-]+\s*:$/.test(declaration)).join('; ');
+        if (v === '') continue;
+      }
       if (only && v === '' && !KEEP_EMPTY.has(a.name)) continue;
       const name = a.prefix ? `${a.prefix}:${a.name}` : a.name;
       s += v === '' && !KEEP_EMPTY.has(a.name) && !a.value ? ` ${name}` : ` ${name}="${escAttr(v)}"`;

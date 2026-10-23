@@ -91,3 +91,26 @@ function dialogueSeconds(project: Project, ref: ReturnType<typeof dialogueBlocks
   if (!paths.length) return 0;
   return paths.reduce((sum, path) => sum + pathTime(project, ref, data, path.walk.beats).seconds, 0) / paths.length;
 }
+
+// The reading time a page announces to its learners (an opening's « 6 min », D63): its estimate as
+// the plan's views have it (above), plus the media they play there (a video or a sound with its
+// controls, at its length; loops and decorative media are not watched for themselves). Whole minutes,
+// at least one. Estimates are kept per project: a build compiles every screen from one project.
+const pageEstimates = new WeakMap<Project, Map<string, ScreenEstimate>>();
+export function pageMinutes(project: Project, screenId: string): number {
+  let estimates = pageEstimates.get(project);
+  if (!estimates) { estimates = screenEstimates(project); pageEstimates.set(project, estimates); }
+  const screen = project.screens.get(screenId)?.data;
+  let seconds = estimates.get(screenId)?.seconds ?? MIN_SCREEN_SECONDS;
+  if (screen) {
+    for (const { block } of screenBlocks(screen)) {
+      const props = isRecord(block.props) ? block.props : {};
+      const root = getRegistry(project).get(block.type)?.root;
+      if ((root !== 'video' && root !== 'audio') || props.decorative === true || props.loop === true || typeof props.asset !== 'string') continue;
+      const file = project.files.get(`assets/${props.asset}`);
+      const duration = file?.kind === 'binary' ? file.media?.duration : null;
+      if (typeof duration === 'number' && Number.isFinite(duration)) seconds += duration;
+    }
+  }
+  return roundedMinutes(seconds);
+}
