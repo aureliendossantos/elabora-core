@@ -38,7 +38,7 @@
     },
     "revisit": {
       "enum": ["none", "retry", "after-end", "anytime"],
-      "description": "How the learner may go back (default: the mode's). none: never (retry options continue instead). retry: « Choisir autrement » right after a consequence, and options with retry come back. after-end: retry, then « Reprendre d'ici » on any past choice and « Recommencer » once the first end is reached. anytime: « Reprendre d'ici » from the first choice. The first run to an end is the only one scored, whatever the policy; a final decision cannot be revisited, nor anything before it."
+      "description": "How the learner may go back (default: the mode's). none: never (retry options continue instead). retry: « Choisir autrement » right after a consequence, and options with retry come back. after-end: retry, then « Reprendre d'ici » on any past choice and « Recommencer » once the first end is reached. anytime: « Reprendre d'ici » from the first choice. The first run to an end is the only one scored, whatever the policy; a final decision cannot be revisited, nor anything before it, but once the dialogue has ended « Recommencer » still starts a new run."
     },
     "scoring": {
       "enum": ["none", "quality", "points", "ending"],

@@ -99,11 +99,12 @@ export function canRetryLast(run: DialogueRun): boolean {
 
 const lastClosed = (walk: DialogueWalk): Decision | undefined => [...walk.decisions].reverse().find((decision) => decision.closed && !decision.auto);
 
-// « Recommencer »: after-end once the scored run is done, anytime; not past a final decision.
+// « Recommencer »: after-end once the scored run is done, anytime. A final decision closes what comes
+// before it until the dialogue ends; once it has ended, starting over is a new run, not a revisit.
 export function canRestart(run: DialogueRun): boolean {
   const { revisit } = run.data;
   if (revisit !== 'anytime' && !(revisit === 'after-end' && scoredDone(run))) return false;
-  return !run.walk.decisions.some((decision) => decision.closed && decision.final);
+  return run.walk.status === 'ended' || !run.walk.decisions.some((decision) => decision.closed && decision.final);
 }
 
 // The path cut back to a decision, which waits again. Before the scored run is done, the choice

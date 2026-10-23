@@ -123,7 +123,9 @@ export function createLiveChrome(options: LiveChromeOptions) {
 
   // « Affichage » and « Langue ».
   const narrated = [...(course.player.top?.items ?? []), ...(course.player.bottom?.items ?? [])].some((item) => item.id === 'controls');
-  menuPopover = chrome.displayButton ? createDisplayMenu(chrome.displayButton, { labels, prefs: options.display, narrated, onChange: (prefs) => applyDisplay(app, prefs) }) : null;
+  // « Texte : tout de suite » with a dialogue on the screen shown (D61).
+  const dialogues = course.screens.some((screen) => screen.blocks.some((block) => block.behavior === 'dialogue'));
+  menuPopover = chrome.displayButton ? createDisplayMenu(chrome.displayButton, { labels, prefs: options.display, narrated, dialogues, onChange: (prefs) => applyDisplay(app, prefs) }) : null;
   languagePopover = chrome.languageButton && course.languages ? createLanguageMenu(chrome.languageButton, {
     labels, languages: course.languages, current: course.language, name: languageName,
     choose: (code) => post({ type: 'elabora/language', protocol: PLAYER_PREVIEW_PROTOCOL, language: code })

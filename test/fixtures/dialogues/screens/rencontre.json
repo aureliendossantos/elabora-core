@@ -1,0 +1,65 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "rencontre",
+  "title": "Prendre l'appel",
+  "covers": ["ITEM-3"],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "rencontre-marc",
+      "type": "dialogue",
+      "props": {
+        "title": "Marc au téléphone",
+        "learner": "leila",
+        "style": "scene",
+        "mode": "assessment",
+        "objective": "OBJ-2",
+        "scene": {
+          "background": "personnages/decor-bureau.svg",
+          "cast": [{ "speaker": "marc", "position": "left" }, { "speaker": "leila", "position": "right" }]
+        },
+        "nodes": [
+          {
+            "id": "ouverture",
+            "lines": [
+              { "id": "r0", "text": "Lundi, 9 h 04. Le téléphone du support sonne." },
+              { "id": "r1", "speaker": "marc", "expression": "inquiet", "text": "Bonjour, c'est Marc. J'ai lancé l'impression, mais aucune feuille ne sort.",
+                "cues": [{ "at": { "word": "Bonjour" }, "gesture": "saluer" }] },
+              { "id": "r2", "speaker": "leila", "expression": "souriant", "text": "Bonjour Marc, je suis Leïla, du support. Je vous écoute.",
+                "cues": [{ "at": { "word": "écoute" }, "gesture": "ecouter" }] }
+            ],
+            "prompt": "Quelle question posez-vous en premier ?",
+            "options": [
+              { "id": "a", "text": "Depuis quand le problème a-t-il commencé ?", "quality": "good",
+                "feedback": "L'heure du premier symptôme permet de recouper avec les journaux du réseau.",
+                "reply": [{ "id": "r3", "speaker": "marc", "expression": "soulage", "text": "Depuis ce matin, vers 8 h 50." }] },
+              { "id": "b", "text": "Avez-vous redémarré le routeur ?", "quality": "ok",
+                "feedback": "Un redémarrage improvisé efface les journaux utiles au diagnostic.",
+                "reply": [{ "id": "r4", "speaker": "marc", "expression": "agace", "text": "Le routeur ? Je ne sais même pas où il est." }] },
+              { "id": "c", "text": "Quel est votre mot de passe ?", "quality": "bad",
+                "feedback": "On ne demande jamais un mot de passe au téléphone.",
+                "reply": [{ "id": "r5", "speaker": "marc", "expression": "inquiet", "text": "Euh… c'est normal de vous le dire ?" }] }
+            ]
+          },
+          {
+            "id": "suite",
+            "lines": [{ "id": "r6", "speaker": "leila", "expression": "concentree", "text": "Je note le symptôme dans le ticket." }],
+            "prompt": "Et ensuite ?",
+            "options": [
+              { "id": "a", "text": "Je transmets le ticket à l'équipe réseau et je vous rappelle.", "quality": "good",
+                "feedback": "Escalader avec un ticket complet, et dire quand on rappelle." },
+              { "id": "b", "text": "Je passe redémarrer les équipements moi-même.", "quality": "bad",
+                "feedback": "Intervenir sans diagnostic risque d'aggraver la panne.",
+                "reply": [{ "id": "r7", "speaker": "marc", "expression": "inquiet", "text": "D'accord… mais tout l'étage attend." }] }
+            ]
+          },
+          { "id": "fin", "lines": [{ "id": "r8", "speaker": "marc", "expression": "soulage", "text": "Merci, je reste joignable." }], "end": true }
+        ],
+        "endings": [
+          { "id": "bien", "title": "Bien mené", "text": "Vous avez cherché le symptôme, puis escaladé avec un ticket complet.", "if": [{ "score": { "op": "gte", "value": 75 } }] },
+          { "id": "revoir", "title": "À revoir", "text": "Reprenez le bilan : chaque choix a une conséquence." }
+        ]
+      }
+    }
+  ]
+}

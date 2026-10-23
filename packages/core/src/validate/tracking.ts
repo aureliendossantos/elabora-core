@@ -42,8 +42,9 @@ export function checkTracking(ctx: CourseCheckContext): void {
   let profiles: LmsProfile[];
   try { profiles = resolveProfiles(ctx.options.profiles); } catch (error) { reporter.emit('E_SCHEMA', { message: error instanceof Error ? error.message : String(error) }); return; }
   const limits = scorm12Limits(profiles);
-  const { keys } = assignKeys(project, readLock(project), { dryRun: true });
-  const worst: number = worstCaseLength(buildStateModel(project, keys));
+  const lock = readLock(project);
+  const { keys } = assignKeys(project, lock, { dryRun: true });
+  const worst: number = worstCaseLength(buildStateModel(project, keys, lock));
   ctx.budget = { worstCase: worst, limit: limits.suspendDataMax, profiles: profiles.map((profile) => profile.id) };
   const profileNames = profiles.map((profile) => profile.id).join(', ');
   if (worst > limits.suspendDataMax) {

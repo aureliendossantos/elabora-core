@@ -39,6 +39,8 @@ export interface RenderOptions {
   at?: { line: string; edge?: 'start' | 'end' } | { time: number };
   // Every step shown, those after the first faded in their place (the editor's phone width).
   ghost?: boolean;
+  // A dialogue of the screen after these choices, at rest (D61; RenderView.dialogue).
+  dialogue?: { block: string; choices?: string[]; node?: string };
   // A translation of the course (translations/<language>.xlf; untranslated units keep the source
   // text). Default: the course language. Generated figures stay those of the source.
   language?: string;
@@ -168,7 +170,7 @@ export function renderScreen(project: Project, screenId: string, options: Render
   for (const file of design ? designFiles(target, design) : shared.designFiles) if (!files.has(file.path)) files.set(file.path, file);
   for (const file of chromeFiles(target, chrome.player, shared.resources)) if (!files.has(file.path)) files.set(file.path, file);
 
-  const view: RenderView = { state: options.state === 'answered' ? 'answered' : 'initial', step: options.step ?? null, layer: options.layer ?? null, ...(options.at ? { at: options.at } : {}), ...(options.ghost ? { ghost: true } : {}) };
+  const view: RenderView = { state: options.state === 'answered' ? 'answered' : 'initial', step: options.step ?? null, layer: options.layer ?? null, ...(options.at ? { at: options.at } : {}), ...(options.ghost ? { ghost: true } : {}), ...(options.dialogue ? { dialogue: options.dialogue } : {}) };
   return { screen: screenId, course, view, styles, files: [...files.values()], outline: chrome.outline };
 }
 

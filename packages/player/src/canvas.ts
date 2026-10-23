@@ -192,6 +192,11 @@ function viewOf(value: Record<string, unknown>): Partial<RenderView> {
   else if (isRecord(value.at) && typeof value.at.time === 'number' && Number.isFinite(value.at.time)) view.at = { time: Math.max(0, value.at.time) };
   else if (isRecord(value.at) && typeof value.at.line === 'string') view.at = { line: value.at.line, ...(value.at.edge === 'end' ? { edge: 'end' as const } : {}) };
   if (typeof value.ghost === 'boolean') view.ghost = value.ghost;
+  if (value.dialogue === null) view.dialogue = null;
+  else if (isRecord(value.dialogue) && typeof value.dialogue.block === 'string') {
+    const choices = Array.isArray(value.dialogue.choices) ? value.dialogue.choices.filter((choice): choice is string => typeof choice === 'string') : [];
+    view.dialogue = { block: value.dialogue.block, choices, ...(typeof value.dialogue.node === 'string' ? { node: value.dialogue.node } : {}) };
+  }
   return view;
 }
 
@@ -355,6 +360,15 @@ function applyView(current: Mounted, view: RenderView, full: boolean, before: Re
     if (view.layer && !current.view.layers.includes(view.layer)) current.view.openLayer(view.layer);
   }
   if (timedLayer(current, view) && (full || view.layer !== before.layer || moved)) showLayerMoment(current, view);
+  if (full || JSON.stringify(view.dialogue ?? null) !== JSON.stringify(before.dialogue ?? null)) showDialogue(current, view, full ? null : before);
+}
+
+// A dialogue after the choices of the view (D61), at rest; the one shown before back at its start.
+function showDialogue(current: Mounted, view: RenderView, before: RenderView | null) {
+  const dialogues = current.view.dialogues;
+  if (!dialogues) return;
+  if (before?.dialogue && before.dialogue.block !== view.dialogue?.block) dialogues.showPath(before.dialogue.block, []);
+  if (view.dialogue) dialogues.showPath(view.dialogue.block, view.dialogue.choices ?? [], view.dialogue.node);
 }
 
 // The layer shown has a timeline of its own (D62): the moment of the view is on it, and the screen

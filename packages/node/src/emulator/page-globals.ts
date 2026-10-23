@@ -63,6 +63,27 @@ export interface PlayerHooks {
   timeline: PlayerTimeline;
   // The host of a free object of the screen (replays drive it as object tests do).
   objectHost(blockId: string): PlayerObjectHost | undefined;
+  // The dialogues of the screen (D61): « Suite », a choice, their virtual clock.
+  dialogues: PlayerDialogues;
+}
+
+export interface DialogueViewState {
+  // idle (not begun), playing, choosing, ended.
+  phase: string;
+  node: string | null;
+  status: string;
+  line: string | null;
+  path: string[];
+  ending: string | null;
+}
+
+export interface PlayerDialogues {
+  blocks(): string[];
+  state(blockId: string): DialogueViewState | null;
+  advance(seconds: number): void;
+  start(blockId: string): void;
+  next(blockId: string): void;
+  choose(blockId: string, option: string): void;
 }
 
 export interface TimelineState {

@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" data-decor="appel-support">
+<style>
+/* Deux demi-décors pour un appel : à gauche le bureau de Marc (chaud), à droite le support (frais).
+   Contrastes bas : tout reste entre 82 et 98 de clarté L*, sauf les voyants, pour que les bulles passent devant. */
+.paper{fill:var(--decor-paper,#FBF9F4)}
+.wall-a{fill:var(--decor-wall-a,#F2EADF)}
+.floor-a{fill:var(--decor-floor-a,#EAE0D1)}
+.prop-a{fill:var(--decor-prop-a,#E3D8C8)}
+.prop-a2{fill:var(--decor-prop-a2,#D8CCBA)}
+.glass{fill:var(--decor-glass,#E6ECEE)}
+.far{fill:var(--decor-far,#DCE4E7)}
+.sheet{fill:var(--decor-sheet,#F8F3EA)}
+.wall-b{fill:var(--decor-wall-b,#E8EDF0)}
+.floor-b{fill:var(--decor-floor-b,#DDE4E9)}
+.prop-b{fill:var(--decor-prop-b,#D6DEE4)}
+.prop-b2{fill:var(--decor-prop-b2,#C9D3DB)}
+.screen{fill:var(--decor-screen,#F3F6F8)}
+.alert{fill:var(--decor-alert,#E58A6C)}
+.ok{fill:var(--decor-ok,#8FC4A4)}
+.frame-a{fill:none;stroke:var(--decor-prop-a,#E3D8C8);stroke-width:10;stroke-linecap:round}
+.chart{fill:none;stroke:var(--decor-prop-b2,#C9D3DB);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+</style>
+<rect class="paper" width="1600" height="900"/>
+
+<g data-part="lieu-gauche">
+ <path class="wall-a" d="M16 900V40Q16 16 40 16H768Q792 16 792 40V900Z"/>
+ <path class="floor-a" d="M16 660H792V900H16Z"/>
+ <g data-part="fenetre">
+  <rect class="prop-a" x="48" y="60" width="212" height="212" rx="18"/>
+  <rect class="glass" x="60" y="72" width="188" height="188" rx="10"/>
+  <path class="far" d="M60 260V212H86V192H114V226H140V178H172V214H194V200H222V222H248V260Z"/>
+  <path class="frame-a" d="M154 72V260M60 166H248"/>
+ </g>
+ <g data-part="imprimante">
+  <rect class="prop-a" x="30" y="640" width="168" height="196" rx="10"/>
+  <path class="frame-a" style="stroke:var(--decor-prop-a2,#D8CCBA);stroke-width:5" d="M44 706H184M44 772H184"/>
+  <rect class="prop-a2" x="96" y="724" width="36" height="8" rx="4"/>
+  <rect class="prop-a2" x="96" y="790" width="36" height="8" rx="4"/>
+  <rect class="prop-a2" x="38" y="552" width="152" height="92" rx="14"/>
+  <rect class="prop-a" x="48" y="540" width="132" height="28" rx="9"/>
+  <path class="sheet" d="M66 550L150 536L156 566L72 580Z"/>
+  <rect class="prop-a" x="58" y="602" width="112" height="12" rx="6"/>
+  <circle data-part="voyant" class="alert" cx="172" cy="626" r="7"/>
+ </g>
+</g>
+
+<g data-part="lieu-droite">
+ <path class="wall-b" d="M808 900V40Q808 16 832 16H1560Q1584 16 1584 40V900Z"/>
+ <path class="floor-b" d="M808 660H1584V900H808Z"/>
+ <g data-part="tableau-de-bord">
+  <rect class="prop-b" x="1228" y="92" width="244" height="160" rx="16"/>
+  <rect class="screen" x="1240" y="104" width="220" height="136" rx="8"/>
+  <rect class="prop-b" x="1258" y="180" width="20" height="40" rx="4"/>
+  <rect class="prop-b" x="1288" y="158" width="20" height="62" rx="4"/>
+  <rect class="prop-b" x="1318" y="194" width="20" height="26" rx="4"/>
+  <path class="chart" d="M1358 206L1382 184L1404 194L1436 144"/>
+  <circle class="ok" cx="1260" cy="126" r="7"/>
+ </g>
+ <g data-part="baie">
+  <rect class="prop-b" x="1456" y="300" width="104" height="300" rx="10"/>
+  <rect class="prop-b2" x="1468" y="318" width="80" height="40" rx="5"/>
+  <rect class="prop-b2" x="1468" y="370" width="80" height="40" rx="5"/>
+  <rect class="prop-b2" x="1468" y="422" width="80" height="40" rx="5"/>
+  <rect class="prop-b2" x="1468" y="474" width="80" height="40" rx="5"/>
+  <circle class="ok" cx="1534" cy="338" r="4"/>
+  <circle class="ok" cx="1534" cy="390" r="4"/>
+  <circle class="ok" cx="1534" cy="442" r="4"/>
+  <circle class="ok" cx="1534" cy="494" r="4"/>
+ </g>
+</g>
+</svg>

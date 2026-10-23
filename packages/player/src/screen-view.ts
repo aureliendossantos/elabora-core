@@ -23,6 +23,10 @@ import type {
   AudioBlock, Behavior, BlockData, CourseData, LayerData, ObjectBlock, ObjectDefinition, ObjectEventDeclaration, QuizBlock, ScreenData, TriggerType, VideoBlock
 } from './course-data.ts';
 import type { ObjectContext, ObjectView, SafeArea } from './object-protocol.ts';
+import { createTranscriptBar } from './transcript.ts';
+import type { TranscriptBar } from './transcript.ts';
+import type { Action } from './course-data.ts';
+import type { DialoguePresentation } from './dialogue/walk.ts';
 
 export interface ScreenViewOptions {
   // #elabora-app (data-presentation) and #t-main, where the screen goes.
@@ -216,6 +220,9 @@ export function createScreenView(options: ScreenViewOptions) {
   // ── Showing a screen ──────────────────────────────────────────────────
   // Leaving the screen shown: its objects stop and its layers close (their events still belong to it).
   function leave() {
+    behaviors.dialogues.dispose();
+    transcriptBar?.dispose();
+    transcriptBar = null;
     timed?.dispose();
     timed = null;
     timeline?.dispose();
@@ -236,6 +243,7 @@ export function createScreenView(options: ScreenViewOptions) {
     applySteps();
     courseState.visit(next, { allSteps: revealed === lastStep() && !(next.narration && options.timeline) });
     startTimeline(next);
+    behaviors.dialogues.afterShow();
     trigger('screen.enter', {});
   }
 
@@ -249,8 +257,11 @@ export function createScreenView(options: ScreenViewOptions) {
     timed = null;
     timeline?.dispose();
     timeline = null;
+    transcriptBar?.dispose();
+    transcriptBar = null;
     const narration = shown.narration;
     const settings = options.timeline;
+    if (!narration && settings?.host && settings.controls?.transcript !== false) startTranscriptBar(shown, settings.host, settings.sheetHost ?? app, settings.tooltip ?? null);
     if (!narration || !settings) return;
     const done = courseState.screenComplete(shown) && revealed === lastStep();
     const start = done ? narration.duration : narration.segments.find((segment) => segment.step === revealed)?.start ?? 0;
@@ -265,6 +276,7 @@ export function createScreenView(options: ScreenViewOptions) {
       // A layer that speaks has the shortcuts (D62); the transcript adds each layer's lines.
       keys: () => !speakingLayer(),
       transcriptLayers: shown.layers.filter((layer) => layer.narration?.lines.length).map((layer) => ({ title: layer.title, lines: layer.narration!.lines })),
+      transcriptDialogues: () => behaviors.dialogues.transcripts(),
       view: {
         revealed: () => revealed,
         lastStep,
@@ -327,8 +339,8 @@ export function createScreenView(options: ScreenViewOptions) {
           }
         },
         changed: () => {
-          // Two voices never overlap: the narration pauses the sounds and videos of the screen.
-          if (timeline?.playing) pauseMedia();
+          // Two voices never overlap: the narration pauses the sounds and videos of the screen, and its dialogues.
+          if (timeline?.playing) { pauseMedia(); behaviors.dialogues.pauseAll(); }
           syncContinue();
           options.afterTimeline?.();
         }
@@ -337,6 +349,22 @@ export function createScreenView(options: ScreenViewOptions) {
     startTimedBlocks(shown);
     applySteps();
   }
+  // A screen without narration whose layers speak, or which holds a dialogue, has a transcript all the
+  // same: a button in the player's controls item (D62, D61).
+  let transcriptBar: TranscriptBar | null = null;
+  function startTranscriptBar(shown: ScreenData, host: HTMLElement, sheetHost: HTMLElement, tooltip: Tooltip | null) {
+    const layers = shown.layers.filter((layer) => layer.narration?.lines.length);
+    const dialogues = flatBlocks(shown.blocks).some((block) => behaviorOf(block) === 'dialogue') || shown.layers.some((layer) => flatBlocks(layer.blocks).some((block) => behaviorOf(block) === 'dialogue'));
+    if (!layers.length && !dialogues) return;
+    transcriptBar = createTranscriptBar({
+      host, sheetHost, labels, tooltip,
+      sections: () => [
+        ...layers.map((layer) => ({ title: layer.title, lines: layer.narration!.lines.map((line) => ({ ...(line.speaker ? { speaker: line.speaker } : {}), text: line.text })) })),
+        ...behaviors.dialogues.transcripts().map((section) => ({ ...section, dialogue: true }))
+      ]
+    });
+  }
+
   // The sounds and videos the learner plays (a voice that starts pauses them).
   function pauseMedia() {
     for (const media of document.querySelectorAll<HTMLMediaElement>('#t-main .t-figure video:not(.t-loop), #t-main .t-figure audio, dialog.t-layer .t-figure video:not(.t-loop), dialog.t-layer .t-figure audio')) if (!media.paused) media.pause();
@@ -396,7 +424,7 @@ export function createScreenView(options: ScreenViewOptions) {
             }
           },
           changed: () => {
-            if (entry.timeline?.playing) { pauseMedia(); if (timeline?.playing) timeline.pause(); }
+            if (entry.timeline?.playing) { pauseMedia(); behaviors.dialogues.pauseAll(); if (timeline?.playing) timeline.pause(); }
             options.afterTimeline?.();
           }
         }
@@ -441,36 +469,9 @@ export function createScreenView(options: ScreenViewOptions) {
     const changedVariables: string[] = [];
     for (const run of courseState.eventsFor(shown, type, info)) {
       for (const action of run.actions) {
-        switch (action.type) {
-          case 'go-to': navigation = action.screen; break;
-          case 'show-layer': openLayer(action.layer); break;
-          case 'hide-layer': (action.layer === undefined ? topLayer() : document.querySelector<HTMLDialogElement>(`dialog.t-layer[data-layer="${action.layer}"]`))?.close(); break;
-          case 'show-block': case 'hide-block': {
-            courseState.setBlockVisible(action.block, action.type === 'show-block');
-            const node = document.querySelector<HTMLElement>(`[data-block="${action.block}"]`);
-            if (node) { node.toggleAttribute('data-t-concealed', action.type === 'hide-block'); syncInert(node); behaviors.noteShown(main); }
-            break;
-          }
-          case 'reveal-step': if (action.step > revealed) revealStep(reachedStep(action.step)); else focusStep(action.step); break;
-          case 'set-variable': if (courseState.setVar(action.variable, action.value)) changedVariables.push(action.variable); break;
-          case 'increment-variable': if (courseState.incrementVar(action.variable, action.by)) changedVariables.push(action.variable); break;
-          case 'complete-screen': courseState.markComplete(shown); break;
-          case 'set-object-props': {
-            const host = hosts.get(action.block);
-            host?.updateProps(action.props);
-            break;
-          }
-          case 'exit-course': setTimeout(() => options.exit(), 0); break;
-          // With layer, the timeline of that layer while it is open (D62).
-          case 'pause-timeline': (action.layer !== undefined ? layerTimelines.get(action.layer)?.timeline : timeline)?.pause(); break;
-          case 'play-timeline': (action.layer !== undefined ? layerTimelines.get(action.layer)?.timeline : timeline)?.play(); break;
-          case 'seek-timeline': if (typeof action.time === 'number') (action.layer !== undefined ? layerTimelines.get(action.layer)?.timeline : timeline)?.jump(action.time); break;
-          case 'play-media': case 'pause-media': {
-            const media = document.querySelector<HTMLMediaElement>(`[data-block="${action.block}"] video, [data-block="${action.block}"] audio`);
-            if (media && action.type === 'play-media') void media.play().catch(() => {}); else media?.pause();
-            break;
-          }
-        }
+        const done = runAction(action, shown);
+        if (done.navigation) navigation = done.navigation;
+        if (done.variable) changedVariables.push(done.variable);
       }
     }
     for (const variable of changedVariables) trigger('variable.changed', { variable });
@@ -481,6 +482,68 @@ export function createScreenView(options: ScreenViewOptions) {
     options.afterEvents();
     if (navigation && depth === 0) options.navigate(navigation, shown);
   }
+  // One action of an event (or of a dialogue: presentation actions only, D61).
+  function runAction(action: Action, shown: ScreenData): { navigation?: string; variable?: string } {
+    let navigation: string | undefined;
+    const changedVariables: string[] = [];
+    switch (action.type) {
+      case 'go-to': navigation = action.screen; break;
+      case 'show-layer': openLayer(action.layer); break;
+      case 'hide-layer': (action.layer === undefined ? topLayer() : document.querySelector<HTMLDialogElement>(`dialog.t-layer[data-layer="${action.layer}"]`))?.close(); break;
+      case 'show-block': case 'hide-block': {
+        courseState.setBlockVisible(action.block, action.type === 'show-block');
+        const node = document.querySelector<HTMLElement>(`[data-block="${action.block}"]`);
+        if (node) { node.toggleAttribute('data-t-concealed', action.type === 'hide-block'); syncInert(node); behaviors.noteShown(main); }
+        break;
+      }
+      case 'reveal-step': if (action.step > revealed) revealStep(reachedStep(action.step)); else focusStep(action.step); break;
+      case 'set-variable': if (courseState.setVar(action.variable, action.value)) changedVariables.push(action.variable); break;
+      case 'increment-variable': if (courseState.incrementVar(action.variable, action.by)) changedVariables.push(action.variable); break;
+      case 'complete-screen': courseState.markComplete(shown); break;
+      case 'set-object-props': {
+        const host = hosts.get(action.block);
+        host?.updateProps(action.props);
+        break;
+      }
+      case 'exit-course': setTimeout(() => options.exit(), 0); break;
+      // With layer, the timeline of that layer while it is open (D62).
+      case 'pause-timeline': (action.layer !== undefined ? layerTimelines.get(action.layer)?.timeline : timeline)?.pause(); break;
+      case 'play-timeline': (action.layer !== undefined ? layerTimelines.get(action.layer)?.timeline : timeline)?.play(); break;
+      case 'seek-timeline': if (typeof action.time === 'number') (action.layer !== undefined ? layerTimelines.get(action.layer)?.timeline : timeline)?.jump(action.time); break;
+      case 'play-media': case 'pause-media': {
+        const media = document.querySelector<HTMLMediaElement>(`[data-block="${action.block}"] video, [data-block="${action.block}"] audio`);
+        if (media && action.type === 'play-media') void media.play().catch(() => {}); else media?.pause();
+        break;
+      }
+      // A dialogue block of the screen (D61): begin it, move it to a node, start it over.
+      case 'start-dialogue': behaviors.dialogues.start(action.block); break;
+      case 'goto-dialogue': behaviors.dialogues.goto(action.block, action.node); break;
+      case 'restart-dialogue': behaviors.dialogues.restart(action.block); break;
+    }
+    return { navigation, variable: changedVariables[0] };
+  }
+  // A dialogue's options and cues run presentation actions only (the validator refuses the others).
+  const PRESENTATION = new Set<Action['type']>(['show-block', 'hide-block', 'show-layer', 'hide-layer', 'play-media', 'pause-media', 'set-object-props', 'reveal-step']);
+  function dialogueActions(actions: readonly { type: string }[]) {
+    const shown = screen;
+    if (!shown) return;
+    for (const action of actions) if (PRESENTATION.has(action.type as Action['type'])) runAction(action as Action, shown);
+    behaviors.noteShown(main);
+    options.afterEvents();
+  }
+  // What a dialogue's replayed path leaves on the screen: the blocks it showed or hid, the props it
+  // set, the step it revealed. No layer opens and no media plays.
+  function dialoguePresentation(presentation: DialoguePresentation) {
+    for (const [id, visible] of Object.entries(presentation.blocks)) {
+      const node = document.querySelector<HTMLElement>(`[data-block="${CSS.escape(id)}"]`);
+      if (node) { node.toggleAttribute('data-t-concealed', !visible); syncInert(node); }
+    }
+    for (const [id, props] of Object.entries(presentation.props)) hosts.get(id)?.updateProps(props as Record<string, never>);
+    if (presentation.step > revealed) revealStep(reachedStep(presentation.step), { animate: false, focus: false, play: false });
+    behaviors.noteShown(main);
+  }
+  // While a dialogue speaks, the narration of the screen waits (and a layer's stops).
+  const dialogueHolds = new Map<string, Timeline>();
 
   // ── Screens and blocks ────────────────────────────────────────────────
   // Every block arrives as HTML rendered at build time from its component template (structure,
@@ -488,7 +551,26 @@ export function createScreenView(options: ScreenViewOptions) {
   // player places the blocks of each slot, then binds behaviours: what is scored, saved, announced
   // and keyboard-operable is never left to a template. Video, audio and free objects are code.
   const behaviors = createBehaviors({
-    courseState, labels, language: course.language, formatLabel: options.formatLabel, announce, recordInteraction, trigger, retake: options.retake, still: options.still
+    courseState, labels, language: course.language, formatLabel: options.formatLabel, announce, recordInteraction, trigger, retake: options.retake, still: options.still,
+    dialogueHost: {
+      virtual: options.timeline?.virtual === true || window.ELABORA_TEST?.virtualTime === true,
+      prefs: () => options.timeline?.prefs ?? FALLBACK_PREFS,
+      hold: (reason) => {
+        for (const entry of layerTimelines.values()) if (entry.timeline.playing) entry.timeline.pause();
+        if (timeline && !dialogueHolds.has(reason)) { dialogueHolds.set(reason, timeline); timeline.hold(reason); }
+      },
+      release: (reason) => {
+        const held = dialogueHolds.get(reason);
+        dialogueHolds.delete(reason);
+        if (held && held === timeline) held.release(reason);
+        timeline?.refreshTranscript();
+        transcriptBar?.refresh();
+      },
+      act: (actions) => dialogueActions(actions),
+      present: (presentation) => dialoguePresentation(presentation),
+      slides,
+      instantText: () => app.hasAttribute('data-text-instant')
+    }
   });
 
   // Screens: without layout, blocks stack in the reading column (.t-blocks). With a layout (a
@@ -740,6 +822,7 @@ export function createScreenView(options: ScreenViewOptions) {
   // end fires media.ended.
   function listened<M extends HTMLMediaElement>(block: BlockData, media: M): M {
     media.addEventListener('play', () => {
+      behaviors.dialogues.pauseAll();
       if (timeline?.playing) timeline.pause();
       for (const entry of layerTimelines.values()) if (entry.timeline.playing) entry.timeline.pause();
     });
@@ -780,6 +863,7 @@ export function createScreenView(options: ScreenViewOptions) {
   }
   // A block that leaves the page: its object stops, its observers and timers end.
   function disposeBlock(blockId: string) {
+    behaviors.dialogues.forget(blockId);
     hosts.get(blockId)?.dispose();
     hosts.delete(blockId);
     for (const undo of cleanups.get(blockId) || []) undo();
@@ -1134,6 +1218,7 @@ export function createScreenView(options: ScreenViewOptions) {
     }
     applySteps();
     updateBackdrop();
+    behaviors.dialogues.afterShow();
     return fresh;
   }
 
@@ -1206,6 +1291,10 @@ export function createScreenView(options: ScreenViewOptions) {
     rooms(blockId: string) { const node = main.querySelector<HTMLElement>(`[data-block="${blockId}"]`); const block = courseState.blockIndex.get(blockId)?.block; return node && block ? outcomeRooms(node, block) : null; },
     objectHost: (blockId: string) => hosts.get(blockId),
     refreshResults: () => behaviors.refreshResults(),
+    // The dialogues of the screen (D61): their state, the editor's paths, the tests' clock.
+    get dialogues() { return behaviors.dialogues; },
+    // The transcript's panel (the narration's, or the one of a screen whose layers or dialogues speak).
+    transcript(open: boolean) { if (timeline) timeline.transcript(open); else transcriptBar?.toggle(open); },
     updateBackdrop,
     dispose: disposeHosts,
     // Closes the open layers but one, without their events (the canvas shows the layer asked for).
@@ -1219,6 +1308,8 @@ export function createScreenView(options: ScreenViewOptions) {
     get layers() { return [...document.querySelectorAll<HTMLDialogElement>('dialog.t-layer')].map((dialog) => dialog.dataset.layer ?? ''); },
     // Everything the view put in the page goes (the canvas mounts a course again).
     destroy() {
+      behaviors.dialogues.dispose();
+      transcriptBar?.dispose();
       disposeHosts();
       backdropHost?.dispose();
       backdropElement?.remove();
@@ -1261,3 +1352,6 @@ function arrange(container: MovableParent, nodes: readonly HTMLElement[]) {
     else container.insertBefore(node, before);
   });
 }
+
+// The learner's voice settings where no narration's bar keeps them (the canvas without bars).
+const FALLBACK_PREFS = { rate: 1, volume: 1, muted: false };
