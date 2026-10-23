@@ -958,7 +958,8 @@ export function createDialogues(context: DialoguesContext) {
         }
         const current = box.getBoundingClientRect().height / zoom;
         const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-        const [low, high] = scene ? [15 * rem, 60 * rem] : [12 * rem, 32 * rem];
+        // A phone's page scrolls anyway: the thread keeps at least half its height there.
+        const [low, high] = scene ? [15 * rem, 60 * rem] : [phone() ? Math.max(12 * rem, Math.min(26 * rem, window.innerHeight * 0.5)) : 12 * rem, 32 * rem];
         if (Math.abs(delta) < 1 && root.style.getPropertyValue('--t-dialog-fill')) { placeOverlays(); return; }
         const fill = Math.round(clamp(low, current + delta / zoom, high));
         root.style.setProperty('--t-dialog-fill', `${fill}px`);

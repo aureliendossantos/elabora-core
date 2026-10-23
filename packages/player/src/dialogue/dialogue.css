@@ -26,6 +26,8 @@
 }
 /* Slides: a box of fixed size (the room the slide leaves, --t-dialog-fill), its thread anchored at the
    bottom, scrolled by the learner. */
+/* Scrollbars in the theme's ink, thin, on a dark theme as on a light one. */
+.t-dialogue-root .t-dialogue-log, .t-dialogue-root .t-dialogue-debrief { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--t-text) 28%, transparent) transparent; }
 [data-presentation="slides"] .t-dialogue-root .t-dialogue-log { height: var(--t-dialog-fill, 24rem); min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .t-dialogue-log > :first-child { margin-top: auto; }
 .t-dialogue-log:focus-visible { outline: 3px solid var(--t-focus); outline-offset: 2px; }
@@ -288,7 +290,7 @@
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-options {
     position: absolute; z-index: 1; inset-inline: 25%; top: 57%; bottom: 4.5%; justify-content: flex-end; min-height: 0 !important; font-size: clamp(0.9375rem, 1.25cqi, 1.1875rem);
   }
-  .t-dialogue-root[data-t-look="scene"] .t-dialogue-prompt { padding: 0 0.25em; font-size: 1em; text-shadow: 0 0 1em var(--t-surface), 0 0 0.25em var(--t-surface); }
+  .t-dialogue-root[data-t-look="scene"] .t-dialogue-prompt { align-self: flex-start; padding: 0.3em 0.75em; border-radius: 999px; font-size: 1em; background: color-mix(in srgb, var(--t-surface) 90%, transparent); box-shadow: 0 1px 4px color-mix(in srgb, var(--t-text) 10%, transparent); }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-choice { min-height: 0; padding: 0.7em 1.15em; border-radius: 0.85em; font-size: 1em; box-shadow: 0 1px 2px color-mix(in srgb, var(--t-text) 6%, transparent); }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-turn, .t-dialogue-root[data-t-look="scene"] .t-dialogue-endbar { padding: 0.375rem 0.5rem; border-radius: 999px; background: color-mix(in srgb, var(--t-surface) 88%, transparent); }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-count { padding-inline-start: 0.5rem; }
