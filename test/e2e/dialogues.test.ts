@@ -507,7 +507,8 @@ test('a fork of dialogue with markup of its own keeps the behaviour', { timeout:
 
 // The screen drives the dialogue: begins: event waits for start-dialogue, a button moves it to a node
 // (goto-dialogue), another starts it over (restart-dialogue, after the scored run: the scored run kept);
-// dialogue.node fires with its node. On a new visit, what its cues showed is shown again, at once.
+// dialogue.node fires with its node. On a new visit after a choice, what its cues showed is shown again,
+// at once, with the thread at its decision (without a choice, nothing is saved: it starts again).
 test('the screen\'s actions on a dialogue, and its presentation replayed on a new visit', { timeout: 180000 }, async () => {
   const dir = dialogueCourse({ screens: ['appel', 'rencontre'] });
   const file = path.join(dir, 'screens/rencontre.json');
@@ -536,6 +537,8 @@ test('the screen\'s actions on a dialogue, and its presentation replayed on a ne
     await page.evaluate(() => (window as DialogueWindow).__elabora.go('appel'));
     await until(page, 'appel-marc', 'choosing');
     assert.equal(await page.locator('[data-block="plan-etage"]').isVisible(), true);
+    await choose(page, 'appel-marc', 'a');
+    assert.equal((await until(page, 'appel-marc', 'choosing')).node, 'ticket');
     await page.evaluate(() => (window as DialogueWindow).__elabora.go('rencontre'));
     assert.equal((await state(page, 'rencontre-marc')).phase, 'playing', 'started by the screen');
     await page.locator('[data-block="rencontre-fin"] button').click();
@@ -547,7 +550,7 @@ test('the screen\'s actions on a dialogue, and its presentation replayed on a ne
     assert.deepEqual([again.phase, again.path.length, Array.isArray(again.scored)], ['playing', 0, true], 'started over, the scored run kept apart');
     await page.evaluate(() => (window as DialogueWindow).__elabora.go('appel'));
     assert.equal(await page.locator('[data-block="plan-etage"]').isVisible(), true, 'shown again on the new visit, at once');
-    assert.equal((await state(page, 'appel-marc')).phase, 'choosing', 'the thread at its decision, at once');
+    assert.deepEqual([(await state(page, 'appel-marc')).phase, (await state(page, 'appel-marc')).node], ['choosing', 'ticket'], 'the thread at its decision, at once');
     assert.deepEqual(errors, []);
   } finally {
     await page.close();
