@@ -401,11 +401,14 @@ export function createScreenView(options: ScreenViewOptions) {
           revealed: () => 1, lastStep: () => 1, display: () => {}, chain: () => false, canReach: () => false, reach: () => {}, segmentEnded: () => {}, advance: () => {}, proceed: () => false,
           moved: (time) => {
             entry.timed?.apply(time);
+            // Charts whose items come with the layer's voice follow its playhead (D60, D62).
+            behaviors.charts.at(time, dialog);
             const focused = document.activeElement;
             if (focused instanceof HTMLElement && focused.closest('[data-t-timed]') && dialog.contains(focused)) entry.timeline?.focusSeek();
           },
           cue: (event) => trigger('timeline.reached', { event }),
           ended: () => {
+            behaviors.charts.at(Infinity, dialog);
             // A panel gives the screen its voice back once it has spoken.
             if (entry.panel) releaseLayerHold(layer.id, entry);
             trigger('timeline.ended', { layer: layer.id });
@@ -1041,6 +1044,7 @@ export function createScreenView(options: ScreenViewOptions) {
       held?.hold(`layer:${id}`);
       document.body.append(dialog);
       if (bar) startLayerTimeline(layer, dialog, false, bar);
+      else behaviors.charts.at(null, dialog);
       dialog.showModal();
       behaviors.noteShown(dialog);
       return;
@@ -1050,6 +1054,7 @@ export function createScreenView(options: ScreenViewOptions) {
     dialog.addEventListener('keydown', (event) => { if (event.key === 'Escape') { event.preventDefault(); dialog.close(); } });
     main.append(dialog);
     if (bar) startLayerTimeline(layer, dialog, true, bar);
+    else behaviors.charts.at(null, dialog);
     dialog.show();
     behaviors.noteShown(dialog);
     heading.focus({ preventScroll: true });

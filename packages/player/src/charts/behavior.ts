@@ -45,11 +45,20 @@ interface Bound {
 export function createCharts(context: ChartsContext) {
   const bound = new Set<Bound>();
   let timelineTime: number | null = null;
+  // The time of each layer's own timeline (D62), by its element: a chart in a layer follows the
+  // layer's voice, not the screen's; until the layer says, it waits hidden (time 0).
+  const layerTimes = new WeakMap<Element, number | null>();
+  const timeOf = (item: Bound): number | null => {
+    const layer = item.wrap.closest('dialog.t-layer');
+    if (!layer) return timelineTime;
+    return layerTimes.has(layer) ? layerTimes.get(layer)! : 0;
+  };
 
   const shownNow = (wrap: HTMLElement) => wrap.isConnected && !wrap.closest('[data-t-pending], [data-t-concealed], [data-t-timed], [inert], [hidden]');
   const hasBeats = (dom: ChartDom) => !!dom.block.props.beats && Object.keys(dom.block.props.beats).length > 0;
-  // A chart follows the voice when it has beats and the screen's timeline runs (null: no timeline).
-  const follows = (dom: ChartDom) => hasBeats(dom) && timelineTime !== null;
+  // A chart follows the voice when it has beats and its timeline runs (the screen's, or its layer's;
+  // null: no timeline).
+  const follows = (item: Bound) => hasBeats(item.dom) && timeOf(item) !== null;
 
   // The entrance at its own time t (seconds since it started): the frame, then the items in reading
   // order, then the focus pull. Infinity: the chart at rest.
@@ -119,7 +128,7 @@ export function createCharts(context: ChartsContext) {
   }
 
   function start(item: Bound) {
-    if (item.entrance !== 'waiting' || follows(item.dom)) return;
+    if (item.entrance !== 'waiting' || follows(item)) return;
     if (context.still || prefersLessMotion()) { finish(item); return; }
     if (!shownNow(item.wrap) || !item.inView) return;
     item.entrance = 'playing';
@@ -176,7 +185,7 @@ export function createCharts(context: ChartsContext) {
     item.dispose = () => { item.stop?.(); item.observer?.disconnect(); focus.dispose(); dom.tip.dispose(); cleanup?.(); };
     bound.add(item);
     // Until the screen says whether its timeline runs, a chart with beats waits hidden (time 0).
-    if (hasBeats(dom)) beatsAt(item, timelineTime ?? 0);
+    if (hasBeats(dom)) beatsAt(item, timeOf(item) ?? 0);
     // Shown at rest at once: in the canvas, and when less motion is asked (nothing would play in view).
     else if (context.still || prefersLessMotion()) finish(item);
     else { view.before?.(dom); entranceAt(item, 0); }
@@ -191,12 +200,15 @@ export function createCharts(context: ChartsContext) {
     // Blocks came into view (a step revealed, a timed block shown, an event showed one).
     noteShown() { sweep(); for (const item of bound) start(item); },
     // The screen's timeline is at time (seconds): charts with beats follow it. null: the screen has
-    // no timeline, and they play their entrance like the others.
-    at(time: number | null) {
-      timelineTime = time;
+    // no timeline, and they play their entrance like the others. layer: the element of a layer whose
+    // own timeline is at time (D62), for the charts in it; the screen's time leaves those alone.
+    at(time: number | null, layer?: Element) {
+      if (layer) layerTimes.set(layer, time);
+      else timelineTime = time;
       sweep();
       for (const item of bound) {
         if (!hasBeats(item.dom)) continue;
+        if ((item.wrap.closest('dialog.t-layer') ?? undefined) !== layer) continue;
         if (time !== null) beatsAt(item, time);
         else if (item.entrance === 'waiting') {
           if (context.still || prefersLessMotion()) finish(item);

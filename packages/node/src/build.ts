@@ -50,6 +50,9 @@ import { writeLock } from './state-lock.ts';
 import { writeFileAtomic, sha256Hex as sha256 } from './util/fs.ts';
 import { gatesStatus } from './objects/gates-record.ts';
 import { narrationTracks, trackName } from './narration/tracks.ts';
+import { dialogueLineAudio } from './narration/dialogue-audio.ts';
+import type { DialogueLineAudio } from './narration/dialogue-audio.ts';
+import type { PackagedLines } from '@elabora/core/dialogue/voices';
 
 const PORTABLE = /^[A-Za-z0-9._/-]+$/;
 
@@ -213,6 +216,10 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     files.set(track.captionsPath, Buffer.from(track.vtt));
   }
   const tracks = new Map(narration.tracks.map((track) => [track.name, track]));
+  // The lines of dialogues: one file per line (D61), at the package's media quality.
+  const dialogueLines = await dialogueLineAudio(project, { quality });
+  for (const failure of dialogueLines.failures) reporter.emit('E_NARRATION_TRACK', { file: `screens/${failure.screen}.json`, target: failure.screen, message: `The audio of dialogue line "${failure.line}" of screen "${failure.screen}" could not be packaged: ${failure.message}` });
+  for (const line of dialogueLines.lines) media.set(line.path, line.file);
 
   // A package of several languages (D59): the course in each translation that is ready and approved,
   // with its own narration tracks (narration/<lang>/).
@@ -234,7 +241,12 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   }
   const others = languages.slice(1).map((language) => ({ language, project: translatedProject(project, language) }));
   const otherTracks = new Map<string, Map<string, (typeof narration.tracks)[number]>>();
+  const otherLines = new Map<string, DialogueLineAudio>();
   for (const other of others) {
+    const lines = await dialogueLineAudio(other.project, { folder: other.language, quality });
+    for (const failure of lines.failures) reporter.emit('E_NARRATION_TRACK', { file: `screens/${failure.screen}.json`, target: failure.screen, message: `The ${other.language} audio of dialogue line "${failure.line}" of screen "${failure.screen}" could not be packaged: ${failure.message}` });
+    for (const line of lines.lines) media.set(line.path, line.file);
+    otherLines.set(other.language, lines);
     const made = await narrationTracks(other.project, { folder: other.language });
     for (const failure of made.failures) reporter.emit('E_NARRATION_TRACK', { file: `screens/${failure.screen}.json`, target: failure.screen, message: `The ${other.language} narration track of ${trackOwner(failure)} could not be made: ${failure.message}` });
     // As in the course's own language: a screen whose lines are not all said runs silent on estimated
@@ -300,13 +312,19 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     components: [...project.components.values()].map((component) => [component.id, componentHash(component)]),
     screens: [...project.screens.entries()].sort(), objects: [...usedObjects].sort().map((id) => [id, project.objects.get(id)?.manifest, project.objects.get(id)?.code]),
     narration: tracks.size ? [...tracks.values()].map((track) => [track.name, track.key]) : undefined,
+    dialogueLines: dialogueLines.lines.length ? dialogueLines.lines.map((line) => [line.path, line.hash, line.mouth]) : undefined,
     delivery,
-    languages: others.length ? languages.map((language) => [language, fileHash(project.files, `translations/${language}.xlf`) ?? null, [...(otherTracks.get(language)?.values() ?? [])].map((track) => [track.name, track.key])]) : undefined
+    languages: others.length ? languages.map((language) => [language, fileHash(project.files, `translations/${language}.xlf`) ?? null, [...(otherTracks.get(language)?.values() ?? [])].map((track) => [track.name, track.key]), ...(otherLines.get(language)?.lines.length ? [otherLines.get(language)!.lines.map((line) => [line.path, line.hash, line.mouth])] : [])]) : undefined
   })).slice(0, 16);
   const several = others.length ? { languages } : {};
   const assetPathOf = assetPaths.size ? { assetPath: (name: string) => assetPaths.get(name) ?? `assets/${name}` } : {};
+  const linesOf = (made: DialogueLineAudio | undefined): { dialogueAudio?: PackagedLines } => {
+    if (!made?.lines.length) return {};
+    const shipped = new Map(made.lines.map((line) => [`${line.screen}/${line.line}`, { src: line.path, mouth: line.mouth, duration: line.duration }]));
+    return { dialogueAudio: (screen: string, line: string) => shipped.get(`${screen}/${line}`) };
+  };
   const data: CompiledCourse = compileCourseData(project, keys, {
-    buildId, ...assetPathOf,
+    buildId, ...assetPathOf, ...linesOf(dialogueLines),
     ...(tracks.size ? { narration: (screen: string, layer?: string) => tracks.get(trackName(screen, layer ?? null))?.track } : {}),
     ...(delivery ? { delivery } : {}), ...several
   });
@@ -315,7 +333,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   for (const other of others) {
     const own = otherTracks.get(other.language);
     const translated = compileCourseData(other.project, keys, {
-      buildId, ...assetPathOf,
+      buildId, ...assetPathOf, ...linesOf(otherLines.get(other.language)),
       ...(own?.size ? { narration: (screen: string, layer?: string) => own.get(trackName(screen, layer ?? null))?.track } : {}),
       ...(delivery ? { delivery } : {}), ...several
     });
@@ -395,16 +413,22 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
 
   const model = { ...buildStateModel(project, keys, lock), ...(others.length ? { languages } : {}) };
   const report = buildReport({
+    dialogueVoices: dialogueLines.lines,
     project, course, plan, registry, profiles: targets, keys: stateKeys, target, web: web && share ? { progress: web.progress, navigation: web.navigation, noindex: web.noindex, url: share.head.url ?? null, image: share.image?.path ?? null, ...(review ? { review: { origins: review.origins } } : {}) } : null, suspendDataWorstCase: worstCaseLength(model), data,
     pkg: { sha256: packageHash, bytes: zipPlan.size, files: zipPlan.entries.length, uncompressedBytes: zipPlan.uncompressed },
     media: packaged.media.length ? { quality, files: packaged.media.map((m) => ({ asset: `assets/${m.name}`, path: m.path, bytes: m.file && fs.existsSync(m.file) ? fs.statSync(m.file).size : 0, rendition: m.rendition })) } : null,
-    narration: narration.tracks.length || narration.silent.length ? {
-      bytes: narration.tracks.reduce((sum, track) => sum + track.bytes + Buffer.byteLength(track.vtt), 0),
-      seconds: Math.round(narration.tracks.reduce((sum, track) => sum + track.duration, 0) * 10) / 10,
-      tracks: narration.tracks.map((track) => ({ screen: track.screen, ...(track.layer !== null ? { layer: track.layer } : {}), path: track.path, captions: track.captionsPath, bytes: track.bytes, seconds: track.duration })),
-      silent: narration.silent,
-      ...(narration.tracks.some((track) => track.credits.length) ? { credits: [...new Set(narration.tracks.flatMap((track) => track.credits))].sort() } : {})
-    } : null,
+    narration: narration.tracks.length || narration.silent.length || dialogueLines.lines.length ? (() => {
+      const lines = dialogueLines.lines.map((line) => ({ screen: line.screen, block: line.block, line: line.line, path: line.path, bytes: fs.statSync(line.file).size, seconds: line.duration }));
+      const credits = [...new Set([...narration.tracks.flatMap((track) => track.credits), ...dialogueLines.lines.map((line) => line.credit).filter((credit): credit is string => !!credit)])].sort();
+      return {
+        bytes: narration.tracks.reduce((sum, track) => sum + track.bytes + Buffer.byteLength(track.vtt), 0) + lines.reduce((sum, line) => sum + line.bytes, 0),
+        seconds: Math.round((narration.tracks.reduce((sum, track) => sum + track.duration, 0) + lines.reduce((sum, line) => sum + line.seconds, 0)) * 10) / 10,
+        tracks: narration.tracks.map((track) => ({ screen: track.screen, ...(track.layer !== null ? { layer: track.layer } : {}), path: track.path, captions: track.captionsPath, bytes: track.bytes, seconds: track.duration })),
+        silent: narration.silent,
+        ...(credits.length ? { credits } : {}),
+        ...(lines.length ? { lines } : {})
+      };
+    })() : null,
     limits, release: !!options.release, diagnostics: sortDiagnostics(applyIgnored(applyWaivers(reporter.items, plan.waivers || []), ignoredOf(project.course))), licenses,
     languages: others.length ? languages : null
   });
@@ -610,6 +634,8 @@ function indexHtml(data: CompiledCourse, { themeCss = false, web, review = false
 }
 
 interface ReportInput {
+  // The dialogue lines shipped with their audio (D61).
+  dialogueVoices?: { screen: string; block: string; generated: boolean }[];
   project: Project;
   course: Course;
   plan: Plan;
@@ -643,7 +669,7 @@ function planValidation(project: Project): Pick<ReportPlan, 'validated' | 'chang
   };
 }
 
-function buildReport({ project, course, plan, registry, profiles, keys, suspendDataWorstCase, data, pkg, media, narration, limits, target, web, release, diagnostics, licenses, languages }: ReportInput): BuildReport {
+function buildReport({ project, course, plan, registry, profiles, keys, suspendDataWorstCase, data, pkg, media, narration, limits, target, web, release, diagnostics, licenses, languages, dialogueVoices }: ReportInput): BuildReport {
   const flat = (blocks: CompiledBlock[] | undefined): CompiledBlock[] => (blocks || []).flatMap((block) => [block, ...flat(block.blocks)]);
   const uses = new Map<string, number>();
   for (const screen of data.screens) {
@@ -668,6 +694,11 @@ function buildReport({ project, course, plan, registry, profiles, keys, suspendD
   for (const { block, screen } of iterateBlocks(project)) if (block.props?.generated) generated.push({ screen: screen.id, block: block.id, type: block.type });
   // A narration spoken by a generated voice (its lines' sidecars say so).
   for (const screen of data.screens) if (screen.narration?.generated && screen.narration.src) generated.push({ screen: screen.id, block: 'narration', type: 'voice' });
+  // The dialogues said by a generated voice (D61): one entry per dialogue.
+  for (const key of new Set((dialogueVoices ?? []).filter((line) => line.generated).map((line) => `${line.screen}\u0000${line.block}`))) {
+    const [screen, block] = key.split('\u0000');
+    generated.push({ screen: screen!, block: block!, type: 'voice' });
+  }
   return {
     format: 'elabora-build-report/1',
     elabora: ELABORA_VERSION,

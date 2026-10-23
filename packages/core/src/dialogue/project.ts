@@ -85,7 +85,8 @@ export function pathTime(project: Project, ref: DialogueBlockRef, data: Dialogue
       seconds += readingSeconds([node?.prompt ?? '', ...(node?.options ?? []).filter((option) => !option.fallback).map((option) => option.label ?? option.text ?? '')].join(' ')) + CHOOSING_SECONDS;
     } else if (beat.type === 'choice' && data.learnerVoice && !beat.auto) {
       const option = data.nodes.find((candidate) => candidate.id === beat.node)?.options.find((candidate) => candidate.id === beat.option);
-      if (option?.text) { seconds += estimatedDuration(option.text) + LINE_GAP; estimated = true; }
+      // The learner's answer said by their voice: its audio when it has one (the line <node>.<option>).
+      if (option?.text) seconds += lineSeconds(`${beat.node}.${beat.option}`, option.text) + LINE_GAP;
     } else if (beat.type === 'feedback') {
       const option = data.nodes.find((candidate) => candidate.id === beat.node)?.options.find((candidate) => candidate.id === beat.option);
       seconds += readingSeconds(option?.feedback ?? '');

@@ -17,6 +17,16 @@ import { blockLayouts, round, scrollFrom } from './layout-report.ts';
 import { REVIEW_PROTOCOL, SIZE_RULES, acceptsFrom, otherVersion, reviewPeer, readPageMessage, textScale, widestColumn, wordAt, wordTime } from './review-protocol.ts';
 import type { AnchorPart, BlocksMessage, GoTarget, LayoutMessage, LocationMessage, ModuleMessage, PageMessage, ReadyMessage, ReviewBlock } from './review-protocol.ts';
 import type { BlockData, NarrationData, ScreenData } from './course-data.ts';
+import type { DialogueData } from './dialogue/types.ts';
+
+// The lines of a dialogue a reviewer may comment: its nodes' lines and replies, and the options its
+// learner says with their voice ("<node>.<option>").
+function dialogueLines(data: DialogueData): { id: string; text?: string; speaker?: string; voice?: DialogueData['nodes'][number]['lines'][number]['voice'] }[] {
+  return data.nodes.flatMap((node) => [
+    ...node.lines,
+    ...node.options.flatMap((option) => [...(option.voice ? [{ id: `${node.id}.${option.id}`, text: option.text, ...(data.learner ? { speaker: data.learner } : {}), voice: option.voice }] : []), ...option.reply])
+  ]);
+}
 
 const course = window.ELABORA_COURSE;
 const review = course.delivery?.review;
@@ -157,12 +167,23 @@ function startBridge(origins: readonly string[]) {
     const message: Omit<LocationMessage, 'protocol'> = {
       type: 'location', screen: screen?.key ?? '', index: screen ? course.screens.indexOf(screen) : -1, step: revealed, steps: [...steps], layer: openLayer(), held: held !== null
     };
-    const state = hooks.timeline.state();
-    if (state && screen?.narration) {
+    // The voice heard: an open layer's own timeline (D62) speaks over the screen's, which waits.
+    const layer = message.layer ? screen?.layers.find((candidate) => candidate.id === message.layer) : undefined;
+    const layerState = layer?.narration ? hooks.timeline.layer(layer.id)?.state() ?? null : null;
+    const narration = layerState ? layer!.narration : screen?.narration;
+    const state = layerState ?? hooks.timeline.state();
+    // A dialogue's line being said (D61), when the player says which.
+    const spoken = dialogueLine();
+    if (spoken) {
+      message.line = spoken.line;
+      if (spoken.said) message.said = spoken.said;
+      if (spoken.speaker) message.speaker = spoken.speaker;
+      if (spoken.word) { message.word = spoken.word.word; if (spoken.word.occurrence > 1) message.occurrence = spoken.word.occurrence; }
+    } else if (state && narration) {
       message.time = Math.round(state.time * 1000) / 1000;
       message.duration = Math.round(state.duration * 1000) / 1000;
       message.playing = state.playing;
-      const line = screen.narration.lines.find((candidate) => candidate.id === state.line);
+      const line = narration.lines.find((candidate) => candidate.id === state.line);
       if (line) {
         message.line = line.id;
         const said = wordAt(line.words ?? [], state.time);
@@ -314,6 +335,11 @@ function startBridge(origins: readonly string[]) {
     const screen = course.screens[at];
     if (hooks.screen !== screen.id) hooks.go(at);
     if (hooks.screen !== screen.id) return ['screen'];
+    // A line of a layer's narration (D62) opens its layer; a line of a dialogue (D61) shows the dialogue.
+    const ownLayer = target.line ? screen.layers.find((layer) => layer.narration?.lines.some((line) => line.id === target.line)) : undefined;
+    const ownDialogue = target.line && !ownLayer && !screen.narration?.lines.some((line) => line.id === target.line) ? dialogueOf(screen, target.line) : null;
+    if (ownLayer && !target.layer) target = { ...target, layer: ownLayer.id };
+    if (ownDialogue && !target.block) target = { ...target, block: ownDialogue };
     const block = target.block ? hooks.engine.blockIndex.get(target.block) : undefined;
     if (target.block && (!block || block.screen.id !== screen.id)) missing.push('block');
     // The step named (it may be an earlier one), else the block's when it is not shown yet.
@@ -323,7 +349,8 @@ function startBridge(origins: readonly string[]) {
     } else if (block && block.screen.id === screen.id && (block.block.step ?? 1) > hooks.step.revealed) hooks.reveal(block.block.step ?? 1);
     // The moment of a timed screen.
     const narration: NarrationData | undefined = screen.narration;
-    if (narration && (target.line || target.time !== undefined)) {
+    if (ownLayer || ownDialogue) { /* placed with the layer, or the dialogue's block */ }
+    else if (narration && (target.line || target.time !== undefined)) {
       const line = target.line ? narration.lines.find((candidate) => candidate.id === target.line) : undefined;
       if (target.line && !line) missing.push('line');
       const wordStart = line && target.word ? wordTime(line.words ?? [], target.word, target.occurrence ?? 1) : null;
@@ -336,8 +363,23 @@ function startBridge(origins: readonly string[]) {
     for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog.t-layer[open]')) if (dialog.dataset.layer !== target.layer) dialog.close();
     if (target.layer) {
       if (!screen.layers.some((layer) => layer.id === target.layer)) missing.push('layer');
-      else hooks.openLayer(target.layer);
+      else {
+        hooks.openLayer(target.layer);
+        // The moment of the layer's own timeline: the word, else the line.
+        const timeline = ownLayer ? hooks.timeline.layer(ownLayer.id) : null;
+        const line = ownLayer?.narration?.lines.find((candidate) => candidate.id === target.line);
+        if (ownLayer && !timeline) missing.push('line');
+        else if (timeline && line) {
+          const wordStart = target.word ? wordTime(line.words ?? [], target.word, target.occurrence ?? 1) : null;
+          if (target.word && wordStart === null) missing.push('word');
+          if (wordStart !== null) timeline.atTime(wordStart + 0.001, { captions: false });
+          else timeline.at(line.id, { captions: false });
+          if (held) timeline.pause();
+        }
+      }
     }
+    // A dialogue's line: the player shows it when it can (its walk replayed up to that line).
+    if (ownDialogue) dialogueHooks()?.show?.(ownDialogue, target.line!);
     // The block, in view and highlighted (twice, or still under reduced motion).
     if (target.block && !missing.includes('block')) {
       const node = document.querySelector<HTMLElement>(`dialog.t-layer[open] [data-block="${CSS.escape(target.block)}"], #t-main [data-block="${CSS.escape(target.block)}"]`);
@@ -355,6 +397,38 @@ function startBridge(origins: readonly string[]) {
     }
     if (held && hooks.timeline.state()?.playing) hooks.timeline.pause();
     return missing;
+  }
+
+  // ── Dialogues (D61) ─────────────────────────────────────────────────
+  // The player's dialogues may say which line is being said (current) and show a line (show); the
+  // bridge reads them when they are there: a module whose player has neither still finds the
+  // dialogue's block.
+  type DialogueHooks = { current?: () => { block: string; line: string; time?: number } | null; show?: (block: string, line: string) => boolean };
+  function dialogueHooks(): DialogueHooks | null {
+    const found = (hooks as unknown as { dialogues?: DialogueHooks }).dialogues;
+    return found && typeof found === 'object' ? found : null;
+  }
+  // The dialogue block of the screen that has this line (a node's line, a reply, an option the
+  // learner's voice says: "<node>.<option>").
+  function dialogueOf(screen: ScreenData, id: string): string | null {
+    const all = (blocks: readonly BlockData[]): BlockData[] => blocks.flatMap((block) => [block, ...all(block.blocks ?? [])]);
+    for (const block of [...all(screen.blocks), ...screen.layers.flatMap((layer) => all(layer.blocks))]) {
+      if (block.behavior !== 'dialogue') continue;
+      const data = block.props as DialogueData;
+      if (dialogueLines(data).some((line) => line.id === id)) return block.id;
+    }
+    return null;
+  }
+  function dialogueLine(): { line: string; said?: string; speaker?: string; word?: { word: string; occurrence: number } } | null {
+    const current = dialogueHooks()?.current?.();
+    if (!current) return null;
+    const block = hooks.engine.blockIndex.get(current.block)?.block;
+    if (!block || block.behavior !== 'dialogue') return null;
+    const data = block.props as DialogueData;
+    const line = dialogueLines(data).find((candidate) => candidate.id === current.line);
+    if (!line) return { line: current.line };
+    const said = current.time !== undefined ? wordAt(line.voice?.words ?? [], current.time) : null;
+    return { line: line.id, ...(line.text ? { said: line.text } : {}), ...(line.speaker ? { speaker: data.speakers[line.speaker]?.name ?? line.speaker } : {}), ...(said ? { word: said } : {}) };
   }
 
   // ── Names ───────────────────────────────────────────────────────────

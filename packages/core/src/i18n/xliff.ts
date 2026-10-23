@@ -36,6 +36,8 @@ export interface XliffUnit {
   targetMarks?: readonly XliffMark[];
   state?: string;
   notes?: XliffNote[];
+  // A line a voice says: its stage directions are marked (default: a unit named as a narration line's).
+  voice?: boolean;
 }
 
 // A unit as read: the target is null when the unit has none; texts without their markers, the
@@ -75,7 +77,7 @@ export function toXliff({ srcLang, trgLang, original, units }: { srcLang: string
       lines.push('      </notes>');
     }
     lines.push(`      <segment state="${unit.state || 'initial'}">`);
-    const narration = NARRATION_UNIT.test(unit.id);
+    const narration = unit.voice ?? NARRATION_UNIT.test(unit.id);
     lines.push(`        <source>${withMarks(unit.source, unit.sourceMarks, narration)}</source>`);
     if (unit.target !== undefined && unit.target !== null) lines.push(`        <target>${withMarks(unit.target, unit.targetMarks, narration)}</target>`);
     lines.push('      </segment>', '    </unit>');
@@ -86,8 +88,9 @@ export function toXliff({ srcLang, trgLang, original, units }: { srcLang: string
 
 // A text with its word anchors' markers (in order; one that overlaps another is left out) and its
 // stage directions' markers.
-// Only a narration line has directions (elsewhere brackets are Markdown's).
-const NARRATION_UNIT = /^screen\.[^.]+\.narration\.[^.]+\.text$/;
+// Only a voice line has directions (elsewhere brackets are Markdown's): a unit says so (voice), or
+// is named as the narration of a screen or of a layer.
+const NARRATION_UNIT = /^screen\.[^.]+\.(?:layer\.[^.]+\.)?narration\.[^.]+\.text$/;
 
 function withMarks(text: string, marks: readonly XliffMark[] | undefined, narration = false): string {
   const directions = (narration ? lineDirections(text) : []).map((direction, index) => ({ id: `d${index + 1}`, start: direction.start, end: direction.end, type: DIRECTION_MARK }));

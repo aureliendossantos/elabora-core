@@ -106,7 +106,8 @@ export interface DialogueLineData {
 export interface DialogueCueData {
   at: { line?: string; word?: string; occurrence?: number; edge?: 'start' | 'end'; offset?: number };
   // When the cue falls in its line, in seconds from the line's start, resolved by the compiler as the
-  // timeline's cues are (the course data; absent when the anchor names no word of the line).
+  // timeline's anchors are (a word the line does not say: the line's start, or its end with edge end).
+  // In the course data, with the line's voice.
   time?: number;
   gesture?: string;
   expression?: string;

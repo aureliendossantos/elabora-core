@@ -14,6 +14,7 @@ import { ALIGNER_MODELS, alignAudio, alignsAtOnce } from '../align/index.ts';
 import { loadProjectFromDir } from '../project-reader.ts';
 import { narrationLines } from '@elabora/core/narration/narration';
 import type { ImportedFile } from './types.ts';
+import { lineMouth, mouthWords } from './mouth.ts';
 
 // The audio of a narration line (docs/decisions.md D24): an M4A (AAC, mono) at
 // assets/narration/<language>/<screen>/<line>.m4a and its sidecar, written as one change. A voice
@@ -30,11 +31,12 @@ export async function setNarrationAudio(dir: string, args: NarrationAudioArgs, o
   const tools = args.tools ?? await findMediaTools();
   return withLineAudio(args.file, { trim: !!args.trim, tools }, async (audio) => {
     const timed = args.words?.length ? { words: args.words, ...(args.aligner ? { aligner: args.aligner } : {}) } : args.align === false ? null : await wordsOf(dir, args, audio.file, tools);
+    const mouth = await mouthOf(dir, args, audio, timed && 'words' in timed ? timed.words : null, tools);
     const written = await setNarrationAudioChange(dir, {
       screen: args.screen, line: args.line, ...(args.language ? { language: args.language } : {}),
       audio: { size: audio.bytes.length, hash: audio.hash }, duration: audio.duration, provider: args.provider, voice: args.voice, generated: args.generated,
       ...(timed && 'words' in timed ? timed : {}), ...(args.take ? { take: args.take } : {}), ...(args.credit ? { credit: args.credit } : {}), ...(args.model ? { model: args.model } : {}),
-      createdAt: createdAt()
+      ...(mouth !== null ? { mouth } : {}), createdAt: createdAt()
     }, new Map([[audio.hash, audio.bytes]]), options);
     return { ...written, ...(timed && 'alignmentError' in timed ? { alignmentError: timed.alignmentError } : {}) };
   });
@@ -96,6 +98,21 @@ async function wordsOf(dir: string, args: NarrationAudioArgs, file: string, tool
     return aligned?.words.length ? { words: aligned.words, aligner: aligned.aligner } : null;
   } catch (error) {
     return { alignmentError: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+// The mouth's envelope of a line's new audio (D61): measured on the audio with its words, timed or
+// placed along its text. null when it cannot be measured (the line is not found): the build measures
+// it then.
+async function mouthOf(dir: string, args: NarrationAudioArgs, audio: LineAudio, words: NarrationAudioArgs['words'] | null, tools: MediaTools): Promise<string | null> {
+  try {
+    if (words?.length) return await lineMouth(tools, audio.file, words);
+    const project = loadProjectFromDir(dir);
+    const language = args.language || project.course?.language || '';
+    const text = narrationLines(project, args.screen, language)?.find((line) => line.id === args.line)?.text ?? null;
+    return await lineMouth(tools, audio.file, mouthWords(text, audio.duration, null, language));
+  } catch {
+    return null;
   }
 }
 

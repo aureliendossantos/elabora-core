@@ -17,6 +17,7 @@ import { canonicalJSON, parseJSON } from '../util/json.ts';
 import { sha256 } from '../util/sha256.ts';
 import { objectsIn } from '../util/values.ts';
 import { screenTimeline } from './timeline.ts';
+import { isMouth } from './mouth.ts';
 import { screenVoiceLines } from './voice-lines.ts';
 import type { VoiceTrack } from './voice-lines.ts';
 import { hasDirections, outsideDirections } from './directions.ts';
@@ -144,6 +145,8 @@ export interface NarrationLineInfo {
   take: number | null;
   credit: string | null;
   model: string | null;
+  // The mouth's envelope of its audio (the sidecar's: narration/mouth.ts); null: none measured yet.
+  mouth: string | null;
 }
 
 // Reads a sidecar; error when it does not parse or does not follow the schema.
@@ -225,7 +228,8 @@ export function narrationLines(project: Project, screenId: string, language = pr
       duration: audioFile?.kind === 'binary' ? probed ?? sidecar?.duration ?? null : null,
       speakerVoice: speakerVoiceOf(speaker?.voices?.[language]),
       provider: sidecar?.provider ?? null, voice: sidecar?.voice ?? null, generated: sidecar?.generated ?? null, words: sidecar?.words ?? null, aligner: sidecar?.aligner ?? null,
-      take: sidecar?.take ?? null, credit: sidecar?.credit ?? null, model: sidecar?.model ?? null
+      take: sidecar?.take ?? null, credit: sidecar?.credit ?? null, model: sidecar?.model ?? null,
+      mouth: typeof sidecar?.mouth === 'string' && isMouth(sidecar.mouth) ? sidecar.mouth : null
     };
   });
 }
