@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { narrationLines, lineSpeaker } from '@elabora/core/narration/narration';
+import { trackKey } from '@elabora/core/narration/voice-lines';
 import type { NarrationLineInfo } from '@elabora/core/narration/narration';
 import type { Speaker } from '@elabora/format';
 import { loadProjectFromDir } from '../project-reader.ts';
@@ -206,7 +207,8 @@ async function planNarration(dir: string, project: Project, infos: NarrationLine
     for (const info of infos) {
       const model = dialogueModel(info);
       const previous = run.at(-1);
-      if (!model || (previous && (previous.step !== info.step || dialogueModel(previous) !== model))) close();
+      // An exchange stays in one step of one track: a layer's lines, or a dialogue's, are said apart.
+      if (!model || (previous && (previous.step !== info.step || trackKey(previous.track) !== trackKey(info.track) || dialogueModel(previous) !== model))) close();
       if (model) run.push(info);
     }
     close();
@@ -255,7 +257,7 @@ async function planNarration(dir: string, project: Project, infos: NarrationLine
 function linesOf(project: Project, screen: string, language: string, lines?: string[]): NarrationLineInfo[] {
   const infos = narrationLines(project, screen, language);
   if (!project.screens.has(screen)) throw new VoiceError('E_VOICE_SCREEN', `Unknown screen "${screen}".`);
-  if (!infos) throw new VoiceError('E_VOICE_SCREEN', `Screen "${screen}" has no narration (screens/${screen}.json narration.lines).`);
+  if (!infos) throw new VoiceError('E_VOICE_SCREEN', `Screen "${screen}" has no narration (screens/${screen}.json narration.lines, or a layer's layers[].narration.lines).`);
   for (const id of lines ?? []) if (!infos.some((info) => info.id === id)) throw new VoiceError('E_VOICE_LINE', `Screen "${screen}" has no narration line "${id}" (its lines: ${infos.map((info) => info.id).join(', ')}).`);
   return infos;
 }

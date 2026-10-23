@@ -16,6 +16,8 @@ import { clockTime } from './timing.ts';
 // and as the screen itself sets them; each line in a language, with its text there, whether its
 // audio is there and up to date, and where it falls on the timeline (estimated from its text while it
 // has no audio); the segment of each step and the whole length. null: the screen is not narrated.
+// Each function takes { layer } for the timeline of a layer of the screen (D62): its lines, one
+// segment from its opening, its timed blocks and cues; a layer plays through (advance auto).
 
 export type Advance = 'learner' | 'auto' | 'next-screen';
 export type Seek = 'seen' | 'free' | 'none';
@@ -29,6 +31,8 @@ export interface NarrationLineView extends NarrationLineInfo {
 
 export interface NarrationView {
   screen: string;
+  // The layer whose narration it is (D62); null: the screen's.
+  layer: string | null;
   language: string;
   source: boolean; // the course's own language
   advance: Advance;
@@ -43,19 +47,20 @@ export interface NarrationView {
 const ADVANCES: readonly string[] = ['learner', 'auto', 'next-screen'];
 const SEEKS: readonly string[] = ['seen', 'free', 'none'];
 
-export function narrationView(project: Project, screenId: string, language = project.course?.language ?? ''): NarrationView | null {
-  const timing = screenTiming(project, screenId, { language });
-  const narration = project.screens.get(screenId)?.data?.narration;
+export function narrationView(project: Project, screenId: string, language = project.course?.language ?? '', { layer = null }: { layer?: string | null } = {}): NarrationView | null {
+  const timing = screenTiming(project, screenId, { language, layer });
+  const screen = project.screens.get(screenId)?.data;
+  const narration = layer === null ? screen?.narration : objectsIn(screen?.layers).find((candidate) => candidate.id === layer)?.narration;
   if (!timing || !narration) return null;
   const course = project.course?.narration;
   const own = {
-    advance: ADVANCES.includes(narration.advance as string) ? narration.advance as Advance : null,
+    advance: layer === null && ADVANCES.includes((narration as { advance?: string }).advance as string) ? (narration as { advance?: string }).advance as Advance : null,
     seek: SEEKS.includes(narration.seek as string) ? narration.seek as Seek : null
   };
-  const advance = own.advance ?? (ADVANCES.includes(course?.advance as string) ? course!.advance as Advance : 'learner');
+  const advance = layer !== null ? 'auto' : own.advance ?? (ADVANCES.includes(course?.advance as string) ? course!.advance as Advance : 'learner');
   const seek = own.seek ?? (SEEKS.includes(course?.seek as string) ? course!.seek as Seek : 'seen');
   return {
-    screen: screenId, language, source: language === project.course?.language, advance, seek, own,
+    screen: screenId, layer, language, source: language === project.course?.language, advance, seek, own,
     lines: timing.lines.map(({ info, start, end, pause, duration, estimated }) => ({ ...info, timing: { start, end, pause, duration, estimated } })),
     segments: timing.segments, duration: timing.duration, estimated: timing.estimated
   };
@@ -115,6 +120,8 @@ export interface TimelineViewBlock {
 
 export interface TimelineView {
   screen: string;
+  // The layer whose timeline it is (D62); null: the screen's.
+  layer: string | null;
   language: string;
   narrated: boolean;
   duration: number;
@@ -127,8 +134,8 @@ export interface TimelineView {
 
 // A timed screen's timeline: each line with its words and their times, each timed block with its
 // moments, the events on it. null: the screen is not timed.
-export function timelineView(project: Project, screenId: string, language = project.course?.language ?? ''): TimelineView | null {
-  const timeline = screenTimeline(project, screenId, { language });
+export function timelineView(project: Project, screenId: string, language = project.course?.language ?? '', { layer = null }: { layer?: string | null } = {}): TimelineView | null {
+  const timeline = screenTimeline(project, screenId, { language, layer });
   const screen = project.screens.get(screenId)?.data;
   if (!timeline || !screen) return null;
   const blocks = new Map<string, { block: Block; stack?: string }>();
@@ -138,13 +145,13 @@ export function timelineView(project: Project, screenId: string, language = proj
       walk(block.blocks, getRegistry(project).get(block.type)?.root === 'stack' ? block.id : undefined);
     }
   };
-  walk(screen.blocks);
+  walk(layer === null ? screen.blocks : objectsIn(screen.layers).find((candidate) => candidate.id === layer)?.blocks);
   const moment = (found: TimelineMoment): TimelineViewMoment => ({
     at: found.at, anchor: found.anchor, effect: found.effect, duration: found.duration, ...(found.direction ? { direction: found.direction } : {}),
     estimated: found.estimated, ...(found.implied ? { implied: true } : {}), ...(found.problem ? { problem: { ...found.problem } } : {})
   });
   return {
-    screen: screenId, language: timeline.language, narrated: timeline.narrated, duration: timeline.duration, estimated: timeline.estimated, segments: timeline.segments,
+    screen: screenId, layer, language: timeline.language, narrated: timeline.narrated, duration: timeline.duration, estimated: timeline.estimated, segments: timeline.segments,
     lines: timeline.lines.map((line) => {
       const info = timeline.infos.get(line.id);
       const text = info?.text ?? '';
@@ -170,6 +177,8 @@ export type TimedBlockState = 'before' | 'entering' | 'shown' | 'leaving' | 'aft
 
 export interface ScreenAt {
   screen: string;
+  // The layer whose timeline it is (D62); null: the screen's.
+  layer: string | null;
   time: number;
   // The step whose stretch holds the time (shown once reached).
   step: number;
@@ -182,8 +191,8 @@ export interface ScreenAt {
 }
 
 // What is seen of a timed screen at a time: the same function of t as the player's. null: not timed.
-export function screenAt(project: Project, screenId: string, time: number, language?: string): ScreenAt | null {
-  const timeline = screenTimeline(project, screenId, { language });
+export function screenAt(project: Project, screenId: string, time: number, language?: string, { layer = null }: { layer?: string | null } = {}): ScreenAt | null {
+  const timeline = screenTimeline(project, screenId, { language, layer });
   if (!timeline) return null;
   const t = Math.max(0, Math.min(time, timeline.duration));
   const segment = [...timeline.segments].reverse().find((candidate) => candidate.start <= t + 1e-6) ?? timeline.segments[0];
@@ -202,7 +211,7 @@ export function screenAt(project: Project, screenId: string, time: number, langu
     if (timing.in && timing.in.duration > 0 && t < inEnd) return { block, state: 'entering' as const, progress: round((t - inStart) / timing.in.duration) };
     return { block, state: 'shown' as const };
   });
-  return { screen: screenId, time: t, step: segment?.step ?? 1, line: line?.id ?? null, word: line && word >= 0 ? { index: word, text: line.words[word].text } : null, caption, blocks };
+  return { screen: screenId, layer, time: t, step: segment?.step ?? 1, line: line?.id ?? null, word: line && word >= 0 ? { index: word, text: line.words[word].text } : null, caption, blocks };
 }
 
 const round = (value: number): number => Math.round(Math.min(1, Math.max(0, value)) * 1000) / 1000;
@@ -234,8 +243,8 @@ export interface TimelineMark {
 // One mark per moment something changes on a timed screen (its start, a block that comes or goes,
 // a cue, the end of a step), those less than 50 ms apart together: the contact sheet of elabora look
 // --sheet, and the Revue's storyboard of a narrated slide. null: not timed.
-export function timelineMarks(project: Project, screenId: string, language?: string): TimelineMark[] | null {
-  const timeline = screenTimeline(project, screenId, { language });
+export function timelineMarks(project: Project, screenId: string, language?: string, { layer = null }: { layer?: string | null } = {}): TimelineMark[] | null {
+  const timeline = screenTimeline(project, screenId, { language, layer });
   if (!timeline) return null;
   const raw: { at: number; time: number; anchor: Anchor | null; text: string; event: TimelineMarkEvent }[] = [];
   const first = timeline.segments[0];
@@ -267,7 +276,7 @@ export function timelineMarks(project: Project, screenId: string, language?: str
       previous.label += ` + ${item.anchor && item.event.kind !== 'step-end' && JSON.stringify(item.anchor) !== JSON.stringify(previous.anchor) ? `${formatAnchor(item.anchor)} · ` : ''}${item.text}`;
       continue;
     }
-    const at = screenAt(project, screenId, item.time, language);
+    const at = screenAt(project, screenId, item.time, language, { layer });
     marks.push({
       time: round3(item.time), at: round3(item.at), anchor: item.anchor, step: at?.step ?? item.event.step ?? 1, line: at?.line ?? null, events: [item.event],
       label: `${clockTime(item.at, { tenths: true })}${item.anchor && item.event.kind !== 'step-end' ? ` · ${formatAnchor(item.anchor)}` : ''} · ${item.text}`

@@ -1,3 +1,4 @@
+import { isTimedLayer } from '../narration/timeline.ts';
 import type { Block, Project, Variable } from './model.ts';
 import { screenBlocks, screenOrder } from './load.ts';
 import { behaviorOf, getRegistry } from '../components/registry.ts';
@@ -12,7 +13,8 @@ import { isRecord } from '../util/values.ts';
 export interface ScreenParts {
   screen: string;
   blocks: BlockPart[]; // in the screen's order, then its layers'
-  layers: { id: string; title: string }[];
+  // timed: the layer has a timeline of its own (D62); narration: its lines, which its events' cues name.
+  layers: { id: string; title: string; timed?: true; narration?: { seek: 'seen' | 'free' | 'none'; lines: { id: string; speaker: string | null; text: string }[] } }[];
   steps: number[]; // the steps its blocks and its narration lines carry (1: shown from the start)
   screens: { id: string; title: string }[]; // in the course's order
   variables: Variable[];
@@ -75,7 +77,14 @@ export function screenParts(project: Project, screenId: string): ScreenParts | n
   return {
     screen: screenId,
     blocks,
-    layers: (Array.isArray(screen.layers) ? screen.layers : []).filter(isRecord).map((layer) => ({ id: String(layer.id), title: typeof layer.title === 'string' ? layer.title : String(layer.id) })),
+    layers: (Array.isArray(screen.layers) ? screen.layers : []).filter(isRecord).map((layer) => {
+      const lines = isRecord(layer.narration) && Array.isArray(layer.narration.lines) ? layer.narration.lines.filter(isRecord) : [];
+      return {
+        id: String(layer.id), title: typeof layer.title === 'string' ? layer.title : String(layer.id),
+        ...(isTimedLayer(project, screen, String(layer.id)) ? { timed: true as const } : {}),
+        ...(lines.length ? { narration: { seek: (isRecord(layer.narration) && layer.narration.seek) || project.course?.narration?.seek || 'seen', lines: lines.map((line) => ({ id: String(line.id), speaker: typeof line.speaker === 'string' ? line.speaker : null, text: typeof line.text === 'string' ? line.text : '' })) } } : {})
+      };
+    }),
     steps: [...steps].sort((a, b) => a - b),
     screens: screenOrder(project).map(({ id }) => ({ id, title: titles.get(id) ?? id })),
     variables: (Array.isArray(project.course?.variables) ? project.course.variables : []).filter(isRecord),

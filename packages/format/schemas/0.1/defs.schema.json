@@ -71,12 +71,44 @@
         }
       }
     },
+    "voiceLine": {
+      "type": "object",
+      "required": ["id", "text"],
+      "description": "A line a voice says: the common shape of the lines of a screen's narration, of a layer's narration and of a dialogue. Its id is unique in the screen, every track counted (the screen's narration, each layer's, each dialogue's): cues, translations and the line's audio files (assets/narration/<language>/<screen>/<line>.m4a) are named by it. The schemas that use it add their own fields and close it (unevaluatedProperties).",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/slug",
+          "description": "Unique in the screen, every track counted (l1, l2…): cues, translations and the line's audio files are named by it."
+        },
+        "speaker": {
+          "$ref": "#/$defs/slug",
+          "description": "A speaker of course.json speakers, named in the captions and the transcript. Default: the first speaker of the course (none: no name)."
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "x-translatable": true,
+          "description": "What the voice says, word for word: the captions and the transcript. Do not show the same words on screen (E4, W_NARRATION_DUPLICATED). Words in square brackets are stage directions for an expressive voice ([chuchote], [rit], [un temps]: how to say it, where the delivery changes): never shown nor counted as words; a voice that cannot play them says the line without them."
+        },
+        "delivery": {
+          "type": "object",
+          "description": "How a generated voice says this line, by language (it is translated): settings of the voice tool (speed, style…) over those of the speaker's voice in that language, for example { \"fr\": { \"speed\": 1.1 } }. Other settings make the line's audio out of date.",
+          "propertyNames": { "pattern": "^[a-z]{2,3}(-[A-Z]{2})?$" },
+          "additionalProperties": { "type": "object" }
+        },
+        "pronunciations": {
+          "$ref": "#/$defs/pronunciations",
+          "description": "How a generated voice says words of this line, by language, before those of the course."
+        }
+      }
+    },
     "anchor": {
       "type": "object",
       "additionalProperties": false,
-      "description": "A moment of the screen's timeline, written against what the voice says rather than in seconds, so that it holds when a voice is generated again, recorded or translated: a line ({ \"line\": \"l2\" }), a word or a few words of it ({ \"line\": \"l2\", \"word\": \"imprimante\" }), the end of either (edge end), shifted by offset seconds. On a screen without narration, seconds from the start of a step ({ \"seconds\": 1.5 }). The start or the end of a step's stretch of the timeline ({ \"step\": 2 }, { \"step\": 2, \"edge\": \"end\" }).",
+      "description": "A moment of the screen's timeline or of a layer's (docs/decisions.md D62), written against what the voice says rather than in seconds, so that it holds when a voice is generated again, recorded or translated: a line ({ \"line\": \"l2\" }), a word or a few words of it ({ \"line\": \"l2\", \"word\": \"imprimante\" }), the end of either (edge end), shifted by offset seconds. On a screen without narration, seconds from the start of a step ({ \"seconds\": 1.5 }); on a layer without narration, seconds from its opening. The start or the end of a step's stretch of the timeline ({ \"step\": 2 }, { \"step\": 2, \"edge\": \"end\" }).",
       "properties": {
-        "line": { "$ref": "#/$defs/slug", "description": "A line of the screen's narration (narration.lines[].id)." },
+        "line": { "$ref": "#/$defs/slug", "description": "A line of the screen's narration (narration.lines[].id), or, for a block or a cue of a layer, of that layer's narration (layers[].narration.lines[].id): an anchor stays on its own timeline (E_TIMELINE_ANCHOR_TRACK)." },
         "word": {
           "type": "string",
           "minLength": 1,
@@ -86,7 +118,7 @@
         "occurrence": { "type": "integer", "minimum": 1, "maximum": 50, "default": 1, "description": "Which time the word appears in the line, when it appears more than once." },
         "edge": { "enum": ["start", "end"], "default": "start", "description": "start: when the line, the word or the step starts. end: when it ends." },
         "offset": { "type": "number", "minimum": -10, "maximum": 10, "description": "Seconds after the line or the word (negative: before)." },
-        "seconds": { "type": "number", "minimum": 0, "maximum": 3600, "description": "Screens without narration only: seconds from the start of a step (step, else the block's step, else 1). Narrated screens anchor to their lines and words." },
+        "seconds": { "type": "number", "minimum": 0, "maximum": 3600, "description": "Screens without narration only: seconds from the start of a step (step, else the block's step, else 1); in a layer without narration, from its opening. Narrated screens and layers anchor to their lines and words." },
         "step": { "type": "integer", "minimum": 1, "maximum": 999, "description": "With seconds: the step they count from. Alone: the start of that step's stretch of the timeline, or its end with edge end." }
       },
       "anyOf": [{ "required": ["line"] }, { "required": ["seconds"] }, { "required": ["step"] }],

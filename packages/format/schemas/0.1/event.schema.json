@@ -26,7 +26,7 @@
       "properties": {
         "type": {
           "enum": ["screen.enter", "click", "quiz.submitted", "decision.selected", "object.event", "variable.changed", "layer.closed", "timeline.reached", "timeline.ended", "media.ended"],
-          "description": "screen.enter: the screen is shown. click: the learner uses a control of a block (target): a button block, or a button, tab or disclosure of a component, optionally filtered by its name. quiz.submitted: a quiz (target) is submitted, optionally filtered by result. decision.selected: an option of a decision block (target) is chosen, optionally filtered by option. object.event: a free object block (target) emits a declared event (name), optionally filtered by payload values (where). variable.changed: a variable changes. layer.closed: a layer (target) is closed. timeline.reached: playback of the screen's timeline crosses a moment (at): a line or a word starts or ends, seconds pass on a screen without narration; never on a seek, again when the learner replays the passage. timeline.ended: playback reaches the end of the narration. media.ended: an audio or video block (target) plays to its end."
+          "description": "screen.enter: the screen is shown. click: the learner uses a control of a block (target): a button block, or a button, tab or disclosure of a component, optionally filtered by its name. quiz.submitted: a quiz (target) is submitted, optionally filtered by result. decision.selected: an option of a decision block (target) is chosen, optionally filtered by option. object.event: a free object block (target) emits a declared event (name), optionally filtered by payload values (where). variable.changed: a variable changes. layer.closed: a layer (target) is closed. timeline.reached: playback of the screen's timeline, or of a layer's, crosses a moment (at): a line or a word starts or ends, seconds pass on a screen or a layer without narration; never on a seek, again when the learner replays the passage. timeline.ended: playback reaches the end of the screen's timeline, or of a layer's with layer (to close the layer once it has spoken: hide-layer). media.ended: an audio or video block (target) plays to its end."
         },
         "target": { "$ref": "defs.schema.json#/$defs/slug", "description": "Block or layer id the trigger listens to." },
         "result": { "enum": ["correct", "incorrect", "any"], "default": "any" },
@@ -38,7 +38,8 @@
           "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
         },
         "variable": { "$ref": "defs.schema.json#/$defs/variableId" },
-        "at": { "$ref": "#/$defs/cue", "description": "timeline.reached: the moment playback crosses (a line, a word, seconds on a screen without narration)." }
+        "at": { "$ref": "#/$defs/cue", "description": "timeline.reached: the moment playback crosses (a line, a word, seconds on a screen without narration). A line of a layer's narration names the layer's timeline by itself." },
+        "layer": { "$ref": "defs.schema.json#/$defs/slug", "description": "The timeline of a layer of the screen (docs/decisions.md D62) instead of the screen's: timeline.ended when the layer's timeline ends (absent: the screen's), timeline.reached at seconds from the layer's opening when it has no narration (a line of a layer's narration needs no layer)." }
       },
       "allOf": [
         { "if": { "properties": { "type": { "enum": ["click", "quiz.submitted", "decision.selected", "object.event", "layer.closed", "media.ended"] } } }, "then": { "required": ["target"] } },
@@ -49,7 +50,7 @@
     },
     "cue": {
       "$ref": "defs.schema.json#/$defs/anchor",
-      "description": "A moment of the screen's timeline (an anchor): a line, a word of a line, the end of either with an offset; seconds from the start of a step on a screen without narration; the start or end of a step."
+      "description": "A moment of the screen's timeline or of a layer's (an anchor): a line, a word of a line, the end of either with an offset; seconds from the start of a step on a screen without narration (from its opening on a layer without narration); the start or end of a step."
     },
     "condition": {
       "type": "object",
@@ -73,10 +74,10 @@
       "properties": {
         "type": {
           "enum": ["go-to", "show-layer", "hide-layer", "show-block", "hide-block", "reveal-step", "set-variable", "increment-variable", "complete-screen", "set-object-props", "exit-course", "pause-timeline", "play-timeline", "seek-timeline", "play-media", "pause-media"],
-          "description": "go-to: navigate (screen id, or next / previous). show-layer / hide-layer: open or close a layer of the current screen; hide-layer without layer closes the layer open on top (a Close button inside a layer). show-block / hide-block: change visibility of a block. reveal-step: reveal the steps of the screen up to step (a click in the slide instead of Continue); a step already shown takes the focus again. set-variable: assign a value. increment-variable: add a number (by, may be negative). complete-screen: mark the current screen complete. set-object-props: change declared props of a free object block without regenerating code. exit-course: save and leave (same as the Quit button). pause-timeline / play-timeline: pause the narration of the screen, or play it from where it is (a modal layer pauses and resumes it by itself). seek-timeline: move the timeline to a moment (to), as a seek: what is seen follows, nothing crossed fires, playback goes on if it was playing; a moment in a later step reaches that step. play-media / pause-media: play or pause an audio or video block (block) of the screen; playing one pauses the narration."
+          "description": "go-to: navigate (screen id, or next / previous). show-layer / hide-layer: open or close a layer of the current screen; hide-layer without layer closes the layer open on top (a Close button inside a layer). show-block / hide-block: change visibility of a block. reveal-step: reveal the steps of the screen up to step (a click in the slide instead of Continue); a step already shown takes the focus again. set-variable: assign a value. increment-variable: add a number (by, may be negative). complete-screen: mark the current screen complete. set-object-props: change declared props of a free object block without regenerating code. exit-course: save and leave (same as the Quit button). pause-timeline / play-timeline: pause the narration of the screen, or play it from where it is (a modal layer pauses and resumes it by itself); with layer, the timeline of that layer while it is open. seek-timeline: move the timeline to a moment (to), as a seek: what is seen follows, nothing crossed fires, playback goes on if it was playing; a moment in a later step reaches that step; with layer (or to a line of a layer's narration), the timeline of that layer while it is open. play-media / pause-media: play or pause an audio or video block (block) of the screen; playing one pauses the narration."
         },
         "screen": { "type": "string", "pattern": "^([a-z][a-z0-9-]{0,47}|next|previous)$" },
-        "layer": { "$ref": "defs.schema.json#/$defs/slug", "description": "show-layer, hide-layer: a layer of the current screen. Required by show-layer; hide-layer without it closes the open layer (the one on top)." },
+        "layer": { "$ref": "defs.schema.json#/$defs/slug", "description": "show-layer, hide-layer: a layer of the current screen. Required by show-layer; hide-layer without it closes the open layer (the one on top). pause-timeline, play-timeline, seek-timeline: the timeline of that layer (docs/decisions.md D62) instead of the screen's." },
         "block": { "$ref": "defs.schema.json#/$defs/slug" },
         "variable": { "$ref": "defs.schema.json#/$defs/variableId" },
         "value": { "type": ["string", "number", "boolean"] },

@@ -127,6 +127,7 @@ export function simplifyErrors(errors: ErrorObject[]): SchemaError[] {
     if (e.keyword === 'if' || e.keyword === 'allOf') continue;
     let msg = e.message || 'invalid';
     if (e.keyword === 'additionalProperties') msg = `unknown property "${e.params.additionalProperty}" (not allowed by the schema)`;
+    else if (e.keyword === 'unevaluatedProperties') msg = `unknown property "${e.params.unevaluatedProperty}" (not allowed by the schema)`;
     else if (e.keyword === 'enum') msg = `must be one of ${JSON.stringify(e.params.allowedValues)}`;
     else if (e.keyword === 'const') msg = `must be ${JSON.stringify(e.params.allowedValue)}`;
     else if (e.keyword === 'required') msg = `missing required property "${e.params.missingProperty}"`;

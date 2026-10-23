@@ -227,10 +227,12 @@ function render(data: ScreenRender) {
   const before = current.requested;
   // Every step shown again: the timeline goes back where the view puts it (reveal waits at the start
   // of the last step, which would hide what is timed after it).
-  if (data.view.step === null && before.step === null) { current.view.reveal(current.view.lastStep()); showMoment(current, data.view); }
+  if (data.view.step === null && before.step === null) { current.view.reveal(current.view.lastStep()); showMoment(current, screenView(current, data.view)); }
   if (data.view.state === 'answered' && before.state === 'answered') current.view.showAnswered(fresh.filter((node) => !node.closest('dialog')));
   for (const layer of open) if (!current.view.layers.includes(layer)) current.view.openLayer(layer);
   applyView(current, data.view, false, before);
+  // A layer opened again (its data changed) shows the moment of its timeline again.
+  if (timedLayer(current, data.view) && !open.includes(data.view.layer ?? '')) showLayerMoment(current, data.view);
   current.live?.update();
 }
 
@@ -341,9 +343,10 @@ function applyView(current: Mounted, view: RenderView, full: boolean, before: Re
     applyView(current, view, true);
     return;
   }
-  if (full || view.step !== before.step || JSON.stringify(view.at ?? null) !== JSON.stringify(before.at ?? null)) {
+  const moved = JSON.stringify(view.at ?? null) !== JSON.stringify(before.at ?? null);
+  if (full || view.step !== before.step || moved) {
     current.view.reveal(view.step ?? current.view.lastStep());
-    showMoment(current, view);
+    showMoment(current, screenView(current, view));
   }
   if (view.state === 'answered' && (full || before.state !== 'answered')) current.view.showAnswered();
   if (full || !!view.ghost !== !!before.ghost || view.step !== before.step) applyGhost(current, !!view.ghost);
@@ -351,6 +354,24 @@ function applyView(current: Mounted, view: RenderView, full: boolean, before: Re
     current.view.closeLayers(view.layer);
     if (view.layer && !current.view.layers.includes(view.layer)) current.view.openLayer(view.layer);
   }
+  if (timedLayer(current, view) && (full || view.layer !== before.layer || moved)) showLayerMoment(current, view);
+}
+
+// The layer shown has a timeline of its own (D62): the moment of the view is on it, and the screen
+// under it shows its end (or its step).
+function timedLayer(current: Mounted, view: RenderView): boolean {
+  return !!view.layer && !!current.view.screen?.layers.find((layer) => layer.id === view.layer)?.narration;
+}
+const screenView = (current: Mounted, view: RenderView): RenderView => (timedLayer(current, view) ? { ...view, at: null } : view);
+
+// An open layer at a time or a line of its timeline; without one, at its end (as captures show it).
+function showLayerMoment(current: Mounted, view: RenderView) {
+  const layer = view.layer;
+  const timeline = layer ? current.view.layerTimeline(layer) : null;
+  if (!layer || !timeline) return;
+  if (view.at && 'time' in view.at) current.view.showLayerTime(layer, view.at.time);
+  else if (view.at) current.view.showLayerLine(layer, view.at.line, { edge: view.at.edge });
+  else current.view.showLayerTime(layer, timeline.duration, { captions: false });
 }
 
 // A narrated screen at the end shows every step; at a line, as it is when the line is said; at a time
@@ -440,7 +461,9 @@ function syncSheets(sheets: readonly RenderSheet[]) {
 
 // ── Layout ────────────────────────────────────────────────────────────
 function timedOf(id: string): { timed?: NonNullable<BlockLayout['timed']> } {
-  const timed = mounted?.view.timed;
+  const view = mounted?.view;
+  // A block of an open layer follows its layer's timeline (D62).
+  const timed = view?.timed?.has(id) ? view.timed : view?.layerTimelines.map((layer) => view.layerTimed(layer)).find((candidate) => candidate?.has(id)) ?? null;
   if (!timed?.has(id)) return {};
   const state = timed.state(id);
   const progress = timed.progress(id);

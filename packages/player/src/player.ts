@@ -574,6 +574,23 @@ const debugHooks = {
     atTime: (time: number, options: { captions?: boolean } = {}) => { const shown = view.showTime(time, options); updateNav(); return shown; },
     // Which timed blocks are hidden by their timing at the time shown.
     hiddenByTiming: () => view.timed?.hidden() ?? [],
+    // The timeline of an open layer (D62): the same controls, on its own clock; null when the layer
+    // is not open or has no timeline. layers: the open layers that have one.
+    layers: () => view.layerTimelines,
+    layer: (id: string) => {
+      const timeline = view.layerTimeline(id);
+      if (!timeline) return null;
+      return {
+        state: () => timeline.state(),
+        play: () => timeline.play(),
+        pause: () => timeline.pause(),
+        seek: (time: number) => timeline.seek(time),
+        advance: (seconds: number) => timeline.advance(seconds),
+        at: (line: string, options: { edge?: 'start' | 'end'; captions?: boolean } = {}) => view.showLayerLine(id, line, options),
+        atTime: (time: number, options: { captions?: boolean } = {}) => view.showLayerTime(id, time, options),
+        hiddenByTiming: () => view.layerTimed(id)?.hidden() ?? []
+      };
+    },
     // Plays to the end on the virtual clock (crossing every cue), opening the steps that open with
     // Continue on the way and closing the dialogs cues open, as a learner would; stops where an
     // answer is awaited. A dialog's close event comes with the next frame: it waits for it.
@@ -582,6 +599,13 @@ const debugHooks = {
       if (!timeline) return null;
       if (timeline.time >= timeline.duration - 1e-3) timeline.seek(view.screen?.narration?.segments.find((segment) => segment.step === view.revealed)?.start ?? 0);
       for (let guard = 0; guard < 1000; guard++) {
+        // A panel that speaks holds the narration until it has spoken (D62): heard to its end.
+        for (const layer of view.layerTimelines) {
+          const own = view.layerTimeline(layer);
+          if (!own || own.time >= own.duration - 1e-3) continue;
+          if (!own.playing) own.play();
+          own.advance(own.duration + 1);
+        }
         // A dialog a cue opened holds the narration: closed, as a learner would.
         const open = [...document.querySelectorAll<HTMLDialogElement>('dialog.t-layer.t-dialog[open]')];
         for (const dialog of open) dialog.close();

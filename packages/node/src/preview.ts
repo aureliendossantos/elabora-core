@@ -174,10 +174,10 @@ export async function capture(dir: string | null, shots: Shot[], { pkgDir }: { p
   const results: ShotResult[] = [];
   // Moments other than a line (a word, seconds, a step) resolve against the course's timeline.
   let project: Project | null | undefined;
-  const momentAt = (screen: string, anchor: string): number => {
+  const momentAt = (screen: string, anchor: string, layer?: string | null): number => {
     project ??= dir ? loadProjectFromDir(dir) : null;
     if (!project) throw new Error(`"${anchor}": a word, seconds or a step need the course folder (a line works with a package).`);
-    const found = resolveAt(project, screen, anchor);
+    const found = resolveAt(project, screen, anchor, { layer: layer ?? null });
     if ('error' in found) throw new Error(found.error);
     return found.time;
   };
@@ -239,7 +239,7 @@ function openAllScreens(): string[] {
   return elabora.engine.screens.map((screen) => screen.id);
 }
 
-async function shoot(browser: Browser, page: Page, screen: string, shot: Shot, group: ShotGroup, momentAt: (screen: string, anchor: string) => number) {
+async function shoot(browser: Browser, page: Page, screen: string, shot: Shot, group: ShotGroup, momentAt: (screen: string, anchor: string, layer?: string | null) => number) {
   await page.evaluate(({ screen, step }) => {
     const elabora = window.__elabora;
     for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog.t-layer')) dialog.close();
@@ -257,9 +257,12 @@ async function shoot(browser: Browser, page: Page, screen: string, shot: Shot, g
       const current = elabora.engine.screens[elabora.engine.screenIndex.get(elabora.screen ?? '') ?? -1];
       if (!(current.layers || []).some((layer) => layer.id === id)) throw new Error(`No layer "${id}" on screen "${elabora.screen}"`);
       elabora.openLayer(id);
+      // A layer with a timeline of its own (D62) shows its end, as a screen shows its last step.
+      elabora.timeline.layer(id)?.atTime(Number.MAX_SAFE_INTEGER, { captions: false });
     }, shot.layer);
     await page.evaluate(() => window.__elabora.ready());
   }
+  const layered = shot.layer ? await page.evaluate((id) => !!window.__elabora.timeline.layer(id), shot.layer) : false;
   const begin = Date.now();
   await page.waitForTimeout(ready.objects.length ? 1500 : 120); // auto-height objects resize after their first frames
   const fullPage = shot.fullPage !== false && !shot.layer && !shot.scroll?.length && !linesOf(shot).length;
@@ -291,9 +294,18 @@ async function shoot(browser: Browser, page: Page, screen: string, shot: Shot, g
     for (const anchor of linesOf(shot)) {
       // A line as phase 1 shows it (its caption on); any other moment at its time.
       const cue = lineAnchor(anchor);
-      let shown = !!cue && await page.evaluate((at) => window.__elabora.timeline.at(at.line, { edge: at.edge, captions: true }), cue);
-      if (!shown) shown = await page.evaluate((time) => window.__elabora.timeline.atTime(time, { captions: true }), momentAt(screen, anchor));
-      if (!shown) throw new Error(`Screen "${screen}" has no timeline: ${anchor} names a moment of one.`);
+      let shown: boolean;
+      if (layered && shot.layer) {
+        // On the open layer's own timeline (D62).
+        const layer = shot.layer;
+        shown = !!cue && await page.evaluate(([id, at]) => window.__elabora.timeline.layer(id)?.at(at.line, { edge: at.edge, captions: true }) ?? false, [layer, cue] as const);
+        if (!shown) shown = await page.evaluate(([id, time]) => window.__elabora.timeline.layer(id)?.atTime(time, { captions: true }) ?? false, [layer, momentAt(screen, anchor, layer)] as const);
+        if (!shown) throw new Error(`Layer "${layer}" of screen "${screen}" has no timeline: ${anchor} names a moment of one.`);
+      } else {
+        shown = !!cue && await page.evaluate((at) => window.__elabora.timeline.at(at.line, { edge: at.edge, captions: true }), cue);
+        if (!shown) shown = await page.evaluate((time) => window.__elabora.timeline.atTime(time, { captions: true }), momentAt(screen, anchor));
+        if (!shown) throw new Error(`Screen "${screen}" has no timeline: ${anchor} names a moment of one.`);
+      }
       await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       frames.push({ ms: 0, png: await page.screenshot({ fullPage: false }), label: anchor });
     }

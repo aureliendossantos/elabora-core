@@ -253,6 +253,9 @@ export interface PlayerHandle {
     atTime(time: number, options?: { captions?: boolean }): boolean;
     hiddenByTiming(): string[];
     toEnd(): Promise<unknown>;
+    // The timelines of open layers (D62).
+    layers(): string[];
+    layer(id: string): Omit<PlayerHandle['timeline'], 'toEnd' | 'layers' | 'layer'> | null;
   };
 }
 export type PlayerWindow = Window & typeof globalThis & { __elabora: PlayerHandle };

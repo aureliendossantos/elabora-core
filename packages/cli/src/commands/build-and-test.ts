@@ -62,7 +62,8 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       1.5s@2, step2:end, 12.5 (seconds). --sheet: a contact sheet, one capture per
                                                       mark of its timeline (start, each block that comes or goes, each cue, each
                                                       step's end), captioned with the anchor and what happens; on a screen without a
-                                                      timeline, the page down its length (0, 25, 50, 75, 100 % or --scroll's).
+                                                      timeline, the page down its length (0, 25, 50, 75, 100 % or --scroll's). With
+                                                      --layer, a layer that has its own timeline: --at and --sheet are on it.
                                                       --scroll: the window there, animations on (px, % of the page, or a block's id);
                                                       several: a sheet down the page. --block: a close-up of the block (PNG up to 2
                                                       Mpx, else JPEG; in view unless --scroll says where), --scale 2 drawn twice as
@@ -78,7 +79,8 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
              [--at 0,2000,4000|l1,l2:end | --scroll 0,25%,50%,1800] [--motion] [--viewport] [--out shot.png | --out-dir <dir>]
                                                       Render screens to PNG once images and free objects are ready. answered: every
                                                       activity shows its tallest feedback. --at: filmstrip of the animations (ms),
-                                                      or of a narrated screen as each line starts (l2) or ends (l2:end);
+                                                      or of a narrated screen as each line starts (l2) or ends (l2:end), with
+                                                      --layer of that layer's own timeline;
                                                       --scroll: filmstrip down the page (px or % of it: scroll-driven animations and
                                                       objects). One contact sheet. Several shots share one build and one browser;
                                                       --out names one image, so several shots are refused with it (exit code 2):

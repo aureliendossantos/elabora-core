@@ -20,6 +20,8 @@ import type { MotionReport } from './motion-report.ts';
 import { captureClip, closeUpClip, objectFrameOf, playActions } from './look-inspect.ts';
 import type { ObjectHost } from '@elabora/player/object-host';
 import { timelineMarks } from '@elabora/core/narration/view';
+import { isTimedLayer } from '@elabora/core/narration/timeline';
+import { timelineVoiceLines } from '@elabora/core/narration/voice-lines';
 import { lineAnchor } from '@elabora/core/narration/narration';
 import { resolveAt } from '@elabora/core/narration/anchor-text';
 import { codeVersion } from './code-version.ts';
@@ -149,7 +151,9 @@ export async function startLooker(dir: string, { port = 0, live = true }: Looker
     let at: { line: string; edge: 'start' | 'end' } | { time: number } | null = null;
     // A sheet of a timed screen shows the marks of its timeline; of another screen, the page down its length.
     const positions = request.scroll ?? [];
-    const marks = request.sheet && !positions.length ? timelineMarks(project, screen, request.language) : null;
+    // A layer with a timeline of its own (D62): at and the sheet are on its timeline.
+    const timedLayer = request.layer && isTimedLayer(project, project.screens.get(screen)?.data, request.layer) ? request.layer : null;
+    const marks = request.sheet && !positions.length ? timelineMarks(project, screen, request.language, { layer: timedLayer }) : null;
     const downThePage = positions.length > 1 || (!!request.sheet && !marks);
     const actions: LookAction[] = [];
     for (const source of request.act ?? []) {
@@ -164,10 +168,10 @@ export async function startLooker(dir: string, { port = 0, live = true }: Looker
     if (marks) at = { time: marks[0].time };
     else if (request.at) {
       const line = lineAnchor(request.at);
-      const lines = (project.screens.get(screen)?.data.narration?.lines ?? []).map((candidate) => candidate.id);
+      const lines = timelineVoiceLines(project, screen, timedLayer).map((candidate) => candidate.line.id);
       if (line && lines.includes(line.line)) at = line;
       else {
-        const found = resolveAt(project, screen, request.at, { language: request.language });
+        const found = resolveAt(project, screen, request.at, { language: request.language, layer: timedLayer });
         if ('error' in found) return { ok: false, error: found.error };
         at = { time: found.time };
       }

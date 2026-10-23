@@ -399,10 +399,10 @@ export class Session {
       case 'listFiles': return this.listFiles(request.params.dir);
       case 'readScreen': return this.readScreen(request.params.screen);
       case 'screenParts': return this.screenParts(request.params.screen);
-      case 'narration': return this.narration(request.params.screen, request.params.language);
-      case 'timeline': return this.timeline(request.params.screen, request.params.language);
+      case 'narration': return this.narration(request.params.screen, request.params.language, request.params.layer);
+      case 'timeline': return this.timeline(request.params.screen, request.params.language, request.params.layer);
       case 'timelineAt': return this.timelineAt(request.params);
-      case 'timelineMarks': return this.timelineMarks(request.params.screen, request.params.language);
+      case 'timelineMarks': return this.timelineMarks(request.params.screen, request.params.language, request.params.layer);
       case 'narrationPeaks': return this.narrationPeaks(request.params);
       case 'planVoiceover': return this.planVoiceover(request.params.screen);
       case 'planVersions': return this.planVersions();
@@ -536,11 +536,12 @@ export class Session {
   }
 
   // A narrated screen's lines in a language (default: the course's), their audio and their times,
-  // and the exchange each generated line's take was cut from (said as one dialogue, D29).
-  narration(id: string, language?: string): NarrationView | null {
+  // and the exchange each generated line's take was cut from (said as one dialogue, D29); with
+  // layer, that layer's narration (D62).
+  narration(id: string, language?: string, layer?: string): NarrationView | null {
     this.#assertOpen();
     if (!this.#state.project.screens.has(id)) throw new EngineError('not-found', `No screen "${id}"`);
-    const view = narrationView(this.#state.project, id, language || undefined);
+    const view = narrationView(this.#state.project, id, language || undefined, { layer: layer ?? null });
     if (!view) return null;
     for (const line of view.lines) {
       if (line.take === null || !line.generated || line.status === 'missing') continue;
@@ -551,26 +552,26 @@ export class Session {
   }
 
   // A timed screen's timeline: lines and their words, timed blocks, events (docs/decisions.md D28).
-  timeline(id: string, language?: string): TimelineView | null {
+  timeline(id: string, language?: string, layer?: string): TimelineView | null {
     this.#assertOpen();
     if (!this.#state.project.screens.has(id)) throw new EngineError('not-found', `No screen "${id}"`);
-    return timelineView(this.#state.project, id, language || undefined);
+    return timelineView(this.#state.project, id, language || undefined, { layer: layer ?? null });
   }
 
-  // What is seen of a timed screen at a time, or at an anchor resolved in that language.
-  timelineAt({ screen, time, at, language }: { screen: string; time?: number; at?: CanvasMoment; language?: string }): ScreenAt | null {
+  // What is seen of a timed screen (or of a layer's timeline, D62) at a time, or at an anchor resolved in that language.
+  timelineAt({ screen, time, at, language, layer }: { screen: string; time?: number; at?: CanvasMoment; language?: string; layer?: string }): ScreenAt | null {
     this.#assertOpen();
     if (!this.#state.project.screens.has(screen)) throw new EngineError('not-found', `No screen "${screen}"`);
-    const moment = at ? momentTime(this.#state.project, screen, at, language) : typeof time === 'number' ? { time } : null;
+    const moment = at ? momentTime(this.#state.project, screen, at, language, layer) : typeof time === 'number' ? { time } : null;
     if (!moment) throw new EngineError('bad-request', 'timelineAt takes a time (seconds) or a moment (at)');
-    return screenAt(this.#state.project, screen, moment.time, language || undefined);
+    return screenAt(this.#state.project, screen, moment.time, language || undefined, { layer: layer ?? null });
   }
 
-  // The marks of a timed screen: a storyboard, one capture per mark (null: not timed).
-  timelineMarks(screen: string, language?: string): TimelineMark[] | null {
+  // The marks of a timed screen (or of a layer's timeline): a storyboard, one capture per mark (null: not timed).
+  timelineMarks(screen: string, language?: string, layer?: string): TimelineMark[] | null {
     this.#assertOpen();
     if (!this.#state.project.screens.has(screen)) throw new EngineError('not-found', `No screen "${screen}"`);
-    return timelineMarks(this.#state.project, screen, language || undefined);
+    return timelineMarks(this.#state.project, screen, language || undefined, { layer: layer ?? null });
   }
 
   // The waveform of a narrated screen's lines, decoded once per audio file (cached in the data folder).
@@ -820,7 +821,7 @@ export class Session {
       return { id, pages: canvas.host.pages, view: { ...view } };
     }
     // A moment is sent when there is one, or to clear the one shown.
-    const at = view.at ? momentTime(this.#state.project, view.screen, view.at, view.language) : null;
+    const at = view.at ? momentTime(this.#state.project, view.screen, view.at, view.language, view.layer) : null;
     const pages = canvas.host.view({ state: view.state, step: view.step, layer: view.layer, ...(at || before.at ? { at } : {}), ...(view.ghost !== undefined || before.ghost !== undefined ? { ghost: !!view.ghost } : {}) }, { id });
     return { id, pages, view: { ...view } };
   }

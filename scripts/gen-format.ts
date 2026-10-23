@@ -39,7 +39,7 @@ const KEYWORDS = new Set([
   'type', 'enum', 'const', 'properties', 'required', 'additionalProperties', 'patternProperties', 'propertyNames',
   'minProperties', 'maxProperties', 'items', 'prefixItems', 'minItems', 'maxItems', 'uniqueItems',
   'minLength', 'maxLength', 'pattern', 'format', 'minimum', 'maximum', 'exclusiveMinimum', 'exclusiveMaximum', 'multipleOf',
-  'allOf', 'anyOf', 'oneOf', 'not', 'if', 'then', 'else'
+  'allOf', 'anyOf', 'oneOf', 'not', 'if', 'then', 'else', 'unevaluatedProperties'
 ]);
 
 interface SchemaFile { name: string; file: string; id: string; schema: JsonSchema }
@@ -132,11 +132,14 @@ function typesModule(files: SchemaFile[]): string {
     }
     return named(name);
   };
-  // An object with properties in an array or a map is declared as its own type.
+  // An object with properties in an array or a map is declared as its own type, and so is an
+  // extension of a definition ($ref with properties of its own: a narration line is a voice line).
   const placed = (schema: JsonSchema | boolean, place: Place): TypeNode =>
-    typeof schema === 'object' && isPlainObject(schema) ? hoist(schema, place) : convert(schema, place);
+    typeof schema === 'object' && (isPlainObject(schema) || isExtension(schema)) ? hoist(schema, place) : convert(schema, place);
   // A property's object stays inline, unless the same object is written elsewhere too.
   const repeated = repeatedObjects(files);
+  // Definitions that other schemas extend and close ($ref next to unevaluatedProperties: false).
+  const extended = extendedDefinitions(files, byId);
   const property = (schema: JsonSchema | boolean, place: Place): TypeNode =>
     typeof schema === 'object' && isPlainObject(schema) && repeated.has(JSON.stringify(schema)) ? hoist(schema, place) : convert(schema, place);
 
@@ -200,7 +203,9 @@ function typesModule(files: SchemaFile[]): string {
     for (const key of required) if (!(key in properties)) members.push({ key, optional: false, type: UNKNOWN, doc: [] });
     const valuePlace = { file: place.file, name: singular(place.name) };
     const values = Object.values(schema.patternProperties ?? {}).map((s) => placed(s, valuePlace));
-    const additional = schema.additionalProperties;
+    // unevaluatedProperties false closes an extension as additionalProperties false closes an object;
+    // a definition that extensions close stays open for validation, but its type is closed.
+    const additional = schema.additionalProperties ?? (schema.unevaluatedProperties === false || extended.has(schema) ? false : undefined);
     if (additional !== false) values.push(additional === undefined || additional === true ? UNKNOWN : placed(additional, valuePlace));
     if (!values.length) return { kind: 'object', members, index: null };
     // The index signature must accept every declared property too.
@@ -281,6 +286,33 @@ function repeatedObjects(files: SchemaFile[]): Set<string> {
   };
   files.forEach((f) => walk(f.schema));
   return new Set([...counts].filter(([, count]) => count > 1).map(([key]) => key));
+}
+
+const isExtension = (schema: JsonSchema) => schema.$ref !== undefined && Object.keys(schema.properties ?? {}).length > 0;
+
+// The definitions closed where they are used: { "$ref": "…#/$defs/voiceLine", "properties": { … },
+// "unevaluatedProperties": false }. They must stay open themselves (a definition that closed itself
+// would refuse the properties its extensions add), so their type is closed here.
+function extendedDefinitions(files: SchemaFile[], byId: ReadonlyMap<string, SchemaFile>): Set<JsonSchema> {
+  const out = new Set<JsonSchema>();
+  const walk = (value: unknown, file: SchemaFile) => {
+    if (Array.isArray(value)) { value.forEach((item) => walk(item, file)); return; }
+    if (!value || typeof value !== 'object') return;
+    const schema = value as JsonSchema;
+    if (typeof schema.$ref === 'string' && schema.unevaluatedProperties === false) {
+      const url = new URL(schema.$ref, file.id);
+      const target = byId.get(url.href.replace(/#.*$/, ''));
+      const def = /^#\/\$defs\/([^/]+)$/.exec(url.hash)?.[1];
+      const found = def ? target?.schema.$defs?.[decodeURIComponent(def)] : undefined;
+      if (found && typeof found === 'object') {
+        if (found.additionalProperties !== undefined || found.unevaluatedProperties !== undefined) throw new Error(`${file.file}: ${schema.$ref} is extended (unevaluatedProperties: false), so it must not close itself`);
+        out.add(found);
+      }
+    }
+    Object.values(value).forEach((item) => walk(item, file));
+  };
+  files.forEach((file) => walk(file.schema, file));
+  return out;
 }
 
 const isConditional = (schema: JsonSchema | boolean) => typeof schema === 'object' && 'if' in schema

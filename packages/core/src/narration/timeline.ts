@@ -9,6 +9,10 @@
 // previous one to its last line, or longer when an effect anchored in it ends later (an effect is
 // never cut by the stop at the end of a step), or for as long as steps[n].duration says without
 // narration. The next step's first line keeps its pause after that.
+//
+// A layer has a timeline of its own (D62) when it has a narration or timed blocks: its lines, its
+// blocks and the cues on its lines (or on seconds, with the trigger's layer), in one stretch from its
+// opening. An anchor stays on its own timeline: a line of another track is a problem of kind track.
 
 import type { Anchor, Block, Moment, Screen } from '@elabora/format';
 import { getRegistry } from '../components/registry.ts';
@@ -17,6 +21,7 @@ import { objectsIn, isRecord } from '../util/values.ts';
 import { lineWordTimes, findPhrase, narrationWords } from './words.ts';
 import type { TimedWord } from './words.ts';
 import { narrationLines, screenSteps } from './narration.ts';
+import { voiceLinesOf, timelineOf, trackLabel } from './voice-lines.ts';
 import type { NarrationLineInfo } from './narration.ts';
 import { captionChunks, estimatedDuration, pauseOf, STEP_GAP } from './timing.ts';
 import type { CaptionCue, Segment } from './timing.ts';
@@ -73,7 +78,9 @@ const EPSILON = 1e-6;
 // Why an anchor did not resolve as written; it then falls back to the start (or end) of its line,
 // or to the start of its step.
 // unplaced: a word anchor whose marker the translation in this language has not placed.
-export type AnchorProblemKind = 'line' | 'word' | 'step' | 'seconds' | 'no-timeline' | 'unplaced';
+// track: a line said on another timeline (the screen's for a block of a layer, a layer's for a block
+// of the screen, another layer's).
+export type AnchorProblemKind = 'line' | 'word' | 'step' | 'seconds' | 'no-timeline' | 'unplaced' | 'track';
 export interface AnchorProblem {
   kind: AnchorProblemKind;
   message: string;
@@ -213,6 +220,9 @@ export interface LayoutInput {
   language?: string;
   // The silences a build wrote (before each line, then after the last): times follow them exactly.
   gaps?: readonly number[];
+  // The lines of the screen said on another timeline, and where (an anchor to one is a problem of
+  // kind track, not a missing line).
+  elsewhere?: ReadonlyMap<string, string>;
 }
 
 // Where an anchor falls: the step whose stretch holds it, and how to find its time once that step's
@@ -235,8 +245,11 @@ export function layoutTimeline(input: LayoutInput): TimelineLayout {
     const edge = anchor.edge === 'end' ? 'end' : 'start';
     if (typeof anchor.line === 'string') {
       const line = lineById.get(anchor.line);
+      const elsewhere = input.elsewhere?.get(anchor.line);
       if (!line) {
-        const problem: AnchorProblem = { kind: narrated ? 'line' : 'no-timeline', message: narrated ? `no line "${anchor.line}" in the narration (lines: ${input.lines.map((candidate) => candidate.id).join(', ')})` : `the screen has no narration, so no line "${anchor.line}"` };
+        const problem: AnchorProblem = elsewhere
+          ? { kind: 'track', message: `line "${anchor.line}" is said on ${elsewhere}, another timeline` }
+          : { kind: narrated ? 'line' : 'no-timeline', message: narrated ? `no line "${anchor.line}" in the narration (lines: ${input.lines.map((candidate) => candidate.id).join(', ')})` : `the screen has no narration, so no line "${anchor.line}"` };
         return { step: hasStep(defaultStep) ? defaultStep : steps[0], time: ({ start }) => ({ time: start, estimated: false, problem }) };
       }
       return {
@@ -410,18 +423,23 @@ export interface ScreenTimelineOptions {
   // Measured by the build, by line id; and the silences it wrote (TimelineLayout.gaps).
   durations?: ReadonlyMap<string, number>;
   gaps?: readonly number[];
+  // The timeline of this layer of the screen (D62) instead of the screen's.
+  layer?: string | null;
 }
 
 export interface ScreenTimeline extends TimelineLayout {
   screen: string;
+  // The layer whose timeline it is; null: the screen's.
+  layer: string | null;
   language: string;
   narrated: boolean;
   // The lines with what the project knows of them (text in that language, audio status, words).
   infos: Map<string, NarrationLineInfo>;
 }
 
-// A block's timing as written, with what it implies in a stack. Blocks of layers are not timed.
-export function momentsOf(project: Project, screen: Pick<Screen, 'blocks'>): MomentInput[] {
+// A block's timing as written, with what it implies in a stack: the blocks of the screen, or of a
+// layer (holder: the layer, path: where its blocks are, step: 1, a layer having one stretch).
+export function momentsOf(project: Project, screen: Pick<Screen, 'blocks'>, { path: base = '/blocks', step: forced = null }: { path?: string; step?: number | null } = {}): MomentInput[] {
   const registry = getRegistry(project);
   const themeEffects = new Set(Object.keys(isRecord(project.course?.theme?.effects) ? project.course!.theme!.effects! : {}));
   const out: MomentInput[] = [];
@@ -451,21 +469,40 @@ export function momentsOf(project: Project, screen: Pick<Screen, 'blocks'>): Mom
       walk(block.blocks, own, `${here}/blocks`, isStack(block) ? block : null);
     });
   };
-  walk((screen as Screen).blocks, null, '/blocks', null);
+  walk((screen as Screen).blocks, forced, base, null);
   return out;
 }
 
-export function cuesOf(screen: Pick<Screen, 'events'>): CueInput[] {
+// The timeline of each line laid on one (null: the screen's; a layer's id), by line id.
+export function lineTimelines(screen: Screen | null | undefined): Map<string, string | null> {
+  const out = new Map<string, string | null>();
+  for (const entry of voiceLinesOf(screen, typeof screen?.id === 'string' ? screen.id : '')) {
+    const timeline = timelineOf(entry.track);
+    if (timeline) out.set(entry.line.id, timeline.layer);
+  }
+  return out;
+}
+
+// The timeline a moment written in an event belongs to: the one its line is said on, else the layer
+// it names, else the screen's (null).
+export function anchorTimeline(anchor: Anchor | null | undefined, layer: unknown, lines: ReadonlyMap<string, string | null>): string | null {
+  if (anchor && typeof anchor.line === 'string' && lines.has(anchor.line)) return lines.get(anchor.line) ?? null;
+  return typeof layer === 'string' ? layer : null;
+}
+
+// The cues of the events of a screen on one of its timelines (layer null: the screen's).
+export function cuesOf(screen: Pick<Screen, 'events'> & Partial<Pick<Screen, 'id' | 'narration' | 'layers'>>, { layer = null }: { layer?: string | null } = {}): CueInput[] {
   const out: CueInput[] = [];
+  const lines = lineTimelines(screen as Screen);
   objectsIn(screen.events).forEach((event, index) => {
-    if (event.on?.type === 'timeline.reached' && isRecord(event.on.at)) out.push({ event: event.id, anchor: event.on.at, path: `/events/${index}/on/at` });
+    if (event.on?.type === 'timeline.reached' && isRecord(event.on.at) && anchorTimeline(event.on.at, event.on.layer, lines) === layer) out.push({ event: event.id, anchor: event.on.at, path: `/events/${index}/on/at` });
   });
   return out;
 }
 
 // The items of charts brought by the voice (D60): each item's at, then the end of the spotlight
 // (spotlightEnd, else the end of the line where the last item came).
-export function beatsOf(project: Project, screen: Pick<Screen, 'blocks'>): BeatInput[] {
+export function beatsOf(project: Project, screen: Pick<Screen, 'blocks'>, { path: base = '/blocks', step: forced = null }: { path?: string; step?: number | null } = {}): BeatInput[] {
   const registry = getRegistry(project);
   const out: BeatInput[] = [];
   const walk = (blocks: readonly Block[] | undefined, step: number | null, path: string) => {
@@ -486,16 +523,18 @@ export function beatsOf(project: Project, screen: Pick<Screen, 'blocks'>): BeatI
       walk(block.blocks, own, `${here}/blocks`);
     });
   };
-  walk((screen as Screen).blocks, null, '/blocks');
+  walk((screen as Screen).blocks, forced, base);
   return out;
 }
 
-// Anchors of seek-timeline actions (they move the playhead; nothing is laid out for them).
-export function seekTargetsOf(screen: Pick<Screen, 'events'>): CueInput[] {
+// Anchors of seek-timeline actions on one of the screen's timelines (they move the playhead; nothing
+// is laid out for them).
+export function seekTargetsOf(screen: Pick<Screen, 'events'> & Partial<Pick<Screen, 'id' | 'narration' | 'layers'>>, { layer = null }: { layer?: string | null | 'any' } = {}): CueInput[] {
   const out: CueInput[] = [];
+  const lines = lineTimelines(screen as Screen);
   objectsIn(screen.events).forEach((event, index) => {
     for (const branch of ['do', 'else'] as const) objectsIn(event[branch]).forEach((action, actionIndex) => {
-      if (action.type === 'seek-timeline' && isRecord(action.to)) out.push({ event: event.id, anchor: action.to, path: `/events/${index}/${branch}/${actionIndex}/to` });
+      if (action.type === 'seek-timeline' && isRecord(action.to) && (layer === 'any' || anchorTimeline(action.to, action.layer, lines) === layer)) out.push({ event: event.id, anchor: action.to, path: `/events/${index}/${branch}/${actionIndex}/to` });
     });
   });
   return out;
@@ -508,11 +547,34 @@ export function isTimedScreen(project: Project, screen: Screen | null | undefine
   return momentsOf(project, screen).length > 0 || cuesOf(screen).length > 0 || beatsOf(project, screen).length > 0;
 }
 
-export function screenTimeline(project: Project, screenId: string, { language, durations, gaps }: ScreenTimelineOptions = {}): ScreenTimeline | null {
+// Whether a layer of a screen has a timeline of its own (D62): a narration, timed blocks, or cues.
+export function isTimedLayer(project: Project, screen: Screen | null | undefined, layerId: string): boolean {
+  const layers = Array.isArray(screen?.layers) ? screen.layers : [];
+  const index = layers.findIndex((layer) => isRecord(layer) && layer.id === layerId);
+  if (!screen || index < 0) return false;
+  const layer = layers[index];
+  if (objectsIn(layer.narration?.lines).length) return true;
+  const holder = { path: `/layers/${index}/blocks`, step: 1 };
+  return momentsOf(project, layer, holder).length > 0 || cuesOf(screen, { layer: layerId }).length > 0 || beatsOf(project, layer, holder).length > 0;
+}
+
+// The layers of a screen that have a timeline of their own.
+export function timedLayers(project: Project, screen: Screen | null | undefined): string[] {
+  return objectsIn(screen?.layers).map((layer) => layer.id).filter((id) => isTimedLayer(project, screen, id));
+}
+
+export function screenTimeline(project: Project, screenId: string, { language, durations, gaps, layer = null }: ScreenTimelineOptions = {}): ScreenTimeline | null {
   const screen = project.screens.get(screenId)?.data;
   if (!screen) return null;
   const lang = language || project.course?.language || '';
-  const infos = narrationLines(project, screenId, lang) ?? [];
+  const layers = Array.isArray(screen.layers) ? screen.layers : [];
+  const layerIndex = layer === null ? -1 : layers.findIndex((candidate) => isRecord(candidate) && candidate.id === layer);
+  if (layer !== null && layerIndex < 0) return null;
+  const holder = layer === null ? screen : layers[layerIndex];
+  const where = layer === null ? {} : { path: `/layers/${layerIndex}/blocks`, step: 1 };
+  const all = narrationLines(project, screenId, lang) ?? [];
+  const infos = all.filter((info) => timelineOf(info.track)?.layer === layer);
+  const elsewhere = new Map(all.filter((info) => !infos.includes(info)).map((info) => [info.id, trackLabel(info.track)]));
   // In a translation, word anchors name the words their markers are placed on (D28).
   const placed = translatedLineAnchors(project, screenId, lang);
   const translated = <T extends { anchor: Anchor; problem?: AnchorProblem }>(entry: T): T => {
@@ -522,23 +584,23 @@ export function screenTimeline(project: Project, screenId: string, { language, d
     const { word: _word, occurrence: _occurrence, ...line } = entry.anchor;
     return { ...entry, anchor: line, problem: { kind: 'unplaced', message: `the ${lang} translation of line "${entry.anchor.line}" has not placed the marker of « ${entry.anchor.word} » (elabora translate status): at the start of the line` } };
   };
-  const moments = momentsOf(project, screen).map(translated);
-  const cues = cuesOf(screen).map(translated);
-  const beats = beatsOf(project, screen).map(translated);
+  const moments = momentsOf(project, holder, where).map(translated);
+  const cues = cuesOf(screen, { layer }).map(translated);
+  const beats = beatsOf(project, holder, where).map(translated);
   const narrated = infos.length > 0;
   if (!narrated && !moments.length && !cues.length && !beats.length) return null;
-  const source = objectsIn(screen.narration?.lines);
+  const source = new Map(voiceLinesOf(screen, screenId, project).map((entry) => [entry.line.id, entry.line]));
   const stepSeconds = new Map<number, number>();
-  for (const [key, value] of Object.entries(isRecord(screen.steps) ? screen.steps : {})) if (isRecord(value) && typeof value.duration === 'number') stepSeconds.set(Number(key), value.duration);
+  if (layer === null) for (const [key, value] of Object.entries(isRecord(screen.steps) ? screen.steps : {})) if (isRecord(value) && typeof value.duration === 'number') stepSeconds.set(Number(key), value.duration);
   const layout = layoutTimeline({
-    narrated, language: lang, steps: screenSteps(screen), stepSeconds, moments, cues, beats, gaps,
-    lines: infos.map((info, index) => ({
-      id: info.id, step: info.step, text: info.text ?? source[index]?.text ?? '', pauseBefore: info.pauseBefore,
+    narrated, language: lang, steps: layer === null ? screenSteps(screen) : [1], stepSeconds, moments, cues, beats, gaps, elsewhere,
+    lines: infos.map((info) => ({
+      id: info.id, step: info.step, text: info.text ?? source.get(info.id)?.text ?? '', pauseBefore: info.pauseBefore,
       duration: durations?.get(info.id) ?? (info.status === 'ok' || info.status === 'stale' ? info.duration : null),
       words: info.status === 'ok' || info.status === 'stale' ? info.words : null
     }))
   });
-  return { ...layout, screen: screenId, language: lang, narrated, infos: new Map(infos.map((info) => [info.id, info])) };
+  return { ...layout, screen: screenId, layer, language: lang, narrated, infos: new Map(infos.map((info) => [info.id, info])) };
 }
 
 // When the voice brings each item of a chart, and when it is done with them (D60).

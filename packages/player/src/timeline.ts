@@ -12,7 +12,8 @@
 //
 // The bar has the look of the Lin pages 27 and 36 (docs/decisions.md D58): it sits in the player's
 // controls item, isolated under .t-timeline*, and the course's player says what it shows (the seek
-// bar, the volume, the transcript, the speeds).
+// bar, the volume, the transcript, the speeds). A layer's timeline (D62) is another instance, its
+// bar compact (play, replay, seek, time, captions) in the layer, its captions there too.
 
 import { element, linkedText, uniqueId } from './dom.ts';
 import { icon } from './icons.ts';
@@ -138,6 +139,14 @@ export interface TimelineOptions {
   phone(): boolean;
   // The module has screens that go on by themselves: the settings offer « M'arrêter à chaque étape ».
   offerStopAtSteps: boolean;
+  // A layer's bar (D62): play, replay, seek, the time and captions; no settings, volume, transcript.
+  compact?: boolean;
+  // The bar's accessible name (default: the player's « Narration »).
+  label?: string;
+  // Whether its keyboard shortcuts act now (a layer that speaks takes them from the screen's bar).
+  keys?: () => boolean;
+  // The transcript adds the lines of each layer that speaks, under its title (D62).
+  transcriptLayers?: readonly { title: string; lines: readonly NarrationLineData[] }[];
 }
 
 // ── Clocks ──────────────────────────────────────────────────────────
@@ -544,10 +553,13 @@ export function createTimeline(options: TimelineOptions) {
   const moreId = uniqueId('more');
   const moreButton = button('t-timeline-more', 'more', labels.more, () => togglePopup(more, moreButton), { 'aria-expanded': 'false', 'aria-controls': moreId });
   const more = element('div', { id: moreId, class: 't-timeline-popup t-timeline-more-menu', hidden: true });
-  const tools = element('span', { class: 't-timeline-tools' }, captionsButton, element('span', { class: 't-timeline-anchor' }, settingsButton, settings), controls.volume ? volume : null, controls.transcript ? transcriptButton : null, element('span', { class: 't-timeline-anchor' }, moreButton, more));
+  const compact = options.compact === true;
+  const tools = compact
+    ? element('span', { class: 't-timeline-tools' }, captionsButton)
+    : element('span', { class: 't-timeline-tools' }, captionsButton, element('span', { class: 't-timeline-anchor' }, settingsButton, settings), controls.volume ? volume : null, controls.transcript ? transcriptButton : null, element('span', { class: 't-timeline-anchor' }, moreButton, more));
   // Without a voice (a screen timed in seconds), nothing to caption, hear or transcribe.
   if (!voiced) { captionsButton.hidden = true; volume.hidden = true; transcriptButton.hidden = true; }
-  const bar = element('div', { class: 't-timeline', role: 'group', 'aria-label': labels.narration, 'data-seek': seekable ? narration.seek : 'none' },
+  const bar = element('div', { class: `t-timeline${compact ? ' t-timeline--compact' : ''}`, role: 'group', 'aria-label': options.label ?? labels.narration, 'data-seek': seekable ? narration.seek : 'none' },
     playButton, replayButton, seek, clockText, tools);
 
   // Narrower windows: the volume and the transcript into « … »; phones: the settings too.
@@ -555,6 +567,7 @@ export function createTimeline(options: TimelineOptions) {
   const small = typeof matchMedia === 'function' ? matchMedia('(max-width: 760px)') : null;
   const anchorOf = (node: HTMLElement) => node.parentElement?.classList.contains('t-timeline-anchor') ? node.parentElement : node;
   function arrangeTools(): void {
+    if (compact) return;
     const movable: HTMLElement[] = [anchorOf(settingsButton), ...(controls.volume ? [volume] : []), ...(controls.transcript ? [transcriptButton] : [])];
     const intoMore: HTMLElement[] = [];
     if (narrow?.matches && voiced) intoMore.push(...movable.slice(1));
@@ -602,7 +615,11 @@ export function createTimeline(options: TimelineOptions) {
   const transcriptSteps = segments.filter((segment) => narration.lines.some((line) => line.step === segment.step)).map((segment, _index, all) => element('section', { class: 't-timeline-transcript-step' },
     all.length > 1 ? element('h3', { text: options.format(labels.stepHeading, { n: segments.indexOf(segment) + 1 }) }) : null,
     transcriptLines.filter((_, lineIndex) => narration.lines[lineIndex].step === segment.step)));
-  const sheet = options.host && voiced && controls.transcript ? createSheet({
+  // The lines of the layers that speak, under each layer's title, after the screen's (D62).
+  const layerSections = (options.transcriptLayers ?? []).filter((layer) => layer.lines.length).map((layer) => element('section', { class: 't-timeline-transcript-step t-timeline-transcript-layer' },
+    element('h3', { text: layer.title }),
+    layer.lines.map((line) => element('p', { class: 't-timeline-line', 'data-line': line.id }, line.speaker ? element('strong', { class: 't-timeline-speaker', text: line.speaker }) : null, line.speaker ? element('span', { class: 't-sr-only', text: labels.colon }) : null, element('span', { class: 't-timeline-line-text', text: line.text })))));
+  const sheet = options.host && voiced && controls.transcript && !compact ? createSheet({
     name: 'transcript', title: labels.transcript, closeLabel: labels.close, tooltip, host: options.sheetHost ?? options.overlay,
     onToggle: (open) => transcriptButton.setAttribute('aria-expanded', String(open))
   }) : null;
@@ -613,6 +630,7 @@ export function createTimeline(options: TimelineOptions) {
     sheet.body.append(
       ...(narration.generated ? [element('p', { class: 't-timeline-generated' }, icon('spark'), element('span', { text: labels.generatedVoice }))] : []),
       ...transcriptSteps,
+      ...layerSections,
       ...(narration.credits?.length ? [element('section', { class: 't-timeline-credits' }, element('h3', { text: labels.credits }), narration.credits.map((credit) => linkedText('p', credit)))] : []));
   }
   // When the browser refused sound: one large Play button over the screen, inviting and nothing else
@@ -794,12 +812,13 @@ export function createTimeline(options: TimelineOptions) {
   // changes the character on a Mac).
   // Shift+? lists them, on the bar only (a character key acts only where it has the focus, WCAG 2.1.4).
   bar.addEventListener('keydown', (event) => {
-    if (event.key !== '?' || event.ctrlKey || event.altKey || event.metaKey) return;
+    if (compact || event.key !== '?' || event.ctrlKey || event.altKey || event.metaKey) return;
     event.preventDefault();
     toggleKeys(true);
   });
   const onKey = (event: KeyboardEvent) => {
     if (!event.ctrlKey || !event.altKey || event.metaKey || event.shiftKey) return;
+    if (options.keys && !options.keys()) return;
     const actions: Record<string, () => void> = { KeyP: () => { toggle(); view.still(!playing); }, KeyR: () => { replayStep(); view.still(false); }, ...(voiced ? { KeyC: () => setCaptions(!prefs.captions) } : {}) };
     const run = actions[event.code];
     if (!run) return;

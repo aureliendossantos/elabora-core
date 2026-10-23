@@ -154,7 +154,7 @@ See a screen while designing, in well under a second: a look server kept warm fo
 | `height` | integer |  |  Default 900. |
 | `state` | "initial" \| "answered" |  |  Default "initial". |
 | `step` | integer |  | Reveal the steps of the screen up to this one (default: all). |
-| `layer` | string |  | Open this layer of the screen (the window is captured). |
+| `layer` | string |  | Open this layer of the screen (the window is captured). A layer with its own timeline (a narration or timed blocks, D62) shows its end, or the moment at says on its timeline; sheet gives its marks. |
 | `at` | string |  | A timed screen at a moment (the window is captured, with the bar): "l2" (a line starts, its caption shown), "l2:end", "l2:imprimante" (a word of it), "l2:imprimante+0.3s", "1.5s@2" (seconds into step 2, screens without narration), "step2:end", or "12.5" (seconds on the timeline). |
 | `sheet` | boolean |  | A contact sheet of a timed screen: one capture per mark of its timeline (its start, each block that comes or goes, each cue, each step's end), captioned with the anchor and what happens: review a narrated slide as a storyboard. |
 | `language` | string |  | A translation of the course (default: its language). |
@@ -190,7 +190,7 @@ Render one screen (or one of its layers) in a real browser once images and free 
 | `screen` | string |  |  |
 | `width` | integer |  |  Default 1600. |
 | `height` | integer |  |  Default 900. |
-| `layer` | string |  | Open this layer of the screen before the capture. |
+| `layer` | string |  | Open this layer of the screen before the capture. A layer with its own timeline (D62) shows its end, and at names moments of its timeline. |
 | `step` | integer |  | Reveal the steps of the screen up to this one (default: all). |
 | `state` | "initial" \| "answered" |  |  Default "initial". |
 | `at` | one of several[] |  | Filmstrip: frames at these times in ms, animations on; or, on a narrated screen, as each of these lines starts ("l2") or ends ("l2:end"), its caption shown. |
@@ -239,7 +239,7 @@ Media jobs of the course (imports, optimisations, renditions: queued, running wi
 
 ### `elabora_timeline`
 
-A timed screen's timeline as text, read without a capture: its steps (segments) and their times, each narration line with its speaker, start, end and audio (ok, missing, stale: what to generate or record again), the blocks each step shows, the timed blocks with their moments (the anchor, its time, the effect) and the events its cues fire (timeline.reached, timeline.ended). Times come from the lines' audio and their word times, estimated from the text while a line has none. Without screen: every narrated screen with the audio of its lines. To see a moment, elabora_look with at: "l2", "l2:imprimante" or a time in seconds.
+A timed screen's timeline as text, read without a capture: its steps (segments) and their times, each narration line with its speaker, start, end and audio (ok, missing, stale: what to generate or record again), the blocks each step shows, the timed blocks with their moments (the anchor, its time, the effect) and the events its cues fire (timeline.reached, timeline.ended); then each layer that has its own timeline (a narration or timed blocks, D62), read the same way. Times come from the lines' audio and their word times, estimated from the text while a line has none. Without screen: every narrated screen with the audio of its lines. To see a moment, elabora_look with at: "l2", "l2:imprimante" or a time in seconds.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -650,6 +650,7 @@ A new narration line made from a recording, in one undoable change: its text wha
 | `after` | string \| null |  | The line it follows (null: first; default: last). |
 | `step` | integer |  | Its step (default: the step of the line before it). |
 | `speaker` | string |  | Its speaker (course.json speakers[].id; default: the speaker of the line before it). |
+| `layer` | string |  | A line of this layer's narration (said on the layer's own timeline when it opens, D62; no step). Default: the screen's narration. |
 | `language` | string |  | A language of the course or of one of its translations (default: the course language). |
 | `keepSilence` | boolean |  | Keep the silence at both ends (default: trimmed to 0.1 s). |
 | `service` | "local" \| "elevenlabs" |  | Who transcribes: local (default: on this computer, free, nothing leaves it; the first use downloads the model once, 671 MB) or elevenlabs (the author's key and quota: use it only when the author asks for it). |

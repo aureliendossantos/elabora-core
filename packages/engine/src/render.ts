@@ -44,7 +44,8 @@ export class Renderer {
     if (!project.screens.has(params.screen)) throw new EngineError('not-found', `No screen "${params.screen}"`);
     const key = JSON.stringify([params.screen, params.state ?? 'initial', params.step ?? null, params.layer ?? null, params.language ?? null]);
     // A moment changes the view only: the render of the screen is the same.
-    const at = params.at ? momentTime(project, params.screen, params.at, params.language) : null;
+    // On the layer shown when it has a timeline of its own (D62).
+    const at = params.at ? momentTime(project, params.screen, params.at, params.language, params.layer) : null;
     // So does ghost (the steps after the first faded).
     const viewOf = (render: RenderedScreen): RenderedScreen => (at || params.ghost ? { ...render, view: { ...render.view, ...(at ? { at } : {}), ...(params.ghost ? { ghost: true } : {}) } } : render);
     // A render made with the bars as they were is made again (their files may differ too).
@@ -107,10 +108,12 @@ export class Renderer {
 }
 
 // The time of a moment on a screen's timeline (an anchor resolved in the language shown; a word the
-// line does not say falls at the line's start).
-export function momentTime(project: Project, screen: string, moment: CanvasMoment, language?: string | null): { time: number } {
+// line does not say falls at the line's start); with layer, on that layer's timeline when it has one
+// of its own (D62).
+export function momentTime(project: Project, screen: string, moment: CanvasMoment, language?: string | null, layer?: string | null): { time: number } {
   if ('time' in moment && typeof moment.time === 'number') return { time: Math.max(0, moment.time) };
-  const timeline = screenTimeline(project, screen, { language: language ?? undefined });
+  const own = layer ? screenTimeline(project, screen, { language: language ?? undefined, layer }) : null;
+  const timeline = own ?? screenTimeline(project, screen, { language: language ?? undefined });
   if (!timeline) throw new EngineError('refused', `Screen "${screen}" has no timeline (no narration, no timed block).`);
   return { time: anchorTime(timeline, moment as Anchor).time };
 }

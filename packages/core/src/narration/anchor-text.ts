@@ -52,15 +52,16 @@ export function formatAnchor(anchor: Anchor): string {
 }
 
 // The time an anchor written on a command line falls at on a screen (a plain number: that time), and
-// what to call it; an error that says what the screen has.
-export function resolveAt(project: Project, screenId: string, input: string, { language }: { language?: string } = {}): { time: number; label: string; anchor: Anchor | null; estimated: boolean } | { error: string } {
-  const timeline = screenTimeline(project, screenId, { language });
-  if (!timeline) return { error: `Screen "${screenId}" has no timeline (no narration, no timed block): --at names a moment of one.` };
+// what to call it; an error that says what the screen has. layer: on that layer's timeline (D62).
+export function resolveAt(project: Project, screenId: string, input: string, { language, layer }: { language?: string; layer?: string | null } = {}): { time: number; label: string; anchor: Anchor | null; estimated: boolean } | { error: string } {
+  const timeline = screenTimeline(project, screenId, { language, layer: layer ?? null });
+  if (!timeline) return { error: layer ? `Layer "${layer}" of screen "${screenId}" has no timeline (no narration, no timed block): --at names a moment of one.` : `Screen "${screenId}" has no timeline (no narration, no timed block): --at names a moment of one.` };
   const plain = /^\d+(?:\.\d+)?$/.test(input.trim()) ? Number(input) : null;
   if (plain !== null) return { time: Math.min(plain, timeline.duration), label: clockTime(plain, { tenths: true }), anchor: null, estimated: timeline.estimated };
   const anchor = parseAnchor(input);
   if (!anchor) return { error: `"${input}" is not a moment: a line (l2, l2:end), a word of it (l2:imprimante, l2:imprimante:end, l2:imprimante#2, +0.3s for an offset), seconds (1.5s, 1.5s@2), a step (step2, step2:end), or a time (12.5).` };
-  if (typeof anchor.line === 'string' && !timeline.lines.some((line) => line.id === anchor.line)) return { error: timeline.lines.length ? `No line "${anchor.line}" in the narration of "${screenId}". Lines: ${timeline.lines.map((line) => line.id).join(', ')}.` : `Screen "${screenId}" has no narration: name seconds or a step.` };
+  const where = layer ? `layer "${layer}" of "${screenId}"` : `"${screenId}"`;
+  if (typeof anchor.line === 'string' && !timeline.lines.some((line) => line.id === anchor.line)) return { error: timeline.lines.length ? `No line "${anchor.line}" in the narration of ${where}. Lines: ${timeline.lines.map((line) => line.id).join(', ')}.` : `${layer ? `Layer "${layer}"` : `Screen "${screenId}"`} has no narration: name seconds${layer ? '' : ' or a step'}.` };
   const found = anchorTime(timeline, anchor);
   if (found.problem && found.problem.kind !== 'seconds') return { error: `${describe(found.problem)} (on screen "${screenId}").` };
   return { time: found.time, label: formatAnchor(anchor), anchor, estimated: found.estimated };

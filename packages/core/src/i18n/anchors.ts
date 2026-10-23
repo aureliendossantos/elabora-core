@@ -8,6 +8,7 @@
 import type { Anchor, Block, Screen } from '@elabora/format';
 import type { Project } from '../project/model.ts';
 import { narrationWords, findPhrase, normalizeWord } from '../narration/words.ts';
+import { voiceLinesOf } from '../narration/voice-lines.ts';
 import { objectsIn, isRecord } from '../util/values.ts';
 import { CHART_TYPE_NAMES } from '../charts/names.ts';
 import { readXliff } from './xliff.ts';
@@ -137,7 +138,7 @@ function xliffOf(project: Project, language: string): XliffDocument | null {
   return parsed.get(entry) ?? null;
 }
 
-// For each narration line of a screen translated into a language: the words its anchors are placed
+// For each voice line of a screen (every track: the screen's narration, its layers') translated into a language: the words its anchors are placed
 // on (a line not translated, or translated from another text, keeps its source words: absent).
 export function translatedLineAnchors(project: Project, screenId: string, language: string): Map<string, Map<string, WordAnchor>> {
   const out = new Map<string, Map<string, WordAnchor>>();
@@ -145,8 +146,8 @@ export function translatedLineAnchors(project: Project, screenId: string, langua
   if (!screen || !project.course || language === project.course.language) return out;
   const xliff = xliffOf(project, language);
   if (!xliff) return out;
-  for (const line of objectsIn(screen.narration?.lines)) {
-    const unit = xliff.units.get(`screen.${screenId}.narration.${line.id}.text`);
+  for (const { line, unit: id } of voiceLinesOf(screen, screenId, project)) {
+    const unit = xliff.units.get(id);
     if (!unit?.target || unit.source !== line.text) continue;
     out.set(line.id, placedAnchors(unit.target, unit.targetMarks, language));
   }

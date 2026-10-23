@@ -45,7 +45,7 @@ export async function addNarrationLineFromAudio(dir: string, args: LineFromAudio
     if (!text) throw new TranscriptionError('E_TRANSCRIBE_EMPTY', `${path.basename(args.file)}: the transcriber heard no words in it. Give its text (--text).`);
     const timed = await timedWords(audio.file, text, language, tools, args.signal);
     const written = await addNarrationLineWithAudioChange(dir, {
-      screen: args.screen, ...(args.after !== undefined ? { after: args.after } : {}), language,
+      screen: args.screen, ...(args.after !== undefined ? { after: args.after } : {}), ...(args.layer !== undefined ? { layer: args.layer } : {}), language,
       line: { text, ...(args.speaker ? { speaker: args.speaker } : {}), ...(typeof args.step === 'number' ? { step: args.step } : {}) },
       audio: { size: audio.bytes.length, hash: audio.hash }, duration: audio.duration, provider: 'recording', voice: path.basename(args.file), generated: false,
       ...(timed ?? {}), createdAt: createdAt()

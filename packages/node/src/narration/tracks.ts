@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process';
 import type { Project } from '@elabora/core/project/model';
 import { screenOrder } from '@elabora/core/project/load';
 import { narrationLines, screenTiming } from '@elabora/core/narration/narration';
+import { narratedLayers, onTimeline } from '@elabora/core/narration/voice-lines';
 import { narrationVtt } from '@elabora/core/narration/timing';
 import type { NarrationTrack } from '@elabora/core/compile/course-data';
 import { canonicalJSON } from '@elabora/core/util/json';
@@ -19,6 +20,10 @@ import { sha256Hex as sha256, writeFileAtomic } from '../util/fs.ts';
 // the decoded samples, so the cues of the course data fall on the sounds. Tracks are cached in the
 // project's data by the hash of their inputs: an unchanged screen is never encoded again, and the
 // same inputs give the same bytes.
+//
+// A layer with a narration has its own track (D62), next to its screen's: narration/<screen>.<layer>.m4a
+// and .vtt. The dot is never in an id (screens, layers and language folders are slugs or language
+// tags), so a layer's track can share a folder with every screen and language without colliding.
 
 // The decoded audio: mono, 48 kHz, 16-bit; the track: AAC-LC at 64 kb/s (about 0.5 MB a minute).
 export const SAMPLE_RATE = 48000;
@@ -28,11 +33,16 @@ const PIPELINE_VERSION = 1;
 
 export const narrationCacheDir = (projectDir: string): string => path.join(projectDataDir(projectDir), 'cache', 'narration');
 // In a package of several languages (D59), the other languages' tracks go in narration/<lang>/.
-export const trackPath = (screen: string, folder = ''): string => `narration/${folder ? `${folder}/` : ''}${screen}.m4a`;
-export const captionsPath = (screen: string, folder = ''): string => `narration/${folder ? `${folder}/` : ''}${screen}.vtt`;
+// layer: the track of that layer of the screen (D62).
+export const trackName = (screen: string, layer: string | null = null): string => (layer === null ? screen : `${screen}.${layer}`);
+export const trackPath = (screen: string, folder = '', layer: string | null = null): string => `narration/${folder ? `${folder}/` : ''}${trackName(screen, layer)}.m4a`;
+export const captionsPath = (screen: string, folder = '', layer: string | null = null): string => `narration/${folder ? `${folder}/` : ''}${trackName(screen, layer)}.vtt`;
 
 export interface BuiltTrack {
   screen: string;
+  // The layer whose track it is; null: the screen's.
+  layer: string | null;
+  // screen, or screen.layer (trackName): the key of tracks by timeline.
   // Package paths, and the cached file the package ships.
   path: string;
   captionsPath: string;
@@ -41,6 +51,7 @@ export interface BuiltTrack {
   bytes: number;
   duration: number;
   key: string;
+  name: string;
   track: NarrationTrack;
   // The credits its voices ask for (their sidecars').
   credits: string[];
@@ -48,9 +59,10 @@ export interface BuiltTrack {
 
 export interface NarrationTracks {
   tracks: BuiltTrack[];
-  // Narrated screens without a track: a line has no audio yet (their timeline runs silent).
+  // Narrated screens without a track: a line has no audio yet (their timeline runs silent); a
+  // layer's as screen.layer (trackName).
   silent: string[];
-  failures: { screen: string; message: string }[];
+  failures: { screen: string; layer: string | null; message: string }[];
 }
 
 export interface TrackOptions {
@@ -63,17 +75,22 @@ export interface TrackOptions {
 export async function narrationTracks(project: Project, options: TrackOptions = {}): Promise<NarrationTracks> {
   const out: NarrationTracks = { tracks: [], silent: [], failures: [] };
   const language = project.course?.language ?? '';
-  const screens = screenOrder(project).map(({ id }) => id).filter((id) => project.screens.get(id)?.data.narration);
+  // Each narrated timeline, in the order of the course: a screen's, then its layers'.
+  const timelines = screenOrder(project).flatMap(({ id }) => {
+    const data = project.screens.get(id)?.data;
+    return [...(data?.narration ? [{ screen: id, layer: null }] : []), ...narratedLayers(data).map((layer) => ({ screen: id, layer }))];
+  });
   let tools: MediaTools | null | undefined = options.tools;
   let done = 0;
-  for (const screen of screens) {
-    const lines = narrationLines(project, screen, language);
-    if (!lines?.length || lines.some((line) => line.status === 'missing' || line.status === 'untranslated')) { out.silent.push(screen); continue; }
+  for (const { screen, layer } of timelines) {
+    const name = trackName(screen, layer);
+    const lines = narrationLines(project, screen, language)?.filter((line) => onTimeline(line.track, layer));
+    if (!lines?.length || lines.some((line) => line.status === 'missing' || line.status === 'untranslated')) { out.silent.push(name); continue; }
     try {
       // The silences come from the timeline: each line's pause, made longer where an effect anchored
       // at the end of a step needs time before the next one, and after the last line as long as the
       // screen's last effects last.
-      const laid = screenTiming(project, screen, { language });
+      const laid = screenTiming(project, screen, { language, layer });
       if (!laid) continue;
       const gaps = laid.gaps;
       const hashes = await Promise.all(lines.map((line) => projectFileHash(project.root, line.audio)));
@@ -96,18 +113,20 @@ export async function narrationTracks(project: Project, options: TrackOptions = 
         writeFileAtomic(facts, `${JSON.stringify({ durations })}\n`);
       }
       const measured = new Map(lines.map((line, index) => [line.id, (durations as number[])[index]]));
-      const timing = screenTiming(project, screen, { language, durations: measured, gaps });
+      const timing = screenTiming(project, screen, { language, durations: measured, gaps, layer });
       if (!timing) continue;
       const vtt = narrationVtt(timing.lines.map((line) => ({ ...line, speaker: line.info.speakerName })));
+      const src = trackPath(screen, options.folder, layer);
+      const captions = captionsPath(screen, options.folder, layer);
       out.tracks.push({
-        screen, path: trackPath(screen, options.folder), captionsPath: captionsPath(screen, options.folder), file, vtt, bytes: fs.statSync(file).size, duration: timing.duration, key,
+        screen, layer, name, path: src, captionsPath: captions, file, vtt, bytes: fs.statSync(file).size, duration: timing.duration, key,
         credits: [...new Set(lines.map((line) => line.credit).filter((credit): credit is string => !!credit))],
-        track: { src: trackPath(screen, options.folder), captions: captionsPath(screen, options.folder), durations: measured, gaps }
+        track: { src, captions, durations: measured, gaps }
       });
     } catch (error) {
-      out.failures.push({ screen, message: error instanceof Error ? error.message : String(error) });
+      out.failures.push({ screen, layer, message: error instanceof Error ? error.message : String(error) });
     }
-    options.onProgress?.(++done, screens.length);
+    options.onProgress?.(++done, timelines.length);
   }
   return out;
 }

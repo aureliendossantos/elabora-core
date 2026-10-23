@@ -117,8 +117,9 @@ timeline [dir] [screen] [--language <lang>] [--json]
                                                     A timed screen's timeline as text: its steps and their times,
                                                     each line with its speaker, start, end and audio (ok, missing,
                                                     stale), the blocks of each step, the timed blocks with their
-                                                    moments and effects, and the events its cues fire. Without a
-                                                    screen: every narrated screen and its audio
+                                                    moments and effects, and the events its cues fire; then each
+                                                    layer that has its own timeline. Without a screen: every
+                                                    narrated screen and its audio
 timing [dir] <block> [--in <moment>] [--out <moment>] [--effect <name>] [--duration <s>] [--direction <side>]
        [--out-effect <name>] [--out-duration <s>] [--out-direction <side>] [--clear in|out|all] [--json]
                                                     When a block comes and goes on its screen's timeline, in one
@@ -146,13 +147,13 @@ narration transcribe [dir] <file> [--language <lang>] [--service local|elevenlab
                                                     computer by default (Parakeet, downloaded once, 671 MB; free, nothing
                                                     leaves the computer), or by ElevenLabs with the author's key: from 1 %
                                                     of the quota it says the share (exit code 3) and runs with --spend
-narration add-from-audio [dir] <screen> <file> [--text <text>] [--after <line>|--first] [--step <n>] [--speaker <id>]
+narration add-from-audio [dir] <screen> <file> [--text <text>] [--after <line>|--first] [--step <n>] [--speaker <id>] [--layer <id>]
        [--language <lang>] [--keep-silence] [--service local|elevenlabs] [--spend <percent>] [--json]
                                                     A new line made from a recording: its text what the recording says
                                                     (transcribed, or --text), its audio the recording (trimmed, encoded),
                                                     its words timed when the aligner is installed, in one undoable change;
                                                     after the last line by default, in the step and with the speaker of
-                                                    the line before it
+                                                    the line before it; --layer: a line of that layer's narration
 narration retranscribe [dir] <screen> <line> [--dry-run] [--text <text>] [--service local|elevenlabs] [--spend <percent>] [--json]
                                                     The line's text written again from its recording (a recording says
                                                     something else than the script): its old and new text printed, then
@@ -298,7 +299,8 @@ look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|an
                                                     1.5s@2, step2:end, 12.5 (seconds). --sheet: a contact sheet, one capture per
                                                     mark of its timeline (start, each block that comes or goes, each cue, each
                                                     step's end), captioned with the anchor and what happens; on a screen without a
-                                                    timeline, the page down its length (0, 25, 50, 75, 100 % or --scroll's).
+                                                    timeline, the page down its length (0, 25, 50, 75, 100 % or --scroll's). With
+                                                    --layer, a layer that has its own timeline: --at and --sheet are on it.
                                                     --scroll: the window there, animations on (px, % of the page, or a block's id);
                                                     several: a sheet down the page. --block: a close-up of the block (PNG up to 2
                                                     Mpx, else JPEG; in view unless --scroll says where), --scale 2 drawn twice as
@@ -314,7 +316,8 @@ screenshot [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state init
            [--at 0,2000,4000|l1,l2:end | --scroll 0,25%,50%,1800] [--motion] [--viewport] [--out shot.png | --out-dir <dir>]
                                                     Render screens to PNG once images and free objects are ready. answered: every
                                                     activity shows its tallest feedback. --at: filmstrip of the animations (ms),
-                                                    or of a narrated screen as each line starts (l2) or ends (l2:end);
+                                                    or of a narrated screen as each line starts (l2) or ends (l2:end), with
+                                                    --layer of that layer's own timeline;
                                                     --scroll: filmstrip down the page (px or % of it: scroll-driven animations and
                                                     objects). One contact sheet. Several shots share one build and one browser;
                                                     --out names one image, so several shots are refused with it (exit code 2):

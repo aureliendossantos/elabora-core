@@ -17,8 +17,9 @@ const HELP = `  timeline [dir] [screen] [--language <lang>] [--json]
                                                       A timed screen's timeline as text: its steps and their times,
                                                       each line with its speaker, start, end and audio (ok, missing,
                                                       stale), the blocks of each step, the timed blocks with their
-                                                      moments and effects, and the events its cues fire. Without a
-                                                      screen: every narrated screen and its audio
+                                                      moments and effects, and the events its cues fire; then each
+                                                      layer that has its own timeline. Without a screen: every
+                                                      narrated screen and its audio
   timing [dir] <block> [--in <moment>] [--out <moment>] [--effect <name>] [--duration <s>] [--direction <side>]
          [--out-effect <name>] [--out-duration <s>] [--out-direction <side>] [--clear in|out|all] [--json]
                                                       When a block comes and goes on its screen's timeline, in one
@@ -46,13 +47,13 @@ const HELP = `  timeline [dir] [screen] [--language <lang>] [--json]
                                                       computer by default (Parakeet, downloaded once, 671 MB; free, nothing
                                                       leaves the computer), or by ElevenLabs with the author's key: from 1 %
                                                       of the quota it says the share (exit code 3) and runs with --spend
-  narration add-from-audio [dir] <screen> <file> [--text <text>] [--after <line>|--first] [--step <n>] [--speaker <id>]
+  narration add-from-audio [dir] <screen> <file> [--text <text>] [--after <line>|--first] [--step <n>] [--speaker <id>] [--layer <id>]
          [--language <lang>] [--keep-silence] [--service local|elevenlabs] [--spend <percent>] [--json]
                                                       A new line made from a recording: its text what the recording says
                                                       (transcribed, or --text), its audio the recording (trimmed, encoded),
                                                       its words timed when the aligner is installed, in one undoable change;
                                                       after the last line by default, in the step and with the speaker of
-                                                      the line before it
+                                                      the line before it; --layer: a line of that layer's narration
   narration retranscribe [dir] <screen> <line> [--dry-run] [--text <text>] [--service local|elevenlabs] [--spend <percent>] [--json]
                                                       The line's text written again from its recording (a recording says
                                                       something else than the script): its old and new text printed, then
@@ -219,10 +220,10 @@ const transcribeCommand = defineCommand({
 
 const addFromAudioCommand = defineCommand({
   name: 'narration add-from-audio',
-  flags: { text: 'string', after: 'string', first: 'boolean', step: 'string', speaker: 'string', language: 'string', 'keep-silence': 'boolean', service: 'string', spend: 'string', json: 'boolean' },
+  flags: { text: 'string', after: 'string', first: 'boolean', step: 'string', speaker: 'string', layer: 'string', language: 'string', 'keep-silence': 'boolean', service: 'string', spend: 'string', json: 'boolean' },
   run: ({ positionals, flags }) => reportingFailures(async () => {
     const { dir, rest: [screen, file, ...extra] } = courseAndArguments(positionals);
-    const usage = 'Usage: elabora narration add-from-audio [dir] <screen> <file> [--text <text>] [--after <line>|--first] [--step <n>] [--speaker <id>] [--language <lang>] [--keep-silence] [--service local|elevenlabs] [--spend <percent>] [--json]';
+    const usage = 'Usage: elabora narration add-from-audio [dir] <screen> <file> [--text <text>] [--after <line>|--first] [--step <n>] [--speaker <id>] [--layer <id>] [--language <lang>] [--keep-silence] [--service local|elevenlabs] [--spend <percent>] [--json]';
     if (!screen || !file || extra.length || (flags.first && flags.after)) { console.error(usage); return 2; }
     if (notACourse(dir)) { console.error(`✘ ${path.resolve(dir)} is not an Elabora course (no course.json).`); return 1; }
     const step = flags.step === undefined ? undefined : Number(flags.step);
@@ -233,7 +234,7 @@ const addFromAudioCommand = defineCommand({
       const result = await addNarrationLineFromAudio(dir, {
         screen, file: path.resolve(file), ...how, install: true, onProgress: downloadProgress(!!flags.json), trim: !flags['keep-silence'],
         ...(flags.text ? { text: flags.text } : {}), ...(flags.first ? { after: null } : flags.after ? { after: flags.after } : {}), ...(step !== undefined ? { step } : {}),
-        ...(flags.speaker ? { speaker: flags.speaker } : {}), ...(flags.language ? { language: flags.language } : {})
+        ...(flags.speaker ? { speaker: flags.speaker } : {}), ...(flags.layer ? { layer: flags.layer } : {}), ...(flags.language ? { language: flags.language } : {})
       });
       const own = result.diagnostics.filter((d) => d.severity !== 'info' && d.file === `screens/${screen}.json`);
       if (flags.json) { printJson({ ok: true, screen, line: result.line, text: result.text, audio: result.audio, sidecar: result.sidecar, transcriber: result.transcript?.transcriber ?? null, change: result.change, undo: result.undo, diagnostics: own }); return 0; }
