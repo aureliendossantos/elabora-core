@@ -14,6 +14,8 @@ import { startCanvasHost } from '@elabora/node/canvas/host';
 import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import { loadAxe, axeViolations } from '@elabora/node/util/axe';
 import { dialogueCourse } from '../dialogue-fixture.ts';
+import { NO_MEDIA_CODECS, playsMedia } from '../helpers.ts';
+import { voice, hasFfmpeg } from '../narration.ts';
 
 // The dialogue in the learner's player, in Chrome (docs/dialogues.md, D61): the thread (role=log,
 // bubbles inserted whole, the focus in « Votre réponse » once the learner answers, never before), a
@@ -402,4 +404,58 @@ test('the package with dialogues is deterministic', { timeout: 120000 }, async (
   const b = await build(dir, { out: tmp('elabora-dialogue-b-'), writeLock: false });
   assert.ok(a.ok && b.ok);
   assert.equal(a.report.package.sha256, b.report.package.sha256);
+});
+
+// Real voices on the real clock: each line plays its own file, the line ends on the audio's ended
+// event (not when currentTime reaches duration), « Couper les voix » mutes it, and a refused autoplay
+// leaves a play button in the bubble while the line goes on, silent, at its own pace.
+test('voiced lines: the audio\'s own clock and ended event, muting, a refused autoplay', { timeout: 240000, skip: !hasFfmpeg() && 'ffmpeg and ffprobe not found' }, async (t) => {
+  const dir = dialogueCourse({ screens: ['rencontre'] });
+  const screen = JSON.parse(fs.readFileSync(path.join(dir, 'screens/rencontre.json'), 'utf8'));
+  const texts = Object.fromEntries(screen.blocks[0].props.nodes.flatMap((node: { lines: { id: string; text: string }[] }) => node.lines).map((line: { id: string; text: string }) => [line.id, line.text]));
+  voice(dir, 'rencontre', { id: 'r1', text: texts.r1, seconds: 4 }, { language: 'fr', frequency: 440 });
+  voice(dir, 'rencontre', { id: 'r2', text: texts.r2, seconds: 1 }, { language: 'fr', frequency: 660 });
+  const b = await build(dir, { emit: 'dir', out: tmp('elabora-dialogue-voice-'), writeLock: false, debug: true });
+  assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
+  assert.ok(fs.existsSync(path.join(b.dirPath, 'narration/rencontre.rencontre-marc/r1.m4a')));
+  const { server, browser } = await context();
+  server.addPackage('dvoice', b.dirPath);
+  for (const refused of [false, true]) {
+    const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    try {
+      if (refused) await page.addInitScript(() => { HTMLMediaElement.prototype.play = function () { return Promise.reject(new DOMException('No gesture', 'NotAllowedError')); }; });
+      await page.goto(`${server.base}/pkg/dvoice/index.html`);
+      await page.waitForFunction(() => (window as DialogueWindow).__elabora);
+      if (!(await playsMedia(page, 'audio/mp4; codecs="mp4a.40.2"'))) return t.skip(NO_MEDIA_CODECS);
+      await page.evaluate(() => (window as DialogueWindow).__elabora.go('rencontre'));
+      await page.waitForFunction(() => (window as DialogueWindow).__elabora.dialogues.state('rencontre-marc')?.line === 'r1', null, { timeout: 30000 });
+      if (!refused) {
+        // r1 plays its file; the line's time is the audio's.
+        await page.waitForFunction(() => { const audio = document.querySelector<HTMLAudioElement>('[data-block="rencontre-marc"] audio'); return !!audio && !audio.paused && audio.currentTime > 0.2; }, null, { timeout: 15000 });
+        const playing = await page.evaluate(() => { const audio = document.querySelector<HTMLAudioElement>('[data-block="rencontre-marc"] audio')!; const now = (window as DialogueWindow).__elabora.dialogues.state('rencontre-marc'); return { src: audio.getAttribute('src'), time: now.time, audio: audio.currentTime }; });
+        assert.match(playing.src ?? '', /narration\/rencontre\.rencontre-marc\/r1\.m4a$/);
+        assert.ok(Math.abs(playing.time - playing.audio) < 0.25, JSON.stringify(playing));
+        // Mute: the voice goes on, silent.
+        await page.locator('[data-block="rencontre-marc"] .t-dialogue-mute').click();
+        await page.waitForFunction(() => document.querySelector<HTMLAudioElement>('[data-block="rencontre-marc"] audio')?.muted === true, null, { timeout: 3000 });
+        await page.locator('[data-block="rencontre-marc"] .t-dialogue-mute').click();
+        await page.waitForFunction(() => document.querySelector<HTMLAudioElement>('[data-block="rencontre-marc"] audio')?.muted === false, null, { timeout: 3000 });
+        // ended moves the dialogue on to r2, then its own file.
+        const ended = page.evaluate(() => new Promise<number>((resolve) => document.querySelector('[data-block="rencontre-marc"] audio')!.addEventListener('ended', () => resolve(performance.now()), { once: true })));
+        const at = await ended;
+        await page.waitForFunction(() => (window as DialogueWindow).__elabora.dialogues.state('rencontre-marc')?.line === 'r2', null, { timeout: 10000 });
+        const moved = await page.evaluate(() => performance.now());
+        assert.ok(moved - at < 2000, `r2 ${Math.round(moved - at)} ms after r1's ended`);
+      } else {
+        // Refused: « Écouter » in the bubble, the line said on its own clock all the same.
+        await page.waitForFunction(() => { const button = document.querySelector<HTMLElement>('[data-block="rencontre-marc"] .t-dialogue-row[data-line="r1"] .t-dialogue-listen'); return !!button && !button.hidden; }, null, { timeout: 10000 });
+        await page.waitForFunction(() => (window as DialogueWindow).__elabora.dialogues.state('rencontre-marc')?.line === 'r2', null, { timeout: 15000 });
+      }
+      assert.deepEqual(errors, []);
+    } finally {
+      await page.close();
+    }
+  }
 });
