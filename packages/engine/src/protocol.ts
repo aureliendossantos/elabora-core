@@ -415,6 +415,15 @@ export interface CanvasView {
   at?: CanvasMoment | null;
   // Every step shown, those after the first faded in their place (the editor's phone width).
   ghost?: boolean;
+  // A dialogue of the screen (D61) after these choices (option ids from its start), at rest, or at a
+  // node; null: each dialogue at its start.
+  dialogue?: CanvasDialogue | null;
+}
+
+export interface CanvasDialogue {
+  block: string;
+  choices?: string[];
+  node?: string;
 }
 
 export type CanvasMoment = { time: number } | Anchor;
@@ -427,6 +436,7 @@ export interface RenderScreenParams {
   language?: string;
   at?: CanvasMoment;
   ghost?: boolean;
+  dialogue?: CanvasDialogue;
 }
 
 // ── requests ─────────────────────────────────────────────────────────

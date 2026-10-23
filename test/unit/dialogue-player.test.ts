@@ -8,6 +8,8 @@ import { createCourseState } from '@elabora/player/course-state';
 import { emptyState, encodeState, decodeState, worstCaseLength, worstCaseState } from '@elabora/player/state-codec';
 import { choose, revisit, restart, canRevisit, scoredDone, scoredResult } from '@elabora/player/dialogue/run';
 import { labelKeys, labelLanguages, labelsFor } from '@elabora/player/labels';
+import { tokenCssVars } from '@elabora/player/tokens';
+import { dialogToken } from '@elabora/core/validate/theme';
 import type { CourseData, DialogueBlock } from '@elabora/player/course-data';
 import { dialogueCourse } from '../dialogue-fixture.ts';
 import { readJSON, writeJSON } from '../helpers.ts';
@@ -175,4 +177,23 @@ test('the player\'s dialogue labels exist in its seven languages', () => {
   }
   assert.equal(labelsFor('fr').dialogueChooseAgain, 'Choisir autrement');
   assert.equal(labelsFor('fr').dialogueResumeHere, 'Reprendre d’ici');
+});
+
+test('the dialogue\'s colours: tokens become --t-dialog-* variables, checked for contrast once the course sets one', () => {
+  const dir = dialogueCourse();
+  const course = readJSON(dir, 'course.json');
+  const errors = () => validateDir(dir).diagnostics.filter((d) => d.code === 'E_THEME_CONTRAST').map((d) => `${d.target} ${d.measured}`);
+  assert.deepEqual(errors(), [], 'the defaults, untouched');
+  course.theme = { ...course.theme, tokens: { ...course.theme?.tokens, 'dialog.wordUnspoken': '#B8BFC6', 'dialog.bubble': '#F1F3F5' } };
+  writeJSON(dir, 'course.json', course);
+  assert.deepEqual(errors(), ['dialog.wordUnspoken 1.67', 'dialog.wordUnspoken 1.56']);
+  course.theme.tokens['dialog.wordUnspoken'] = '#5B6670';
+  writeJSON(dir, 'course.json', course);
+  assert.deepEqual(errors(), []);
+  // A learner's bubble too close to the text.
+  course.theme.tokens['dialog.learner'] = '#3A4651';
+  writeJSON(dir, 'course.json', course);
+  assert.deepEqual(errors(), ['dialog.learner 1.53', 'dialog.learner 1.53', 'dialog.wordUnspoken 1.65'], 'the token the course set is the one reported');
+  assert.equal(tokenCssVars({ 'dialog.wordSpoken': '#111111' })['--t-dialog-word-spoken'], '#111111');
+  assert.equal(dialogToken({ 'color.text': '#000000', 'color.surface': '#FFFFFF' }, 'dialog.bubble'), '#f2f2f2');
 });
