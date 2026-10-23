@@ -233,11 +233,12 @@ export const trendView: ChartView = {
       .sort((a, b) => a.at - b.at);
     if (!timed.length) { settle(dom, trend); return; }
     timed.push({ x: reach(trend), at: ends });
+    const seconds = prefersLessMotion() ? 1e-3 : HEAD_SECONDS;
     let head = 0;
     for (const beat of timed) {
       if (time < beat.at) break;
       const target = Math.min(beat.x, reach(trend));
-      head += (target - head) * easeInOut(clamp01((time - beat.at) / HEAD_SECONDS));
+      head += (target - head) * easeInOut(clamp01((time - beat.at) / seconds));
     }
     if (trend.revealing) return;
     const started = time >= timed[0].at;

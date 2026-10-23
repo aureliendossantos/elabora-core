@@ -76,11 +76,13 @@ export function createCharts(context: ChartsContext) {
     const timing = view.entrance ?? defaultView.entrance!;
     const reveal = props.revealOnBeats !== false;
     const first = Math.min(...Object.values(beats));
+    // Less motion asked: each item is there at its moment, without growing.
+    const duration = prefersLessMotion() ? 1e-3 : timing.item;
     view.frame?.(dom, 1);
     let moving = false;
     for (const id of dom.order) {
       const at = beats[id];
-      const p = !reveal ? 1 : at === undefined ? (time >= first ? 1 : 0) : clamp01((time - at) / timing.item);
+      const p = !reveal ? 1 : at === undefined ? (time >= first ? 1 : 0) : clamp01((time - at) / duration);
       if (p > 0 && p < 1) moving = true;
       view.reveal(dom, id, p);
     }
@@ -93,7 +95,7 @@ export function createCharts(context: ChartsContext) {
     pull(dom, time >= ends);
   }
   function pull(dom: ChartDom, on: boolean) {
-    if (!dom.block.props.highlight) return;
+    if (!dom.block.props.highlight && !dom.root.querySelector('.is-hl')) return;
     dom.root.classList.toggle('is-pulled', on);
   }
   // Signalling: what the voice talks about stands, the rest steps back as on hover.

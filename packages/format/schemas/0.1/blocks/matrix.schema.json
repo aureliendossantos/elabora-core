@@ -146,12 +146,6 @@
         "bottomLeft",
         "bottomRight"
       ],
-      "x-enum-labels": {
-        "topLeft": "Top left",
-        "topRight": "Top right",
-        "bottomLeft": "Bottom left",
-        "bottomRight": "Bottom right"
-      },
       "description": "The quadrant that carries the message."
     },
     "items": {

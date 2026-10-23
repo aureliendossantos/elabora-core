@@ -30,7 +30,7 @@ const addFormats = formats.default;
 
 // Annotation keywords used by editors and agents; validators ignore them.
 // x-kind tells templates and editors how to treat a string: text, markdown, tex, asset, token.
-const X_KEYWORDS = ['x-ai-instructions', 'x-category', 'x-translatable', 'x-group', 'x-editable-by', 'x-control', 'x-token', 'x-object-id', 'x-asset-type', 'x-plan-locked', 'x-kind', 'x-token-prefix', 'x-item-label', 'x-text-on', 'x-slots', 'x-enum-labels'];
+const X_KEYWORDS = ['x-ai-instructions', 'x-category', 'x-translatable', 'x-group', 'x-editable-by', 'x-control', 'x-token', 'x-object-id', 'x-asset-type', 'x-plan-locked', 'x-kind', 'x-token-prefix', 'x-item-label', 'x-text-on', 'x-slots'];
 
 // A schema violation, phrased so an agent can fix the value: path is a JSON Pointer in the data.
 export interface SchemaError {

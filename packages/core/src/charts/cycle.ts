@@ -63,10 +63,12 @@ export const cycle: ChartType = {
     if (!stages.length) return '';
     const center = isRecord(props.center) ? props.center : {};
     const pct = (value: number, of: number) => `${n((value / of) * 100)}%`;
-    const words = (title: string, text: string, tag = 'p') => `<${tag} class="t-cycle-name">${esc(title)}</${tag}>${text ? `<p class="t-cycle-about">${esc(text)}</p>` : ''}`;
-    // The centre: the loop at rest, then each stage's words, stacked in one place (the player shows one).
+    const words = (title: string, text: string) => `${title ? `<p class="t-cycle-name">${esc(title)}</p>` : ''}${text ? `<p class="t-cycle-about">${esc(text)}</p>` : ''}`;
+    // The centre: the loop at rest (when it has one: center is optional, the middle then stays empty
+    // until a stage is pointed at), then each stage's words, stacked in one place (the player shows one).
+    const rest = words(str(center.title), str(center.text));
     const centre = '<div class="t-cycle-centre">'
-      + `<div class="t-cycle-rest">${words(str(center.title), str(center.text))}</div>`
+      + (rest ? `<div class="t-cycle-rest">${rest}</div>` : '')
       + stages.map((stage) => `<div class="t-cycle-say"${attrs({ 'data-t-for': stage.id })}>${words(stage.title, stage.text)}</div>`).join('')
       + '</div>';
     const nodes = stages.map((stage, index) => `<div class="t-cycle-stage is-${stage.side}${hl(props, stage.id)}"${attrs({ 'data-t-item': stage.id, 'data-t-say': say(stage, index) })} style="--x:${pct(stage.x, VIEW.w)};--y:${pct(stage.y, VIEW.h)}">`

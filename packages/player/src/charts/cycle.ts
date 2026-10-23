@@ -50,6 +50,8 @@ function drawArc(arc: SVGGElement | undefined, draw: number, rest: boolean): voi
   if (line) {
     line.style.strokeDasharray = rest ? '' : '1 1';
     line.style.strokeDashoffset = rest ? '' : String(1 - easeInOut(draw));
+    // An empty dash still paints its round cap: hidden until it starts.
+    line.style.opacity = rest || draw > 0 ? '' : '0';
   }
   if (head) head.style.opacity = rest ? '' : String(clamp01((draw - 0.82) / 0.18));
 }

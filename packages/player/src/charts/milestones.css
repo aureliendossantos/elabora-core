@@ -57,8 +57,13 @@
 .t-chart.is-pulled .t-ms-dot.is-hl { background: var(--t-chart-accent); box-shadow: inset 0 0 0 2.5px var(--t-chart-accent); }
 .t-chart.is-pulled .t-ms-date.is-hl { color: var(--t-chart-accent); }
 
-/* Pointed at, or talked about: the ring takes the accent and grows a little, softly. */
-.t-chart .t-ms-dot:is(.is-pointed, .is-spoken) { scale: 1.2; box-shadow: inset 0 0 0 2.5px var(--t-chart-accent); }
+/* Pointed at, or talked about: the ring takes the accent and grows a little, softly. The other
+   dots step back by their colours, not their opacity, so the line never shows through them. */
+.t-chart.is-focused .t-ms-dot:not(.is-pointed),
+.t-chart.is-spotlit:not(.is-focused) .t-ms-dot:not(.is-spoken) { opacity: 1; box-shadow: inset 0 0 0 2.5px color-mix(in oklab, var(--t-chart-ink) 12%, var(--t-chart-paper)); }
+.t-chart.is-pulled.is-focused .t-ms-dot.is-hl:not(.is-pointed),
+.t-chart.is-pulled.is-spotlit:not(.is-focused) .t-ms-dot.is-hl:not(.is-spoken) { background: color-mix(in oklab, var(--t-chart-accent) 40%, var(--t-chart-paper)); box-shadow: inset 0 0 0 2.5px transparent; }
+.t-chart:has(.t-ms-dot) .t-ms-dot:is(.is-pointed, .is-spoken) { scale: 1.2; box-shadow: inset 0 0 0 2.5px var(--t-chart-accent); }
 .t-chart.is-spotlit:not(.is-pulled) .t-ms-dot.is-spoken { background: var(--t-chart-accent); }
 .t-chart.is-entering .t-ms-line { transition: none; }
 

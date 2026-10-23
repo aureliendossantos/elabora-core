@@ -21,7 +21,8 @@ export const levelsView: ChartView = {
     return (isPyramid(dom.root) ? last - index : index) * step;
   },
   reveal(dom, id, p) {
-    const [row, note] = dom.items.elements(id);
+    // Its row, its note, and its sentence under the shape when narrow.
+    const [row, note, ...under] = dom.items.elements(id);
     if (!row) return;
     const done = p >= 1;
     const e = easeOut(p);
@@ -52,5 +53,6 @@ export const levelsView: ChartView = {
       note.style.opacity = done ? '' : String(clamp01((p - 0.15) / 0.55));
       note.style.translate = done ? '' : `${-(1 - e) * 0.5}rem 0`;
     }
+    for (const element of under) element.style.opacity = done ? '' : String(clamp01((p - 0.15) / 0.55));
   }
 };

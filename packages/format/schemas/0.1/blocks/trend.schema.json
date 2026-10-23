@@ -117,10 +117,6 @@
         "predict"
       ],
       "default": "show",
-      "x-enum-labels": {
-        "show": "Show the line",
-        "predict": "The learner predicts first"
-      },
       "description": "predict: the learner draws the end of the line, then sees the real one over their guess."
     },
     "predict": {

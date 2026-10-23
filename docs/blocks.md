@@ -290,7 +290,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 
 ## `donut` (chart)
 
-A whole in 2 to 5 parts, as a ring whose centre says the highlighted part. Hover, a tap or the arrow keys lend the centre to another part.
+A whole in 2 to 6 parts (fewer reads better), as a ring whose centre says the highlighted part. Hover, a tap or the arrow keys lend the centre to another part.
 
 > One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). Parts should add up to a whole; more than 5 parts reads badly: use bars.
 
@@ -432,7 +432,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
 | `source` | string |  | Where the data comes from, shown under the chart. |
 | `items` | array | yes | The stages, clockwise from the top. |
-| `center` | object | yes | What the centre says at rest. |
+| `center` | object |  | What the centre says at rest (optional: without it the centre stays empty). |
 | `highlight` | string |  | Id of the stage that carries the idea: it takes the accent colour, the others step back. |
 | `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
 | `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |

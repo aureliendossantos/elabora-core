@@ -36,16 +36,19 @@
 .t-levels-num { margin-left: 0.25rem; font-weight: 650; white-space: nowrap; transition: color var(--t-chart-pull) ease; }
 .t-levels-text { margin: 0.1875rem 0 0; color: var(--t-chart-muted); font-size: 0.875rem; line-height: 1.4; text-wrap: pretty; }
 .t-levels-head + .t-levels-text { margin-top: 0.1875rem; }
+.t-levels-texts { display: none; margin: 1.25rem 0 0; padding: 0; list-style: none; }
+.t-levels-texts li { margin: 0.5rem 0 0; color: var(--t-chart-muted); font-size: 0.875rem; line-height: 1.4; }
+.t-levels-texts b { margin-right: 0.25rem; color: var(--t-chart-ink); font-weight: 600; }
 .t-chart :is(.t-levels-in, .t-levels-num, .t-levels-drop) { font-variant-numeric: tabular-nums; }
 
-/* With a highlight, every level stands quiet until the pull gives the one that matters the colour. */
+/* With a highlight, every level stands quiet (one grey silhouette) until the pull gives the one that
+   matters the colour. */
 .t-chart:has(.t-levels-row.is-hl) .t-levels-row { --t-levels-fill: var(--t-chart-quiet); }
-.t-chart.is-pulled .t-levels-row:not(.is-hl) { --t-levels-fill: var(--t-chart-quieter); }
 .t-chart.is-pulled .t-levels-row.is-hl,
 .t-chart.is-spotlit .t-levels-row.is-spoken { --t-levels-fill: var(--t-chart-accent); }
 .t-chart.is-pulled .t-levels-row.is-hl .t-levels-in,
 .t-chart.is-spotlit .t-levels-row.is-spoken .t-levels-in { color: var(--t-chart-on-accent, var(--t-chart-paper)); }
-.t-chart.is-pulled .t-levels-note.is-hl .t-levels-name { font-weight: 700; }
+.t-chart.is-pulled :is(.t-levels-note.is-hl .t-levels-name, .t-levels-texts .is-hl b) { font-weight: 700; }
 .t-chart.is-pulled .t-levels-note.is-hl .t-levels-num { color: var(--t-chart-accent); }
 
 @container (max-width: 560px) {
@@ -60,5 +63,7 @@
   .t-levels-note.is-in-narrow :is(.t-levels-dup, .t-levels-head--dup) { display: none; }
   .t-levels-head { font-size: 0.875rem; }
   .t-levels-text { font-size: 0.8125rem; line-height: 1.35; }
+  .t-levels.is-texts-under .t-levels-text { display: none; }
+  .t-levels.is-texts-under + .t-levels-texts { display: block; }
   .t-levels-drop { left: calc(50% + var(--edge) * 50% + 0.375rem); font-size: 0.75rem; }
 }

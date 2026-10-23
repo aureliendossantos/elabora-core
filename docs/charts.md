@@ -12,7 +12,7 @@ agents write a free object with D3 and the same kit. The decision and its reason
 |---|---|---|
 | `key-figures` | 2–4 numbers to remember | `items[]`: `figure`, `label`, `count`, `was`, `meter` |
 | `bars` | A ranking: what dominates | `rows[]`: `label`, `value`, `note` |
-| `donut` | A whole in 2–5 parts | `parts[]`: `label`, `value` |
+| `donut` | A whole in 2–6 parts | `parts[]`: `label`, `value` |
 | `trend` | A change over time, and what explains it | `points[]`: `x`, `y`; `note`; `mode: "predict"` |
 | `proportion` | "1 in 10" as an icon array | `of`, `part`, `figure`, `label` |
 | `before-after` | Who moved, and who moved least | `items[]`: `label`, `before`, `after` |

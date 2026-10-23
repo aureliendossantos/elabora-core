@@ -4,16 +4,16 @@
 .t-chart--donut {
   --t-donut-hl: color-mix(in oklab, var(--t-chart-ink) 58%, var(--t-chart-paper));
   --t-donut-k0: color-mix(in oklab, var(--t-chart-ink) 40%, var(--t-chart-paper));
-  --t-donut-k1: color-mix(in oklab, var(--t-chart-ink) 26%, var(--t-chart-paper));
-  --t-donut-k2: color-mix(in oklab, var(--t-chart-ink) 17%, var(--t-chart-paper));
-  --t-donut-k3: color-mix(in oklab, var(--t-chart-ink) 11%, var(--t-chart-paper));
-  --t-donut-k4: color-mix(in oklab, var(--t-chart-ink) 7%, var(--t-chart-paper));
+  --t-donut-k1: color-mix(in oklab, var(--t-chart-ink) 28%, var(--t-chart-paper));
+  --t-donut-k2: color-mix(in oklab, var(--t-chart-ink) 20%, var(--t-chart-paper));
+  --t-donut-k3: color-mix(in oklab, var(--t-chart-ink) 14%, var(--t-chart-paper));
+  --t-donut-k4: color-mix(in oklab, var(--t-chart-ink) 10%, var(--t-chart-paper));
   --t-donut-a0: var(--t-chart-accent);
-  --t-donut-a1: color-mix(in oklab, var(--t-chart-accent) 68%, var(--t-chart-paper));
-  --t-donut-a2: color-mix(in oklab, var(--t-chart-accent) 44%, var(--t-chart-paper));
-  --t-donut-a3: color-mix(in oklab, var(--t-chart-accent) 28%, var(--t-chart-paper));
-  --t-donut-a4: color-mix(in oklab, var(--t-chart-accent) 17%, var(--t-chart-paper));
-  --t-donut-a5: color-mix(in oklab, var(--t-chart-accent) 10%, var(--t-chart-paper));
+  --t-donut-a1: color-mix(in oklab, var(--t-chart-accent) 70%, var(--t-chart-paper));
+  --t-donut-a2: color-mix(in oklab, var(--t-chart-accent) 50%, var(--t-chart-paper));
+  --t-donut-a3: color-mix(in oklab, var(--t-chart-accent) 36%, var(--t-chart-paper));
+  --t-donut-a4: color-mix(in oklab, var(--t-chart-accent) 26%, var(--t-chart-paper));
+  --t-donut-a5: color-mix(in oklab, var(--t-chart-accent) 18%, var(--t-chart-paper));
 }
 .t-donut-layout { display: grid; grid-template-columns: minmax(10rem, 17rem) minmax(0, 24rem); align-items: center; gap: 1.5rem 3rem; }
 .t-donut-ring { position: relative; aspect-ratio: 1; }
@@ -30,11 +30,12 @@
 /* The centre: the face at rest, and one face per part, stacked; the one shown cross-fades in. */
 .t-donut-center { position: absolute; inset: 27%; display: grid; place-items: center; pointer-events: none; }
 .t-donut-face { grid-area: 1 / 1; display: flex; flex-direction: column; align-items: center; margin: 0; text-align: center; }
-.t-chart .t-donut-face { opacity: 0; transition: opacity 120ms ease; }
-.t-chart .t-donut-face.is-rest { opacity: 1; }
-.t-chart:is(.is-focused, .is-spotlit) .t-donut-face.is-rest { opacity: 0; }
-.t-chart.is-focused .t-donut-face.is-pointed,
-.t-chart.is-spotlit:not(.is-focused) .t-donut-face.is-spoken { opacity: 1; transition: opacity 180ms ease 40ms; }
+/* (Stronger than the 40 % of charts.css: a face is shown whole or not at all.) */
+.t-chart.t-chart--donut .t-donut-face { opacity: 0; transition: opacity 120ms ease; }
+.t-chart.t-chart--donut .t-donut-face.is-rest { opacity: 1; }
+.t-chart.t-chart--donut:is(.is-focused, .is-spotlit) .t-donut-face.is-rest { opacity: 0; }
+.t-chart.t-chart--donut.is-focused .t-donut-face.is-pointed,
+.t-chart.t-chart--donut.is-spotlit:not(.is-focused) .t-donut-face.is-spoken { opacity: 1; transition: opacity 180ms ease 40ms; }
 .t-donut-figure { font-family: var(--t-font-heading, var(--t-font-body)); font-size: 2.5rem; font-weight: 700; line-height: 1; letter-spacing: -0.02em; white-space: nowrap; font-variant-numeric: tabular-nums; transition: color var(--t-chart-pull) ease; }
 .t-donut-name { display: -webkit-box; max-width: 9rem; margin-top: 0.375rem; overflow: hidden; color: var(--t-chart-muted); font-size: 0.875rem; line-height: 1.25; text-wrap: balance; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 
@@ -42,7 +43,7 @@
 .t-donut-legend { display: grid; gap: 0.125rem; margin: 0; padding: 0; list-style: none; }
 .t-donut-row { display: grid; grid-template-columns: 0.75rem minmax(0, 1fr) auto; align-items: baseline; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--t-chart-rule); font-size: 1rem; line-height: 1.3; }
 .t-donut-row:last-child { border-bottom: 0; }
-.t-donut-swatch { align-self: center; width: 0.75rem; height: 0.75rem; border-radius: 3px; background: var(--c); transition: background-color var(--t-chart-pull) ease; }
+.t-donut-swatch { align-self: start; margin-top: calc((1.3em - 0.75rem) / 2); width: 0.75rem; height: 0.75rem; border-radius: 3px; background: var(--c); transition: background-color var(--t-chart-pull) ease; }
 .t-donut-label { text-wrap: pretty; }
 .t-donut-value { font-weight: 650; white-space: nowrap; font-variant-numeric: tabular-nums; transition: color var(--t-chart-pull) ease; }
 

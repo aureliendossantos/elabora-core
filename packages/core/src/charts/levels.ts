@@ -18,10 +18,10 @@ import { recordsOf, num, str, itemsOf } from './values.ts';
 
 // Sizes in rem, as levels.css draws them: a row's least height, the gap between rows, and the smallest
 // width of the shape's column wide and narrow (its clamp() lower bounds).
-export const LEVELS = { row: 3.25, gap: 0.5, wide: 19, narrow: 9 } as const;
+export const LEVELS = { row: 3.25, gap: 0.5, wide: 19, narrow: 9, note: 10, textSize: 0.8125 } as const;
 const MIN_WIDTH = 0.1; // the narrowest row of a funnel (a fraction of the column)
 const APEX = 0.04; // a pyramid's tip
-const INSIDE_PAD = 1.5; // rem of breathing room around words inside a row
+const INSIDE_PAD = { wide: 1.5, narrow: 1 }; // rem of breathing room around words inside a row
 const INSIDE_SIZE = 0.9375; // rem, the size of the words inside a row
 
 export interface Level {
@@ -75,10 +75,10 @@ export function textWidth(text: string, bold = false): number {
 
 // Whether words fit inside a row whose column is columnRem wide: within the row's narrower edge, near
 // its middle where the words sit.
-function fits(level: Level, words: string, columnRem: number): boolean {
+function fits(level: Level, words: string, layout: 'wide' | 'narrow'): boolean {
   const at = (t: number) => level.top + (level.bottom - level.top) * t;
   const narrowest = Math.min(at(0.3), at(0.7));
-  return textWidth(words, true) * INSIDE_SIZE + INSIDE_PAD <= narrowest * columnRem;
+  return textWidth(words, true) * INSIDE_SIZE + INSIDE_PAD[layout] <= narrowest * LEVELS[layout];
 }
 
 // A drop between two stages, as the language writes a percentage, with a true minus sign.
@@ -104,7 +104,7 @@ export const levels: ChartType = {
       // Inside the row: a funnel's value, or the label.
       const primaryIsValue = shape === 'funnel' && level.value !== null;
       const primary = primaryIsValue ? value : level.label;
-      const wide = fits(level, primary, LEVELS.wide), narrow = fits(level, primary, LEVELS.narrow);
+      const wide = fits(level, primary, 'wide'), narrow = fits(level, primary, 'narrow');
       const fit = `${wide ? ' is-in-wide' : ''}${narrow ? ' is-in-narrow' : ''}`;
       const say = `${level.label}${value ? `: ${value}` : ''}${level.text ? `. ${level.text}` : ''}`;
       const previous = rows[index - 1];
@@ -130,7 +130,11 @@ export const levels: ChartType = {
         + '</div>';
       return row + note;
     });
-    return `<div class="t-levels t-levels--${shape}${sized ? ' is-sized' : ''}${bare ? ' is-bare' : ''}" style="--n:${rows.length}">${cells.join('')}</div>`;
+    // Narrow, sentences longer than two lines beside a row would stretch the silhouette: they all go
+    // under it, each after its level's name.
+    const under = rows.some((level) => level.text && Math.ceil(textWidth(level.text) * LEVELS.textSize / LEVELS.note) > 2);
+    const texts = under ? `<ul class="t-levels-texts">${rows.filter((level) => level.text).map((level) => `<li${attrs({ class: hl(props, level.id).trim() || null, 'data-t-item': level.id })}><b>${esc(level.label)}</b> ${esc(level.text)}</li>`).join('')}</ul>` : '';
+    return `<div class="t-levels t-levels--${shape}${sized ? ' is-sized' : ''}${bare ? ' is-bare' : ''}${under ? ' is-texts-under' : ''}" style="--n:${rows.length}">${cells.join('')}</div>${texts}`;
   },
   table(props, context) {
     const { levels: rows } = levelsGeometry(props);

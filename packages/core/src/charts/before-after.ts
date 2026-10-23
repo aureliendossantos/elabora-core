@@ -55,7 +55,7 @@ export function dodgeSized(centres: readonly number[], sizes: readonly number[],
     if (!moved) break;
   }
   const out: number[] = [];
-  for (const entry of order) out[entry.i] = entry.c;
+  for (const entry of order) out[entry.i] = Math.round(entry.c * 10000) / 10000;
   return out;
 }
 
@@ -109,8 +109,10 @@ export const beforeAfter: ChartType = {
         + `<i class="t-slope-dot is-after${h}"${attrs({ 'data-t-item': item.id })} style="--y:${y(item.y1)}"></i>`
         + `<p class="t-slope-label is-after${h}"${attrs({ 'data-t-item': item.id })} style="--y:${y(wideRight[index])};--yn:${y(narrowRight[index])}"><b class="t-slope-num"${attrs({ 'data-t-num': item.after })}>${esc(value(item.after))}</b> <span class="t-slope-name">${esc(item.label)}</span></p>`;
     });
+    // Lines the columns' headings take (capitals, spaced), so the plot leaves them room above it.
+    const headLines = (room: number, size: number) => Math.max(...[str(props.beforeLabel), str(props.afterLabel)].map((head) => linesOf(head.toUpperCase(), size * 1.1, room)));
     const heads = `<p class="t-slope-head is-before">${esc(str(props.beforeLabel))}</p><p class="t-slope-head is-after">${esc(str(props.afterLabel))}</p>`;
-    return `<div class="t-slope"><div class="t-slope-plot" style="--h:${wide.height};--hn:${narrow.height}">${heads}${marks.join('')}</div></div>`;
+    return `<div class="t-slope"><div class="t-slope-plot" style="--h:${wide.height};--hn:${narrow.height};--heads:${headLines(Math.min(2 * SLOPE.wide.x0, SLOPE.wide.x1 - SLOPE.wide.x0) * SLOPE.wide.width, 0.8125)};--headsn:${headLines(Math.min(2 * SLOPE.narrow.x0, SLOPE.narrow.x1 - SLOPE.narrow.x0) * SLOPE.narrow.width, 0.75)}">${heads}${marks.join('')}</div></div>`;
   },
   table(props, context) {
     const format = formatOf(props);

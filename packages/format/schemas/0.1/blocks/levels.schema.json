@@ -83,10 +83,6 @@
         "pyramid"
       ],
       "default": "funnel",
-      "x-enum-labels": {
-        "funnel": "Funnel",
-        "pyramid": "Pyramid"
-      },
       "description": "funnel: widest at the top; pyramid: widest at the base."
     },
     "highlight": {

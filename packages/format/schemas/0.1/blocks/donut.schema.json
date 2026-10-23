@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://elabora.studio/schemas/0.1/blocks/donut.schema.json",
   "title": "donut block props",
-  "description": "A whole in 2 to 5 parts, as a ring whose centre says the highlighted part. Hover, a tap or the arrow keys lend the centre to another part.",
+  "description": "A whole in 2 to 6 parts (fewer reads better), as a ring whose centre says the highlighted part. Hover, a tap or the arrow keys lend the centre to another part.",
   "x-category": "chart",
   "x-ai-instructions": "One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). Parts should add up to a whole; more than 5 parts reads badly: use bars.",
   "type": "object",
@@ -95,10 +95,6 @@
         "total"
       ],
       "default": "highlight",
-      "x-enum-labels": {
-        "highlight": "The highlighted part",
-        "total": "The total"
-      },
       "description": "What the centre of the ring says at rest."
     },
     "totalLabel": {

@@ -158,16 +158,6 @@ function axis(spec: unknown, className: string): string {
 export const matrix: ChartType = {
   axis: 'xy',
   items: (props) => itemsOf(props.items, 'items'),
-  figure(props) {
-    // A quadrant alone carries the message: the frame pulls only for an item, so it is pulled here.
-    return highlightedQuadrant(props) && typeof props.highlight !== 'string' ? { className: 'is-pulled' } : {};
-  },
-  // The behaviour pulls (gives the accent at the end of the entrance) when a highlight is set: a
-  // highlighted quadrant counts.
-  data(props) {
-    const quadrant = highlightedQuadrant(props);
-    return quadrant && typeof props.highlight !== 'string' ? { highlight: `quadrant:${quadrant}` } : undefined;
-  },
   body(props) {
     const { items, names, wide, narrow, legend } = matrixLayout(props);
     const lit = highlightedQuadrant(props);

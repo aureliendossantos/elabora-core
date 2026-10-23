@@ -85,7 +85,8 @@ export const donutView: ChartView = {
     const done = [...donut.parts.keys()].every((key) => (donut.drawn.get(key) ?? 0) >= 1);
     const share = done ? 1 : whole > 0 ? filled / whole : 0;
     if (donut.rest) {
-      donut.rest.style.opacity = done ? '' : String(clamp01(share * 5));
+      // The face's words fade in (its own opacity is the CSS's: hidden while a part is pointed or said).
+      for (const child of donut.rest.children) (child as HTMLElement).style.opacity = done ? '' : String(clamp01(share * 5));
       count(donut.rest.querySelector<HTMLElement>('[data-t-num]'), share, dom.format_);
     }
   },

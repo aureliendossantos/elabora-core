@@ -15,7 +15,7 @@
 }
 .t-prop--circle .t-prop-icon { aspect-ratio: 1; border-radius: 50%; overflow: hidden; }
 .t-prop--square .t-prop-icon { aspect-ratio: 1; border-radius: 3px; overflow: hidden; }
-.t-prop--circle .t-prop-grid, .t-prop--square .t-prop-grid { gap: 0.3125rem; width: min(100%, calc(var(--cols) * 1.75rem)); }
+.t-prop--circle .t-prop-grid, .t-prop--square .t-prop-grid { gap: 0.3125rem; width: min(100%, calc(var(--cols) * 2rem)); }
 
 /* Pointing at the figure (or the lit icons): the lit icons lift by 2 px, softly. */
 .t-chart .t-prop-icon.is-lit { transition: translate var(--t-chart-calm) var(--t-ease-out); }

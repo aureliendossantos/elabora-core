@@ -5,7 +5,9 @@
 .t-cycle { position: relative; max-width: 44rem; margin: 0 auto; padding: 1.25rem 0; }
 .t-cycle-ring { position: relative; aspect-ratio: 3 / 2; }
 .t-cycle-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.t-cycle-line { fill: none; stroke: var(--t-chart-quiet); stroke-width: 3; stroke-linecap: round; vector-effect: non-scaling-stroke; transition: stroke var(--t-chart-pull) ease; }
+/* The viewBox is uniform (no stretching), so strokes are in its units: 1.3 ≈ 3 px at full size; dashes
+   then follow the arc's pathLength while it draws. */
+.t-cycle-line { fill: none; stroke: var(--t-chart-quiet); stroke-width: 1.3; stroke-linecap: round; transition: stroke var(--t-chart-pull) ease; }
 .t-cycle-head { fill: var(--t-chart-quiet); transition: fill var(--t-chart-pull) ease; }
 
 .t-cycle-stage { position: absolute; left: var(--x); top: var(--y); width: 0; height: 0; z-index: 1; }
@@ -59,6 +61,7 @@
   .t-cycle { padding: 0; }
   .t-cycle-centre { position: static; width: auto; margin: 0 0 1.25rem; transform: none; text-align: left; }
   .t-cycle-say { display: none; }
+  .t-cycle-centre:not(:has(.t-cycle-rest)) { display: none; }
   .t-cycle-rest.is-away { opacity: 1; translate: none; }
   .t-cycle-name { font-size: 1.0625rem; }
   .t-cycle-ring { aspect-ratio: auto; display: grid; gap: 1.125rem; padding: 0 0 1.25rem 1.125rem; }

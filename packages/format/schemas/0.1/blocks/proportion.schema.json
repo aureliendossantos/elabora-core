@@ -68,11 +68,6 @@
         "square"
       ],
       "default": "person",
-      "x-enum-labels": {
-        "person": "People",
-        "circle": "Dots",
-        "square": "Squares"
-      },
       "description": "The icon."
     },
     "columns": {

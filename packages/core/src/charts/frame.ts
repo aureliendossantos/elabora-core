@@ -7,7 +7,8 @@
 //   data-t-item="<id>"                every element of an item (a bar's label and its track)
 //   data-t-say="…"                    on an item's first element: what the live region says of it
 //   data-t-tip="…"                    an item's detail, in the bubble over data-t-tip-at (or the item)
-//   data-t-num="62"                   a figure the entrance counts up (written with the chart's format)
+//   data-t-num="62"                   a figure the entrance counts up (written with the chart's format);
+//                                     on an element that holds only its text (counting replaces it)
 //   .is-hl                            the highlighted item's elements; .is-pulled on the figure when
 //                                     there is one (the entrance adds it last: the focus pull)
 //   data-t-depth                      a diagram node's distance from the roots (its entrance slot);
@@ -54,7 +55,9 @@ export interface FrameInput {
 export function frame(context: ChartContext, input: FrameInput): string {
   const { props } = input;
   const titleId = `${context.id}-title`;
-  const pulled = typeof props.highlight === 'string' && props.highlight !== '';
+  // Something takes the accent once every item stands: a highlighted item, or a part of the drawing
+  // marked .is-hl by its type (a matrix's quadrant).
+  const pulled = (typeof props.highlight === 'string' && props.highlight !== '') || /class="[^"]*\bis-hl\b/.test(input.body);
   const field = (name: string) => (context.fields ? ` data-t-field="${name}"` : '');
   const text = (value: unknown) => (typeof value === 'string' ? escapeHtml(value) : '');
   const on = onAccent(context.tokens);

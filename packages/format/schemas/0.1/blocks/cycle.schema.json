@@ -9,8 +9,7 @@
   "additionalProperties": false,
   "required": [
     "takeaway",
-    "items",
-    "center"
+    "items"
   ],
   "properties": {
     "takeaway": {
@@ -79,7 +78,7 @@
       "required": [
         "title"
       ],
-      "description": "What the centre says at rest.",
+      "description": "What the centre says at rest (optional: without it the centre stays empty).",
       "properties": {
         "title": {
           "type": "string",

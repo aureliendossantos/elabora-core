@@ -1250,8 +1250,8 @@ export type CycleProps = {
   source?: string;
   /** The stages, clockwise from the top. */
   items: CycleItem[];
-  /** What the centre says at rest. */
-  center: {
+  /** What the centre says at rest (optional: without it the centre stays empty). */
+  center?: {
     /** The loop's name. */
     title: string;
     /** A sentence under it ("Point at a stage"). */
@@ -1355,7 +1355,7 @@ export type DiagramBeat = {
 /**
  * donut block props
  *
- * A whole in 2 to 5 parts, as a ring whose centre says the highlighted part. Hover, a tap or the arrow keys lend the centre to another part.
+ * A whole in 2 to 6 parts (fewer reads better), as a ring whose centre says the highlighted part. Hover, a tap or the arrow keys lend the centre to another part.
  */
 export type DonutProps = {
   /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */

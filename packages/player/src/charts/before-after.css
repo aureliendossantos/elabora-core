@@ -3,7 +3,7 @@
    fractions of it); --x0 and --x1 are its two columns, wide and narrow. Labels are positioned with
    transform, so the entrance may move them with translate. */
 .t-slope { --x0: 0.34; --x1: 0.66; --t-slope-dot: 11px; }
-.t-slope-plot { position: relative; height: calc(var(--h, 18) * 1rem); max-width: 42rem; margin: 3rem auto 0.5rem; touch-action: pan-y; }
+.t-slope-plot { position: relative; height: calc(var(--h, 18) * 1rem); max-width: 42rem; margin: calc(1.75rem + var(--heads, 1) * 1.0625rem) auto 0.5rem; touch-action: pan-y; }
 /* A heading stays over its column and within its half: a long one wraps upwards. */
 .t-slope-head {
   position: absolute; bottom: calc(100% + 1.25rem); left: calc(var(--x0) * 100%); width: max-content;
@@ -50,13 +50,14 @@
 .t-chart.is-pulled .t-slope-label.is-after.is-hl .t-slope-name { color: var(--t-chart-accent); font-weight: 650; }
 /* The line pointed at comes forward a little. */
 .t-chart.is-focused .t-slope-line.is-pointed { z-index: 1; }
-.t-chart.is-focused .t-slope-line.is-pointed:not(.is-hl) { --t-slope-ink: color-mix(in oklab, var(--t-chart-ink) 45%, var(--t-chart-paper)); }
-.t-chart.is-focused .t-slope-line.is-pointed line { transition-duration: var(--t-chart-calm); }
+.t-chart.is-focused :is(.t-slope-line, .t-slope-dot).is-pointed:not(.is-hl) { --t-slope-ink: color-mix(in oklab, var(--t-chart-ink) 45%, var(--t-chart-paper)); }
+.t-chart.is-focused .t-slope-line.is-pointed line,
+.t-chart.is-focused .t-slope-dot.is-pointed { transition-duration: var(--t-chart-calm); }
 
 @container (max-width: 560px) {
   .t-slope { --x0: 0.2; --x1: 0.6; }
-  .t-slope-plot { height: calc(var(--hn, 18) * 1rem); margin-top: 2.75rem; }
+  .t-slope-plot { height: calc(var(--hn, 18) * 1rem); margin-top: calc(1.75rem + var(--headsn, 1) * 1rem); }
   .t-slope-label { top: calc(var(--yn) * 100%); font-size: 0.875rem; }
   .t-slope-label.is-before .t-slope-name { display: none; }
-  .t-slope-head { font-size: 0.75rem; letter-spacing: 0.04em; }
+  .t-slope-head { font-size: 0.75rem; line-height: 1.25; letter-spacing: 0.04em; }
 }
