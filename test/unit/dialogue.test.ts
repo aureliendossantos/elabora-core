@@ -431,6 +431,33 @@ test('the map: placed by layers, deterministic, dashed edges going back', () => 
   assert.ok(dialogueMap(loop).edges.some((edge) => edge.from === 'b' && edge.to === 'a' && edge.back));
 });
 
+test('the map going down, for a portrait page: rows by layer, the ways from the bottom with their letters', () => {
+  const across = dialogueMap(marc());
+  const map = dialogueMap(marc(), { direction: 'down' });
+  assert.equal(map.direction, 'down');
+  assert.deepEqual(map.nodes.map((node) => [node.id, node.rank]), across.nodes.map((node) => [node.id, node.rank]), 'the same layers');
+  // Each layer a row below the one before; a row's nodes side by side, never overlapping.
+  for (const node of map.nodes) for (const other of map.nodes) {
+    if (other.rank === node.rank + 1) assert.ok(other.y >= node.y + node.height, `${other.id} below ${node.id}`);
+    if (node !== other && node.rank === other.rank) assert.ok(node.x + node.width <= other.x || other.x + other.width <= node.x, `${node.id} and ${other.id} overlap`);
+  }
+  assert.ok(map.height > map.width, 'taller than wide');
+  // An option's own way leaves the node's bottom, its letter beside it (the common way from the middle,
+  // without); the retry goes back on the right.
+  const question = map.nodes.find((node) => node.id === 'premiere-question')!;
+  const b = map.edges.find((edge) => edge.from === 'premiere-question' && edge.option === 'b')!;
+  assert.equal(b.letter?.text, 'B');
+  assert.match(b.d, new RegExp(`^M \\d+ ${question.y + question.height} C`));
+  const retry = map.edges.find((edge) => edge.from === 'premiere-question' && edge.option === 'c')!;
+  assert.equal(retry.back, true);
+  assert.equal(retry.letter, undefined);
+  assert.match(dialogueMapSvg(map, { title: 'Carte' }), /<text class="dm-label dm-way" x="\d+" y="\d+">B<\/text>/);
+  // The client's page takes the map that reads best on A4: Marc's call (7 layers) goes down.
+  assert.match(dialogueDocumentHtml(marc(), { id: 'appel-marc', screen: 'appel', language: 'fr' }), /class="dm-label dm-way"/);
+  const short = dialogue([{ id: 'a', options: [{ id: 'x', text: 'x' }, { id: 'y', text: 'y' }] }]);
+  assert.doesNotMatch(dialogueDocumentHtml(short, { id: 'court', screen: 'appel', language: 'fr' }), /class="dm-label dm-way"/, 'a short one keeps going right');
+});
+
 test('the export for the client: the map then the script, in the course\'s language, as one page', async () => {
   const dir = courseWithDialogue();
   const html = dialogueDocumentHtml(marc(), { id: 'appel-marc', screen: 'appel', course: 'Diagnostic réseau', screenTitle: 'Signaler l\'incident', language: 'fr' });

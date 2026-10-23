@@ -60,12 +60,20 @@ export interface DialogueDocumentOptions {
   fontFaces?: string;
 }
 
+// What a map has on an A4 page in portrait, its margins and the map's frame taken off (CSS px).
+const PAGE = { width: 660, height: 900 };
+
 export function dialogueDocumentHtml(data: DialogueData, options: DialogueDocumentOptions): string {
   const language = options.language ?? 'en';
   const words = /^fr\b/i.test(language) ? WORDS.fr : WORDS.en;
   const scriptLanguage = scriptWords(language);
   const script = dialogueScript(data, { id: options.id, screen: options.screen, words: scriptLanguage });
-  const map = dialogueMap(data, { words: scriptLanguage });
+  // The map that reads best on a portrait page: its layers going right while they fit across it, else
+  // going down (a long dialogue), never drawn larger than itself.
+  const fit = (candidate: ReturnType<typeof dialogueMap>) => Math.min(1, PAGE.width / candidate.width, PAGE.height / candidate.height);
+  const across = dialogueMap(data, { words: scriptLanguage });
+  const down = dialogueMap(data, { words: scriptLanguage, direction: 'down' });
+  const map = fit(down) > fit(across) * 1.15 ? down : across;
   const svg = dialogueMapSvg(map, { title: `${words.map} · ${data.title}`, qualities: words.qualities });
   const head = [
     '<!doctype html>',
@@ -144,7 +152,7 @@ h3 { margin: 26px 0 10px; font-size: 15px; break-after: avoid; }
 h3 .n { color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 4px; }
 .meta { margin: 0; color: var(--muted); }
 .map-frame { border: 1px solid var(--line); border-radius: 12px; padding: 8px; background: var(--soft); overflow: auto; break-inside: avoid; }
-.map-frame svg { display: block; width: 100%; height: auto; }
+.map-frame svg { display: block; width: auto; max-width: 100%; height: auto; margin: 0 auto; }
 .legend { color: var(--muted); font-size: 12px; }
 .dm rect { fill: #fff; stroke: var(--line); }
 .dm-ending rect { fill: var(--soft); }
@@ -161,6 +169,7 @@ h3 .n { color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 4
 .dm-back { stroke-dasharray: 4 4; }
 .dm-arrowhead { fill: #9aa0a6; }
 .dm .dm-label { fill: var(--muted); font-size: 11px; }
+.dm .dm-way { font-weight: 600; font-size: 10px; }
 .node { break-inside: avoid-page; }
 .line { margin: 0 0 10px 30px; }
 .who { margin: 0; font-size: 12px; font-weight: 600; color: #3c4043; }
