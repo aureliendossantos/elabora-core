@@ -10,6 +10,8 @@ import type { DialogueMap } from './layout.ts';
 import { dialoguePaths } from './play.ts';
 import type { PathsReport } from './play.ts';
 import type { Project } from '../project/model.ts';
+import { narrationLines } from '../narration/narration.ts';
+import type { NarrationLineInfo } from '../narration/narration.ts';
 
 export interface DialogueView {
   id: string;
@@ -18,6 +20,10 @@ export interface DialogueView {
   script: DialogueScript;
   map: DialogueMap;
   paths: PathsReport;
+  // The voice lines of the dialogue (D61: lines with a speaker, the learner's answers with
+  // learnerVoice as <node>.<option>), with their audio in the course's language and whether it is
+  // there and up to date: what the dock shows and the voice tools take.
+  voices: NarrationLineInfo[];
 }
 
 export function dialogueView(project: Project, block: string): DialogueView | null {
@@ -25,7 +31,8 @@ export function dialogueView(project: Project, block: string): DialogueView | nu
   if (!ref) return null;
   const data = projectDialogue(project, ref);
   const words = scriptWords(project.course?.language);
-  return { id: ref.id, screen: ref.screen, data, script: dialogueScript(data, { id: ref.id, screen: ref.screen, words }), map: dialogueMap(data, { words }), paths: dialoguePaths(project, ref) };
+  const voices = (narrationLines(project, ref.screen) ?? []).filter((line) => line.track.kind === 'dialogue' && line.track.block === ref.id);
+  return { id: ref.id, screen: ref.screen, data, script: dialogueScript(data, { id: ref.id, screen: ref.screen, words }), map: dialogueMap(data, { words }), paths: dialoguePaths(project, ref), voices };
 }
 
 // The dialogue blocks of the course: where each one is.

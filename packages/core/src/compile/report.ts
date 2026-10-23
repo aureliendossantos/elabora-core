@@ -30,7 +30,8 @@ export interface BuildReport {
   // (their bytes and seconds), and the narrated screens without a track (a line without audio yet).
   // credits: what the voices of the tracks ask the module's credits to say (their sidecars' credit).
   // tracks: a narrated layer's with its layer (D62); silent: screens, and layers as screen.layer.
-  narration?: { bytes: number; seconds: number; tracks: { screen: string; layer?: string; path: string; captions: string; bytes: number; seconds: number }[]; silent: string[]; credits?: string[] };
+  // lines: the audio of each line of a dialogue, one file per line (D61), counted in bytes and seconds.
+  narration?: { bytes: number; seconds: number; tracks: { screen: string; layer?: string; path: string; captions: string; bytes: number; seconds: number }[]; silent: string[]; credits?: string[]; lines?: { screen: string; block: string; line: string; path: string; bytes: number; seconds: number }[] };
   structure: StructureFingerprint;
   stateKeys: StateKeys;
   // suspendDataLimit null: no LMS limits it (the web target).

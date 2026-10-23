@@ -172,10 +172,82 @@ About 2 characters a decision. The compiler measures the worst case (`worstCaseD
 
 A character is a speaker of `course.json` `speakers`, with:
 - `color`: a colour token of the theme for its name and bubble;
-- `look`: `{ "svg": "personnages/marc.svg" }`, an SVG that follows the characters' convention (its root declares `data-expressions`, `data-gestures`, `data-default-expression` and `data-portrait`; the player sets `data-speaking`, `data-talking`, `data-mouth`, `data-expression`, `data-gesture`, `data-listening`, `data-paused` and `data-reduced-motion` on its `<g data-part="character">`), or pictures `{ "portrait": "…", "expressions": { "inquiet": "…" } }`. An expression or a gesture its look does not declare is `W_DIALOGUE_LOOK`;
+- `look`: `{ "svg": "personnages/marc.svg" }`, an SVG that follows the characters' convention ([Characters](#characters)), or pictures `{ "portrait": "…", "expressions": { "inquiet": "…" } }`. An expression or a gesture its look does not declare is `W_DIALOGUE_LOOK`;
 - `narrator: true`: its lines are narration, said with its voice.
 
 The block's template has the hooks of the `dialogue` behaviour ([Components](components.md#3-behaviours-headless-and-primitives)): `data-t-log` (the thread), `data-t-options` (the options' room), and optionally `data-t-group`, `data-t-stage`, `data-t-debrief`, `data-t-start`. A fork keeps the behaviour and changes the markup.
+
+## Voices
+
+A dialogue's lines are voice lines like those of a screen's narration and of a layer's ([D24](decisions/D24.md), [D62](decisions/D62.md)): the voice tools, takes, word alignment, recordings, transcription, the audio's state and translation see them all.
+
+- **Which lines have a voice.** A line with a `speaker` (a narrator speaker included); a line without speaker is a narration without voice. With `learnerVoice: true`, the learner's answers too, said by the voice of the `learner` speaker: an option has no id of its own in the screen, so its voice line is named `<node>.<option>` (`premiere-question.a`; a dot is never in an id, so it never meets a line's).
+- **Their audio** keeps the convention: `assets/narration/<language>/<screen>/<line>.m4a` and its sidecar. `elabora voice generate <screen>` says the dialogue's lines with the narration's (`--line m1` for one); `elabora narration import` takes recordings named after them. A voice of several speakers (ElevenLabs' dialogue mode) says each node's lines, and each option's line with its reaction, as one exchange; a dialogue's lines take no pause from it (the player sets the rhythm).
+- **Missing audio** is said once per dialogue (`W_NARRATION_AUDIO_MISSING`, path: the block's props); out of date, per line. A line id taken twice in the screen, whatever holds the two lines, is `E_NARRATION_LINE_DUPLICATE`.
+- **The mouth's envelope.** When a line's audio is written (generated, imported, or its words timed again), the sidecar gets `mouth`: one letter per 1/30 s, `c` closed, `s` small, `o` open, `w` wide, measured on the sound (each frame's level, half against the line's loud level and half against its neighbours; thresholds from the line's own spoken frames, so a whisper moves the mouth as a loud voice does), closed in silences of more than 250 ms and on m, b, p. The build measures it for a sidecar without one.
+- **In the package**, each line with audio is one file at the package's media quality: `narration/<screen>.<block>/<line>.m4a` (`narration/<language>/<screen>.<block>/…` for another language of the package). The course data gives every line (and every voiced answer) its `voice`: `src` (null without audio), `duration`, `words` (`[text, start, end]`, aligned or placed along the line), `mouth` and `estimated`; each cue its `time` in its line. Without audio, the voice is the core's estimate: 15 characters a second, the words placed in proportion to the text, a mouth drawn from the letters.
+
+## Characters
+
+A character drawn in SVG is **one file** of the module (`assets/personnages/marc.svg`). The compiler sanitizes it ([D33](decisions/D33.md): no script, no reference out of the drawing, its `<style>` scoped to it) with the class `t-character`, and the player mounts it twice if needed (the scene, the round avatar of the chat): the same drawing, the state set on its group, the parts it shows chosen by that state. Its own CSS only moves it.
+
+**The root describes the character**; the validation, the player and the app read it:
+
+```xml
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600"
+     data-character="marc"
+     data-expressions="neutre souriant inquiet soulage agace"
+     data-default-expression="neutre"
+     data-gestures="saluer:1.2 hocher:0.8"
+     data-portrait="94 118 212 212">
+```
+
+- `data-expressions`: the expressions it shows, lower case without accents, in the module's language; `data-default-expression` is one of them (else the first).
+- `data-gestures`: each gesture with its duration in seconds, the duration of its CSS animation.
+- `data-portrait`: the box of the face for the round avatar (`x y width height` in the viewBox).
+
+**The tree** is always the same; each group that moves has a `data-part`:
+
+```
+<svg …>
+  <style>…</style>
+  <g data-part="character">              ← the player sets the state here
+    <g data-part="breath">               ← breathing lifts the whole bust
+      <g data-part="body">…</g>          ← neck, bust, collar
+      <g data-part="head">               ← ears, head, hair, nose, cheeks, then:
+        <g data-expression="neutre">…</g>       ← brows, eyes, the expression's detail (one per expression)
+        <g data-part="eyes-closed">…</g>        ← eyelids, shown an instant by the blink
+        <path data-mouth="closed"/> … small, open, wide   ← the four generic mouths
+        <path data-mouth="closed" data-expression="souriant"/>  ← an expression's own mouths
+      <g data-part="arm-wave" data-gesture="saluer">…</g>   ← exists only during the gesture
+```
+
+**The state**, on `<g data-part="character">`: `data-speaking` (its line is being said), `data-talking` (the voice sounds), `data-mouth` (`closed`, `small`, `open`, `wide`), `data-expression`, `data-gesture` (removed after its duration), `data-listening` (another speaks), `data-paused`, `data-reduced-motion`.
+
+**What the player does, without a rule of the character**: a part is shown when each of its `data-gesture`, `data-expression` and `data-mouth` matches the state, hidden otherwise (on the descendants only, never the group); a mouth that names the expression wins over the generic mouth of the same shape. `data-part="eyes-closed"` is transparent until the character's blink shows it. Every animation stops under `data-paused`, and none plays under `data-reduced-motion` (each part rests in its base pose). So a character works without writing a single rule.
+
+**What its CSS does**: breathing, blinking and gestures.
+- Animate `transform` and `opacity` only, with `transform-box: view-box` and a `transform-origin` in `px` of the viewBox.
+- Tie a gesture to the state, never to its part being shown: `[data-part="character"][data-gesture="saluer"] [data-part="arm-wave"] { animation: raise 1.2s ease-in-out both }`. The state and the parts use the same attribute names: always anchor the state on `[data-part="character"]`.
+- `both` on a gesture; a gesture ends where it started (an arm that rises from the bottom of the frame goes back down); the base pose of a gesture's part is its final pose (what stays, still, under reduced motion); for a permanent part (the head), write its reduced pose.
+- Breathing: 2 to 3 units, 4.5 to 5.5 s, `alternate`. Blink: 140 to 160 ms once every 5 to 7 s, with durations of its own per character.
+- Colours are custom properties with their default, declared once in a class: `.skin { fill: var(--character-skin, #E8B48F) }`; a theme sets one character with `svg[data-character="marc"] { --character-top: #2F6B5E }`.
+- `@keyframes` names stay simple (`blink`, `wave`): the sanitizer prefixes them per character. It also scopes every selector, reads the `<style>` as text, keeps lists inside `:is()`, `:where()`, `:not()` and `:has()`, and removes `@property` (registered properties belong to the page). Avoid CSS nesting with an ancestor context (`.arm { [data-paused] & {…} }` never applies once scoped) and an animation name passed through `var()`.
+
+**What the convention forbids** (`W_CHARACTER_CONTENT`): an `id` (so no gradient, clip path, mask or filter: flat shapes instead; two copies on a page would repeat it), text (the name is in the bubbles), more than 40 KB. **What the player needs** (`W_CHARACTER_CONVENTION`): the `data-part="character"` group, the four generic mouths, `data-expressions` (with a default among them) and parts for each expression, `data-gestures` for every gesture its parts play. What the sanitizer had to remove is `W_SVG_INLINE_SANITIZED`.
+
+**The style that works** (the sample characters follow it): flat geometric shapes without outlines, soft colours, one dark stroke with round caps for the brows, closed eyes and mouths; the head an ellipse about a third of the height (viewBox 400 × 600 for a bust), filled ellipses for eyes; one path for the hair; an arm is a thick stroke ending in a mitten. Never pure black (the ink is a very dark violet); clothes of medium saturation that stand out from the backdrop; one bright accent per character. Expressions go through the brows first (inner ends up for worry, down for annoyance, high and round for joy, flat and low for concentration), then the eyes, then one detail (a drop of sweat, pinker cheeks); each expression's own closed mouth carries it at rest. Every expression should read in a 40 px avatar.
+
+**A new character**, step by step:
+1. Copy a sample character and change `data-character`, then the palette's defaults (skin, hair, clothes, accent).
+2. Redraw the hair and the top of the bust (collar, one simple accessory: a lanyard, a headset, glasses as two rounded rects). Keep the head, eyes, mouths and gestures where they are.
+3. Set `data-expressions` to what it plays (the base five: `neutre souriant inquiet soulage agace`) and `data-gestures`; add an expression by copying `<g data-expression="neutre">`, changing brows, eyes and one detail, and adding its closed mouth `<path data-mouth="closed" data-expression="…">`; add a gesture as a part that exists only during it (`data-part="arm-wave" data-gesture="saluer"`, drawn in its final pose) or a rule on a permanent part.
+4. Change its breathing and blinking durations.
+5. Check: `elabora validate` (no `W_CHARACTER_*`, no `W_SVG_INLINE_SANITIZED`), then look at the character in the dialogue's screen (`elabora look`), its expressions and gestures, paused and with reduced motion.
+
+**A backdrop** (`scene.background`) is an ordinary SVG or picture without convention: 1600 × 900, flat, low contrast (the bubbles and characters pass in front), the details on the edges, one bright point per place only if it tells something. For a call between two places, two half-backdrops side by side.
+
+**In a fork of the block, or an app**, `@elabora/player` `character/` mounts a character without global DOM: `mountCharacter(host, speaker, { portrait })` gives a view whose `set({ speaking, talking, mouth, expression, gesture, listening, paused, reducedMotion })` sets the state, `gesture(name)` plays a gesture again from its start and removes it after its duration (a duration that stops while paused), and `dispose()` removes it; `voiceAt(voice, t)` gives the mouth, whether the voice sounds and the word said at a time of a line, and `textVoice(text)` a voice for a line without audio.
 
 ## Events: the dialogue and its screen
 
@@ -200,6 +272,8 @@ The map is computed by `@elabora/core` `dialogue/layout.ts`, pure and determinis
 ## Translation
 
 A dialogue's texts are translation units like any block's: `block.<id>.title`, `block.<id>.nodes.<node>.lines.<line>.text`, `block.<id>.nodes.<node>.prompt`, `block.<id>.nodes.<node>.options.<option>.text` (and `.label`, `.feedback`, `.unavailableText`), `block.<id>.nodes.<node>.options.<option>.reply.<line>.text`, `block.<id>.endings.<ending>.title` and `.text`.
+
+The units of its voice lines (and of the learner's answers with `learnerVoice`) are marked as a narration line's are: the words its cues wait for in `<mrk type="elabora:anchor">`, which translators place on the words of their language that say the same thing (the translated course's cues follow them, [D28](decisions/D28.md)), and its stage directions in `<mrk type="elabora:direction">` ([D29](decisions/D29.md)).
 
 ## From Rise
 

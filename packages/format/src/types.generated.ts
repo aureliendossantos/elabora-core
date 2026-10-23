@@ -3085,8 +3085,8 @@ export type NarrationAudio = {
   $schema?: string;
   /** The screen of the line. */
   screen: Slug;
-  /** The line (narration.lines[].id). */
-  line: Slug;
+  /** The line: its id (narration.lines[].id, a layer's or a dialogue's line), or <node>.<option> for an option a dialogue's learner says with their voice (learnerVoice). */
+  line: string;
   /** The language spoken. */
   language: Language;
   /** SHA-256 of the line's text in that language the audio was made from, after Unicode NFC, whitespace runs made one space and trimmed (narrationTextHash in @elabora/core). Another hash: the text changed since, the audio is out of date. */
@@ -3116,6 +3116,8 @@ export type NarrationAudio = {
   text?: string;
   /** What timed the words (the forced-alignment model and its revision, or the voice itself), for information. */
   aligner?: string;
+  /** How open a character's mouth is while the audio plays, one letter per 1/30 s from its start: c (closed), s (small), o (open), w (wide). Computed from the audio and its words when the audio is written or its words timed (the build computes it for a sidecar without it); the player's characters read it (docs/dialogues.md). */
+  mouth?: string;
   /** When each word of text is said, in seconds from the start of the audio file, in the order of the text (the words of narrationWords in @elabora/core: elisions such as l' and qu' are words of their own): what word anchors resolve to. Written by forced alignment (elabora narration align) when a voice is generated or a recording imported. */
   words?: NarrationAudioWord[];
 };

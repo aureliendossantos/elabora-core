@@ -49,6 +49,8 @@ export interface ReviewAnchor {
   // On a timed screen: seconds on its timeline, and on a narrated one the line and the word said
   // then (D28), so that the comment survives a new take: go prefers the word, then the line, then
   // the time. occurrence: which time the word appears in the line (1: the first), left out for 1.
+  // The line may be a layer's (D62: go opens the layer at it, time is then the layer's) or a
+  // dialogue's (D61: go shows the dialogue; <node>.<option> for what its learner says aloud).
   // said and speaker: the line's text (at most SAID_MAX characters, around the word) and who says
   // it, as the module showed them, so that the page and the author's tools can say « when Marc says
   // "…" » without the module.

@@ -74,7 +74,7 @@ test('format: a narration line is a voice line with step and pauseBefore; a laye
 test('screenVoiceLines: every line of a screen with its track, its unit and where it is written; narrationLines reads them all', () => {
   const dir = layered({ audio: false });
   const project = loadProjectFromDir(dir);
-  assert.equal(VOICE_LINE_SOURCES.length, 2, 'the screen\'s narration and the layers\' (a dialogue\'s source comes next)');
+  assert.equal(VOICE_LINE_SOURCES.length, 3, 'the screen\'s narration, the layers\' and the dialogues\' (D61)');
   const entries = screenVoiceLines(project, 'accueil');
   assert.deepEqual(entries.map((entry) => [entry.line.id, trackKey(entry.track), entry.unit, entry.path]), [
     ['l1', 'screen', 'screen.accueil.narration.l1.text', '/narration/lines/0'],

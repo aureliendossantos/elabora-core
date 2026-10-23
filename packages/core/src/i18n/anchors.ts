@@ -25,7 +25,9 @@ export function anchorMarkId(word: string, occurrence = 1): string {
   return `w-${slug}${occurrence > 1 ? `-${occurrence}` : ''}`;
 }
 
-// Every anchor written on a screen (block timings, event cues, seek-timeline), with where it is.
+// Every anchor written on a screen (block timings, chart moments, a dialogue's cues, event cues,
+// seek-timeline), with where it is. A dialogue's cue anchors to its own line without naming it
+// (D61): its anchor is given with that line, which set() leaves out again.
 export function screenAnchors(screen: Pick<Screen, 'blocks' | 'layers' | 'events'>): { anchor: Anchor; set(next: Anchor): void; where: string }[] {
   const out: { anchor: Anchor; set(next: Anchor): void; where: string }[] = [];
   const walk = (blocks: readonly Block[] | undefined) => {
@@ -38,6 +40,7 @@ export function screenAnchors(screen: Pick<Screen, 'blocks' | 'layers' | 'events
         own(props, 'at', `${block.id}`);
         own(props, 'spotlightEnd', `${block.id} end`);
       }
+      if (isRecord(block.props) && Array.isArray(block.props.nodes)) dialogueCues(block, out);
       if (isRecord(block.timing)) {
         for (const kind of ['in', 'out'] as const) {
           const moment = block.timing[kind];
@@ -55,6 +58,21 @@ export function screenAnchors(screen: Pick<Screen, 'blocks' | 'layers' | 'events
     for (const action of [...objectsIn(event.do), ...objectsIn(event.else)]) if (action.type === 'seek-timeline' && isRecord(action.to)) out.push({ anchor: action.to, set: (next) => { action.to = next; }, where: event.id });
   }
   return out;
+}
+
+// The cues of a dialogue's lines (nodes[].lines, nodes[].options[].reply).
+function dialogueCues(block: Block, out: { anchor: Anchor; set(next: Anchor): void; where: string }[]): void {
+  const props = block.props as Record<string, unknown>;
+  const records = (value: unknown): Record<string, unknown>[] => (Array.isArray(value) ? value.filter(isRecord) : []);
+  const lines = records(props.nodes).flatMap((node) => [...records(node.lines), ...records(node.options).flatMap((option) => records(option.reply))]);
+  for (const line of lines) {
+    if (typeof line.id !== 'string' || !Array.isArray(line.cues)) continue;
+    for (const cue of line.cues) {
+      if (!isRecord(cue) || !isRecord(cue.at)) continue;
+      const named = typeof cue.at.line === 'string';
+      out.push({ anchor: { line: line.id, ...cue.at } as Anchor, set: (next) => { const { line: _line, ...rest } = next; cue.at = named ? next : rest; }, where: `${block.id} ${line.id}` });
+    }
+  }
 }
 
 // The word anchors of a screen by line, each word (and occurrence) once.
