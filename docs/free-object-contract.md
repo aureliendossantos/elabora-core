@@ -32,6 +32,8 @@ See [`object-manifest.schema.json`](../packages/format/schemas/0.1/object-manife
 
 ```js
 import * as THREE from 'three';            // mapped to the vendored r186 build
+import * as d3 from 'd3';                  // D3 7.9, bundled with its notice (charts, D60)
+import { play, createFocus } from '@elabora/charts';   // the kit Elabora's charts move with (charts.md)
 
 export function mount(container, ctx) {
   // ctx.props, ctx.tokens, ctx.objects, ctx.locale, ctx.reducedMotion, ctx.testMode, ctx.savedState

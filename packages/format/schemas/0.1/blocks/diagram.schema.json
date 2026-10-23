@@ -43,13 +43,14 @@
     },
     "labels": {
       "type": "object",
-      "description": "Words of nodes and edges by id, replacing the source's (translations write here).",
+      "description": "Words of nodes and edges by id (as Pele names them: a flowchart node's id, an edge's L_<from>_<to>_<n>, a mind map node's words), replacing the Mermaid text's. Translations write here.",
       "additionalProperties": {
         "type": "string",
         "maxLength": 200
       },
       "propertyNames": {
-        "pattern": "^[A-Za-z0-9_-]{1,64}$"
+        "minLength": 1,
+        "maxLength": 120
       }
     },
     "beats": {

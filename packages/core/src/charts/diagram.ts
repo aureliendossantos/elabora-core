@@ -18,7 +18,13 @@ export type DiagramProblem = { code: 'E_DIAGRAM_TYPE' | 'E_DIAGRAM_SYNTAX'; mess
 
 interface Parsed { type: DiagramType; model: ReturnType<typeof parse> }
 
-export function parseDiagram(source: string): Parsed | DiagramProblem {
+// Colours written in the source (classDef, style, linkStyle) are left out (W_DIAGRAM_COLOR): the
+// course's tokens colour every diagram. The lines stay, empty, so that errors keep their line numbers.
+export const COLOR_LINES = /^[ \t]*(?:classDef|style|linkStyle)\b[^\n]*/gm;
+export const hasColors = (source: string): boolean => new RegExp(COLOR_LINES.source, 'm').test(source);
+
+export function parseDiagram(written: string): Parsed | DiagramProblem {
+  const source = written.replace(COLOR_LINES, '');
   const type = detectType(source);
   if (!type) return { code: 'E_DIAGRAM_SYNTAX', message: 'the source does not start with a Mermaid diagram type (flowchart LR, mindmap, sequenceDiagram…)' };
   if (!DIAGRAM_TYPES.includes(type)) return { code: 'E_DIAGRAM_TYPE', message: `"${type}" diagrams are not drawn by the diagram block (allowed: ${DIAGRAM_TYPES.join(', ')}); use a chart block (bars, donut, trend…) for data` };
@@ -106,6 +112,21 @@ export function drawDiagram(source: string, labels: Record<string, unknown>, opt
   return { wide: draw('w'), narrow: draw('n'), type: first.type };
 }
 
+// The groups of Pele's SVG that are the diagram's items (nodes, sets, categories), and its edges.
+const ITEM_GROUP = /<g class="(pele-node[^"]*|pele-venn-region[^"]*|pele-venn-set[^"]*|pele-ishikawa-category[^"]*|pele-ishikawa-head[^"]*)" data-id="([^"]*)"/g;
+const EDGE_GROUP = /<g class="pele-edge(?:\s[^"]*)?" data-id="([^"]*)"/g;
+
+// The ids a highlight or a beat (items) and a label (items and edges) may name, as Pele draws them.
+export function diagramIds(source: string): { items: string[]; edges: string[] } | DiagramProblem {
+  const drawn = drawDiagram(source, {}, { id: 'ids' });
+  if ('code' in drawn) return drawn;
+  return {
+    items: [...new Set([...drawn.wide.matchAll(ITEM_GROUP)].map((match) => unescapeId(match[2])))],
+    edges: [...new Set([...drawn.wide.matchAll(EDGE_GROUP)].map((match) => unescapeId(match[1])))]
+  };
+}
+const unescapeId = (id: string) => id.replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+
 // Pele's nodes and edges as the chart's items: data-t-item (and the words said), depth, highlight.
 function mark(svg: string, parsed: Parsed, highlight: string | undefined): string {
   const words = new Map(diagramWords(parsed).map((word) => [word.id, word.text]));
@@ -113,7 +134,7 @@ function mark(svg: string, parsed: Parsed, highlight: string | undefined): strin
   const ends = edgeEnds(parsed);
   let order = 0;
   return svg
-    .replace(/<g class="(pele-node[^"]*|pele-venn-set[^"]*|pele-ishikawa-category[^"]*)" data-id="([^"]*)"/g, (_whole, classes: string, id: string) => {
+    .replace(ITEM_GROUP, (_whole, classes: string, id: string) => {
       const said = words.get(id) ?? id;
       const lit = highlight && id === highlight ? ' is-hl' : '';
       return `<g class="${classes}${lit}" data-id="${id}"${attrs({ 'data-t-item': id, 'data-t-say': said, 'data-t-depth': depth.get(id) ?? order++ })}`;

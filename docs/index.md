@@ -14,6 +14,7 @@ This page is the map of the documentation. Each page is a Markdown file of this 
 - [Format specification](../SPEC.md): the files of a course and their rules: the plan and its versions, screens, blocks, events, components, free objects, tracking, translation and archives.
 - [Built-in blocks](blocks.md): every built-in block type with its props and how to fork its template (generated).
 - [Components](components.md): course components, block types and screen layouts made from a props schema and a template without code; forks, slots, fallback and libraries.
+- [Charts and diagrams](charts.md): the chart blocks, each saying one thing; how they move, follow the voice and let learners predict; Mermaid diagrams; charts agents make with D3 and the kit.
 - [Design layer](design.md): free stylesheets, layouts and generated figures around structured content; window sizes, slides and steps; checks on the rendered course.
 - [Free-object contract](free-object-contract.md): custom code such as three.js scenes and mini-games, kept sandboxed, testable and editable without code: manifest, protocol, gates.
 - [JSON Schemas](../packages/format/schemas/0.1/): the normative schemas of format 0.1, also served at `https://elabora.studio/schemas/0.1/`.

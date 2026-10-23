@@ -1,1 +1,64 @@
-/* levels (D60): its styles come with its drawing. */
+/* ── levels (D60): one silhouette, a funnel or a pyramid ──
+   Rows are grid cells of equal height (the tallest note sets it); each holds a trapezoid stretched to
+   it whose stroke, of the fill's colour, rounds its corners at any size (core charts/levels.ts). The
+   column of the shape keeps the sizes the core measured its words against (19 rem wide, 9 narrow). */
+.t-levels {
+  --t-levels-shape: clamp(19rem, 46cqi, 22rem);
+  --t-levels-gap: 0.5rem;
+  --t-levels-r: max(5px, var(--t-chart-radius));
+  --t-levels-soft: color-mix(in oklab, var(--t-chart-accent) 30%, var(--t-chart-paper));
+  display: grid;
+  grid-template-columns: var(--t-levels-shape) minmax(0, 34rem);
+  grid-auto-rows: minmax(3.25rem, 1fr);
+  gap: var(--t-levels-gap) 1.75rem;
+}
+.t-levels.is-sized { column-gap: 4.75rem; }
+.t-levels.is-bare { grid-template-columns: var(--t-levels-shape); justify-content: center; }
+.t-levels-row { position: relative; display: grid; place-items: center; min-width: 0; padding: 0 0.75rem; --t-levels-fill: var(--t-levels-soft); }
+.t-levels-svg { position: absolute; top: var(--t-levels-r); left: var(--t-levels-r); width: calc(100% - 2 * var(--t-levels-r)); height: calc(100% - 2 * var(--t-levels-r)); overflow: visible; }
+.t-levels-svg polygon {
+  fill: var(--t-levels-fill); stroke: var(--t-levels-fill);
+  stroke-width: calc(2 * var(--t-levels-r)); stroke-linejoin: round; vector-effect: non-scaling-stroke;
+  transition: fill var(--t-chart-pull) ease, stroke var(--t-chart-pull) ease;
+}
+.t-levels-in { position: relative; display: none; font-size: 0.9375rem; font-weight: 650; line-height: 1.2; white-space: nowrap; transition: color var(--t-chart-pull) ease; }
+.t-levels-row.is-in-wide .t-levels-in { display: block; }
+/* The drop from the stage above, in the gap, just beyond the silhouette's edge. */
+.t-levels-drop {
+  position: absolute; top: calc(var(--t-levels-gap) / -2); left: calc(50% + var(--edge) * 50% + 0.5rem);
+  transform: translateY(-50%);
+  color: var(--t-chart-muted); font-size: 0.8125rem; font-weight: 550; line-height: 1; white-space: nowrap;
+}
+.t-levels-note { align-self: center; min-width: 0; }
+.t-levels-head { margin: 0; font-size: 0.9375rem; line-height: 1.3; text-wrap: balance; }
+.t-levels-note.is-in-wide :is(.t-levels-dup, .t-levels-head--dup) { display: none; }
+.t-levels-name { font-weight: 600; }
+.t-levels-num { margin-left: 0.25rem; font-weight: 650; white-space: nowrap; transition: color var(--t-chart-pull) ease; }
+.t-levels-text { margin: 0.1875rem 0 0; color: var(--t-chart-muted); font-size: 0.875rem; line-height: 1.4; text-wrap: pretty; }
+.t-levels-head + .t-levels-text { margin-top: 0.1875rem; }
+.t-chart :is(.t-levels-in, .t-levels-num, .t-levels-drop) { font-variant-numeric: tabular-nums; }
+
+/* With a highlight, every level stands quiet until the pull gives the one that matters the colour. */
+.t-chart:has(.t-levels-row.is-hl) .t-levels-row { --t-levels-fill: var(--t-chart-quiet); }
+.t-chart.is-pulled .t-levels-row:not(.is-hl) { --t-levels-fill: var(--t-chart-quieter); }
+.t-chart.is-pulled .t-levels-row.is-hl,
+.t-chart.is-spotlit .t-levels-row.is-spoken { --t-levels-fill: var(--t-chart-accent); }
+.t-chart.is-pulled .t-levels-row.is-hl .t-levels-in,
+.t-chart.is-spotlit .t-levels-row.is-spoken .t-levels-in { color: var(--t-chart-on-accent, var(--t-chart-paper)); }
+.t-chart.is-pulled .t-levels-note.is-hl .t-levels-name { font-weight: 700; }
+.t-chart.is-pulled .t-levels-note.is-hl .t-levels-num { color: var(--t-chart-accent); }
+
+@container (max-width: 560px) {
+  .t-levels { --t-levels-shape: clamp(9rem, 44cqi, 13rem); column-gap: 1rem; }
+  .t-levels.is-sized { column-gap: 3.75rem; }
+  .t-levels.is-bare { grid-template-columns: var(--t-levels-shape) minmax(0, 1fr); justify-content: stretch; }
+  .t-levels-row { padding: 0 0.5rem; }
+  .t-levels-row.is-in-wide .t-levels-in { display: none; }
+  .t-levels-row.is-in-narrow .t-levels-in { display: block; }
+  .t-levels-note.is-in-wide .t-levels-dup { display: inline; }
+  .t-levels-note.is-in-wide .t-levels-head--dup { display: block; }
+  .t-levels-note.is-in-narrow :is(.t-levels-dup, .t-levels-head--dup) { display: none; }
+  .t-levels-head { font-size: 0.875rem; }
+  .t-levels-text { font-size: 0.8125rem; line-height: 1.35; }
+  .t-levels-drop { left: calc(50% + var(--edge) * 50% + 0.375rem); font-size: 0.75rem; }
+}

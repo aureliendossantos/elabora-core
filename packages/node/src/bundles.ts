@@ -85,12 +85,28 @@ const threeGlobals: esbuild.Plugin = {
   }
 };
 
+// Charts in free objects (D60): `import * as d3 from 'd3'` bundles D3 (ISC; its notice goes with the
+// code) and `import { … } from '@elabora/charts'` the kit Elabora's own charts move with.
+const D3_ENTRY = fileURLToPath(import.meta.resolve('d3'));
+const D3_VERSION = (JSON.parse(fs.readFileSync(path.join(path.dirname(D3_ENTRY), '..', 'package.json'), 'utf8')) as { version: string }).version;
+const chartLibraries: esbuild.Plugin = {
+  name: 'elabora-chart-libraries',
+  setup(build) {
+    build.onResolve({ filter: /^d3$/ }, () => ({ path: 'd3', namespace: 'elabora-d3' }));
+    build.onLoad({ filter: /.*/, namespace: 'elabora-d3' }, () => ({
+      contents: `/*! D3 ${D3_VERSION} (https://d3js.org) | ISC License | Copyright 2010-2023 Mike Bostock */\nexport * from ${JSON.stringify(D3_ENTRY)};\n`,
+      loader: 'js', resolveDir: path.dirname(D3_ENTRY)
+    }));
+    build.onResolve({ filter: /^@elabora\/charts$/ }, () => ({ path: path.join(RUNTIME, 'charts', 'kit.ts') }));
+  }
+};
+
 // Legal comments (/*! … */, @license, @preserve) go to the end of the script: an object that
 // includes code from elsewhere ships its notice in every package (docs/free-object-contract.md).
 export async function compileObjectCode(objectDir: string, { minify = true }: { minify?: boolean } = {}): Promise<string> {
   const result = await esbuild.build({
     entryPoints: [path.join(objectDir, 'object.js')], bundle: true, format: 'iife', globalName: '__elaboraObject',
-    target: 'es2020', minify, write: false, legalComments: 'eof', logLevel: 'silent', plugins: [threeGlobals], charset: 'utf8'
+    target: 'es2020', minify, write: false, legalComments: 'eof', logLevel: 'silent', plugins: [threeGlobals, chartLibraries], charset: 'utf8'
   });
   return result.outputFiles[0].text;
 }

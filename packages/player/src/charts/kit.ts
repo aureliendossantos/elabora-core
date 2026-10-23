@@ -273,3 +273,18 @@ export function createFocus(root: HTMLElement, options: FocusOptions): { set(id:
     }
   };
 }
+
+// ── a chart's data for screen readers ──
+// A free object's drawing is not read aloud: its data goes in a table that only screen readers see,
+// as Elabora's charts do (their frame's .t-chart-table). Returns the table, appended to container.
+export function dataTable(container: HTMLElement, { caption, head = [], rows }: { caption?: string; head?: readonly string[]; rows: readonly (readonly string[])[] }): HTMLTableElement {
+  const table = document.createElement('table');
+  table.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0';
+  const cell = (tag: 'th' | 'td', text: string, scope?: string) => { const node = document.createElement(tag); node.textContent = text; if (scope) node.scope = scope; return node; };
+  if (caption) table.createCaption().textContent = caption;
+  if (head.length) table.createTHead().insertRow().append(...head.map((text) => cell('th', text, 'col')));
+  const body = table.createTBody();
+  for (const row of rows) body.insertRow().append(...row.map((text, index) => (index === 0 ? cell('th', text, 'row') : cell('td', text))));
+  container.append(table);
+  return table;
+}

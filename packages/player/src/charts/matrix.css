@@ -1,1 +1,91 @@
-/* matrix (D60): its styles come with its drawing. */
+/* ── matrix (D60) ──
+   The y axis (its words turned), the plot, the x axis under it. The plot holds four tiles (names in
+   their outer corners), the cross, the dots (14 px) and their labels on the side the core chose
+   (data-side; data-nside under 560 px), 6 px from the dot: charts/matrix.ts places them with these
+   sizes. Under 560 px the plot is square; if a label could not fit there (.t-matrix--legend), the dots
+   carry numbers and the labels go into the legend under the plot. */
+.t-matrix { display: grid; grid-template-columns: 1.375rem minmax(0, 1fr); column-gap: 0.625rem; row-gap: 0.5rem; max-width: 42rem; margin: 0 auto; }
+.t-matrix-axis { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; color: var(--t-chart-muted); font-size: 0.8125rem; font-weight: 550; line-height: 1.2; }
+.t-matrix-axis-name { color: var(--t-chart-ink); font-weight: 650; }
+.t-matrix-axis span:empty { visibility: hidden; }
+.t-matrix-y { grid-column: 1; grid-row: 1; writing-mode: vertical-rl; rotate: 180deg; white-space: nowrap; }
+.t-matrix-x { grid-column: 2; grid-row: 2; }
+.t-matrix-plot { grid-column: 2; grid-row: 1; position: relative; aspect-ratio: 4 / 3; touch-action: pan-y; }
+
+.t-matrix-quads { position: absolute; inset: 0; display: grid; grid-template: 1fr 1fr / 1fr 1fr; }
+.t-matrix-q { display: flex; padding: 0.75rem; background: color-mix(in oklab, var(--t-chart-ink) 4.5%, var(--t-chart-paper)); transition: background-color var(--t-chart-pull) ease; }
+.t-matrix-q.is-tl { border-top-left-radius: var(--t-chart-radius); }
+.t-matrix-q.is-tr { border-top-right-radius: var(--t-chart-radius); justify-content: flex-end; text-align: right; }
+.t-matrix-q.is-bl { border-bottom-left-radius: var(--t-chart-radius); align-items: flex-end; }
+.t-matrix-q.is-br { border-bottom-right-radius: var(--t-chart-radius); justify-content: flex-end; align-items: flex-end; text-align: right; }
+.t-matrix-q-name { max-width: 84%; color: color-mix(in oklab, var(--t-chart-muted) 85%, var(--t-chart-paper)); font-size: 0.71875rem; font-weight: 700; line-height: 1.25; letter-spacing: 0.08em; text-transform: uppercase; transition: color var(--t-chart-pull) ease; }
+.t-matrix-cross { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.t-matrix-cross line { stroke: color-mix(in oklab, var(--t-chart-ink) 24%, transparent); stroke-width: 1.5; vector-effect: non-scaling-stroke; transform-box: view-box; transform-origin: 50% 50%; }
+
+.t-matrix-dot {
+  position: absolute; z-index: 2; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: color-mix(in oklab, var(--t-chart-ink) 78%, var(--t-chart-paper));
+  box-shadow: 0 0 0 3px var(--t-chart-paper);
+  font-style: normal;
+  transition: background-color var(--t-chart-pull) ease, box-shadow var(--t-chart-calm) var(--t-ease-out), opacity var(--t-chart-calm) ease;
+}
+.t-matrix-dot span { display: none; }
+.t-matrix-label {
+  position: absolute; z-index: 1; width: max-content; max-width: 10rem;
+  font-size: 0.875rem; font-weight: 600; line-height: 1.25; text-wrap: balance; pointer-events: none;
+  transition: color var(--t-chart-pull) ease, opacity var(--t-chart-calm) ease;
+}
+.t-matrix-label[data-side="r"] { transform: translate(13px, -50%); }
+.t-matrix-label[data-side="l"] { transform: translate(calc(-100% - 13px), -50%); text-align: right; }
+.t-matrix-label[data-side="t"] { transform: translate(-50%, calc(-100% - 13px)); text-align: center; }
+.t-matrix-label[data-side="b"] { transform: translate(-50%, 13px); text-align: center; }
+.t-matrix-label[data-side="rt"] { transform: translate(5px, calc(-100% - 5px)); }
+.t-matrix-label[data-side="rb"] { transform: translate(5px, 5px); }
+.t-matrix-label[data-side="lt"] { transform: translate(calc(-100% - 5px), calc(-100% - 5px)); text-align: right; }
+.t-matrix-label[data-side="lb"] { transform: translate(calc(-100% - 5px), 5px); text-align: right; }
+.t-matrix-legend { display: none; }
+
+/* Pointed at, or said: a soft halo around the dot (no scale, no bounce). */
+.t-chart .t-matrix-dot:is(.is-pointed, .is-spoken) { box-shadow: 0 0 0 3px var(--t-chart-paper), 0 0 0 5.5px color-mix(in oklab, var(--t-chart-ink) 28%, transparent); }
+
+/* With a highlight, the dots stand quiet until the pull gives the one that matters the accent. */
+.t-chart:has(.t-matrix-dot.is-hl) .t-matrix-dot { background: color-mix(in oklab, var(--t-chart-ink) 55%, var(--t-chart-paper)); }
+.t-chart.is-pulled .t-matrix-dot.is-hl { background: var(--t-chart-accent); }
+.t-chart.is-pulled .t-matrix-dot:not(.is-hl) { background: color-mix(in oklab, var(--t-chart-ink) 42%, var(--t-chart-paper)); }
+.t-chart.is-pulled .t-matrix-label.is-hl { font-weight: 700; }
+.t-chart.is-pulled .t-matrix-label:not(.is-hl) { color: color-mix(in oklab, var(--t-chart-ink) 78%, var(--t-chart-paper)); }
+.t-chart.is-spotlit .t-matrix-dot.is-spoken { background: var(--t-chart-accent); }
+/* A quadrant that carries the message. */
+.t-chart.is-pulled .t-matrix-q.is-hl { background: color-mix(in oklab, var(--t-chart-accent) 13%, var(--t-chart-paper)); }
+.t-chart.is-pulled .t-matrix-q.is-hl .t-matrix-q-name { color: color-mix(in oklab, var(--t-chart-accent) 82%, var(--t-chart-ink)); }
+.t-chart.is-entering .t-matrix :is(.t-matrix-q, .t-matrix-q-name) { transition: none; }
+
+@container (max-width: 560px) {
+  .t-matrix { column-gap: 0.5rem; }
+  .t-matrix-plot { aspect-ratio: 1; }
+  .t-matrix-axis { font-size: 0.75rem; }
+  .t-matrix-q { padding: 0.5625rem; }
+  .t-matrix-q-name { font-size: 0.65625rem; letter-spacing: 0.06em; }
+  .t-matrix-label { font-size: 0.8125rem; max-width: 7rem; }
+  .t-matrix-label[data-nside="r"] { transform: translate(13px, -50%); text-align: left; }
+  .t-matrix-label[data-nside="l"] { transform: translate(calc(-100% - 13px), -50%); text-align: right; }
+  .t-matrix-label[data-nside="t"] { transform: translate(-50%, calc(-100% - 13px)); text-align: center; }
+  .t-matrix-label[data-nside="b"] { transform: translate(-50%, 13px); text-align: center; }
+  .t-matrix-label[data-nside="rt"] { transform: translate(5px, calc(-100% - 5px)); text-align: left; }
+  .t-matrix-label[data-nside="rb"] { transform: translate(5px, 5px); text-align: left; }
+  .t-matrix-label[data-nside="lt"] { transform: translate(calc(-100% - 5px), calc(-100% - 5px)); text-align: right; }
+  .t-matrix-label[data-nside="lb"] { transform: translate(calc(-100% - 5px), 5px); text-align: right; }
+  /* Labels that could not fit: numbered dots and a legend. */
+  .t-matrix--legend .t-matrix-label { display: none; }
+  .t-matrix--legend .t-matrix-dot { width: 1.5rem; height: 1.5rem; margin: -0.75rem 0 0 -0.75rem; color: var(--t-chart-paper); font-size: 0.75rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+  .t-matrix--legend .t-matrix-dot span { display: block; }
+  .t-chart.is-pulled .t-matrix--legend .t-matrix-dot.is-hl { color: var(--t-chart-on-accent, var(--t-chart-paper)); }
+  .t-matrix--legend + .t-matrix-legend { display: grid; gap: 0.625rem; margin: 1.125rem 0 0; padding: 0; list-style: none; }
+  .t-matrix-key { display: grid; grid-template-columns: 1.5rem 1fr; column-gap: 0.75rem; align-items: start; font-size: 0.9375rem; line-height: 1.35; }
+  .t-matrix-key b { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; border-radius: 50%; color: var(--t-chart-paper); background: color-mix(in oklab, var(--t-chart-ink) 78%, var(--t-chart-paper)); font-size: 0.75rem; font-weight: 700; line-height: 1; transition: background-color var(--t-chart-pull) ease; }
+  .t-matrix-key > span { padding-top: 0.125rem; font-weight: 600; }
+  .t-matrix-key small { display: block; margin-top: 0.125rem; color: var(--t-chart-muted); font-size: 0.8125rem; font-weight: 400; line-height: 1.4; }
+  .t-chart:has(.t-matrix-key.is-hl) .t-matrix-key b { background: color-mix(in oklab, var(--t-chart-ink) 55%, var(--t-chart-paper)); }
+  .t-chart.is-pulled .t-matrix-key.is-hl b { color: var(--t-chart-on-accent, var(--t-chart-paper)); background: var(--t-chart-accent); }
+}

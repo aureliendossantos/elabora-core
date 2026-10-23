@@ -3,9 +3,10 @@ import { worstCaseLength } from '@elabora/player/state-codec';
 import { listProfiles, resolveProfiles, scorm12Limits } from '../lms/profiles.ts';
 import type { LmsProfile } from '../lms/profiles.ts';
 import { resolveBlockProps } from '../project/load.ts';
-import { behaviorOf } from '../components/registry.ts';
+import { instanceBehavior } from '../components/registry.ts';
 import type { Course } from '../project/model.ts';
 import type { CourseCheckContext } from './context.ts';
+import { fieldsOf } from './guards.ts';
 
 // Tracking rules: status reporting coherence and the worst-case suspend data budget
 // against the strictest selected LMS profile (checklist items 3 and 13).
@@ -18,9 +19,10 @@ export function checkTracking(ctx: CourseCheckContext): void {
   }
   const scored = [...ctx.blocks.values()].some(({ block }) => {
     const props = resolveBlockProps(block, planIndex, registry);
-    const behavior = behaviorOf(registry, block.type);
+    const behavior = instanceBehavior(registry, block);
     if (behavior === 'quiz' || behavior === 'numeric') return props.scored !== false;
     if (behavior === 'decision' || behavior === 'object') return !!props.scored;
+    if (behavior === 'predict') return fieldsOf(props.predict).scored === true;
     return false;
   });
   if (reportAs !== 'completed-incomplete' && !scored) reporter.emit('W_NO_SCORED_ITEMS', { file: 'course.json', path: '/completion/reportAs', message: `reportAs "${reportAs}" but no item is scored.` });

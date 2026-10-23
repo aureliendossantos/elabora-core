@@ -12,6 +12,8 @@ import type { CheckContext, CourseCheckContext, ScreenFile } from './context.ts'
 import { list, fieldsOf, byId, hasId } from './guards.ts';
 
 export const ALLOWED_THREE_ADDONS = ['loaders/GLTFLoader.js', 'controls/OrbitControls.js'];
+// Charts (D60): D3, bundled into the object, and the kit Elabora's charts are built with.
+export const CHART_IMPORTS = ['d3', '@elabora/charts'];
 
 // Globals a sandboxed free object must not touch: no network, no storage, no access to the
 // host page, no dynamic code. The iframe sandbox and CSP enforce it at run time; this static
@@ -197,8 +199,8 @@ export function analyzeObjectCode(ctx: Pick<CheckContext, 'project' | 'reporter'
           if (target.startsWith('..')) found('E_OBJECT_IMPORT', node, `Import "${source}" leaves the object folder: copy the file into objects/${object.id}/.`);
           else if (!seen.has(target) && imported !== null) analyzeObjectCode(ctx, object, manifest, { code: imported, rel: target, entry: false, seen });
         }
-        const allowed = source === 'three' || source.startsWith('./') || source.startsWith('../') || (source.startsWith('three/addons/') && ALLOWED_THREE_ADDONS.includes(source.slice('three/addons/'.length)));
-        if (!allowed) found('E_OBJECT_IMPORT', node, `Import "${source}" is not allowed. Allowed: "three", ${ALLOWED_THREE_ADDONS.map((addon) => `"three/addons/${addon}"`).join(', ')}, and relative files.`);
+        const allowed = source === 'three' || CHART_IMPORTS.includes(source) || source.startsWith('./') || source.startsWith('../') || (source.startsWith('three/addons/') && ALLOWED_THREE_ADDONS.includes(source.slice('three/addons/'.length)));
+        if (!allowed) found('E_OBJECT_IMPORT', node, `Import "${source}" is not allowed. Allowed: "three", ${ALLOWED_THREE_ADDONS.map((addon) => `"three/addons/${addon}"`).join(', ')}, ${CHART_IMPORTS.map((name) => `"${name}"`).join(', ')}, and relative files.`);
         if ((source === 'three' || source.startsWith('three/')) && !manifest.requires?.three) found('E_OBJECT_IMPORT', node, 'The code imports three.js but the manifest has no requires.three ("r186").');
         break;
       }

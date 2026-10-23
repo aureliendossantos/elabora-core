@@ -123,6 +123,8 @@ export interface BeatInput {
   anchor: Anchor;
   path: string;
   problem?: AnchorProblem;
+  // The end of the spotlight taken from the last item's line (no spotlightEnd written).
+  implied?: boolean;
 }
 
 export interface TimelineBeat {
@@ -473,7 +475,7 @@ export function beatsOf(project: Project, screen: Pick<Screen, 'blocks'>): BeatI
           const written = isRecord(block.props.spotlightEnd) ? block.props.spotlightEnd as Anchor : null;
           const last = items.reduce<ChartItem | null>((latest, item) => item, null);
           const end = written ?? (last?.at && typeof last.at.line === 'string' ? { line: last.at.line, edge: 'end' as const } : null);
-          if (end) out.push({ block: block.id, item: null, step: own, anchor: end, path: `${here}/props/spotlightEnd` });
+          if (end) out.push({ block: block.id, item: null, step: own, anchor: end, path: `${here}/props/spotlightEnd`, ...(written ? {} : { implied: true }) });
         }
       }
       walk(block.blocks, own, `${here}/blocks`);

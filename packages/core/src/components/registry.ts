@@ -6,6 +6,7 @@ import { BUILTIN_TEMPLATES } from './builtin-templates.generated.ts';
 import { canonicalJSON, sha256 } from '../util/json.ts';
 import { objectsIn } from '../util/values.ts';
 import type { Project, ComponentSource, ComponentManifest, ComponentSlot, ComponentExample, ComponentOrigin, FallbackEntry, JsonSchema } from '../project/model.ts';
+import { isPredict } from '../charts/predict.ts';
 import corePackage from '../../package.json' with { type: 'json' };
 
 // One model for every block type: the native catalogue is a set of built-in components, and a
@@ -258,3 +259,9 @@ export function hooksOf(d: ComponentDescriptor | null | undefined): Set<string> 
 
 export const rootOf = (reg: Registry | null | undefined, type: string): string | null => reg?.get(type)?.root ?? (isBuiltinBlockType(type) ? type : null);
 export const behaviorOf = (reg: Registry | null | undefined, type: string): Behavior | null => reg?.get(type)?.behavior ?? BUILTINS[type]?.behavior ?? null;
+// A block's behaviour as its instance has it: a trend in predict mode is an activity (D60).
+export function instanceBehavior(reg: Registry | null | undefined, block: { type: string; props?: unknown }): Behavior | 'predict' | null {
+  const behavior = behaviorOf(reg, block.type);
+  const props = block.props && typeof block.props === 'object' && !Array.isArray(block.props) ? block.props as Record<string, unknown> : null;
+  return behavior === 'chart' && isPredict(rootOf(reg, block.type), props) ? 'predict' : behavior;
+}

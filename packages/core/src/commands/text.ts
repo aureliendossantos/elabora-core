@@ -1,4 +1,4 @@
-import { extractUnits, invariants, setAt, valueAt } from '../i18n/units.ts';
+import { extractUnits, invariants, writeUnit } from '../i18n/units.ts';
 import type { Project } from '../project/model.ts';
 import { CommandError, Draft } from './context.ts';
 import type { CommandContext, CommandOutput } from './context.ts';
@@ -97,8 +97,7 @@ export function replaceText(context: CommandContext, { find, replace, caseSensit
     }
     const document = documents.get(unit.file) ?? draft.json<object>(unit.file);
     documents.set(unit.file, document);
-    if (unit.base && valueAt(document, unit.base.pointer) == null) setAt(document, unit.base.pointer, structuredClone(unit.base.value));
-    setAt(document, unit.pointer, next);
+    writeUnit(document, unit, next);
     replaced += match.count;
     done.push(unit.id);
   }

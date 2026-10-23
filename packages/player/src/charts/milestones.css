@@ -1,1 +1,80 @@
-/* milestones (D60): its styles come with its drawing. */
+/* ── milestones (D60) ──
+   A grid of equal columns over five rows: titles above (alternating only), dates above, the line
+   with its dots, titles (or dates, alternating) below, titles below (alternating). Each element
+   says its column (--c) and how many it may take (--span). Dots are rings on the paper; with a
+   highlight the pull fills its dot and colours its date. Pointing is soothing: the dot's ring takes
+   the accent and grows a pixel or two over 220 ms, the other events step back to 40 %. */
+.t-ms {
+  --t-ms-dot: 0.875rem;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--columns, var(--n)), minmax(0, 1fr));
+  grid-template-rows: auto auto var(--t-ms-dot) auto auto;
+  padding-top: 0.25rem;
+}
+.t-ms-line {
+  grid-row: 3; grid-column: 1 / -1; align-self: center;
+  height: 2px; border-radius: 1px;
+  background: var(--t-chart-quiet);
+  transform-origin: 0 50%;
+}
+.t-ms-dot {
+  position: relative; z-index: 1;
+  grid-row: 3; grid-column: var(--c); justify-self: start; align-self: center;
+  width: var(--t-ms-dot); height: var(--t-ms-dot);
+  border-radius: 50%;
+  background: var(--t-chart-paper);
+  box-shadow: inset 0 0 0 2.5px var(--t-chart-accent);
+  transition: opacity var(--t-chart-calm) ease, scale var(--t-chart-calm) var(--t-ease-out), box-shadow var(--t-chart-calm) ease, background-color var(--t-chart-pull) ease;
+}
+.t-ms-date {
+  grid-row: 2; grid-column: var(--c) / span var(--span);
+  margin: 0 0 0.5rem; padding-right: 1rem;
+  font-family: var(--t-font-heading, var(--t-font-body));
+  font-size: 1.0625rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.005em;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: break-word;
+  transition: opacity var(--t-chart-calm) ease, color var(--t-chart-pull) ease;
+}
+.t-ms-label { grid-row: 4; grid-column: var(--c) / span var(--span); margin-top: 0.875rem; padding-right: 1.25rem; }
+.t-ms-title {
+  margin: 0;
+  font-family: var(--t-font-heading, var(--t-font-body));
+  font-size: 1rem; font-weight: 650; line-height: 1.3;
+  text-wrap: balance; overflow-wrap: break-word;
+}
+.t-ms-text { margin: 0.3125rem 0 0; color: var(--t-chart-muted); font-size: 0.875rem; line-height: 1.45; text-wrap: pretty; overflow-wrap: break-word; }
+
+/* Alternating: above the line the title stands over its date, below the date comes first; texts
+   go into the tip. */
+.t-ms.is-alternate .t-ms-label.is-above { grid-row: 1; align-self: end; margin: 0 0 0.25rem; }
+.t-ms.is-alternate .t-ms-date.is-below { grid-row: 4; margin: 0.5rem 0 0; }
+.t-ms.is-alternate .t-ms-label.is-below { grid-row: 5; margin: 0.25rem 0 0; }
+.t-ms.is-alternate .t-ms-text { display: none; }
+
+/* With a highlight: every dot stands quiet until the pull fills the one that carries the idea. */
+.t-chart:has(.t-ms-dot.is-hl) .t-ms-dot { box-shadow: inset 0 0 0 2.5px var(--t-chart-quiet); }
+.t-chart.is-pulled .t-ms-dot.is-hl { background: var(--t-chart-accent); box-shadow: inset 0 0 0 2.5px var(--t-chart-accent); }
+.t-chart.is-pulled .t-ms-date.is-hl { color: var(--t-chart-accent); }
+
+/* Pointed at, or talked about: the ring takes the accent and grows a little, softly. */
+.t-chart .t-ms-dot:is(.is-pointed, .is-spoken) { scale: 1.2; box-shadow: inset 0 0 0 2.5px var(--t-chart-accent); }
+.t-chart.is-spotlit:not(.is-pulled) .t-ms-dot.is-spoken { background: var(--t-chart-accent); }
+.t-chart.is-entering .t-ms-line { transition: none; }
+
+@container (max-width: 560px) {
+  /* Down the left: dates, the line with its dots, titles and texts. */
+  .t-ms {
+    grid-template-columns: minmax(0, max-content) var(--t-ms-dot) minmax(0, 1fr);
+    grid-template-rows: repeat(var(--n), auto);
+    column-gap: 0.875rem; row-gap: 1.25rem;
+    padding-top: 0;
+  }
+  .t-ms-line { grid-row: 1 / -1; grid-column: 2; justify-self: center; align-self: stretch; width: 2px; height: auto; margin-top: 0.5rem; transform-origin: 50% 0; }
+  .t-ms-dot { grid-row: var(--c); grid-column: 2; justify-self: center; align-self: start; margin-top: 0.1875rem; }
+  .t-ms .t-ms-date, .t-ms.is-alternate .t-ms-date.is-below { grid-row: var(--c); grid-column: 1; max-width: 6.5rem; margin: 0; padding: 0; text-align: right; font-size: 1rem; line-height: 1.25; }
+  .t-ms .t-ms-label, .t-ms.is-alternate .t-ms-label:is(.is-above, .is-below) { grid-row: var(--c); grid-column: 3; align-self: start; margin: 0; padding: 0; }
+  .t-ms.is-alternate .t-ms-text { display: block; }
+  /* The texts are written: no tip. */
+  .t-chart--milestones .t-chart-tip { display: none; }
+}

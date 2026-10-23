@@ -7,7 +7,7 @@ import { localDay } from '../util/local-day.ts';
 import { validateSchema } from '@elabora/format/schemas';
 import type { Project, Course, Plan, PlanVersion, Screen, TranslationApproval } from '../project/model.ts';
 import { planVersionFile, versionedPlan } from '../project/plan-versions.ts';
-import { extractUnits, setAt, valueAt, invariants } from './units.ts';
+import { extractUnits, setAt, valueAt, invariants, writeUnit } from './units.ts';
 import type { TranslationUnit } from './units.ts';
 import { toXliff, readXliff } from './xliff.ts';
 import type { XliffDocument, XliffMark, XliffNote, XliffUnit } from './xliff.ts';
@@ -417,8 +417,7 @@ function applyTargets<C extends Course | null>(project: Project, source: C, xlif
     if (!translated?.target || translated.source !== unit.text) continue;
     const document = documentOf(unit.file);
     if (!document) continue;
-    if (unit.base && valueAt(document, unit.base.pointer) == null) setAt(document, unit.base.pointer, structuredClone(unit.base.value));
-    setAt(document, unit.pointer, translated.target);
+    writeUnit(document, unit, translated.target);
   }
   // Word anchors follow the words their markers are placed on (D28).
   const unplaced: TranslatedFiles<C>['unplaced'] = [];

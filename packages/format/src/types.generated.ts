@@ -1329,7 +1329,7 @@ export type DiagramProps = {
   source?: string;
   /** The diagram in Mermaid syntax, its words in the course language. */
   mermaid: string;
-  /** Words of nodes and edges by id, replacing the source's (translations write here). */
+  /** Words of nodes and edges by id (as Pele names them: a flowchart node's id, an edge's L_<from>_<to>_<n>, a mind map node's words), replacing the Mermaid text's. Translations write here. */
   labels?: { [key: string]: string };
   /** Narrated screens: nodes brought by the voice. */
   beats?: DiagramBeat[];

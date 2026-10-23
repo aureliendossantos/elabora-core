@@ -1,4 +1,4 @@
-import { analysisOf, behaviorOf } from '../components/registry.ts';
+import { analysisOf, instanceBehavior } from '../components/registry.ts';
 import type { ComponentDescriptor } from '../components/registry.ts';
 import { screenBlocks, resolveBlockProps } from '../project/load.ts';
 import { valuesOfKind } from '../components/props.ts';
@@ -8,7 +8,7 @@ import { list, fieldsOf, text, byId, hasId } from './guards.ts';
 
 // Course-level pedagogical heuristics (guardrails B1, E3) and screen completion coherence.
 // Activities are recognised by behaviour (forks of quiz count), blocks in slots included.
-const ACTIVITY_BEHAVIORS = new Set(['quiz', 'numeric', 'decision', 'object']);
+const ACTIVITY_BEHAVIORS = new Set(['quiz', 'numeric', 'decision', 'object', 'predict']);
 const STREAK_LIMIT = 4; // exposition screens in a row before a warning (guardrail B1, to calibrate)
 // Text density. Slides: a screen is one view. Scroll presentation: a screen is a page (a lesson),
 // read in stretches between things to do; a very long page is two lessons.
@@ -42,7 +42,7 @@ function shownBlocks(data: Screen, file: string): Block[] {
   return [...screenBlocks(data, file)].filter((location) => !location.layer && location.block !== null && location.block !== undefined).map((location) => location.block);
 }
 
-const hasActivity = (ctx: CourseCheckContext, blocks: Block[]) => blocks.some((block) => hasId(ACTIVITY_BEHAVIORS, behaviorOf(ctx.registry, block.type)));
+const hasActivity = (ctx: CourseCheckContext, blocks: Block[]) => blocks.some((block) => hasId(ACTIVITY_BEHAVIORS, instanceBehavior(ctx.registry, block)));
 
 // Text density and completion of a screen.
 export function checkScreenPedagogy(ctx: CourseCheckContext, screen: ScreenFile): void {
@@ -67,7 +67,7 @@ export function checkScreenPedagogy(ctx: CourseCheckContext, screen: ScreenFile)
     if (count > WORDS_PER_SCREEN) reporter.emit('W_TEXT_DENSITY', { file, target: id, measured: count, limit: WORDS_PER_SCREEN, key: `${id}/slide@${count}`, message: `Screen "${id}" shows about ${count} words.` });
   } else {
     // The longest stretch of reading between two things to do, in reading order.
-    const breaks = (block: Block) => hasId(ACTIVITY_BEHAVIORS, behaviorOf(registry, block.type)) || BREAKING_TYPES.has(block.type) || CONTROL_HOOK.test(registry.get(block.type)?.template || '');
+    const breaks = (block: Block) => hasId(ACTIVITY_BEHAVIORS, instanceBehavior(registry, block)) || BREAKING_TYPES.has(block.type) || CONTROL_HOOK.test(registry.get(block.type)?.template || '');
     let stretch = { words: 0, first: '', last: '' };
     let longest = stretch;
     for (const block of blocks) {

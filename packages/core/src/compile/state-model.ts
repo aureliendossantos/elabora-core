@@ -3,14 +3,13 @@ import { parseJSON } from '../util/json.ts';
 import { readText } from '../project/files.ts';
 import type { Project, Screen, Block } from '../project/model.ts';
 import { iterateBlocks, screenOrder, screenBlocks, planIndex, resolveBlockProps } from '../project/load.ts';
-import { getRegistry, behaviorOf } from '../components/registry.ts';
+import { getRegistry, behaviorOf, instanceBehavior } from '../components/registry.ts';
 import type { Behavior } from '../components/registry.ts';
 import { pendingMigrations } from '../components/migrate.ts';
 import { blockControls, controlEntity } from '../components/controls.ts';
 import type { StateModel } from '@elabora/player/state-codec';
 import { isRecord, recordsOf, textOf, numberOr, isText } from './values.ts';
 import { listOf, objectsIn } from '../util/values.ts';
-import { isPredict } from '../charts/predict.ts';
 
 // elabora.lock.json gives every stateful element a short, permanent key (base 36 counter), and
 // records the version of each course component its instances were written for (migrations).
@@ -44,11 +43,6 @@ export type StateKeys = Record<string, string>;
 const ACTIVITY_STATE_PREFIX = { quiz: 'quiz', numeric: 'numeric', decision: 'decision', object: 'object', predict: 'predict' } as const;
 export type ActivityBehavior = keyof typeof ACTIVITY_STATE_PREFIX;
 const isActivity = (behavior: Behavior | 'predict' | null): behavior is ActivityBehavior => behavior !== null && behavior in ACTIVITY_STATE_PREFIX;
-// A block's behaviour as its instance has it: a trend in predict mode is an activity (D60).
-function instanceBehavior(registry: ReturnType<typeof getRegistry>, block: Block): Behavior | 'predict' | null {
-  const behavior = behaviorOf(registry, block.type);
-  return behavior === 'chart' && isPredict(registry.get(block.type)?.root, isRecord(block.props) ? block.props : null) ? 'predict' : behavior;
-}
 export const activityEntity = (behavior: ActivityBehavior, blockId: string): string => `${ACTIVITY_STATE_PREFIX[behavior]}:${blockId}`;
 
 // Stateful entities in deterministic course order.

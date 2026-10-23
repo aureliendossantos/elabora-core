@@ -103,7 +103,7 @@ export const trend: ChartType = {
       ...base,
       predict: {
         from: indexOf(p.from),
-        hint: str(p.hint) || undefined, button: str(p.button) || undefined, close: str(p.close) || undefined, far: str(p.far) || undefined,
+        ...Object.fromEntries((['hint', 'button', 'close', 'far'] as const).filter((key) => str(p[key])).map((key) => [key, str(p[key])])),
         tolerance: typeof p.tolerance === 'number' ? p.tolerance : range / 10,
         scored: p.scored === true, weight: typeof p.weight === 'number' ? p.weight : 1, ...(typeof p.objective === 'string' ? { objective: p.objective } : {})
       }

@@ -1,1 +1,67 @@
-/* donut (D60): its styles come with its drawing. */
+/* ── donut (D60) ── A ring in a uniform viewBox beside its legend; under 560 px the legend goes under
+   the ring. Parts take --c: steps of ink beside a highlighted part (darker ink until the focus pull
+   gives it the accent), or steps of the accent when there is none. */
+.t-chart--donut {
+  --t-donut-hl: color-mix(in oklab, var(--t-chart-ink) 58%, var(--t-chart-paper));
+  --t-donut-k0: color-mix(in oklab, var(--t-chart-ink) 40%, var(--t-chart-paper));
+  --t-donut-k1: color-mix(in oklab, var(--t-chart-ink) 26%, var(--t-chart-paper));
+  --t-donut-k2: color-mix(in oklab, var(--t-chart-ink) 17%, var(--t-chart-paper));
+  --t-donut-k3: color-mix(in oklab, var(--t-chart-ink) 11%, var(--t-chart-paper));
+  --t-donut-k4: color-mix(in oklab, var(--t-chart-ink) 7%, var(--t-chart-paper));
+  --t-donut-a0: var(--t-chart-accent);
+  --t-donut-a1: color-mix(in oklab, var(--t-chart-accent) 68%, var(--t-chart-paper));
+  --t-donut-a2: color-mix(in oklab, var(--t-chart-accent) 44%, var(--t-chart-paper));
+  --t-donut-a3: color-mix(in oklab, var(--t-chart-accent) 28%, var(--t-chart-paper));
+  --t-donut-a4: color-mix(in oklab, var(--t-chart-accent) 17%, var(--t-chart-paper));
+  --t-donut-a5: color-mix(in oklab, var(--t-chart-accent) 10%, var(--t-chart-paper));
+}
+.t-donut-layout { display: grid; grid-template-columns: minmax(10rem, 17rem) minmax(0, 24rem); align-items: center; gap: 1.5rem 3rem; }
+.t-donut-ring { position: relative; aspect-ratio: 1; }
+.t-donut-svg { display: block; width: 100%; height: 100%; overflow: visible; }
+
+/* A part: it moves a few pixels out along its bisector when pointed at (px are viewBox units here:
+   2.8 of 200, about 3–4 px on screen), on ease-out, without overshoot. */
+.t-donut-arc {
+  fill: var(--c);
+  transition: opacity var(--t-chart-calm) ease, translate var(--t-chart-calm) var(--t-ease-out), fill var(--t-chart-pull) ease;
+}
+.t-chart.is-focused .t-donut-arc.is-pointed { translate: calc(var(--ux) * 2.8px) calc(var(--uy) * 2.8px); }
+
+/* The centre: the face at rest, and one face per part, stacked; the one shown cross-fades in. */
+.t-donut-center { position: absolute; inset: 27%; display: grid; place-items: center; pointer-events: none; }
+.t-donut-face { grid-area: 1 / 1; display: flex; flex-direction: column; align-items: center; margin: 0; text-align: center; }
+.t-chart .t-donut-face { opacity: 0; transition: opacity 120ms ease; }
+.t-chart .t-donut-face.is-rest { opacity: 1; }
+.t-chart:is(.is-focused, .is-spotlit) .t-donut-face.is-rest { opacity: 0; }
+.t-chart.is-focused .t-donut-face.is-pointed,
+.t-chart.is-spotlit:not(.is-focused) .t-donut-face.is-spoken { opacity: 1; transition: opacity 180ms ease 40ms; }
+.t-donut-figure { font-family: var(--t-font-heading, var(--t-font-body)); font-size: 2.5rem; font-weight: 700; line-height: 1; letter-spacing: -0.02em; white-space: nowrap; font-variant-numeric: tabular-nums; transition: color var(--t-chart-pull) ease; }
+.t-donut-name { display: -webkit-box; max-width: 9rem; margin-top: 0.375rem; overflow: hidden; color: var(--t-chart-muted); font-size: 0.875rem; line-height: 1.25; text-wrap: balance; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+
+/* The legend: a swatch, the label (it wraps), the value. */
+.t-donut-legend { display: grid; gap: 0.125rem; margin: 0; padding: 0; list-style: none; }
+.t-donut-row { display: grid; grid-template-columns: 0.75rem minmax(0, 1fr) auto; align-items: baseline; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--t-chart-rule); font-size: 1rem; line-height: 1.3; }
+.t-donut-row:last-child { border-bottom: 0; }
+.t-donut-swatch { align-self: center; width: 0.75rem; height: 0.75rem; border-radius: 3px; background: var(--c); transition: background-color var(--t-chart-pull) ease; }
+.t-donut-label { text-wrap: pretty; }
+.t-donut-value { font-weight: 650; white-space: nowrap; font-variant-numeric: tabular-nums; transition: color var(--t-chart-pull) ease; }
+
+/* The focus pull: the highlighted part takes the accent, in the ring, its swatch and the centre. */
+.t-chart.is-pulled .t-donut-arc.is-hl { fill: var(--t-chart-accent); }
+.t-chart.is-pulled .t-donut-row.is-hl .t-donut-swatch { background: var(--t-chart-accent); }
+.t-chart.is-pulled .t-donut-row.is-hl .t-donut-label { font-weight: 650; }
+.t-chart.is-pulled :is(.t-donut-row, .t-donut-face).is-hl :is(.t-donut-value, .t-donut-figure) { color: var(--t-chart-accent); }
+/* The voice: the part it names takes the accent while the rest steps back. */
+.t-chart.is-spotlit:not(.is-focused) .t-donut-arc.is-spoken { fill: var(--t-chart-accent); }
+.t-chart.is-spotlit:not(.is-focused) .t-donut-row.is-spoken .t-donut-swatch { background: var(--t-chart-accent); }
+.t-chart.is-entering :is(.t-donut-arc, .t-donut-row, .t-donut-face, .t-donut-swatch) { transition: none; }
+
+@container (max-width: 560px) {
+  .t-donut-layout { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 1.5rem; }
+  .t-donut-ring { width: min(100%, 15rem); }
+  .t-donut-legend { width: 100%; }
+  .t-donut-figure { font-size: 2.125rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-chart.is-focused .t-donut-arc.is-pointed { translate: none; }
+}

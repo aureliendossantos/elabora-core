@@ -9,6 +9,7 @@ import { listOf } from '../util/values.ts';
 import { pointer } from '../util/json.ts';
 import { enumPlaces } from '../validate/object-props.ts';
 import { lineWordAnchors, anchorMarks } from './anchors.ts';
+import { parseDiagram, diagramWords, isProblem, LABELLED_TYPES } from '../charts/diagram.ts';
 import type { XliffMark } from './xliff.ts';
 
 // Translation units: every string a learner (or the approver of a translated plan, or an author in
@@ -43,6 +44,9 @@ export interface TranslationUnit {
   editor?: boolean;
   // A narration line's word anchors (docs/decisions.md D28): the markers translators place.
   marks?: (XliffMark & { word: string })[];
+  // Values elsewhere in the file that name these words and follow them when they change (a trend's
+  // note and prediction name a point by its x: D60).
+  follows?: string[];
 }
 
 interface UnitOptions {
@@ -154,6 +158,8 @@ export function extractUnits(project: Project): TranslationUnit[] {
       const where = `${descriptor.title || block.type} on screen "${screen.title}"`;
       walkProps(descriptor.schema, block.props, `${path}/props`, `block.${block.id}`, descriptor.builtin, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: where }));
       if (descriptor.root === 'free-object') objectUnits(project, block, path, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: options.note || where }));
+      if (descriptor.root === 'trend') followPoints(units, block, path);
+      if (descriptor.root === 'diagram') diagramUnits(block, path, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: `${options.note} (${where})` }));
     }
   }
   return units;
@@ -218,6 +224,47 @@ function objectUnits(project: Project, block: Block, path: string, addUnit: AddU
       }
     }
   }
+}
+
+// A diagram's words (D60). Flowcharts, state diagrams and mind maps: each node's and edge's words, by
+// id, translated into props.labels (the build swaps them on the parsed diagram, so the Mermaid text
+// stays as written). Other types: the Mermaid text as a whole, its syntax kept.
+function diagramUnits(block: Block, path: string, addUnit: AddUnit): void {
+  const props = recordOf(block.props);
+  if (typeof props.mermaid !== 'string') return;
+  const parsed = parseDiagram(props.mermaid);
+  if (isProblem(parsed)) return;
+  if (!LABELLED_TYPES.includes(parsed.type)) {
+    addUnit(`block.${block.id}.mermaid`, `${path}/props/mermaid`, props.mermaid, { note: 'A diagram in Mermaid syntax: translate only the words people read (labels, titles, messages); keep the first line, the keywords, the ids, the arrows and the punctuation of the syntax as they are', maxLength: 20000 });
+    return;
+  }
+  const labels = recordOf(props.labels);
+  const base = isRecord(props.labels) ? undefined : { pointer: `${path}/props/labels`, value: {} };
+  for (const word of diagramWords(parsed)) {
+    const text = typeof labels[word.id] === 'string' ? labels[word.id] : word.text;
+    addUnit(`block.${block.id}.labels.${segment(word.id)}`, `${path}/props/labels${pointer(word.id)}`, text, { maxLength: 120, note: `Words of a box or an arrow of a ${parsed.type} diagram`, ...(base ? { base } : {}) });
+  }
+}
+
+// A trend's note and prediction name a point by its x: when the x is words (months, phases), they
+// follow its translation.
+function followPoints(units: TranslationUnit[], block: Block, path: string): void {
+  const props = recordOf(block.props);
+  const references = [['note', 'x'], ['predict', 'from']].filter(([key, field]) => typeof recordOf(props[key])[field] === 'string').map(([key, field]) => ({ pointer: `${path}/props/${key}/${field}`, value: recordOf(props[key])[field] }));
+  if (!references.length) return;
+  const point = new RegExp(`^${path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/props/points/\\d+/x$`);
+  for (const unit of units) {
+    if (!point.test(unit.pointer)) continue;
+    const follows = references.filter((reference) => reference.value === unit.text).map((reference) => reference.pointer);
+    if (follows.length) unit.follows = follows;
+  }
+}
+
+// Writes a unit's new words where they live, and what follows them.
+export function writeUnit(document: object, unit: TranslationUnit, next: string): void {
+  if (unit.base && valueAt(document, unit.base.pointer) == null) setAt(document, unit.base.pointer, structuredClone(unit.base.value));
+  setAt(document, unit.pointer, next);
+  for (const follower of unit.follows ?? []) if (valueAt(document, follower) === unit.text) setAt(document, follower, next);
 }
 
 // The value at a JSON pointer (undefined when the document has none there).
