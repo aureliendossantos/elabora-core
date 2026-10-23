@@ -196,6 +196,36 @@ Template `packages/core/src/components/builtin/decision.html`: fork it to change
 | `weight` | number |  |  Default 1. |
 | `allowChange` | boolean |  | Let the learner choose again after seeing the consequence. Default false. |
 
+## `dialogue` (scenario)
+
+A branching conversation held in one block (D61): its nodes (a few lines, then a way out: options the learner chooses, a jump, an end), its endings and its score. The learner plays a speaker (learner) whose options become their bubbles; characters answer with lines. The thread grows in the block; the player keeps the path, replays it on resume, scores the first run and records one SCORM interaction per decision.
+
+> Write the best path first, then the other options. Short lines (one or two sentences). Each decision: about three options, good, ok and bad (quality), plausible and of similar length, never with a speaker. Show the consequence first (reply, a character's reaction), the trainer's note after (feedback), never in a character's mouth. An option without next joins the node's way out: branch only where the story really differs, and join back. Check with elabora dialogue paths and elabora dialogue play (skill elabora-dialogues).
+
+Template `packages/core/src/components/builtin/dialogue.html`: fork it to change the markup; the fork keeps the dialogue behaviour and must provide `data-t-log`, `data-t-options`.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `title` | string | yes | The dialogue's accessible name, read by screen readers and shown on its start card and debrief (« L'appel de Marc »). |
+| `learner` | slug |  | The speaker of course.json speakers the learner plays: their options become this speaker's bubbles. Absent: the bubbles say « Vous » (a player label). |
+| `learnerVoice` | boolean |  | The learner's options are said by the voice of learner, as lines (with learner). Default false. |
+| `style` | "messaging" \| "scene" |  | messaging: a chat thread, characters on the left with a round portrait, the learner on the right (slides and scroll pages). scene: a backdrop and the cast drawn large, a few bubbles near them, the full thread in a History (slides; scroll pages too). Default "messaging". |
+| `scene` | dialogueScene |  | Style scene: the backdrop and the cast placed on it. A node may change the backdrop (its scene). |
+| `mode` | "practice" \| "assessment" \| "exploration" |  | Sets revisit, feedback and scoring at once (each stays changeable). practice: retry during the run, then back to any choice after the first end; feedback now and in the debrief; not scored. assessment: no going back, feedback in the debrief only, scored by quality. exploration: back to any choice at any time, feedback now, not scored. Default "practice". |
+| `revisit` | "none" \| "retry" \| "after-end" \| "anytime" |  | How the learner may go back (default: the mode's). none: never (retry options continue instead). retry: « Choisir autrement » right after a consequence, and options with retry come back. after-end: retry, then « Reprendre d'ici » on any past choice and « Recommencer » once the first end is reached. anytime: « Reprendre d'ici » from the first choice. The first run to an end is the only one scored, whatever the policy; a final decision cannot be revisited, nor anything before it. |
+| `scoring` | "none" \| "quality" \| "points" \| "ending" |  | What the dialogue's score (0 to 1, like any activity) is made of (default: the mode's). quality: good 1, ok 0.5, bad 0, the mean over the decisions met. points: the sum of the options' points over the highest sum a path can reach (computed on the graph). ending: the score of the ending reached. none: not scored. Scored dialogues count in the course score with weight, and record one choice interaction per decision of the first run. |
+| `weight` | number |  | Weight in the course score, when scored. Default 1. |
+| `objective` | planId |  | The plan objective the dialogue practises: the objective of its SCORM interactions. A node or an option may name its own. |
+| `feedback` | "now" \| "debrief" \| "both" |  | When the options' feedback is shown (default: the mode's): now, as a trainer's note in the thread after the consequence; debrief, in the debrief card at the end; both. |
+| `debrief` | boolean |  | A debrief card at the end: the ending reached, each decision with its quality and feedback, then the other endings. Default true. |
+| `pace` | "auto" \| "click" |  | auto: the lines of a turn follow one another. click: one line per click. Default "auto". |
+| `reveal` | "ink" \| "appear" \| "instant" |  | How a line's words come in step with its voice: ink (words not said yet in a lighter ink), appear (they appear), instant (the whole text at once). Reduced motion and the learner's « Texte : tout de suite » show the whole text. Default "ink". |
+| `begins` | "auto" \| "click" \| "event" |  | auto: when the block comes into view (or its step is revealed). click: a start card with a button. event: when an event runs start-dialogue. Default "auto". |
+| `start` | dialogueNodeId |  | The first node (default: the first of nodes). |
+| `vars` | array |  | Variables of the dialogue only (a character's trust…), changed by options (set, add) and read by conditions ({ "var": "trust", "op": "gte", "value": 2 }). Recomputed from the path, so they go back when the learner goes back. Never the course's variables: those change on dialogue.ended, in an event of the screen. |
+| `nodes` | array | yes | The moments of the conversation, in reading order. A node plays its lines, then leaves by, in this order: its options (a decision), its next, its end, or else the next node of the list (after the last one, the dialogue ends). |
+| `endings` | array |  | Named endings. end: true lets their conditions choose (the first that holds wins; put one without if last); end: "&lt;id&gt;" picks one. Without endings, the dialogue ends without a title. |
+
 ## `free-object` (free)
 
 Places a free object (governed custom code, for example a three.js scene) on the screen. The object lives in objects/&lt;object&gt;/ with its manifest, code, tests and notes. props holds values for the props the manifest declares: change them here, never in the code.

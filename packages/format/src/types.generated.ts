@@ -154,7 +154,7 @@ export type Course = {
   sections: CourseSection[];
   /** Course variables, readable and writable by events. Persisted variables are saved in the learner's suspend data, so their size counts against the LMS budget. */
   variables?: Variable[];
-  /** The voices of the course's narration (screen narration lines name them): the name shown in captions and in the transcript, and the voice that speaks each language. */
+  /** The voices and characters of the course (narration lines and dialogue lines name them): the name shown in captions, the transcript and dialogue bubbles, the voice that speaks each language, and in dialogues their colour and look. */
   speakers?: Speaker[];
   /** Defaults of the course's narrated screens (each screen's narration may say otherwise). */
   narration?: {
@@ -398,10 +398,26 @@ export type PlayerGlossaryOptions = {
 export type PlayerNoOptions = {};
 
 export type Speaker = {
-  /** Named by narration lines (speaker). */
+  /** Named by narration lines and dialogue lines (speaker), and by a dialogue's learner. */
   id: Slug;
   /** The name learners read in captions and in the transcript (Leïla, Narrator). */
   name: string;
+  /**
+   * A narrator rather than a character: in a dialogue (D61) its lines are said with its voice and shown as narration, centred, without a bubble or a portrait.
+   * @default false
+   */
+  narrator?: boolean;
+  /** The theme colour of this character's name and bubble in a dialogue (a token: color.accent, or a custom color.* token), contrast-checked like the theme's. */
+  color?: string;
+  /** How the character is drawn in a dialogue (D61): an SVG that follows the characters' convention ({ "svg": "personnages/marc.svg" }: its root declares data-expressions, data-gestures and data-portrait, and the player animates its mouth, expressions and gestures), or pictures ({ "portrait": "personnages/marc.webp", "expressions": { "inquiet": "personnages/marc-inquiet.webp" } }). Expressions and gestures not declared here are warnings (W_DIALOGUE_LOOK). Without a look: the name and an initial. */
+  look?: {
+    /** An SVG of assets/ that follows the characters' convention (docs/dialogues.md). */
+    svg?: AssetPath;
+    /** A picture of the character's face (the neutral expression). */
+    portrait?: AssetPath;
+    /** Pictures by expression name: the closed list of the faces the character may show. */
+    expressions?: { [key: string]: AssetPath };
+  };
   /** The voice that speaks each language, keyed by language tag (fr, en, fr-CA): the voice tools generate the lines of this speaker with it, and a generated line made with another voice is out of date. */
   voices?: { [key: string]: SpeakerVoice };
 };
@@ -848,7 +864,7 @@ export type ScreenLayerNarrationLine = VoiceLine & {
 /** A block placed on a screen, a layer or in a slot of a component instance. id identifies it in the whole course. type is a built-in type (the native catalogue, props in blocks/<type>.schema.json) or the id of a course component (components/<id>/component.json declares its props). */
 export type Block = {
   id: Slug;
-  /** Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, decision, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props. */
+  /** Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props. */
   type: string;
   props: { [key: string]: unknown };
   /** Blocks placed in the slots of this component instance (each picks its slot with slot; without slot, the default slot). Only for components that declare slots. */
@@ -895,6 +911,7 @@ export type BuiltinBlockType =
   | 'quiz'
   | 'numeric'
   | 'decision'
+  | 'dialogue'
   | 'free-object'
   | 'results'
   | 'stack'
@@ -925,6 +942,7 @@ export type BuiltinBlock =
   | QuizBlock
   | NumericBlock
   | DecisionBlock
+  | DialogueBlock
   | FreeObjectBlock
   | ResultsBlock
   | StackBlock
@@ -999,6 +1017,11 @@ export type NumericBlock = Omit<Block, 'type' | 'props'> & {
 export type DecisionBlock = Omit<Block, 'type' | 'props'> & {
   type: 'decision';
   props: DecisionProps;
+};
+
+export type DialogueBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'dialogue';
+  props: DialogueProps;
 };
 
 export type FreeObjectBlock = Omit<Block, 'type' | 'props'> & {
@@ -1366,6 +1389,321 @@ export type DiagramBeat = {
   /** The node's id in the source. */
   node: string;
   at: Anchor;
+};
+
+// blocks/dialogue.schema.json
+
+/**
+ * dialogue block props
+ *
+ * A branching conversation held in one block (D61): its nodes (a few lines, then a way out: options the learner chooses, a jump, an end), its endings and its score. The learner plays a speaker (learner) whose options become their bubbles; characters answer with lines. The thread grows in the block; the player keeps the path, replays it on resume, scores the first run and records one SCORM interaction per decision.
+ */
+export type DialogueProps = {
+  /** The dialogue's accessible name, read by screen readers and shown on its start card and debrief (« L'appel de Marc »). */
+  title: string;
+  /** The speaker of course.json speakers the learner plays: their options become this speaker's bubbles. Absent: the bubbles say « Vous » (a player label). */
+  learner?: Slug;
+  /**
+   * The learner's options are said by the voice of learner, as lines (with learner).
+   * @default false
+   */
+  learnerVoice?: boolean;
+  /**
+   * messaging: a chat thread, characters on the left with a round portrait, the learner on the right (slides and scroll pages). scene: a backdrop and the cast drawn large, a few bubbles near them, the full thread in a History (slides; scroll pages too).
+   * @default 'messaging'
+   */
+  style?: 'messaging' | 'scene';
+  /** Style scene: the backdrop and the cast placed on it. A node may change the backdrop (its scene). */
+  scene?: DialogueScene;
+  /**
+   * Sets revisit, feedback and scoring at once (each stays changeable). practice: retry during the run, then back to any choice after the first end; feedback now and in the debrief; not scored. assessment: no going back, feedback in the debrief only, scored by quality. exploration: back to any choice at any time, feedback now, not scored.
+   * @default 'practice'
+   */
+  mode?: 'practice' | 'assessment' | 'exploration';
+  /** How the learner may go back (default: the mode's). none: never (retry options continue instead). retry: « Choisir autrement » right after a consequence, and options with retry come back. after-end: retry, then « Reprendre d'ici » on any past choice and « Recommencer » once the first end is reached. anytime: « Reprendre d'ici » from the first choice. The first run to an end is the only one scored, whatever the policy; a final decision cannot be revisited, nor anything before it. */
+  revisit?: 'none' | 'retry' | 'after-end' | 'anytime';
+  /** What the dialogue's score (0 to 1, like any activity) is made of (default: the mode's). quality: good 1, ok 0.5, bad 0, the mean over the decisions met. points: the sum of the options' points over the highest sum a path can reach (computed on the graph). ending: the score of the ending reached. none: not scored. Scored dialogues count in the course score with weight, and record one choice interaction per decision of the first run. */
+  scoring?: 'none' | 'quality' | 'points' | 'ending';
+  /**
+   * Weight in the course score, when scored.
+   * @default 1
+   */
+  weight?: number;
+  /** The plan objective the dialogue practises: the objective of its SCORM interactions. A node or an option may name its own. */
+  objective?: PlanId;
+  /** When the options' feedback is shown (default: the mode's): now, as a trainer's note in the thread after the consequence; debrief, in the debrief card at the end; both. */
+  feedback?: 'now' | 'debrief' | 'both';
+  /**
+   * A debrief card at the end: the ending reached, each decision with its quality and feedback, then the other endings.
+   * @default true
+   */
+  debrief?: boolean;
+  /**
+   * auto: the lines of a turn follow one another. click: one line per click.
+   * @default 'auto'
+   */
+  pace?: 'auto' | 'click';
+  /**
+   * How a line's words come in step with its voice: ink (words not said yet in a lighter ink), appear (they appear), instant (the whole text at once). Reduced motion and the learner's « Texte : tout de suite » show the whole text.
+   * @default 'ink'
+   */
+  reveal?: 'ink' | 'appear' | 'instant';
+  /**
+   * auto: when the block comes into view (or its step is revealed). click: a start card with a button. event: when an event runs start-dialogue.
+   * @default 'auto'
+   */
+  begins?: 'auto' | 'click' | 'event';
+  /** The first node (default: the first of nodes). */
+  start?: DialogueNodeId;
+  /** Variables of the dialogue only (a character's trust…), changed by options (set, add) and read by conditions ({ "var": "trust", "op": "gte", "value": 2 }). Recomputed from the path, so they go back when the learner goes back. Never the course's variables: those change on dialogue.ended, in an event of the screen. */
+  vars?: DialogueVar[];
+  /** The moments of the conversation, in reading order. A node plays its lines, then leaves by, in this order: its options (a decision), its next, its end, or else the next node of the list (after the last one, the dialogue ends). */
+  nodes: DialogueNode[];
+  /** Named endings. end: true lets their conditions choose (the first that holds wins; put one without if last); end: "<id>" picks one. Without endings, the dialogue ends without a title. */
+  endings?: DialogueEnding[];
+};
+
+export type DialogueVar = {
+  id: VariableId;
+  /** The value at the start; its type is the variable's. */
+  default: number | boolean | string;
+};
+
+/** Identifier of a node, unique in its dialogue: lowercase letters, digits and hyphens. Permanent once learners played: their saved path names options by node. */
+export type DialogueNodeId = string;
+
+export type DialogueScene = {
+  /** The backdrop: an image or an SVG of assets/ (decorative). */
+  background?: AssetPath;
+  /** Who is on stage and where. */
+  cast?: DialogueSceneCast[];
+};
+
+export type DialogueSceneCast = {
+  speaker: Slug;
+  /** @default 'left' */
+  position?: 'left' | 'right' | 'center';
+};
+
+/** A line, as a narration line is (id, speaker, text, delivery, pronunciations), with what the drawing does (expression, cues) and a condition (if). Without speaker, a narration: a setting of the scene shown without a character's bubble (« Plus tard, au bureau de Marc »); a speaker declared narrator in course.json says it with its voice, still without a bubble. */
+export type DialogueLine = {
+  /** Unique in the screen, across the screen's narration, its layers and its dialogues: the line's audio, translation and anchors are named by it. */
+  id: Slug;
+  /** A speaker of course.json speakers. Absent: a narration without voice. */
+  speaker?: Slug;
+  /** What is said, word for word: the bubble, the voice and its captions. Words in square brackets are stage directions for an expressive voice ([inquiet], [soupire]): never shown nor counted as words. Keep it short: one or two sentences. */
+  text: string;
+  /** How a generated voice says this line, by language: settings over those of the speaker's voice in that language, for example { "fr": { "speed": 1.1 } }. */
+  delivery?: { [key: string]: { [key: string]: unknown } };
+  /** How a generated voice says words of this line, by language, before those of the course. */
+  pronunciations?: Pronunciations;
+  /** The face the speaker shows from this line on, until another line or cue changes it: one of the expressions their look declares. Distinct from a stage direction, which tells the voice how to say it. */
+  expression?: DialogueExpression;
+  /** Moments on the words of this line: a gesture, an expression, or presentation actions on the screen (show a photo when Marc says « imprimante »). */
+  cues?: DialogueCue[];
+  /** The line is skipped unless every condition holds. */
+  if?: DialogueConditions;
+};
+
+export type DialogueExpression = string;
+
+export type DialogueCue = {
+  /** A moment of this line, as a timeline anchor (D28) without its line: a word or a few words ({ "word": "Bonjour" }), their end (edge end), an offset in seconds; {} or { "edge": "end" } for the line itself. */
+  at: {
+    /** Implicit: the cue's own line. When written, it must be that line. */
+    line?: Slug;
+    /** One or a few words of the line, as written there. */
+    word?: string;
+    /** @default 1 */
+    occurrence?: number;
+    /** @default 'start' */
+    edge?: 'start' | 'end';
+    offset?: number;
+  };
+  /** A gesture the speaker's look declares (data-gestures of its SVG), played at that moment. */
+  gesture?: DialogueExpression;
+  /** The speaker's face from that moment on. */
+  expression?: DialogueExpression;
+  /** Presentation actions on the screen at that moment. */
+  do?: DialogueAction[];
+};
+
+/** What a dialogue may do to its screen: show-block, hide-block, show-layer, hide-layer, play-media, pause-media, set-object-props, reveal-step (presentation only: replaying a path sets the last visibility and props of the blocks it touched, and opens no layer). A dialogue never writes the course's variables nor navigates: do that on dialogue.ended, in an event of the screen. */
+export type DialogueAction = {
+  type: string;
+  block?: Slug;
+  layer?: Slug;
+  step?: number;
+  /** set-object-props: values for declared props only. */
+  props?: { [key: string]: unknown };
+  screen?: string;
+  variable?: string;
+  value?: string | number | boolean;
+  by?: number;
+};
+
+/** All must hold (AND). For OR, write two options, or next cases where the first that holds wins. */
+export type DialogueConditions = DialogueCondition[];
+
+/** { "chosen": "node.option" }: the option was chosen on the current path. { "seen": "node" }: the node is on the current path. { "var": "trust", "op": "gte", "value": 2 }: a variable of the dialogue. { "score": { "op": "gte", "value": 80 } }: the current score out of 100 (the quality score when the dialogue is not scored). { "variable": "role", "op": "eq", "value": "tech" }: a variable of the course, read only. */
+export type DialogueCondition = ({
+  chosen: unknown;
+  seen?: never;
+  var?: never;
+  variable?: never;
+  op?: never;
+  value?: never;
+  score?: never;
+  [key: string]: unknown;
+} | {
+  chosen?: never;
+  seen: unknown;
+  var?: never;
+  variable?: never;
+  op?: never;
+  value?: never;
+  score?: never;
+  [key: string]: unknown;
+} | {
+  chosen?: never;
+  seen?: never;
+  var: unknown;
+  variable?: never;
+  op: unknown;
+  value: unknown;
+  score?: never;
+  [key: string]: unknown;
+} | {
+  chosen?: never;
+  seen?: never;
+  var?: never;
+  variable: unknown;
+  op: unknown;
+  value: unknown;
+  score?: never;
+  [key: string]: unknown;
+} | {
+  chosen?: never;
+  seen?: never;
+  var?: never;
+  variable?: never;
+  op?: never;
+  value?: never;
+  score: unknown;
+  [key: string]: unknown;
+}) & {
+  chosen?: string;
+  seen?: DialogueNodeId;
+  var?: VariableId;
+  variable?: VariableId;
+  op?: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte';
+  value?: string | number | boolean;
+  score?: DialogueScoreTest;
+};
+
+export type DialogueScoreTest = {
+  op: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte';
+  value: number;
+};
+
+/** true: the endings' conditions choose (the first that holds). An ending's id: that ending. */
+export type DialogueEnd = true | Slug;
+
+export type DialogueNode = {
+  id: DialogueNodeId;
+  /** For authors only (the script, the map): « Conséquence A ». Never shown to learners. */
+  title?: string;
+  /** The plan objective this decision practises (default: the dialogue's). */
+  objective?: PlanId;
+  /**
+   * A final decision (« Choix définitif », announced before the choice): no going back to it, nor before it.
+   * @default false
+   */
+  final?: boolean;
+  /** Style scene: the backdrop (and cast) from this node on. */
+  scene?: DialogueScene;
+  /** Said in order when the node is entered; a line whose if fails is skipped. */
+  lines?: DialogueLine[];
+  /** The instruction over the options (« Quelle question posez-vous en premier ? »). */
+  prompt?: string;
+  /** A decision: what the learner may say. One option shown is not taken by itself: the learner clicks it. */
+  options?: DialogueOption[];
+  /** Where the node goes after its lines (or where its options go when they have no next of their own): a node id, or cases where the first whose if holds wins ([{ "if": [ … ], "go": "a" }, { "go": "b" }]: end with a case without if). */
+  next?: DialogueNodeId | DialogueNodeNext[];
+  end?: DialogueEnd;
+};
+
+export type DialogueNodeNext = {
+  if?: DialogueConditions;
+  go: DialogueNodeId;
+};
+
+/** What the learner may say (always the learner: an option has no speaker). Without next, it joins the node's way out (its next, its end, else the next node): a decision with a reaction and a note per option, then one common thread, needs no wiring. */
+export type DialogueOption = {
+  /** Unique in its node, permanent (learners' saved paths name it). */
+  id: string;
+  /** What the learner says: their bubble (and a voice line with learnerVoice). */
+  text?: string;
+  /** The button's words, when shorter than text. */
+  label?: string;
+  /** Good, ok or bad: never shown before the choice; the score (quality), the debrief and SCORM (correct, neutral, wrong) read it. */
+  quality?: 'good' | 'ok' | 'bad';
+  /** The plan objective this choice puts into play. */
+  objective?: PlanId;
+  /** The immediate reaction: lines said after the learner's bubble. */
+  reply?: DialogueLine[];
+  /** The trainer's note on this choice, shown as a note (never a character's bubble) after the reaction, when the dialogue's feedback says now or both, and in the debrief. */
+  feedback?: Markdown;
+  /**
+   * What the choice is worth (scoring points).
+   * @default 0
+   */
+  points?: number;
+  /** Assigns variables of the dialogue: { "trust": 1 }. */
+  set?: { [key: string]: number | boolean | string };
+  /** Adds to number variables of the dialogue: { "trust": -1 }. */
+  add?: { [key: string]: number };
+  /** Presentation actions on the screen when the option is chosen. */
+  do?: DialogueAction[];
+  /** A jump to a node (default: the node's way out). */
+  next?: DialogueNodeId;
+  end?: DialogueEnd;
+  /**
+   * After the reaction and the feedback, the same options come back, this one greyed (the first choice still counts).
+   * @default false
+   */
+  retry?: boolean;
+  /**
+   * Gone (or greyed, with unavailable disable) once taken on the path: a hub of questions.
+   * @default false
+   */
+  once?: boolean;
+  /**
+   * Never shown; taken by itself when no other option can be chosen.
+   * @default false
+   */
+  fallback?: boolean;
+  /** Offered only when every condition holds. */
+  if?: DialogueConditions;
+  /**
+   * What an option whose if fails (or a once option taken) does: hidden, or shown greyed.
+   * @default 'hide'
+   */
+  unavailable?: 'hide' | 'disable';
+  /** With disable: why it cannot be chosen yet. */
+  unavailableText?: string;
+};
+
+export type DialogueEnding = {
+  id: Slug;
+  /** Shown at the top of the debrief (« Maîtrisé »). */
+  title?: string;
+  /** What this ending means for the learner. */
+  text?: Markdown;
+  /** With end: true, the first ending whose conditions hold is reached. */
+  if?: DialogueConditions;
+  /** scoring ending: the score this ending gives, out of 100. */
+  score?: number;
 };
 
 // blocks/donut.schema.json
@@ -2115,14 +2453,20 @@ export type Event = {
 };
 
 export type Trigger = {
-  /** screen.enter: the screen is shown. click: the learner uses a control of a block (target): a button block, or a button, tab or disclosure of a component, optionally filtered by its name. quiz.submitted: a quiz (target) is submitted, optionally filtered by result. decision.selected: an option of a decision block (target) is chosen, optionally filtered by option. object.event: a free object block (target) emits a declared event (name), optionally filtered by payload values (where). variable.changed: a variable changes. layer.closed: a layer (target) is closed. timeline.reached: playback of the screen's timeline, or of a layer's, crosses a moment (at): a line or a word starts or ends, seconds pass on a screen or a layer without narration; never on a seek, again when the learner replays the passage. timeline.ended: playback reaches the end of the screen's timeline, or of a layer's with layer (to close the layer once it has spoken: hide-layer). media.ended: an audio or video block (target) plays to its end. */
-  type: 'screen.enter' | 'click' | 'quiz.submitted' | 'decision.selected' | 'object.event' | 'variable.changed' | 'layer.closed' | 'timeline.reached' | 'timeline.ended' | 'media.ended';
+  /** screen.enter: the screen is shown. click: the learner uses a control of a block (target): a button block, or a button, tab or disclosure of a component, optionally filtered by its name. quiz.submitted: a quiz (target) is submitted, optionally filtered by result. decision.selected: an option of a decision block (target) is chosen, optionally filtered by option. object.event: a free object block (target) emits a declared event (name), optionally filtered by payload values (where). variable.changed: a variable changes. layer.closed: a layer (target) is closed. timeline.reached: playback of the screen's timeline, or of a layer's, crosses a moment (at): a line or a word starts or ends, seconds pass on a screen or a layer without narration; never on a seek, again when the learner replays the passage. timeline.ended: playback reaches the end of the screen's timeline, or of a layer's with layer (to close the layer once it has spoken: hide-layer). media.ended: an audio or video block (target) plays to its end. dialogue.started: a dialogue block (target) begins. dialogue.node: it enters a node (node filter). dialogue.line: one of its lines starts (line filter). dialogue.chosen: the learner chooses an option (node and option filters; on every path, retries and returns included). dialogue.ended: it reaches an ending (ending filter), on every run; a condition on the dialogue says whether its first, scored run is done. */
+  type: 'screen.enter' | 'click' | 'quiz.submitted' | 'decision.selected' | 'object.event' | 'variable.changed' | 'layer.closed' | 'timeline.reached' | 'timeline.ended' | 'media.ended' | 'dialogue.started' | 'dialogue.node' | 'dialogue.line' | 'dialogue.chosen' | 'dialogue.ended';
   /** Block or layer id the trigger listens to. */
   target?: Slug;
   /** @default 'any' */
   result?: 'correct' | 'incorrect' | 'any';
-  /** Decision option id. */
+  /** Decision option id (decision.selected), or a dialogue option id (dialogue.chosen, with node). */
   option?: string;
+  /** dialogue.node, dialogue.chosen: a node of the dialogue. */
+  node?: string;
+  /** dialogue.line: a line of the dialogue (its id). */
+  line?: Slug;
+  /** dialogue.ended: an ending of the dialogue (its id). */
+  ending?: Slug;
   /** click: name of the control in the component template (data-t-click="name", data-t-tab="name" or data-t-toggle="name"); without it, any control of the block. object.event: event name, as declared in the free object's manifest. */
   name?: string;
   /** Payload filter: every listed field must equal the given value. */
@@ -2137,7 +2481,7 @@ export type Trigger = {
 /** A moment of the screen's timeline or of a layer's (an anchor): a line, a word of a line, the end of either with an offset; seconds from the start of a step on a screen without narration (from its opening on a layer without narration); the start or end of a step. */
 export type Cue = Anchor;
 
-/** A variable compared with a value ({ variable, op, value }), or the visited state of a block's controls ({ visited, name }). */
+/** A variable compared with a value ({ variable, op, value }), the visited state of a block's controls ({ visited, name }), or what the scored run of a dialogue block gave ({ dialogue, ending | chosen | score | done }). */
 export type Condition = {
   variable?: VariableId;
   op?: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte';
@@ -2146,15 +2490,30 @@ export type Condition = {
   visited?: Slug;
   /** With visited: one control of the block, by name. */
   name?: string;
+  /** A dialogue block (any screen), with one of ending, chosen, score or done: what its first run to an end (the scored run) gave, never a later replay. */
+  dialogue?: Slug;
+  /** With dialogue: the scored run reached this ending. */
+  ending?: Slug;
+  /** With dialogue: the scored run chose this option (node.option), first or after a retry. */
+  chosen?: string;
+  /** With dialogue: the scored run's score out of 100. */
+  score?: {
+    op: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte';
+    value: number;
+  };
+  /** With dialogue: true once the scored run reached an ending, false before. */
+  done?: boolean;
 };
 
 export type Action = {
-  /** go-to: navigate (screen id, or next / previous). show-layer / hide-layer: open or close a layer of the current screen; hide-layer without layer closes the layer open on top (a Close button inside a layer). show-block / hide-block: change visibility of a block. reveal-step: reveal the steps of the screen up to step (a click in the slide instead of Continue); a step already shown takes the focus again. set-variable: assign a value. increment-variable: add a number (by, may be negative). complete-screen: mark the current screen complete. set-object-props: change declared props of a free object block without regenerating code. exit-course: save and leave (same as the Quit button). pause-timeline / play-timeline: pause the narration of the screen, or play it from where it is (a modal layer pauses and resumes it by itself); with layer, the timeline of that layer while it is open. seek-timeline: move the timeline to a moment (to), as a seek: what is seen follows, nothing crossed fires, playback goes on if it was playing; a moment in a later step reaches that step; with layer (or to a line of a layer's narration), the timeline of that layer while it is open. play-media / pause-media: play or pause an audio or video block (block) of the screen; playing one pauses the narration. */
-  type: 'go-to' | 'show-layer' | 'hide-layer' | 'show-block' | 'hide-block' | 'reveal-step' | 'set-variable' | 'increment-variable' | 'complete-screen' | 'set-object-props' | 'exit-course' | 'pause-timeline' | 'play-timeline' | 'seek-timeline' | 'play-media' | 'pause-media';
+  /** go-to: navigate (screen id, or next / previous). show-layer / hide-layer: open or close a layer of the current screen; hide-layer without layer closes the layer open on top (a Close button inside a layer). show-block / hide-block: change visibility of a block. reveal-step: reveal the steps of the screen up to step (a click in the slide instead of Continue); a step already shown takes the focus again. set-variable: assign a value. increment-variable: add a number (by, may be negative). complete-screen: mark the current screen complete. set-object-props: change declared props of a free object block without regenerating code. exit-course: save and leave (same as the Quit button). pause-timeline / play-timeline: pause the narration of the screen, or play it from where it is (a modal layer pauses and resumes it by itself); with layer, the timeline of that layer while it is open. seek-timeline: move the timeline to a moment (to), as a seek: what is seen follows, nothing crossed fires, playback goes on if it was playing; a moment in a later step reaches that step; with layer (or to a line of a layer's narration), the timeline of that layer while it is open. play-media / pause-media: play or pause an audio or video block (block) of the screen; playing one pauses the narration. start-dialogue: begin a dialogue block (block) of the screen (one whose begins is event, or not begun yet). goto-dialogue: move a dialogue (block) to one of its nodes (node), as if the conversation went there (a free object or a click drives it). restart-dialogue: start a dialogue (block) over; its scored run stays. */
+  type: 'go-to' | 'show-layer' | 'hide-layer' | 'show-block' | 'hide-block' | 'reveal-step' | 'set-variable' | 'increment-variable' | 'complete-screen' | 'set-object-props' | 'exit-course' | 'pause-timeline' | 'play-timeline' | 'seek-timeline' | 'play-media' | 'pause-media' | 'start-dialogue' | 'goto-dialogue' | 'restart-dialogue';
   screen?: string;
   /** show-layer, hide-layer: a layer of the current screen. Required by show-layer; hide-layer without it closes the open layer (the one on top). pause-timeline, play-timeline, seek-timeline: the timeline of that layer (docs/decisions.md D62) instead of the screen's. */
   layer?: Slug;
   block?: Slug;
+  /** goto-dialogue: a node of the dialogue. */
+  node?: string;
   variable?: VariableId;
   value?: string | number | boolean;
   by?: number;

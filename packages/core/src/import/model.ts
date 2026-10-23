@@ -40,7 +40,29 @@ export type SourceItemBody =
   // A feature Elabora has no block for yet: what can be kept of it (its text, a medium) and why.
   | { kind: 'fallback'; feature: string; markdown?: string; media?: SourceMedia; alt?: string; detail?: string }
   // A feature nothing of which is kept.
-  | { kind: 'unsupported'; feature: string; detail?: string };
+  | { kind: 'unsupported'; feature: string; detail?: string }
+  // A branching conversation (Rise's scenario block): its moments, each a few lines and the learner's
+  // answers with where they go; what is not kept (the characters' poses, the backdrops) in lost.
+  | { kind: 'dialogue'; title?: string; nodes: SourceDialogueNode[]; lost?: { feature: string; detail?: string }[] };
+
+export interface SourceDialogueNode {
+  ref: string;
+  title?: string;
+  // Lines in order: a character's (speaker: their name), or a narration (no speaker).
+  lines: { speaker?: string; text: string }[];
+  options: SourceDialogueOption[];
+  // Where the node goes when it has no options, or for options without a way of their own: a node's
+  // ref, or the end (default: the next node of the list).
+  next?: string | { end: true };
+}
+
+export interface SourceDialogueOption {
+  text: string;
+  feedback?: string;
+  quality?: 'good' | 'ok' | 'bad';
+  // A node's ref, the end, the same options again (try again); null: the node's way out.
+  to: { node: string } | { end: true } | { retry: true } | null;
+}
 
 export type SourceItem = SourceItemBody & {
   ref: string; // the source's id of the item, for the report and the triggers

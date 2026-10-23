@@ -11,6 +11,7 @@ import blocksCalloutSchema from '../schemas/0.1/blocks/callout.schema.json' with
 import blocksCycleSchema from '../schemas/0.1/blocks/cycle.schema.json' with { type: 'json' };
 import blocksDecisionSchema from '../schemas/0.1/blocks/decision.schema.json' with { type: 'json' };
 import blocksDiagramSchema from '../schemas/0.1/blocks/diagram.schema.json' with { type: 'json' };
+import blocksDialogueSchema from '../schemas/0.1/blocks/dialogue.schema.json' with { type: 'json' };
 import blocksDonutSchema from '../schemas/0.1/blocks/donut.schema.json' with { type: 'json' };
 import blocksFreeObjectSchema from '../schemas/0.1/blocks/free-object.schema.json' with { type: 'json' };
 import blocksHeadingSchema from '../schemas/0.1/blocks/heading.schema.json' with { type: 'json' };
@@ -57,6 +58,7 @@ export type SchemaName =
   | 'blocks/cycle'
   | 'blocks/decision'
   | 'blocks/diagram'
+  | 'blocks/dialogue'
   | 'blocks/donut'
   | 'blocks/free-object'
   | 'blocks/heading'
@@ -100,6 +102,7 @@ export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
   'blocks/cycle': blocksCycleSchema,
   'blocks/decision': blocksDecisionSchema,
   'blocks/diagram': blocksDiagramSchema,
+  'blocks/dialogue': blocksDialogueSchema,
   'blocks/donut': blocksDonutSchema,
   'blocks/free-object': blocksFreeObjectSchema,
   'blocks/heading': blocksHeadingSchema,
@@ -134,4 +137,4 @@ export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
 };
 
 /** Built-in block types (the native catalogue), in the order of block.schema.json. */
-export const BLOCK_TYPES: readonly BuiltinBlockType[] = ['heading', 'text', 'image', 'video', 'audio', 'callout', 'button', 'accordion', 'math', 'quiz', 'numeric', 'decision', 'free-object', 'results', 'stack', 'key-figures', 'bars', 'donut', 'trend', 'proportion', 'before-after', 'levels', 'process', 'cycle', 'matrix', 'milestones', 'diagram'];
+export const BLOCK_TYPES: readonly BuiltinBlockType[] = ['heading', 'text', 'image', 'video', 'audio', 'callout', 'button', 'accordion', 'math', 'quiz', 'numeric', 'decision', 'dialogue', 'free-object', 'results', 'stack', 'key-figures', 'bars', 'donut', 'trend', 'proportion', 'before-after', 'levels', 'process', 'cycle', 'matrix', 'milestones', 'diagram'];

@@ -1,6 +1,6 @@
 import type {
   CourseData, WebDelivery, PlayerData, ResourceData, GlossaryData, AboutData, ScreenData, ScreenLayout, BlockData, EventData, Condition as ConditionData, Action as ActionData, Backdrop, ObjectDefinition, TokenValues,
-  QuizProps, NumericProps, NumericTolerance, DecisionProps, ObjectBlockProps, ResultsProps, VideoProps, AudioProps, AspectRatio, NarrationData, MomentData, TimingData
+  QuizProps, NumericProps, NumericTolerance, DecisionProps, DialogueProps, ObjectBlockProps, ResultsProps, VideoProps, AudioProps, AspectRatio, NarrationData, MomentData, TimingData
 } from '@elabora/player/course-data';
 import type { DataSchema, DataType } from '@elabora/player/data-schema';
 import { planIndex, resolveBlockProps, resolveTextRefs, screenOrder } from '../project/load.ts';
@@ -15,8 +15,10 @@ import { renderTemplate, defaultAssetPath } from '../components/template.ts';
 import type { ParsedTemplate } from '../components/template.ts';
 import { applyDefaults } from '../components/props.ts';
 import { controlsOf, controlEntity } from '../components/controls.ts';
-import { activityEntity } from './state-model.ts';
-import type { StateKeys, ActivityBehavior } from './state-model.ts';
+import { activityEntity, readLock } from './state-model.ts';
+import type { StateKeys, StateLock, ActivityBehavior } from './state-model.ts';
+import { dialogueData } from '../dialogue/data.ts';
+import { dialogueKeys } from '../dialogue/keys.ts';
 import { isRecord, recordOf, recordsOf, textOf, optionalTextOf, isText, isNumber, isOptional, numberOr, isJsonValue, jsonObjectOf } from './values.ts';
 import { objectsIn } from '../util/values.ts';
 import { screenTimeline, blockTimings, blockBeats, anchorTime, anchorTimeline, lineTimelines } from '../narration/timeline.ts';
@@ -65,6 +67,9 @@ export interface CompileContext {
   glossary: GlossaryData[];
   // A package of several languages (D59): its languages, the course's own first.
   languages?: string[];
+  // elabora.lock.json as the project has it: a dialogue's bit fields count the keys of options
+  // removed since (dialogue/keys.ts).
+  lock?: StateLock | null;
 }
 
 // A screen's narration as the build laid it out: the package paths of its track and captions, and
@@ -95,7 +100,7 @@ export function createCompileContext(project: Project, keys: StateKeys, { assetP
   const config = delivery?.navigation === 'free' ? withItemEnabled(playerConfig(course), 'outline') : playerConfig(course);
   const several = languages && languages.length > 1 ? languages : undefined;
   const player = shownPlayer(config, playerContent(project, { web: !!delivery, languages: several?.length ?? 1 }), { assetPath });
-  return { course, registry: getRegistry(project), planIndex: planIndex(project.plan), tokens: withPlayerTokens(resolveTokens(course)), keys, sectionOf, assetPath, ...(fields ? { fields } : {}), ...(narration ? { narration } : {}), ...(delivery ? { delivery } : {}), player, glossary: glossaryOf(course), ...(several ? { languages: several } : {}) };
+  return { course, registry: getRegistry(project), planIndex: planIndex(project.plan), tokens: withPlayerTokens(resolveTokens(course)), keys, lock: readLock(project), sectionOf, assetPath, ...(fields ? { fields } : {}), ...(narration ? { narration } : {}), ...(delivery ? { delivery } : {}), player, glossary: glossaryOf(course), ...(several ? { languages: several } : {}) };
 }
 
 // The course's glossary as the player reads it.
@@ -399,6 +404,7 @@ function compileBlock(block: Block, scope: ScreenScope): BlockData {
     case 'quiz': return { ...head, behavior: 'quiz', ...placement, key: activityKey('quiz'), ...rendered, props: quizProps(props), ...children };
     case 'numeric': return { ...head, behavior: 'numeric', ...placement, key: activityKey('numeric'), ...rendered, props: numericProps(props), ...children };
     case 'decision': return { ...head, behavior: 'decision', ...placement, key: activityKey('decision'), ...rendered, props: decisionProps(props), ...children };
+    case 'dialogue': return { ...head, behavior: 'dialogue', ...placement, key: activityKey('dialogue'), ...rendered, props: dialogueProps(block.id, props, context), ...children };
     case 'free-object': {
       // A free object without manifest (E_OBJECT_NOT_FOUND) shows nothing.
       const objectProps = objectBlockProps(props, scope);
@@ -459,6 +465,16 @@ function decisionProps(props: Record<string, unknown>): DecisionProps {
     objective: optionalTextOf(props.objective), scored: !!props.scored, weight: numberOr(props.weight, 1), allowChange: !!props.allowChange,
     options: recordsOf(props.options).map((option) => ({ id: textOf(option.id), label: textOf(option.label), feedbackHtml: renderMarkdown(option.feedback), ...(typeof option.correct === 'boolean' ? { correct: option.correct } : {}) }))
   };
+}
+
+// A dialogue (D61): its graph for the walk, the stage directions left out of what learners read, its
+// Markdown as HTML, its speakers and its keys.
+function dialogueProps(blockId: string, props: Record<string, unknown>, context: CompileContext): DialogueProps {
+  const variables = new Map(objectsIn(context.course.variables).map((variable) => [variable.id, variable.default]));
+  return dialogueData(props, {
+    course: context.course, keys: dialogueKeys(blockId, context.keys, context.lock ?? null), assetPath: context.assetPath, directions: 'strip', markdown: (text) => renderMarkdown(text),
+    env: { variable: (id) => { const value = variables.get(id); return typeof value === 'number' || typeof value === 'boolean' || typeof value === 'string' ? value : undefined; } }
+  });
 }
 
 function objectBlockProps(props: Record<string, unknown>, scope: ScreenScope): ObjectBlockProps | null {
@@ -564,6 +580,7 @@ function isEventData(event: Event): event is Event & EventData {
 
 function isConditionData(condition: Condition): condition is Condition & ConditionData {
   if (!isRecord(condition)) return false;
+  if (typeof condition.dialogue === 'string') return typeof condition.ending === 'string' || typeof condition.chosen === 'string' || typeof condition.done === 'boolean' || (isRecord(condition.score) && typeof condition.score.value === 'number');
   return typeof condition.visited === 'string' || (typeof condition.variable === 'string' && condition.op !== undefined && condition.value !== undefined);
 }
 
@@ -581,6 +598,8 @@ function isActionData(action: Action): action is Action & ActionData {
     case 'complete-screen': case 'exit-course': case 'pause-timeline': case 'play-timeline': return true;
     case 'seek-timeline': return isRecord(action.to);
     case 'play-media': case 'pause-media': return typeof action.block === 'string';
+    case 'start-dialogue': case 'restart-dialogue': return typeof action.block === 'string';
+    case 'goto-dialogue': return typeof action.block === 'string' && typeof action.node === 'string';
     default: return false;
   }
 }

@@ -17,7 +17,7 @@
     "type": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]{0,47}$",
-      "description": "Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, decision, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props."
+      "description": "Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props."
     },
     "props": {
       "type": "object"
@@ -304,6 +304,25 @@
         "properties": {
           "props": {
             "$ref": "blocks/decision.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "dialogue"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/dialogue.schema.json"
           }
         }
       }

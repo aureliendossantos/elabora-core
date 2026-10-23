@@ -64,4 +64,5 @@ Generated from `docs/decisions/` by `npm run docs`. One file per decision: what 
 | [D58](decisions/D58.md) | The learner's player: two configurable bars, resources, a glossary, an AI mention and credits | 19 Oct 2026 |
 | [D59](decisions/D59.md) | One package in every approved language, which learners switch in place | 20 Oct 2026 |
 | [D60](decisions/D60.md) | Charts and diagrams: blocks that each say one thing, drawn at build time, moved by the player, in step with the voice | 23 Oct 2026 |
+| [D61](decisions/D61.md) | Branching dialogues: a block that holds its graph, one pure walk replayed from the choices, the first run scored | 23 Oct 2026 |
 | [D62](decisions/D62.md) | Layer timelines and voice lines on every track of a screen | 23 Oct 2026 |

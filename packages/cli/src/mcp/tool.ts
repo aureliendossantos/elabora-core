@@ -122,7 +122,7 @@ export const imageResult = (image: Buffer, text: string, mimeType = 'image/png')
 
 // What an edit returns to agents: the change (for elabora_undo), the files written and the findings
 // that matter (no info, none the author ignored: D31).
-const EDIT_FIELDS = new Set(['screen', 'block', 'blocks', 'layer', 'event', 'replaced', 'units', 'language', 'skipped', 'object', 'waivers', 'section', 'component', 'renamed', 'migrated', 'components', 'from', 'to', 'library', 'version', 'formatMigration', 'font', 'tokens', 'notes', 'origin', 'captions', 'line', 'audio', 'sidecar', 'linked', 'unlinked', 'translations']);
+const EDIT_FIELDS = new Set(['screen', 'block', 'blocks', 'layer', 'event', 'replaced', 'units', 'language', 'skipped', 'object', 'waivers', 'section', 'component', 'renamed', 'migrated', 'components', 'from', 'to', 'library', 'version', 'formatMigration', 'font', 'tokens', 'notes', 'origin', 'captions', 'line', 'audio', 'sidecar', 'linked', 'unlinked', 'translations', 'node', 'added']);
 export const agentFindings = <D extends { severity: string; ignored?: boolean }>(diagnostics: readonly D[]): D[] => diagnostics.filter((d) => d.severity !== 'info' && !d.ignored);
 export const editPayload = (result: EditResult): Record<string, unknown> => ({
   ok: true, op: result.op, undo: result.undo, change: result.change, files: result.files, summary: result.summary,

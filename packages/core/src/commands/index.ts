@@ -23,6 +23,7 @@ export { exportTranslation, translateText, approveTranslation, type ExportTransl
 export { findText, replaceText, type TextMatch, type FindTextOptions, type ReplaceTextArgs, type ReplaceTextResult } from './text.ts';
 export { updateNarration, addNarrationLine, updateNarrationLine, moveNarrationLine, removeNarrationLine, removeSpeaker, setNarrationAudio, setNarrationWords, splitStep, narrationFromPlan, planVoiceover, keepNarrationAudio, addNarrationLineWithAudio, setNarrationTextFromAudio, LINE_FIELDS, type KeepNarrationAudioArgs, type AddNarrationLineWithAudioArgs, type SetNarrationTextFromAudioArgs, type SetNarrationWordsArgs, type SplitStepArgs, type NarrationFromPlanArgs, type UpdateNarrationArgs, type AddNarrationLineArgs, type UpdateNarrationLineArgs, type MoveNarrationLineArgs, type SetNarrationAudioArgs, type NarrationAudioFileArgs, type RemoveSpeakerArgs } from './narration.ts';
 export { setBlockTiming, reanchorLine, type SetBlockTimingArgs, type MomentPatch, type Reanchored } from './timing.ts';
+export { setDialogueNode, removeDialogueNode, type SetDialogueNodeArgs, type RemoveDialogueNodeArgs } from './dialogue.ts';
 export { upgradeThemeCascade, type UpgradeThemeResult } from './theme.ts';
 export { updatePlayer, type UpdatePlayerArgs } from './player.ts';
 export { addFont, type AddFontArgs, type AddFontResult, type FontFace, type FontRequest, type FontSource } from './fonts.ts';

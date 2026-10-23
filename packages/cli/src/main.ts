@@ -19,13 +19,14 @@ import { projectLibraryCommands } from './commands/projects.ts';
 import { mediaCommands } from './commands/media.ts';
 import { narrationCommands } from './commands/narration.ts';
 import { voiceCommands } from './commands/voice.ts';
+import { dialogueCommands } from './commands/dialogue.ts';
 import { downloadCommands } from './commands/downloads.ts';
 import { sourceCommands } from './commands/sources.ts';
 import { accountCommands, publishCommands } from './commands/cloud.ts';
 
 // The command groups, in the order of the help. A group module owns its section of the help and
 // its commands; adding a group (media, backups…) is adding it here. docs/cli.md is written from them.
-export const GROUPS: readonly CommandGroup[] = [projectCommands, projectLibraryCommands, historyCommands, sourceCommands, mediaCommands, narrationCommands, voiceCommands, downloadCommands, buildAndTestCommands, accountCommands, publishCommands, designCommands, fontCommands, componentCommands, objectCommands, contractCommands, translationCommands, interopCommands, agentCommands, toolCommands];
+export const GROUPS: readonly CommandGroup[] = [projectCommands, projectLibraryCommands, historyCommands, sourceCommands, mediaCommands, narrationCommands, voiceCommands, dialogueCommands, downloadCommands, buildAndTestCommands, accountCommands, publishCommands, designCommands, fontCommands, componentCommands, objectCommands, contractCommands, translationCommands, interopCommands, agentCommands, toolCommands];
 
 const section = (group: CommandGroup) => `${group.title}\n${group.help}`;
 

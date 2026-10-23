@@ -121,6 +121,8 @@ export function checkPlan(ctx: CourseCheckContext): void {
     const behavior = instanceBehavior(ctx.registry, block);
     if ((behavior === 'quiz' || behavior === 'numeric' || behavior === 'decision') && props.objective) practised.add(props.objective);
     if (behavior === 'predict' && fieldsOf(props.predict).objective) practised.add(fieldsOf(props.predict).objective);
+    // A dialogue practises its objective, and those of its decisions and options (D61).
+    if (behavior === 'dialogue') for (const value of [props.objective, ...list(props.nodes).flatMap((node) => [fieldsOf(node).objective, ...list(fieldsOf(node).options).map((option) => fieldsOf(option).objective)])]) if (typeof value === 'string') practised.add(value);
     if ((behavior === 'quiz' || behavior === 'numeric') && props.questionRef) for (const objective of list(byId(planIndex.questions, props.questionRef)?.objectives)) practised.add(objective);
     if (behavior === 'object') for (const objective of list(byId(project.objects, props.object)?.manifest?.planRefs?.objectives)) practised.add(objective);
   }

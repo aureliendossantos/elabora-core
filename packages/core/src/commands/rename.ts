@@ -109,11 +109,24 @@ export function renameId(context: CommandContext, { from, to }: RenameArgs): Com
     const action = (a: Action) => {
       if (kind === 'screen' && a.type === 'go-to') a.screen = rename(a.screen);
       if (layers && (a.type === 'show-layer' || a.type === 'hide-layer')) a.layer = rename(a.layer);
-      if (kind === 'block' && (a.type === 'show-block' || a.type === 'hide-block' || a.type === 'set-object-props')) a.block = rename(a.block);
+      if (kind === 'block' && (a.type === 'show-block' || a.type === 'hide-block' || a.type === 'set-object-props' || a.type === 'play-media' || a.type === 'pause-media' || a.type === 'start-dialogue' || a.type === 'goto-dialogue' || a.type === 'restart-dialogue')) a.block = rename(a.block);
     };
+    // A dialogue's options and cues act on blocks and layers of its screen (D61).
+    for (const { block } of screenBlocks(screen)) {
+      if (block.type !== 'dialogue' || !isRecord(block.props)) continue;
+      for (const node of objectsIn(block.props.nodes as Record<string, unknown>[] | undefined)) {
+        const lines = (list: unknown) => objectsIn(list as Record<string, unknown>[] | undefined);
+        const cuesOf = (list: unknown) => lines(list).flatMap((line) => lines(line.cues));
+        const options = lines(node.options);
+        for (const holder of [...cuesOf(node.lines), ...options, ...options.flatMap((option) => cuesOf(option.reply))]) for (const a of lines(holder.do)) action(a as Action);
+      }
+    }
     for (const event of objectsIn(screen.events)) {
       if (isRecord(event.on) && (kind === 'block' || layers)) event.on.target = rename(event.on.target);
-      if (kind === 'block') for (const condition of objectsIn(event.if)) if ('visited' in condition) condition.visited = rename(condition.visited);
+      if (kind === 'block') for (const condition of objectsIn(event.if)) {
+        if ('visited' in condition) condition.visited = rename(condition.visited);
+        if ('dialogue' in condition) condition.dialogue = rename(condition.dialogue);
+      }
       for (const a of [...objectsIn(event.do), ...objectsIn(event.else)]) action(a);
     }
     if (kind === 'screen' && screenId === from) {
@@ -131,7 +144,7 @@ export function renameId(context: CommandContext, { from, to }: RenameArgs): Com
     const renamedEntity = (entity: string): string => {
       const [, prefix, id, name] = /^([a-z]+):([^#]*)(#.*)?$/.exec(entity) ?? [];
       const ofScreen = kind === 'screen' && prefix === 'screen';
-      const ofBlock = kind === 'block' && ['quiz', 'numeric', 'decision', 'object', 'block', 'visit'].includes(prefix);
+      const ofBlock = kind === 'block' && ['quiz', 'numeric', 'decision', 'dialogue', 'choice', 'ending', 'object', 'block', 'visit'].includes(prefix);
       return (ofScreen || ofBlock) && id === from ? (references++, `${prefix}:${to}${name ?? ''}`) : entity;
     };
     const keys = Object.fromEntries(Object.entries(lock.keys).map(([entity, key]) => [renamedEntity(entity), key]));

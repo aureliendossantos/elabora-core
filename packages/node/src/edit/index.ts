@@ -250,6 +250,15 @@ export function setBlockTiming(dir: string, args: commands.SetBlockTimingArgs, o
   return runCommand(dir, { name: 'set_block_timing', args, run: (context) => commands.setBlockTiming(context, args) }, options);
 }
 
+// A node of a dialogue written whole, or removed (docs/decisions.md D61).
+export function setDialogueNode(dir: string, args: commands.SetDialogueNodeArgs, options?: EditOptions) {
+  return runCommand(dir, { name: 'set_dialogue_node', args, run: (context) => commands.setDialogueNode(context, args) }, options);
+}
+
+export function removeDialogueNode(dir: string, args: commands.RemoveDialogueNodeArgs, options?: EditOptions) {
+  return runCommand(dir, { name: 'remove_dialogue_node', args, run: (context) => commands.removeDialogueNode(context, args) }, options);
+}
+
 export function removeNarrationLine(dir: string, args: { screen: string; line: string }, options?: EditOptions) {
   return runCommand(dir, { name: 'remove_narration_line', args, run: (context) => commands.removeNarrationLine(context, args) }, options);
 }

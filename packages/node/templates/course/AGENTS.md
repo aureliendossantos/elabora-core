@@ -15,6 +15,7 @@ This folder is an Elabora course (`elabora/0.1`). **Read this file and “Notes 
   - *Content, structure or behaviour*: the whole route, from the plan to `elabora fit` and the gates of the objects changed (`elabora object test`).
   
   Broaden only when a check reveals a problem. See screens and objects with `elabora look`, `elabora preview` or `elabora screenshot`, never a Playwright script of your own, and check fit before delivery. Never ignore a diagnostic on your own: explain keyed warnings and request author approval before `elabora ignore`.
+- **Dialogues.** Short lines; the consequence first, the trainer's feedback after, never in a character's mouth; about three options (good, ok, bad), plausible and of similar length; write the best path first; check with `elabora dialogue paths` and `elabora dialogue play` before saying a dialogue is done.
 - **Human and paid-service boundaries.** The author controls plan approvals, translated-plan approval, publishing, sharing and review resolution. For paid narration/transcription, load `elabora-narration` and follow its quota-estimation and approval threshold; do not assume every paid call requires approval.
 
 ## Load only the guidance your task needs
@@ -29,6 +30,7 @@ Skills are **not automatically loaded** just because they are listed here. With 
 | Reusable blocks, activity forks, migrations | `elabora-components` |
 | Custom simulations/interactions | `elabora-free-objects` (and `threejs-r186` for three.js) |
 | Objectives, questions, feedback, cognitive load | `elabora-pedagogy` |
+| Branching dialogues (a conversation, its choices and characters) | `elabora-dialogues` |
 | Voice, recorded audio, timing and cues | `elabora-narration` |
 | Translating/localising a course | `elabora-translation` |
 | Importing Storyline or Rise | `elabora-importing` |

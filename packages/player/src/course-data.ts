@@ -7,6 +7,7 @@
 
 import type { JsonObject } from './json.ts';
 import type { DataSchema } from './data-schema.ts';
+import type { DialogueData, DialogueEventCondition } from './dialogue/types.ts';
 
 export interface CourseData {
   format: string;
@@ -271,12 +272,13 @@ export interface LayerData {
 // needs to score, save and record them; video, audio and free objects are rendered by code from
 // their props; every other block is HTML rendered from its component template.
 
-export type Behavior = 'quiz' | 'numeric' | 'decision' | 'object' | 'results' | 'chart' | 'predict';
+export type Behavior = 'quiz' | 'numeric' | 'decision' | 'dialogue' | 'object' | 'results' | 'chart' | 'predict';
 
 export type BlockData =
   | QuizBlock
   | NumericBlock
   | DecisionBlock
+  | DialogueBlock
   | ObjectBlock
   | ResultsBlock
   | VideoBlock
@@ -289,6 +291,7 @@ export interface BlockByBehavior {
   quiz: QuizBlock;
   numeric: NumericBlock;
   decision: DecisionBlock;
+  dialogue: DialogueBlock;
   object: ObjectBlock;
   results: ResultsBlock;
   chart: ChartBlock;
@@ -296,7 +299,7 @@ export interface BlockByBehavior {
 }
 
 // Blocks whose answers count: they have a key in the learner state.
-export type ActivityBlock = QuizBlock | NumericBlock | DecisionBlock | ObjectBlock | PredictBlock;
+export type ActivityBlock = QuizBlock | NumericBlock | DecisionBlock | DialogueBlock | ObjectBlock | PredictBlock;
 
 export interface BlockBase {
   id: string;
@@ -357,6 +360,15 @@ export interface DecisionBlock extends BlockBase {
   key: string;
   props: DecisionProps;
 }
+
+// A branching conversation (D61): its graph, its keys and its settings, read by the pure walk
+// (dialogue/); its progress is saved under key (dialogue/state.ts).
+export interface DialogueBlock extends BlockBase {
+  behavior: 'dialogue';
+  key: string;
+  props: DialogueProps;
+}
+export type DialogueProps = DialogueData;
 
 export interface ObjectBlock extends BlockBase {
   type: 'free-object';
@@ -539,7 +551,7 @@ export interface AudioProps {
 
 // ── Events (trigger → conditions → actions), as authored in the screen ──
 
-export type TriggerType = 'screen.enter' | 'click' | 'quiz.submitted' | 'decision.selected' | 'object.event' | 'variable.changed' | 'layer.closed' | 'timeline.reached' | 'timeline.ended' | 'media.ended';
+export type TriggerType = 'screen.enter' | 'click' | 'quiz.submitted' | 'decision.selected' | 'object.event' | 'variable.changed' | 'layer.closed' | 'timeline.reached' | 'timeline.ended' | 'media.ended' | 'dialogue.started' | 'dialogue.node' | 'dialogue.line' | 'dialogue.chosen' | 'dialogue.ended';
 
 export interface EventData {
   id: string;
@@ -556,6 +568,10 @@ export interface Trigger {
   target?: string;
   result?: 'correct' | 'incorrect' | 'any';
   option?: string;
+  // dialogue.node, dialogue.chosen: a node; dialogue.line: a line; dialogue.ended: an ending.
+  node?: string;
+  line?: string;
+  ending?: string;
   name?: string;
   where?: Record<string, string | number | boolean | null>;
   variable?: string;
@@ -570,7 +586,9 @@ export type VariableValue = boolean | number | string;
 
 export type Condition =
   | { variable: string; op: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte'; value: VariableValue; visited?: undefined }
-  | { visited: string; name?: string };
+  | { visited: string; name?: string; variable?: undefined }
+  // What a dialogue's scored run gave (dialogue/run.ts eventConditionHolds).
+  | (DialogueEventCondition & { variable?: undefined; visited?: undefined });
 
 export type Action =
   | { type: 'go-to'; screen: string }
@@ -589,7 +607,10 @@ export type Action =
   // to: compiled to the time of the moment (seconds on the timeline); layer: on that layer's timeline
   // (named, or the layer whose line it goes to).
   | { type: 'seek-timeline'; to: unknown; time?: number; layer?: string }
-  | { type: 'play-media' | 'pause-media'; block: string };
+  | { type: 'play-media' | 'pause-media'; block: string }
+  // A dialogue block of the screen: begin it, move it to a node, start it over (D61).
+  | { type: 'start-dialogue' | 'restart-dialogue'; block: string }
+  | { type: 'goto-dialogue'; block: string; node: string };
 
 // ── Variables ──
 
