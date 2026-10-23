@@ -22,7 +22,8 @@ import type { Labels } from '../labels.ts';
 import type { Interaction } from '../scorm12.ts';
 import { mountCharacter, textVoice, voiceAt } from '../character/index.ts';
 import type { CharacterView } from '../character/index.ts';
-import { nodeOf, optionOf, presentationOf, expressionsOf } from './walk.ts';
+import { nodeOf, optionOf, presentationOf, expressionsOf, replay as replayWalk } from './walk.ts';
+import { explorePaths } from './paths.ts';
 import type { Beat, DialogueWalk } from './walk.ts';
 import { choose, canRetryLast, retryLast, canRevisit, revisit, canRestart, restart, jump, scoredDone, scoredResult, openDialogue } from './run.ts';
 import type { DialogueRun } from './run.ts';
@@ -144,6 +145,7 @@ export function createDialogues(context: DialoguesContext) {
     restartRun(): void;
     pause(): void;
     showPath(choices: readonly string[], node?: string): void;
+    showLine(line: string): boolean;
     state(): DialogueViewState;
     transcript(): { title: string; lines: { speaker?: string; text: string }[] } | null;
     next(): void;
@@ -639,7 +641,12 @@ export function createDialogues(context: DialoguesContext) {
       if (!data.debrief) return;
       if (phase !== 'ended') { if (target) { target.replaceChildren(); target.hidden = true; } root.removeAttribute('data-t-debrief-open'); return; }
       const card = debriefCard(thread, debriefOf());
-      if (target) { target.replaceChildren(card); target.hidden = overlaidDebrief() && !debriefOpen; }
+      if (target) {
+        target.replaceChildren(card);
+        target.hidden = overlaidDebrief() && !debriefOpen;
+        // Over the thread it scrolls in its box: a region the keyboard reaches.
+        if (overlaidDebrief()) { target.tabIndex = 0; target.setAttribute('role', 'region'); target.setAttribute('aria-label', labels.dialogueDebrief); }
+      }
       else if (!log.querySelector('.t-dialogue-debrief-card')) { const row = element('div', { class: 't-dialogue-row', 'data-role': 'debrief' }, card); insert(row); }
       root.toggleAttribute('data-t-debrief-open', !!target && overlaidDebrief() && debriefOpen);
       placeDebrief();
@@ -1030,6 +1037,23 @@ export function createDialogues(context: DialoguesContext) {
         shown.length = 0;
         renderAll();
       },
+      // The Review (docs/review-bridge.md): a line of the dialogue, a node's or a reply's (or an option
+      // the learner's voice says, <node>.<option>), shown at rest where it comes: on the thread when it
+      // is there, else after the choices of the first path that says it.
+      showLine(line: string): boolean {
+        const says = (walk: DialogueWalk) => walk.beats.some((beat) => (beat.type === 'line' && beat.line.id === line) || (beat.type === 'choice' && `${beat.node}.${beat.option}` === line));
+        const there = () => log.querySelector<HTMLElement>(`.t-dialogue-row[data-line="${CSS.escape(line)}"]`);
+        if (!there() || phase === 'playing') {
+          const path = says(run.walk) ? { entries: run.walk.entries } : explorePaths(data, { env: run.env, limit: 200 }).paths.find((candidate) => says(candidate.walk));
+          if (!path) return false;
+          let count = 0;
+          while (count < path.entries.length && !says(replayWalk(data, path.entries.slice(0, count), run.env))) count++;
+          controller.showPath(path.entries.slice(0, count).map((entry) => entry.slice(entry.lastIndexOf('.') + 1)));
+        }
+        const row = there();
+        row?.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
+        return true;
+      },
       state(): DialogueViewState {
         return {
           phase, node: run.walk.node, status: run.walk.status, presented, beats: beats.length,
@@ -1065,6 +1089,16 @@ export function createDialogues(context: DialoguesContext) {
     // Another voice starts (the narration played, a sound or a video): the dialogues pause.
     pauseAll(): void { for (const controller of controllers.values()) controller.pause(); },
     // The editor's canvas: a dialogue after these choices, at a node.
+    // The Review: the line being said (and when in it), a line shown.
+    current(): { block: string; line: string; time?: number } | null {
+      for (const [id, controller] of controllers) {
+        if (!controller.wrap.isConnected) continue;
+        const now = controller.state();
+        if (now.line) return { block: id, line: now.line, ...(now.time !== null ? { time: now.time } : {}) };
+      }
+      return null;
+    },
+    show(blockId: string, line: string): boolean { return controllers.get(blockId)?.showLine(line) ?? false; },
     showPath(blockId: string, choices: readonly string[], node?: string): boolean {
       const controller = controllers.get(blockId);
       if (!controller) return false;

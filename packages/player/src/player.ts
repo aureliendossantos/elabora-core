@@ -633,7 +633,10 @@ const debugHooks = {
     advance: (seconds: number) => view.dialogues.advance(seconds),
     start: (blockId: string) => view.dialogues.start(blockId),
     next: (blockId: string) => view.dialogues.next(blockId),
-    choose: (blockId: string, option: string) => view.dialogues.choose(blockId, option)
+    choose: (blockId: string, option: string) => view.dialogues.choose(blockId, option),
+    // The Review (review.ts): the line being said, a line shown by replaying its path.
+    current: () => view.dialogues.current(),
+    show: (blockId: string, line: string) => view.dialogues.show(blockId, line)
   },
   // Resolves when the fonts are loaded, the images of the current screen decoded and its free
   // objects answered (or failed), and the layout has settled (reserved rooms measured again):

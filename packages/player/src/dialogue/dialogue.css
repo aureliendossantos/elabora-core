@@ -54,7 +54,7 @@
 .t-dialogue-row:not([data-first])[data-side="right"] .t-dialogue-bubble { border-top-right-radius: 0.375rem; }
 /* The name above the first bubble of a series, in the speaker's colour. */
 .t-dialogue-row[data-first] .t-dialogue-bubble { margin-top: 1.25rem; }
-.t-dialogue-name { position: absolute; bottom: calc(100% + 0.1875rem); inset-inline-start: 0.375rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8125rem; font-weight: 650; line-height: 1.2; color: var(--t-dl-speaker, var(--t-muted)); }
+.t-dialogue-name { position: absolute; bottom: calc(100% + 0.1875rem); inset-inline-start: 0.375rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8125rem; font-weight: 650; line-height: 1.2; color: color-mix(in srgb, var(--t-dl-speaker, var(--t-muted)) 72%, var(--t-dl-text)); }
 .t-dialogue-row[data-side="right"] .t-dialogue-name { inset-inline: auto 0.375rem; }
 /* A series names its speaker once (a scene names every bubble: its page may begin with any). */
 .t-dialogue-row:not([data-first]) .t-dialogue-name { display: none; }
