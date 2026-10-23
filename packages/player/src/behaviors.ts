@@ -14,6 +14,8 @@
 // data-t-panel="<k>" (tabs; data-t-selected picks the first), data-t-label="<label id>" (player label).
 // Buttons, tabs and disclosures are the block's controls: each fires "click" with its name when the
 // learner uses it, and gets data-t-visited once used (tabs and disclosures: once their content is shown).
+// The primitives of D63 (sequences, flip cards, the lightbox, exclusive parts, details, reveals) are in
+// primitives.ts; their items, cards, details and reveals are controls too.
 //
 // State for styling: options get is-selected, is-correct, is-wrong; the group gets
 // data-t-result="correct|incorrect" and data-t-final once the answer is final.
@@ -31,6 +33,8 @@ import type { Interaction } from './scorm12.ts';
 import { element, uniqueId } from './dom.ts';
 import { parseNumber, gradeNumeric, formatNumber } from './numeric.ts';
 import { createCharts } from './charts/behavior.ts';
+import { bindPrimitives } from './primitives.ts';
+import type { BoundPrimitives, PrimitiveHook } from './primitives.ts';
 
 export interface BehaviorContext {
   courseState: CourseState;
@@ -46,6 +50,9 @@ export interface BehaviorContext {
   retake(): void;
   // The editor's canvas: what plays by itself (a chart's entrance) is shown at rest.
   still?: boolean;
+  // A control was visited without an event (shown when its block came into view): steps that wait
+  // for exploration look again.
+  onVisited?(): void;
 }
 
 // Renders one possible outcome of an activity (dry run).
@@ -59,21 +66,26 @@ interface ControlOwner {
   visits?: Record<string, string>;
 }
 
-interface Control {
+export interface Control {
   node: HTMLElement;
-  hook: 'click' | 'tab' | 'toggle';
+  hook: 'click' | 'tab' | 'toggle' | PrimitiveHook;
   name: string;
+  // Other elements that show its visited state (a sequence's goto button, a card's flip buttons).
+  also?: HTMLElement[];
 }
 
 // SCORM 1.2 responses and patterns name choices by letter: a, b, c…
 const letter = (index: number) => String.fromCharCode(97 + index);
 
-export function createBehaviors({ courseState, labels, language, formatLabel, announce, recordInteraction, trigger, retake, still = false }: BehaviorContext) {
+export function createBehaviors({ courseState, labels, language, formatLabel, announce, recordInteraction, trigger, retake, still = false, onVisited }: BehaviorContext) {
   // Charts and diagrams (D60): their own behaviour (charts/behavior.ts).
   const charts = createCharts({ courseState, labels, language, formatLabel, announce, recordInteraction, trigger, still });
   // Controls of each template root (bound before the slots are filled), and the refresh of each results block.
   const controlsOf = new WeakMap<Element, Control[]>();
   const refreshers = new WeakMap<Element, () => void>();
+  // The primitives bound in each template root, and the disclosures (data-t-toggle) they may close.
+  const primitivesOf = new WeakMap<Element, BoundPrimitives>();
+  const disclosures = new WeakMap<HTMLElement, { open(): boolean; set(open: boolean): void }>();
 
   const escapeValue = (value: string) => String(value).replace(/["\\]/g, '\\$&');
   const findHook = <E extends Element = HTMLElement>(root: ParentNode, hook: string, value?: string) => root.querySelector<E>(value === undefined ? `[data-t-${hook}]` : `[data-t-${hook}="${escapeValue(value)}"]`);
@@ -98,7 +110,12 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
   // ── primitives, for every template ──
   // Controls remember being used: the visited state is recorded before the click event runs, so
   // its conditions see it (all visited, on the last one).
-  const syncVisited = (root: Element, owner: ControlOwner) => { for (const control of controlsOf.get(root) || []) control.node.toggleAttribute('data-t-visited', !!owner.visits && courseState.controlVisited(owner.id, control.name)); };
+  const syncVisited = (root: Element, owner: ControlOwner) => {
+    for (const control of controlsOf.get(root) || []) {
+      const visited = !!owner.visits && courseState.controlVisited(owner.id, control.name);
+      for (const node of [control.node, ...control.also || []]) node.toggleAttribute('data-t-visited', visited);
+    }
+  };
   function use(root: Element, owner: ControlOwner, name: string) {
     if (owner.visits) courseState.visitControl(owner.id, name);
     syncVisited(root, owner);
@@ -119,6 +136,7 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
       makeButton(button);
       button.setAttribute('aria-controls', part.id);
       const set = (open: boolean) => { part.hidden = !open; button.setAttribute('aria-expanded', String(open)); };
+      disclosures.set(button, { open: () => !part.hidden, set });
       set(part.hasAttribute('data-t-open'));
       button.addEventListener('click', () => { set(!!part.hidden); use(root, owner, button.getAttribute('data-t-toggle') ?? ''); });
     }
@@ -159,6 +177,14 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
         });
       });
     }
+    // The primitives of D63: their controls join the template's.
+    const bound = bindPrimitives(root, {
+      labels, formatLabel, still, use: (name) => use(root, owner, name),
+      visited: (name) => !!owner.visits && courseState.controlVisited(owner.id, name),
+      disclosure: (button) => disclosures.get(button)
+    });
+    primitivesOf.set(root, bound);
+    controlsOf.get(root)?.push(...bound.controls);
     syncVisited(root, owner);
   }
   // Tabs and disclosures count as visited once their content is shown, without a click: the
@@ -166,17 +192,24 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
   // calls this whenever blocks come into view.
   function noteShown(container: ParentNode) {
     charts.noteShown();
+    let visitedAny = false;
     for (const wrap of container.querySelectorAll<HTMLElement>('.t-block[data-block]')) {
       const block = courseState.blockIndex.get(wrap.dataset.block ?? '')?.block;
       const controls = controlsOf.get(wrap);
       if (!block?.visits || !controls?.length || wrap.closest('[inert]')) continue;
       let seen = false;
       for (const control of controls) {
-        const shown = control.hook === 'tab' ? control.node.getAttribute('aria-selected') === 'true' : control.hook === 'toggle' && control.node.getAttribute('aria-expanded') === 'true';
+        // A sequence's item once it shows, details open from the start (D63).
+        const shown = control.hook === 'tab' ? control.node.getAttribute('aria-selected') === 'true'
+          : control.hook === 'toggle' ? control.node.getAttribute('aria-expanded') === 'true'
+          : control.hook === 'item' || (control.hook === 'details' && (control.node as HTMLDetailsElement).open);
         if (shown && !control.node.closest('[hidden]') && courseState.visitControl(block.id, control.name)) seen = true;
       }
-      if (seen) syncVisited(wrap, block);
+      if (seen) { syncVisited(wrap, block); visitedAny = true; }
+      // What is visited once in view (a step revealed may have brought it).
+      primitivesOf.get(wrap)?.refresh();
     }
+    if (visitedAny) onVisited?.();
   }
 
   // ── quiz: single or multiple choice ──
@@ -449,6 +482,15 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
     bind(wrap: HTMLElement, block: BlockData): void { run(wrap, block, false); },
     // Dry run: the possible outcomes of an activity or results block (none for other blocks).
     outcomes(wrap: HTMLElement, block: BlockData): Outcome[] { return run(wrap, block, true) || []; },
+    // The controls of a template root (buttons, tabs, disclosures and the primitives' items, cards,
+    // details and reveals), for steps that wait for exploration.
+    controls: (root: Element): readonly Control[] => controlsOf.get(root) || [],
+    // The rooms of what shows one thing at a time in a template root (sequences), measured by the view.
+    rooms: (root: Element) => primitivesOf.get(root)?.rooms ?? [],
+    // Every sequence of a template root shows its tallest item (fit checks and captures).
+    showTallest: (root: Element) => primitivesOf.get(root)?.showTallest(),
+    // A template root leaves the page: its observers and listeners end, its lightbox closes.
+    release: (root: Element) => primitivesOf.get(root)?.dispose(),
     // Results blocks of the page show the current score and status.
     refreshResults(): void { for (const node of document.querySelectorAll('[data-behavior="results"]')) refreshers.get(node)?.(); }
   };

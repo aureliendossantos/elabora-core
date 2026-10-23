@@ -4,7 +4,7 @@
 // room of activities, hosts free objects, opens layers, reveals steps, runs the events of the
 // screen and paints the backdrop. Navigation, the LMS and saving belong to the page around it.
 
-import { behaviorOf, flatBlocks } from './course-state.ts';
+import { behaviorOf, flatBlocks, isActivity } from './course-state.ts';
 import type { CourseState, TriggerInfo } from './course-state.ts';
 import { createBehaviors } from './behaviors.ts';
 import { createObjectHost } from './object-host.ts';
@@ -101,7 +101,51 @@ export function createScreenView(options: ScreenViewOptions) {
   const shownActivities = () => (screen ? courseState.activitiesOf({ blocks: screen.blocks.filter((block) => (block.step || 1) <= revealed) }) : []);
   // With navigation.lockUntilComplete, a narrated step must also have been heard to its end.
   const listening = () => !!course.navigation.lockUntilComplete && !!timeline && !timeline.segmentHeard(revealed);
-  const continueLocked = () => !!course.navigation.lockUntilComplete && (!shownActivities().every(courseState.activityDone) || listening());
+  const continueLocked = () => exploreLocked() || (!!course.navigation.lockUntilComplete && (!shownActivities().every(courseState.activityDone) || listening()));
+  // Steps that wait for exploration (screen.steps opens "explored", D63): their Continue is shown but
+  // locked until every activity of the steps above is answered and every control of their blocks is
+  // visited, optional blocks (and what they hold) and blocks concealed by events aside.
+  const waitsForExploring = (step: number | undefined) => step !== undefined && stepSettings(step).opens === 'explored';
+  function leftAbove(step: number) {
+    const left = { answer: 0, explore: 0, cards: 0 };
+    const count = (blocks: readonly BlockData[] | undefined) => {
+      for (const block of blocks || []) {
+        if (block.optional || !courseState.blockVisible(block)) continue;
+        if (isActivity(block) && !courseState.activityAnswered(block)) left.answer++;
+        const node = main.querySelector<HTMLElement>(`[data-block="${CSS.escape(block.id)}"]`);
+        // The controls of its template, by name (a name is one control, whatever holds it).
+        const controls = node ? behaviors.controls(node) : Object.keys(block.visits || {}).map((name) => ({ name, hook: 'click' as const }));
+        const named = new Set<string>();
+        for (const control of controls) {
+          if (named.has(control.name) || !block.visits?.[control.name] || courseState.controlVisited(block.id, control.name)) continue;
+          named.add(control.name);
+          left.explore++;
+          if (control.hook === 'flip') left.cards++;
+        }
+        count(block.blocks);
+      }
+    };
+    count(screen?.blocks.filter((block) => (block.step || 1) < step));
+    return left;
+  }
+  // What is left before the next step opens, or null when it does not wait for exploration or nothing is left.
+  function exploreLeft() {
+    const next = nextStep();
+    if (!screen || revealed >= lastStep() || !waitsForExploring(next)) return null;
+    const left = leftAbove(next);
+    return left.answer + left.explore ? left : null;
+  }
+  const exploreLocked = () => exploreLeft() !== null;
+  // Locked, it says what is left: "1 question left to answer. 2 cards left to turn over."
+  function exploreReason(): string {
+    const left = exploreLeft();
+    if (!left) return '';
+    const parts: string[] = [];
+    if (left.answer) parts.push(options.formatLabel(labels.leftToAnswer, { n: left.answer }));
+    if (left.explore) parts.push(options.formatLabel(left.cards === left.explore ? labels.leftCards : labels.leftToExplore, { n: left.explore }));
+    return parts.join(' ');
+  }
+  const lockedWhy = () => (listening() ? labels.listen : exploreLocked() ? exploreReason() : labels.locked);
   // The blocks of the latest step shown get data-t-current (styles: the next thing to click).
   function applySteps() {
     if (!screen) return;
@@ -114,8 +158,10 @@ export function createScreenView(options: ScreenViewOptions) {
       node.toggleAttribute('data-t-current', (block.step || 1) === shown);
       syncInert(node);
     }
-    syncContinue();
+    // Blocks that come into view visit what they show first (a sequence's item): before Continue is
+    // drawn, so that it knows what is left.
     behaviors.noteShown(main);
+    syncContinue();
   }
   // Scroll presentation: the next step opens with a Continue button in the page, where the shown
   // content ends (the continue dividers of Rise); in slides the page's Next button does it. With
@@ -131,12 +177,26 @@ export function createScreenView(options: ScreenViewOptions) {
       onclick: () => {
         const step = next ?? nextStep();
         if (step === undefined) return;
-        if (continueLocked()) { const why = listening() ? labels.listen : labels.locked; options.tooltip?.flash(button, why); announce(why); return; }
+        if (continueLocked()) { const why = lockedWhy(); options.tooltip?.flash(button, why); announce(why); return; }
         revealStep(step);
       }
     }, (next !== undefined && stepSettings(next).label) || labels.continue);
-    options.tooltip?.attach(button, () => (button.getAttribute('aria-disabled') === 'true' ? (listening() ? labels.listen : labels.locked) : null));
-    return element('div', { class: className, 'data-step': next === undefined ? undefined : String(next) }, button);
+    options.tooltip?.attach(button, () => (button.getAttribute('aria-disabled') === 'true' ? lockedWhy() : null));
+    const control = element('div', { class: className, 'data-step': next === undefined ? undefined : String(next) }, button);
+    syncHint(control, next ?? nextStep());
+    return control;
+  }
+  // A Continue that waits for exploration says what is left under it; its line stays once nothing is
+  // left, so that nothing moves when it unlocks.
+  function syncHint(control: HTMLElement, next: number | undefined) {
+    let hint = control.querySelector<HTMLElement>('.t-continue-hint');
+    const button = control.querySelector<HTMLElement>('.t-continue-btn');
+    if (!waitsForExploring(next)) { hint?.remove(); button?.removeAttribute('aria-describedby'); return; }
+    if (!hint) { hint = element('p', { class: 't-continue-hint', id: uniqueId('t-continue-hint') }); control.append(hint); }
+    const why = exploreReason();
+    hint.textContent = why || '\u00a0';
+    hint.toggleAttribute('data-t-empty', !why);
+    if (why) button?.setAttribute('aria-describedby', hint.id); else button?.removeAttribute('aria-describedby');
   }
   function syncContinue() {
     if (timeline && slides() && !phone()) { syncContinueSlot(); return; }
@@ -168,6 +228,7 @@ export function createScreenView(options: ScreenViewOptions) {
       button.textContent = (next !== undefined && stepSettings(next).label) || labels.continue;
       if (offered && continueLocked()) button.setAttribute('aria-disabled', 'true'); else if (offered) button.removeAttribute('aria-disabled'); else button.setAttribute('aria-disabled', 'true');
     }
+    syncHint(slot, next);
   }
   // Steps that open once the activities above them are answered, right or wrong (screen.steps
   // opens "answered"): they appear without taking the focus, so the learner reads the feedback first.
@@ -488,7 +549,10 @@ export function createScreenView(options: ScreenViewOptions) {
   // player places the blocks of each slot, then binds behaviours: what is scored, saved, announced
   // and keyboard-operable is never left to a template. Video, audio and free objects are code.
   const behaviors = createBehaviors({
-    courseState, labels, language: course.language, formatLabel: options.formatLabel, announce, recordInteraction, trigger, retake: options.retake, still: options.still
+    courseState, labels, language: course.language, formatLabel: options.formatLabel, announce, recordInteraction, trigger, retake: options.retake, still: options.still,
+    // A control seen as its block came into view (a sequence's first item): a step waiting for
+    // exploration looks again, and the page's Next with it.
+    onVisited: () => { if (!screen) return; syncContinue(); options.afterEvents(); }
   });
 
   // Screens: without layout, blocks stack in the reading column (.t-blocks). With a layout (a
@@ -531,7 +595,41 @@ export function createScreenView(options: ScreenViewOptions) {
   const roomFits = new Set<() => void>();
   const blockOf = (node: HTMLElement) => courseState.blockIndex.get(node.dataset.block ?? '')?.block;
   // Rooms are measured once the blocks are in the page.
-  function flushRooms() { for (const [wrap, block] of roomQueue.splice(0)) reserveRoom(wrap, block); }
+  function flushRooms() {
+    for (const [wrap, block] of roomQueue.splice(0)) reserveRoom(wrap, block);
+    for (const [wrap, block] of itemRoomQueue.splice(0)) reserveItemRooms(wrap, block);
+  }
+  // What shows one thing at a time (a sequence, D63) reserves the room of its tallest item, in every
+  // presentation and in layers too: moving through it never moves what is around it. (A flip card
+  // needs no measure: its faces share one cell, player.css.)
+  const itemRoomQueue: [HTMLElement, BlockData][] = [];
+  function reserveItemRooms(wrap: HTMLElement, block: BlockData) {
+    for (const { host, measure } of behaviors.rooms(wrap)) {
+      // Measured again when the width changes, and when the content may have (images and fonts
+      // loading): at a given width the room only grows.
+      let width = 0;
+      let room = 0;
+      const fit = (force = false) => {
+        if (!host.isConnected) return;
+        const measuredWidth = Math.round(cssPx(host, host.getBoundingClientRect().width));
+        if (!measuredWidth || (!force && measuredWidth === width)) return;
+        if (measuredWidth !== width) room = 0;
+        width = measuredWidth;
+        room = Math.max(room, cssPx(host, measure()));
+        host.style.minHeight = `${Math.ceil(room)}px`;
+      };
+      fit();
+      const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(() => fit()) : null;
+      observer?.observe(host);
+      const refit = () => fit(true);
+      host.addEventListener('load', refit, true); // images of the items (load does not bubble)
+      document.fonts?.ready.then(refit);
+      document.fonts?.addEventListener?.('loadingdone', refit);
+      const later = setTimeout(refit, 700);
+      roomFits.add(refit);
+      cleanup(block.id, () => { observer?.disconnect(); document.fonts?.removeEventListener?.('loadingdone', refit); clearTimeout(later); roomFits.delete(refit); });
+    }
+  }
   // Boxes in the CSS px of the block: under the learner's text size (a CSS zoom on #t-main,
   // « Affichage »), getBoundingClientRect gives zoomed px, which written back as CSS px would be
   // zoomed again.
@@ -602,6 +700,8 @@ export function createScreenView(options: ScreenViewOptions) {
     const changed: (string | undefined)[] = [];
     for (const node of nodes) {
       const block = blockOf(node);
+      // A sequence shows its tallest item (D63): the room it reserves, filled.
+      if (block && behaviors.rooms(node).length) { behaviors.showTallest(node); changed.push(block.id); }
       if (!block || !ROOM_BEHAVIORS.has(behaviorOf(block))) continue;
       const rooms = outcomeRooms(node, block).slice(1);
       if (!rooms.length) continue;
@@ -669,7 +769,9 @@ export function createScreenView(options: ScreenViewOptions) {
       // Behaviours bind before the slots are filled: hooks of nested blocks belong to those blocks.
       behaviors.primitives(wrap, block);
       behaviors.bind(wrap, block);
+      cleanup(block.id, () => behaviors.release(wrap));
       if (ROOM_BEHAVIORS.has(behaviorOf(block))) roomQueue.push([wrap, block]);
+      if (behaviors.rooms(wrap).length) itemRoomQueue.push([wrap, block]);
       return wrap;
     }
     if (isVideo(block)) wrap.append(block.props.loop || block.props.decorative ? loopFigure(block) : videoFigure(block));
@@ -962,6 +1064,7 @@ export function createScreenView(options: ScreenViewOptions) {
       if (bar) startLayerTimeline(layer, dialog, false, bar);
       else behaviors.charts.at(null, dialog);
       dialog.showModal();
+      flushRooms();
       behaviors.noteShown(dialog);
       return;
     }
@@ -972,6 +1075,7 @@ export function createScreenView(options: ScreenViewOptions) {
     if (bar) startLayerTimeline(layer, dialog, true, bar);
     else behaviors.charts.at(null, dialog);
     dialog.show();
+    flushRooms();
     behaviors.noteShown(dialog);
     heading.focus({ preventScroll: true });
   }
@@ -1201,6 +1305,8 @@ export function createScreenView(options: ScreenViewOptions) {
     },
     // Next waits until the narrated step has been heard (navigation.lockUntilComplete).
     listening,
+    // Next (in slides) waits until the blocks above a step that opens once explored are (D63), and says what is left.
+    exploreLocked, exploreReason,
     openLayer, showAnswered, feedbackRooms,
     // Heights of an activity of the screen: as it is now, then once answered, outcome by outcome.
     rooms(blockId: string) { const node = main.querySelector<HTMLElement>(`[data-block="${blockId}"]`); const block = courseState.blockIndex.get(blockId)?.block; return node && block ? outcomeRooms(node, block) : null; },

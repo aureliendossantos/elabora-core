@@ -300,9 +300,11 @@ const slides = () => app.dataset.presentation === 'slides';
 // A narrated screen has its own Continue in the screen: Next goes to the next screen.
 const nextReveals = () => slides() && !view.timeline && view.revealed < view.lastStep() && view.opensWithContinue(view.nextStep());
 // Locked: activities of the revealed steps (or of the whole screen on its last step) not done yet;
-// steps that Next does not reveal, not all shown yet.
+// steps that Next does not reveal, not all shown yet; a step that opens once explored, before the
+// blocks above it are (D63, whatever lockUntilComplete says).
 function nextLocked() {
   const screen = currentScreen();
+  if (screen && nextReveals() && view.exploreLocked()) return true;
   if (!course.navigation.lockUntilComplete || !screen) return false;
   if (view.revealed < view.lastStep()) return !nextReveals() || view.listening() || !courseState.activitiesOf({ blocks: screen.blocks.filter((block) => (block.step || 1) <= view.revealed) }).every(courseState.activityDone);
   return !courseState.screenComplete(screen);
@@ -311,6 +313,7 @@ function nextLocked() {
 function lockReason() {
   const screen = currentScreen();
   if (view.listening()) return labels.listen;
+  if (nextReveals() && view.exploreLocked()) return view.exploreReason();
   if (screen && view.timeline && (screen.completeWhen || 'viewed') === 'viewed' && courseState.activitiesOf(screen).every(courseState.activityDone)) return labels.listen;
   return view.revealed < view.lastStep() && !nextReveals() ? labels.explore : labels.locked;
 }

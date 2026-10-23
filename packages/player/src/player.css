@@ -673,8 +673,47 @@ button.t-timeline-line:disabled { color: var(--t-muted); }
 }
 /* Less motion asked: what the course's authors wrote (themes, components, a block's own CSS) is stilled
    entirely, since the player cannot tell what in it moves; the player's own pieces keep their fades
-   (--t-move). A step's revealed blocks keep theirs too: with --t-move at 0 it moves nothing. */
+   (--t-move). A step's revealed blocks keep theirs too: with --t-move at 0 it moves nothing; so do the
+   faces of a flip card, whose turn becomes a cross-fade (D63). */
 @media (prefers-reduced-motion: reduce) {
   :is(#t-main, dialog.t-layer, .t-backdrop) :is(*, *::before, *::after) { animation: none !important; }
-  :is(#t-main, dialog.t-layer, .t-backdrop) :is(*:not(.t-block[data-t-revealed]), *::before, *::after) { transition: none !important; }
+  :is(#t-main, dialog.t-layer, .t-backdrop) :is(*:not(.t-block[data-t-revealed], [data-t-card] [data-t-face]), *::before, *::after) { transition: none !important; }
 }
+
+/* ── Primitives of any template (D63; docs/components.md §3) ──────────────────────────────────
+   What shows one thing at a time keeps the room of its tallest thing: a sequence's items (the player
+   sets the min-height of their container), a flip card's faces (both in one cell, so whichever shows,
+   the card is as tall as its taller face). Interactions are soothing: --t-dur-item on the ease-out
+   curve, no spring; with less motion a short fade, or nothing. Nothing moves by itself. */
+:root { --t-dur-item: 220ms; }
+/* A sequence: Previous and Next stay in reach at its ends (aria-disabled), a swipe sideways is the
+   player's while the page keeps its vertical scroll. */
+[data-t-sequence] [data-t-item] { touch-action: pan-y; }
+:is([data-t-prev], [data-t-next])[aria-disabled="true"] { opacity: .4; cursor: default; }
+/* A flip card turns on its vertical axis; the face away is out of reach (inert) and hidden. */
+[data-t-card] { display: grid; perspective: 1600px; }
+[data-t-card] [data-t-face] { grid-area: 1 / 1; backface-visibility: hidden; transition: rotate var(--t-dur-item) var(--t-ease-out), opacity var(--t-dur-item) ease; }
+[data-t-card] [data-t-face="back"] { rotate: y 180deg; }
+[data-t-card][data-t-flipped] [data-t-face="front"] { rotate: y -180deg; }
+[data-t-card][data-t-flipped] [data-t-face="back"] { rotate: y 0deg; }
+@media (prefers-reduced-motion: reduce) {
+  [data-t-card] [data-t-face] { rotate: none !important; transition: opacity var(--t-dur-item) ease !important; }
+  [data-t-card]:not([data-t-flipped]) [data-t-face="back"], [data-t-card][data-t-flipped] [data-t-face="front"] { opacity: 0; }
+}
+/* A native disclosure that is visited: its content fades in where the browser can. */
+details[data-t-details]::details-content { opacity: 0; transition: opacity var(--t-dur-item) ease, content-visibility var(--t-dur-item) allow-discrete; }
+details[data-t-details][open]::details-content { opacity: 1; }
+/* The lightbox: the image at full size over the page (the viewer's frame and motion), its caption,
+   previous and next between the images of the block, and Close. */
+.t-lightbox { width: min(80rem, calc(100vw - 2.5rem)); }
+.t-lightbox[open] { display: flex; flex-direction: column; }
+.t-lightbox-stage { position: relative; flex: 1; min-height: 0; background: color-mix(in srgb, var(--t-text) 6%, var(--t-surface)); }
+.t-lightbox-image { position: absolute; inset: 0; width: 100%; height: 100%; padding: 1.5rem; object-fit: contain; }
+.t-lightbox-foot { display: flex; align-items: center; gap: 0.5rem; flex: none; min-height: 4rem; padding: 0.625rem 0.75rem 0.625rem 1.5rem; color: var(--t-text); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--t-text) 10%, transparent); --t-pl-bottom-fg: var(--t-text); }
+.t-lightbox-caption { flex: 1; min-width: 0; margin: 0; color: var(--t-text); font-size: 0.9375rem; line-height: 1.45; }
+.t-lightbox-caption[hidden] { display: block !important; visibility: hidden; }
+.t-lightbox-position { min-width: 3.5rem; color: var(--t-muted); font-size: 0.875rem; font-variant-numeric: tabular-nums; text-align: center; }
+.t-lightbox .t-icon-btn[aria-disabled="true"] { opacity: .4; cursor: default; }
+/* A Continue that waits for exploration says what is left under it; its line stays once unlocked. */
+.t-continue-hint { margin: 0; color: var(--t-muted); font-size: 0.9375rem; text-align: center; }
+.t-continue-hint[data-t-empty] { visibility: hidden; }

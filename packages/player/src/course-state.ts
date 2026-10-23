@@ -31,6 +31,13 @@ export function flatBlocks(blocks: readonly BlockData[] | undefined, out: BlockD
   return out;
 }
 
+// The blocks of a list that count for completion and for steps that open once explored, with the
+// blocks of their slots, depth first: optional blocks, and what they hold, aside (D63).
+export function requiredBlocks(blocks: readonly BlockData[] | undefined, out: BlockData[] = []): BlockData[] {
+  for (const block of blocks || []) { if (block.optional) continue; out.push(block); if (block.blocks) requiredBlocks(block.blocks, out); }
+  return out;
+}
+
 // What changed, for onChange.
 export type ChangeKind = 'variable' | 'quiz' | 'numeric' | 'decision' | 'object' | 'object-state' | 'visibility' | 'visited' | 'step' | 'completion' | 'visit' | 'retake';
 
@@ -295,7 +302,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     refreshScreenCompletion(screen);
   }
   function refreshScreenCompletion(screen: ScreenData): void {
-    if (screen.completeWhen === 'interactions-done' && activitiesOf(screen).every(activityDone)) markComplete(screen);
+    if (screen.completeWhen === 'interactions-done' && requiredBlocks(screen.blocks).filter(isActivity).every(activityDone)) markComplete(screen);
   }
 
   // ── scoring and status ──
