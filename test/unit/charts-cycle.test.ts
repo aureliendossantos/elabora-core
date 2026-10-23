@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderChart, chartItems, chartTable, chartMarkdown } from '@elabora/core/charts/index';
-import { stagesOf, arcOf } from '@elabora/core/charts/cycle';
+import { stagesOf, arcOf, heightOf, VIEW } from '@elabora/core/charts/cycle';
 
 const context = { id: 'loop', language: 'en', tokens: {} };
 const props = (extra: Record<string, unknown> = {}) => ({
@@ -25,6 +25,21 @@ test('cycle: stages placed clockwise from the top, words on their outer side', (
   const arc = arcOf(stages[0], 4);
   assert.ok(arc && /^M[\d. ]+A66 66 0 0 1 [\d. ]+$/.test(arc.d) && /Z$/.test(arc.head));
   assert.equal(arcOf(stages[0], 1), null);
+});
+
+test('cycle: an odd ring has no empty band under it, a stage at the bottom keeps its room', () => {
+  const ring = (count: number) => stagesOf({ items: Array.from({ length: count }, (_, index) => ({ id: `s${index}`, title: `Stage ${index}` })) });
+  assert.equal(heightOf(ring(4)), VIEW.h);
+  assert.equal(heightOf(ring(6)), VIEW.h);
+  for (const count of [3, 5, 7]) {
+    const height = heightOf(ring(count));
+    assert.ok(height < VIEW.h, `${count} stages: cut`);
+    assert.ok(height >= VIEW.cy + VIEW.r, `${count} stages: the lowest arc stays inside`);
+    assert.ok(ring(count).every((stage) => stage.y + 12 < height), `${count} stages: room under the lowest number`);
+  }
+  const { html } = renderChart('cycle', { takeaway: 'Five', items: ring(5).map((stage) => ({ id: stage.id, title: stage.title })) }, context);
+  assert.match(html, /style="--n:5;--h:[\d.]+;--cy:0\.[\d]+"/);
+  assert.match(html, /viewBox="0 0 300 1[5-9][\d.]*"/);
 });
 
 test('cycle: markup hooks, the centre, the arcs and the data table', () => {

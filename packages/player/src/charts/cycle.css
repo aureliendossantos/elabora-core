@@ -1,9 +1,9 @@
 /* ── cycle (D60) ──
-   A 3:2 box: the ring's SVG fills it with a uniform viewBox (charts/cycle.ts VIEW), the stages sit at
+   A 3:2 box (cut under an odd ring, --h): the ring's SVG fills it with a uniform viewBox (charts/cycle.ts VIEW), the stages sit at
    --x, --y (the number's centre), their words on the outer side. The centre stacks every text in one
    cell and shows one. Positions use transform; the entrance uses scale and translate (they compose). */
 .t-cycle { position: relative; max-width: 44rem; margin: 0 auto; padding: 1.25rem 0; }
-.t-cycle-ring { position: relative; aspect-ratio: 3 / 2; }
+.t-cycle-ring { position: relative; aspect-ratio: 300 / var(--h, 200); }
 .t-cycle-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
 /* The viewBox is uniform (no stretching), so strokes are in its units: 1.3 ≈ 3 px at full size; dashes
    then follow the arc's pathLength while it draws. */
@@ -29,7 +29,7 @@
 
 /* The centre: the loop's name at rest, the stage pointed at or said. One grid cell: no layout moves. */
 .t-cycle-centre {
-  position: absolute; z-index: 0; left: 50%; top: 50%; width: min(16rem, 34cqi);
+  position: absolute; z-index: 0; left: 50%; top: calc(1.25rem + (100% - 2.5rem) * var(--cy, 0.5)); width: min(16rem, 34cqi);
   display: grid; transform: translate(-50%, -50%); text-align: center; pointer-events: none;
 }
 .t-cycle-rest, .t-cycle-say { grid-area: 1 / 1; align-self: center; transition: opacity 200ms ease, translate var(--t-chart-calm) var(--t-ease-out); }

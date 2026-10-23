@@ -6,6 +6,8 @@ import { compileCourseData } from '@elabora/core/compile/course-data';
 import { renderChart, chartItems, chartMarkdown, CHART_TYPES } from '@elabora/core/charts/index';
 import { diagramIds, parseDiagram, isProblem } from '@elabora/core/charts/diagram';
 import { extractUnits, writeUnit } from '@elabora/core/i18n/units';
+import { timelineReport, formatTimeline } from '@elabora/core/narration/report';
+import { timelineMarks } from '@elabora/core/narration/view';
 import { createCourseState } from '@elabora/player/course-state';
 import type { PredictBlock } from '@elabora/player/course-data';
 import { monotoneY, monotonePath, dodge, formatValue } from '@elabora/player/charts/kit';
@@ -112,6 +114,17 @@ test('compile: charts carry their drawing, their beats on the timeline, and a tr
   assert.equal(state.computeStatus().score.items, createCourseState(data).computeStatus().score.items, 'not scored by default');
   const again = createCourseState(data, { suspendData: state.encode() });
   assert.equal(again.predictState(clicks), 12, 'resumed');
+});
+
+test('timeline and sheet: a chart\'s beats are listed and captured at their words', () => {
+  const project = loadProjectFromDir(chartsCourse());
+  const report = timelineReport(project, 'chemin')!;
+  assert.deepEqual(report.beats.map((beat) => `${beat.block} ${beat.item}`), ['origin email', 'origin web', 'origin null']);
+  assert.ok(report.beats[0].time < report.beats[1].time && report.beats[1].time <= report.beats[2].time);
+  assert.match(formatTimeline(report), /Chart beats[^\n]*\n  origin email +[\d:.]+\*? /);
+  const marks = timelineMarks(project, 'chemin')!;
+  const beatMarks = marks.flatMap((mark) => mark.events).filter((event) => event.kind === 'beat');
+  assert.deepEqual(beatMarks.map((event) => event.item), ['email', 'web', null]);
 });
 
 test('validation: item ids, what names an item, a trend that cannot be drawn, a widening funnel, diagram types and colours, beat anchors', () => {

@@ -57,7 +57,7 @@ On a narrated screen, an item may take `at`, an anchor like a timing's: a line, 
 - At its moment the item appears and becomes the one the voice talks about: the others step back as on hover. It stays so until the next item's moment, or until the block's `spotlightEnd` (an anchor); without one, until the end of the line of the last item. Then every item stands and the highlight takes the colour.
 - `revealOnBeats: false` shows every item from the start and only moves the spotlight.
 - A trend's points take `at`: the line draws up to each point as the voice names it. A diagram takes `beats: [{ "node": "B", "at": … }]`.
-- Beats are moments of the screen's timeline, like timings: seeking back hides what had not come yet, they are translated with the narration's word markers, and an anchor on words the line does not say is `E_TIMELINE_ANCHOR_MISSING`.
+- Beats are moments of the screen's timeline, like timings: seeking back hides what had not come yet, they are translated with the narration's word markers, and an anchor on words the line does not say is `E_TIMELINE_ANCHOR_MISSING`. `elabora timeline <screen>` lists them under « Chart beats », and `elabora look --sheet` captures the screen once each item has arrived.
 
 ## Predict, then reveal
 

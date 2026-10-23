@@ -14,7 +14,7 @@ import { n } from './format.ts';
 import type { ChartType } from './types.ts';
 import { isRecord, recordsOf, str, itemsOf } from './values.ts';
 
-// The drawing space (the ring box is 3:2), the ring's centre and radius.
+// The drawing space (the ring box is 3:2, cut under the ring by heightOf), the ring's centre and radius.
 export const VIEW = { w: 300, h: 200, cx: 150, cy: 100, r: 66 } as const;
 // Room kept free around a stage's number on its arcs (viewBox units): the number's disc and a breath.
 const GAP = 15;
@@ -53,6 +53,15 @@ export function arcOf(from: Stage, count: number): { d: string; head: string } |
   return { d, head };
 }
 
+// The ring box's height: the full 3:2 when a stage sits at the bottom (its title goes under it);
+// otherwise cut under the lowest arc or stage (with room for its number and its words, centred on it),
+// so an odd ring leaves no empty band under it.
+export function heightOf(stages: Stage[]): number {
+  if (stages.some((stage) => stage.side === 'bottom')) return VIEW.h;
+  const lowest = Math.max(...stages.map((stage) => stage.y));
+  return Math.min(VIEW.h, Math.max(VIEW.cy + VIEW.r + WING + 2, lowest + 16));
+}
+
 const say = (stage: Stage, index: number) => `${index + 1}. ${stage.title}${stage.text ? `: ${stage.text}` : ''}`;
 
 export const cycle: ChartType = {
@@ -63,6 +72,7 @@ export const cycle: ChartType = {
     if (!stages.length) return '';
     const center = isRecord(props.center) ? props.center : {};
     const pct = (value: number, of: number) => `${n((value / of) * 100)}%`;
+    const h = heightOf(stages);
     const words = (title: string, text: string) => `${title ? `<p class="t-cycle-name">${esc(title)}</p>` : ''}${text ? `<p class="t-cycle-about">${esc(text)}</p>` : ''}`;
     // The centre: the loop at rest (when it has one: center is optional, the middle then stays empty
     // until a stage is pointed at), then each stage's words, stacked in one place (the player shows one).
@@ -71,7 +81,7 @@ export const cycle: ChartType = {
       + (rest ? `<div class="t-cycle-rest">${rest}</div>` : '')
       + stages.map((stage) => `<div class="t-cycle-say"${attrs({ 'data-t-for': stage.id })}>${words(stage.title, stage.text)}</div>`).join('')
       + '</div>';
-    const nodes = stages.map((stage, index) => `<div class="t-cycle-stage is-${stage.side}${hl(props, stage.id)}"${attrs({ 'data-t-item': stage.id, 'data-t-say': say(stage, index) })} style="--x:${pct(stage.x, VIEW.w)};--y:${pct(stage.y, VIEW.h)}">`
+    const nodes = stages.map((stage, index) => `<div class="t-cycle-stage is-${stage.side}${hl(props, stage.id)}"${attrs({ 'data-t-item': stage.id, 'data-t-say': say(stage, index) })} style="--x:${pct(stage.x, VIEW.w)};--y:${pct(stage.y, h)}">`
       + `<span class="t-cycle-num">${index + 1}</span>`
       + `<span class="t-cycle-words"><span class="t-cycle-title">${esc(stage.title)}</span>${stage.text ? `<span class="t-cycle-text">${esc(stage.text)}</span>` : ''}</span>`
       + '</div>').join('');
@@ -82,9 +92,9 @@ export const cycle: ChartType = {
       const into = stages[(index + 1) % stages.length];
       return `<g class="t-cycle-arc${hl(props, into.id)}"${attrs({ 'data-t-item': into.id })}><path class="t-cycle-line" d="${arc.d}" pathLength="1"/><path class="t-cycle-head" d="${arc.head}"/></g>`;
     }).join('');
-    const svg = arcs ? `<svg class="t-cycle-svg" viewBox="0 0 ${VIEW.w} ${VIEW.h}" focusable="false">${arcs}</svg>` : '';
+    const svg = arcs ? `<svg class="t-cycle-svg" viewBox="0 0 ${VIEW.w} ${n(h)}" focusable="false">${arcs}</svg>` : '';
     // The ring's stages come before its arcs: a stage is its item's first element.
-    return `<div class="t-cycle" style="--n:${stages.length}">${centre}<div class="t-cycle-ring">${nodes}${svg}<i class="t-cycle-back"></i></div></div>`;
+    return `<div class="t-cycle" style="--n:${stages.length};--h:${n(h)};--cy:${n(VIEW.cy / h)}">${centre}<div class="t-cycle-ring">${nodes}${svg}<i class="t-cycle-back"></i></div></div>`;
   },
   table(props) {
     return { head: [], rows: stagesOf(props).map((stage, index) => [`${index + 1}. ${stage.title}`, stage.text]) };

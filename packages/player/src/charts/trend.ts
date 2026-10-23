@@ -148,11 +148,24 @@ function drawGuess(dom: ChartDom, trend: Trend): void {
     const tip = points[points.length - 1];
     label.style.left = pct(tip.x);
     label.style.top = pct(tip.y);
+    label.classList.toggle('is-below', labelBelow(trend, points, tip));
     const value = trend.guesses.size ? trend.guesses.get(Math.max(...trend.guesses.keys())) : undefined;
     label.textContent = value === undefined ? dom.labels.predictYours : `${dom.labels.predictYours} · ${dom.format_(value)}`;
   }
   const complete = guessPoints(trend).length === trend.points.length - trend.from;
   if (trend.ask?.button) trend.ask.button.disabled = !complete || trend.revealed;
+}
+// The label sits left of the guess's end, above it unless the line that comes into the end comes from
+// above (it would sit on it): the real line once revealed and close by, the guess otherwise.
+function labelBelow(trend: Trend, guess: XY[], tip: XY): boolean {
+  // Within a label's height of the plot's top or bottom, the side that has room.
+  if (tip.y < 0.1) return true;
+  if (tip.y > 0.9) return false;
+  const actual = trend.points;
+  const near = trend.revealed && Math.abs(actual[actual.length - 1].y - tip.y) < 0.15;
+  const path = near ? actual : guess;
+  const before = path[path.length - 2] ?? tip;
+  return before.y < tip.y;
 }
 // The slider sets the last year's guess; the years between follow a straight line from the last known one.
 function guessFromEnd(trend: Trend, value: number): void {

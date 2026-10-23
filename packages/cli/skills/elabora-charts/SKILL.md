@@ -20,7 +20,7 @@ Read `elabora docs charts` (MCP `elabora_docs { page: "charts" }`) for the full 
 
 ## With a voice
 - On a narrated screen give items `at` (`{ "line": "l2", "word": "email" }`) where the voice names them: they appear then, and the others step back while the voice talks about them. A trend's points take `at`; a diagram takes `beats: [{ "node": "B", "at": … }]`. `spotlightEnd` ends the spotlight; `revealOnBeats: false` keeps everything shown and only moves the spotlight.
-- Check with `elabora timeline <screen>` and `elabora look --screen <id> --at l2` (MCP `elabora_look` with `at`).
+- Check with `elabora timeline <screen>` (its « Chart beats » list each item's time) and `elabora look --screen <id> --sheet` (one capture per beat, once the item has arrived), or `--at l2` for one moment (MCP `elabora_look` with `at`).
 
 ## Predict, then reveal
 - When the learner can reasonably guess where a curve goes, use `trend` with `mode: "predict"` and `predict.from` (the last point shown): they draw the rest, then see the real line. Word `predict.hint`, `close` and `far` (`{guess}`, `{actual}`). Leave it unscored (default) unless the course asks for it to count.
