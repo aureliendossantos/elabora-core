@@ -34,7 +34,7 @@
         "node": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,47}$", "description": "dialogue.node, dialogue.chosen: a node of the dialogue." },
         "line": { "$ref": "defs.schema.json#/$defs/slug", "description": "dialogue.line: a line of the dialogue (its id)." },
         "ending": { "$ref": "defs.schema.json#/$defs/slug", "description": "dialogue.ended: an ending of the dialogue (its id)." },
-        "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]{0,47}$", "description": "click: name of the control in the component template (data-t-click=\"name\", data-t-tab=\"name\" or data-t-toggle=\"name\"); without it, any control of the block. object.event: event name, as declared in the free object's manifest." },
+        "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]{0,47}$", "description": "click: name of the control in the component template (data-t-click=\"name\", data-t-tab=\"name\", data-t-toggle=\"name\", or a primitive's data-t-item, data-t-flip, data-t-details or data-t-reveal); without it, any control of the block. object.event: event name, as declared in the free object's manifest." },
         "where": {
           "type": "object",
           "description": "Payload filter: every listed field must equal the given value.",
@@ -63,7 +63,7 @@
         "variable": { "$ref": "defs.schema.json#/$defs/variableId" },
         "op": { "enum": ["eq", "neq", "gt", "gte", "lt", "lte"] },
         "value": { "type": ["string", "number", "boolean"] },
-        "visited": { "$ref": "defs.schema.json#/$defs/slug", "description": "Block id (any screen): holds once the learner has used every control of the block (its buttons, tabs and disclosures; a tab or disclosure counts once its content is shown), or only the control name. Saved with the learner's progress." },
+        "visited": { "$ref": "defs.schema.json#/$defs/slug", "description": "Block id (any screen): holds once the learner has used every control of the block (its buttons, tabs and disclosures, the items of its sequences, its flip cards, details and elements brought into view; a tab or disclosure counts once its content is shown, an item once shown, a card once turned over, an element once in view), or only the control name. Saved with the learner's progress." },
         "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]{0,47}$", "description": "With visited: one control of the block, by name." },
         "dialogue": { "$ref": "defs.schema.json#/$defs/slug", "description": "A dialogue block (any screen), with one of ending, chosen, score or done: what its first run to an end (the scored run) gave, never a later replay." },
         "ending": { "$ref": "defs.schema.json#/$defs/slug", "description": "With dialogue: the scored run reached this ending." },

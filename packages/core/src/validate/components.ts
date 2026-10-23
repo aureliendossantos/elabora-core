@@ -1,8 +1,9 @@
 import { validateSchema, compileInline, BLOCK_TYPES, isBuiltinBlockType } from '@elabora/format';
 import type { ValidateFunction, ErrorObject } from '@elabora/format';
-import { getRegistry, analysisOf, stylesOf, componentHash, BEHAVIORS, PRIMITIVE_HOOKS, BUTTON_HOOKS } from '../components/registry.ts';
+import { getRegistry, analysisOf, stylesOf, componentHash, BEHAVIORS, PRIMITIVE_HOOKS, BUTTON_HOOKS, PRIMITIVE_TAGS } from '../components/registry.ts';
 import type { ComponentDescriptor } from '../components/registry.ts';
-import { CONTROL_NAME } from '../components/controls.ts';
+import type { TemplateHook } from '../components/template.ts';
+import { CONTROL_NAME, NAMED_CONTROL_HOOKS } from '../components/controls.ts';
 import { kindOf, renderTemplate } from '../components/template.ts';
 import { walkHeadings } from '../components/headings.ts';
 import type { SchemaNode } from '../components/template.ts';
@@ -183,10 +184,12 @@ export function checkTemplate(ctx: Pick<CheckContext, 'project' | 'reporter'>, c
       // data-t-heading: a heading that follows the page (components/headings.ts), on h2 to h6.
       if (hook === 'heading') { if (!/^h[2-6]$/.test(tag)) report('E_COMPONENT_HOOK', line, `data-t-heading goes on a heading (<h2> to <h6>), not <${tag}>.`); continue; }
       if (!allowedHooks.has(hook)) report('E_COMPONENT_HOOK', line, `data-t-${hook} is ${Object.values(BEHAVIORS).some((other) => other.required.includes(hook) || other.optional?.includes(hook)) ? `a hook of another behaviour than ${component.behavior || 'none'} (${id}${component.behavior ? ` forks ${component.root}` : ' has no behaviour'})` : 'not a known hook'}.`);
-      const tags = behavior?.tags?.[hook];
+      const tags = behavior?.tags?.[hook] ?? PRIMITIVE_TAGS[hook];
       if (tags && !tags.includes(tag)) report('E_COMPONENT_HOOK', line, `data-t-${hook} goes on <${tags.join('> or <')}>, not <${tag}>.`);
       const value = attrs[`data-t-${hook}`];
-      if (hook === 'click' && value && !value.includes('{{') && !CONTROL_NAME.test(value)) report('E_COMPONENT_HOOK', line, `data-t-click="${value}": a name is lowercase letters, digits, "-", "_" or "." (48 at most), starting with a letter or digit.`);
+      const named = (NAMED_CONTROL_HOOKS as readonly string[]).includes(hook) || hook === 'card';
+      if (named && !value.trim()) report('E_COMPONENT_HOOK', line, `data-t-${hook} needs a name (data-t-${hook}="{{id}}" in data-each, or a literal name): its visited state is saved under it.`);
+      else if ((hook === 'click' || named) && value && !value.includes('{{') && !CONTROL_NAME.test(value)) report('E_COMPONENT_HOOK', line, `data-t-${hook}="${value}": a name is lowercase letters, digits, "-", "_" or "." (48 at most), starting with a letter or digit.`);
     }
   }
   for (const literal of analysis.texts) report('W_COMPONENT_TEXT', literal.line, `${component.level === 'screen' ? 'Layout' : 'Component'} "${id}" contains text: "${literal.text.slice(0, 60)}".`);
@@ -223,6 +226,7 @@ export function checkTemplate(ctx: Pick<CheckContext, 'project' | 'reporter'>, c
     if (!hook.within.includes('tabs')) report('E_COMPONENT_HOOK', hook.line, 'data-t-tab goes inside a data-t-tabs element.');
     if (!panels.has(hook.value)) report('E_COMPONENT_HOOK', hook.line, `data-t-tab="${hook.value}" has no data-t-panel="${hook.value}".`);
   }
+  checkPrimitives(analysis.hooks, report);
   for (const hook of analysis.hooks.filter((x) => x.hook === 'label')) {
     if (!LABEL_KEYS.has(hook.value)) report('E_COMPONENT_HOOK', hook.line, `data-t-label="${hook.value}" is not a player label (${[...LABEL_KEYS].slice(0, 12).join(', ')}…).`);
   }
@@ -389,3 +393,45 @@ export function headingSequence(ctx: Pick<CheckContext, 'registry' | 'planIndex'
 }
 
 export { kindOf };
+
+// The primitives of D63: what each hook needs around it and inside it (docs/components.md §3).
+function checkPrimitives(hooks: readonly TemplateHook[], report: (code: string, line: number | null | undefined, message: string) => void): void {
+  const of = (name: string) => hooks.filter((hook) => hook.hook === name);
+  const holds = (hook: TemplateHook, name: string, value?: string) => hook.inner.hooks.some((inner) => inner.hook === name && (value === undefined || inner.value === value));
+  const bound = (value: string) => value.includes('{{');
+  // One item at a time: items, Previous and Next inside the sequence.
+  for (const sequence of of('sequence')) {
+    const missing = ['item', 'prev', 'next'].filter((name) => !holds(sequence, name));
+    if (missing.length) report('E_COMPONENT_HOOK', sequence.line, `data-t-sequence needs ${missing.map((name) => (name === 'item' ? 'data-t-item elements' : `a data-t-${name} button`)).join(', ')} inside it.`);
+    if (holds(sequence, 'sequence')) report('E_COMPONENT_HOOK', sequence.line, 'data-t-sequence holds another data-t-sequence: one item at a time cannot nest (place the inner one in its own component, in a slot).');
+  }
+  for (const name of ['item', 'prev', 'next', 'goto', 'position']) {
+    for (const hook of of(name)) if (!hook.within.includes('sequence')) report('E_COMPONENT_HOOK', hook.line, `data-t-${name} goes inside a data-t-sequence element.`);
+  }
+  const items = of('item');
+  if (!items.some((item) => bound(item.value))) {
+    const names = new Set(items.map((item) => item.value));
+    for (const goto of of('goto')) if (!bound(goto.value) && !names.has(goto.value)) report('E_COMPONENT_HOOK', goto.line, `data-t-goto="${goto.value}" names no data-t-item (items: ${[...names].join(', ') || 'none'}).`);
+  }
+  // A flip card: its two faces inside it, a button that flips it.
+  const flips = of('flip');
+  for (const card of of('card')) {
+    const faces = ['front', 'back'].filter((face) => !holds(card, 'face', face));
+    if (faces.length) report('E_COMPONENT_HOOK', card.line, `data-t-card needs ${faces.map((face) => `a data-t-face="${face}"`).join(' and ')} inside it.`);
+    if (!flips.some((flip) => flip.value === card.value)) report('E_COMPONENT_HOOK', card.line, `data-t-card="${card.value}" has no data-t-flip="${card.value}" button.`);
+  }
+  for (const face of of('face')) {
+    if (face.value !== 'front' && face.value !== 'back') report('E_COMPONENT_HOOK', face.line, `data-t-face is "front" or "back", not "${face.value}".`);
+    if (!face.within.includes('card')) report('E_COMPONENT_HOOK', face.line, 'data-t-face goes inside a data-t-card element.');
+  }
+  const cards = new Set(of('card').map((card) => card.value));
+  for (const flip of flips) if (!cards.has(flip.value)) report('E_COMPONENT_HOOK', flip.line, `data-t-flip="${flip.value}" names no data-t-card.`);
+  // The lightbox: a button holding the image it enlarges, a caption with it.
+  for (const zoom of of('zoom')) if (!zoom.inner.tags.includes('img')) report('E_COMPONENT_HOOK', zoom.line, 'data-t-zoom goes on a button that holds the <img> it enlarges.');
+  if (of('caption').length && !of('zoom').length) report('E_COMPONENT_HOOK', of('caption')[0].line, 'data-t-caption is the caption of a data-t-zoom image: inside the zoom button or next to it.');
+  // One part open at a time: disclosures inside.
+  for (const exclusive of of('exclusive')) {
+    if (exclusive.value !== '' && exclusive.value !== 'popover') report('E_COMPONENT_HOOK', exclusive.line, `data-t-exclusive is empty or "popover", not "${exclusive.value}".`);
+    if (!holds(exclusive, 'toggle')) report('E_COMPONENT_HOOK', exclusive.line, 'data-t-exclusive holds the data-t-toggle buttons of the parts it keeps one at a time.');
+  }
+}

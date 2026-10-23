@@ -345,7 +345,7 @@ function compileLayout(screen: Screen, layout: ComponentDescriptor, template: Pa
 }
 
 // A block shown empty: the player renders its html (none), whatever its type.
-function emptyBlock(block: Block, placement: Partial<Pick<BlockData, 'hidden' | 'step' | 'slot' | 'style'>>): BlockData {
+function emptyBlock(block: Block, placement: Partial<Pick<BlockData, 'hidden' | 'step' | 'slot' | 'style' | 'optional'>>): BlockData {
   return { id: textOf(block.id), type: textOf(block.type), width: block.width || 'full', ...placement, html: '' };
 }
 
@@ -371,7 +371,9 @@ function compileBlock(block: Block, scope: ScreenScope): BlockData {
     ...((block.step ?? 1) > 1 ? { step: block.step } : {}),
     ...timingOf(scope.timings.get(block.id)),
     ...(block.slot ? { slot: block.slot } : {}),
-    ...(block.style ? { style: block.style } : {})
+    ...(block.style ? { style: block.style } : {}),
+    // Extra the learner may skip: not waited for by steps that open once explored nor by interactions-done (D63).
+    ...(block.optional === true ? { optional: true as const } : {})
   };
   // A block the player cannot show (unknown type: E_COMPONENT_UNKNOWN) compiles to an empty block, so
   // a screen being written still renders.

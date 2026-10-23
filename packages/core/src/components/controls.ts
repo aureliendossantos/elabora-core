@@ -10,28 +10,37 @@ import { isRecord } from '../util/values.ts';
 
 // Controls of a block: what the learner activates in its template, by name. Buttons (data-t-click,
 // unnamed or ="name", the name possibly bound to a prop: one marker per item of a list), tabs
-// (data-t-tab="k") and disclosures (data-t-toggle="k"). Each fires the screen event "click" with its
-// name; each has a visited state (saved with the learner's progress) that conditions can read.
-export const CONTROL_HOOKS: readonly ControlHook[] = ['click', 'tab', 'toggle'];
+// (data-t-tab="k") and disclosures (data-t-toggle="k"); and the primitives of D63: the items of a
+// sequence (data-t-item="k" in a data-t-sequence), flip cards (data-t-flip="k"), native disclosures
+// (<details data-t-details="k">) and what is visited once in view (data-t-reveal="k"). Each fires the
+// screen event "click" with its name; each has a visited state (saved with the learner's progress)
+// that conditions and steps that open once explored read.
+export const CONTROL_HOOKS: readonly ControlHook[] = ['click', 'tab', 'toggle', 'item', 'flip', 'details', 'reveal'];
+// The controls that always carry a name (their visited state is saved under it).
+export const NAMED_CONTROL_HOOKS: readonly ControlHook[] = ['item', 'flip', 'details', 'reveal'];
 export const CONTROL_NAME = /^[a-z0-9][a-z0-9_.-]{0,47}$/;
 
-export type ControlHook = 'click' | 'tab' | 'toggle';
+export type ControlHook = 'click' | 'tab' | 'toggle' | 'item' | 'flip' | 'details' | 'reveal';
 type ParentNode = DefaultTreeAdapterMap['parentNode'];
 
-// Names of the controls in rendered HTML → Map(name → hook); '' for an unnamed data-t-click.
+// Names of the controls in rendered HTML → Map(name → hook); '' for an unnamed data-t-click. An item
+// is a control inside a sequence only (charts mark their items with data-t-item too).
 export function controlsOf(html: unknown): Map<string, ControlHook> {
   const out = new Map<string, ControlHook>();
-  const walk = (node: ParentNode) => {
+  const walk = (node: ParentNode, inSequence: boolean) => {
     for (const c of node.childNodes || []) {
       if (!('tagName' in c)) continue;
+      let sequence = inSequence;
+      for (const a of c.attrs || []) if (a.name === 'data-t-sequence') sequence = true;
       for (const a of c.attrs || []) {
-        const m = /^data-t-(click|tab|toggle)$/.exec(a.name);
-        if (m && !out.has(a.value)) out.set(a.value, m[1] as ControlHook);
+        const m = /^data-t-(click|tab|toggle|item|flip|details|reveal)$/.exec(a.name);
+        if (!m || (m[1] === 'item' && !inSequence) || out.has(a.value)) continue;
+        out.set(a.value, m[1] as ControlHook);
       }
-      walk('content' in c ? (c as DefaultTreeAdapterMap['template']).content : c);
+      walk('content' in c ? (c as DefaultTreeAdapterMap['template']).content : c, sequence);
     }
   };
-  walk(parseFragment(String(html || '')));
+  walk(parseFragment(String(html || '')), false);
   return out;
 }
 

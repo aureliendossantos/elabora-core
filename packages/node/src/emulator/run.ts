@@ -444,7 +444,8 @@ async function elaboraScenario(run: RunContext, { accessibility }: { accessibili
 }
 
 // Answers every activity of the current screen through the real UI and the behaviour hooks
-// (data-t-…), whatever the component that renders it: built-in blocks and their forks.
+// (data-t-…), whatever the component that renders it: built-in blocks and their forks; then explores
+// what the primitives show one at a time.
 async function answerScreen(frame: Frame): Promise<void> {
   await frame.evaluate(async () => {
     const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -485,6 +486,30 @@ async function answerScreen(frame: Frame): Promise<void> {
       await wait(30);
       for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog[open]')) dialog.close();
     }
+    // Then explores it (D63), so that a step that opens once explored unlocks as for a learner: every
+    // item of a sequence shown, every card turned over, every tab, disclosure and details opened, what
+    // is visited once in view scrolled to. Buttons that fire events (data-t-click) are left alone.
+    const reachable = (node: Element) => !node.closest('[inert]');
+    for (const box of document.querySelectorAll<HTMLElement>('#t-main [data-t-sequence]')) {
+      for (let guard = 0; guard < 50; guard++) {
+        const next = [...box.querySelectorAll<HTMLElement>('[data-t-next]')].find((button) => reachable(button) && button.getAttribute('aria-disabled') !== 'true');
+        if (!next) break;
+        next.click();
+      }
+    }
+    for (const card of document.querySelectorAll<HTMLElement>('#t-main [data-t-card]:not([data-t-visited])')) {
+      const name = card.getAttribute('data-t-card') ?? '';
+      [...document.querySelectorAll<HTMLElement>(`#t-main [data-t-flip="${quote(name)}"]`)].find(reachable)?.click();
+    }
+    for (const tab of document.querySelectorAll<HTMLElement>('#t-main [data-t-tab]')) if (reachable(tab)) tab.click();
+    for (const toggle of document.querySelectorAll<HTMLElement>('#t-main [data-t-toggle][aria-expanded="false"]')) if (reachable(toggle)) toggle.click();
+    for (const details of document.querySelectorAll<HTMLDetailsElement>('#t-main details[data-t-details]')) if (reachable(details) && !details.open) details.querySelector<HTMLElement>('summary')?.click();
+    for (const node of document.querySelectorAll<HTMLElement>('#t-main [data-t-reveal]:not([data-t-visited])')) {
+      if (!reachable(node)) continue;
+      node.scrollIntoView({ block: 'center' });
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    }
+    await wait(30);
   });
 }
 

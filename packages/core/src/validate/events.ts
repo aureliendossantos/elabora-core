@@ -14,7 +14,7 @@ import { isTimedScreen, isTimedLayer, lineTimelines } from '../narration/timelin
 
 // What each trigger needs from its target block: a behaviour (forks included) or a control.
 const TRIGGER_TARGET: Readonly<Record<string, { test: (component: ComponentDescriptor, block: Block) => boolean; what: string }>> = {
-  click: { test: (component) => CONTROL_HOOKS.some((hook) => hooksOf(component).has(hook)), what: 'button (or a component with data-t-click buttons, tabs or disclosures)' },
+  click: { test: (component) => CONTROL_HOOKS.some((hook) => hooksOf(component).has(hook)), what: 'button (or a component with controls: data-t-click buttons, tabs, disclosures, sequence items, flip cards, details or elements brought into view)' },
   // A trend in predict mode is submitted when the learner reveals the line (D60).
   'quiz.submitted': { test: (component, block) => component.behavior === 'quiz' || component.behavior === 'numeric' || isPredict(component.root, fieldsOf(block.props)), what: 'quiz, numeric or predicting trend block' },
   'decision.selected': { test: (component) => component.behavior === 'decision', what: 'decision block' },
@@ -124,7 +124,7 @@ export function checkEvents(ctx: CourseCheckContext, screen: ScreenFile): void {
         const block = ctx.lastBlocks.get(condition.visited);
         const controls = block ? blockControls(project, block) : new Map<string, unknown>();
         if (!block) reporter.emit('E_UNKNOWN_REFERENCE', { file, path: `${at}/visited`, target: event.id, message: `Condition on unknown block "${condition.visited}".` });
-        else if (!controls.size) reporter.emit('E_VISITED_TARGET', { file, path: `${at}/visited`, target: event.id, message: `visited: ${block.type} "${block.id}" has no button, tab or disclosure the learner could use.` });
+        else if (!controls.size) reporter.emit('E_VISITED_TARGET', { file, path: `${at}/visited`, target: event.id, message: `visited: ${block.type} "${block.id}" has no control the learner could use (button, tab, disclosure, sequence item, flip card, details, element brought into view).` });
         else if (condition.name !== undefined && !controls.has(condition.name)) reporter.emit('E_VISITED_TARGET', { file, path: `${at}/name`, target: event.id, message: `visited: ${block.type} "${block.id}" has no control named "${condition.name}" (controls: ${controlNames(controls)}).` });
         return;
       }
@@ -233,6 +233,12 @@ export function checkEvents(ctx: CourseCheckContext, screen: ScreenFile): void {
     const step = Number(key);
     if (!steps.has(step) || step === firstStep) {
       reporter.emit('W_STEP_SETTING_UNUSED', { file, path: `/steps/${key}`, target: screenId, message: steps.has(step) ? `Step ${step} is the first step of "${screenId}": it is shown from the start, its settings are not used.` : `"${screenId}" has no block of step ${step}: its settings are not used.` });
+      continue;
+    }
+    // A step that waits for exploration with nothing to explore above it opens at once (D63).
+    if (fieldsOf(value).opens === 'explored') {
+      const above = list(data.blocks).filter((block): block is Block => block !== null && block !== undefined && (block.step || 1) < step).flatMap((block) => flat([block])).filter((inner) => inner.optional !== true);
+      if (!above.some((inner) => hasId(STEP_ACTIVITIES, instanceBehavior(registry, inner)) || blockControls(project, inner).size > 0)) reporter.emit('W_STEP_SETTING_UNUSED', { file, path: `/steps/${key}/opens`, target: screenId, message: `Step ${step} of "${screenId}" waits until the blocks above it are explored, but they hold no activity and no control to use (or only optional ones): its Continue is never locked.` });
       continue;
     }
     if (fieldsOf(value).opens !== 'answered') continue;

@@ -76,8 +76,14 @@ export const BEHAVIORS: Readonly<Record<Behavior, BehaviorHooks>> = {
 };
 // Hooks any template may use: click (a button firing the screen event "click"), toggle/part
 // (disclosure), tabs/tab/panel (tabs), label (a player label, translated by the course language).
-export const PRIMITIVE_HOOKS = ['click', 'toggle', 'part', 'open', 'tabs', 'tab', 'panel', 'selected', 'label'];
-export const BUTTON_HOOKS = ['click', 'toggle', 'tab', 'submit', 'choice', 'retry', 'start'];
+// D63: sequence/item/prev/next/goto/position (one item at a time), card/face/flip (a flip card),
+// zoom/caption (an image opened in the lightbox), exclusive (one part open at a time), details (a
+// native disclosure that is visited), reveal (visited once it has been in view).
+export const PRIMITIVE_HOOKS = ['click', 'toggle', 'part', 'open', 'tabs', 'tab', 'panel', 'selected', 'label',
+  'sequence', 'item', 'prev', 'next', 'goto', 'position', 'card', 'face', 'flip', 'zoom', 'caption', 'exclusive', 'details', 'reveal'];
+export const BUTTON_HOOKS = ['click', 'toggle', 'tab', 'submit', 'choice', 'retry', 'start', 'prev', 'next', 'goto', 'flip', 'zoom'];
+// Elements the primitives' hooks may sit on (the behaviours' are in BEHAVIORS tags).
+export const PRIMITIVE_TAGS: Readonly<Record<string, readonly string[]>> = { prev: ['button'], next: ['button'], goto: ['button'], flip: ['button'], zoom: ['button'], details: ['details'] };
 
 // A finding made while resolving a component, reported by the validator.
 export interface RegistryError {

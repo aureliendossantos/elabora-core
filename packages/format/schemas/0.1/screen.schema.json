@@ -73,7 +73,7 @@
     },
     "steps": {
       "type": "object",
-      "description": "How each step of the screen opens, keyed by step number (blocks carry the step). By default a step opens with Continue: in scroll presentation a Continue button in the page, at the cut, like the continue dividers of Rise; in slides the Next button, relabelled Continue. opens \"answered\": the step opens by itself once every activity of the steps above is answered (submitted, right or wrong), like content shown after a knowledge check.",
+      "description": "How each step of the screen opens, keyed by step number (blocks carry the step). By default a step opens with Continue: in scroll presentation a Continue button in the page, at the cut, like the continue dividers of Rise; in slides the Next button, relabelled Continue. opens \"answered\": the step opens by itself once every activity of the steps above is answered (submitted, right or wrong), like content shown after a knowledge check opens \"explored\": Continue stays locked, saying what is left, until the blocks above are explored and their activities answered, like Rise's Continue that waits for the block above.",
       "propertyNames": {
         "pattern": "^[1-9][0-9]{0,2}$"
       },
@@ -84,10 +84,11 @@
           "opens": {
             "enum": [
               "continue",
-              "answered"
+              "answered",
+              "explored"
             ],
             "default": "continue",
-            "description": "continue: the learner presses Continue (in the page in scroll presentation, Next in slides). answered: it opens by itself once the activities of the steps above are answered."
+            "description": "continue: the learner presses Continue (in the page in scroll presentation, Next in slides). answered: it opens by itself once the activities of the steps above are answered. explored: Continue (Next in slides) is shown but locked until every activity of the steps above is answered and every control of their blocks is visited (items of a sequence, flip cards, disclosures, tabs, buttons, elements to bring into view), optional blocks aside; locked, it says what is left."
           },
           "label": {
             "type": "string",

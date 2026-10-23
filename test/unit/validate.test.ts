@@ -182,7 +182,7 @@ test('events: named controls of components and visited conditions', () => {
   writeJSON(dir, 'screens/chemin.json', s);
   d = validateDir(dir).diagnostics;
   assert.match(d.find((x) => x.code === 'E_EVENT_TARGET')?.message || '', /markers "chemin-marques" has no control named "routeur" \(controls: poste, switch\)/);
-  assert.deepEqual(d.filter((x) => x.code === 'E_VISITED_TARGET').map((x) => x.message), ['visited: text "chemin-intro" has no button, tab or disclosure the learner could use.', 'visited: facets "chemin-facettes" has no control named "dns" (controls: cable, ip).']);
+  assert.deepEqual(d.filter((x) => x.code === 'E_VISITED_TARGET').map((x) => x.message), ['visited: text "chemin-intro" has no control the learner could use (button, tab, disclosure, sequence item, flip card, details, element brought into view).', 'visited: facets "chemin-facettes" has no control named "dns" (controls: cable, ip).']);
   assert.ok(d.some((x) => x.code === 'E_UNKNOWN_REFERENCE' && /nulle-part/.test(x.message)));
   // A condition is either a variable test or a visited state.
   s.events[1].if = [{ visited: 'chemin-facettes', variable: 'indiceVu', op: 'eq', value: true }];

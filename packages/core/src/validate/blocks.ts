@@ -4,7 +4,7 @@ import { resolveBlockProps, screenBlocks, screenLayout, readingOrder } from '../
 import type { NumericTolerance } from '@elabora/format';
 import { mathErrors } from '../compile/markdown.ts';
 import { withinTolerance } from '@elabora/player/numeric';
-import { blockControls, CONTROL_NAME } from '../components/controls.ts';
+import { blockControls, CONTROL_NAME, NAMED_CONTROL_HOOKS } from '../components/controls.ts';
 import type { ComponentDescriptor } from '../components/registry.ts';
 import type { Block, Event, Plan } from '../project/model.ts';
 import { checkInstance, headingSequence } from './components.ts';
@@ -98,7 +98,11 @@ function checkBlock(ctx: CourseCheckContext, { block, component, path, file, scr
   // it; tabs and disclosures act by themselves. Names bound to props are checked once rendered.
   if (component.root !== 'button') {
     for (const [name, hook] of blockControls(project, block)) {
-      if (hook !== 'click') continue;
+      if (hook !== 'click') {
+        // Items, cards, disclosures and what comes into view (D63) carry names bound to props too.
+        if ((NAMED_CONTROL_HOOKS as readonly string[]).includes(hook) && !CONTROL_NAME.test(name)) reporter.emit('E_COMPONENT_HOOK', { file, path: at(), target: id, message: `${component.id} "${id}" renders data-t-${hook}="${name}": a name is lowercase letters, digits, "-", "_" or "." (48 at most), starting with a letter or digit.` });
+        continue;
+      }
       if (name && !CONTROL_NAME.test(name)) reporter.emit('E_COMPONENT_HOOK', { file, path: at(), target: id, message: `${component.id} "${id}" renders data-t-click="${name}": a name is lowercase letters, digits, "-", "_" or "." (48 at most), starting with a letter or digit.` });
       else if (!eventsOn(id).some((event) => event.on.type === 'click' && (event.on.name === undefined || event.on.name === name))) reporter.emit('W_DEAD_BUTTON', { file, path, target: id, message: name ? `${component.id} "${id}" has a button named "${name}" but no click event for it.` : `${component.id} "${id}" has a button (data-t-click) but no click event.` });
     }

@@ -140,12 +140,13 @@ function checkTimes(ctx: CourseCheckContext, id: string, layer: string | null): 
     const blocks = blocksOf(layer === null ? data.blocks : list(data.layers).find((candidate) => candidate?.id === layer)?.blocks);
     const segmentOf = (step: number) => timeline.segments.find((segment) => segment.step === step);
     // Where playback stops for the learner: the end of a step that waits for Continue (learner
-    // mode) or for answers (opens "answered"), and the end of the screen. A layer plays through.
+    // mode), for answers (opens "answered") or for exploring (opens "explored"), and the end of the screen. A layer plays through.
     const advance = layer !== null ? 'auto' : data.narration?.advance ?? ctx.course.narration?.advance ?? 'learner';
     const stops = timeline.segments.filter((segment, index) => {
       const next = timeline.segments[index + 1];
       if (!next) return advance !== 'next-screen';
-      return advance === 'learner' || fieldsOf(fieldsOf(data.steps)[String(next.step)]).opens === 'answered';
+      const opens = fieldsOf(fieldsOf(data.steps)[String(next.step)]).opens;
+      return advance === 'learner' || opens === 'answered' || opens === 'explored';
     }).map((segment) => segment.end);
     for (const [blockId, timing] of timings) {
       const block = blocks.get(blockId);

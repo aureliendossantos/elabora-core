@@ -157,7 +157,8 @@ export interface SectionData {
 }
 
 export interface StepSettings {
-  opens?: 'continue' | 'answered';
+  // explored: Continue is locked until the blocks of the steps above are explored (D63).
+  opens?: 'continue' | 'answered' | 'explored';
   label?: string;
 }
 
@@ -173,8 +174,8 @@ export interface ScreenData {
   // A backdrop variant, or "none".
   backdrop?: string;
   continueRevealsSteps?: false;
-  // How steps open, by step number (only steps with settings): continue (default) or answered,
-  // and the text of the Continue button that opens them in scroll presentation.
+  // How steps open, by step number (only steps with settings): continue (default), answered or
+  // explored, and the text of the Continue button that opens them in scroll presentation.
   steps?: Record<string, StepSettings>;
   // viewed, on a narrated screen: the end of its narration reached by playback.
   completeWhen: 'viewed' | 'interactions-done' | 'action';
@@ -315,6 +316,8 @@ export interface BlockBase {
   timing?: TimingData;
   slot?: string;
   style?: string;
+  // Extra the learner may skip: steps that open once explored and interactions-done do not wait for it (D63).
+  optional?: true;
   // Key of its visibility in the learner state, when events show or hide it.
   vkey?: string;
   // Rendered template (blocks rendered by a template).

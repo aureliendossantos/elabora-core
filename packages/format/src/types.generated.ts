@@ -791,7 +791,7 @@ export type Screen = {
    * @default true
    */
   continueRevealsSteps?: boolean;
-  /** How each step of the screen opens, keyed by step number (blocks carry the step). By default a step opens with Continue: in scroll presentation a Continue button in the page, at the cut, like the continue dividers of Rise; in slides the Next button, relabelled Continue. opens "answered": the step opens by itself once every activity of the steps above is answered (submitted, right or wrong), like content shown after a knowledge check. */
+  /** How each step of the screen opens, keyed by step number (blocks carry the step). By default a step opens with Continue: in scroll presentation a Continue button in the page, at the cut, like the continue dividers of Rise; in slides the Next button, relabelled Continue. opens "answered": the step opens by itself once every activity of the steps above is answered (submitted, right or wrong), like content shown after a knowledge check opens "explored": Continue stays locked, saying what is left, until the blocks above are explored and their activities answered, like Rise's Continue that waits for the block above. */
   steps?: { [key: string]: ScreenStep };
   /** The voice of the screen, script first: its lines in the order they are spoken, each in a step of the screen. A narrated screen has a timeline: its steps are segments of the narration, the player shows a bar (play, pause, replay the step, seek, captions, speed, transcript) and captions and the transcript are generated from the lines. Layers have their own narration (layers[].narration). The audio of each line lives in assets/narration/<language>/<screen>/<line>.m4a with its sidecar <line>.json (docs/decisions.md D24); the build lays the lines of a screen end to end into one track. */
   narration?: {
@@ -813,10 +813,10 @@ export type Screen = {
 
 export type ScreenStep = {
   /**
-   * continue: the learner presses Continue (in the page in scroll presentation, Next in slides). answered: it opens by itself once the activities of the steps above are answered.
+   * continue: the learner presses Continue (in the page in scroll presentation, Next in slides). answered: it opens by itself once the activities of the steps above are answered. explored: Continue (Next in slides) is shown but locked until every activity of the steps above is answered and every control of their blocks is visited (items of a sequence, flip cards, disclosures, tabs, buttons, elements to bring into view), optional blocks aside; locked, it says what is left.
    * @default 'continue'
    */
-  opens?: 'continue' | 'answered';
+  opens?: 'continue' | 'answered' | 'explored';
   /** Text of the Continue button that opens this step in scroll presentation (default: the player's Continue label). */
   label?: string;
   /** Screens without narration whose blocks are timed in seconds: how long this step's stretch of the timeline lasts (default: until its last timed block has come or gone). A narrated step lasts as long as its lines. */
@@ -893,6 +893,11 @@ export type Block = {
   slot?: Slug;
   /** Named style declared for this type: in course.json theme.styles.<type> or in the component's styles (also those of its parents). */
   style?: string;
+  /**
+   * Extra the learner may skip (a transcript, more detail): its activities and controls count neither for a step that opens once explored (steps.<n>.opens "explored") nor for completeWhen "interactions-done".
+   * @default false
+   */
+  optional?: boolean;
   /** Note for reviewers and authors; never shown to learners. */
   note?: string;
 };
@@ -2467,7 +2472,7 @@ export type Trigger = {
   line?: Slug;
   /** dialogue.ended: an ending of the dialogue (its id). */
   ending?: Slug;
-  /** click: name of the control in the component template (data-t-click="name", data-t-tab="name" or data-t-toggle="name"); without it, any control of the block. object.event: event name, as declared in the free object's manifest. */
+  /** click: name of the control in the component template (data-t-click="name", data-t-tab="name", data-t-toggle="name", or a primitive's data-t-item, data-t-flip, data-t-details or data-t-reveal); without it, any control of the block. object.event: event name, as declared in the free object's manifest. */
   name?: string;
   /** Payload filter: every listed field must equal the given value. */
   where?: { [key: string]: string | number | boolean | null };
@@ -2486,7 +2491,7 @@ export type Condition = {
   variable?: VariableId;
   op?: 'eq' | 'neq' | 'gt' | 'gte' | 'lt' | 'lte';
   value?: string | number | boolean;
-  /** Block id (any screen): holds once the learner has used every control of the block (its buttons, tabs and disclosures; a tab or disclosure counts once its content is shown), or only the control name. Saved with the learner's progress. */
+  /** Block id (any screen): holds once the learner has used every control of the block (its buttons, tabs and disclosures, the items of its sequences, its flip cards, details and elements brought into view; a tab or disclosure counts once its content is shown, an item once shown, a card once turned over, an element once in view), or only the control name. Saved with the learner's progress. */
   visited?: Slug;
   /** With visited: one control of the block, by name. */
   name?: string;

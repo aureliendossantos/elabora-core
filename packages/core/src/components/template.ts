@@ -326,6 +326,8 @@ export interface TemplateHook {
   inEach: boolean;
   each: string | null;
   within: string[]; // hooks of the enclosing elements
+  // What the element holds: the tags and the hooks (with their values) of its descendants.
+  inner: { tags: string[]; hooks: { hook: string; value: string }[] };
 }
 export interface TemplateAnalysis {
   refs: TemplateRef[];
@@ -379,7 +381,8 @@ export function analyzeTemplate(tpl: ParsedTemplate, schema: SchemaNode): Templa
       if (!r.found) a.unknown.push(ref);
     }
   };
-  const walk = (node: ParentNode, scope: Scope, ctx: WalkContext) => {
+  const walk = (node: ParentNode, scope: Scope, ctx: WalkContext): TemplateHook['inner'] => {
+    const held: TemplateHook['inner'] = { tags: [], hooks: [] };
     for (const c of node.childNodes || []) {
       if (isText(c)) {
         refsIn(c.value, scope, 'text', { tagName: 'tagName' in node ? node.tagName : undefined, sourceCodeLocation: c.sourceCodeLocation }, null);
@@ -412,12 +415,17 @@ export function analyzeTemplate(tpl: ParsedTemplate, schema: SchemaNode): Templa
       if (attrs['data-slot'] !== undefined) a.slots.push({ id: attrs['data-slot'], line: el.line, empty: !(c.childNodes || []).some((n) => !isText(n) || n.value.trim()), conditional: el.conditional, inEach: el.inEach });
       if (attrs['data-title'] !== undefined) a.titles++;
       const hooks = Object.keys(attrs).filter((k) => k.startsWith('data-t-'));
-      for (const h of hooks) a.hooks.push({ hook: h.slice(7), value: attrs[h], tag: c.tagName, line: el.line, inEach: el.inEach, each: el.each, within: ctx.hooks });
-      walk(childrenOf(c), scope2, {
+      const own = hooks.map((h) => ({ hook: h.slice(7), value: attrs[h], tag: c.tagName, line: el.line, inEach: el.inEach, each: el.each, within: ctx.hooks, inner: { tags: [], hooks: [] } as TemplateHook['inner'] }));
+      a.hooks.push(...own);
+      const inner = walk(childrenOf(c), scope2, {
         inSvg: ctx.inSvg || c.tagName === 'svg', inSvgText: ctx.inSvgText || (ctx.inSvg && /^(title|desc)$/.test(c.tagName)),
         each: attrs['data-each'] ?? ctx.each, conditional: el.conditional, hooks: [...(ctx.hooks || []), ...hooks.map((h) => h.slice(7))]
       });
+      for (const hook of own) hook.inner = inner;
+      held.tags.push(c.tagName, ...inner.tags);
+      held.hooks.push(...own.map(({ hook, value }) => ({ hook, value })), ...inner.hooks);
     }
+    return held;
   };
   walk(tpl.root, root, { hooks: [] });
   return a;

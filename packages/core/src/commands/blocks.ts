@@ -38,6 +38,8 @@ export interface UpdateBlockArgs {
   hidden?: boolean;
   width?: Block['width'];
   note?: string;
+  // Extra the learner may skip (D63): not waited for by steps that open once explored nor by interactions-done.
+  optional?: boolean;
   slot?: string | null;
   style?: string | null;
   // The step of the screen that reveals it (null or 1: shown from the start); only for a block of
@@ -56,6 +58,8 @@ export function updateBlock(context: CommandContext, args: UpdateBlockArgs): Com
   if (args.hidden !== undefined) block.hidden = args.hidden;
   if (args.width !== undefined) block.width = args.width;
   if (args.note !== undefined) block.note = args.note;
+  if (args.optional === true) block.optional = true;
+  else if (args.optional === false) delete block.optional;
   for (const key of ['slot', 'style'] as const) {
     const value = args[key];
     if (value === null) delete block[key];

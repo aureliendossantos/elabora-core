@@ -73,6 +73,11 @@
       "pattern": "^[a-z][a-z0-9-]{0,31}$",
       "description": "Named style declared for this type: in course.json theme.styles.<type> or in the component's styles (also those of its parents)."
     },
+    "optional": {
+      "type": "boolean",
+      "default": false,
+      "description": "Extra the learner may skip (a transcript, more detail): its activities and controls count neither for a step that opens once explored (steps.<n>.opens \"explored\") nor for completeWhen \"interactions-done\"."
+    },
     "note": {
       "type": "string",
       "maxLength": 500,

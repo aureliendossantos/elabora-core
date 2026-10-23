@@ -21,11 +21,11 @@ export const createScreen = defineTool({
 });
 
 // How each step of a screen opens, by step number.
-const STEPS = { type: ['object', 'null'], additionalProperties: { type: 'object', properties: { opens: { enum: ['continue', 'answered'] }, label: { type: 'string' } }, additionalProperties: false } } as const;
+const STEPS = { type: ['object', 'null'], additionalProperties: { type: 'object', properties: { opens: { enum: ['continue', 'answered', 'explored'] }, label: { type: 'string' } }, additionalProperties: false } } as const;
 
 export const updateScreen = defineTool({
   name: 'elabora_update_screen',
-  description: 'Change title, covers, completeWhen, required, showTitle, layout (a screen-level component), layoutProps (its props), style (theme.styles.screen), backdrop (a theme.backdrop variant, or none), continueRevealsSteps (false: only the screen\'s reveal-step events reveal its steps), narration (the script: lines with id, speaker, text, step and pauseBefore; advance and seek; replaced whole) or steps (how each step opens, by number: { "2": { "opens": "answered" } }, replaced whole) of a screen. null removes layout, layoutProps, style, backdrop, continueRevealsSteps, steps or narration.',
+  description: 'Change title, covers, completeWhen, required, showTitle, layout (a screen-level component), layoutProps (its props), style (theme.styles.screen), backdrop (a theme.backdrop variant, or none), continueRevealsSteps (false: only the screen\'s reveal-step events reveal its steps), narration (the script: lines with id, speaker, text, step and pauseBefore; advance and seek; replaced whole) or steps (how each step opens, by number: { "2": { "opens": "answered" } }, or "explored" for a Continue locked until the blocks above are explored; replaced whole) of a screen. null removes layout, layoutProps, style, backdrop, continueRevealsSteps, steps or narration.',
   inputSchema: objectSchema({ id: SLUG, title: { type: 'string' }, covers: { type: 'array', items: PLAN_ID }, completeWhen: { enum: ['viewed', 'interactions-done', 'action'] }, required: { type: 'boolean' }, showTitle: { type: 'boolean' }, layout: { type: ['string', 'null'] }, layoutProps: { type: ['object', 'null'] }, style: { type: ['string', 'null'] }, backdrop: { type: ['string', 'null'] }, continueRevealsSteps: { type: ['boolean', 'null'] }, steps: STEPS, narration: formatValue<Screen['narration'] | null>()({ type: ['object', 'null'] }) }, ['id']),
   // The schema checks the shape of steps, which objectSchema types as a plain record.
   handler: (args, { root, author }) => editResult(edit.updateScreen(root, args as UpdateScreenArgs, { author }))
@@ -55,8 +55,8 @@ export const addBlock = defineTool({
 
 export const updateBlock = defineTool({
   name: 'elabora_update_block',
-  description: 'Edit a block by id (anywhere, slots included): props are merged (a prop set to null is removed); also hidden, width, note, slot and style (null removes), and step (a block of the screen itself: the step that reveals it; null or 1: from the start). For free-object blocks, props.props holds the declared prop values.',
-  inputSchema: objectSchema({ block: SLUG, props: { type: 'object' }, hidden: { type: 'boolean' }, width: { enum: ['full', 'wide', 'half'] }, note: { type: 'string' }, slot: { type: ['string', 'null'] }, style: { type: ['string', 'null'] }, step: { type: ['integer', 'null'], minimum: 1, maximum: 12 } }, ['block']),
+  description: 'Edit a block by id (anywhere, slots included): props are merged (a prop set to null is removed); also hidden, width, note, optional (true: extra the learner may skip, not waited for by steps that open once explored nor by interactions-done), slot and style (null removes), and step (a block of the screen itself: the step that reveals it; null or 1: from the start). For free-object blocks, props.props holds the declared prop values.',
+  inputSchema: objectSchema({ block: SLUG, props: { type: 'object' }, hidden: { type: 'boolean' }, width: { enum: ['full', 'wide', 'half'] }, note: { type: 'string' }, optional: { type: 'boolean' }, slot: { type: ['string', 'null'] }, style: { type: ['string', 'null'] }, step: { type: ['integer', 'null'], minimum: 1, maximum: 12 } }, ['block']),
   handler: (args, { root, author }) => editResult(edit.updateBlock(root, args, { author }))
 });
 
