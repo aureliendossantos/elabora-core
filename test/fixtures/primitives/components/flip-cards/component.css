@@ -1,0 +1,9 @@
+.t-block--flip-cards .pr-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr)); gap: 1.25rem; margin: 0; padding: 0; list-style: none; }
+.t-block--flip-cards .pr-cards-cell { display: grid; grid-template-rows: 1fr auto; justify-items: start; gap: 0.625rem; }
+.t-block--flip-cards .pr-card { width: 100%; min-height: 9rem; }
+.t-block--flip-cards .pr-card-face { display: flex; flex-direction: column; justify-content: center; padding: 1.25rem 1.5rem; border-radius: var(--t-radius); }
+.t-block--flip-cards .pr-card-front { color: var(--t-on-primary); background: var(--t-primary); }
+.t-block--flip-cards .pr-card-back { color: var(--t-text); background: var(--t-surface); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-text) 18%, transparent); }
+.t-block--flip-cards .pr-card-title { margin: 0; color: inherit; font-size: 1.25rem; line-height: 1.3; }
+.t-block--flip-cards .pr-card-body > :last-child { margin-bottom: 0; }
+.t-block--flip-cards .pr-card-flip { min-height: 2.75rem; padding: 0.5rem 1rem; border: 1px solid color-mix(in srgb, var(--t-text) 22%, transparent); border-radius: 999px; color: var(--t-text); background: var(--t-surface); font: inherit; font-weight: 600; cursor: pointer; }

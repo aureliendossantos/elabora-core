@@ -1,0 +1,62 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "timeline-events",
+  "title": "Events in time",
+  "description": "A vertical timeline: each event is visited once it has been in view (data-t-reveal), and its mark fills in.",
+  "instructions": "Three to eight events, each with a date, a title of a few words and one or two sentences.",
+  "category": "content",
+  "version": "1.0.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "events"
+    ],
+    "properties": {
+      "events": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 8,
+        "description": "The events, in order.",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "date",
+            "title",
+            "markdown"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{1,24}$",
+              "description": "Stable id of the item: its visited mark and its translations name it."
+            },
+            "date": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "x-translatable": true,
+              "description": "When."
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "x-translatable": true,
+              "description": "What happened, in a few words."
+            },
+            "markdown": {
+              "type": "string",
+              "x-kind": "markdown",
+              "x-translatable": true,
+              "description": "What it changed."
+            }
+          }
+        }
+      }
+    }
+  }
+}

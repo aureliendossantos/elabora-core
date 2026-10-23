@@ -1,0 +1,68 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "timeline",
+  "title": "A day on the mast",
+  "covers": [
+    "ITEM-2"
+  ],
+  "steps": {
+    "2": {
+      "opens": "explored"
+    }
+  },
+  "blocks": [
+    {
+      "id": "timeline-intro",
+      "type": "text",
+      "props": {
+        "markdown": "Scroll through the day."
+      }
+    },
+    {
+      "id": "day",
+      "type": "timeline-events",
+      "props": {
+        "events": [
+          {
+            "id": "e0600",
+            "date": "06:00",
+            "title": "The chart comes out",
+            "markdown": "The night's measures, drawn as isobars and fronts."
+          },
+          {
+            "id": "e0700",
+            "date": "07:00",
+            "title": "The team reads it",
+            "markdown": "Before leaving the depot, the team reads the fronts on their route."
+          },
+          {
+            "id": "e0900",
+            "date": "09:00",
+            "title": "On the mast",
+            "markdown": "Wind under thirty knots: the climb goes ahead."
+          },
+          {
+            "id": "e1200",
+            "date": "12:00",
+            "title": "The front passes",
+            "markdown": "Showers and a turning wind: everyone comes down."
+          },
+          {
+            "id": "e1500",
+            "date": "15:00",
+            "title": "Back up",
+            "markdown": "Clear sky behind the front: the work ends before dusk."
+          }
+        ]
+      }
+    },
+    {
+      "id": "timeline-done",
+      "type": "text",
+      "step": 2,
+      "props": {
+        "markdown": "That is a day read from the chart."
+      }
+    }
+  ]
+}

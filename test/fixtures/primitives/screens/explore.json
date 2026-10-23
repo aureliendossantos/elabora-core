@@ -1,0 +1,116 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "explore",
+  "title": "Before you climb",
+  "covers": [
+    "ITEM-2"
+  ],
+  "completeWhen": "interactions-done",
+  "steps": {
+    "2": {
+      "opens": "explored",
+      "label": "I have read the chart"
+    }
+  },
+  "blocks": [
+    {
+      "id": "explore-intro",
+      "type": "text",
+      "props": {
+        "markdown": "Go through the marks, turn the cards and answer the question: then you may go on."
+      }
+    },
+    {
+      "id": "explore-marks",
+      "type": "step-sequence",
+      "props": {
+        "items": [
+          {
+            "id": "isobars",
+            "title": "Isobars",
+            "markdown": "Lines of equal pressure. Close together, they mean strong wind."
+          },
+          {
+            "id": "fronts",
+            "title": "Fronts",
+            "markdown": "Where two air masses meet. A cold front brings showers and a sudden change of wind; a warm front brings low clouds and steady rain for hours.\n\nOn the chart, triangles mark a cold front and half-circles a warm one: they point the way the front moves, so the weather they carry comes from that side.\n\nA front that stops moving is drawn with both marks, on either side of the line."
+          },
+          {
+            "id": "pressure",
+            "title": "Pressure",
+            "markdown": "The figure at the centre of a low or a high, in hectopascals."
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-cards",
+      "type": "flip-cards",
+      "props": {
+        "cards": [
+          {
+            "id": "cold",
+            "title": "Cold front",
+            "markdown": "Showers, then a clear sky."
+          },
+          {
+            "id": "warm",
+            "title": "Warm front",
+            "markdown": "Low clouds and steady rain for hours, then milder air. The rain can last half a day before the sky lifts, and the wind turns as the front passes: climbs wait until it has."
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-more",
+      "type": "detail-list",
+      "optional": true,
+      "props": {
+        "items": [
+          {
+            "id": "units",
+            "title": "Why hectopascals?",
+            "markdown": "One hectopascal is one millibar: older charts used millibars."
+          }
+        ]
+      }
+    },
+    {
+      "id": "explore-check",
+      "type": "quiz",
+      "props": {
+        "stem": "Which front brings steady rain for hours?",
+        "mode": "single",
+        "options": [
+          {
+            "id": "a",
+            "text": "A warm front",
+            "correct": true,
+            "feedback": "Yes: low clouds and steady rain."
+          },
+          {
+            "id": "b",
+            "text": "A cold front",
+            "correct": false,
+            "feedback": "A cold front brings showers, then a clear sky."
+          },
+          {
+            "id": "c",
+            "text": "A ridge",
+            "correct": false,
+            "feedback": "A ridge is high pressure: settled weather."
+          }
+        ],
+        "objective": "OBJ-1"
+      }
+    },
+    {
+      "id": "explore-done",
+      "type": "text",
+      "step": 2,
+      "props": {
+        "markdown": "You can read a chart: check it every morning before you climb."
+      }
+    }
+  ]
+}

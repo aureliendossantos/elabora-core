@@ -1,0 +1,6 @@
+.t-block--zoom-images .pr-zoom { display: grid; grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); gap: 1.25rem; margin: 0; padding: 0; list-style: none; }
+.t-block--zoom-images .pr-zoom-figure { margin: 0; }
+.t-block--zoom-images .pr-zoom-button { display: block; width: 100%; padding: 0; border: 0; border-radius: var(--t-radius); overflow: hidden; background: transparent; cursor: zoom-in; }
+.t-block--zoom-images .pr-zoom-image { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; transition: scale var(--t-dur-item, 220ms) var(--t-ease-out); }
+.t-block--zoom-images .pr-zoom-button:hover .pr-zoom-image { scale: 1.02; }
+.t-block--zoom-images .pr-zoom-caption { margin-top: 0.5rem; color: var(--t-muted); font-size: 0.9375rem; }

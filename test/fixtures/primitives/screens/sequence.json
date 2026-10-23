@@ -1,0 +1,70 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "sequence",
+  "title": "Four marks, one at a time",
+  "covers": [
+    "ITEM-1"
+  ],
+  "blocks": [
+    {
+      "id": "sequence-intro",
+      "type": "text",
+      "props": {
+        "markdown": "A weather chart has four marks. Go through them one at a time."
+      }
+    },
+    {
+      "id": "marks",
+      "type": "step-sequence",
+      "props": {
+        "items": [
+          {
+            "id": "isobars",
+            "title": "Isobars",
+            "markdown": "Lines of equal pressure. Close together, they mean strong wind."
+          },
+          {
+            "id": "fronts",
+            "title": "Fronts",
+            "markdown": "Where two air masses meet. A cold front brings showers and a sudden change of wind; a warm front brings low clouds and steady rain for hours.\n\nOn the chart, triangles mark a cold front and half-circles a warm one: they point the way the front moves, so the weather they carry comes from that side.\n\nA front that stops moving is drawn with both marks, on either side of the line."
+          },
+          {
+            "id": "pressure",
+            "title": "Pressure",
+            "markdown": "The figure at the centre of a low or a high, in hectopascals."
+          },
+          {
+            "id": "wind",
+            "title": "Wind",
+            "markdown": "Barbs on a staff: each long barb is ten knots."
+          }
+        ]
+      }
+    },
+    {
+      "id": "fronts-cards",
+      "type": "flip-cards",
+      "props": {
+        "cards": [
+          {
+            "id": "cold",
+            "title": "Cold front",
+            "markdown": "Showers, then a clear sky."
+          },
+          {
+            "id": "warm",
+            "title": "Warm front",
+            "markdown": "Low clouds and steady rain for hours, then milder air. The rain can last half a day before the sky lifts, and the wind turns as the front passes: climbs wait until it has."
+          }
+        ]
+      }
+    },
+    {
+      "id": "sequence-after",
+      "type": "text",
+      "props": {
+        "markdown": "This paragraph stays where it is while the learner moves through the marks and turns the cards."
+      }
+    }
+  ]
+}

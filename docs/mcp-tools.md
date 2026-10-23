@@ -381,7 +381,7 @@ Create a screen and insert it in a section. covers lists the plan items it imple
 
 ### `elabora_update_screen`
 
-Change title, covers, completeWhen, required, showTitle, layout (a screen-level component), layoutProps (its props), style (theme.styles.screen), backdrop (a theme.backdrop variant, or none), continueRevealsSteps (false: only the screen's reveal-step events reveal its steps), narration (the script: lines with id, speaker, text, step and pauseBefore; advance and seek; replaced whole) or steps (how each step opens, by number: { "2": { "opens": "answered" } }, replaced whole) of a screen. null removes layout, layoutProps, style, backdrop, continueRevealsSteps, steps or narration.
+Change title, covers, completeWhen, required, showTitle, layout (a screen-level component), layoutProps (its props), style (theme.styles.screen), backdrop (a theme.backdrop variant, or none), continueRevealsSteps (false: only the screen's reveal-step events reveal its steps), narration (the script: lines with id, speaker, text, step and pauseBefore; advance and seek; replaced whole) or steps (how each step opens, by number: { "2": { "opens": "answered" } }, or "explored" for a Continue locked until the blocks above are explored; replaced whole) of a screen. null removes layout, layoutProps, style, backdrop, continueRevealsSteps, steps or narration.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -443,7 +443,7 @@ Add a block {id, type, props} (built-in type or course component) to a screen, o
 
 ### `elabora_update_block`
 
-Edit a block by id (anywhere, slots included): props are merged (a prop set to null is removed); also hidden, width, note, slot and style (null removes), and step (a block of the screen itself: the step that reveals it; null or 1: from the start). For free-object blocks, props.props holds the declared prop values.
+Edit a block by id (anywhere, slots included): props are merged (a prop set to null is removed); also hidden, width, note, optional (true: extra the learner may skip, not waited for by steps that open once explored nor by interactions-done), slot and style (null removes), and step (a block of the screen itself: the step that reveals it; null or 1: from the start). For free-object blocks, props.props holds the declared prop values.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -452,6 +452,7 @@ Edit a block by id (anywhere, slots included): props are merged (a prop set to n
 | `hidden` | boolean |  |  |
 | `width` | "full" \| "wide" \| "half" |  |  |
 | `note` | string |  |  |
+| `optional` | boolean |  |  |
 | `slot` | string \| null |  |  |
 | `style` | string \| null |  |  |
 | `step` | integer \| null |  |  |

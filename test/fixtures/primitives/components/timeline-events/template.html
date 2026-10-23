@@ -1,0 +1,8 @@
+<!-- A timeline whose events the player marks as seen once they have been in view (data-t-reveal). -->
+<ol class="pr-timeline">
+  <li class="pr-event" data-each="events" data-t-reveal="{{id}}">
+    <p class="pr-event-date">{{date}}</p>
+    <h3 class="pr-event-title" data-t-heading>{{title}}</h3>
+    <div class="pr-event-body t-text">{{markdown}}</div>
+  </li>
+</ol>

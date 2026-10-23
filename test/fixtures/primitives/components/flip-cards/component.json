@@ -1,0 +1,73 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "flip-cards",
+  "title": "Flip cards",
+  "description": "A grid of cards: a term on the front, its explanation on the back. Built on the player's flip card (data-t-card): a button turns each card, the face away is out of reach, and a card is as tall as its taller face.",
+  "instructions": "Two to twelve cards. Keep the front to a few words and the back to two or three sentences. A card is visited once turned over.",
+  "category": "interaction",
+  "version": "1.0.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "cards"
+    ],
+    "properties": {
+      "cards": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 12,
+        "description": "The cards.",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "title",
+            "markdown"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{1,24}$",
+              "description": "Stable id of the item: its visited mark and its translations name it."
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "x-translatable": true,
+              "description": "The front: a term or a question."
+            },
+            "markdown": {
+              "type": "string",
+              "x-kind": "markdown",
+              "x-translatable": true,
+              "description": "The back: what it means."
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "title": "Two fronts",
+      "props": {
+        "cards": [
+          {
+            "id": "cold",
+            "title": "Cold front",
+            "markdown": "Showers, then a clear sky."
+          },
+          {
+            "id": "warm",
+            "title": "Warm front",
+            "markdown": "Low clouds and steady rain."
+          }
+        ]
+      }
+    }
+  ]
+}

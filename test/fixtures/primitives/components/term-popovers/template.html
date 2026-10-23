@@ -1,0 +1,9 @@
+<!-- Terms in popovers: disclosures (data-t-toggle and data-t-part) kept one open at a time by the player
+     (data-t-exclusive="popover": Escape or a click outside closes the one open). The popover floats over
+     what follows: opening it moves nothing. -->
+<div class="pr-terms" data-t-exclusive="popover">
+  <div class="pr-term" data-each="terms">
+    <button class="pr-term-button" data-t-toggle="{{id}}">{{label}}</button>
+    <div class="pr-term-pop t-text" data-t-part="{{id}}">{{markdown}}</div>
+  </div>
+</div>

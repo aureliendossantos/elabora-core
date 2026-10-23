@@ -1,0 +1,5 @@
+.t-block--detail-list .pr-details { display: grid; gap: 0.5rem; }
+.t-block--detail-list .pr-detail { border-radius: var(--t-radius); background: color-mix(in srgb, var(--t-text) 4%, var(--t-surface)); }
+.t-block--detail-list .pr-detail-summary { padding: 0.875rem 1.125rem; font-weight: 600; cursor: pointer; }
+.t-block--detail-list .pr-detail-body { padding: 0 1.125rem 1rem; }
+.t-block--detail-list .pr-detail-body > :last-child { margin-bottom: 0; }

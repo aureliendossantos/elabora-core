@@ -1,0 +1,73 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "images",
+  "title": "The chart up close",
+  "covers": [
+    "ITEM-1"
+  ],
+  "blocks": [
+    {
+      "id": "images-intro",
+      "type": "text",
+      "props": {
+        "markdown": "Open each drawing to see it at full size."
+      }
+    },
+    {
+      "id": "drawings",
+      "type": "zoom-images",
+      "props": {
+        "images": [
+          {
+            "id": "isobars",
+            "asset": "images/isobars.svg",
+            "alt": "Three rings of isobars around a low",
+            "caption": "Isobars around a low."
+          },
+          {
+            "id": "front",
+            "asset": "images/front.svg",
+            "alt": "A cold front, its triangles pointing east",
+            "caption": "A cold front moving east."
+          },
+          {
+            "id": "wind",
+            "asset": "images/wind.svg",
+            "alt": "A wind barb with three long barbs",
+            "caption": "Thirty knots from the south-west."
+          }
+        ]
+      }
+    },
+    {
+      "id": "terms",
+      "type": "term-popovers",
+      "props": {
+        "terms": [
+          {
+            "id": "low",
+            "label": "Low",
+            "markdown": "An area where the pressure is lower than around it: clouds and wind."
+          },
+          {
+            "id": "high",
+            "label": "High",
+            "markdown": "An area of higher pressure: settled weather."
+          },
+          {
+            "id": "ridge",
+            "label": "Ridge",
+            "markdown": "A tongue of high pressure between two lows."
+          }
+        ]
+      }
+    },
+    {
+      "id": "images-after",
+      "type": "text",
+      "props": {
+        "markdown": "Opening a term moves nothing on the page."
+      }
+    }
+  ]
+}

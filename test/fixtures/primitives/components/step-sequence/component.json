@@ -1,0 +1,78 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "step-sequence",
+  "title": "Steps one at a time",
+  "description": "A short process shown one step at a time, with Previous and Next, a button per step and where the learner is. Built on the player's sequence (data-t-sequence): arrow keys and a swipe move through it, and it keeps the room of its tallest step.",
+  "instructions": "Three to seven steps, each a title of a few words and two or three sentences. Each step is visited once shown.",
+  "category": "interaction",
+  "version": "1.0.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "items"
+    ],
+    "properties": {
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 7,
+        "description": "The steps, in order.",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "title",
+            "markdown"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{1,24}$",
+              "description": "Stable id of the item: its visited mark and its translations name it."
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "x-translatable": true,
+              "description": "The step in a few words."
+            },
+            "markdown": {
+              "type": "string",
+              "x-kind": "markdown",
+              "x-translatable": true,
+              "description": "What happens at this step."
+            }
+          }
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "title": "Three steps",
+      "props": {
+        "items": [
+          {
+            "id": "look",
+            "title": "Look",
+            "markdown": "Find the isobars."
+          },
+          {
+            "id": "read",
+            "title": "Read",
+            "markdown": "Read the pressure at their centre."
+          },
+          {
+            "id": "decide",
+            "title": "Decide",
+            "markdown": "Decide whether to climb."
+          }
+        ]
+      }
+    }
+  ]
+}

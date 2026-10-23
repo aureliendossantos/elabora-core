@@ -1,0 +1,15 @@
+<!-- Flip cards (data-t-card): the front and the back in one cell, a button under each card that turns it.
+     The player words the button ("Turn the card over", "Show the front") and keeps the face away out of reach. -->
+<ul class="pr-cards">
+  <li class="pr-cards-cell" data-each="cards">
+    <div class="pr-card" data-t-card="{{id}}">
+      <div class="pr-card-face pr-card-front" data-t-face="front">
+        <h3 class="pr-card-title" data-t-heading>{{title}}</h3>
+      </div>
+      <div class="pr-card-face pr-card-back" data-t-face="back">
+        <div class="pr-card-body t-text">{{markdown}}</div>
+      </div>
+    </div>
+    <button class="pr-card-flip" data-t-flip="{{id}}"></button>
+  </li>
+</ul>

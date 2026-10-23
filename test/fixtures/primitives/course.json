@@ -1,0 +1,50 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "primitives",
+  "title": "Reading a weather chart",
+  "description": "Fixture of the player's primitives (D63): one course component per primitive, as the built-in starter blocks will use them.",
+  "language": "en",
+  "version": "1.0.0",
+  "sections": [
+    {
+      "id": "discover",
+      "title": "Discover",
+      "screens": [
+        "sequence",
+        "images",
+        "explore",
+        "timeline"
+      ]
+    }
+  ],
+  "variables": [],
+  "theme": {
+    "cascade": "components-over-theme",
+    "tokens": {
+      "color.primary": "#1D3557",
+      "color.onPrimary": "#FFFFFF",
+      "color.accent": "#B4441D",
+      "color.surface": "#FFFFFF",
+      "color.text": "#1F2933",
+      "color.muted": "#52606D",
+      "color.focus": "#2563EB",
+      "radius": 10
+    }
+  },
+  "presentation": {
+    "mode": "scroll"
+  },
+  "navigation": {
+    "mode": "free",
+    "lockUntilComplete": false
+  },
+  "completion": {
+    "reportAs": "completed-incomplete"
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  }
+}

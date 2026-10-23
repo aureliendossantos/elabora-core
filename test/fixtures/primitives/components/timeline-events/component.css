@@ -1,0 +1,8 @@
+.t-block--timeline-events .pr-timeline { display: grid; gap: 3rem; margin: 0; padding: 0 0 0 1.75rem; list-style: none; border-inline-start: 2px solid color-mix(in srgb, var(--t-text) 14%, transparent); }
+.t-block--timeline-events .pr-event { position: relative; min-height: 14rem; }
+/* The mark fills in once the event has been seen: a colour that changes, nothing that moves. */
+.t-block--timeline-events .pr-event::before { content: ""; position: absolute; inset-inline-start: calc(-1.75rem - 7px); inset-block-start: 0.3rem; width: 12px; height: 12px; border: 2px solid var(--t-primary); border-radius: 50%; background: var(--t-surface); transition: background var(--t-dur-item, 220ms) ease; }
+.t-block--timeline-events .pr-event[data-t-visited]::before { background: var(--t-primary); }
+.t-block--timeline-events .pr-event-date { margin: 0 0 0.25rem; color: var(--t-muted); font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+.t-block--timeline-events .pr-event-title { margin: 0 0 0.5rem; font-size: 1.25rem; }
+.t-block--timeline-events .pr-event-body > :last-child { margin-bottom: 0; }

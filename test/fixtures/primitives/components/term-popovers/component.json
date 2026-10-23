@@ -1,0 +1,54 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "term-popovers",
+  "title": "Terms in popovers",
+  "description": "A row of terms, each opening a short definition in a popover; one at a time (data-t-exclusive=\"popover\"): opening one closes the other, Escape or a click outside closes it.",
+  "instructions": "Two to six terms of one or two words, each defined in one or two sentences.",
+  "category": "interaction",
+  "version": "1.0.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "terms"
+    ],
+    "properties": {
+      "terms": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 6,
+        "description": "The terms.",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "label",
+            "markdown"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]{1,24}$",
+              "description": "Stable id of the item: its visited mark and its translations name it."
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "x-translatable": true,
+              "description": "The term."
+            },
+            "markdown": {
+              "type": "string",
+              "x-kind": "markdown",
+              "x-translatable": true,
+              "description": "Its definition."
+            }
+          }
+        }
+      }
+    }
+  }
+}

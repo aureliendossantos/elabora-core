@@ -1,0 +1,10 @@
+<!-- Images to enlarge (data-t-zoom on a button holding the image): the player opens the lightbox with the
+     image's alt and its caption (data-t-caption, next to the button), and previous and next between them. -->
+<ul class="pr-zoom">
+  <li class="pr-zoom-cell" data-each="images">
+    <figure class="pr-zoom-figure">
+      <button class="pr-zoom-button" data-t-zoom><img class="pr-zoom-image" src="{{asset}}" alt="{{alt}}"></button>
+      <figcaption class="pr-zoom-caption" data-if="caption" data-t-caption>{{caption}}</figcaption>
+    </figure>
+  </li>
+</ul>

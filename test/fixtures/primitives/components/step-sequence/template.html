@@ -1,0 +1,18 @@
+<!-- One step at a time (data-t-sequence): the steps, then Previous, a button per step, where the learner is, Next.
+     The player hides the steps not shown, reserves the room of the tallest and writes the position. -->
+<div class="pr-seq" data-t-sequence>
+  <div class="pr-seq-items">
+    <section class="pr-seq-item" data-each="items" data-t-item="{{id}}">
+      <h3 class="pr-seq-title" data-t-heading>{{title}}</h3>
+      <div class="pr-seq-body t-text">{{markdown}}</div>
+    </section>
+  </div>
+  <div class="pr-seq-nav">
+    <button class="pr-seq-arrow" data-t-prev><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg></button>
+    <ol class="pr-seq-dots">
+      <li data-each="items"><button class="pr-seq-dot" data-t-goto="{{id}}" aria-label="{{title}}"></button></li>
+    </ol>
+    <span class="pr-seq-position" data-t-position></span>
+    <button class="pr-seq-arrow" data-t-next><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></button>
+  </div>
+</div>
