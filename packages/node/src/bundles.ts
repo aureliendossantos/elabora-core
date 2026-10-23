@@ -52,8 +52,8 @@ export async function runtimeFiles({ debug = false }: { debug?: boolean } = {}):
     'elabora/object-frame.js': banner + await bundle(path.join(RUNTIME, 'object-frame.ts'), { minify: !debug }),
     // The player stylesheet sits in the first cascade layer: the course's theme, component
     // stylesheets and overrides follow in the order of the course's cascade (elabora/theme.css).
-    // Charts' styles (D60) come with it: charts.css, then each type's.
-    'elabora/player.css': `${BASE_LAYER}\n@layer elabora.base {\n${['player.css', ...chartStyles()].map((file) => fs.readFileSync(path.join(RUNTIME, file), 'utf8')).join('\n')}\n}\n`
+    // Charts' styles (D60) come with it: charts.css, then each type's; then dialogue characters' (D61).
+    'elabora/player.css': `${BASE_LAYER}\n@layer elabora.base {\n${['player.css', ...chartStyles(), 'character/character.css'].map((file) => fs.readFileSync(path.join(RUNTIME, file), 'utf8')).join('\n')}\n}\n`
   };
 }
 

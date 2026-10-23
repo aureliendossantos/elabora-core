@@ -22,7 +22,8 @@ import type { XliffMark } from './xliff.ts';
 //   course.speaker.<id>.name · course.glossary.<id>.term / .definition / .variant.<n>
 //   course.resource.<id>.title / .description · course.credit.<n> · course.logo.alt
 //   screen.<id>.title · screen.<id>.layout.<prop> · screen.<id>.layer.<id>.title · screen.<id>.step.<n>.label
-//   screen.<id>.narration.<line>.text
+//   screen.<id>.narration.<line>.text · screen.<id>.layer.<id>.narration.<line>.text
+//   block.<id>.nodes.<node>.lines.<line>.text · ….options.<option>.text · ….options.<option>.reply.<line>.text (a dialogue's voice lines)
 //   block.<id>.<prop path> (array items by id when they have one) · block.<id>.strings.<key>
 //   block.<id>.enumLabels.<prop or prop_field>.<value>
 // Ids only use letters, digits, '.', '-' and '_' (XLIFF unit ids are NMTOKENs). Words never live in
@@ -45,6 +46,9 @@ export interface TranslationUnit {
   editor?: boolean;
   // A narration line's word anchors (docs/decisions.md D28): the markers translators place.
   marks?: (XliffMark & { word: string })[];
+  // A line a voice says (any track: the screen's, a layer's, a dialogue's): its stage directions
+  // (D29) are marked in the XLIFF.
+  voice?: true;
   // Values elsewhere in the file that name these words and follow them when they change (a trend's
   // note and prediction name a point by its x: D60).
   follows?: string[];
@@ -57,6 +61,7 @@ interface UnitOptions {
   base?: { pointer: string; value: unknown };
   editor?: boolean;
   marks?: (XliffMark & { word: string })[];
+  voice?: true;
 }
 
 // Adds a unit for a value, when it is words: units come from values of any type.
@@ -66,10 +71,10 @@ export function extractUnits(project: Project): TranslationUnit[] {
   const units: TranslationUnit[] = [];
   const registry = getRegistry(project);
   const seen = new Set<string>();
-  const add = (id: string, file: string, pointer: string, text: unknown, { format = 'text', note, maxLength, base, editor, marks }: UnitOptions = {}): void => {
+  const add = (id: string, file: string, pointer: string, text: unknown, { format = 'text', note, maxLength, base, editor, marks, voice }: UnitOptions = {}): void => {
     if (typeof text !== 'string' || !/\p{L}/u.test(text) || seen.has(id)) return;
     seen.add(id);
-    units.push({ id, file, pointer, text, format, ...(note ? { note } : {}), ...(maxLength ? { maxLength } : {}), ...(base ? { base } : {}), ...(editor ? { editor } : {}), ...(marks?.length ? { marks } : {}) });
+    units.push({ id, file, pointer, text, format, ...(note ? { note } : {}), ...(maxLength ? { maxLength } : {}), ...(base ? { base } : {}), ...(editor ? { editor } : {}), ...(marks?.length ? { marks } : {}), ...(voice ? { voice } : {}) });
   };
   const course = project.course;
   add('course.title', 'course.json', '/title', course?.title, { note: 'Course title' });
@@ -145,22 +150,29 @@ export function extractUnits(project: Project): TranslationUnit[] {
     listOf(screen.layers).forEach((layer, i) => { if (isRecord(layer)) add(`screen.${id}.layer.${layer.id}.title`, file, `/layers/${i}/title`, layer.title, { note: `Title of a layer of screen "${screen.title}"` }); });
     if (isRecord(screen.steps)) for (const [step, settings] of Object.entries(screen.steps)) if (isRecord(settings)) add(`screen.${id}.step.${step}.label`, file, `/steps/${step}/label`, settings.label, { note: `Continue button opening step ${step} of screen "${screen.title}"`, maxLength: 40 });
     const anchored = lineWordAnchors(screen);
-    // Voice lines of every track (the screen's narration, each layer's), with their own units; lines
-    // whose unit is a prop of their block are listed with the block's props below.
+    // Voice lines of every track (the screen's narration, each layer's, each dialogue's), with their
+    // markers and a note on what they are. Lines whose unit is a prop of their block (a dialogue's) are
+    // listed in the block's place, with the block's other props, under the same id.
+    const voiced = new Map<string, UnitOptions>();
     for (const { line, track, unit, path, blockUnit } of voiceLinesOf(screen, id, project)) {
-      if (blockUnit) continue;
       const speaker = typeof line.speaker === 'string' ? ` (${line.speaker})` : '';
       const marks = typeof line.text === 'string' ? anchorMarks(line.text, anchored.get(line.id) ?? [], course?.language ?? '') : [];
-      const anchors = marks.length ? `. Markers <mrk type="elabora:anchor"> wrap words a block or an event waits for (${marks.map((mark) => `« ${mark.word} »`).join(', ')}): keep each marker, with its id, around the words of your language that say the same thing` : '';
+      const anchors = marks.length ? `. Markers <mrk type="elabora:anchor"> wrap words ${track.kind === 'dialogue' ? 'a gesture or an action of the dialogue waits for' : 'a block or an event waits for'} (${marks.map((mark) => `« ${mark.word} »`).join(', ')}): keep each marker, with its id, around the words of your language that say the same thing` : '';
       const directions = typeof line.text === 'string' && hasDirections(line.text) ? '. Text in square brackets, in markers <mrk type="elabora:direction">, is a stage direction for the voice (how to say it, never shown): keep it in brackets where the delivery changes in your sentence, and translate or adapt it' : '';
+      if (track.kind === 'dialogue') {
+        const what = track.option && line.id.includes('.') ? `The learner's answer ${track.option} in node "${track.node}"${speaker}` : `Line ${line.id}${speaker} of node "${track.node}"`;
+        voiced.set(`${path}/text`, { note: `${what} of dialogue "${track.block}" on screen "${screen.title}": shown in a bubble and said by a voice in the translated course${anchors}${directions}`, marks, voice: true });
+        continue;
+      }
+      if (blockUnit) continue;
       const where = track.kind === 'layer' ? `the narration of layer "${track.layer}" of screen "${screen.title}"` : `screen "${screen.title}"`;
-      add(unit, file, `${path}/text`, line.text, { note: `Narration line ${line.id}${speaker} of ${where}: said by a voice in the translated course and shown as its captions${anchors}${directions}`, maxLength: 2000, marks });
+      add(unit, file, `${path}/text`, line.text, { note: `Narration line ${line.id}${speaker} of ${where}: said by a voice in the translated course and shown as its captions${anchors}${directions}`, maxLength: 2000, marks, voice: true });
     }
     for (const { block, path } of screenBlocks(screen, file)) {
       const descriptor = registry.get(block.type);
       if (!descriptor) continue;
       const where = `${descriptor.title || block.type} on screen "${screen.title}"`;
-      walkProps(descriptor.schema, block.props, `${path}/props`, `block.${block.id}`, descriptor.builtin, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: where }));
+      walkProps(descriptor.schema, block.props, `${path}/props`, `block.${block.id}`, descriptor.builtin, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: where, ...voiced.get(pointer) }));
       if (descriptor.root === 'free-object') objectUnits(project, block, path, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: options.note || where }));
       if (descriptor.root === 'trend') followPoints(units, block, path);
       if (descriptor.root === 'diagram') diagramUnits(block, path, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: `${options.note} (${where})` }));

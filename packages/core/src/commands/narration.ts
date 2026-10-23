@@ -7,6 +7,7 @@ import type { Narration, NarrationLine, NarrationAudio } from '../narration/narr
 import { CommandError, Draft, assignFields, commandContext, insertAt, listIn, screenFile, type CommandContext, type CommandOutput } from './context.ts';
 import { reanchorLine, type Reanchored } from './timing.ts';
 import { lineWordTimes } from '../narration/words.ts';
+import { isMouth } from '../narration/mouth.ts';
 import { isRecord, objectsIn } from '../util/values.ts';
 import { screenAnchors } from '../i18n/anchors.ts';
 import { voiceLinesOf } from '../narration/voice-lines.ts';
@@ -304,6 +305,8 @@ export interface SetNarrationAudioArgs {
   credit?: string;
   model?: string;
   createdAt?: string;
+  // The mouth's envelope of the audio (narration/mouth.ts): what @elabora/node measured on it.
+  mouth?: string;
 }
 
 // The audio of a line in a language and its sidecar, which records the text it says (its hash in
@@ -331,6 +334,7 @@ export function setNarrationAudio(context: CommandContext, args: SetNarrationAud
     ...(args.generated && line.spokenHash ? { spokenHash: line.spokenHash, settingsHash: line.settingsHash } : {}),
     ...(args.credit ? { credit: args.credit } : {}), ...(args.model ? { model: args.model } : {}),
     ...(line.text ? { text: line.text } : {}),
+    ...(args.mouth !== undefined && isMouth(args.mouth) ? { mouth: args.mouth } : {}),
     ...(args.words?.length ? { ...(args.aligner ? { aligner: args.aligner } : {}), words: args.words } : {})
   };
   draft.writeJson(sidecar, record);
@@ -378,6 +382,8 @@ export interface SetNarrationWordsArgs {
   audioHash?: FileHash;
   words: NonNullable<NarrationAudio['words']>;
   aligner: string;
+  // The mouth's envelope measured again with these words (the one the sidecar has stays without it).
+  mouth?: string;
 }
 
 export function setNarrationWords(context: CommandContext, args: SetNarrationWordsArgs): CommandOutput<{ sidecar: string; words: number }> {
@@ -393,7 +399,7 @@ export function setNarrationWords(context: CommandContext, args: SetNarrationWor
   if (line.textHash !== sidecar.textHash || !line.text) throw new CommandError(`The audio of line "${args.line}" says an older text: make or import it again before timing its words.`);
   const { words: _words, aligner: _aligner, text: _text, ...rest } = sidecar;
   const draft = new Draft(context.files);
-  draft.writeJson(path, { ...rest, text: line.text, aligner: args.aligner, words: args.words });
+  draft.writeJson(path, { ...rest, ...(args.mouth !== undefined && isMouth(args.mouth) ? { mouth: args.mouth } : {}), text: line.text, aligner: args.aligner, words: args.words });
   return { files: draft.files(), result: { sidecar: path, words: args.words.length } };
 }
 
@@ -472,7 +478,18 @@ export function setNarrationTextFromAudio(context: CommandContext, args: SetNarr
   const before = line.text ?? '';
   let files = context.files;
   let anchors: { moved: Reanchored[]; lost: Reanchored[] } | undefined;
-  if (text !== before) {
+  if (text !== before && line.track.kind === 'dialogue') {
+    // A dialogue's line (D61): its text where the block holds it (a node's line, a reply, the
+    // learner's answer); its cues are checked against the new words (E_DIALOGUE_CUE).
+    const draft = new Draft(context.files);
+    const file = screenFile(args.screen);
+    const screen = draft.json<Screen>(file);
+    const holder = line.path.split('/').slice(1).reduce<unknown>((node, key) => (isRecord(node) || Array.isArray(node) ? (node as Record<string, unknown>)[key] : undefined), screen);
+    if (!isRecord(holder)) throw new CommandError(`Line "${args.line}" is no longer where the dialogue held it (${line.path}).`);
+    holder.text = text;
+    draft.writeJson(file, screen);
+    files = draft.files();
+  } else if (text !== before) {
     const edited = updateNarrationLine(context, { screen: args.screen, line: args.line, text });
     files = edited.files!;
     anchors = edited.result.anchors;

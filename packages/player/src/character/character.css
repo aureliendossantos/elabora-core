@@ -1,0 +1,15 @@
+/* Dialogue characters (docs/dialogues.md, characters; @elabora/player character/). The sizes are the
+   dialogue's; these rules only make a character work without a rule of its own. */
+.t-character { display: block; max-width: 100%; height: auto; overflow: visible; }
+.t-character.t-character-portrait { width: 100%; height: 100%; overflow: hidden; }
+/* The blink's eyelids stay hidden until the character's own animation shows them (opacity, not display:
+   the animation overrides it). */
+.t-character [data-part="eyes-closed"] { opacity: 0; }
+/* Paused: every animation of the character stops where it is. Reduced motion: none plays, each part
+   rests in its base pose (a gesture's final pose). */
+.t-character [data-part="character"][data-paused], .t-character [data-part="character"][data-paused] * { animation-play-state: paused !important; }
+.t-character [data-part="character"][data-reduced-motion], .t-character [data-part="character"][data-reduced-motion] * { animation: none !important; transition: none !important; }
+/* Pictures: the expression's picture, or the speaker's initial. */
+.t-character-picture { position: relative; display: block; width: 100%; height: 100%; }
+.t-character-picture > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.t-character-initial { display: grid; place-items: center; aspect-ratio: 1; font-weight: 600; color: var(--t-muted); }

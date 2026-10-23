@@ -44,11 +44,18 @@ export function maskDirections(text: string): string {
 }
 
 // The text without its directions, as learners read it (captions, transcript): a direction and
-// the space before it go, and no space is left before punctuation.
+// the space before it go (« mot [un temps], suite » reads « mot, suite »). The rest of the text keeps
+// its own typography: the space a French line puts before : ; ! ? stays (« étage : ni »).
 export function withoutDirections(text: string): string {
   if (!hasDirections(text)) return text;
-  return text.replace(/\s*\[([^[\]\n]{1,80})\]/g, (whole, inner: string) => inner.trim() ? '' : whole)
-    .replace(/[ \t]+([,.;:!?…)\]])/g, '$1').replace(/[ \t]{2,}/g, ' ').replace(/^\s+/, '').replace(/\s+$/, '');
+  return text.replace(/[ \t]*\[([^[\]\n]{1,80})\]([ \t]*)/g, (whole: string, inner: string, after: string, offset: number, all: string) => {
+    if (!inner.trim()) return whole;
+    const next = all[offset + whole.length] ?? '';
+    // Nothing at either end of the line or before a comma, a full stop or a closing bracket; one
+    // space where the direction stood between words, and only if one followed it (« mot [rit]: »).
+    if (!all.slice(0, offset).trim() || next === '' || /[,.…)\]]/.test(next)) return '';
+    return after ? ' ' : '';
+  }).replace(/[ \t]{2,}/g, ' ').replace(/^\s+/, '').replace(/\s+$/, '');
 }
 
 // Applies fn to the parts of the text outside directions (pronunciations never touch a direction).

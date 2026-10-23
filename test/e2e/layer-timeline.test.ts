@@ -193,6 +193,39 @@ test('a layer\'s bar: seek (free) recomputes what is seen and fires nothing, the
   });
 });
 
+test('a chart whose items come with the voice follows its layer\'s timeline, not the screen\'s (D60, D62)', { skip: NO_FFMPEG, timeout: 120000 }, async () => {
+  const dir = course();
+  const accueil = readJSON(dir, 'screens/accueil.json');
+  accueil.layers[0].blocks.push({ id: 'ordre', type: 'bars', props: { takeaway: 'Le poste d\'abord', rows: [
+    { id: 'poste', label: 'Poste', value: 70, at: { line: 'r2', word: 'poste' } },
+    { id: 'reseau', label: 'Réseau', value: 30, at: { line: 'r2', word: 'réseau' } }
+  ] } });
+  accueil.events = accueil.events.filter((event: { id: string }) => event.id !== 'ferme-regle');
+  writeJSON(dir, 'screens/accueil.json', accueil);
+  await player(dir, async (page) => {
+    await page.evaluate(() => (window as PlayerWindow).__elabora.timeline.pause());
+    await page.evaluate(() => (window as PlayerWindow).__elabora.openLayer('regle'));
+    await page.evaluate(() => (window as PlayerWindow).__elabora.timeline.layer('regle')?.pause());
+    const spoken = () => page.$$eval('dialog.t-layer[data-layer="regle"] .t-block[data-block="ordre"] .is-spoken[data-t-item]', (elements) => [...new Set(elements.map((element) => element.getAttribute('data-t-item')))]);
+    const label = (id: string) => page.$eval(`dialog.t-layer[data-layer="regle"] .t-block[data-block="ordre"] .t-bars-label[data-t-item="${id}"]`, (element) => Number(getComputedStyle(element).opacity));
+    assert.deepEqual(await spoken(), []);
+    assert.equal(await label('poste'), 0, 'not said yet at the layer\'s 0');
+    // The screen's playhead moves: the layer's chart stays where its own voice is.
+    await page.evaluate(() => (window as PlayerWindow).__elabora.timeline.seek(3));
+    assert.equal(await label('poste'), 0);
+    const poste = await wordTime(page, 'regle', 'r2', 'poste');
+    await page.evaluate((t) => (window as PlayerWindow).__elabora.timeline.layer('regle')?.seek(t), poste + 0.05);
+    await page.waitForTimeout(300);
+    assert.deepEqual(await spoken(), ['poste'], 'at « poste » in the layer');
+    assert.equal(await label('poste'), 1);
+    assert.equal(await label('reseau'), 0);
+    const reseau = await wordTime(page, 'regle', 'r2', 'réseau');
+    await page.evaluate((t) => (window as PlayerWindow).__elabora.timeline.layer('regle')?.seek(t), reseau + 0.05);
+    await page.waitForTimeout(300);
+    assert.deepEqual(await spoken(), ['reseau']);
+  });
+});
+
 test('captures of a layer at a moment of its own timeline', { skip: NO_FFMPEG, timeout: 120000 }, async () => {
   const dir = course();
   const result = await capture(dir, [{ screen: 'accueil', layer: 'regle', at: ['r2', 'r2:poste', 'r1:end'], width: 1280, height: 720 }]);

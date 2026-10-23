@@ -2,6 +2,7 @@ import path from 'node:path';
 import { readLock } from '@elabora/core/compile/state-model';
 import { screenBlocks } from '@elabora/core/project/load';
 import { narrationWords, normalizeWord, findPhrase } from '@elabora/core/narration/words';
+import { voiceLinesOf } from '@elabora/core/narration/voice-lines';
 import type { Project, ScreenEntry } from '@elabora/core/project/model';
 import { loadProjectFromDir } from '../project-reader.ts';
 import { CloudError, cloudUrl, isRecord } from './client.ts';
@@ -64,13 +65,25 @@ function placeOf(anchor: CommentAnchor, view: CourseView | null): ResolvedPlace 
     place.layer = { id: anchor.layer, title: layer ? text(layer.title) : null, found: !!layer };
   }
   if (typeof anchor.line === 'string') {
-    const narration = isRecord(screen) ? (screen as Record<string, unknown>).narration : undefined;
-    const lines = isRecord(narration) && Array.isArray(narration.lines) ? narration.lines : [];
-    const line = lines.find((candidate): candidate is Record<string, unknown> => isRecord(candidate) && candidate.id === anchor.line);
+    // The line in whichever track holds it: the screen's narration, a layer's (D62), a dialogue's (D61).
+    const line = screen && id ? voiceLinesOf(screen, id, view?.project ?? null).find((entry) => entry.line.id === anchor.line)?.line ?? silentDialogueLine(screen, anchor.line) : undefined;
     const lineText = line ? text(line.text) : null;
     place.line = { id: anchor.line, speaker: line ? text(line.speaker) : null, text: lineText, word: anchor.word === undefined ? null : wordOf(anchor, onTranslation ? null : lineText, courseLanguage) };
   }
   return place;
+}
+
+// A line of a dialogue without a voice (a narration without speaker): not a voice line, still a line.
+function silentDialogueLine(screen: unknown, id: string): Record<string, unknown> | undefined {
+  for (const { block } of screenBlocks(screen as Parameters<typeof screenBlocks>[0])) {
+    const nodes = isRecord(block.props) && Array.isArray(block.props.nodes) ? block.props.nodes : [];
+    for (const node of nodes.filter(isRecord)) {
+      const lines = [...(Array.isArray(node.lines) ? node.lines : []), ...(Array.isArray(node.options) ? node.options : []).filter(isRecord).flatMap((option) => (Array.isArray(option.reply) ? option.reply : []))];
+      const found = lines.find((candidate): candidate is Record<string, unknown> => isRecord(candidate) && candidate.id === id);
+      if (found) return found;
+    }
+  }
+  return undefined;
 }
 
 // The word commented: the API counts words from 0 (an index), the review bridge names them with

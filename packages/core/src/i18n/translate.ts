@@ -141,7 +141,7 @@ function xliffWith(project: Project, to: string, overrides: ReadonlyMap<string, 
     return {
       id: unit.id, source: unit.text, ...(unit.marks?.length ? { sourceMarks: unit.marks } : {}),
       target: translated?.target || undefined, ...(translated?.target && translated.targetMarks?.length ? { targetMarks: translated.targetMarks } : {}),
-      state: unchanged ? translated.state : 'initial', notes
+      state: unchanged ? translated.state : 'initial', notes, ...(unit.voice ? { voice: true } : {})
     };
   });
   const text = toXliff({ srcLang: course.language, trgLang: to, original: `${course.id}@${course.version}`, units: xliffUnits });

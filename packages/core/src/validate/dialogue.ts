@@ -12,10 +12,12 @@ import { dialogueEdges, reachableNodes, nodesReachingEnd } from '../dialogue/gra
 import { narrationWords, findPhrase } from '../narration/words.ts';
 import { withoutDirections } from '../narration/directions.ts';
 import { screenSteps } from '../narration/narration.ts';
+import { voiceLinesOf, trackLabel } from '../narration/voice-lines.ts';
 import { screenBlocks } from '../project/load.ts';
 import { readText, hasFile } from '../project/files.ts';
 import { resolveTokens } from './theme.ts';
 import { rootOf } from '../components/registry.ts';
+import { characterManifest, characterProblems, characterInline } from '../dialogue/character.ts';
 import type { Block } from '../project/model.ts';
 import type { CourseCheckContext, ScreenFile } from './context.ts';
 import { fieldsOf, list, hasId, isRecord } from './guards.ts';
@@ -33,9 +35,11 @@ export const TREE_MAX = 3;
 export function checkDialogues(ctx: CourseCheckContext, screen: ScreenFile): void {
   const { registry } = ctx;
   const { file, data } = screen;
-  // Line ids are unique in the screen, across its narration and its dialogues.
+  // Line ids are unique in the screen, every track counted (E_NARRATION_LINE_DUPLICATE): the voice
+  // lines are checked with the narration (checkScreenNarration); a dialogue's narrations without a
+  // voice (no speaker) are not voice lines, and are checked here against them all.
   const lineIds = new Map<string, string>();
-  for (const line of list(data.narration?.lines)) if (line && typeof line.id === 'string') lineIds.set(line.id, 'the screen\'s narration');
+  for (const { line, track } of voiceLinesOf(data, screen.id, ctx.project)) if (!lineIds.has(line.id)) lineIds.set(line.id, trackLabel(track));
   for (const { block, path } of screenBlocks(data, file)) {
     if (!block || rootOf(registry, block.type) !== 'dialogue') continue;
     checkDialogue(ctx, screen, block, path, lineIds);
@@ -116,9 +120,9 @@ function checkDialogue(ctx: CourseCheckContext, screen: ScreenFile, block: Block
 
   // ── lines ──
   const line = (value: DialogueLineData, at: string) => {
-    if (value.id) {
+    if (value.id && value.speaker === undefined) {
       const where = lineIds.get(value.id);
-      if (where) emit('E_DIALOGUE_DUPLICATE_ID', `${at}/id`, `line "${value.id}" has the id of a line of ${where}: line ids are unique in the screen.`);
+      if (where) reporter.emit('E_NARRATION_LINE_DUPLICATE', { file, path: `${path}/props${at}/id`, target: screenId, details: { screen: screenId, line: value.id }, message: `Screen "${screenId}" has two lines "${value.id}": in ${where} and in dialogue "${id}" (ids are unique in the screen, every track counted).` });
       else lineIds.set(value.id, `dialogue "${id}"`);
     }
     speakerKnown(value.speaker, `${at}/speaker`, `line "${value.id}"`);
@@ -299,18 +303,17 @@ function scoreGap(data: DialogueData): string | null {
 }
 const round = (value: number) => Math.round(value * 10) / 10;
 
-// The expressions and gestures a character's look declares (null: it declares none, nothing to check).
+// The expressions and gestures a character's look declares (null: it declares none, nothing to check):
+// its SVG's manifest (data-expressions, data-gestures), or its pictures' expressions.
 function declaredLook(ctx: CourseCheckContext, look: Record<string, unknown>): { expressions: Set<string> | null; gestures: Set<string> | null } {
   if (typeof look.svg === 'string') {
     const source = readText(ctx.project.files, `assets/${look.svg}`);
-    if (source === null) return { expressions: null, gestures: null };
-    const root = /<svg\b[^>]*>/i.exec(source)?.[0] ?? '';
-    const attribute = (name: string) => new RegExp(`\\s${name}\\s*=\\s*"([^"]*)"`, 'i').exec(root)?.[1];
-    const expressions = attribute('data-expressions');
-    const gestures = attribute('data-gestures');
+    const manifest = source === null ? null : characterManifest(source);
+    if (!manifest) return { expressions: null, gestures: null };
+    const root = /<svg\b[^>]*>/i.exec(source ?? '')?.[0] ?? '';
     return {
-      expressions: expressions === undefined ? null : new Set(expressions.split(/\s+/).filter(Boolean)),
-      gestures: gestures === undefined ? null : new Set(gestures.split(/\s+/).filter(Boolean).map((entry) => entry.split(':')[0]))
+      expressions: /\sdata-expressions\s*=/.test(root) ? new Set(manifest.expressions) : null,
+      gestures: /\sdata-gestures\s*=/.test(root) ? new Set(Object.keys(manifest.gestures)) : null
     };
   }
   if (isRecord(look.expressions) || typeof look.portrait === 'string') return { expressions: new Set(Object.keys(fieldsOf(look.expressions))), gestures: new Set() };
@@ -329,6 +332,16 @@ export function checkSpeakerLooks(ctx: CourseCheckContext): void {
     const files: [string, unknown][] = [['svg', look.svg], ['portrait', look.portrait], ...Object.entries(fieldsOf(look.expressions)).map(([name, file]): [string, unknown] => [`expressions/${name}`, file])];
     for (const [where, file] of files) {
       if (typeof file === 'string' && !hasFile(project.files, `assets/${file}`)) reporter.emit('E_ASSET_MISSING', { file: 'course.json', path: `${at}/look/${where}`, target: speaker.id, message: `Speaker "${speaker.id}": assets/${file} not found.` });
+    }
+    // A character drawn as an SVG follows the convention (docs/dialogues.md, characters).
+    const source = typeof look.svg === 'string' ? readText(project.files, `assets/${look.svg}`) : null;
+    if (source !== null) {
+      const where = { file: 'course.json', path: `${at}/look/svg`, target: speaker.id };
+      for (const problem of characterProblems(source)) {
+        reporter.emit(problem.kind === 'convention' ? 'W_CHARACTER_CONVENTION' : 'W_CHARACTER_CONTENT', { ...where, message: `Character "${speaker.id}" (assets/${look.svg}): ${problem.message}.` });
+      }
+      const removed = characterInline(source, speaker.id)?.removed ?? [];
+      if (removed.length) reporter.emit('W_SVG_INLINE_SANITIZED', { ...where, measured: removed.length, message: `assets/${look.svg}, the character "${speaker.id}", lost what is not safe in the page: ${removed.slice(0, 5).join(', ')}${removed.length > 5 ? '…' : ''}.` });
     }
     if (typeof speaker.color === 'string' && tokens[speaker.color] === undefined) reporter.emit('E_UNKNOWN_REFERENCE', { file: 'course.json', path: `${at}/color`, target: speaker.id, message: `Speaker "${speaker.id}": no theme token "${speaker.color}" (a colour token such as color.accent, or one of theme.custom).` });
   });

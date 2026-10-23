@@ -60,7 +60,7 @@ Every message is a plain object with `protocol: "elabora-review/1"` and a `type`
   "time": 3.601, "duration": 9.2, "playing": false, "line": "l2", "word": "imprimante",
   "said": "Ni l'imprimante, ni le partage de fichiers ne marchent.", "speaker": "Marc", "held": true }
 ```
-`time`, `duration`, `playing`, `line`, `word`, `occurrence` only on a timed screen; `occurrence` when the word is said for the second time or more in the line. `said`: the line's text, `speaker`: its speaker's name when it has one, as the captions show them (the page says « quand Marc dit « … » »). `held`: the page paused the narration (`pause`) and has not resumed it.
+`time`, `duration`, `playing`, `line`, `word`, `occurrence` only on a timed screen; `occurrence` when the word is said for the second time or more in the line. While an open layer speaks on its own timeline (D62), they are the layer's (its time, its line). While a dialogue says a line (D61), `line` is that line (`<node>.<option>` for an answer the learner says aloud) with its `word`, `said` and `speaker`, when the player tells which one is being said. `said`: the line's text, `speaker`: its speaker's name when it has one, as the captions show them (the page says « quand Marc dit « … » »). `held`: the page paused the narration (`pause`) and has not resumed it.
 
 **`blocks`**: the blocks of what is shown, after every change of screen, step, layer, size or scroll, and when a block grows or moves (at most once a frame, only when something changed).
 ```json
@@ -97,7 +97,7 @@ Post to the iframe's window with the module's origin as the target: `frame.conte
 { "protocol": "elabora-review/1", "type": "go", "id": "g1", "highlight": true,
   "anchor": { "screen": "0", "step": 2, "line": "l2", "word": "imprimante", "block": "accueil-illustration" } }
 ```
-The module goes to the screen, reveals the step named (or the block's, when the block is not shown yet), places a timed screen at the word (its start), else at the line's start, else at the time, still (nothing plays, no cue fires); opens the layer (and closes the others: they would hide the screen); scrolls the block into view and outlines it twice (still under reduced motion; `highlight: false` to skip). The page makes its pin ping too.
+The module goes to the screen, reveals the step named (or the block's, when the block is not shown yet), places a timed screen at the word (its start), else at the line's start, else at the time, still (nothing plays, no cue fires); opens the layer (and closes the others: they would hide the screen); a line of a layer's narration opens that layer and places its own timeline at the word or the line; a line of a dialogue scrolls to the dialogue's block (and the player shows the line when it can); scrolls the block into view and outlines it twice (still under reduced motion; `highlight: false` to skip). The page makes its pin ping too.
 
 **`pause`** and **`resume`**: comment mode pauses the narration; while it holds it, a screen that starts playing (`go`, the reviewer's Next) is paused at once. `resume` plays it again only if it was playing when held (or a screen tried to start meanwhile).
 

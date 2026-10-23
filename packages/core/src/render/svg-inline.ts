@@ -20,6 +20,9 @@ export interface InlineSvgOptions {
   label?: string; // the accessible name (the block's alt)
   decorative?: boolean;
   className?: string; // classes of the <img> it replaces
+  // A figure (t-figure-svg: an image block's drawing) or a dialogue's character (t-character:
+  // docs/dialogues.md, characters).
+  kind?: 'figure' | 'character';
 }
 
 const ELEMENTS = new Set([
@@ -40,7 +43,7 @@ const ID_LISTS = new Set(['aria-labelledby', 'aria-describedby']);
 
 interface Tag { name: string; attributes: [string, string][]; selfClosing: boolean }
 
-export function inlineSvg(source: string, { prefix, label, decorative = false, className }: InlineSvgOptions): InlineSvg {
+export function inlineSvg(source: string, { prefix, label, decorative = false, className, kind = 'figure' }: InlineSvgOptions): InlineSvg {
   const removed = new Set<string>();
   // Every id the drawing names is prefixed, its own and those it does not have (a reference to an id
   // of the page then points at nothing).
@@ -90,7 +93,7 @@ export function inlineSvg(source: string, { prefix, label, decorative = false, c
     if (root) {
       if (tag.name !== 'svg') return { html: '', removed: [`<${tag.name}> as the root (not an SVG)`] };
       root = false;
-      out.push(`<svg${rootAttributes(tag, { prefix, label, decorative, className }, fixUrls, removed)}>`);
+      out.push(`<svg${rootAttributes(tag, { prefix, label, decorative, className, kind }, fixUrls, removed)}>`);
       stack.push({ name: 'svg', written: true, style: false });
       if (tag.selfClosing) { stack.pop(); out.push('</svg>'); }
       continue;
@@ -102,9 +105,38 @@ export function inlineSvg(source: string, { prefix, label, decorative = false, c
     if (write) out.push(`<${tag.name}${attributes(tag, renameId, fixUrls, removed)}>`);
     if (tag.selfClosing || VOID_IN_HTML.has(tag.name)) { if (write) out.push(`</${tag.name}>`); continue; }
     stack.push({ name: tag.name, written: allowed, style: tag.name === 'style' });
+    // A <style>'s content is text up to </style>, whatever it holds (a « < » in a comment or a string
+    // is no tag): XML comments and CDATA sections in it are read as XML would.
+    if (tag.name === 'style') {
+      const css = readStyleText(source, i);
+      i = css.end;
+      if (write) out.push(escapeStyleText(scopeStyle(css.text, prefix, renameId, removed)));
+    }
   }
   while (stack.length) { const entry = stack.pop()!; if (entry.written && !dropping()) out.push(`</${entry.name}>`); }
   return { html: out.join('').trim(), removed: [...removed] };
+}
+
+// The text of a <style> from its content's start to its end tag (not included): XML comments left
+// out, CDATA sections as they are, character references decoded outside them.
+function readStyleText(source: string, from: number): { text: string; end: number } {
+  let text = '';
+  let i = from;
+  while (i < source.length) {
+    if (source.startsWith('<![CDATA[', i)) {
+      const end = source.indexOf(']]>', i + 9);
+      text += source.slice(i + 9, end < 0 ? source.length : end);
+      i = end < 0 ? source.length : end + 3;
+      continue;
+    }
+    if (source.startsWith('<!--', i)) { const end = source.indexOf('-->', i + 4); i = end < 0 ? source.length : end + 3; continue; }
+    if (/^<\/style\s*>/i.test(source.slice(i, i + 16))) return { text, end: i };
+    const next = source.slice(i).search(/<!\[CDATA\[|<!--|<\/style\s*>/i);
+    const stop = next < 0 ? source.length : i + Math.max(next, 1);
+    text += decodeEntities(source.slice(i, stop));
+    i = stop;
+  }
+  return { text, end: source.length };
 }
 
 function readTag(source: string, lt: number): { tag: Tag; end: number } | null {
@@ -162,7 +194,7 @@ function attributes(tag: Tag, renameId: (id: string) => string, fixUrls: (value:
   return written;
 }
 
-function rootAttributes(tag: Tag, { prefix, label, decorative, className }: InlineSvgOptions, fixUrls: (value: string) => string, removed: Set<string>): string {
+function rootAttributes(tag: Tag, { prefix, label, decorative, className, kind }: InlineSvgOptions, fixUrls: (value: string) => string, removed: Set<string>): string {
   const kept: [string, string][] = [];
   const has = (name: string) => tag.attributes.some(([key]) => key === name);
   for (const [name, raw] of tag.attributes) {
@@ -174,7 +206,7 @@ function rootAttributes(tag: Tag, { prefix, label, decorative, className }: Inli
   const height = parseFloat(tag.attributes.find(([key]) => key === 'height')?.[1] ?? '');
   if (!has('viewBox') && width > 0 && height > 0) kept.push(['viewBox', `0 0 ${width} ${height}`]);
   const own = tag.attributes.find(([key]) => key === 'class')?.[1];
-  const classes = ['t-figure-svg', ...(className ? className.split(/\s+/) : []), ...(own ? own.split(/\s+/) : [])].filter(Boolean);
+  const classes = [kind === 'character' ? 't-character' : 't-figure-svg', ...(className ? className.split(/\s+/) : []), ...(own ? own.split(/\s+/) : [])].filter(Boolean);
   const a11y: [string, string][] = decorative || !label ? [['aria-hidden', 'true']] : [['role', 'img'], ['aria-label', label]];
   return `${attributes({ name: 'svg', attributes: kept, selfClosing: false }, (id) => id, fixUrls, removed)} class="${escapeAttribute([...new Set(classes)].join(' '))}" data-t-svg="${escapeAttribute(prefix)}"${a11y.map(([name, value]) => ` ${name}="${escapeAttribute(value)}"`).join('')} focusable="false"`;
 }
@@ -199,8 +231,12 @@ function scopeStyle(css: string, prefix: string, renameId: (id: string) => strin
     const block = node as CssBlockNode;
     if (block.kind === 'at-rule') {
       if (['import', 'font-face', 'namespace', 'charset'].includes(block.name)) { if (block.name !== 'charset') removed.add(`@${block.name} in its <style>`); return ''; }
+      // A registered property is the page's, not the drawing's: two drawings that register one each
+      // would fight over it.
+      if (block.name === 'property') { removed.add('@property in its <style> (registered properties belong to the whole page)'); return ''; }
       if (/keyframes$/.test(block.name)) return `@${block.name} ${prefix}-${block.prelude.replace(/^@[\w-]+\s+/, '').trim()}{${write(parseCss(css.slice(block.bodyStart, block.bodyEnd)), true)}}`; // opaque to the reader: read on its own
-      if (!block.block) return '';
+      // A statement (« @layer base; ») would order the page's own cascade.
+      if (!block.block) { removed.add(`@${block.name} without a block in its <style>`); return ''; }
       return `${block.prelude}{${write(block.children, nested)}}`;
     }
     const selector = nested ? block.prelude : scopeSelector(block.prelude, scope, renameId);
@@ -211,13 +247,53 @@ function scopeStyle(css: string, prefix: string, renameId: (id: string) => strin
 }
 
 // Under the drawing's root; a selector that would reach the page beside it (the root's siblings,
-// « svg ~ p », « + p ») is left out (an empty string when none is left).
+// « svg ~ p », « + p ») is left out (an empty string when none is left). The list is cut on its own
+// commas only (not those of :is(), :where(), :not(), :has() nor of a string), and ids are renamed in
+// id selectors only (not a « # » in an attribute's value).
 function scopeSelector(list: string, scope: string, renameId: (id: string) => string): string {
-  return list.split(',').map((part) => {
-    const selector = part.trim().replace(/#([\w-]+)/g, (_m, id: string) => `#${renameId(id)}`);
+  return splitTopLevel(list).map((part) => {
+    const selector = renameIdSelectors(part.trim(), renameId);
     const scoped = /^(svg|:root)\b/.test(selector) ? selector.replace(/^(svg|:root)/, scope) : `${scope} ${selector}`;
     return scoped.slice(scope.length).trimStart().startsWith('~') || scoped.slice(scope.length).trimStart().startsWith('+') ? '' : scoped;
   }).filter(Boolean).join(',');
+}
+
+// A selector list cut on the commas outside parentheses, brackets and strings.
+export function splitTopLevel(list: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let quote: string | null = null;
+  let start = 0;
+  for (let i = 0; i < list.length; i++) {
+    const ch = list[i]!;
+    if (quote) { if (ch === '\\') i++; else if (ch === quote) quote = null; continue; }
+    if (ch === '"' || ch === "'") quote = ch;
+    else if (ch === '(' || ch === '[') depth++;
+    else if (ch === ')' || ch === ']') depth = Math.max(0, depth - 1);
+    else if (ch === ',' && depth === 0) { parts.push(list.slice(start, i)); start = i + 1; }
+  }
+  parts.push(list.slice(start));
+  return parts;
+}
+
+// « #id » renamed where it is an id selector: outside attribute selectors and strings.
+function renameIdSelectors(selector: string, renameId: (id: string) => string): string {
+  let out = '';
+  let brackets = 0;
+  let quote: string | null = null;
+  for (let i = 0; i < selector.length; i++) {
+    const ch = selector[i]!;
+    if (quote) { out += ch; if (ch === '\\') { out += selector[i + 1] ?? ''; i++; } else if (ch === quote) quote = null; continue; }
+    if (ch === '"' || ch === "'") quote = ch;
+    else if (ch === '[') brackets++;
+    else if (ch === ']') brackets = Math.max(0, brackets - 1);
+    else if (ch === '#' && brackets === 0) {
+      const id = /^[\w-]+/.exec(selector.slice(i + 1))?.[0];
+      if (id) { out += `#${renameId(id)}`; i += id.length; continue; }
+    }
+    out += ch;
+  }
+  return out;
 }
 
 // What makes a declaration unsafe in the page, in words, or null: anything that loads (a url() out of
