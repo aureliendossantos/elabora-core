@@ -1,0 +1,97 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "rules",
+  "title": "Our rules, and why",
+  "covers": [
+    "ITEM-4"
+  ],
+  "blocks": [
+    {
+      "id": "rules-timeline",
+      "type": "milestones",
+      "width": "wide",
+      "props": {
+        "takeaway": "Each of our rules answered an attack",
+        "context": "The anti-phishing rules of Quillon Freight, from 2021",
+        "source": "Information security policy, Quillon Freight (internal policy, fictional)",
+        "highlight": "callback",
+        "items": [
+          {
+            "id": "mfa",
+            "date": "2021",
+            "title": "Two-step sign-in",
+            "text": "After a stolen password opened a mailbox for a week.",
+            "at": {
+              "line": "l2",
+              "word": "Two-step"
+            }
+          },
+          {
+            "id": "button",
+            "date": "2023",
+            "title": "One-click Report button",
+            "text": "Reporting used to mean forwarding to an address few knew.",
+            "at": {
+              "line": "l2",
+              "word": "Report button"
+            }
+          },
+          {
+            "id": "callback",
+            "date": "2024",
+            "title": "Call suppliers back",
+            "text": "Before any change of bank details, on the number already on file.",
+            "at": {
+              "line": "l3",
+              "word": "call"
+            }
+          },
+          {
+            "id": "drills",
+            "date": "2025",
+            "title": "Monthly drills",
+            "text": "A safe fake every month, a one-screen debrief after a click.",
+            "at": {
+              "line": "l4",
+              "word": "drills"
+            }
+          },
+          {
+            "id": "module",
+            "date": "2026",
+            "title": "This module",
+            "text": "For every employee, office and warehouse.",
+            "at": {
+              "line": "l4",
+              "word": "module"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "l1",
+        "speaker": "guide",
+        "text": "Each of our rules answered an attack."
+      },
+      {
+        "id": "l2",
+        "speaker": "guide",
+        "text": "Two-step sign-in in 2021. The Report button in 2023."
+      },
+      {
+        "id": "l3",
+        "speaker": "guide",
+        "text": "After a fake invoice cost us 48,000 pounds, we call suppliers back."
+      },
+      {
+        "id": "l4",
+        "speaker": "guide",
+        "text": "Monthly drills in 2025. And this module, today."
+      }
+    ]
+  }
+}

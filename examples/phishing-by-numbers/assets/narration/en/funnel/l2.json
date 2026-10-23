@@ -1,0 +1,117 @@
+{
+  "screen": "funnel",
+  "line": "l2",
+  "language": "en",
+  "textHash": "sha256:9e7ec34213901e134d5f5360aa64ca4bbe132f48b297369e98006c27984bc516",
+  "duration": 5.69,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:2b2fab9ae170eb594bf48bb3f60c25c04cee8473bcd6f94e1e8427ec6bd74d0b",
+  "createdAt": "2026-10-23T12:18:03Z",
+  "take": 1,
+  "spokenHash": "sha256:9e7ec34213901e134d5f5360aa64ca4bbe132f48b297369e98006c27984bc516",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Two in three opened it, one in three clicked, and one in twelve typed a password.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Two",
+      "start": 0.04,
+      "end": 0.281,
+      "score": 0.999
+    },
+    {
+      "text": "in",
+      "start": 0.281,
+      "end": 0.473,
+      "score": 0.504
+    },
+    {
+      "text": "three",
+      "start": 0.481,
+      "end": 0.853,
+      "score": 0.955
+    },
+    {
+      "text": "opened",
+      "start": 0.942,
+      "end": 1.322,
+      "score": 0.998
+    },
+    {
+      "text": "it",
+      "start": 1.322,
+      "end": 1.494,
+      "score": 1
+    },
+    {
+      "text": "one",
+      "start": 2.044,
+      "end": 2.184,
+      "score": 1
+    },
+    {
+      "text": "in",
+      "start": 2.184,
+      "end": 2.344,
+      "score": 0.54
+    },
+    {
+      "text": "three",
+      "start": 2.344,
+      "end": 2.656,
+      "score": 1
+    },
+    {
+      "text": "clicked",
+      "start": 2.685,
+      "end": 3.177,
+      "score": 0.998
+    },
+    {
+      "text": "and",
+      "start": 3.506,
+      "end": 3.738,
+      "score": 0.987
+    },
+    {
+      "text": "one",
+      "start": 3.787,
+      "end": 3.927,
+      "score": 1
+    },
+    {
+      "text": "in",
+      "start": 3.927,
+      "end": 4.087,
+      "score": 0.581
+    },
+    {
+      "text": "twelve",
+      "start": 4.087,
+      "end": 4.64,
+      "score": 0.997
+    },
+    {
+      "text": "typed",
+      "start": 4.648,
+      "end": 4.949,
+      "score": 0.923
+    },
+    {
+      "text": "a",
+      "start": 4.949,
+      "end": 5.029,
+      "score": 0.02
+    },
+    {
+      "text": "password",
+      "start": 5.029,
+      "end": 5.642,
+      "score": 0.868
+    }
+  ]
+}

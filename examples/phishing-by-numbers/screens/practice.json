@@ -1,0 +1,59 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "practice",
+  "title": "Your turn: new bank details",
+  "covers": [
+    "ITEM-6"
+  ],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "practice-email",
+      "type": "callout",
+      "style": "email",
+      "props": {
+        "variant": "info",
+        "title": "New bank details before Friday’s payment",
+        "markdown": "**From:** Accounts, Harlow Tyres `accounts@harlow-tyres-billing.com`\n\nHello, our bank has changed. Please pay this week’s invoice (£18,400) to the account below and confirm today, so the payment is not delayed.\n\nIBAN: GB33 BUKB 2020 1555 5555 55"
+      }
+    },
+    {
+      "id": "practice-choice",
+      "type": "decision",
+      "props": {
+        "prompt": "You work in Finance. What do you do?",
+        "objective": "OBJ-1",
+        "allowChange": true,
+        "options": [
+          {
+            "id": "report",
+            "label": "Press Report, and leave the payment as it is",
+            "correct": true,
+            "feedback": "**Right.** It asks for money, in a hurry, from an address Harlow has never used. Report sends it to the desk; if the change were real, Finance would confirm it by calling Harlow on the number already on file."
+          },
+          {
+            "id": "reply",
+            "label": "Reply and ask them to confirm the change",
+            "correct": false,
+            "feedback": "**Not this.** Your reply goes to the attacker, who will gladly confirm. Report the email; a real change is checked by calling the supplier on the number already on file, never one in the email."
+          },
+          {
+            "id": "forward",
+            "label": "Forward it to your manager so they can decide",
+            "correct": false,
+            "feedback": "**Not this.** Forwarding passes the lure to someone who can approve the payment. Report it: the desk checks it in minutes and warns Finance if needed."
+          }
+        ]
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "l1",
+        "speaker": "guide",
+        "text": "Your turn. This email reached Finance this morning. What do you do?"
+      }
+    ]
+  }
+}

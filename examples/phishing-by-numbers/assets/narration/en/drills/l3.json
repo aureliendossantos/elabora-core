@@ -1,0 +1,63 @@
+{
+  "screen": "drills",
+  "line": "l3",
+  "language": "en",
+  "textHash": "sha256:b0e54493a1c7f38ac971dbabec84a87b641b38689786ec229bdb7a8ffd3bc639",
+  "duration": 2.62,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:d99634f7fefbb977bc10db3c5f1df8d5e08d7ac05f531599851a0ddf1c2ab53c",
+  "createdAt": "2026-10-23T12:18:21Z",
+  "take": 1,
+  "spokenHash": "sha256:b0e54493a1c7f38ac971dbabec84a87b641b38689786ec229bdb7a8ffd3bc639",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Every team clicks less than in January.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Every",
+      "start": 0.121,
+      "end": 0.403,
+      "score": 1
+    },
+    {
+      "text": "team",
+      "start": 0.403,
+      "end": 0.737,
+      "score": 0.974
+    },
+    {
+      "text": "clicks",
+      "start": 0.746,
+      "end": 1.14,
+      "score": 0.943
+    },
+    {
+      "text": "less",
+      "start": 1.189,
+      "end": 1.592,
+      "score": 0.997
+    },
+    {
+      "text": "than",
+      "start": 1.592,
+      "end": 1.814,
+      "score": 1
+    },
+    {
+      "text": "in",
+      "start": 1.814,
+      "end": 1.935,
+      "score": 1
+    },
+    {
+      "text": "January",
+      "start": 1.935,
+      "end": 2.62,
+      "score": 0.892
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "screen": "rules",
+  "line": "l1",
+  "language": "en",
+  "textHash": "sha256:b958d3cf787354751dc37c5b0f8f74e300f45557afa3c6a915e6b051c3f0c1c1",
+  "duration": 2.32,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:ce32d0df1808b964ba43731244b61f5ede278dded1d0096d4c7161f409d056b0",
+  "createdAt": "2026-10-23T12:18:34Z",
+  "take": 1,
+  "spokenHash": "sha256:b958d3cf787354751dc37c5b0f8f74e300f45557afa3c6a915e6b051c3f0c1c1",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Each of our rules answered an attack.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Each",
+      "start": 0.061,
+      "end": 0.283,
+      "score": 0.997
+    },
+    {
+      "text": "of",
+      "start": 0.283,
+      "end": 0.444,
+      "score": 1
+    },
+    {
+      "text": "our",
+      "start": 0.444,
+      "end": 0.646,
+      "score": 1
+    },
+    {
+      "text": "rules",
+      "start": 0.646,
+      "end": 1.06,
+      "score": 1
+    },
+    {
+      "text": "answered",
+      "start": 1.211,
+      "end": 1.634,
+      "score": 0.936
+    },
+    {
+      "text": "an",
+      "start": 1.634,
+      "end": 1.755,
+      "score": 0.876
+    },
+    {
+      "text": "attack",
+      "start": 1.755,
+      "end": 2.23,
+      "score": 1
+    }
+  ]
+}

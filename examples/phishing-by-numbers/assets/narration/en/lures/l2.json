@@ -1,0 +1,93 @@
+{
+  "screen": "lures",
+  "line": "l2",
+  "language": "en",
+  "textHash": "sha256:d94c6576585753048d8374d29373339e259c9881fed8897c1dda84ff456374f3",
+  "duration": 6.68,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:060ec2a31b5d1f327471f00ff4d96682d83fccc280b6ad561924f8077baf0245",
+  "createdAt": "2026-10-23T12:17:57Z",
+  "take": 1,
+  "spokenHash": "sha256:d94c6576585753048d8374d29373339e259c9881fed8897c1dda84ff456374f3",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Delivery notices, then invoices, password resets, payroll messages, and a few others.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Delivery",
+      "start": 0.06,
+      "end": 0.542,
+      "score": 0.977
+    },
+    {
+      "text": "notices",
+      "start": 0.542,
+      "end": 1.135,
+      "score": 0.986
+    },
+    {
+      "text": "then",
+      "start": 1.485,
+      "end": 1.757,
+      "score": 0.986
+    },
+    {
+      "text": "invoices",
+      "start": 1.805,
+      "end": 2.499,
+      "score": 0.974
+    },
+    {
+      "text": "password",
+      "start": 2.929,
+      "end": 3.47,
+      "score": 0.903
+    },
+    {
+      "text": "resets",
+      "start": 3.47,
+      "end": 4.084,
+      "score": 0.876
+    },
+    {
+      "text": "payroll",
+      "start": 4.393,
+      "end": 4.835,
+      "score": 0.858
+    },
+    {
+      "text": "messages",
+      "start": 4.835,
+      "end": 5.428,
+      "score": 0.977
+    },
+    {
+      "text": "and",
+      "start": 5.697,
+      "end": 5.858,
+      "score": 1
+    },
+    {
+      "text": "a",
+      "start": 5.858,
+      "end": 5.938,
+      "score": 0.979
+    },
+    {
+      "text": "few",
+      "start": 5.938,
+      "end": 6.199,
+      "score": 1
+    },
+    {
+      "text": "others",
+      "start": 6.199,
+      "end": 6.632,
+      "score": 0.908
+    }
+  ]
+}

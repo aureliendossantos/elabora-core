@@ -1,0 +1,105 @@
+{
+  "screen": "drills",
+  "line": "l2",
+  "language": "en",
+  "textHash": "sha256:ec3387d64557ccfd0136ba44e8f4a7e8dd205091cc8ec393a827e6e4404d4aab",
+  "duration": 4.2,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:17f391d6504b2c37ea89e9d5446792e760e5e66b60ae5adae128759e404577f9",
+  "createdAt": "2026-10-23T12:18:19Z",
+  "take": 1,
+  "spokenHash": "sha256:ec3387d64557ccfd0136ba44e8f4a7e8dd205091cc8ec393a827e6e4404d4aab",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Where were clicks by November, do you think? Draw the rest of the line.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Where",
+      "start": 0.06,
+      "end": 0.281,
+      "score": 1
+    },
+    {
+      "text": "were",
+      "start": 0.281,
+      "end": 0.482,
+      "score": 0.99
+    },
+    {
+      "text": "clicks",
+      "start": 0.482,
+      "end": 0.824,
+      "score": 0.98
+    },
+    {
+      "text": "by",
+      "start": 0.824,
+      "end": 1.005,
+      "score": 1
+    },
+    {
+      "text": "November",
+      "start": 1.005,
+      "end": 1.608,
+      "score": 0.953
+    },
+    {
+      "text": "do",
+      "start": 1.608,
+      "end": 1.708,
+      "score": 0.997
+    },
+    {
+      "text": "you",
+      "start": 1.708,
+      "end": 1.889,
+      "score": 0.992
+    },
+    {
+      "text": "think",
+      "start": 1.889,
+      "end": 2.182,
+      "score": 1
+    },
+    {
+      "text": "Draw",
+      "start": 2.854,
+      "end": 3.115,
+      "score": 0.996
+    },
+    {
+      "text": "the",
+      "start": 3.115,
+      "end": 3.256,
+      "score": 1
+    },
+    {
+      "text": "rest",
+      "start": 3.256,
+      "end": 3.537,
+      "score": 0.971
+    },
+    {
+      "text": "of",
+      "start": 3.537,
+      "end": 3.637,
+      "score": 0.999
+    },
+    {
+      "text": "the",
+      "start": 3.637,
+      "end": 3.778,
+      "score": 0.982
+    },
+    {
+      "text": "line",
+      "start": 3.778,
+      "end": 4.151,
+      "score": 1
+    }
+  ]
+}

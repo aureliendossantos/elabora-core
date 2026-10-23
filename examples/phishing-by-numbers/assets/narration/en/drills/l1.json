@@ -1,0 +1,117 @@
+{
+  "screen": "drills",
+  "line": "l1",
+  "language": "en",
+  "textHash": "sha256:a5aa2f3efb5e3e0e835aba8e5c789f0dd402a868360f42979219a9b050c5d9e3",
+  "duration": 6.9,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:78fed410b0625d89ed5d816af62c2f790e073574e81a6f66bd1838e1f13388c8",
+  "createdAt": "2026-10-23T12:19:32Z",
+  "take": 2,
+  "spokenHash": "sha256:a5aa2f3efb5e3e0e835aba8e5c789f0dd402a868360f42979219a9b050c5d9e3",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "In January, one in three clicked our drill. By May, after monthly drills, one in five.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "In",
+      "start": 0.08,
+      "end": 0.221,
+      "score": 1
+    },
+    {
+      "text": "January",
+      "start": 0.221,
+      "end": 0.954,
+      "score": 0.972
+    },
+    {
+      "text": "one",
+      "start": 1.304,
+      "end": 1.464,
+      "score": 0.925
+    },
+    {
+      "text": "in",
+      "start": 1.464,
+      "end": 1.656,
+      "score": 0.737
+    },
+    {
+      "text": "three",
+      "start": 1.745,
+      "end": 2.118,
+      "score": 0.999
+    },
+    {
+      "text": "clicked",
+      "start": 2.166,
+      "end": 2.487,
+      "score": 0.999
+    },
+    {
+      "text": "our",
+      "start": 2.487,
+      "end": 2.628,
+      "score": 0.999
+    },
+    {
+      "text": "drill",
+      "start": 2.628,
+      "end": 3.041,
+      "score": 0.958
+    },
+    {
+      "text": "By",
+      "start": 3.57,
+      "end": 3.811,
+      "score": 0.996
+    },
+    {
+      "text": "May",
+      "start": 3.811,
+      "end": 4.164,
+      "score": 0.941
+    },
+    {
+      "text": "after",
+      "start": 4.493,
+      "end": 4.794,
+      "score": 0.968
+    },
+    {
+      "text": "monthly",
+      "start": 4.794,
+      "end": 5.195,
+      "score": 0.865
+    },
+    {
+      "text": "drills",
+      "start": 5.195,
+      "end": 5.648,
+      "score": 0.979
+    },
+    {
+      "text": "one",
+      "start": 6.058,
+      "end": 6.198,
+      "score": 0.936
+    },
+    {
+      "text": "in",
+      "start": 6.198,
+      "end": 6.37,
+      "score": 0.935
+    },
+    {
+      "text": "five",
+      "start": 6.419,
+      "end": 6.852,
+      "score": 1
+    }
+  ]
+}

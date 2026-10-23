@@ -1,0 +1,115 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "lure-map",
+  "title": "The lures that work",
+  "covers": [
+    "ITEM-3"
+  ],
+  "blocks": [
+    {
+      "id": "lure-map-matrix",
+      "type": "matrix",
+      "width": "wide",
+      "style": "aside",
+      "props": {
+        "takeaway": "Invoices and password resets are the lures to watch first",
+        "context": "Each lure of 2025: how often it arrived, and how often people clicked it in drills",
+        "source": "Phishing drills 2025, Quillon Freight (internal report, fictional)",
+        "x": {
+          "label": "How often it arrives",
+          "low": "Rarely",
+          "high": "Every day"
+        },
+        "y": {
+          "label": "How often people click",
+          "low": "Rarely",
+          "high": "Often"
+        },
+        "quadrants": {
+          "topLeft": "Rare but convincing",
+          "topRight": "Watch first",
+          "bottomLeft": "Background noise",
+          "bottomRight": "Common, easy to spot"
+        },
+        "highlightQuadrant": "topRight",
+        "highlight": "invoice",
+        "items": [
+          {
+            "id": "prize",
+            "label": "Prize draw",
+            "x": 0.16,
+            "y": 0.12,
+            "text": "Too good to be true, and everyone knows it",
+            "at": {
+              "line": "l2",
+              "word": "Prize"
+            }
+          },
+          {
+            "id": "delivery",
+            "label": "Delivery notice",
+            "x": 0.88,
+            "y": 0.34,
+            "text": "Daily, but the courier names give it away",
+            "at": {
+              "line": "l2",
+              "word": "Delivery"
+            }
+          },
+          {
+            "id": "payroll",
+            "label": "Payroll message",
+            "x": 0.28,
+            "y": 0.76,
+            "text": "Rare, but personal: people click",
+            "at": {
+              "line": "l3",
+              "word": "Payroll"
+            }
+          },
+          {
+            "id": "password",
+            "label": "Password reset",
+            "x": 0.6,
+            "y": 0.66,
+            "text": "Looks like IT, and asks for the one thing it must not",
+            "at": {
+              "line": "l3",
+              "word": "Password"
+            }
+          },
+          {
+            "id": "invoice",
+            "label": "Invoice",
+            "x": 0.72,
+            "y": 0.84,
+            "text": "Looks like real work, and asks for money",
+            "at": {
+              "line": "l3",
+              "word": "invoices"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "l1",
+        "speaker": "guide",
+        "text": "Now place each lure: how often it comes, and how often people click."
+      },
+      {
+        "id": "l2",
+        "speaker": "guide",
+        "text": "Prize draws are rare and easy to spot. Delivery notices are common, but rarely fool us."
+      },
+      {
+        "id": "l3",
+        "speaker": "guide",
+        "text": "Payroll messages are rare but convincing. Password resets and invoices are both."
+      }
+    ]
+  }
+}

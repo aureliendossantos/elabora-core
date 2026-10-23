@@ -1,0 +1,93 @@
+{
+  "screen": "after-report",
+  "line": "l1",
+  "language": "en",
+  "textHash": "sha256:51302fdd5e4cf94a1857973a3e26f6f118514325ec80ac9a4cf1669824cefcca",
+  "duration": 4.46,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:75927e85b3fbda271495adb11e41011d5631f889c5d8c35c8032e5e589086f7a",
+  "createdAt": "2026-10-23T12:18:54Z",
+  "take": 1,
+  "spokenHash": "sha256:51302fdd5e4cf94a1857973a3e26f6f118514325ec80ac9a4cf1669824cefcca",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Your report reaches the desk, where an analyst triages it within minutes.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Your",
+      "start": 0.06,
+      "end": 0.221,
+      "score": 0.997
+    },
+    {
+      "text": "report",
+      "start": 0.221,
+      "end": 0.683,
+      "score": 0.983
+    },
+    {
+      "text": "reaches",
+      "start": 0.683,
+      "end": 1.065,
+      "score": 0.972
+    },
+    {
+      "text": "the",
+      "start": 1.065,
+      "end": 1.206,
+      "score": 0.965
+    },
+    {
+      "text": "desk",
+      "start": 1.206,
+      "end": 1.639,
+      "score": 0.976
+    },
+    {
+      "text": "where",
+      "start": 1.828,
+      "end": 2.029,
+      "score": 0.927
+    },
+    {
+      "text": "an",
+      "start": 2.029,
+      "end": 2.201,
+      "score": 0.998
+    },
+    {
+      "text": "analyst",
+      "start": 2.23,
+      "end": 2.744,
+      "score": 0.935
+    },
+    {
+      "text": "triages",
+      "start": 2.752,
+      "end": 3.395,
+      "score": 0.764
+    },
+    {
+      "text": "it",
+      "start": 3.395,
+      "end": 3.516,
+      "score": 0.998
+    },
+    {
+      "text": "within",
+      "start": 3.516,
+      "end": 3.889,
+      "score": 0.989
+    },
+    {
+      "text": "minutes",
+      "start": 3.918,
+      "end": 4.371,
+      "score": 0.972
+    }
+  ]
+}

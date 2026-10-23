@@ -1,0 +1,117 @@
+{
+  "screen": "lure-map",
+  "line": "l2",
+  "language": "en",
+  "textHash": "sha256:2a2db711d67dc345256979177550b7c775eb4542f6279ffb625a21a89d41bdcf",
+  "duration": 6.7,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:c667281636ec411b3941367835291449a6475e6395da40797004321d927150b7",
+  "createdAt": "2026-10-23T12:18:11Z",
+  "take": 1,
+  "spokenHash": "sha256:2a2db711d67dc345256979177550b7c775eb4542f6279ffb625a21a89d41bdcf",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Prize draws are rare and easy to spot. Delivery notices are common, but rarely fool us.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Prize",
+      "start": 0.04,
+      "end": 0.441,
+      "score": 0.987
+    },
+    {
+      "text": "draws",
+      "start": 0.441,
+      "end": 0.894,
+      "score": 0.964
+    },
+    {
+      "text": "are",
+      "start": 0.923,
+      "end": 1.135,
+      "score": 1
+    },
+    {
+      "text": "rare",
+      "start": 1.143,
+      "end": 1.556,
+      "score": 0.9
+    },
+    {
+      "text": "and",
+      "start": 1.605,
+      "end": 1.817,
+      "score": 1
+    },
+    {
+      "text": "easy",
+      "start": 1.906,
+      "end": 2.187,
+      "score": 0.976
+    },
+    {
+      "text": "to",
+      "start": 2.187,
+      "end": 2.347,
+      "score": 1
+    },
+    {
+      "text": "spot",
+      "start": 2.347,
+      "end": 2.82,
+      "score": 0.999
+    },
+    {
+      "text": "Delivery",
+      "start": 3.43,
+      "end": 3.952,
+      "score": 0.974
+    },
+    {
+      "text": "notices",
+      "start": 3.952,
+      "end": 4.453,
+      "score": 0.997
+    },
+    {
+      "text": "are",
+      "start": 4.453,
+      "end": 4.614,
+      "score": 1
+    },
+    {
+      "text": "common",
+      "start": 4.614,
+      "end": 5.127,
+      "score": 1
+    },
+    {
+      "text": "but",
+      "start": 5.236,
+      "end": 5.528,
+      "score": 0.946
+    },
+    {
+      "text": "rarely",
+      "start": 5.557,
+      "end": 6.018,
+      "score": 0.955
+    },
+    {
+      "text": "fool",
+      "start": 6.018,
+      "end": 6.359,
+      "score": 0.998
+    },
+    {
+      "text": "us",
+      "start": 6.359,
+      "end": 6.571,
+      "score": 0.855
+    }
+  ]
+}

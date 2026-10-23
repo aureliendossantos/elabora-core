@@ -1,0 +1,99 @@
+{
+  "screen": "drills",
+  "line": "l4",
+  "language": "en",
+  "textHash": "sha256:cfdac9672f59034499552cae9d51f90a5d20b02b2156f05e23e0fcd3d1be4f96",
+  "duration": 6.55,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:0c5be17025b5c1b1b8b0eb356ecc5da885d4e6578e91af5f9dd23976a370094a",
+  "createdAt": "2026-10-23T12:18:23Z",
+  "take": 1,
+  "spokenHash": "sha256:cfdac9672f59034499552cae9d51f90a5d20b02b2156f05e23e0fcd3d1be4f96",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Finance, sales and HR fell to 3 or 4 percent. IT started low.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Finance",
+      "start": 0.08,
+      "end": 0.693,
+      "score": 0.999
+    },
+    {
+      "text": "sales",
+      "start": 0.821,
+      "end": 1.314,
+      "score": 0.941
+    },
+    {
+      "text": "and",
+      "start": 1.322,
+      "end": 1.534,
+      "score": 1
+    },
+    {
+      "text": "HR",
+      "start": 1.683,
+      "end": 2.215,
+      "score": 0.888
+    },
+    {
+      "text": "fell",
+      "start": 2.284,
+      "end": 2.524,
+      "score": 1
+    },
+    {
+      "text": "to",
+      "start": 2.524,
+      "end": 2.756,
+      "score": 0.967
+    },
+    {
+      "text": "3",
+      "start": 2.764,
+      "end": 3.125,
+      "score": 0.998
+    },
+    {
+      "text": "or",
+      "start": 3.125,
+      "end": 3.265,
+      "score": 0.874
+    },
+    {
+      "text": "4",
+      "start": 3.265,
+      "end": 3.545,
+      "score": 0.986
+    },
+    {
+      "text": "percent",
+      "start": 3.545,
+      "end": 4.098,
+      "score": 0.999
+    },
+    {
+      "text": "IT",
+      "start": 4.747,
+      "end": 5.06,
+      "score": 0.992
+    },
+    {
+      "text": "started",
+      "start": 5.248,
+      "end": 5.689,
+      "score": 0.986
+    },
+    {
+      "text": "low",
+      "start": 5.689,
+      "end": 6.001,
+      "score": 0.995
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "screen": "funnel",
+  "line": "l3",
+  "language": "en",
+  "textHash": "sha256:d1b4602ef48481f6958b07b5b74f82f334a1a614c96d73c281bf783c61c5ed3d",
+  "duration": 3.2,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:d0775afe4aacf794d69fe9b4408c875ffc1b5d6b522ed1b723a62fe972bf1622",
+  "createdAt": "2026-10-23T12:18:05Z",
+  "take": 1,
+  "spokenHash": "sha256:d1b4602ef48481f6958b07b5b74f82f334a1a614c96d73c281bf783c61c5ed3d",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "And only one in seven told the security desk.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "And",
+      "start": 0.061,
+      "end": 0.273,
+      "score": 0.997
+    },
+    {
+      "text": "only",
+      "start": 0.302,
+      "end": 0.635,
+      "score": 0.991
+    },
+    {
+      "text": "one",
+      "start": 0.785,
+      "end": 0.946,
+      "score": 1
+    },
+    {
+      "text": "in",
+      "start": 0.946,
+      "end": 1.138,
+      "score": 0.562
+    },
+    {
+      "text": "seven",
+      "start": 1.208,
+      "end": 1.702,
+      "score": 0.998
+    },
+    {
+      "text": "told",
+      "start": 1.771,
+      "end": 2.033,
+      "score": 0.965
+    },
+    {
+      "text": "the",
+      "start": 2.033,
+      "end": 2.154,
+      "score": 0.998
+    },
+    {
+      "text": "security",
+      "start": 2.154,
+      "end": 2.717,
+      "score": 1
+    },
+    {
+      "text": "desk",
+      "start": 2.717,
+      "end": 3.111,
+      "score": 0.729
+    }
+  ]
+}

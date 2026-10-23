@@ -1,0 +1,75 @@
+{
+  "screen": "intro",
+  "line": "l2",
+  "language": "en",
+  "textHash": "sha256:858f5e4faaa729c6b13fab3fc71682be151fa8af84dd77f0502e8756d5d25667",
+  "duration": 3.55,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:faa9c3edbc7607afda6bf6c9f6cc39b93dd8f4fdfc8aea7b081a3352f45ec0d4",
+  "createdAt": "2026-10-23T12:17:40Z",
+  "take": 1,
+  "spokenHash": "sha256:858f5e4faaa729c6b13fab3fc71682be151fa8af84dd77f0502e8756d5d25667",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Email is where 62 percent of our incidents began.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Email",
+      "start": 0.1,
+      "end": 0.553,
+      "score": 0.735
+    },
+    {
+      "text": "is",
+      "start": 0.602,
+      "end": 0.722,
+      "score": 0.988
+    },
+    {
+      "text": "where",
+      "start": 0.722,
+      "end": 1.035,
+      "score": 0.996
+    },
+    {
+      "text": "62",
+      "start": 1.063,
+      "end": 1.765,
+      "score": 0.95
+    },
+    {
+      "text": "percent",
+      "start": 1.765,
+      "end": 2.186,
+      "score": 0.999
+    },
+    {
+      "text": "of",
+      "start": 2.186,
+      "end": 2.307,
+      "score": 1
+    },
+    {
+      "text": "our",
+      "start": 2.307,
+      "end": 2.487,
+      "score": 1
+    },
+    {
+      "text": "incidents",
+      "start": 2.487,
+      "end": 2.989,
+      "score": 0.994
+    },
+    {
+      "text": "began",
+      "start": 2.989,
+      "end": 3.55,
+      "score": 0.791
+    }
+  ]
+}

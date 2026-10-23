@@ -1,0 +1,117 @@
+{
+  "screen": "flow",
+  "line": "l3",
+  "language": "en",
+  "textHash": "sha256:480b3087ca0a69756f7f55007d30084d08622f1f606888c47fba5731354e8163",
+  "duration": 6.19,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:70a7c74c51b11370799aa58275b8862f7e95a8220cdd7f10ede3b52e6c7fd350",
+  "createdAt": "2026-10-23T12:19:06Z",
+  "take": 1,
+  "spokenHash": "sha256:480b3087ca0a69756f7f55007d30084d08622f1f606888c47fba5731354e8163",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Then, if you clicked, call the desk. If not, you're done: we take it from here.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Then",
+      "start": 0.06,
+      "end": 0.392,
+      "score": 0.998
+    },
+    {
+      "text": "if",
+      "start": 0.701,
+      "end": 0.801,
+      "score": 1
+    },
+    {
+      "text": "you",
+      "start": 0.801,
+      "end": 1.013,
+      "score": 1
+    },
+    {
+      "text": "clicked",
+      "start": 1.022,
+      "end": 1.494,
+      "score": 0.997
+    },
+    {
+      "text": "call",
+      "start": 1.823,
+      "end": 2.083,
+      "score": 0.986
+    },
+    {
+      "text": "the",
+      "start": 2.083,
+      "end": 2.204,
+      "score": 0.999
+    },
+    {
+      "text": "desk",
+      "start": 2.204,
+      "end": 2.576,
+      "score": 0.779
+    },
+    {
+      "text": "If",
+      "start": 3.265,
+      "end": 3.446,
+      "score": 1
+    },
+    {
+      "text": "not",
+      "start": 3.446,
+      "end": 3.798,
+      "score": 0.999
+    },
+    {
+      "text": "you're",
+      "start": 4.087,
+      "end": 4.287,
+      "score": 0.995
+    },
+    {
+      "text": "done",
+      "start": 4.287,
+      "end": 4.619,
+      "score": 0.969
+    },
+    {
+      "text": "we",
+      "start": 5.128,
+      "end": 5.309,
+      "score": 1
+    },
+    {
+      "text": "take",
+      "start": 5.309,
+      "end": 5.549,
+      "score": 1
+    },
+    {
+      "text": "it",
+      "start": 5.549,
+      "end": 5.649,
+      "score": 0.996
+    },
+    {
+      "text": "from",
+      "start": 5.649,
+      "end": 5.85,
+      "score": 0.962
+    },
+    {
+      "text": "here",
+      "start": 5.85,
+      "end": 6.162,
+      "score": 0.978
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "screen": "practice",
+  "line": "l1",
+  "language": "en",
+  "textHash": "sha256:2674e96c92439459b2a637cebc02cf4253b13e48d6eb4dd84df941339435b82f",
+  "duration": 4.77,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:4f40622034ef7394d3783f508a424d7a35a09f637fdf12e78e29ad92da684eb7",
+  "createdAt": "2026-10-23T12:19:09Z",
+  "take": 1,
+  "spokenHash": "sha256:2674e96c92439459b2a637cebc02cf4253b13e48d6eb4dd84df941339435b82f",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Your turn. This email reached Finance this morning. What do you do?",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Your",
+      "start": 0.06,
+      "end": 0.301,
+      "score": 0.989
+    },
+    {
+      "text": "turn",
+      "start": 0.301,
+      "end": 0.633,
+      "score": 0.997
+    },
+    {
+      "text": "This",
+      "start": 1.343,
+      "end": 1.635,
+      "score": 0.961
+    },
+    {
+      "text": "email",
+      "start": 1.704,
+      "end": 2.096,
+      "score": 0.942
+    },
+    {
+      "text": "reached",
+      "start": 2.104,
+      "end": 2.465,
+      "score": 0.965
+    },
+    {
+      "text": "Finance",
+      "start": 2.465,
+      "end": 2.966,
+      "score": 0.993
+    },
+    {
+      "text": "this",
+      "start": 2.966,
+      "end": 3.187,
+      "score": 0.972
+    },
+    {
+      "text": "morning",
+      "start": 3.187,
+      "end": 3.599,
+      "score": 0.975
+    },
+    {
+      "text": "What",
+      "start": 3.988,
+      "end": 4.169,
+      "score": 0.948
+    },
+    {
+      "text": "do",
+      "start": 4.169,
+      "end": 4.269,
+      "score": 0.999
+    },
+    {
+      "text": "you",
+      "start": 4.269,
+      "end": 4.409,
+      "score": 0.979
+    },
+    {
+      "text": "do",
+      "start": 4.409,
+      "end": 4.77,
+      "score": 0.625
+    }
+  ]
+}

@@ -1,0 +1,210 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "phishing-by-numbers",
+  "title": "Phishing by numbers",
+  "description": "A 10-minute narrated module for the employees of Quillon Freight (a fictional company): spotting and reporting phishing, told through the company's own numbers, in twelve charts that follow the voice.",
+  "language": "en",
+  "version": "1.0.0",
+  "durationMinutes": 10,
+  "sections": [
+    {
+      "id": "threat",
+      "title": "The threat",
+      "screens": [
+        "intro",
+        "origins",
+        "lures"
+      ]
+    },
+    {
+      "id": "catches",
+      "title": "How it catches us",
+      "screens": [
+        "funnel",
+        "lure-map"
+      ]
+    },
+    {
+      "id": "changed",
+      "title": "What changed",
+      "screens": [
+        "drills",
+        "reports",
+        "rules"
+      ]
+    },
+    {
+      "id": "your-move",
+      "title": "Your move",
+      "screens": [
+        "steps",
+        "clicked",
+        "after-report",
+        "flow",
+        "practice"
+      ]
+    }
+  ],
+  "variables": [],
+  "speakers": [
+    {
+      "id": "guide",
+      "name": "Dana, security desk",
+      "voices": {
+        "en": {
+          "provider": "elevenlabs",
+          "voice": "CvD6hF1BJzAFN428j1cO",
+          "name": "Kristen - Warm, Corporate and Steady"
+        }
+      }
+    }
+  ],
+  "narration": {
+    "advance": "learner",
+    "seek": "seen"
+  },
+  "pronunciations": {
+    "en": [
+      {
+        "text": "4444",
+        "say": "four four four four"
+      }
+    ]
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "logo",
+          "enabled": false
+        },
+        {
+          "id": "title"
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "outline"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "theme": {
+    "cascade": "components-over-theme",
+    "fonts": [
+      {
+        "family": "Fraunces",
+        "src": "theme/fonts/fraunces/fraunces-latin-wght-normal.woff2",
+        "weight": "100 900"
+      },
+      {
+        "family": "Fraunces",
+        "src": "theme/fonts/fraunces/fraunces-latin-wght-italic.woff2",
+        "weight": "100 900",
+        "style": "italic"
+      },
+      {
+        "family": "Figtree",
+        "src": "theme/fonts/figtree/figtree-latin-wght-normal.woff2",
+        "weight": "300 900"
+      },
+      {
+        "family": "Figtree",
+        "src": "theme/fonts/figtree/figtree-latin-wght-italic.woff2",
+        "weight": "300 900",
+        "style": "italic"
+      }
+    ],
+    "tokens": {
+      "color.primary": "#23213A",
+      "color.onPrimary": "#FFFFFF",
+      "color.accent": "#5B3DF5",
+      "color.surface": "#FBF9F4",
+      "color.text": "#1F1D2B",
+      "color.muted": "#5C5868",
+      "color.success": "#1E7046",
+      "color.error": "#B3261E",
+      "color.focus": "#5B3DF5",
+      "font.body": "\"Figtree\", \"Avenir Next\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "font.heading": "\"Fraunces\", \"Iowan Old Style\", Georgia, serif",
+      "radius": 10,
+      "player.top.background": "#FBF9F4",
+      "player.top.text": "#1F1D2B",
+      "player.bottom.background": "#F3F0E8",
+      "player.bottom.text": "#1F1D2B",
+      "player.progress": "#5B3DF5"
+    },
+    "stylesheet": "theme/theme.css",
+    "styles": {
+      "callout": {
+        "email": "An email as the learner would read it in their inbox"
+      },
+      "donut": {
+        "aside": "The takeaway beside the chart, for a chart taller than wide"
+      },
+      "matrix": {
+        "aside": "The takeaway beside the chart, for a chart taller than wide"
+      },
+      "cycle": {
+        "aside": "The takeaway beside the chart, for a chart taller than wide"
+      }
+    },
+    "custom": {
+      "color.sheet": "#FFFFFF"
+    }
+  },
+  "presentation": {
+    "mode": "slides",
+    "contentWidth": 900,
+    "wideWidth": 1320,
+    "fit": {
+      "reference": "1600x900",
+      "minimum": "1280x720"
+    }
+  },
+  "navigation": {
+    "mode": "linear",
+    "lockUntilComplete": true
+  },
+  "completion": {
+    "reportAs": "completed-incomplete"
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  }
+}

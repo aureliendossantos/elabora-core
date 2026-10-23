@@ -1,0 +1,87 @@
+{
+  "screen": "lures",
+  "line": "l1",
+  "language": "en",
+  "textHash": "sha256:8150ebe5d0f16dae772a248a8ed54236710423b231fb4735821e8051a448faa0",
+  "duration": 3.94,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:b92ff2cbb9dbff4cd15452c57b54085e37dee174a6da1c9f5f7e4434f6d09791",
+  "createdAt": "2026-10-23T12:17:55Z",
+  "take": 1,
+  "spokenHash": "sha256:8150ebe5d0f16dae772a248a8ed54236710423b231fb4735821e8051a448faa0",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "And what do these emails look like? Like our everyday work.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "And",
+      "start": 0.081,
+      "end": 0.293,
+      "score": 0.999
+    },
+    {
+      "text": "what",
+      "start": 0.422,
+      "end": 0.603,
+      "score": 0.987
+    },
+    {
+      "text": "do",
+      "start": 0.603,
+      "end": 0.724,
+      "score": 0.988
+    },
+    {
+      "text": "these",
+      "start": 0.724,
+      "end": 0.985,
+      "score": 0.953
+    },
+    {
+      "text": "emails",
+      "start": 0.985,
+      "end": 1.387,
+      "score": 0.907
+    },
+    {
+      "text": "look",
+      "start": 1.387,
+      "end": 1.628,
+      "score": 1
+    },
+    {
+      "text": "like",
+      "start": 1.628,
+      "end": 1.941,
+      "score": 0.999
+    },
+    {
+      "text": "Like",
+      "start": 2.573,
+      "end": 2.855,
+      "score": 0.995
+    },
+    {
+      "text": "our",
+      "start": 2.855,
+      "end": 3.067,
+      "score": 0.999
+    },
+    {
+      "text": "everyday",
+      "start": 3.076,
+      "end": 3.518,
+      "score": 0.997
+    },
+    {
+      "text": "work",
+      "start": 3.518,
+      "end": 3.851,
+      "score": 0.976
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "screen": "drills",
+  "line": "l5",
+  "language": "en",
+  "textHash": "sha256:794f52dfbe97c8cf7457d75ee7e3303227e346d5c175c67ec2a90ae4539499b0",
+  "duration": 5.21,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:4fc3be29ca023efbb0ad09d319db63057a94da74e0c2b5cf479f644e16105262",
+  "createdAt": "2026-10-23T12:18:25Z",
+  "take": 1,
+  "spokenHash": "sha256:794f52dfbe97c8cf7457d75ee7e3303227e346d5c175c67ec2a90ae4539499b0",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "The warehouse started highest, at 41 percent, and still clicks most.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "The",
+      "start": 0.02,
+      "end": 0.16,
+      "score": 0.955
+    },
+    {
+      "text": "warehouse",
+      "start": 0.16,
+      "end": 0.762,
+      "score": 0.986
+    },
+    {
+      "text": "started",
+      "start": 0.762,
+      "end": 1.194,
+      "score": 0.973
+    },
+    {
+      "text": "highest",
+      "start": 1.202,
+      "end": 1.795,
+      "score": 0.973
+    },
+    {
+      "text": "at",
+      "start": 2.004,
+      "end": 2.176,
+      "score": 0.999
+    },
+    {
+      "text": "41",
+      "start": 2.204,
+      "end": 2.785,
+      "score": 0.986
+    },
+    {
+      "text": "percent",
+      "start": 2.785,
+      "end": 3.338,
+      "score": 0.98
+    },
+    {
+      "text": "and",
+      "start": 3.647,
+      "end": 3.868,
+      "score": 0.917
+    },
+    {
+      "text": "still",
+      "start": 3.868,
+      "end": 4.3,
+      "score": 0.972
+    },
+    {
+      "text": "clicks",
+      "start": 4.308,
+      "end": 4.689,
+      "score": 0.937
+    },
+    {
+      "text": "most",
+      "start": 4.689,
+      "end": 5.122,
+      "score": 0.994
+    }
+  ]
+}

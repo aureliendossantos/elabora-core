@@ -1,0 +1,99 @@
+{
+  "screen": "lure-map",
+  "line": "l1",
+  "language": "en",
+  "textHash": "sha256:0b22e0a44a765a7537e38ccfd12b162c65d4211c35967f767d84bee00419669d",
+  "duration": 5.11,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:f3528fc223f7f126471f3c3fe94969bd59b3cc7729824e48300d58b0dcb2ee4c",
+  "createdAt": "2026-10-23T12:18:08Z",
+  "take": 1,
+  "spokenHash": "sha256:0b22e0a44a765a7537e38ccfd12b162c65d4211c35967f767d84bee00419669d",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Now place each lure: how often it comes, and how often people click.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Now",
+      "start": 0.08,
+      "end": 0.352,
+      "score": 0.999
+    },
+    {
+      "text": "place",
+      "start": 0.361,
+      "end": 0.733,
+      "score": 0.997
+    },
+    {
+      "text": "each",
+      "start": 0.822,
+      "end": 1.114,
+      "score": 0.948
+    },
+    {
+      "text": "lure",
+      "start": 1.122,
+      "end": 1.515,
+      "score": 0.427
+    },
+    {
+      "text": "how",
+      "start": 1.964,
+      "end": 2.216,
+      "score": 1
+    },
+    {
+      "text": "often",
+      "start": 2.264,
+      "end": 2.525,
+      "score": 1
+    },
+    {
+      "text": "it",
+      "start": 2.525,
+      "end": 2.665,
+      "score": 0.972
+    },
+    {
+      "text": "comes",
+      "start": 2.665,
+      "end": 3.138,
+      "score": 0.973
+    },
+    {
+      "text": "and",
+      "start": 3.407,
+      "end": 3.659,
+      "score": 0.992
+    },
+    {
+      "text": "how",
+      "start": 3.667,
+      "end": 3.96,
+      "score": 0.94
+    },
+    {
+      "text": "often",
+      "start": 3.988,
+      "end": 4.309,
+      "score": 0.947
+    },
+    {
+      "text": "people",
+      "start": 4.309,
+      "end": 4.701,
+      "score": 0.996
+    },
+    {
+      "text": "click",
+      "start": 4.709,
+      "end": 5.042,
+      "score": 0.603
+    }
+  ]
+}

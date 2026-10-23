@@ -1,0 +1,23 @@
+{
+  "format": "elabora-lock/1",
+  "next": 16,
+  "keys": {
+    "screen:intro": "0",
+    "screen:origins": "1",
+    "screen:lures": "2",
+    "screen:funnel": "3",
+    "screen:lure-map": "4",
+    "screen:drills": "5",
+    "screen:reports": "6",
+    "screen:rules": "7",
+    "screen:steps": "8",
+    "screen:clicked": "9",
+    "screen:after-report": "a",
+    "screen:flow": "b",
+    "screen:practice": "c",
+    "predict:drills-guess": "d",
+    "quiz:clicked-quiz": "e",
+    "decision:practice-choice": "f"
+  },
+  "components": {}
+}

@@ -1,0 +1,135 @@
+{
+  "screen": "after-report",
+  "line": "l2",
+  "language": "en",
+  "textHash": "sha256:d36b9a9e84b489f3e02a834874c44befb7fca9b41b447b640e878ac6466617b7",
+  "duration": 6.78,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:59307996066a9b1c4bc34f1b167973b88295619a3a23469b2e7351c08a84ad06",
+  "createdAt": "2026-10-23T12:18:57Z",
+  "take": 1,
+  "spokenHash": "sha256:d36b9a9e84b489f3e02a834874c44befb7fca9b41b447b640e878ac6466617b7",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "We block it in all 1,200 inboxes, warn those who got it, and teach it in a coming drill.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "We",
+      "start": 0.02,
+      "end": 0.201,
+      "score": 0.999
+    },
+    {
+      "text": "block",
+      "start": 0.201,
+      "end": 0.562,
+      "score": 0.958
+    },
+    {
+      "text": "it",
+      "start": 0.562,
+      "end": 0.722,
+      "score": 0.977
+    },
+    {
+      "text": "in",
+      "start": 0.722,
+      "end": 0.894,
+      "score": 1
+    },
+    {
+      "text": "all",
+      "start": 0.983,
+      "end": 1.235,
+      "score": 1
+    },
+    {
+      "text": "1,200",
+      "start": 1.304,
+      "end": 2.708,
+      "score": 0.978
+    },
+    {
+      "text": "inboxes",
+      "start": 2.708,
+      "end": 3.442,
+      "score": 0.987
+    },
+    {
+      "text": "warn",
+      "start": 3.791,
+      "end": 4.092,
+      "score": 0.999
+    },
+    {
+      "text": "those",
+      "start": 4.092,
+      "end": 4.313,
+      "score": 1
+    },
+    {
+      "text": "who",
+      "start": 4.313,
+      "end": 4.473,
+      "score": 1
+    },
+    {
+      "text": "got",
+      "start": 4.473,
+      "end": 4.754,
+      "score": 0.992
+    },
+    {
+      "text": "it",
+      "start": 4.754,
+      "end": 4.946,
+      "score": 0.927
+    },
+    {
+      "text": "and",
+      "start": 5.155,
+      "end": 5.336,
+      "score": 0.992
+    },
+    {
+      "text": "teach",
+      "start": 5.336,
+      "end": 5.657,
+      "score": 0.974
+    },
+    {
+      "text": "it",
+      "start": 5.657,
+      "end": 5.817,
+      "score": 0.999
+    },
+    {
+      "text": "in",
+      "start": 5.817,
+      "end": 5.918,
+      "score": 1
+    },
+    {
+      "text": "a",
+      "start": 5.918,
+      "end": 6.018,
+      "score": 0.997
+    },
+    {
+      "text": "coming",
+      "start": 6.018,
+      "end": 6.359,
+      "score": 0.991
+    },
+    {
+      "text": "drill",
+      "start": 6.359,
+      "end": 6.752,
+      "score": 0.915
+    }
+  ]
+}
