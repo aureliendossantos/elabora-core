@@ -54,6 +54,12 @@ test('trend: points placed in fractions, the note at its year, predict mode hide
   assert.deepEqual(points.map((point) => point.px), [0, 0.2, 0.4, 0.6, 0.8, 1]);
   assert.deepEqual((data as { predict: unknown }).predict, { from: 2, tolerance: 4, scored: false, weight: 1 });
   assert.deepEqual(chartItems('trend', { points: [{ x: 1, y: 2, at: { line: 'l1' } }, { x: 2, y: 3 }] }), [{ id: 'p0', at: { line: 'l1' }, path: '/points/0/at' }]);
+  // The values written on the line: both ends by default, the last only, or none (the dot stays).
+  const line = { takeaway: 'Clicks fall', unit: '%', points: months };
+  const written = (valueLabels?: string) => { const drawn = renderChart('trend', { ...line, ...(valueLabels ? { valueLabels } : {}) }, context).html; return [/t-trend-start/.test(drawn), /t-trend-end/.test(drawn), /t-trend-dot/.test(drawn)]; };
+  assert.deepEqual(written(), [true, true, true]);
+  assert.deepEqual(written('end'), [false, true, true]);
+  assert.deepEqual(written('none'), [false, false, true]);
 });
 
 test('diagram: Pele draws it wide and narrow, its nodes become items by depth, colours written in it are left out', () => {

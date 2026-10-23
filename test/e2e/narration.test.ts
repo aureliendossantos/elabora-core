@@ -338,6 +338,73 @@ test('the real clock: the timeline follows the audio and stops at the end of the
   }, { virtual: false, refuse: true });
 });
 
+test('the real clock: a track that runs out a little before the timeline\'s end ends the screen there', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
+  // Free navigation: straight to the screen.
+  const dir = course();
+  const data = readJSON(dir, 'course.json');
+  data.navigation = { mode: 'free', lockUntilComplete: false };
+  writeJSON(dir, 'course.json', data);
+  await player(dir, async ({ page }) => {
+    if (!(await playsMedia(page, 'audio/mp4; codecs="mp4a.40.2"'))) return t.skip(NO_MEDIA_CODECS);
+    await page.evaluate(() => (window as PlayerWindow).__elabora.go('chemin'));
+    await page.waitForFunction(() => (window as PlayerWindow).__elabora.screen === 'chemin');
+    const start = page.locator('.t-timeline-start');
+    if (await start.count()) await start.click();
+    await page.evaluate(() => (window as PlayerWindow).__elabora.timeline.play());
+    // In the last step, the audio stops 0.3 s short of the timeline's end and says it has ended, as some
+    // browsers decode an AAC track: the screen still ends, and moves on (advance next-screen).
+    await page.waitForFunction(() => { const s = (window as PlayerWindow).__elabora.timeline.state(); return !!s && s.step === 2 && s.time > s.duration - 0.8; }, null, { timeout: 8000 });
+    await page.evaluate(() => {
+      const audio = document.querySelector<HTMLAudioElement>('audio.t-timeline-audio')!;
+      audio.pause();
+      audio.currentTime = ((window as PlayerWindow).__elabora.timeline.state()?.duration ?? 0) - 0.3;
+      audio.dispatchEvent(new Event('ended'));
+    });
+    await page.waitForFunction(() => (window as PlayerWindow).__elabora.screen === 'premier-reflexe', null, { timeout: 5000 });
+  }, { virtual: false });
+});
+
+test('the seek bar keeps play or pause: a click towards the end reaches it, and let go there the screen rests instead of starting over', { skip: NO_FFMPEG, timeout: 120000 }, async () => {
+  const dir = course();
+  const data = readJSON(dir, 'course.json');
+  data.navigation = { mode: 'free', lockUntilComplete: false };
+  writeJSON(dir, 'course.json', data);
+  narrate(dir, 'chemin', [
+    { id: 'c1', text: 'Une impression suit un chemin.', seconds: 1 },
+    { id: 'c2', text: 'Elle passe par le réseau.', seconds: 1 }
+  ], { seek: 'free' });
+  await player(dir, async ({ page }) => {
+    await page.evaluate(() => (window as PlayerWindow).__elabora.go('chemin'));
+    await page.waitForFunction(() => (window as PlayerWindow).__elabora.screen === 'chemin');
+    const box = (await page.locator('.t-timeline-seek').boundingBox())!;
+    const clickAt = (x: number) => page.mouse.click(x, box.y + box.height / 2);
+    const now = async () => (await state(page)).timeline!;
+    // Paused: a click moves the playhead, nothing plays.
+    await page.evaluate(() => (window as PlayerWindow).__elabora.timeline.pause());
+    await clickAt(box.x + box.width / 2);
+    let s = await now();
+    assert.equal(s.playing, false, 'still paused');
+    assert.ok(s.time > 0.3 && s.time < s.duration - 0.3, String(s.time));
+    // A click a few pixels short of the end is the end, still paused.
+    await clickAt(box.x + box.width - 4);
+    s = await now();
+    assert.deepEqual([s.time, s.playing], [s.duration, false]);
+    // Playing: a click plays on from there…
+    await clickAt(box.x + box.width * 0.2);
+    await page.evaluate(() => (window as PlayerWindow).__elabora.timeline.play());
+    await advance(page, 0.1);
+    assert.equal((await now()).playing, true);
+    await clickAt(box.x + box.width * 0.5);
+    assert.equal((await now()).playing, true, 'plays on from the click');
+    // …and let go at the end, it rests there: no start over.
+    await clickAt(box.x + box.width - 2);
+    await advance(page, 0.5);
+    s = await now();
+    assert.deepEqual([s.time, s.playing], [s.duration, false]);
+    assert.equal(await page.evaluate(() => (window as PlayerWindow).__elabora.screen), 'chemin');
+  });
+});
+
 test('captures and fit see narrated screens still: a line\'s moment on a contact sheet, slides measured with the bar', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
   const dir = course();
   const shots = await capture(dir, [{ screen: 'accueil', at: ['l1', 'l3:end'] }]);
