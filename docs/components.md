@@ -42,7 +42,7 @@ components/ratio-card/
 | `asset` | a file of `assets/` | `assets/<path>` (shipped in the package, checked like image assets) |
 | `token` | a theme token name (`color.copper`) | `var(--t-color-copper)`, only in `style="--x: {{prop}}"` |
 
-Mark text `x-translatable`. `x-group: "design"` marks the settings authors may change without an agent (tokens, enums). In instances, a text or Markdown prop may be `{ "textRef": "TXT-2" }`: the locked text of the plan, used word for word and counted as used.
+Mark text `x-translatable`. `x-group: "design"` marks the settings authors may change without an agent (tokens, enums). The editor picks each setting's control from its schema; `x-control` asks for one as in free-object manifests: `textarea` (a few lines of text), `slider` (a number with `minimum` and `maximum`), `range` (a low and a high number: an array of two numbers whose items have `minimum` and `maximum`), `vec2` and `vec3` (an array of two or three numbers, X, Y and Z on one row), `color` (a string of `format: "color"`). In instances, a text or Markdown prop may be `{ "textRef": "TXT-2" }`: the locked text of the plan, used word for word and counted as used.
 
 ## 2. Template
 

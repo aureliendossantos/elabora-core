@@ -1677,8 +1677,8 @@ export type PropSchema = {
   'x-group'?: string;
   /** @default 'author' */
   'x-editable-by'?: 'author' | 'developer';
-  /** Editor control. list: a prop of type array, edited as rows (one per item, one field per item field). */
-  'x-control'?: 'text' | 'textarea' | 'slider' | 'number' | 'toggle' | 'select' | 'color' | 'vec3-gizmo' | 'asset' | 'list';
+  /** Editor control. list: a prop of type array, edited as rows (one per item, one field per item field). range: two numbers (a low and a high value) between the items' minimum and maximum, edited with a two-handle slider. vec2, vec3: two or three numbers (x, y and z) edited on one row. */
+  'x-control'?: 'text' | 'textarea' | 'slider' | 'range' | 'number' | 'toggle' | 'select' | 'color' | 'vec2' | 'vec3' | 'vec3-gizmo' | 'asset' | 'list';
   /** Theme token the value comes from by default: a charter token (color.accent) or a custom token of theme.custom (color.blueprint). Colours that carry the course identity bind to one; a material colour (brass, wood) keeps a literal default instead. */
   'x-token'?: string;
   /** For a colour the object draws text in: the colour that text is read on, another colour prop of this manifest (paper) or a theme token (color.surface). They must reach 4.5:1 (WCAG AA) with the defaults and with the values of each block. */
