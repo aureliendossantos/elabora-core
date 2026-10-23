@@ -1,0 +1,32 @@
+/* ── proportion (D60) ── The figure beside a grid of icons; under 560 px the figure goes above. Icons
+   keep their shape at any width (a person 3:5, a dot, a square); a lit icon holds its accent as a
+   layer (.t-prop-ink) over its quiet shape, which the entrance fades in, in turn. */
+.t-prop-layout { display: grid; grid-template-columns: minmax(8rem, max-content) minmax(0, 1fr); align-items: center; gap: 1.5rem 2.75rem; }
+.t-prop-figure { max-width: 15rem; }
+.t-prop-big { margin: 0; color: var(--t-chart-accent); font-family: var(--t-font-heading, var(--t-font-body)); font-size: 4rem; font-weight: 700; line-height: 0.95; letter-spacing: -0.03em; text-wrap: balance; font-variant-numeric: tabular-nums; }
+.t-prop-label { margin: 0.625rem 0 0; color: var(--t-chart-muted); font-size: 1rem; line-height: 1.35; text-wrap: pretty; }
+.t-prop-grid { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 0.375rem 0.3125rem; width: min(100%, calc(var(--cols) * 2.25rem)); }
+.t-prop-icon { position: relative; display: block; background: var(--t-chart-quiet); }
+.t-prop-ink { position: absolute; inset: 0; background: var(--t-chart-accent); }
+.t-prop--person .t-prop-icon {
+  aspect-ratio: 3 / 5;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 20'%3E%3Ccircle cx='6' cy='3.2' r='3'/%3E%3Cpath d='M1.4 9.2a4.6 4.6 0 0 1 9.2 0v4.3a1.2 1.2 0 0 1-1.2 1.2h-.6l-.5 4.1a1 1 0 0 1-1 .9H4.7a1 1 0 0 1-1-.9l-.5-4.1h-.6a1.2 1.2 0 0 1-1.2-1.2z'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 20'%3E%3Ccircle cx='6' cy='3.2' r='3'/%3E%3Cpath d='M1.4 9.2a4.6 4.6 0 0 1 9.2 0v4.3a1.2 1.2 0 0 1-1.2 1.2h-.6l-.5 4.1a1 1 0 0 1-1 .9H4.7a1 1 0 0 1-1-.9l-.5-4.1h-.6a1.2 1.2 0 0 1-1.2-1.2z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.t-prop--circle .t-prop-icon { aspect-ratio: 1; border-radius: 50%; overflow: hidden; }
+.t-prop--square .t-prop-icon { aspect-ratio: 1; border-radius: 3px; overflow: hidden; }
+.t-prop--circle .t-prop-grid, .t-prop--square .t-prop-grid { gap: 0.3125rem; width: min(100%, calc(var(--cols) * 2rem)); }
+
+/* Pointing at the figure (or the lit icons): the lit icons lift by 2 px, softly. */
+.t-chart .t-prop-icon.is-lit { transition: translate var(--t-chart-calm) var(--t-ease-out); }
+.t-chart.is-focused .t-prop-icon.is-lit.is-pointed { translate: 0 -2px; }
+.t-chart.is-entering .t-prop-icon { transition: none; }
+
+@container (max-width: 560px) {
+  .t-prop-layout { grid-template-columns: minmax(0, 1fr); gap: 1.25rem; }
+  .t-prop-figure { max-width: none; }
+  .t-prop-big { font-size: 3rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .t-chart.is-focused .t-prop-icon.is-lit.is-pointed { translate: none; }
+}

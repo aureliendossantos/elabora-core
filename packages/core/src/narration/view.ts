@@ -210,8 +210,10 @@ const round = (value: number): number => Math.round(Math.min(1, Math.max(0, valu
 // ── Marks: a storyboard of a timed screen ────────────────────────────
 
 export interface TimelineMarkEvent {
-  kind: 'start' | 'in' | 'out' | 'cue' | 'step-end';
+  kind: 'start' | 'in' | 'out' | 'cue' | 'step-end' | 'beat';
   block?: string;
+  // A chart's item the voice brings (beat), null at the end of its spotlight.
+  item?: string | null;
   event?: string;
   effect?: string;
   step?: number;
@@ -244,6 +246,16 @@ export function timelineMarks(project: Project, screenId: string, language?: str
     raw.push({ at: moment.at, time: settled, anchor: moment.anchor, text: `${moment.block} ${moment.kind === 'in' ? 'comes' : 'goes'}${effect}`, event: { kind: moment.kind, block: moment.block, effect: moment.effect } });
   }
   for (const cue of timeline.cues) raw.push({ at: cue.time, time: cue.time, anchor: cue.anchor, text: `${cue.event} fires`, event: { kind: 'cue', event: cue.event } });
+  // A chart's item said by the voice, seen once it has arrived (the slowest, a trend's head, takes
+  // 1.2 s) and before the chart's next beat. The spotlight's end has its own mark only before its step
+  // ends (that end is seen just before it comes).
+  for (const [index, beat] of timeline.beats.entries()) {
+    const next = timeline.beats.slice(index + 1).find((other) => other.block === beat.block);
+    const stepEnd = timeline.segments.find((segment) => segment.step === beat.step)?.end ?? timeline.duration;
+    if (beat.item === null && beat.time > stepEnd - 0.1) continue;
+    const settled = Math.min(timeline.duration, beat.time + (beat.item === null ? 0.3 : BEAT_SETTLE), next ? next.time - 0.05 : Infinity, stepEnd - 0.05);
+    raw.push({ at: beat.time, time: Math.max(beat.time, settled), anchor: beat.anchor, text: beat.item === null ? `${beat.block} spotlight ends` : `${beat.block} ${beat.item} said`, event: { kind: 'beat', block: beat.block, item: beat.item } });
+  }
   // A step's end is seen just before the next step starts.
   for (const segment of timeline.segments) raw.push({ at: segment.end, time: Math.max(segment.start, segment.end - 0.05), anchor: { step: segment.step, edge: 'end' }, text: `end of step ${segment.step}`, event: { kind: 'step-end', step: segment.step } });
   raw.sort((a, b) => a.time - b.time || a.at - b.at);
@@ -264,4 +276,5 @@ export function timelineMarks(project: Project, screenId: string, language?: str
   return marks;
 }
 
+const BEAT_SETTLE = 1.2;
 const round3 = (value: number): number => Math.round(value * 1000) / 1000;

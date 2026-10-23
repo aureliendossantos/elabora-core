@@ -1,0 +1,123 @@
+{
+  "screen": "flow",
+  "line": "l2",
+  "language": "en",
+  "textHash": "sha256:af89f6edb68e4060830df5ecd6806442b67fa3586ee9dc92820ad1384545c557",
+  "duration": 6.53,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:51eed131f1eaf126a8970542b0b99c34edec5255b0b7c45677c949821dda6181",
+  "createdAt": "2026-10-23T12:19:36Z",
+  "take": 2,
+  "spokenHash": "sha256:af89f6edb68e4060830df5ecd6806442b67fa3586ee9dc92820ad1384545c557",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "If so, or if the sender or the link looks wrong, report it. If not, carry on.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "If",
+      "start": 0.06,
+      "end": 0.232,
+      "score": 1
+    },
+    {
+      "text": "so",
+      "start": 0.26,
+      "end": 0.593,
+      "score": 1
+    },
+    {
+      "text": "or",
+      "start": 1.082,
+      "end": 1.294,
+      "score": 0.997
+    },
+    {
+      "text": "if",
+      "start": 1.362,
+      "end": 1.482,
+      "score": 1
+    },
+    {
+      "text": "the",
+      "start": 1.482,
+      "end": 1.663,
+      "score": 0.999
+    },
+    {
+      "text": "sender",
+      "start": 1.663,
+      "end": 2.115,
+      "score": 0.623
+    },
+    {
+      "text": "or",
+      "start": 2.123,
+      "end": 2.264,
+      "score": 0.989
+    },
+    {
+      "text": "the",
+      "start": 2.264,
+      "end": 2.424,
+      "score": 0.999
+    },
+    {
+      "text": "link",
+      "start": 2.424,
+      "end": 2.744,
+      "score": 0.978
+    },
+    {
+      "text": "looks",
+      "start": 2.744,
+      "end": 3.085,
+      "score": 0.973
+    },
+    {
+      "text": "wrong",
+      "start": 3.085,
+      "end": 3.457,
+      "score": 0.991
+    },
+    {
+      "text": "report",
+      "start": 3.766,
+      "end": 4.227,
+      "score": 0.974
+    },
+    {
+      "text": "it",
+      "start": 4.227,
+      "end": 4.419,
+      "score": 0.636
+    },
+    {
+      "text": "If",
+      "start": 5.028,
+      "end": 5.208,
+      "score": 1
+    },
+    {
+      "text": "not",
+      "start": 5.208,
+      "end": 5.56,
+      "score": 0.999
+    },
+    {
+      "text": "carry",
+      "start": 5.829,
+      "end": 6.241,
+      "score": 1
+    },
+    {
+      "text": "on",
+      "start": 6.31,
+      "end": 6.482,
+      "score": 1
+    }
+  ]
+}

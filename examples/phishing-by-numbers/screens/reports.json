@@ -1,0 +1,84 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "reports",
+  "title": "One click changed reporting",
+  "covers": [
+    "ITEM-4"
+  ],
+  "blocks": [
+    {
+      "id": "reports-trend",
+      "type": "trend",
+      "width": "wide",
+      "props": {
+        "takeaway": "Reports took off once reporting took one click",
+        "context": "Phishing emails reported to the security desk, per month (yearly average)",
+        "source": "Security desk report 2025, Quillon Freight (internal report, fictional)",
+        "points": [
+          {
+            "x": 2020,
+            "y": 6,
+            "at": {
+              "line": "l1",
+              "word": "Before"
+            }
+          },
+          {
+            "x": 2021,
+            "y": 7
+          },
+          {
+            "x": 2022,
+            "y": 9,
+            "at": {
+              "line": "l1",
+              "word": "month"
+            }
+          },
+          {
+            "x": 2023,
+            "y": 34,
+            "at": {
+              "line": "l2",
+              "word": "button"
+            }
+          },
+          {
+            "x": 2024,
+            "y": 92,
+            "at": {
+              "line": "l2",
+              "word": "took off"
+            }
+          },
+          {
+            "x": 2025,
+            "y": 153,
+            "at": {
+              "line": "l2",
+              "word": "last year"
+            }
+          }
+        ],
+        "note": {
+          "x": 2023,
+          "text": "One-click Report button"
+        }
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "l1",
+        "speaker": "guide",
+        "text": "Before 2023, we got about 9 reports a month."
+      },
+      {
+        "id": "l2",
+        "speaker": "guide",
+        "text": "Then came the one-click Report button, and reports took off: 153 a month last year."
+      }
+    ]
+  }
+}

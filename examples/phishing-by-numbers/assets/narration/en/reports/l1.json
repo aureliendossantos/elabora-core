@@ -1,0 +1,75 @@
+{
+  "screen": "reports",
+  "line": "l1",
+  "language": "en",
+  "textHash": "sha256:77c7046d806967bd0720f5e34ea6cbbb246a8701d66675ea4221dc239387b023",
+  "duration": 3.94,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:7ef6a1e8e57c9a457eb5c1705209fe658e9ba331ce3664e94b39a06dacb8cc28",
+  "createdAt": "2026-10-23T12:18:28Z",
+  "take": 1,
+  "spokenHash": "sha256:77c7046d806967bd0720f5e34ea6cbbb246a8701d66675ea4221dc239387b023",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Before 2023, we got about 9 reports a month.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Before",
+      "start": 0.081,
+      "end": 0.402,
+      "score": 0.671
+    },
+    {
+      "text": "2023",
+      "start": 0.402,
+      "end": 1.539,
+      "score": 0.521
+    },
+    {
+      "text": "we",
+      "start": 1.829,
+      "end": 1.97,
+      "score": 1
+    },
+    {
+      "text": "got",
+      "start": 1.97,
+      "end": 2.191,
+      "score": 1
+    },
+    {
+      "text": "about",
+      "start": 2.191,
+      "end": 2.544,
+      "score": 0.976
+    },
+    {
+      "text": "9",
+      "start": 2.634,
+      "end": 2.955,
+      "score": 1
+    },
+    {
+      "text": "reports",
+      "start": 2.955,
+      "end": 3.418,
+      "score": 0.971
+    },
+    {
+      "text": "a",
+      "start": 3.418,
+      "end": 3.518,
+      "score": 0.998
+    },
+    {
+      "text": "month",
+      "start": 3.518,
+      "end": 3.871,
+      "score": 0.987
+    }
+  ]
+}

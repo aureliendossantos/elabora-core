@@ -1,0 +1,105 @@
+{
+  "screen": "clicked",
+  "line": "l1",
+  "language": "en",
+  "textHash": "sha256:4d5d9a9436df2399c99ef2469a883f46abaa38259662107ddd783e30872b1860",
+  "duration": 4.71,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:d3ad731c36f2c79bad02cc5d0d4f3c56010371398676761defd311fb387bddb4",
+  "createdAt": "2026-10-23T12:18:51Z",
+  "take": 1,
+  "spokenHash": "sha256:4d5d9a9436df2399c99ef2469a883f46abaa38259662107ddd783e30872b1860",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "A quick check. Say a fake gets past you. What do you do first?",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "A",
+      "start": 0.08,
+      "end": 0.18,
+      "score": 0.935
+    },
+    {
+      "text": "quick",
+      "start": 0.18,
+      "end": 0.461,
+      "score": 0.996
+    },
+    {
+      "text": "check",
+      "start": 0.461,
+      "end": 0.834,
+      "score": 0.959
+    },
+    {
+      "text": "Say",
+      "start": 1.463,
+      "end": 1.704,
+      "score": 0.551
+    },
+    {
+      "text": "a",
+      "start": 1.704,
+      "end": 1.856,
+      "score": 0.838
+    },
+    {
+      "text": "fake",
+      "start": 1.864,
+      "end": 2.225,
+      "score": 0.97
+    },
+    {
+      "text": "gets",
+      "start": 2.225,
+      "end": 2.525,
+      "score": 0.97
+    },
+    {
+      "text": "past",
+      "start": 2.525,
+      "end": 2.886,
+      "score": 0.996
+    },
+    {
+      "text": "you",
+      "start": 2.886,
+      "end": 3.118,
+      "score": 1
+    },
+    {
+      "text": "What",
+      "start": 3.568,
+      "end": 3.728,
+      "score": 0.956
+    },
+    {
+      "text": "do",
+      "start": 3.728,
+      "end": 3.828,
+      "score": 0.999
+    },
+    {
+      "text": "you",
+      "start": 3.828,
+      "end": 3.969,
+      "score": 0.998
+    },
+    {
+      "text": "do",
+      "start": 3.969,
+      "end": 4.149,
+      "score": 0.99
+    },
+    {
+      "text": "first",
+      "start": 4.149,
+      "end": 4.642,
+      "score": 0.992
+    }
+  ]
+}

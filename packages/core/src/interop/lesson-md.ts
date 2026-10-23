@@ -2,6 +2,7 @@ import { schemaId } from '@elabora/format';
 import { planIndex, resolveBlockProps, screenOrder, readingOrder, screenLayout } from '../project/load.ts';
 import { getRegistry } from '../components/registry.ts';
 import { fallbackBlocks } from '../components/fallback.ts';
+import { isChartType, chartMarkdown } from '../charts/index.ts';
 import { hasFile } from '../project/files.ts';
 import { basename } from '../util/paths.ts';
 import type { Project, Screen, Block } from '../project/model.ts';
@@ -121,6 +122,12 @@ export function lessonMdExport(project: Project): LessonMdExport {
           directive('note', { variant: 2 }, `${props.stem}\n\n**${props.answer}${props.unit ? ` ${props.unit}` : ''}**\n\n${recordOf(props.feedback).correct || ''}`);
           lose(id, block.id, 'numeric answer, tolerance and misconception feedback (exported as a note)');
           break;
+        default:
+          // Charts (D60): the takeaway, then the data as a Markdown table.
+          if (isChartType(block.type)) {
+            directive('text', {}, chartMarkdown(block.type, props, { id: block.id, language: project.course?.language || 'en', tokens: {} }));
+            lose(id, block.id, `${block.type} chart (exported as its takeaway and a table of its data${props.mode === 'predict' ? '; the prediction is lost' : ''})`);
+          }
       }
     }
     const layers = objectsIn(screen.layers);

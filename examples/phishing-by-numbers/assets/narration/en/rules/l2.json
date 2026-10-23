@@ -1,0 +1,75 @@
+{
+  "screen": "rules",
+  "line": "l2",
+  "language": "en",
+  "textHash": "sha256:eb9815abf76e79f92303c5f1b22c7b49bf0d4295411aed3c978d9fcc20760984",
+  "duration": 5.62,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:2361ebbabc00715af1df9d7403553b33748e48b5f3d412f772e86a9278b9ad54",
+  "createdAt": "2026-10-23T12:18:36Z",
+  "take": 1,
+  "spokenHash": "sha256:eb9815abf76e79f92303c5f1b22c7b49bf0d4295411aed3c978d9fcc20760984",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Two-step sign-in in 2021. The Report button in 2023.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Two-step",
+      "start": 0.02,
+      "end": 0.614,
+      "score": 1
+    },
+    {
+      "text": "sign-in",
+      "start": 0.622,
+      "end": 1.156,
+      "score": 0.781
+    },
+    {
+      "text": "in",
+      "start": 1.245,
+      "end": 1.405,
+      "score": 1
+    },
+    {
+      "text": "2021",
+      "start": 1.405,
+      "end": 2.541,
+      "score": 0.548
+    },
+    {
+      "text": "The",
+      "start": 3.171,
+      "end": 3.312,
+      "score": 0.999
+    },
+    {
+      "text": "Report",
+      "start": 3.312,
+      "end": 3.794,
+      "score": 0.999
+    },
+    {
+      "text": "button",
+      "start": 3.794,
+      "end": 4.207,
+      "score": 0.976
+    },
+    {
+      "text": "in",
+      "start": 4.275,
+      "end": 4.456,
+      "score": 0.999
+    },
+    {
+      "text": "2023",
+      "start": 4.456,
+      "end": 5.62,
+      "score": 0.514
+    }
+  ]
+}

@@ -1,7 +1,8 @@
 import { variableValueError } from './structure.ts';
 import { objectPropErrors, textContrasts, TEXT_CONTRAST } from './object-props.ts';
 import { resolveTokens } from './theme.ts';
-import { behaviorOf, hooksOf } from '../components/registry.ts';
+import { instanceBehavior, hooksOf } from '../components/registry.ts';
+import { isPredict } from '../charts/predict.ts';
 import type { ComponentDescriptor } from '../components/registry.ts';
 import { blockControls, CONTROL_HOOKS } from '../components/controls.ts';
 import { screenBlocks } from '../project/load.ts';
@@ -12,15 +13,16 @@ import { screenSteps } from '../narration/narration.ts';
 import { isTimedScreen } from '../narration/timeline.ts';
 
 // What each trigger needs from its target block: a behaviour (forks included) or a control.
-const TRIGGER_TARGET: Readonly<Record<string, { test: (component: ComponentDescriptor) => boolean; what: string }>> = {
+const TRIGGER_TARGET: Readonly<Record<string, { test: (component: ComponentDescriptor, block: Block) => boolean; what: string }>> = {
   click: { test: (component) => CONTROL_HOOKS.some((hook) => hooksOf(component).has(hook)), what: 'button (or a component with data-t-click buttons, tabs or disclosures)' },
-  'quiz.submitted': { test: (component) => component.behavior === 'quiz' || component.behavior === 'numeric', what: 'quiz or numeric block' },
+  // A trend in predict mode is submitted when the learner reveals the line (D60).
+  'quiz.submitted': { test: (component, block) => component.behavior === 'quiz' || component.behavior === 'numeric' || isPredict(component.root, fieldsOf(block.props)), what: 'quiz, numeric or predicting trend block' },
   'decision.selected': { test: (component) => component.behavior === 'decision', what: 'decision block' },
   'object.event': { test: (component) => component.behavior === 'object', what: 'free-object block' }
 };
 const ORDER_OPERATORS = ['gt', 'gte', 'lt', 'lte'];
 // Behaviours that make a block an activity a step can wait for (screen.steps opens "answered").
-const STEP_ACTIVITIES = new Set(['quiz', 'numeric', 'decision', 'object']);
+const STEP_ACTIVITIES = new Set(['quiz', 'numeric', 'decision', 'object', 'predict']);
 
 const controlNames = (controls: Map<string, unknown>) => [...controls.keys()].map((name) => name || '(unnamed)').join(', ');
 
@@ -53,7 +55,7 @@ export function checkEvents(ctx: CourseCheckContext, screen: ScreenFile): void {
       const block = byId(local, on.target);
       const component = block && registry.get(block.type);
       if (!block) reporter.emit('E_EVENT_TARGET', { file, path: `${base}/on/target`, target: event.id, message: `Event "${event.id}": no block "${on.target}" on screen "${screenId}".` });
-      else if (!component || !trigger.test(component)) reporter.emit('E_EVENT_TARGET', { file, path: `${base}/on/target`, target: event.id, message: `Event "${event.id}": ${on.type} needs a ${trigger.what}, "${on.target}" is a ${block.type}.` });
+      else if (!component || !trigger.test(component, block)) reporter.emit('E_EVENT_TARGET', { file, path: `${base}/on/target`, target: event.id, message: `Event "${event.id}": ${on.type} needs a ${trigger.what}, "${on.target}" is a ${block.type}.` });
       else if (on.type === 'click' && on.name !== undefined && !blockControls(project, block).has(on.name)) {
         reporter.emit('E_EVENT_TARGET', { file, path: `${base}/on/name`, target: event.id, message: `Event "${event.id}": ${block.type} "${block.id}" has no control named "${on.name}" (controls: ${controlNames(blockControls(project, block)) || 'none'}).` });
       } else if (on.type === 'decision.selected' && on.option && !list(fieldsOf(block.props).options).some((option) => fieldsOf(option).id === on.option)) {
@@ -171,7 +173,7 @@ export function checkEvents(ctx: CourseCheckContext, screen: ScreenFile): void {
   const firstStep = Math.min(...steps);
   const flat = (blocks: readonly (Block | null | undefined)[] | undefined): Block[] => list(blocks).flatMap((block) => (block === null || block === undefined ? [] : [block, ...flat(block.blocks)]));
   const activityBefore = (step: number) => list(data.blocks).some((block) => block !== null && block !== undefined && (block.step || 1) < step
-    && flat([block]).some((inner) => hasId(STEP_ACTIVITIES, behaviorOf(registry, inner.type))));
+    && flat([block]).some((inner) => hasId(STEP_ACTIVITIES, instanceBehavior(registry, inner))));
   const opensAnswered = new Set<number>();
   for (const [key, value] of Object.entries(fieldsOf(data.steps))) {
     const step = Number(key);

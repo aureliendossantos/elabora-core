@@ -1,0 +1,75 @@
+{
+  "screen": "origins",
+  "line": "l1",
+  "language": "en",
+  "textHash": "sha256:3df1bb22ba4a8eded0f64d381e25f9b837c4667f5272b5b7f5f9e938350397c7",
+  "duration": 3.74,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:a424c72d255f95e5dc66f1e1821ebe7a3b250678608c2d272995e1a2a2f3a879",
+  "createdAt": "2026-10-23T12:17:50Z",
+  "take": 1,
+  "spokenHash": "sha256:3df1bb22ba4a8eded0f64d381e25f9b837c4667f5272b5b7f5f9e938350397c7",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Where do our incidents start? Mostly in an email.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Where",
+      "start": 0.081,
+      "end": 0.302,
+      "score": 0.979
+    },
+    {
+      "text": "do",
+      "start": 0.302,
+      "end": 0.463,
+      "score": 1
+    },
+    {
+      "text": "our",
+      "start": 0.463,
+      "end": 0.664,
+      "score": 0.999
+    },
+    {
+      "text": "incidents",
+      "start": 0.664,
+      "end": 1.207,
+      "score": 0.969
+    },
+    {
+      "text": "start",
+      "start": 1.207,
+      "end": 1.68,
+      "score": 0.999
+    },
+    {
+      "text": "Mostly",
+      "start": 2.272,
+      "end": 2.867,
+      "score": 0.986
+    },
+    {
+      "text": "in",
+      "start": 2.956,
+      "end": 3.077,
+      "score": 1
+    },
+    {
+      "text": "an",
+      "start": 3.077,
+      "end": 3.269,
+      "score": 0.975
+    },
+    {
+      "text": "email",
+      "start": 3.278,
+      "end": 3.711,
+      "score": 0.791
+    }
+  ]
+}

@@ -70,6 +70,16 @@ export interface TimelineBlock {
   out?: TimelineBlockMoment;
 }
 
+// A chart's item brought by the voice, or the end of the chart's spotlight (item null), D60.
+export interface TimelineChartBeat {
+  block: string;
+  item: string | null;
+  time: number;
+  anchor: string;
+  estimated: boolean;
+  problem?: string;
+}
+
 export interface TimelineReport {
   screen: string;
   title: string;
@@ -86,6 +96,8 @@ export interface TimelineReport {
   // Blocks with a timing, in the order they come.
   blocks: TimelineBlock[];
   cues: TimelineCue[];
+  // Charts whose items come at the voice's words, in time order.
+  beats: TimelineChartBeat[];
 }
 
 const actionText = (action: Record<string, unknown>): string => {
@@ -129,10 +141,13 @@ export function timelineReport(project: Project, screenId: string, { language }:
     else if (on?.type === 'media.ended') cues.push({ event: event.id, trigger: 'media.ended', target: on.target, time: null, actions });
   }
   cues.sort((a, b) => (a.time ?? Infinity) - (b.time ?? Infinity));
+  const beats: TimelineChartBeat[] = timeline.beats.map((beat) => ({
+    block: beat.block, item: beat.item, time: beat.time, anchor: formatAnchor(beat.anchor), estimated: beat.estimated, ...(beat.problem ? { problem: beat.problem.message } : {})
+  }));
   return {
     screen: screenId, title: screen.title, language: lang, advance: screen.narration?.advance || project.course?.narration?.advance || 'learner', seek: screen.narration?.seek || project.course?.narration?.seek || 'seen',
     duration: timeline.duration, estimated: timeline.estimated, voiced: timeline.narrated && (timing?.lines ?? []).every((line) => line.info.status === 'ok' || line.info.status === 'stale'),
-    narrated: timeline.narrated, steps, blocks, cues
+    narrated: timeline.narrated, steps, blocks, cues, beats
   };
 }
 
@@ -168,6 +183,12 @@ export function formatTimeline(report: TimelineReport): string {
       ? `${kind} ${time(found.time)}${found.estimated ? '*' : ''} ${found.implied ? '(the next content comes)' : found.anchor} ${found.effect}${found.direction ? ` ${found.direction}` : ''} ${found.duration} s${found.problem ? ` ⚠ ${found.problem}` : ''}`
       : kind === 'in' ? 'in  with its step' : '');
     for (const block of report.blocks) out.push(`  ${block.block.padEnd(width)}  step ${block.step}  ${moment(block.in, 'in')}${block.out ? `  ·  ${moment(block.out, 'out')}` : ''}`);
+  }
+  if (report.beats.length) {
+    out.push('', 'Chart beats (each item comes at its words, the rest of its chart stepping back until the spotlight ends):');
+    const name = (beat: TimelineChartBeat) => `${beat.block} ${beat.item ?? 'end of spotlight'}`;
+    const width = Math.max(5, ...report.beats.map((beat) => name(beat).length));
+    for (const beat of report.beats) out.push(`  ${name(beat).padEnd(width)}  ${time(beat.time)}${beat.estimated ? '*' : ''} ${beat.anchor}${beat.problem ? ` ⚠ ${beat.problem}` : ''}`);
   }
   if (report.cues.length) {
     out.push('', 'Events on the timeline (they fire when playback crosses them, never on a seek):');

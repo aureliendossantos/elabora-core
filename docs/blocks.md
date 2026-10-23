@@ -247,3 +247,252 @@ Template `packages/core/src/components/builtin/stack.html`: fork it to change th
 |---|---|---|---|
 | `transition` | "crossfade" \| "cut" \| "slide" |  | How a content gives way to the next, unless the content sets its own effect: crossfade (one fades out as the next fades in), cut (at once), slide (the next comes from the right). Default "crossfade". |
 | `duration` | number |  | Seconds of the transition. Default 0.4. |
+
+## `key-figures` (chart)
+
+2 to 4 figures to remember, side by side, counted up when they appear.
+
+> One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). A figure is short ("62 %", "1 in 10", "25 min"); its label says what it counts.
+
+Rendered by code: cannot be forked; place it in a component slot.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
+| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `source` | string |  | Where the data comes from, shown under the chart. |
+| `items` | array | yes | The figures. |
+| `highlight` | string |  | Id of the figure that carries the idea: it takes the accent colour, the others step back. |
+| `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
+| `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
+
+## `bars` (chart)
+
+A ranking: horizontal bars that say which item dominates. The highlighted bar takes the accent colour once every bar stands; the pointer, a tap or the arrow keys read each value.
+
+> One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). 2 to 12 rows; sorted largest first unless sort is none (an order that means something: a scale, years).
+
+Rendered by code: cannot be forked; place it in a component slot.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
+| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `source` | string |  | Where the data comes from, shown under the chart. |
+| `rows` | array | yes | The bars, in any order. |
+| `highlight` | string |  | Id of the row that carries the idea: it takes the accent colour, the others step back. |
+| `unit` | string |  | Unit written after the values (min, kg, €). "%" writes percentages as the language does (62 %, 62%). |
+| `decimals` | integer |  | Decimals shown. Default 0. |
+| `sort` | "descending" \| "none" |  | Order of the bars. Default "descending". |
+| `max` | number |  | The value of a full bar (100 for percentages of a whole). Default: the largest value. |
+| `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
+| `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
+
+## `donut` (chart)
+
+A whole in 2 to 6 parts (fewer reads better), as a ring whose centre says the highlighted part. Hover, a tap or the arrow keys lend the centre to another part.
+
+> One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). Parts should add up to a whole; more than 5 parts reads badly: use bars.
+
+Rendered by code: cannot be forked; place it in a component slot.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
+| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `source` | string |  | Where the data comes from, shown under the chart. |
+| `parts` | array | yes | The parts, clockwise from the top. |
+| `highlight` | string |  | Id of the part that carries the idea: it takes the accent colour, the others step back. |
+| `unit` | string |  | Unit written after the values (min, kg, €). "%" writes percentages as the language does (62 %, 62%). |
+| `decimals` | integer |  | Decimals shown. Default 0. |
+| `center` | "highlight" \| "total" |  | What the centre of the ring says at rest. Default "highlight". |
+| `totalLabel` | string |  | Under the total, when center is total ("emails tested"). |
+| `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
+| `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
+
+## `trend` (chart)
+
+A change over time as a line that draws itself, with the moment that explains it. In predict mode the learner draws the end of the line before seeing it.
+
+> One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). 2 to 40 points; a note on the point where things changed. Predict mode: hide the points after predict.from and let the learner draw them; not scored by default (an engagement moment).
+
+Rendered by code: cannot be forked; place it in a component slot.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
+| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `source` | string |  | Where the data comes from, shown under the chart. |
+| `points` | array | yes | The points, in order. x is a year or a number (spaced by value), or a word (evenly spaced). |
+| `unit` | string |  | Unit written after the values (min, kg, €). "%" writes percentages as the language does (62 %, 62%). |
+| `decimals` | integer |  | Decimals shown. Default 0. |
+| `yMin` | number |  | Bottom of the scale. Default 0. |
+| `yMax` | number |  | Top of the scale. Default a little above the largest value. |
+| `note` | object |  | What explains the change, written at a point of the line, shown when the line reaches it. |
+| `mode` | "show" \| "predict" |  | predict: the learner draws the end of the line, then sees the real one over their guess. Default "show". |
+| `predict` | object |  | Predict mode. |
+| `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
+| `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
+
+## `proportion` (chart)
+
+"1 in 10" as an icon array: of icons in a grid, part of them in the accent colour, grouped at the start (grouped icons are read better than scattered ones), with the figure beside them.
+
+> One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). Keep of at 10, 20, 50 or 100; write figure in words people say ("1 in 10").
+
+Rendered by code: cannot be forked; place it in a component slot.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
+| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `source` | string |  | Where the data comes from, shown under the chart. |
+| `of` | integer | yes | How many icons in all. Default 100. |
+| `part` | integer | yes | How many in the accent colour. |
+| `figure` | string |  | The figure beside the icons ("1 in 10"). Default: the percentage. |
+| `label` | string |  | What the figure counts, under it ("clicked the link of the test email"). |
+| `icon` | "person" \| "circle" \| "square" |  | The icon. Default "person". |
+| `columns` | integer |  | Icons per row. Default 10, or 20 from 100 icons. |
+| `at` | anchor |  | Narrated screens: the moment the counted icons fill in. |
+| `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
+| `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
+
+## `before-after` (chart)
+
+A few items measured twice, joined by a line: who moved, who moved least.
+
+> One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). 2 to 10 items; beforeLabel and afterLabel name the two moments.
+
+Rendered by code: cannot be forked; place it in a component slot.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
+| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `source` | string |  | Where the data comes from, shown under the chart. |
+| `items` | array | yes | The items. |
+| `beforeLabel` | string | yes | The first moment ("2022"). |
+| `afterLabel` | string | yes | The second moment ("2025"). |
+| `highlight` | string |  | Id of the item that carries the idea: it takes the accent colour, the others step back. |
+| `unit` | string |  | Unit written after the values (min, kg, €). "%" writes percentages as the language does (62 %, 62%). |
+| `decimals` | integer |  | Decimals shown. Default 0. |
+| `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
+| `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
+
+## `levels` (chart)
+
+Stacked levels shaped as one figure: a funnel, widest at the top (what remains at each stage, with values), or a pyramid, widest at the base (levels that rest on one another).
+
+> One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). Items from top to bottom. A funnel has values; a pyramid may not.
+
+Rendered by code: cannot be forked; place it in a component slot.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
+| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `source` | string |  | Where the data comes from, shown under the chart. |
+| `items` | array | yes | The levels, from top to bottom. |
+| `shape` | "funnel" \| "pyramid" |  | funnel: widest at the top; pyramid: widest at the base. Default "funnel". |
+| `highlight` | string |  | Id of the level that carries the idea: it takes the accent colour, the others step back. |
+| `unit` | string |  | Unit written after the values (min, kg, €). "%" writes percentages as the language does (62 %, 62%). |
+| `decimals` | integer |  | Decimals shown. Default 0. |
+| `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
+| `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
+
+## `process` (chart)
+
+A short procedure: numbered steps joined by a line that draws itself.
+
+> One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). 2 to 7 steps; a title is a verb ("Press Report").
+
+Rendered by code: cannot be forked; place it in a component slot.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
+| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `source` | string |  | Where the data comes from, shown under the chart. |
+| `items` | array | yes | The steps, in order. |
+| `highlight` | string |  | Id of the step that carries the idea: it takes the accent colour, the others step back. |
+| `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
+| `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
+
+## `cycle` (chart)
+
+A loop of stages around a centre; the centre explains the stage pointed at, focused or tapped.
+
+> One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). 3 to 8 stages; center says what the loop is.
+
+Rendered by code: cannot be forked; place it in a component slot.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
+| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `source` | string |  | Where the data comes from, shown under the chart. |
+| `items` | array | yes | The stages, clockwise from the top. |
+| `center` | object |  | What the centre says at rest (optional: without it the centre stays empty). |
+| `highlight` | string |  | Id of the stage that carries the idea: it takes the accent colour, the others step back. |
+| `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
+| `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
+
+## `matrix` (chart)
+
+Items placed on two axes, in four quadrants; one quadrant can carry the message.
+
+> One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). x and y of items go from 0 to 1 (left to right, bottom to top).
+
+Rendered by code: cannot be forked; place it in a component slot.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
+| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `source` | string |  | Where the data comes from, shown under the chart. |
+| `x` | object | yes | The horizontal axis. |
+| `y` | object | yes | The vertical axis. |
+| `quadrants` | object | yes | The quadrants' names. |
+| `highlightQuadrant` | "topLeft" \| "topRight" \| "bottomLeft" \| "bottomRight" |  | The quadrant that carries the message. |
+| `items` | array | yes | The items. |
+| `highlight` | string |  | Id of the item that carries the idea: it takes the accent colour, the others step back. |
+| `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
+| `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
+
+## `milestones` (chart)
+
+Dated events on a rail that draws itself.
+
+> One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). 2 to 8 events, in order; date is short ("2019", "March 2024").
+
+Rendered by code: cannot be forked; place it in a component slot.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
+| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `source` | string |  | Where the data comes from, shown under the chart. |
+| `items` | array | yes | The events, in order. |
+| `highlight` | string |  | Id of the event that carries the idea: it takes the accent colour, the others step back. |
+| `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
+| `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
+
+## `diagram` (chart)
+
+A flow, a decision, a map of ideas, written in Mermaid and drawn when the course is built (by Pele): nodes appear by depth and edges draw; pointing at a node lights the path that leads to it.
+
+> One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). Allowed: flowchart, sequenceDiagram, stateDiagram-v2, mindmap, timeline, journey, ishikawa, venn. Write labels in the course language; no style, classDef or colours (the theme colours the diagram). Keep it under about 15 nodes.
+
+Rendered by code: cannot be forked; place it in a component slot.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
+| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `source` | string |  | Where the diagram comes from, shown under it. |
+| `mermaid` | string | yes | The diagram in Mermaid syntax, its words in the course language. |
+| `labels` | object |  | Words of nodes and edges by id (as Pele names them: a flowchart node's id, an edge's L_&lt;from&gt;_&lt;to&gt;_&lt;n&gt;, a mind map node's words), replacing the Mermaid text's. Translations write here. |
+| `beats` | array |  | Narrated screens: nodes brought by the voice. |
+| `highlight` | string |  | Id of the node that carries the idea (an outcome): it takes the accent colour. |
+| `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
+| `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |

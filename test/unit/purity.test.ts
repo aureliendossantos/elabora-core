@@ -14,7 +14,8 @@ const FORBIDDEN: [RegExp, string][] = [
   [/\bfrom\s+['"](fs|path|os|url|crypto|child_process|module)['"]/, 'a Node module import'],
   [/['"]@elabora\/(node|cli|engine)(\/[^'"]*)?['"]/, 'an import of a Node package'],
   [/\bBuffer\b/, 'Buffer'],
-  [/\bprocess\./, 'process']
+  // The global, not a file or an import named process (the process chart: process.ts).
+  [/(?<![\w/.'"-])process\./, 'process']
 ];
 // Comments may name what the code must not use.
 const stripComments = (code: string) => code.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:'"\\])\/\/.*$/gm, '$1');

@@ -1,0 +1,87 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "after-report",
+  "title": "What your report sets off",
+  "covers": [
+    "ITEM-5"
+  ],
+  "blocks": [
+    {
+      "id": "after-report-cycle",
+      "type": "cycle",
+      "width": "wide",
+      "style": "aside",
+      "props": {
+        "takeaway": "One report protects 1,200 inboxes",
+        "context": "What the security desk does with each report",
+        "source": "Security desk report 2025, Quillon Freight (internal report, fictional)",
+        "highlight": "block",
+        "center": {
+          "title": "One report",
+          "text": "From your inbox to every inbox"
+        },
+        "items": [
+          {
+            "id": "report",
+            "title": "You report",
+            "text": "One click on Report sends the email to the desk.",
+            "at": {
+              "line": "l1",
+              "word": "report"
+            }
+          },
+          {
+            "id": "triage",
+            "title": "Triage",
+            "text": "An analyst reads it and decides: phishing or not.",
+            "at": {
+              "line": "l1",
+              "word": "triages"
+            }
+          },
+          {
+            "id": "block",
+            "title": "Block",
+            "text": "Its sender and links are blocked in every inbox, typically 11 minutes after the first report.",
+            "at": {
+              "line": "l2",
+              "word": "block"
+            }
+          },
+          {
+            "id": "warn",
+            "title": "Warn",
+            "text": "Those who got it hear what it was, and what to do.",
+            "at": {
+              "line": "l2",
+              "word": "warn"
+            }
+          },
+          {
+            "id": "teach",
+            "title": "Teach",
+            "text": "The lure becomes a safe fake in a coming drill.",
+            "at": {
+              "line": "l2",
+              "word": "teach"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "l1",
+        "speaker": "guide",
+        "text": "Your report reaches the desk, where an analyst triages it within minutes."
+      },
+      {
+        "id": "l2",
+        "speaker": "guide",
+        "text": "We block it in all 1,200 inboxes, warn those who got it, and teach it in a coming drill."
+      }
+    ]
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "screen": "steps",
+  "line": "l2",
+  "language": "en",
+  "textHash": "sha256:869578203dad5f6dace728a0a0ca5058c768a3377387188249797e7b5f4a161a",
+  "duration": 4.88,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:81be54dc442373763a15d9fb59c32cd335637acc52cc5b8fbeab61a9489f7056",
+  "createdAt": "2026-10-23T12:18:46Z",
+  "take": 1,
+  "spokenHash": "sha256:869578203dad5f6dace728a0a0ca5058c768a3377387188249797e7b5f4a161a",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Check who really sent it, and where the link goes. Then press Report.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Check",
+      "start": 0.04,
+      "end": 0.321,
+      "score": 0.892
+    },
+    {
+      "text": "who",
+      "start": 0.321,
+      "end": 0.574,
+      "score": 0.983
+    },
+    {
+      "text": "really",
+      "start": 0.643,
+      "end": 1.024,
+      "score": 0.99
+    },
+    {
+      "text": "sent",
+      "start": 1.024,
+      "end": 1.366,
+      "score": 0.99
+    },
+    {
+      "text": "it",
+      "start": 1.366,
+      "end": 1.558,
+      "score": 0.998
+    },
+    {
+      "text": "and",
+      "start": 1.727,
+      "end": 1.908,
+      "score": 0.993
+    },
+    {
+      "text": "where",
+      "start": 1.908,
+      "end": 2.189,
+      "score": 0.976
+    },
+    {
+      "text": "the",
+      "start": 2.189,
+      "end": 2.33,
+      "score": 1
+    },
+    {
+      "text": "link",
+      "start": 2.33,
+      "end": 2.611,
+      "score": 0.997
+    },
+    {
+      "text": "goes",
+      "start": 2.611,
+      "end": 3.004,
+      "score": 0.974
+    },
+    {
+      "text": "Then",
+      "start": 3.494,
+      "end": 3.767,
+      "score": 0.999
+    },
+    {
+      "text": "press",
+      "start": 3.956,
+      "end": 4.298,
+      "score": 0.987
+    },
+    {
+      "text": "Report",
+      "start": 4.298,
+      "end": 4.811,
+      "score": 1
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "funnel",
+  "title": "How a phish catches people",
+  "covers": [
+    "ITEM-3"
+  ],
+  "blocks": [
+    {
+      "id": "funnel-levels",
+      "type": "levels",
+      "width": "half",
+      "props": {
+        "takeaway": "One drill email in twelve got a password",
+        "context": "The January 2025 drill: a fake password reset sent to every employee",
+        "source": "Phishing drills 2025, Quillon Freight (internal report, fictional)",
+        "shape": "funnel",
+        "highlight": "typed",
+        "items": [
+          {
+            "id": "sent",
+            "label": "Sent",
+            "value": 1200,
+            "at": {
+              "line": "l1",
+              "word": "sent"
+            }
+          },
+          {
+            "id": "opened",
+            "label": "Opened",
+            "value": 790,
+            "at": {
+              "line": "l2",
+              "word": "opened"
+            }
+          },
+          {
+            "id": "clicked",
+            "label": "Clicked the link",
+            "value": 384,
+            "at": {
+              "line": "l2",
+              "word": "clicked"
+            }
+          },
+          {
+            "id": "typed",
+            "label": "Typed a password",
+            "value": 100,
+            "at": {
+              "line": "l2",
+              "word": "password"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "funnel-reported",
+      "type": "proportion",
+      "width": "half",
+      "step": 2,
+      "props": {
+        "takeaway": "Only one in seven told us",
+        "context": "Employees who reported the January drill to the security desk",
+        "source": "Phishing drills 2025, Quillon Freight (internal report, fictional)",
+        "of": 28,
+        "part": 4,
+        "columns": 7,
+        "figure": "1 in 7",
+        "label": "reported the drill email",
+        "at": {
+          "line": "l3",
+          "word": "told"
+        }
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "l1",
+        "speaker": "guide",
+        "text": "In January, we sent everyone a fake password reset."
+      },
+      {
+        "id": "l2",
+        "speaker": "guide",
+        "text": "Two in three opened it, one in three clicked, and one in twelve typed a password."
+      },
+      {
+        "id": "l3",
+        "speaker": "guide",
+        "text": "And only one in seven told the security desk.",
+        "step": 2
+      }
+    ]
+  }
+}

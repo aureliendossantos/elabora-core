@@ -1,0 +1,84 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "lures",
+  "title": "What phishing looks like",
+  "covers": [
+    "ITEM-2"
+  ],
+  "blocks": [
+    {
+      "id": "lures-donut",
+      "type": "donut",
+      "width": "wide",
+      "style": "aside",
+      "props": {
+        "takeaway": "Most phishing dresses up as everyday work",
+        "context": "What the 1,840 phishing emails reported in 2025 pretended to be",
+        "source": "Security desk report 2025, Quillon Freight (internal report, fictional)",
+        "unit": "%",
+        "highlight": "delivery",
+        "parts": [
+          {
+            "id": "delivery",
+            "label": "Delivery notice",
+            "value": 38,
+            "at": {
+              "line": "l2",
+              "word": "Delivery"
+            }
+          },
+          {
+            "id": "invoice",
+            "label": "Invoice or payment",
+            "value": 24,
+            "at": {
+              "line": "l2",
+              "word": "invoices"
+            }
+          },
+          {
+            "id": "password",
+            "label": "Password reset",
+            "value": 21,
+            "at": {
+              "line": "l2",
+              "word": "password"
+            }
+          },
+          {
+            "id": "payroll",
+            "label": "HR or payroll",
+            "value": 11,
+            "at": {
+              "line": "l2",
+              "word": "payroll"
+            }
+          },
+          {
+            "id": "other",
+            "label": "Other",
+            "value": 6,
+            "at": {
+              "line": "l2",
+              "word": "others"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "l1",
+        "speaker": "guide",
+        "text": "And what do these emails look like? Like our everyday work."
+      },
+      {
+        "id": "l2",
+        "speaker": "guide",
+        "text": "Delivery notices, then invoices, password resets, payroll messages, and a few others."
+      }
+    ]
+  }
+}

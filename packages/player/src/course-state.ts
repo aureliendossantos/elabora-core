@@ -7,7 +7,7 @@ import { gradeNumeric } from './numeric.ts';
 import { fieldOf } from './json.ts';
 import type {
   Action, ActivityBlock, Behavior, BlockByBehavior, BlockData, Condition, CourseData, DecisionBlock, DecisionOption, LayerData, Misconception,
-  NumericBlock, ObjectBlock, QuizBlock, ScreenData, Trigger, TriggerType, VariableData, VariableValue
+  NumericBlock, ObjectBlock, PredictBlock, QuizBlock, ScreenData, Trigger, TriggerType, VariableData, VariableValue
 } from './course-data.ts';
 
 // The reported lesson status never goes down. Statuses the LMS may return that are not here rank as
@@ -22,7 +22,7 @@ export const behaviorOf = (block: BlockData): Behavior | null => block.behavior 
 export function hasBehavior<K extends Behavior>(block: BlockData, behavior: K): block is BlockByBehavior[K] {
   return behaviorOf(block) === behavior;
 }
-const ACTIVITIES = new Set<Behavior | null>(['quiz', 'numeric', 'decision', 'object']);
+const ACTIVITIES = new Set<Behavior | null>(['quiz', 'numeric', 'decision', 'object', 'predict']);
 export const isActivity = (block: BlockData): block is ActivityBlock => ACTIVITIES.has(behaviorOf(block));
 
 // Blocks of a list and the blocks placed in their slots, depth first.
@@ -179,6 +179,18 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     changed('numeric');
     return { correct: grade.correct, misconception: grade.misconception, final, attemptsLeft: (block.props.attempts || 1) - answer.attempts };
   }
+  // A trend in predict mode (D60): the learner's guess at the last point, kept like a numeric answer;
+  // close when within the tolerance of the real value.
+  const predictState = (block: PredictBlock): number | null => learner.numerics[block.key]?.value ?? null;
+  const predictActual = (block: PredictBlock): number => block.props.points?.at(-1)?.y ?? 0;
+  const predictClose = (block: PredictBlock, guess: number): boolean => Math.abs(guess - predictActual(block)) <= block.props.predict.tolerance + 1e-9;
+  function answerPredict(blockId: string, guess: number): { close: boolean; actual: number } | null {
+    const block = blockIndex.get(blockId)?.block;
+    if (!block || !hasBehavior(block, 'predict') || predictState(block) !== null || !Number.isFinite(guess)) return null;
+    learner.numerics[block.key] = { value: guess, attempts: 1 };
+    changed('numeric');
+    return { close: predictClose(block, guess), actual: predictActual(block) };
+  }
   function chooseDecision(blockId: string, optionId: string): { option: DecisionOption | undefined } | null {
     const block = blockIndex.get(blockId)?.block;
     if (!block || !hasBehavior(block, 'decision')) return null;
@@ -250,6 +262,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     if (hasBehavior(block, 'numeric')) return numericFinal(block);
     if (hasBehavior(block, 'decision')) return !!learner.decisions[block.key];
     if (hasBehavior(block, 'object')) return block.key in learner.objectsDone;
+    if (hasBehavior(block, 'predict')) return predictState(block) !== null;
     return true;
   }
   // Answered at least once, right or wrong (a step that opens once answered); an object, once completed.
@@ -289,6 +302,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     for (const screen of screens) for (const block of flatBlocks(screen.blocks)) {
       if ((hasBehavior(block, 'quiz') || hasBehavior(block, 'numeric')) && block.props.scored !== false) out.push(block);
       else if ((hasBehavior(block, 'decision') || hasBehavior(block, 'object')) && block.props.scored) out.push(block);
+      else if (hasBehavior(block, 'predict') && block.props.predict.scored) out.push(block);
     }
     return out;
   }
@@ -297,13 +311,15 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     if (hasBehavior(block, 'numeric')) { const answer = numericState(block); return answer && gradeNumeric(block.props, answer.value).correct ? 1 : 0; }
     if (hasBehavior(block, 'decision')) { const option = block.props.options.find((candidate) => candidate.id === learner.decisions[block.key]); return option?.correct ? 1 : 0; }
     if (hasBehavior(block, 'object')) return learner.objectsDone[block.key] ?? 0;
+    if (hasBehavior(block, 'predict')) { const guess = predictState(block); return guess !== null && predictClose(block, guess) ? 1 : 0; }
     return 0;
   }
+  const weightOf = (block: ActivityBlock): number => (hasBehavior(block, 'predict') ? block.props.predict.weight : block.props.weight) || 1;
   function score(): Score {
     const items = scoredItems();
     if (!items.length) return { raw: null, decided: true, items: 0 };
-    const total = items.reduce((sum, block) => sum + (block.props.weight || 1), 0);
-    const earned = items.reduce((sum, block) => sum + (block.props.weight || 1) * itemScore(block), 0);
+    const total = items.reduce((sum, block) => sum + weightOf(block), 0);
+    const earned = items.reduce((sum, block) => sum + weightOf(block) * itemScore(block), 0);
     return { raw: Math.round((100 * earned) / total), decided: items.every(activityDone), items: items.length };
   }
   function computeStatus(): { target: TargetStatus; score: Score; requiredDone: boolean } {
@@ -337,7 +353,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     const scoredBlocks: readonly BlockData[] = scored;
     for (const block of scored) {
       if (hasBehavior(block, 'quiz')) delete learner.quizzes[block.key];
-      if (hasBehavior(block, 'numeric')) delete learner.numerics[block.key];
+      if (hasBehavior(block, 'numeric') || hasBehavior(block, 'predict')) delete learner.numerics[block.key];
       if (hasBehavior(block, 'decision')) delete learner.decisions[block.key];
       if (hasBehavior(block, 'object')) { delete learner.objectsDone[block.key]; delete learner.objects[block.key]; }
     }
@@ -402,6 +418,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     getVar, setVar, incrementVar,
     answerQuiz, quizState, quizFinal, quizIsCorrect,
     answerNumeric, numericState, numericFinal,
+    answerPredict, predictState, predictClose,
     chooseDecision, decisionOf: (block: DecisionBlock): string | null => learner.decisions[block.key] || null,
     completeObject, objectDone: (block: ObjectBlock): boolean => block.key in learner.objectsDone, saveObjectState, objectSavedState,
     blockVisible, setBlockVisible,

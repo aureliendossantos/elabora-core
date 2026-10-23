@@ -1,0 +1,87 @@
+{
+  "screen": "steps",
+  "line": "l1",
+  "language": "en",
+  "textHash": "sha256:955514ab6ef0c45b5d9b61e8b75548cd38adc38ecc1f58cecd7db690c69f89c6",
+  "duration": 6.17,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:12f12a1060350c41cce46ce8ced08f587e41aa6b33df38298988618ff48d4c16",
+  "createdAt": "2026-10-23T12:18:43Z",
+  "take": 1,
+  "spokenHash": "sha256:955514ab6ef0c45b5d9b61e8b75548cd38adc38ecc1f58cecd7db690c69f89c6",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "So, an email surprises you. Pause: don't click, reply or forward.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "So",
+      "start": 0.12,
+      "end": 0.433,
+      "score": 0.997
+    },
+    {
+      "text": "an",
+      "start": 0.761,
+      "end": 0.933,
+      "score": 0.997
+    },
+    {
+      "text": "email",
+      "start": 1.002,
+      "end": 1.402,
+      "score": 0.926
+    },
+    {
+      "text": "surprises",
+      "start": 1.402,
+      "end": 2.083,
+      "score": 0.998
+    },
+    {
+      "text": "you",
+      "start": 2.083,
+      "end": 2.316,
+      "score": 0.979
+    },
+    {
+      "text": "Pause",
+      "start": 2.945,
+      "end": 3.417,
+      "score": 0.99
+    },
+    {
+      "text": "don't",
+      "start": 3.926,
+      "end": 4.247,
+      "score": 0.991
+    },
+    {
+      "text": "click",
+      "start": 4.247,
+      "end": 4.619,
+      "score": 0.945
+    },
+    {
+      "text": "reply",
+      "start": 4.768,
+      "end": 5.341,
+      "score": 0.975
+    },
+    {
+      "text": "or",
+      "start": 5.409,
+      "end": 5.589,
+      "score": 1
+    },
+    {
+      "text": "forward",
+      "start": 5.589,
+      "end": 6.142,
+      "score": 0.953
+    }
+  ]
+}

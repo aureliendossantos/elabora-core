@@ -267,7 +267,7 @@ export interface LayerData {
 // needs to score, save and record them; video, audio and free objects are rendered by code from
 // their props; every other block is HTML rendered from its component template.
 
-export type Behavior = 'quiz' | 'numeric' | 'decision' | 'object' | 'results';
+export type Behavior = 'quiz' | 'numeric' | 'decision' | 'object' | 'results' | 'chart' | 'predict';
 
 export type BlockData =
   | QuizBlock
@@ -277,6 +277,8 @@ export type BlockData =
   | ResultsBlock
   | VideoBlock
   | AudioBlock
+  | ChartBlock
+  | PredictBlock
   | ContentBlock;
 
 export interface BlockByBehavior {
@@ -285,10 +287,12 @@ export interface BlockByBehavior {
   decision: DecisionBlock;
   object: ObjectBlock;
   results: ResultsBlock;
+  chart: ChartBlock;
+  predict: PredictBlock;
 }
 
 // Blocks whose answers count: they have a key in the learner state.
-export type ActivityBlock = QuizBlock | NumericBlock | DecisionBlock | ObjectBlock;
+export type ActivityBlock = QuizBlock | NumericBlock | DecisionBlock | ObjectBlock | PredictBlock;
 
 export interface BlockBase {
   id: string;
@@ -372,6 +376,43 @@ export interface AudioBlock extends BlockBase {
   type: 'audio';
   behavior?: undefined;
   props: AudioProps;
+}
+
+// Charts and diagrams (D60): their markup is the chart at rest, drawn when the course is built; the
+// chart behaviour moves it. A trend in predict mode is an activity: its guess is kept under key.
+export interface ChartBlock extends BlockBase {
+  behavior: 'chart';
+  props: ChartProps;
+}
+export interface PredictBlock extends BlockBase {
+  behavior: 'predict';
+  key: string;
+  props: ChartProps & { predict: PredictData };
+}
+export interface ChartProps {
+  chart: string;
+  highlight?: string;
+  // Narrated screens: when the voice brings each item (seconds on the timeline, by item id), and
+  // when it is done with them; whether items appear at their moment or only take the spotlight.
+  beats?: Record<string, number>;
+  beatsEnd?: number;
+  revealOnBeats?: boolean;
+  // trend: its points (px and py are fractions of the plot, from its top left), its scale and format.
+  points?: { x: number | string; y: number; px: number; py: number }[];
+  domain?: [number, number];
+  format?: { unit?: string; decimals?: number };
+}
+export interface PredictData {
+  // Index of the last point shown before the guess.
+  from: number;
+  hint?: string;
+  button?: string;
+  close?: string;
+  far?: string;
+  tolerance: number;
+  scored: boolean;
+  weight: number;
+  objective?: string;
 }
 
 // Headings, text, images, callouts, buttons… and course components without a behaviour.

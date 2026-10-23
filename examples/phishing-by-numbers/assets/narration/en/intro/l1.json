@@ -1,0 +1,87 @@
+{
+  "screen": "intro",
+  "line": "l1",
+  "language": "en",
+  "textHash": "sha256:cd3982f644719ffdd70e2225713a48a15f9261cb0814ad0db7e817fe966f1fe8",
+  "duration": 5.86,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:facc20f2d36251ef50070104d1ec7ca59cdcfecf55f879d40222612112c7e47d",
+  "createdAt": "2026-10-23T12:17:38Z",
+  "take": 1,
+  "spokenHash": "sha256:cd3982f644719ffdd70e2225713a48a15f9261cb0814ad0db7e817fe966f1fe8",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Last year, you reported 1,840 phishing emails to the security desk.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Last",
+      "start": 0.1,
+      "end": 0.462,
+      "score": 0.988
+    },
+    {
+      "text": "year",
+      "start": 0.462,
+      "end": 0.774,
+      "score": 0.963
+    },
+    {
+      "text": "you",
+      "start": 0.983,
+      "end": 1.184,
+      "score": 1
+    },
+    {
+      "text": "reported",
+      "start": 1.184,
+      "end": 1.758,
+      "score": 1
+    },
+    {
+      "text": "1,840",
+      "start": 1.846,
+      "end": 3.765,
+      "score": 0.974
+    },
+    {
+      "text": "phishing",
+      "start": 3.773,
+      "end": 4.214,
+      "score": 0.747
+    },
+    {
+      "text": "emails",
+      "start": 4.214,
+      "end": 4.616,
+      "score": 0.827
+    },
+    {
+      "text": "to",
+      "start": 4.616,
+      "end": 4.756,
+      "score": 1
+    },
+    {
+      "text": "the",
+      "start": 4.756,
+      "end": 4.877,
+      "score": 0.999
+    },
+    {
+      "text": "security",
+      "start": 4.877,
+      "end": 5.419,
+      "score": 0.996
+    },
+    {
+      "text": "desk",
+      "start": 5.419,
+      "end": 5.812,
+      "score": 0.526
+    }
+  ]
+}

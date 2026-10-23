@@ -1,0 +1,83 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "intro",
+  "title": "Phishing at Quillon, in three numbers",
+  "covers": [
+    "ITEM-1"
+  ],
+  "blocks": [
+    {
+      "id": "intro-figures",
+      "type": "key-figures",
+      "width": "wide",
+      "props": {
+        "takeaway": "Phishing is our most common attack, and your reports are our best defence",
+        "context": "Quillon Freight, 1,200 employees, year 2025",
+        "source": "Security desk report 2025, Quillon Freight (internal report, fictional)",
+        "highlight": "block",
+        "items": [
+          {
+            "id": "reported",
+            "figure": "1,840",
+            "label": "phishing emails reported by you",
+            "count": {
+              "to": 1840
+            },
+            "at": {
+              "line": "l1",
+              "word": "reported"
+            }
+          },
+          {
+            "id": "email",
+            "figure": "62%",
+            "label": "of our security incidents began with an email",
+            "count": {
+              "to": 62,
+              "format": "percent"
+            },
+            "meter": 0.62,
+            "at": {
+              "line": "l2",
+              "word": "Email"
+            }
+          },
+          {
+            "id": "block",
+            "figure": "11 min",
+            "label": "from the first report to a phish blocked for everyone",
+            "count": {
+              "from": 250,
+              "to": 11,
+              "format": "minutes"
+            },
+            "was": "4 h 10 in 2022",
+            "at": {
+              "line": "l3",
+              "word": "block"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "l1",
+        "speaker": "guide",
+        "text": "Last year, you reported 1,840 phishing emails to the security desk."
+      },
+      {
+        "id": "l2",
+        "speaker": "guide",
+        "text": "Email is where 62 percent of our incidents began."
+      },
+      {
+        "id": "l3",
+        "speaker": "guide",
+        "text": "And thanks to your reports, we now block a phish in 11 minutes, down from four hours."
+      }
+    ]
+  }
+}

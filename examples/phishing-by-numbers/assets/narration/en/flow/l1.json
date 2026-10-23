@@ -1,0 +1,111 @@
+{
+  "screen": "flow",
+  "line": "l1",
+  "language": "en",
+  "textHash": "sha256:bec7a20eacc2fbc122840110950378f6507d78cb6a60399e7538188e1f52260f",
+  "duration": 5.62,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:83bfae55adda28e4121209e5393284a107d62d647883c010c88fe4aae35837c6",
+  "createdAt": "2026-10-23T12:19:01Z",
+  "take": 1,
+  "spokenHash": "sha256:bec7a20eacc2fbc122840110950378f6507d78cb6a60399e7538188e1f52260f",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "When an email surprises you, ask: does it want a password, money, or a file?",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "When",
+      "start": 0.06,
+      "end": 0.241,
+      "score": 0.999
+    },
+    {
+      "text": "an",
+      "start": 0.241,
+      "end": 0.413,
+      "score": 0.998
+    },
+    {
+      "text": "email",
+      "start": 0.442,
+      "end": 0.803,
+      "score": 0.776
+    },
+    {
+      "text": "surprises",
+      "start": 0.803,
+      "end": 1.485,
+      "score": 0.98
+    },
+    {
+      "text": "you",
+      "start": 1.485,
+      "end": 1.738,
+      "score": 1
+    },
+    {
+      "text": "ask",
+      "start": 2.168,
+      "end": 2.46,
+      "score": 0.986
+    },
+    {
+      "text": "does",
+      "start": 2.951,
+      "end": 3.151,
+      "score": 0.915
+    },
+    {
+      "text": "it",
+      "start": 3.151,
+      "end": 3.232,
+      "score": 1
+    },
+    {
+      "text": "want",
+      "start": 3.232,
+      "end": 3.412,
+      "score": 0.887
+    },
+    {
+      "text": "a",
+      "start": 3.412,
+      "end": 3.513,
+      "score": 0.995
+    },
+    {
+      "text": "password",
+      "start": 3.513,
+      "end": 4.187,
+      "score": 0.993
+    },
+    {
+      "text": "money",
+      "start": 4.396,
+      "end": 4.769,
+      "score": 1
+    },
+    {
+      "text": "or",
+      "start": 4.938,
+      "end": 5.078,
+      "score": 0.999
+    },
+    {
+      "text": "a",
+      "start": 5.078,
+      "end": 5.199,
+      "score": 0.996
+    },
+    {
+      "text": "file",
+      "start": 5.199,
+      "end": 5.62,
+      "score": 0.855
+    }
+  ]
+}

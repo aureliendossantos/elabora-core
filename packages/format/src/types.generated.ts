@@ -830,7 +830,7 @@ export type ScreenLayer = {
 /** A block placed on a screen, a layer or in a slot of a component instance. id identifies it in the whole course. type is a built-in type (the native catalogue, props in blocks/<type>.schema.json) or the id of a course component (components/<id>/component.json declares its props). */
 export type Block = {
   id: Slug;
-  /** Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, decision, free-object, results, stack) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props. */
+  /** Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, decision, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props. */
   type: string;
   props: { [key: string]: unknown };
   /** Blocks placed in the slots of this component instance (each picks its slot with slot; without slot, the default slot). Only for components that declare slots. */
@@ -879,7 +879,19 @@ export type BuiltinBlockType =
   | 'decision'
   | 'free-object'
   | 'results'
-  | 'stack';
+  | 'stack'
+  | 'key-figures'
+  | 'bars'
+  | 'donut'
+  | 'trend'
+  | 'proportion'
+  | 'before-after'
+  | 'levels'
+  | 'process'
+  | 'cycle'
+  | 'matrix'
+  | 'milestones'
+  | 'diagram';
 
 /** A Block whose type is built in: its props follow the schema of that type. */
 export type BuiltinBlock =
@@ -897,7 +909,19 @@ export type BuiltinBlock =
   | DecisionBlock
   | FreeObjectBlock
   | ResultsBlock
-  | StackBlock;
+  | StackBlock
+  | KeyFiguresBlock
+  | BarsBlock
+  | DonutBlock
+  | TrendBlock
+  | ProportionBlock
+  | BeforeAfterBlock
+  | LevelsBlock
+  | ProcessBlock
+  | CycleBlock
+  | MatrixBlock
+  | MilestonesBlock
+  | DiagramBlock;
 
 export type HeadingBlock = Omit<Block, 'type' | 'props'> & {
   type: 'heading';
@@ -974,6 +998,66 @@ export type StackBlock = Omit<Block, 'type' | 'props'> & {
   props: StackProps;
 };
 
+export type KeyFiguresBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'key-figures';
+  props: KeyFiguresProps;
+};
+
+export type BarsBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'bars';
+  props: BarsProps;
+};
+
+export type DonutBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'donut';
+  props: DonutProps;
+};
+
+export type TrendBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'trend';
+  props: TrendProps;
+};
+
+export type ProportionBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'proportion';
+  props: ProportionProps;
+};
+
+export type BeforeAfterBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'before-after';
+  props: BeforeAfterProps;
+};
+
+export type LevelsBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'levels';
+  props: LevelsProps;
+};
+
+export type ProcessBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'process';
+  props: ProcessProps;
+};
+
+export type CycleBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'cycle';
+  props: CycleProps;
+};
+
+export type MatrixBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'matrix';
+  props: MatrixProps;
+};
+
+export type MilestonesBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'milestones';
+  props: MilestonesProps;
+};
+
+export type DiagramBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'diagram';
+  props: DiagramProps;
+};
+
 // blocks/accordion.schema.json
 
 /**
@@ -1018,6 +1102,109 @@ export type AudioProps = {
   generated?: boolean;
 };
 
+// blocks/bars.schema.json
+
+/**
+ * bars block props
+ *
+ * A ranking: horizontal bars that say which item dominates. The highlighted bar takes the accent colour once every bar stands; the pointer, a tap or the arrow keys read each value.
+ */
+export type BarsProps = {
+  /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
+  takeaway: string;
+  /** One line under the title: what is measured, where, when, in what unit. */
+  context?: string;
+  /** Where the data comes from, shown under the chart. */
+  source?: string;
+  /** The bars, in any order. */
+  rows: BarsRow[];
+  /** Id of the row that carries the idea: it takes the accent colour, the others step back. */
+  highlight?: string;
+  /** Unit written after the values (min, kg, €). "%" writes percentages as the language does (62 %, 62%). */
+  unit?: string;
+  /**
+   * Decimals shown.
+   * @default 0
+   */
+  decimals?: number;
+  /**
+   * Order of the bars.
+   * @default 'descending'
+   */
+  sort?: 'descending' | 'none';
+  /** The value of a full bar (100 for percentages of a whole). Default: the largest value. */
+  max?: number;
+  /** Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. */
+  spotlightEnd?: Anchor;
+  /**
+   * Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false).
+   * @default true
+   */
+  revealOnBeats?: boolean;
+};
+
+export type BarsRow = {
+  /** Stable id of the item: highlights, voice beats and translations name it. */
+  id: string;
+  /** What the bar measures. */
+  label: string;
+  /** The value. */
+  value: number;
+  /** A detail said with the value on hover and to screen readers ("769 incidents"). */
+  note?: string;
+  /** Narrated screens: the moment the voice brings this item ({ "line": "l2", "word": "phishing" }). It appears then, and the other items step back while the voice talks about it, until the next item's moment. */
+  at?: Anchor;
+};
+
+// blocks/before-after.schema.json
+
+/**
+ * before-after block props
+ *
+ * A few items measured twice, joined by a line: who moved, who moved least.
+ */
+export type BeforeAfterProps = {
+  /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
+  takeaway: string;
+  /** One line under the title: what is measured, where, when, in what unit. */
+  context?: string;
+  /** Where the data comes from, shown under the chart. */
+  source?: string;
+  /** The items. */
+  items: BeforeAfterItem[];
+  /** The first moment ("2022"). */
+  beforeLabel: string;
+  /** The second moment ("2025"). */
+  afterLabel: string;
+  /** Id of the item that carries the idea: it takes the accent colour, the others step back. */
+  highlight?: string;
+  /** Unit written after the values (min, kg, €). "%" writes percentages as the language does (62 %, 62%). */
+  unit?: string;
+  /**
+   * Decimals shown.
+   * @default 0
+   */
+  decimals?: number;
+  /** Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. */
+  spotlightEnd?: Anchor;
+  /**
+   * Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false).
+   * @default true
+   */
+  revealOnBeats?: boolean;
+};
+
+export type BeforeAfterItem = {
+  /** Stable id of the item: highlights, voice beats and translations name it. */
+  id: string;
+  /** The item. */
+  label: string;
+  before: number;
+  after: number;
+  /** Narrated screens: the moment the voice brings this item ({ "line": "l2", "word": "phishing" }). It appears then, and the other items step back while the voice talks about it, until the next item's moment. */
+  at?: Anchor;
+};
+
 // blocks/button.schema.json
 
 /**
@@ -1045,6 +1232,51 @@ export type CalloutProps = {
   /** Use markdown or textRef, not both. */
   markdown?: Markdown;
   textRef?: PlanId;
+};
+
+// blocks/cycle.schema.json
+
+/**
+ * cycle block props
+ *
+ * A loop of stages around a centre; the centre explains the stage pointed at, focused or tapped.
+ */
+export type CycleProps = {
+  /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
+  takeaway: string;
+  /** One line under the title: what is measured, where, when, in what unit. */
+  context?: string;
+  /** Where the data comes from, shown under the chart. */
+  source?: string;
+  /** The stages, clockwise from the top. */
+  items: CycleItem[];
+  /** What the centre says at rest (optional: without it the centre stays empty). */
+  center?: {
+    /** The loop's name. */
+    title: string;
+    /** A sentence under it ("Point at a stage"). */
+    text?: string;
+  };
+  /** Id of the stage that carries the idea: it takes the accent colour, the others step back. */
+  highlight?: string;
+  /** Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. */
+  spotlightEnd?: Anchor;
+  /**
+   * Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false).
+   * @default true
+   */
+  revealOnBeats?: boolean;
+};
+
+export type CycleItem = {
+  /** Stable id of the item: highlights, voice beats and translations name it. */
+  id: string;
+  /** The stage. */
+  title: string;
+  /** What happens in it, said in the centre. */
+  text?: string;
+  /** Narrated screens: the moment the voice brings this item ({ "line": "l2", "word": "phishing" }). It appears then, and the other items step back while the voice talks about it, until the next item's moment. */
+  at?: Anchor;
 };
 
 // blocks/decision.schema.json
@@ -1079,6 +1311,95 @@ export type DecisionOption = {
   feedback?: Markdown;
   /** Optional: marks the best choice for tracking and scoring. */
   correct?: boolean;
+};
+
+// blocks/diagram.schema.json
+
+/**
+ * diagram block props
+ *
+ * A flow, a decision, a map of ideas, written in Mermaid and drawn when the course is built (by Pele): nodes appear by depth and edges draw; pointing at a node lights the path that leads to it.
+ */
+export type DiagramProps = {
+  /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
+  takeaway: string;
+  /** One line under the title: what is measured, where, when, in what unit. */
+  context?: string;
+  /** Where the diagram comes from, shown under it. */
+  source?: string;
+  /** The diagram in Mermaid syntax, its words in the course language. */
+  mermaid: string;
+  /** Words of nodes and edges by id (as Pele names them: a flowchart node's id, an edge's L_<from>_<to>_<n>, a mind map node's words), replacing the Mermaid text's. Translations write here. */
+  labels?: { [key: string]: string };
+  /** Narrated screens: nodes brought by the voice. */
+  beats?: DiagramBeat[];
+  /** Id of the node that carries the idea (an outcome): it takes the accent colour. */
+  highlight?: string;
+  /** Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. */
+  spotlightEnd?: Anchor;
+  /**
+   * Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false).
+   * @default true
+   */
+  revealOnBeats?: boolean;
+};
+
+export type DiagramBeat = {
+  /** The node's id in the source. */
+  node: string;
+  at: Anchor;
+};
+
+// blocks/donut.schema.json
+
+/**
+ * donut block props
+ *
+ * A whole in 2 to 6 parts (fewer reads better), as a ring whose centre says the highlighted part. Hover, a tap or the arrow keys lend the centre to another part.
+ */
+export type DonutProps = {
+  /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
+  takeaway: string;
+  /** One line under the title: what is measured, where, when, in what unit. */
+  context?: string;
+  /** Where the data comes from, shown under the chart. */
+  source?: string;
+  /** The parts, clockwise from the top. */
+  parts: DonutPart[];
+  /** Id of the part that carries the idea: it takes the accent colour, the others step back. */
+  highlight?: string;
+  /** Unit written after the values (min, kg, €). "%" writes percentages as the language does (62 %, 62%). */
+  unit?: string;
+  /**
+   * Decimals shown.
+   * @default 0
+   */
+  decimals?: number;
+  /**
+   * What the centre of the ring says at rest.
+   * @default 'highlight'
+   */
+  center?: 'highlight' | 'total';
+  /** Under the total, when center is total ("emails tested"). */
+  totalLabel?: string;
+  /** Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. */
+  spotlightEnd?: Anchor;
+  /**
+   * Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false).
+   * @default true
+   */
+  revealOnBeats?: boolean;
+};
+
+export type DonutPart = {
+  /** Stable id of the item: highlights, voice beats and translations name it. */
+  id: string;
+  /** What the part is. */
+  label: string;
+  /** Its size (a share, a count). */
+  value: number;
+  /** Narrated screens: the moment the voice brings this item ({ "line": "l2", "word": "phishing" }). It appears then, and the other items step back while the voice talks about it, until the next item's moment. */
+  at?: Anchor;
 };
 
 // blocks/free-object.schema.json
@@ -1174,6 +1495,113 @@ export type ImageProps = {
   inline?: boolean;
 };
 
+// blocks/key-figures.schema.json
+
+/**
+ * key-figures block props
+ *
+ * 2 to 4 figures to remember, side by side, counted up when they appear.
+ */
+export type KeyFiguresProps = {
+  /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
+  takeaway: string;
+  /** One line under the title: what is measured, where, when, in what unit. */
+  context?: string;
+  /** Where the data comes from, shown under the chart. */
+  source?: string;
+  /** The figures. */
+  items: KeyFiguresItem[];
+  /** Id of the figure that carries the idea: it takes the accent colour, the others step back. */
+  highlight?: string;
+  /** Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. */
+  spotlightEnd?: Anchor;
+  /**
+   * Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false).
+   * @default true
+   */
+  revealOnBeats?: boolean;
+};
+
+export type KeyFiguresItem = {
+  /** Stable id of the item: highlights, voice beats and translations name it. */
+  id: string;
+  /** The figure as shown ("62 %"). */
+  figure: string;
+  /** What it counts. */
+  label: string;
+  /** Counts the figure up (or down) when it appears; it then shows figure. */
+  count?: {
+    /** @default 0 */
+    from?: number;
+    to: number;
+    /**
+     * percent: 62 → 62 %; minutes: 250 → 4 h 10.
+     * @default 'number'
+     */
+    format?: 'number' | 'percent' | 'minutes';
+    /** @default 0 */
+    decimals?: number;
+  };
+  /** What it was before, under the label ("4 h 10 in 2022"). */
+  was?: string;
+  /** A share drawn as a line under the card (0.62). */
+  meter?: number;
+  /** Narrated screens: the moment the voice brings this item ({ "line": "l2", "word": "phishing" }). It appears then, and the other items step back while the voice talks about it, until the next item's moment. */
+  at?: Anchor;
+};
+
+// blocks/levels.schema.json
+
+/**
+ * levels block props
+ *
+ * Stacked levels shaped as one figure: a funnel, widest at the top (what remains at each stage, with values), or a pyramid, widest at the base (levels that rest on one another).
+ */
+export type LevelsProps = {
+  /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
+  takeaway: string;
+  /** One line under the title: what is measured, where, when, in what unit. */
+  context?: string;
+  /** Where the data comes from, shown under the chart. */
+  source?: string;
+  /** The levels, from top to bottom. */
+  items: LevelsItem[];
+  /**
+   * funnel: widest at the top; pyramid: widest at the base.
+   * @default 'funnel'
+   */
+  shape?: 'funnel' | 'pyramid';
+  /** Id of the level that carries the idea: it takes the accent colour, the others step back. */
+  highlight?: string;
+  /** Unit written after the values (min, kg, €). "%" writes percentages as the language does (62 %, 62%). */
+  unit?: string;
+  /**
+   * Decimals shown.
+   * @default 0
+   */
+  decimals?: number;
+  /** Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. */
+  spotlightEnd?: Anchor;
+  /**
+   * Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false).
+   * @default true
+   */
+  revealOnBeats?: boolean;
+};
+
+export type LevelsItem = {
+  /** Stable id of the item: highlights, voice beats and translations name it. */
+  id: string;
+  /** The level. */
+  label: string;
+  /** A sentence about it. */
+  text?: string;
+  /** Its size (a funnel's count): the width of the level. */
+  value?: number;
+  /** Narrated screens: the moment the voice brings this item ({ "line": "l2", "word": "phishing" }). It appears then, and the other items step back while the voice talks about it, until the next item's moment. */
+  at?: Anchor;
+};
+
 // blocks/math.schema.json
 
 /**
@@ -1188,6 +1616,119 @@ export type MathProps = {
   caption?: Markdown;
   /** Equation number shown at the right, for example (1). */
   label?: string;
+};
+
+// blocks/matrix.schema.json
+
+/**
+ * matrix block props
+ *
+ * Items placed on two axes, in four quadrants; one quadrant can carry the message.
+ */
+export type MatrixProps = {
+  /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
+  takeaway: string;
+  /** One line under the title: what is measured, where, when, in what unit. */
+  context?: string;
+  /** Where the data comes from, shown under the chart. */
+  source?: string;
+  /** The horizontal axis. */
+  x: {
+    /** Its name. */
+    label: string;
+    /** Its left end. */
+    low?: string;
+    /** Its right end. */
+    high?: string;
+  };
+  /** The vertical axis. */
+  y: {
+    /** Its name. */
+    label: string;
+    /** Its bottom end. */
+    low?: string;
+    /** Its top end. */
+    high?: string;
+  };
+  /** The quadrants' names. */
+  quadrants: {
+    /** Top left. */
+    topLeft: string;
+    /** Top right. */
+    topRight: string;
+    /** Bottom left. */
+    bottomLeft: string;
+    /** Bottom right. */
+    bottomRight: string;
+  };
+  /** The quadrant that carries the message. */
+  highlightQuadrant?: 'topLeft' | 'topRight' | 'bottomLeft' | 'bottomRight';
+  /** The items. */
+  items: MatrixItem[];
+  /** Id of the item that carries the idea: it takes the accent colour, the others step back. */
+  highlight?: string;
+  /** Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. */
+  spotlightEnd?: Anchor;
+  /**
+   * Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false).
+   * @default true
+   */
+  revealOnBeats?: boolean;
+};
+
+export type MatrixItem = {
+  /** Stable id of the item: highlights, voice beats and translations name it. */
+  id: string;
+  /** The item. */
+  label: string;
+  /** From left (0) to right (1). */
+  x: number;
+  /** From bottom (0) to top (1). */
+  y: number;
+  /** Why it sits there, said on hover. */
+  text?: string;
+  /** Narrated screens: the moment the voice brings this item ({ "line": "l2", "word": "phishing" }). It appears then, and the other items step back while the voice talks about it, until the next item's moment. */
+  at?: Anchor;
+};
+
+// blocks/milestones.schema.json
+
+/**
+ * milestones block props
+ *
+ * Dated events on a rail that draws itself.
+ */
+export type MilestonesProps = {
+  /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
+  takeaway: string;
+  /** One line under the title: what is measured, where, when, in what unit. */
+  context?: string;
+  /** Where the data comes from, shown under the chart. */
+  source?: string;
+  /** The events, in order. */
+  items: MilestonesItem[];
+  /** Id of the event that carries the idea: it takes the accent colour, the others step back. */
+  highlight?: string;
+  /** Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. */
+  spotlightEnd?: Anchor;
+  /**
+   * Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false).
+   * @default true
+   */
+  revealOnBeats?: boolean;
+};
+
+export type MilestonesItem = {
+  /** Stable id of the item: highlights, voice beats and translations name it. */
+  id: string;
+  /** When. */
+  date: string;
+  /** What happened. */
+  title: string;
+  /** A sentence about it. */
+  text?: string;
+  /** Narrated screens: the moment the voice brings this item ({ "line": "l2", "word": "phishing" }). It appears then, and the other items step back while the voice talks about it, until the next item's moment. */
+  at?: Anchor;
 };
 
 // blocks/numeric.schema.json
@@ -1227,6 +1768,87 @@ export type NumericProps = {
    * @default true
    */
   showCorrectAnswer?: boolean;
+};
+
+// blocks/process.schema.json
+
+/**
+ * process block props
+ *
+ * A short procedure: numbered steps joined by a line that draws itself.
+ */
+export type ProcessProps = {
+  /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
+  takeaway: string;
+  /** One line under the title: what is measured, where, when, in what unit. */
+  context?: string;
+  /** Where the data comes from, shown under the chart. */
+  source?: string;
+  /** The steps, in order. */
+  items: ProcessItem[];
+  /** Id of the step that carries the idea: it takes the accent colour, the others step back. */
+  highlight?: string;
+  /** Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. */
+  spotlightEnd?: Anchor;
+  /**
+   * Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false).
+   * @default true
+   */
+  revealOnBeats?: boolean;
+};
+
+export type ProcessItem = {
+  /** Stable id of the item: highlights, voice beats and translations name it. */
+  id: string;
+  /** The step, as an action. */
+  title: string;
+  /** What it involves. */
+  text?: string;
+  /** Narrated screens: the moment the voice brings this item ({ "line": "l2", "word": "phishing" }). It appears then, and the other items step back while the voice talks about it, until the next item's moment. */
+  at?: Anchor;
+};
+
+// blocks/proportion.schema.json
+
+/**
+ * proportion block props
+ *
+ * "1 in 10" as an icon array: of icons in a grid, part of them in the accent colour, grouped at the start (grouped icons are read better than scattered ones), with the figure beside them.
+ */
+export type ProportionProps = {
+  /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
+  takeaway: string;
+  /** One line under the title: what is measured, where, when, in what unit. */
+  context?: string;
+  /** Where the data comes from, shown under the chart. */
+  source?: string;
+  /**
+   * How many icons in all.
+   * @default 100
+   */
+  of: number;
+  /** How many in the accent colour. */
+  part: number;
+  /** The figure beside the icons ("1 in 10"). Default: the percentage. */
+  figure?: string;
+  /** What the figure counts, under it ("clicked the link of the test email"). */
+  label?: string;
+  /**
+   * The icon.
+   * @default 'person'
+   */
+  icon?: 'person' | 'circle' | 'square';
+  /** Icons per row. Default 10, or 20 from 100 icons. */
+  columns?: number;
+  /** Narrated screens: the moment the counted icons fill in. */
+  at?: Anchor;
+  /** Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. */
+  spotlightEnd?: Anchor;
+  /**
+   * Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false).
+   * @default true
+   */
+  revealOnBeats?: boolean;
 };
 
 // blocks/quiz.schema.json
@@ -1329,6 +1951,87 @@ export type TextProps = {
   markdown?: Markdown;
   /** Id of a validated text of the plan: the block shows the plan's wording, and rewording it writes the plan. */
   textRef?: PlanId;
+};
+
+// blocks/trend.schema.json
+
+/**
+ * trend block props
+ *
+ * A change over time as a line that draws itself, with the moment that explains it. In predict mode the learner draws the end of the line before seeing it.
+ */
+export type TrendProps = {
+  /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
+  takeaway: string;
+  /** One line under the title: what is measured, where, when, in what unit. */
+  context?: string;
+  /** Where the data comes from, shown under the chart. */
+  source?: string;
+  /** The points, in order. x is a year or a number (spaced by value), or a word (evenly spaced). */
+  points: TrendPoint[];
+  /** Unit written after the values (min, kg, €). "%" writes percentages as the language does (62 %, 62%). */
+  unit?: string;
+  /**
+   * Decimals shown.
+   * @default 0
+   */
+  decimals?: number;
+  /** Bottom of the scale. Default 0. */
+  yMin?: number;
+  /** Top of the scale. Default a little above the largest value. */
+  yMax?: number;
+  /** What explains the change, written at a point of the line, shown when the line reaches it. */
+  note?: {
+    /** The x of the point it marks. */
+    x: number | string;
+    /** The note. */
+    text: string;
+  };
+  /**
+   * predict: the learner draws the end of the line, then sees the real one over their guess.
+   * @default 'show'
+   */
+  mode?: 'show' | 'predict';
+  /** Predict mode. */
+  predict?: {
+    /** The x of the last point shown before the guess. */
+    from: number | string;
+    /** Said in the area to draw in ("Draw the line from 2023 to 2025"). */
+    hint?: string;
+    /** The button that reveals the line ("Show me"). */
+    button?: string;
+    /** Feedback when the guess is within tolerance. {guess} and {actual} are the values at the last point. */
+    close?: string;
+    /** Feedback otherwise. {guess} and {actual} are the values at the last point. */
+    far?: string;
+    /** How far from the last value a guess counts as close, in the unit of the values. Default: a tenth of the scale. */
+    tolerance?: number;
+    /**
+     * Counts in the course score, correct when close. Off by default: predicting is a moment of engagement, not a test.
+     * @default false
+     */
+    scored?: boolean;
+    /** @default 1 */
+    weight?: number;
+    /** Plan objective it serves. */
+    objective?: PlanId;
+  };
+  /** Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. */
+  spotlightEnd?: Anchor;
+  /**
+   * Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false).
+   * @default true
+   */
+  revealOnBeats?: boolean;
+};
+
+export type TrendPoint = {
+  /** Where on the horizontal axis: a number (a year) or a short word (Q1). */
+  x: number | string;
+  /** The value. */
+  y: number;
+  /** Narrated screens: the moment the line reaches this point (the line draws from the previous point's moment to this one). */
+  at?: Anchor;
 };
 
 // blocks/video.schema.json

@@ -8,6 +8,8 @@ import { blockControls, CONTROL_NAME } from '../components/controls.ts';
 import type { ComponentDescriptor } from '../components/registry.ts';
 import type { Block, Event, Plan } from '../project/model.ts';
 import { checkInstance, headingSequence } from './components.ts';
+import { checkChart } from './charts.ts';
+import { isChartType } from '../charts/index.ts';
 import { objectPropErrors, blockEnumLabelErrors, textContrasts, TEXT_CONTRAST } from './object-props.ts';
 import { resolveTokens } from './theme.ts';
 import type { CheckContext, CourseCheckContext, ScreenFile } from './context.ts';
@@ -102,6 +104,7 @@ function checkBlock(ctx: CourseCheckContext, { block, component, path, file, scr
     }
   }
   if (!component.root) return;
+  if (isChartType(component.root)) { checkChart(ctx, { block, type: component.root, path, file }); return; }
 
   switch (component.root) {
     case 'text':

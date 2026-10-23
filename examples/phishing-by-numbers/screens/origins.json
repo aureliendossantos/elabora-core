@@ -1,0 +1,79 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "origins",
+  "title": "Where attacks start",
+  "covers": [
+    "ITEM-2"
+  ],
+  "blocks": [
+    {
+      "id": "origins-bars",
+      "type": "bars",
+      "width": "wide",
+      "props": {
+        "takeaway": "Most of our incidents start with an email",
+        "context": "Share of the 74 security incidents of 2025, by first contact (3% other)",
+        "source": "Security desk report 2025, Quillon Freight (internal report, fictional)",
+        "unit": "%",
+        "max": 100,
+        "highlight": "email",
+        "rows": [
+          {
+            "id": "email",
+            "label": "Email",
+            "value": 62,
+            "note": "46 incidents",
+            "at": {
+              "line": "l1",
+              "word": "email"
+            }
+          },
+          {
+            "id": "web",
+            "label": "Website found by a search",
+            "value": 18,
+            "note": "13 incidents",
+            "at": {
+              "line": "l2",
+              "word": "websites"
+            }
+          },
+          {
+            "id": "phone",
+            "label": "Phone call",
+            "value": 12,
+            "note": "9 incidents",
+            "at": {
+              "line": "l2",
+              "word": "phone"
+            }
+          },
+          {
+            "id": "usb",
+            "label": "USB stick",
+            "value": 5,
+            "note": "4 incidents",
+            "at": {
+              "line": "l2",
+              "word": "USB"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "l1",
+        "speaker": "guide",
+        "text": "Where do our incidents start? Mostly in an email."
+      },
+      {
+        "id": "l2",
+        "speaker": "guide",
+        "text": "Far behind come fake websites, phone calls and USB sticks."
+      }
+    ]
+  }
+}

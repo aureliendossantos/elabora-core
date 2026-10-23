@@ -1,0 +1,148 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/plan.schema.json",
+  "id": "PLAN-QUILLON-PHISHING-V1",
+  "title": "Phishing by numbers",
+  "businessGoal": "At Quillon Freight (fictional company), raise the share of employees who report a phishing drill to the security desk from 1 in 7 to 1 in 2 by the end of 2026, and keep password entries in drills under 2%.",
+  "audience": {
+    "role": "Every employee of Quillon Freight (fictional), a freight and logistics company of 1,200 people: office staff, drivers and warehouse teams who read email at work",
+    "priorKnowledge": "low",
+    "notes": "Have all received the monthly drills since January 2025. Know the Report button exists; most do not know what happens after they press it, nor which lures work best on them."
+  },
+  "duration": {
+    "min": 8,
+    "max": 12
+  },
+  "sources": [
+    {
+      "id": "SRC-1",
+      "title": "Quillon Freight security desk, phishing and incident report 2025 (internal report, fictional)",
+      "type": "internal report (fictional)",
+      "version": "2026-01"
+    },
+    {
+      "id": "SRC-2",
+      "title": "Quillon Freight phishing drills, results from January to November 2025 (internal report, fictional)",
+      "type": "internal report (fictional)",
+      "version": "2025-12"
+    },
+    {
+      "id": "SRC-3",
+      "title": "Quillon Freight information security policy and the history of its rules (internal policy, fictional)",
+      "type": "internal policy (fictional)",
+      "version": "2026-03"
+    }
+  ],
+  "objectives": [
+    {
+      "id": "OBJ-1",
+      "short": "Spot a phishing email",
+      "statement": "Spot the signs of phishing in a work email: an unexpected request for a password, money or a file, and a sender or link that does not match who it claims to be.",
+      "bloom": "apply",
+      "criterion": "Right choice in a realistic email scenario, with the signs named in the feedback",
+      "sources": [
+        "SRC-1",
+        "SRC-2"
+      ]
+    },
+    {
+      "id": "OBJ-2",
+      "short": "Report, then call if clicked",
+      "statement": "Report a suspicious email with the Report button rather than replying or forwarding it, and call the security desk at once after a click or a typed password.",
+      "bloom": "apply",
+      "criterion": "Chooses to report in the scenario; names the call to 4444 after a click",
+      "sources": [
+        "SRC-1",
+        "SRC-3"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "ITEM-1",
+      "kind": "intro",
+      "title": "Phishing at Quillon, in three numbers",
+      "part": "The threat",
+      "objectives": [],
+      "sources": [
+        "SRC-1"
+      ],
+      "description": "Three figures frame the module: 1,840 phishing emails reported in 2025, 62% of security incidents started by an email, and a phish now blocked 11 minutes after the first report (4 h 10 in 2022)."
+    },
+    {
+      "id": "ITEM-2",
+      "kind": "exposition",
+      "title": "Where attacks start and what they look like",
+      "part": "The threat",
+      "objectives": [
+        "OBJ-1"
+      ],
+      "sources": [
+        "SRC-1"
+      ],
+      "description": "Where the 74 incidents of 2025 started (email far ahead of websites, phone calls and USB sticks), and what the 1,840 phishing emails pretended to be: delivery notices, invoices, password resets, payroll messages."
+    },
+    {
+      "id": "ITEM-3",
+      "kind": "exposition",
+      "title": "How a phish catches people",
+      "part": "How it catches us",
+      "objectives": [
+        "OBJ-1",
+        "OBJ-2"
+      ],
+      "sources": [
+        "SRC-2"
+      ],
+      "description": "The January 2025 drill as a funnel (1,200 sent, 790 opened, 384 clicked, 100 typed a password) and the 1 in 7 who reported it; then the lures placed by how often they come and how often people click: invoices and password resets are frequent and convincing."
+    },
+    {
+      "id": "ITEM-4",
+      "kind": "exposition",
+      "title": "What reporting and drills changed",
+      "part": "What changed",
+      "objectives": [
+        "OBJ-2"
+      ],
+      "sources": [
+        "SRC-1",
+        "SRC-2",
+        "SRC-3"
+      ],
+      "description": "The learner predicts the click rate of the November drill (5%, from 32% in January), then sees that every team clicks less and the warehouse still most; reports per month before and after the one-click Report button (2023); each rule of the policy answered an attack (two-step sign-in, Report button, supplier call-back, drills)."
+    },
+    {
+      "id": "ITEM-5",
+      "kind": "demonstration",
+      "title": "What to do with a suspicious email",
+      "part": "Your move",
+      "objectives": [
+        "OBJ-1",
+        "OBJ-2"
+      ],
+      "sources": [
+        "SRC-1",
+        "SRC-3"
+      ],
+      "description": "Pause, check, report, and call 4444 after a click, with an unscored check question on what to do first after a click; what a report sets off (triage, block for all 1,200 inboxes, warning, next drill); the decision path for an unexpected email."
+    },
+    {
+      "id": "ITEM-6",
+      "kind": "practice",
+      "title": "Your turn: new bank details",
+      "part": "Your move",
+      "objectives": [
+        "OBJ-1",
+        "OBJ-2"
+      ],
+      "sources": [
+        "SRC-3"
+      ],
+      "description": "Unscored decision: an email from a known supplier's lookalike address asks Finance to pay this week's invoice to new bank details. Report it, reply to check, or forward it to Finance, with feedback on each."
+    }
+  ],
+  "spacing": [
+    "Monthly: a drill, debrief for those who click",
+    "D+30: each team's drill figures, by its manager"
+  ],
+  "waivers": []
+}

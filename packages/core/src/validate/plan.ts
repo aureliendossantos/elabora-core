@@ -5,9 +5,9 @@ import { latestValidated, planContentHash, planState, versionLabel } from '../pr
 import { planDiff } from '../project/plan-diff.ts';
 import { planCourse } from '../project/plan-order.ts';
 import type { PlanRef } from '../project/load.ts';
-import { behaviorOf } from '../components/registry.ts';
+import { instanceBehavior } from '../components/registry.ts';
 import type { CourseCheckContext, ScreenFile } from './context.ts';
-import { list, byId, hasId } from './guards.ts';
+import { list, byId, hasId, fieldsOf } from './guards.ts';
 
 const VAGUE_VERBS = /^\s*(comprendre|connaître|connaitre|savoir|être sensibilisé|etre sensibilise|découvrir|decouvrir|appréhender|apprehender|understand|know|learn about|be aware|become familiar|appreciate|discover)\b/i;
 const NEUROMYTHS = /(styles? d['’]apprentissage|learning styles?|visuel, auditif,? (et )?kinesth|\bVAK\b|cerveau (gauche|droit)|left[- ]brain|right[- ]brain|pyramide de l['’]apprentissage|learning pyramid|on retient 10 ?%)/i;
@@ -118,8 +118,9 @@ export function checkPlan(ctx: CourseCheckContext): void {
   const practised = new Set<unknown>();
   for (const { block } of ctx.blocks.values()) {
     const props = resolveBlockProps(block, planIndex, ctx.registry);
-    const behavior = behaviorOf(ctx.registry, block.type);
+    const behavior = instanceBehavior(ctx.registry, block);
     if ((behavior === 'quiz' || behavior === 'numeric' || behavior === 'decision') && props.objective) practised.add(props.objective);
+    if (behavior === 'predict' && fieldsOf(props.predict).objective) practised.add(fieldsOf(props.predict).objective);
     if ((behavior === 'quiz' || behavior === 'numeric') && props.questionRef) for (const objective of list(byId(planIndex.questions, props.questionRef)?.objectives)) practised.add(objective);
     if (behavior === 'object') for (const objective of list(byId(project.objects, props.object)?.manifest?.planRefs?.objectives)) practised.add(objective);
   }

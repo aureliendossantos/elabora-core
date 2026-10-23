@@ -1,0 +1,93 @@
+{
+  "screen": "lure-map",
+  "line": "l3",
+  "language": "en",
+  "textHash": "sha256:b01ce5872c31d38cb58d743c64980a7bbb6e7e785eab8a926bb2c04122601f3d",
+  "duration": 6.13,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:4202f9dc7d20bcb6b68b97215e7b268f79d0f63a32a3840f7933bae8c12e76a8",
+  "createdAt": "2026-10-23T12:18:13Z",
+  "take": 1,
+  "spokenHash": "sha256:b01ce5872c31d38cb58d743c64980a7bbb6e7e785eab8a926bb2c04122601f3d",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Payroll messages are rare but convincing. Password resets and invoices are both.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Payroll",
+      "start": 0.02,
+      "end": 0.481,
+      "score": 0.891
+    },
+    {
+      "text": "messages",
+      "start": 0.481,
+      "end": 1.074,
+      "score": 0.996
+    },
+    {
+      "text": "are",
+      "start": 1.102,
+      "end": 1.314,
+      "score": 1
+    },
+    {
+      "text": "rare",
+      "start": 1.322,
+      "end": 1.755,
+      "score": 1
+    },
+    {
+      "text": "but",
+      "start": 1.823,
+      "end": 2.043,
+      "score": 0.875
+    },
+    {
+      "text": "convincing",
+      "start": 2.043,
+      "end": 2.776,
+      "score": 0.998
+    },
+    {
+      "text": "Password",
+      "start": 3.366,
+      "end": 3.926,
+      "score": 0.959
+    },
+    {
+      "text": "resets",
+      "start": 3.926,
+      "end": 4.507,
+      "score": 0.794
+    },
+    {
+      "text": "and",
+      "start": 4.507,
+      "end": 4.728,
+      "score": 0.953
+    },
+    {
+      "text": "invoices",
+      "start": 4.728,
+      "end": 5.441,
+      "score": 0.968
+    },
+    {
+      "text": "are",
+      "start": 5.489,
+      "end": 5.649,
+      "score": 0.998
+    },
+    {
+      "text": "both",
+      "start": 5.649,
+      "end": 6.002,
+      "score": 0.971
+    }
+  ]
+}

@@ -52,7 +52,7 @@ node bin/elabora.js look examples/diagnostic-reseau --screen simulation
 
 `preview` serves the course live, standalone and in the LMS emulator, and reloads after each rebuild. While designing, `look` shows one screen in well under a second once warm (a look server keeps one browser for the course; no build; free objects included). A narrated screen has its timeline: `node bin/elabora.js timeline examples/diagnostic-reseau chemin` lists its steps, lines and cues, and `look … --screen chemin --sheet` draws it as a storyboard.
 
-[`examples/planetary-gearset`](../examples/planetary-gearset/) is an English engineering module that uses the [design layer](design.md) and [components](components.md): layouts, a quiz fork with generated diagrams, maths, numeric questions and a responsive 3D test bench. [`examples/orbital-rendezvous`](../examples/orbital-rendezvous/) and [`examples/medieval-charts`](../examples/medieval-charts/) are two more.
+[`examples/planetary-gearset`](../examples/planetary-gearset/) is an English engineering module that uses the [design layer](design.md) and [components](components.md): layouts, a quiz fork with generated diagrams, maths, numeric questions and a responsive 3D test bench. [`examples/orbital-rendezvous`](../examples/orbital-rendezvous/) and [`examples/medieval-charts`](../examples/medieval-charts/) are two more. [`examples/phishing-by-numbers`](../examples/phishing-by-numbers/) shows the twelve [chart blocks](charts.md) on narrated slides: a short English module on spotting and reporting phishing, told through a fictional company's numbers, whose charts follow an ElevenLabs voice word by word.
 
 ## Start a course
 

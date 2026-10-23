@@ -3,7 +3,7 @@ import { parseJSON } from '../util/json.ts';
 import { readText } from '../project/files.ts';
 import type { Project, Screen, Block } from '../project/model.ts';
 import { iterateBlocks, screenOrder, screenBlocks, planIndex, resolveBlockProps } from '../project/load.ts';
-import { getRegistry, behaviorOf } from '../components/registry.ts';
+import { getRegistry, behaviorOf, instanceBehavior } from '../components/registry.ts';
 import type { Behavior } from '../components/registry.ts';
 import { pendingMigrations } from '../components/migrate.ts';
 import { blockControls, controlEntity } from '../components/controls.ts';
@@ -40,9 +40,9 @@ export type StateKeys = Record<string, string>;
 
 // Activities keep learner state under an entity named by their behaviour, so a fork of the quiz
 // block (an image quiz…) keeps learner state like a quiz.
-const ACTIVITY_STATE_PREFIX = { quiz: 'quiz', numeric: 'numeric', decision: 'decision', object: 'object' } as const;
+const ACTIVITY_STATE_PREFIX = { quiz: 'quiz', numeric: 'numeric', decision: 'decision', object: 'object', predict: 'predict' } as const;
 export type ActivityBehavior = keyof typeof ACTIVITY_STATE_PREFIX;
-const isActivity = (behavior: Behavior | null): behavior is ActivityBehavior => behavior !== null && behavior in ACTIVITY_STATE_PREFIX;
+const isActivity = (behavior: Behavior | 'predict' | null): behavior is ActivityBehavior => behavior !== null && behavior in ACTIVITY_STATE_PREFIX;
 export const activityEntity = (behavior: ActivityBehavior, blockId: string): string => `${ACTIVITY_STATE_PREFIX[behavior]}:${blockId}`;
 
 // Stateful entities in deterministic course order.
@@ -66,7 +66,7 @@ export function screenEntities(project: Pick<Project, 'components' | 'plan' | 'c
 
 function blockEntities(project: Pick<Project, 'components' | 'plan' | 'course'>, block: Block, toggled: ReadonlySet<string>): string[] {
   const entities: string[] = [];
-  const behavior = behaviorOf(getRegistry(project), block.type);
+  const behavior = instanceBehavior(getRegistry(project), block);
   if (isActivity(behavior)) entities.push(activityEntity(behavior, block.id));
   if (toggled.has(block.id)) entities.push(`block:${block.id}`);
   for (const name of blockControls(project, block).keys()) entities.push(controlEntity(block.id, name));
@@ -146,13 +146,16 @@ export function buildStateModel(project: Project, keys: StateKeys): StateModel {
   }
   for (const { block } of iterateBlocks(project)) {
     const props = resolveBlockProps(block, index, registry);
-    const behavior = behaviorOf(registry, block.type);
+    const behavior = instanceBehavior(registry, block);
     const key = isActivity(behavior) ? keys[activityEntity(behavior, block.id)] : undefined;
     const optionIds = () => recordsOf(props.options).map((option) => option.id).filter(isText);
     if (behavior === 'quiz' && key) {
       model.quizzes.push({ key, optionIds: optionIds(), maxAttempts: numberOr(props.attempts, 1) });
     } else if (behavior === 'numeric' && key) {
       model.numerics.push({ key, maxAttempts: numberOr(props.attempts, 1) });
+    } else if (behavior === 'predict' && key) {
+      // A guess is kept like a numeric answer (D60).
+      model.numerics.push({ key, maxAttempts: 1 });
     } else if (behavior === 'decision' && key) {
       model.decisions.push({ key, longestOptionId: optionIds().reduce((longest, id) => (id.length > longest.length ? id : longest), '') });
     } else if (behavior === 'object' && key) {

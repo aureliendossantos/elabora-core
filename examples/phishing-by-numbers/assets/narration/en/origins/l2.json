@@ -1,0 +1,81 @@
+{
+  "screen": "origins",
+  "line": "l2",
+  "language": "en",
+  "textHash": "sha256:0154c10a9de775a45dea20e869756783a3506b3a4c399ce6878ce5bb19121267",
+  "duration": 4.88,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:0c381b51f17533a79bb544daf099b6c9d11e614043eedc4c2f90b434efeac3cd",
+  "createdAt": "2026-10-23T12:17:52Z",
+  "take": 1,
+  "spokenHash": "sha256:0154c10a9de775a45dea20e869756783a3506b3a4c399ce6878ce5bb19121267",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Far behind come fake websites, phone calls and USB sticks.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Far",
+      "start": 0.1,
+      "end": 0.362,
+      "score": 0.959
+    },
+    {
+      "text": "behind",
+      "start": 0.362,
+      "end": 0.895,
+      "score": 0.988
+    },
+    {
+      "text": "come",
+      "start": 0.984,
+      "end": 1.297,
+      "score": 0.981
+    },
+    {
+      "text": "fake",
+      "start": 1.366,
+      "end": 1.647,
+      "score": 0.748
+    },
+    {
+      "text": "websites",
+      "start": 1.647,
+      "end": 2.321,
+      "score": 0.99
+    },
+    {
+      "text": "phone",
+      "start": 2.611,
+      "end": 2.892,
+      "score": 0.82
+    },
+    {
+      "text": "calls",
+      "start": 2.892,
+      "end": 3.365,
+      "score": 0.971
+    },
+    {
+      "text": "and",
+      "start": 3.494,
+      "end": 3.727,
+      "score": 0.964
+    },
+    {
+      "text": "USB",
+      "start": 3.796,
+      "end": 4.269,
+      "score": 0.943
+    },
+    {
+      "text": "sticks",
+      "start": 4.298,
+      "end": 4.771,
+      "score": 0.734
+    }
+  ]
+}

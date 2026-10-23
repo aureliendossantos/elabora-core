@@ -19,7 +19,9 @@ import { activityEntity } from './state-model.ts';
 import type { StateKeys, ActivityBehavior } from './state-model.ts';
 import { isRecord, recordOf, recordsOf, textOf, optionalTextOf, isText, isNumber, isOptional, numberOr, isJsonValue, jsonObjectOf } from './values.ts';
 import { objectsIn } from '../util/values.ts';
-import { screenTimeline, blockTimings, anchorTime } from '../narration/timeline.ts';
+import { screenTimeline, blockTimings, blockBeats, anchorTime } from '../narration/timeline.ts';
+import { isChartType, renderChart } from '../charts/index.ts';
+import { isPredict } from '../charts/predict.ts';
 import { withoutDirections } from '../narration/directions.ts';
 import { inlineSvg, replaceImage } from '../render/svg-inline.ts';
 import { readText } from '../project/files.ts';
@@ -214,7 +216,7 @@ export function compileScreen(project: Project, screenId: string, context: Compi
   // The timeline of a timed screen: where its lines, words and timed blocks fall.
   const track = context.narration?.(screenId);
   const timeline = screenTimeline(project, screenId, { durations: track?.durations, gaps: track?.gaps });
-  const scope: ScreenScope = { project, context, objects: new Map(), headingBefore, timings: timeline ? blockTimings(timeline) : new Map() };
+  const scope: ScreenScope = { project, context, objects: new Map(), headingBefore, timings: timeline ? blockTimings(timeline) : new Map(), beats: timeline ? blockBeats(timeline) : new Map() };
   const compileBlocks = (blocks: Block[] | undefined): BlockData[] => objectsIn(blocks).map((block) => compileBlock(block, scope));
   const data: ScreenData = {
     id: screenId, key: context.keys[`screen:${screenId}`], section: context.sectionOf.get(screenId) ?? '', title: screen.title,
@@ -310,6 +312,8 @@ interface ScreenScope {
   headingBefore: Map<string, number>;
   // When timed blocks come and go (blocks of the screen and of its components' slots).
   timings: Map<string, { in?: TimelineMoment; out?: TimelineMoment }>;
+  // When the voice brings the items of charts, and when it is done with them (D60).
+  beats: Map<string, { items: Record<string, number>; end?: number }>;
 }
 
 function compileBlock(block: Block, scope: ScreenScope): BlockData {
@@ -340,6 +344,21 @@ function compileBlock(block: Block, scope: ScreenScope): BlockData {
   const children = nested.length ? { blocks: nested.map((child) => compileBlock(child, scope)) } : {};
   // key: learner state of activities (forks of an activity keep its behaviour, so its state).
   const activityKey = (behavior: ActivityBehavior): string => context.keys[activityEntity(behavior, block.id)];
+
+  // Charts and diagrams (D60): drawn here, moved by the player's chart behaviour; a trend in predict
+  // mode is an activity (its guess is kept, and scored when it says so).
+  if (descriptor.root && isChartType(descriptor.root)) {
+    const chart = renderChart(descriptor.root, props, { id: block.id, language: context.course.language || 'en', tokens: context.tokens, fields: context.fields });
+    const beats = scope.beats.get(block.id);
+    const predict = isPredict(descriptor.root, props);
+    const chartProps = {
+      chart: descriptor.root,
+      ...(typeof props.highlight === 'string' ? { highlight: props.highlight } : {}),
+      ...(beats ? { beats: beats.items, ...(beats.end !== undefined ? { beatsEnd: beats.end } : {}), revealOnBeats: props.revealOnBeats !== false } : {}),
+      ...(chart.data ?? {})
+    };
+    return { ...head, behavior: predict ? 'predict' : 'chart', ...placement, ...(predict ? { key: activityKey('predict') } : {}), ...rendered, html: chart.html, props: chartProps, ...children } as BlockData;
+  }
 
   // Data for the behaviours (player) and for the components rendered by code.
   switch (descriptor.root) {

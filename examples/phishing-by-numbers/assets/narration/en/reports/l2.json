@@ -1,0 +1,111 @@
+{
+  "screen": "reports",
+  "line": "l2",
+  "language": "en",
+  "textHash": "sha256:06acee1eee6b6dacf37634dad65a2196dedede0a7ab99213d483078a721e104c",
+  "duration": 6.65,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:9eb6b9b4e19bfe393db13ee636d70c617b36e290a9a93d926c31067928d19f1f",
+  "createdAt": "2026-10-23T12:18:31Z",
+  "take": 1,
+  "spokenHash": "sha256:06acee1eee6b6dacf37634dad65a2196dedede0a7ab99213d483078a721e104c",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Then came the one-click Report button, and reports took off: 153 a month last year.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Then",
+      "start": 0.06,
+      "end": 0.332,
+      "score": 0.961
+    },
+    {
+      "text": "came",
+      "start": 0.341,
+      "end": 0.641,
+      "score": 0.975
+    },
+    {
+      "text": "the",
+      "start": 0.641,
+      "end": 0.853,
+      "score": 0.976
+    },
+    {
+      "text": "one-click",
+      "start": 0.901,
+      "end": 1.382,
+      "score": 0.99
+    },
+    {
+      "text": "Report",
+      "start": 1.382,
+      "end": 1.823,
+      "score": 0.995
+    },
+    {
+      "text": "button",
+      "start": 1.823,
+      "end": 2.235,
+      "score": 0.998
+    },
+    {
+      "text": "and",
+      "start": 2.324,
+      "end": 2.464,
+      "score": 0.993
+    },
+    {
+      "text": "reports",
+      "start": 2.464,
+      "end": 3.036,
+      "score": 0.98
+    },
+    {
+      "text": "took",
+      "start": 3.045,
+      "end": 3.397,
+      "score": 0.962
+    },
+    {
+      "text": "off",
+      "start": 3.485,
+      "end": 3.717,
+      "score": 1
+    },
+    {
+      "text": "153",
+      "start": 4.266,
+      "end": 5.528,
+      "score": 0.969
+    },
+    {
+      "text": "a",
+      "start": 5.528,
+      "end": 5.609,
+      "score": 0.96
+    },
+    {
+      "text": "month",
+      "start": 5.609,
+      "end": 5.921,
+      "score": 0.997
+    },
+    {
+      "text": "last",
+      "start": 5.929,
+      "end": 6.27,
+      "score": 0.996
+    },
+    {
+      "text": "year",
+      "start": 6.27,
+      "end": 6.562,
+      "score": 0.999
+    }
+  ]
+}

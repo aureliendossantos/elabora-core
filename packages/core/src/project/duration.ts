@@ -2,7 +2,7 @@ import type { Project } from './model.ts';
 import { planIndex, screenBlocks } from './load.ts';
 import { extractUnits } from '../i18n/units.ts';
 import { screenTimeline } from '../narration/timeline.ts';
-import { behaviorOf, getRegistry, type Behavior } from '../components/registry.ts';
+import { instanceBehavior, getRegistry, type Behavior } from '../components/registry.ts';
 import { isRecord } from '../util/values.ts';
 
 // How long a learner spends on each screen, estimated from what it holds (docs/decisions.md D50):
@@ -14,7 +14,8 @@ import { isRecord } from '../util/values.ts';
 // 140 to 200 to learn or remember: Carver's reading gears), and the pace of the narration's voice.
 export const READING_WORDS_PER_MINUTE = 150;
 // What an activity adds to the reading of its words: deciding, answering, trying.
-export const ACTIVITY_SECONDS: Readonly<Record<Behavior, number>> = { quiz: 45, numeric: 60, decision: 45, object: 90, results: 0 };
+// A prediction (a trend's predict mode) takes about as long as a choice: drawing, then reading the answer.
+export const ACTIVITY_SECONDS: Readonly<Record<Behavior | 'predict', number>> = { quiz: 45, numeric: 60, decision: 45, object: 90, results: 0, chart: 0, predict: 40 };
 // A screen is never shorter than a glance.
 export const MIN_SCREEN_SECONDS = 10;
 
@@ -52,7 +53,7 @@ export function screenEstimates(project: Project): Map<string, ScreenEstimate> {
         const question = plan.questions.get(props.questionRef);
         if (question) read += countWords([question.stem, ...(question.options ?? []).map((option) => option.text)].join(' '));
       }
-      const behavior = behaviorOf(registry, block.type);
+      const behavior = instanceBehavior(registry, block);
       if (behavior && ACTIVITY_SECONDS[behavior]) { activities++; busy += ACTIVITY_SECONDS[behavior]; }
     }
     const timeline = screenTimeline(project, id);

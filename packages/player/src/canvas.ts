@@ -286,7 +286,7 @@ function mount(data: ScreenRender, screen: ScreenData) {
     app, main, course, courseState, labels, formatLabel: (label, values) => formatLabel(label, values, course.language),
     announce: (message) => { liveRegion.textContent = ''; setTimeout(() => { liveRegion.textContent = message; }, 30); },
     // Nothing is recorded or saved: the canvas is not a learner session.
-    recordInteraction: () => {}, syncSoon: () => {},
+    recordInteraction: () => {}, syncSoon: () => {}, still: true,
     afterEvents: () => scheduleLayout(), afterReveal: () => scheduleLayout(),
     // next and previous are the screens around the one the event is on, in the outline the canvas
     // has now (the view outlives renders of other screens, and the outline changes with the course).

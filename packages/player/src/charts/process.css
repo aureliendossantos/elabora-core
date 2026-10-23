@@ -1,0 +1,104 @@
+/* ── process (D60) ──
+   Steps in equal columns, each a circle over its title and text; a link from each circle to the next
+   runs between them, clear of both. Without a highlight every circle is full of the accent; with one, they all stand
+   quiet (a ring) until the pull fills the one that matters. Pointing is soothing: the circle's ring
+   takes the accent over 220 ms, the other steps step back to 40 %. */
+.t-process {
+  --t-process-dot: 2.75rem;
+  --t-process-gap: 1.5rem;
+  --t-process-row: 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+  column-gap: var(--t-process-gap);
+  padding-top: 0.25rem;
+}
+.t-process-step { position: relative; display: flex; flex-direction: column; align-items: center; min-width: 0; text-align: center; }
+.t-process-link {
+  --t-process-clear: 0.375rem;
+  position: absolute; z-index: 0;
+  top: calc(var(--t-process-dot) / 2 + 0.25rem - 1px);
+  left: calc(50% + var(--t-process-dot) / 2 + var(--t-process-clear));
+  width: calc(100% + var(--t-process-gap) - var(--t-process-dot) - 2 * var(--t-process-clear)); height: 2px;
+  border-radius: 1px;
+  background: var(--t-chart-tint);
+  transform-origin: 0 50%;
+  transition: background-color var(--t-chart-pull) ease, opacity var(--t-chart-calm) ease;
+}
+/* Links step back with the steps when one is pointed at or talked about. */
+.t-chart:is(.is-focused, .is-spotlit) .t-process-link { opacity: 0.5; }
+.t-process-n {
+  position: relative; z-index: 1;
+  display: grid; place-items: center; flex: none;
+  width: var(--t-process-dot); height: var(--t-process-dot);
+  margin: 0.25rem 0 0.875rem;
+  border-radius: 50%;
+  color: var(--t-chart-on-accent, var(--t-chart-paper));
+  background: var(--t-chart-accent);
+  font-family: var(--t-font-heading, var(--t-font-body));
+  font-size: 1.0625rem; font-weight: 700; line-height: 1;
+  font-variant-numeric: tabular-nums;
+  transition: opacity var(--t-chart-calm) ease, color var(--t-chart-pull) ease, background-color var(--t-chart-pull) ease, box-shadow var(--t-chart-calm) var(--t-ease-out);
+}
+.t-process-title {
+  margin: 0; max-width: 18rem;
+  font-family: var(--t-font-heading, var(--t-font-body));
+  font-size: 1.0625rem; font-weight: 650; line-height: 1.25; letter-spacing: -0.005em;
+  text-wrap: balance; overflow-wrap: break-word;
+}
+.t-process-text {
+  margin: 0.375rem 0 0; max-width: 18rem;
+  color: var(--t-chart-muted);
+  font-size: 0.9375rem; line-height: 1.45;
+  text-wrap: pretty; overflow-wrap: break-word;
+}
+
+/* With a highlight: every circle stands quiet (a ring on the paper), then the pull fills the one
+   that carries the idea. */
+.t-chart:has(.t-process-n.is-hl) .t-process-link { background: var(--t-chart-quiet); }
+.t-chart:has(.t-process-n.is-hl) .t-process-n {
+  color: var(--t-chart-ink);
+  background: var(--t-chart-paper);
+  box-shadow: inset 0 0 0 2px var(--t-chart-quiet);
+}
+.t-chart.is-pulled .t-process-n.is-hl {
+  color: var(--t-chart-on-accent, var(--t-chart-paper));
+  background: var(--t-chart-accent);
+  box-shadow: inset 0 0 0 2px var(--t-chart-accent);
+}
+.t-chart.is-pulled .t-process-n:not(.is-hl) { color: var(--t-chart-muted); }
+.t-chart.is-pulled .t-process-title.is-hl { font-weight: 700; }
+
+/* Pointed at, or talked about: the ring takes the accent (a quiet circle), softly. */
+.t-chart:has(.t-process-n.is-hl) .t-process-n:is(.is-pointed, .is-spoken):not(.is-hl) {
+  color: var(--t-chart-ink);
+  box-shadow: inset 0 0 0 2px var(--t-chart-accent);
+}
+.t-chart.is-spotlit:not(.is-pulled) .t-process-n.is-spoken {
+  color: var(--t-chart-on-accent, var(--t-chart-paper));
+  background: var(--t-chart-accent);
+  box-shadow: inset 0 0 0 2px var(--t-chart-accent);
+}
+.t-chart.is-entering .t-process-link { transition: none; }
+
+@container (max-width: 560px) {
+  .t-process {
+    --t-process-dot: 2.25rem;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: var(--t-process-row);
+    padding-top: 0;
+  }
+  .t-process-step {
+    display: grid; grid-template-columns: var(--t-process-dot) minmax(0, 1fr);
+    column-gap: 0.875rem; align-items: start; text-align: left;
+  }
+  .t-process-n { grid-row: 1 / span 2; margin: 0; font-size: 0.9375rem; }
+  .t-process-title { grid-column: 2; max-width: none; padding-top: 0.4375rem; }
+  .t-process-text { grid-column: 2; max-width: none; margin-top: 0.25rem; }
+  /* The link runs down from this circle to the next one, through the gap between the steps. */
+  .t-process-link {
+    top: calc(var(--t-process-dot) + var(--t-process-clear)); left: calc(var(--t-process-dot) / 2 - 1px);
+    bottom: calc(var(--t-process-clear) - var(--t-process-row));
+    width: 2px; height: auto;
+    transform-origin: 50% 0;
+  }
+}

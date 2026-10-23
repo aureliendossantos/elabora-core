@@ -1,0 +1,63 @@
+/* ── before-after (D60): a slope chart ──
+   The plot is --h rem high (--hn narrow; core charts/before-after.ts places values and pushes labels apart in
+   fractions of it); --x0 and --x1 are its two columns, wide and narrow. Labels are positioned with
+   transform, so the entrance may move them with translate. */
+.t-slope { --x0: 0.34; --x1: 0.66; --t-slope-dot: 11px; }
+.t-slope-plot { position: relative; height: calc(var(--h, 18) * 1rem); max-width: 42rem; margin: calc(1.75rem + var(--heads, 1) * 1.0625rem) auto 0.5rem; touch-action: pan-y; }
+/* A heading stays over its column and within its half: a long one wraps upwards. */
+.t-slope-head {
+  position: absolute; bottom: calc(100% + 1.25rem); left: calc(var(--x0) * 100%); width: max-content;
+  max-width: calc(min(2 * var(--x0), var(--x1) - var(--x0)) * 100%); margin: 0; transform: translateX(-50%);
+  color: var(--t-chart-muted); font-size: 0.8125rem; font-weight: 650; line-height: 1.25; letter-spacing: 0.06em; text-align: center; text-transform: uppercase; text-wrap: balance;
+}
+.t-slope-head.is-after { left: calc(var(--x1) * 100%); max-width: calc(min(2 * (1 - var(--x1)), var(--x1) - var(--x0)) * 100%); }
+.t-slope-line {
+  position: absolute; top: 0; left: calc(var(--x0) * 100%); width: calc((var(--x1) - var(--x0)) * 100%); height: 100%;
+  overflow: visible; pointer-events: none; --t-slope-ink: var(--t-chart-tint);
+}
+.t-slope-line line {
+  stroke: var(--t-slope-ink); stroke-width: 2.25; stroke-linecap: round; vector-effect: non-scaling-stroke;
+  transition: stroke var(--t-chart-pull) ease, stroke-width var(--t-chart-pull) ease;
+}
+.t-slope-dot {
+  position: absolute; z-index: 2; top: calc(var(--y) * 100%); left: calc(var(--x0) * 100%);
+  width: var(--t-slope-dot); height: var(--t-slope-dot); margin: calc(var(--t-slope-dot) / -2) 0 0 calc(var(--t-slope-dot) / -2);
+  border-radius: 50%; background: var(--t-chart-paper); box-shadow: inset 0 0 0 2.5px var(--t-slope-ink);
+  --t-slope-ink: var(--t-chart-tint);
+  transition: background-color var(--t-chart-pull) ease, box-shadow var(--t-chart-pull) ease;
+}
+.t-slope-dot.is-after { left: calc(var(--x1) * 100%); }
+.t-slope-label {
+  position: absolute; z-index: 2; top: calc(var(--y) * 100%); margin: 0; transform: translateY(-50%);
+  font-size: 0.9375rem; line-height: 1.25rem; text-wrap: balance;
+  transition: color var(--t-chart-pull) ease;
+}
+.t-slope-label.is-before { right: calc((1 - var(--x0)) * 100% + 0.875rem); max-width: calc(var(--x0) * 100% - 0.875rem); text-align: right; }
+.t-slope-label.is-after { left: calc(var(--x1) * 100% + 0.875rem); max-width: calc((1 - var(--x1)) * 100% - 0.875rem); }
+.t-slope-num { font-weight: 700; white-space: nowrap; }
+.t-slope-label.is-after .t-slope-name { color: var(--t-chart-muted); }
+.t-chart .t-slope-num { font-variant-numeric: tabular-nums; }
+
+/* With a highlight, every line stands quiet until the pull gives the one that matters the colour
+   and a little more weight. */
+.t-chart:has(.t-slope-line.is-hl) :is(.t-slope-line, .t-slope-dot) { --t-slope-ink: var(--t-chart-quiet); }
+.t-chart.is-pulled :is(.t-slope-line, .t-slope-dot).is-hl,
+.t-chart.is-spotlit :is(.t-slope-line, .t-slope-dot).is-spoken { --t-slope-ink: var(--t-chart-accent); }
+.t-chart.is-pulled .t-slope-line.is-hl { z-index: 1; }
+.t-chart.is-pulled .t-slope-line.is-hl line { stroke-width: 3.5; }
+.t-chart.is-pulled .t-slope-dot.is-hl { background: var(--t-chart-accent); }
+.t-chart.is-pulled .t-slope-label.is-hl,
+.t-chart.is-pulled .t-slope-label.is-after.is-hl .t-slope-name { color: var(--t-chart-accent); font-weight: 650; }
+/* The line pointed at comes forward a little. */
+.t-chart.is-focused .t-slope-line.is-pointed { z-index: 1; }
+.t-chart.is-focused :is(.t-slope-line, .t-slope-dot).is-pointed:not(.is-hl) { --t-slope-ink: color-mix(in oklab, var(--t-chart-ink) 45%, var(--t-chart-paper)); }
+.t-chart.is-focused .t-slope-line.is-pointed line,
+.t-chart.is-focused .t-slope-dot.is-pointed { transition-duration: var(--t-chart-calm); }
+
+@container (max-width: 560px) {
+  .t-slope { --x0: 0.2; --x1: 0.6; }
+  .t-slope-plot { height: calc(var(--hn, 18) * 1rem); margin-top: calc(1.75rem + var(--headsn, 1) * 1rem); }
+  .t-slope-label { top: calc(var(--yn) * 100%); font-size: 0.875rem; }
+  .t-slope-label.is-before .t-slope-name { display: none; }
+  .t-slope-head { font-size: 0.75rem; line-height: 1.25; letter-spacing: 0.04em; }
+}

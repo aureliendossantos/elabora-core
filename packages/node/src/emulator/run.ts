@@ -472,6 +472,15 @@ async function answerScreen(frame: Frame): Promise<void> {
         node.querySelector<HTMLElement>(`[data-t-choice="${quote(best?.id)}"]`)?.click();
       } else if (behavior === 'object') {
         elabora.test.completeObject(block.id, 1);
+      } else if (behavior === 'predict') {
+        // A trend to predict: the slider (what keys and screen readers use) set to the real last value, then « Show me ».
+        const points = (block.props?.points as { y: number }[] | undefined) || [];
+        const range = node.querySelector<HTMLInputElement>('.t-trend-range');
+        if (range && !range.disabled && points.length) {
+          range.value = String(points[points.length - 1].y);
+          range.dispatchEvent(new Event('input', { bubbles: true }));
+          node.querySelector<HTMLElement>('.t-trend-reveal:not([hidden])')?.click();
+        }
       }
       await wait(30);
       for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog[open]')) dialog.close();
@@ -482,6 +491,17 @@ async function answerScreen(frame: Frame): Promise<void> {
 async function runAxe(frame: Frame, screen: string, state: string, report: AccessibilityReport): Promise<void> {
   const axe = loadAxe();
   if (!axe) return;
+  // Contrast is measured on what is at rest: a fade still running (a chart's rows coming back after the
+  // voice, a tooltip leaving) would be read at its passing opacity. Loops (endless) are not waited for.
+  await frame.evaluate(async () => {
+    const frameDone = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    await frameDone();
+    for (const end = Date.now() + 2000; Date.now() < end;) {
+      const running = document.getAnimations().filter((animation) => animation.playState === 'running' && Number.isFinite(Number(animation.effect?.getComputedTiming().endTime)));
+      if (!running.length) return;
+      await Promise.race([Promise.all(running.map((animation) => animation.finished.catch(() => null))), new Promise((resolve) => setTimeout(resolve, 250))]);
+    }
+  });
   const result = await frame.evaluate(`(function(){ if (!window.axe) { ${axe} } return axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa'] } }).then(r => r.violations.map(v => ({ id: v.id, impact: v.impact, help: v.help, nodes: v.nodes.length, targets: v.nodes.slice(0, 3).map(n => String(n.target)) }))); })()`);
   report.screens++;
   for (const violation of axeViolations(result)) { report.violations++; report.details.push({ screen, state, ...violation }); }

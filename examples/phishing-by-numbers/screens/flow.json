@@ -1,0 +1,99 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "flow",
+  "title": "The path for a doubtful email",
+  "covers": [
+    "ITEM-5"
+  ],
+  "blocks": [
+    {
+      "id": "flow-diagram",
+      "type": "diagram",
+      "width": "wide",
+      "props": {
+        "takeaway": "When in doubt, report: it is never the wrong move",
+        "context": "What to do with an email you did not expect",
+        "source": "Information security policy, Quillon Freight (internal policy, fictional)",
+        "mermaid": "flowchart LR\n  A[An unexpected email] --> B{Wants a password, money or a file?}\n  B -- Yes --> R[Report it]\n  B -- No --> C{Sender and link look right?}\n  C -- No --> R\n  C -- Yes --> D[Carry on]\n  R --> E{Clicked or typed anything?}\n  E -- Yes --> F[Call 4444 now]\n  E -- No --> G[Done: the desk takes over]",
+        "highlight": "R",
+        "beats": [
+          {
+            "node": "A",
+            "at": {
+              "line": "l1",
+              "word": "surprises"
+            }
+          },
+          {
+            "node": "B",
+            "at": {
+              "line": "l1",
+              "word": "password"
+            }
+          },
+          {
+            "node": "C",
+            "at": {
+              "line": "l2",
+              "word": "sender"
+            }
+          },
+          {
+            "node": "R",
+            "at": {
+              "line": "l2",
+              "word": "report"
+            }
+          },
+          {
+            "node": "D",
+            "at": {
+              "line": "l2",
+              "word": "carry on"
+            }
+          },
+          {
+            "node": "E",
+            "at": {
+              "line": "l3",
+              "word": "clicked"
+            }
+          },
+          {
+            "node": "F",
+            "at": {
+              "line": "l3",
+              "word": "call"
+            }
+          },
+          {
+            "node": "G",
+            "at": {
+              "line": "l3",
+              "word": "done"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "l1",
+        "speaker": "guide",
+        "text": "When an email surprises you, ask: does it want a password, money, or a file?"
+      },
+      {
+        "id": "l2",
+        "speaker": "guide",
+        "text": "If so, or if the sender or the link looks wrong, report it. If not, carry on."
+      },
+      {
+        "id": "l3",
+        "speaker": "guide",
+        "text": "Then, if you clicked, call the desk. If not, you're done: we take it from here."
+      }
+    ]
+  }
+}

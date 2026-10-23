@@ -1,0 +1,75 @@
+{
+  "screen": "funnel",
+  "line": "l1",
+  "language": "en",
+  "textHash": "sha256:4815c64204d34773807797855658b05106a9429e7c2d92368cb3026597a5f10f",
+  "duration": 3.75,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:162fd688fb7207e1ba5560511b09964ae05ed83b1055df4cd8875a50bfae0794",
+  "createdAt": "2026-10-23T12:18:01Z",
+  "take": 1,
+  "spokenHash": "sha256:4815c64204d34773807797855658b05106a9429e7c2d92368cb3026597a5f10f",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "In January, we sent everyone a fake password reset.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "In",
+      "start": 0.08,
+      "end": 0.221,
+      "score": 1
+    },
+    {
+      "text": "January",
+      "start": 0.221,
+      "end": 0.994,
+      "score": 0.997
+    },
+    {
+      "text": "we",
+      "start": 1.083,
+      "end": 1.263,
+      "score": 1
+    },
+    {
+      "text": "sent",
+      "start": 1.263,
+      "end": 1.576,
+      "score": 0.99
+    },
+    {
+      "text": "everyone",
+      "start": 1.604,
+      "end": 2.106,
+      "score": 0.999
+    },
+    {
+      "text": "a",
+      "start": 2.106,
+      "end": 2.258,
+      "score": 0.903
+    },
+    {
+      "text": "fake",
+      "start": 2.306,
+      "end": 2.667,
+      "score": 0.839
+    },
+    {
+      "text": "password",
+      "start": 2.667,
+      "end": 3.209,
+      "score": 0.981
+    },
+    {
+      "text": "reset",
+      "start": 3.209,
+      "end": 3.742,
+      "score": 0.792
+    }
+  ]
+}

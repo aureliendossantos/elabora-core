@@ -1,0 +1,169 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "drills",
+  "title": "Your guess: a year of drills",
+  "covers": [
+    "ITEM-4"
+  ],
+  "completeWhen": "interactions-done",
+  "steps": {
+    "2": {
+      "opens": "answered"
+    }
+  },
+  "blocks": [
+    {
+      "id": "drills-guess",
+      "type": "trend",
+      "width": "half",
+      "props": {
+        "takeaway": "Drills cut clicks, month after month",
+        "context": "Employees who clicked the link of the monthly drill email, 2025",
+        "source": "Phishing drills 2025, Quillon Freight (internal report, fictional)",
+        "unit": "%",
+        "yMax": 40,
+        "mode": "predict",
+        "points": [
+          {
+            "x": "Jan",
+            "y": 32,
+            "at": {
+              "line": "l1",
+              "word": "January"
+            }
+          },
+          {
+            "x": "Mar",
+            "y": 27
+          },
+          {
+            "x": "May",
+            "y": 21,
+            "at": {
+              "line": "l1",
+              "word": "May"
+            }
+          },
+          {
+            "x": "Jul",
+            "y": 14
+          },
+          {
+            "x": "Sep",
+            "y": 9
+          },
+          {
+            "x": "Nov",
+            "y": 5
+          }
+        ],
+        "predict": {
+          "from": "May",
+          "hint": "Draw the line on to November",
+          "button": "Show me",
+          "close": "Well seen: you said {guess}, and it fell to {actual}.",
+          "far": "You said {guess}; it fell to {actual}. Practice on safe fakes works, and fast."
+        }
+      }
+    },
+    {
+      "id": "teams-slope",
+      "type": "before-after",
+      "width": "half",
+      "step": 2,
+      "props": {
+        "takeaway": "The warehouse still clicks most",
+        "context": "Employees who clicked the drill link, by team: all fell",
+        "source": "Phishing drills 2025, Quillon Freight (internal report, fictional)",
+        "unit": "%",
+        "beforeLabel": "January 2025",
+        "afterLabel": "November 2025",
+        "highlight": "warehouse",
+        "items": [
+          {
+            "id": "finance",
+            "label": "Finance",
+            "before": 35,
+            "after": 3,
+            "at": {
+              "line": "l4",
+              "word": "Finance"
+            }
+          },
+          {
+            "id": "sales",
+            "label": "Sales",
+            "before": 30,
+            "after": 4,
+            "at": {
+              "line": "l4",
+              "word": "sales"
+            }
+          },
+          {
+            "id": "hr",
+            "label": "HR",
+            "before": 27,
+            "after": 3,
+            "at": {
+              "line": "l4",
+              "word": "HR"
+            }
+          },
+          {
+            "id": "it",
+            "label": "IT",
+            "before": 14,
+            "after": 2,
+            "at": {
+              "line": "l4",
+              "word": "IT"
+            }
+          },
+          {
+            "id": "warehouse",
+            "label": "Warehouse",
+            "before": 41,
+            "after": 9,
+            "at": {
+              "line": "l5",
+              "word": "warehouse"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "l1",
+        "speaker": "guide",
+        "text": "In January, one in three clicked our drill. By May, after monthly drills, one in five."
+      },
+      {
+        "id": "l2",
+        "speaker": "guide",
+        "text": "Where were clicks by November, do you think? Draw the rest of the line."
+      },
+      {
+        "id": "l3",
+        "speaker": "guide",
+        "text": "Every team clicks less than in January.",
+        "step": 2
+      },
+      {
+        "id": "l4",
+        "speaker": "guide",
+        "text": "Finance, sales and HR fell to 3 or 4 percent. IT started low.",
+        "step": 2
+      },
+      {
+        "id": "l5",
+        "speaker": "guide",
+        "text": "The warehouse started highest, at 41 percent, and still clicks most.",
+        "step": 2
+      }
+    ]
+  }
+}

@@ -5,6 +5,7 @@ import type { Project, Block } from './model.ts';
 import { markdownToText } from '../compile/markdown.ts';
 import { getRegistry } from '../components/registry.ts';
 import { fallbackBlocks } from '../components/fallback.ts';
+import { isChartType, chartTable } from '../charts/index.ts';
 import { recordOf, recordsOf, textOf } from '../compile/values.ts';
 import { listOf, objectsIn } from '../util/values.ts';
 
@@ -60,7 +61,20 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
           const p = resolveBlockProps(b, pidx, reg);
           const fork = d && !d.builtin ? ` (fork of ${d.root})` : '';
           const tag = agent ? `${b.type}${fork} \`${b.id}\`${b.slot ? ` →${b.slot}` : ''}${b.style ? ` (style ${b.style})` : ''}${b.hidden ? ' (hidden)' : ''}${p.textRef ? ` [locked ${p.textRef}]` : ''}${p.questionRef ? ` [plan ${p.questionRef}]` : ''}: ` : '';
-          switch (d?.root || b.type) {
+          const root = d?.root || b.type;
+          // Charts (D60): their takeaway and their data, as the table screen readers get.
+          if (isChartType(root)) {
+            const table = chartTable(root, p, { id: b.id, language: project.course?.language || 'en', tokens: {} });
+            const data = table.rows.map((row) => row.filter(Boolean).join(' ')).join(' · ');
+            const marks = [p.highlight ? `highlight ${p.highlight}` : '', p.mode === 'predict' ? `the learner predicts from ${recordOf(p.predict).from}` : ''].filter(Boolean).join(', ');
+            if (agent) L.push(`${indent}- ${tag}${root} chart **${p.takeaway}**${marks ? ` (${marks})` : ''}: ${short(data, 220)}`);
+            else {
+              L.push(`${indent}- **${p.takeaway}**${p.context ? ` — ${short(p.context, 300)}` : ''}`);
+              for (const row of table.rows) L.push(`${indent}  - ${row.filter(Boolean).join(' : ')}`);
+            }
+            continue;
+          }
+          switch (root) {
             case 'heading': L.push(`${indent}- ${tag}**${p.text}**`); break;
             case 'text': L.push(`${indent}- ${tag}${short(p.markdown, agent ? 160 : 2000)}`); break;
             case 'callout': L.push(`${indent}- ${tag}[${p.variant || 'info'}] ${p.title ? `**${p.title}** ` : ''}${short(p.markdown, agent ? 160 : 2000)}`); break;

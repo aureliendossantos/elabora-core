@@ -1,0 +1,64 @@
+/* Phishing by numbers: warm paper, ink and one ultramarine accent. Editorial: the screen's title is a
+   small kicker, and the chart's takeaway is the headline of the slide. */
+
+.t-screen-title {
+  max-width: var(--t-wide-width, 68.75rem);
+  margin: 0 auto 0.875rem;
+  color: var(--t-accent);
+  font-family: var(--t-font-body);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.t-chart-head { margin-bottom: 1.75rem; }
+.t-chart-title {
+  max-width: 28ch;
+  font-size: 2.25rem;
+  font-weight: 560;
+  line-height: 1.12;
+  letter-spacing: -0.018em;
+  font-variation-settings: "SOFT" 50, "opsz" 72;
+}
+.t-chart-context { margin-top: 0.625rem; font-size: 1rem; }
+.t-chart-source { margin-top: 1.5rem; font-style: italic; }
+
+/* An email as it would sit in an inbox: white sheet, hairline, a soft lift. */
+.t-s-email .t-callout {
+  border: 1px solid color-mix(in oklab, var(--t-text) 14%, transparent);
+  border-left: 1px solid color-mix(in oklab, var(--t-text) 14%, transparent);
+  border-radius: var(--t-radius);
+  background: var(--t-color-sheet);
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--t-text) 6%, transparent), 0 12px 32px color-mix(in oklab, var(--t-text) 7%, transparent);
+}
+.t-s-email .t-callout-title { font-family: var(--t-font-heading); font-size: 1.25rem; font-weight: 600; }
+
+/* Screens without charts (a question, a decision): the kicker sits over the reading column. */
+.t-screen:not(:has(.t-w-wide, .t-w-half)) .t-screen-title { max-width: var(--t-content-width, 47.5rem); }
+
+/* Two charts side by side: smaller headlines. */
+.t-w-half .t-chart-title { font-size: 1.75rem; }
+.t-w-half .t-chart-head { margin-bottom: 1rem; }
+.t-w-half .t-chart-source { margin-top: 1rem; }
+
+/* "aside": the headline, its context and the source in a column beside the drawing, for charts
+   taller than wide (a ring, a matrix, a loop). Stacked again in narrow windows. */
+@container (min-width: 900px) {
+  .t-s-aside .t-chart {
+    display: grid;
+    grid-template-columns: minmax(0, 25rem) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: 4.5rem;
+  }
+  .t-s-aside .t-chart-head { grid-column: 1; grid-row: 1; align-self: end; margin-bottom: 0; }
+  .t-s-aside .t-chart-source { grid-column: 1; grid-row: 2; align-self: start; }
+  .t-s-aside .t-chart-body { grid-column: 2; grid-row: 1 / span 2; align-self: center; }
+}
+
+/* Phones: smaller headlines, so the chart starts within the first screenful. */
+@container (max-width: 560px) {
+  .t-chart-title, .t-w-half .t-chart-title { font-size: 1.75rem; }
+  .t-chart-head { margin-bottom: 1.25rem; }
+}

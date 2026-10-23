@@ -1,0 +1,50 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "clicked",
+  "title": "Check: after a click",
+  "covers": [
+    "ITEM-5"
+  ],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "clicked-quiz",
+      "type": "quiz",
+      "props": {
+        "stem": "A fake delivery notice got you: you clicked its link and typed your password. What do you do first?",
+        "mode": "single",
+        "objective": "OBJ-2",
+        "scored": false,
+        "options": [
+          {
+            "id": "call",
+            "text": "Call the security desk on 4444",
+            "correct": true,
+            "feedback": "Yes: the desk resets your password and closes the session before the attacker uses it. Minutes count; nobody is blamed for calling."
+          },
+          {
+            "id": "change",
+            "text": "Change your password, and say nothing",
+            "correct": false,
+            "feedback": "A good reflex, but not enough: the attacker may already be signed in, and others got the same email. Call 4444 so the desk can close the session and block the email for everyone."
+          },
+          {
+            "id": "report",
+            "text": "Press Report, then carry on with your day",
+            "correct": false,
+            "feedback": "Report is right before a click. After one, the desk needs to know at once that your password is out: call 4444."
+          }
+        ]
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "l1",
+        "speaker": "guide",
+        "text": "A quick check. Say a fake gets past you. What do you do first?"
+      }
+    ]
+  }
+}

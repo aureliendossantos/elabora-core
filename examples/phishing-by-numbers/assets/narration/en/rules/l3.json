@@ -1,0 +1,93 @@
+{
+  "screen": "rules",
+  "line": "l3",
+  "language": "en",
+  "textHash": "sha256:d943dedb03f765c76875e8dd2af5a36175c7812edcdc29cddef42c0bcdcb10e8",
+  "duration": 5.52,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:44314b35b4a79b23a0c8ac6a260015d9133bff0945388cef9d44f03b8796a10c",
+  "createdAt": "2026-10-23T12:18:38Z",
+  "take": 1,
+  "spokenHash": "sha256:d943dedb03f765c76875e8dd2af5a36175c7812edcdc29cddef42c0bcdcb10e8",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "After a fake invoice cost us 48,000 pounds, we call suppliers back.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "After",
+      "start": 0.1,
+      "end": 0.381,
+      "score": 0.946
+    },
+    {
+      "text": "a",
+      "start": 0.381,
+      "end": 0.534,
+      "score": 0.987
+    },
+    {
+      "text": "fake",
+      "start": 0.542,
+      "end": 0.923,
+      "score": 0.91
+    },
+    {
+      "text": "invoice",
+      "start": 0.923,
+      "end": 1.425,
+      "score": 0.893
+    },
+    {
+      "text": "cost",
+      "start": 1.425,
+      "end": 1.787,
+      "score": 0.917
+    },
+    {
+      "text": "us",
+      "start": 1.787,
+      "end": 1.979,
+      "score": 0.997
+    },
+    {
+      "text": "48,000",
+      "start": 2.007,
+      "end": 3.232,
+      "score": 0.974
+    },
+    {
+      "text": "pounds",
+      "start": 3.232,
+      "end": 3.745,
+      "score": 0.917
+    },
+    {
+      "text": "we",
+      "start": 4.055,
+      "end": 4.256,
+      "score": 0.899
+    },
+    {
+      "text": "call",
+      "start": 4.256,
+      "end": 4.516,
+      "score": 0.665
+    },
+    {
+      "text": "suppliers",
+      "start": 4.516,
+      "end": 5.099,
+      "score": 0.818
+    },
+    {
+      "text": "back",
+      "start": 5.099,
+      "end": 5.431,
+      "score": 0.979
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "screen": "intro",
+  "line": "l3",
+  "language": "en",
+  "textHash": "sha256:d3e7822e9efce68b5b8b197fd49e3f59e939955b600b9d8702531f474eb506c7",
+  "duration": 6.03,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:1ad85b1d06ebdcb7488196f5a8453c65a3159e2637b666c3299975cfedad6d26",
+  "createdAt": "2026-10-23T12:17:42Z",
+  "take": 1,
+  "spokenHash": "sha256:d3e7822e9efce68b5b8b197fd49e3f59e939955b600b9d8702531f474eb506c7",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "And thanks to your reports, we now block a phish in 11 minutes, down from four hours.",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "And",
+      "start": 0.02,
+      "end": 0.22,
+      "score": 0.998
+    },
+    {
+      "text": "thanks",
+      "start": 0.22,
+      "end": 0.521,
+      "score": 0.978
+    },
+    {
+      "text": "to",
+      "start": 0.521,
+      "end": 0.661,
+      "score": 1
+    },
+    {
+      "text": "your",
+      "start": 0.661,
+      "end": 0.861,
+      "score": 0.992
+    },
+    {
+      "text": "reports",
+      "start": 0.861,
+      "end": 1.494,
+      "score": 0.994
+    },
+    {
+      "text": "we",
+      "start": 1.683,
+      "end": 1.883,
+      "score": 1
+    },
+    {
+      "text": "now",
+      "start": 1.883,
+      "end": 2.144,
+      "score": 0.932
+    },
+    {
+      "text": "block",
+      "start": 2.144,
+      "end": 2.444,
+      "score": 0.999
+    },
+    {
+      "text": "a",
+      "start": 2.444,
+      "end": 2.564,
+      "score": 0.003
+    },
+    {
+      "text": "phish",
+      "start": 2.564,
+      "end": 2.937,
+      "score": 0.584
+    },
+    {
+      "text": "in",
+      "start": 2.945,
+      "end": 3.085,
+      "score": 0.999
+    },
+    {
+      "text": "11",
+      "start": 3.085,
+      "end": 3.606,
+      "score": 0.989
+    },
+    {
+      "text": "minutes",
+      "start": 3.606,
+      "end": 4.059,
+      "score": 0.996
+    },
+    {
+      "text": "down",
+      "start": 4.347,
+      "end": 4.668,
+      "score": 0.963
+    },
+    {
+      "text": "from",
+      "start": 4.668,
+      "end": 4.9,
+      "score": 0.925
+    },
+    {
+      "text": "four",
+      "start": 4.988,
+      "end": 5.309,
+      "score": 0.999
+    },
+    {
+      "text": "hours",
+      "start": 5.309,
+      "end": 5.882,
+      "score": 0.964
+    }
+  ]
+}

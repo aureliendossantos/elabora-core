@@ -9,6 +9,7 @@ import type { Anchor, Block, Screen } from '@elabora/format';
 import type { Project } from '../project/model.ts';
 import { narrationWords, findPhrase, normalizeWord } from '../narration/words.ts';
 import { objectsIn, isRecord } from '../util/values.ts';
+import { CHART_TYPE_NAMES } from '../charts/names.ts';
 import { readXliff } from './xliff.ts';
 import type { XliffDocument, XliffMark } from './xliff.ts';
 
@@ -28,6 +29,14 @@ export function screenAnchors(screen: Pick<Screen, 'blocks' | 'layers' | 'events
   const out: { anchor: Anchor; set(next: Anchor): void; where: string }[] = [];
   const walk = (blocks: readonly Block[] | undefined) => {
     for (const block of objectsIn(blocks)) {
+      // A chart's items brought by the voice, and the end of its spotlight (D60).
+      if (CHART_TYPE_NAMES.has(String(block.type)) && isRecord(block.props)) {
+        const props = block.props;
+        const own = (holder: Record<string, unknown>, key: string, where: string) => { const value = holder[key]; if (isRecord(value)) out.push({ anchor: value as Anchor, set: (next) => { holder[key] = next; }, where }); };
+        for (const list of ['rows', 'parts', 'items', 'points', 'beats']) for (const item of Array.isArray(props[list]) ? props[list] : []) if (isRecord(item)) own(item, 'at', `${block.id} ${String(item.id ?? item.node ?? item.x ?? '')}`);
+        own(props, 'at', `${block.id}`);
+        own(props, 'spotlightEnd', `${block.id} end`);
+      }
       if (isRecord(block.timing)) {
         for (const kind of ['in', 'out'] as const) {
           const moment = block.timing[kind];

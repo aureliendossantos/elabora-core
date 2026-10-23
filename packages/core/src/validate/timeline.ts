@@ -2,7 +2,7 @@ import type { Anchor, Block } from '@elabora/format';
 import { blockControls } from '../components/controls.ts';
 import { narrationWords, findPhrase } from '../narration/words.ts';
 import { withoutDirections } from '../narration/directions.ts';
-import { momentsOf, cuesOf, seekTargetsOf, screenTimeline, blockTimings, isBuiltinEffect, EFFECTS } from '../narration/timeline.ts';
+import { momentsOf, cuesOf, seekTargetsOf, beatsOf, screenTimeline, blockTimings, isBuiltinEffect, EFFECTS } from '../narration/timeline.ts';
 import type { ScreenTimeline, TimelineMoment } from '../narration/timeline.ts';
 import { screenSteps } from '../narration/narration.ts';
 import { blockText } from './narration.ts';
@@ -92,6 +92,13 @@ export function checkScreenTiming(ctx: CourseCheckContext, screen: ScreenFile): 
     if (typeof cue.anchor.line === 'string' && !lines.has(cue.anchor.line)) continue;
     const problem = anchorProblem(cue.anchor, { lines, steps, narrated, language });
     if (problem) reporter.emit(problem.code, { file, path: `${cue.path}${problem.at}`, target: cue.event, details: { screen: id, event: cue.event, anchor: cue.anchor, lost: problem.at.slice(1) }, message: `Event "${cue.event}" of screen "${id}": its moment ${problem.message}.` });
+  }
+  // Charts' items brought by the voice, and the end of their spotlight (D60).
+  for (const beat of beatsOf(project, data)) {
+    if (beat.implied) continue;
+    const problem = anchorProblem(beat.anchor, { lines, steps, narrated, language });
+    const what = beat.item === null ? 'its spotlightEnd' : `item "${beat.item}"'s moment`;
+    if (problem) reporter.emit(problem.code, { file, path: `${beat.path}${problem.at}`, target: beat.block, details: { screen: id, block: beat.block, item: beat.item, anchor: beat.anchor, lost: problem.at.slice(1) }, message: `Chart "${beat.block}" of screen "${id}": ${what} ${problem.message}.` });
   }
 }
 

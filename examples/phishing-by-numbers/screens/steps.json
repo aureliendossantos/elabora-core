@@ -1,0 +1,78 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "steps",
+  "title": "Pause, check, report",
+  "covers": [
+    "ITEM-5"
+  ],
+  "blocks": [
+    {
+      "id": "steps-process",
+      "type": "process",
+      "width": "wide",
+      "props": {
+        "takeaway": "Pause, check, report: one click does the rest",
+        "context": "What to do with any email that surprises you",
+        "source": "Information security policy, Quillon Freight (internal policy, fictional)",
+        "highlight": "report",
+        "items": [
+          {
+            "id": "pause",
+            "title": "Pause",
+            "text": "Don't click, reply or forward.",
+            "at": {
+              "line": "l1",
+              "word": "Pause"
+            }
+          },
+          {
+            "id": "check",
+            "title": "Check",
+            "text": "Who really sent it? Hover over the link: where does it go?",
+            "at": {
+              "line": "l2",
+              "word": "Check"
+            }
+          },
+          {
+            "id": "report",
+            "title": "Report",
+            "text": "Press Report in Outlook. It goes to the desk and leaves your inbox.",
+            "at": {
+              "line": "l2",
+              "word": "Report"
+            }
+          },
+          {
+            "id": "call",
+            "title": "Clicked? Call 4444",
+            "text": "Typed a password or opened a file? Call the security desk at once.",
+            "at": {
+              "line": "l3",
+              "word": "Clicked"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "narration": {
+    "lines": [
+      {
+        "id": "l1",
+        "speaker": "guide",
+        "text": "So, an email surprises you. Pause: don't click, reply or forward."
+      },
+      {
+        "id": "l2",
+        "speaker": "guide",
+        "text": "Check who really sent it, and where the link goes. Then press Report."
+      },
+      {
+        "id": "l3",
+        "speaker": "guide",
+        "text": "Clicked, or typed a password? Call the desk on 4444, straight away."
+      }
+    ]
+  }
+}
