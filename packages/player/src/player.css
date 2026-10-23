@@ -230,13 +230,16 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
    column. In a layout's slot, the slot's width. What is inside keeps the reading width (--t-bleed-gutter
    for templates). #t-main clips the rest, so that a rounding never makes the page scroll sideways. */
 .t-main { overflow-x: clip; }
-.t-w-bleed { --t-bleed-gutter: max(1.25rem, calc((100% - var(--t-content-width, 47.5rem)) / 2)); }
+/* The page's side margin, as #t-main pads the default column. */
+:root { --t-gutter: 1.25rem; }
+@media (max-width: 760px) { :root { --t-gutter: 0.875rem; } }
+.t-w-bleed { --t-bleed-gutter: max(var(--t-gutter), calc((100% - var(--t-content-width, 47.5rem)) / 2)); }
 :is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block.t-w-bleed { max-width: none; width: auto; justify-self: stretch; margin-inline: calc((100% - var(--t-page-width, 100vw)) / 2); }
 .t-slot > .t-block.t-w-bleed { margin-inline: 0; }
 /* A band breathes: a little more room around it than between paragraphs. */
 :is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block.t-w-bleed:not(:first-child) { margin-top: .75rem; }
 :is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block.t-w-bleed:not(:last-child) { margin-bottom: .75rem; }
-.t-w-bleed:not(:has(> [data-t-bleed])) > :not(.t-figure) { max-width: var(--t-content-width, 47.5rem); margin-inline: auto; padding-inline: 1.25rem; box-sizing: content-box; }
+.t-w-bleed:not(:has(> [data-t-bleed])) > :not(.t-figure) { max-width: var(--t-content-width, 47.5rem); margin-inline: auto; padding-inline: var(--t-gutter); box-sizing: content-box; }
 .t-w-bleed > .t-figure img { width: 100%; border-radius: 0; }
 /* A picture cropped to its place keeps its focal point (focus: --focus-x, --focus-y, 0 to 1). */
 :is(.t-image, .t-gallery, .t-statement, .t-opening) img { object-position: calc(var(--focus-x, .5) * 100%) calc(var(--focus-y, .5) * 100%); }
@@ -277,7 +280,9 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-statement-scrim { display: grid; align-content: center; min-height: var(--t-band-medium); padding: clamp(2.5rem, 6vw, 4.5rem) var(--t-bleed-gutter, 1.25rem); }
 .t-statement--image:has(> .t-statement-media) { color: var(--t-on-scrim, #fff); }
 .t-statement--image:has(> .t-statement-media) .t-statement-scrim { background: var(--t-scrim, linear-gradient(to top, rgb(10 13 18 / .78), rgb(10 13 18 / .52) 55%, rgb(10 13 18 / .46))); }
-.t-statement--image :is(.t-statement-text, .t-statement-text strong, .t-statement-role, .t-genmark) { color: inherit; }
+/* Text over a picture keeps the scrim's colour whatever the theme says of its headings and text
+   (important in elabora.base outweighs the later layers): a theme changes it with --t-on-scrim. */
+.t-statement--image :is(.t-statement-text, .t-statement-text *, .t-statement-author, .t-statement-role, .t-genmark) { color: inherit !important; }
 .t-statement--image .t-statement-role { opacity: .88; }
 .t-slot > .t-w-bleed :is(.t-statement--image, .t-image--band .t-image-frame, .t-image--over) { border-radius: var(--t-radius); overflow: hidden; }
 
@@ -322,7 +327,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-image--over .t-image-frame img { position: absolute; inset: 0; }
 .t-image-overlay { display: grid; align-content: end; min-height: var(--t-band); padding: clamp(2rem, 5vw, 3.5rem) var(--t-bleed-gutter, 1.25rem); background: var(--t-scrim, linear-gradient(to top, rgb(10 13 18 / .78), rgb(10 13 18 / .52) 55%, rgb(10 13 18 / .46))); }
 .t-image--over .t-image-text { max-width: 36rem; }
-.t-image--over :is(.t-image-title, .t-text, .t-text a) { color: inherit; }
+.t-image--over .t-image-overlay :is(.t-image-title, .t-text, .t-text *) { color: inherit !important; }
 .t-image--over .t-image-title { font-size: clamp(1.5rem, 1.15rem + 1.2vw, 2.25rem); line-height: 1.15; }
 .t-image--over .t-text { font-size: 1.125rem; }
 .t-image--over > .t-genmark { padding-inline: var(--t-bleed-gutter, 0); color: var(--t-muted); }
@@ -350,7 +355,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-gallery--mosaic .t-gallery-item { break-inside: avoid; margin-bottom: 1rem; }
 .t-gallery-caption { margin-top: .75rem; color: var(--t-muted); font-size: .9375rem; }
 @container (max-width: 640px) { .t-gallery[data-columns] { --t-gallery-columns: 2; } .t-gallery-list { gap: .75rem; } .t-gallery--mosaic .t-gallery-list { column-gap: .75rem; } }
-@container (max-width: 380px) { .t-gallery[data-columns] { --t-gallery-columns: 1; } }
+@container (max-width: 300px) { .t-gallery[data-columns] { --t-gallery-columns: 1; } }
 /* Before and after (data-t-compare): the second picture over the first, clipped at the line the
    range sets (--t-compare); the range covers both, invisible, its handle drawn on the line. */
 .t-compare { --t-compare: 50%; position: relative; overflow: hidden; border-radius: var(--t-radius); touch-action: pan-y; user-select: none; -webkit-user-select: none; }
@@ -393,7 +398,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 
 /* Opening (« Ouverture »), a built-in screen layout: the head of a lesson, then its page as the default
    column. The layout owns the page (full bleed): its head may go edge to edge. */
-.t-opening { --t-opening-gutter: max(1.25rem, calc((100% - var(--t-content-width, 47.5rem)) / 2)); }
+.t-opening { --t-opening-gutter: max(var(--t-gutter), calc((100% - var(--t-content-width, 47.5rem)) / 2)); }
 .t-opening-head { position: relative; display: grid; isolation: isolate; }
 .t-opening-copy { position: relative; padding: clamp(2.5rem, 6vw, 4.5rem) var(--t-opening-gutter) clamp(1.25rem, 2.5vw, 2rem); }
 .t-opening-eyebrow { margin: 0 0 1rem; color: var(--t-primary); font-size: .8125rem; font-weight: 700; letter-spacing: .08em; line-height: 1.4; text-transform: uppercase; }
@@ -420,7 +425,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-head:has(> .t-opening-media) .t-opening-copy { --t-opening-fade: clamp(5rem, 12vw, 9rem); padding-top: var(--t-opening-fade); }
 /* The scrim under the text fades in above it: no edge across the picture. */
 .t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-head:has(> .t-opening-media) .t-opening-copy::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--t-scrim, linear-gradient(to top, rgb(10 13 18 / .78), rgb(10 13 18 / .52) 55%, rgb(10 13 18 / .46))); -webkit-mask: linear-gradient(transparent, #000 var(--t-opening-fade)); mask: linear-gradient(transparent, #000 var(--t-opening-fade)); }
-.t-opening:is(.t-opening--band, .t-opening--cover) :is(.t-opening-eyebrow, .t-screen-title, .t-opening-lead, .t-opening-lead a, .t-opening-meta) { color: inherit; }
+.t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-copy :is(.t-opening-eyebrow, .t-opening-eyebrow *, .t-screen-title, .t-opening-lead, .t-opening-lead *, .t-opening-meta) { color: inherit !important; }
 .t-opening--cover .t-opening-copy { padding-bottom: clamp(2.5rem, 7vh, 4.5rem); }
 /* split: the head beside the picture; the picture above it in narrow windows. */
 .t-opening--split .t-opening-head:has(> .t-opening-media) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: clamp(24rem, 40vw, 36rem); }
@@ -434,7 +439,11 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
   .t-opening--title .t-opening-media { width: calc(100% - 1.75rem); }
   .t-opening--title .t-opening-media img { aspect-ratio: 3 / 2; }
 }
-[data-presentation="slides"] .t-opening--cover .t-opening-head { min-height: calc(100vh - var(--t-bar-top, 0px) - var(--t-bar-bottom, 0px)); min-height: calc(100dvh - var(--t-bar-top, 0px) - var(--t-bar-bottom, 0px)); }
+/* In slides the opening is the slide: its head takes the room its page leaves (a cover, all of it). */
+[data-presentation="slides"] .t-screen.t-layout--opening { display: flex; flex-direction: column; align-self: stretch; margin-block: 0; flex: 1; }
+[data-presentation="slides"] .t-opening { display: flex; flex: 1; flex-direction: column; }
+[data-presentation="slides"] .t-opening-head { flex: 1 0 auto; }
+[data-presentation="slides"] .t-opening:is(.t-opening--band, .t-opening--cover, .t-opening--split) .t-opening-head { min-height: min(22rem, 45vh); }
 /* The question before the lesson, then the page: the default column, under the head. */
 .t-opening-question.t-slot { width: 100%; max-width: calc(var(--t-content-width, 47.5rem) + 2.5rem); margin: 0 auto; padding: clamp(1.75rem, 4vw, 2.5rem) 1.25rem 0; }
 .t-opening-body.t-slot { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 1.5rem; width: 100%; max-width: calc(var(--t-wide-width, 68.75rem) + 2.5rem); margin: 0 auto; padding: clamp(1.75rem, 4vw, 2.75rem) 1.25rem 2.5rem; }
