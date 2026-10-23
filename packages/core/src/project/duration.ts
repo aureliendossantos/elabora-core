@@ -34,8 +34,8 @@ export function screenEstimates(project: Project): Map<string, ScreenEstimate> {
   const words = new Map<string, number>();
   for (const unit of extractUnits(project)) {
     const screen = /^screens\/(.+)\.json$/.exec(unit.file)?.[1];
-    // Heard, not read: the narration's lines are timed by the voice.
-    if (!screen || unit.editor || unit.pointer.startsWith('/narration/')) continue;
+    // Heard, not read: the narration's lines (the screen's, a layer's) are timed by the voice.
+    if (!screen || unit.editor || /(^|\/)narration\//.test(unit.pointer)) continue;
     words.set(screen, (words.get(screen) ?? 0) + countWords(unit.text));
   }
   const plan = planIndex(project.plan);

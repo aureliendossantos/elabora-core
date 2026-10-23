@@ -13,6 +13,7 @@ import { toXliff, readXliff } from './xliff.ts';
 import type { XliffDocument, XliffMark, XliffNote, XliffUnit } from './xliff.ts';
 import { anchorMarkId, markersOf, placedAnchors, screenAnchors, translateAnchor } from './anchors.ts';
 import type { WordAnchor } from './anchors.ts';
+import { voiceLinesOf } from '../narration/voice-lines.ts';
 
 // Translations of a course (one SCORM package per language). The source course keeps them:
 //   translations/<lang>.xlf            the units, with the source text they were translated from
@@ -424,9 +425,9 @@ function applyTargets<C extends Course | null>(project: Project, source: C, xlif
   const language = xliff.trgLang ?? '';
   for (const [screenId, entry] of project.screens) {
     const lines = new Map<string, Map<string, WordAnchor>>();
-    for (const line of entry.data.narration?.lines ?? []) {
-      const translated = xliff.units.get(`screen.${screenId}.narration.${line?.id}.text`);
-      if (line && translated?.target && translated.source === line.text) lines.set(line.id, placedAnchors(translated.target, translated.targetMarks, language));
+    for (const { line, unit } of voiceLinesOf(entry.data, screenId, project)) {
+      const translated = xliff.units.get(unit);
+      if (translated?.target && translated.source === line.text) lines.set(line.id, placedAnchors(translated.target, translated.targetMarks, language));
     }
     if (!lines.size) continue;
     const document = documentOf(entry.file) as Screen | undefined;

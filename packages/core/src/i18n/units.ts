@@ -9,6 +9,7 @@ import { listOf } from '../util/values.ts';
 import { pointer } from '../util/json.ts';
 import { enumPlaces } from '../validate/object-props.ts';
 import { lineWordAnchors, anchorMarks } from './anchors.ts';
+import { voiceLinesOf } from '../narration/voice-lines.ts';
 import { parseDiagram, diagramWords, isProblem, LABELLED_TYPES } from '../charts/diagram.ts';
 import type { XliffMark } from './xliff.ts';
 
@@ -144,14 +145,17 @@ export function extractUnits(project: Project): TranslationUnit[] {
     listOf(screen.layers).forEach((layer, i) => { if (isRecord(layer)) add(`screen.${id}.layer.${layer.id}.title`, file, `/layers/${i}/title`, layer.title, { note: `Title of a layer of screen "${screen.title}"` }); });
     if (isRecord(screen.steps)) for (const [step, settings] of Object.entries(screen.steps)) if (isRecord(settings)) add(`screen.${id}.step.${step}.label`, file, `/steps/${step}/label`, settings.label, { note: `Continue button opening step ${step} of screen "${screen.title}"`, maxLength: 40 });
     const anchored = lineWordAnchors(screen);
-    listOf(screen.narration?.lines).forEach((line, i) => {
-      if (!isRecord(line)) return;
+    // Voice lines of every track (the screen's narration, each layer's), with their own units; lines
+    // whose unit is a prop of their block are listed with the block's props below.
+    for (const { line, track, unit, path, blockUnit } of voiceLinesOf(screen, id, project)) {
+      if (blockUnit) continue;
       const speaker = typeof line.speaker === 'string' ? ` (${line.speaker})` : '';
       const marks = typeof line.text === 'string' ? anchorMarks(line.text, anchored.get(line.id) ?? [], course?.language ?? '') : [];
       const anchors = marks.length ? `. Markers <mrk type="elabora:anchor"> wrap words a block or an event waits for (${marks.map((mark) => `« ${mark.word} »`).join(', ')}): keep each marker, with its id, around the words of your language that say the same thing` : '';
       const directions = typeof line.text === 'string' && hasDirections(line.text) ? '. Text in square brackets, in markers <mrk type="elabora:direction">, is a stage direction for the voice (how to say it, never shown): keep it in brackets where the delivery changes in your sentence, and translate or adapt it' : '';
-      add(`screen.${id}.narration.${line.id}.text`, file, `/narration/lines/${i}/text`, line.text, { note: `Narration line ${line.id}${speaker} of screen "${screen.title}": said by a voice in the translated course and shown as its captions${anchors}${directions}`, maxLength: 2000, marks });
-    });
+      const where = track.kind === 'layer' ? `the narration of layer "${track.layer}" of screen "${screen.title}"` : `screen "${screen.title}"`;
+      add(unit, file, `${path}/text`, line.text, { note: `Narration line ${line.id}${speaker} of ${where}: said by a voice in the translated course and shown as its captions${anchors}${directions}`, maxLength: 2000, marks });
+    }
     for (const { block, path } of screenBlocks(screen, file)) {
       const descriptor = registry.get(block.type);
       if (!descriptor) continue;

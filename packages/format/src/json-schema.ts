@@ -17,6 +17,7 @@ export interface JsonSchema {
   properties?: { [name: string]: JsonSchema | boolean };
   required?: string[];
   additionalProperties?: JsonSchema | boolean;
+  unevaluatedProperties?: JsonSchema | boolean;
   patternProperties?: { [pattern: string]: JsonSchema | boolean };
   propertyNames?: JsonSchema | boolean;
   minProperties?: number;

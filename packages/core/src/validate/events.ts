@@ -10,7 +10,7 @@ import type { Action, Block, Trigger } from '../project/model.ts';
 import type { CourseCheckContext, ScreenFile } from './context.ts';
 import { list, fieldsOf, byId, hasId } from './guards.ts';
 import { screenSteps } from '../narration/narration.ts';
-import { isTimedScreen } from '../narration/timeline.ts';
+import { isTimedScreen, isTimedLayer, lineTimelines } from '../narration/timeline.ts';
 
 // What each trigger needs from its target block: a behaviour (forks included) or a control.
 const TRIGGER_TARGET: Readonly<Record<string, { test: (component: ComponentDescriptor, block: Block) => boolean; what: string }>> = {
@@ -43,6 +43,16 @@ export function checkEvents(ctx: CourseCheckContext, screen: ScreenFile): void {
   const narrated = lines.size > 0;
   // Timed: narrated, or blocks and cues timed in seconds.
   const timed = isTimedScreen(project, data);
+  // The timeline of each line on one (null: the screen's, else a layer's: D62).
+  const timelines = lineTimelines(data);
+  const layerLines = (layer: string) => [...timelines].filter(([, own]) => own === layer).map(([line]) => line);
+  // A timeline action or trigger that names a layer needs that layer, with a timeline of its own.
+  const timedLayer = (layer: unknown, path: string, what: string, eventId: string): boolean => {
+    if (layer === undefined) return true;
+    if (!hasId(layers, layer)) { reporter.emit('E_EVENT_TARGET', { file, path, target: eventId, message: `${what}: no layer "${String(layer)}" on screen "${screenId}".` }); return false; }
+    if (!isTimedLayer(project, data, String(layer))) { reporter.emit('E_TIMELINE_CUE', { file, path, target: eventId, message: `${what}: layer "${String(layer)}" of screen "${screenId}" has no timeline (no narration, no timed block).` }); return false; }
+    return true;
+  };
   // Sounds and videos the learner plays (a loop never ends).
   const playable = (block: Block | undefined) => !!block && (block.type === 'audio' || (block.type === 'video' && !fieldsOf(block.props).loop));
 
@@ -71,11 +81,21 @@ export function checkEvents(ctx: CourseCheckContext, screen: ScreenFile): void {
       if (!hasId(layers, on.target)) reporter.emit('E_EVENT_TARGET', { file, path: `${base}/on/target`, target: event.id, message: `Event "${event.id}": no layer "${on.target}" on screen "${screenId}".` });
     } else if (on.type === 'variable.changed') {
       if (!hasId(variables, on.variable)) reporter.emit('E_UNKNOWN_REFERENCE', { file, path: `${base}/on/variable`, target: event.id, message: `Event "${event.id}": unknown variable "${on.variable}".` });
-    } else if (on.type === 'timeline.reached' || on.type === 'timeline.ended') {
-      // A cue in seconds times a screen without narration; a line needs the narration.
+    } else if ((on.type === 'timeline.reached' || on.type === 'timeline.ended') && on.layer !== undefined) {
+      // A layer's timeline (D62): its end, a line it says, or seconds from its opening.
       const byLine = on.type === 'timeline.reached' && typeof on.at?.line === 'string';
-      if (on.type === 'timeline.ended' ? !timed : byLine && !narrated) reporter.emit('E_TIMELINE_CUE', { file, path: `${base}/on/type`, target: event.id, message: `Event "${event.id}": ${on.type}${byLine ? ` at line "${on.at?.line}"` : ''} on screen "${screenId}", which has no ${byLine ? 'narration' : 'timeline (no narration, no timed block)'}.` });
-      else if (byLine && !hasId(lines, on.at?.line)) reporter.emit('E_TIMELINE_CUE', { file, path: `${base}/on/at/line`, target: event.id, message: `Event "${event.id}": no narration line "${on.at?.line}" on screen "${screenId}" (lines: ${[...lines].join(', ')}).` });
+      if (timedLayer(on.layer, `${base}/on/layer`, `Event "${event.id}": ${on.type}`, event.id) && byLine) {
+        const own = timelines.get(on.at!.line!);
+        if (own === undefined) reporter.emit('E_TIMELINE_CUE', { file, path: `${base}/on/at/line`, target: event.id, message: `Event "${event.id}": no narration line "${on.at?.line}" on layer "${on.layer}" of screen "${screenId}" (lines: ${layerLines(on.layer).join(', ') || 'none'}).` });
+        else if (own !== on.layer) reporter.emit('E_TIMELINE_ANCHOR_TRACK', { file, path: `${base}/on/at/line`, target: event.id, message: `Event "${event.id}": line "${on.at?.line}" is said on ${own === null ? 'the screen\'s timeline' : `the timeline of layer "${own}"`}, not on that of layer "${on.layer}" (its layer).` });
+      }
+    } else if (on.type === 'timeline.reached' || on.type === 'timeline.ended') {
+      // A cue in seconds times a screen without narration; a line needs a narration (the screen's,
+      // or a layer's, whose timeline it then names).
+      const byLine = on.type === 'timeline.reached' && typeof on.at?.line === 'string';
+      const ownTimeline = byLine ? timelines.get(on.at!.line!) : undefined;
+      if (byLine && ownTimeline === undefined) reporter.emit('E_TIMELINE_CUE', { file, path: narrated || timelines.size ? `${base}/on/at/line` : `${base}/on/type`, target: event.id, message: timelines.size ? `Event "${event.id}": no narration line "${on.at?.line}" on screen "${screenId}" (lines: ${[...timelines.keys()].join(', ')}).` : `Event "${event.id}": ${on.type} at line "${on.at?.line}" on screen "${screenId}", which has no narration.` });
+      else if (!byLine && !timed) reporter.emit('E_TIMELINE_CUE', { file, path: `${base}/on/type`, target: event.id, message: `Event "${event.id}": ${on.type} on screen "${screenId}", which has no timeline (no narration, no timed block).` });
     } else if (on.type === 'media.ended') {
       const block = byId(local, on.target);
       if (!block) reporter.emit('E_EVENT_TARGET', { file, path: `${base}/on/target`, target: event.id, message: `Event "${event.id}": no block "${on.target}" on screen "${screenId}".` });
@@ -124,10 +144,21 @@ export function checkEvents(ctx: CourseCheckContext, screen: ScreenFile): void {
           break;
         case 'pause-timeline':
         case 'play-timeline':
-        case 'seek-timeline':
+        case 'seek-timeline': {
+          // A layer's timeline (D62): named by layer, or by a line its narration says (seek-timeline).
+          const toLine = action.type === 'seek-timeline' && typeof action.to?.line === 'string' ? action.to.line : undefined;
+          const lineTimeline = toLine !== undefined ? timelines.get(toLine) : undefined;
+          if (action.layer !== undefined) {
+            if (!timedLayer(action.layer, `${at}/layer`, action.type, event.id) || toLine === undefined) break;
+            if (lineTimeline === undefined) reporter.emit('E_TIMELINE_CUE', { file, path: `${at}/to/line`, target: event.id, message: `seek-timeline: no narration line "${toLine}" on layer "${action.layer}" of screen "${screenId}" (lines: ${layerLines(action.layer).join(', ') || 'none'}).` });
+            else if (lineTimeline !== action.layer) reporter.emit('E_TIMELINE_ANCHOR_TRACK', { file, path: `${at}/to/line`, target: event.id, message: `seek-timeline: line "${toLine}" is said on ${lineTimeline === null ? 'the screen\'s timeline' : `the timeline of layer "${lineTimeline}"`}, not on that of layer "${action.layer}" (its layer).` });
+            break;
+          }
+          if (toLine !== undefined && lineTimeline !== undefined && lineTimeline !== null) break;
           if (!timed) reporter.emit('E_TIMELINE_CUE', { file, path: `${at}/type`, target: event.id, message: `${action.type}: screen "${screenId}" has no timeline (no narration, no timed block).` });
-          else if (action.type === 'seek-timeline' && typeof action.to?.line === 'string' && !hasId(lines, action.to.line)) reporter.emit('E_TIMELINE_CUE', { file, path: `${at}/to/line`, target: event.id, message: `seek-timeline: no narration line "${action.to.line}" on screen "${screenId}" (lines: ${[...lines].join(', ') || 'none'}).` });
+          else if (toLine !== undefined && !hasId(lines, toLine)) reporter.emit('E_TIMELINE_CUE', { file, path: `${at}/to/line`, target: event.id, message: `seek-timeline: no narration line "${toLine}" on screen "${screenId}" (lines: ${[...lines].join(', ') || 'none'}).` });
           break;
+        }
         case 'play-media':
         case 'pause-media': {
           const block = byId(local, action.block);

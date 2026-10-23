@@ -5,7 +5,8 @@
 // A line is out of date when its text, its audio or its speaker's voice changed since the sidecar was
 // written, and for a generated voice when what it was told to say (the pronunciations) or how (the
 // voice's settings, the line's delivery) changed; missing without both files. The validator, the build, `elabora timeline` and the voice tools
-// read lines through here.
+// read lines through here. Lines of every track count (voice-lines.ts: the screen's narration, each
+// layer's, D62): ids are unique in the screen, so a line's audio keeps its path whatever holds it.
 
 import type { Course, NarrationAudio, Screen, Speaker } from '@elabora/format';
 import { fileHash, getFile, readText } from '../project/files.ts';
@@ -16,6 +17,8 @@ import { canonicalJSON, parseJSON } from '../util/json.ts';
 import { sha256 } from '../util/sha256.ts';
 import { objectsIn } from '../util/values.ts';
 import { screenTimeline } from './timeline.ts';
+import { screenVoiceLines } from './voice-lines.ts';
+import type { VoiceTrack } from './voice-lines.ts';
 import { hasDirections, outsideDirections } from './directions.ts';
 import type { TimelineLayout, TimelineLine } from './timeline.ts';
 
@@ -101,6 +104,11 @@ export type NarrationCause = 'untranslated' | 'no-audio' | 'no-sidecar' | 'text'
 
 export interface NarrationLineInfo {
   id: string;
+  // Where it is said (the screen's narration, a layer's: D62), the translation unit of its text and
+  // where it is written in the screen's file.
+  track: VoiceTrack;
+  unit: string;
+  path: string;
   step: number;
   pauseBefore?: number;
   speaker: string | null;
@@ -166,12 +174,12 @@ function translatedTexts(project: Project, language: string): Map<string, { sour
   try { return readXliff(entry.xliff).units; } catch { return new Map(); }
 }
 
-// The lines of a screen in a language (default: the course's), each with its text in that language,
-// its audio files and whether they are there and up to date. null when the screen is not narrated.
+// The voice lines of a screen in a language (default: the course's), every track counted (the
+// screen's narration, then each layer's), each with its text in that language, its audio files and
+// whether they are there and up to date. null when the screen has no voice line.
 export function narrationLines(project: Project, screenId: string, language = project.course?.language ?? ''): NarrationLineInfo[] | null {
-  const screen = project.screens.get(screenId)?.data;
-  const lines = objectsIn(screen?.narration?.lines);
-  if (!screen?.narration || !lines.length) return null;
+  const entries = screenVoiceLines(project, screenId);
+  if (!entries.length) return null;
   const course = project.course;
   const source = !course || language === course.language;
   const units = source ? null : translatedTexts(project, language);
@@ -180,10 +188,9 @@ export function narrationLines(project: Project, screenId: string, language = pr
     const unit = units?.get(id);
     return unit?.target && unit.source === text ? unit.target : null;
   };
-  return lines.map((line, index) => {
-    const step = typeof line.step === 'number' ? line.step : 1;
+  return entries.map(({ line, track, step, unit, path }) => {
     const speaker = lineSpeaker(course, line);
-    const text = typeof line.text === 'string' ? translated(`screen.${screenId}.narration.${line.id}.text`, line.text) : null;
+    const text = typeof line.text === 'string' ? translated(unit, line.text) : null;
     const audio = narrationAudioPath(language, screenId, line.id);
     const sidecarPath = narrationSidecarPath(language, screenId, line.id);
     const audioFile = getFile(project.files, audio);
@@ -213,7 +220,7 @@ export function narrationLines(project: Project, screenId: string, language = pr
     const probed = audioFile?.kind === 'binary' ? audioFile.media?.duration ?? null : null;
     const name = speaker ? (source ? speaker.name : translated(`course.speaker.${speaker.id}.name`, speaker.name) ?? speaker.name) : null;
     return {
-      id: line.id, step, ...(typeof line.pauseBefore === 'number' ? { pauseBefore: line.pauseBefore } : {}),
+      id: line.id, track, unit, path, step, ...(typeof line.pauseBefore === 'number' ? { pauseBefore: line.pauseBefore } : {}),
       speaker: speaker?.id ?? null, speakerName: name, text, textHash, spoken, spokenHash, settings: delivery.settings, settingsHash: delivery.hash, audio, sidecar: sidecarPath, status, reasons, causes,
       duration: audioFile?.kind === 'binary' ? probed ?? sidecar?.duration ?? null : null,
       speakerVoice: speakerVoiceOf(speaker?.voices?.[language]),
@@ -242,9 +249,10 @@ export function spokenText(project: Project, screenId: string, lineId: string, l
 export type ScreenTimedLine = TimelineLine & { info: NarrationLineInfo };
 export type ScreenTiming = Omit<TimelineLayout, 'lines'> & { lines: ScreenTimedLine[] };
 
-export function screenTiming(project: Project, screenId: string, { language, durations, gaps }: { language?: string; durations?: ReadonlyMap<string, number>; gaps?: readonly number[] } = {}): ScreenTiming | null {
-  const timeline = screenTimeline(project, screenId, { language, durations, gaps });
+// layer: the timeline of that layer of the screen (D62).
+export function screenTiming(project: Project, screenId: string, { language, durations, gaps, layer }: { language?: string; durations?: ReadonlyMap<string, number>; gaps?: readonly number[]; layer?: string | null } = {}): ScreenTiming | null {
+  const timeline = screenTimeline(project, screenId, { language, durations, gaps, layer });
   if (!timeline?.narrated) return null;
-  const { infos, screen: _screen, language: _language, narrated: _narrated, ...layout } = timeline;
+  const { infos, screen: _screen, language: _language, narrated: _narrated, layer: _layer, ...layout } = timeline;
   return { ...layout, lines: timeline.lines.map((line) => ({ ...line, info: infos.get(line.id)! })) };
 }

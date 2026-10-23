@@ -404,7 +404,8 @@ export interface CanvasView {
   language: string | null;
   // A timed screen at a moment (docs/decisions.md D28): a time in seconds on its timeline (the
   // playhead), or an anchor ({ line, word… }, { seconds }) the engine resolves in the language
-  // shown; null: as captures show it, at the end of its steps.
+  // shown; null: as captures show it, at the end of its steps. With a layer that has a timeline of
+  // its own (D62), the moment is on the layer's timeline (the screen under it at its end or its step).
   at?: CanvasMoment | null;
   // Every step shown, those after the first faded in their place (the editor's phone width).
   ghost?: boolean;
@@ -441,14 +442,16 @@ export interface Requests {
   // A narrated screen as an editor shows it: its settings, each line in a language (default: the
   // course's) with its audio's state and its place on the timeline, the steps' segments; null: not
   // narrated (docs/decisions.md D24).
-  narration: { params: { screen: string; language?: string }; result: NarrationView | null };
+  // layer: that layer's narration (D62); each line says its track (the screen's, a layer's).
+  narration: { params: { screen: string; language?: string; layer?: string }; result: NarrationView | null };
   // A timed screen's timeline as the Chronologie view shows it: lines with their words and times,
   // timed blocks with their moments, events on it (null: not timed); and the screen at a time.
-  timeline: { params: { screen: string; language?: string }; result: TimelineView | null };
-  timelineAt: { params: { screen: string; time?: number; at?: CanvasMoment; language?: string }; result: ScreenAt | null };
+  // layer: the timeline of that layer of the screen (D62).
+  timeline: { params: { screen: string; language?: string; layer?: string }; result: TimelineView | null };
+  timelineAt: { params: { screen: string; time?: number; at?: CanvasMoment; language?: string; layer?: string }; result: ScreenAt | null };
   // The marks of a timed screen, a storyboard (the Revue, elabora look --sheet): its start, each block
   // that comes or goes, each cue, each step's end, with the time to show each at (canvasView { at }).
-  timelineMarks: { params: { screen: string; language?: string }; result: TimelineMark[] | null };
+  timelineMarks: { params: { screen: string; language?: string; layer?: string }; result: TimelineMark[] | null };
   // The effects a block's timing can take (built-in presets, then the theme's theme.effects), with
   // their default duration, the directions they take and what they do.
   effects: { params: NoParams; result: EffectInfo[] };

@@ -37,6 +37,7 @@ export interface LineFromAudioFileArgs {
   after?: string | null;           // after this line (null: first; default: last)
   step?: number;                   // default: the step of the line before it
   speaker?: string;                // default: the speaker of the line before it
+  layer?: string;                  // a line of that layer's narration (D62); default: the screen's
   language?: string;               // the course's
   trim?: boolean;                  // silence at both ends trimmed (default true)
   service?: 'local' | 'elevenlabs'; // who transcribes (default: this computer)

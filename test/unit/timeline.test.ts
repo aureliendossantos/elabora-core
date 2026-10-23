@@ -199,7 +199,7 @@ test('validation: anchors, seconds, effects, layers, stacks, order, reading time
   const at = (code: string) => found.filter((d) => d.code === code).map((d) => d.target);
   assert.deepEqual(at('E_TIMING_SECONDS_NARRATED'), ['accueil-illustration']);
   assert.deepEqual(at('E_TIMING_EFFECT_UNKNOWN'), ['accueil-illustration']);
-  assert.deepEqual(at('W_TIMING_IGNORED'), ['aide-texte']);
+  assert.deepEqual(at('E_TIMELINE_ANCHOR_TRACK'), ['aide-texte'], 'a block of a layer anchors to the layer\'s own lines (D62)');
   assert.deepEqual(at('W_STACK_UNTIMED'), ['pile-2']);
   assert.deepEqual(at('W_TEXT_TOO_FAST'), ['accueil-situation'], 'shown for a fraction of l2');
   assert.deepEqual(at('E_ACTIVITY_LEAVES_UNANSWERED'), ['accueil-question']);

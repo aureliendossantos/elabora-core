@@ -93,6 +93,9 @@ export interface PlayerTimeline {
   atTime(time: number, options?: { captions?: boolean }): boolean;
   hiddenByTiming(): string[];
   toEnd(): Promise<TimelineState | null>;
+  // The timelines of open layers (D62).
+  layers(): string[];
+  layer(id: string): Omit<PlayerTimeline, 'toEnd' | 'layers' | 'layer'> | null;
 }
 
 export interface PlayerObjectHost {

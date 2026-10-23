@@ -41,9 +41,23 @@ export type Pronunciation = {
   say: string;
 };
 
-/** A moment of the screen's timeline, written against what the voice says rather than in seconds, so that it holds when a voice is generated again, recorded or translated: a line ({ "line": "l2" }), a word or a few words of it ({ "line": "l2", "word": "imprimante" }), the end of either (edge end), shifted by offset seconds. On a screen without narration, seconds from the start of a step ({ "seconds": 1.5 }). The start or the end of a step's stretch of the timeline ({ "step": 2 }, { "step": 2, "edge": "end" }). */
+/** A line a voice says: the common shape of the lines of a screen's narration, of a layer's narration and of a dialogue. Its id is unique in the screen, every track counted (the screen's narration, each layer's, each dialogue's): cues, translations and the line's audio files (assets/narration/<language>/<screen>/<line>.m4a) are named by it. The schemas that use it add their own fields and close it (unevaluatedProperties). */
+export type VoiceLine = {
+  /** Unique in the screen, every track counted (l1, l2…): cues, translations and the line's audio files are named by it. */
+  id: Slug;
+  /** A speaker of course.json speakers, named in the captions and the transcript. Default: the first speaker of the course (none: no name). */
+  speaker?: Slug;
+  /** What the voice says, word for word: the captions and the transcript. Do not show the same words on screen (E4, W_NARRATION_DUPLICATED). Words in square brackets are stage directions for an expressive voice ([chuchote], [rit], [un temps]: how to say it, where the delivery changes): never shown nor counted as words; a voice that cannot play them says the line without them. */
+  text: string;
+  /** How a generated voice says this line, by language (it is translated): settings of the voice tool (speed, style…) over those of the speaker's voice in that language, for example { "fr": { "speed": 1.1 } }. Other settings make the line's audio out of date. */
+  delivery?: { [key: string]: { [key: string]: unknown } };
+  /** How a generated voice says words of this line, by language, before those of the course. */
+  pronunciations?: Pronunciations;
+};
+
+/** A moment of the screen's timeline or of a layer's (docs/decisions.md D62), written against what the voice says rather than in seconds, so that it holds when a voice is generated again, recorded or translated: a line ({ "line": "l2" }), a word or a few words of it ({ "line": "l2", "word": "imprimante" }), the end of either (edge end), shifted by offset seconds. On a screen without narration, seconds from the start of a step ({ "seconds": 1.5 }); on a layer without narration, seconds from its opening. The start or the end of a step's stretch of the timeline ({ "step": 2 }, { "step": 2, "edge": "end" }). */
 export type Anchor = {
-  /** A line of the screen's narration (narration.lines[].id). */
+  /** A line of the screen's narration (narration.lines[].id), or, for a block or a cue of a layer, of that layer's narration (layers[].narration.lines[].id): an anchor stays on its own timeline (E_TIMELINE_ANCHOR_TRACK). */
   line?: Slug;
   /** One or a few words of the line, as written there (case, punctuation and apostrophes aside): the moment the voice says them. Their time comes from the line's word times (the sidecar's words, filled by forced alignment), estimated from the text without them. Translations carry it as a marker that translators place on the words of their language. A word no longer in the line is an error (E_TIMELINE_ANCHOR_MISSING); editing the line's text moves the anchor with its word. */
   word?: string;
@@ -59,7 +73,7 @@ export type Anchor = {
   edge?: 'start' | 'end';
   /** Seconds after the line or the word (negative: before). */
   offset?: number;
-  /** Screens without narration only: seconds from the start of a step (step, else the block's step, else 1). Narrated screens anchor to their lines and words. */
+  /** Screens without narration only: seconds from the start of a step (step, else the block's step, else 1); in a layer without narration, from its opening. Narrated screens and layers anchor to their lines and words. */
   seconds?: number;
   /** With seconds: the step they count from. Alone: the start of that step's stretch of the timeline, or its end with edge end. */
   step?: number;
@@ -763,7 +777,7 @@ export type Screen = {
   continueRevealsSteps?: boolean;
   /** How each step of the screen opens, keyed by step number (blocks carry the step). By default a step opens with Continue: in scroll presentation a Continue button in the page, at the cut, like the continue dividers of Rise; in slides the Next button, relabelled Continue. opens "answered": the step opens by itself once every activity of the steps above is answered (submitted, right or wrong), like content shown after a knowledge check. */
   steps?: { [key: string]: ScreenStep };
-  /** The voice of the screen, script first: its lines in the order they are spoken, each in a step of the screen. A narrated screen has a timeline: its steps are segments of the narration, the player shows a bar (play, pause, replay the step, seek, captions, speed, transcript) and captions and the transcript are generated from the lines. The audio of each line lives in assets/narration/<language>/<screen>/<line>.m4a with its sidecar <line>.json (docs/decisions.md D24); the build lays the lines of a screen end to end into one track. */
+  /** The voice of the screen, script first: its lines in the order they are spoken, each in a step of the screen. A narrated screen has a timeline: its steps are segments of the narration, the player shows a bar (play, pause, replay the step, seek, captions, speed, transcript) and captions and the transcript are generated from the lines. Layers have their own narration (layers[].narration). The audio of each line lives in assets/narration/<language>/<screen>/<line>.m4a with its sidecar <line>.json (docs/decisions.md D24); the build lays the lines of a screen end to end into one track. */
   narration?: {
     /** learner (default, or the course's narration.advance): playback stops at the end of each step and Continue plays the next one. auto: the steps follow each other; the learner can always pause. next-screen: the steps follow each other, then the player goes to the next screen by itself (an introduction, credits: a time limit learners did not choose, WCAG 2.2.1, W_AUTO_ADVANCE). Learners may turn auto and next-screen back into learner with « M'arrêter à chaque étape »; phones always go step by step. */
     advance?: 'learner' | 'auto' | 'next-screen';
@@ -793,13 +807,8 @@ export type ScreenStep = {
   duration?: number;
 };
 
-export type ScreenNarrationLine = {
-  /** Unique in the screen (l1, l2…): cues, translations and the line's audio files are named by it. */
-  id: Slug;
-  /** A speaker of course.json speakers, named in the captions and the transcript. Default: the first speaker of the course (none: no name). */
-  speaker?: Slug;
-  /** What the voice says, word for word: the captions and the transcript. Do not show the same words on screen (E4, W_NARRATION_DUPLICATED). Words in square brackets are stage directions for an expressive voice ([chuchote], [rit], [un temps]: how to say it, where the delivery changes): never shown nor counted as words; a voice that cannot play them says the line without them. */
-  text: string;
+/** A line of the screen's narration: a voice line (id, speaker, text, delivery, pronunciations) in a step of the screen. */
+export type ScreenNarrationLine = VoiceLine & {
   /**
    * The step of the screen this line belongs to: its segment of the timeline. Lines are in step order.
    * @default 1
@@ -807,10 +816,6 @@ export type ScreenNarrationLine = {
   step?: number;
   /** Seconds of silence before the line. Default: 0.4, and 0 for the first line of the screen. */
   pauseBefore?: number;
-  /** How a generated voice says this line, by language (it is translated): settings of the voice tool (speed, style…) over those of the speaker's voice in that language, for example { "fr": { "speed": 1.1 } }. Other settings make the line's audio out of date. */
-  delivery?: { [key: string]: { [key: string]: unknown } };
-  /** How a generated voice says words of this line, by language, before those of the course. */
-  pronunciations?: Pronunciations;
 };
 
 export type ScreenLayer = {
@@ -822,7 +827,20 @@ export type ScreenLayer = {
    * @default 'dialog'
    */
   presentation?: 'dialog' | 'panel';
+  /** The layer's own voice (docs/decisions.md D62): its lines in the order they are spoken. A layer with a narration, or with blocks timed (timing), has its own timeline: it starts at 0 when the layer opens, stops when it closes and starts again at 0 when it opens again; its compact bar (play, pause, replay, seek, captions) is in the layer. While the layer speaks, the screen's timeline is paused (two voices never overlap): a dialog resumes it when it closes, a panel when its narration ends. The lines' ids are unique in the screen with those of the screen's narration; their audio lives in assets/narration/<language>/<screen>/<line>.m4a like the screen's, and the build lays them into one track for the layer. */
+  narration?: {
+    /** How far the learner may move in the layer's timeline (default: the course's narration.seek, else seen). seen: back anywhere, forward up to the furthest point reached. free: anywhere. none: no seek bar. */
+    seek?: 'seen' | 'free' | 'none';
+    lines: ScreenLayerNarrationLine[];
+  };
+  /** The blocks of the layer. They may be timed (timing) on the layer's timeline: anchored to the layer's lines, or { "seconds": n } from its opening when it has no narration. */
   blocks: Block[];
+};
+
+/** A line of the layer's narration: a voice line (id, speaker, text, delivery, pronunciations). A layer has no steps: its lines follow each other with 0.4 s between them. */
+export type ScreenLayerNarrationLine = VoiceLine & {
+  /** Seconds of silence before the line. Default: 0.4, and 0 for the first line of the layer. */
+  pauseBefore?: number;
 };
 
 // block.schema.json
@@ -2097,7 +2115,7 @@ export type Event = {
 };
 
 export type Trigger = {
-  /** screen.enter: the screen is shown. click: the learner uses a control of a block (target): a button block, or a button, tab or disclosure of a component, optionally filtered by its name. quiz.submitted: a quiz (target) is submitted, optionally filtered by result. decision.selected: an option of a decision block (target) is chosen, optionally filtered by option. object.event: a free object block (target) emits a declared event (name), optionally filtered by payload values (where). variable.changed: a variable changes. layer.closed: a layer (target) is closed. timeline.reached: playback of the screen's timeline crosses a moment (at): a line or a word starts or ends, seconds pass on a screen without narration; never on a seek, again when the learner replays the passage. timeline.ended: playback reaches the end of the narration. media.ended: an audio or video block (target) plays to its end. */
+  /** screen.enter: the screen is shown. click: the learner uses a control of a block (target): a button block, or a button, tab or disclosure of a component, optionally filtered by its name. quiz.submitted: a quiz (target) is submitted, optionally filtered by result. decision.selected: an option of a decision block (target) is chosen, optionally filtered by option. object.event: a free object block (target) emits a declared event (name), optionally filtered by payload values (where). variable.changed: a variable changes. layer.closed: a layer (target) is closed. timeline.reached: playback of the screen's timeline, or of a layer's, crosses a moment (at): a line or a word starts or ends, seconds pass on a screen or a layer without narration; never on a seek, again when the learner replays the passage. timeline.ended: playback reaches the end of the screen's timeline, or of a layer's with layer (to close the layer once it has spoken: hide-layer). media.ended: an audio or video block (target) plays to its end. */
   type: 'screen.enter' | 'click' | 'quiz.submitted' | 'decision.selected' | 'object.event' | 'variable.changed' | 'layer.closed' | 'timeline.reached' | 'timeline.ended' | 'media.ended';
   /** Block or layer id the trigger listens to. */
   target?: Slug;
@@ -2110,11 +2128,13 @@ export type Trigger = {
   /** Payload filter: every listed field must equal the given value. */
   where?: { [key: string]: string | number | boolean | null };
   variable?: VariableId;
-  /** timeline.reached: the moment playback crosses (a line, a word, seconds on a screen without narration). */
+  /** timeline.reached: the moment playback crosses (a line, a word, seconds on a screen without narration). A line of a layer's narration names the layer's timeline by itself. */
   at?: Cue;
+  /** The timeline of a layer of the screen (docs/decisions.md D62) instead of the screen's: timeline.ended when the layer's timeline ends (absent: the screen's), timeline.reached at seconds from the layer's opening when it has no narration (a line of a layer's narration needs no layer). */
+  layer?: Slug;
 };
 
-/** A moment of the screen's timeline (an anchor): a line, a word of a line, the end of either with an offset; seconds from the start of a step on a screen without narration; the start or end of a step. */
+/** A moment of the screen's timeline or of a layer's (an anchor): a line, a word of a line, the end of either with an offset; seconds from the start of a step on a screen without narration (from its opening on a layer without narration); the start or end of a step. */
 export type Cue = Anchor;
 
 /** A variable compared with a value ({ variable, op, value }), or the visited state of a block's controls ({ visited, name }). */
@@ -2129,10 +2149,10 @@ export type Condition = {
 };
 
 export type Action = {
-  /** go-to: navigate (screen id, or next / previous). show-layer / hide-layer: open or close a layer of the current screen; hide-layer without layer closes the layer open on top (a Close button inside a layer). show-block / hide-block: change visibility of a block. reveal-step: reveal the steps of the screen up to step (a click in the slide instead of Continue); a step already shown takes the focus again. set-variable: assign a value. increment-variable: add a number (by, may be negative). complete-screen: mark the current screen complete. set-object-props: change declared props of a free object block without regenerating code. exit-course: save and leave (same as the Quit button). pause-timeline / play-timeline: pause the narration of the screen, or play it from where it is (a modal layer pauses and resumes it by itself). seek-timeline: move the timeline to a moment (to), as a seek: what is seen follows, nothing crossed fires, playback goes on if it was playing; a moment in a later step reaches that step. play-media / pause-media: play or pause an audio or video block (block) of the screen; playing one pauses the narration. */
+  /** go-to: navigate (screen id, or next / previous). show-layer / hide-layer: open or close a layer of the current screen; hide-layer without layer closes the layer open on top (a Close button inside a layer). show-block / hide-block: change visibility of a block. reveal-step: reveal the steps of the screen up to step (a click in the slide instead of Continue); a step already shown takes the focus again. set-variable: assign a value. increment-variable: add a number (by, may be negative). complete-screen: mark the current screen complete. set-object-props: change declared props of a free object block without regenerating code. exit-course: save and leave (same as the Quit button). pause-timeline / play-timeline: pause the narration of the screen, or play it from where it is (a modal layer pauses and resumes it by itself); with layer, the timeline of that layer while it is open. seek-timeline: move the timeline to a moment (to), as a seek: what is seen follows, nothing crossed fires, playback goes on if it was playing; a moment in a later step reaches that step; with layer (or to a line of a layer's narration), the timeline of that layer while it is open. play-media / pause-media: play or pause an audio or video block (block) of the screen; playing one pauses the narration. */
   type: 'go-to' | 'show-layer' | 'hide-layer' | 'show-block' | 'hide-block' | 'reveal-step' | 'set-variable' | 'increment-variable' | 'complete-screen' | 'set-object-props' | 'exit-course' | 'pause-timeline' | 'play-timeline' | 'seek-timeline' | 'play-media' | 'pause-media';
   screen?: string;
-  /** show-layer, hide-layer: a layer of the current screen. Required by show-layer; hide-layer without it closes the open layer (the one on top). */
+  /** show-layer, hide-layer: a layer of the current screen. Required by show-layer; hide-layer without it closes the open layer (the one on top). pause-timeline, play-timeline, seek-timeline: the timeline of that layer (docs/decisions.md D62) instead of the screen's. */
   layer?: Slug;
   block?: Slug;
   variable?: VariableId;

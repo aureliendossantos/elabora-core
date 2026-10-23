@@ -1,0 +1,13 @@
+---
+npm/elabora: minor (Added)
+npm/@elabora/format: minor (Added)
+npm/@elabora/player: minor (Added)
+npm/@elabora/core: minor (Added)
+npm/@elabora/node: minor (Added)
+npm/@elabora/engine: minor (Added)
+npm/@elabora/cli: minor (Added)
+---
+
+Layers can speak (D62). A layer takes its own `narration` (`layers[].narration`: `lines`, `seek`) and its blocks take `timing`, anchored to the layer's lines (or to seconds from its opening when it has no narration): the layer then has its own timeline, started at 0 each time it opens, with a compact bar (play, replay, seek, captions) and its captions in the layer. While a layer speaks, the screen's timeline waits (a dialog until it closes, a panel until it has spoken); the learner's Pause stops what is in the layer and the screen's transcript adds each layer's lines under its title. `timeline.ended` takes `layer` (close the layer once it has spoken with `hide-layer`), `timeline.reached` names a layer's timeline by its line (or by `layer` for seconds), and `pause-timeline`, `play-timeline` and `seek-timeline` take `layer`. Packages carry one track per narrated layer, `narration/<screen>.<layer>.m4a` with its `.vtt`.
+
+Every line a voice says is a voice line (`defs.schema.json` `voiceLine`: `id`, `speaker`, `text`, `delivery`, `pronunciations`), whose id is unique in the screen, every track counted; a line's audio keeps its path whatever holds it. `@elabora/core/narration/voice-lines` `screenVoiceLines` gives every line of a screen with its track (`screen`, `layer`), its translation unit and where it is written, and the voice tools, alignment, recordings, transcription, translation (a layer's line is `screen.<id>.layer.<layer>.narration.<line>.text`, with its anchors' markers), the audio checks and the timeline report read lines through it. New code `E_TIMELINE_ANCHOR_TRACK` (an anchor on a line of another timeline); `W_TIMING_IGNORED` is retired, a layer's timed blocks now apply. The engine's `narration`, `timeline`, `timelineAt` and `timelineMarks` take `layer`, each line of `narration` says its `track`, `screenParts` lists each layer's narration, and `canvasView { layer, at }` shows a layer at a moment of its own timeline. The narration commands find a line in whichever narration holds it, and `add_narration_line` and `update_narration` take `layer`; `elabora narration add-from-audio --layer` and `elabora_narration_line_from_audio { layer }` make a layer's line from a recording. `elabora screenshot --layer x --at …`, `elabora look --layer x --at …|--sheet` and `elabora_look { layer }` capture a layer at a moment of its timeline, and `elabora timeline` reports each layer after its screen.

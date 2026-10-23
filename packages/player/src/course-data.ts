@@ -259,6 +259,10 @@ export interface LayerData {
   id: string;
   title: string;
   presentation: 'dialog' | 'panel';
+  // The layer's own timeline (docs/decisions.md D62): its lines (one segment, step 1) and its cues,
+  // played through (advance auto) from 0 each time it opens, with its track (src) once every line
+  // has its audio; a layer timed in seconds has no line. Its compact bar is in the layer.
+  narration?: NarrationData;
   blocks: BlockData[];
 }
 
@@ -557,6 +561,9 @@ export interface Trigger {
   variable?: string;
   // timeline.reached: a line of the narration, its start (default) or its end.
   at?: { line: string; edge?: 'start' | 'end' };
+  // timeline.ended (and timeline.reached in seconds): the timeline of that layer (D62); absent: the
+  // screen's.
+  layer?: string;
 }
 
 export type VariableValue = boolean | number | string;
@@ -577,9 +584,11 @@ export type Action =
   | { type: 'complete-screen' }
   | { type: 'set-object-props'; block: string; props: JsonObject }
   | { type: 'exit-course' }
-  | { type: 'pause-timeline' | 'play-timeline' }
-  // to: compiled to the time of the moment (seconds on the timeline).
-  | { type: 'seek-timeline'; to: unknown; time?: number }
+  // layer: the timeline of that layer while it is open (D62).
+  | { type: 'pause-timeline' | 'play-timeline'; layer?: string }
+  // to: compiled to the time of the moment (seconds on the timeline); layer: on that layer's timeline
+  // (named, or the layer whose line it goes to).
+  | { type: 'seek-timeline'; to: unknown; time?: number; layer?: string }
   | { type: 'play-media' | 'pause-media'; block: string };
 
 // ── Variables ──

@@ -19,7 +19,7 @@ const LANGUAGE = { type: 'string', pattern: '^[a-z]{2,3}(-[A-Z]{2})?$', descript
 export const timeline = defineTool({
   name: 'elabora_timeline',
   readOnly: true,
-  description: 'A timed screen\'s timeline as text, read without a capture: its steps (segments) and their times, each narration line with its speaker, start, end and audio (ok, missing, stale: what to generate or record again), the blocks each step shows, the timed blocks with their moments (the anchor, its time, the effect) and the events its cues fire (timeline.reached, timeline.ended). Times come from the lines\' audio and their word times, estimated from the text while a line has none. Without screen: every narrated screen with the audio of its lines. To see a moment, elabora_look with at: "l2", "l2:imprimante" or a time in seconds.',
+  description: 'A timed screen\'s timeline as text, read without a capture: its steps (segments) and their times, each narration line with its speaker, start, end and audio (ok, missing, stale: what to generate or record again), the blocks each step shows, the timed blocks with their moments (the anchor, its time, the effect) and the events its cues fire (timeline.reached, timeline.ended); then each layer that has its own timeline (a narration or timed blocks, D62), read the same way. Times come from the lines\' audio and their word times, estimated from the text while a line has none. Without screen: every narrated screen with the audio of its lines. To see a moment, elabora_look with at: "l2", "l2:imprimante" or a time in seconds.',
   inputSchema: objectSchema({ screen: { ...SLUG, description: 'A narrated screen (default: the list of narrated screens).' }, language: LANGUAGE }),
   handler(args, { root }) {
     const project = loadProjectFromDir(root);
@@ -121,6 +121,7 @@ export const lineFromAudioTool = defineTool({
     after: { type: ['string', 'null'], pattern: SLUG.pattern, description: 'The line it follows (null: first; default: last).' },
     step: { type: 'integer', minimum: 1, description: 'Its step (default: the step of the line before it).' },
     speaker: { ...SLUG, description: 'Its speaker (course.json speakers[].id; default: the speaker of the line before it).' },
+    layer: { ...SLUG, description: 'A line of this layer\'s narration (said on the layer\'s own timeline when it opens, D62; no step). Default: the screen\'s narration.' },
     language: LANGUAGE,
     keepSilence: { type: 'boolean', description: 'Keep the silence at both ends (default: trimmed to 0.1 s).' },
     service: SERVICE,
@@ -131,7 +132,7 @@ export const lineFromAudioTool = defineTool({
       const result = await addNarrationLineFromAudio(root, {
         screen: args.screen, file: path.resolve(root, args.file), install: true, trim: !args.keepSilence,
         ...(args.text ? { text: args.text } : {}), ...(args.after !== undefined ? { after: args.after } : {}), ...(typeof args.step === 'number' ? { step: args.step } : {}),
-        ...(args.speaker ? { speaker: args.speaker } : {}), ...(args.language ? { language: args.language } : {}),
+        ...(args.speaker ? { speaker: args.speaker } : {}), ...(args.layer ? { layer: args.layer } : {}), ...(args.language ? { language: args.language } : {}),
         ...(args.service ? { service: args.service } : {}), ...(typeof args.approvedPercent === 'number' ? { approvedPercent: args.approvedPercent } : {})
       }, { author });
       return editResult(result);

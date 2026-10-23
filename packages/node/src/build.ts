@@ -49,7 +49,7 @@ import { loadProjectFromDir } from './project-reader.ts';
 import { writeLock } from './state-lock.ts';
 import { writeFileAtomic, sha256Hex as sha256 } from './util/fs.ts';
 import { gatesStatus } from './objects/gates-record.ts';
-import { narrationTracks } from './narration/tracks.ts';
+import { narrationTracks, trackName } from './narration/tracks.ts';
 
 const PORTABLE = /^[A-Za-z0-9._/-]+$/;
 
@@ -204,14 +204,15 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   const assetPaths = new Map(packaged.media.filter((m) => m.path !== `assets/${m.name}`).map((m) => [m.name, m.path]));
 
   // Narration: one track per narrated screen whose lines all have their audio, with its captions
-  // (D24). The tracks ship from the project's cache, like media.
+  // (D24), and one per narrated layer (D62). The tracks ship from the project's cache, like media.
   const narration = await narrationTracks(project);
-  for (const failure of narration.failures) reporter.emit('E_NARRATION_TRACK', { file: `screens/${failure.screen}.json`, target: failure.screen, message: `The narration track of screen "${failure.screen}" could not be made: ${failure.message}` });
+  const trackOwner = (failure: { screen: string; layer: string | null }) => (failure.layer === null ? `screen "${failure.screen}"` : `layer "${failure.layer}" of screen "${failure.screen}"`);
+  for (const failure of narration.failures) reporter.emit('E_NARRATION_TRACK', { file: `screens/${failure.screen}.json`, target: failure.screen, message: `The narration track of ${trackOwner(failure)} could not be made: ${failure.message}` });
   for (const track of narration.tracks) {
     media.set(track.path, track.file);
     files.set(track.captionsPath, Buffer.from(track.vtt));
   }
-  const tracks = new Map(narration.tracks.map((track) => [track.screen, track]));
+  const tracks = new Map(narration.tracks.map((track) => [track.name, track]));
 
   // A package of several languages (D59): the course in each translation that is ready and approved,
   // with its own narration tracks (narration/<lang>/).
@@ -235,15 +236,19 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   const otherTracks = new Map<string, Map<string, (typeof narration.tracks)[number]>>();
   for (const other of others) {
     const made = await narrationTracks(other.project, { folder: other.language });
-    for (const failure of made.failures) reporter.emit('E_NARRATION_TRACK', { file: `screens/${failure.screen}.json`, target: failure.screen, message: `The ${other.language} narration track of screen "${failure.screen}" could not be made: ${failure.message}` });
+    for (const failure of made.failures) reporter.emit('E_NARRATION_TRACK', { file: `screens/${failure.screen}.json`, target: failure.screen, message: `The ${other.language} narration track of ${trackOwner(failure)} could not be made: ${failure.message}` });
     // As in the course's own language: a screen whose lines are not all said runs silent on estimated
     // times, which the build says since the validator reads the course's own language only.
-    for (const screen of made.silent) if (tracks.has(screen)) reporter.emit('W_NARRATION_AUDIO_MISSING', { file: `screens/${screen}.json`, target: screen, message: `Screen "${screen}" has narration lines without audio in ${other.language}: learners who choose ${other.language} get its timeline silent, on estimated times.` });
+    for (const name of made.silent) {
+      if (!tracks.has(name)) continue;
+      const [screen, layer] = name.split('.');
+      reporter.emit('W_NARRATION_AUDIO_MISSING', { file: `screens/${screen}.json`, target: screen, message: `${layer ? `Layer "${layer}" of screen "${screen}"` : `Screen "${screen}"`} has narration lines without audio in ${other.language}: learners who choose ${other.language} get its timeline silent, on estimated times.` });
+    }
     for (const track of made.tracks) {
       media.set(track.path, track.file);
       files.set(track.captionsPath, Buffer.from(track.vtt));
     }
-    otherTracks.set(other.language, new Map(made.tracks.map((track) => [track.screen, track])));
+    otherTracks.set(other.language, new Map(made.tracks.map((track) => [track.name, track])));
   }
 
   // Design layer: theme stylesheet, component stylesheets, embedded fonts and the files they reference.
@@ -294,15 +299,15 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     fontLicenses: licenses.length ? licenses.map((name) => [name, sha256(files.get(name) as Buffer)]) : undefined,
     components: [...project.components.values()].map((component) => [component.id, componentHash(component)]),
     screens: [...project.screens.entries()].sort(), objects: [...usedObjects].sort().map((id) => [id, project.objects.get(id)?.manifest, project.objects.get(id)?.code]),
-    narration: tracks.size ? [...tracks.values()].map((track) => [track.screen, track.key]) : undefined,
+    narration: tracks.size ? [...tracks.values()].map((track) => [track.name, track.key]) : undefined,
     delivery,
-    languages: others.length ? languages.map((language) => [language, fileHash(project.files, `translations/${language}.xlf`) ?? null, [...(otherTracks.get(language)?.values() ?? [])].map((track) => [track.screen, track.key])]) : undefined
+    languages: others.length ? languages.map((language) => [language, fileHash(project.files, `translations/${language}.xlf`) ?? null, [...(otherTracks.get(language)?.values() ?? [])].map((track) => [track.name, track.key])]) : undefined
   })).slice(0, 16);
   const several = others.length ? { languages } : {};
   const assetPathOf = assetPaths.size ? { assetPath: (name: string) => assetPaths.get(name) ?? `assets/${name}` } : {};
   const data: CompiledCourse = compileCourseData(project, keys, {
     buildId, ...assetPathOf,
-    ...(tracks.size ? { narration: (screen: string) => tracks.get(screen)?.track } : {}),
+    ...(tracks.size ? { narration: (screen: string, layer?: string) => tracks.get(trackName(screen, layer ?? null))?.track } : {}),
     ...(delivery ? { delivery } : {}), ...several
   });
   files.set('elabora/course.js', Buffer.from(`window.ELABORA_COURSE = ${JSON.stringify(data)};\n`));
@@ -311,7 +316,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     const own = otherTracks.get(other.language);
     const translated = compileCourseData(other.project, keys, {
       buildId, ...assetPathOf,
-      ...(own?.size ? { narration: (screen: string) => own.get(screen)?.track } : {}),
+      ...(own?.size ? { narration: (screen: string, layer?: string) => own.get(trackName(screen, layer ?? null))?.track } : {}),
       ...(delivery ? { delivery } : {}), ...several
     });
     files.set(`elabora/course.${other.language}.js`, Buffer.from(`(window.ELABORA_COURSES = window.ELABORA_COURSES || {})[${JSON.stringify(other.language)}] = ${JSON.stringify(translated)};\n`));
@@ -396,7 +401,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     narration: narration.tracks.length || narration.silent.length ? {
       bytes: narration.tracks.reduce((sum, track) => sum + track.bytes + Buffer.byteLength(track.vtt), 0),
       seconds: Math.round(narration.tracks.reduce((sum, track) => sum + track.duration, 0) * 10) / 10,
-      tracks: narration.tracks.map((track) => ({ screen: track.screen, path: track.path, captions: track.captionsPath, bytes: track.bytes, seconds: track.duration })),
+      tracks: narration.tracks.map((track) => ({ screen: track.screen, ...(track.layer !== null ? { layer: track.layer } : {}), path: track.path, captions: track.captionsPath, bytes: track.bytes, seconds: track.duration })),
       silent: narration.silent,
       ...(narration.tracks.some((track) => track.credits.length) ? { credits: [...new Set(narration.tracks.flatMap((track) => track.credits))].sort() } : {})
     } : null,

@@ -19,7 +19,7 @@ import { activityEntity } from './state-model.ts';
 import type { StateKeys, ActivityBehavior } from './state-model.ts';
 import { isRecord, recordOf, recordsOf, textOf, optionalTextOf, isText, isNumber, isOptional, numberOr, isJsonValue, jsonObjectOf } from './values.ts';
 import { objectsIn } from '../util/values.ts';
-import { screenTimeline, blockTimings, blockBeats, anchorTime } from '../narration/timeline.ts';
+import { screenTimeline, blockTimings, blockBeats, anchorTime, anchorTimeline, lineTimelines } from '../narration/timeline.ts';
 import { isChartType, renderChart } from '../charts/index.ts';
 import { isPredict } from '../charts/predict.ts';
 import { withoutDirections } from '../narration/directions.ts';
@@ -54,9 +54,9 @@ export interface CompileContext {
   assetPath: (name: string) => string;
   // The app's canvas: templates mark the elements that show a text prop (data-t-field).
   fields?: boolean;
-  // The narration track the build made for a screen (none: the timeline from the lines' sidecars,
-  // or estimated, without a track).
-  narration?: (screenId: string) => NarrationTrack | undefined;
+  // The narration track the build made for a screen, or for a layer of it (D62; none: the timeline
+  // from the lines' sidecars, or estimated, without a track).
+  narration?: (screenId: string, layer?: string) => NarrationTrack | undefined;
   // The web target's settings (D41): said in the course data; navigation free opens the navigation
   // rules (mode free, no lock until complete) and the narrations' seek "seen".
   delivery?: WebDelivery;
@@ -80,7 +80,7 @@ export interface NarrationTrack {
 export interface CompileOptions {
   assetPath?: (name: string) => string;
   fields?: boolean;
-  narration?: (screenId: string) => NarrationTrack | undefined;
+  narration?: (screenId: string, layer?: string) => NarrationTrack | undefined;
   delivery?: WebDelivery;
   // The languages of a package of several languages (D59): the language item shows with them.
   languages?: string[];
@@ -213,10 +213,23 @@ export function compileScreen(project: Project, screenId: string, context: Compi
   // Heading levels in reading order: the screen under its title, each layer under its own (h2).
   const headingBefore = walkHeadings(context.registry, context.planIndex, screen.blocks, layout).before;
   for (const layer of objectsIn(screen.layers)) for (const [id, level] of walkHeadings(context.registry, context.planIndex, layer.blocks, null, 2).before) headingBefore.set(id, level);
-  // The timeline of a timed screen: where its lines, words and timed blocks fall.
+  // The timeline of a timed screen: where its lines, words and timed blocks fall; and the timeline of
+  // each layer that has one (D62). Block ids are unique in the course: one map holds every timing.
   const track = context.narration?.(screenId);
   const timeline = screenTimeline(project, screenId, { durations: track?.durations, gaps: track?.gaps });
-  const scope: ScreenScope = { project, context, objects: new Map(), headingBefore, timings: timeline ? blockTimings(timeline) : new Map(), beats: timeline ? blockBeats(timeline) : new Map() };
+  const layerTimelines = new Map<string, { timeline: ScreenTimeline; track: NarrationTrack | undefined }>();
+  for (const layer of objectsIn(screen.layers)) {
+    const own = context.narration?.(screenId, layer.id);
+    const found = screenTimeline(project, screenId, { layer: layer.id, durations: own?.durations, gaps: own?.gaps });
+    if (found) layerTimelines.set(layer.id, { timeline: found, track: own });
+  }
+  const timings = new Map(timeline ? blockTimings(timeline) : []);
+  const beats = new Map(timeline ? blockBeats(timeline) : []);
+  for (const { timeline: own } of layerTimelines.values()) {
+    for (const [block, timing] of blockTimings(own)) timings.set(block, timing);
+    for (const [block, beat] of blockBeats(own)) beats.set(block, beat);
+  }
+  const scope: ScreenScope = { project, context, objects: new Map(), headingBefore, timings, beats };
   const compileBlocks = (blocks: Block[] | undefined): BlockData[] => objectsIn(blocks).map((block) => compileBlock(block, scope));
   const data: ScreenData = {
     id: screenId, key: context.keys[`screen:${screenId}`], section: context.sectionOf.get(screenId) ?? '', title: screen.title,
@@ -228,8 +241,11 @@ export function compileScreen(project: Project, screenId: string, context: Compi
     completeWhen: screen.completeWhen || 'viewed', covers: screen.covers,
     ...narrationOf(screen, timeline, track, context),
     blocks: compileBlocks(screen.blocks),
-    layers: objectsIn(screen.layers).map((layer) => ({ id: layer.id, title: layer.title, presentation: layer.presentation || 'dialog', blocks: compileBlocks(layer.blocks) })),
-    events: objectsIn(screen.events).filter(isEventData).map((event) => seekTimes(event, timeline)),
+    layers: objectsIn(screen.layers).map((layer) => {
+      const own = layerTimelines.get(layer.id);
+      return { id: layer.id, title: layer.title, presentation: layer.presentation || 'dialog', ...(own ? layerNarrationOf(screen, layer, own.timeline, own.track, context) : {}), blocks: compileBlocks(layer.blocks) };
+    }),
+    events: objectsIn(screen.events).filter(isEventData).map((event) => seekTimes(event, timeline, layerTimelines, lineTimelines(screen))),
     // Screen layout: a screen-level component rendered with the screen's layoutProps.
     ...(layout?.tpl ? { layout: compileLayout(screen, layout, layout.tpl, context) } : {})
   };
@@ -260,6 +276,14 @@ function narrationOf(screen: Screen, timeline: ScreenTimeline | null, track: Nar
   };
 }
 
+// A layer's timeline (D62): its lines, its segment (one, from its opening) and its cues, played
+// through (advance auto) from 0 each time it opens, by its own track.
+function layerNarrationOf(screen: Screen, layer: NonNullable<Screen['layers']>[number], timeline: ScreenTimeline, track: NarrationTrack | undefined, context: CompileContext): { narration?: NarrationData } {
+  const seek = layer.narration?.seek || context.course.narration?.seek || 'seen';
+  const { narration } = narrationOf(screen, timeline, track, context);
+  return narration ? { narration: { ...narration, advance: 'auto', seek: seek === 'seen' && freeNavigation(context) ? 'free' : seek } } : {};
+}
+
 // How far learners may move in a narration's timeline; free navigation frees what is "seen" (a
 // timeline without a bar, "none", stays so).
 function seekOf(screen: Screen, context: CompileContext): NarrationData['seek'] {
@@ -267,9 +291,19 @@ function seekOf(screen: Screen, context: CompileContext): NarrationData['seek'] 
   return seek === 'seen' && freeNavigation(context) ? 'free' : seek;
 }
 
-// A seek-timeline action knows the time of its moment.
-function seekTimes(event: Event & EventData, timeline: ScreenTimeline | null): Event & EventData {
-  const timed = (actions: EventData['do'] | undefined) => actions?.map((action) => (action.type === 'seek-timeline' && timeline && isRecord(action.to) ? { ...action, time: anchorTime(timeline, action.to).time } : action));
+// A seek-timeline action knows the time of its moment, on the timeline it moves (the screen's, or the
+// layer's it names or whose line it goes to).
+function seekTimes(event: Event & EventData, screenTimeline: ScreenTimeline | null, layers: ReadonlyMap<string, { timeline: ScreenTimeline }>, lines: ReadonlyMap<string, string | null>): Event & EventData {
+  const timelineOf = (action: Extract<EventData['do'][number], { type: 'seek-timeline' }>) => {
+    const layer = anchorTimeline(isRecord(action.to) ? action.to : null, action.layer, lines);
+    return layer === null ? screenTimeline : layers.get(layer)?.timeline ?? null;
+  };
+  const timed = (actions: EventData['do'] | undefined) => actions?.map((action) => {
+    if (action.type !== 'seek-timeline' || !isRecord(action.to)) return action;
+    const timeline = timelineOf(action);
+    const layer = anchorTimeline(action.to, action.layer, lines);
+    return timeline ? { ...action, ...(layer !== null ? { layer } : {}), time: anchorTime(timeline, action.to).time } : action;
+  });
   if (!event.do.some((action) => action.type === 'seek-timeline') && !event.else?.some((action) => action.type === 'seek-timeline')) return event;
   return { ...event, do: timed(event.do)!, ...(event.else ? { else: timed(event.else) } : {}) } as Event & EventData;
 }

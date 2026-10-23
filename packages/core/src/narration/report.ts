@@ -1,7 +1,8 @@
 // `elabora timeline` (MCP elabora_timeline): a narrated screen's timeline as text an agent reads without
 // a capture: its steps and their stretch of time, the lines with their speaker, time and audio, the
 // blocks each step shows, and the events its cues fire. Times are resolved from the lines' audio,
-// estimated from their text while a line has none.
+// estimated from their text while a line has none. A screen's report holds those of its layers that
+// have a timeline of their own (D62), each read the same way.
 
 import type { Project } from '../project/model.ts';
 import { screenOrder } from '../project/load.ts';
@@ -9,7 +10,8 @@ import { objectsIn } from '../util/values.ts';
 import { narrationLines, screenTiming } from './narration.ts';
 import type { NarrationLineStatus } from './narration.ts';
 import { clockTime } from './timing.ts';
-import { screenTimeline, blockTimings } from './timeline.ts';
+import { screenTimeline, blockTimings, timedLayers, anchorTimeline, lineTimelines } from './timeline.ts';
+import { onTimeline } from './voice-lines.ts';
 import type { TimelineMoment } from './timeline.ts';
 import { formatAnchor } from './anchor-text.ts';
 
@@ -82,7 +84,10 @@ export interface TimelineChartBeat {
 
 export interface TimelineReport {
   screen: string;
+  // The layer whose timeline it is (D62), and its title; null: the screen's.
+  layer: string | null;
   title: string;
+  // false: the screen has no timeline of its own, only its layers do (layers).
   language: string;
   advance: 'learner' | 'auto' | 'next-screen';
   seek: 'seen' | 'free' | 'none';
@@ -98,6 +103,9 @@ export interface TimelineReport {
   cues: TimelineCue[];
   // Charts whose items come at the voice's words, in time order.
   beats: TimelineChartBeat[];
+  timed: boolean;
+  // The screen's layers that have a timeline of their own (absent in a layer's report).
+  layers?: TimelineReport[];
 }
 
 const actionText = (action: Record<string, unknown>): string => {
@@ -106,13 +114,27 @@ const actionText = (action: Record<string, unknown>): string => {
   return `${String(type)}${args ? ` ${args}` : ''}`;
 };
 
-export function timelineReport(project: Project, screenId: string, { language }: { language?: string } = {}): TimelineReport | null {
+// layer: that layer's timeline alone; without it, the screen's with its layers' (null when neither
+// the screen nor any of its layers is timed).
+export function timelineReport(project: Project, screenId: string, { language, layer }: { language?: string; layer?: string | null } = {}): TimelineReport | null {
   const screen = project.screens.get(screenId)?.data;
   const lang = language || project.course?.language || '';
-  const timeline = screenTimeline(project, screenId, { language: lang });
-  if (!screen || !timeline) return null;
-  const timing = screenTiming(project, screenId, { language: lang });
-  const blocksOf = (step: number) => objectsIn(screen.blocks).filter((block) => (typeof block.step === 'number' ? block.step : 1) === step).map((block) => block.id);
+  if (!screen) return null;
+  if (layer === undefined) {
+    const layers = timedLayers(project, screen).map((id) => timelineReport(project, screenId, { language: lang, layer: id })).filter((report): report is TimelineReport => !!report);
+    const own = timelineReport(project, screenId, { language: lang, layer: null });
+    if (own) return { ...own, ...(layers.length ? { layers } : {}) };
+    if (!layers.length) return null;
+    return {
+      screen: screenId, layer: null, title: screen.title, language: lang, advance: screen.narration?.advance || project.course?.narration?.advance || 'learner', seek: screen.narration?.seek || project.course?.narration?.seek || 'seen',
+      duration: 0, estimated: false, voiced: false, narrated: false, steps: [], blocks: [], cues: [], beats: [], timed: false, layers
+    };
+  }
+  const timeline = screenTimeline(project, screenId, { language: lang, layer });
+  if (!timeline) return null;
+  const timing = screenTiming(project, screenId, { language: lang, layer });
+  const holder = layer === null ? screen : objectsIn(screen.layers).find((candidate) => candidate.id === layer);
+  const blocksOf = (step: number) => objectsIn(holder?.blocks).filter((block) => layer !== null || (typeof block.step === 'number' ? block.step : 1) === step).map((block) => block.id);
   const steps = timeline.segments.map((segment) => ({
     step: segment.step, start: segment.start, end: segment.end, blocks: blocksOf(segment.step),
     lines: (timing?.lines ?? []).filter((line) => line.step === segment.step).map((line) => ({
@@ -128,9 +150,13 @@ export function timelineReport(project: Project, screenId: string, { language }:
     .sort((a, b) => (a.in?.time ?? timeline.segments.find((segment) => segment.step === a.step)?.start ?? 0) - (b.in?.time ?? timeline.segments.find((segment) => segment.step === b.step)?.start ?? 0));
   const resolved = new Map(timeline.cues.map((cue) => [cue.event, cue]));
   const cues: TimelineCue[] = [];
+  const lines = lineTimelines(screen);
   for (const event of objectsIn(screen.events)) {
     const on = event.on;
     const actions = [...objectsIn(event.do), ...objectsIn(event.else)].map((action) => actionText(action as unknown as Record<string, unknown>));
+    // Each event on the timeline it follows: the one its line is said on, or the layer it names.
+    if ((on?.type === 'timeline.reached' || on?.type === 'timeline.ended') && anchorTimeline(on.type === 'timeline.reached' ? on.at : null, on.layer, lines) !== layer) continue;
+    if (on?.type === 'media.ended' && layer !== null) continue;
     if (on?.type === 'timeline.reached') {
       const cue = resolved.get(event.id);
       cues.push({
@@ -144,10 +170,13 @@ export function timelineReport(project: Project, screenId: string, { language }:
   const beats: TimelineChartBeat[] = timeline.beats.map((beat) => ({
     block: beat.block, item: beat.item, time: beat.time, anchor: formatAnchor(beat.anchor), estimated: beat.estimated, ...(beat.problem ? { problem: beat.problem.message } : {})
   }));
+  const own = layer === null ? null : objectsIn(screen.layers).find((candidate) => candidate.id === layer);
   return {
-    screen: screenId, title: screen.title, language: lang, advance: screen.narration?.advance || project.course?.narration?.advance || 'learner', seek: screen.narration?.seek || project.course?.narration?.seek || 'seen',
+    screen: screenId, layer, title: own ? own.title : screen.title, language: lang,
+    advance: own ? 'auto' : screen.narration?.advance || project.course?.narration?.advance || 'learner',
+    seek: (own ? own.narration?.seek : screen.narration?.seek) || project.course?.narration?.seek || 'seen',
     duration: timeline.duration, estimated: timeline.estimated, voiced: timeline.narrated && (timing?.lines ?? []).every((line) => line.info.status === 'ok' || line.info.status === 'stale'),
-    narrated: timeline.narrated, steps, blocks, cues, beats
+    narrated: timeline.narrated, steps, blocks, cues, beats, timed: true
   };
 }
 
@@ -157,7 +186,12 @@ const cut = (text: string, width: number) => (text.length > width ? `${text.slic
 export function formatTimeline(report: TimelineReport): string {
   const out: string[] = [];
   const lines = report.steps.flatMap((step) => step.lines);
-  if (report.narrated) {
+  const layers = (report.layers ?? []).map((layer) => `\n${formatTimeline(layer)}`);
+  if (!report.timed) return [`${report.screen} — "${report.title}" — no timeline of its own; its layers have theirs:`, ...layers].join('\n');
+  if (report.layer !== null) {
+    out.push(`${report.screen} › layer ${report.layer} — "${report.title}" — ${report.narrated ? `narration in ${report.language}` : 'timed in seconds, without narration'}: its own timeline from its opening, seek ${report.seek}`);
+    out.push(`${time(report.duration)}, ${lines.length} line${lines.length === 1 ? '' : 's'}${report.estimated ? ' (times estimated from the text where a line has no audio)' : ''}${report.narrated ? `; ${report.voiced ? 'every line has its audio: the build makes the layer\'s track' : 'the layer runs silent until every line has its audio'}` : ''}; the screen's timeline waits while it speaks`);
+  } else if (report.narrated) {
     out.push(`${report.screen} — "${report.title}" — narration in ${report.language}: advance ${report.advance}, seek ${report.seek}`);
     out.push(`${time(report.duration)} in ${report.steps.length} step${report.steps.length > 1 ? 's' : ''}, ${lines.length} line${lines.length > 1 ? 's' : ''}${report.estimated ? ' (times estimated from the text where a line has no audio)' : ''}; ${report.voiced ? 'every line has its audio: the build makes the track' : 'the screen runs silent until every line has its audio'}`);
   } else {
@@ -197,13 +231,15 @@ export function formatTimeline(report: TimelineReport): string {
       out.push(`  ${cue.event}: ${cue.trigger} ${where} → ${cue.actions.join('; ') || 'nothing'}`);
     }
   }
-  return out.join('\n');
+  return [...out, ...layers].join('\n');
 }
 
 export interface NarratedScreen {
   screen: string;
   title: string;
+  // Lines of every timeline (the screen's and its layers'); layers: those narrated (D62).
   lines: number;
+  layers: number;
   steps: number;
   duration: number;
   audio: Record<NarrationLineStatus, number>;
@@ -214,12 +250,13 @@ export function narratedScreens(project: Project, { language }: { language?: str
   const out: NarratedScreen[] = [];
   for (const { id } of screenOrder(project)) {
     const screen = project.screens.get(id)?.data;
-    const lines = screen?.narration ? narrationLines(project, id, language) : null;
-    const timing = lines ? screenTiming(project, id, { language }) : null;
-    if (!screen || !lines || !timing) continue;
+    const lines = narrationLines(project, id, language)?.filter((line) => onTimeline(line.track, null) || line.track.kind === 'layer') ?? null;
+    if (!screen || !lines?.length) continue;
+    const timing = screen.narration ? screenTiming(project, id, { language }) : null;
     const audio: Record<NarrationLineStatus, number> = { ok: 0, missing: 0, stale: 0, untranslated: 0 };
     for (const line of lines) audio[line.status]++;
-    out.push({ screen: id, title: screen.title, lines: lines.length, steps: timing.segments.length, duration: timing.duration, audio });
+    const layers = new Set(lines.flatMap((line) => (line.track.kind === 'layer' ? [line.track.layer] : []))).size;
+    out.push({ screen: id, title: screen.title, lines: lines.length, layers, steps: timing?.segments.length ?? 0, duration: timing?.duration ?? 0, audio });
   }
   return out;
 }
@@ -230,7 +267,7 @@ export function formatNarratedScreens(screens: readonly NarratedScreen[], langua
   const out = [`Narrated screens (${language}):`, `${'Screen'.padEnd(width)} ${'Lines'.padStart(5)} ${'Steps'.padStart(5)} ${'Length'.padStart(7)}  Audio`];
   for (const screen of screens) {
     const audio = Object.entries(screen.audio).filter(([, count]) => count).map(([status, count]) => `${count} ${status}`).join(', ');
-    out.push(`${screen.screen.padEnd(width)} ${String(screen.lines).padStart(5)} ${String(screen.steps).padStart(5)} ${clockTime(screen.duration, { tenths: true }).padStart(7)}  ${audio}`);
+    out.push(`${screen.screen.padEnd(width)} ${String(screen.lines).padStart(5)} ${String(screen.steps).padStart(5)} ${clockTime(screen.duration, { tenths: true }).padStart(7)}  ${audio}${screen.layers ? `  (${screen.layers} narrated layer${screen.layers === 1 ? '' : 's'})` : ''}`);
   }
   out.push('', 'elabora timeline <screen> shows one screen: its steps, lines, times and cues.');
   return out.join('\n');

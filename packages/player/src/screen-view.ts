@@ -20,7 +20,7 @@ import type { Tooltip } from './tooltip.ts';
 import { createTimedBlocks, forgetThemeKeyframes } from './timed-blocks.ts';
 import type { TimedBlocks } from './timed-blocks.ts';
 import type {
-  AudioBlock, Behavior, BlockData, CourseData, ObjectBlock, ObjectDefinition, ObjectEventDeclaration, QuizBlock, ScreenData, TriggerType, VideoBlock
+  AudioBlock, Behavior, BlockData, CourseData, LayerData, ObjectBlock, ObjectDefinition, ObjectEventDeclaration, QuizBlock, ScreenData, TriggerType, VideoBlock
 } from './course-data.ts';
 import type { ObjectContext, ObjectView, SafeArea } from './object-protocol.ts';
 
@@ -262,6 +262,9 @@ export function createScreenView(options: ScreenViewOptions) {
       controls: settings.controls, tooltip: settings.tooltip, sheetHost: settings.sheetHost,
       start, reached: start, autoplay: autoplay && !done, phone,
       offerStopAtSteps: course.screens.some((candidate) => !!candidate.narration && candidate.narration.advance !== 'learner'),
+      // A layer that speaks has the shortcuts (D62); the transcript adds each layer's lines.
+      keys: () => !speakingLayer(),
+      transcriptLayers: shown.layers.filter((layer) => layer.narration?.lines.length).map((layer) => ({ title: layer.title, lines: layer.narration!.lines })),
       view: {
         revealed: () => revealed,
         lastStep,
@@ -325,7 +328,7 @@ export function createScreenView(options: ScreenViewOptions) {
         },
         changed: () => {
           // Two voices never overlap: the narration pauses the sounds and videos of the screen.
-          if (timeline?.playing) for (const media of document.querySelectorAll<HTMLMediaElement>('#t-main .t-figure video:not(.t-loop), #t-main .t-figure audio, dialog.t-layer .t-figure video:not(.t-loop), dialog.t-layer .t-figure audio')) if (!media.paused) media.pause();
+          if (timeline?.playing) pauseMedia();
           syncContinue();
           options.afterTimeline?.();
         }
@@ -333,6 +336,83 @@ export function createScreenView(options: ScreenViewOptions) {
     });
     startTimedBlocks(shown);
     applySteps();
+  }
+  // The sounds and videos the learner plays (a voice that starts pauses them).
+  function pauseMedia() {
+    for (const media of document.querySelectorAll<HTMLMediaElement>('#t-main .t-figure video:not(.t-loop), #t-main .t-figure audio, dialog.t-layer .t-figure video:not(.t-loop), dialog.t-layer .t-figure audio')) if (!media.paused) media.pause();
+  }
+
+  // ── The timeline of a layer (docs/decisions.md D62) ───────────────────
+  // A layer with a narration or timed blocks has its own timeline: another instance whose compact bar
+  // is in the layer. It starts at 0 when the layer opens and stops when it closes. While it speaks the
+  // screen's timeline is held (two voices never overlap): a dialog holds it until it closes, a panel
+  // until its narration ends. The learner's Pause stops what is in the layer.
+  interface LayerTimeline { timeline: Timeline; timed: TimedBlocks | null; dialog: HTMLDialogElement; panel: boolean; held: Timeline | null }
+  const layerTimelines = new Map<string, LayerTimeline>();
+  // The layer whose voice is live (the last opened that still plays or waits), which takes the shortcuts.
+  const speakingLayer = (): string | null => [...layerTimelines.keys()].pop() ?? null;
+  function startLayerTimeline(layer: LayerData, dialog: HTMLDialogElement, panel: boolean, host: HTMLElement) {
+    const narration = layer.narration;
+    const settings = options.timeline;
+    if (!narration || !settings) return;
+    const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const timed = createTimedBlocks(dialog, layer.blocks, { reducedMotion, onChange: (node) => { syncInert(node); behaviors.noteShown(dialog); } });
+    timed.apply(0);
+    // The screen waits while the layer speaks (a modal dialog already holds it until it closes).
+    const held = timeline;
+    if (narration.lines.length && panel) held?.hold(`voice:${layer.id}`);
+    const stilled = new Set<Animation>();
+    // The timeline calls its view while it is made (its first move, autoplay): the entry exists first.
+    const entry = { timed, dialog, panel, held } as LayerTimeline;
+    entry.timeline = createTimeline({
+        narration, labels, format: options.formatLabel, host, overlay: dialog, prefs: settings.prefs, virtual: settings.virtual,
+        controls: { seekBar: settings.controls?.seekBar ?? true, volume: false, transcript: false, speeds: [] }, tooltip: settings.tooltip,
+        compact: true, label: `${labels.narration} · ${layer.title}`, keys: () => speakingLayer() === layer.id,
+        start: 0, reached: 0, autoplay: settings.autoplay, phone: () => false, offerStopAtSteps: false,
+        view: {
+          revealed: () => 1, lastStep: () => 1, display: () => {}, chain: () => false, canReach: () => false, reach: () => {}, segmentEnded: () => {}, advance: () => {}, proceed: () => false,
+          moved: (time) => {
+            entry.timed?.apply(time);
+            const focused = document.activeElement;
+            if (focused instanceof HTMLElement && focused.closest('[data-t-timed]') && dialog.contains(focused)) entry.timeline?.focusSeek();
+          },
+          cue: (event) => trigger('timeline.reached', { event }),
+          ended: () => {
+            // A panel gives the screen its voice back once it has spoken.
+            if (entry.panel) releaseLayerHold(layer.id, entry);
+            trigger('timeline.ended', { layer: layer.id });
+          },
+          // The learner's Pause stops what is in the layer: its animations and free objects.
+          still: (paused) => {
+            for (const [id, host] of hosts) if (dialog.querySelector(`[data-block="${CSS.escape(id)}"]`)) { if (paused) host.pause(); else host.resume(); }
+            if (paused) {
+              for (const animation of dialog.getAnimations?.({ subtree: true }) ?? []) if (animation.playState === 'running') { animation.pause(); stilled.add(animation); }
+            } else {
+              for (const animation of stilled) animation.play();
+              stilled.clear();
+            }
+          },
+          changed: () => {
+            if (entry.timeline?.playing) { pauseMedia(); if (timeline?.playing) timeline.pause(); }
+            options.afterTimeline?.();
+          }
+        }
+    });
+    layerTimelines.set(layer.id, entry);
+  }
+  function releaseLayerHold(id: string, entry: LayerTimeline) {
+    if (!entry.panel || !entry.held) return;
+    const held = entry.held;
+    entry.held = null;
+    if (held === timeline) held.release(`voice:${id}`);
+  }
+  function stopLayerTimeline(id: string) {
+    const entry = layerTimelines.get(id);
+    if (!entry) return;
+    layerTimelines.delete(id);
+    entry.timed?.dispose();
+    entry.timeline.dispose();
+    releaseLayerHold(id, entry);
   }
   // The timed blocks of the screen shown, placed at the playhead (blocks rendered again in the
   // canvas get their effects again).
@@ -378,9 +458,10 @@ export function createScreenView(options: ScreenViewOptions) {
             break;
           }
           case 'exit-course': setTimeout(() => options.exit(), 0); break;
-          case 'pause-timeline': timeline?.pause(); break;
-          case 'play-timeline': timeline?.play(); break;
-          case 'seek-timeline': if (typeof action.time === 'number') timeline?.jump(action.time); break;
+          // With layer, the timeline of that layer while it is open (D62).
+          case 'pause-timeline': (action.layer !== undefined ? layerTimelines.get(action.layer)?.timeline : timeline)?.pause(); break;
+          case 'play-timeline': (action.layer !== undefined ? layerTimelines.get(action.layer)?.timeline : timeline)?.play(); break;
+          case 'seek-timeline': if (typeof action.time === 'number') (action.layer !== undefined ? layerTimelines.get(action.layer)?.timeline : timeline)?.jump(action.time); break;
           case 'play-media': case 'pause-media': {
             const media = document.querySelector<HTMLMediaElement>(`[data-block="${action.block}"] video, [data-block="${action.block}"] audio`);
             if (media && action.type === 'play-media') void media.play().catch(() => {}); else media?.pause();
@@ -655,7 +736,10 @@ export function createScreenView(options: ScreenViewOptions) {
   // A sound or video the learner plays: it pauses the narration (two voices never overlap), and its
   // end fires media.ended.
   function listened<M extends HTMLMediaElement>(block: BlockData, media: M): M {
-    media.addEventListener('play', () => { if (timeline?.playing) timeline.pause(); });
+    media.addEventListener('play', () => {
+      if (timeline?.playing) timeline.pause();
+      for (const entry of layerTimelines.values()) if (entry.timeline.playing) entry.timeline.pause();
+    });
     media.addEventListener('ended', () => trigger('media.ended', { target: block.id }));
     return media;
   }
@@ -852,25 +936,36 @@ export function createScreenView(options: ScreenViewOptions) {
     const panel = layer.presentation === 'panel';
     const back = focusedElement();
     const heading = element('h2', { id: titleId, class: 't-dialog-title', tabindex: panel ? '-1' : undefined, text: layer.title });
-    const dialog: HTMLDialogElement = element('dialog', { class: `t-layer ${panel ? 't-panel' : 't-dialog'}`, 'data-layer': id, 'aria-labelledby': titleId },
+    // A layer with its own timeline (D62) has its compact bar next to Close.
+    const bar = layer.narration && options.timeline ? element('div', { class: 't-layer-timeline' }) : null;
+    const dialog: HTMLDialogElement = element('dialog', { class: `t-layer ${panel ? 't-panel' : 't-dialog'}`, 'data-layer': id, 'aria-labelledby': titleId, ...(bar ? { 'data-timeline': layer.narration!.seek } : {}) },
       heading,
       element('div', { class: 't-blocks' }, layer.blocks.map((block) => renderBlock(block))),
-      element('div', { class: 't-dialog-actions' }, element('button', { type: 'button', class: 't-btn t-btn--primary', onclick: () => dialog.close() }, labels.close)));
+      element('div', { class: 't-dialog-actions' }, bar, element('button', { type: 'button', class: 't-btn t-btn--primary', onclick: () => dialog.close() }, labels.close)));
     roomQueue.length = 0; // a layer scrolls inside: its activities need no reserved room
     // A modal layer pauses the narration and its closing resumes it; a panel does not.
     const held = timeline;
     dialog.addEventListener('close', () => {
+      stopLayerTimeline(id);
       dialog.remove();
       if (panel && back?.isConnected && !dialog.contains(back)) back.focus({ preventScroll: true });
       if (!panel && held === timeline) held?.release(`layer:${id}`);
       trigger('layer.closed', { target: id });
     });
     openedLayers.push(dialog);
-    if (!panel) { held?.hold(`layer:${id}`); document.body.append(dialog); dialog.showModal(); behaviors.noteShown(dialog); return; }
+    if (!panel) {
+      held?.hold(`layer:${id}`);
+      document.body.append(dialog);
+      if (bar) startLayerTimeline(layer, dialog, false, bar);
+      dialog.showModal();
+      behaviors.noteShown(dialog);
+      return;
+    }
     // A panel opens over part of the slide without blocking it (like a Storyline layer): the slide
     // stays usable, Escape or Close dismisses it and focus goes back where it was.
     dialog.addEventListener('keydown', (event) => { if (event.key === 'Escape') { event.preventDefault(); dialog.close(); } });
     main.append(dialog);
+    if (bar) startLayerTimeline(layer, dialog, true, bar);
     dialog.show();
     behaviors.noteShown(dialog);
     heading.focus({ preventScroll: true });
@@ -1002,8 +1097,17 @@ export function createScreenView(options: ScreenViewOptions) {
       const layer = next.layers.find((candidate) => candidate.id === id);
       const old = previous.layers.find((candidate) => candidate.id === id);
       const column = dialog.querySelector<HTMLElement>(':scope > .t-blocks');
-      if (layer && old && column && layer.title === old.title && layer.presentation === old.presentation) fill(dialog, layer.blocks, null, column);
-      else dialog.remove();
+      if (layer && old && column && layer.title === old.title && layer.presentation === old.presentation && same(layer.narration ?? null, old.narration ?? null)) {
+        fill(dialog, layer.blocks, null, column);
+        // Its timed blocks follow the playhead again (blocks rendered anew get their effects).
+        const entry = layerTimelines.get(id);
+        if (entry) {
+          entry.timed?.dispose();
+          const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+          entry.timed = createTimedBlocks(dialog, layer.blocks, { reducedMotion, onChange: (node) => { syncInert(node); behaviors.noteShown(dialog); } });
+          entry.timed.apply(entry.timeline.time);
+        }
+      } else { stopLayerTimeline(id); dialog.remove(); }
     }
     for (const [container, list] of wanted) for (const child of [...container.children]) if (child instanceof HTMLElement && isBlockNode(child) && !list.includes(child)) child.remove();
     if (target !== article) article.remove();
@@ -1068,6 +1172,28 @@ export function createScreenView(options: ScreenViewOptions) {
       return true;
     },
     get timed() { return timed; },
+    // The timeline of an open layer (D62), and its timed blocks.
+    layerTimeline: (layer: string) => layerTimelines.get(layer)?.timeline ?? null,
+    layerTimed: (layer: string) => layerTimelines.get(layer)?.timed ?? null,
+    get layerTimelines() { return [...layerTimelines.keys()]; },
+    // An open layer as it is at a time on its timeline, or when one of its lines starts (or ends):
+    // its caption shown (captions on); nothing fires. False without that timeline or line.
+    showLayerTime(layer: string, time: number, { captions = true }: { captions?: boolean } = {}): boolean {
+      const entry = layerTimelines.get(layer);
+      if (!entry) return false;
+      if (captions) entry.timeline.prefs.captions = true;
+      entry.timeline.showAt(Math.max(0, Math.min(time, entry.timeline.duration)));
+      return true;
+    },
+    showLayerLine(layer: string, line: string, { edge = 'start', captions = true }: { edge?: 'start' | 'end'; captions?: boolean } = {}): boolean {
+      const entry = layerTimelines.get(layer);
+      const at = entry?.timeline.lineAt(line, edge);
+      if (!entry || at === null || at === undefined) return false;
+      const start = entry.timeline.lineAt(line, 'start') ?? at;
+      if (captions) entry.timeline.prefs.captions = true;
+      entry.timeline.showAt(edge === 'end' ? Math.max(start, at - 0.05) : at + 0.01);
+      return true;
+    },
     // Next waits until the narrated step has been heard (navigation.lockUntilComplete).
     listening,
     openLayer, showAnswered, feedbackRooms,

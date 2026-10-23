@@ -85,6 +85,8 @@ export interface TriggerInfo {
   event?: string;
   line?: string;
   edge?: 'start' | 'end';
+  // timeline.ended: the layer whose timeline ended (D62); absent: the screen's.
+  layer?: string;
 }
 
 export interface EventRun {
@@ -377,6 +379,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     }
     if (type === 'variable.changed' && on.variable !== info.variable) return false;
     if (type === 'timeline.reached' && info.event === undefined && (on.at?.line !== info.line || (on.at?.edge || 'start') !== info.edge)) return false;
+    if (type === 'timeline.ended' && (on.layer ?? null) !== (info.layer ?? null)) return false;
     return true;
   }
   function conditionHolds(condition: Condition): boolean {
