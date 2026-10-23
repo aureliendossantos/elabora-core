@@ -66,3 +66,4 @@ Generated from `docs/decisions/` by `npm run docs`. One file per decision: what 
 | [D60](decisions/D60.md) | Charts and diagrams: blocks that each say one thing, drawn at build time, moved by the player, in step with the voice | 23 Oct 2026 |
 | [D61](decisions/D61.md) | Branching dialogues: a block that holds its graph, one pure walk replayed from the choices, the first run scored | 23 Oct 2026 |
 | [D62](decisions/D62.md) | Layer timelines and voice lines on every track of a screen | 23 Oct 2026 |
+| [D63](decisions/D63.md) | Starter blocks for scroll courses: few blocks with presentations, three primitives, three activities | 24 Oct 2026 |
