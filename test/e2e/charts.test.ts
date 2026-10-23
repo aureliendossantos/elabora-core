@@ -161,10 +161,20 @@ test('with a voice: each item comes at its word and takes the spotlight, the oth
     assert.equal(await page.$eval('.t-block[data-block="origine"] .t-bars-track[data-t-item="mail"]', (element) => element.classList.contains('is-spoken')), true);
     await seek(beats.web + 0.1);
     assert.equal(await page.$eval('.t-block[data-block="origine"] .t-bars-track[data-t-item="web"]', (element) => element.classList.contains('is-spoken')), true);
+    // While the voice brings the items, pointing waits: no tooltip, nothing pointed at.
+    const tip = () => page.$eval('.t-block[data-block="origine"] .t-chart-tip', (element) => element.classList.contains('is-on'));
+    await page.locator('.t-block[data-block="origine"] .t-bars-track[data-t-item="mail"]').hover();
+    await page.waitForTimeout(250);
+    assert.equal(await tip(), false, 'no tooltip while the voice brings the items');
+    assert.doesNotMatch(await classes(), /is-focused/);
     // Once the voice is done with the chart, every row stands and the highlight takes the colour.
     await seek(8.5);
     assert.doesNotMatch(await classes(), /is-spotlit/);
     assert.match(await classes(), /is-pulled/);
+    // And the pointer answers again (the row with a note has a tooltip).
+    await page.mouse.move(0, 0);
+    await page.locator('.t-block[data-block="origine"] .t-bars-track[data-t-item="mail"]').hover();
+    await page.waitForFunction(() => document.querySelector('.t-block[data-block="origine"] .t-chart')?.classList.contains('is-focused') && document.querySelector('.t-block[data-block="origine"] .t-chart-tip')?.classList.contains('is-on'));
     // Seeking back hides what had not come yet.
     await seek(0.2);
     assert.equal(await label('web'), 0);

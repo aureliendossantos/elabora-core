@@ -259,7 +259,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
-| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `context` | string |  | Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. |
 | `source` | string |  | Where the data comes from, shown under the chart. |
 | `items` | array | yes | The figures. |
 | `highlight` | string |  | Id of the figure that carries the idea: it takes the accent colour, the others step back. |
@@ -277,7 +277,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
-| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `context` | string |  | Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. |
 | `source` | string |  | Where the data comes from, shown under the chart. |
 | `rows` | array | yes | The bars, in any order. |
 | `highlight` | string |  | Id of the row that carries the idea: it takes the accent colour, the others step back. |
@@ -299,7 +299,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
-| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `context` | string |  | Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. |
 | `source` | string |  | Where the data comes from, shown under the chart. |
 | `parts` | array | yes | The parts, clockwise from the top. |
 | `highlight` | string |  | Id of the part that carries the idea: it takes the accent colour, the others step back. |
@@ -321,7 +321,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
-| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `context` | string |  | Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. |
 | `source` | string |  | Where the data comes from, shown under the chart. |
 | `points` | array | yes | The points, in order. x is a year or a number (spaced by value), or a word (evenly spaced). |
 | `unit` | string |  | Unit written after the values (min, kg, €). "%" writes percentages as the language does (62 %, 62%). |
@@ -345,7 +345,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
-| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `context` | string |  | Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. |
 | `source` | string |  | Where the data comes from, shown under the chart. |
 | `of` | integer | yes | How many icons in all. Default 100. |
 | `part` | integer | yes | How many in the accent colour. |
@@ -368,7 +368,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
-| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `context` | string |  | Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. |
 | `source` | string |  | Where the data comes from, shown under the chart. |
 | `items` | array | yes | The items. |
 | `beforeLabel` | string | yes | The first moment ("2022"). |
@@ -390,13 +390,14 @@ Rendered by code: cannot be forked; place it in a component slot.
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
-| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `context` | string |  | Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. |
 | `source` | string |  | Where the data comes from, shown under the chart. |
 | `items` | array | yes | The levels, from top to bottom. |
 | `shape` | "funnel" \| "pyramid" |  | funnel: widest at the top; pyramid: widest at the base. Default "funnel". |
 | `highlight` | string |  | Id of the level that carries the idea: it takes the accent colour, the others step back. |
 | `unit` | string |  | Unit written after the values (min, kg, €). "%" writes percentages as the language does (62 %, 62%). |
 | `decimals` | integer |  | Decimals shown. Default 0. |
+| `showDrops` | boolean |  | A funnel with values: the drop from one row to the next (« −34 % ») beside the silhouette. false leaves the values alone. Default true. |
 | `spotlightEnd` | anchor |  | Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. |
 | `revealOnBeats` | boolean |  | Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false). Default true. |
 
@@ -411,7 +412,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
-| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `context` | string |  | Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. |
 | `source` | string |  | Where the data comes from, shown under the chart. |
 | `items` | array | yes | The steps, in order. |
 | `highlight` | string |  | Id of the step that carries the idea: it takes the accent colour, the others step back. |
@@ -429,7 +430,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
-| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `context` | string |  | Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. |
 | `source` | string |  | Where the data comes from, shown under the chart. |
 | `items` | array | yes | The stages, clockwise from the top. |
 | `center` | object |  | What the centre says at rest (optional: without it the centre stays empty). |
@@ -448,7 +449,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
-| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `context` | string |  | Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. |
 | `source` | string |  | Where the data comes from, shown under the chart. |
 | `x` | object | yes | The horizontal axis. |
 | `y` | object | yes | The vertical axis. |
@@ -470,7 +471,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
-| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `context` | string |  | Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. |
 | `source` | string |  | Where the data comes from, shown under the chart. |
 | `items` | array | yes | The events, in order. |
 | `highlight` | string |  | Id of the event that carries the idea: it takes the accent colour, the others step back. |
@@ -488,7 +489,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `takeaway` | string | yes | The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". |
-| `context` | string |  | One line under the title: what is measured, where, when, in what unit. |
+| `context` | string |  | Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. |
 | `source` | string |  | Where the diagram comes from, shown under it. |
 | `mermaid` | string | yes | The diagram in Mermaid syntax, its words in the course language. |
 | `labels` | object |  | Words of nodes and edges by id (as Pele names them: a flowchart node's id, an edge's L_&lt;from&gt;_&lt;to&gt;_&lt;n&gt;, a mind map node's words), replacing the Mermaid text's. Translations write here. |

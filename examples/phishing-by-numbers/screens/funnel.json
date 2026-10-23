@@ -2,6 +2,7 @@
   "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
   "id": "funnel",
   "title": "How a phish catches people",
+  "showTitle": false,
   "covers": [
     "ITEM-3"
   ],
@@ -12,7 +13,6 @@
       "width": "half",
       "props": {
         "takeaway": "One drill email in twelve got a password",
-        "context": "The January 2025 drill: a fake password reset sent to every employee",
         "source": "Phishing drills 2025, Quillon Freight (internal report, fictional)",
         "shape": "funnel",
         "highlight": "typed",
@@ -63,7 +63,6 @@
       "step": 2,
       "props": {
         "takeaway": "Only one in seven told us",
-        "context": "Employees who reported the January drill to the security desk",
         "source": "Phishing drills 2025, Quillon Freight (internal report, fictional)",
         "of": 28,
         "part": 4,

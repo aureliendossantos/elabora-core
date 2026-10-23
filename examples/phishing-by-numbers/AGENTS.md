@@ -1,10 +1,11 @@
-<!-- elabora:rules revision=10 sha256=22c36c7514fda1d3 · Elabora keeps the rules down to « elabora:rules end » up to date while nobody edits them; write your own notes after it. -->
+<!-- elabora:rules revision=11 sha256=1c58fd894fa2e4ce · Elabora keeps the rules down to « elabora:rules end » up to date while nobody edits them; write your own notes after it. -->
 # AGENTS.md — Elabora course project
 
 This folder is an Elabora course (`elabora/0.1`). **Read this file and “Notes for this course” below before editing.** Load detailed guidance only for the task at hand.
 
 ## Always applicable
 - **Plan is the contract.** Read `plan.json` and relevant author sources before changing course content. Draft or update the working plan through `elabora_write_plan` / `elabora plan write`; record assumptions in `decided` and at most one consequential `question`. After a validation keep writing the plan, then tell the author what changed (`elabora plan diff` / `elabora_plan_diff`). A change of substance (what is taught, a rule, an answer) is the author's call: ask before writing it. Never modify a `verbatim` text, create/validate plan versions or edit `plan-versions/`: those decisions belong to the author.
+- **No words that repeat.** Avoid eyebrow texts and descriptions unless their information cannot be conveyed from the title and main content: learners read all of it, and on a narrated screen they hear the voice too.
 - **Traceability.** Every screen has `covers` and every plan item is covered. Reference validated material with `textRef` / `questionRef` instead of duplicating it; change the plan to change approved wording.
 - **Editable before custom.** Prefer native blocks, then reusable components (including activity forks); use free-object code only when needed. Keep learner-facing words in editable blocks and props, not CSS, templates or generated figures. Preserve component fallbacks and migrations.
 - **Stable learner state.** Never reuse ids or edit `elabora.lock.json`. Rename via `elabora_rename` / `elabora rename`, so references and progress follow.
@@ -47,4 +48,4 @@ If `elabora` is not on PATH (on macOS, Elabora installs it from Réglages › Ou
 - A sample of Elabora's chart blocks: the twelve types each say one true thing of the story, and their items come with the voice that names them (`at` anchors, a diagram's `beats`). Keep one or two charts a screen, a takeaway sentence as each chart's title, one highlight.
 - Quillon Freight and every figure are fictional: say so in each chart's `source` and keep the figures consistent from screen to screen (1,200 employees; the January 2025 drill: 790 opened, 384 clicked, 100 typed a password, 1 in 7 reported; 32 % to 5 % clicks over 2025).
 - One narrator, "Dana, security desk", said by the ElevenLabs voice Kristen: lines are short, in the second person, and name the items the charts bring. `4444` is said digit by digit (`pronunciations`).
-- Theme: warm paper, ink, one ultramarine accent; the screen's title is a small kicker over the chart's takeaway (`theme/theme.css`). Charts taller than wide take the `aside` style.
+- Theme: warm paper, ink, one ultramarine accent (`theme/theme.css`). A chart's takeaway is its slide's headline: screens with a chart hide their own title (`showTitle: false`), and a chart's `context` stays only where it gives what the chart is counted on. Charts taller than wide take the `aside` style.

@@ -7,7 +7,7 @@
 // with round joins and a non-scaling stroke, so its corners stay round at any size; the SVG is inset by
 // the stroke's half width so the shape fills the cell exactly. Widths are fractions of the shape's
 // column. Words are HTML: the value (or, without values, the label) inside the row when it fits, the
-// rest beside it in a note column, and for a funnel the drop between two rows (« −38 % ») in the gap,
+// rest beside it in a note column, and for a funnel the drop between two rows (« −38 % », unless showDrops is false) in the gap,
 // next to the silhouette's edge. The fit is decided here for the two layouts (wide, and narrow under
 // 560 px), from estimated text widths at the smallest size the shape takes in each (levels.css).
 
@@ -108,7 +108,7 @@ export const levels: ChartType = {
       const fit = `${wide ? ' is-in-wide' : ''}${narrow ? ' is-in-narrow' : ''}`;
       const say = `${level.label}${value ? `: ${value}` : ''}${level.text ? `. ${level.text}` : ''}`;
       const previous = rows[index - 1];
-      const drop = sized && previous && previous.value !== null && level.value !== null ? dropText(previous.value, level.value, context.language) : '';
+      const drop = props.showDrops !== false && sized && previous && previous.value !== null && level.value !== null ? dropText(previous.value, level.value, context.language) : '';
       // Where the silhouette's edge is in the gap above (the drop sits just beyond it).
       const edge = previous ? (previous.bottom + level.top) / 2 : level.top;
       const half = (w: number) => n(50 - w * 50);

@@ -205,6 +205,9 @@ export interface FocusOptions {
   pick?(event: PointerEvent): string | null | undefined;
   // Items that may be reached now (default: all).
   enabled?(id: string): boolean;
+  // Whether pointing answers at all now (default: always). A chart still coming in (its entrance, or
+  // the voice bringing its items) does not: what it shows is not all there, and the voice leads.
+  active?(): boolean;
   on(id: string, byKeys: boolean): void;
   off(): void;
   say?(id: string): string;
@@ -241,12 +244,13 @@ export function createFocus(root: HTMLElement, options: FocusOptions): { set(id:
   };
   // A view's pick may answer undefined: the default (nearest) decides.
   const pick = (event: PointerEvent) => { const id = options.pick?.(event); return id === undefined ? nearest(event) : id; };
-  const move = (event: PointerEvent) => { if (event.pointerType !== 'touch') set(pick(event)); };
+  const quiet = () => { if (options.active && !options.active()) { set(null); return true; } return false; };
+  const move = (event: PointerEvent) => { if (event.pointerType !== 'touch' && !quiet()) set(pick(event)); };
   const leave = () => set(null);
-  const down = (event: PointerEvent) => { if (event.pointerType === 'touch') { const id = pick(event); set(id === current ? null : id); } };
+  const down = (event: PointerEvent) => { if (event.pointerType === 'touch' && !quiet()) { const id = pick(event); set(id === current ? null : id); } };
   const key = (event: KeyboardEvent) => {
     // Keys typed in a control of the chart (a guess's slider, a button) are theirs.
-    if (event.target !== root) return;
+    if (event.target !== root || quiet()) return;
     const reachable = ids();
     if (!reachable.length) return;
     const forward = ['ArrowDown', 'ArrowRight'].includes(event.key), back = ['ArrowUp', 'ArrowLeft'].includes(event.key);
@@ -279,7 +283,8 @@ export function createFocus(root: HTMLElement, options: FocusOptions): { set(id:
 // as Elabora's charts do (their frame's .t-chart-table). Returns the table, appended to container.
 export function dataTable(container: HTMLElement, { caption, head = [], rows }: { caption?: string; head?: readonly string[]; rows: readonly (readonly string[])[] }): HTMLTableElement {
   const table = document.createElement('table');
-  table.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0';
+  // A table keeps its content's width whatever its own says: shown as a clipped block, it widens nothing.
+  table.style.cssText = 'position:absolute;display:block;width:1px;height:1px;max-width:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0';
   const cell = (tag: 'th' | 'td', text: string, scope?: string) => { const node = document.createElement(tag); node.textContent = text; if (scope) node.scope = scope; return node; };
   if (caption) table.createCaption().textContent = caption;
   if (head.length) table.createTHead().insertRow().append(...head.map((text) => cell('th', text, 'col')));

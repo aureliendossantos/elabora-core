@@ -2,6 +2,7 @@
   "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
   "id": "after-report",
   "title": "What your report sets off",
+  "showTitle": false,
   "covers": [
     "ITEM-5"
   ],
@@ -13,7 +14,6 @@
       "style": "aside",
       "props": {
         "takeaway": "One report protects 1,200 inboxes",
-        "context": "What the security desk does with each report",
         "source": "Security desk report 2025, Quillon Freight (internal report, fictional)",
         "highlight": "block",
         "center": {

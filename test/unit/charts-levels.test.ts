@@ -42,6 +42,7 @@ test('levels: a funnel is one silhouette sized by its values, its slanted sides 
   assert.match(html, /<span class="t-levels-in" data-t-num="1240">1,240<\/span>/);
   assert.match(html, /data-t-item="opened"[^>]*>.*?<span class="t-levels-drop">−38%<\/span>/);
   assert.ok(!/data-t-item="sent"[^>]*>(?:(?!data-t-item).)*t-levels-drop/.test(html), 'no drop above the first stage');
+  assert.doesNotMatch(renderChart('levels', { ...funnel, showDrops: false }, context).html, /t-levels-drop/, 'showDrops: false leaves the values alone');
   // Beside: the label, the sentence; what the arrow keys say.
   assert.match(html, /<div class="t-levels-note[^"]*" data-t-item="opened"><p class="t-levels-head"><span class="t-levels-name">Opened it<\/span>/);
   assert.match(html, /<p class="t-levels-text">Most within the first hour.<\/p>/);

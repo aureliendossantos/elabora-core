@@ -2,6 +2,7 @@
   "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
   "id": "lure-map",
   "title": "The lures that work",
+  "showTitle": false,
   "covers": [
     "ITEM-3"
   ],
@@ -13,7 +14,6 @@
       "style": "aside",
       "props": {
         "takeaway": "Invoices and password resets are the lures to watch first",
-        "context": "Each lure of 2025: how often it arrived, and how often people clicked it in drills",
         "source": "Phishing drills 2025, Quillon Freight (internal report, fictional)",
         "x": {
           "label": "How often it arrives",

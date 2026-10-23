@@ -36,6 +36,9 @@ interface Bound {
   stop?: () => void;
   observer?: IntersectionObserver;
   inView: boolean;
+  // Coming in (its entrance playing, or the voice still bringing its items): pointing is off.
+  revealing: boolean;
+  focus?: { set(id: string | null): void; readonly current: string | null };
   dispose(): void;
 }
 
@@ -65,7 +68,13 @@ export function createCharts(context: ChartsContext) {
     dom.order.forEach((id, index) => view.reveal(dom, id, clamp01((t - start - slotOf(item, id, index) * timing.stagger) / timing.item)));
     // Written frame by frame: no CSS transition may lag behind (charts.css).
     dom.root.classList.toggle('is-entering', t < entranceEnd(item));
+    revealing(item, t < entranceEnd(item));
     pull(dom, t >= entranceEnd(item) + 0.05);
+  }
+  // While a chart comes in, what is pointed at lets go and pointing waits (kit.ts createFocus active).
+  function revealing(item: Bound, on: boolean) {
+    item.revealing = on;
+    if (on && item.focus?.current != null) item.focus.set(null);
   }
   // At the screen's time: each item from its beat (or from the start), the spotlight on the one the
   // voice talks about, then the focus pull when it is done.
@@ -89,6 +98,7 @@ export function createCharts(context: ChartsContext) {
     dom.root.classList.toggle('is-entering', moving);
     const ends = props.beatsEnd ?? Math.max(...Object.values(beats)) + timing.item + 1.5;
     let spoken: string | null = null;
+    revealing(item, time < ends);
     if (time < ends) for (const [id, at] of Object.entries(beats)) if (at <= time + 1e-3 && (spoken === null || at >= beats[spoken])) spoken = id;
     spotlight(item, spoken);
     view.beat?.(dom, time, beats, ends);
@@ -133,13 +143,14 @@ export function createCharts(context: ChartsContext) {
     const dom = chartDom(root, block, context);
     // Dry run (slides reserve the room of the answered state): the outcomes of a predict.
     if (dry) return view.outcomes?.(dom) ?? undefined;
-    const item: Bound = { wrap, dom, view, entrance: 'waiting', inView: false, dispose: () => {} };
+    const item: Bound = { wrap, dom, view, entrance: 'waiting', inView: false, revealing: false, dispose: () => {} };
     root.tabIndex = 0;
     const focus = createFocus(root, {
       axis: (root.dataset.tAxis as 'x' | 'y' | 'xy' | 'none') ?? 'y',
       items: dom.items,
       pick: view.pick ? (event) => view.pick!(dom, event) : undefined,
       enabled: view.enabled ? (id) => view.enabled!(dom, id) : undefined,
+      active: () => !item.revealing,
       live: dom.live,
       say: (id) => dom.items.first(id)?.dataset.tSay ?? id,
       on: (id) => {
@@ -156,6 +167,7 @@ export function createCharts(context: ChartsContext) {
         view.focus?.(dom, null);
       }
     });
+    item.focus = focus;
     const cleanup = view.setup?.(dom);
     item.observer = typeof IntersectionObserver === 'function' ? new IntersectionObserver((entries) => {
       for (const entry of entries) { item.inView = entry.isIntersecting; if (item.inView) start(item); }

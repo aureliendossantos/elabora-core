@@ -16,7 +16,7 @@ agents write a free object with D3 and the same kit. The decision and its reason
 | `trend` | A change over time, and what explains it | `points[]`: `x`, `y`; `note`; `mode: "predict"` |
 | `proportion` | "1 in 10" as an icon array | `of`, `part`, `figure`, `label` |
 | `before-after` | Who moved, and who moved least | `items[]`: `label`, `before`, `after` |
-| `levels` | A funnel (values) or a pyramid (levels) | `items[]`: `label`, `text`, `value`; `shape` |
+| `levels` | A funnel (values) or a pyramid (levels) | `items[]`: `label`, `text`, `value`; `shape`, `showDrops` |
 | `process` | A short procedure | `items[]`: `title`, `text` |
 | `cycle` | A loop of stages | `items[]`: `title`, `text`; `center` |
 | `matrix` | Items placed on two axes | `items[]`: `label`, `x`, `y`, `text`; `quadrants` |
@@ -26,8 +26,8 @@ agents write a free object with D3 and the same kit. The decision and its reason
 Every block's props are in [Built-in blocks](blocks.md).
 
 **What every chart has.**
-- `takeaway` (required): the sentence the chart proves, shown as its title. "Most incidents start with an email", not "Incidents by origin".
-- `context`: one line under it (the unit, the population, the period).
+- `takeaway` (required): the sentence the chart proves, shown as its title. "Most incidents start with an email", not "Incidents by origin". When the chart carries the slide, it is the slide's title: hide the screen's own (`showTitle: false`, kept for the menu and screen readers) and put no eyebrow over it.
+- `context`: one line under the title, only for what neither the title nor the chart says (the unit, the population, the period the axes do not give). Most charts need none, and on a narrated slide the voice says the rest.
 - `source`: where the data comes from, under the chart.
 - `highlight`: the id of the item that carries the idea. Once every item has arrived, it takes the accent and the others step back (the "focus pull").
 

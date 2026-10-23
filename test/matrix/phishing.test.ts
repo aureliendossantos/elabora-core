@@ -21,14 +21,10 @@ const copy = () => {
 test('the phishing-by-numbers sample validates and passes the emulator with axe-core, without overflow at phone width', { timeout: 400000 }, async () => {
   const dir = copy();
   const validation = validateDir(dir, { release: true });
-  // Approving the plan is its author's act (elabora plan version, plan approve), never an agent's: until
-  // a person has done it, it is the one thing a release may refuse, and the emulator runs a draft build.
-  const errors = validation.diagnostics.filter((d) => d.severity === 'error');
-  assert.deepEqual(errors.filter((d) => d.code !== 'E_PLAN_NOT_APPROVED'), []);
-  const approved = errors.length === 0;
+  assert.equal(validation.summary.errors, 0, JSON.stringify(validation.diagnostics.filter((d) => d.severity === 'error')));
   const charts = new Set(fs.readdirSync(path.join(dir, 'screens')).flatMap((file) => JSON.parse(fs.readFileSync(path.join(dir, 'screens', file), 'utf8')).blocks.map((block: { type: string }) => block.type)));
   for (const type of ['key-figures', 'bars', 'donut', 'trend', 'proportion', 'before-after', 'levels', 'process', 'cycle', 'matrix', 'milestones', 'diagram']) assert.ok(charts.has(type), `no ${type} in the sample`);
-  const b = await build(dir, { profiles: ['moodle'], emit: 'dir', out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-e2e-')), release: approved });
+  const b = await build(dir, { profiles: ['moodle'], emit: 'dir', out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-e2e-')), release: true });
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error')));
   const r = await testPackage({ dir: b.dirPath, profiles: ['moodle'], modes: ['iframe'], accessibility: true, unloadVariants: false });
   assert.deepEqual(r.runs.filter((run) => !run.ok).map((run) => run.failures.map((failure) => `${failure.code}: ${failure.message}`)), []);

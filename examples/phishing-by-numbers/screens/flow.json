@@ -2,6 +2,7 @@
   "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
   "id": "flow",
   "title": "The path for a doubtful email",
+  "showTitle": false,
   "covers": [
     "ITEM-5"
   ],
@@ -12,7 +13,6 @@
       "width": "wide",
       "props": {
         "takeaway": "When in doubt, report: it is never the wrong move",
-        "context": "What to do with an email you did not expect",
         "source": "Information security policy, Quillon Freight (internal policy, fictional)",
         "mermaid": "flowchart LR\n  A[An unexpected email] --> B{Wants a password, money or a file?}\n  B -- Yes --> R[Report it]\n  B -- No --> C{Sender and link look right?}\n  C -- No --> R\n  C -- Yes --> D[Carry on]\n  R --> E{Clicked or typed anything?}\n  E -- Yes --> F[Call 4444 now]\n  E -- No --> G[Done: the desk takes over]",
         "highlight": "R",
