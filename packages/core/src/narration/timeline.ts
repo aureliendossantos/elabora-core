@@ -115,6 +115,11 @@ export interface CueInput {
   problem?: AnchorProblem;
 }
 
+// How long the player takes, at most, to bring a chart's item once the voice names it (a trend's head
+// moving to its point, a key figure counting): a step lasts until its last item has arrived, as it does
+// for a timed block's effect, so a beat near the end of the voice is never cut short.
+export const BEAT_SETTLE = 1.2;
+
 // An item of a chart brought by the voice (D60), or the end of a chart's spotlight (item null).
 export interface BeatInput {
   block: string;
@@ -328,7 +333,7 @@ export function layoutTimeline(input: LayoutInput): TimelineLayout {
       const problem = found.problem ?? entry.beat.problem;
       const beat: TimelineBeat = { block: entry.beat.block, item: entry.beat.item, time: ms(Math.max(0, found.time)), step, anchor: entry.beat.anchor, estimated: found.estimated, path: entry.beat.path, ...(problem ? { problem } : {}) };
       resolvedBeats.push(beat);
-      contentEnd = Math.max(contentEnd, beat.time);
+      contentEnd = Math.max(contentEnd, beat.item === null ? beat.time : beat.time + BEAT_SETTLE);
     }
     let end = contentEnd;
     for (const entry of beatEndings) resolvedBeats.push({ block: entry.beat.block, item: entry.beat.item, time: ms(contentEnd), step, anchor: entry.beat.anchor, estimated: false, path: entry.beat.path });

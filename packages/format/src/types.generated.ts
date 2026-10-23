@@ -1112,7 +1112,7 @@ export type AudioProps = {
 export type BarsProps = {
   /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
   takeaway: string;
-  /** One line under the title: what is measured, where, when, in what unit. */
+  /** Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. */
   context?: string;
   /** Where the data comes from, shown under the chart. */
   source?: string;
@@ -1166,7 +1166,7 @@ export type BarsRow = {
 export type BeforeAfterProps = {
   /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
   takeaway: string;
-  /** One line under the title: what is measured, where, when, in what unit. */
+  /** Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. */
   context?: string;
   /** Where the data comes from, shown under the chart. */
   source?: string;
@@ -1244,7 +1244,7 @@ export type CalloutProps = {
 export type CycleProps = {
   /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
   takeaway: string;
-  /** One line under the title: what is measured, where, when, in what unit. */
+  /** Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. */
   context?: string;
   /** Where the data comes from, shown under the chart. */
   source?: string;
@@ -1323,7 +1323,7 @@ export type DecisionOption = {
 export type DiagramProps = {
   /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
   takeaway: string;
-  /** One line under the title: what is measured, where, when, in what unit. */
+  /** Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. */
   context?: string;
   /** Where the diagram comes from, shown under it. */
   source?: string;
@@ -1360,7 +1360,7 @@ export type DiagramBeat = {
 export type DonutProps = {
   /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
   takeaway: string;
-  /** One line under the title: what is measured, where, when, in what unit. */
+  /** Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. */
   context?: string;
   /** Where the data comes from, shown under the chart. */
   source?: string;
@@ -1505,7 +1505,7 @@ export type ImageProps = {
 export type KeyFiguresProps = {
   /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
   takeaway: string;
-  /** One line under the title: what is measured, where, when, in what unit. */
+  /** Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. */
   context?: string;
   /** Where the data comes from, shown under the chart. */
   source?: string;
@@ -1560,7 +1560,7 @@ export type KeyFiguresItem = {
 export type LevelsProps = {
   /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
   takeaway: string;
-  /** One line under the title: what is measured, where, when, in what unit. */
+  /** Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. */
   context?: string;
   /** Where the data comes from, shown under the chart. */
   source?: string;
@@ -1580,6 +1580,11 @@ export type LevelsProps = {
    * @default 0
    */
   decimals?: number;
+  /**
+   * A funnel with values: the drop from one row to the next (« −34 % ») beside the silhouette. false leaves the values alone.
+   * @default true
+   */
+  showDrops?: boolean;
   /** Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came. */
   spotlightEnd?: Anchor;
   /**
@@ -1628,7 +1633,7 @@ export type MathProps = {
 export type MatrixProps = {
   /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
   takeaway: string;
-  /** One line under the title: what is measured, where, when, in what unit. */
+  /** Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. */
   context?: string;
   /** Where the data comes from, shown under the chart. */
   source?: string;
@@ -1701,7 +1706,7 @@ export type MatrixItem = {
 export type MilestonesProps = {
   /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
   takeaway: string;
-  /** One line under the title: what is measured, where, when, in what unit. */
+  /** Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. */
   context?: string;
   /** Where the data comes from, shown under the chart. */
   source?: string;
@@ -1780,7 +1785,7 @@ export type NumericProps = {
 export type ProcessProps = {
   /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
   takeaway: string;
-  /** One line under the title: what is measured, where, when, in what unit. */
+  /** Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. */
   context?: string;
   /** Where the data comes from, shown under the chart. */
   source?: string;
@@ -1818,7 +1823,7 @@ export type ProcessItem = {
 export type ProportionProps = {
   /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
   takeaway: string;
-  /** One line under the title: what is measured, where, when, in what unit. */
+  /** Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. */
   context?: string;
   /** Where the data comes from, shown under the chart. */
   source?: string;
@@ -1963,7 +1968,7 @@ export type TextProps = {
 export type TrendProps = {
   /** The sentence the chart proves, shown as its title: "Most incidents start with an email", not "Incidents by origin". */
   takeaway: string;
-  /** One line under the title: what is measured, where, when, in what unit. */
+  /** Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway. */
   context?: string;
   /** Where the data comes from, shown under the chart. */
   source?: string;

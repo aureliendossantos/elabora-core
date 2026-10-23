@@ -27,7 +27,7 @@
       "minLength": 1,
       "maxLength": 240,
       "x-translatable": true,
-      "description": "One line under the title: what is measured, where, when, in what unit."
+      "description": "Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway."
     },
     "source": {
       "type": "string",

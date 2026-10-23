@@ -5,7 +5,7 @@ import { objectsIn } from '../util/values.ts';
 import { readNarrationSidecar, screenTiming } from './narration.ts';
 import type { NarrationLineInfo } from './narration.ts';
 import type { Segment, TimedLine } from './timing.ts';
-import { screenTimeline, blockTimings } from './timeline.ts';
+import { screenTimeline, blockTimings, BEAT_SETTLE } from './timeline.ts';
 import type { TimelineMoment } from './timeline.ts';
 import { narrationWords } from './words.ts';
 import { formatAnchor } from './anchor-text.ts';
@@ -276,5 +276,4 @@ export function timelineMarks(project: Project, screenId: string, language?: str
   return marks;
 }
 
-const BEAT_SETTLE = 1.2;
 const round3 = (value: number): number => Math.round(value * 1000) / 1000;

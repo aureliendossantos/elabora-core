@@ -1,27 +1,19 @@
-/* Phishing by numbers: warm paper, ink and one ultramarine accent. Editorial: the screen's title is a
-   small kicker, and the chart's takeaway is the headline of the slide. */
+/* Phishing by numbers: warm paper, ink and one ultramarine accent. Editorial: a chart's takeaway is the
+   headline of its slide (those screens hide their own title); a screen without a chart has its title as
+   the same headline. No eyebrow over it, no line under it that says it again. */
 
-.t-screen-title {
-  max-width: var(--t-wide-width, 68.75rem);
-  margin: 0 auto 0.875rem;
-  color: var(--t-accent);
-  font-family: var(--t-font-body);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  line-height: 1.3;
-  text-transform: uppercase;
-}
-
-.t-chart-head { margin-bottom: 1.75rem; }
-.t-chart-title {
-  max-width: 28ch;
+.t-screen-title, .t-chart-title {
+  font-family: var(--t-font-heading);
   font-size: 2.25rem;
   font-weight: 560;
   line-height: 1.12;
   letter-spacing: -0.018em;
   font-variation-settings: "SOFT" 50, "opsz" 72;
 }
+.t-screen-title { margin: 0 auto 1.5rem; }
+
+.t-chart-head { margin-bottom: 1.75rem; }
+.t-chart-title { max-width: 28ch; }
 .t-chart-context { margin-top: 0.625rem; font-size: 1rem; }
 .t-chart-source { margin-top: 1.5rem; font-style: italic; }
 
@@ -35,7 +27,7 @@
 }
 .t-s-email .t-callout-title { font-family: var(--t-font-heading); font-size: 1.25rem; font-weight: 600; }
 
-/* Screens without charts (a question, a decision): the kicker sits over the reading column. */
+/* Screens without charts (a question, a decision): the title over the reading column. */
 .t-screen:not(:has(.t-w-wide, .t-w-half)) .t-screen-title { max-width: var(--t-content-width, 47.5rem); }
 
 /* Two charts side by side: smaller headlines. */
@@ -59,6 +51,6 @@
 
 /* Phones: smaller headlines, so the chart starts within the first screenful. */
 @container (max-width: 560px) {
-  .t-chart-title, .t-w-half .t-chart-title { font-size: 1.75rem; }
+  .t-screen-title, .t-chart-title, .t-w-half .t-chart-title { font-size: 1.75rem; }
   .t-chart-head { margin-bottom: 1.25rem; }
 }

@@ -2,6 +2,7 @@
   "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
   "id": "reports",
   "title": "One click changed reporting",
+  "showTitle": false,
   "covers": [
     "ITEM-4"
   ],
@@ -12,7 +13,7 @@
       "width": "wide",
       "props": {
         "takeaway": "Reports took off once reporting took one click",
-        "context": "Phishing emails reported to the security desk, per month (yearly average)",
+        "context": "Reports to the security desk per month, yearly average",
         "source": "Security desk report 2025, Quillon Freight (internal report, fictional)",
         "points": [
           {

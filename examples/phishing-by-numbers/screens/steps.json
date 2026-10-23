@@ -2,6 +2,7 @@
   "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
   "id": "steps",
   "title": "Pause, check, report",
+  "showTitle": false,
   "covers": [
     "ITEM-5"
   ],
@@ -12,7 +13,6 @@
       "width": "wide",
       "props": {
         "takeaway": "Pause, check, report: one click does the rest",
-        "context": "What to do with any email that surprises you",
         "source": "Information security policy, Quillon Freight (internal policy, fictional)",
         "highlight": "report",
         "items": [
