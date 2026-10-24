@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { loadProject } from '@elabora/core/project/load';
@@ -15,6 +14,7 @@ import type { RenderedScreen } from '@elabora/core/render/screen';
 import { rebaseUrls } from '@elabora/core/render/styles';
 import type { CourseData } from '@elabora/player/course-data';
 import { ROOT } from '../helpers.ts';
+import { resources } from '../resources.ts';
 import { build } from '@elabora/node/build';
 
 const EXAMPLES = ['diagnostic-reseau', 'planetary-gearset', 'orbital-rendezvous'];
@@ -58,10 +58,10 @@ test('renderScreen gives each screen as the course data holds it, with the cours
   assert.throws(() => renderScreen(project, 'nowhere'), /Screen "nowhere" not found/);
 });
 
-test('renderScreen: stylesheets and files match the build', async () => {
+test('renderScreen: stylesheets and files match the build', async (t) => {
   for (const example of EXAMPLES) {
     const source = path.join(ROOT, 'examples', example);
-    const built = await build(source, { emit: 'dir', out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-render-')), writeLock: false });
+    const built = await build(source, { emit: 'dir', out: resources(t).tempDir('elabora-render-'), writeLock: false });
     assert.ok(built.ok && built.dirPath, example);
     const dirPath = built.dirPath;
     const packaged = (name: string) => fs.readFileSync(path.join(dirPath, name), 'utf8');
@@ -125,11 +125,12 @@ test('renderScreen: a screen edited since the context was made renders as with a
   // A component the course did not use yet brings its stylesheet.
   const card = withScreen(project, 'intro', (screen) => { screen.blocks = screen.blocks.filter((candidate) => candidate.type !== 'ratio-card'); });
   const without = createRenderContext(card);
-  assert.ok(!without.design.components.includes('ratio-card'));
+  const initial = renderScreen(card, 'intro', {}, without);
+  assert.ok(!initial.styles.sheets.some(sheet => sheet.id === 'components/ratio-card/component.css'));
   const back = withScreen(card, 'intro', (screen) => { screen.blocks.push({ id: 'intro-card', type: 'ratio-card', props: { label: 'Reduce', value: '3.6', body: 'Ring held.' } }); });
   const styled = renderScreen(back, 'intro', {}, without);
   assert.ok(styled.styles.sheets.some((sheet) => sheet.id === 'components/ratio-card/component.css'));
-  assert.notEqual(styled.styles.hash, without.styles.hash);
+  assert.notEqual(styled.styles.hash, initial.styles.hash);
 });
 
 test('renderScreen in another language: the translation applied, the design kept', () => {

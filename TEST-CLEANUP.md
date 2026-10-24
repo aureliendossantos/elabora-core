@@ -41,7 +41,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Private layout assertions | 7 | charts-matrix imported label placement helpers instead of measuring rendered labels |
 
-| Fixture lifetime | 1 | copied courses lacked per-case failure cleanup |
+| Fixture lifetime | 2 | copied courses lacked per-case failure cleanup |
 
 ## Production changes
 
@@ -155,7 +155,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/purity.test.ts` | 53 | 53 | Passed 3 native-seeded cases; public LMS catalogue compared with checked-in data instead of private PROFILE_FILES import/order; required cross-browser architecture and generated-template guards retained |
 | `test/unit/releases.test.ts` | 38 | — | Pending |
 | `test/unit/rename.test.ts` | 118 | — | Pending |
-| `test/unit/render.test.ts` | 147 | — | Pending |
+| `test/unit/render.test.ts` | 147 | 148 | Passed native-seeded checks; Public incremental/full render and CSS/package parity retained; owns fixtures and checks output rather than private render context |
 | `test/unit/renditions-prune.test.ts` | 44 | 43 | Passed 2 native-seeded cases; fixed public now/mtime ages and bytes, owned course copies; keeps current/recent renditions and removes old obsolete data |
 | `test/unit/review-bridge.test.ts` | 278 | — | Pending |
 | `test/unit/robustness-commands.test.ts` | 155 | — | Pending |
