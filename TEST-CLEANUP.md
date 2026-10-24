@@ -113,7 +113,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/diff-mcp.test.ts` | 74 | — | Pending |
 | `test/unit/docs.test.ts` | 127 | — | Pending |
 | `test/unit/downloads.test.ts` | 147 | 161 | Native seed 130363 passed all 4 cases; extension registration isolated in a child, model files reset per case, real download/hash/install/removal and in-use refusals retained |
-| `test/unit/edit-journal.test.ts` | 225 | — | Pending |
+| `test/unit/edit-journal.test.ts` | 225 | 216 | Passed native-seeded cases; owns fixtures, seeded binaries and scoped Date; output/error semantics replace identity, exact retry count and elapsed-speed checks |
 | `test/unit/edit.test.ts` | 223 | 224 | Passed native-seeded cases; context-owned courses preserve disk refusal, text editing, IDs, undo and translation contracts |
 | `test/unit/electron-runtime.test.ts` | 21 | 21 | Reviewed, retained; passed native seed 155921. Real registration files, protocol/version/path refusals and explicit overrides are observable runtime-discovery contracts; context cleanup already failure-safe |
 | `test/unit/elevenlabs.test.ts` | 675 | 688 | Native seed 104729: 17 passed and 1 live skip; fresh service/account/cache state fixes two reproduced order dependencies; alignment checks exchange timestamps |
