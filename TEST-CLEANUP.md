@@ -168,7 +168,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/svg-inline.test.ts` | 99 | — | Pending |
 | `test/unit/template-fields.test.ts` | 27 | — | Pending |
 | `test/unit/timeline.test.ts` | 390 | 387 | Passed 15 native-seeded cases; own narrated/translated courses; preserved word anchors, cue timing, editing, translation markers and resume contracts; removed constant-only assertion |
-| `test/unit/transcribe.test.ts` | 290 | — | Pending |
+| `test/unit/transcribe.test.ts` | 290 | 296 | Native-seeded cases passed with one explicit unavailable-model skip; fresh fake model/input per case, dispose inference before removal, owned session, fixed recording filename replaces random UUID |
 | `test/unit/translation-context.test.ts` | 156 | — | Pending |
 | `test/unit/validate.test.ts` | 627 | 631 | Passed 32 cases; preserves all diagnostic rules, checks exact prop paths, cleans every copied fixture; removes internal check-name assertion |
 | `test/unit/voice-models.test.ts` | 252 | 253 | Native-seeded cases passed; per-case models and restored environment, seeded downloads, owned generation gates; outputs replace fake provider install counters |

@@ -1,7 +1,7 @@
-import { test, after } from 'node:test';
+import { test, beforeEach, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
 import crypto from 'node:crypto';
@@ -18,7 +18,7 @@ import { textOfPieces, withApostrophesOf, wordsOfPieces } from '@elabora/node/tr
 import { windows } from '@elabora/node/transcribe/parakeet';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { forgetQuota } from '@elabora/node/voice/elevenlabs/costs';
-import { copyExample, readJSON, ROOT } from '../helpers.ts';
+import { readJSON, ROOT } from '../helpers.ts';
 import { narrate, toneM4a, hasFfmpeg } from '../narration.ts';
 
 // Transcription (docs/decisions.md D46): what a recording says, a line made from a recording, a
@@ -28,16 +28,22 @@ import { narrate, toneM4a, hasFfmpeg } from '../narration.ts';
 
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg is not installed';
 const execFileAsync = promisify(execFile);
-const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-transcribe-'));
-after(() => fs.rmSync(temp, { recursive: true, force: true }));
-after(disposeTranscriber);
+let temp: string;
+beforeEach(async t => {
+  await disposeTranscriber();
+  temp = resources(t as TestContext).tempDir('elabora-transcribe-');
+  fakeModels = path.join(temp, 'transcribers');
+  heard = path.join(temp, 'heard.json');
+  installFakeModel();
+  resources(t as TestContext).own(null, disposeTranscriber);
+});
 
 // The real model's folder, when the one who runs the tests named one where it is installed.
 const realDir = process.env.ELABORA_TRANSCRIBER_MODELS_DIR;
 const real = !!realDir && transcriberInstalled(TRANSCRIBER_MODELS[0]);
 
 // A made-up model of 10 bytes, installed as a download leaves it (its file checked, verified.json).
-const fakeModels = path.join(temp, 'transcribers');
+let fakeModels: string;
 function installFakeModel(): void {
   const body = Buffer.from('not a mod.');
   const sha256 = crypto.createHash('sha256').update(body).digest('hex');
@@ -47,7 +53,7 @@ function installFakeModel(): void {
   fs.writeFileSync(path.join(dir, 'model.bin'), body);
   fs.writeFileSync(path.join(dir, 'verified.json'), JSON.stringify({ 'model.bin': sha256 }));
 }
-const heard = path.join(temp, 'heard.json');
+let heard: string;
 const fakeEnv = (texts: Record<string, string>) => {
   fs.writeFileSync(heard, JSON.stringify(texts));
   return { ELABORA_TRANSCRIBER_MODELS_DIR: fakeModels, ELABORA_TRANSCRIBER_MODELS_MANIFEST: path.join(temp, 'transcribers.json'), ELABORA_TRANSCRIBER_FAKE: heard };
@@ -57,9 +63,8 @@ function withEnv<T>(env: Record<string, string | undefined>, run: () => Promise<
   for (const [name, value] of Object.entries(env)) { if (value === undefined) delete process.env[name]; else process.env[name] = value; }
   return run().finally(() => { for (const [name, value] of Object.entries(saved)) { if (value === undefined) delete process.env[name]; else process.env[name] = value; } });
 }
-installFakeModel();
 
-test('a transcriber\'s pieces as text and words: no space before a comma or a full stop, French spaces before ? ! : ;, words without their punctuation', () => {
+test('a transcriber\'s pieces as text and words: no space before a comma or a full stop, French spaces before ? ! : ;, words without their punctuation', (t) => {
   const pieces = [' Pou', 'vez', '-', 'vous', ' m', '\'', 'aider', ' ?', ' Il', ' est', ' 9', ':', '30', ',', ' oui', ' !'].map((piece, i) => ({ piece, time: i * 0.08, probability: 0.9 }));
   assert.equal(textOfPieces(pieces, 'fr'), 'Pouvez-vous m\'aider ? Il est 9:30, oui !');
   assert.equal(textOfPieces(pieces, 'en'), 'Pouvez-vous m\'aider? Il est 9:30, oui!');
@@ -72,7 +77,7 @@ test('a transcriber\'s pieces as text and words: no space before a comma or a fu
   assert.equal(withApostrophesOf('C\'est l’imprimante.', 'Rien'), 'C\'est l’imprimante.');
 });
 
-test('long recordings are heard in windows of 30 s at most, each ending in the quietest moment of its last third', () => {
+test('long recordings are heard in windows of 30 s at most, each ending in the quietest moment of its last third', (t) => {
   const rate = 16000;
   const samples = new Float32Array(rate * 75).map((_, i) => Math.sin(i / 7) * 0.5);
   // Silences at 25 s and 52 s.
@@ -85,7 +90,7 @@ test('long recordings are heard in windows of 30 s at most, each ending in the q
   assert.ok(cuts.every((cut, i) => cut.end - cut.start <= 30 * rate && (i === 0 || cut.start === cuts[i - 1].end)));
 });
 
-test('transcribers: one local model for 25 European languages, its size before it is downloaded; nothing heard before it is here', async () => {
+test('transcribers: one local model for 25 European languages, its size before it is downloaded; nothing heard before it is here', async (t) => {
   const empty = path.join(temp, 'none');
   await withEnv({ ELABORA_TRANSCRIBER_MODELS_DIR: empty, ELABORA_TRANSCRIBER_MODELS_MANIFEST: undefined, ELEVENLABS_API_KEY: undefined, ELABORA_ELEVENLABS_KEY_FILE: path.join(temp, 'no-key') }, async () => {
     const view = transcribers('fr-CA');
@@ -103,20 +108,20 @@ test('transcribers: one local model for 25 European languages, its size before i
 });
 
 // A screen with two lines, the second a recording (a tone: what the test transcriber "hears" is given).
-async function recorded(): Promise<{ dir: string; file: string }> {
-  const dir = copyExample();
+async function recorded(t: TestContext): Promise<{ dir: string; file: string }> {
+  const dir = resources(t).copyExample();
   narrate(dir, 'accueil', [
     { id: 'l1', text: 'Bonjour, voici le ticket de Marc.', seconds: 1, speaker: 'marc' },
     { id: 'l2', text: 'Ni l\'imprimante, ni le partage ne marchent.', step: 2, speaker: 'marc' }
   ], { speakers: [{ id: 'marc', name: 'Marc' }, { id: 'leila', name: 'Leïla' }] });
-  const file = path.join(temp, `prise-${crypto.randomUUID()}.m4a`);
+  const file = path.join(temp, 'prise.m4a');
   toneM4a(file, 2, 523);
   await importNarration(dir, { screen: 'accueil', line: 'l2', file, trim: false });
   return { dir, file };
 }
 
-test('a new line from an audio file: its text what the recording says, its audio the recording, after the last line in its step with its speaker, in one undoable change', { skip: NO_FFMPEG }, async () => {
-  const { dir } = await recorded();
+test('a new line from an audio file: its text what the recording says, its audio the recording, after the last line in its step with its speaker, in one undoable change', { skip: NO_FFMPEG }, async (t) => {
+  const { dir } = await recorded(t);
   const file = path.join(temp, 'appel-marc.wav');
   toneM4a(file.replace(/wav$/, 'm4a'), 1.5, 660);
   fs.renameSync(file.replace(/wav$/, 'm4a'), file);
@@ -143,8 +148,8 @@ test('a new line from an audio file: its text what the recording says, its audio
   });
 });
 
-test('« Régénérer le texte d\'après l\'audio »: the line says what its recording says, the recording kept up to date, anchors followed, translations changed since; one change', { skip: NO_FFMPEG }, async () => {
-  const { dir } = await recorded();
+test('« Régénérer le texte d\'après l\'audio »: the line says what its recording says, the recording kept up to date, anchors followed, translations changed since; one change', { skip: NO_FFMPEG }, async (t) => {
+  const { dir } = await recorded(t);
   const before = narrationLines(loadProjectFromDir(dir), 'accueil', 'fr')!.find((line) => line.id === 'l2')!;
   await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'imprimante' } } });
   edit.exportTranslationChange(dir, { to: 'en' });
@@ -179,13 +184,13 @@ test('« Régénérer le texte d\'après l\'audio »: the line says what its rec
   });
 });
 
-test('engine: what can transcribe, a line\'s recording heard, both flows as commands of the session', { skip: NO_FFMPEG }, async () => {
+test('engine: what can transcribe, a line\'s recording heard, both flows as commands of the session', { skip: NO_FFMPEG }, async (t) => {
   const { openProject } = await import('@elabora/engine');
-  const { dir } = await recorded();
+  const { dir } = await recorded(t);
   const file = path.join(temp, 'nouvelle.m4a');
   toneM4a(file, 1, 700);
   await withEnv(fakeEnv({ 'l2.m4a': 'Rien ne marche.', 'nouvelle.m4a': 'Et le copieur ?' }), async () => {
-    const session = await openProject(dir, { backups: { onOpen: false, prune: false }, rescanIntervalMs: 0, media: { enabled: false } });
+    const session = resources(t).own(await openProject(dir, { backups: { onOpen: false, prune: false }, rescanIntervalMs: 0, media: { enabled: false } }), value => value.close());
     const events: string[] = [];
     session.subscribe(({ event }) => events.push(event.type));
     try {
@@ -210,8 +215,8 @@ test('engine: what can transcribe, a line\'s recording heard, both flows as comm
   });
 });
 
-test('cli: elabora narration add-from-audio and retranscribe, --dry-run printing the old text and the new', { skip: NO_FFMPEG }, async () => {
-  const { dir } = await recorded();
+test('cli: elabora narration add-from-audio and retranscribe, --dry-run printing the old text and the new', { skip: NO_FFMPEG }, async (t) => {
+  const { dir } = await recorded(t);
   const file = path.join(temp, 'cli.m4a');
   toneM4a(file, 1, 800);
   const env = { ...process.env, ...fakeEnv({ 'cli.m4a': 'Le copieur aussi.', 'l2.m4a': 'Plus rien ne marche.' }) };
@@ -227,7 +232,7 @@ test('cli: elabora narration add-from-audio and retranscribe, --dry-run printing
 });
 
 // ElevenLabs' speech to text, as a server of this test: the request it is sent, the words it answers.
-test('elevenlabs: a recording transcribed with the author\'s key once its share of the quota is approved, the key never said', { skip: NO_FFMPEG }, async () => {
+test('elevenlabs: a recording transcribed with the author\'s key once its share of the quota is approved, the key never said', { skip: NO_FFMPEG }, async (t) => {
   const asked: { route: string; fields: string }[] = [];
   let limit = 1_000;
   const server = http.createServer((request, response) => {
@@ -245,6 +250,7 @@ test('elevenlabs: a recording transcribed with the author\'s key once its share 
     });
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => server.close());
   const file = path.join(temp, 'eleven.m4a');
   toneM4a(file, 3, 440);
   try {
@@ -279,7 +285,7 @@ test('elevenlabs: a recording transcribed with the author\'s key once its share 
   }
 });
 
-test('the real model hears a recorded French line, punctuated (when ELABORA_TRANSCRIBER_MODELS_DIR has it installed)', { skip: !real && 'the transcription model is not installed (ELABORA_TRANSCRIBER_MODELS_DIR)' }, async () => {
+test('the real model hears a recorded French line, punctuated (when ELABORA_TRANSCRIBER_MODELS_DIR has it installed)', { skip: !real && 'the transcription model is not installed (ELABORA_TRANSCRIBER_MODELS_DIR)' }, async (t) => {
   const file = path.join(ROOT, 'examples/diagnostic-reseau/assets/narration/fr/chemin/chemin-reseaux.m4a');
   const transcript = await transcribeAudio(file, 'fr');
   assert.equal(transcript.text, 'Le routeur dirige ensuite les paquets vers le réseau des serveurs. Le pare-feu décide quels flux peuvent passer. Le serveur d\'impression reçoit enfin la demande.');
