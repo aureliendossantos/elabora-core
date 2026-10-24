@@ -1,7 +1,7 @@
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
@@ -13,7 +13,7 @@ import { build } from '@elabora/node/build';
 import { capture, measureFit } from '@elabora/node/preview';
 import { startLooker } from '@elabora/node/look';
 import { testPackage } from '@elabora/node/emulator/run';
-import { NO_MEDIA_CODECS, copyExample, isClosed, playsMedia, readJSON, writeJSON } from '../helpers.ts';
+import { NO_MEDIA_CODECS, isClosed, playsMedia, readJSON, writeJSON } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { narrate, hasFfmpeg, toneM4a } from '../narration.ts';
 
@@ -21,13 +21,13 @@ import { narrate, hasFfmpeg, toneM4a } from '../narration.ts';
 // bar, steps as segments, seeking, cues, layers, resume, the emulator. Voices are sine tones.
 
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
-const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+const tmp = (t: TestContext, prefix: string) => resources(t).tempDir(prefix);
 const SPEAKERS = [{ id: 'narratrice', name: 'Narratrice' }, { id: 'marc', name: 'Marc' }];
 
 // The example as slides: "accueil" narrated in three steps (learner), with a cue that counts, a cue
 // that opens a dialog, and a sound block; "chemin" narrated in two steps that go on by themselves.
-function course() {
-  const dir = copyExample();
+function course(t: TestContext) {
+  const dir = resources(t).copyExample();
   const data = readJSON(dir, 'course.json');
   data.presentation = { mode: 'slides' };
   writeJSON(dir, 'course.json', data);
@@ -58,36 +58,31 @@ function course() {
 
 interface Session { page: Page; browser: Browser; server: EmulatorServer; dir: string }
 
-async function player(dir: string, run: (session: Session) => Promise<void>, { virtual = true, refuse = false }: { virtual?: boolean; refuse?: boolean } = {}) {
-  const b = await build(dir, { emit: 'dir', out: tmp('elabora-narration-'), writeLock: false, debug: true });
+async function player(t: TestContext, dir: string, run: (session: Session) => Promise<void>, { virtual = true, refuse = false }: { virtual?: boolean; refuse?: boolean } = {}) {
+  const b = await build(dir, { emit: 'dir', out: tmp(t, 'elabora-narration-'), writeLock: false, debug: true });
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
-  const server = await startServer();
+  const server = resources(t).own(await startServer(), value => value.close());
   server.addPackage('p', b.dirPath);
-  const browser = await launchBrowser('chromium');
-  try {
-    const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
-    const errors: string[] = [];
-    page.on('pageerror', (error) => errors.push(error.message));
-    if (virtual) await page.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
-    if (refuse) {
-      // The browser refuses sound before a gesture: the first play() is refused.
-      await page.addInitScript(() => {
-        const play = HTMLMediaElement.prototype.play;
-        let refused = false;
-        HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
-          if (!refused) { refused = true; return Promise.reject(new DOMException('play() needs a gesture', 'NotAllowedError')); }
-          return play.call(this);
-        };
-      });
-    }
-    await page.goto(`${server.base}/pkg/p/index.html`);
-    await page.waitForFunction(() => (window as PlayerWindow).__elabora);
-    await run({ page, browser, server, dir });
-    assert.deepEqual(errors, []);
-  } finally {
-    await browser.close();
-    await server.close();
+  const browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
+  const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  if (virtual) await page.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
+  if (refuse) {
+    // The browser refuses sound before a gesture: the first play() is refused.
+    await page.addInitScript(() => {
+      const play = HTMLMediaElement.prototype.play;
+      let refused = false;
+      HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+        if (!refused) { refused = true; return Promise.reject(new DOMException('play() needs a gesture', 'NotAllowedError')); }
+        return play.call(this);
+      };
+    });
   }
+  await page.goto(`${server.base}/pkg/p/index.html`);
+  await page.waitForFunction(() => (window as PlayerWindow).__elabora);
+  await run({ page, browser, server, dir });
+  assert.deepEqual(errors, []);
 }
 
 const state = (page: Page) => page.evaluate(() => {
@@ -113,22 +108,22 @@ async function closeDialog(page: Page) {
   await page.waitForFunction(() => (window as PlayerWindow).__elabora.timeline.state()?.playing === true);
 }
 
-test('a narrated screen\'s track: lines and pauses laid end to end, captions with voices, sizes reported, deterministic', { skip: NO_FFMPEG, timeout: 120000 }, async () => {
-  const dir = course();
-  const out = tmp('elabora-narration-build-');
+test('a narrated screen\'s track: lines and pauses laid end to end, captions with voices, sizes reported, deterministic', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
+  const dir = course(t);
+  const out = tmp(t, 'elabora-narration-build-');
   const first = await build(dir, { out, writeLock: false });
   assert.ok(first.ok && first.zipPath, JSON.stringify(first.diagnostics.filter((d) => d.severity === 'error')));
   const hash = crypto.createHash('sha256').update(fs.readFileSync(first.zipPath)).digest('hex');
-  const again = await build(dir, { out: tmp('elabora-narration-build-'), writeLock: false });
+  const again = await build(dir, { out: tmp(t, 'elabora-narration-build-'), writeLock: false });
   assert.ok(again.ok && again.zipPath);
   assert.equal(crypto.createHash('sha256').update(fs.readFileSync(again.zipPath)).digest('hex'), hash, 'the same sources give the same bytes');
   const report = first.report;
   assert.deepEqual(report.narration?.tracks.map((track) => [track.screen, track.path, track.seconds]), [['accueil', 'narration/accueil.m4a', 6.9], ['chemin', 'narration/chemin.m4a', 2.4]]);
-  assert.ok(report.narration!.bytes > 20000 && report.narration!.bytes < 120000, `${report.narration!.bytes} bytes`);
   assert.ok(report.generatedMedia.some((media) => media.screen === 'accueil' && media.type === 'voice'), 'AI Act: a generated voice is listed');
   // The track's length is the timeline's (the encoder pads a few milliseconds).
-  const folder = await build(dir, { emit: 'dir', out: tmp('elabora-narration-dir-'), writeLock: false });
+  const folder = await build(dir, { emit: 'dir', out: tmp(t, 'elabora-narration-dir-'), writeLock: false });
   assert.ok(folder.ok && folder.dirPath);
+  assert.equal(report.narration!.bytes, report.narration!.tracks.reduce((sum, track) => sum + fs.statSync(path.join(folder.dirPath!, track.path)).size + fs.statSync(path.join(folder.dirPath!, track.captions)).size, 0), 'reported bytes include every packaged track and caption');
   const seconds = Number(execFileSync(process.env.ELABORA_FFPROBE || 'ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', path.join(folder.dirPath, 'narration/accueil.m4a')], { encoding: 'utf8' }));
   assert.ok(Math.abs(seconds - 6.9) < 0.06, `${seconds} s`);
   const vtt = fs.readFileSync(path.join(folder.dirPath, 'narration/accueil.vtt'), 'utf8');
@@ -136,8 +131,8 @@ test('a narrated screen\'s track: lines and pauses laid end to end, captions wit
   assert.match(vtt, /00:00:04\.300 --> 00:00:05\.500\n<v Marc>Ça bloque toute la comptabilité !/);
 });
 
-test('steps are segments: playback stops at the end of the step, Continue plays the next, cues fire when crossed', { skip: NO_FFMPEG, timeout: 120000 }, async () => {
-  await player(course(), async ({ page }) => {
+test('steps are segments: playback stops at the end of the step, Continue plays the next, cues fire when crossed', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
+  await player(t, course(t), async ({ page }) => {
     let s = await state(page);
     assert.equal(s.timeline?.playing, true, 'the narration starts with the screen');
     assert.deepEqual(s.pending, ['accueil-illustration', 'accueil-objectifs', 'accueil-son']);
@@ -195,8 +190,8 @@ test('steps are segments: playback stops at the end of the step, Continue plays 
   });
 });
 
-test('the bar: an APG seek slider at the keyboard, shortcuts with modifiers, captions, speed, transcript', { skip: NO_FFMPEG, timeout: 120000 }, async () => {
-  await player(course(), async ({ page }) => {
+test('the bar: an APG seek slider at the keyboard, shortcuts with modifiers, captions, speed, transcript', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
+  await player(t, course(t), async ({ page }) => {
     await advance(page, 1.6);
     await closeDialog(page);
     await advance(page, 10);
@@ -262,8 +257,8 @@ test('the bar: an APG seek slider at the keyboard, shortcuts with modifiers, cap
   });
 });
 
-test('resume: a narrated screen left part-way reopens at the start of the step reached; one seen to its end waits at its end', { skip: NO_FFMPEG, timeout: 120000 }, async () => {
-  await player(course(), async ({ page }) => {
+test('resume: a narrated screen left part-way reopens at the start of the step reached; one seen to its end waits at its end', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
+  await player(t, course(t), async ({ page }) => {
     await advance(page, 1.6);
     await closeDialog(page);
     await advance(page, 10);
@@ -289,8 +284,8 @@ test('resume: a narrated screen left part-way reopens at the start of the step r
   });
 });
 
-test('next-screen: the steps follow each other and the course goes on; « M\'arrêter à chaque étape », in the playback settings, stops at each step', { skip: NO_FFMPEG, timeout: 120000 }, async () => {
-  await player(course(), async ({ page }) => {
+test('next-screen: the steps follow each other and the course goes on; « M\'arrêter à chaque étape », in the playback settings, stops at each step', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
+  await player(t, course(t), async ({ page }) => {
     await page.evaluate(() => { const elabora = (window as PlayerWindow).__elabora; for (const screen of elabora.engine.screens) elabora.engine.st.completed.add(screen.key); elabora.go('chemin'); });
     await advance(page, 1.2);
     let s = await state(page);
@@ -314,7 +309,7 @@ test('next-screen: the steps follow each other and the course goes on; « M\'arr
 });
 
 test('the real clock: the timeline follows the audio and stops at the end of the step; a refused sound waits for a large Play button', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
-  await player(course(), async ({ page }) => {
+  await player(t, course(t), async ({ page }) => {
     // The audio's own clock: the narration's AAC must play.
     if (!(await playsMedia(page, 'audio/mp4; codecs="mp4a.40.2"'))) return t.skip(NO_MEDIA_CODECS);
     const start = page.locator('.t-timeline-start');
@@ -338,11 +333,11 @@ test('the real clock: the timeline follows the audio and stops at the end of the
 
 test('the real clock: a track that runs out a little before the timeline\'s end ends the screen there', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
   // Free navigation: straight to the screen.
-  const dir = course();
+  const dir = course(t);
   const data = readJSON(dir, 'course.json');
   data.navigation = { mode: 'free', lockUntilComplete: false };
   writeJSON(dir, 'course.json', data);
-  await player(dir, async ({ page }) => {
+  await player(t, dir, async ({ page }) => {
     if (!(await playsMedia(page, 'audio/mp4; codecs="mp4a.40.2"'))) return t.skip(NO_MEDIA_CODECS);
     await page.evaluate(() => (window as PlayerWindow).__elabora.go('chemin'));
     await page.waitForFunction(() => (window as PlayerWindow).__elabora.screen === 'chemin');
@@ -362,8 +357,8 @@ test('the real clock: a track that runs out a little before the timeline\'s end 
   }, { virtual: false });
 });
 
-test('the seek bar keeps play or pause: a click towards the end reaches it, and let go there the screen rests instead of starting over', { skip: NO_FFMPEG, timeout: 120000 }, async () => {
-  const dir = course();
+test('the seek bar keeps play or pause: a click towards the end reaches it, and let go there the screen rests instead of starting over', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
+  const dir = course(t);
   const data = readJSON(dir, 'course.json');
   data.navigation = { mode: 'free', lockUntilComplete: false };
   writeJSON(dir, 'course.json', data);
@@ -371,7 +366,7 @@ test('the seek bar keeps play or pause: a click towards the end reaches it, and 
     { id: 'c1', text: 'Une impression suit un chemin.', seconds: 1 },
     { id: 'c2', text: 'Elle passe par le réseau.', seconds: 1 }
   ], { seek: 'free' });
-  await player(dir, async ({ page }) => {
+  await player(t, dir, async ({ page }) => {
     await page.evaluate(() => (window as PlayerWindow).__elabora.go('chemin'));
     await page.waitForFunction(() => (window as PlayerWindow).__elabora.screen === 'chemin');
     const box = (await page.locator('.t-timeline-seek').boundingBox())!;
@@ -403,8 +398,8 @@ test('the seek bar keeps play or pause: a click towards the end reaches it, and 
   });
 });
 
-test('captures and fit see narrated screens still: a line\'s moment on a contact sheet, slides measured with the bar', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
-  const dir = course();
+test('captures and fit see narrated screens still: a line\'s moment on a contact sheet, slides measured with the bar', { skip: NO_FFMPEG, timeout: 240000 }, async (t) => {
+  const dir = course(t);
   const shots = await capture(dir, [{ screen: 'accueil', at: ['l1', 'l3:end'] }]);
   assert.ok(shots.ok, JSON.stringify(shots));
   const shot = shots.shots![0];
@@ -414,22 +409,18 @@ test('captures and fit see narrated screens still: a line\'s moment on a contact
   const fit = await measureFit(dir, { sizes: [{ role: 'reference', size: '1600x900' }] });
   assert.ok(fit.ok);
   // The look server shows a line's moment in the canvas: its step, its caption and the bar.
-  const looker = await startLooker(dir, { live: false });
-  try {
-    const look = await looker.look({ screen: 'accueil', at: 'l3' });
-    assert.ok(look.ok, look.ok ? '' : look.error);
-    const shown = look.ok ? look.blocks.filter((block) => !block.hidden).map((block) => block.id) : [];
-    assert.ok(shown.includes('accueil-illustration') && !shown.includes('accueil-objectifs'), JSON.stringify(shown));
-    const wrong = await looker.look({ screen: 'accueil', at: 'l9' });
-    assert.ok(!wrong.ok && /Lines: l1, l2, l3, l4/.test(wrong.error));
-  } finally {
-    await looker.close();
-  }
+  const looker = resources(t).own(await startLooker(dir, { live: false }), value => value.close());
+  const look = await looker.look({ screen: 'accueil', at: 'l3' });
+  assert.ok(look.ok, look.ok ? '' : look.error);
+  const shown = look.ok ? look.blocks.filter((block) => !block.hidden).map((block) => block.id) : [];
+  assert.ok(shown.includes('accueil-illustration') && !shown.includes('accueil-objectifs'), JSON.stringify(shown));
+  const wrong = await looker.look({ screen: 'accueil', at: 'l9' });
+  assert.ok(!wrong.ok && /Lines: l1, l2, l3, l4/.test(wrong.error));
 });
 
-test('the LMS emulator plays narrated screens to their end and completes the course', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
-  const dir = course();
-  const b = await build(dir, { profiles: ['moodle'], emit: 'dir', out: tmp('elabora-narration-lms-'), writeLock: false });
+test('the LMS emulator plays narrated screens to their end and completes the course', { skip: NO_FFMPEG, timeout: 240000 }, async (t) => {
+  const dir = course(t);
+  const b = await build(dir, { profiles: ['moodle'], emit: 'dir', out: tmp(t, 'elabora-narration-lms-'), writeLock: false });
   assert.ok(b.ok && b.dirPath);
   const r = await testPackage({ dir: b.dirPath, profiles: ['moodle'], accessibility: true, unloadVariants: false });
   assert.deepEqual(r.runs.filter((x) => !x.ok).map((x) => `${x.profile}/${x.launch}/${x.browser}: ${x.failures.map((f) => `${f.code} ${f.message}`).join(',')}`), []);

@@ -33,7 +33,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Unseeded randomness | 34 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 6 | engine-store: repeated hash equality replaced with hash invalidation after a write |
-| Weak assertion | 8 | validate: counted two errors without identifying their prop paths |
+| Weak assertion | 9 | validate: counted two errors without identifying their prop paths |
 | Resource cleanup | 115 | validate: copied fixtures were never removed |
 | Wall-clock timing | 14 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
@@ -69,7 +69,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/e2e/lms.test.ts` | 103 | 95 | Focused seed 104729 passed all four; legacy unload warning, stalled step and browser emulation retained; load event replaces delayed stall start |
 | `test/e2e/look.test.ts` | 357 | 353 | Focused seed 104729 passed all six workflows; look reuse, code reload, scrolling, object actions and refused opaque-frame behaviour; response events replace sleeps |
 | `test/e2e/media.test.ts` | 96 | 82 | Focused seed 104729 passed; iframe navigation, loaded metadata and seeked events synchronize actual video controls; own fixture and browser |
-| `test/e2e/narration.test.ts` | 437 | — | Pending |
+| `test/e2e/narration.test.ts` | 437 | 428 | Native seed 130363 passed all ten; actual packaged audio/caption byte accounting replaces size quotas; narrated controls, resume, real audio-clock and emulator contracts retained; owned resources |
 | `test/e2e/object.test.ts` | 372 | 372 | Native seed 104729 passed fourteen behaviours; gates, event order and dry WebGL readback retained; decoded captures require variation between pixels; final suite repeat queued |
 | `test/e2e/plan-document.test.ts` | 61 | 61 | Reviewed unchanged; focused seed 104729 passed tagged A4 outline, date, deterministic bytes and export; Electron case requires opt-in executable |
 | `test/e2e/player-items.test.ts` | 265 | 251 | Focused seed 155921 passed all seven; virtual PDF fallback timers and public popup/screen/progress/storage behaviour replace listener counters and real waits |
