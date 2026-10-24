@@ -178,11 +178,13 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `.sampo/changesets/layer-captions-bare-canvas.md` | 5 | 6 | Metadata only; restore mandatory root release target so CI can run |
 | `.sampo/changesets/player-motion.md` | 10 | 11 | Metadata only; restore mandatory root release target so CI can run |
 
-| `test/resources.ts` | 0 | 28 | Shared test-only ownership helper: context-scoped copies/folders and reverse-order disposal; used by subsequent audit files |
+| `test/resources.ts` | 0 | 34 | Shared test-only ownership helper: one context-owned stack even across helper calls; reverse-order disposal keeps dependants ahead of files |
 
 | `test/cloud-fake.ts` | 451 | 454 | Test-only hosting fake now uses instance-owned deterministic IDs and time; existing 20 cloud contracts passed with seed 155921 |
 
 | `test/events.ts` | 0 | 27 | Shared test-only event log and subscription waits; real failure deadline stays active while domain timers are faked; 19 engine cases passed |
+
+| `test/bytes.ts` | 0 | 9 | Reusable high-entropy seeded media/archive bytes; another explicit seed represents an edit; backup restore/pruning/large-file tests passed |
 
 ## Remaining work
 
