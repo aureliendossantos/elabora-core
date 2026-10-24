@@ -39,7 +39,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 ## Production changes
 
-None.
+No production code changed. CI discovered a pre-existing release-metadata error before tests could run: `.sampo/changesets/layer-captions-bare-canvas.md` and `player-motion.md` named only `npm/@elabora/player`, although the release policy requires `npm/elabora` too. Added the matching root patch target to each in a separate metadata-only commit; the original change texts and player targets are preserved. `npm run release:check` then passed.
 
 ## Human questions / proposed refactors
 
