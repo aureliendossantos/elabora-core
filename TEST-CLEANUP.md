@@ -24,17 +24,17 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Defect | Count | Example |
 | --- | ---: | --- |
-| Implementation coupling | 33 | ops: private computeDiff comparison and exact chosen diff scripts |
+| Implementation coupling | 36 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 4 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
 | Fixed-delay synchronization | 32 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
-| Unseeded randomness | 33 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
+| Unseeded randomness | 34 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 4 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 5 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 99 | validate: copied fixtures were never removed |
+| Resource cleanup | 101 | validate: copied fixtures were never removed |
 | Wall-clock timing | 9 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -147,7 +147,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/plan.test.ts` | 356 | — | Pending |
 | `test/unit/player-items.test.ts` | 422 | — | Pending |
 | `test/unit/player.test.ts` | 240 | — | Pending |
-| `test/unit/project-files.test.ts` | 124 | — | Pending |
+| `test/unit/project-files.test.ts` | 124 | 115 | Passed 7 native-seeded cases; deterministic SHA oracle and owned courses, public snapshot/hash invalidation replace cache JSON tampering; real cache reuse under unreadable content remains checked by backups |
 | `test/unit/purity.test.ts` | 53 | 53 | Passed 3 native-seeded cases; public LMS catalogue compared with checked-in data instead of private PROFILE_FILES import/order; required cross-browser architecture and generated-template guards retained |
 | `test/unit/releases.test.ts` | 38 | — | Pending |
 | `test/unit/rename.test.ts` | 118 | — | Pending |

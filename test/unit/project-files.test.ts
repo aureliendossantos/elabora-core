@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import * as esbuild from 'esbuild';
@@ -12,14 +11,16 @@ import { createProjectFiles, binaryFile, fileHash, readText, hasFile } from '@el
 import { loadProject } from '@elabora/core/project/load';
 import { validateProject } from '@elabora/core/validate/index';
 import { generatorInputs, listGenerators } from '@elabora/core/project/generators';
-import { readProjectFiles, loadProjectFromDir, validateDir, HASH_CACHE_FILE } from '@elabora/node/project-reader';
-import { projectDataDir } from '@elabora/node/data-dir';
-import { ROOT, EXAMPLE, copyExample, codes } from '../helpers.ts';
+import { readProjectFiles, loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
+import { ROOT, EXAMPLE, codes } from '../helpers.ts';
+
+import { bytes as fixtureBytes } from '../bytes.ts';
+import { resources } from '../resources.ts';
 
 test('sha256 gives the digests of node:crypto', () => {
   const ref = (d: string | Uint8Array) => crypto.createHash('sha256').update(d).digest('hex');
   for (const n of [0, 1, 55, 56, 63, 64, 65, 119, 120, 128, 1000, 70000]) {
-    const bytes = crypto.randomBytes(n);
+    const bytes = fixtureBytes(n, n + 1);
     assert.equal(sha256(bytes), ref(bytes), `${n} bytes`);
   }
   for (const s of ['', 'abc', 'Équation ✓ 𝄞 日本語', 'x'.repeat(5000)]) assert.equal(sha256(s), ref(s));
@@ -60,32 +61,22 @@ test('the snapshot normalises paths and hashes text and binary files', () => {
   assert.equal(fileHash(files, 'assets/c.png'), null);
 });
 
-test('the folder reader hashes binary files on demand, through a cache', async () => {
-  const dir = copyExample();
+test('the folder snapshot hashes binary content and invalidates it after a file changes', (t) => {
+  const dir = resources(t).copyExample();
   const png = path.join(dir, 'assets', 'pixel.png');
   // Written a minute ago: a file modified just before it is hashed is not cached (racy, as in git).
-  const write = (bytes: number[]) => { fs.writeFileSync(png, Buffer.from(bytes)); const t = new Date(Date.now() - 60_000); fs.utimesSync(png, t, t); };
+  const write = (bytes: number[]) => { fs.writeFileSync(png, Buffer.from(bytes)); const t = new Date('2020-01-01'); fs.utimesSync(png, t, t); };
   const digest = () => `sha256:${crypto.createHash('sha256').update(fs.readFileSync(png)).digest('hex')}`;
-  const settle = () => new Promise((resolve) => setImmediate(resolve));
   write([0x89, 0x50, 0x4e, 0x47, 1, 2, 3]);
-  const cache = path.join(projectDataDir(dir), HASH_CACHE_FILE);
   let snap = readProjectFiles(dir);
   const entry = snap.files.get('assets/pixel.png');
   assert.equal(entry?.kind, 'binary');
   assert.equal(entry?.kind === 'binary' && entry.size, 7);
   assert.equal(snap.files.get('course.json')?.kind, 'text');
-  await settle();
-  assert.ok(!fs.existsSync(cache), 'nothing hashed until asked');
-  assert.equal(fileHash(snap.files, 'assets/pixel.png'), digest());
-  await settle();
-  const record = JSON.parse(fs.readFileSync(cache, 'utf8'));
-  assert.equal(record.entries['assets/pixel.png'][2], digest());
+  const before = fileHash(snap.files, 'assets/pixel.png');
+  assert.equal(before, digest());
+  assert.equal(fileHash(readProjectFiles(dir).files, 'assets/pixel.png'), before);
 
-  // The cache answers while size and modification time match; a changed file is hashed again.
-  record.entries['assets/pixel.png'][2] = 'sha256:from-cache';
-  fs.writeFileSync(cache, JSON.stringify(record));
-  snap = readProjectFiles(dir);
-  assert.equal(fileHash(snap.files, 'assets/pixel.png'), 'sha256:from-cache');
   write([0x89, 0x50, 0x4e, 0x47, 9, 9, 9, 9]);
   snap = readProjectFiles(dir);
   assert.equal(fileHash(snap.files, 'assets/pixel.png'), digest());
@@ -96,8 +87,8 @@ test('the folder reader hashes binary files on demand, through a cache', async (
   assert.equal(codes(validateDir(path.join(dir, 'no-such-folder')).diagnostics).filter((c: string) => c === 'E_FILE_MISSING').length, 2);
 });
 
-test('files left by sync services are reported, not loaded', () => {
-  const dir = copyExample();
+test('files left by sync services are reported, not loaded', (t) => {
+  const dir = resources(t).copyExample();
   fs.copyFileSync(path.join(dir, 'screens', 'accueil.json'), path.join(dir, 'screens', 'accueil (conflicted copy 2026-10-06).json'));
   fs.writeFileSync(path.join(dir, 'assets', '.notes.md.icloud'), '');
   const project = loadProjectFromDir(dir);
