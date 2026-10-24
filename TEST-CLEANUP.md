@@ -34,7 +34,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 6 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 5 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 108 | validate: copied fixtures were never removed |
+| Resource cleanup | 110 | validate: copied fixtures were never removed |
 | Wall-clock timing | 11 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -64,7 +64,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/e2e/dialogues.test.ts` | 559 | — | Pending |
 | `test/e2e/edge.test.ts` | 122 | — | Pending |
 | `test/e2e/engine-canvas.test.ts` | 128 | 91 | Focused seed 130363 passed; commands and external writes reach actual DOM while the free object keeps its marker and frame; removed machine-speed budgets |
-| `test/e2e/fonts.test.ts` | 124 | — | Pending |
+| `test/e2e/fonts.test.ts` | 124 | 112 | Focused seed 130363 passed both browser regressions; actual Unicode/font loading, licence and embedded font rendering retained; own sources/builds/server/browser |
 | `test/e2e/layer-timeline.test.ts` | 296 | — | Pending |
 | `test/e2e/lms.test.ts` | 103 | — | Pending |
 | `test/e2e/look.test.ts` | 357 | — | Pending |
