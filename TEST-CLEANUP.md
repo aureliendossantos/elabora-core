@@ -150,7 +150,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/plan-order.test.ts` | 124 | — | Pending |
 | `test/unit/plan.test.ts` | 356 | — | Pending |
 | `test/unit/player-items.test.ts` | 422 | — | Pending |
-| `test/unit/player.test.ts` | 240 | — | Pending |
+| `test/unit/player.test.ts` | 240 | 241 | Native-seeded player cases passed; context-owned fixtures preserve compiled bars, accessibility, navigation, editing and translation contracts |
 | `test/unit/project-files.test.ts` | 124 | 115 | Passed 7 native-seeded cases; deterministic SHA oracle and owned courses, public snapshot/hash invalidation replace cache JSON tampering; real cache reuse under unreadable content remains checked by backups |
 | `test/unit/purity.test.ts` | 53 | 53 | Passed 3 native-seeded cases; public LMS catalogue compared with checked-in data instead of private PROFILE_FILES import/order; required cross-browser architecture and generated-template guards retained |
 | `test/unit/releases.test.ts` | 38 | — | Pending |

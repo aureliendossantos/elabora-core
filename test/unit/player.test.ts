@@ -1,8 +1,9 @@
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources as testResources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT, copyExample as copyCourse, readJSON, writeJSON, codes } from '../helpers.ts';
+import { ROOT, readJSON, writeJSON, codes } from '../helpers.ts';
 import * as edit from '@elabora/node/edit';
 import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
 import { readLock, assignKeys } from '@elabora/core/compile/state-model';
@@ -16,7 +17,7 @@ import type { CourseData, PlayerBarData } from '@elabora/player/course-data';
 // The learner's player (docs/decisions/D58.md): course.json player, its items and what they show.
 
 // The sample has a logo, resources, a glossary and credits (the test fixture has none).
-const copyExample = () => copyCourse(path.join(ROOT, 'examples/diagnostic-reseau'));
+const copyExample = (t: TestContext) => testResources(t).copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
 
 const compiled = (dir: string, options: Partial<Parameters<typeof compileCourseData>[2]> = {}): CourseData => {
   const project = loadProjectFromDir(dir);
@@ -25,8 +26,8 @@ const compiled = (dir: string, options: Partial<Parameters<typeof compileCourseD
 };
 const ids = (bar: PlayerBarData | null) => bar?.items.map((item) => item.id) ?? null;
 
-test('the player: the items that show, in the author\'s order; a bar with nothing to show is removed', () => {
-  const dir = copyExample();
+test('the player: the items that show, in the author\'s order; a bar with nothing to show is removed', (t) => {
+  const dir = copyExample(t);
   let data = compiled(dir);
   assert.deepEqual(ids(data.player.top), ['logo', 'title', 'progress', 'spacer', 'resources', 'glossary', 'credits', 'exit']);
   assert.deepEqual(ids(data.player.bottom), ['outline', 'controls', 'spacer', 'previous', 'next']);
@@ -45,8 +46,8 @@ test('the player: the items that show, in the author\'s order; a bar with nothin
   assert.equal(data.player.top?.position, 'page');
 });
 
-test('the player\'s defaults: a course without player gets the bars of a new course; Quit is never on the web, and free navigation shows the outline', () => {
-  const dir = copyExample();
+test('the player\'s defaults: a course without player gets the bars of a new course; Quit is never on the web, and free navigation shows the outline', (t) => {
+  const dir = copyExample(t);
   const course = readJSON(dir, 'course.json');
   delete course.player;
   writeJSON(dir, 'course.json', course);
@@ -63,8 +64,8 @@ test('the player\'s defaults: a course without player gets the bars of a new cou
   assert.deepEqual(ids(compiled(dir, { delivery: { target: 'web', progress: 'local', navigation: 'free' } }).player.bottom), ['outline', 'next']);
 });
 
-test('settings that moved into course.json player are refused with where they went', () => {
-  const dir = copyExample();
+test('settings that moved into course.json player are refused with where they went', (t) => {
+  const dir = copyExample(t);
   const course = readJSON(dir, 'course.json');
   course.navigation.showMenu = false;
   course.navigation.footer = 'end';
@@ -76,8 +77,8 @@ test('settings that moved into course.json player are refused with where they we
   assert.match(moved.find((d) => d.path === '/narration/seek')!.message, /seekBar/);
 });
 
-test('the player\'s checks: the way back, the end reachable without Next, Quit, an item twice, resources and glossary links', () => {
-  const dir = copyExample();
+test('the player\'s checks: the way back, the end reachable without Next, Quit, an item twice, resources and glossary links', (t) => {
+  const dir = copyExample(t);
   const course = readJSON(dir, 'course.json');
   course.player.bottom.items = [{ id: 'controls' }];
   course.player.top.items = course.player.top.items.filter((item: { id: string }) => item.id !== 'exit').concat([{ id: 'title' }]);
@@ -108,8 +109,8 @@ test('the player\'s checks: the way back, the end reachable without Next, Quit, 
   assert.ok(!codes(validateDir(dir).diagnostics).includes('W_PLAYER_END_UNREACHABLE'));
 });
 
-test('the end without Next: go-to buttons count where learners reach them, narrations that go on by themselves do not', () => {
-  const dir = copyExample();
+test('the end without Next: go-to buttons count where learners reach them, narrations that go on by themselves do not', (t) => {
+  const dir = copyExample(t);
   const course = readJSON(dir, 'course.json');
   course.presentation = { mode: 'slides' };
   course.player.bottom.items = course.player.bottom.items.filter((item: { id: string }) => item.id !== 'next');
@@ -149,8 +150,8 @@ test('the end without Next: go-to buttons count where learners reach them, narra
   assert.deepEqual((ends()[0]?.details as { screens: { screen: string }[] } | undefined)?.screens.map((entry) => entry.screen), ['accueil']);
 });
 
-test('default bars: a bar without its own items has the defaults, an item the author placed wins, and update_player keeps both', () => {
-  const dir = copyExample();
+test('default bars: a bar without its own items has the defaults, an item the author placed wins, and update_player keeps both', (t) => {
+  const dir = copyExample(t);
   const course = readJSON(dir, 'course.json');
   // A top bar that only says where it is, and resources placed in the bottom bar.
   course.player = { top: { position: 'page' }, bottom: { items: [{ id: 'outline' }, { id: 'resources' }, { id: 'controls' }, { id: 'previous' }, { id: 'next' }] } };
@@ -172,8 +173,8 @@ test('default bars: a bar without its own items has the defaults, an item the au
   assert.throws(() => edit.updatePlayer(dir, { resources: [{ id: 'r', title: 'R', asset: 'resources/absente.pdf' }] }), /not in the course/);
 });
 
-test('regulation and accessibility: a generated voice with « IA et crédits » hidden, narration without controls or transcript', () => {
-  const dir = copyExample();
+test('regulation and accessibility: a generated voice with « IA et crédits » hidden, narration without controls or transcript', (t) => {
+  const dir = copyExample(t);
   const course = readJSON(dir, 'course.json');
   course.player.top.items = course.player.top.items.map((item: { id: string }) => (item.id === 'credits' ? { id: 'credits', enabled: false } : item));
   course.player.bottom.items = course.player.bottom.items.map((item: { id: string }) => (item.id === 'controls' ? { id: 'controls', options: { transcript: false, speeds: 'none' } } : item));
@@ -195,8 +196,8 @@ test('regulation and accessibility: a generated voice with « IA et crédits » 
   assert.deepEqual(compiled(dir).about?.ai, { voices: ['Marc', 'Claire, votre guide', 'Leïla'] });
 });
 
-test('update_player: items enabled, moved and given options, tokens, content, in one undoable change', () => {
-  const dir = copyExample();
+test('update_player: items enabled, moved and given options, tokens, content, in one undoable change', (t) => {
+  const dir = copyExample(t);
   const before = fs.readFileSync(path.join(dir, 'course.json'), 'utf8');
   const result = edit.updatePlayer(dir, {
     disable: ['progress'], move: [{ item: 'outline', bar: 'top', index: 1 }],
@@ -219,8 +220,8 @@ test('update_player: items enabled, moved and given options, tokens, content, in
   assert.equal(fs.readFileSync(path.join(dir, 'course.json'), 'utf8'), before);
 });
 
-test('elabora_player reads the bars with what shows and why not, the tokens with their values, and the findings', () => {
-  const dir = copyCourse(); // the test fixture: no narration, no player of its own
+test('elabora_player reads the bars with what shows and why not, the tokens with their values, and the findings', (t) => {
+  const dir = testResources(t).copyExample(); // the test fixture: no narration, no player of its own
   const report = playerReport(dir);
   const controls = report.bottom.items.find((item) => item.id === 'controls')!;
   assert.deepEqual([controls.shows, controls.why], [false, 'no narrated screen']);
@@ -230,9 +231,9 @@ test('elabora_player reads the bars with what shows and why not, the tokens with
   assert.ok(Object.values(report.tokens).every((token) => token.value !== '' && token.set === false), 'defaults come from the charter');
 });
 
-test('glossary links compile to the entry, and the player\'s content is translated', () => {
+test('glossary links compile to the entry, and the player\'s content is translated', (t) => {
   assert.equal(renderMarkdown('Le [switch](glossary:commutateur) relie les postes.'), '<p>Le <a href="#t-glossary-commutateur" class="t-term" data-term="commutateur">switch</a> relie les postes.</p>');
-  const units = extractUnits(loadProjectFromDir(copyExample()));
+  const units = extractUnits(loadProjectFromDir(copyExample(t)));
   const keys = units.map((unit) => unit.id);
   for (const key of ['course.glossary.commutateur.term', 'course.glossary.commutateur.definition', 'course.glossary.commutateur.variant.1', 'course.resource.fiche-reflexe.title', 'course.resource.fiche-reflexe.description', 'course.credit.1', 'course.logo.alt']) {
     assert.ok(keys.includes(key), key);
