@@ -27,7 +27,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Implementation coupling | 41 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 5 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
-| Fixed-delay synchronization | 36 | engine-session: sleep(400) before checking watcher results |
+| Fixed-delay synchronization | 38 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
 | Unseeded randomness | 34 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
@@ -56,7 +56,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | File | Lines before | Lines after | Result / preserved behaviour |
 | --- | ---: | ---: | --- |
 | `test/e2e/agent-workflow.test.ts` | 53 | 54 | Focused seed 130363 passed; real MCP translate, preview, validation and language package workflow retained; own copied course and MCP peers |
-| `test/e2e/canvas-live.test.ts` | 233 | — | Pending |
+| `test/e2e/canvas-live.test.ts` | 233 | 232 | Focused seed 130363 passed all six workflows; ordered postMessage acknowledgement replaces delay-based absence checks; owned browser, host and session |
 | `test/e2e/canvas.test.ts` | 473 | — | Pending |
 | `test/e2e/character.test.ts` | 136 | — | Pending |
 | `test/e2e/charts.test.ts` | 182 | 228 | Passed crowded six-label desktop/phone layout and five-stage cycle; verifies visible labels and SVG bounds |

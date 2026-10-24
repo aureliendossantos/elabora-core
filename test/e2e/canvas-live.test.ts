@@ -1,4 +1,5 @@
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -11,7 +12,7 @@ import { renderScreen } from '@elabora/core/render/screen';
 import type { CanvasApi } from '@elabora/player/canvas';
 import { PLAYER_PREVIEW_PROTOCOL } from '@elabora/player/canvas-protocol';
 import type { CanvasMessage, HostMessage } from '@elabora/player/canvas-protocol';
-import { ROOT, copyExample, isClosed, settled } from '../helpers.ts';
+import { ROOT, isClosed, settled } from '../helpers.ts';
 import { openProject } from '@elabora/engine';
 
 // The player's preview (the canvas with chrome=live, protocol elabora-player-preview/1): the bars
@@ -21,48 +22,51 @@ import { openProject } from '@elabora/engine';
 type LiveWindow = Window & typeof globalThis & { __elaboraCanvas: CanvasApi; sent: CanvasMessage[] };
 const protocol = PLAYER_PREVIEW_PROTOCOL;
 
-async function withLive(dir: string, run: (live: { page: Frame; host: Page; show(screen: string, id: number): Promise<void>; send(message: HostMessage): Promise<void>; post(message: Record<string, unknown>): Promise<void>; sent(): Promise<CanvasMessage[]> }) => Promise<void>, { chrome = 'live' }: { chrome?: string } = {}) {
-  const host = await startCanvasHost({ root: dir });
-  const browser = await launchBrowser('chromium');
-  try {
-    const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
-    const errors: string[] = [];
-    page.on('pageerror', (error) => errors.push(error.message));
-    // In a frame, as the app shows it: the canvas posts to its parent, which listens as a host would.
-    await page.evaluate(() => {
-      (window as unknown as LiveWindow).sent = [];
-      addEventListener('message', (event) => { const data = event.data as CanvasMessage; if (data?.type && data.type !== 'elabora/layout') (window as unknown as LiveWindow).sent.push(data); });
-    });
-    await page.evaluate((url) => { document.body.style.margin = '0'; document.body.innerHTML = `<iframe id="canvas" src="${url}" style="border:0;width:1600px;height:900px"></iframe><input id="column" aria-label="Colonne">`; }, `${host.url}&chrome=${chrome}`);
-    const frame = await (await page.waitForSelector('#canvas')).contentFrame();
-    if (!frame) throw new Error('no frame');
-    await frame.waitForFunction(() => (window as unknown as LiveWindow).__elaboraCanvas);
-    const show = async (screen: string, id: number) => {
-      host.push(renderScreen(loadProjectFromDir(dir), screen, {}), { id });
-      await frame.waitForFunction((wanted) => (window as unknown as LiveWindow).__elaboraCanvas.layout().id === wanted, id);
-      await frame.evaluate(() => (window as unknown as LiveWindow).__elaboraCanvas.ready(5000));
-    };
-    const send = async (message: HostMessage) => { await frame.evaluate((json) => (window as unknown as LiveWindow).__elaboraCanvas.receive(JSON.parse(json)), JSON.stringify(message)); };
-    // As the app posts it: from the parent window, with the token.
-    const token = new URL(host.url).searchParams.get('token');
-    const post = async (message: Record<string, unknown>) => {
-      await page.evaluate((json) => { (document.getElementById('canvas') as HTMLIFrameElement).contentWindow!.postMessage(JSON.parse(json), '*'); }, JSON.stringify({ ...message, token }));
-      await page.waitForTimeout(50);
-    };
-    // Messages arrive after the event that sent them (postMessage is asynchronous).
-    const sent = async () => { await page.waitForTimeout(100); return page.evaluate(() => (window as unknown as LiveWindow).sent.splice(0)); };
-    await run({ page: frame, host: page, show, send, post, sent });
-    assert.deepEqual(errors, []);
-  } finally {
-    await browser.close();
-    await host.close();
-  }
+async function withLive(t: TestContext, dir: string, run: (live: { page: Frame; host: Page; show(screen: string, id: number): Promise<void>; send(message: HostMessage): Promise<void>; post(message: Record<string, unknown>): Promise<void>; sent(): Promise<CanvasMessage[]> }) => Promise<void>, { chrome = 'live' }: { chrome?: string } = {}) {
+  const host = resources(t).own(await startCanvasHost({ root: dir }), value => value.close());
+  const browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
+  const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
+  await page.addInitScript(() => addEventListener('message', event => { if (event.data?.testBarrier) parent.postMessage({ testBarrier: event.data.testBarrier }, '*'); }));
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  // In a frame, as the app shows it: the canvas posts to its parent, which listens as a host would.
+  await page.evaluate(() => {
+    (window as unknown as LiveWindow).sent = [];
+    addEventListener('message', (event) => { const data = event.data as CanvasMessage; if (data?.type && data.type !== 'elabora/layout') (window as unknown as LiveWindow).sent.push(data); });
+  });
+  await page.evaluate((url) => { document.body.style.margin = '0'; document.body.innerHTML = `<iframe id="canvas" src="${url}" style="border:0;width:1600px;height:900px"></iframe><input id="column" aria-label="Colonne">`; }, `${host.url}&chrome=${chrome}`);
+  const frame = await (await page.waitForSelector('#canvas')).contentFrame();
+  if (!frame) throw new Error('no frame');
+  await frame.waitForFunction(() => (window as unknown as LiveWindow).__elaboraCanvas);
+  const show = async (screen: string, id: number) => {
+    host.push(renderScreen(loadProjectFromDir(dir), screen, {}), { id });
+    await frame.waitForFunction((wanted) => (window as unknown as LiveWindow).__elaboraCanvas.layout().id === wanted, id);
+    await frame.evaluate(() => (window as unknown as LiveWindow).__elaboraCanvas.ready(5000));
+  };
+  const send = async (message: HostMessage) => { await frame.evaluate((json) => (window as unknown as LiveWindow).__elaboraCanvas.receive(JSON.parse(json)), JSON.stringify(message)); };
+  // As the app posts it: from the parent window, with the token.
+  const token = new URL(host.url).searchParams.get('token');
+  let barrier = 0;
+  const flush = () => page.evaluate(id => new Promise<void>(resolve => {
+    const target = (document.getElementById('canvas') as HTMLIFrameElement).contentWindow!;
+    const receive = (event: MessageEvent) => { if (event.source === target && event.data?.testBarrier === id) { removeEventListener('message', receive); resolve(); } };
+    addEventListener('message', receive);
+    target.postMessage({ testBarrier: id }, '*');
+  }), ++barrier);
+  const post = async (message: Record<string, unknown>) => {
+    await page.evaluate((json) => { (document.getElementById('canvas') as HTMLIFrameElement).contentWindow!.postMessage(JSON.parse(json), '*'); }, JSON.stringify({ ...message, token }));
+    await flush();
+  };
+  // Messages arrive after the event that sent them (postMessage is asynchronous).
+  const sent = async () => { await flush(); return page.evaluate(() => (window as unknown as LiveWindow).sent.splice(0)); };
+  await run({ page: frame, host: page, show, send, post, sent });
+  assert.deepEqual(errors, []);
 }
 
-test('the live bars: panels, the outline, Previous and Next said to the host, the item clicked, highlight, open and close', { timeout: 180000 }, async () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+test('the live bars: panels, the outline, Previous and Next said to the host, the item clicked, highlight, open and close', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
   edit.updatePlayer(dir, { enable: ['display'] });
-  await withLive(dir, async ({ page, show, send, post, sent }) => {
+  await withLive(t, dir, async ({ page, show, send, post, sent }) => {
     await show('chemin', 1);
     assert.deepEqual((await sent()).find((message) => message.type === 'elabora/ready'), { type: 'elabora/ready', chrome: 'live', protocol });
     // The panels open from their buttons, between the bars.
@@ -124,9 +128,9 @@ test('the live bars: panels, the outline, Previous and Next said to the host, th
   });
 });
 
-test('the live bars: a change of the player reaches the open canvas without a reload, the panel open stays open', { timeout: 180000 }, async () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
-  await withLive(dir, async ({ page, show, post }) => {
+test('the live bars: a change of the player reaches the open canvas without a reload, the panel open stays open', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  await withLive(t, dir, async ({ page, show, post }) => {
     await show('accueil', 1);
     await page.evaluate(() => { (window as unknown as { kept: boolean }).kept = true; });
     await post({ type: 'elabora/open', protocol, panel: 'resources' });
@@ -143,10 +147,10 @@ test('the live bars: a change of the player reaches the open canvas without a re
   });
 });
 
-test('the canvas never takes focus from the host: not on an open, a push that mounts the course again, or a modal layer; a click inside does', { timeout: 180000 }, async () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+test('the canvas never takes focus from the host: not on an open, a push that mounts the course again, or a modal layer; a click inside does', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
   const typing = (host: Page) => host.evaluate(() => document.activeElement?.id ?? document.activeElement?.tagName ?? null);
-  await withLive(dir, async ({ page, host, show, post }) => {
+  await withLive(t, dir, async ({ page, host, show, post }) => {
     await show('accueil', 1);
     // The host's column has the focus (below the canvas, focused without scrolling the page).
     await host.evaluate(() => document.getElementById('column')!.focus({ preventScroll: true }));
@@ -176,10 +180,10 @@ test('the canvas never takes focus from the host: not on an open, a push that mo
   });
 });
 
-test('the live bars: « Langue » lists the languages a package of every language holds, and a choice goes to the host', { timeout: 180000 }, async () => {
-  const dir = copyExample(path.join(ROOT, 'examples/orbital-rendezvous'));
+test('the live bars: « Langue » lists the languages a package of every language holds, and a choice goes to the host', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample(path.join(ROOT, 'examples/orbital-rendezvous'));
   edit.updatePlayer(dir, { enable: ['language'] });
-  await withLive(dir, async ({ page, show, sent }) => {
+  await withLive(t, dir, async ({ page, show, sent }) => {
     await show('intro', 1);
     await page.click('.t-language-btn');
     assert.deepEqual(await page.locator('.t-language-menu [role="menuitemradio"]').allTextContents(), ['English', 'Français']);
@@ -192,14 +196,14 @@ test('the live bars: « Langue » lists the languages a package of every languag
   });
 });
 
-test('an event that goes to the next screen names the screen after the one shown, when the canvas has shown others before', { timeout: 180000 }, async () => {
+test('an event that goes to the next screen names the screen after the one shown, when the canvas has shown others before', { timeout: 180000 }, async (t) => {
   // The frozen fixture: its first-reflex screen is still a decision block (the sample's is a dialogue).
-  const dir = copyExample();
+  const dir = resources(t).copyExample();
   const file = path.join(dir, 'screens/premier-reflexe.json');
   const screen = JSON.parse(fs.readFileSync(file, 'utf8'));
   screen.events = [...(screen.events ?? []), { id: 'reflexe-suite', on: { type: 'decision.selected', target: 'reflexe-choix', option: 'a' }, do: [{ type: 'go-to', screen: 'next' }] }];
   fs.writeFileSync(file, `${JSON.stringify(screen, null, 2)}\n`);
-  await withLive(dir, async ({ page, show, sent }) => {
+  await withLive(t, dir, async ({ page, show, sent }) => {
     // The view mounted on accueil, then updated in place for premier-reflexe.
     await show('accueil', 1);
     await show('premier-reflexe', 2);
@@ -210,24 +214,19 @@ test('an event that goes to the next screen names the screen after the one shown
   });
 });
 
-test('the engine pushes the screen shown again when another screen changes what the bars show (a title in the outline)', { timeout: 180000 }, async () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
-  const session = await openProject(dir, { backups: { enabled: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 });
-  const browser = await launchBrowser('chromium');
-  try {
-    const canvas = await session.openCanvas();
-    const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
-    await page.goto(`${canvas.url}&chrome=live`);
-    await page.waitForFunction(() => (window as unknown as LiveWindow).__elaboraCanvas);
-    const view = await session.canvasView({ screen: 'accueil' });
-    await page.waitForFunction((id) => (window as unknown as LiveWindow).__elaboraCanvas.layout().id === id, view.id);
-    await page.evaluate((json) => (window as unknown as LiveWindow).__elaboraCanvas.receive(JSON.parse(json)), JSON.stringify({ type: 'elabora/open', protocol, panel: 'outline' }));
-    assert.match(await page.locator('.t-menu').textContent() ?? '', /Le chemin d'une impression/);
-    const renamed = await session.run('update_screen', { id: 'chemin', title: 'Le trajet d\'une impression' });
-    await page.waitForFunction((id) => (window as unknown as LiveWindow).__elaboraCanvas.layout().id === id, renamed.change?.seq);
-    assert.match(await page.locator('.t-menu').textContent() ?? '', /Le trajet d'une impression/);
-  } finally {
-    await browser.close();
-    await session.close();
-  }
+test('the engine pushes the screen shown again when another screen changes what the bars show (a title in the outline)', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const session = resources(t).own(await openProject(dir, { backups: { enabled: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 }), value => value.close());
+  const browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
+  const canvas = await session.openCanvas();
+  const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
+  await page.goto(`${canvas.url}&chrome=live`);
+  await page.waitForFunction(() => (window as unknown as LiveWindow).__elaboraCanvas);
+  const view = await session.canvasView({ screen: 'accueil' });
+  await page.waitForFunction((id) => (window as unknown as LiveWindow).__elaboraCanvas.layout().id === id, view.id);
+  await page.evaluate((json) => (window as unknown as LiveWindow).__elaboraCanvas.receive(JSON.parse(json)), JSON.stringify({ type: 'elabora/open', protocol, panel: 'outline' }));
+  assert.match(await page.locator('.t-menu').textContent() ?? '', /Le chemin d'une impression/);
+  const renamed = await session.run('update_screen', { id: 'chemin', title: 'Le trajet d\'une impression' });
+  await page.waitForFunction((id) => (window as unknown as LiveWindow).__elaboraCanvas.layout().id === id, renamed.change?.seq);
+  assert.match(await page.locator('.t-menu').textContent() ?? '', /Le trajet d'une impression/);
 });
