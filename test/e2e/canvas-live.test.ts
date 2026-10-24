@@ -11,7 +11,7 @@ import { renderScreen } from '@elabora/core/render/screen';
 import type { CanvasApi } from '@elabora/player/canvas';
 import { PLAYER_PREVIEW_PROTOCOL } from '@elabora/player/canvas-protocol';
 import type { CanvasMessage, HostMessage } from '@elabora/player/canvas-protocol';
-import { ROOT, copyExample, isClosed } from '../helpers.ts';
+import { ROOT, copyExample, isClosed, settled } from '../helpers.ts';
 import { openProject } from '@elabora/engine';
 
 // The player's preview (the canvas with chrome=live, protocol elabora-player-preview/1): the bars
@@ -183,6 +183,7 @@ test('the live bars: « Langue » lists the languages a package of every languag
     await show('intro', 1);
     await page.click('.t-language-btn');
     assert.deepEqual(await page.locator('.t-language-menu [role="menuitemradio"]').allTextContents(), ['English', 'Français']);
+    await settled(page.locator('.t-language-menu'));
     await page.click('.t-language-menu [lang="fr"]');
     const messages = await sent();
     assert.deepEqual(messages.filter((message) => message.type === 'elabora/language'), [{ type: 'elabora/language', protocol, language: 'fr' }]);

@@ -24,6 +24,11 @@ export const playsMedia = (target: Page | Frame, type = 'video/mp4; codecs="avc1
 // out the fade.
 export const isClosed = (target: Locator): Promise<boolean> => target.evaluate((element) => Boolean((element as HTMLElement).hidden));
 
+// Waits for an element's own entrance to end before the test acts on it: its animations and
+// transitions, which the page ends when it draws frames. Playwright's click does wait for a still
+// box, but only for 30 s; on a loaded computer a menu's arrival can take longer than that.
+export const settled = (target: Locator): Promise<void> => target.evaluate((element) => Promise.all(element.getAnimations({ subtree: true }).map((animation) => animation.finished.catch(() => undefined))).then(() => undefined));
+
 // Stable baseline: tests that reshape the course must not depend on later sample design edits.
 export const EXAMPLE = path.join(ROOT, 'test/fixtures/format-0.1/diagnostic-reseau');
 // URL of a source module of the repository, for import() in another process (Windows paths are not
