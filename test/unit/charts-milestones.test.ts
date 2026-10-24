@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderChart, chartItems, chartTable, chartMarkdown } from '@elabora/core/charts/index';
-import { alternates, linesIn, milestonesOf } from '@elabora/core/charts/milestones';
 
 const context = { id: 'rules', language: 'en', tokens: {} };
 const short = (extra: Record<string, unknown> = {}) => ({
@@ -24,16 +23,6 @@ const long = () => ({
   ]
 });
 const count = (html: string, pattern: RegExp) => (html.match(pattern) ?? []).length;
-
-test('milestones: the measure decides when events alternate', () => {
-  assert.equal(linesIn('First IT charter', 200), 1);
-  assert.ok(linesIn('Fake PayPal pages copy the real site pixel for pixel', 100) > 3);
-  assert.equal(linesIn('Überprüfungsverantwortlichkeit', 100), Infinity);
-  assert.equal(alternates(milestonesOf(short())), false);
-  assert.equal(alternates(milestonesOf(long())), true);
-  // Two events never alternate: each has half the line.
-  assert.equal(alternates(milestonesOf({ items: long().items.slice(0, 2) })), false);
-});
 
 test('milestones: markup hooks, one line, a dot per event, words in their column', () => {
   const { html, data } = renderChart('milestones', short(), context);
@@ -88,6 +77,7 @@ test('milestones: items with their moments, the table and the Markdown fallback'
 test('milestones: one event, escaped words, bad items, determinism', () => {
   const one = renderChart('milestones', { takeaway: 'One date', items: [{ id: 'a', date: '2026', title: '<i>Now</i>' }] }, context).html;
   assert.equal(count(one, /class="t-ms-dot/g), 1);
+  assert.doesNotMatch(renderChart('milestones', { items: long().items.slice(0, 2) }, context).html, /is-alternate/, 'two long events stay on one line');
   assert.match(one, /&lt;i&gt;Now&lt;\/i&gt;/);
   const bad = renderChart('milestones', { takeaway: 'Bad', items: [null, { id: 'a', date: '2026', title: 'Ok' }, 3] }, context).html;
   assert.match(bad, /--n:1/);
