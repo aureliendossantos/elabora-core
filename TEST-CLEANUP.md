@@ -175,7 +175,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/unit/zip-writer.test.ts` | 90 | 87 | Passed 3 native-seeded cases; own directories, seeded high-entropy payloads, round-trip every entry and compare reordered public writes; controlled mtimes and limit errors replace elapsed-time and private writer comparison |
 | `test/unit/zip.test.ts` | 19 | 19 | Passed native-seeded cases; retained CRC reference and deterministic ordered ZIP; now compares every restored entry rather than one file |
 | `README.md` | 86 | 90 | Policy complete; canonical standards in CONTRIBUTING |
-| `CONTRIBUTING.md` | 51 | 55 | Policy complete; canonical standards in CONTRIBUTING |
+| `CONTRIBUTING.md` | 51 | 55 | Canonical policy includes full-audit lessons: decoded outputs, independent prerequisites, resource ownership, virtual clocks and completion acknowledgements |
 | `AGENTS.md` | 29 | 29 | Policy complete; canonical standards in CONTRIBUTING |
 | `.sampo/changesets/layer-captions-bare-canvas.md` | 5 | 6 | Metadata only; restore mandatory root release target so CI can run |
 | `.sampo/changesets/player-motion.md` | 10 | 11 | Metadata only; restore mandatory root release target so CI can run |
