@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderChart, chartItems, chartTable, chartMarkdown } from '@elabora/core/charts/index';
-import { proportionGeometry, PROPORTION_ITEM } from '@elabora/core/charts/proportion';
+import { seededRandom } from '../mutations.ts';
 
 // proportion (D60): "1 in 10" as an icon array drawn at build time.
 
@@ -19,16 +19,12 @@ test('proportion: one item, the figure and the lit icons; the figure says it to 
   assert.equal([...html.matchAll(/<b class="t-prop-ink"><\/b>/g)].length, 9);
   assert.equal(icons(html).length, 100);
   assert.match(html, /<div class="t-prop-grid" style="--cols:20">/);
-  assert.deepEqual(chartItems('proportion', clicks), [{ id: PROPORTION_ITEM, at: { line: 'l2', word: 'ten' }, path: '/at' }]);
+  assert.deepEqual(chartItems('proportion', clicks), [{ id: 'part', at: { line: 'l2', word: 'ten' }, path: '/at' }]);
   assert.deepEqual(chartItems('proportion', { ...clicks, at: undefined }), [{ id: 'part', path: '/at' }]);
 });
 
 test('proportion: lit icons fill column after column from the top left, as one block, each with its turn', () => {
   // 100 in 20 columns (5 rows): 9 lit are the first column and four of the second.
-  const { lit, rows, columns } = proportionGeometry(clicks);
-  assert.equal(columns, 20);
-  assert.equal(rows, 5);
-  assert.deepEqual([...lit], [0, 20, 40, 60, 80, 1, 21, 41, 61]);
   const { html } = renderChart('proportion', clicks, context);
   const lights = icons(html);
   assert.deepEqual(lights.flatMap((on, index) => (on ? [index] : [])), [0, 1, 20, 21, 40, 41, 60, 61, 80]);
@@ -37,9 +33,9 @@ test('proportion: lit icons fill column after column from the top left, as one b
   assert.match(html, /<i class="t-prop-icon" data-wave="1"><\/i><\/div>/);
   assert.match(html, /<i class="t-prop-icon is-lit" data-t-item="part" data-wave="0.0435" data-turn="0.5556">/);
   // A short last row: cells that do not exist are skipped.
-  const short = proportionGeometry({ of: 25, part: 23, columns: 10 });
-  assert.equal(short.lit.size, 23);
-  assert.ok([...short.lit].every((index) => index < 25));
+  const short = icons(renderChart('proportion', { of: 25, part: 23, columns: 10 }, context).html);
+  assert.equal(short.length, 25);
+  assert.equal(short.filter(Boolean).length, 23);
 });
 
 test('proportion: the default figure is the share, counted; columns, icons and bounds', () => {
@@ -51,12 +47,12 @@ test('proportion: the default figure is the share, counted; columns, icons and b
   const fr = renderChart('proportion', { ...dots, of: 3, part: 1 }, { ...context, language: 'fr' }).html;
   assert.match(fr, /data-t-num="33">33 %</);
   // Bounds: part above of is all of them; nothing lit is a grid of quiet icons; an unknown icon is a person.
-  assert.equal(proportionGeometry({ of: 10, part: 40 }).lit.size, 10);
+  assert.equal(icons(renderChart('proportion', { of: 10, part: 40 }, context).html).filter(Boolean).length, 10);
   const none = renderChart('proportion', { takeaway: 'T', of: 10, part: 0, icon: 'star' }, context).html;
   assert.doesNotMatch(none, /is-lit/);
   assert.match(none, /t-prop--person/);
   assert.match(none, /data-t-num="0">0%</);
-  assert.equal(proportionGeometry({ of: 50, part: 5, columns: 25 }).rows, 2);
+  assert.match(renderChart('proportion', { of: 50, part: 5, columns: 25 }, context).html, /--cols:25/);
 });
 
 test('proportion: the table and the Markdown fallback name the figure and the count', () => {
@@ -66,4 +62,14 @@ test('proportion: the table and the Markdown fallback name the figure and the co
   const long = renderChart('proportion', { ...clicks, label: 'clicked <the> link & typed their password on the fake page' }, context).html;
   assert.match(long, /clicked &lt;the&gt; link &amp; typed/);
   assert.equal(renderChart('proportion', clicks, context).html, renderChart('proportion', clicks, context).html);
+});
+
+test('rendered icon counts preserve the total and clamp the share for seed 71', () => {
+  const random = seededRandom(71);
+  for (let trial = 0; trial < 100; trial++) {
+    const of = 1 + Math.floor(random() * 200), part = Math.floor(random() * (of + 20)) - 10;
+    const cells = icons(renderChart('proportion', { of, part }, context).html);
+    assert.equal(cells.length, of, `seed 71, trial ${trial}`);
+    assert.equal(cells.filter(Boolean).length, Math.max(0, Math.min(of, part)), `seed 71, trial ${trial}`);
+  }
 });

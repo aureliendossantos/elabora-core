@@ -24,7 +24,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Defect | Count | Example |
 | --- | ---: | --- |
-| Implementation coupling | 36 | ops: private computeDiff comparison and exact chosen diff scripts |
+| Implementation coupling | 41 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 5 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
 | Fixed-delay synchronization | 32 | engine-session: sleep(400) before checking watcher results |
@@ -92,7 +92,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/charts-matrix.test.ts` | 98 | — | Pending |
 | `test/unit/charts-milestones.test.ts` | 95 | — | Pending |
 | `test/unit/charts-process.test.ts` | 84 | 83 | Passed 5 native-seeded cases; public markup/accessibility/order/table/escaping/highlight/determinism retained; duplicate link-count assertion removed |
-| `test/unit/charts-proportion.test.ts` | 69 | — | Pending |
+| `test/unit/charts-proportion.test.ts` | 69 | 75 | Passed 5 native-seeded cases; public icon positions/counts/format/escaping replace private geometry and self-referential item constant; 100 seed-71 totals/share invariants added |
 | `test/unit/charts.test.ts` | 186 | — | Pending |
 | `test/unit/cli-projects.test.ts` | 266 | — | Pending |
 | `test/unit/cli.test.ts` | 715 | 684 | Passed 28 native-seeded cases; real CLI/MCP transport, refusal, privacy, journal/undo, translation and permission contracts preserved; failure-safe context ownership closes clients/servers before removing copies |
