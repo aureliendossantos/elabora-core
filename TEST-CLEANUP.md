@@ -24,18 +24,18 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Defect | Count | Example |
 | --- | ---: | --- |
-| Implementation coupling | 32 | ops: private computeDiff comparison and exact chosen diff scripts |
+| Implementation coupling | 33 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 4 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
 | Fixed-delay synchronization | 32 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
-| Unseeded randomness | 30 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
+| Unseeded randomness | 32 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 4 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 5 | validate: counted two errors without identifying their prop paths |
 | Resource cleanup | 97 | validate: copied fixtures were never removed |
-| Wall-clock timing | 8 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
+| Wall-clock timing | 9 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
 
@@ -170,7 +170,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/voice-models.test.ts` | 252 | — | Pending |
 | `test/unit/voice.test.ts` | 434 | — | Pending |
 | `test/unit/web-target.test.ts` | 321 | — | Pending |
-| `test/unit/zip-writer.test.ts` | 90 | — | Pending |
+| `test/unit/zip-writer.test.ts` | 90 | 87 | Passed 3 native-seeded cases; own directories, seeded high-entropy payloads, round-trip every entry and compare reordered public writes; controlled mtimes and limit errors replace elapsed-time and private writer comparison |
 | `test/unit/zip.test.ts` | 19 | — | Pending |
 | `README.md` | 86 | 90 | Policy complete; canonical standards in CONTRIBUTING |
 | `CONTRIBUTING.md` | 51 | 55 | Policy complete; canonical standards in CONTRIBUTING |
