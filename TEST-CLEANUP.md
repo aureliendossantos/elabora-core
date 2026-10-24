@@ -147,7 +147,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/package-limits.test.ts` | 131 | — | Pending |
 | `test/unit/pdf-title.test.ts` | 111 | — | Pending |
 | `test/unit/plan-document.test.ts` | 523 | 522 | Passed all plan-document cases with native seed 130363; context-owned copies, clients and sessions replace shared arrays and swallowed close failures; valid package/revisions/privacy/local-day/deterministic export contracts retained |
-| `test/unit/plan-order.test.ts` | 124 | — | Pending |
+| `test/unit/plan-order.test.ts` | 124 | 125 | Native-seeded cases passed; owned copied course; unique plan ordering, shared-screen, undo and duration behaviours retained |
 | `test/unit/plan.test.ts` | 356 | 356 | Native-seeded plan cases passed; owned copied courses; version approval, verbatim protection, diff, notes and package/archive contracts retained |
 | `test/unit/player-items.test.ts` | 422 | 418 | Native-seeded item cases passed; owned fixtures/builds and error outputs replace host-speed budget; SVG parsing, glossary, language and live bar behaviours retained |
 | `test/unit/player.test.ts` | 240 | 241 | Native-seeded player cases passed; context-owned fixtures preserve compiled bars, accessibility, navigation, editing and translation contracts |

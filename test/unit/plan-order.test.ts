@@ -1,11 +1,12 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import { followPlanOrder, itemParts } from '@elabora/core/project/plan-order';
 import { screenEstimates, roundedMinutes, countWords, READING_WORDS_PER_MINUTE } from '@elabora/core/project/duration';
 import type { Course, Plan } from '@elabora/core/project/model';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import * as edit from '@elabora/node/edit';
-import { copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { readJSON, writeJSON } from '../helpers.ts';
 
 // A module of three parts, a section each; ITEM-4 and ITEM-5 share the screen r-45.
 const course = (): Course => ({
@@ -23,26 +24,26 @@ const plan = (order: string[], parts: Record<string, string> | null = PARTS): Pl
 const ORDER = ['I1', 'I2', 'I3', 'I4', 'I5', 'I6', 'I7', 'I8'];
 const screensOf = (followed: ReturnType<typeof followPlanOrder>) => followed?.course.sections.map((section) => `${section.id}:${section.screens.join(',')}`);
 
-test('the plan\'s parts: an item without one continues the part before it; none at all, no parts', () => {
+test('the plan\'s parts: an item without one continues the part before it; none at all, no parts', (t) => {
   assert.deepEqual([...itemParts({ items: [{ id: 'A', part: 'Un' }, { id: 'B' }, { id: 'C', part: 'Deux' }] } as unknown as Plan)!], [['A', 'Un'], ['B', 'Un'], ['C', 'Deux']]);
   assert.equal(itemParts(plan(ORDER, null)), null);
 });
 
-test('the screens follow the plan: nothing moves while the order and the parts stay', () => {
+test('the screens follow the plan: nothing moves while the order and the parts stay', (t) => {
   assert.equal(followPlanOrder(course(), covers, plan(ORDER), plan(ORDER)), null);
   // A title changed, an item added at the end: nothing to follow.
   const longer = plan([...ORDER, 'I9'], { ...PARTS, I9: 'Évaluer' });
   assert.equal(followPlanOrder(course(), covers, plan(ORDER), longer), null);
 });
 
-test('an item moved within its part takes its screen with it', () => {
+test('an item moved within its part takes its screen with it', (t) => {
   const followed = followPlanOrder(course(), covers, plan(ORDER), plan(['I1', 'I2', 'I6', 'I3', 'I4', 'I5', 'I7', 'I8']));
   assert.deepEqual(screensOf(followed), ['s1:a1,a2', 's2:b6,b3,r-45', 's3:c7,c8']);
   assert.deepEqual(followed!.screens, ['b6']);
   assert.deepEqual(followed!.sections, []);
 });
 
-test('an item moved to another part goes to that part\'s section; a screen shared by two items stays', () => {
+test('an item moved to another part goes to that part\'s section; a screen shared by two items stays', (t) => {
   // I3 moves to the start of « Évaluer ».
   const parts = { ...PARTS, I3: 'Évaluer' };
   const followed = followPlanOrder(course(), covers, plan(ORDER), plan(['I1', 'I2', 'I4', 'I5', 'I6', 'I3', 'I7', 'I8'], parts));
@@ -53,7 +54,7 @@ test('an item moved to another part goes to that part\'s section; a screen share
   assert.deepEqual(screensOf(regrouped), ['s1:a1', 's2:a2,b3,r-45,b6', 's3:c7,c8']);
 });
 
-test('a part moved takes its section with it, and the section is renamed with its part', () => {
+test('a part moved takes its section with it, and the section is renamed with its part', (t) => {
   const followed = followPlanOrder(course(), covers, plan(ORDER), plan(['I1', 'I2', 'I7', 'I8', 'I3', 'I4', 'I5', 'I6']));
   assert.deepEqual(screensOf(followed), ['s1:a1,a2', 's3:c7,c8', 's2:b3,r-45,b6']);
   assert.deepEqual(followed!.screens, []);
@@ -64,7 +65,7 @@ test('a part moved takes its section with it, and the section is renamed with it
   assert.deepEqual(renamed!.screens, []);
 });
 
-test('parts written for the first time, from the sections, as the app does: the moved item\'s screen alone moves, and no section ends empty', () => {
+test('parts written for the first time, from the sections, as the app does: the moved item\'s screen alone moves, and no section ends empty', (t) => {
   // I7 (« Évaluer ») moves to the start of « Le texte »: every item now says its part, the sections' titles.
   const parts = { ...PARTS, I7: 'Le texte' };
   const followed = followPlanOrder(course(), covers, plan(ORDER, null), plan(['I1', 'I2', 'I7', 'I3', 'I4', 'I5', 'I6', 'I8'], parts));
@@ -81,14 +82,14 @@ test('parts written for the first time, from the sections, as the app does: the 
   assert.deepEqual(renamed!.screens, []);
 });
 
-test('a plan without parts: a moved item\'s screen goes after the screens of the item now before it', () => {
+test('a plan without parts: a moved item\'s screen goes after the screens of the item now before it', (t) => {
   const followed = followPlanOrder(course(), covers, plan(ORDER, null), plan(['I1', 'I3', 'I2', 'I4', 'I5', 'I6', 'I7', 'I8'], null));
   // I3 moved up: its screen joins the section of the item before it, after a1.
   assert.deepEqual(screensOf(followed), ['s1:a1,b3,a2', 's2:r-45,b6', 's3:c7,c8']);
 });
 
-test('write_plan with a move patch moves the screens in the same change, a validated version or not (D50, D52)', () => {
-  const dir = copyExample();
+test('write_plan with a move patch moves the screens in the same change, a validated version or not (D50, D52)', (t) => {
+  const dir = resources(t).copyExample();
   // ITEM-5 (Évaluation, screen evaluation of « Valider ») moves before ITEM-3 (Premier réflexe, « Pratiquer »).
   const result = edit.writePlan(dir, { patch: [{ op: 'move', from: '/items/4', path: '/items/2' }] }, { author: { kind: 'human' } });
   assert.deepEqual(result.moved, { screens: ['evaluation'], sections: [], renamed: [] });
@@ -105,9 +106,9 @@ test('write_plan with a move patch moves the screens in the same change, a valid
   assert.deepEqual(readJSON(dir, 'course.json').sections.flatMap((section: { screens: string[] }) => section.screens), ['accueil', 'chemin', 'premier-reflexe', 'simulation', 'evaluation', 'bilan']);
 });
 
-test('how long a screen takes: its words read, or its voice when longer, and a moment per activity (D50)', () => {
+test('how long a screen takes: its words read, or its voice when longer, and a moment per activity (D50)', (t) => {
   assert.equal(countWords('Le **chemin** d’une [impression](https://example.org/x) : 4 équipements'), 5);
-  const dir = copyExample();
+  const dir = resources(t).copyExample();
   const project = loadProjectFromDir(dir);
   const estimates = screenEstimates(project);
   assert.deepEqual([...estimates.keys()].sort(), [...project.screens.keys()].sort());
