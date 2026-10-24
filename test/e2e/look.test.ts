@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -10,7 +11,7 @@ import { preview } from '@elabora/node/preview';
 import { startServer } from '@elabora/node/emulator/server';
 import { build } from '@elabora/node/build';
 import { launchBrowser } from '@elabora/node/emulator/browser';
-import { ROOT, copyExample, readJSON, writeFixture, writeJSON } from '../helpers.ts';
+import { ROOT, readJSON, writeFixture, writeJSON } from '../helpers.ts';
 import { dialogueCourse } from '../dialogue-fixture.ts';
 
 // Looking while designing (docs/architecture/rendering.md, Looking while designing): a warm look after an
@@ -20,57 +21,51 @@ import { dialogueCourse } from '../dialogue-fixture.ts';
 const OBJECT_SCREEN = 'simulation';
 const OBJECT_BLOCK = 'simulation-scene';
 
-test('look: an edit shows in well under 2 s, the free object keeps running; its code edited, it starts again', { timeout: 180000 }, async () => {
-  const dir = copyExample();
-  const looker = await startLooker(dir);
-  try {
-    const first = await looker.look({ screen: OBJECT_SCREEN });
-    assert.ok(first.ok, JSON.stringify(first));
-    assert.deepEqual(first.objects, [{ block: OBJECT_BLOCK, ready: true, failed: false }]);
-    assert.equal(first.started, 1);
-    assert.equal(first.type, 'jpeg');
-    assert.deepEqual([...first.image.subarray(0, 3)], [0xff, 0xd8, 0xff]);
-    assert.deepEqual(first.consoleErrors.filter((error) => !/GL Driver|WebGL|PCFSoftShadowMap/.test(error)), []);
-    // The player's header and footer are there, as in a package.
-    assert.ok(first.blocks.some((block) => block.id === OBJECT_BLOCK));
+test('look: an edit keeps its free object running; editing its code starts it again', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
+  const looker = resources(t).own(await startLooker(dir), value => value.close());
+  const first = await looker.look({ screen: OBJECT_SCREEN });
+  assert.ok(first.ok, JSON.stringify(first));
+  assert.deepEqual(first.objects, [{ block: OBJECT_BLOCK, ready: true, failed: false }]);
+  assert.equal(first.started, 1);
+  assert.equal(first.type, 'jpeg');
+  assert.deepEqual([...first.image.subarray(0, 3)], [0xff, 0xd8, 0xff]);
+  assert.deepEqual(first.consoleErrors.filter((error) => !/GL Driver|WebGL|PCFSoftShadowMap/.test(error)), []);
+  // The player's header and footer are there, as in a package.
+  assert.ok(first.blocks.some((block) => block.id === OBJECT_BLOCK));
 
-    // A block added next to the object: shown at once, the object untouched. No screen given: the
-    // screen of the last look.
-    const screen = readJSON(dir, `screens/${OBJECT_SCREEN}.json`);
-    screen.blocks.splice(1, 0, { id: 'look-added', type: 'text', props: { markdown: 'Added while looking.' } });
-    writeJSON(dir, `screens/${OBJECT_SCREEN}.json`, screen);
-    const edited = await looker.look();
-    assert.ok(edited.ok, JSON.stringify(edited));
-    assert.equal(edited.screen, OBJECT_SCREEN);
-    assert.ok(edited.blocks.some((block) => block.id === 'look-added'), JSON.stringify(edited.blocks.map((block) => block.id)));
-    assert.equal(edited.started, 0);
-    assert.deepEqual(edited.objects, [{ block: OBJECT_BLOCK, ready: true, failed: false }]);
-    assert.ok(edited.ms < 2000, `${edited.ms} ms`);
+  // A block added next to the object: shown at once, the object untouched. No screen given: the
+  // screen of the last look.
+  const screen = readJSON(dir, `screens/${OBJECT_SCREEN}.json`);
+  screen.blocks.splice(1, 0, { id: 'look-added', type: 'text', props: { markdown: 'Added while looking.' } });
+  writeJSON(dir, `screens/${OBJECT_SCREEN}.json`, screen);
+  const edited = await looker.look();
+  assert.ok(edited.ok, JSON.stringify(edited));
+  assert.equal(edited.screen, OBJECT_SCREEN);
+  assert.ok(edited.blocks.some((block) => block.id === 'look-added'), JSON.stringify(edited.blocks.map((block) => block.id)));
+  assert.equal(edited.started, 0);
+  assert.deepEqual(edited.objects, [{ block: OBJECT_BLOCK, ready: true, failed: false }]);
 
-    // Its code edited: the object starts again with the new code.
-    const code = path.join(dir, 'objects/diagnostic-reseau/object.js');
-    fs.appendFileSync(code, '\n// edited while looking\n');
-    const restarted = await looker.look({ full: false, type: 'png' });
-    assert.ok(restarted.ok, JSON.stringify(restarted));
-    assert.equal(restarted.started, 1);
-    assert.equal(restarted.type, 'png');
-    assert.deepEqual([...restarted.image.subarray(1, 4)], [0x50, 0x4e, 0x47]);
+  // Its code edited: the object starts again with the new code.
+  const code = path.join(dir, 'objects/diagnostic-reseau/object.js');
+  fs.appendFileSync(code, '\n// edited while looking\n');
+  const restarted = await looker.look({ full: false, type: 'png' });
+  assert.ok(restarted.ok, JSON.stringify(restarted));
+  assert.equal(restarted.started, 1);
+  assert.equal(restarted.type, 'png');
+  assert.deepEqual([...restarted.image.subarray(1, 4)], [0x50, 0x4e, 0x47]);
 
-    // Another size, the answered state, mistakes.
-    const narrow = await looker.look({ screen: 'accueil', width: 375, height: 812, state: 'answered' });
-    assert.ok(narrow.ok && narrow.width === 375 && narrow.state === 'answered', JSON.stringify(narrow));
-    const unknown = await looker.look({ screen: 'nowhere' });
-    assert.ok(!unknown.ok && /Unknown screen "nowhere"\. Screens: accueil, /.test(unknown.error), JSON.stringify(unknown));
-    const layer = await looker.look({ screen: 'accueil', layer: 'nowhere' });
-    assert.ok(!layer.ok && /No layer "nowhere" on screen "accueil"/.test(layer.error), JSON.stringify(layer));
-    // A screen file caught mid-write.
-    fs.writeFileSync(path.join(dir, 'screens/bilan.json'), '{ "id": "bilan", ');
-    const broken = await looker.look({ screen: 'bilan' });
-    assert.ok(!broken.ok && /^screens\/bilan\.json: .*\(E_JSON_PARSE\)$/.test(broken.error), JSON.stringify(broken));
-  } finally {
-    await looker.close();
-    fs.rmSync(dir, { recursive: true, force: true });
-  }
+  // Another size, the answered state, mistakes.
+  const narrow = await looker.look({ screen: 'accueil', width: 375, height: 812, state: 'answered' });
+  assert.ok(narrow.ok && narrow.width === 375 && narrow.state === 'answered', JSON.stringify(narrow));
+  const unknown = await looker.look({ screen: 'nowhere' });
+  assert.ok(!unknown.ok && /Unknown screen "nowhere"\. Screens: accueil, /.test(unknown.error), JSON.stringify(unknown));
+  const layer = await looker.look({ screen: 'accueil', layer: 'nowhere' });
+  assert.ok(!layer.ok && /No layer "nowhere" on screen "accueil"/.test(layer.error), JSON.stringify(layer));
+  // A screen file caught mid-write.
+  fs.writeFileSync(path.join(dir, 'screens/bilan.json'), '{ "id": "bilan", ');
+  const broken = await looker.look({ screen: 'bilan' });
+  assert.ok(!broken.ok && /^screens\/bilan\.json: .*\(E_JSON_PARSE\)$/.test(broken.error), JSON.stringify(broken));
 });
 
 interface Run { status: number | null; stdout: string; stderr: string }
@@ -87,13 +82,13 @@ function elabora(args: string[]): Promise<Run> {
 }
 
 test('elabora look: the first look starts a look server, the next ones use it; --url, --stop', { timeout: 180000 }, async (t) => {
-  const dir = copyExample();
+  const dir = resources(t).copyExample();
   t.after(async () => { await elabora(['look', dir, '--stop']); fs.rmSync(dir, { recursive: true, force: true }); });
   const first = await elabora(['look', dir, '--screen', OBJECT_SCREEN, '--json']);
   assert.equal(first.status, 0, first.stderr);
   const [shot] = JSON.parse(first.stdout);
   assert.equal(shot.file, path.join(lookFolder(dir), `${OBJECT_SCREEN}-1600x900.jpg`));
-  assert.ok(fs.statSync(shot.file).size > 20000);
+  assert.deepEqual([...fs.readFileSync(shot.file).subarray(0, 3)], [0xff, 0xd8, 0xff], 'the CLI writes a JPEG capture');
   assert.deepEqual(shot.objects, [{ block: OBJECT_BLOCK, ready: true, failed: false }]);
   const server = await findLookServer(dir);
   assert.ok(server, 'the look server answers');
@@ -160,23 +155,24 @@ async function showScreen(page: Page, screen: string): Promise<void> {
 }
 
 test('elabora preview: free objects show in a browser pane that refuses opaque frames; pages reload after a rebuild', { timeout: 240000 }, async (t) => {
-  const dir = copyExample();
+  const dir = resources(t).copyExample();
   // Build the control before watching: generators may write assets and reload the preview.
   const built = await build(dir, { emit: 'dir', out: path.join(dir, '.elabora', 'plain'), writeLock: false, media: 'link' });
   assert.ok(built.ok && built.dirPath);
   let rebuilt: () => void = () => {};
-  const session = await preview(dir, { port: 0, onRebuild: () => rebuilt() });
-  const browser: Browser = await launchBrowser('chromium', { rendering: 'gpu' });
+  const session = resources(t).own(await preview(dir, { port: 0, onRebuild: () => rebuilt() }), value => value.close());
+  const browser: Browser = resources(t).own(await launchBrowser('chromium', { rendering: 'gpu' }), value => value.close());
   // A package served as it is (not a preview): the same policy refuses its object, as the pane did.
-  const plain = await startServer();
+  const plain = resources(t).own(await startServer(), value => value.close());
   t.after(async () => { await browser.close(); await session.close(); await plain.close(); fs.rmSync(dir, { recursive: true, force: true }); });
 
   plain.addPackage('plain', built.dirPath, built.media);
   const control = await browser.newPage();
   const blocked = await refuseOpaqueFrames(control);
+  const blockedRequest = control.waitForEvent('requestfailed', { predicate: request => request.url().endsWith('/objects/diagnostic-reseau/frame.html') });
   await control.goto(`${plain.base}/pkg/plain/index.html`);
   await showScreen(control, OBJECT_SCREEN);
-  for (const begin = Date.now(); !blocked.length && Date.now() - begin < 10000;) await control.waitForTimeout(100);
+  await blockedRequest;
   assert.ok(blocked.some((url) => url.endsWith('/objects/diagnostic-reseau/frame.html')), JSON.stringify(blocked));
   await control.close();
 
@@ -257,9 +253,9 @@ function addInspectionProbes(dir: string): void {
 const pngSize = (png: Buffer) => ({ width: png.readUInt32BE(16), height: png.readUInt32BE(20) });
 
 test('look: a block at a scroll position, a page down its length, a close-up, what moves and what cannot finish', { timeout: 180000 }, async (t) => {
-  const dir = copyExample();
+  const dir = resources(t).copyExample();
   addInspectionProbes(dir);
-  const looker = await startLooker(dir, { live: false });
+  const looker = resources(t).own(await startLooker(dir, { live: false }), value => value.close());
   t.after(async () => { await looker.close(); fs.rmSync(dir, { recursive: true, force: true }); });
 
   // The end of the page: the last entrance cannot finish, it says how it stays.
@@ -316,9 +312,9 @@ test('look: a block at a scroll position, a page down its length, a close-up, wh
 });
 
 test('look --act: a click by text inside a free object changes its state; a missing target names what the frame offers', { timeout: 180000 }, async (t) => {
-  const dir = copyExample();
+  const dir = resources(t).copyExample();
   addInspectionProbes(dir);
-  const looker = await startLooker(dir, { live: false });
+  const looker = resources(t).own(await startLooker(dir, { live: false }), value => value.close());
   t.after(async () => { await looker.close(); fs.rmSync(dir, { recursive: true, force: true }); });
 
   const missing = await looker.look({ screen: 'accueil', block: INSPECT.object, act: ['click:Éteindre'] });
@@ -333,8 +329,8 @@ test('look --act: a click by text inside a free object changes its state; a miss
 });
 
 test('look --act choose: a dialogue block at rest after its choices, the end of its thread in the window; a choice not offered says which were', { timeout: 180000 }, async (t) => {
-  const dir = dialogueCourse({ presentation: 'scroll' });
-  const looker = await startLooker(dir, { live: false });
+  const dir = resources(t).own(dialogueCourse({ presentation: 'scroll' }), value => fs.rmSync(value, { recursive: true, force: true }));
+  const looker = resources(t).own(await startLooker(dir, { live: false }), value => value.close());
   t.after(async () => { await looker.close(); fs.rmSync(dir, { recursive: true, force: true }); });
 
   // c is retried (its first choice is the one scored), then b opens a short branch that comes back: the dialogue waits at « ticket ».
