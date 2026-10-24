@@ -1,0 +1,112 @@
+{
+  "screen": "practice",
+  "line": "neil-hello",
+  "language": "en",
+  "textHash": "sha256:a39ae353596d7a7f8f45e71deed56d47685cdd09b40661efa7929bfbb05b1473",
+  "duration": 4.52,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:41fa9a5749eff1cc8cad37f2db0ab7fb411f16a4f534505959d3decabbb8caac",
+  "createdAt": "2026-10-24T02:41:44Z",
+  "take": 1,
+  "spokenHash": "sha256:a39ae353596d7a7f8f45e71deed56d47685cdd09b40661efa7929bfbb05b1473",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Hi, it's Neil from accounts at Harlow Tyres. Did you get our email this morning?",
+  "mouth": "ccwwwwwoossccccwwooocssscoowwwwwwwccoooccccoowwoosscoooossswwwwwwccooowwoosssccssccccccccccccoosssssssoowwwoooocwwwwwsssscccooooossscccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Hi",
+      "start": 0.06,
+      "end": 0.333,
+      "score": 0.294
+    },
+    {
+      "text": "it's",
+      "start": 0.542,
+      "end": 0.835,
+      "score": 0.491
+    },
+    {
+      "text": "Neil",
+      "start": 0.864,
+      "end": 1.165,
+      "score": 0.784
+    },
+    {
+      "text": "from",
+      "start": 1.165,
+      "end": 1.326,
+      "score": 0.994
+    },
+    {
+      "text": "accounts",
+      "start": 1.326,
+      "end": 1.788,
+      "score": 0.906
+    },
+    {
+      "text": "at",
+      "start": 1.788,
+      "end": 1.909,
+      "score": 0.659
+    },
+    {
+      "text": "Harlow",
+      "start": 1.909,
+      "end": 2.21,
+      "score": 0.62
+    },
+    {
+      "text": "Tyres",
+      "start": 2.21,
+      "end": 2.704,
+      "score": 0.577
+    },
+    {
+      "text": "Did",
+      "start": 3.094,
+      "end": 3.234,
+      "score": 0.999
+    },
+    {
+      "text": "you",
+      "start": 3.234,
+      "end": 3.335,
+      "score": 0.983
+    },
+    {
+      "text": "get",
+      "start": 3.335,
+      "end": 3.455,
+      "score": 0.955
+    },
+    {
+      "text": "our",
+      "start": 3.455,
+      "end": 3.636,
+      "score": 0.902
+    },
+    {
+      "text": "email",
+      "start": 3.636,
+      "end": 3.917,
+      "score": 0.721
+    },
+    {
+      "text": "this",
+      "start": 3.917,
+      "end": 4.078,
+      "score": 0.949
+    },
+    {
+      "text": "morning",
+      "start": 4.078,
+      "end": 4.471,
+      "score": 0.978
+    }
+  ]
+}

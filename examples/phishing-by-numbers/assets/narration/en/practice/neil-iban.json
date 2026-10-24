@@ -1,0 +1,94 @@
+{
+  "screen": "practice",
+  "line": "neil-iban",
+  "language": "en",
+  "textHash": "sha256:dcf958287d0f40809b14bf69cb6bf1fed80639398f43d69850bb89dc72e249c8",
+  "duration": 3.76,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:7197afc70461b6ccc0b30e942b16742fc5490c30788cf60246a7158ff650b7f2",
+  "createdAt": "2026-10-24T02:41:50Z",
+  "take": 1,
+  "spokenHash": "sha256:dcf958287d0f40809b14bf69cb6bf1fed80639398f43d69850bb89dc72e249c8",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Lovely. It's all in the email, just copy the account number across.",
+  "mouth": "ccwwwwwssssssscccccccccccsscwwwwwooooowwwwooocoooosssccccccwwwsscccoooocoooowwwwcooooossooocccooocccwwooocccssscc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Lovely",
+      "start": 0.081,
+      "end": 0.534,
+      "score": 0.995
+    },
+    {
+      "text": "It's",
+      "start": 0.825,
+      "end": 1.005,
+      "score": 0.939
+    },
+    {
+      "text": "all",
+      "start": 1.005,
+      "end": 1.146,
+      "score": 0.983
+    },
+    {
+      "text": "in",
+      "start": 1.146,
+      "end": 1.247,
+      "score": 0.999
+    },
+    {
+      "text": "the",
+      "start": 1.247,
+      "end": 1.388,
+      "score": 0.999
+    },
+    {
+      "text": "email",
+      "start": 1.388,
+      "end": 1.781,
+      "score": 0.776
+    },
+    {
+      "text": "just",
+      "start": 1.951,
+      "end": 2.232,
+      "score": 0.955
+    },
+    {
+      "text": "copy",
+      "start": 2.232,
+      "end": 2.493,
+      "score": 0.997
+    },
+    {
+      "text": "the",
+      "start": 2.493,
+      "end": 2.634,
+      "score": 0.913
+    },
+    {
+      "text": "account",
+      "start": 2.634,
+      "end": 2.956,
+      "score": 0.954
+    },
+    {
+      "text": "number",
+      "start": 2.956,
+      "end": 3.217,
+      "score": 0.977
+    },
+    {
+      "text": "across",
+      "start": 3.217,
+      "end": 3.711,
+      "score": 0.633
+    }
+  ]
+}
