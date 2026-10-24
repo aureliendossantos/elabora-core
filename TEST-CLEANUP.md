@@ -8,8 +8,13 @@ Test public behaviour, use real domain objects, fake only uncontrolled boundarie
 
 ## Validation
 
-- Baseline suite started before edits; results pending.
-- Final required: full suites, typecheck, repeated runs with reproducible shuffled file order.
+- Baseline `npm test`: **769 passed, 6 skipped** (775 cases).
+- Full default-order unit run after the main cleanup: **788 passed, 6 skipped** (794 cases); typecheck passed. Individual changed files passed before each commit.
+- Native randomization with seed **104729** reproduced two ElevenLabs order defects: an estimate got a 41-credit ceiling instead of 82 without a previous library search, and account remaining quota was 38,779 instead of 38,800 after another case spent credits. A focused rerun reproduced both; fresh per-test service/cache/quota state and explicit search setup fixed them (17 passed, one opt-in live skip).
+- Final native randomized full-unit reruns in progress: **104729, 130363, 155921**. Reproduce with `node --test --test-random-seed=<seed> --test-concurrency=4 --test-global-setup=test/isolate.ts "test/unit/*.test.ts"`.
+- Earlier repeats with shuffled CLI file arguments are repeat evidence only: Node sorts those arguments. They are not randomized runs.
+- Required browser suite in progress. The matrix is not required: no player/emulator/layout/sample production sources changed.
+- No production code changed. Native Windows and live paid-provider checks are not claimed as passes.
 
 ## Recurring defects
 
