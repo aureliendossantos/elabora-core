@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -6,7 +7,7 @@ import { inlineSvg } from '@elabora/core/render/svg-inline';
 import { renderScreen } from '@elabora/core/render/screen';
 import { subpaths } from '@elabora/player/timed-blocks';
 import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
-import { copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
+import { readJSON, writeJSON, codes } from '../helpers.ts';
 
 const DRAWING = `<?xml version="1.0"?>
 <!DOCTYPE svg [<!ENTITY x "boom">]>
@@ -24,7 +25,7 @@ const DRAWING = `<?xml version="1.0"?>
   <text>&lt;1&gt; &amp; 2</text>
 </svg>`;
 
-test('inline SVG: what draws stays, scripts, handlers, links and outside references go, ids and styles keep to the drawing', () => {
+test('inline SVG: what draws stays, scripts, handlers, links and outside references go, ids and styles keep to the drawing', (t) => {
   const { html, removed } = inlineSvg(DRAWING, { prefix: 't-svg-plate', label: 'A "plate"' });
   assert.match(html, /^<svg width="200" height="100" viewBox="0 0 200 100" class="t-figure-svg plate" data-t-svg="t-svg-plate" role="img" aria-label="A &quot;plate&quot;" focusable="false">/);
   for (const gone of ['onload', 'onclick', '<script', 'alert', 'foreignObject', '<div', 'example.test', '<a ', '@import', '<title', 'ENTITY', '<!--', '<?xml']) assert.ok(!html.includes(gone), gone);
@@ -44,7 +45,7 @@ test('inline SVG: what draws stays, scripts, handlers, links and outside referen
   assert.deepEqual(inlineSvg('<html><body/></html>', { prefix: 'p' }).removed, ['<html> as the root (not an SVG)']);
 });
 
-test('inline SVG: hostile drawings neither run script, load anything nor reach the page around them (the independent review\'s cases)', () => {
+test('inline SVG: hostile drawings neither run script, load anything nor reach the page around them (the independent review\'s cases)', (t) => {
   const inline = (svg: string) => inlineSvg(svg, { prefix: 'p', label: 'x' });
   // A CDATA style holding markup: foreign content would make it an <img onerror>.
   const cdata = inline('<svg><style><![CDATA[ a{fill:"<img src=x onerror=alert(1)>"} ]]></style></svg>').html;
@@ -68,7 +69,7 @@ test('inline SVG: hostile drawings neither run script, load anything nor reach t
   assert.match(reach.html, /fill="url\(#p-page-grad\)"/);
 });
 
-test('the draw effect: subpaths of path data, each from an absolute point', () => {
+test('the draw effect: subpaths of path data, each from an absolute point', (t) => {
   assert.deepEqual(subpaths('M10 10 L20 20 m5 0 l10 0 h5 z m1 1 v3 M0 0 c1 1 2 2 3 3 1 1 1 1 4 4'), ['M10 10L20 20', 'M25 20l10 0h5Z', 'M26 21v3', 'M0 0c1 1 2 2 3 3c1 1 1 1 4 4']);
   assert.deepEqual(subpaths('m1 1 2 2 3 3'), ['M1 1l2 2l3 3']);
   assert.deepEqual(subpaths('M0 0a5 5 0 0 1 10 0m-10 5h1'), ['M0 0a5 5 0 0 1 10 0', 'M0 5h1']);
@@ -77,8 +78,8 @@ test('the draw effect: subpaths of path data, each from an absolute point', () =
   assert.deepEqual(subpaths('M0 0l1 1M5 5a5 5 0 2 0 5 5'), []);
 });
 
-test('an image block with inline: true has its SVG in the page, named by its alt; the checks follow', () => {
-  const dir = copyExample();
+test('an image block with inline: true has its SVG in the page, named by its alt; the checks follow', (t) => {
+  const dir = resources(t).copyExample();
   fs.writeFileSync(path.join(dir, 'assets/images/trace.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path id="a" d="M0 0L9 9" fill="none" stroke="currentColor"/><script>x()</script></svg>');
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.blocks.push({ id: 'accueil-trace', type: 'image', props: { asset: 'images/trace.svg', alt: 'Un trait', inline: true }, timing: { in: { at: { seconds: 0.5 }, effect: 'draw' } } });

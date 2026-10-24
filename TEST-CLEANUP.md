@@ -165,7 +165,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/sources.test.ts` | 511 | 521 | Passed 21 native-seeded cases; fresh input/model folders and restored library/data environment per case; await transcriber/client disposal before removal; mtime edits relative to fixture; import/readability/privacy/build-byte/archive contracts preserved |
 | `test/unit/state-golden.test.ts` | 40 | 36 | Passed native-seeded cases; pinned legacy bytes retained; decode compares complete learner state rather than selected fields and re-encoding |
 | `test/unit/state.test.ts` | 53 | 50 | Passed; 100 full-state persistence cases, complete corruption fallback, permanent keys and budget growth; test-owned course folders |
-| `test/unit/svg-inline.test.ts` | 99 | — | Pending |
+| `test/unit/svg-inline.test.ts` | 99 | 100 | Passed native-seeded cases; owned rendered course; hostile SVG sanitizing, scope isolation, subpaths and validation regressions retained |
 | `test/unit/template-fields.test.ts` | 27 | — | Pending |
 | `test/unit/timeline.test.ts` | 390 | 387 | Passed 15 native-seeded cases; own narrated/translated courses; preserved word anchors, cue timing, editing, translation markers and resume contracts; removed constant-only assertion |
 | `test/unit/transcribe.test.ts` | 290 | 296 | Native-seeded cases passed with one explicit unavailable-model skip; fresh fake model/input per case, dispose inference before removal, owned session, fixed recording filename replaces random UUID |
