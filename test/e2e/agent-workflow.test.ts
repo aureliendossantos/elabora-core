@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -6,15 +7,15 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { createMcpServer } from '@elabora/cli/mcp';
 import { stopLookServer } from '@elabora/node/look-client';
-import { copyExample, readJSON } from '../helpers.ts';
+import { readJSON } from '../helpers.ts';
 
 // A shell-free client stays connected to the source course for the entire language workflow.
-test('agent workflow: translate, see, check, package and test a language through one MCP connection', { timeout: 180000 }, async () => {
-  const dir = copyExample();
-  const server = createMcpServer(dir);
+test('agent workflow: translate, see, check, package and test a language through one MCP connection', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
+  const server = resources(t).own(createMcpServer(dir), value => value.close());
   const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
   await server.connect(serverSide);
-  const client = new Client({ name: 'plugin-agent', version: '1' });
+  const client = resources(t).own(new Client({ name: 'plugin-agent', version: '1' }), value => value.close());
   await client.connect(clientSide);
   const call = async (name: string, args: Record<string, unknown>) => {
     const result = await client.callTool({ name, arguments: args });

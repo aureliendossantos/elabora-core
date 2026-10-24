@@ -34,7 +34,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 6 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 5 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 107 | validate: copied fixtures were never removed |
+| Resource cleanup | 108 | validate: copied fixtures were never removed |
 | Wall-clock timing | 9 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -55,7 +55,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 
 | File | Lines before | Lines after | Result / preserved behaviour |
 | --- | ---: | ---: | --- |
-| `test/e2e/agent-workflow.test.ts` | 53 | — | Pending |
+| `test/e2e/agent-workflow.test.ts` | 53 | 54 | Focused seed 130363 passed; real MCP translate, preview, validation and language package workflow retained; own copied course and MCP peers |
 | `test/e2e/canvas-live.test.ts` | 233 | — | Pending |
 | `test/e2e/canvas.test.ts` | 473 | — | Pending |
 | `test/e2e/character.test.ts` | 136 | — | Pending |
