@@ -132,7 +132,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/import.test.ts` | 427 | — | Pending |
 | `test/unit/interop.test.ts` | 92 | — | Pending |
 | `test/unit/journal.test.ts` | 437 | 437 | Passed 14 cases; explicit lock entry/release gates and child stdin handshake; no elapsed-time assertions or fixed sleeps; sequence/history/binary/undo contracts retained |
-| `test/unit/layer-timeline.test.ts` | 265 | 263 | Passed 9 native-seeded cases; own layered courses and both build outputs; preserves independent layer tracks, cue routing, translations, commands and deterministic packages; removed registry-count assertion |
+| `test/unit/layer-timeline.test.ts` | 265 | 263 | Passed 10 native-seeded cases; own layered courses and both build outputs; preserves independent layer tracks, cue routing, translations, commands and deterministic packages; removed registry-count assertion |
 | `test/unit/library.test.ts` | 840 | 843 | Passed 21 cases; deterministic media/retention, restored environment and owned temporary data; public archive/trash contracts retained |
 | `test/unit/local-ai-platform.test.ts` | 50 | 50 | Passed 2 native-seeded cases; disposable OS override and throwing network boundary exercise all listed models, Intel refusals and removals; removes exact catalogue-size coupling |
 | `test/unit/look.test.ts` | 122 | — | Pending |
@@ -167,11 +167,11 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/state.test.ts` | 53 | 50 | Passed; 100 full-state persistence cases, complete corruption fallback, permanent keys and budget growth; test-owned course folders |
 | `test/unit/svg-inline.test.ts` | 99 | — | Pending |
 | `test/unit/template-fields.test.ts` | 27 | — | Pending |
-| `test/unit/timeline.test.ts` | 390 | 387 | Passed 16 native-seeded cases; own narrated/translated courses; preserved word anchors, cue timing, editing, translation markers and resume contracts; removed constant-only assertion |
+| `test/unit/timeline.test.ts` | 390 | 387 | Passed 15 native-seeded cases; own narrated/translated courses; preserved word anchors, cue timing, editing, translation markers and resume contracts; removed constant-only assertion |
 | `test/unit/transcribe.test.ts` | 290 | — | Pending |
 | `test/unit/translation-context.test.ts` | 156 | — | Pending |
 | `test/unit/validate.test.ts` | 627 | 631 | Passed 32 cases; preserves all diagnostic rules, checks exact prop paths, cleans every copied fixture; removes internal check-name assertion |
-| `test/unit/voice-models.test.ts` | 252 | — | Pending |
+| `test/unit/voice-models.test.ts` | 252 | 253 | Native-seeded cases passed; per-case models and restored environment, seeded downloads, owned generation gates; outputs replace fake provider install counters |
 | `test/unit/voice.test.ts` | 434 | 445 | 15 passed, 2 explicit unavailable-model skips with native seed 130363; owned courses/sessions, seeded download bytes, file notification gates and controllable external voice service replace sleeps/polling; separate named rejection cases and one recovery replace repeated retry checks; native inference seam proposal recorded |
 | `test/unit/web-target.test.ts` | 321 | — | Pending |
 | `test/unit/zip-writer.test.ts` | 90 | 87 | Passed 3 native-seeded cases; own directories, seeded high-entropy payloads, round-trip every entry and compare reordered public writes; controlled mtimes and limit errors replace elapsed-time and private writer comparison |

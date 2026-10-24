@@ -1,4 +1,6 @@
-import { test, after } from 'node:test';
+import { test, beforeEach, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
+import { bytes } from '../bytes.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -7,7 +9,7 @@ import http from 'node:http';
 import crypto from 'node:crypto';
 import { execFile, spawnSync } from 'node:child_process';
 import { promisify } from 'node:util';
-import { ROOT, copyExample, readJSON } from '../helpers.ts';
+import { ROOT, readJSON } from '../helpers.ts';
 import { narrate, hasFfmpeg } from '../narration.ts';
 import { bundleDownloading, bundleFor, bundleInUse, bundleOnDisk, holdBundle, installBundle, isInstalled, modelsRoot, uninstallBundle } from '@elabora/node/voice/pocket/models';
 import type { Bundle } from '@elabora/node/voice/pocket/models';
@@ -22,12 +24,13 @@ import { toneProvider } from '@elabora/node/voice/tone';
 const execFileAsync = promisify(execFile);
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
 const sha = (body: Buffer) => crypto.createHash('sha256').update(body).digest('hex');
-const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-voice-models-'));
-after(() => fs.rmSync(temp, { recursive: true, force: true }));
-// Every model of this file in its own folder: uninstallVoices removes Pocket TTS's too, and must
-// never reach the computer's own (the author's models).
-process.env.ELABORA_VOICE_MODELS_DIR = path.join(temp, 'pocket');
-process.env.ELABORA_ALIGNER_MODELS_DIR = path.join(temp, 'aligners');
+let temp: string;
+beforeEach(t => {
+  temp = resources(t as TestContext).tempDir('elabora-voice-models-');
+  const saved = { ELABORA_VOICE_MODELS_DIR: process.env.ELABORA_VOICE_MODELS_DIR, ELABORA_ALIGNER_MODELS_DIR: process.env.ELABORA_ALIGNER_MODELS_DIR };
+  Object.assign(process.env, { ELABORA_VOICE_MODELS_DIR: path.join(temp, 'pocket'), ELABORA_ALIGNER_MODELS_DIR: path.join(temp, 'aligners') });
+  (t as TestContext).after(() => { for (const [key, value] of Object.entries(saved)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } });
+});
 
 // A model's files served from this computer, the requests counted.
 async function modelServer(files: Record<string, Buffer>): Promise<{ url: string; requests: () => number; close: () => void }> {
@@ -47,9 +50,10 @@ function deadPid(): number {
   return spawnSync(process.execPath, ['-e', '0']).pid!;
 }
 
-test('models: removed on request, refused while held or downloaded in any process, downloaded again on next use', async () => {
-  const files = { 'a.bin': crypto.randomBytes(200_000), 'b.json': Buffer.from('{"x":1}') };
+test('models: removed on request, refused while held or downloaded in any process, downloaded again on next use', async (t) => {
+  const files = { 'a.bin': bytes(200_000), 'b.json': Buffer.from('{"x":1}') };
   const server = await modelServer(files);
+  t.after(() => server.close());
   const dir = path.join(temp, 'models');
   const env = { ...process.env, ELABORA_VOICE_MODELS_DIR: dir, ELABORA_VOICE_MODELS_URL: server.url };
   const bundle: Bundle = { id: 'test', language: 'xx', model: 'test', files: Object.entries(files).map(([name, body]) => ({ name, url: `repo/${name}`, size: body.length, sha256: sha(body) })) };
@@ -123,7 +127,7 @@ test('models: removed on request, refused while held or downloaded in any proces
   }
 });
 
-test('models: ELABORA_VOICE_MODELS_MANIFEST gives a bundle made-up files (tests only)', () => {
+test('models: ELABORA_VOICE_MODELS_MANIFEST gives a bundle made-up files (tests only)', (t) => {
   const manifest = path.join(temp, 'manifest.json');
   fs.writeFileSync(manifest, JSON.stringify({ 'english_2026-04': [{ name: 'x.bin', url: 'x/x.bin', size: 3, sha256: 'a'.repeat(64) }] }));
   const env = { ...process.env, ELABORA_VOICE_MODELS_MANIFEST: manifest };
@@ -134,39 +138,37 @@ test('models: ELABORA_VOICE_MODELS_MANIFEST gives a bundle made-up files (tests 
 
 // A local voice whose model is a test bundle: it says a line as the test tone does, once the test
 // lets it (to remove its model while a generation runs).
-const files = { 'model.bin': crypto.randomBytes(50_000) };
-const server = await modelServer(files);
-after(() => server.close());
-const env = { ...process.env, ELABORA_VOICE_MODELS_DIR: path.join(temp, 'held'), ELABORA_VOICE_MODELS_URL: server.url };
-const held: Bundle = { id: 'held', language: 'fr', model: 'held@1', files: [{ name: 'model.bin', url: 'repo/model.bin', size: 50_000, sha256: sha(files['model.bin']) }] };
-let installs = 0;
-let gate: Promise<void> = Promise.resolve();
-let speaking: () => void = () => {};
-const heldProvider: VoiceProvider = {
-  id: 'held',
-  name: 'Held test voice',
-  voices: (language) => toneProvider.voices('fr').filter(() => !language || language.startsWith('fr')).slice(0, 1).map((voice) => ({ ...voice, id: 'held-a', name: 'Héloïse', provider: 'held' })),
-  status: (language) => (language.startsWith('fr') ? { installed: isInstalled(held, env), size: isInstalled(held, env) ? 0 : 50_000, onDisk: bundleOnDisk(held, env), download: 50_000, installing: bundleDownloading(held, env), inUse: bundleInUse(held, env) } : null),
-  model: (language) => (language.startsWith('fr') ? { id: held.id, model: held.model } : null),
-  async install(_language, { signal, onProgress, force } = {}) {
-    installs++;
-    if (force) await uninstallBundle(held, { env });
-    await installBundle(held, { env, signal, onProgress });
-  },
-  uninstall: async () => ({ freed: await uninstallBundle(held, { env }) }),
-  hold: (_language, signal) => holdBundle(held, { env, signal }),
-  async synthesize(request) {
-    speaking();
-    await gate;
-    return { ...(await toneProvider.synthesize({ ...request, voice: 'tone-a' })), model: held.model };
-  },
-  dispose: async () => {}
-};
-registerVoiceProvider(toneProvider);
-registerVoiceProvider(heldProvider);
-
-test('uninstall: the local voices by language; refused while a generation says lines, the lines made stay, the next one downloads it again', { skip: NO_FFMPEG }, async () => {
-  const dir = copyExample();
+test('uninstall: the local voices by language; refused while a generation says lines, the lines made stay, the next one downloads it again', { skip: NO_FFMPEG }, async (t) => {
+  const files = { 'model.bin': bytes(50_000) };
+  const server = await modelServer(files);
+  t.after(() => server.close());
+  const env = { ...process.env, ELABORA_VOICE_MODELS_DIR: path.join(temp, 'held'), ELABORA_VOICE_MODELS_URL: server.url };
+  const held: Bundle = { id: 'held', language: 'fr', model: 'held@1', files: [{ name: 'model.bin', url: 'repo/model.bin', size: 50_000, sha256: sha(files['model.bin']) }] };
+  let gate: Promise<void> = Promise.resolve();
+  let speaking: () => void = () => {};
+  const heldProvider: VoiceProvider = {
+    id: 'held',
+    name: 'Held test voice',
+    voices: (language) => toneProvider.voices('fr').filter(() => !language || language.startsWith('fr')).slice(0, 1).map((voice) => ({ ...voice, id: 'held-a', name: 'Héloïse', provider: 'held' })),
+    status: (language) => (language.startsWith('fr') ? { installed: isInstalled(held, env), size: isInstalled(held, env) ? 0 : 50_000, onDisk: bundleOnDisk(held, env), download: 50_000, installing: bundleDownloading(held, env), inUse: bundleInUse(held, env) } : null),
+    model: (language) => (language.startsWith('fr') ? { id: held.id, model: held.model } : null),
+    async install(_language, { signal, onProgress, force } = {}) {
+      if (force) await uninstallBundle(held, { env });
+      await installBundle(held, { env, signal, onProgress });
+    },
+    uninstall: async () => ({ freed: await uninstallBundle(held, { env }) }),
+    hold: (_language, signal) => holdBundle(held, { env, signal }),
+    async synthesize(request) {
+      speaking();
+      await gate;
+      return { ...(await toneProvider.synthesize({ ...request, voice: 'tone-a' })), model: held.model };
+    },
+    dispose: async () => {}
+  };
+  registerVoiceProvider(toneProvider);
+  registerVoiceProvider(heldProvider);
+  t.after(() => registerVoiceProvider({ ...heldProvider, voices: () => [], status: () => null }));
+  const dir = resources(t).copyExample();
   narrate(dir, 'accueil', [{ id: 'l1', speaker: 'leila', text: 'Bonjour.' }, { id: 'l2', speaker: 'leila', text: 'Au revoir.' }], { speakers: [{ id: 'leila', name: 'Leïla' }] });
   await setSpeakerVoice(dir, { speaker: 'leila', voice: 'held-a', provider: 'held' });
 
@@ -178,9 +180,8 @@ test('uninstall: the local voices by language; refused while a generation says l
   let release!: () => void;
   gate = new Promise((resolve) => { release = resolve; });
   const started = new Promise<void>((resolve) => { speaking = resolve; });
-  const generating = generateNarration(dir, { screen: 'accueil' });
+  const generating = resources(t).own(generateNarration(dir, { screen: 'accueil' }), async running => { release(); await running; });
   await started;
-  assert.equal(installs, 1);
   assert.equal(view().inUse, true);
   await assert.rejects(uninstallVoices('fr'), (error: VoiceError) => error.code === 'E_VOICE_IN_USE');
   release();
@@ -206,20 +207,20 @@ test('uninstall: the local voices by language; refused while a generation says l
   gate = Promise.resolve();
   speaking = () => {};
   await generateNarration(dir, { screen: 'accueil', lines: ['l2'] });
-  assert.equal(installs, 2);
   assert.equal(view().installed, true);
   const requests = server.requests();
   await heldProvider.install('fr', { force: true });
   assert.equal(server.requests(), requests + 1, 'a reinstall downloads it again');
 });
 
-test('cli: elabora voice models, uninstall and install --force on a made-up model', { skip: NO_FFMPEG }, async () => {
+test('cli: elabora voice models, uninstall and install --force on a made-up model', { skip: NO_FFMPEG }, async (t) => {
   // The English model as a 30 KB made-up file, from a server of this test (the commands run in
   // children, so that it answers meanwhile).
-  const body = crypto.randomBytes(30_000);
+  const body = bytes(30_000);
   const manifest = path.join(temp, 'cli-manifest.json');
   fs.writeFileSync(manifest, JSON.stringify({ 'english_2026-04': [{ name: 'model.bin', url: 'repo/model.bin', size: body.length, sha256: sha(body) }] }));
   const serve = await modelServer({ 'model.bin': body });
+  t.after(() => serve.close());
   const cliEnv = { ...process.env, ELABORA_VOICE_MODELS_DIR: path.join(temp, 'cli'), ELABORA_VOICE_MODELS_URL: serve.url, ELABORA_VOICE_MODELS_MANIFEST: manifest };
   const elabora = async (...args: string[]) => {
     try {
