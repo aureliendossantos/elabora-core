@@ -109,7 +109,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/unit/dialogue-voice.test.ts` | 376 | 376 | Native-seeded cases passed; owned dialogue courses/recordings/builds and shared seeded noise; sanitizer, character, transcription, voice packaging and review contracts retained without registry count |
 | `test/unit/dialogue.test.ts` | 575 | 577 | Passed 19 native-seeded cases; every reachable path preserves walk and score after save/resume, owned courses, graph geometry rather than exact rank/curve choices; duplicate budget/stability checks removed |
 | `test/unit/diff-mcp.test.ts` | 74 | 77 | Passed native-seeded cases; owned clients/servers/projects/builds; verifies actual disk edit and read-only refusal, removes arbitrary tool count |
-| `test/unit/docs.test.ts` | 127 | — | Pending |
+| `test/unit/docs.test.ts` | 127 | 127 | Reviewed unchanged; all 7 native-seeded checks passed; published links, generated maps, diagnostic rule references and actual docs/skill access remain operational contracts |
 | `test/unit/downloads.test.ts` | 147 | 161 | Native seed 130363 passed all 4 cases; extension registration isolated in a child, model files reset per case, real download/hash/install/removal and in-use refusals retained |
 | `test/unit/edit-journal.test.ts` | 225 | 216 | Passed native-seeded cases; owns fixtures, seeded binaries and scoped Date; output/error semantics replace identity, exact retry count and elapsed-speed checks |
 | `test/unit/edit.test.ts` | 223 | 224 | Passed native-seeded cases; context-owned courses preserve disk refusal, text editing, IDs, undo and translation contracts |
