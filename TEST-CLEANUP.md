@@ -60,7 +60,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/e2e/canvas.test.ts` | 473 | 444 | Focused seed 130363 passed all nine behaviours; real DOM/layout/image/code updates, frame continuity, focus, ranges and token refusals; owned fixtures |
 | `test/e2e/character.test.ts` | 136 | 139 | Focused seed 104729 passed; virtual browser clock drives gesture expiry and pause; computed arm reset replaces Animation identity |
 | `test/e2e/charts.test.ts` | 182 | 228 | Passed crowded six-label desktop/phone layout and five-stage cycle; verifies visible labels and SVG bounds |
-| `test/e2e/design.test.ts` | 697 | 686 | Native seed 104729 passed all 21 behaviours; rendered captures and public object state replace image-size quotas and fixed waits; owns fixtures, outputs, browser and hosts |
+| `test/e2e/design.test.ts` | 697 | 686 | Native seed 104729 passed 21 behaviours; public object state and decoded captures replace waits/byte quotas; capture variation compares pixels, including uniform non-grey failure; final suite repeat queued |
 | `test/e2e/dialogues.test.ts` | 559 | — | Pending |
 | `test/e2e/edge.test.ts` | 122 | — | Pending |
 | `test/e2e/engine-canvas.test.ts` | 128 | 91 | Focused seed 130363 passed; commands and external writes reach actual DOM while the free object keeps its marker and frame; removed machine-speed budgets |

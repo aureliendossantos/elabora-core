@@ -41,7 +41,7 @@ async function objectState<T>(page: Page, block: string, expected: Record<string
 const { PNG } = createRequire(import.meta.url)('pngjs');
 function visibleCapture(bytes: Buffer): void {
   const image = PNG.sync.read(bytes);
-  assert.ok(image.width > 0 && image.height > 0 && new Set(image.data).size > 1, 'capture decodes with visible content');
+  assert.ok(image.width > 0 && image.height > 0 && image.data.some((value: number, index: number) => value !== image.data[index % 4]), 'capture decodes with visible content');
 }
 
 // The reference example as slides, with a stylesheet (for the contrast and backdrop cases).
