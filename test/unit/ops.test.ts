@@ -1,6 +1,5 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {
@@ -9,30 +8,22 @@ import {
   type Files, type FileContent, type Json, type JsonObject, type Op, type Author, type JournalEntry, type ChangeEntry, type UndoEntry
 } from '@elabora/core/ops/index';
 import { ROOT } from '../helpers.ts';
+import { seededRandom } from '../mutations.ts';
+import { readProjectFiles } from '@elabora/node/project-reader';
+import { fileHash } from '@elabora/core/project/files';
 
 // ── tools ────────────────────────────────────────────────────────────
 
 // Small seeded generator (mulberry32): a failing property names its seed, so it can be replayed.
 type Rng = ReturnType<typeof random>;
 function random(seed: number) {
-  let state = seed >>> 0;
-  const next = () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let t = state;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-  const int = (n: number) => Math.floor(next() * n);
-  return {
-    next, int,
-    chance: (p: number) => next() < p,
+  const next = seededRandom(seed), int = (n: number) => Math.floor(next() * n);
+  return { next, int, chance: (p: number) => next() < p,
     pick: <T>(list: readonly T[]): T => list[int(list.length)],
     shuffle: <T>(list: readonly T[]): T[] => {
       const out = [...list];
       for (let i = out.length - 1; i > 0; i--) {
-        const j = int(i + 1);
-        [out[i], out[j]] = [out[j], out[i]];
+        const j = int(i + 1); [out[i], out[j]] = [out[j], out[i]];
       }
       return out;
     }
@@ -94,16 +85,7 @@ const STRINGS = ['ITEM-1', 'ITEM-2', 'ITEM-3', 'ITEM-4', 'ITEM-5', 'ITEM-6', 'IT
 function generator(rng: Rng) {
   let counter = 0;
   const fresh = () => `e${++counter}`;
-  const scalar = (): Json => {
-    switch (rng.int(6)) {
-      case 0: return null;
-      case 1: return rng.chance(0.5);
-      case 2: return rng.int(1000) - 500;
-      case 3: return Math.round(rng.next() * 1e4) / 100;
-      case 4: return rng.pick(WORDS);
-      default: return `${rng.pick(WORDS)} ${rng.int(100)}`;
-    }
-  };
+  const scalar = (): Json => rng.pick([null, rng.chance(0.5), rng.int(1000) - 500, rng.next() * 100, rng.pick(WORDS)]);
   const keyedStrings = (): Json[] => rng.shuffle(STRINGS).slice(0, rng.int(5));
   const object = (depth: number, id?: string): JsonObject => {
     const out: JsonObject = id ? { id } : {};
@@ -114,20 +96,14 @@ function generator(rng: Rng) {
     return out;
   };
   const keyedObjects = (depth: number): Json[] => Array.from({ length: depth > 0 ? rng.int(5) : 0 }, () => object(depth - 1, fresh()));
-  const plainArray = (depth: number): Json[] => {
-    switch (rng.int(3)) {
-      case 0: return Array.from({ length: rng.int(5) }, () => rng.int(4)); // duplicates: a value
-      case 1: return Array.from({ length: rng.int(3) }, () => ({ kind: rng.pick(WORDS), n: rng.int(9) }));
-      default: return Array.from({ length: rng.int(4) }, () => (depth > 0 ? value(depth - 1) : scalar()));
-    }
-  };
   const value = (depth: number): Json => {
     if (depth <= 0 || rng.chance(0.35)) return scalar();
     switch (rng.int(5)) {
-      case 0: case 1: return object(depth - 1);
-      case 2: return keyedObjects(depth - 1);
-      case 3: return keyedStrings();
-      default: return plainArray(depth - 1);
+      case 0: return object(depth - 1);
+      case 1: return keyedObjects(depth - 1);
+      case 2: return keyedStrings();
+      case 3: return Array.from({ length: rng.int(5) }, () => rng.int(4));
+      default: return Array.from({ length: rng.int(4) }, () => value(depth - 1));
     }
   };
   return { fresh, scalar, value, object, keyedObjects, keyedStrings };
@@ -504,29 +480,13 @@ test('touchedFiles lists sources and destinations of moves', () => {
 
 // ── the example projects, with realistic edits ───────────────────────
 
-const TEXT = /\.(json|md|css|html|js|mjs|svg|xlf|vtt|txt|csv|gitignore)$/i;
-
-// The example as a snapshot, its JSON formatted the way Elabora writes it.
-function loadExample(name: string): Map<string, FileContent> {
-  const root = path.join(ROOT, 'examples', name);
-  const files = new Map<string, FileContent>();
-  const walk = (abs: string, rel: string) => {
-    for (const entry of fs.readdirSync(abs, { withFileTypes: true })) {
-      if (['dist', '.elabora', 'node_modules'].includes(entry.name)) continue;
-      const child = rel ? `${rel}/${entry.name}` : entry.name;
-      if (entry.isDirectory()) walk(path.join(abs, entry.name), child);
-      else {
-        const bytes = fs.readFileSync(path.join(abs, entry.name));
-        if (!TEXT.test(entry.name)) files.set(child, binaryFile(`sha256:${crypto.createHash('sha256').update(bytes).digest('hex')}`, bytes.length));
-        else {
-          const file = textFile(child, bytes.toString('utf8'));
-          files.set(child, file.json !== undefined ? jsonFile(file.json) : file);
-        }
-      }
-    }
-  };
-  walk(root, '');
-  return files;
+function loadExample(name: string): Files {
+  const { files } = readProjectFiles(path.join(ROOT, 'examples', name));
+  return new Map([...files].map(([name, content]): [string, FileContent] => {
+    if (content.kind === 'binary') return [name, binaryFile(fileHash(files, name)!, content.size)];
+    const file = textFile(name, content.text);
+    return [name, file.json === undefined ? file : jsonFile(file.json)];
+  }));
 }
 
 interface Project { docs: Map<string, Json>; others: Map<string, FileContent> }

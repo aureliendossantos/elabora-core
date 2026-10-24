@@ -30,6 +30,8 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Resource cleanup | 40 | validate: copied fixtures were never removed |
 | Wall-clock timing | 4 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 
+| Duplicate fixtures | 2 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
+
 ## Production changes
 
 None.
@@ -130,7 +132,7 @@ Further review should prioritize the CLI transport suite (715 lines), ElevenLabs
 | `test/unit/model-versions.test.ts` | 126 | — | Pending |
 | `test/unit/narration.test.ts` | 346 | — | Pending |
 | `test/unit/object-gates.test.ts` | 35 | — | Pending |
-| `test/unit/ops.test.ts` | 929 | 797 | Passed 41 cases; seeded round trips and documented edit/undo contracts; mutable JSON case types checked |
+| `test/unit/ops.test.ts` | 929 | 757 | Passed 41 cases; shared seeded generator and real snapshot reader replace duplicate support machinery; public replay/undo properties and all named boundaries retained |
 | `test/unit/package-limits.test.ts` | 131 | — | Pending |
 | `test/unit/pdf-title.test.ts` | 111 | — | Pending |
 | `test/unit/plan-document.test.ts` | 523 | — | Pending |
