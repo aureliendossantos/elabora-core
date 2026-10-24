@@ -12,8 +12,6 @@ import type { AddressInfo } from 'node:net';
 export const FAKE_CODE = '12345678';
 
 const sha256 = (data: string | Uint8Array) => crypto.createHash('sha256').update(data).digest('hex');
-const token = (prefix: string) => `${prefix}${crypto.randomBytes(32).toString('base64url')}`;
-const hexId = (prefix: string) => `${prefix}${crypto.randomBytes(10).toString('hex')}`;
 
 function canonical(value: unknown): string {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
@@ -34,6 +32,11 @@ export interface FakeComment { id: string; review: string; number: number | null
 export interface FakeRequest { method: string; path: string; bytes: number; authorization: boolean }
 
 export class FakeCloud {
+  #serial = 0;
+  #time = Date.UTC(2026, 9, 20, 12);
+  #token(prefix: string): string { return prefix + crypto.createHash('sha256').update(`fake-cloud-${++this.#serial}`).digest('base64url'); }
+  #hexId(prefix: string): string { return prefix + sha256(`fake-cloud-${++this.#serial}`).slice(0, 20); }
+  #now(): string { return new Date(this.#time++).toISOString(); }
   readonly requests: FakeRequest[] = [];
   readonly tokens = new Map<string, Principal>();
   readonly blobs = new Map<string, Map<string, Buffer>>(); // space → sha256 → bytes
@@ -66,7 +69,7 @@ export class FakeCloud {
 
   // A tester's invitation key for a space, as the administrator issues it.
   invite(space: string, label = 'Testeur'): string {
-    const key = token('eik_');
+    const key = this.#token('eik_');
     this.tokens.set(key, { kind: 'invitation', space, label });
     return key;
   }
@@ -79,9 +82,9 @@ export class FakeCloud {
     const version = target.versions.find((v) => v.version === anchor.version) ?? target.versions.at(-1)!;
     target.rev++;
     const thread: FakeComment = {
-      id: hexId('cm_'), review, number: this.comments.filter((c) => c.review === review && c.parent === null).length + 1, parent: null,
+      id: this.#hexId('cm_'), review, number: this.comments.filter((c) => c.review === review && c.parent === null).length + 1, parent: null,
       version: version.version, versionNumber: version.number, screen: String(anchor.screen), anchor, text, by: { kind: 'reviewer', name },
-      state: 'open', resolvedAt: null, createdAt: new Date().toISOString(), editedAt: null, deleted: false, rev: target.rev
+      state: 'open', resolvedAt: null, createdAt: this.#now(), editedAt: null, deleted: false, rev: target.rev
     };
     this.comments.push(thread);
     return thread;
@@ -91,7 +94,7 @@ export class FakeCloud {
     const target = this.reviews.get(review)!;
     const thread = this.comments.find((c) => c.id === parent)!;
     target.rev++;
-    const reply: FakeComment = { ...thread, id: hexId('cm_'), number: null, parent, anchor: null, screen: null, text, by: { kind: 'reviewer', name }, state: null, rev: target.rev };
+    const reply: FakeComment = { ...thread, id: this.#hexId('cm_'), number: null, parent, anchor: null, screen: null, text, by: { kind: 'reviewer', name }, state: null, rev: target.rev };
     this.comments.push(reply);
     return reply;
   }
@@ -130,10 +133,10 @@ export class FakeCloud {
         return left > 0 ? fail(401, 'invalid-code', 'This code is not the one sent.', { attemptsLeft: left }) : fail(401, 'code-expired', 'Ask a new code.');
       }
       const known = [...this.tokens.values()].find((p) => p.account?.email === email)?.account;
-      const account: Account = known ?? { id: hexId('acc_'), email, handle: null, displayName: null, language: 'fr' };
-      const session = token('eas_');
-      const now = new Date().toISOString();
-      const row: FakeSession = { id: hexId('ses_'), device: String(body.device), createdAt: now, lastUsedAt: now, expiresAt: new Date(Date.now() + 90 * 86_400_000).toISOString(), account, token: session };
+      const account: Account = known ?? { id: this.#hexId('acc_'), email, handle: null, displayName: null, language: 'fr' };
+      const session = this.#token('eas_');
+      const now = this.#now();
+      const row: FakeSession = { id: this.#hexId('ses_'), device: String(body.device), createdAt: now, lastUsedAt: now, expiresAt: new Date(this.#time + 90 * 86_400_000).toISOString(), account, token: session };
       this.sessions.set(row.id, row);
       this.tokens.set(session, { kind: 'session', space: account.handle, account, label: email, session: row.id });
       return this.#send(response, 200, { token: session, session: { id: row.id, device: row.device }, account: this.#account(account), next: account.handle ? null : 'choose-handle' });
@@ -145,7 +148,7 @@ export class FakeCloud {
     if (principal.kind === 'ai') {
       const reads = method === 'GET' && parts[1] === 'spaces' && parts[3] === 'reviews' && (parts.length === 4 || parts.length === 5 || (parts.length === 6 && parts[5] === 'comments'));
       if (!reads) return fail(403, 'read-only-key', 'This key is an AI’s: it only lists reviews and reads their comments.');
-      this.aiKeys.get(principal.id!)!.lastUsedAt = new Date().toISOString();
+      this.aiKeys.get(principal.id!)!.lastUsedAt = this.#now();
     }
 
     if (parts[1] === 'auth' && parts[2] === 'logout' && method === 'POST') {
@@ -164,7 +167,7 @@ export class FakeCloud {
           if (mine().length >= 5) return fail(409, 'too-many-ai-keys', 'An account has at most 5 AI keys: revoke one first.', { limit: 5 });
           const name = String(json().name ?? '').trim();
           if (!name || name.length > 60) return fail(422, 'invalid-name', 'name is 1 to 60 characters.');
-          const made: AiKey = { id: hexId('aik_'), name, createdAt: new Date().toISOString(), lastUsedAt: null, key: token('ear_'), account };
+          const made: AiKey = { id: this.#hexId('aik_'), name, createdAt: this.#now(), lastUsedAt: null, key: this.#token('ear_'), account };
           this.aiKeys.set(made.id, made);
           this.tokens.set(made.key, { kind: 'ai', space: account.handle, account, label: name, id: made.id });
           return this.#send(response, 201, { aiKey: { id: made.id, name, createdAt: made.createdAt, lastUsedAt: null }, key: made.key, space: account.handle });
@@ -296,9 +299,9 @@ export class FakeCloud {
       if (this.quota && this.#stored(space) + adding > this.quota.storageBytes) {
         return fail(403, 'quota-storage', 'Your space is full: unpublish an old publication, or delete a review that shows one.', { quota: 'storageBytes', limit: this.quota.storageBytes, used: this.#stored(space), adding });
       }
-      const upload: Upload = { id: hexId('up_'), space, name, visibility, version, manifest: body.manifest, previous: current?.version ?? null };
+      const upload: Upload = { id: this.#hexId('up_'), space, name, visibility, version, manifest: body.manifest, previous: current?.version ?? null };
       this.uploads.set(upload.id, upload);
-      return this.#send(response, 201, { unchanged: false, upload: upload.id, version, previous: upload.previous, url: urlOf, expiresAt: new Date(Date.now() + 86_400_000).toISOString(), missing: [...missing].map(([sha, size]) => ({ sha256: sha, size })), missingBytes: adding, limits: this.limits });
+      return this.#send(response, 201, { unchanged: false, upload: upload.id, version, previous: upload.previous, url: urlOf, expiresAt: new Date(this.#time + 86_400_000).toISOString(), missing: [...missing].map(([sha, size]) => ({ sha256: sha, size })), missingBytes: adding, limits: this.limits });
     }
     if (parts[3] === 'uploads') {
       const upload = this.uploads.get(parts[4]);
@@ -317,7 +320,7 @@ export class FakeCloud {
         }
         if (parts[7] === 'multipart' && parts.length === 8 && method === 'POST') {
           if (blobs.has(sha)) return this.#send(response, 200, { present: true });
-          const id = `mp-${crypto.randomBytes(6).toString('hex')}/x`; // URL-encoded by the client
+          const id = `${this.#hexId('mp-')}/x`; // URL-encoded by the client
           this.multiparts.set(id, { sha256: sha, parts: new Map() });
           return this.#send(response, 200, { present: false, multipart: id, partBytes: this.limits.partBytes, parts: Math.ceil(sizes.get(sha)! / this.limits.partBytes) });
         }
@@ -339,7 +342,7 @@ export class FakeCloud {
       if (parts[5] === 'commit' && method === 'POST') {
         const missing = [...sizes.keys()].filter((sha) => !blobs.has(sha));
         if (missing.length) return fail(409, 'blobs-missing', 'Send them first.', { missing });
-        const committedAt = new Date().toISOString();
+        const committedAt = this.#now();
         const kept = publications.get(upload.name)?.versions ?? [];
         publications.set(upload.name, { name: upload.name, visibility: upload.visibility, version: upload.version, manifest: upload.manifest, committedAt, versions: kept.includes(upload.version) ? kept : [...kept, upload.version] });
         this.uploads.delete(upload.id);
@@ -359,8 +362,8 @@ export class FakeCloud {
         const note = typeof body.note === 'string' && body.note.trim() ? body.note.trim() : null;
         if (note && note.length > 500) return fail(422, 'invalid-text', 'note is at most 500 characters.');
         const invitedBy = principal.kind === 'session' ? principal.account!.displayName : principal.label;
-        const review: Review = { id: hexId('rv_'), space, publication: publication.name, title: typeof body.title === 'string' ? body.title : String(publication.manifest.meta.title), state: 'open', versions: [{ number: 1, version: publication.version, addedAt: new Date().toISOString(), course: publication.manifest.meta.course ?? null }], rev: 0, link: '', createdAt: new Date().toISOString(), note, invitedBy };
-        review.link = `https://revue.elabora.studio/#${token('erl_')}`;
+        const review: Review = { id: this.#hexId('rv_'), space, publication: publication.name, title: typeof body.title === 'string' ? body.title : String(publication.manifest.meta.title), state: 'open', versions: [{ number: 1, version: publication.version, addedAt: this.#now(), course: publication.manifest.meta.course ?? null }], rev: 0, link: '', createdAt: this.#now(), note, invitedBy };
+        review.link = `https://revue.elabora.studio/#${this.#token('erl_')}`;
         this.reviews.set(review.id, review);
         return this.#send(response, 201, { review: this.#review(review, true), link: review.link });
       }
@@ -388,11 +391,11 @@ export class FakeCloud {
         if (!others) publications.delete(review.publication);
         return this.#send(response, 200, { deleted: true, review: review.id, commentsDeleted: count, content: others ? null : { unpublished: true } });
       }
-      if (parts[5] === 'link' && method === 'POST') { review.link = `https://revue.elabora.studio/#${token('erl_')}`; return this.#send(response, 200, { review: this.#review(review, true), link: review.link }); }
+      if (parts[5] === 'link' && method === 'POST') { review.link = `https://revue.elabora.studio/#${this.#token('erl_')}`; return this.#send(response, 200, { review: this.#review(review, true), link: review.link }); }
       if (parts[5] === 'versions' && method === 'POST') {
         const current = publications.get(review.publication)!;
         const added = !review.versions.some((v) => v.version === current.version);
-        if (added) review.versions.push({ number: review.versions.length + 1, version: current.version, addedAt: new Date().toISOString(), course: current.manifest.meta.course ?? null });
+        if (added) review.versions.push({ number: review.versions.length + 1, version: current.version, addedAt: this.#now(), course: current.manifest.meta.course ?? null });
         return this.#send(response, 200, { added, review: this.#review(review) });
       }
       if (parts[5] === 'comments') {
@@ -409,7 +412,7 @@ export class FakeCloud {
           const thread = this.comments.find((c) => c.id === body.parent && c.review === id);
           if (!thread) return fail(404, 'no-comment', 'No such comment.');
           review.rev++;
-          const reply: FakeComment = { ...thread, id: hexId('cm_'), number: null, parent: thread.id, anchor: null, screen: null, text: String(body.text), by: { kind: 'author', name: typeof body.name === 'string' ? body.name : principal.label }, state: null, resolvedAt: null, createdAt: new Date().toISOString(), rev: review.rev };
+          const reply: FakeComment = { ...thread, id: this.#hexId('cm_'), number: null, parent: thread.id, anchor: null, screen: null, text: String(body.text), by: { kind: 'author', name: typeof body.name === 'string' ? body.name : principal.label }, state: null, resolvedAt: null, createdAt: this.#now(), rev: review.rev };
           this.comments.push(reply);
           return this.#send(response, 201, { comment: { ...reply, mine: true, review: undefined } });
         }
@@ -418,7 +421,7 @@ export class FakeCloud {
           if (!comment) return fail(404, 'no-comment', 'No such comment.');
           const body = json();
           if (body.state && comment.parent) return fail(422, 'not-a-thread', 'Only a thread is resolved.');
-          if (body.state === 'resolved' || body.state === 'open') { comment.state = body.state; comment.resolvedAt = body.state === 'resolved' ? new Date().toISOString() : null; }
+          if (body.state === 'resolved' || body.state === 'open') { comment.state = body.state; comment.resolvedAt = body.state === 'resolved' ? this.#now() : null; }
           comment.rev = ++review.rev;
           return this.#send(response, 200, { comment: { ...comment, mine: false, review: undefined } });
         }
