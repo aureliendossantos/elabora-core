@@ -1,4 +1,4 @@
-import { test, after } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -14,7 +14,10 @@ import { readJournal } from '@elabora/node/journal/index';
 import { createProjectFiles } from '@elabora/core/project/files';
 import { FsStore } from '@elabora/node/store/index';
 import type { ChangeLike } from '@elabora/core/ops/types';
-import { copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { readJSON, writeJSON } from '../helpers.ts';
+
+import { resources } from '../resources.ts';
+import { eventLog, waitFor as waitForEvent, type EventLog } from '../events.ts';
 
 // Media in a session: references rewritten when a conversion changes a file's extension, media
 // dropped into assets/ converted automatically, imports journaled when their job is done.
@@ -22,21 +25,8 @@ import { copyExample, readJSON, writeJSON } from '../helpers.ts';
 const run = promisify(execFile);
 const tools: MediaTools | null = await findMediaTools().catch(() => null);
 const NO_FFMPEG = 'ffmpeg and ffprobe are not installed';
-const temporary: string[] = [];
-const sessions: Session[] = [];
-after(async () => {
-  for (const session of sessions) await session.close({ media: 'cancel' }).catch(() => {});
-  for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true });
-});
-
-async function waitFor<T extends EngineEvent>(events: EngineEvent[], match: (event: EngineEvent) => event is T, timeoutMs = 60000): Promise<T> {
-  const deadline = Date.now() + timeoutMs;
-  for (;;) {
-    const found = events.find(match);
-    if (found) return found;
-    if (Date.now() > deadline) throw new Error(`No matching event in ${timeoutMs} ms: ${JSON.stringify(events.map((event) => event.type))}`);
-    await new Promise((resolve) => setTimeout(resolve, 25));
-  }
+function waitFor<T extends EngineEvent>(events: EventLog<EngineEvent>, match: (event: EngineEvent) => event is T): Promise<T> {
+  return waitForEvent(events, match, 60000);
 }
 
 const QUIET: OpenOptions = { backups: { onOpen: false, prune: false }, rescanIntervalMs: 0 };
@@ -63,20 +53,19 @@ test('references to a converted asset are rewritten: block props, project paths,
 
 test('a media file dropped into assets/ that is not conformant is converted, its references rewritten in one system change', async (t) => {
   if (!tools) return t.skip(NO_FFMPEG);
-  const dir = copyExample();
-  temporary.push(dir);
+  const r = resources(t);
+  const dir = r.copyExample();
   // A screen already names the picture the agent is about to drop (BMP: not a web format).
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.blocks.push({ id: 'accueil-photo', type: 'image', props: { asset: 'images/photo.bmp', alt: 'Photo du poste de Marc' } });
   writeJSON(dir, 'screens/accueil.json', screen);
-  const session = await openProject(dir, { ...QUIET, media: { tools } });
-  sessions.push(session);
-  const events: EngineEvent[] = [];
-  session.subscribe(({ event }) => events.push(event));
+  const session = r.own(await openProject(dir, { ...QUIET, media: { tools } }), value => value.close({ media: 'cancel' }));
+  const events = eventLog<EngineEvent>();
+  session.subscribe(({ event }) => events.record(event));
   await session.flush();
   assert.ok(session.readScreen('accueil').diagnostics.some((d) => d.code === 'E_ASSET_MISSING'));
 
-  const source = path.join(os.tmpdir(), `elabora-engine-${process.pid}-photo.bmp`);
+  const source = path.join(r.tempDir('elabora-engine-'), 'photo.bmp');
   await run(tools.ffmpeg, ['-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=320x200', '-frames:v', '1', source]);
   fs.copyFileSync(source, path.join(dir, 'assets/images/photo.bmp'));
   fs.rmSync(source, { force: true });
@@ -98,7 +87,6 @@ test('a media file dropped into assets/ that is not conformant is converted, its
   assert.ok(session.files.has(output) && !session.files.has('assets/images/photo.bmp'));
   await waitFor(events, (event): event is Extract<EngineEvent, { type: 'diagnostics' }> => event.type === 'diagnostics' && !(event.screens.accueil ?? []).some((d) => d.code === 'E_ASSET_MISSING'));
   // Nothing else journaled when the watcher reports the job's files.
-  await new Promise((resolve) => setTimeout(resolve, 400));
   await session.flush({ rescan: true });
   assert.deepEqual(changes(dir).map((change) => [change.author.kind, change.command?.name ?? null]), [['external', null], ['system', 'optimize_media']]);
   // The conversion can be undone: the original comes back from the blob store.
@@ -109,14 +97,12 @@ test('a media file dropped into assets/ that is not conformant is converted, its
 
 test('an import requested through the session is journaled as the requester\'s change when its job is done', async (t) => {
   if (!tools) return t.skip(NO_FFMPEG);
-  const dir = copyExample();
-  temporary.push(dir);
-  const session = await openProject(dir, { ...QUIET, media: { tools } });
-  sessions.push(session);
-  const events: EngineEvent[] = [];
-  session.subscribe(({ event }) => events.push(event));
-  const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-engine-import-'));
-  temporary.push(folder);
+  const r = resources(t);
+  const dir = r.copyExample();
+  const session = r.own(await openProject(dir, { ...QUIET, media: { tools } }), value => value.close({ media: 'cancel' }));
+  const events = eventLog<EngineEvent>();
+  session.subscribe(({ event }) => events.record(event));
+  const folder = r.tempDir('elabora-engine-import-');
   const source = path.join(folder, 'Schéma Réseau.png');
   await run(tools.ffmpeg, ['-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=640x360', '-frames:v', '1', source]);
   const imported = await session.importMedia(source);
@@ -130,14 +116,13 @@ test('an import requested through the session is journaled as the requester\'s c
   assert.equal(session.mediaJobs().find((job) => job.id === imported.job.id)?.status, 'done');
 });
 
-test('an asset that a media job will write is reported as processing, not missing, while the job is under way', async () => {
-  const dir = copyExample();
-  temporary.push(dir);
+test('an asset that a media job will write is reported as processing, not missing, while the job is under way', async (t) => {
+  const r = resources(t);
+  const dir = r.copyExample();
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.blocks.push({ id: 'accueil-video', type: 'video', props: { asset: 'video/accueil.mp4', title: 'Accueil' } });
   writeJSON(dir, 'screens/accueil.json', screen);
-  const session = await openProject(dir, { ...QUIET, media: { enabled: false } });
-  sessions.push(session);
+  const session = r.own(await openProject(dir, { ...QUIET, media: { enabled: false } }), value => value.close({ media: 'cancel' }));
   const codes = () => session.readScreen('accueil').diagnostics.map((d) => d.code);
   assert.ok(codes().includes('E_ASSET_MISSING'));
   // Another process (the CLI) queues an import whose output is that file.
@@ -153,14 +138,12 @@ test('an asset that a media job will write is reported as processing, not missin
 
 test('media files carry their verdict in the snapshot: a dropped file that is not a master is reported', async (t) => {
   if (!tools) return t.skip(NO_FFMPEG);
-  const dir = copyExample();
-  temporary.push(dir);
-  const session = await openProject(dir, { ...QUIET, media: { tools, autoOptimize: false } });
-  sessions.push(session);
-  const events: EngineEvent[] = [];
-  session.subscribe(({ event }) => events.push(event));
-  const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-engine-bmp-'));
-  temporary.push(folder);
+  const r = resources(t);
+  const dir = r.copyExample();
+  const session = r.own(await openProject(dir, { ...QUIET, media: { tools, autoOptimize: false } }), value => value.close({ media: 'cancel' }));
+  const events = eventLog<EngineEvent>();
+  session.subscribe(({ event }) => events.record(event));
+  const folder = r.tempDir('elabora-engine-bmp-');
   await run(tools.ffmpeg, ['-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=160x100', '-frames:v', '1', path.join(folder, 'old.bmp')]);
   fs.copyFileSync(path.join(folder, 'old.bmp'), path.join(dir, 'assets/images/old.bmp'));
   await waitFor(events, (event): event is Extract<EngineEvent, { type: 'diagnostics' }> => event.type === 'diagnostics' && (event.project ?? []).some((d) => d.code === 'W_MEDIA_NOT_OPTIMIZED' && d.file === 'assets/images/old.bmp'));
@@ -181,22 +164,21 @@ class FolderReportingStore extends FsStore {
 
 test('a folder reported as soon as a conversion removes the original leaves the removal to the conversion', async (t) => {
   if (!tools) return t.skip(NO_FFMPEG);
-  const dir = copyExample();
-  temporary.push(dir);
+  const r = resources(t);
+  const dir = r.copyExample();
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.blocks.push({ id: 'accueil-photo', type: 'image', props: { asset: 'images/photo.bmp', alt: 'Photo du poste de Marc' } });
   writeJSON(dir, 'screens/accueil.json', screen);
   const store = new FolderReportingStore(dir);
-  const session = await openProject(dir, { ...QUIET, media: { tools }, store });
-  sessions.push(session);
-  const events: EngineEvent[] = [];
+  const session = r.own(await openProject(dir, { ...QUIET, media: { tools }, store }), value => value.close({ media: 'cancel' }));
+  const events = eventLog<EngineEvent>();
   session.subscribe(({ event }) => {
-    events.push(event);
+    events.record(event);
     // The job is done and the original gone: its folder is reported before the job's change is journaled.
     if (event.type === 'mediaJob' && event.job.status === 'done') { store.report(['assets/images']); void session.flush(); }
   });
   await session.flush();
-  const source = path.join(os.tmpdir(), `elabora-engine-${process.pid}-folder.bmp`);
+  const source = path.join(r.tempDir('elabora-engine-'), 'folder.bmp');
   await run(tools.ffmpeg, ['-y', '-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=320x200', '-frames:v', '1', source]);
   fs.copyFileSync(source, path.join(dir, 'assets/images/photo.bmp'));
   fs.rmSync(source, { force: true });

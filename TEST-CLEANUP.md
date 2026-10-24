@@ -27,14 +27,14 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Implementation coupling | 30 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 4 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 9 | ops: module-level change ID counter replaced with content-derived IDs |
-| Fixed-delay synchronization | 27 | engine-session: sleep(400) before checking watcher results |
+| Fixed-delay synchronization | 29 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
 | Unseeded randomness | 13 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 | Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 1 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 78 | validate: copied fixtures were never removed |
+| Resource cleanup | 81 | validate: copied fixtures were never removed |
 | Wall-clock timing | 6 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 4 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -116,7 +116,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/engine-agents.test.ts` | 189 | 177 | Passed 8 native-seeded cases; public-event waits and fake clock drive idle/backup deadlines; rescan barrier replaces sleep; test-owned sessions retain real CLI/agent journal and undo contracts |
 | `test/unit/engine-build.test.ts` | 127 | 113 | Passed 3 native-seeded cases; explicit rescan barrier replaces watcher delays, owned sessions; packaging/state keys/system journal/publish ordering and refusals retained |
 | `test/unit/engine-canvas.test.ts` | 133 | 124 | Passed 2 native-seeded cases; render content/view/title and unchanged unrelated screen replace cache identities; next expected SSE render proves unrelated edit sent nothing without a negative timeout |
-| `test/unit/engine-media.test.ts` | 208 | — | Pending |
+| `test/unit/engine-media.test.ts` | 208 | 190 | Passed 6 native-seeded cases; public media/change events and rescan replace polling/sleep, owned sessions and unique source folders; real conversion/undo/import/verdict/folder-race regressions retained |
 | `test/unit/engine-project-state.test.ts` | 92 | 92 | Passed; incremental findings/content equal full validation, including component content after no-op saves |
 | `test/unit/engine-session.test.ts` | 413 | 364 | Passed 14 cases; event-driven watcher waits, fixed 128-write concurrency regression, per-test sessions; persistence/diagnostics/undo/protocol retained |
 | `test/unit/engine-store.test.ts` | 194 | 175 | Passed 9 cases; event/readiness waits and fixed-size concurrent writes; resources close in reverse ownership order before folders are removed |
