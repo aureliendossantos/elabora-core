@@ -111,7 +111,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/downloads.test.ts` | 147 | 161 | Native seed 130363 passed all 4 cases; extension registration isolated in a child, model files reset per case, real download/hash/install/removal and in-use refusals retained |
 | `test/unit/edit-journal.test.ts` | 225 | — | Pending |
 | `test/unit/edit.test.ts` | 223 | — | Pending |
-| `test/unit/electron-runtime.test.ts` | 21 | — | Pending |
+| `test/unit/electron-runtime.test.ts` | 21 | 21 | Reviewed, retained; passed native seed 155921. Real registration files, protocol/version/path refusals and explicit overrides are observable runtime-discovery contracts; context cleanup already failure-safe |
 | `test/unit/elevenlabs.test.ts` | 675 | 688 | Native seed 104729: 17 passed and 1 live skip; fresh service/account/cache state fixes two reproduced order dependencies; alignment checks exchange timestamps |
 | `test/unit/engine-agents.test.ts` | 189 | 177 | Passed 8 native-seeded cases; public-event waits and fake clock drive idle/backup deadlines; rescan barrier replaces sleep; test-owned sessions retain real CLI/agent journal and undo contracts |
 | `test/unit/engine-build.test.ts` | 127 | 113 | Passed 3 native-seeded cases; explicit rescan barrier replaces watcher delays, owned sessions; packaging/state keys/system journal/publish ordering and refusals retained |
