@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -8,7 +9,7 @@ import { spawnSync } from 'node:child_process';
 import { agentRulesState, agentsFile, currentRules, updateAgentRules } from '@elabora/node/agent-rules';
 import { initProject } from '@elabora/node/scaffold';
 import * as edit from '@elabora/node/edit';
-import { ROOT, copyExample } from '../helpers.ts';
+import { ROOT } from '../helpers.ts';
 
 // A course's rules for agents follow the Elabora that runs (docs/decisions.md D34).
 const BIN = path.join(ROOT, 'bin/elabora.js');
@@ -16,7 +17,7 @@ const elabora = (args: string[]) => spawnSync(process.execPath, [BIN, ...args], 
 const sha = (text: string) => crypto.createHash('sha256').update(text).digest('hex').slice(0, 16);
 const marked = (revision: number, rules: string, notes = '\n## Notes for this course\nAudience : étudiants de licence.\n') => `<!-- elabora:rules revision=${revision} sha256=${sha(rules)} · … -->\n${rules.slice(0, -1)}\n<!-- elabora:rules end -->\n${notes}`;
 
-test('the rules history ends with the template, and the examples carry it (npm run gen)', () => {
+test('the rules history ends with the template, and the examples carry it (npm run gen)', (t) => {
   const history = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages/node/templates/agents-revisions.json'), 'utf8')).revisions;
   const { text, revision } = currentRules();
   assert.equal(history.at(-1).sha, sha(text), 'the template changed: run npm run gen');
@@ -28,8 +29,8 @@ test('the rules history ends with the template, and the examples carry it (npm r
   }
 });
 
-test('rules nobody edited are brought up to date with the notes kept; edited ones are left and said; a newer Elabora\'s are said', () => {
-  const dir = copyExample();
+test('rules nobody edited are brought up to date with the notes kept; edited ones are left and said; a newer Elabora\'s are said', (t) => {
+  const dir = resources(t).copyExample();
   const old = marked(0, '# Old rules\n1. Never edit plan.json.\n');
   fs.writeFileSync(path.join(dir, 'AGENTS.md'), old);
   // The history's commands leave them: a bare elabora undo undoes the author's last change.
@@ -64,7 +65,7 @@ test('rules nobody edited are brought up to date with the notes kept; edited one
   assert.equal(fs.readFileSync(path.join(dir, 'AGENTS.md'), 'utf8'), newer);
 });
 
-test('an AGENTS.md copied whole from a template before the markers is recognised; one Elabora did not write is left', () => {
+test('an AGENTS.md copied whole from a template before the markers is recognised; one Elabora did not write is left', (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-rules-'));
   try {
     const dir = path.join(root, 'c');
@@ -83,7 +84,7 @@ test('an AGENTS.md copied whole from a template before the markers is recognised
 });
 
 // The rules the 17 October split lost and the 19 October review restored, one short line each.
-test('the course rules keep the plan, review, privacy and capture rules the split had dropped', () => {
+test('the course rules keep the plan, review, privacy and capture rules the split had dropped', (t) => {
   const template = currentRules().text;
   assert.match(template, /After a validation keep writing the plan, then tell the author what changed \(`elabora plan diff` \/ `elabora_plan_diff`\)/);
   assert.match(template, /A change of substance[^.]*is the author's call/);
@@ -94,7 +95,7 @@ test('the course rules keep the plan, review, privacy and capture rules the spli
   assert.doesNotMatch(template, /repository-root/, 'an author\'s course folder has no repository root');
 });
 
-test('course entrypoint stays short and routes optional skills without altering author notes', () => {
+test('course entrypoint stays short and routes optional skills without altering author notes', (t) => {
   const template = currentRules().text;
   assert.ok(template.trim().split(/\s+/).length < 950, 'AGENTS.md should not be a cookbook');
   assert.match(template, /elabora tools skills/);

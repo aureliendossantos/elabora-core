@@ -9,14 +9,14 @@ Test public behaviour, use real domain objects, fake only uncontrolled boundarie
 ## Validation
 
 - Baseline `npm test`: **769 passed, 6 skipped** (775 cases).
-- Full default-order unit run after the main cleanup: **788 passed, 6 skipped** (794 cases); typecheck passed. Individual changed files passed before each commit.
+- First-checkpoint default-order unit run: **788 passed, 6 skipped** (794 cases); typecheck passed. Individual changed files passed before each commit.
 - Native randomization with seed **104729** reproduced two ElevenLabs order defects: an estimate got a 41-credit ceiling instead of 82 without a previous library search, and account remaining quota was 38,779 instead of 38,800 after another case spent credits. A focused rerun reproduced both; fresh per-test service/cache/quota state and explicit search setup fixed them (17 passed, one opt-in live skip).
-- Final native randomized full-unit runs each passed **788 tests, 6 skipped** with seeds **104729, 130363, 155921**. Reproduce with `node --test --test-random-seed=<seed> --test-concurrency=2 --test-global-setup=test/isolate.ts "test/unit/*.test.ts"`. Each final run includes both ElevenLabs and download-isolation fixes.
+- First-checkpoint native randomized full-unit runs each passed **788 tests, 6 skipped** with seeds **104729, 130363, 155921**. Reproduce with `node --test --test-random-seed=<seed> --test-concurrency=2 --test-global-setup=test/isolate.ts "test/unit/*.test.ts"`. Each final run includes both ElevenLabs and download-isolation fixes.
 - Native seed **130363** exposed a third order defect: a custom download kind remained registered when another case expected only built-ins. A disposable-process extension check and fresh model files fix it; the focused seed passes all four cases.
 - Earlier repeats with shuffled CLI file arguments are repeat evidence only: Node sorts those arguments. They are not randomized runs.
-- Browser suite: **118 passed, 3 skipped** (121 cases). Two Edge cases require an installed Microsoft Edge; the Electron PDF case requires `ELABORA_ELECTRON_EXECUTABLE`. The matrix is not required: no player/emulator/layout/sample production sources changed.
+- First-checkpoint browser suite: **118 passed, 3 skipped** (121 cases). Two Edge cases require an installed Microsoft Edge; the Electron PDF case requires `ELABORA_ELECTRON_EXECUTABLE`. The resumed audit also ran all 8 matrix cases successfully with native seed 130363.
 - Final documentation link/structure checks: **7 passed**. Typecheck and `npm run release:check` passed.
-- Changed test files: **4,407 → 4,198 lines (209 fewer)** across ten files. No production code changed. Native Windows and live paid-provider checks are not claimed as passes.
+- First-checkpoint changed test files: **4,407 → 4,198 lines (209 fewer)** across ten files. No production code changed. Native Windows and live paid-provider checks are not claimed as passes.
 
 ## Recurring defects
 
@@ -38,9 +38,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Wall-clock timing | 9 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
-
 | Private layout assertions | 7 | charts-matrix imported label placement helpers instead of measuring rendered labels |
-
 | Fixture lifetime | 9 | copied courses lacked per-case failure cleanup |
 
 ## Production changes
@@ -51,7 +49,7 @@ No production code changed. CI discovered a pre-existing release-metadata error 
 
 Proposed, not applied: give `watchFolders` an explicit readiness acknowledgement on every platform, matching FsStore. Its macOS integration test currently probes the real stream because the public API has no ready signal. Keep the real-filesystem regression; a test-only delay cannot fix this API limitation.
 
-Further review should prioritize the CLI transport suite (715 lines), cloud (638), dialogue (575), fonts (547), plan-document (523), sources (511), and remaining browser scenarios. These include valuable public-output contracts; size alone is not a reason to remove them.
+The critical and complete unit inventory has been reviewed; the browser inventory is still in progress. Keep native inference rejection regressions until the proposed inference seam can replace their prototype fixture. The look-server integration still needs a bounded OS process-exit poll: propose exposing completion of daemon shutdown so this can await a termination signal without changing production during cleanup.
 
 ## Files
 
@@ -84,7 +82,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/matrix/phishing.test.ts` | 41 | — | Pending |
 | `test/matrix/planetary.test.ts` | 84 | — | Pending |
 | `test/unit/add-resource.test.ts` | 107 | 108 | Native-seeded cases passed; per-case source files and owned sessions/MCP clients; exact imported bytes replace size-only check |
-| `test/unit/agent-rules.test.ts` | 105 | — | Pending |
+| `test/unit/agent-rules.test.ts` | 105 | 106 | Native-seeded cases passed; own copied course; generated revisions, preservation of author notes, update/undo and published rule-text regressions retained |
 | `test/unit/align.test.ts` | 469 | 477 | Passed native seed 155921 with two explicit unavailable-model skips; seeded CTC oracle retained; context-owned narration/model/recording folders and session/worker disposal, real-case environment restored |
 | `test/unit/backups.test.ts` | 456 | 465 | Passed all 14 native-seeded cases; reproducible media with distinct edit seeds, owned project folders, hash-race clock controlled; child readiness/release gates replace synchronized wall-clock start; live-lock refusal uses zero timeout; retention/restore/GC contracts retained |
 | `test/unit/browser.test.ts` | 57 | 50 | Passed native-seeded cases; named channel/fallback cases inspect usable returned browser; value comparison replaces argument identity and mock-call-only checks |
@@ -181,13 +179,9 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `AGENTS.md` | 29 | 29 | Policy complete; canonical standards in CONTRIBUTING |
 | `.sampo/changesets/layer-captions-bare-canvas.md` | 5 | 6 | Metadata only; restore mandatory root release target so CI can run |
 | `.sampo/changesets/player-motion.md` | 10 | 11 | Metadata only; restore mandatory root release target so CI can run |
-
 | `test/resources.ts` | 0 | 34 | Shared test-only ownership helper: one context-owned stack even across helper calls; reverse-order disposal keeps dependants ahead of files |
-
 | `test/cloud-fake.ts` | 451 | 454 | Test-only hosting fake now uses instance-owned deterministic IDs and time; existing 20 cloud contracts passed with seed 155921 |
-
 | `test/events.ts` | 0 | 27 | Shared test-only event log and subscription waits; real failure deadline stays active while domain timers are faked; 19 engine cases passed |
-
 | `test/bytes.ts` | 0 | 9 | Reusable high-entropy seeded media/archive bytes; another explicit seed represents an edit; backup restore/pruning/large-file tests passed |
 
 ## Additional proposed testability refactor
@@ -196,4 +190,4 @@ PocketModel constructs native ONNX inference internally and has a private constr
 
 ## Remaining work
 
-Audit resumed after the first ten rewritten core files. The remaining inventory is being reviewed to completion. Ten initial core files were rewritten, starting with edit/undo, session consistency, validation and persistence. Continue the pending inventory with the CLI transport, cloud, dialogue, fonts, plan-document and sources suites, then the remaining browser scenarios. The app ledger records its completed 17-file audit and proposed refactors. Preserve every unique behaviour and record environmental limits separately from passes.
+Complete the pending browser rows, then run the complete unit and browser suites repeatedly with native random ordering, refresh totals, and fold findings into the canonical policy. All unit files have focused passing runs; the complete resumed unit run with seed 104729 is in progress. The app ledger records its completed 17-file audit and proposed refactors. Preserve every unique behaviour and record environmental limits separately from passes.
