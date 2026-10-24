@@ -1,4 +1,4 @@
-import { test, after } from 'node:test';
+import { test, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -19,12 +19,21 @@ import { writeZip } from '@elabora/node/packaging/zip-writer';
 import { ZipReader, ZipFormatError } from '@elabora/node/packaging/zip-reader';
 import { ROOT, copyExample, moduleUrl } from '../helpers.ts';
 import { isIgnoredPath } from '@elabora/node/project-files';
+import { seededRandom } from '../mutations.ts';
 
 // Every test works in its own library, in a temp folder (ELABORA_LIBRARY): never the user's.
-delete process.env.ELABORA_DATA_DIR;
+beforeEach(t => {
+  const saved = { ELABORA_DATA_DIR: process.env.ELABORA_DATA_DIR, ELABORA_LIBRARY: process.env.ELABORA_LIBRARY };
+  delete process.env.ELABORA_DATA_DIR;
+  t.after(() => {
+    for (const [key, value] of Object.entries(saved)) {
+      if (value === undefined) delete process.env[key]; else process.env[key] = value;
+    }
+  });
+});
 const temporary: string[] = [];
-after(() => {
-  for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true });
+afterEach(() => {
+  for (const dir of temporary.splice(0)) fs.rmSync(dir, { recursive: true, force: true });
 });
 const tempDir = (prefix: string): string => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
@@ -41,6 +50,11 @@ const example = (name: string): string => {
   const dir = copyExample(path.join(ROOT, 'examples', name));
   temporary.push(dir);
   return dir;
+};
+const noise = (length: number, seed = 42) => {
+  const random = seededRandom(seed), bytes = Buffer.alloc(length);
+  for (let i = 0; i < length; i++) bytes[i] = Math.floor(random() * 256);
+  return bytes;
 };
 const sha = (file: string) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 // Relative path → hash of every file of a folder outside tool folders and OS files (.DS_Store).
@@ -94,7 +108,10 @@ test('library: create, list and the cached validation summary', async () => {
 
   // Newest first; the summary stays cached while the files do not change.
   const second = await createProject({ id: 'gestes', title: 'Gestes', language: 'en' });
-  const later = new Date(Date.now() + 60_000);
+  const earlier = new Date(Date.UTC(2026, 9, 24, 12));
+  fs.utimesSync(path.join(project.path, 'course.json'), earlier, earlier);
+  getProject(project.id, { validate: true });
+  const later = new Date(earlier.getTime() + 60_000);
   fs.utimesSync(path.join(second.path, 'course.json'), later, later);
   const listed = listProjects();
   assert.deepEqual(listed.map((p) => p.id), [second.id, project.id]);
@@ -172,8 +189,8 @@ async function projectWithHistory(): Promise<{ dir: string; v1: Buffer; v2: Buff
   const root = libraryRoot();
   const imported = await importFolder(example('diagnostic-reseau'));
   const dir = path.join(root, imported.project.id);
-  const v1 = crypto.randomBytes(300_000);
-  const v2 = crypto.randomBytes(200_000);
+  const v1 = noise(300_000);
+  const v2 = noise(200_000);
   fs.mkdirSync(path.join(dir, 'assets', 'video'), { recursive: true });
   fs.writeFileSync(path.join(dir, 'assets', 'video', 'intro.mp4'), v1);
   await createVersion(dir, { reason: 'manual', name: 'First cut' });
@@ -310,7 +327,7 @@ test('archives: a damaged or tampered archive is refused and leaves nothing behi
   await refused(rebuild(out, (files) => files.delete('plan.json')), 'E_ARCHIVE_DAMAGED');
   await refused(rebuild(out, (files) => {
     const blob = [...files.keys()].find((name) => name.startsWith('history/blobs/'))!;
-    files.set(blob, crypto.randomBytes(300_000));
+    files.set(blob, noise(300_000, 99));
   }), 'E_ARCHIVE_DAMAGED');
   // Truncated: not a ZIP any more.
   const truncated = path.join(tempDir('elabora-truncated-'), 'x.elabora');
@@ -432,49 +449,37 @@ test('library: a copy made from an example keeps its origin, which no archive ca
   stagingIsEmpty(root);
 });
 
-test('library: trash, restore, empty the trash', async () => {
+test('emptying the trash removes only entries older than the chosen retention', async () => {
   const root = freshLibrary();
   const kept = await createProject({ id: 'garde', title: 'Gardé' });
   const old = await createProject({ id: 'ancien', title: 'Ancien' });
   const recent = await createProject({ id: 'recent', title: 'Récent' });
   const oldEntry = await trashProject(old.id);
-  assert.equal(oldEntry.reason, 'trashed');
-  assert.equal(oldEntry.title, 'Ancien');
-  assert.equal(fs.existsSync(old.path), false);
-  assert.equal(fs.existsSync(path.join(oldEntry.path, '.elabora', 'lock')), false);
-  await trashProject(recent.id);
-  assert.deepEqual(listProjects().map((p) => p.id), [kept.id]);
-  assert.deepEqual(listTrash().map((e) => e.id).sort(), [old.id, recent.id].sort());
-
-  // Back in the library with its id; trashed again; then the trash is emptied by age.
-  const back = await restoreFromTrash(oldEntry.entry);
-  assert.equal(back.id, old.id);
-  assert.equal(back.path, old.path);
-  await rejectsWith(restoreFromTrash(oldEntry.entry), 'E_TRASH_ENTRY');
-  await rejectsWith(restoreFromTrash('../Library'), 'E_TRASH_ENTRY');
-  await trashProject(old.id);
-  const now = new Date(Date.now() + 10 * 86_400_000);
-  assert.deepEqual((await emptyTrash({ olderThanDays: 30, now })).removed, []);
-  const emptied = await emptyTrash({ olderThanDays: 5, now });
-  assert.equal(emptied.removed.length, 2);
+  const recentEntry = await trashProject(recent.id);
+  trashedAgo(root, oldEntry.entry, 10 * DAY);
+  trashedAgo(root, recentEntry.entry, 2 * DAY);
+  assert.deepEqual((await emptyTrash({ olderThanDays: 30, now: new Date(Date.UTC(2026, 9, 24, 12)) })).removed, []);
+  const emptied = await emptyTrash({ olderThanDays: 5, now: new Date(Date.UTC(2026, 9, 24, 12)) });
+  assert.deepEqual(emptied.removed.map(entry => entry.id), [old.id]);
   assert.ok(emptied.bytes > 0);
-  assert.deepEqual(listTrash(), []);
-  assert.deepEqual(fs.readdirSync(path.join(root, '.trash')), []);
-  assert.deepEqual(listProjects().map((p) => p.id), [kept.id]);
+  assert.deepEqual(listTrash().map(entry => entry.id), [recent.id]);
+  assert.deepEqual(listProjects().map(project => project.id), [kept.id]);
+});
 
-  // Trashed twice at once: the second caller finds it gone, and leaves no empty shell behind.
-  const twice = await createProject({ id: 'deux-fois', title: 'Deux fois' });
-  const outcomes = await Promise.allSettled([trashProject(twice.id), trashProject(twice.id)]);
-  assert.deepEqual(outcomes.map((o) => o.status).sort(), ['fulfilled', 'rejected']);
-  const failure = outcomes.find((o): o is PromiseRejectedResult => o.status === 'rejected')!.reason as LibraryError;
+test('concurrent trash requests remove a project once and leave no empty shell', async () => {
+  freshLibrary();
+  const project = await createProject({ id: 'deux-fois', title: 'Deux fois' });
+  const outcomes = await Promise.allSettled([trashProject(project.id), trashProject(project.id)]);
+  assert.deepEqual(outcomes.map(outcome => outcome.status).sort(), ['fulfilled', 'rejected']);
+  const failure = outcomes.find((outcome): outcome is PromiseRejectedResult => outcome.status === 'rejected')!.reason as LibraryError;
   assert.equal(failure.code, 'E_PROJECT_NOT_FOUND');
-  assert.equal(fs.existsSync(twice.path), false);
-  assert.deepEqual(listTrash().map((e) => e.id), [twice.id]);
+  assert.equal(fs.existsSync(project.path), false);
+  assert.deepEqual(listTrash().map(entry => entry.id), [project.id]);
 });
 
 // The trash record of an entry, aged: what listTrash reads as the time it was trashed.
 const DAY = 86_400_000;
-function trashedAgo(root: string, entry: string, milliseconds: number, now = Date.now()): string {
+function trashedAgo(root: string, entry: string, milliseconds: number, now = Date.UTC(2026, 9, 24, 12)): string {
   const file = path.join(root, '.trash', `${entry}.json`);
   const trashedAt = new Date(now - milliseconds).toISOString();
   fs.writeFileSync(file, JSON.stringify({ ...JSON.parse(fs.readFileSync(file, 'utf8')), trashedAt }));
@@ -492,7 +497,7 @@ test('trash: the list gives each entry its title, when it was trashed and when i
   const a = await trashProject(first.id);
   const b = await trashProject(second.id);
   const c = await trashProject(third.id);
-  const now = Date.now();
+  const now = Date.UTC(2026, 9, 24, 12);
   const trashedA = trashedAgo(root, a.entry, 20 * DAY, now);
   const trashedB = trashedAgo(root, b.entry, 2 * DAY, now);
 
@@ -765,7 +770,7 @@ test('library: move the library (rename, then copy and check), and find it after
 
 test('ZIP reader: streams what the writer wrote, refuses entries that lie about their size', async () => {
   const dir = tempDir('elabora-zip-reader-');
-  const media = crypto.randomBytes(3 * 1024 * 1024 + 17);
+  const media = noise(3 * 1024 * 1024 + 17);
   fs.writeFileSync(path.join(dir, 'clip.mp4'), media);
   const text = 'lorem ipsum '.repeat(50_000);
   const archive = path.join(dir, 'a.zip');
@@ -804,7 +809,7 @@ test('archives: a 50 MB video is streamed through export and import (peak memory
   fs.mkdirSync(path.join(project, 'assets', 'video'), { recursive: true });
   const video = path.join(project, 'assets', 'video', 'x.mp4');
   const handle = fs.openSync(video, 'w');
-  for (let i = 0; i < 50; i++) fs.writeSync(handle, crypto.randomBytes(1024 * 1024));
+  for (let i = 0; i < 50; i++) fs.writeSync(handle, noise(1024 * 1024));
   fs.closeSync(handle);
   const out = path.join(tempDir('elabora-archive-'), 'big.elabora');
   const report = JSON.parse(execFileSync(process.execPath, ['--input-type=module', '-e', `

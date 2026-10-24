@@ -22,13 +22,17 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Duplicate assertions | 1 | ops: identical notes restoration asserted twice |
 
-| Shared mutable fixtures | 2 | ops: module-level change ID counter replaced with content-derived IDs |
+| Shared mutable fixtures | 3 | ops: module-level change ID counter replaced with content-derived IDs |
 
 | Fixed-delay synchronization | 7 | engine-session: sleep(400) before checking watcher results |
 
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 
 | Duplicate computation | 1 | engine-project-state: full validator run twice per assertion |
+
+| Unseeded randomness | 7 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
+
+| Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
 
 ## Production changes
 
@@ -118,7 +122,7 @@ None yet.
 | `test/unit/interop.test.ts` | 92 | — | Pending |
 | `test/unit/journal.test.ts` | 437 | — | Pending |
 | `test/unit/layer-timeline.test.ts` | 265 | — | Pending |
-| `test/unit/library.test.ts` | 840 | — | Pending |
+| `test/unit/library.test.ts` | 840 | 845 | Passed 21 cases; deterministic high-entropy media and explicit trash ages, isolated environment, age/concurrency cases split; archives/history/security/streaming retained |
 | `test/unit/local-ai-platform.test.ts` | 50 | — | Pending |
 | `test/unit/look.test.ts` | 122 | — | Pending |
 | `test/unit/media-project.test.ts` | 286 | — | Pending |
