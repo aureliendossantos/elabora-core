@@ -1,9 +1,9 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
-import { copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
+import { readJSON, writeJSON, codes } from '../helpers.ts';
 import { narrate, voice, hasFfmpeg } from '../narration.ts';
 import { exportTranslation, translationStatus, buildTranslation, translationFile } from '@elabora/node/translate';
 import { translationTable, translatedCourse } from '@elabora/core/i18n/translate';
@@ -14,7 +14,6 @@ import { narrationWords, findPhrase, phraseCount, lineWordTimes } from '@elabora
 import { layoutTimeline, screenTimeline, blockTimings, anchorTime } from '@elabora/core/narration/timeline';
 import { parseAnchor, formatAnchor, resolveAt } from '@elabora/core/narration/anchor-text';
 import { narrationSidecarPath, screenTiming, narrationLines } from '@elabora/core/narration/narration';
-import { STEP_GAP } from '@elabora/core/narration/timing';
 import { timelineView, screenAt, timelineMarks } from '@elabora/core/narration/view';
 import { timelineReport, formatTimeline } from '@elabora/core/narration/report';
 import { renderScreen } from '@elabora/core/render/screen';
@@ -23,7 +22,7 @@ import type { BlockData } from '@elabora/player/course-data';
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
 const SPEAKERS = [{ id: 'narratrice', name: 'Narratrice' }, { id: 'marc', name: 'Marc' }];
 
-test('words: elisions are words, numbers and codes stay whole, punctuation is not a word', () => {
+test('words: elisions are words, numbers and codes stay whole, punctuation is not a word', (t) => {
   const words = narrationWords("Bonjour… Plus rien ne marche au 2e étage : ni l'imprimante, ni le partage. 9 h 30, P-12, 3,5 % aujourd'hui", 'fr');
   assert.deepEqual(words.map((word) => word.text), ['Bonjour', 'Plus', 'rien', 'ne', 'marche', 'au', '2e', 'étage', 'ni', "l'", 'imprimante', 'ni', 'le', 'partage', '9', 'h', '30', 'P-12', '3,5', "aujourd'hui"]);
   assert.deepEqual(narrationWords("don't stop at the printer's tray", 'en').map((word) => word.text), ["don't", 'stop', 'at', 'the', "printer's", 'tray'], 'no elision in English');
@@ -36,7 +35,7 @@ test('words: elisions are words, numbers and codes stay whole, punctuation is no
   assert.deepEqual(findPhrase(narrationWords("not the printer's tray", 'en'), 'printer', { language: 'en' }), { index: 2, count: 1 }, 'a possessive carries its word');
 });
 
-test('word times: aligned, followed through a changed text, estimated without', () => {
+test('word times: aligned, followed through a changed text, estimated without', (t) => {
   const said = [{ text: 'Plus', start: 0.1, end: 0.3 }, { text: 'rien', start: 0.3, end: 0.5 }, { text: 'ne', start: 0.5, end: 0.6 }, { text: 'marche', start: 0.6, end: 1 }];
   assert.deepEqual(lineWordTimes('Plus rien ne marche.', 1.2, said, 'fr').map((word) => [word.text, word.start, !!word.estimated]), [['Plus', 0.1, false], ['rien', 0.3, false], ['ne', 0.5, false], ['marche', 0.6, false]]);
   // A word added: the others keep their times, the new one shares the gap.
@@ -48,7 +47,7 @@ test('word times: aligned, followed through a changed text, estimated without', 
   assert.ok(estimated.every((word) => word.estimated) && estimated[0].start === 0 && estimated[2].end <= 1.4);
 });
 
-test('anchors as written on a command line, and as people read them', () => {
+test('anchors as written on a command line, and as people read them', (t) => {
   assert.deepEqual(parseAnchor('l2:imprimante'), { line: 'l2', word: 'imprimante' });
   assert.deepEqual(parseAnchor('l2:imprimante:end'), { line: 'l2', edge: 'end', word: 'imprimante' });
   assert.deepEqual(parseAnchor('l2:imprimante#2'), { line: 'l2', occurrence: 2, word: 'imprimante' });
@@ -63,7 +62,7 @@ test('anchors as written on a command line, and as people read them', () => {
   assert.equal(formatAnchor({ line: 'l2', word: 'imprimante', edge: 'end', offset: -0.2 }), 'end of l2 « imprimante » −0.2 s');
 });
 
-test('layout: moments anchored to words; an effect at the end of a step lengthens its stretch, never cut by the stop', () => {
+test('layout: moments anchored to words; an effect at the end of a step lengthens its stretch, never cut by the stop', (t) => {
   const lines = [
     { id: 'l1', step: 1, text: 'Plus rien ne marche.', duration: 2, words: [{ text: 'Plus', start: 0, end: 0.4 }, { text: 'rien', start: 0.4, end: 0.8 }, { text: 'ne', start: 0.8, end: 1 }, { text: 'marche', start: 1, end: 2 }] },
     { id: 'l2', step: 2, text: 'Ni l’imprimante.', duration: 1 }
@@ -82,7 +81,6 @@ test('layout: moments anchored to words; an effect at the end of a step lengthen
   assert.equal(timing.get('b')!.in!.at, 2);
   assert.deepEqual(layout.segments[0], { step: 1, start: 0, end: 2.6 }, 'the fade at the end of l1 ends the stretch');
   assert.equal(layout.lines[1].start, 3, 'the next step comes after it, with its pause (at least STEP_GAP)');
-  assert.ok(0.4 >= STEP_GAP);
   assert.deepEqual(layout.gaps, [0, 1, 0]);
   assert.equal(timing.get('a')!.out!.problem!.kind, 'word', 'a word the line does not say');
   assert.equal(timing.get('a')!.out!.at, layout.lines[1].start, 'it falls back to the start of its line');
@@ -92,7 +90,7 @@ test('layout: moments anchored to words; an effect at the end of a step lengthen
   assert.equal(built.lines[1].start, 2.01 + 1);
 });
 
-test('layout without narration: seconds from a step\'s start, steps as long as their moments or their duration', () => {
+test('layout without narration: seconds from a step\'s start, steps as long as their moments or their duration', (t) => {
   const layout = layoutTimeline({
     narrated: false, steps: [1, 2], lines: [], stepSeconds: new Map([[2, 4]]),
     moments: [
@@ -110,8 +108,7 @@ test('layout without narration: seconds from a step\'s start, steps as long as t
 });
 
 // The example's first screen, narrated, with timed blocks: l1 and l2 in step 1, l3 in step 2.
-function timed({ words = true }: { words?: boolean } = {}) {
-  const dir = copyExample();
+function timed(dir: string, { words = true }: { words?: boolean } = {}) {
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.blocks[2].step = 2;
   writeJSON(dir, 'screens/accueil.json', screen);
@@ -128,8 +125,8 @@ function timed({ words = true }: { words?: boolean } = {}) {
   return dir;
 }
 
-test('set_block_timing: in and out as patches, null removes; the screen\'s timeline, report and course data follow', { skip: NO_FFMPEG }, async () => {
-  const dir = timed();
+test('set_block_timing: in and out as patches, null removes; the screen\'s timeline, report and course data follow', { skip: NO_FFMPEG }, async (t) => {
+  const dir = timed(resources(t).copyExample());
   let result = await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'imprimante' }, effect: 'rise' } });
   assert.deepEqual(result.timing, { in: { at: { line: 'l2', word: 'imprimante' }, effect: 'rise' } });
   result = await edit.setBlockTiming(dir, { block: 'accueil-illustration', out: { at: { line: 'l3' } }, in: { duration: 0.8 } });
@@ -165,8 +162,8 @@ test('set_block_timing: in and out as patches, null removes; the screen\'s timel
   assert.equal(readJSON(dir, 'screens/accueil.json').blocks[1].timing, undefined);
 });
 
-test('a line\'s new text takes its word anchors along; an anchor whose words are gone is a finding', { skip: NO_FFMPEG }, async () => {
-  const dir = timed();
+test('a line\'s new text takes its word anchors along; an anchor whose words are gone is a finding', { skip: NO_FFMPEG }, async (t) => {
+  const dir = timed(resources(t).copyExample());
   await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'partage' } } });
   await edit.upsertEvent(dir, { screen: 'accueil', event: { id: 'imprimante-entendue', on: { type: 'timeline.reached', at: { line: 'l2', word: 'ni', occurrence: 2 } }, do: [{ type: 'pause-timeline' }] } });
   let result = await edit.updateNarrationLine(dir, { screen: 'accueil', line: 'l2', text: "Ni le copieur, ni l'imprimante, ni le partage de fichiers ne marchent." });
@@ -181,8 +178,8 @@ test('a line\'s new text takes its word anchors along; an anchor whose words are
   assert.match(found[0].message, /does not say "partage"/);
 });
 
-test('validation: anchors, seconds, effects, layers, stacks, order, reading time, questions that leave, long movement', { skip: NO_FFMPEG }, async () => {
-  const dir = timed();
+test('validation: anchors, seconds, effects, layers, stacks, order, reading time, questions that leave, long movement', { skip: NO_FFMPEG }, async (t) => {
+  const dir = timed(resources(t).copyExample());
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.blocks[0].timing = { in: { at: { line: 'l2', word: 'imprimante' } }, out: { at: { line: 'l2', word: 'partage' } } };
   screen.blocks[1].timing = { in: { at: { seconds: 2 }, effect: 'spin' } };
@@ -214,8 +211,8 @@ test('validation: anchors, seconds, effects, layers, stacks, order, reading time
   assert.deepEqual(again.filter((d) => d.code === 'E_TIMING_ORDER').map((d) => d.target), ['accueil-situation']);
 });
 
-test('word anchors without word times are estimated, and said so', { skip: NO_FFMPEG }, async () => {
-  const dir = timed({ words: false });
+test('word anchors without word times are estimated, and said so', { skip: NO_FFMPEG }, async (t) => {
+  const dir = timed(resources(t).copyExample(), { words: false });
   await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'partage' } } });
   const finding = validateDir(dir).diagnostics.find((d) => d.code === 'I_TIMELINE_WORDS_ESTIMATED');
   assert.match(finding?.message ?? '', /Line "l2" .* "partage" \(accueil-illustration\)/);
@@ -223,8 +220,8 @@ test('word anchors without word times are estimated, and said so', { skip: NO_FF
   assert.equal(blockTimings(timeline).get('accueil-illustration')!.in!.estimated, true);
 });
 
-test('a screen timed in seconds, without narration: its timeline, its cues, seek-timeline resolved', () => {
-  const dir = copyExample();
+test('a screen timed in seconds, without narration: its timeline, its cues, seek-timeline resolved', (t) => {
+  const dir = resources(t).copyExample();
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.blocks[1].timing = { in: { at: { seconds: 1 }, effect: 'zoom' } };
   screen.blocks[2].timing = { in: { at: { seconds: 2.5 } } };
@@ -250,8 +247,8 @@ test('a screen timed in seconds, without narration: its timeline, its cues, seek
   assert.equal(anchorTime(timeline, { step: 1, edge: 'end' }).time, 2.9);
 });
 
-test('XLIFF: word anchors travel as markers; the translator places them, the translated course anchors to their words', { skip: NO_FFMPEG }, async () => {
-  const dir = timed();
+test('XLIFF: word anchors travel as markers; the translator places them, the translated course anchors to their words', { skip: NO_FFMPEG }, async (t) => {
+  const dir = timed(resources(t).copyExample());
   await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'imprimante' }, effect: 'rise' } });
   await edit.upsertEvent(dir, { screen: 'accueil', event: { id: 'partage-entendu', on: { type: 'timeline.reached', at: { line: 'l2', word: 'partage' } }, do: [{ type: 'pause-timeline' }] } });
   exportTranslation(dir, { to: 'en' });
@@ -297,7 +294,7 @@ test('XLIFF: word anchors travel as markers; the translator places them, the tra
   await edit.translateText(dir, { language: 'en', texts: [{ unit: others[0].unit, target: `${others[0].target} ` }] });
   assert.match(fs.readFileSync(translationFile(dir, 'en'), 'utf8'), /<target>Neither the <mrk id="w-imprimante" type="elabora:anchor">printer<\/mrk> nor <mrk id="w-partage" type="elabora:anchor">file sharing<\/mrk> work\.<\/target>/);
   // The translated course: anchors on the English words, its own voice gives them their times.
-  const out = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-anchors-')), 'en');
+  const out = path.join(resources(t).tempDir('elabora-anchors-'), 'en');
   const built = await buildTranslation(dir, { to: 'en', out });
   assert.equal(built.unplaced, 0);
   const screen = readJSON(out, 'screens/accueil.json');
@@ -315,8 +312,8 @@ test('XLIFF: word anchors travel as markers; the translator places them, the tra
   assert.deepEqual(codes(validateDir(out).diagnostics).filter((code) => code.startsWith('E_TIMELINE')), []);
 });
 
-test('marks of a timed screen: its start, blocks that come and go, cues and steps\' ends, at the time each settles', { skip: NO_FFMPEG }, async () => {
-  const dir = timed();
+test('marks of a timed screen: its start, blocks that come and go, cues and steps\' ends, at the time each settles', { skip: NO_FFMPEG }, async (t) => {
+  const dir = timed(resources(t).copyExample());
   await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'imprimante' }, effect: 'rise' }, out: { at: { line: 'l3' } } });
   await edit.upsertEvent(dir, { screen: 'accueil', event: { id: 'partage-entendu', on: { type: 'timeline.reached', at: { line: 'l2', word: 'partage' } }, do: [{ type: 'pause-timeline' }] } });
   const project = loadProjectFromDir(dir);
@@ -333,8 +330,8 @@ test('marks of a timed screen: its start, blocks that come and go, cues and step
   assert.equal(timelineMarks(project, 'premier-reflexe'), null);
 });
 
-test('split_step (« Couper à une réplique »): the line and those after it start the next step; later steps, blocks on moved lines and anchors follow', { skip: NO_FFMPEG }, async () => {
-  const dir = timed();
+test('split_step (« Couper à une réplique »): the line and those after it start the next step; later steps, blocks on moved lines and anchors follow', { skip: NO_FFMPEG }, async (t) => {
+  const dir = timed(resources(t).copyExample());
   // Step 1: l1, l2; step 2: l3. The illustration comes on « partage » of l2.
   await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'partage' } } });
   const screen = readJSON(dir, 'screens/accueil.json');
@@ -355,8 +352,8 @@ test('split_step (« Couper à une réplique »): the line and those after it st
   assert.deepEqual(timeline.segments.map((segment) => segment.step), [1, 2, 3]);
 });
 
-test('duplicate_screen: the copy says its lines with the same audio, its sidecars naming it', { skip: NO_FFMPEG }, async () => {
-  const dir = timed();
+test('duplicate_screen: the copy says its lines with the same audio, its sidecars naming it', { skip: NO_FFMPEG }, async (t) => {
+  const dir = timed(resources(t).copyExample());
   const result = await edit.duplicateScreen(dir, { id: 'accueil', newId: 'accueil-bis' });
   assert.equal(result.screen, 'accueil-bis');
   const sidecar = readJSON(dir, narrationSidecarPath('fr', 'accueil-bis', 'l2'));
@@ -366,8 +363,8 @@ test('duplicate_screen: the copy says its lines with the same audio, its sidecar
   assert.ok(narrationLines(loadProjectFromDir(dir), 'accueil-bis')!.every((line) => line.status === 'ok'), 'its audio is up to date');
 });
 
-test('« Reprendre la voix off du plan »: the screen\'s script from the voice-over its plan items give, translated with the plan', { skip: NO_FFMPEG }, async () => {
-  const dir = copyExample();
+test('« Reprendre la voix off du plan »: the screen\'s script from the voice-over its plan items give, translated with the plan', { skip: NO_FFMPEG }, async (t) => {
+  const dir = resources(t).copyExample();
   const plan = readJSON(dir, 'plan.json');
   const covered = readJSON(dir, 'screens/accueil.json').covers[0];
   const item = plan.items.find((candidate: { id: string }) => candidate.id === covered);

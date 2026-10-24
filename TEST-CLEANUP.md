@@ -41,7 +41,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Private layout assertions | 7 | charts-matrix imported label placement helpers instead of measuring rendered labels |
 
-| Fixture lifetime | 7 | copied courses lacked per-case failure cleanup |
+| Fixture lifetime | 8 | copied courses lacked per-case failure cleanup |
 
 ## Production changes
 
@@ -167,7 +167,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/state.test.ts` | 53 | 50 | Passed; 100 full-state persistence cases, complete corruption fallback, permanent keys and budget growth; test-owned course folders |
 | `test/unit/svg-inline.test.ts` | 99 | — | Pending |
 | `test/unit/template-fields.test.ts` | 27 | — | Pending |
-| `test/unit/timeline.test.ts` | 390 | — | Pending |
+| `test/unit/timeline.test.ts` | 390 | 387 | Passed 16 native-seeded cases; own narrated/translated courses; preserved word anchors, cue timing, editing, translation markers and resume contracts; removed constant-only assertion |
 | `test/unit/transcribe.test.ts` | 290 | — | Pending |
 | `test/unit/translation-context.test.ts` | 156 | — | Pending |
 | `test/unit/validate.test.ts` | 627 | 631 | Passed 32 cases; preserves all diagnostic rules, checks exact prop paths, cleans every copied fixture; removes internal check-name assertion |
