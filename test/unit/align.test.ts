@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
 import { spawnSync } from 'node:child_process';
@@ -17,9 +16,12 @@ import { narrationSidecarPath, narrationLines } from '@elabora/core/narration/na
 import { screenTimeline } from '@elabora/core/narration/timeline';
 import * as edit from '@elabora/node/edit';
 import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
-import { copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
+import { readJSON, writeJSON, codes } from '../helpers.ts';
 import { narrate, voice, hasFfmpeg } from '../narration.ts';
 import { agentFindings } from '@elabora/cli/mcp/tool';
+
+import { resources } from '../resources.ts';
+import { seededRandom } from '../mutations.ts';
 
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
 const SPEAKERS = [{ id: 'narratrice', name: 'Narratrice' }];
@@ -43,8 +45,7 @@ function bestPathScore(logProbs: Float32Array, T: number, V: number, targets: nu
 }
 
 test('the Viterbi finds the best CTC path (random emissions, repeated targets); too little audio is an error, a star absorbs', () => {
-  let seed = 7;
-  const random = (): number => { seed = (seed * 1103515245 + 12345) % 2 ** 31; return seed / 2 ** 31; };
+  const random = seededRandom(7);
   for (let trial = 0; trial < 30; trial++) {
     const T = 6;
     const V = 4;
@@ -112,14 +113,15 @@ test('word times from emissions: the characters\' frames, starts a frame earlier
   assert.deepEqual(doubtfulWords([{ text: 'le', score: 0.1 }, { text: 'a', score: 0.05 }, { text: 'imprimante', score: 0.9 }, { text: '12' }]), [{ word: 'le', score: 0.1, index: 0 }], 'two letters or more under 0.25, with their place in the line');
 });
 
-test('aligners: one per language, pinned and checked; lines are timed at once only where the aligner is installed', () => {
+test('aligners: one per language, pinned and checked; lines are timed at once only where the aligner is installed', (t) => {
+  const { tempDir } = resources(t);
   assert.equal(alignerFor('fr-CA')?.language, 'fr');
   assert.equal(alignerFor('de'), null);
   for (const model of ALIGNER_MODELS) {
     assert.deepEqual(model.files.map((file) => file.name), ['model.onnx', 'vocab.json']);
     for (const file of model.files) { assert.match(file.sha256, /^[0-9a-f]{64}$/); assert.match(file.url, /\/resolve\/[0-9a-f]{40}\//, 'a pinned revision'); }
   }
-  const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-aligners-'));
+  const empty = tempDir('elabora-aligners-');
   const env = { ...process.env, ELABORA_ALIGNER_MODELS_DIR: empty, ELABORA_ALIGN: '1' };
   assert.equal(alignerInstalled(ALIGNER_MODELS[0], env), false);
   assert.equal(alignsAtOnce('fr', env), null);
@@ -134,8 +136,7 @@ test('aligners: one per language, pinned and checked; lines are timed at once on
 });
 
 // The example's first screen, narrated with tones (no speech: words come from set_narration_words).
-function voiced() {
-  const dir = copyExample();
+function voiced(dir: string) {
   narrate(dir, 'accueil', [
     { id: 'l1', text: 'Bonjour, voici le ticket de Marc.', seconds: 2 },
     { id: 'l2', text: "Ni l'imprimante, ni le partage de fichiers ne marchent.", seconds: 3 },
@@ -144,8 +145,9 @@ function voiced() {
   return dir;
 }
 
-test('set_narration_words: the words, their aligner and the text they time go into the sidecar; anchors take their times; swallowed words are a finding', { skip: NO_FFMPEG }, async () => {
-  const dir = voiced();
+test('set_narration_words: the words, their aligner and the text they time go into the sidecar; anchors take their times; swallowed words are a finding', { skip: NO_FFMPEG }, async (t) => {
+  const { copyExample } = resources(t);
+  const dir = voiced(copyExample());
   await edit.setBlockTiming(dir, { block: 'accueil-illustration', in: { at: { line: 'l2', word: 'partage' } } });
   assert.ok(codes(validateDir(dir).diagnostics).includes('I_TIMELINE_WORDS_ESTIMATED'));
   const text = "Ni l'imprimante, ni le partage de fichiers ne marchent.";
@@ -177,8 +179,9 @@ test('set_narration_words: the words, their aligner and the text they time go in
   assert.throws(() => edit.setNarrationWords(dir, { screen: 'accueil', line: 'l3', words, aligner: 'test' }), /has no audio in fr to time/);
 });
 
-test('a swallowed word the author ignores (D31): kept in course.json for this word of this take, it counts no more; another take brings it back', { skip: NO_FFMPEG }, async () => {
-  const dir = voiced();
+test('a swallowed word the author ignores (D31): kept in course.json for this word of this take, it counts no more; another take brings it back', { skip: NO_FFMPEG }, async (t) => {
+  const { copyExample } = resources(t);
+  const dir = voiced(copyExample());
   const text = "Ni l'imprimante, ni le partage de fichiers ne marchent.";
   const timed = (scores: Record<string, number>) => narrationWords(text, 'fr').map((word, index) => ({ text: word.text, start: index * 0.3, end: index * 0.3 + 0.25, score: scores[word.text] ?? 0.97 }));
   const audioHash = () => readJSON(dir, narrationSidecarPath('fr', 'accueil', 'l2')).audioHash;
@@ -226,13 +229,14 @@ test('a swallowed word the author ignores (D31): kept in course.json for this wo
   assert.ok(swallowed().every((d) => d.ignored));
 });
 
-test('elabora narration align: lines without audio or already timed are skipped, the aligner downloaded once, its failure said', { skip: NO_FFMPEG }, async () => {
-  const dir = voiced();
+test('elabora narration align: lines without audio or already timed are skipped, the aligner downloaded once, its failure said', { skip: NO_FFMPEG }, async (t) => {
+  const { copyExample, tempDir } = resources(t);
+  const dir = voiced(copyExample());
   // A mirror that has nothing: the download fails with its code, nothing is written.
   const server = http.createServer((_request, response) => { response.writeHead(404).end(); });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const saved = { dir: process.env.ELABORA_ALIGNER_MODELS_DIR, url: process.env.ELABORA_ALIGNER_MODELS_URL };
-  process.env.ELABORA_ALIGNER_MODELS_DIR = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-aligners-'));
+  process.env.ELABORA_ALIGNER_MODELS_DIR = tempDir('elabora-aligners-');
   process.env.ELABORA_ALIGNER_MODELS_URL = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
   try {
     await assert.rejects(alignNarration(dir, { screen: 'accueil' }), (error: Error & { code?: string }) => error.code === 'E_ALIGN_DOWNLOAD' && /word aligner model could not be downloaded: 404/.test(error.message));
@@ -254,10 +258,12 @@ test('elabora narration align: lines without audio or already timed are skipped,
 // pointing to installed models.
 const realModels = (): boolean => !!(process.env.ELABORA_VOICE_MODELS_DIR && process.env.ELABORA_ALIGNER_MODELS_DIR && alignerInstalled(ALIGNER_MODELS[0]) && fs.existsSync(path.join(process.env.ELABORA_VOICE_MODELS_DIR, 'french_24l/verified.json')));
 
-test('a real voice is timed as it is made: words in its sidecar, anchors on them, the voice heard where the alignment puts it (when the models are installed)', { skip: !realModels() && 'the French voice and aligner are not installed (ELABORA_VOICE_MODELS_DIR, ELABORA_ALIGNER_MODELS_DIR)' }, async () => {
+test('a real voice is timed as it is made: words in its sidecar, anchors on them, the voice heard where the alignment puts it (when the models are installed)', { skip: !realModels() && 'the French voice and aligner are not installed (ELABORA_VOICE_MODELS_DIR, ELABORA_ALIGNER_MODELS_DIR)' }, async (t) => {
+  const { copyExample } = resources(t);
   const { generateNarration, disposeVoiceProviders } = await import('@elabora/node/voice/index');
   const dir = copyExample();
   narrate(dir, 'accueil', [{ id: 'l1', text: "Bonjour, c'est Marc. J'ai lancé l'impression à 9 h 30, mais rien ne sort." }], { speakers: [{ id: 'narratrice', name: 'Narratrice', voices: { fr: { provider: 'pocket-tts', voice: 'estelle' } } }] });
+  const savedAlign = process.env.ELABORA_ALIGN;
   process.env.ELABORA_ALIGN = '1';
   try {
     await generateNarration(dir, { screen: 'accueil' });
@@ -275,16 +281,17 @@ test('a real voice is timed as it is made: words in its sidecar, anchors on them
     assert.equal(again.lines[0].status, 'aligned');
     assert.deepEqual(readJSON(dir, narrationSidecarPath('fr', 'accueil', 'l1')).words, sidecar.words);
   } finally {
-    process.env.ELABORA_ALIGN = '0';
+    if (savedAlign === undefined) delete process.env.ELABORA_ALIGN; else process.env.ELABORA_ALIGN = savedAlign;
     await disposeVoiceProviders();
     await disposeAligner();
   }
 });
 
-test('the sidecar keeps the text its audio says', { skip: NO_FFMPEG }, async () => {
-  const dir = voiced();
+test('the sidecar keeps the text its audio says', { skip: NO_FFMPEG }, async (t) => {
+  const { copyExample, tempDir } = resources(t);
+  const dir = voiced(copyExample());
   const file = path.join(dir, 'assets/narration/fr/accueil/l1.m4a');
-  const copy = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-line-')), 'l1.m4a');
+  const copy = path.join(tempDir('elabora-line-'), 'l1.m4a');
   fs.copyFileSync(file, copy);
   await edit.updateNarrationLine(dir, { screen: 'accueil', line: 'l1', text: 'Bonjour, voici le ticket de Leïla.' });
   const { importNarration } = await import('@elabora/node/narration/audio');
@@ -294,37 +301,35 @@ test('the sidecar keeps the text its audio says', { skip: NO_FFMPEG }, async () 
   assert.equal(sidecar.words, undefined, 'no aligner in tests (ELABORA_ALIGN=0): words untimed');
 });
 
-test('engine: the app asks which aligners are here, writes words and times lines through its session', { skip: NO_FFMPEG }, async () => {
+test('engine: the app asks which aligners are here, writes words and times lines through its session', { skip: NO_FFMPEG }, async (t) => {
+  const { copyExample, own } = resources(t);
   const { openProject } = await import('@elabora/engine');
   type EngineEvent = import('@elabora/engine').EngineEvent;
-  const dir = voiced();
-  const session = await openProject(dir, { backups: { onOpen: false, prune: false }, rescanIntervalMs: 0, media: { enabled: false } });
+  const dir = voiced(copyExample());
+  const session = own(await openProject(dir, { backups: { onOpen: false, prune: false }, rescanIntervalMs: 0, media: { enabled: false } }), value => value.close());
   const events: EngineEvent[] = [];
   session.subscribe(({ event }) => events.push(event));
-  try {
-    assert.deepEqual(session.aligners('fr-CA').map((aligner) => [aligner.language, aligner.model]), [['fr', ALIGNER_MODELS[0].model]]);
-    const words = narrationWords('Bonjour, voici le ticket de Marc.', 'fr').map((word, index) => ({ text: word.text, start: index * 0.3, end: index * 0.3 + 0.2 }));
-    const written = await session.run('set_narration_words', { screen: 'accueil', line: 'l1', words, aligner: ALIGNER_MODELS[0].model });
-    assert.ok(written.change);
-    assert.equal(narrationLines(session.project, 'accueil')![0].aligner, ALIGNER_MODELS[0].model, 'the session\'s snapshot has the words');
-    const result = await session.alignNarration({ screen: 'accueil', lines: ['l1', 'l3'] });
-    assert.deepEqual(result.lines.map((line) => line.status), ['skipped', 'skipped']);
-    assert.ok(events.some((event) => event.type === 'changed' && event.source === 'engine'));
-    // Through the protocol, as the app asks.
-    for (const [type, params] of [['aligners', {}], ['timeline', { screen: 'accueil' }], ['timelineAt', { screen: 'accueil', time: 1 }], ['timelineMarks', { screen: 'accueil' }]] as const) {
-      const response = await session.handle({ kind: 'request', id: type, type, params });
-      assert.ok(response.ok, `${type}: ${JSON.stringify(response)}`);
-    }
-    const relative = await session.handle({ kind: 'request', id: 'tr', type: 'transcribeRecording', params: { file: 'l1.m4a' } });
-    assert.ok(!relative.ok && relative.error.kind === 'bad-request', 'a recording is an absolute path');
-    assert.equal(session.effects()[0].name, 'none');
-    await assert.rejects(session.alignNarration({ screen: 'accueil', lines: ['l9'] }), (error: Error & { kind?: string; code?: string }) => error.kind === 'not-found' && error.code === 'E_ALIGN_LINE');
-  } finally {
-    await session.close();
+  assert.deepEqual(session.aligners('fr-CA').map((aligner) => [aligner.language, aligner.model]), [['fr', ALIGNER_MODELS[0].model]]);
+  const words = narrationWords('Bonjour, voici le ticket de Marc.', 'fr').map((word, index) => ({ text: word.text, start: index * 0.3, end: index * 0.3 + 0.2 }));
+  const written = await session.run('set_narration_words', { screen: 'accueil', line: 'l1', words, aligner: ALIGNER_MODELS[0].model });
+  assert.ok(written.change);
+  assert.equal(narrationLines(session.project, 'accueil')![0].aligner, ALIGNER_MODELS[0].model, 'the session\'s snapshot has the words');
+  const result = await session.alignNarration({ screen: 'accueil', lines: ['l1', 'l3'] });
+  assert.deepEqual(result.lines.map((line) => line.status), ['skipped', 'skipped']);
+  assert.ok(events.some((event) => event.type === 'changed' && event.source === 'engine'));
+  // Through the protocol, as the app asks.
+  for (const [type, params] of [['aligners', {}], ['timeline', { screen: 'accueil' }], ['timelineAt', { screen: 'accueil', time: 1 }], ['timelineMarks', { screen: 'accueil' }]] as const) {
+    const response = await session.handle({ kind: 'request', id: type, type, params });
+    assert.ok(response.ok, `${type}: ${JSON.stringify(response)}`);
   }
+  const relative = await session.handle({ kind: 'request', id: 'tr', type: 'transcribeRecording', params: { file: 'l1.m4a' } });
+  assert.ok(!relative.ok && relative.error.kind === 'bad-request', 'a recording is an absolute path');
+  assert.equal(session.effects()[0].name, 'none');
+  await assert.rejects(session.alignNarration({ screen: 'accueil', lines: ['l9'] }), (error: Error & { kind?: string; code?: string }) => error.kind === 'not-found' && error.code === 'E_ALIGN_LINE');
 });
 
-test('recordings imported together: each file to the line its name gives; the others said unmatched; the waveform of the lines', { skip: NO_FFMPEG }, async () => {
+test('recordings imported together: each file to the line its name gives; the others said unmatched; the waveform of the lines', { skip: NO_FFMPEG }, async (t) => {
+  const { copyExample, tempDir } = resources(t);
   const { importNarrationFiles } = await import('@elabora/node/narration/audio');
   const { narrationPeaks } = await import('@elabora/node/narration/peaks');
   const { toneM4a } = await import('../narration.ts');
@@ -334,7 +339,7 @@ test('recordings imported together: each file to the line its name gives; the ot
     { id: 'l2', text: "Ni l'imprimante, ni le partage de fichiers ne marchent." },
     { id: 'l3', text: 'Ça bloque toute la comptabilité !' }
   ], { speakers: SPEAKERS });
-  const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-recordings-'));
+  const folder = tempDir('elabora-recordings-');
   const files = ['L1.m4a', 'accueil-l2.m4a', '03 fin.m4a', 'autre chose.m4a'].map((name, index) => { const file = path.join(folder, name); toneM4a(file, 1 + index * 0.5); return file; });
   const result = await importNarrationFiles(dir, { screen: 'accueil', files, trim: false });
   assert.deepEqual(result.files.map((file) => [path.basename(file.file), file.status, file.line ?? null, file.by ?? null]), [
@@ -352,7 +357,8 @@ test('recordings imported together: each file to the line its name gives; the ot
   assert.deepEqual(again.lines[0].peaks, peaks.lines[0].peaks, 'from the cache');
 });
 
-test('a recording without a name finds its line by what it says (when the models are installed)', { skip: !realModels() && 'the French voice and aligner are not installed (ELABORA_VOICE_MODELS_DIR, ELABORA_ALIGNER_MODELS_DIR)' }, async () => {
+test('a recording without a name finds its line by what it says (when the models are installed)', { skip: !realModels() && 'the French voice and aligner are not installed (ELABORA_VOICE_MODELS_DIR, ELABORA_ALIGNER_MODELS_DIR)' }, async (t) => {
+  const { copyExample, tempDir } = resources(t);
   const { generateNarration, disposeVoiceProviders } = await import('@elabora/node/voice/index');
   const { importNarrationFiles } = await import('@elabora/node/narration/audio');
   const dir = copyExample();
@@ -362,24 +368,26 @@ test('a recording without a name finds its line by what it says (when the models
     { id: 'l3', text: 'Ça bloque toute la comptabilité depuis ce matin !' }
   ];
   narrate(dir, 'accueil', lines, { speakers: [{ id: 'narratrice', name: 'Narratrice', voices: { fr: { provider: 'pocket-tts', voice: 'estelle' } } }] });
+  const savedAlign = process.env.ELABORA_ALIGN;
   process.env.ELABORA_ALIGN = '1';
   try {
     await generateNarration(dir, { screen: 'accueil' });
-    const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-recordings-'));
+    const folder = tempDir('elabora-recordings-');
     // The voices made, as unnamed recordings, in another order; the lines' audio removed.
     const files = ['l3', 'l1', 'l2'].map((line, index) => { const file = path.join(folder, `prise ${index + 1}.m4a`); fs.copyFileSync(path.join(dir, `assets/narration/fr/accueil/${line}.m4a`), file); return file; });
     for (const line of lines) for (const ext of ['m4a', 'json']) fs.rmSync(path.join(dir, `assets/narration/fr/accueil/${line.id}.${ext}`));
     const result = await importNarrationFiles(dir, { screen: 'accueil', files, trim: false });
     assert.deepEqual(result.files.map((file) => [file.line, file.by]), [['l3', 'voice'], ['l1', 'voice'], ['l2', 'voice']]);
   } finally {
-    process.env.ELABORA_ALIGN = '0';
+    if (savedAlign === undefined) delete process.env.ELABORA_ALIGN; else process.env.ELABORA_ALIGN = savedAlign;
     await disposeVoiceProviders();
     await disposeAligner();
   }
 });
 
-test('keep_narration_audio (« La voix dit bien ce texte »): a corrected text keeps its audio, its words follow; refused for other causes', { skip: NO_FFMPEG }, async () => {
-  const dir = voiced();
+test('keep_narration_audio (« La voix dit bien ce texte »): a corrected text keeps its audio, its words follow; refused for other causes', { skip: NO_FFMPEG }, async (t) => {
+  const { copyExample } = resources(t);
+  const dir = voiced(copyExample());
   const text = "Ni l'imprimante, ni le partage de fichiers ne marchent.";
   const words = narrationWords(text, 'fr').map((word, index) => ({ text: word.text, start: index * 0.3, end: index * 0.3 + 0.25, score: 0.9 }));
   await edit.setNarrationWords(dir, { screen: 'accueil', line: 'l2', words, aligner: 'test' });
@@ -396,7 +404,8 @@ test('keep_narration_audio (« La voix dit bien ce texte »): a corrected text k
   assert.throws(() => edit.keepNarrationAudio(dir, { screen: 'accueil', line: 'l3' }), /missing: nothing to keep/);
 });
 
-test('set_plan_voiceover: written in the plan, whether a version of it was validated or not (D52)', async () => {
+test('set_plan_voiceover: written in the plan, whether a version of it was validated or not (D52)', async (t) => {
+  const { copyExample } = resources(t);
   const dir = copyExample();
   const item = readJSON(dir, 'screens/accueil.json').covers[0];
   await edit.setPlanVoiceover(dir, { item, lines: [{ speaker: 'marc', text: ' Bonjour,   c\'est Marc. ' }] }, { author: { kind: 'agent', name: 'claude-code' } });
@@ -408,9 +417,10 @@ test('set_plan_voiceover: written in the plan, whether a version of it was valid
   assert.throws(() => edit.setPlanVoiceover(dir, { item, lines: [{ text: '  ' }] }), /has its words/);
 });
 
-test('effects a timing can take: the presets, then the theme\'s, with their durations and directions; diagnostics carry structured details', { skip: NO_FFMPEG }, async () => {
+test('effects a timing can take: the presets, then the theme\'s, with their durations and directions; diagnostics carry structured details', { skip: NO_FFMPEG }, async (t) => {
+  const { copyExample } = resources(t);
   const { effectsOf } = await import('@elabora/core/narration/timeline');
-  const dir = voiced();
+  const dir = voiced(copyExample());
   const course = readJSON(dir, 'course.json');
   course.theme = { ...(course.theme ?? {}), effects: { tampon: 'Comes in like a rubber stamp' } };
   writeJSON(dir, 'course.json', course);
@@ -423,21 +433,19 @@ test('effects a timing can take: the presets, then the theme\'s, with their dura
   assert.deepEqual(lost.details, { screen: 'accueil', block: 'accueil-illustration', kind: 'in', anchor: { line: 'l2', word: 'copieur' }, lost: 'word' });
 });
 
-test('the aligner runs in a process of its own: when ONNX Runtime aborts it, the job fails with E_ALIGN_CRASHED and the next one still runs', async () => {
+test('the aligner runs in a process of its own: when ONNX Runtime aborts it, the job fails with E_ALIGN_CRASHED and the next one still runs', async (t) => {
+  const { own } = resources(t);
   const { AlignProcess } = await import('@elabora/node/align/process');
-  const aligner = new AlignProcess(new URL('../fixtures/align-stand-in.ts', import.meta.url).href);
+  const aligner = own(new AlignProcess(new URL('../fixtures/align-stand-in.ts', import.meta.url).href), value => value.dispose());
   const job = (text: string) => ({ dir: '', samples: new Float32Array(16000), text, language: 'fr', startShift: 0, endShift: 0 });
-  try {
-    assert.equal((await aligner.align(job('bonjour'))).words[0].text, 'bonjour');
-    // Windows reports process.abort() as exit code 134 rather than a Unix signal.
-    await assert.rejects(aligner.align(job('crash')), (error: Error & { code?: string }) => error.code === 'E_ALIGN_CRASHED' && (process.platform === 'win32' ? /exit code 134/ : /SIGABRT/).test(error.message));
-    assert.equal((await aligner.align(job('encore'))).duration, 1, 'another process answers');
-  } finally {
-    await aligner.dispose();
-  }
+  assert.equal((await aligner.align(job('bonjour'))).words[0].text, 'bonjour');
+  // Windows reports process.abort() as exit code 134 rather than a Unix signal.
+  await assert.rejects(aligner.align(job('crash')), (error: Error & { code?: string }) => error.code === 'E_ALIGN_CRASHED' && (process.platform === 'win32' ? /exit code 134/ : /SIGABRT/).test(error.message));
+  assert.equal((await aligner.align(job('encore'))).duration, 1, 'another process answers');
 });
 
-test('a line of more than 45 s is suggested to be cut, as a warning that blocks nothing', { skip: NO_FFMPEG }, () => {
+test('a line of more than 45 s is suggested to be cut, as a warning that blocks nothing', { skip: NO_FFMPEG }, (t) => {
+  const { copyExample } = resources(t);
   const dir = copyExample();
   narrate(dir, 'accueil', [
     { id: 'l1', text: 'Bonjour, voici le ticket de Marc.', seconds: 2 },
