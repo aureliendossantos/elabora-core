@@ -41,7 +41,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Private layout assertions | 7 | charts-matrix imported label placement helpers instead of measuring rendered labels |
 
-| Fixture lifetime | 2 | copied courses lacked per-case failure cleanup |
+| Fixture lifetime | 3 | copied courses lacked per-case failure cleanup |
 
 ## Production changes
 
@@ -104,7 +104,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/compile.test.ts` | 156 | 160 | Passed native-seeded checks; Build packaging, SCORM, failures and live preview checks retained; every course/output is context-owned |
 | `test/unit/components.test.ts` | 313 | — | Pending |
 | `test/unit/costs.test.ts` | 200 | — | Pending |
-| `test/unit/course-state.test.ts` | 127 | — | Pending |
+| `test/unit/course-state.test.ts` | 127 | 130 | Passed native-seeded checks; All scoring, resume, completion and event behaviours retained with owned courses |
 | `test/unit/data-dir.test.ts` | 35 | 37 | Passed native-seeded case; disposable processes still test process-cached settings; owned parent keeps renamed project and relocated blobs isolated |
 | `test/unit/design.test.ts` | 394 | — | Pending |
 | `test/unit/dialogue-player.test.ts` | 199 | — | Pending |

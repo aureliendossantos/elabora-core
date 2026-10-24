@@ -4,9 +4,10 @@ import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { readLock, assignKeys } from '@elabora/core/compile/state-model';
 import { compileCourseData } from '@elabora/core/compile/course-data';
 import { createCourseState } from '@elabora/player/course-state';
-import { EXAMPLE, copyExample, addExplorer, readJSON, writeJSON } from '../helpers.ts';
+import { EXAMPLE, addExplorer, readJSON, writeJSON } from '../helpers.ts';
 import { decodeState, worstCaseLength } from '@elabora/player/state-codec';
 import { buildStateModel } from '@elabora/core/compile/state-model';
+import { resources } from '../resources.ts';
 
 function course(overrides = {}) {
   const p = loadProjectFromDir(EXAMPLE);
@@ -74,7 +75,8 @@ test('events: conditions, else branch and variables', () => {
   assert.equal(e.getVar('bonsReflexes'), 10, 'clamped to maximum');
 });
 
-test('events: one without actions reaches the player and runs nothing', () => {
+test('events: one without actions reaches the player and runs nothing', (t) => {
+  const { copyExample } = resources(t);
   const dir = copyExample();
   const file = readJSON(dir, 'screens/premier-reflexe.json');
   file.events.push({ id: 'premier-reflexe-vide', on: { type: 'screen.enter' }, do: [] });
@@ -96,7 +98,8 @@ test('resume restores answers from suspend data', () => {
   assert.ok(again.screens.every((s: Parameters<CourseState['screenComplete']>[0]) => again.screenComplete(s)));
 });
 
-test('controls: named clicks, visited state saved under the lock keys, visited conditions', () => {
+test('controls: named clicks, visited state saved under the lock keys, visited conditions', (t) => {
+  const { copyExample } = resources(t);
   const dir = copyExample();
   addExplorer(dir);
   const sc = readJSON(dir, 'screens/chemin.json');
