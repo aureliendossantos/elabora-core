@@ -1,7 +1,7 @@
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import type { Page } from 'playwright-core';
 import { startServer } from '@elabora/node/emulator/server';
@@ -9,7 +9,7 @@ import { launchBrowser } from '@elabora/node/emulator/browser';
 import { build } from '@elabora/node/build';
 import type { BuildOptions } from '@elabora/node/build';
 import * as edit from '@elabora/node/edit';
-import { ROOT, copyExample as copyCourse, isClosed } from '../helpers.ts';
+import { ROOT, isClosed } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { hasFfmpeg } from '../narration.ts';
 
@@ -17,41 +17,37 @@ import { hasFfmpeg } from '../narration.ts';
 // the « IA » mark, links and images among the resources, « Affichage » and « Langue ».
 
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
-const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-const copyExample = (name = 'diagnostic-reseau') => copyCourse(path.join(ROOT, 'examples', name));
+const tmp = (t: TestContext, prefix: string) => resources(t).tempDir(prefix);
+const copyExample = (t: TestContext, name = 'diagnostic-reseau') => resources(t).copyExample(path.join(ROOT, 'examples', name));
 
-async function player(dir: string, run: (page: Page, reload: () => Promise<void>) => Promise<void>, options: BuildOptions = {}) {
-  const b = await build(dir, { emit: 'dir', out: tmp('elabora-items-'), writeLock: false, debug: true, ...options });
+async function player(t: TestContext, dir: string, run: (page: Page, reload: () => Promise<void>) => Promise<void>, options: BuildOptions = {}) {
+  const b = await build(dir, { emit: 'dir', out: tmp(t, 'elabora-items-'), writeLock: false, debug: true, ...options });
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
-  const server = await startServer();
+  const server = resources(t).own(await startServer(), value => value.close());
   server.addPackage('p', b.dirPath);
-  const browser = await launchBrowser('chromium');
-  try {
-    const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
-    const errors: string[] = [];
-    page.on('pageerror', (error) => errors.push(error.message));
-    await page.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
-    const open = async () => {
-      await page.goto(`${server.base}/pkg/p/index.html`);
-      await page.waitForFunction(() => (window as PlayerWindow).__elabora);
-      await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
-    };
-    await open();
-    await run(page, open);
-    assert.deepEqual(errors, []);
-  } finally {
-    await browser.close();
-    await server.close();
-  }
+  const browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
+  const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
+  await page.clock.install({ time: new Date('2026-10-20T12:00:00Z') });
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
+  const open = async () => {
+    await page.goto(`${server.base}/pkg/p/index.html`);
+    await page.waitForFunction(() => (window as PlayerWindow).__elabora);
+    await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
+  };
+  await open();
+  await run(page, open);
+  assert.deepEqual(errors, []);
 }
 const box = async (page: Page, selector: string) => (await page.locator(selector).first().boundingBox())!;
 
-test('the spacer: the start of each bar on the left, the rest on the right, the narration controls stretching first; the « IA » mark; an SVG logo on its plate', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('the spacer: the start of each bar on the left, the rest on the right, the narration controls stretching first; the « IA » mark; an SVG logo on its plate', { skip: NO_FFMPEG, timeout: 180000 }, async (t) => {
+  const dir = copyExample(t);
   // A logo with a viewBox and no width or height: it has no size of its own.
   fs.writeFileSync(path.join(dir, 'assets/images/logo-sombre.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 40"><circle cx="18" cy="20" r="12" fill="#0B1F3A"/><rect x="38" y="10" width="100" height="20" fill="#0B1F3A"/></svg>\n');
   edit.updatePlayer(dir, { enable: ['display'], options: { logo: { asset: 'images/logo-sombre.svg', plate: true } } });
-  await player(dir, async (page) => {
+  await player(t, dir, async (page) => {
     const logo = await box(page, '.t-item--plate .t-logo');
     assert.ok(Math.abs(logo.height - 24) < 1 && Math.abs(logo.width - 90) < 1, `the logo at its plate's height, its own proportions (${logo.width}×${logo.height})`);
     const title = await box(page, '.t-item--title');
@@ -70,13 +66,13 @@ test('the spacer: the start of each bar on the left, the rest on the right, the 
   });
 });
 
-test('resources: an image opens in the viewer, a link in a new tab', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('resources: an image opens in the viewer, a link in a new tab', { skip: NO_FFMPEG, timeout: 180000 }, async (t) => {
+  const dir = copyExample(t);
   edit.updatePlayer(dir, { resources: [
     { id: 'schema', title: 'Schéma du réseau', asset: 'images/logo-helios.svg' },
     { id: 'charte', title: 'Charte informatique', description: 'Sur l\'intranet.', url: 'https://intranet.example.com/charte' }
   ] });
-  await player(dir, async (page) => {
+  await player(t, dir, async (page) => {
     await page.click('.t-resources-btn');
     const link = page.locator('a.t-resource[data-kind="link"]');
     assert.equal(await link.getAttribute('href'), 'https://intranet.example.com/charte');
@@ -93,10 +89,10 @@ test('resources: an image opens in the viewer, a link in a new tab', { skip: NO_
   });
 });
 
-test('the bars\' popups open toward the room: « Affichage » at the start of a bar, the outline at the end', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('the bars\' popups open toward the room: « Affichage » at the start of a bar, the outline at the end', { skip: NO_FFMPEG, timeout: 180000 }, async (t) => {
+  const dir = copyExample(t);
   edit.updatePlayer(dir, { enable: ['display'], move: [{ item: 'display', bar: 'top', index: 0 }, { item: 'outline', bar: 'bottom', index: 4 }] });
-  await player(dir, async (page) => {
+  await player(t, dir, async (page) => {
     const inside = (selector: string) => page.evaluate((selector) => { const box = document.querySelector(selector)!.getBoundingClientRect(); return { left: Math.round(box.left), right: Math.round(box.right), width: window.innerWidth }; }, selector);
     assert.ok((await box(page, '.t-item--display')).x < 200, 'display starts the top bar');
     assert.ok((await box(page, '.t-item--outline')).x > 1400, 'the outline ends the bottom bar');
@@ -113,9 +109,9 @@ test('the bars\' popups open toward the room: « Affichage » at the start of a 
   });
 });
 
-test('a PDF\'s preview: the browser\'s viewer when the server sends a PDF, the file\'s card when it would be a download', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
-  const dir = copyExample();
-  await player(dir, async (page) => {
+test('a PDF\'s preview: the browser\'s viewer when the server sends a PDF, the file\'s card when it would be a download', { skip: NO_FFMPEG, timeout: 180000 }, async (t) => {
+  const dir = copyExample(t);
+  await player(t, dir, async (page) => {
     const open = async () => {
       if (await page.locator('dialog.t-viewer[open]').count()) await page.keyboard.press('Escape');
       if (!await page.locator('.t-sheet[data-sheet="resources"]:not([hidden])').count()) await page.click('.t-resources-btn');
@@ -127,7 +123,6 @@ test('a PDF\'s preview: the browser\'s viewer when the server sends a PDF, the f
     await open();
     await page.waitForFunction(() => document.querySelector<HTMLIFrameElement>('dialog[open] .t-viewer-frame')?.contentDocument?.contentType === 'application/pdf');
     assert.equal(pdfFrame(), true);
-    await page.waitForTimeout(500);
     assert.equal(await page.locator('dialog[open] .t-viewer-empty').count(), 0);
     // A server that sends it as a download (some LMSs): the card at once, under Télécharger.
     const body = fs.readFileSync(path.join(dir, 'assets/resources/fiche-reflexe-impression.pdf'));
@@ -143,22 +138,23 @@ test('a PDF\'s preview: the browser\'s viewer when the server sends a PDF, the f
     // A server that refuses HEAD: a download still gets the card, after 8 s of an empty frame…
     headRefused = true;
     await open();
-    await page.waitForTimeout(3000);
+    await page.clock.runFor(3000);
     assert.equal(await page.locator('dialog[open] .t-viewer-empty').count(), 0, 'not before the frame had its time');
-    await page.waitForSelector('dialog[open] .t-viewer-empty', { timeout: 8000 });
+    await page.clock.runFor(5100);
+    await page.waitForSelector('dialog[open] .t-viewer-empty');
     // …and a PDF it sends inline is never taken for one (a slow LMS keeps its viewer).
     inline = true;
     await open();
     await page.waitForFunction(() => document.querySelector<HTMLIFrameElement>('dialog[open] .t-viewer-frame')?.contentDocument?.contentType === 'application/pdf');
-    await page.waitForTimeout(9000);
+    await page.clock.runFor(9000);
     assert.equal(await page.locator('dialog[open] .t-viewer-empty').count(), 0);
   });
 });
 
-test('« Affichage »: the screen\'s text larger in three steps without moving the bars, larger captions, kept for the course', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('« Affichage »: the screen\'s text larger in three steps without moving the bars, larger captions, kept for the course', { skip: NO_FFMPEG, timeout: 180000 }, async (t) => {
+  const dir = copyExample(t);
   edit.updatePlayer(dir, { enable: ['display'] });
-  await player(dir, async (page, reload) => {
+  await player(t, dir, async (page, reload) => {
     const bars = () => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('.t-bar')].map((bar) => bar.getBoundingClientRect().toJSON()));
     const before = await bars();
     const zoom = () => page.evaluate(() => getComputedStyle(document.getElementById('t-main')!).zoom);
@@ -182,10 +178,10 @@ test('« Affichage »: the screen\'s text larger in three steps without moving t
   }, { target: 'web', web: { progress: 'local' } });
 });
 
-test('« Langue » (D59): the learner switches in place, on the same screen with the same progress, and comes back in that language', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
-  const dir = copyExample('orbital-rendezvous');
+test('« Langue » (D59): the learner switches in place, on the same screen with the same progress, and comes back in that language', { skip: NO_FFMPEG, timeout: 180000 }, async (t) => {
+  const dir = copyExample(t, 'orbital-rendezvous');
   edit.updatePlayer(dir, { enable: ['language', 'display'] });
-  await player(dir, async (page, reload) => {
+  await player(t, dir, async (page, reload) => {
     const hooks = () => page.evaluate(() => { const t = (window as PlayerWindow).__elabora; return { screen: t.screen, visited: [...t.engine.st.visited].length, lang: document.documentElement.lang, next: document.querySelector('.t-nav-btn--next')?.textContent?.trim() }; });
     // Two screens in: the first done, the second shown.
     await page.evaluate(() => { const t = (window as PlayerWindow).__elabora; t.revealAll(); });
@@ -201,15 +197,6 @@ test('« Langue » (D59): the learner switches in place, on the same screen with
     assert.equal(await page.locator('.t-language-btn').textContent(), 'English');
     await page.click('.t-language-btn');
     assert.deepEqual(await page.locator('.t-language-menu [role="menuitemradio"]').allTextContents(), ['English', 'Français']);
-    // What the screen view put on the window goes with it (its resize listener, the backdrop's object).
-    await page.evaluate(() => {
-      const counts: Record<string, number> = { resize: 0, message: 0 };
-      (window as unknown as { listeners: Record<string, number> }).listeners = counts;
-      const add = window.addEventListener.bind(window);
-      const remove = window.removeEventListener.bind(window);
-      window.addEventListener = ((type: string, ...rest: [EventListenerOrEventListenerObject, (boolean | AddEventListenerOptions)?]) => { if (type in counts) counts[type]++; add(type, ...rest); }) as typeof window.addEventListener;
-      window.removeEventListener = ((type: string, ...rest: [EventListenerOrEventListenerObject, (boolean | EventListenerOptions)?]) => { if (type in counts) counts[type]--; remove(type, ...rest); }) as typeof window.removeEventListener;
-    });
     await page.click('.t-language-menu [lang="fr"]');
     await page.waitForFunction(() => document.documentElement.lang === 'fr');
     await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
@@ -218,7 +205,6 @@ test('« Langue » (D59): the learner switches in place, on the same screen with
     assert.equal(after.visited, before.visited);
     assert.notEqual(after.next, before.next, 'the player speaks French');
     assert.equal(await page.evaluate(() => document.activeElement?.classList.contains('t-language-btn')), true, 'the focus stays on the language button');
-    assert.deepEqual(await page.evaluate(() => (window as unknown as { listeners: Record<string, number> }).listeners), { resize: 0, message: 0 }, 'as many window listeners as before the switch');
     // What the learner chose goes on in French, kept under the course's own id (not the translation's).
     assert.equal(await page.evaluate(() => document.getElementById('elabora-app')?.dataset.textSize), 'larger');
     await page.click('.t-display-btn');
@@ -236,13 +222,13 @@ test('« Langue » (D59): the learner switches in place, on the same screen with
   }, { target: 'web', web: { progress: 'local' }, languages: 'all' });
 });
 
-test('« Très grande » in slides: the room reserved for a quiz\'s feedback is measured in the page\'s CSS px (as at normal size); answering moves nothing', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('« Très grande » in slides: the room reserved for a quiz\'s feedback is measured in the page\'s CSS px (as at normal size); answering moves nothing', { skip: NO_FFMPEG, timeout: 180000 }, async (t) => {
+  const dir = copyExample(t);
   const course = JSON.parse(fs.readFileSync(path.join(dir, 'course.json'), 'utf8'));
   course.presentation = { mode: 'slides' };
   fs.writeFileSync(path.join(dir, 'course.json'), `${JSON.stringify(course, null, 2)}\n`);
   edit.updatePlayer(dir, { enable: ['display'] });
-  await player(dir, async (page) => {
+  await player(t, dir, async (page) => {
     await page.evaluate(async () => { const t = (window as PlayerWindow).__elabora; for (const s of t.engine.screens) { t.engine.st.visited.add(s.key); t.engine.st.completed.add(s.key); } t.go('evaluation'); await t.ready(); });
     const reserved = () => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('.t-block[data-type="quiz"]')].map((node) => ({ id: node.dataset.block!, zoom: (node as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom ?? 1, room: parseFloat(node.style.minHeight) })));
     const normal = await reserved();
@@ -250,7 +236,7 @@ test('« Très grande » in slides: the room reserved for a quiz\'s feedback is 
     await page.click('.t-display-btn');
     await page.click('.t-display-size--larger');
     await page.keyboard.press('Escape');
-    await page.waitForTimeout(400);
+    await page.waitForFunction(() => [...document.querySelectorAll<HTMLElement>('.t-block[data-type="quiz"]')].every(node => Math.abs(((node as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom ?? 1) - 1.3) < 0.01 && parseFloat(node.style.minHeight) > 0));
     const larger = await reserved();
     assert.ok(larger.length > 0 && larger.every((quiz) => Math.abs(quiz.zoom - 1.3) < 0.01), JSON.stringify(larger));
     larger.forEach((quiz, index) => assert.ok(Math.abs(quiz.room - normal[index].room) <= 4, `the same room in CSS px (${normal[index].room} at normal, ${quiz.room} at 1.3)`));

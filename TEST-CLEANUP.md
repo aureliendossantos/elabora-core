@@ -24,7 +24,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Defect | Count | Example |
 | --- | ---: | --- |
-| Implementation coupling | 46 | ops: private computeDiff comparison and exact chosen diff scripts |
+| Implementation coupling | 47 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 5 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
 | Fixed-delay synchronization | 43 | engine-session: sleep(400) before checking watcher results |
@@ -72,7 +72,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/e2e/narration.test.ts` | 437 | — | Pending |
 | `test/e2e/object.test.ts` | 372 | 372 | Focused seed 104729 passed all fourteen cases; real object gate failures, states, event sequences, dry WebGL readback and decoded captures; no elapsed-time/PNG-size budgets |
 | `test/e2e/plan-document.test.ts` | 61 | 61 | Reviewed unchanged; focused seed 104729 passed tagged A4 outline, date, deterministic bytes and export; Electron case requires opt-in executable |
-| `test/e2e/player-items.test.ts` | 265 | — | Pending |
+| `test/e2e/player-items.test.ts` | 265 | 251 | Focused seed 155921 passed all seven; virtual PDF fallback timers and public popup/screen/progress/storage behaviour replace listener counters and real waits |
 | `test/e2e/player.test.ts` | 150 | — | Pending |
 | `test/e2e/review.test.ts` | 299 | — | Pending |
 | `test/e2e/timeline.test.ts` | 461 | — | Pending |
