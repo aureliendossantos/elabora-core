@@ -143,7 +143,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/unit/object-gates.test.ts` | 35 | 35 | Passed 2 native-seeded cases; test-owned snapshot folder; frame plan boundaries and real baseline pruning retained |
 | `test/unit/ops.test.ts` | 929 | 757 | Passed 41 cases; shared seeded generator and real snapshot reader replace duplicate support machinery; public replay/undo properties and all named boundaries retained |
 | `test/unit/package-limits.test.ts` | 131 | 131 | Reviewed unchanged; native-seeded checks passed; real chosen/unknown LMS limits, size/ratio diagnostics and package/preview targeting preserved with existing failure-safe cleanup |
-| `test/unit/pdf-title.test.ts` | 111 | — | Pending |
+| `test/unit/pdf-title.test.ts` | 111 | 115 | All native-seeded cases passed; adversarial inputs run in a heap-limited subprocess with a failure deadline instead of machine-speed budgets; extraction, precedence, encoding, file reads and bounded refusals retained |
 | `test/unit/plan-document.test.ts` | 523 | 522 | Passed all plan-document cases with native seed 130363; context-owned copies, clients and sessions replace shared arrays and swallowed close failures; valid package/revisions/privacy/local-day/deterministic export contracts retained |
 | `test/unit/plan-order.test.ts` | 124 | 125 | Native-seeded cases passed; owned copied course; unique plan ordering, shared-screen, undo and duration behaviours retained |
 | `test/unit/plan.test.ts` | 356 | 356 | Native-seeded plan cases passed; owned copied courses; version approval, verbatim protection, diff, notes and package/archive contracts retained |

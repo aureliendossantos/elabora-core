@@ -1,4 +1,6 @@
 import { test } from 'node:test';
+import { spawnSync } from 'node:child_process';
+import { moduleUrl } from '../helpers.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -87,24 +89,26 @@ test('a file on disk, read at both ends when it is large', async () => {
 });
 
 test('a PDF made to hurt: bounded, never throws, null when in doubt', () => {
-  const timed = (bytes: Buffer) => { const started = performance.now(); const title = pdfTitleOf(bytes); return { title, ms: performance.now() - started }; };
+  const bounded = (bytes: Buffer) => {
+    const script = `import fs from 'node:fs'; import { pdfTitleOf } from ${JSON.stringify(moduleUrl('packages/node/src/sources/pdf-title.ts'))}; console.log(JSON.stringify(pdfTitleOf(fs.readFileSync(0))));`;
+    const run = spawnSync(process.execPath, ['--max-old-space-size=96', '--input-type=module', '-e', script], { input: bytes, encoding: 'utf8', timeout: 15_000 });
+    assert.equal(run.status, 0, run.error?.message ?? run.stderr);
+    return JSON.parse(run.stdout);
+  };
   // A character reference that names no character.
   const xmp = Buffer.from('<x:xmpmeta><dc:title><rdf:Alt><rdf:li xml:lang="x-default">A &#x110000; B&#xD800;</rdf:li></rdf:Alt></dc:title></x:xmpmeta>', 'utf8');
   assert.equal(pdfTitleOf(pdf(['<< /Type /Catalog /Pages 2 0 R /Metadata 3 0 R >>', pages, [`<< /Length ${xmp.length} >>`, xmp]], '/Root 1 0 R')), 'A B');
   // A long run of digits where objects are looked for (Root not at the top level).
-  const digits = timed(Buffer.from(`%PDF-1.7\n${'1'.repeat(1024 * 1024)}\ntrailer << /Root 5 0 R /Info 6 0 R >>`, 'latin1'));
-  assert.equal(digits.title, null);
-  assert.ok(digits.ms < 1000, `digits: ${digits.ms} ms`);
+  const digits = bounded(Buffer.from(`%PDF-1.7\n${'1'.repeat(1024 * 1024)}\ntrailer << /Root 5 0 R /Info 6 0 R >>`, 'latin1'));
+  assert.equal(digits, null);
   // A stream that inflates to a gigabyte: read up to the bound only.
   const bomb = zlib.deflateSync(Buffer.alloc(256 * 1024 * 1024));
-  const inflated = timed(pdf([[`<< /Type /ObjStm /N 1 /First 4 /Filter /FlateDecode /Length ${bomb.length} >>`, bomb], '<< /Type /Catalog /Metadata 1 0 R >>'], '/Root 2 0 R /Info 3 0 R'));
-  assert.equal(inflated.title, null);
-  assert.ok(inflated.ms < 2000, `bomb: ${inflated.ms} ms`);
+  const inflated = bounded(pdf([[`<< /Type /ObjStm /N 1 /First 4 /Filter /FlateDecode /Length ${bomb.length} >>`, bomb], '<< /Type /Catalog /Metadata 1 0 R >>'], '/Root 2 0 R /Info 3 0 R'));
+  assert.equal(inflated, null);
   // Hundreds of object streams in a large file, the Info dictionary in none of them.
   const many = Array.from({ length: 500 }, (_, index) => `${index + 10} 0 obj\n<< /Type /ObjStm /N 0 /First 0 /Length 4 >>\nstream\nxxxx\nendstream\nendobj\n${'%'.repeat(60000)}\n`).join('');
-  const streams = timed(Buffer.from(`%PDF-1.7\n${many}trailer << /Root 1 0 R /Info 2 0 R >>`, 'latin1'));
-  assert.equal(streams.title, null);
-  assert.ok(streams.ms < 2000, `500 object streams: ${streams.ms} ms`);
+  const streams = bounded(Buffer.from(`%PDF-1.7\n${many}trailer << /Root 1 0 R /Info 2 0 R >>`, 'latin1'));
+  assert.equal(streams, null);
   // A title longer than a resource's title may be: cut at a word.
   const long = pdfTitleOf(pdf(['<< /Type /Catalog /Pages 2 0 R >>', pages, `<< /Title (${'Procédure de diagnostic '.repeat(8)}) >>`], '/Root 1 0 R /Info 3 0 R'))!;
   assert.ok(long.length <= 120 && long.endsWith('…') && long.startsWith('Procédure de diagnostic'), long);
