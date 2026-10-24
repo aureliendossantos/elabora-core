@@ -41,7 +41,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Private layout assertions | 7 | charts-matrix imported label placement helpers instead of measuring rendered labels |
 
-| Fixture lifetime | 8 | copied courses lacked per-case failure cleanup |
+| Fixture lifetime | 9 | copied courses lacked per-case failure cleanup |
 
 ## Production changes
 
@@ -132,7 +132,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/import.test.ts` | 427 | — | Pending |
 | `test/unit/interop.test.ts` | 92 | — | Pending |
 | `test/unit/journal.test.ts` | 437 | 437 | Passed 14 cases; explicit lock entry/release gates and child stdin handshake; no elapsed-time assertions or fixed sleeps; sequence/history/binary/undo contracts retained |
-| `test/unit/layer-timeline.test.ts` | 265 | — | Pending |
+| `test/unit/layer-timeline.test.ts` | 265 | 263 | Passed 9 native-seeded cases; own layered courses and both build outputs; preserves independent layer tracks, cue routing, translations, commands and deterministic packages; removed registry-count assertion |
 | `test/unit/library.test.ts` | 840 | 843 | Passed 21 cases; deterministic media/retention, restored environment and owned temporary data; public archive/trash contracts retained |
 | `test/unit/local-ai-platform.test.ts` | 50 | 50 | Passed 2 native-seeded cases; disposable OS override and throwing network boundary exercise all listed models, Intel refusals and removals; removes exact catalogue-size coupling |
 | `test/unit/look.test.ts` | 122 | — | Pending |

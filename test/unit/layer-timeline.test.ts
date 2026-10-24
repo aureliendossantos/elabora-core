@@ -3,11 +3,11 @@
 // timeline (its lines, its timed blocks, its cues), the checks, translation units and anchors, the
 // course data, the commands, the report and the layer's track in the package.
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
-import { copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
+import { readJSON, writeJSON, codes } from '../helpers.ts';
 import { narrate, voice, hasFfmpeg } from '../narration.ts';
 import { validateSchema } from '@elabora/format';
 import type { CourseData } from '@elabora/player/course-data';
@@ -16,7 +16,7 @@ import * as edit from '@elabora/node/edit';
 import { build } from '@elabora/node/build';
 import { exportTranslation } from '@elabora/node/translate';
 import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
-import { screenVoiceLines, trackKey, timelineVoiceLines, VOICE_LINE_SOURCES } from '@elabora/core/narration/voice-lines';
+import { screenVoiceLines, trackKey, timelineVoiceLines } from '@elabora/core/narration/voice-lines';
 import { narrationLines, narrationAudioPath } from '@elabora/core/narration/narration';
 import { screenTimeline, blockTimings, isTimedLayer, cuesOf } from '@elabora/core/narration/timeline';
 import { timelineView, screenAt, timelineMarks, narrationView } from '@elabora/core/narration/view';
@@ -36,8 +36,7 @@ const RAPPEL = [
 
 // The screen accueil narrated (l1, l2), with a layer « Rappel de la règle » said by the guide whose
 // schema comes at the word « poste »; audio: tones for every line (a layer's too).
-function layered({ audio = true }: { audio?: boolean } = {}): string {
-  const dir = copyExample();
+function layered(dir: string, { audio = true }: { audio?: boolean } = {}): string {
   narrate(dir, 'accueil', [
     { id: 'l1', text: 'Bonjour, voici le ticket de Marc.', ...(audio ? { seconds: 2 } : {}) },
     { id: 'l2', text: "Ni l'imprimante, ni le partage ne marchent.", ...(audio ? { seconds: 3 } : {}) }
@@ -61,7 +60,7 @@ function layered({ audio = true }: { audio?: boolean } = {}): string {
   return dir;
 }
 
-test('format: a narration line is a voice line with step and pauseBefore; a layer\'s lines have no step', () => {
+test('format: a narration line is a voice line with step and pauseBefore; a layer\'s lines have no step', (t) => {
   const base = { id: 's', title: 'S', covers: ['OBJ-1'], blocks: [{ id: 'b', type: 'text', props: { markdown: 'a' } }] };
   assert.deepEqual(validateSchema('screen', { ...base, narration: { lines: [{ id: 'l1', text: 'Bonjour', step: 2, pauseBefore: 1, speaker: 'marc', delivery: { fr: { speed: 1.1 } } }] } }), []);
   const extra = validateSchema('screen', { ...base, narration: { lines: [{ id: 'l1', text: 'Bonjour', expression: 'inquiet' }] } });
@@ -71,10 +70,9 @@ test('format: a narration line is a voice line with step and pauseBefore; a laye
   assert.deepEqual(validateSchema('event', { id: 'e', on: { type: 'timeline.ended', layer: 'r' }, do: [{ type: 'play-timeline', layer: 'r' }] }), []);
 });
 
-test('screenVoiceLines: every line of a screen with its track, its unit and where it is written; narrationLines reads them all', () => {
-  const dir = layered({ audio: false });
+test('screenVoiceLines: every line of a screen with its track, its unit and where it is written; narrationLines reads them all', (t) => {
+  const dir = layered(resources(t).copyExample(), { audio: false });
   const project = loadProjectFromDir(dir);
-  assert.equal(VOICE_LINE_SOURCES.length, 3, 'the screen\'s narration, the layers\' and the dialogues\' (D61)');
   const entries = screenVoiceLines(project, 'accueil');
   assert.deepEqual(entries.map((entry) => [entry.line.id, trackKey(entry.track), entry.unit, entry.path]), [
     ['l1', 'screen', 'screen.accueil.narration.l1.text', '/narration/lines/0'],
@@ -93,8 +91,8 @@ test('screenVoiceLines: every line of a screen with its track, its unit and wher
   assert.deepEqual(parts.layers, [{ id: 'rappel', title: 'Rappel de la règle', timed: true, narration: { seek: 'seen', lines: [{ id: 'r1', speaker: 'guide', text: RAPPEL[0].text }, { id: 'r2', speaker: 'guide', text: RAPPEL[1].text }] } }]);
 });
 
-test('a layer\'s timeline: its lines from its opening, its blocks at its words, its cues; the screen\'s keeps its own', { skip: NO_FFMPEG }, () => {
-  const project = loadProjectFromDir(layered());
+test('a layer\'s timeline: its lines from its opening, its blocks at its words, its cues; the screen\'s keeps its own', { skip: NO_FFMPEG }, (t) => {
+  const project = loadProjectFromDir(layered(resources(t).copyExample()));
   const own = screenTimeline(project, 'accueil', { layer: 'rappel' })!;
   assert.equal(own.layer, 'rappel');
   assert.deepEqual(own.lines.map((line) => [line.id, line.start, line.end]), [['r1', 0, 2], ['r2', 2.4, 4.9]]);
@@ -124,8 +122,8 @@ test('a layer\'s timeline: its lines from its opening, its blocks at its words, 
   assert.match(formatTimeline(report), /accueil › layer rappel — "Rappel de la règle" — narration in fr/);
 });
 
-test('an anchor stays on its own timeline: a line of another track is E_TIMELINE_ANCHOR_TRACK, not a missing line', () => {
-  const dir = layered({ audio: false });
+test('an anchor stays on its own timeline: a line of another track is E_TIMELINE_ANCHOR_TRACK, not a missing line', (t) => {
+  const dir = layered(resources(t).copyExample(), { audio: false });
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.blocks[0].timing = { in: { at: { line: 'r1' } } };
   screen.layers[0].blocks[0].timing = { in: { at: { line: 'l2', word: 'partage' } } };
@@ -139,8 +137,8 @@ test('an anchor stays on its own timeline: a line of another track is E_TIMELINE
   assert.equal(blockTimings(timeline).get('consigne-texte')?.in?.problem?.kind, 'track');
 });
 
-test('checks on layers: ids unique in the screen, missing audio by track, cues and actions on a layer\'s timeline, times in the layer', { skip: NO_FFMPEG }, () => {
-  const dir = layered();
+test('checks on layers: ids unique in the screen, missing audio by track, cues and actions on a layer\'s timeline, times in the layer', { skip: NO_FFMPEG }, (t) => {
+  const dir = layered(resources(t).copyExample());
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.layers[0].narration.lines.push({ id: 'l1', text: 'Encore un rappel.' });
   writeJSON(dir, 'screens/accueil.json', screen);
@@ -170,8 +168,8 @@ test('checks on layers: ids unique in the screen, missing audio by track, cues a
   assert.ok(!codes(found).includes('W_TIMING_IGNORED'), 'a layer\'s timed blocks apply');
 });
 
-test('translation: a layer\'s lines are units with their anchors\' markers; the translated course anchors there', { skip: NO_FFMPEG }, async () => {
-  const dir = layered();
+test('translation: a layer\'s lines are units with their anchors\' markers; the translated course anchors there', { skip: NO_FFMPEG }, async (t) => {
+  const dir = layered(resources(t).copyExample());
   const units = extractUnits(loadProjectFromDir(dir));
   const unit = units.find((candidate) => candidate.id === 'screen.accueil.layer.rappel.narration.r2.text')!;
   assert.equal(unit.pointer, '/layers/0/narration/lines/1/text');
@@ -184,8 +182,8 @@ test('translation: a layer\'s lines are units with their anchors\' markers; the 
   assert.equal(timeline.infos.get('r2')?.text, 'We always check the computer before the network.');
 });
 
-test('course data: a layer\'s narration, its timed blocks and the events on its timeline', () => {
-  const dir = layered({ audio: false });
+test('course data: a layer\'s narration, its timed blocks and the events on its timeline', (t) => {
+  const dir = layered(resources(t).copyExample(), { audio: false });
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.layers[0].narration.seek = 'free';
   screen.events.push({ id: 'saut', on: { type: 'layer.closed', target: 'rappel' }, do: [{ type: 'seek-timeline', to: { line: 'r2' } }] });
@@ -205,7 +203,7 @@ test('course data: a layer\'s narration, its timed blocks and the events on its 
   assert.ok(codes(validateDir(dir).diagnostics).every((code) => code !== 'E_TIMELINE_CUE'));
 });
 
-test('course state: timeline.ended with a layer fires at the end of that layer\'s timeline only', () => {
+test('course state: timeline.ended with a layer fires at the end of that layer\'s timeline only', (t) => {
   const course = {
     screens: [{ id: 's', key: '1', section: 'a', title: 'S', showTitle: true, required: true, completeWhen: 'viewed', covers: [], blocks: [], layers: [], events: [
       { id: 'screen-end', on: { type: 'timeline.ended' }, do: [{ type: 'complete-screen' }] },
@@ -220,8 +218,8 @@ test('course state: timeline.ended with a layer fires at the end of that layer\'
   assert.deepEqual(state.eventsFor(screen, 'timeline.ended', { layer: 'autre' }), []);
 });
 
-test('narration commands on a layer: a line added there (its id unique in the screen), changed, removed with its audio; no step', { skip: NO_FFMPEG }, () => {
-  const dir = layered();
+test('narration commands on a layer: a line added there (its id unique in the screen), changed, removed with its audio; no step', { skip: NO_FFMPEG }, (t) => {
+  const dir = layered(resources(t).copyExample());
   const added = edit.addNarrationLine(dir, { screen: 'accueil', layer: 'rappel', line: { text: 'Et on note ce qu\'on a vu.', speaker: 'guide' } });
   assert.equal(added.line, 'l5', 'the next free id of the screen, every track counted');
   assert.throws(() => edit.addNarrationLine(dir, { screen: 'accueil', layer: 'rappel', line: { id: 'l1', text: 'Doublon.' } }), /already has a line "l1"/);
@@ -244,9 +242,9 @@ test('narration commands on a layer: a line added there (its id unique in the sc
   assert.ok(screen.layers[0].narration.lines.every((line: { speaker?: string }) => line.speaker === 'narratrice'), 'a layer\'s lines change speaker too');
 });
 
-test('build: a layer\'s track next to its screen\'s (narration/<screen>.<layer>.m4a), the same bytes twice', { skip: NO_FFMPEG }, async () => {
-  const dir = layered();
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-layer-'));
+test('build: a layer\'s track next to its screen\'s (narration/<screen>.<layer>.m4a), the same bytes twice', { skip: NO_FFMPEG }, async (t) => {
+  const dir = layered(resources(t).copyExample());
+  const out = resources(t).tempDir('elabora-layer-');
   try {
     const first = await build(dir, { out });
     assert.ok(first.ok, JSON.stringify(first.diagnostics?.filter((d) => d.severity === 'error')));
@@ -256,7 +254,7 @@ test('build: a layer\'s track next to its screen\'s (narration/<screen>.<layer>.
     assert.deepEqual(first.report?.narration?.tracks.map((track) => [track.screen, track.layer ?? null, track.path]).filter(([screen]) => screen === 'accueil'), [['accueil', null, 'narration/accueil.m4a'], ['accueil', 'rappel', 'narration/accueil.rappel.m4a']]);
     const course = files.get('elabora/course.js')!.toString();
     assert.match(course, /"src":"narration\/accueil\.rappel\.m4a"/, 'the layer\'s narration plays its track');
-    const second = await build(dir, { out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-layer-')) });
+    const second = await build(dir, { out: resources(t).tempDir('elabora-layer-') });
     assert.equal(first.report.package.sha256, second.report?.package.sha256, 'deterministic');
     assert.match(files.get('narration/accueil.rappel.vtt')!.toString(), /<v La guide>Un rappel de la règle/);
   } finally {
