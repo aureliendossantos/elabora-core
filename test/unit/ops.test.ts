@@ -450,7 +450,7 @@ for (const [name, before, after] of [
   ['an object replaced by an array', { a: { b: 1 }, c: 1 }, { a: [1], c: 1 }],
   ['the first keyed element', { list: [] }, { list: [{ id: 'q' }] }],
   ['key order around a large value', { id: 's', blocks: [{ id: 'b', text: 'x'.repeat(1000) }], layout: 'stage' }, { id: 's', layout: 'stage', blocks: [{ id: 'b', text: 'x'.repeat(1000) }] }]
-] as const) test(`document diff preserves ${name}`, () => {
+] satisfies [string, Json, Json][]) test(`document diff preserves ${name}`, () => {
   const files = makeFiles({ 'f.json': formatJson(before) });
   const ops = diffDocuments(before, after, 'f.json');
   assertSameFiles(applyOps(files, ops), makeFiles({ 'f.json': formatJson(after) }), name);

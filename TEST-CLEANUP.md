@@ -126,7 +126,7 @@ None yet.
 | `test/unit/model-versions.test.ts` | 126 | — | Pending |
 | `test/unit/narration.test.ts` | 346 | — | Pending |
 | `test/unit/object-gates.test.ts` | 35 | — | Pending |
-| `test/unit/ops.test.ts` | 929 | 797 | Passed; seeded JSON/course round trips, keyed moves, errors, human-safe undo and batching retained |
+| `test/unit/ops.test.ts` | 929 | 797 | Passed 41 cases; seeded round trips and documented edit/undo contracts; mutable JSON case types checked |
 | `test/unit/package-limits.test.ts` | 131 | — | Pending |
 | `test/unit/pdf-title.test.ts` | 111 | — | Pending |
 | `test/unit/plan-document.test.ts` | 523 | — | Pending |
