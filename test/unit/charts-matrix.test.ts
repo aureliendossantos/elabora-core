@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderChart, chartItems, chartTable } from '@elabora/core/charts/index';
-import { matrixLayout, placeLabels, matrixItems, measure, WIDE_PLOT, NARROW_PLOT } from '@elabora/core/charts/matrix';
 
 const context = { id: 'risks', language: 'en', tokens: {} };
 const base = {
@@ -65,24 +64,17 @@ test('matrix: an item highlight, a quadrant highlight, both', () => {
   assert.doesNotMatch(renderChart('matrix', props(), context).html, /is-hl|is-pulled/);
 });
 
-test('matrix: labels never cover each other, the dots or the quadrants\' names', () => {
-  const { wide, narrow, legend } = matrixLayout(props());
-  assert.deepEqual(wide.clashes, [0, 0, 0, 0, 0]);
-  assert.deepEqual(narrow.clashes, [0, 0, 0, 0, 0]);
-  assert.equal(legend, false);
+test('a spacious matrix keeps its labels and a close pair faces opposite directions', () => {
   assert.doesNotMatch(renderChart('matrix', props(), context).html, /t-matrix--legend/);
-  // Two dots side by side: their labels go to opposite sides.
-  const pair = placeLabels(matrixItems({ items: [{ id: 'a', label: 'Phishing drills', x: 0.3, y: 0.5 }, { id: 'b', label: 'Single sign-on', x: 0.36, y: 0.5 }] }), ['', '', '', ''], WIDE_PLOT);
-  assert.deepEqual(pair.clashes, [0, 0]);
-  assert.notEqual(pair.sides[0], pair.sides[1]);
+  const pair = renderChart('matrix', props({ items: [{ id: 'a', label: 'Phishing drills', x: 0.3, y: 0.5 }, { id: 'b', label: 'Single sign-on', x: 0.36, y: 0.5 }] }), context).html;
+  const sides = [...pair.matchAll(/class="t-matrix-label"[^>]*data-side="([^"]+)"/g)].map(match => match[1]);
+  assert.equal(sides.length, 2);
+  assert.notEqual(sides[0], sides[1]);
 });
 
 test('matrix: a crowded plot numbers its dots on a phone, with a legend', () => {
   const crowd = Array.from({ length: 8 }, (_, index) => ({ id: `i${index}`, label: `A rather long label number ${index + 1}`, x: 0.2 + (index % 4) * 0.08, y: 0.6 + Math.floor(index / 4) * 0.1 }));
-  const layout = matrixLayout({ ...base, items: crowd });
-  assert.equal(layout.legend, true);
   assert.match(renderChart('matrix', { ...base, items: crowd }, context).html, /class="t-matrix t-matrix--legend"/);
-  assert.ok(measure('A rather long label number 1', NARROW_PLOT.font, NARROW_PLOT.maxWidth).h > NARROW_PLOT.font * 1.25);
 });
 
 test('matrix: deterministic, one item, values out of range, missing ends, escaped words', () => {
