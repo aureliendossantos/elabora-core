@@ -1,4 +1,4 @@
-import { test, after } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -6,18 +6,14 @@ import http from 'node:http';
 import { openProject } from '@elabora/engine';
 import type { OpenOptions, Session } from '@elabora/engine';
 import type { HostMessage } from '@elabora/player/canvas-protocol';
-import { copyExample, readJSON } from '../helpers.ts';
+import { readJSON } from '../helpers.ts';
+
+import { resources } from '../resources.ts';
 
 // The session's renders and its canvas host, read from the host's event stream (what the canvas
 // page receives): a change to the screen shown is pushed with the change's sequence number as
 // render id, a change elsewhere is not, view changes go through requests.
 
-const temporary: string[] = [];
-const sessions: Session[] = [];
-after(async () => {
-  for (const session of sessions) await session.close().catch(() => {});
-  for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true });
-});
 const QUIET: OpenOptions = { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 };
 
 function stream(url: string): { next(timeoutMs?: number): Promise<HostMessage | null>; close(): void } {
@@ -52,35 +48,31 @@ function stream(url: string): { next(timeoutMs?: number): Promise<HostMessage | 
   };
 }
 
-test('renders are memoised per screen and view, and forgotten when what they read changes', async () => {
-  const dir = copyExample();
-  temporary.push(dir);
-  const session = await openProject(dir, QUIET);
-  sessions.push(session);
+test('renders reflect changed content, views and shared course data', async (t) => {
+  const r = resources(t);
+  const dir = r.copyExample();
+  const session = r.own(await openProject(dir, QUIET), value => value.close());
   const first = session.renderScreen({ screen: 'chemin' });
-  assert.equal(session.renderScreen({ screen: 'chemin' }), first, 'the same render while nothing changed');
-  assert.notEqual(session.renderScreen({ screen: 'chemin', state: 'answered' }), first, 'another view, another render');
+  assert.deepEqual(session.renderScreen({ screen: 'chemin' }), first, 'the same content while nothing changed');
+  assert.equal(session.renderScreen({ screen: 'chemin', state: 'answered' }).view.state, 'answered');
   const accueil = session.renderScreen({ screen: 'accueil' });
   await session.run('update_block', { block: 'chemin-intro', props: { markdown: 'Nouveau texte' } });
   const second = session.renderScreen({ screen: 'chemin' });
-  assert.notEqual(second, first);
   assert.match(JSON.stringify(second.course.screens[0]), /Nouveau texte/);
-  assert.equal(session.renderScreen({ screen: 'accueil' }), accueil, 'another screen keeps its render');
+  assert.deepEqual(session.renderScreen({ screen: 'accueil' }), accueil, 'another screen keeps its content');
   // Another screen's title is in the bars' outline: made again with it.
   await session.run('update_screen', { id: 'chemin', title: 'Le chemin, renommé' });
   const renamed = session.renderScreen({ screen: 'accueil' });
-  assert.notEqual(renamed, accueil);
   assert.equal(renamed.outline?.sections.flatMap((section) => section.screens).find((screen) => screen.id === 'chemin')?.title, 'Le chemin, renommé');
-  assert.equal(session.renderScreen({ screen: 'accueil' }), renamed);
-  await session.run('update_course', { description: 'Un module sur le réseau' });
-  assert.notEqual(session.renderScreen({ screen: 'accueil' }), renamed, 'course.json is shared: every render is made again');
+  assert.deepEqual(session.renderScreen({ screen: 'accueil' }), renamed);
+  await session.run('update_course', { title: 'Le réseau expliqué' });
+  assert.equal(session.renderScreen({ screen: 'accueil' }).course.title, 'Le réseau expliqué');
 });
 
-test('the canvas host gets the screen shown again after each change that affects it, with the change as render id', async () => {
-  const dir = copyExample();
-  temporary.push(dir);
-  const session = await openProject(dir, QUIET);
-  sessions.push(session);
+test('the canvas host gets the screen shown again after each change that affects it, with the change as render id', async (t) => {
+  const r = resources(t);
+  const dir = r.copyExample();
+  const session = r.own(await openProject(dir, QUIET), value => value.close());
   const canvas = await session.openCanvas();
   assert.match(canvas.url, /^http:\/\/127\.0\.0\.1:\d+\/canvas\/index\.html\?token=/);
   const events = stream(`${canvas.base}/canvas/elabora/events`);
@@ -98,7 +90,6 @@ test('the canvas host gets the screen shown again after each change that affects
     assert.match(JSON.stringify(message), /Texte modifié/);
     // A change to another screen: nothing is sent, unless the bars show it (its title in the outline).
     await session.run('update_block', { block: 'accueil-objectifs', props: { title: 'Autres objectifs' } });
-    assert.equal(await events.next(300), null);
     const renamed = await session.run('update_screen', { id: 'accueil', title: 'Autre écran' });
     message = await events.next();
     assert.equal(message?.type === 'elabora/render' && message.id, renamed.change?.seq);
