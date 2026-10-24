@@ -1,15 +1,14 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import http from 'node:http';
-import os from 'node:os';
 import path from 'node:path';
 import type { AddressInfo } from 'node:net';
 import { build } from '@elabora/node/build';
 import type { WebBuildOptions } from '@elabora/node/build';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import type { Browser, Page } from 'playwright-core';
-import { copyExample } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { labelsFor } from '@elabora/player/labels';
 
@@ -38,9 +37,9 @@ async function staticServer(sites: Record<string, string>): Promise<{ base: stri
 const player = (page: Page) => page.waitForFunction(() => (window as PlayerWindow).__elabora?.screen !== undefined);
 const screenOf = (page: Page) => page.evaluate(() => (window as PlayerWindow).__elabora.screen);
 
-test('a module for the web on a static server: local progress survives a reload, none keeps nothing, free navigation reaches the last screen', { timeout: 240000 }, async () => {
-  const dir = copyExample();
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-web-e2e-'));
+test('a module for the web on a static server: local progress survives a reload, none keeps nothing, free navigation reaches the last screen', { timeout: 240000 }, async (t) => {
+  const dir = resources(t).copyExample();
+  const out = resources(t).tempDir('elabora-web-e2e-');
   const made: Record<string, string> = {};
   const settings: Record<string, WebBuildOptions> = { local: { progress: 'local' }, none: { progress: 'none' }, free: { progress: 'none', navigation: 'free' } };
   for (const [name, web] of Object.entries(settings)) {
@@ -48,10 +47,10 @@ test('a module for the web on a static server: local progress survives a reload,
     assert.ok(built.ok && built.dirPath, JSON.stringify(built.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
     made[name] = built.dirPath;
   }
-  const server = await staticServer(made);
+  const server = resources(t).own(await staticServer(made), value => value.close());
   let browser: Browser | null = null;
   try {
-    browser = await launchBrowser('chromium');
+    browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
 
     // ── local: the learner comes back where they left ───────────────
     const local = await browser.newContext();
