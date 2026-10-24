@@ -39,7 +39,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
 
-| Private layout assertions | 3 | charts-matrix imported label placement helpers instead of measuring rendered labels |
+| Private layout assertions | 4 | charts-matrix imported label placement helpers instead of measuring rendered labels |
 
 ## Production changes
 
@@ -90,7 +90,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/charts-before-after.test.ts` | 86 | 43 | Passed chart units and desktop/phone browser layout; public output replaces private geometry/dodge formulas; crowded and coincident labels checked by actual DOM bounds |
 | `test/unit/charts-cycle.test.ts` | 112 | 106 | Passed chart units and browser layout; rendered clockwise order and visible bounds replace private stage/arc formulas and constants |
 | `test/unit/charts-donut.test.ts` | 99 | 95 | Passed chart units; public totals, accessible data, full/empty turns replace private geometry and SVG mask implementation details |
-| `test/unit/charts-levels.test.ts` | 103 | — | Pending |
+| `test/unit/charts-levels.test.ts` | 103 | 102 | Passed chart units; rendered ordering and partial rows replace private layout shape and exact coordinate formulas |
 | `test/unit/charts-matrix.test.ts` | 98 | — | Pending |
 | `test/unit/charts-milestones.test.ts` | 95 | — | Pending |
 | `test/unit/charts-process.test.ts` | 84 | 83 | Passed 5 native-seeded cases; public markup/accessibility/order/table/escaping/highlight/determinism retained; duplicate link-count assertion removed |

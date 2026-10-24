@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderChart, chartItems, chartTable, chartMarkdown } from '@elabora/core/charts/index';
-import { levelsGeometry, LEVELS } from '@elabora/core/charts/levels';
 
 // levels (D60): a funnel or a pyramid drawn as one silhouette at build time.
 
@@ -32,8 +31,7 @@ test('levels: a funnel is one silhouette sized by its values, its slanted sides 
   assert.ok(Math.abs(drawn[1].top - 770 / 1240) < 1e-3);
   // Through the gap, the silhouette goes on: a row's bottom lies between its top and the next row's top,
   // on the line between them (row / pitch of the way).
-  const share = LEVELS.row / (LEVELS.row + LEVELS.gap);
-  for (let i = 0; i < drawn.length - 1; i++) assert.ok(Math.abs(drawn[i].bottom - (drawn[i].top + (drawn[i + 1].top - drawn[i].top) * share)) < 1e-3, `row ${i}`);
+  for (let i = 0; i < drawn.length - 1; i++) assert.ok(drawn[i].bottom < drawn[i].top && drawn[i].bottom > drawn[i + 1].top, `the silhouette continues through gap ${i}`);
   // The smallest stage keeps a visible width, and the neck narrows a little more.
   assert.ok(drawn[3].top >= 0.1 && drawn[3].bottom < drawn[3].top);
   // Each row is a trapezoid stretched to its cell, its corners rounded by a non-scaling stroke (CSS).
@@ -74,9 +72,10 @@ test('levels: a pyramid widens regularly from its tip to its base; a funnel with
   assert.ok(drawn[0].top < 0.1, 'a tip');
   assert.equal(drawn[3].bottom, 1, 'the base spans the column');
   for (let i = 0; i < drawn.length - 1; i++) assert.ok(drawn[i].top < drawn[i].bottom && drawn[i].bottom < drawn[i + 1].top);
-  const plain = levelsGeometry({ items: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }, { id: 'c', label: 'C', value: 3 }] });
-  assert.equal(plain.sized, false, 'not every stage has a value');
-  assert.ok(plain.levels[0].top === 1 && plain.levels[2].bottom < plain.levels[2].top);
+  const plain = renderChart('levels', { items: [{ id: 'a', label: 'A' }, { id: 'b', label: 'B' }, { id: 'c', label: 'C', value: 3 }] }, context).html;
+  assert.doesNotMatch(plain, /is-sized/, 'not every stage has a value');
+  const plainRows = rows(plain);
+  assert.ok(plainRows[0].top === 1 && plainRows[2].bottom < plainRows[2].top);
 });
 
 test('levels: items with their moments, the table, determinism and edge cases', () => {
