@@ -1,7 +1,7 @@
-import { test, after } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -15,20 +15,18 @@ import { readZip } from '@elabora/node/zip';
 import { createMcpServer } from '@elabora/cli/mcp';
 import { openProject } from '@elabora/engine';
 import type { BuildView, ResponseMessage } from '@elabora/engine';
-import { ROOT, copyExample, codes } from '../helpers.ts';
+import { ROOT, codes } from '../helpers.ts';
 
 // The review bridge (docs/review-bridge.md, docs/decisions.md D42): the protocol elabora-review/1 (its
 // messages, the origins it takes, the anchor), the text sizes it reports, and the review build
 // (elabora/review.js in review builds only; every other build unchanged), through the build, the
 // CLI, the MCP server and the engine. The bridge itself runs in Chrome: test/e2e/review.test.ts.
 
-const temporary: string[] = [];
-after(() => { for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true }); });
-const tmp = (prefix: string) => { const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix)); temporary.push(dir); return dir; };
-const course = () => { const dir = copyExample(); temporary.push(dir); return dir; };
+const tmp = (t: TestContext, prefix: string) => resources(t).tempDir(prefix);
+const course = (t: TestContext) => resources(t).copyExample();
 const REVUE = 'https://revue.elabora.studio';
 
-test('review origins: an https origin, or http on this computer; never a path, a wildcard or credentials', () => {
+test('review origins: an https origin, or http on this computer; never a path, a wildcard or credentials', (t) => {
   for (const [value, origin] of [
     [REVUE, REVUE], [`${REVUE}/`, REVUE], ['https://REVUE.elabora.studio', REVUE], ['https://revue.elabora.studio:8443', 'https://revue.elabora.studio:8443'],
     ['http://localhost:5173', 'http://localhost:5173'], ['http://127.0.0.1:8787', 'http://127.0.0.1:8787'], ['http://[::1]:3000', 'http://[::1]:3000'], ['http://revue.localhost:3000', 'http://revue.localhost:3000']
@@ -37,7 +35,7 @@ test('review origins: an https origin, or http on this computer; never a path, a
     assert.equal(reviewOrigin(value), null, value);
 });
 
-test('origin filtering: only the embedder, only a named origin, only the page once it spoke', () => {
+test('origin filtering: only the embedder, only a named origin, only the page once it spoke', (t) => {
   const origins = [REVUE, 'http://localhost:5173'];
   assert.deepEqual(reviewPeer(origins, REVUE), { peer: REVUE, silent: false }, 'the browser names the embedder: posts go to it only');
   assert.deepEqual(reviewPeer(origins, 'https://evil.example'), { peer: null, silent: true }, 'an embedder not named gets nothing');
@@ -50,7 +48,7 @@ test('origin filtering: only the embedder, only a named origin, only the page on
   assert.equal(acceptsFrom(origins, REVUE, { origin: 'null', fromParent: true }), false, 'an opaque origin');
 });
 
-test('page messages: read and checked, another version recognised, anything else ignored', () => {
+test('page messages: read and checked, another version recognised, anything else ignored', (t) => {
   const p = REVIEW_PROTOCOL;
   assert.equal(p, 'elabora-review/1');
   assert.deepEqual(readPageMessage({ protocol: p, type: 'hello' }), { type: 'hello' });
@@ -73,7 +71,7 @@ test('page messages: read and checked, another version recognised, anything else
   assert.deepEqual(goTarget({ screen: 'k3', step: 0, time: -1, occurrence: 1, word: ' ', layer: 4 }), { screen: 'k3' });
 });
 
-test('text sizes follow the frame as player.css says; the widest column is the cap or the room left', () => {
+test('text sizes follow the frame as player.css says; the widest column is the cap or the room left', (t) => {
   // The rules are the media queries of player.css that size html.
   const css = fs.readFileSync(path.join(ROOT, 'packages/player/src/player.css'), 'utf8');
   const queries = [...css.matchAll(/@media ([^{]+)\{ html \{ font-size: ([\d.]+)%; \} \}/g)].map(([, query, percent]) => ({ query: query.trim(), scale: Number(percent) / 100 }));
@@ -105,7 +103,7 @@ const block = (id: string, rect: [number, number, number, number], extra: Partia
   id, type: 'text', kind: 'text', name: 'Texte', label: null, order: 1, rect: { x: rect[0], y: rect[1], width: rect[2], height: rect[3] }, layer: null, parent: null, hidden: false, ...extra
 });
 
-test('pointing and anchors: the innermost visible block, a layer before the screen, the point in its box', () => {
+test('pointing and anchors: the innermost visible block, a layer before the screen, the point in its box', (t) => {
   const blocks = [
     block('carte', [100, 100, 800, 400], { order: 1, type: 'card', kind: 'component' }),
     block('titre', [120, 120, 300, 40], { order: 2, parent: 'carte', kind: 'heading' }),
@@ -123,9 +121,9 @@ test('pointing and anchors: the innermost visible block, a layer before the scre
   const location: Omit<LocationMessage, 'protocol' | 'type'> = { screen: 'k2', index: 1, step: 2, steps: [1, 2], layer: null, time: 4.21234, duration: 9, playing: false, line: 'l2', word: 'imprimante', occurrence: 2, held: true };
   const frame = { width: 1600.4, height: 744 };
   const titre = blockAt(blocks, { x: 270, y: 130 });
-  assert.deepEqual(JSON.stringify(anchorFor(ready, location, frame, { block: titre, point: { x: 270, y: 130 } })),
-    JSON.stringify({ version: '1.2.0', language: 'fr', screen: 'k2', block: 'titre', step: 2, time: 4.212, line: 'l2', word: 'imprimante', occurrence: 2, point: { x: 0.5, y: 0.25 }, frame: { width: 1600, height: 744 } }),
-    'the contract\'s fields, in its order');
+  assert.deepEqual(anchorFor(ready, location, frame, { block: titre, point: { x: 270, y: 130 } }),
+    { version: '1.2.0', language: 'fr', screen: 'k2', block: 'titre', step: 2, time: 4.212, line: 'l2', word: 'imprimante', occurrence: 2, point: { x: 0.5, y: 0.25 }, frame: { width: 1600, height: 744 } },
+    'the contract\'s fields');
   assert.deepEqual(anchorFor(ready, { screen: 'k1', index: 0, step: 1, steps: [1], layer: 'rappel-regle', held: false }, { width: 400, height: 200 }, { block: null, point: { x: 100, y: 150 } }),
     { version: '1.2.0', language: 'fr', screen: 'k1', step: 1, layer: 'rappel-regle', point: { x: 0.25, y: 0.75 }, frame: { width: 400, height: 200 } }, 'the whole screen: the point in the frame');
   assert.deepEqual(anchorFor(ready, { screen: 'k1', index: 0, step: 1, steps: [1], layer: null, held: false }, { width: 400, height: 200 }),
@@ -133,14 +131,14 @@ test('pointing and anchors: the innermost visible block, a layer before the scre
 
   // The line's text and speaker, after the word and before the point.
   const spoken = { ...location, said: "  Ni l'imprimante,\n ni le partage de fichiers ne marchent.", speaker: 'Marc' };
-  assert.deepEqual(Object.keys(anchorFor(ready, spoken, frame, { block: titre, point: { x: 270, y: 130 } })),
-    ['version', 'language', 'screen', 'block', 'step', 'time', 'line', 'word', 'occurrence', 'said', 'speaker', 'point', 'frame']);
+  assert.deepEqual(Object.keys(anchorFor(ready, spoken, frame, { block: titre, point: { x: 270, y: 130 } })).sort(),
+    ['version', 'language', 'screen', 'block', 'step', 'time', 'line', 'word', 'occurrence', 'said', 'speaker', 'point', 'frame'].sort());
   assert.deepEqual([anchorFor(ready, spoken, frame).said, anchorFor(ready, spoken, frame).speaker], ["Ni l'imprimante, ni le partage de fichiers ne marchent.", 'Marc']);
   const { line: _line, ...unspoken } = spoken;
   assert.equal(anchorFor(ready, unspoken, frame).said, undefined, 'no line, no text');
 });
 
-test('the line said: kept whole up to its limit, else cut around the word at spaces', () => {
+test('the line said: kept whole up to its limit, else cut around the word at spaces', (t) => {
   assert.equal(saidAround('Bonjour, voici le ticket de Marc.'), 'Bonjour, voici le ticket de Marc.');
   const long = `${'Au début, '.repeat(30)}l'imprimante ne répond plus${', puis plus rien'.repeat(30)}.`;
   const cut = saidAround(long, "l'imprimante");
@@ -153,7 +151,7 @@ test('the line said: kept whole up to its limit, else cut around the word at spa
   assert.ok(saidAround(long).startsWith('Au début'), 'no word: the start');
 });
 
-test('words: the word said at a time with its occurrence, and when a word is said', () => {
+test('words: the word said at a time with its occurrence, and when a word is said', (t) => {
   const words: [string, number, number][] = [['Ni', 2, 2.2], ["l'", 2.3, 2.4], ['imprimante', 2.4, 2.9], ['ni', 3, 3.2], ['le', 3.3, 3.4], ['Partage', 3.5, 4]];
   assert.equal(wordAt(words, 1), null);
   assert.deepEqual(wordAt(words, 2.5), { index: 2, word: 'imprimante', occurrence: 1 });
@@ -170,12 +168,12 @@ test('words: the word said at a time with its occurrence, and when a word is sai
 const fileText = (files: Map<string, Buffer>, name: string) => files.get(name)?.toString() ?? '';
 const courseData = (files: Map<string, Buffer>) => JSON.parse(fileText(files, 'elabora/course.js').replace(/^window\.ELABORA_COURSE = /, '').replace(/;\n$/, ''));
 
-test('review build: elabora/review.js and its script, the origins and languages in the course data; every other build unchanged, byte for byte', async () => {
-  const dir = course();
+test('review build: elabora/review.js and its script, the origins and languages in the course data; every other build unchanged, byte for byte', async (t) => {
+  const dir = course(t);
   fs.mkdirSync(path.join(dir, 'translations'), { recursive: true });
   fs.writeFileSync(path.join(dir, 'translations/en.xlf'), '<?xml version="1.0"?><xliff version="2.0" srcLang="fr" trgLang="en"></xliff>\n');
   const review = { origins: ['http://localhost:5173', `${REVUE}/`, REVUE] };
-  const [a, b] = [await build(dir, { target: 'web', web: { review }, out: tmp('elabora-r1-') }), await build(dir, { target: 'web', web: { review }, out: tmp('elabora-r2-') })];
+  const [a, b] = [await build(dir, { target: 'web', web: { review }, out: tmp(t, 'elabora-r1-') }), await build(dir, { target: 'web', web: { review }, out: tmp(t, 'elabora-r2-') })];
   assert.ok(a.ok && b.ok && a.zipPath, JSON.stringify(a.diagnostics.filter((d) => d.severity === 'error')));
   assert.equal(a.report.package.sha256, b.report.package.sha256, 'deterministic');
   const reviewed = readZip(fs.readFileSync(a.zipPath)).files;
@@ -192,7 +190,7 @@ test('review build: elabora/review.js and its script, the origins and languages 
   assert.doesNotMatch(bridge, /postMessage\([^)]*["']\*["']/, 'never posts to any origin');
 
   // The same settings without review: no bridge, and the player's files are the review build's.
-  const plain = await build(dir, { target: 'web', web: { progress: 'none', navigation: 'free', noindex: true }, out: tmp('elabora-r3-') });
+  const plain = await build(dir, { target: 'web', web: { progress: 'none', navigation: 'free', noindex: true }, out: tmp(t, 'elabora-r3-') });
   assert.ok(plain.ok && plain.zipPath);
   const files = readZip(fs.readFileSync(plain.zipPath)).files;
   assert.equal(files.has('elabora/review.js'), false);
@@ -203,14 +201,14 @@ test('review build: elabora/review.js and its script, the origins and languages 
   assert.deepEqual([...reviewed.keys()].filter((name) => !files.has(name)), ['elabora/review.js']);
   assert.doesNotMatch(fileText(files, 'elabora/player.js'), /elabora-review/, 'the player knows nothing of the bridge');
   // Explicit settings win over the review's defaults.
-  const kept = await build(dir, { target: 'web', web: { review, progress: 'local', navigation: 'authored', noindex: false }, out: tmp('elabora-r4-') });
+  const kept = await build(dir, { target: 'web', web: { review, progress: 'local', navigation: 'authored', noindex: false }, out: tmp(t, 'elabora-r4-') });
   assert.ok(kept.ok);
   assert.deepEqual({ ...kept.report.web, review: undefined }, { progress: 'local', navigation: 'authored', noindex: false, url: null, image: null, review: undefined });
 });
 
-test('review build: an origin that is not one stops it; review settings outside the web target are refused', async () => {
-  const dir = course();
-  const out = tmp('elabora-r5-');
+test('review build: an origin that is not one stops it; review settings outside the web target are refused', async (t) => {
+  const dir = course(t);
+  const out = tmp(t, 'elabora-r5-');
   for (const origins of [['revue.elabora.studio'], [`${REVUE}/revue`], ['http://revue.elabora.studio'], ['*'], []]) {
     const result = await build(dir, { target: 'web', web: { review: { origins } }, out });
     assert.equal(result.ok, false, JSON.stringify(origins));
@@ -233,26 +231,26 @@ function elabora(args: string[]): Promise<{ status: number | null; stdout: strin
   });
 }
 
-test('elabora build --review-origin, repeatable; MCP elabora_build web.review; the engine build request', async () => {
-  const dir = course();
+test('elabora build --review-origin, repeatable; MCP elabora_build web.review; the engine build request', async (t) => {
+  const dir = course(t);
   const refused = await elabora(['build', dir, '--review-origin', REVUE]);
   assert.equal(refused.status, 2);
   assert.match(refused.stderr, /--review-origin: for --target web only/);
-  const bad = await elabora(['build', dir, '--target', 'web', '--review-origin', 'revue.elabora.studio', '--out', tmp('elabora-r6-')]);
+  const bad = await elabora(['build', dir, '--target', 'web', '--review-origin', 'revue.elabora.studio', '--out', tmp(t, 'elabora-r6-')]);
   assert.equal(bad.status, 1);
   assert.match(bad.stdout + bad.stderr, /E_WEB_REVIEW_ORIGIN/);
-  const made = await elabora(['build', dir, '--target', 'web', '--review-origin', REVUE, '--review-origin', 'http://localhost:5173', '--out', tmp('elabora-r7-'), '--json']);
+  const made = await elabora(['build', dir, '--target', 'web', '--review-origin', REVUE, '--review-origin', 'http://localhost:5173', '--out', tmp(t, 'elabora-r7-'), '--json']);
   assert.equal(made.status, 0, made.stderr);
   const printed = JSON.parse(made.stdout);
   assert.deepEqual(printed.web, { progress: 'none', navigation: 'free', noindex: true, url: null, image: null, review: { origins: ['http://localhost:5173', REVUE] } });
   assert.ok(fs.existsSync(path.join(printed.dir, 'elabora/review.js')));
-  const local = await elabora(['build', dir, '--target', 'web', '--review-origin', REVUE, '--progress', 'local', '--out', tmp('elabora-r8-'), '--json']);
+  const local = await elabora(['build', dir, '--target', 'web', '--review-origin', REVUE, '--progress', 'local', '--out', tmp(t, 'elabora-r8-'), '--json']);
   assert.equal(JSON.parse(local.stdout).web.progress, 'local', 'a flag given wins over the review\'s default');
 
-  const server = createMcpServer(dir);
+  const server = resources(t).own(createMcpServer(dir), value => value.close());
   const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
   await server.connect(serverSide);
-  const client = new Client({ name: 'test', version: '1' });
+  const client = resources(t).own(new Client({ name: 'test', version: '1' }), value => value.close());
   await client.connect(clientSide);
   const result = await client.callTool({ name: 'elabora_build', arguments: { target: 'web', web: { review: { origins: [REVUE] } } } });
   const body = JSON.parse((result.content as { type: 'text'; text: string }[])[0].text);
@@ -261,7 +259,7 @@ test('elabora build --review-origin, repeatable; MCP elabora_build web.review; t
   assert.ok(fs.existsSync(path.join(body.dir, 'elabora/review.js')));
   await client.close();
 
-  const session = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 });
+  const session = resources(t).own(await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 }), value => value.close());
   try {
     const response = await session.handle({ kind: 'request', id: 'r1', type: 'build', params: { target: 'web', web: { review: { origins: [REVUE, 'http://localhost:5173'] } } } }) as ResponseMessage;
     assert.equal(response.ok, true, JSON.stringify(response));

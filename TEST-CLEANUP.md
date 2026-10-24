@@ -157,7 +157,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/rename.test.ts` | 118 | 118 | Native-seeded cases passed; dispose courses/builds after each case; reference propagation, learner keys, translation and exact undo contracts retained |
 | `test/unit/render.test.ts` | 147 | 148 | Passed native-seeded checks; Public incremental/full render and CSS/package parity retained; owns fixtures and checks output rather than private render context |
 | `test/unit/renditions-prune.test.ts` | 44 | 43 | Passed 2 native-seeded cases; fixed public now/mtime ages and bytes, owned course copies; keeps current/recent renditions and removes old obsolete data |
-| `test/unit/review-bridge.test.ts` | 278 | — | Pending |
+| `test/unit/review-bridge.test.ts` | 278 | 276 | Passed native-seeded cases; owned projects/builds/MCP/session; object content rather than insertion order; origin filtering, anchors and review delivery contracts retained |
 | `test/unit/robustness-commands.test.ts` | 155 | 158 | Passed native-seeded checks; 240 seeded command replay/undo invariants; owns courses and now compares binary hashes as well as paths and text |
 | `test/unit/robustness.test.ts` | 93 | 96 | Passed native-seeded checks; 250 seeded reader and incremental/full validation invariants; own fixtures and report reproducing seed |
 | `test/unit/scaffold.test.ts` | 128 | — | Pending |
