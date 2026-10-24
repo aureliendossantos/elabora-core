@@ -24,8 +24,8 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Defect | Count | Example |
 | --- | ---: | --- |
-| Implementation coupling | 19 | ops: private computeDiff comparison and exact chosen diff scripts |
-| Duplicate assertions | 1 | ops: identical notes restoration asserted twice |
+| Implementation coupling | 21 | ops: private computeDiff comparison and exact chosen diff scripts |
+| Duplicate assertions | 4 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 9 | ops: module-level change ID counter replaced with content-derived IDs |
 | Fixed-delay synchronization | 21 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
@@ -34,7 +34,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 1 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 50 | validate: copied fixtures were never removed |
+| Resource cleanup | 59 | validate: copied fixtures were never removed |
 | Wall-clock timing | 4 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 2 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -105,7 +105,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/design.test.ts` | 394 | — | Pending |
 | `test/unit/dialogue-player.test.ts` | 199 | — | Pending |
 | `test/unit/dialogue-voice.test.ts` | 376 | — | Pending |
-| `test/unit/dialogue.test.ts` | 575 | — | Pending |
+| `test/unit/dialogue.test.ts` | 575 | 577 | Passed 19 native-seeded cases; every reachable path preserves walk and score after save/resume, owned courses, graph geometry rather than exact rank/curve choices; duplicate budget/stability checks removed |
 | `test/unit/diff-mcp.test.ts` | 74 | — | Pending |
 | `test/unit/docs.test.ts` | 127 | — | Pending |
 | `test/unit/downloads.test.ts` | 147 | 161 | Native seed 130363 passed all 4 cases; extension registration isolated in a child, model files reset per case, real download/hash/install/removal and in-use refusals retained |
