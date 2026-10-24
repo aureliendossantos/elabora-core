@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import http from 'node:http';
@@ -7,10 +8,10 @@ import { startCanvasHost } from '@elabora/node/canvas/host';
 import { byteRange, mimeType } from '@elabora/node/canvas/files';
 import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import type { HostMessage } from '@elabora/player/canvas-protocol';
-import { ROOT, copyExample } from '../helpers.ts';
+import { ROOT } from '../helpers.ts';
 import { narrate, hasFfmpeg } from '../narration.ts';
 
-test('byte ranges: first, open, last bytes; several ranges serve the whole file', () => {
+test('byte ranges: first, open, last bytes; several ranges serve the whole file', (t) => {
   assert.deepEqual(byteRange('bytes=0-99', 1000), { start: 0, end: 99 });
   assert.deepEqual(byteRange('bytes=900-', 1000), { start: 900, end: 999 });
   assert.deepEqual(byteRange('bytes=-100', 1000), { start: 900, end: 999 });
@@ -66,10 +67,10 @@ const get = (url: string) => new Promise<{ status: number; type: string; body: s
   }).on('error', reject);
 });
 
-test('canvas host: render data pushed to pages, styles sent once, the page and the files it needs served', { timeout: 120000 }, async () => {
+test('canvas host: render data pushed to pages, styles sent once, the page and the files it needs served', { timeout: 120000 }, async (t) => {
   const project = loadProjectFromDir(path.join(ROOT, 'examples', 'planetary-gearset'));
   const context = createRenderContext(project);
-  const host = await startCanvasHost({ root: project.root });
+  const host = resources(t).own(await startCanvasHost({ root: project.root }), value => value.close());
   const first = events(`${host.base}/canvas/elabora/events`);
   try {
     const page = await get(host.url);
@@ -97,7 +98,7 @@ test('canvas host: render data pushed to pages, styles sent once, the page and t
     const three = await first.next();
     assert.deepEqual(three, { type: 'elabora/view', id: 3, view: { step: 1 } });
     // A page connecting later gets the last render, with its styles and the view since.
-    const second = events(`${host.base}/canvas/elabora/events`);
+    const second = resources(t).own(events(`${host.base}/canvas/elabora/events`), value => value.close());
     const late = await second.next();
     assert.ok(late.type === 'elabora/render' && late.render.screen === 'intro' && late.render.styles && late.render.view.step === 1);
     second.close();
@@ -117,10 +118,10 @@ test('canvas host: render data pushed to pages, styles sent once, the page and t
   }
 });
 
-test('canvas host: the audio of a narration line served for the editor to play, nothing else unlisted', { skip: !hasFfmpeg() && 'ffmpeg not found' }, async () => {
-  const dir = copyExample();
+test('canvas host: the audio of a narration line served for the editor to play, nothing else unlisted', { skip: !hasFfmpeg() && 'ffmpeg not found' }, async (t) => {
+  const dir = resources(t).copyExample();
   narrate(dir, 'accueil', [{ id: 'l1', text: 'Bonjour.', seconds: 1 }], { speakers: [{ id: 'guide', name: 'Guide' }] });
-  const host = await startCanvasHost({ root: dir });
+  const host = resources(t).own(await startCanvasHost({ root: dir }), value => value.close());
   try {
     const audio = await get(`${host.base}/canvas/assets/narration/fr/accueil/l1.m4a`);
     assert.equal(audio.status, 200);
