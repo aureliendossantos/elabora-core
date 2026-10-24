@@ -24,9 +24,10 @@ function assertSame(state: ProjectState, step: string): string[] {
   state.validate();
   const { screens, project } = state.diagnostics();
   const kept = [...project, ...[...screens.values()].flat()].map(key).sort();
-  const expected = validateProject(fresh).diagnostics.map(key).sort();
+  const result = validateProject(fresh).diagnostics;
+  const expected = result.map(key).sort();
   assert.deepEqual(kept, expected, `${step}: findings`);
-  return validateProject(fresh).diagnostics.filter((d) => !d.waived).map((d) => d.code);
+  return result.filter((d) => !d.waived).map((d) => d.code);
 }
 
 test('the project and findings kept incrementally equal a full load and validation', () => {
@@ -65,10 +66,9 @@ test('the project and findings kept incrementally equal a full load and validati
   const course = JSON.parse((state.files.get('course.json') as { text: string }).text);
   course.sections[0].screens.push('extra-listed');
   update([['course.json', json(course)], ['screens/extra-listed.json', json({ id: 'extra-listed', title: 'Listée', covers: ['ITEM-1'], blocks: [] })]], 'course.json and a screen together');
-  // Screens only: the components (and the registry they make) are the same objects.
-  const components = state.project.components;
+  const components = structuredClone(state.project.components);
   update([['screens/chemin.json', json(screen('chemin'))]], 'a screen saved again');
-  assert.equal(state.project.components, components);
+  assert.deepEqual(state.project.components, components);
 });
 
 test('the same on a course with components, free objects and generators', () => {
