@@ -29,7 +29,7 @@ export const look = defineCommand({
       const parsed = looks.parseLookAction(action);
       if ('error' in parsed) { console.error(parsed.error); return 2; }
     }
-    if (flags.act?.length && !flags.block) { console.error('--act drives the free object of a block: give --block <id>.'); return 2; }
+    if (flags.act?.length && !flags.block) { console.error('--act drives the free object of a block, or chooses in a dialogue block: give --block <id>.'); return 2; }
     const sizes: [number, number][] = [];
     for (const size of flags.size || ['1600x900']) {
       const [width, height] = size.split('x').map(Number);

@@ -136,7 +136,7 @@
                 "text": "Can't you just change it today? I'll stay on the line."
               }
             ],
-            "prompt": "What do you say?",
+            "prompt": "How do you answer the deadline?",
             "options": [
               {
                 "id": "a",
@@ -263,7 +263,7 @@
           {
             "id": "close-call",
             "title": "Close call",
-            "text": "Nothing was paid, but one answer left a door open. Go back to the choice marked « ok » to hear the safer one.",
+            "text": "Nothing was paid, but one answer left a door open. Go back to the fair choice to hear the safer one.",
             "if": [
               {
                 "score": {

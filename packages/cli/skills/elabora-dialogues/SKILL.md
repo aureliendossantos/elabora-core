@@ -43,6 +43,7 @@ Read `elabora docs dialogues` (MCP `elabora_docs { page: "dialogues" }`) for the
 - `elabora dialogue show . <block>` (MCP `elabora_dialogue_show`): reread it as a script.
 - `elabora dialogue paths . <block>`: every ending reached, no node unreached, the best score at 100 %.
 - `elabora dialogue play . <block> --choose a,a,a`: the best path; then each mistake.
+- `elabora look . --screen <screen> --block <block> --act choose:a --act choose:c` (MCP `elabora_look` with `block` and `act`): the thread at rest after those choices, its end in the window (the notes, the next options, the debrief at the end); `--size 375x812` for a phone. Look at the best path's end and at a mistake.
 - `elabora validate .`: the `E_DIALOGUE_*`, `W_DIALOGUE_*` and `W_CHARACTER_*` codes say what to fix; `W_NARRATION_AUDIO_MISSING` once per dialogue until its lines have their voices.
 
 ## For the client
