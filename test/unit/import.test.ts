@@ -1,4 +1,4 @@
-import { after, describe, test } from 'node:test';
+import { afterEach, describe, test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -22,7 +22,7 @@ import { ROOT } from '../helpers.ts';
 // scripts/make-import-fixtures.ts: their structure imitates real exports, their content is ours.
 
 const temporary: string[] = [];
-after(() => { for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true }); });
+afterEach(() => { for (const dir of temporary.splice(0)) fs.rmSync(dir, { recursive: true, force: true }); });
 const tempDir = (prefix = 'elabora-import-'): string => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
   temporary.push(dir);
