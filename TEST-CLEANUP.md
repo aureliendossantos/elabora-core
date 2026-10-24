@@ -27,13 +27,13 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Implementation coupling | 32 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 4 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
-| Fixed-delay synchronization | 30 | engine-session: sleep(400) before checking watcher results |
+| Fixed-delay synchronization | 32 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
 | Unseeded randomness | 30 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 4 | engine-store: repeated hash equality replaced with hash invalidation after a write |
-| Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
+| Weak assertion | 5 | validate: counted two errors without identifying their prop paths |
 | Resource cleanup | 97 | validate: copied fixtures were never removed |
 | Wall-clock timing | 8 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
@@ -136,7 +136,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/media.test.ts` | 315 | — | Pending |
 | `test/unit/migrate.test.ts` | 86 | — | Pending |
 | `test/unit/model-mirrors.test.ts` | 71 | — | Pending |
-| `test/unit/model-versions.test.ts` | 126 | — | Pending |
+| `test/unit/model-versions.test.ts` | 126 | 132 | Passed 4 native-seeded cases; fake request gate and filesystem event replace polling; cancellation must reject; context-owned leases/install/folders preserve compatible-model use, deferred deletion and resume contracts |
 | `test/unit/narration.test.ts` | 346 | — | Pending |
 | `test/unit/object-gates.test.ts` | 35 | — | Pending |
 | `test/unit/ops.test.ts` | 929 | 757 | Passed 41 cases; shared seeded generator and real snapshot reader replace duplicate support machinery; public replay/undo properties and all named boundaries retained |
