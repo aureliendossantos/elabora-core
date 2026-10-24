@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { moduleUrl } from '../helpers.ts';
+import { resources } from '../resources.ts';
 
 // Each case runs in a child process: the data location is cached per process and read from the
 // environment once.
@@ -15,13 +15,15 @@ const probe = (dir: string, env: Record<string, string>) => JSON.parse(execFileS
   console.log(JSON.stringify({ ...dataLocation(${JSON.stringify(dir)}), blob: blobPath(${JSON.stringify(dir)}, hash) }));
 `], { env: { ...process.env, ELABORA_DATA_DIR: '', ...env } }).toString());
 
-test('machine-local data stays in .elabora/ by default, or moves under ELABORA_DATA_DIR with a project id', () => {
-  const project = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-data-'));
+test('machine-local data stays in .elabora/ by default, or moves under ELABORA_DATA_DIR with a project id', (t) => {
+  const r = resources(t);
+  const project = path.join(r.tempDir('elabora-data-'), 'course');
+  fs.mkdirSync(project);
   const local = probe(project, {});
   assert.equal(local.inProject, true);
   assert.ok(local.blob.startsWith(path.join(project, '.elabora', 'blobs')));
 
-  const store = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-store-'));
+  const store = r.tempDir('elabora-store-');
   const moved = probe(project, { ELABORA_DATA_DIR: store });
   assert.equal(moved.inProject, false);
   const id = fs.readFileSync(path.join(project, '.elabora', 'project-id'), 'utf8').trim();

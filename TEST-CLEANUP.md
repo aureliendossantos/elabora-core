@@ -34,7 +34,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 4 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 5 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 101 | validate: copied fixtures were never removed |
+| Resource cleanup | 103 | validate: copied fixtures were never removed |
 | Wall-clock timing | 9 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -101,7 +101,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/components.test.ts` | 313 | — | Pending |
 | `test/unit/costs.test.ts` | 200 | — | Pending |
 | `test/unit/course-state.test.ts` | 127 | — | Pending |
-| `test/unit/data-dir.test.ts` | 35 | — | Pending |
+| `test/unit/data-dir.test.ts` | 35 | 37 | Passed native-seeded case; disposable processes still test process-cached settings; owned parent keeps renamed project and relocated blobs isolated |
 | `test/unit/design.test.ts` | 394 | — | Pending |
 | `test/unit/dialogue-player.test.ts` | 199 | — | Pending |
 | `test/unit/dialogue-voice.test.ts` | 376 | — | Pending |
