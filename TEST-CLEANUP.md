@@ -138,7 +138,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/look.test.ts` | 122 | — | Pending |
 | `test/unit/media-project.test.ts` | 286 | 281 | Passed native-seeded cases; failure-safe project and HTTP ownership; actual media/ZIP/privacy/backup and range response contracts retained |
 | `test/unit/media.test.ts` | 315 | 311 | Passed native-seeded cases; owned projects/queues, cancellation driven by ffmpeg progress, cache reuse checked by results rather than private filename; unique encoder boundary checks retained |
-| `test/unit/migrate.test.ts` | 86 | — | Pending |
+| `test/unit/migrate.test.ts` | 86 | 86 | Passed native-seeded cases; fixtures disposed per case and binary hashes compared instead of only sizes; dry-run, backup, system journal and undo retained |
 | `test/unit/model-mirrors.test.ts` | 71 | 71 | Passed 2 native-seeded cases; pin/hash/size/origin and real fake-network install/reuse/tamper refusal retained; model families available rather than arbitrary file-count quota |
 | `test/unit/model-versions.test.ts` | 126 | 132 | Passed 4 native-seeded cases; fake request gate and filesystem event replace polling; cancellation must reject; context-owned leases/install/folders preserve compatible-model use, deferred deletion and resume contracts |
 | `test/unit/narration.test.ts` | 346 | 346 | Native-seeded cases passed; owned narrated courses; timing, captions, status, editing, speaker, recording, pronunciation and credits contracts retained |

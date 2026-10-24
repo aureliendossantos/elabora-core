@@ -1,4 +1,4 @@
-import { test, after } from 'node:test';
+import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,9 +20,9 @@ import { copyExample, readJSON, writeJSON } from '../helpers.ts';
 // test's own, elabora/0.0 → elabora/0.1, which renames a course.json field.
 
 const temporary: string[] = [];
-after(() => { for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true }); });
+afterEach(() => { for (const dir of temporary.splice(0)) fs.rmSync(dir, { recursive: true, force: true }); });
 const copy = () => { const dir = copyExample(); temporary.push(dir); return dir; };
-const folder = (dir: string) => Object.fromEntries([...readProjectFiles(dir).files].map(([file, content]) => [file, content.kind === 'text' ? content.text : `binary ${content.size}`]));
+const folder = (dir: string) => Object.fromEntries([...readProjectFiles(dir).files].map(([file, content]) => [file, content.kind === 'text' ? content.text : `binary ${content.hash}`]));
 
 const step: FormatStep = {
   from: 'elabora/0.0',
