@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import type { SourceFile } from '@elabora/core/project/files';
+import { textFile } from '@elabora/core/project/files';
 import { loadProject } from '@elabora/core/project/load';
 import type { Project } from '@elabora/core/project/model';
 import { validateProject, validateScreen, validateProjectChecks, createValidationContext } from '@elabora/core/validate/index';
@@ -74,4 +75,19 @@ test('every reader of a project survives documents that break their schema', () 
       assert.fail(`mutation ${i} of ${path.basename(sample.root)} (${log.join('; ')}): ${error instanceof Error ? error.stack : String(error)}`);
     }
   }
+});
+
+test('a sidecar whose words are not a list (or hold a word that is not one) is read as untimed, never thrown on', () => {
+  const sample = readProjectFiles(copyExample(path.join(ROOT, 'examples', 'diagnostic-reseau')));
+  const files = new Map<string, SourceFile>(sample.files);
+  const broken = (rel: string, words: unknown) => {
+    const file = files.get(rel);
+    assert.ok(file?.kind === 'text', rel);
+    files.set(rel, textFile(JSON.stringify({ ...JSON.parse(file.text), words })));
+  };
+  broken('assets/narration/fr/premier-reflexe/marc-intranet.json', 'not words');
+  broken('assets/narration/fr/accueil/marc-appel.json', [null, { text: 'Bonjour', start: 0, end: 0.4, score: 0.1 }]);
+  const project = loadProject(files, { root: sample.root, artefacts: sample.artefacts });
+  const result = validateProject(project);
+  assert.ok(!result.diagnostics.some((d: Diagnostic) => d.code === 'E_INTERNAL'), JSON.stringify(result.diagnostics.filter((d: Diagnostic) => d.severity === 'error')));
 });

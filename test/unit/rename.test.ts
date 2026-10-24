@@ -54,7 +54,7 @@ test('rename: a section, a screen, a layer, blocks and an event of diagnostic-re
   assert.ok(screen.files.includes('screens/premier-geste.json') && screen.files.includes('screens/premier-reflexe.json'));
   await renameAndCheck(dir, 'rappel-regle', 'rappel', 'layer');
   await renameAndCheck(dir, 'simulation-bravo', 'simulation-felicitations', 'block');
-  await renameAndCheck(dir, 'reflexe-choix', 'reflexe-decision', 'block');
+  await renameAndCheck(dir, 'appel-marc', 'appel-de-marc', 'block');
   await renameAndCheck(dir, 'evaluation-q1', 'evaluation-premiere', 'block');
   await renameAndCheck(dir, 'reflexe-bon', 'reflexe-juste', 'event');
 });

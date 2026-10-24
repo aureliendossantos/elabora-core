@@ -159,7 +159,7 @@ export const SWALLOWED_SCORE = 0.25;
 export function doubtfulWords(words: readonly { text: string; score?: number }[]): { word: string; score: number; index: number }[] {
   return words
     .map((word, index) => ({ word, index }))
-    .filter(({ word }) => typeof word.score === 'number' && word.score < SWALLOWED_SCORE && [...word.text.matchAll(/\p{L}/gu)].length >= 2)
+    .filter(({ word }) => typeof word?.text === 'string' && typeof word.score === 'number' && word.score < SWALLOWED_SCORE && [...word.text.matchAll(/\p{L}/gu)].length >= 2)
     .map(({ word, index }) => ({ word: word.text, score: word.score!, index }));
 }
 

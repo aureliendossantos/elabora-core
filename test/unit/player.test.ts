@@ -192,7 +192,7 @@ test('regulation and accessibility: a generated voice with « IA et crédits » 
   // « IA et crédits » says who speaks with a generated voice.
   course.player.top.items = course.player.top.items.map((item: { id: string }) => (item.id === 'credits' ? { id: 'credits' } : item));
   writeJSON(dir, 'course.json', course);
-  assert.deepEqual(compiled(dir).about?.ai, { voices: ['Marc', 'Claire, votre guide'] });
+  assert.deepEqual(compiled(dir).about?.ai, { voices: ['Marc', 'Claire, votre guide', 'Leïla'] });
 });
 
 test('update_player: items enabled, moved and given options, tokens, content, in one undoable change', () => {

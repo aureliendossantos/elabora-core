@@ -371,7 +371,7 @@ test('review comments: each comment placed in the course\'s sources, with what c
   const marc = readJSON(dir, 'screens/accueil.json').narration.lines.find((line: { id: string }) => line.id === 'marc-appel');
   const words = narrationWords(marc.text, 'fr');
   const onWelcome = fake.reviewerComment(review, { version, language: 'fr', screen: '0', block: 'accueil-situation', step: 0, line: 'marc-appel', word: 3, point: { x: 0.42, y: 0.61 }, frame: { width: 1600, height: 744 } }, 'Le texte est trop long.\nCouper la deuxième phrase ?');
-  fake.reviewerComment(review, { version, language: 'fr', screen: '2', block: 'rappel-texte', layer: 'rappel-regle', frame: { width: 375, height: 700 } }, 'Illisible sur téléphone.', 'Paul');
+  fake.reviewerComment(review, { version, language: 'fr', screen: '2', block: 'rappel-chemin', layer: 'rappel-regle', frame: { width: 375, height: 700 } }, 'Illisible sur téléphone.', 'Paul');
   fake.reviewerComment(review, { version, language: 'fr', screen: 'zz', block: 'gone', frame: { width: 1280, height: 720 } }, 'Écran supprimé ?');
   fake.reviewerReply(review, onWelcome.id, 'Oui, et le titre aussi.');
 
@@ -389,7 +389,7 @@ test('review comments: each comment placed in the course\'s sources, with what c
   assert.deepEqual(first.version, { id: version, number: 1, latest: 1, course: readJSON(dir, 'course.json').version, newerInReview: false, screenChanged: false });
   assert.deepEqual([first.state, first.by, first.text], ['open', { kind: 'reviewer', name: 'Léa Morel' }, 'Le texte est trop long.\nCouper la deuxième phrase ?']);
   assert.deepEqual(first.replies.map((reply) => [reply.by.name, reply.text]), [['Léa Morel', 'Oui, et le titre aussi.']]);
-  assert.deepEqual(second.place!.block, { id: 'rappel-texte', type: 'text', path: '/layers/0/blocks/0', layer: 'rappel-regle' });
+  assert.deepEqual(second.place!.block, { id: 'rappel-chemin', type: 'network-path', path: '/layers/0/blocks/0', layer: 'rappel-regle' });
   assert.deepEqual(second.place!.layer, { id: 'rappel-regle', title: 'Rappel : la règle SUP-NET-04', found: true });
   assert.deepEqual([third.place!.screen.id, third.place!.screen.file, third.place!.block!.type], [null, null, null]);
 
@@ -403,7 +403,7 @@ test('review comments: each comment placed in the course\'s sources, with what c
   assert.match(text.stdout, new RegExp(`^Review ${review} « .+ » \\(open\\) · diagnostic-reseau-review, latest v2 · 3 open, 0 resolved\\n`));
   assert.match(text.stdout, /#1 open · on v1 [0-9a-f]{16} \(course [\d.]+\) · v2 is newer, the screen changed since\n {3}screen {2}accueil « Le ticket de Marc, revu » → screens\/accueil\.json \(key 0\)\n {3}block {3}accueil-situation \(text\) at \/blocks\/0\n {3}line {4}marc-appel \(marc\): « Bonjour, c'est Marc\./);
   assert.match(text.stdout, /#2 open · on v1 [0-9a-f]{16} \(course [\d.]+\) · v2 is newer, the screen is unchanged since\n {3}screen {2}premier-reflexe/);
-  assert.match(text.stdout, /block {3}rappel-texte \(text\) at \/layers\/0\/blocks\/0 in layer rappel-regle\n {3}layer rappel-regle « Rappel : la règle SUP-NET-04 »\n {3}in a 375×700 frame\n {3}Paul \(reviewer\)/);
+  assert.match(text.stdout, /block {3}rappel-chemin \(network-path\) at \/layers\/0\/blocks\/0 in layer rappel-regle\n {3}layer rappel-regle « Rappel : la règle SUP-NET-04 »\n {3}in a 375×700 frame\n {3}Paul \(reviewer\)/);
   assert.match(text.stdout, /#3 open .*\n {3}screen {2}key zz: no screen has this key now \(removed\?\)\n {3}block {3}gone — not in this screen now/);
   assert.match(text.stdout, / {3}Léa Morel \(reviewer\), [\d-]+ [\d:]+ UTC: Le texte est trop long\.\n {5}Couper la deuxième phrase \?\n {5}↳ Léa Morel \(reviewer\), [\d-]+ [\d:]+ UTC: Oui, et le titre aussi\./);
   const rev = Number(/--since (\d+)$/.exec(text.stdout.trim())![1]);
