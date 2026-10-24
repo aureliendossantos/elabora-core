@@ -34,7 +34,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 1 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 61 | validate: copied fixtures were never removed |
+| Resource cleanup | 72 | validate: copied fixtures were never removed |
 | Wall-clock timing | 4 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 2 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -95,7 +95,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/charts-proportion.test.ts` | 69 | — | Pending |
 | `test/unit/charts.test.ts` | 186 | — | Pending |
 | `test/unit/cli-projects.test.ts` | 266 | — | Pending |
-| `test/unit/cli.test.ts` | 715 | — | Pending |
+| `test/unit/cli.test.ts` | 715 | 684 | Passed 28 native-seeded cases; real CLI/MCP transport, refusal, privacy, journal/undo, translation and permission contracts preserved; failure-safe context ownership closes clients/servers before removing copies |
 | `test/unit/cloud.test.ts` | 638 | — | Pending |
 | `test/unit/compile.test.ts` | 156 | — | Pending |
 | `test/unit/components.test.ts` | 313 | — | Pending |
