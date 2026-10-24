@@ -11,7 +11,7 @@ import { renderScreen } from '@elabora/core/render/screen';
 import type { CanvasApi } from '@elabora/player/canvas';
 import { PLAYER_PREVIEW_PROTOCOL } from '@elabora/player/canvas-protocol';
 import type { CanvasMessage, HostMessage } from '@elabora/player/canvas-protocol';
-import { ROOT, copyExample } from '../helpers.ts';
+import { ROOT, copyExample, isClosed, settled } from '../helpers.ts';
 import { openProject } from '@elabora/engine';
 
 // The player's preview (the canvas with chrome=live, protocol elabora-player-preview/1): the bars
@@ -71,8 +71,7 @@ test('the live bars: panels, the outline, Previous and Next said to the host, th
     assert.ok(sheet && sheet.y >= 55 && sheet.y + sheet.height <= 829, `the panel between the bars (${JSON.stringify(sheet)})`);
     await page.click('.t-glossary-btn');
     assert.equal(await page.locator('.t-sheet[data-sheet="glossary"]').isVisible(), true);
-    await page.locator('.t-sheet[data-sheet="resources"]').waitFor({ state: 'hidden', timeout: 2000 }); // it fades out
-    assert.equal(await page.locator('.t-sheet[data-sheet="resources"]').isVisible(), false);
+    assert.equal(await isClosed(page.locator('.t-sheet[data-sheet="resources"]')), true, 'one panel open at a time');
     // A term of the screen shows its definition.
     await page.hover('#t-main a.t-term[data-term="paquet"]');
     await page.waitForFunction(() => { const tip = document.getElementById('t-tip'); return !!tip && !tip.hidden && /Petit morceau/.test(tip.textContent ?? ''); });
@@ -113,8 +112,7 @@ test('the live bars: panels, the outline, Previous and Next said to the host, th
     assert.equal(await page.locator('.t-sheet[data-sheet="glossary"]').isVisible(), true);
     await send({ type: 'elabora/open', protocol, panel: 'display' });
     assert.equal(await page.locator('.t-display-menu').isVisible(), true);
-    await page.locator('.t-sheet[data-sheet="glossary"]').waitFor({ state: 'hidden', timeout: 2000 }); // it fades out
-    assert.equal(await page.locator('.t-sheet[data-sheet="glossary"]').isVisible(), false, 'one thing open at a time');
+    assert.equal(await isClosed(page.locator('.t-sheet[data-sheet="glossary"]')), true, 'one thing open at a time');
     // A version the canvas does not speak, a panel the course does not have.
     await post({ type: 'elabora/open', protocol: 'elabora-player-preview/2', panel: 'about' });
     await send({ type: 'elabora/open', protocol, panel: 'language' });
@@ -185,6 +183,7 @@ test('the live bars: « Langue » lists the languages a package of every languag
     await show('intro', 1);
     await page.click('.t-language-btn');
     assert.deepEqual(await page.locator('.t-language-menu [role="menuitemradio"]').allTextContents(), ['English', 'Français']);
+    await settled(page.locator('.t-language-menu'));
     await page.click('.t-language-menu [lang="fr"]');
     const messages = await sent();
     assert.deepEqual(messages.filter((message) => message.type === 'elabora/language'), [{ type: 'elabora/language', protocol, language: 'fr' }]);

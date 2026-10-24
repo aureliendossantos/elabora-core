@@ -10,7 +10,7 @@ import { build } from '@elabora/node/build';
 import { capture } from '@elabora/node/preview';
 import { narrationWords } from '@elabora/core/narration/words';
 import { narrationSidecarPath } from '@elabora/core/narration/narration';
-import { ROOT, copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, copyExample, isClosed, readJSON, writeJSON } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { narrate, hasFfmpeg } from '../narration.ts';
 
@@ -174,16 +174,14 @@ test('dragging the playhead: the screen follows, a tooltip quotes the words, pla
     await page.mouse.up();
     const after = await timeline(page);
     assert.equal(after.playing, true, 'playback goes on from there');
-    await page.locator('.t-tip').waitFor({ state: 'hidden', timeout: 2000 });
-    assert.equal(await page.locator('.t-tip').isHidden(), true);
+    assert.equal(await isClosed(page.locator('.t-tip')), true);
     // The shortcuts: Shift+? on the bar, Escape closes them.
     await page.focus('.t-timeline-seek');
     await page.keyboard.press('Shift+?');
     assert.equal(await page.locator('.t-timeline-keys').isVisible(), true);
     assert.match(await page.locator('.t-timeline-keys').innerText(), /Ctrl\+Alt\+P[\s\S]*Lecture ou pause/);
     await page.keyboard.press('Escape');
-    await page.locator('.t-timeline-keys').waitFor({ state: 'hidden', timeout: 2000 });
-    assert.equal(await page.locator('.t-timeline-keys').isHidden(), true);
+    assert.equal(await isClosed(page.locator('.t-timeline-keys')), true);
   });
 });
 
