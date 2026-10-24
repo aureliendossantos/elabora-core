@@ -133,7 +133,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/unit/layer-timeline.test.ts` | 265 | 263 | Passed 10 native-seeded cases; own layered courses and both build outputs; preserves independent layer tracks, cue routing, translations, commands and deterministic packages; removed registry-count assertion |
 | `test/unit/library.test.ts` | 840 | 843 | Passed 21 cases; deterministic media/retention, restored environment and owned temporary data; public archive/trash contracts retained |
 | `test/unit/local-ai-platform.test.ts` | 50 | 50 | Passed 2 native-seeded cases; disposable OS override and throwing network boundary exercise all listed models, Intel refusals and removals; removes exact catalogue-size coupling |
-| `test/unit/look.test.ts` | 122 | — | Pending |
+| `test/unit/look.test.ts` | 122 | 113 | Native-seeded cases passed; owns folders/preview and real terminated PID fixture; public HTTP reload and code-version invalidation retained; consolidated redundant cleanup |
 | `test/unit/media-project.test.ts` | 286 | 281 | Passed native-seeded cases; failure-safe project and HTTP ownership; actual media/ZIP/privacy/backup and range response contracts retained |
 | `test/unit/media.test.ts` | 315 | 311 | Passed native-seeded cases; owned projects/queues, cancellation driven by ffmpeg progress, cache reuse checked by results rather than private filename; unique encoder boundary checks retained |
 | `test/unit/migrate.test.ts` | 86 | 86 | Passed native-seeded cases; fixtures disposed per case and binary hashes compared instead of only sizes; dry-run, backup, system journal and undo retained |
