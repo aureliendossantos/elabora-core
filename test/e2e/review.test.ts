@@ -1,8 +1,9 @@
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
+import { eventLog, waitFor } from '../events.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import http from 'node:http';
-import os from 'node:os';
 import path from 'node:path';
 import type { AddressInfo } from 'node:net';
 import type { Browser, Frame, Page } from 'playwright-core';
@@ -12,7 +13,7 @@ import { narrationWords } from '@elabora/core/narration/words';
 import { narrationSidecarPath } from '@elabora/core/narration/narration';
 import { REVIEW_PROTOCOL } from '@elabora/player/review-protocol';
 import type { BlocksMessage, LayoutMessage, LocationMessage, ModuleMessage, ReadyMessage } from '@elabora/player/review-protocol';
-import { copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { readJSON, writeJSON } from '../helpers.ts';
 import { narrate, hasFfmpeg } from '../narration.ts';
 
 // The review bridge in Chrome (docs/review-bridge.md, D42): a host page of one origin shows a module
@@ -22,12 +23,12 @@ import { narrate, hasFfmpeg } from '../narration.ts';
 // resizing it; a page of another origin, and a frame that is not the page, are not heard.
 
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
-const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+const tmp = (t: TestContext, prefix: string) => resources(t).tempDir(prefix);
 const L2 = "Ni l'imprimante, ni le partage de fichiers ne marchent.";
 
 // "accueil" narrated in two steps (sine tones), word times 0.3 s apart on l2; slides.
-function reviewedCourse(): string {
-  const dir = copyExample();
+function reviewedCourse(t: TestContext): string {
+  const dir = resources(t).copyExample();
   const data = readJSON(dir, 'course.json');
   data.presentation = { mode: 'slides' };
   writeJSON(dir, 'course.json', data);
@@ -71,7 +72,7 @@ const hostPage = (moduleUrl: string, moduleOrigin: string, evilUrl: string) => `
 <iframe id="evil" src="${evilUrl}" style="width:10px;height:10px"></iframe>
 <script>
 window.received = [];
-window.addEventListener('message', (event) => { if (event.origin === ${JSON.stringify(moduleOrigin)} && event.data && event.data.protocol === ${JSON.stringify(REVIEW_PROTOCOL)}) window.received.push(event.data); });
+window.addEventListener('message', (event) => { if (event.origin === ${JSON.stringify(moduleOrigin)} && event.data && event.data.protocol === ${JSON.stringify(REVIEW_PROTOCOL)}) { window.received.push(event.data); window.reviewMessage(event.data); } });
 window.send = (message) => document.getElementById('module').contentWindow.postMessage({ protocol: ${JSON.stringify(REVIEW_PROTOCOL)}, ...message }, ${JSON.stringify(moduleOrigin)});
 </script>`;
 // A frame of another origin: posts what it is told to its parent's first frame (the module), or embeds the module.
@@ -86,32 +87,32 @@ window.toChild = (message) => document.getElementById('module').contentWindow.po
 
 type Received = ModuleMessage & { re?: string | number };
 // The last message of a type the host page heard (after `since` messages), waited for.
+const received = new WeakMap<Page, ReturnType<typeof eventLog<Received>>>();
 async function heard<T extends Received>(page: Page, type: T['type'], check: (message: T) => boolean = () => true, since = 0): Promise<T> {
-  const deadline = Date.now() + 10000;
-  for (;;) {
-    const all = await page.evaluate(() => (window as unknown as { received: Received[] }).received);
-    const found = all.slice(since).filter((message) => message.type === type).reverse().find((message) => check(message as T));
-    if (found) return found as T;
-    if (Date.now() > deadline) throw new Error(`No ${type} message${since ? ` after #${since}` : ''}: ${JSON.stringify(all.slice(since).slice(-6))}`);
-    await page.waitForTimeout(50);
-  }
+  const messages = received.get(page)!;
+  return waitFor(messages, (message): message is T => messages.indexOf(message) >= since && message.type === type && check(message as T));
 }
-const count = (page: Page) => page.evaluate(() => (window as unknown as { received: unknown[] }).received.length);
+const count = async (page: Page) => received.get(page)!.length;
+const barrier = (sender: Frame | Page, method: string, id: string) => sender.evaluate(({ method, id }) => new Promise<void>(resolve => {
+  const receive = (event: MessageEvent) => { if (event.data?.testBarrierReply === id) { removeEventListener('message', receive); resolve(); } };
+  addEventListener('message', receive);
+  (window as unknown as Record<string, (message: unknown) => void>)[method]({ testBarrier: id });
+}), { method, id });
 const send = (page: Page, message: Record<string, unknown>) => page.evaluate((m) => (window as unknown as { send(m: unknown): void }).send(m), message);
 
-test('the review bridge: a page of another origin hears the module, takes it to a step, a layer, a word and a time, pauses it and moves its column', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
-  const dir = reviewedCourse();
+test('the review bridge: a page of another origin hears the module, takes it to a step, a layer, a word and a time, pauses it and moves its column', { skip: NO_FFMPEG, timeout: 240000 }, async (t) => {
+  const dir = reviewedCourse(t);
   let modulePort = 0;
   let evilPort = 0;
   let moduleRoot = '';
-  const moduleServer = await serve((pathname) => folder(moduleRoot)(pathname));
+  const moduleServer = resources(t).own(await serve((pathname) => folder(moduleRoot)(pathname)), value => value.close());
   modulePort = moduleServer.port;
-  const evilServer = await serve((pathname) => pathname === '/sibling.html' ? { type: TYPES['.html'], body: evilPage(null) } : pathname === '/embed.html' ? { type: TYPES['.html'], body: evilPage(`http://127.0.0.1:${modulePort}/m/index.html`) } : null);
+  const evilServer = resources(t).own(await serve((pathname) => pathname === '/sibling.html' ? { type: TYPES['.html'], body: evilPage(null) } : pathname === '/embed.html' ? { type: TYPES['.html'], body: evilPage(`http://127.0.0.1:${modulePort}/m/index.html`) } : null), value => value.close());
   evilPort = evilServer.port;
   // Three servers, three origins (their ports): the page, the module, and a page the build does not name.
-  const hostServer = await serve((pathname) => pathname === '/host.html' ? { type: TYPES['.html'], body: hostPage(`http://127.0.0.1:${modulePort}/m/index.html`, `http://127.0.0.1:${modulePort}`, `http://127.0.0.1:${evilPort}/sibling.html`) } : null);
+  const hostServer = resources(t).own(await serve((pathname) => pathname === '/host.html' ? { type: TYPES['.html'], body: hostPage(`http://127.0.0.1:${modulePort}/m/index.html`, `http://127.0.0.1:${modulePort}`, `http://127.0.0.1:${evilPort}/sibling.html`) } : null), value => value.close());
   const hostOrigin = `http://127.0.0.1:${hostServer.port}`;
-  const built = await build(dir, { target: 'web', web: { review: { origins: [hostOrigin] } }, emit: 'dir', out: tmp('elabora-review-'), writeLock: false, debug: true });
+  const built = await build(dir, { target: 'web', web: { review: { origins: [hostOrigin] } }, emit: 'dir', out: tmp(t, 'elabora-review-'), writeLock: false, debug: true });
   assert.ok(built.ok && built.dirPath, JSON.stringify(built.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
   moduleRoot = built.dirPath;
   const data = JSON.parse(fs.readFileSync(path.join(moduleRoot, 'elabora/course.js'), 'utf8').replace(/^window\.ELABORA_COURSE = /, '').replace(/;\n$/, ''));
@@ -119,17 +120,20 @@ test('the review bridge: a page of another origin hears the module, takes it to 
 
   let browser: Browser | null = null;
   try {
-    browser = await launchBrowser('chromium');
+    browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
     const context = await browser.newContext({ viewport: { width: 1700, height: 900 } });
     await context.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
+    await context.addInitScript(() => addEventListener('message', event => { if (event.data?.testBarrier) (event.source as Window | null)?.postMessage({ testBarrierReply: event.data.testBarrier }, event.origin); }));
     // Errors in the module's frame (pageerror is the page's own).
     await context.addInitScript(() => { const errors: string[] = []; (window as Window & { frameErrors?: string[] }).frameErrors = errors; addEventListener('error', (event) => errors.push(event.message)); });
     const page = await context.newPage();
+    const messages = eventLog<Received>();
+    received.set(page, messages);
+    await page.exposeFunction('reviewMessage', (message: Received) => messages.record(message));
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(`${hostOrigin}/host.html`);
-    const frameOf = async (): Promise<Frame> => { for (;;) { const found = page.frames().find((frame) => frame.url().startsWith(`http://127.0.0.1:${modulePort}/m/`)); if (found) return found; await page.waitForTimeout(50); } };
-    const module = await frameOf();
+    const module = page.frames().find(frame => frame.url().startsWith(`http://127.0.0.1:${modulePort}/m/`)) ?? await page.waitForEvent('framenavigated', { predicate: frame => frame.url().startsWith(`http://127.0.0.1:${modulePort}/m/`) });
 
     // ── ready, layout, location, blocks ───────────────────────────────
     const ready = await heard<ReadyMessage>(page, 'ready');
@@ -200,7 +204,7 @@ test('the review bridge: a page of another origin hears the module, takes it to 
     await module.locator('[data-block="accueil-situation"]').click();
     await page.keyboard.press('Control+c');
     await page.keyboard.press('Shift+C');
-    await page.waitForTimeout(400);
+    await barrier(page, 'send', 'keys-processed');
     assert.equal((await page.evaluate(() => (window as unknown as { received: Received[] }).received)).slice(since).filter((message) => message.type === 'key').length, 0);
     await module.evaluate(() => document.getElementById('typed')?.remove());
 
@@ -277,17 +281,17 @@ test('the review bridge: a page of another origin hears the module, takes it to 
     assert.ok(sibling);
     await sibling.evaluate(() => (window as unknown as { toSibling(m: unknown): void }).toSibling({ type: 'go', id: 'evil', anchor: { screen: 'x' } }));
     await sibling.evaluate((key) => (window as unknown as { toSibling(m: unknown): void }).toSibling({ type: 'go', id: 'evil2', anchor: { screen: key } }), keyOf('bilan'));
-    await page.waitForTimeout(500);
+    await barrier(sibling, 'toSibling', 'sibling-processed');
     assert.equal(await module.evaluate(() => (window as unknown as { __elabora: { screen: string } }).__elabora.screen), 'premier-reflexe', 'a frame that is not the page moves nothing');
     assert.equal((await page.evaluate(() => (window as unknown as { received: Received[] }).received)).slice(since).filter((message) => message.re === 'evil' || message.re === 'evil2').length, 0);
     // A page of an origin the build did not name: the module says nothing to it and does nothing it asks.
     const evil = await context.newPage();
     await evil.goto(`http://127.0.0.1:${evilPort}/embed.html`);
-    const embedded = await (async () => { for (;;) { const found = evil.frames().find((frame) => frame.url().includes('/m/index.html')); if (found) return found; await evil.waitForTimeout(50); } })();
+    const embedded = evil.frames().find(frame => frame.url().includes('/m/index.html')) ?? await evil.waitForEvent('framenavigated', { predicate: frame => frame.url().includes('/m/index.html') });
     await embedded.waitForFunction(() => (window as unknown as { __elabora?: { screen?: string } }).__elabora?.screen !== undefined);
     await evil.evaluate((key) => (window as unknown as { toChild(m: unknown): void }).toChild({ type: 'go', anchor: { screen: key } }), keyOf('bilan'));
     await evil.evaluate(() => (window as unknown as { toChild(m: unknown): void }).toChild({ type: 'hello' }));
-    await evil.waitForTimeout(500);
+    await barrier(evil, 'toChild', 'foreign-page-processed');
     assert.deepEqual(await evil.evaluate(() => (window as unknown as { received: unknown[] }).received), []);
     assert.equal(await embedded.evaluate(() => (window as unknown as { __elabora: { screen: string } }).__elabora.screen), 'accueil');
     assert.deepEqual(errors, []);

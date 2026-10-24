@@ -27,7 +27,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Implementation coupling | 47 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 5 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
-| Fixed-delay synchronization | 46 | engine-session: sleep(400) before checking watcher results |
+| Fixed-delay synchronization | 51 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
 | Unseeded randomness | 34 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
@@ -74,7 +74,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/e2e/plan-document.test.ts` | 61 | 61 | Reviewed unchanged; focused seed 104729 passed tagged A4 outline, date, deterministic bytes and export; Electron case requires opt-in executable |
 | `test/e2e/player-items.test.ts` | 265 | 251 | Focused seed 155921 passed all seven; virtual PDF fallback timers and public popup/screen/progress/storage behaviour replace listener counters and real waits |
 | `test/e2e/player.test.ts` | 150 | 146 | Focused seed 155921 passed all four; virtual tooltip clock and DOM conditions retain learner controls, navigation and reload behaviour |
-| `test/e2e/review.test.ts` | 299 | — | Pending |
+| `test/e2e/review.test.ts` | 299 | 303 | Focused seed 155921 passed; explicit browser message acknowledgements and event log replace fixed waits and polling; review origin/refusal behaviours retained |
 | `test/e2e/timeline.test.ts` | 461 | — | Pending |
 | `test/e2e/web.test.ts` | 150 | — | Pending |
 | `test/matrix/lms-matrix.test.ts` | 26 | — | Pending |
