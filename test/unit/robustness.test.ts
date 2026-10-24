@@ -17,8 +17,9 @@ import { lessonMdExport } from '@elabora/core/interop/lesson-md';
 import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import type { RenderContext } from '@elabora/core/render/screen';
 import type { Diagnostic } from '@elabora/core/diagnostics/index';
-import { ROOT, copyExample } from '../helpers.ts';
+import { ROOT } from '../helpers.ts';
 import { seededRandom, mutate } from '../mutations.ts';
+import { resources } from '../resources.ts';
 
 // Agents write broken JSON and the engine loads files being written: loading, validating, compiling
 // and the other readers of a project never throw on a project that parses but breaks its schema;
@@ -60,7 +61,8 @@ function readEverything(project: Project, shared: RenderContext): void {
   lessonMdExport(project);
 }
 
-test('every reader of a project survives documents that break their schema', () => {
+test('every reader of a project survives documents that break their schema', (t) => {
+  const { copyExample } = resources(t);
   const samples = ['diagnostic-reseau', 'planetary-gearset', 'orbital-rendezvous'].map((name) => readProjectFiles(copyExample(path.join(ROOT, 'examples', name))));
   const contexts = samples.map((sample) => createRenderContext(loadProject(sample.files, { root: sample.root, artefacts: sample.artefacts })));
   const random = seededRandom(SEED);
@@ -72,12 +74,13 @@ test('every reader of a project survives documents that break their schema', () 
     try {
       readEverything(loadProject(files, { root: sample.root, artefacts: sample.artefacts }), shared);
     } catch (error) {
-      assert.fail(`mutation ${i} of ${path.basename(sample.root)} (${log.join('; ')}): ${error instanceof Error ? error.stack : String(error)}`);
+      assert.fail(`seed ${SEED}, mutation ${i} of ${path.basename(sample.root)} (${log.join('; ')}): ${error instanceof Error ? error.stack : String(error)}`);
     }
   }
 });
 
-test('a sidecar whose words are not a list (or hold a word that is not one) is read as untimed, never thrown on', () => {
+test('a sidecar whose words are not a list (or hold a word that is not one) is read as untimed, never thrown on', (t) => {
+  const { copyExample } = resources(t);
   const sample = readProjectFiles(copyExample(path.join(ROOT, 'examples', 'diagnostic-reseau')));
   const files = new Map<string, SourceFile>(sample.files);
   const broken = (rel: string, words: unknown) => {

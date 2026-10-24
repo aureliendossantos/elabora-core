@@ -41,7 +41,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Private layout assertions | 7 | charts-matrix imported label placement helpers instead of measuring rendered labels |
 
-| Fixture lifetime | 4 | copied courses lacked per-case failure cleanup |
+| Fixture lifetime | 5 | copied courses lacked per-case failure cleanup |
 
 ## Production changes
 
@@ -159,7 +159,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/renditions-prune.test.ts` | 44 | 43 | Passed 2 native-seeded cases; fixed public now/mtime ages and bytes, owned course copies; keeps current/recent renditions and removes old obsolete data |
 | `test/unit/review-bridge.test.ts` | 278 | — | Pending |
 | `test/unit/robustness-commands.test.ts` | 155 | — | Pending |
-| `test/unit/robustness.test.ts` | 93 | — | Pending |
+| `test/unit/robustness.test.ts` | 93 | 96 | Passed native-seeded checks; 250 seeded reader and incremental/full validation invariants; own fixtures and report reproducing seed |
 | `test/unit/scaffold.test.ts` | 128 | — | Pending |
 | `test/unit/schema.test.ts` | 40 | 36 | Passed 5 native-seeded cases; full strict registry compile check already lives in format.test.ts; real profile/schema/action boundaries retained without arbitrary profile count |
 | `test/unit/sources.test.ts` | 511 | 521 | Passed 21 native-seeded cases; fresh input/model folders and restored library/data environment per case; await transcriber/client disposal before removal; mtime edits relative to fixture; import/readability/privacy/build-byte/archive contracts preserved |
