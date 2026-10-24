@@ -1,13 +1,14 @@
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
+import { seededRandom } from '../mutations.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { withoutDirections } from '@elabora/core/narration/directions';
 import { narrationWords } from '@elabora/core/narration/words';
 import { mouthEnvelope } from '@elabora/core/narration/mouth';
-import { screenVoiceLines, trackKey, VOICE_LINE_SOURCES } from '@elabora/core/narration/voice-lines';
+import { screenVoiceLines, trackKey } from '@elabora/core/narration/voice-lines';
 import { narrationLines } from '@elabora/core/narration/narration';
 import { inlineSvg } from '@elabora/core/render/svg-inline';
 import { characterProblems, characterManifest } from '@elabora/core/dialogue/character';
@@ -28,7 +29,7 @@ import { setNarrationTextFromAudioChange } from '@elabora/node/edit';
 import { readZip } from '@elabora/node/zip';
 import { resolveComments } from '@elabora/node/cloud/resolve';
 import type { CloudReview, CommentsAnswer } from '@elabora/node/cloud/types';
-import { courseWithDialogue, MARC_DIALOGUE } from '../dialogue-fixture.ts';
+import { courseWithDialogue as makeDialogueCourse, MARC_DIALOGUE } from '../dialogue-fixture.ts';
 import { ROOT, readJSON, writeJSON, codes } from '../helpers.ts';
 import { hasFfmpeg } from '../narration.ts';
 
@@ -37,9 +38,10 @@ import { hasFfmpeg } from '../narration.ts';
 
 registerVoiceProvider(toneProvider);
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
-const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+const tmp = (t: TestContext, prefix: string) => resources(t).tempDir(prefix);
+const courseWithDialogue = (t: TestContext, ...args: Parameters<typeof makeDialogueCourse>) => resources(t).own(makeDialogueCourse(...args), dir => fs.rmSync(dir, { recursive: true, force: true }));
 
-test('withoutDirections keeps the line\'s own typography: the space a French line puts before : ; ! ? stays', () => {
+test('withoutDirections keeps the line\'s own typography: the space a French line puts before : ; ! ? stays', (t) => {
   assert.equal(withoutDirections('[inquiet, au téléphone] Bonjour… plus rien ne marche au deuxième étage : ni l\'imprimante !'), 'Bonjour… plus rien ne marche au deuxième étage : ni l\'imprimante !');
   assert.equal(withoutDirections('Vraiment ? [un temps] Bon ; on y va : maintenant !'), 'Vraiment ? Bon ; on y va : maintenant !');
   assert.equal(withoutDirections('Bonjour [rit] !'), 'Bonjour !', 'the space before a direction goes, the line\'s own space before ! stays');
@@ -50,7 +52,7 @@ test('withoutDirections keeps the line\'s own typography: the space a French lin
   assert.equal(withoutDirections('Fin [soupire].'), 'Fin.');
 });
 
-test('the sanitizer (D33) reads a <style> as text, scopes selector lists at their own level, renames id selectors only, and drops @property', () => {
+test('the sanitizer (D33) reads a <style> as text, scopes selector lists at their own level, renames id selectors only, and drops @property', (t) => {
   const run = (source: string) => inlineSvg(source, { prefix: 'p', decorative: true });
   const scope = 'svg[data-t-svg="p"]';
   // A « < » in a comment or a string is no tag: the rules after it stay.
@@ -116,21 +118,20 @@ test('the sanitizer (D33) reads a <style> as text, scopes selector lists at thei
 function syllables(rate: number, words: { start: number; end: number }[], gain = 1, noise = false): Float32Array {
   const duration = Math.max(...words.map((word) => word.end)) + 0.3;
   const samples = new Float32Array(Math.round(duration * rate));
-  let seed = 7;
-  const random = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff - 0.5; };
+  const random = seededRandom(7);
   for (let index = 0; index < samples.length; index++) {
     const t = index / rate;
     const word = words.find((candidate) => t >= candidate.start && t <= candidate.end);
     if (!word) continue;
     // About three syllables a second, each opening and closing.
     const syllable = Math.abs(Math.sin(Math.PI * (t - word.start) * 3));
-    const carrier = noise ? random() * 2 : Math.sin(2 * Math.PI * 180 * t);
+    const carrier = noise ? random() * 2 - 1 : Math.sin(2 * Math.PI * 180 * t);
     samples[index] = gain * syllable * carrier * 0.6;
   }
   return samples;
 }
 
-test('the mouth\'s envelope: 30 letters a second, deterministic, the same for a whispered voice, closed in silences and on m, b, p', () => {
+test('the mouth\'s envelope: 30 letters a second, deterministic, the same for a whispered voice, closed in silences and on m, b, p', (t) => {
   const rate = 16000;
   const words = [{ text: 'Bonjour', start: 0.1, end: 0.6 }, { text: 'Marc', start: 0.7, end: 1.1 }, { text: 'merci', start: 1.8, end: 2.3 }];
   const loud = syllables(rate, words);
@@ -159,7 +160,7 @@ test('the mouth\'s envelope: 30 letters a second, deterministic, the same for a 
   assert.equal(mouthEnvelope(tone, rate, [{ text: 'aaa', start: 0, end: 1 }]).replace(/c/g, ''), 'o'.repeat(30));
 });
 
-test('a voice without audio: words placed as the core places them, a mouth from the letters, voiceAt for the player', () => {
+test('a voice without audio: words placed as the core places them, a mouth from the letters, voiceAt for the player', (t) => {
   for (const [text, language] of [["L'imprimante du 2e étage ne répond plus : ni le partage, ni le 3,5.", 'fr'], ["The printer's down, isn't it? P-12 at 9:30.", 'en']] as const) {
     assert.deepEqual(textWords(text, language).map((word) => [word.text, word.start, word.end]), narrationWords(text, language).map((word) => [word.text, word.start, word.end]), 'the player and the core count the same words');
   }
@@ -182,12 +183,11 @@ test('a voice without audio: words placed as the core places them, a mouth from 
   assert.deepEqual(voiceAt({ src: null, duration: 1.5, words, mouth: null, estimated: true }, 0.6), { talking: false, mouth: 'closed', word: 0 });
 });
 
-test('a dialogue\'s lines are voice lines: their track, unit and place, the learner\'s answers with learnerVoice, never a narration without voice', () => {
+test('a dialogue\'s lines are voice lines: their track, unit and place, the learner\'s answers with learnerVoice, never a narration without voice', (t) => {
   const dialogue = structuredClone(MARC_DIALOGUE);
   (dialogue.props as Record<string, unknown>).learnerVoice = true;
-  const dir = courseWithDialogue(dialogue);
+  const dir = courseWithDialogue(t, dialogue);
   const project = loadProjectFromDir(dir);
-  assert.equal(VOICE_LINE_SOURCES.length, 3);
   const entries = screenVoiceLines(project, 'appel');
   const byId = new Map(entries.map((entry) => [entry.line.id, entry]));
   assert.deepEqual(entries.map((entry) => entry.line.id), ['m1', 'l1', 'premiere-question.a', 'm2', 'l2', 'premiere-question.b', 'premiere-question.c', 'm3', 'm4', 'ticket.a', 'ticket.b', 'ticket.c', 'm5', 'm6', 'escalade.a', 'escalade.b', 'm7']);
@@ -213,8 +213,8 @@ test('a dialogue\'s lines are voice lines: their track, unit and place, the lear
   assert.ok(found.includes('E_DIALOGUE_SPEAKER') && !found.includes('E_NARRATION_SPEAKER'), found.join(', '));
 });
 
-test('translation units of a dialogue\'s lines carry their cues\' anchors and their stage directions (D28, D29), as a layer\'s lines do', () => {
-  const dir = courseWithDialogue();
+test('translation units of a dialogue\'s lines carry their cues\' anchors and their stage directions (D28, D29), as a layer\'s lines do', (t) => {
+  const dir = courseWithDialogue(t);
   const project = loadProjectFromDir(dir);
   const units = extractUnits(project);
   const m1 = units.find((unit) => unit.id === 'block.appel-marc.nodes.appel.lines.m1.text')!;
@@ -233,7 +233,7 @@ test('translation units of a dialogue\'s lines carry their cues\' anchors and th
   assert.deepEqual(anchors.map((reference) => [reference.anchor.line, reference.anchor.word]), [['m1', 'étage'], ['l1', 'Bonjour']]);
 });
 
-test('a character is read from its root, checked against the convention, and sanitized into the course data', () => {
+test('a character is read from its root, checked against the convention, and sanitized into the course data', (t) => {
   const marc = fs.readFileSync(path.join(ROOT, 'test/fixtures/characters/marc.svg'), 'utf8');
   assert.deepEqual(characterProblems(marc), []);
   assert.deepEqual(characterManifest(marc), { expressions: ['neutre', 'souriant', 'inquiet', 'soulage', 'agace'], defaultExpression: 'neutre', gestures: { saluer: 1.2, hocher: 0.8 }, portrait: [94, 118, 212, 212] });
@@ -245,7 +245,7 @@ test('a character is read from its root, checked against the convention, and san
   assert.match(problems[3]!.message, /ids? \(m\)/);
   assert.match(problems[4]!.message, /text/);
 
-  const dir = courseWithDialogue();
+  const dir = courseWithDialogue(t);
   fs.writeFileSync(path.join(dir, 'assets/personnages/marc.svg'), marc);
   fs.writeFileSync(path.join(dir, 'assets/personnages/leila.svg'), bare.replace('<svg ', '<svg data-expressions="neutre souriante concentree" '));
   const course = readJSON(dir, 'course.json');
@@ -270,8 +270,8 @@ test('a character is read from its root, checked against the convention, and san
   assert.equal(props.speakers.marc!.look!.svg, 'assets/personnages/marc.svg');
 });
 
-test('the course data: each line\'s voice estimated without audio (src null, a mouth from the text) and each cue\'s time in its line', () => {
-  const dir = courseWithDialogue();
+test('the course data: each line\'s voice estimated without audio (src null, a mouth from the text) and each cue\'s time in its line', (t) => {
+  const dir = courseWithDialogue(t);
   const project = loadProjectFromDir(dir);
   const data = compileCourseData(project, assignKeys(project, readLock(project)).keys, { buildId: 'test' });
   const props = data.screens.find((screen) => screen.id === 'appel')!.blocks[0]!.props as unknown as DialogueData;
@@ -287,10 +287,10 @@ test('the course data: each line\'s voice estimated without audio (src null, a m
   assert.equal(props.nodes[1]!.options[0]!.voice, undefined, 'no learner voice without learnerVoice');
 });
 
-test('generated voices say a dialogue\'s lines (ELABORA_VOICE_TONES=1), with the mouth in each sidecar; the package ships one file per line and stays the same', { skip: NO_FFMPEG }, async () => {
+test('generated voices say a dialogue\'s lines (ELABORA_VOICE_TONES=1), with the mouth in each sidecar; the package ships one file per line and stays the same', { skip: NO_FFMPEG }, async (t) => {
   const dialogue = structuredClone(MARC_DIALOGUE);
   (dialogue.props as Record<string, unknown>).learnerVoice = true;
-  const dir = courseWithDialogue(dialogue);
+  const dir = courseWithDialogue(t, dialogue);
   // The CLI, as an agent runs it, with the test voices.
   const env = { ...process.env, ELABORA_VOICE_TONES: '1' };
   const elabora = (...args: string[]) => execFileSync(process.execPath, [path.join(ROOT, 'bin/elabora.js'), ...args], { cwd: dir, env, encoding: 'utf8' });
@@ -313,8 +313,8 @@ test('generated voices say a dialogue\'s lines (ELABORA_VOICE_TONES=1), with the
   assert.deepEqual(checked.map((d) => `${d.code} ${d.file}`), [], 'the sidecars follow their schema');
 
   // The package: one file per line at narration/<screen>.<block>/<line>.m4a, its voice in the course data.
-  const a = await build(dir, { out: tmp('elabora-dv-a-'), writeLock: false });
-  const b = await build(dir, { out: tmp('elabora-dv-b-'), writeLock: false });
+  const a = await build(dir, { out: tmp(t, 'elabora-dv-a-'), writeLock: false });
+  const b = await build(dir, { out: tmp(t, 'elabora-dv-b-'), writeLock: false });
   assert.ok(a.ok && b.ok && a.zipPath, JSON.stringify(a.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
   assert.equal(a.report.package.sha256, b.report.package.sha256, 'the same inputs give the same package');
   const { files } = readZip(fs.readFileSync(a.zipPath));
@@ -335,18 +335,18 @@ test('generated voices say a dialogue\'s lines (ELABORA_VOICE_TONES=1), with the
   // A sidecar without its mouth: the build measures it, the same as the node did.
   delete sidecar.mouth;
   writeJSON(dir, 'assets/narration/fr/appel/m1.json', sidecar);
-  const c = await build(dir, { out: tmp('elabora-dv-c-'), writeLock: false, mediaQuality: 'low' });
+  const c = await build(dir, { out: tmp(t, 'elabora-dv-c-'), writeLock: false, mediaQuality: 'low' });
   assert.ok(c.ok && c.zipPath);
   const again = readZip(fs.readFileSync(c.zipPath)).files.get('elabora/course.js')!.toString();
   assert.ok(again.includes(`"mouth":"${readJSON(dir, 'assets/narration/fr/appel/l1.json').mouth}"`));
   assert.ok(again.includes(`"src":"narration/appel.appel-marc/m1.m4a"`), 'at a lower quality too, as the other media');
 });
 
-test('recordings of a dialogue\'s lines go to their lines by name, and a recording\'s text is written back into the block', { skip: NO_FFMPEG }, async () => {
+test('recordings of a dialogue\'s lines go to their lines by name, and a recording\'s text is written back into the block', { skip: NO_FFMPEG }, async (t) => {
   const dialogue = structuredClone(MARC_DIALOGUE);
   (dialogue.props as Record<string, unknown>).learnerVoice = true;
-  const dir = courseWithDialogue(dialogue);
-  const folder = tmp('elabora-dv-rec-');
+  const dir = courseWithDialogue(t, dialogue);
+  const folder = tmp(t, 'elabora-dv-rec-');
   const files = ['m4.wav', 'premiere-question-a.wav'].map((name) => path.join(folder, name));
   for (const file of files) execFileSync(process.env.ELABORA_FFMPEG || 'ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'sine=frequency=300:duration=1.2', '-ac', '1', file]);
   const imported = await importNarrationFiles(dir, { screen: 'appel', files });
@@ -363,8 +363,8 @@ test('recordings of a dialogue\'s lines go to their lines by name, and a recordi
   assert.equal(readJSON(dir, 'screens/appel.json').blocks[0].props.nodes[1].options[0].text, 'Depuis quand ça ne marche plus ?', 'the learner\'s answer');
 });
 
-test('review comments on a line find it in a layer or a dialogue, voiced or not', () => {
-  const dir = courseWithDialogue();
+test('review comments on a line find it in a layer or a dialogue, voiced or not', (t) => {
+  const dir = courseWithDialogue(t);
   const thread = (n: number, anchor: Record<string, unknown>) => ({ id: `cm_${n}`, number: n, parent: null, version: '0123456789abcdef', versionNumber: 1, screen: 'appel', anchor: { version: '0123456789abcdef', language: 'fr', screen: 'appel', frame: { width: 1600, height: 900 }, ...anchor }, text: `t${n}`, by: { kind: 'reviewer', name: 'R' }, mine: false, state: 'open' as const, resolvedAt: null, createdAt: '2026-10-23T10:00:00Z', editedAt: null, deleted: false, rev: n });
   const review = { id: 'rv_00000000000000000000', space: 's', publication: 'p', title: 'T', state: 'open', languages: ['fr'], latest: 1, versions: [], comments: { open: 2, resolved: 0 }, reviewers: 1, rev: 2, createdAt: '', updatedAt: '' } as unknown as CloudReview;
   const answer = { review: review.id, rev: 2, comments: [thread(1, { line: 'm1', word: 'étage' }), thread(2, { line: 'n1' })] } as unknown as CommentsAnswer;
