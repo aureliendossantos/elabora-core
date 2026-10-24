@@ -2,8 +2,8 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { ObjectTestStep } from '@elabora/format';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
+import { resources } from '../resources.ts';
 import { drawnBeforeSnapshots, pruneSnapshots } from '@elabora/node/objects/test';
 
 test('a dry run of an object test draws the last step that runs frames before each snapshot', () => {
@@ -17,8 +17,8 @@ test('a dry run of an object test draws the last step that runs frames before ea
   assert.deepEqual([...drawnBeforeSnapshots(steps('step', 'expect-state'))], []);
 });
 
-test('--update-snapshots removes the baselines of states no test names, for every engine, and lists those kept for other engines and systems', () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-snapshots-'));
+test('--update-snapshots removes the baselines of states no test names, for every engine, and lists those kept for other engines and systems', (t) => {
+  const dir = resources(t).tempDir('elabora-snapshots-');
   const files = [
     'scroll--drawn-darwin.png', 'scroll--drawn-electron-darwin.png', 'scroll--drawn-win32.png', 'scroll--drawn-electron-win32.png',
     'scroll--drawn-again-darwin.png', // a test state whose name starts like another's: its own

@@ -34,7 +34,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 4 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 5 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 103 | validate: copied fixtures were never removed |
+| Resource cleanup | 104 | validate: copied fixtures were never removed |
 | Wall-clock timing | 9 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -138,7 +138,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/model-mirrors.test.ts` | 71 | — | Pending |
 | `test/unit/model-versions.test.ts` | 126 | 132 | Passed 4 native-seeded cases; fake request gate and filesystem event replace polling; cancellation must reject; context-owned leases/install/folders preserve compatible-model use, deferred deletion and resume contracts |
 | `test/unit/narration.test.ts` | 346 | — | Pending |
-| `test/unit/object-gates.test.ts` | 35 | — | Pending |
+| `test/unit/object-gates.test.ts` | 35 | 35 | Passed 2 native-seeded cases; test-owned snapshot folder; frame plan boundaries and real baseline pruning retained |
 | `test/unit/ops.test.ts` | 929 | 757 | Passed 41 cases; shared seeded generator and real snapshot reader replace duplicate support machinery; public replay/undo properties and all named boundaries retained |
 | `test/unit/package-limits.test.ts` | 131 | — | Pending |
 | `test/unit/pdf-title.test.ts` | 111 | — | Pending |
