@@ -245,19 +245,15 @@ test('narration commands on a layer: a line added there (its id unique in the sc
 test('build: a layer\'s track next to its screen\'s (narration/<screen>.<layer>.m4a), the same bytes twice', { skip: NO_FFMPEG }, async (t) => {
   const dir = layered(resources(t).copyExample());
   const out = resources(t).tempDir('elabora-layer-');
-  try {
-    const first = await build(dir, { out });
-    assert.ok(first.ok, JSON.stringify(first.diagnostics?.filter((d) => d.severity === 'error')));
-    const { files } = readZip(fs.readFileSync(first.zipPath!));
-    const names = [...files.keys()];
-    assert.ok(names.includes('narration/accueil.m4a') && names.includes('narration/accueil.rappel.m4a') && names.includes('narration/accueil.rappel.vtt'), names.filter((name) => name.startsWith('narration/')).join(', '));
-    assert.deepEqual(first.report?.narration?.tracks.map((track) => [track.screen, track.layer ?? null, track.path]).filter(([screen]) => screen === 'accueil'), [['accueil', null, 'narration/accueil.m4a'], ['accueil', 'rappel', 'narration/accueil.rappel.m4a']]);
-    const course = files.get('elabora/course.js')!.toString();
-    assert.match(course, /"src":"narration\/accueil\.rappel\.m4a"/, 'the layer\'s narration plays its track');
-    const second = await build(dir, { out: resources(t).tempDir('elabora-layer-') });
-    assert.equal(first.report.package.sha256, second.report?.package.sha256, 'deterministic');
-    assert.match(files.get('narration/accueil.rappel.vtt')!.toString(), /<v La guide>Un rappel de la règle/);
-  } finally {
-    fs.rmSync(out, { recursive: true, force: true });
-  }
+  const first = await build(dir, { out });
+  assert.ok(first.ok, JSON.stringify(first.diagnostics?.filter((d) => d.severity === 'error')));
+  const { files } = readZip(fs.readFileSync(first.zipPath!));
+  const names = [...files.keys()];
+  assert.ok(names.includes('narration/accueil.m4a') && names.includes('narration/accueil.rappel.m4a') && names.includes('narration/accueil.rappel.vtt'), names.filter((name) => name.startsWith('narration/')).join(', '));
+  assert.deepEqual(first.report?.narration?.tracks.map((track) => [track.screen, track.layer ?? null, track.path]).filter(([screen]) => screen === 'accueil'), [['accueil', null, 'narration/accueil.m4a'], ['accueil', 'rappel', 'narration/accueil.rappel.m4a']]);
+  const course = files.get('elabora/course.js')!.toString();
+  assert.match(course, /"src":"narration\/accueil\.rappel\.m4a"/, 'the layer\'s narration plays its track');
+  const second = await build(dir, { out: resources(t).tempDir('elabora-layer-') });
+  assert.equal(first.report.package.sha256, second.report?.package.sha256, 'deterministic');
+  assert.match(files.get('narration/accueil.rappel.vtt')!.toString(), /<v La guide>Un rappel de la règle/);
 });
