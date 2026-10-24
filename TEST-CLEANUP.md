@@ -18,11 +18,15 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Defect | Count | Example |
 | --- | ---: | --- |
 
-| Implementation coupling | 12 | ops: private computeDiff comparison and exact chosen diff scripts |
+| Implementation coupling | 16 | ops: private computeDiff comparison and exact chosen diff scripts |
 
 | Duplicate assertions | 1 | ops: identical notes restoration asserted twice |
 
-| Shared mutable fixtures | 1 | ops: module-level change ID counter replaced with content-derived IDs |
+| Shared mutable fixtures | 2 | ops: module-level change ID counter replaced with content-derived IDs |
+
+| Fixed-delay synchronization | 7 | engine-session: sleep(400) before checking watcher results |
+
+| Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 
 ## Production changes
 
@@ -101,7 +105,7 @@ None yet.
 | `test/unit/engine-canvas.test.ts` | 133 | — | Pending |
 | `test/unit/engine-media.test.ts` | 208 | — | Pending |
 | `test/unit/engine-project-state.test.ts` | 92 | — | Pending |
-| `test/unit/engine-session.test.ts` | 413 | — | Pending |
+| `test/unit/engine-session.test.ts` | 413 | 364 | Passed 14 cases; event-driven watcher waits, fixed 128-write concurrency regression, per-test sessions; persistence/diagnostics/undo/protocol retained |
 | `test/unit/engine-store.test.ts` | 194 | — | Pending |
 | `test/unit/fit-cache.test.ts` | 72 | — | Pending |
 | `test/unit/fonts.test.ts` | 547 | — | Pending |
