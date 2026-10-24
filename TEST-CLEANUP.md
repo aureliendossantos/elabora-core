@@ -39,7 +39,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
 
-| Private layout assertions | 6 | charts-matrix imported label placement helpers instead of measuring rendered labels |
+| Private layout assertions | 7 | charts-matrix imported label placement helpers instead of measuring rendered labels |
 
 ## Production changes
 
@@ -95,7 +95,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/charts-milestones.test.ts` | 95 | 85 | Passed chart units and browser layout; public compact/long/two-event arrangements replace private text-line and alternation helpers |
 | `test/unit/charts-process.test.ts` | 84 | 83 | Passed 5 native-seeded cases; public markup/accessibility/order/table/escaping/highlight/determinism retained; duplicate link-count assertion removed |
 | `test/unit/charts-proportion.test.ts` | 69 | 75 | Passed 5 native-seeded cases; public icon positions/counts/format/escaping replace private geometry and self-referential item constant; 100 seed-71 totals/share invariants added |
-| `test/unit/charts.test.ts` | 186 | — | Pending |
+| `test/unit/charts.test.ts` | 186 | 187 | Passed chart units; context-owned course and public curve/gap invariants replace exact chosen Bezier and dodge coordinates |
 | `test/unit/cli-projects.test.ts` | 266 | — | Pending |
 | `test/unit/cli.test.ts` | 715 | 684 | Passed 28 native-seeded cases; real CLI/MCP transport, refusal, privacy, journal/undo, translation and permission contracts preserved; failure-safe context ownership closes clients/servers before removing copies |
 | `test/unit/cloud.test.ts` | 638 | 641 | Passed 20 native-seeded cases with a fresh fake service/credential store per case, restored cloud environment and failure-safe client cleanup; redundant storage mock-call tracking removed; real publishing/privacy/account/review contracts retained |

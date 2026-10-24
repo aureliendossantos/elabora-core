@@ -10,8 +10,10 @@ import { timelineReport, formatTimeline } from '@elabora/core/narration/report';
 import { timelineMarks } from '@elabora/core/narration/view';
 import { createCourseState } from '@elabora/player/course-state';
 import type { PredictBlock } from '@elabora/player/course-data';
-import { monotoneY, monotonePath, dodge, formatValue } from '@elabora/player/charts/kit';
-import { copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
+import { monotoneY, dodge, formatValue } from '@elabora/player/charts/kit';
+import { readJSON, writeJSON, codes } from '../helpers.ts';
+
+import { resources } from '../resources.ts';
 
 // Charts and diagrams (D60): drawn at build time, moved by the player, in step with the voice.
 
@@ -62,7 +64,7 @@ test('trend: points placed in fractions, the note at its year, predict mode hide
   assert.deepEqual(written('none'), [false, false, true]);
 });
 
-test('diagram: Pele draws it wide and narrow, its nodes become items by depth, colours written in it are left out', () => {
+test('diagram: Pele draws it wide and narrow, its nodes become items by depth, colours written in it are left out', (t) => {
   const { html } = renderChart('diagram', { ...flow, mermaid: `${flow.mermaid}\n  style A fill:#ff0000` }, context);
   assert.match(html, /<div class="t-diagram t-diagram--flowchart"><div class="t-diagram-wide"><svg/);
   assert.match(html, /<div class="t-diagram-narrow"><svg/);
@@ -78,8 +80,7 @@ test('diagram: Pele draws it wide and narrow, its nodes become items by depth, c
 });
 
 // A copy of the example with a narrated screen of charts.
-function chartsCourse(edit: (screen: Record<string, any>) => void = () => {}): string {
-  const dir = copyExample();
+function chartsCourse(dir: string, edit: (screen: Record<string, any>) => void = () => {}): string {
   const screen = readJSON(dir, 'screens/chemin.json');
   screen.narration = { lines: [{ id: 'l1', text: 'Most incidents start with an email, far more than with websites.' }, { id: 'l2', text: 'Look at how clicks fall after the drills.' }] };
   screen.blocks.push(
@@ -92,8 +93,8 @@ function chartsCourse(edit: (screen: Record<string, any>) => void = () => {}): s
   return dir;
 }
 
-test('compile: charts carry their drawing, their beats on the timeline, and a trend that predicts is an activity', () => {
-  const project = loadProjectFromDir(chartsCourse());
+test('compile: charts carry their drawing, their beats on the timeline, and a trend that predicts is an activity', (t) => {
+  const project = loadProjectFromDir(chartsCourse(resources(t).copyExample()));
   const { keys } = assignKeys(project, readLock(project), { dryRun: true });
   const data = compileCourseData(project, keys, { buildId: 'test' });
   const screen = data.screens.find((candidate) => candidate.id === 'chemin')!;
@@ -122,8 +123,8 @@ test('compile: charts carry their drawing, their beats on the timeline, and a tr
   assert.equal(again.predictState(clicks), 12, 'resumed');
 });
 
-test('timeline and sheet: a chart\'s beats are listed and captured at their words', () => {
-  const project = loadProjectFromDir(chartsCourse());
+test('timeline and sheet: a chart\'s beats are listed and captured at their words', (t) => {
+  const project = loadProjectFromDir(chartsCourse(resources(t).copyExample()));
   const report = timelineReport(project, 'chemin')!;
   assert.deepEqual(report.beats.map((beat) => `${beat.block} ${beat.item}`), ['origin email', 'origin web', 'origin null']);
   assert.ok(report.beats[0].time < report.beats[1].time && report.beats[1].time <= report.beats[2].time);
@@ -133,8 +134,8 @@ test('timeline and sheet: a chart\'s beats are listed and captured at their word
   assert.deepEqual(beatMarks.map((event) => event.item), ['email', 'web', null]);
 });
 
-test('validation: item ids, what names an item, a trend that cannot be drawn, a widening funnel, diagram types and colours, beat anchors', () => {
-  const dir = chartsCourse((screen) => {
+test('validation: item ids, what names an item, a trend that cannot be drawn, a widening funnel, diagram types and colours, beat anchors', (t) => {
+  const dir = chartsCourse(resources(t).copyExample(), (screen) => {
     screen.blocks.push(
       { id: 'dup', type: 'bars', props: { takeaway: 'Twice the same id', highlight: 'nope', rows: [{ id: 'a', label: 'A', value: 1 }, { id: 'a', label: 'B', value: 2 }] } },
       { id: 'late', type: 'trend', props: { ...predict, predict: { from: 'Nov' }, note: { x: 'Dec', text: 'Too late' } } },
@@ -155,11 +156,11 @@ test('validation: item ids, what names an item, a trend that cannot be drawn, a 
   assert.ok(found('W_DIAGRAM_COLOR', 'painted'));
   assert.equal(diagnostics.filter((d) => d.code === 'E_CHART_ITEM_UNKNOWN' && d.target === 'painted').length, 3, 'highlight, beat and label');
   assert.ok(diagnostics.some((d) => d.code === 'E_TIMELINE_ANCHOR_MISSING' && d.target === 'origin' && d.path?.endsWith('/at/word')), 'a beat on a word the line does not say');
-  assert.ok(!codes(validateDir(chartsCourse()).diagnostics).some((code) => code.startsWith('E_CHART') || code.startsWith('E_DIAGRAM') || code === 'E_TIMELINE_ANCHOR_MISSING'), 'the charts course is clean');
+  assert.ok(!codes(validateDir(chartsCourse(resources(t).copyExample())).diagnostics).some((code) => code.startsWith('E_CHART') || code.startsWith('E_DIAGRAM') || code === 'E_TIMELINE_ANCHOR_MISSING'), 'the charts course is clean');
 });
 
-test('translation: a diagram\'s words by id into labels, a trend\'s references follow the words of its points', () => {
-  const project = loadProjectFromDir(chartsCourse((screen) => { screen.blocks.find((block: { id: string }) => block.id === 'clicks').props.note = { x: 'May', text: 'Halfway' }; }));
+test('translation: a diagram\'s words by id into labels, a trend\'s references follow the words of its points', (t) => {
+  const project = loadProjectFromDir(chartsCourse(resources(t).copyExample(), (screen) => { screen.blocks.find((block: { id: string }) => block.id === 'clicks').props.note = { x: 'May', text: 'Halfway' }; }));
   const units = extractUnits(project);
   const label = units.find((unit) => unit.id === 'block.flow.labels.C')!;
   assert.equal(label.text, 'Hover the link');
@@ -179,8 +180,8 @@ test('the kit: the monotone curve the core draws, labels pushed apart, numbers i
   for (const point of points) assert.equal(monotoneY(points, point.x), point.y, 'through every point');
   const y = monotoneY(points, 1.5);
   assert.ok(y > 1 && y < 2, 'monotone between two points');
-  assert.match(monotonePath(points), /^M0,0C0\.33,/);
-  assert.deepEqual(dodge([10, 11, 30], 4).map(Math.round), [9, 13, 30]);
+  const placed = dodge([10, 11, 30], 4);
+  assert.ok(placed.every((value, i) => i === 0 || value - placed[i - 1] >= 4), 'labels keep their order and minimum gap');
   assert.equal(formatValue(62, { unit: '%' }, 'fr'), '62\u00a0%');
   assert.equal(formatValue(1250.5, { decimals: 1, unit: 'h' }, 'fr'), '1\u202f250,5\u202fh');
 });
