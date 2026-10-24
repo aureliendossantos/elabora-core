@@ -32,7 +32,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
 | Unseeded randomness | 34 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
-| Low-value assertion | 5 | engine-store: repeated hash equality replaced with hash invalidation after a write |
+| Low-value assertion | 6 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 5 | validate: counted two errors without identifying their prop paths |
 | Resource cleanup | 104 | validate: copied fixtures were never removed |
 | Wall-clock timing | 9 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
@@ -130,7 +130,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/journal.test.ts` | 437 | 437 | Passed 14 cases; explicit lock entry/release gates and child stdin handshake; no elapsed-time assertions or fixed sleeps; sequence/history/binary/undo contracts retained |
 | `test/unit/layer-timeline.test.ts` | 265 | — | Pending |
 | `test/unit/library.test.ts` | 840 | 843 | Passed 21 cases; deterministic media/retention, restored environment and owned temporary data; public archive/trash contracts retained |
-| `test/unit/local-ai-platform.test.ts` | 50 | — | Pending |
+| `test/unit/local-ai-platform.test.ts` | 50 | 50 | Passed 2 native-seeded cases; disposable OS override and throwing network boundary exercise all listed models, Intel refusals and removals; removes exact catalogue-size coupling |
 | `test/unit/look.test.ts` | 122 | — | Pending |
 | `test/unit/media-project.test.ts` | 286 | — | Pending |
 | `test/unit/media.test.ts` | 315 | — | Pending |
