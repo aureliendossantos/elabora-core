@@ -1,4 +1,4 @@
-import { test, after } from 'node:test';
+import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -15,7 +15,7 @@ import { ROOT, copyExample, codes, readJSON, writeJSON } from '../helpers.ts';
 // course validates as before and learners keep their progress.
 
 const temporary: string[] = [];
-after(() => { for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true }); });
+afterEach(() => { for (const dir of temporary.splice(0)) fs.rmSync(dir, { recursive: true, force: true }); });
 const example = (name: string) => { const dir = copyExample(path.join(ROOT, 'examples', name)); temporary.push(dir); return dir; };
 const tempDir = () => { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-rename-')); temporary.push(dir); return dir; };
 const texts = (dir: string) => Object.fromEntries([...readProjectFiles(dir).files].filter(([, file]) => file.kind === 'text').map(([file, content]) => [file, content.kind === 'text' ? content.text : '']));
