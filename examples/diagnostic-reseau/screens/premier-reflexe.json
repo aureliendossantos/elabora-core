@@ -324,7 +324,7 @@
             "in": {
               "at": {
                 "line": "rappel-poste",
-                "word": "poste"
+                "word": "voici"
               },
               "effect": "wipe",
               "duration": 0.8

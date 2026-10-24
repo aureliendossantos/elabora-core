@@ -6,7 +6,7 @@
 import { escapeHtml } from '../util/html.ts';
 import { renderMarkdown } from '../compile/markdown.ts';
 import { dialogueMap, dialogueMapSvg } from './layout.ts';
-import { dialogueScript, scriptWords } from './script.ts';
+import { dialogueScript, scriptWords, choosesVerb } from './script.ts';
 import type { ScriptLine, DialogueScript } from './script.ts';
 import type { DialogueData } from '@elabora/player/dialogue/types';
 
@@ -17,7 +17,7 @@ interface DocumentWords {
   map: string;
   script: string;
   endings: string;
-  chooses: string;
+  chooses: (learner: string) => string;
   then: string;
   feedback: string;
   final: string;
@@ -29,7 +29,7 @@ interface DocumentWords {
 
 const WORDS: Readonly<Record<'fr' | 'en', DocumentWords>> = {
   fr: {
-    dialogue: 'Dialogue', map: 'Carte du dialogue', script: 'Script', endings: 'Fins', chooses: 'choisit', then: 'puis', feedback: 'Note du formateur', final: 'Choix définitif',
+    dialogue: 'Dialogue', map: 'Carte du dialogue', script: 'Script', endings: 'Fins', chooses: (learner) => choosesVerb(learner, 'fr'), then: 'puis', feedback: 'Note du formateur', final: 'Choix définitif',
     legend: 'Chaque case est un temps du dialogue ; les lettres sont les options de l\'apprenant. Les flèches en pointillés reviennent en arrière (réessayer, une boucle).', otherwise: 'sinon',
     qualities: { good: 'bonne', ok: 'moyenne', bad: 'mauvaise' },
     settings: (data) => [
@@ -39,9 +39,9 @@ const WORDS: Readonly<Record<'fr' | 'en', DocumentWords>> = {
     ]
   },
   en: {
-    dialogue: 'Dialogue', map: 'Map of the dialogue', script: 'Script', endings: 'Endings', chooses: 'chooses', then: 'then', feedback: 'Trainer\'s note', final: 'Final decision',
+    dialogue: 'Dialogue', map: 'Map of the dialogue', script: 'Script', endings: 'Endings', chooses: (learner) => choosesVerb(learner, 'en'), then: 'then', feedback: 'Trainer\'s note', final: 'Final decision',
     legend: 'Each box is a moment of the dialogue; letters are the learner\'s options. Dashed arrows go back (a retry, a loop).', otherwise: 'otherwise',
-    qualities: { good: 'good', ok: 'ok', bad: 'bad' },
+    qualities: { good: 'good', ok: 'fair', bad: 'poor' },
     settings: (data) => [
       { practice: 'Practice', assessment: 'Assessment', exploration: 'Exploration' }[data.mode],
       { none: 'not scored', quality: 'scored on the quality of the choices', points: 'scored in points', ending: 'scored by its ending' }[data.scoring],
@@ -122,7 +122,7 @@ function scriptHtml(script: DialogueScript, words: DocumentWords): string {
     const parts: string[] = [`<article class="node" id="n-${escapeHtml(node.id)}">`, `<h3><span class="n">${node.number}</span> ${escapeHtml(node.title ?? node.id)}${node.final ? ` <span class="final">${escapeHtml(words.final)}</span>` : ''}</h3>`];
     for (const line of node.lines) parts.push(lineHtml(line));
     if (node.options.length) {
-      parts.push(`<p class="chooses"><span class="who">${escapeHtml(script.learner)}</span> ${escapeHtml(words.chooses)}${node.prompt ? ` · ${escapeHtml(node.prompt)}` : ''}</p>`, '<div class="options">');
+      parts.push(`<p class="chooses"><span class="who">${escapeHtml(script.learner)}</span> ${escapeHtml(words.chooses(script.learner))}${node.prompt ? ` · ${escapeHtml(node.prompt)}` : ''}</p>`, '<div class="options">');
       for (const option of node.options) {
         const quality = option.quality ? `<span class="quality q-${option.quality}">${escapeHtml(words.qualities[option.quality] ?? option.quality)}</span>` : '';
         const marks = [option.points ? `${option.points > 0 ? '+' : ''}${option.points}` : '', ...option.marks].filter(Boolean).map(escapeHtml).join(', ');

@@ -11,7 +11,7 @@ import type { DialogueData } from '@elabora/player/dialogue/types';
 import { withoutDirections } from '../narration/directions.ts';
 import { courseEnv, pathTime, formatSeconds, projectDialogue } from './project.ts';
 import type { DialogueBlockRef } from './project.ts';
-import { letterOf } from './script.ts';
+import { letterOf, choosesVerb } from './script.ts';
 import type { Project } from '../project/model.ts';
 
 export interface PlayedStep {
@@ -75,7 +75,7 @@ function describeSteps(data: DialogueData, walk: DialogueWalk): PlayedStep[] {
       const node = data.nodes.find((candidate) => candidate.id === beat.node);
       const index = node?.options.findIndex((candidate) => candidate.id === beat.option) ?? -1;
       const option = node?.options[index];
-      steps.push({ kind: 'choice', node: beat.node, option: beat.option, ...(beat.auto ? { auto: true as const } : {}), text: beat.auto ? `${learner} (by itself): ${option?.text ?? beat.option}` : `▸ ${learner} chooses ${letterOf(index)} [${beat.option}]: « ${option?.text ?? ''} »${option?.quality ? ` (${option.quality}${option.points ? `, ${option.points > 0 ? '+' : ''}${option.points}` : ''})` : option?.points ? ` (${option.points > 0 ? '+' : ''}${option.points})` : ''}` });
+      steps.push({ kind: 'choice', node: beat.node, option: beat.option, ...(beat.auto ? { auto: true as const } : {}), text: beat.auto ? `${learner} (by itself): ${option?.text ?? beat.option}` : `▸ ${learner} ${choosesVerb(learner)} ${letterOf(index)} [${beat.option}]: « ${option?.text ?? ''} »${option?.quality ? ` (${option.quality}${option.points ? `, ${option.points > 0 ? '+' : ''}${option.points}` : ''})` : option?.points ? ` (${option.points > 0 ? '+' : ''}${option.points})` : ''}` });
     } else if (beat.type === 'feedback') {
       steps.push({ kind: 'feedback', node: beat.node, option: beat.option, text: `Feedback: ${(optionOf(data, beat.node, beat.option)?.feedback ?? '').replace(/\s*\n\s*/g, ' ')}` });
     } else if (beat.type === 'retry') steps.push({ kind: 'retry', node: beat.node, option: beat.option, text: '↺ the same options again' });

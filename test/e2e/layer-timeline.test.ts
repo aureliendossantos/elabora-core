@@ -171,6 +171,15 @@ test('a layer\'s bar: seek (free) recomputes what is seen and fires nothing, the
     // Captions in the layer.
     await page.click('dialog.t-layer[data-layer="regle"] .t-timeline-captions');
     assert.equal((await state(page)).caption, 'Un rappel de la règle.');
+    // Captions on, the layer keeps a room for them under its blocks: they never cover its last lines.
+    const room = await page.evaluate(() => {
+      const layer = document.querySelector('dialog.t-layer[data-layer="regle"]')!;
+      const blocks = layer.querySelector('.t-blocks')!.getBoundingClientRect();
+      const band = layer.querySelector('.t-timeline-band:not([hidden]) .t-timeline-caption')!.getBoundingClientRect();
+      return { blocksBottom: blocks.bottom, bandTop: band.top, marked: layer.hasAttribute('data-captions') };
+    });
+    assert.equal(room.marked, true);
+    assert.ok(room.blocksBottom <= room.bandTop + 0.5, `the caption (top ${room.bandTop}) stays under the layer's blocks (bottom ${room.blocksBottom})`);
     // The learner's Pause (the layer's own Play button), then its shortcut: the layer's, not the screen's.
     await page.click('dialog.t-layer[data-layer="regle"] .t-timeline-play');
     s = await state(page);

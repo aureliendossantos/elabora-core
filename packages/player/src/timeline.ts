@@ -217,6 +217,8 @@ function virtualClock(): Clock & { advance(seconds: number): void } {
 export type Timeline = ReturnType<typeof createTimeline>;
 
 export function createTimeline(options: TimelineOptions) {
+  // The layer whose own timeline this is (D62), if any: its captions get a room of their own.
+  const layerDialog = options.host?.closest('dialog.t-layer') ?? null;
   const { narration, view, labels, prefs } = options;
   const segments = narration.segments;
   const duration = narration.duration;
@@ -741,6 +743,9 @@ export function createTimeline(options: TimelineOptions) {
       }
     }
     captionsButton.setAttribute('aria-pressed', String(prefs.captions));
+    // In a layer (D62), captions on keep a room of their own under the layer's blocks, so they never
+    // cover its last lines; it comes with the learner's switch, never while the voice plays.
+    if (layerDialog && layerDialog.hasAttribute('data-captions') !== prefs.captions) layerDialog.toggleAttribute('data-captions', prefs.captions);
     muteButton.setAttribute('aria-pressed', String(prefs.muted));
     volumeInput.value = String(prefs.muted ? 0 : Math.round(prefs.volume * 100));
     rateBadge.textContent = prefs.rate === 1 ? '' : rateText(prefs.rate);
