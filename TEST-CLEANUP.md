@@ -32,7 +32,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
 | Unseeded randomness | 14 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
-| Low-value assertion | 3 | engine-store: repeated hash equality replaced with hash invalidation after a write |
+| Low-value assertion | 4 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
 | Resource cleanup | 97 | validate: copied fixtures were never removed |
 | Wall-clock timing | 6 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
@@ -122,7 +122,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/engine-store.test.ts` | 194 | 175 | Passed 9 cases; event/readiness waits and fixed-size concurrent writes; resources close in reverse ownership order before folders are removed |
 | `test/unit/fit-cache.test.ts` | 72 | — | Pending |
 | `test/unit/fonts.test.ts` | 547 | 540 | Passed 15 native-seeded cases; public catalogue/license/font-byte/embedding/refusal/build contracts retained; per-test folders and failure-safe MCP/session disposal; arbitrary family-count and basename constraints removed |
-| `test/unit/format.test.ts` | 77 | — | Pending |
+| `test/unit/format.test.ts` | 77 | 76 | Passed 6 native-seeded cases; generated registry, accepted samples, diagnostics and dereferencing retained; removes arbitrary fixture-count coverage quota |
 | `test/unit/i18n.test.ts` | 260 | — | Pending |
 | `test/unit/ignored.test.ts` | 55 | — | Pending |
 | `test/unit/import.test.ts` | 427 | — | Pending |
