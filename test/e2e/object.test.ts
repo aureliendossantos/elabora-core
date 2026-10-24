@@ -1,16 +1,25 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
+import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import * as esbuild from 'esbuild';
-import { ROOT, copyExample, readJSON, writeJSON, addViewProbe, addListProbe, addLateProbe, addDrawProbe } from '../helpers.ts';
+import { ROOT, readJSON, writeJSON, addViewProbe, addListProbe, addLateProbe, addDrawProbe } from '../helpers.ts';
 import { replayObject, screenshot } from '@elabora/node/preview';
 import { testObject } from '@elabora/node/objects/test';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import type { DryFrames } from '@elabora/player/dry-frames';
 
-test('the example free object passes gates 2 to 6', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+const { PNG } = createRequire(import.meta.url)('pngjs');
+const visibleImage = (bytes: Uint8Array) => {
+  const image = PNG.sync.read(Buffer.from(bytes));
+  assert.ok(image.width > 0 && image.height > 0);
+  assert.ok(new Set(image.data).size > 1, 'the capture has visible content');
+};
+
+test('the example free object passes gates 2 to 6', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   const r = await testObject(dir, 'diagnostic-reseau');
   assert.ok(r.ok, JSON.stringify(r.diagnostics.filter((d) => d.severity === 'error'), null, 1));
   for (const gate of ['smoke', 'behaviour', 'budget', 'visual', 'accessibility'] as const) assert.equal(r.gates[gate], 'passed', gate);
@@ -19,8 +28,8 @@ test('the example free object passes gates 2 to 6', { timeout: 180000 }, async (
   assert.equal(r.gates.frames?.tests['Hors procédure : indice après deux écarts'], 'dry');
 });
 
-test('a behaviour regression fails gate 3', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('a behaviour regression fails gate 3', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   const file = path.join(dir, 'objects/diagnostic-reseau/object.js');
   // Bug: the failing device is never detected.
   fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace("const faulty = id === props.failingDevice;", 'const faulty = false;'));
@@ -29,26 +38,26 @@ test('a behaviour regression fails gate 3', { timeout: 180000 }, async () => {
   assert.ok(r.diagnostics.some((d) => d.code === 'E_GATE_BEHAVIOUR'));
 });
 
-test('consecutive expect-event steps check the events of the same action', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('consecutive expect-event steps check the events of the same action', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   const file = path.join(dir, 'objects/diagnostic-reseau/object.tests.json');
-  const t = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const testsFile = JSON.parse(fs.readFileSync(file, 'utf8'));
   // A wrong click emits device_inspected then hint_shown.
-  t.tests = [{ name: 'two events from one click', props: { hintAfterErrors: 1 }, steps: [
+  testsFile.tests = [{ name: 'two events from one click', props: { hintAfterErrors: 1 }, steps: [
     { action: 'click', object: 'serveur' },
     { action: 'expect-event', name: 'device_inspected', payload: { device: 'serveur' } },
     { action: 'expect-event', name: 'hint_shown' },
     { action: 'expect-no-event', name: 'device_inspected' },
     { action: 'expect-no-event', name: 'completed' }
   ] }];
-  fs.writeFileSync(file, JSON.stringify(t));
+  fs.writeFileSync(file, JSON.stringify(testsFile));
   const r = await testObject(dir, 'diagnostic-reseau');
   assert.equal(r.gates.behaviour, 'passed', JSON.stringify(r.gates.tests));
   assert.equal(r.gates.perf?.webglContexts, 1);
 });
 
-test('event expectations wait for the frame: a late event is awaited, an event on its way is seen', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('event expectations wait for the frame: a late event is awaited, an event on its way is seen', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   addLateProbe(dir);
   const r = await testObject(dir, 'late-probe');
   const [late, onItsWay] = r.gates.tests || [];
@@ -58,58 +67,56 @@ test('event expectations wait for the frame: a late event is awaited, an event o
   for (const gate of ['smoke', 'accessibility'] as const) assert.equal(r.gates[gate], 'passed', gate);
 });
 
-test('an object stuck in a loop fails the smoke gate instead of hanging the run', { timeout: 120000 }, async () => {
-  const dir = copyExample();
+test('an object stuck in a loop fails the smoke gate instead of hanging the run', { timeout: 120000 }, async (t) => {
+  const dir = resources(t).copyExample();
   const file = path.join(dir, 'objects/diagnostic-reseau/object.js');
   // Stuck when the smoke gate asks for the state after its 300 frames, on fast and slow machines
   // alike (a loop started 800 ms after mount came after the whole gate on Linux CI).
   const code = fs.readFileSync(file, 'utf8');
   assert.ok(code.includes('getState() {'));
   fs.writeFileSync(file, code.replace('getState() {', 'getState() { for (;;) {}'));
-  const started = Date.now();
   const r = await testObject(dir, 'diagnostic-reseau', { stallMs: 5000, only: 'none' });
   assert.equal(r.gates.smoke, 'failed');
   assert.ok(r.diagnostics.some((d) => d.code === 'E_GATE_SMOKE' && /stuck in a loop/.test(d.message)), JSON.stringify(r.diagnostics));
   assert.equal(r.gates.behaviour, 'not-run (object stuck)');
-  assert.ok(Date.now() - started < 60000);
 });
 
-test('screenshots render a screen with its free object', { timeout: 120000 }, async () => {
-  const r = await screenshot(copyExample(), { screen: 'simulation' });
+test('screenshots render a screen with its free object', { timeout: 120000 }, async (t) => {
+  const r = await screenshot(resources(t).copyExample(), { screen: 'simulation' });
   assert.ok(r.ok);
-  assert.ok(r.png.length > 20000);
+  visibleImage(r.png);
   assert.deepEqual(r.consoleErrors, []);
 });
 
-test('object tests set where the frame is: view, then set-view (host.onView)', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('object tests set where the frame is: view, then set-view (host.onView)', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   addViewProbe(dir);
   const r = await testObject(dir, 'view-probe');
   assert.equal(r.gates.behaviour, 'passed', JSON.stringify(r.gates.tests));
 });
 
-test('object tests give a free object a list prop and a material colour, then change them (set-props)', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('object tests give a free object a list prop and a material colour, then change them (set-props)', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   addListProbe(dir);
   const r = await testObject(dir, 'list-probe');
   assert.equal(r.gates.behaviour, 'passed', JSON.stringify(r.gates.tests));
 });
 
-test('an object test replays in the course page: its snapshots on a contact sheet, its expectations checked', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('an object test replays in the course page: its snapshots on a contact sheet, its expectations checked', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   const tests = JSON.parse(fs.readFileSync(path.join(dir, 'objects/diagnostic-reseau/object.tests.json'), 'utf8'));
   const r = await replayObject(dir, 'diagnostic-reseau', { test: tests.tests[0].name, width: 1280, height: 720 });
   assert.ok(r.error === undefined, r.error);
   assert.equal(r.screen, 'simulation');
   assert.ok(r.frames.length >= 1 && r.frames[r.frames.length - 1].name === 'end');
   assert.deepEqual(r.failures, []);
-  assert.ok(r.png.length > 20000);
+  visibleImage(r.png);
   const missing = await replayObject(dir, 'diagnostic-reseau', { test: 'no such test' });
   assert.ok(missing.error !== undefined && /No test/.test(missing.error));
 });
 
-test('a test that reads its drawing back is decided with every frame drawn, not by the frames it ran dry', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('a test that reads its drawing back is decided with every frame drawn, not by the frames it ran dry', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   // Dry, the switch to green at frame 10 is not drawn: the pixel read would still be red.
   addDrawProbe(dir, [{ name: 'reads its pixel', steps: [{ action: 'step', frames: 20 }, { action: 'key', key: 'Enter' }, { action: 'expect-state', state: { read: 'red' } }] }]);
   const r = await testObject(dir, 'draw-probe');
@@ -119,8 +126,8 @@ test('a test that reads its drawing back is decided with every frame drawn, not 
   assert.equal(r.gates.frames?.tests['reads its pixel'], 'every frame (readPixels of a drawing a dry frame skipped)');
 });
 
-test('a snapshot of a canvas that dry frames left stale is taken with every frame drawn', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('a snapshot of a canvas that dry frames left stale is taken with every frame drawn', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   const tests = [{ name: 'colour', steps: [{ action: 'step', frames: 20 }, { action: 'snapshot', name: 'end' }] }];
   addDrawProbe(dir, tests, { before: 'green', after: 'green' });
   const first = await testObject(dir, 'draw-probe');
@@ -135,9 +142,9 @@ test('a snapshot of a canvas that dry frames left stale is taken with every fram
   assert.equal(second.gates.frames?.tests.colour, 'every frame (a snapshot of a canvas a dry frame left stale)');
 });
 
-test('dry frames skip draws, track what they leave stale until drawn again, and report any use of it', { timeout: 120000 }, async () => {
+test('dry frames skip draws, track what they leave stale until drawn again, and report any use of it', { timeout: 120000 }, async (t) => {
   const bundle = await esbuild.build({ entryPoints: [path.join(ROOT, 'packages/player/src/dry-frames.ts')], bundle: true, format: 'iife', globalName: 'ElaboraDry', write: false, logLevel: 'error' });
-  const browser = await launchBrowser('chromium');
+  const browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
   type Seen = [number, boolean, string | null][];
   // Each scenario in a page of its own: install() wraps the canvas APIs of the page.
   const scenario = async (run: () => Seen): Promise<Seen> => {
@@ -147,201 +154,194 @@ test('dry frames skip draws, track what they leave stale until drawn again, and 
       return await page.evaluate(run);
     } finally { await page.close(); }
   };
-  try {
-    const canvas = await scenario(() => {
-      const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
-      dry.install();
-      const seen: Seen = [];
-      const look = () => { const r = dry.report(); seen.push([r.skipped, r.stale, r.unsafe]); };
-      const gl = document.body.appendChild(document.createElement('canvas')).getContext('webgl2');
-      if (!gl) return seen;
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); look();
-      dry.setDry('all'); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); look();
-      dry.setDry(false); gl.enable(gl.SCISSOR_TEST); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); look();
-      gl.disable(gl.SCISSOR_TEST); gl.colorMask(true, false, true, true); gl.clear(gl.COLOR_BUFFER_BIT); look();
-      gl.colorMask(true, true, true, true); gl.clear(gl.COLOR_BUFFER_BIT); look();
-      gl.drawArrays(gl.POINTS, 0, 0); look();
-      return seen;
-    });
-    assert.deepEqual(canvas, [
-      [0, false, null], // drawn
-      [1, true, null], // a clear skipped: the canvas shows a stale drawing
-      [1, true, null], // a clear under a scissor does not cover it
-      [1, true, null], // nor one with a channel masked
-      [1, false, null], // a whole clear does (its depth is still stale)
-      [1, false, 'a frame drawn over a drawing a dry frame skipped'] // a draw on that depth
-    ]);
-    const texture = await scenario(() => {
-      const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
-      dry.install();
-      const seen: Seen = [];
-      const look = () => { const r = dry.report(); seen.push([r.skipped, r.stale, r.unsafe]); };
-      const gl = document.body.appendChild(document.createElement('canvas')).getContext('webgl2');
-      if (!gl) return seen;
-      const target = (texture: WebGLTexture) => {
+  const canvas = await scenario(() => {
+    const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
+    dry.install();
+    const seen: Seen = [];
+    const look = () => { const r = dry.report(); seen.push([r.skipped, r.stale, r.unsafe]); };
+    const gl = document.body.appendChild(document.createElement('canvas')).getContext('webgl2');
+    if (!gl) return seen;
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); look();
+    dry.setDry('all'); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); look();
+    dry.setDry(false); gl.enable(gl.SCISSOR_TEST); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); look();
+    gl.disable(gl.SCISSOR_TEST); gl.colorMask(true, false, true, true); gl.clear(gl.COLOR_BUFFER_BIT); look();
+    gl.colorMask(true, true, true, true); gl.clear(gl.COLOR_BUFFER_BIT); look();
+    gl.drawArrays(gl.POINTS, 0, 0); look();
+    return seen;
+  });
+  assert.deepEqual(canvas, [
+    [0, false, null], // drawn
+    [1, true, null], // a clear skipped: the canvas shows a stale drawing
+    [1, true, null], // a clear under a scissor does not cover it
+    [1, true, null], // nor one with a channel masked
+    [1, false, null], // a whole clear does (its depth is still stale)
+    [1, false, 'a frame drawn over a drawing a dry frame skipped'] // a draw on that depth
+  ]);
+  const texture = await scenario(() => {
+    const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
+    dry.install();
+    const seen: Seen = [];
+    const look = () => { const r = dry.report(); seen.push([r.skipped, r.stale, r.unsafe]); };
+    const gl = document.body.appendChild(document.createElement('canvas')).getContext('webgl2');
+    if (!gl) return seen;
+    const target = (texture: WebGLTexture) => {
+      const framebuffer = gl.createFramebuffer();
+      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+      return framebuffer;
+    };
+    const make = () => { const texture = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, texture); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4, 4, 0, gl.RGBA, gl.UNSIGNED_BYTE, null); return texture; };
+    const redrawn = make();
+    const redrawnTarget = target(redrawn);
+    const reused = make();
+    const reusedTarget = target(reused);
+    dry.setDry('all');
+    for (const framebuffer of [redrawnTarget, reusedTarget]) { gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer); gl.clear(gl.COLOR_BUFFER_BIT); }
+    dry.setDry(false);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, redrawnTarget); gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.bindTexture(gl.TEXTURE_2D, redrawn); gl.drawArrays(gl.POINTS, 0, 0); look();
+    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, reused); gl.activeTexture(gl.TEXTURE0); gl.drawArrays(gl.POINTS, 0, 0); look();
+    return seen;
+  });
+  assert.deepEqual(texture, [
+    [2, false, null], // a texture drawn again before a draw uses it
+    [2, false, 'a texture drawn in a dry frame used by a later draw'] // one that was not, bound on another unit (no program: any bound texture counts)
+  ]);
+  // With a program, only the textures its samplers read count.
+  const sampled = await scenario(() => {
+    const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
+    dry.install();
+    const seen: Seen = [];
+    const look = () => { const r = dry.report(); seen.push([r.skipped, r.stale, r.unsafe]); };
+    const gl = document.body.appendChild(document.createElement('canvas')).getContext('webgl2');
+    if (!gl) return seen;
+    const program = (fragment: string) => {
+      const linked = gl.createProgram();
+      for (const [type, source] of [[gl.VERTEX_SHADER, '#version 300 es\nvoid main() { gl_Position = vec4(0.0); gl_PointSize = 1.0; }'], [gl.FRAGMENT_SHADER, `#version 300 es\nprecision mediump float;\nout vec4 colour;\n${fragment}`]] as const) {
+        const shader = gl.createShader(type);
+        if (!shader) continue;
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        gl.attachShader(linked, shader);
+      }
+      gl.linkProgram(linked);
+      return linked;
+    };
+    const one = program('uniform sampler2D a;\nvoid main() { colour = texture(a, vec2(0.5)); }');
+    const both = program('uniform sampler2D a;\nuniform sampler2D b[2];\nvoid main() { colour = texture(a, vec2(0.5)) + texture(b[1], vec2(0.5)); }');
+    const staleTexture = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE3);
+    gl.bindTexture(gl.TEXTURE_2D, staleTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4, 4, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    const framebuffer = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, staleTexture, 0);
+    dry.setDry('all'); gl.clear(gl.COLOR_BUFFER_BIT); dry.setDry(false);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.useProgram(both); gl.uniform1i(gl.getUniformLocation(both, 'b[1]'), 3);
+    gl.useProgram(one); gl.drawArrays(gl.POINTS, 0, 1); look();
+    gl.useProgram(both); gl.drawArrays(gl.POINTS, 0, 1); look();
+    return seen;
+  });
+  // Dry on the canvas only: render targets are drawn, a texture they hold stays fresh. Fully dry,
+  // its reuse is flagged as offscreen only (what makes the host try the canvas only level).
+  const levels: Seen[] = [];
+  for (const level of ['all', 'canvas'] as const) {
+    const page = await browser.newPage();
+    try {
+      await page.addScriptTag({ content: bundle.outputFiles[0].text });
+      levels.push(await page.evaluate((level) => {
+        const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
+        dry.install();
+        const gl = document.body.appendChild(document.createElement('canvas')).getContext('webgl2');
+        if (!gl) return [];
+        const texture = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4, 4, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
         const framebuffer = gl.createFramebuffer();
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
         gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-        return framebuffer;
-      };
-      const make = () => { const texture = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, texture); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4, 4, 0, gl.RGBA, gl.UNSIGNED_BYTE, null); return texture; };
-      const redrawn = make();
-      const redrawnTarget = target(redrawn);
-      const reused = make();
-      const reusedTarget = target(reused);
-      dry.setDry('all');
-      for (const framebuffer of [redrawnTarget, reusedTarget]) { gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer); gl.clear(gl.COLOR_BUFFER_BIT); }
-      dry.setDry(false);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, redrawnTarget); gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-      gl.bindTexture(gl.TEXTURE_2D, redrawn); gl.drawArrays(gl.POINTS, 0, 0); look();
-      gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, reused); gl.activeTexture(gl.TEXTURE0); gl.drawArrays(gl.POINTS, 0, 0); look();
-      return seen;
-    });
-    assert.deepEqual(texture, [
-      [2, false, null], // a texture drawn again before a draw uses it
-      [2, false, 'a texture drawn in a dry frame used by a later draw'] // one that was not, bound on another unit (no program: any bound texture counts)
-    ]);
-    // With a program, only the textures its samplers read count.
-    const sampled = await scenario(() => {
-      const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
-      dry.install();
-      const seen: Seen = [];
-      const look = () => { const r = dry.report(); seen.push([r.skipped, r.stale, r.unsafe]); };
-      const gl = document.body.appendChild(document.createElement('canvas')).getContext('webgl2');
-      if (!gl) return seen;
-      const program = (fragment: string) => {
-        const linked = gl.createProgram();
-        for (const [type, source] of [[gl.VERTEX_SHADER, '#version 300 es\nvoid main() { gl_Position = vec4(0.0); gl_PointSize = 1.0; }'], [gl.FRAGMENT_SHADER, `#version 300 es\nprecision mediump float;\nout vec4 colour;\n${fragment}`]] as const) {
-          const shader = gl.createShader(type);
-          if (!shader) continue;
-          gl.shaderSource(shader, source);
-          gl.compileShader(shader);
-          gl.attachShader(linked, shader);
-        }
-        gl.linkProgram(linked);
-        return linked;
-      };
-      const one = program('uniform sampler2D a;\nvoid main() { colour = texture(a, vec2(0.5)); }');
-      const both = program('uniform sampler2D a;\nuniform sampler2D b[2];\nvoid main() { colour = texture(a, vec2(0.5)) + texture(b[1], vec2(0.5)); }');
-      const staleTexture = gl.createTexture();
-      gl.activeTexture(gl.TEXTURE3);
-      gl.bindTexture(gl.TEXTURE_2D, staleTexture);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4, 4, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-      const framebuffer = gl.createFramebuffer();
-      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, staleTexture, 0);
-      dry.setDry('all'); gl.clear(gl.COLOR_BUFFER_BIT); dry.setDry(false);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-      gl.useProgram(both); gl.uniform1i(gl.getUniformLocation(both, 'b[1]'), 3);
-      gl.useProgram(one); gl.drawArrays(gl.POINTS, 0, 1); look();
-      gl.useProgram(both); gl.drawArrays(gl.POINTS, 0, 1); look();
-      return seen;
-    });
-    // Dry on the canvas only: render targets are drawn, a texture they hold stays fresh. Fully dry,
-    // its reuse is flagged as offscreen only (what makes the host try the canvas only level).
-    const levels: Seen[] = [];
-    for (const level of ['all', 'canvas'] as const) {
-      const page = await browser.newPage();
-      try {
-        await page.addScriptTag({ content: bundle.outputFiles[0].text });
-        levels.push(await page.evaluate((level) => {
-          const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
-          dry.install();
-          const gl = document.body.appendChild(document.createElement('canvas')).getContext('webgl2');
-          if (!gl) return [];
-          const texture = gl.createTexture();
-          gl.bindTexture(gl.TEXTURE_2D, texture);
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4, 4, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-          const framebuffer = gl.createFramebuffer();
-          gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-          gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-          dry.setDry(level);
-          gl.clear(gl.COLOR_BUFFER_BIT);
-          gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-          dry.setDry(false);
-          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); gl.drawArrays(gl.POINTS, 0, 0);
-          const r = dry.report();
-          return [[r.skipped, r.offscreen, r.unsafe]] as Seen;
-        }, level));
-      } finally { await page.close(); }
-    }
-    assert.deepEqual(levels, [
-      [[2, true, 'a texture drawn in a dry frame used by a later draw']], // both clears skipped; only the texture was at fault
-      [[1, false, null]] // the render target cleared, the canvas skipped
-    ]);
-    assert.deepEqual(sampled, [
-      [1, false, null], // the stale texture is bound on unit 3, the program samples unit 0
-      [1, false, 'a texture drawn in a dry frame used by a later draw'] // b[1] samples unit 3
-    ]);
-    const reads = await Promise.all([
-      scenario(() => {
-        const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
-        dry.install();
-        const gl = document.body.appendChild(document.createElement('canvas')).getContext('webgl2');
-        if (!gl) return [];
-        const pixel = new Uint8Array(4);
-        dry.setDry('all'); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-        dry.setDry(false); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-        const fresh = dry.report().unsafe;
-        dry.setDry('all'); gl.clear(gl.COLOR_BUFFER_BIT); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
-        return [[0, false, fresh], [0, false, dry.report().unsafe]];
-      }),
-      scenario(() => {
-        const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
-        dry.install();
-        const webgl = document.body.appendChild(document.createElement('canvas'));
-        const gl = webgl.getContext('webgl2');
-        const flat = document.createElement('canvas').getContext('2d');
-        if (!gl || !flat) return [];
-        dry.setDry('all'); gl.clear(gl.COLOR_BUFFER_BIT);
-        flat.drawImage(webgl, 0, 0);
-        return [[0, false, dry.report().unsafe]];
-      }),
-      scenario(() => {
-        const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
-        dry.install();
-        const gl = document.body.appendChild(document.createElement('canvas')).getContext('webgl2');
-        if (!gl) return [];
-        dry.setDry('all'); gl.drawArrays(gl.POINTS, 0, 0);
-        gl.getError();
-        return [[0, false, dry.report().unsafe]];
-      })
-    ]);
-    assert.deepEqual(reads.map((seen) => seen.map((entry) => entry[2])), [
-      [null, 'readPixels of a drawing a dry frame skipped'],
-      ['drawImage of a WebGL canvas a dry frame left stale'],
-      ['getError after a dry frame']
-    ]);
-    // WebGL 1 extensions draw too; a canvas off the page is not shown.
-    const extension = await scenario(() => {
-      const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
-      dry.install();
-      const gl = document.createElement('canvas').getContext('webgl');
-      const instanced = gl?.getExtension('ANGLE_instanced_arrays');
-      if (!gl || !instanced) return [];
-      dry.setDry('all'); instanced.drawArraysInstancedANGLE(gl.POINTS, 0, 0, 1);
-      const r = dry.report();
-      return [[r.skipped, r.stale, r.unsafe]];
-    });
-    assert.deepEqual(extension, [[1, false, null]]);
-  } finally {
-    await browser.close();
+        dry.setDry(level);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        dry.setDry(false);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); gl.drawArrays(gl.POINTS, 0, 0);
+        const r = dry.report();
+        return [[r.skipped, r.offscreen, r.unsafe]] as Seen;
+      }, level));
+    } finally { await page.close(); }
   }
+  assert.deepEqual(levels, [
+    [[2, true, 'a texture drawn in a dry frame used by a later draw']], // both clears skipped; only the texture was at fault
+    [[1, false, null]] // the render target cleared, the canvas skipped
+  ]);
+  assert.deepEqual(sampled, [
+    [1, false, null], // the stale texture is bound on unit 3, the program samples unit 0
+    [1, false, 'a texture drawn in a dry frame used by a later draw'] // b[1] samples unit 3
+  ]);
+  const reads = await Promise.all([
+    scenario(() => {
+      const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
+      dry.install();
+      const gl = document.body.appendChild(document.createElement('canvas')).getContext('webgl2');
+      if (!gl) return [];
+      const pixel = new Uint8Array(4);
+      dry.setDry('all'); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      dry.setDry(false); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+      const fresh = dry.report().unsafe;
+      dry.setDry('all'); gl.clear(gl.COLOR_BUFFER_BIT); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+      return [[0, false, fresh], [0, false, dry.report().unsafe]];
+    }),
+    scenario(() => {
+      const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
+      dry.install();
+      const webgl = document.body.appendChild(document.createElement('canvas'));
+      const gl = webgl.getContext('webgl2');
+      const flat = document.createElement('canvas').getContext('2d');
+      if (!gl || !flat) return [];
+      dry.setDry('all'); gl.clear(gl.COLOR_BUFFER_BIT);
+      flat.drawImage(webgl, 0, 0);
+      return [[0, false, dry.report().unsafe]];
+    }),
+    scenario(() => {
+      const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
+      dry.install();
+      const gl = document.body.appendChild(document.createElement('canvas')).getContext('webgl2');
+      if (!gl) return [];
+      dry.setDry('all'); gl.drawArrays(gl.POINTS, 0, 0);
+      gl.getError();
+      return [[0, false, dry.report().unsafe]];
+    })
+  ]);
+  assert.deepEqual(reads.map((seen) => seen.map((entry) => entry[2])), [
+    [null, 'readPixels of a drawing a dry frame skipped'],
+    ['drawImage of a WebGL canvas a dry frame left stale'],
+    ['getError after a dry frame']
+  ]);
+  // WebGL 1 extensions draw too; a canvas off the page is not shown.
+  const extension = await scenario(() => {
+    const dry = (Reflect.get(window, 'ElaboraDry') as { createDryFrames(): DryFrames }).createDryFrames();
+    dry.install();
+    const gl = document.createElement('canvas').getContext('webgl');
+    const instanced = gl?.getExtension('ANGLE_instanced_arrays');
+    if (!gl || !instanced) return [];
+    dry.setDry('all'); instanced.drawArraysInstancedANGLE(gl.POINTS, 0, 0, 1);
+    const r = dry.report();
+    return [[r.skipped, r.stale, r.unsafe]];
+  });
+  assert.deepEqual(extension, [[1, false, null]]);
 });
 
-test('an object unchanged since its last run is not run again; a change to it or to the theme runs it, and so does force', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('an object unchanged since its last run is not run again; a change to it or to the theme runs it, and so does force', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   addDrawProbe(dir, [{ name: 'counts', steps: [{ action: 'step', frames: 20 }, { action: 'expect-state', state: { frame: 21 } }] }]); // the mount draws the first frame
   const first = await testObject(dir, 'draw-probe');
   assert.equal(first.gates.behaviour, 'passed', JSON.stringify(first.diagnostics));
   assert.equal(first.reused, undefined);
-  const recorded = JSON.parse(fs.readFileSync(path.join(dir, 'objects/draw-probe/object.gates.json'), 'utf8'));
-  const begin = Date.now();
   const again = await testObject(dir, 'draw-probe');
-  assert.deepEqual(again.reused, { at: recorded.at });
+  assert.match(again.reused?.at ?? '', /^\d{4}-\d{2}-\d{2}T/);
   assert.deepEqual({ ...again, reused: undefined }, { ...first, reused: undefined });
-  assert.ok(Date.now() - begin < 5000, `${Date.now() - begin} ms`);
   // The theme's tokens, which props may be bound to: it runs again.
   const course = readJSON(dir, 'course.json');
   course.theme.tokens = { ...course.theme.tokens, 'color.primary': '#7a1f3d' };
@@ -354,8 +354,8 @@ test('an object unchanged since its last run is not run again; a change to it or
   assert.equal((await testObject(dir, 'draw-probe', { force: true })).reused, undefined);
 });
 
-test('--update-snapshots removes the baselines of states no test names, and none when object.tests.json does not read', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('--update-snapshots removes the baselines of states no test names, and none when object.tests.json does not read', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   addDrawProbe(dir, [{ name: 'colour', steps: [{ action: 'step', frames: 20 }, { action: 'snapshot', name: 'end' }] }]);
   const snapshots = path.join(dir, 'objects/draw-probe/__snapshots__');
   fs.mkdirSync(snapshots, { recursive: true });

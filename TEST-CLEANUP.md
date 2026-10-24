@@ -35,7 +35,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Low-value assertion | 6 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 5 | validate: counted two errors without identifying their prop paths |
 | Resource cleanup | 110 | validate: copied fixtures were never removed |
-| Wall-clock timing | 11 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
+| Wall-clock timing | 14 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
 | Private layout assertions | 7 | charts-matrix imported label placement helpers instead of measuring rendered labels |
@@ -70,7 +70,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/e2e/look.test.ts` | 357 | 353 | Focused seed 104729 passed all six workflows; look reuse, code reload, scrolling, object actions and refused opaque-frame behaviour; response events replace sleeps |
 | `test/e2e/media.test.ts` | 96 | 82 | Focused seed 104729 passed; iframe navigation, loaded metadata and seeked events synchronize actual video controls; own fixture and browser |
 | `test/e2e/narration.test.ts` | 437 | — | Pending |
-| `test/e2e/object.test.ts` | 372 | — | Pending |
+| `test/e2e/object.test.ts` | 372 | 372 | Focused seed 104729 passed all fourteen cases; real object gate failures, states, event sequences, dry WebGL readback and decoded captures; no elapsed-time/PNG-size budgets |
 | `test/e2e/plan-document.test.ts` | 61 | — | Pending |
 | `test/e2e/player-items.test.ts` | 265 | — | Pending |
 | `test/e2e/player.test.ts` | 150 | — | Pending |
