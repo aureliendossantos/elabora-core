@@ -178,6 +178,8 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `.sampo/changesets/layer-captions-bare-canvas.md` | 5 | 6 | Metadata only; restore mandatory root release target so CI can run |
 | `.sampo/changesets/player-motion.md` | 10 | 11 | Metadata only; restore mandatory root release target so CI can run |
 
+| `test/resources.ts` | 0 | 29 | Shared test-only ownership helper: context-scoped copies/folders and reverse-order disposal; used by subsequent audit files |
+
 ## Remaining work
 
-Ten core files were rewritten, starting with edit/undo, session consistency, validation and persistence. Continue the pending inventory with the CLI transport, cloud, dialogue, fonts, plan-document and sources suites, then the remaining browser scenarios. The app ledger records its completed 17-file audit and proposed refactors. Preserve every unique behaviour and record environmental limits separately from passes.
+Audit resumed after the first ten rewritten core files. The remaining inventory is being reviewed to completion. Ten initial core files were rewritten, starting with edit/undo, session consistency, validation and persistence. Continue the pending inventory with the CLI transport, cloud, dialogue, fonts, plan-document and sources suites, then the remaining browser scenarios. The app ledger records its completed 17-file audit and proposed refactors. Preserve every unique behaviour and record environmental limits separately from passes.
