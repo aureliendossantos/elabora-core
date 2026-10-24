@@ -23,7 +23,6 @@ test('process: markup hooks, numbered circles and the links between them', () =>
   assert.equal(count(html, /class="t-process-step/g), 3);
   // A link from each step to the next: none after the last.
   assert.equal(count(html, /class="t-process-link"/g), 2);
-  assert.ok(!/t-process-link[^]*t-process-link[^]*t-process-link/.test(html));
   // The circle is the item's first element and says the step; title and text belong to the item.
   assert.match(html, /<span class="t-process-n" data-t-item="stop" data-t-say="1. Don’t click, don’t reply: Not even to unsubscribe.">1<\/span>/);
   assert.match(html, /data-t-item="delete" data-t-say="3. Delete it">3</);

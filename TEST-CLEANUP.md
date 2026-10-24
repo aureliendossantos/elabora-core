@@ -25,7 +25,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Defect | Count | Example |
 | --- | ---: | --- |
 | Implementation coupling | 36 | ops: private computeDiff comparison and exact chosen diff scripts |
-| Duplicate assertions | 4 | ops: identical notes restoration asserted twice |
+| Duplicate assertions | 5 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
 | Fixed-delay synchronization | 32 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
@@ -91,7 +91,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/charts-levels.test.ts` | 103 | — | Pending |
 | `test/unit/charts-matrix.test.ts` | 98 | — | Pending |
 | `test/unit/charts-milestones.test.ts` | 95 | — | Pending |
-| `test/unit/charts-process.test.ts` | 84 | — | Pending |
+| `test/unit/charts-process.test.ts` | 84 | 83 | Passed 5 native-seeded cases; public markup/accessibility/order/table/escaping/highlight/determinism retained; duplicate link-count assertion removed |
 | `test/unit/charts-proportion.test.ts` | 69 | — | Pending |
 | `test/unit/charts.test.ts` | 186 | — | Pending |
 | `test/unit/cli-projects.test.ts` | 266 | — | Pending |
