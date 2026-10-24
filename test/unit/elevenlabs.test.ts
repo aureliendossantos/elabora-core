@@ -555,7 +555,7 @@ test('elevenlabs: a Starter plan is estimated at the ledger\'s undiscounted 0.4 
   // The model's list price is no longer the period's: the ledger and the requests made at the old price are not used.
   assert.deepEqual([chargedShare('starter', 'eleven_v4', 2), expectedCharge('starter', 'eleven_v4', 2).from], [1, 'list']);
   // A request too small to say a share (8 credits for 74 characters) is not counted.
-  fs.rmSync(path.join(process.env.ELABORA_ELEVENLABS_CACHE, 'charges.json'));
+  fs.rmSync(path.join(process.env.ELABORA_ELEVENLABS_CACHE!, 'charges.json'));
   charge(30, 'starter', 30);
   assert.equal(chargedShare('starter'), STARTER);
   // A plan the ledger has not measured: the list price, then what its own requests say, and a quarter more.
@@ -567,9 +567,9 @@ test('elevenlabs: a Starter plan is estimated at the ledger\'s undiscounted 0.4 
   // A model the ledger has not measured: the list price.
   assert.equal(chargedShare('starter', 'eleven_v5'), 1);
   // rates.json, kept before the ledger without dates, is dropped once a charge is kept.
-  fs.writeFileSync(path.join(process.env.ELABORA_ELEVENLABS_CACHE, 'rates.json'), '{}');
+  fs.writeFileSync(path.join(process.env.ELABORA_ELEVENLABS_CACHE!, 'rates.json'), '{}');
   charge(40);
-  assert.equal(fs.existsSync(path.join(process.env.ELABORA_ELEVENLABS_CACHE, 'rates.json')), false);
+  assert.equal(fs.existsSync(path.join(process.env.ELABORA_ELEVENLABS_CACHE!, 'rates.json')), false);
 });
 
 

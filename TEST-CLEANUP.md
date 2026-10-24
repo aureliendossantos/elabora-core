@@ -105,7 +105,7 @@ Further review should prioritize the CLI transport suite (715 lines), ElevenLabs
 | `test/unit/edit-journal.test.ts` | 225 | — | Pending |
 | `test/unit/edit.test.ts` | 223 | — | Pending |
 | `test/unit/electron-runtime.test.ts` | 21 | — | Pending |
-| `test/unit/elevenlabs.test.ts` | 675 | 688 | Native seed 104729 passed (17 plus 1 opt-in live skip); fresh quota/rate/cache/request fixtures, explicit library-voice search, preserved paid-generation, dialogue, CLI and engine contracts |
+| `test/unit/elevenlabs.test.ts` | 675 | 688 | Native seed 104729: 17 passed and 1 live skip; fresh service/account/cache state fixes two reproduced order dependencies; alignment checks exchange timestamps |
 | `test/unit/engine-agents.test.ts` | 189 | — | Pending |
 | `test/unit/engine-build.test.ts` | 127 | — | Pending |
 | `test/unit/engine-canvas.test.ts` | 133 | — | Pending |
