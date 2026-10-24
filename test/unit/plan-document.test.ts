@@ -1,13 +1,11 @@
-import { after, test } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { openProject } from '@elabora/engine';
-import type { Session } from '@elabora/engine';
 import { planDocument } from '@elabora/core/plan-document/model';
 import { localDay } from '@elabora/core/util/local-day';
 import { commandContext } from '@elabora/core/commands/context';
@@ -24,7 +22,9 @@ import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { iterateBlocks } from '@elabora/core/project/load';
 import * as edit from '@elabora/node/edit';
 import { createMcpServer } from '@elabora/cli/mcp';
-import { ROOT, copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, readJSON, writeJSON } from '../helpers.ts';
+
+import { resources } from '../resources.ts';
 
 // The plan's document (docs/decisions.md D48, D52): one model, read by the Word, HTML and PDF exports
 // and by the app. What the client reads and signs: a version of the plan or its working copy, the
@@ -33,17 +33,6 @@ import { ROOT, copyExample, readJSON, writeJSON } from '../helpers.ts';
 // well-formed XML, bookmarks, revisions) and, when they are installed, opened by python-docx and
 // read back by pandoc.
 
-const temporary: string[] = [];
-const sessions: Session[] = [];
-after(async () => {
-  for (const session of sessions) await session.close().catch(() => {});
-  for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true });
-});
-const course = (source?: string): string => {
-  const dir = copyExample(source);
-  temporary.push(dir);
-  return dir;
-};
 const GEARS = path.join(ROOT, 'examples/planetary-gearset');
 const NETWORK = path.join(ROOT, 'examples/diagnostic-reseau'); // V1 sent, V2 validated, two changes since
 const PERSON = { author: { kind: 'human' as const, name: 'Aurélien' } };
@@ -53,7 +42,8 @@ const documentOf = (dir: string, version?: number | 'current'): PlanDocument => 
 const section = <Kind extends PlanSection['kind']>(doc: PlanDocument, kind: Kind) => doc.sections.find((entry) => entry.kind === kind) as Extract<PlanSection, { kind: Kind }>;
 const docxText = (doc: PlanDocument) => [...planDocumentDocx(doc).values()].join('\n');
 
-test('the document of a validated version: its properties, then the six sections, in the module\'s language', () => {
+test('the document of a validated version: its properties, then the six sections, in the module\'s language', (t) => {
+  const { copyExample: course } = resources(t);
   const doc = documentOf(course());
   assert.equal(doc.format, 'elabora/plan-document/2');
   assert.equal(doc.words, 'fr');
@@ -83,7 +73,8 @@ test('the document of a validated version: its properties, then the six sections
 });
 
 // The day of a document, of an approval, is the author's: 00:30 in Paris is still yesterday in UTC.
-test('the document is dated the author\'s day, not UTC\'s: the time and the zone are fixed', () => {
+test('the document is dated the author\'s day, not UTC\'s: the time and the zone are fixed', (t) => {
+  const { copyExample: course } = resources(t);
   const zone = process.env.TZ;
   const dir = course();
   try {
@@ -108,7 +99,8 @@ test('the document is dated the author\'s day, not UTC\'s: the time and the zone
   }
 });
 
-test('English words for an English module; a numeric question and maths', () => {
+test('English words for an English module; a numeric question and maths', (t) => {
+  const { copyExample: course } = resources(t);
   const doc = documentOf(course(GEARS));
   assert.equal(doc.words, 'en');
   assert.equal(doc.status.label, 'Approved for production');
@@ -123,7 +115,8 @@ test('English words for an English module; a numeric question and maths', () => 
   assert.ok(willis.text.blocks.some((block) => block.type === 'math'));
 });
 
-test('the status follows the versions: a draft without one, a version to approve, changes since the validated version', () => {
+test('the status follows the versions: a draft without one, a version to approve, changes since the validated version', (t) => {
+  const { copyExample: course } = resources(t);
   const dir = course();
   fs.rmSync(path.join(dir, 'plan-versions'), { recursive: true });
   let doc = documentOf(dir);
@@ -148,7 +141,8 @@ test('the status follows the versions: a draft without one, a version to approve
   assert.throws(() => documentOf(network, 3), /The plan has no version V3 \(it has V1, V2\)/);
 });
 
-test('the changes since the validated version read in place: words deleted and inserted, elements marked, the notes for the client', () => {
+test('the changes since the validated version read in place: words deleted and inserted, elements marked, the notes for the client', (t) => {
+  const { copyExample: course } = resources(t);
   const dir = course(NETWORK);
   let doc = documentOf(dir, 'current');
   const text = section(doc, 'texts').groups[1]!.texts[0]!;
@@ -192,7 +186,8 @@ test('the changes since the validated version read in place: words deleted and i
   assert.match(parts2.get('word/comments.xml')!, /<w:comment w:id="\d+" w:author="Note pour le client" w:initials="NPLC">.*Formulation plus directe/);
 });
 
-test('the document never says who wrote the plan or a change', () => {
+test('the document never says who wrote the plan or a change', (t) => {
+  const { copyExample: course } = resources(t);
   const dir = course(GEARS);
   edit.setPlanText(dir, { block: readBlockWithText(dir, 'TXT-1'), markdown: 'A planetary gearset fits in the space of a single gear.' }, AGENT);
   edit.writePlan(dir, { patch: [{ op: 'replace', path: '/items/0/title', value: 'One gearset' }] }, AGENT);
@@ -298,7 +293,8 @@ function checkDocx(bytes: Buffer, doc: PlanDocument): Map<string, string> {
   return parts;
 }
 
-test('the .docx is a valid package: parts, relationships, styles, bookmarks, tracked changes; Word\'s headings', () => {
+test('the .docx is a valid package: parts, relationships, styles, bookmarks, tracked changes; Word\'s headings', (t) => {
+  const { copyExample: course } = resources(t);
   const dir = course(GEARS);
   edit.setPlanText(dir, { block: readBlockWithText(dir, 'TXT-1'), markdown: 'A planetary gearset fits in the space of a single gear, yet it can **reduce** speed.' }, AGENT);
   const doc = documentOf(dir, 'current');
@@ -316,15 +312,16 @@ test('the .docx is a valid package: parts, relationships, styles, bookmarks, tra
   // The same project and day give the same bytes (D8); another day, another document.
   assert.deepEqual(planDocumentWord(doc), planDocumentWord(documentOf(dir, 'current')));
   assert.notDeepEqual(planDocumentWord(doc), planDocumentWord(planDocument(loadProjectFromDir(dir), { date: '2026-10-16', version: 'current' })!));
-  checkDocx(planDocumentWord(documentOf(course())), documentOf(course()));
+  const draft = documentOf(course());
+  checkDocx(planDocumentWord(draft), draft);
 });
 
 test('python-docx opens the .docx and pandoc reads its maths and tracked changes back (when they are installed)', (t) => {
+  const { copyExample: course, tempDir } = resources(t);
   const dir = course(GEARS);
   edit.setPlanText(dir, { block: readBlockWithText(dir, 'TXT-1'), markdown: 'A planetary gearset fits in the space of one gear.' }, AGENT);
   edit.setPlanNote(dir, { target: 'text:TXT-1', text: 'Shorter.' }, PERSON);
-  const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-docx-')), 'plan.docx');
-  temporary.push(path.dirname(file));
+  const file = path.join(tempDir('elabora-docx-'), 'plan.docx');
   fs.writeFileSync(file, planDocumentWord(documentOf(dir, 'current')));
   const python = spawnSync('python3', ['-I', '-c', 'import sys, docx\nd = docx.Document(sys.argv[1])\nprint("|".join(p.style.name for p in d.paragraphs if p.style.name.startswith("Heading")))', file], { encoding: 'utf8' });
   if (python.error || /No module named/.test(python.stderr)) t.diagnostic('python-docx is not installed: skipped');
@@ -343,8 +340,10 @@ test('python-docx opens the .docx and pandoc reads its maths and tracked changes
   assert.match(pandoc.stdout, /\{\.comment-start[^}]*author="Note for the client"[^}]*\}Shorter\.|\[Shorter\.\]\{\.comment-start[^}]*author="Note for the client"[^}]*\}/);
 });
 
-test('the HTML page holds its fonts, its anchors and its print rules; it is the same for the same day', () => {
-  const doc = documentOf(course());
+test('the HTML page holds its fonts, its anchors and its print rules; it is the same for the same day', (t) => {
+  const { copyExample: course } = resources(t);
+  const dir = course();
+  const doc = documentOf(dir);
   const html = planDocumentPage(doc);
   assert.match(html, /^<!doctype html>\n<html lang="fr">/);
   assert.match(html, /@font-face \{ font-family: "Inter"; font-style: normal; font-weight: 100 900; font-display: block; src: url\(data:font\/woff2;base64,/);
@@ -353,7 +352,7 @@ test('the HTML page holds its fonts, its anchors and its print rules; it is the 
   assert.match(html, /@page \{\n  size: A4;/);
   assert.match(html, /@bottom-right \{ content: "Page" " " counter\(page\) " \/ " counter\(pages\)/);
   assert.match(html, /<span class="pill">Bon pour production<\/span>/);
-  assert.equal(html, planDocumentPage(documentOf(course())));
+  assert.equal(html, planDocumentPage(documentOf(dir)));
   assert.doesNotMatch(html, /<script/i, 'nothing runs in the page');
   // A title is text everywhere, in the style sheet's footer too.
   const odd = course();
@@ -385,7 +384,8 @@ function elabora(args: string[]): Promise<{ status: number | null; stdout: strin
   });
 }
 
-test('elabora plan export writes Word and HTML where asked, in dist/ by default; a wrong format is a usage error', async () => {
+test('elabora plan export writes Word and HTML where asked, in dist/ by default; a wrong format is a usage error', async (t) => {
+  const { copyExample: course } = resources(t);
   const dir = course();
   const out = path.join(dir, 'out', 'plan.docx');
   const word = await elabora(['plan', 'export', dir, '--format', 'docx', '--out', out, '--date', DATE]);
@@ -412,22 +412,21 @@ test('elabora plan export writes Word and HTML where asked, in dist/ by default;
   assert.match((await elabora(['plan', 'export', network, '--version', 'current', '--format', 'html', '--date', DATE])).stdout, /showing the working copy\. It shows its changes since the validated version\.\n$/);
 });
 
-test('MCP elabora_export_plan_document writes into dist/; the engine gives the model, the page and the files', async () => {
+test('MCP elabora_export_plan_document writes into dist/; the engine gives the model, the page and the files', async (t) => {
+  const { copyExample: course, tempDir, own } = resources(t);
   const dir = course();
-  const server = createMcpServer(dir);
+  const server = own(createMcpServer(dir), value => value.close());
   const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
   await server.connect(serverSide);
-  const client = new Client({ name: 'test', version: '1' });
+  const client = own(new Client({ name: 'test', version: '1' }), value => value.close());
   await client.connect(clientSide);
   const result = await client.callTool({ name: 'elabora_export_plan_document', arguments: { format: 'docx' } });
   const body = JSON.parse((result.content as { text: string }[])[0]!.text);
   assert.deepEqual([body.file, body.version, body.sent], [path.join(dir, 'dist', 'diagnostic-reseau-plan.docx'), 'V1', true]);
   assert.ok(fs.existsSync(body.file));
   assert.equal(readJSON(dir, 'plan-versions/V1.json').sends.length, 1, 'the send recorded, by the agent the author asked');
-  await client.close();
 
-  const session = await openProject(dir);
-  sessions.push(session);
+  const session = own(await openProject(dir), value => value.close());
   const ask = async (type: string, params: unknown) => {
     const response = await session.handle({ kind: 'request', id: type, type, params });
     if (!response.ok) throw Object.assign(new Error(response.error.message), { kind: response.error.kind });
@@ -458,13 +457,14 @@ test('MCP elabora_export_plan_document writes into dist/; the engine gives the m
   await assert.rejects(ask('planDocument', { version: 7 }), (error: Error & { kind?: string }) => error.kind === 'not-found');
   await assert.rejects(ask('exportPlanDocument', { format: 'odt', file }), (error: Error & { kind?: string }) => error.kind === 'bad-request' && /takes a format/.test(error.message));
   await assert.rejects(ask('exportPlanDocument', { format: 'docx', file: 'plan.docx' }), /absolute path/);
-  assert.throws(() => readPlanDocument(loadProjectFromDir(fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-empty-')))), /No readable plan\.json/);
+  assert.throws(() => readPlanDocument(loadProjectFromDir(tempDir('elabora-empty-'))), /No readable plan\.json/);
 });
 
 // A plan without parts takes them from the course's sections, and the app writes them into the plan
 // the first time its author drags an item (D50): the patch moves the item and gives every item the
 // part it was shown in. That is one item moved, not six whose part changed (D52).
-test('a plan that writes its parts down when one item is dragged changed that item only: counts, document, Word, HTML, the command line and the engine', async () => {
+test('a plan that writes its parts down when one item is dragged changed that item only: counts, document, Word, HTML, the command line and the engine', async (t) => {
+  const { copyExample: course, own } = resources(t);
   const dir = course(); // V1, validated, the working copy as it is; no part anywhere; sections Découvrir (1, 2), Pratiquer (3, 4), Valider (5, 6)
   assert.ok(readJSON(dir, 'plan.json').items.every((item: { part?: string }) => item.part === undefined));
   // ITEM-6 dragged up among the items of Pratiquer, as the app writes it: a move, then each item's part.
@@ -499,8 +499,7 @@ test('a plan that writes its parts down when one item is dragged changed that it
   assert.equal(line.status, 0, line.stderr);
   assert.match(line.stdout, /^From V1 to the working copy: 1 change\(s\): 0 added, 0 removed, 1 changed\.\n  item:ITEM-6  changed « .* » \(moved from 6 to 4\)\n$/);
   only(JSON.parse((await elabora(['plan', 'diff', dir, '--json'])).stdout).changes);
-  const session = await openProject(dir);
-  sessions.push(session);
+  const session = own(await openProject(dir), value => value.close());
   const ask = async (type: string) => {
     const response = await session.handle({ kind: 'request', id: type, type, params: {} });
     if (!response.ok) throw new Error(response.error.message);

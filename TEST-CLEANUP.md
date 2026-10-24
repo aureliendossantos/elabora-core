@@ -34,9 +34,9 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 1 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 72 | validate: copied fixtures were never removed |
+| Resource cleanup | 75 | validate: copied fixtures were never removed |
 | Wall-clock timing | 4 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
-| Duplicate fixtures | 2 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
+| Duplicate fixtures | 4 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
 
 ## Production changes
@@ -142,7 +142,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/ops.test.ts` | 929 | 757 | Passed 41 cases; shared seeded generator and real snapshot reader replace duplicate support machinery; public replay/undo properties and all named boundaries retained |
 | `test/unit/package-limits.test.ts` | 131 | — | Pending |
 | `test/unit/pdf-title.test.ts` | 111 | — | Pending |
-| `test/unit/plan-document.test.ts` | 523 | — | Pending |
+| `test/unit/plan-document.test.ts` | 523 | 522 | Passed all plan-document cases with native seed 130363; context-owned copies, clients and sessions replace shared arrays and swallowed close failures; valid package/revisions/privacy/local-day/deterministic export contracts retained |
 | `test/unit/plan-order.test.ts` | 124 | — | Pending |
 | `test/unit/plan.test.ts` | 356 | — | Pending |
 | `test/unit/player-items.test.ts` | 422 | — | Pending |
