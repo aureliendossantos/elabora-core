@@ -27,15 +27,15 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Implementation coupling | 23 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 4 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 9 | ops: module-level change ID counter replaced with content-derived IDs |
-| Fixed-delay synchronization | 21 | engine-session: sleep(400) before checking watcher results |
+| Fixed-delay synchronization | 23 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
 | Unseeded randomness | 13 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 | Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 1 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 75 | validate: copied fixtures were never removed |
-| Wall-clock timing | 4 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
+| Resource cleanup | 76 | validate: copied fixtures were never removed |
+| Wall-clock timing | 6 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 4 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
 
@@ -113,7 +113,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/edit.test.ts` | 223 | — | Pending |
 | `test/unit/electron-runtime.test.ts` | 21 | — | Pending |
 | `test/unit/elevenlabs.test.ts` | 675 | 688 | Native seed 104729: 17 passed and 1 live skip; fresh service/account/cache state fixes two reproduced order dependencies; alignment checks exchange timestamps |
-| `test/unit/engine-agents.test.ts` | 189 | — | Pending |
+| `test/unit/engine-agents.test.ts` | 189 | 177 | Passed 8 native-seeded cases; public-event waits and fake clock drive idle/backup deadlines; rescan barrier replaces sleep; test-owned sessions retain real CLI/agent journal and undo contracts |
 | `test/unit/engine-build.test.ts` | 127 | — | Pending |
 | `test/unit/engine-canvas.test.ts` | 133 | — | Pending |
 | `test/unit/engine-media.test.ts` | 208 | — | Pending |
