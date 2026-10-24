@@ -34,7 +34,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 6 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 5 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 111 | validate: copied fixtures were never removed |
+| Resource cleanup | 112 | validate: copied fixtures were never removed |
 | Wall-clock timing | 14 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -77,7 +77,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/e2e/review.test.ts` | 299 | 303 | Focused seed 155921 passed; explicit browser message acknowledgements and event log replace fixed waits and polling; review origin/refusal behaviours retained |
 | `test/e2e/timeline.test.ts` | 461 | — | Pending |
 | `test/e2e/web.test.ts` | 150 | 149 | Focused seed 130363 passed; local progress survives reload, none persists nothing, free navigation reaches end across three built targets; owned resources |
-| `test/matrix/lms-matrix.test.ts` | 26 | — | Pending |
+| `test/matrix/lms-matrix.test.ts` | 26 | 26 | Native seed 130363 passed; real sample validation, packaging, LMS launch modes and browser gates retained; own copied inputs, outputs and browser resources |
 | `test/matrix/medieval.test.ts` | 45 | — | Pending |
 | `test/matrix/phishing.test.ts` | 41 | — | Pending |
 | `test/matrix/planetary.test.ts` | 84 | — | Pending |
