@@ -1,23 +1,30 @@
 import { test } from 'node:test';
+import type { TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { validateDir, loadProjectFromDir } from '@elabora/node/project-reader';
-import { validateProject, validateScreen, validateProjectChecks, createValidationContext, FILE_CHECKS, COURSE_CHECKS } from '@elabora/core/validate/index';
+import { validateProject, validateScreen, validateProjectChecks, createValidationContext } from '@elabora/core/validate/index';
 import type { Diagnostic } from '@elabora/core/diagnostics/index';
 import type { Block } from '@elabora/format';
 import { loadProject } from '@elabora/core/project/load';
 import { binaryFile, createProjectFiles, textFile } from '@elabora/core/project/files';
 import type { FileMedia } from '@elabora/core/media/conformance';
-import { ROOT, EXAMPLE, copyExample, readJSON, writeJSON, writeFixture, codes, addExplorer } from '../helpers.ts';
+import { ROOT, EXAMPLE, copyExample as copyCourse, readJSON, writeJSON, writeFixture, codes, addExplorer } from '../helpers.ts';
 
-test('the example course has no error', () => {
+const copyExample = (t: TestContext, source?: string) => {
+  const dir = copyCourse(source);
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  return dir;
+};
+
+test('the example course has no error', testContext => {
   const r = validateDir(EXAMPLE, { profiles: ['moodle', 'successfactors'] });
   assert.equal(r.summary.errors, 0, JSON.stringify(r.diagnostics.filter((d) => d.severity === 'error'), null, 1));
 });
 
-test('contract rules: uncovered item, unused locked text, orphan reference', () => {
-  const dir = copyExample();
+test('contract rules: uncovered item, unused locked text, orphan reference', testContext => {
+  const dir = copyExample(testContext);
   const s = readJSON(dir, 'screens/chemin.json');
   s.covers = ['ITEM-9'];
   writeJSON(dir, 'screens/chemin.json', s);
@@ -25,8 +32,8 @@ test('contract rules: uncovered item, unused locked text, orphan reference', () 
   for (const code of ['E_PLAN_ITEM_UNCOVERED', 'E_PLAN_REFERENCE', 'E_LOCKED_TEXT_OUTSIDE_ITEM']) assert.ok(c.includes(code), code);
 });
 
-test('item-writing and feedback rules', () => {
-  const dir = copyExample();
+test('item-writing and feedback rules', testContext => {
+  const dir = copyExample(testContext);
   const s = readJSON(dir, 'screens/evaluation.json');
   s.blocks.push({ id: 'q3', type: 'quiz', props: { stem: "Quel équipement n'est pas sur le chemin ?", mode: 'single', options: [{ id: 'a', text: 'Toutes les réponses', correct: true }, { id: 'b', text: 'Le routeur', correct: true }] } });
   writeJSON(dir, 'screens/evaluation.json', s);
@@ -34,8 +41,8 @@ test('item-writing and feedback rules', () => {
   for (const code of ['E_FEEDBACK_MISSING', 'E_QUIZ_SINGLE_MULTIPLE_CORRECT', 'W_QUIZ_ALL_NONE', 'W_QUIZ_NEGATION', 'W_QUIZ_OPTION_COUNT']) assert.ok(c.includes(code), code);
 });
 
-test('accessibility rules: alt text, heading order, contrast', () => {
-  const dir = copyExample();
+test('accessibility rules: alt text, heading order, contrast', testContext => {
+  const dir = copyExample(testContext);
   const s = readJSON(dir, 'screens/chemin.json');
   delete s.blocks[1].props.alt;
   s.blocks.push({ id: 'chemin-h', type: 'heading', props: { text: 'x', level: 4 } });
@@ -47,8 +54,8 @@ test('accessibility rules: alt text, heading order, contrast', () => {
   for (const code of ['E_IMAGE_ALT_MISSING', 'E_HEADING_ORDER', 'E_THEME_CONTRAST']) assert.ok(c.includes(code), code);
 });
 
-test('videos and sounds: captions and a transcript when heard, alt for a loop, nothing when decorative', () => {
-  const dir = copyExample();
+test('videos and sounds: captions and a transcript when heard, alt for a loop, nothing when decorative', testContext => {
+  const dir = copyExample(testContext);
   for (const file of ['assets/video/demo.mp4', 'assets/audio/appel.mp3']) {
     fs.mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
     fs.writeFileSync(path.join(dir, file), 'x');
@@ -83,8 +90,8 @@ function withScreenProps(project: ReturnType<typeof loadProjectFromDir>, screen:
   return loadProject(createProjectFiles([...project.files].map(([name, content]) => [name, name === file ? textFile(JSON.stringify(data)) : content] as const)), { root: project.root });
 }
 
-test('events: wrong target kind, unknown screen, value type, undeclared object event', () => {
-  const dir = copyExample();
+test('events: wrong target kind, unknown screen, value type, undeclared object event', testContext => {
+  const dir = copyExample(testContext);
   const s = readJSON(dir, 'screens/simulation.json');
   s.events[0].on.name = 'nope';
   s.events.push({ id: 'bad', on: { type: 'click', target: 'simulation-consigne' }, do: [{ type: 'go-to', screen: 'nowhere' }, { type: 'set-variable', variable: 'bonsReflexes', value: 'trois' }] });
@@ -93,8 +100,8 @@ test('events: wrong target kind, unknown screen, value type, undeclared object e
   for (const code of ['E_OBJECT_EVENT_UNDECLARED', 'E_EVENT_TARGET', 'E_ACTION_TARGET', 'E_VARIABLE_TYPE']) assert.ok(c.includes(code), code);
 });
 
-test('events: one without actions is valid, with a warning; with conditions, else may hold them', () => {
-  const dir = copyExample();
+test('events: one without actions is valid, with a warning; with conditions, else may hold them', testContext => {
+  const dir = copyExample(testContext);
   const s = readJSON(dir, 'screens/simulation.json');
   s.events.push({ id: 'simulation-vide', on: { type: 'screen.enter' }, do: [] });
   s.events.push({ id: 'simulation-sinon', on: { type: 'screen.enter' }, if: [{ variable: 'indiceVu', op: 'eq', value: true }], do: [], else: [{ type: 'set-variable', variable: 'indiceVu', value: true }] });
@@ -104,8 +111,8 @@ test('events: one without actions is valid, with a warning; with conditions, els
   assert.deepEqual(d.filter((x) => x.code === 'W_EVENT_NO_ACTION').map((x) => [x.target, x.path]), [['simulation-vide', `/events/${s.events.length - 2}/do`]]);
 });
 
-test('events: hide-layer without a layer closes the open one, on a screen that has a layer', () => {
-  const dir = copyExample();
+test('events: hide-layer without a layer closes the open one, on a screen that has a layer', testContext => {
+  const dir = copyExample(testContext);
   const s = readJSON(dir, 'screens/chemin.json');
   s.layers = [{ id: 'chemin-detail', title: 'Détail', blocks: [
     { id: 'chemin-detail-t', type: 'text', props: { markdown: 'Détail.' } },
@@ -131,8 +138,8 @@ test('events: hide-layer without a layer closes the open one, on a screen that h
   assert.ok(codes(validateDir(dir).diagnostics).includes('E_SCHEMA'));
 });
 
-test('events: reveal-step names a step of the screen', () => {
-  const dir = copyExample();
+test('events: reveal-step names a step of the screen', testContext => {
+  const dir = copyExample(testContext);
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.splice(1, 0, { id: 'chemin-voir', type: 'button', props: { label: 'Voir le schéma' } });
   s.blocks[2].step = 2;
@@ -158,8 +165,8 @@ test('events: reveal-step names a step of the screen', () => {
   assert.ok(!codes(validateDir(dir).diagnostics).includes('E_STEP_UNREACHABLE'));
 });
 
-test('events: named controls of components and visited conditions', () => {
-  const dir = copyExample();
+test('events: named controls of components and visited conditions', testContext => {
+  const dir = copyExample(testContext);
   addExplorer(dir);
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push(
@@ -197,21 +204,21 @@ test('events: named controls of components and visited conditions', () => {
   assert.ok(validateDir(dir).diagnostics.some((x) => x.code === 'E_COMPONENT_HOOK' && /data-t-click="Voir"/.test(x.message)));
 });
 
-test('free object code: forbidden APIs and non-determinism are errors', () => {
-  const dir = copyExample();
+test('free object code: forbidden APIs and non-determinism are errors', testContext => {
+  const dir = copyExample(testContext);
   fs.appendFileSync(path.join(dir, 'objects/diagnostic-reseau/object.js'), "\nconst x = Math.random() + Date.now(); fetch('https://example.com'); localStorage.x = 1;\n");
   const c = codes(validateDir(dir).diagnostics);
   for (const code of ['E_OBJECT_FORBIDDEN_API', 'E_OBJECT_NONDETERMINISM', 'E_EXTERNAL_RESOURCE']) assert.ok(c.includes(code), code);
 });
 
-test('free object code: XML namespace names are not external resources', () => {
-  const dir = copyExample();
+test('free object code: XML namespace names are not external resources', testContext => {
+  const dir = copyExample(testContext);
   fs.appendFileSync(path.join(dir, 'objects/diagnostic-reseau/object.js'), "\nexport const svgNode = (tag) => document.createElementNS('http://www.w3.org/2000/svg', tag);\n");
   assert.ok(!codes(validateDir(dir).diagnostics).includes('E_EXTERNAL_RESOURCE'));
 });
 
-test('free object props bind to custom tokens with hyphens (x-token)', () => {
-  const dir = copyExample();
+test('free object props bind to custom tokens with hyphens (x-token)', testContext => {
+  const dir = copyExample(testContext);
   const course = readJSON(dir, 'course.json');
   course.theme.custom = { ...(course.theme.custom || {}), 'color.deep-sea': '#0F2A47' };
   writeJSON(dir, 'course.json', course);
@@ -222,14 +229,14 @@ test('free object props bind to custom tokens with hyphens (x-token)', () => {
   assert.ok(!c.includes('E_SCHEMA') && !c.includes('E_OBJECT_TOKEN'), c.join(', '));
 });
 
-test('free object props are validated against the manifest', () => {
-  const dir = copyExample();
+test('free object props are validated against the manifest', testContext => {
+  const dir = copyExample(testContext);
   const s = readJSON(dir, 'screens/simulation.json');
   s.blocks[1].props.props.packetSpeed = 9;
   s.blocks[1].props.props.unknown = 1;
   writeJSON(dir, 'screens/simulation.json', s);
   const d = validateDir(dir).diagnostics.filter((x) => x.code === 'E_OBJECT_PROP_VALUE');
-  assert.equal(d.length, 2);
+  assert.deepEqual(d.map(finding => finding.path).sort(), ['/blocks/1/props/props/packetSpeed', '/blocks/1/props/props/unknown']);
 });
 
 // A list prop for the example object: devices the packets stop at, with a note (a field called
@@ -251,8 +258,8 @@ const withStops = (dir: string, stops: object = STOPS): void => {
   writeJSON(dir, 'objects/diagnostic-reseau/object.manifest.json', m);
 };
 
-test('free object list props: every item is checked against the items of the manifest', () => {
-  const dir = copyExample();
+test('free object list props: every item is checked against the items of the manifest', testContext => {
+  const dir = copyExample(testContext);
   withStops(dir);
   assert.deepEqual(validateDir(dir).diagnostics.filter((d) => d.severity === 'error'), []);
   const s = readJSON(dir, 'screens/simulation.json');
@@ -264,8 +271,8 @@ test('free object list props: every item is checked against the items of the man
   for (const part of [/\/1\/device must be equal to one of the allowed values/, /\/2 must NOT have additional properties \("couleur"\)/, /\/3 must have required property 'device'/, /must NOT have more than 4 items/]) assert.match(d[0].message, part);
 });
 
-test('free object list props: defaults of the list and of its fields match the items', () => {
-  const dir = copyExample();
+test('free object list props: defaults of the list and of its fields match the items', testContext => {
+  const dir = copyExample(testContext);
   const stops = structuredClone(STOPS);
   stops.default = [{ device: 'routeur', description: 'Une note bien trop longue pour tenir dans la ligne' }];
   stops.items.properties.description.default = 'Une autre note bien trop longue pour la ligne';
@@ -274,8 +281,8 @@ test('free object list props: defaults of the list and of its fields match the i
   assert.deepEqual(d.map((x) => x.path).sort(), ['/props/properties/stops/default', '/props/properties/stops/items/properties/description/default']);
 });
 
-test('editor controls fit their props (W_OBJECT_PROP_CONTROL)', () => {
-  const dir = copyExample();
+test('editor controls fit their props (W_OBJECT_PROP_CONTROL)', testContext => {
+  const dir = copyExample(testContext);
   const stops = structuredClone(STOPS);
   (stops.items.properties.description as Record<string, unknown>)['x-control'] = 'toggle';
   withStops(dir, stops);
@@ -302,8 +309,8 @@ test('editor controls fit their props (W_OBJECT_PROP_CONTROL)', () => {
   assert.ok(!after.includes('W_OBJECT_PROP_CONTROL') && !after.includes('E_OBJECT_TOKEN'), after.join(', '));
 });
 
-test('range, vec2 and vec3 edit two or three numbers, a range on a scale, low first (W_OBJECT_PROP_CONTROL)', () => {
-  const dir = copyExample();
+test('range, vec2 and vec3 edit two or three numbers, a range on a scale, low first (W_OBJECT_PROP_CONTROL)', testContext => {
+  const dir = copyExample(testContext);
   const mf = 'objects/diagnostic-reseau/object.manifest.json';
   const m = readJSON(dir, mf);
   const numbers = (count: number, items: Record<string, unknown> = {}) => ({ type: 'array', items: { type: 'number', ...items }, minItems: count, maxItems: count });
@@ -329,8 +336,8 @@ test('range, vec2 and vec3 edit two or three numbers, a range on a scale, low fi
   assert.match(message('instruction'), /"range" edits array values, not a string/);
 });
 
-test('words of the choices (x-enum-labels, a block\'s props.enumLabels) only word values of their enum (E_OBJECT_ENUM_LABELS)', () => {
-  const dir = copyExample();
+test('words of the choices (x-enum-labels, a block\'s props.enumLabels) only word values of their enum (E_OBJECT_ENUM_LABELS)', testContext => {
+  const dir = copyExample(testContext);
   const stops = structuredClone(STOPS);
   (stops.items.properties.device as Record<string, unknown>)['x-enum-labels'] = { parefeu: 'Pare-feu', imprimante: 'Imprimante' };
   withStops(dir, stops);
@@ -364,8 +371,8 @@ test('words of the choices (x-enum-labels, a block\'s props.enumLabels) only wor
   assert.ok(!codes(validateDir(dir).diagnostics).includes('E_OBJECT_ENUM_LABELS'));
 });
 
-test('colours an object draws text in keep their contrast (x-text-on), with the defaults and with each block', () => {
-  const dir = copyExample();
+test('colours an object draws text in keep their contrast (x-text-on), with the defaults and with each block', testContext => {
+  const dir = copyExample(testContext);
   const mf = 'objects/diagnostic-reseau/object.manifest.json';
   const m = readJSON(dir, mf);
   const colour = (fallback: string, extra: object = {}) => ({ type: 'string', format: 'color', default: fallback, description: 'Couleur', 'x-group': 'Style', 'x-control': 'color', ...extra });
@@ -395,8 +402,8 @@ test('colours an object draws text in keep their contrast (x-text-on), with the 
   assert.ok(d.some((x) => x.target === 'simulation-pale' && /props\/captionColor$/.test(x.path ?? '')));
 });
 
-test('object tests give the props values the manifest accepts', () => {
-  const dir = copyExample();
+test('object tests give the props values the manifest accepts', testContext => {
+  const dir = copyExample(testContext);
   withStops(dir);
   const tf = 'objects/diagnostic-reseau/object.tests.json';
   const t = readJSON(dir, tf);
@@ -407,8 +414,8 @@ test('object tests give the props values the manifest accepts', () => {
   assert.deepEqual(d.map((x) => `${x.file} ${x.path}`).sort(), [`${tf} /tests/0/props/packetSpeed`, `${tf} /tests/0/steps/0/props/stops/0/device`]);
 });
 
-test('suspend data budget follows the strictest selected profile', () => {
-  const dir = copyExample();
+test('suspend data budget follows the strictest selected profile', testContext => {
+  const dir = copyExample(testContext);
   const course = readJSON(dir, 'course.json');
   for (let i = 0; i < 6; i++) course.variables.push({ id: `note${i}`, type: 'string', default: '', maxLength: 400 });
   writeJSON(dir, 'course.json', course);
@@ -416,8 +423,8 @@ test('suspend data budget follows the strictest selected profile', () => {
   assert.ok(!codes(validateDir(dir, { profiles: ['successfactors'] }).diagnostics).includes('E_SUSPEND_DATA_BUDGET'));
 });
 
-test('waivers turn a pedagogical finding into an approved exception', () => {
-  const dir = copyExample();
+test('waivers turn a pedagogical finding into an approved exception', testContext => {
+  const dir = copyExample(testContext);
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push({ id: 'chemin-btn', type: 'button', props: { label: 'Voir' } });
   writeJSON(dir, 'screens/chemin.json', s);
@@ -428,8 +435,8 @@ test('waivers turn a pedagogical finding into an approved exception', () => {
   assert.ok(d?.waived);
 });
 
-test('object strings: rewordings match the manifest; other languages and undeclared keys are reported', () => {
-  const dir = copyExample();
+test('object strings: rewordings match the manifest; other languages and undeclared keys are reported', testContext => {
+  const dir = copyExample(testContext);
   const mf = 'objects/diagnostic-reseau/object.manifest.json';
   const m = readJSON(dir, mf);
   m.language = 'en';
@@ -448,8 +455,8 @@ test('object strings: rewordings match the manifest; other languages and undecla
   assert.ok(codes(d).includes('W_OBJECT_STRING_UNDECLARED'));
 });
 
-test('backdrop: variants and the decorative object are checked; decorations stay out of blocks', () => {
-  const dir = copyExample();
+test('backdrop: variants and the decorative object are checked; decorations stay out of blocks', testContext => {
+  const dir = copyExample(testContext);
   const course = readJSON(dir, 'course.json');
   course.theme.backdrop = { layers: ['far', 'near'], variants: { dim: 'Darker' }, object: { id: 'diagnostic-reseau' } };
   writeJSON(dir, 'course.json', course);
@@ -473,8 +480,8 @@ test('backdrop: variants and the decorative object are checked; decorations stay
   assert.ok(c.includes('E_OBJECT_DECORATION'));
 });
 
-test('player labels: a course language without built-in labels must give them in course.ui', () => {
-  const dir = copyExample();
+test('player labels: a course language without built-in labels must give them in course.ui', testContext => {
+  const dir = copyExample(testContext);
   const course = readJSON(dir, 'course.json');
   course.language = 'ja';
   writeJSON(dir, 'course.json', course);
@@ -484,18 +491,15 @@ test('player labels: a course language without built-in labels must give them in
 // The same findings, whatever their order.
 const findings = (diagnostics: readonly Diagnostic[]) => diagnostics.map((d) => JSON.stringify(d)).sort();
 
-test('validateScreen: the findings of one screen; with the project checks, those of validateProject', () => {
-  const names = [...FILE_CHECKS, ...COURSE_CHECKS].map((check) => check.name);
-  assert.equal(new Set(names).size, names.length, 'check names are unique');
-
-  const dir = copyExample();
+test('validateScreen: the findings of one screen; with the project checks, those of validateProject', testContext => {
+  const dir = copyExample(testContext);
   const s = readJSON(dir, 'screens/chemin.json');
   delete s.blocks[1].props.alt;
   s.covers.push('ITEM-9');
   s.blocks.push({ id: 'chemin-voir', type: 'button', props: { label: 'Voir' } });
   writeJSON(dir, 'screens/chemin.json', s);
   writeJSON(dir, 'screens/brouillon.json', { id: 'brouillon', title: 'Brouillon', covers: [], blocks: [{ id: 'brouillon-texte', type: 'text', props: {} }] });
-  for (const course of [dir, ...['planetary-gearset', 'orbital-rendezvous'].map((name) => copyExample(path.join(ROOT, 'examples', name)))]) {
+  for (const course of [dir, ...['planetary-gearset', 'orbital-rendezvous'].map((name) => copyExample(testContext, path.join(ROOT, 'examples', name)))]) {
     const project = loadProjectFromDir(course);
     const context = createValidationContext(project);
     const parts = [...validateProjectChecks(context), ...[...project.screens.keys()].flatMap((id) => validateScreen(context, id))];
@@ -511,7 +515,7 @@ test('validateScreen: the findings of one screen; with the project checks, those
   assert.deepEqual(validateScreen(context, 'nowhere'), []);
 });
 
-test('checks read documents that fail their schema without throwing', () => {
+test('checks read documents that fail their schema without throwing', testContext => {
   const cases: [string, (dir: string) => void][] = [
     ['covers as a string', (dir) => { const s = readJSON(dir, 'screens/chemin.json'); s.covers = 'ITEM-1'; writeJSON(dir, 'screens/chemin.json', s); }],
     ['actions as a string, a null condition', (dir) => { const s = readJSON(dir, 'screens/simulation.json'); s.events[0].do = 'go'; s.events[1].if = [null]; writeJSON(dir, 'screens/simulation.json', s); }],
@@ -523,7 +527,7 @@ test('checks read documents that fail their schema without throwing', () => {
     ['a null component example', (dir) => { addExplorer(dir); const m = readJSON(dir, 'components/markers/component.json'); m.examples = [null]; writeJSON(dir, 'components/markers/component.json', m); }]
   ];
   for (const [what, mutate] of cases) {
-    const dir = copyExample();
+    const dir = copyExample(testContext);
     mutate(dir);
     let found: string[] = [];
     assert.doesNotThrow(() => { found = codes(validateDir(dir).diagnostics); }, what);
@@ -531,8 +535,8 @@ test('checks read documents that fail their schema without throwing', () => {
   }
 });
 
-test('a free object placed on no screen has its own warning', () => {
-  const dir = copyExample();
+test('a free object placed on no screen has its own warning', testContext => {
+  const dir = copyExample(testContext);
   const s = readJSON(dir, 'screens/simulation.json');
   s.blocks = s.blocks.filter((block: Block) => block.type !== 'free-object');
   s.events = [];
@@ -542,8 +546,8 @@ test('a free object placed on no screen has its own warning', () => {
   assert.ok(!validateDir(dir).diagnostics.some((d) => d.code === 'W_SCREEN_FILE_UNUSED'));
 });
 
-test('text density follows the presentation: a slide is read at once, a scroll page by stretches', () => {
-  const dir = copyExample();
+test('text density follows the presentation: a slide is read at once, a scroll page by stretches', testContext => {
+  const dir = copyExample(testContext);
   const screen = readJSON(dir, 'screens/chemin.json');
   const words = (count: number) => Array.from({ length: count }, (_, index) => `mot${index}`).join(' ');
   // Five paragraphs of 110 words after the accordion: 550 words to read in a row.
@@ -581,8 +585,8 @@ test('text density follows the presentation: a slide is read at once, a scroll p
   assert.match(found[0].message, /^Screen "chemin" shows about \d+ words\.$/);
 });
 
-test('text density: a component\'s alternative text is not reading, its caption is', () => {
-  const dir = copyExample();
+test('text density: a component\'s alternative text is not reading, its caption is', testContext => {
+  const dir = copyExample(testContext);
   const words = (count: number) => Array.from({ length: count }, (_, index) => `mot${index}`).join(' ');
   fs.mkdirSync(path.join(dir, 'components/figure-caption'), { recursive: true });
   writeJSON(dir, 'components/figure-caption/component.json', { $schema: 'https://elabora.studio/schemas/0.1/component.schema.json', id: 'figure-caption', title: 'Figure', version: '1.0.0', level: 'block', category: 'media', description: 'Une image et sa légende.',
@@ -603,8 +607,8 @@ test('text density: a component\'s alternative text is not reading, its caption 
   assert.match(density()[0]?.message ?? '', /455 words to read in a row/);
 });
 
-test('step settings: only for steps of the screen after the first; opening once answered needs an activity above', () => {
-  const dir = copyExample();
+test('step settings: only for steps of the screen after the first; opening once answered needs an activity above', testContext => {
+  const dir = copyExample(testContext);
   const screen = readJSON(dir, 'screens/chemin.json');
   screen.blocks.find((block: Block) => block.id === 'chemin-regle').step = 2;
   screen.blocks.find((block: Block) => block.id === 'chemin-roles').step = 3;

@@ -18,7 +18,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Defect | Count | Example |
 | --- | ---: | --- |
 
-| Implementation coupling | 17 | ops: private computeDiff comparison and exact chosen diff scripts |
+| Implementation coupling | 18 | ops: private computeDiff comparison and exact chosen diff scripts |
 
 | Duplicate assertions | 1 | ops: identical notes restoration asserted twice |
 
@@ -35,6 +35,10 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
 
 | Low-value assertion | 1 | engine-store: repeated hash equality replaced with hash invalidation after a write |
+
+| Weak assertion | 1 | validate: counted two errors without identifying their prop paths |
+
+| Resource cleanup | 38 | validate: copied fixtures were never removed |
 
 ## Production changes
 
@@ -161,7 +165,7 @@ None yet.
 | `test/unit/timeline.test.ts` | 390 | — | Pending |
 | `test/unit/transcribe.test.ts` | 290 | — | Pending |
 | `test/unit/translation-context.test.ts` | 156 | — | Pending |
-| `test/unit/validate.test.ts` | 627 | — | Pending |
+| `test/unit/validate.test.ts` | 627 | 631 | Passed 32 cases; preserves all diagnostic rules, checks exact prop paths, cleans every copied fixture; removes internal check-name assertion |
 | `test/unit/voice-models.test.ts` | 252 | — | Pending |
 | `test/unit/voice.test.ts` | 434 | — | Pending |
 | `test/unit/web-target.test.ts` | 321 | — | Pending |
