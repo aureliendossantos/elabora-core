@@ -172,7 +172,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/translation-context.test.ts` | 156 | — | Pending |
 | `test/unit/validate.test.ts` | 627 | 631 | Passed 32 cases; preserves all diagnostic rules, checks exact prop paths, cleans every copied fixture; removes internal check-name assertion |
 | `test/unit/voice-models.test.ts` | 252 | — | Pending |
-| `test/unit/voice.test.ts` | 434 | — | Pending |
+| `test/unit/voice.test.ts` | 434 | 445 | 15 passed, 2 explicit unavailable-model skips with native seed 130363; owned courses/sessions, seeded download bytes, file notification gates and controllable external voice service replace sleeps/polling; separate named rejection cases and one recovery replace repeated retry checks; native inference seam proposal recorded |
 | `test/unit/web-target.test.ts` | 321 | — | Pending |
 | `test/unit/zip-writer.test.ts` | 90 | 87 | Passed 3 native-seeded cases; own directories, seeded high-entropy payloads, round-trip every entry and compare reordered public writes; controlled mtimes and limit errors replace elapsed-time and private writer comparison |
 | `test/unit/zip.test.ts` | 19 | — | Pending |
@@ -189,6 +189,10 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/events.ts` | 0 | 27 | Shared test-only event log and subscription waits; real failure deadline stays active while domain timers are faked; 19 engine cases passed |
 
 | `test/bytes.ts` | 0 | 9 | Reusable high-entropy seeded media/archive bytes; another explicit seed represents an edit; backup restore/pruning/large-file tests passed |
+
+## Additional proposed testability refactor
+
+PocketModel constructs native ONNX inference internally and has a private constructor. Retain the unique silent/non-finite/unfinished rejection and recovery regressions while proposing a small injectable inference backend. Their prototype fixture remains a documented exception until that production refactor is reviewed; no production runtime code was changed.
 
 ## Remaining work
 
