@@ -6,29 +6,23 @@ import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { copyExample } from '../helpers.ts';
 import * as edit from '@elabora/node/edit';
 
-test('state round-trips through suspend data', () => {
-  const s = emptyState();
-  s.visited.add('0'); s.visited.add('1'); s.completed.add('0');
-  s.quizzes['9'] = { selected: ['a', 'c'], attempts: 2 };
-  s.decisions['6'] = 'b';
-  s.vars.b = 3;
-  s.objects['7'] = { found: true, inspected: ['poste'] };
-  s.objectsDone['7'] = 0.75;
-  s.visibility['8'] = 1;
-  s.retakes = 1;
-  const back = decodeState(encodeState(s));
-  assert.deepEqual([...back.visited], ['0', '1']);
-  assert.deepEqual(back.quizzes['9'], { selected: ['a', 'c'], attempts: 2 });
-  assert.equal(back.decisions['6'], 'b');
-  assert.deepEqual(back.objects['7'], { found: true, inspected: ['poste'] });
-  assert.equal(back.objectsDone['7'], 0.75);
-  assert.equal(back.retakes, 1);
+test('suspend data preserves every learner-state field across generated values', () => {
+  for (let seed = 0; seed < 100; seed++) {
+    const state = emptyState(), key = seed.toString(36);
+    state.visited.add(key); state.completed.add(key); state.visits.add(`v${key}`);
+    state.quizzes[key] = { selected: seed % 2 ? ['a', 'c'] : [], attempts: seed };
+    state.numerics[key] = { value: seed % 2 ? seed / 4 : null, attempts: seed };
+    state.decisions[key] = 'b'; state.vars[key] = seed % 2 ? `Zoé 日本 ${seed}` : false;
+    state.objects[key] = { found: true, inspected: ['poste', seed] };
+    state.objectsDone[key] = seed / 100; state.visibility[key] = seed % 2;
+    state.steps[key] = 2 + seed; state.retakes = seed;
+    state.language = seed % 2 ? 'fr' : 'en'; state.dialogues[key] = 'a|b';
+    assert.deepEqual(decodeState(encodeState(state)), state, `seed ${seed}`);
+  }
 });
 
 test('corrupt or foreign suspend data starts a fresh state', () => {
-  assert.equal(decodeState('not json').visited.size, 0);
-  assert.equal(decodeState('{"v":99}').visited.size, 0);
-  assert.equal(decodeState('').visited.size, 0);
+  for (const input of ['not json', '{"v":99}', '']) assert.deepEqual(decodeState(input), emptyState(), input);
 });
 
 test('keys are permanent: inserting a screen keeps every existing key', () => {

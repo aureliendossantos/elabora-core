@@ -36,7 +36,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Low-value assertion | 1 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 
-| Weak assertion | 1 | validate: counted two errors without identifying their prop paths |
+| Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
 
 | Resource cleanup | 38 | validate: copied fixtures were never removed |
 
@@ -161,7 +161,7 @@ None yet.
 | `test/unit/schema.test.ts` | 40 | — | Pending |
 | `test/unit/sources.test.ts` | 511 | — | Pending |
 | `test/unit/state-golden.test.ts` | 40 | — | Pending |
-| `test/unit/state.test.ts` | 53 | — | Pending |
+| `test/unit/state.test.ts` | 53 | 47 | Passed; 100 generated complete learner states round-trip every field; malformed input checked against the entire empty state |
 | `test/unit/svg-inline.test.ts` | 99 | — | Pending |
 | `test/unit/template-fields.test.ts` | 27 | — | Pending |
 | `test/unit/timeline.test.ts` | 390 | — | Pending |
