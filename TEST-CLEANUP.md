@@ -39,6 +39,8 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
 
+| Private layout assertions | 1 | charts-matrix imported label placement helpers instead of measuring rendered labels |
+
 ## Production changes
 
 No production code changed. CI discovered a pre-existing release-metadata error before tests could run: `.sampo/changesets/layer-captions-bare-canvas.md` and `player-motion.md` named only `npm/@elabora/player`, although the release policy requires `npm/elabora` too. Added the matching root patch target to each in a separate metadata-only commit; the original change texts and player targets are preserved. `npm run release:check` then passed.
@@ -85,7 +87,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/backups.test.ts` | 456 | 465 | Passed all 14 native-seeded cases; reproducible media with distinct edit seeds, owned project folders, hash-race clock controlled; child readiness/release gates replace synchronized wall-clock start; live-lock refusal uses zero timeout; retention/restore/GC contracts retained |
 | `test/unit/browser.test.ts` | 57 | — | Pending |
 | `test/unit/canvas-host.test.ts` | 134 | — | Pending |
-| `test/unit/charts-before-after.test.ts` | 86 | — | Pending |
+| `test/unit/charts-before-after.test.ts` | 86 | 43 | Passed chart units and desktop/phone browser layout; public output replaces private geometry/dodge formulas; crowded and coincident labels checked by actual DOM bounds |
 | `test/unit/charts-cycle.test.ts` | 112 | — | Pending |
 | `test/unit/charts-donut.test.ts` | 99 | — | Pending |
 | `test/unit/charts-levels.test.ts` | 103 | — | Pending |
