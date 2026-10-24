@@ -1,4 +1,4 @@
-import { test, after } from 'node:test';
+import { test, type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -6,27 +6,21 @@ import { openProject } from '@elabora/engine';
 import type { BuildView, EngineEvent, OpenOptions, Session, ResponseMessage } from '@elabora/engine';
 import { readJournal } from '@elabora/node/journal/index';
 import type { Author, ChangeEntry } from '@elabora/core/ops/types';
-import { copyExample, readJSON } from '../helpers.ts';
+import { readJSON } from '../helpers.ts';
+
+import { resources } from '../resources.ts';
 
 // The engine's build request: the package as `elabora build` makes it, the state keys it adds to
 // elabora.lock.json journaled as the session's own system change (never as an agent's external
 // edit), and a publish version.
 
-const temporary: string[] = [];
-const sessions: Session[] = [];
-after(async () => {
-  for (const session of sessions) await session.close().catch(() => {});
-  for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true });
-});
-
 const QUIET: OpenOptions = { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 };
 const agent: Author = { kind: 'agent', name: 'claude-code' };
 
-async function open(): Promise<{ dir: string; session: Session; events: EngineEvent[] }> {
-  const dir = copyExample();
-  temporary.push(dir);
-  const session = await openProject(dir, QUIET);
-  sessions.push(session);
+async function open(t: TestContext) {
+  const r = resources(t);
+  const dir = r.copyExample();
+  const session = r.own(await openProject(dir, QUIET), value => value.close());
   const events: EngineEvent[] = [];
   session.subscribe(({ event }) => events.push(event));
   await session.flush();
@@ -34,16 +28,8 @@ async function open(): Promise<{ dir: string; session: Session; events: EngineEv
 }
 
 const changes = (dir: string) => readJournal(dir).filter((entry): entry is ChangeEntry => entry.type === 'change');
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// Long enough for the watcher to report the lock the build wrote, then everything is read again.
-async function settle(session: Session): Promise<void> {
-  await sleep(300);
-  await session.flush({ rescan: true });
-}
-
-test('build: the package, the new state keys as a system change, a publish version, and no external change', async () => {
-  const { dir, session, events } = await open();
+test('build: the package, the new state keys as a system change, a publish version, and no external change', async (t) => {
+  const { dir, session, events } = await open(t);
   const lockBefore = readJSON(dir, 'elabora.lock.json');
   // An agent adds a screen: it needs a state key, which only a build assigns.
   await session.run('create_screen', { id: 'chemin-suite', title: 'La suite du chemin', covers: ['ITEM-2'], section: 'decouvrir', after: 'chemin', blocks: [{ id: 'chemin-suite-texte', type: 'text', props: { markdown: 'Chaque équipement relaie la demande au suivant.' } }] }, agent);
@@ -77,7 +63,7 @@ test('build: the package, the new state keys as a system change, a publish versi
   assert.ok(session.backups().findIndex((version) => version.reason === 'after-ai') < session.backups().findIndex((version) => version.id === built.version));
 
   // The watcher sees the lock the build wrote, and settles it as the session's own write.
-  await settle(session);
+  await session.flush({ rescan: true });
   const journal = changes(dir);
   assert.deepEqual(journal.filter((entry) => entry.author.kind === 'external').map((entry) => entry.files.map((file) => file.path)), [], 'no external change');
   assert.equal(journal.filter((entry) => entry.command?.name === 'build').length, 1);
@@ -88,12 +74,12 @@ test('build: the package, the new state keys as a system change, a publish versi
   assert.equal(again.ok, true);
   assert.equal(again.change, null);
   assert.equal(session.backups().find((version) => version.id === again.version)?.name, 'Livraison client');
-  await settle(session);
+  await session.flush({ rescan: true });
   assert.equal(changes(dir).filter((entry) => entry.author.kind === 'external').length, 0);
 });
 
-test('build: a build that stops gives its errors and takes no publish version', async () => {
-  const { dir, session } = await open();
+test('build: a build that stops gives its errors and takes no publish version', async (t) => {
+  const { dir, session } = await open(t);
   await session.run('add_block', { screen: 'chemin', block: { id: 'chemin-plan', type: 'image', props: { asset: 'images/absent.svg', alt: 'Plan du réseau' } }, after: 'chemin-intro' });
   const versions = session.backups().length;
 
@@ -107,12 +93,12 @@ test('build: a build that stops gives its errors and takes no publish version', 
   assert.equal(built.summary.errors >= built.errors.length, true);
   assert.equal(session.backups().filter((version) => version.reason === 'publish').length, 0);
   assert.ok(session.backups().length >= versions);
-  await settle(session);
+  await session.flush({ rescan: true });
   assert.equal(changes(dir).filter((entry) => entry.author.kind === 'external').length, 0);
 });
 
-test('build over the protocol: typed result, bad parameters refused', async () => {
-  const { session } = await open();
+test('build over the protocol: typed result, bad parameters refused', async (t) => {
+  const { session } = await open(t);
   const response = await session.handle({ kind: 'request', id: 'b1', type: 'build', params: { profiles: ['moodle'] } }) as ResponseMessage;
   assert.equal(response.ok, true, JSON.stringify(response));
   if (response.ok && response.type === 'build') assert.equal((response.result as BuildView).ok, true);
