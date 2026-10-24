@@ -25,8 +25,8 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | --- | ---: | --- |
 | Implementation coupling | 55 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 5 | ops: identical notes restoration asserted twice |
-| Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
-| Fixed-delay synchronization | 53 | engine-session: sleep(400) before checking watcher results |
+| Shared mutable fixtures | 14 | ops: module-level change ID counter replaced with content-derived IDs |
+| Fixed-delay synchronization | 56 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
 | Unseeded randomness | 34 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
@@ -60,7 +60,7 @@ No human answer is required to finish this test-only audit. All automated files 
 | `test/e2e/character.test.ts` | 136 | 139 | Focused seed 104729 passed; virtual browser clock drives gesture expiry and pause; computed arm reset replaces Animation identity |
 | `test/e2e/charts.test.ts` | 182 | 228 | Passed crowded six-label desktop/phone layout and five-stage cycle; verifies visible labels and SVG bounds |
 | `test/e2e/design.test.ts` | 697 | 686 | Native seed 104729 passed 21 behaviours; public object state and decoded captures replace waits/byte quotas; capture variation compares pixels, including uniform non-grey failure; final suite repeat queued |
-| `test/e2e/dialogues.test.ts` | 559 | — | Pending |
+| `test/e2e/dialogues.test.ts` | 559 | 551 | All ten native seed 130363 cases passed; latest-state LMS acknowledgement passed again at seed 155921; per-case packages/browser state, fixed IDs, frame events and real voiced-line completion replace shared caches, sleeps and timing budgets; exact forked thread retained |
 | `test/e2e/edge.test.ts` | 122 | 125 | Reviewed and typechecked; two native seed 130363 cases skip because Edge is absent; real SwiftShader comparison and fallback preserved, captures decoded, resources owned; Linux CI exercises installed Edge |
 | `test/e2e/engine-canvas.test.ts` | 128 | 91 | Focused seed 130363 passed; commands and external writes reach actual DOM while the free object keeps its marker and frame; removed machine-speed budgets |
 | `test/e2e/fonts.test.ts` | 124 | 112 | Focused seed 130363 passed both browser regressions; actual Unicode/font loading, licence and embedded font rendering retained; own sources/builds/server/browser |

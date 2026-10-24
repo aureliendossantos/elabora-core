@@ -1,7 +1,7 @@
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import type { Browser, Frame, Page } from 'playwright-core';
 import { startServer } from '@elabora/node/emulator/server';
@@ -26,41 +26,35 @@ import { voice, hasFfmpeg } from '../narration.ts';
 // transcript of a screen without narration, the canvas's view of a path, a deterministic package.
 // The lines have no audio (their estimated voice); the clock is virtual.
 
-const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+const tmp = (t: TestContext, prefix: string) => resources(t).tempDir(prefix);
+const course = (t: TestContext, options?: Parameters<typeof dialogueCourse>[0]) => resources(t).own(dialogueCourse(options), dir => fs.rmSync(dir, { recursive: true, force: true }));
 type Any = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 type DialogueWindow = Window & typeof globalThis & { __elabora: Any; inserted?: { text: string; ink: string; role: string }[] };
 
 // open: the last decision of « appel » is not final (a final decision closes going back; once the dialogue ends, starting over stays).
-const packages = new Map<string, Promise<string>>();
-function packageOf(presentation: 'slides' | 'scroll' = 'slides', { open = false }: { open?: boolean } = {}): Promise<string> {
-  const key = `${presentation}${open ? '-open' : ''}`;
-  if (!packages.has(key)) packages.set(key, (async () => {
-    const dir = dialogueCourse({ presentation });
-    if (open) {
-      const file = path.join(dir, 'screens/appel.json');
-      const screen = JSON.parse(fs.readFileSync(file, 'utf8'));
-      delete screen.blocks[0].props.nodes.find((node: { id: string }) => node.id === 'escalade').final;
-      fs.writeFileSync(file, JSON.stringify(screen, null, 2));
-    }
-    const b = await build(dir, { emit: 'dir', out: tmp('elabora-dialogue-'), writeLock: false, debug: true });
-    assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
-    return b.dirPath;
-  })());
-  return packages.get(key)!;
+async function packageOf(t: TestContext, presentation: 'slides' | 'scroll' = 'slides', { open = false }: { open?: boolean } = {}): Promise<string> {
+  const dir = course(t, { presentation });
+  if (open) {
+    const file = path.join(dir, 'screens/appel.json');
+    const screen = JSON.parse(fs.readFileSync(file, 'utf8'));
+    delete screen.blocks[0].props.nodes.find((node: { id: string }) => node.id === 'escalade').final;
+    fs.writeFileSync(file, JSON.stringify(screen, null, 2));
+  }
+  const built = await build(dir, { emit: 'dir', out: tmp(t, 'elabora-dialogue-'), writeLock: false, debug: true });
+  assert.ok(built.ok && built.dirPath, JSON.stringify(built.diagnostics.filter(d => d.severity === 'error')));
+  return built.dirPath;
 }
-
-let shared: { server: EmulatorServer; browser: Browser } | null = null;
-async function context() {
-  if (!shared) shared = { server: await startServer(), browser: await launchBrowser('chromium') };
-  return shared;
+async function context(t: TestContext) {
+  const server = resources(t).own(await startServer(), value => value.close());
+  const browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
+  return { server, browser };
 }
-test.after(async () => { await shared?.browser.close(); await shared?.server.close(); });
 
 interface PlayerOptions { presentation?: 'slides' | 'scroll'; open?: boolean; width?: number; height?: number; reducedMotion?: 'reduce' | 'no-preference' }
-async function player(options: PlayerOptions, run: (page: Page) => Promise<void>) {
-  const { server, browser } = await context();
-  const name = `d${Math.random().toString(36).slice(2, 8)}`;
-  server.addPackage(name, await packageOf(options.presentation, { open: options.open }));
+async function player(t: TestContext, options: PlayerOptions, run: (page: Page) => Promise<void>) {
+  const { server, browser } = await context(t);
+  const name = 'dialogue';
+  server.addPackage(name, await packageOf(t, options.presentation, { open: options.open }));
   const page = await browser.newPage({ viewport: { width: options.width ?? 1600, height: options.height ?? 900 }, reducedMotion: options.reducedMotion ?? 'no-preference' });
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -104,8 +98,8 @@ const watchInsertions = (page: Page) => page.evaluate(() => {
   }).observe(document.body, { childList: true, subtree: true });
 });
 
-test('messaging in a slide: the thread, whole bubbles, the ink on the clock, cues, a retry, the common way, going back, the focus, no shift, a final decision, the debrief', { timeout: 240000 }, async () => {
-  await player({}, async (page) => {
+test('messaging in a slide: the thread, whole bubbles, the ink on the clock, cues, a retry, the common way, going back, the focus, no shift, a final decision, the debrief', { timeout: 240000 }, async (t) => {
+  await player(t, {}, async (page) => {
     await watchInsertions(page);
     await page.evaluate(() => (window as DialogueWindow).__elabora.go('appel'));
     const wrap = page.locator('[data-block="appel-marc"]');
@@ -186,8 +180,8 @@ test('messaging in a slide: the thread, whole bubbles, the ink on the clock, cue
   });
 });
 
-test('the scene in a slide: the décor, the cast, the characters\' state during a line and at a cue, paging, history; on a phone it becomes a thread', { timeout: 240000 }, async () => {
-  await player({}, async (page) => {
+test('the scene in a slide: the décor, the cast, the characters\' state during a line and at a cue, paging, history; on a phone it becomes a thread', { timeout: 240000 }, async (t) => {
+  await player(t, {}, async (page) => {
     await page.evaluate(() => (window as DialogueWindow).__elabora.go('rencontre'));
     const wrap = page.locator('[data-block="rencontre-marc"]');
     assert.equal(await wrap.locator('.t-dialogue-root').getAttribute('data-t-look'), 'scene');
@@ -234,20 +228,21 @@ test('the scene in a slide: the décor, the cast, the characters\' state during 
     // Assessment: no going back, no start over.
     assert.equal(await wrap.locator('.t-dialogue-endbar .t-dialogue-action').filter({ hasText: 'Recommencer' }).count(), 0);
   });
-  await player({ width: 390, height: 844 }, async (page) => {
+  await player(t, { width: 390, height: 844 }, async (page) => {
     await page.evaluate(() => (window as DialogueWindow).__elabora.go('rencontre'));
     await until(page, 'rencontre-marc', 'choosing');
     const phone = await page.evaluate(() => {
       const wrap = document.querySelector('[data-block="rencontre-marc"]')!;
       return { actors: [...wrap.querySelectorAll('.t-dialogue-actor')].filter((node) => (node as HTMLElement).offsetParent !== null).length, avatars: [...wrap.querySelectorAll('.t-dialogue-avatar')].filter((node) => (node as HTMLElement).offsetParent !== null).length, wide: document.documentElement.scrollWidth > innerWidth };
     });
-    assert.deepEqual(phone, { actors: 0, avatars: phone.avatars, wide: false });
+    assert.equal(phone.actors, 0);
+    assert.equal(phone.wide, false);
     assert.ok(phone.avatars >= 1, 'a thread with avatars');
   });
 });
 
-test('reduced motion: whole lines at once, nothing slides; the transcript of a screen without narration has the path; going back after the end; the Review shows a line; axe finds nothing', { timeout: 240000 }, async () => {
-  await player({ reducedMotion: 'reduce', open: true }, async (page) => {
+test('reduced motion: whole lines at once, nothing slides; the transcript of a screen without narration has the path; going back after the end; the Review shows a line; axe finds nothing', { timeout: 240000 }, async (t) => {
+  await player(t, { reducedMotion: 'reduce', open: true }, async (page) => {
     await page.evaluate(() => (window as DialogueWindow).__elabora.go('appel'));
     const ink = await page.evaluate(() => { const words = [...document.querySelectorAll('[data-block="appel-marc"] .t-dialogue-row[data-role="character"] .t-w')]; return { said: words.filter((word) => word.classList.contains('is-said')).length, all: words.length }; });
     assert.ok(ink.all > 0 && ink.said === ink.all, `whole at once (${ink.said}/${ink.all})`);
@@ -297,47 +292,53 @@ async function axe(page: Page, where: string) {
   assert.deepEqual(axeViolations(result), [], `axe on ${where}`);
 }
 
-test('scroll: the dialogue begins when it is seen, its thread grows in the page', { timeout: 120000 }, async () => {
-  await player({ presentation: 'scroll' }, async (page) => {
+test('scroll: the dialogue begins when it is seen, its thread grows in the page', { timeout: 120000 }, async (t) => {
+  await player(t, { presentation: 'scroll' }, async (page) => {
     await page.evaluate(() => (window as DialogueWindow).__elabora.go('appel'));
     await until(page, 'appel-marc', 'choosing');
     const log = await page.evaluate(() => { const log = document.querySelector<HTMLElement>('[data-block="appel-marc"] [data-t-log]')!; return { scrolls: log.scrollHeight > log.clientHeight + 1, rows: log.querySelectorAll('.t-dialogue-row').length }; });
-    assert.deepEqual(log, { scrolls: false, rows: log.rows });
+    assert.equal(log.scrolls, false);
     assert.ok(log.rows >= 2);
   });
 });
 
 // The LMS: the scored run's interactions, one per decision, sent once; the session left on a
 // decision comes back with its thread at once and its options; nothing more after the end.
-test('in the LMS: a session resumed on a decision, the scored run\'s interactions once, the emulator plays dialogues', { timeout: 300000 }, async () => {
-  const dir = await packageOf('slides', { open: true });
-  const { server, browser } = await context();
+test('in the LMS: a session resumed on a decision, the scored run\'s interactions once, the emulator plays dialogues', { timeout: 300000 }, async (t) => {
+  const dir = await packageOf(t, 'slides', { open: true });
+  const { server, browser } = await context(t);
   server.addPackage('dlms', dir);
-  const reg = `r${Math.random().toString(36).slice(2, 8)}`;
+  const reg = 'dialogue-learner';
   async function launch() {
-    const lms = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    const lms = resources(t).own(await browser.newContext({ viewport: { width: 1280, height: 720 } }), value => value.close());
     await lms.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
     const page = await lms.newPage();
     await page.goto(`${server.base}/lms/launch.html?pkg=dlms&profile=moodle&mode=iframe&reg=${reg}`);
     await page.waitForFunction(() => (window as Window & { __lmsReady?: boolean }).__lmsReady === true);
-    let frame: Frame | undefined;
-    for (let i = 0; i < 100 && !frame; i++) { frame = page.frames().find((candidate) => /\/pkg\//.test(candidate.url())); if (!frame) await page.waitForTimeout(100); }
-    await frame!.waitForFunction(() => (window as DialogueWindow).__elabora);
-    return { lms, page, frame: frame! };
+    const frame = page.frames().find(candidate => /\/pkg\//.test(candidate.url())) ?? await page.waitForEvent('framenavigated', { predicate: frame => /\/pkg\//.test(frame.url()) });
+    await frame.waitForFunction(() => (window as DialogueWindow).__elabora);
+    return { lms, page, frame };
   }
   const interactions = () => {
     const cmi = server.registration(reg)?.cmi as Any;
     const list = cmi?.interactions?.childArray ?? Object.values(cmi?.interactions ?? {}).filter((entry) => entry && typeof entry === 'object');
     return (list as Any[]).map((entry) => `${entry.id} ${entry.student_response ?? entry.learner_response} ${entry.result}`);
   };
-  const close = async (session: { lms: Any; page: Page }) => { await session.page.close({ runBeforeUnload: false }); await session.lms.close(); };
+  const close = async (session: { lms: Any; page: Page; frame: Frame }) => {
+    // The lifecycle save is complete when the fake LMS acknowledges its persisted CMI.
+    const expected = await session.frame.evaluate(() => (window as DialogueWindow).__elabora.engine.encode());
+    const saved = session.page.waitForResponse(response => response.url().includes(`/lms/commit/${reg}`) && response.ok() && (server.registration(reg)?.cmi as Any)?.suspend_data === expected);
+    await session.frame.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: true })));
+    await saved;
+    await session.page.close({ runBeforeUnload: false });
+    await session.lms.close();
+  };
 
   let session = await launch();
   await session.frame.evaluate(() => (window as DialogueWindow).__elabora.go('appel'));
   await until(session.frame, 'appel-marc', 'choosing');
   await choose(session.frame, 'appel-marc', 'b');
   assert.equal((await until(session.frame, 'appel-marc', 'choosing')).node, 'ticket');
-  await session.frame.waitForTimeout(1500);
   await close(session);
   assert.deepEqual(interactions(), [], 'nothing before the scored run ends');
 
@@ -353,7 +354,6 @@ test('in the LMS: a session resumed on a decision, the scored run\'s interaction
   await session.frame.locator('[data-block="appel-marc"] .t-dialogue-endbar .t-dialogue-action').filter({ hasText: 'Recommencer' }).click();
   await until(session.frame, 'appel-marc', 'choosing');
   await choose(session.frame, 'appel-marc', 'c');
-  await session.frame.waitForTimeout(1500);
   await close(session);
   assert.deepEqual(interactions().map((entry) => entry.split(' ').slice(0, 1)[0]), ['appel-marc.premiere-question', 'appel-marc.ticket', 'appel-marc.escalade']);
   assert.deepEqual(interactions().map((entry) => entry.split(' ').slice(1)), [['b', 'neutral'], ['a', 'correct'], ['a', 'correct']]);
@@ -370,40 +370,35 @@ test('in the LMS: a session resumed on a decision, the scored run\'s interaction
   assert.equal(run.accessibility?.violations, 0, JSON.stringify(run.accessibility?.details));
 });
 
-test('the canvas shows a dialogue after some choices, at rest, and back at its start', { timeout: 120000 }, async () => {
-  const dir = dialogueCourse();
+test('the canvas shows a dialogue after some choices, at rest, and back at its start', { timeout: 120000 }, async (t) => {
+  const dir = course(t);
   const project = loadProjectFromDir(dir);
   const render = createRenderContext(project);
-  const host = await startCanvasHost({ root: dir });
-  const browser = await launchBrowser('chromium');
-  try {
-    const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
-    const errors: string[] = [];
-    page.on('pageerror', (error) => errors.push(error.message));
-    await page.goto(host.url);
-    await page.waitForFunction(() => (window as Window & { __elaboraCanvas?: unknown }).__elaboraCanvas);
-    host.push(renderScreen(project, 'appel', { dialogue: { block: 'appel-marc', choices: ['c', 'b'] } }, render), { id: 1 });
-    await page.waitForFunction(() => document.querySelector('[data-block="appel-marc"] [data-t-options] [data-option]'));
-    const shown = () => page.evaluate(() => ({ lines: [...document.querySelectorAll('[data-block="appel-marc"] .t-dialogue-row[data-line]')].map((row) => (row as HTMLElement).dataset.line), options: [...document.querySelectorAll('[data-block="appel-marc"] [data-t-options] [data-option]')].map((button) => (button as HTMLElement).dataset.option) }));
-    const after = await shown();
-    assert.ok(after.lines.includes('m3') && after.lines.at(-1) !== 'm1', `the path: ${after.lines.join(' ')}`);
-    assert.deepEqual(after.options, ['a', 'b', 'c'], 'the options of « ticket »');
-    host.view({ dialogue: null }, { id: 2 });
-    await page.waitForFunction(() => !document.querySelector('[data-block="appel-marc"] .t-dialogue-row[data-line="m3"]'));
-    assert.deepEqual((await shown()).lines, ['m1', 'l1'], 'at its start, its first decision');
-    host.view({ dialogue: { block: 'appel-marc', node: 'escalade' } }, { id: 3 });
-    await page.waitForFunction(() => document.querySelector('[data-block="appel-marc"] .t-dialogue-final'));
-    assert.deepEqual(errors, []);
-  } finally {
-    await browser.close();
-    await host.close();
-  }
+  const host = resources(t).own(await startCanvasHost({ root: dir }), value => value.close());
+  const browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
+  const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto(host.url);
+  await page.waitForFunction(() => (window as Window & { __elaboraCanvas?: unknown }).__elaboraCanvas);
+  host.push(renderScreen(project, 'appel', { dialogue: { block: 'appel-marc', choices: ['c', 'b'] } }, render), { id: 1 });
+  await page.waitForFunction(() => document.querySelector('[data-block="appel-marc"] [data-t-options] [data-option]'));
+  const shown = () => page.evaluate(() => ({ lines: [...document.querySelectorAll('[data-block="appel-marc"] .t-dialogue-row[data-line]')].map((row) => (row as HTMLElement).dataset.line), options: [...document.querySelectorAll('[data-block="appel-marc"] [data-t-options] [data-option]')].map((button) => (button as HTMLElement).dataset.option) }));
+  const after = await shown();
+  assert.ok(after.lines.includes('m3') && after.lines.at(-1) !== 'm1', `the path: ${after.lines.join(' ')}`);
+  assert.deepEqual(after.options, ['a', 'b', 'c'], 'the options of « ticket »');
+  host.view({ dialogue: null }, { id: 2 });
+  await page.waitForFunction(() => !document.querySelector('[data-block="appel-marc"] .t-dialogue-row[data-line="m3"]'));
+  assert.deepEqual((await shown()).lines, ['m1', 'l1'], 'at its start, its first decision');
+  host.view({ dialogue: { block: 'appel-marc', node: 'escalade' } }, { id: 3 });
+  await page.waitForFunction(() => document.querySelector('[data-block="appel-marc"] .t-dialogue-final'));
+  assert.deepEqual(errors, []);
 });
 
-test('the package with dialogues is deterministic', { timeout: 120000 }, async () => {
-  const dir = dialogueCourse();
-  const a = await build(dir, { out: tmp('elabora-dialogue-a-'), writeLock: false });
-  const b = await build(dir, { out: tmp('elabora-dialogue-b-'), writeLock: false });
+test('the package with dialogues is deterministic', { timeout: 120000 }, async (t) => {
+  const dir = course(t);
+  const a = await build(dir, { out: tmp(t, 'elabora-dialogue-a-'), writeLock: false });
+  const b = await build(dir, { out: tmp(t, 'elabora-dialogue-b-'), writeLock: false });
   assert.ok(a.ok && b.ok);
   assert.equal(a.report.package.sha256, b.report.package.sha256);
 });
@@ -412,15 +407,15 @@ test('the package with dialogues is deterministic', { timeout: 120000 }, async (
 // event (not when currentTime reaches duration), « Couper les voix » mutes it, and a refused autoplay
 // leaves a play button in the bubble while the line goes on, silent, at its own pace.
 test('voiced lines: the audio\'s own clock and ended event, muting, a refused autoplay', { timeout: 240000, skip: !hasFfmpeg() && 'ffmpeg and ffprobe not found' }, async (t) => {
-  const dir = dialogueCourse({ screens: ['rencontre'] });
+  const dir = course(t, { screens: ['rencontre'] });
   const screen = JSON.parse(fs.readFileSync(path.join(dir, 'screens/rencontre.json'), 'utf8'));
   const texts = Object.fromEntries(screen.blocks[0].props.nodes.flatMap((node: { lines: { id: string; text: string }[] }) => node.lines).map((line: { id: string; text: string }) => [line.id, line.text]));
   voice(dir, 'rencontre', { id: 'r1', text: texts.r1, seconds: 4 }, { language: 'fr', frequency: 440 });
   voice(dir, 'rencontre', { id: 'r2', text: texts.r2, seconds: 1 }, { language: 'fr', frequency: 660 });
-  const b = await build(dir, { emit: 'dir', out: tmp('elabora-dialogue-voice-'), writeLock: false, debug: true });
+  const b = await build(dir, { emit: 'dir', out: tmp(t, 'elabora-dialogue-voice-'), writeLock: false, debug: true });
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
   assert.ok(fs.existsSync(path.join(b.dirPath, 'narration/rencontre.rencontre-marc/r1.m4a')));
-  const { server, browser } = await context();
+  const { server, browser } = await context(t);
   server.addPackage('dvoice', b.dirPath);
   for (const refused of [false, true]) {
     const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
@@ -445,11 +440,9 @@ test('voiced lines: the audio\'s own clock and ended event, muting, a refused au
         await page.locator('[data-block="rencontre-marc"] .t-dialogue-mute').click();
         await page.waitForFunction(() => document.querySelector<HTMLAudioElement>('[data-block="rencontre-marc"] audio')?.muted === false, null, { timeout: 3000 });
         // ended moves the dialogue on to r2, then its own file.
-        const ended = page.evaluate(() => new Promise<number>((resolve) => document.querySelector('[data-block="rencontre-marc"] audio')!.addEventListener('ended', () => resolve(performance.now()), { once: true })));
-        const at = await ended;
+        await page.evaluate(() => new Promise<void>((resolve) => document.querySelector('[data-block="rencontre-marc"] audio')!.addEventListener('ended', () => resolve(), { once: true })));
         await page.waitForFunction(() => (window as DialogueWindow).__elabora.dialogues.state('rencontre-marc')?.line === 'r2', null, { timeout: 10000 });
-        const moved = await page.evaluate(() => performance.now());
-        assert.ok(moved - at < 2000, `r2 ${Math.round(moved - at)} ms after r1's ended`);
+        assert.match(await page.locator('[data-block="rencontre-marc"] audio').getAttribute('src') ?? '', /r2\.m4a$/, 'the next line plays its own file');
       } else {
         // Refused: « Écouter » in the bubble, the line said on its own clock all the same.
         await page.waitForFunction(() => { const button = document.querySelector<HTMLElement>('[data-block="rencontre-marc"] .t-dialogue-row[data-line="r1"] .t-dialogue-listen'); return !!button && !button.hidden; }, null, { timeout: 10000 });
@@ -464,8 +457,8 @@ test('voiced lines: the audio\'s own clock and ended event, muting, a refused au
 
 // A fork changes the markup and keeps the behaviour: its own elements with the hooks, the thread, the
 // options, the score and the debrief all the same.
-test('a fork of dialogue with markup of its own keeps the behaviour', { timeout: 180000 }, async () => {
-  const dir = dialogueCourse({ screens: ['appel'] });
+test('a fork of dialogue with markup of its own keeps the behaviour', { timeout: 180000 }, async (t) => {
+  const dir = course(t, { screens: ['appel'] });
   forkComponent(dir, { component: 'dialogue', id: 'dialogue-sobre' });
   fs.writeFileSync(path.join(dir, 'components/dialogue-sobre/template.html'), [
     '<article class="sobre" data-t-group aria-label="{{title}}">',
@@ -478,9 +471,9 @@ test('a fork of dialogue with markup of its own keeps the behaviour', { timeout:
   const screen = JSON.parse(fs.readFileSync(file, 'utf8'));
   screen.blocks[0].type = 'dialogue-sobre';
   fs.writeFileSync(file, JSON.stringify(screen, null, 2));
-  const b = await build(dir, { emit: 'dir', out: tmp('elabora-dialogue-fork-'), writeLock: false, debug: true });
+  const b = await build(dir, { emit: 'dir', out: tmp(t, 'elabora-dialogue-fork-'), writeLock: false, debug: true });
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
-  const { server, browser } = await context();
+  const { server, browser } = await context(t);
   server.addPackage('dfork', b.dirPath);
   const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
   const errors: string[] = [];
@@ -495,10 +488,9 @@ test('a fork of dialogue with markup of its own keeps the behaviour', { timeout:
     assert.equal(ended.ending, 'maitrise');
     const look = await page.evaluate(() => {
       const wrap = document.querySelector('[data-block="appel-marc"]')!;
-      return { root: wrap.querySelector('.sobre')?.classList.contains('t-dialogue-root'), log: wrap.querySelector('.sobre-thread')?.getAttribute('role'), rows: wrap.querySelectorAll('.sobre-thread .t-dialogue-row').length, room: wrap.querySelector('.sobre-answers')?.getAttribute('aria-label'), end: !!wrap.querySelector('.sobre-answers .t-dialogue-endbar') };
+      return { root: wrap.querySelector('.sobre')?.classList.contains('t-dialogue-root'), log: wrap.querySelector('.sobre-thread')?.getAttribute('role'), lines: [...wrap.querySelectorAll<HTMLElement>('.sobre-thread .t-dialogue-row[data-line]')].map(row => row.dataset.line), room: wrap.querySelector('.sobre-answers')?.getAttribute('aria-label'), end: !!wrap.querySelector('.sobre-answers .t-dialogue-endbar') };
     });
-    assert.deepEqual(look, { root: true, log: 'log', rows: look.rows, room: 'Votre réponse', end: true });
-    assert.ok(look.rows > 8);
+    assert.deepEqual(look, { root: true, log: 'log', lines: ['m1', 'l1', 'm2', 'l2', 'n1', 'm5', 'm6', 'n2'], room: 'Votre réponse', end: true });
     assert.equal(await page.evaluate(() => (window as DialogueWindow).__elabora.engine.getVar('bonsReflexes')), 1, 'dialogue.ended with its ending');
     assert.deepEqual(errors, []);
   } finally {
@@ -510,8 +502,8 @@ test('a fork of dialogue with markup of its own keeps the behaviour', { timeout:
 // (goto-dialogue), another starts it over (restart-dialogue, after the scored run: the scored run kept);
 // dialogue.node fires with its node. On a new visit after a choice, what its cues showed is shown again,
 // at once, with the thread at its decision (without a choice, nothing is saved: it starts again).
-test('the screen\'s actions on a dialogue, and its presentation replayed on a new visit', { timeout: 180000 }, async () => {
-  const dir = dialogueCourse({ screens: ['appel', 'rencontre'] });
+test('the screen\'s actions on a dialogue, and its presentation replayed on a new visit', { timeout: 180000 }, async (t) => {
+  const dir = course(t, { screens: ['appel', 'rencontre'] });
   const file = path.join(dir, 'screens/rencontre.json');
   const screen = JSON.parse(fs.readFileSync(file, 'utf8'));
   screen.blocks[0].props.begins = 'event';
@@ -523,9 +515,9 @@ test('the screen\'s actions on a dialogue, and its presentation replayed on a ne
     { id: 'noeud', on: { type: 'dialogue.node', target: 'rencontre-marc', node: 'fin' }, do: [{ type: 'increment-variable', variable: 'bonsReflexes', by: 1 }] }
   ];
   fs.writeFileSync(file, JSON.stringify(screen, null, 2));
-  const b = await build(dir, { emit: 'dir', out: tmp('elabora-dialogue-events-'), writeLock: false, debug: true });
+  const b = await build(dir, { emit: 'dir', out: tmp(t, 'elabora-dialogue-events-'), writeLock: false, debug: true });
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
-  const { server, browser } = await context();
+  const { server, browser } = await context(t);
   server.addPackage('devents', b.dirPath);
   const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
   const errors: string[] = [];
