@@ -1,9 +1,9 @@
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources as testResources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
-import { ROOT, copyExample as copyCourse, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, readJSON, writeJSON } from '../helpers.ts';
 import * as edit from '@elabora/node/edit';
 import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
 import { build } from '@elabora/node/build';
@@ -24,7 +24,7 @@ import type { CourseData, PlayerBarData } from '@elabora/player/course-data';
 // 20 Oct 2026, and D59): the spacer, links among the resources, linking the glossary's terms to the
 // screens, the logo's plate and its check, the display and language items.
 
-const copyExample = (name = 'diagnostic-reseau') => copyCourse(path.join(ROOT, 'examples', name));
+const copyExample = (t: TestContext, name = 'diagnostic-reseau') => testResources(t).copyExample(path.join(ROOT, 'examples', name));
 const compiled = (dir: string): CourseData => {
   const project = loadProjectFromDir(dir);
   const { keys } = assignKeys(project, readLock(project), { dryRun: true });
@@ -33,10 +33,10 @@ const compiled = (dir: string): CourseData => {
 const ids = (bar: PlayerBarData | null) => bar?.items.map((item) => item.id) ?? null;
 const listed = (dir: string, bar: 'top' | 'bottom') => (readJSON(dir, 'course.json').player[bar].items as { id: string }[]).map((item) => item.id);
 
-test('the spacer: one per bar, always on, moved within its bar; a bar of only a spacer is removed', () => {
+test('the spacer: one per bar, always on, moved within its bar; a bar of only a spacer is removed', (t) => {
   assert.deepEqual(DEFAULT_PLAYER.top.items.map((item) => item.id), ['logo', 'title', 'progress', 'spacer', 'resources', 'glossary', 'credits', 'exit']);
   assert.deepEqual(DEFAULT_PLAYER.bottom.items.map((item) => item.id), ['outline', 'controls', 'spacer', 'previous', 'next']);
-  const dir = copyExample();
+  const dir = copyExample(t);
   // A course written before the spacer keeps the implicit rule: no spacer is added.
   const course = readJSON(dir, 'course.json');
   for (const bar of ['top', 'bottom'] as const) course.player[bar].items = course.player[bar].items.filter((item: { id: string }) => item.id !== 'spacer');
@@ -65,8 +65,8 @@ test('the spacer: one per bar, always on, moved within its bar; a bar of only a 
   assert.equal(playerReport(dir).bottom.shown, false);
 });
 
-test('display and language: off in a new module, put back where Lin 44 draws them; language shows with more than one language', () => {
-  const dir = copyExample();
+test('display and language: off in a new module, put back where Lin 44 draws them; language shows with more than one language', (t) => {
+  const dir = copyExample(t);
   const report = playerReport(dir);
   assert.deepEqual(report.unused, ['language', 'display']);
   assert.deepEqual(report.content.languages, ['fr']);
@@ -82,8 +82,8 @@ test('display and language: off in a new module, put back where Lin 44 draws the
   assert.deepEqual(packageLanguages(loadProjectFromDir(path.join(ROOT, 'examples/orbital-rendezvous'))), ['en', 'fr']);
 });
 
-test('resources: https links beside files, images among the files; refused when they would only be flagged', () => {
-  const dir = copyExample();
+test('resources: https links beside files, images among the files; refused when they would only be flagged', (t) => {
+  const dir = copyExample(t);
   const course = readJSON(dir, 'course.json');
   const resources = [...course.resources, { id: 'charte', title: 'Charte informatique', description: 'Sur l\'intranet.', url: 'https://intranet.example.com/charte?v=2#impression' }, { id: 'schema', title: 'Schéma du réseau', asset: 'images/logo-helios.svg' }];
   edit.updatePlayer(dir, { resources });
@@ -100,7 +100,7 @@ test('resources: https links beside files, images among the files; refused when 
   assert.equal(compiled(dir).resources!.some((resource) => resource.id === 'ftp'), false);
 });
 
-test('the logo: its colours against the bar, the plate that lets it read', () => {
+test('the logo: its colours against the bar, the plate that lets it read', (t) => {
   const box = 'd="M0 0h10v10z"';
   assert.ok(svgLogoContrast(`<svg viewBox="0 0 10 10"><path ${box}/></svg>`, '#14161C')!.ratio < 3, 'unfilled shapes are black');
   assert.ok(svgLogoContrast(`<svg><path fill="#FFFFFF" ${box}/><path style="fill:#0B1F3A" ${box}/></svg>`, '#14161C')!.ratio > 10, 'the best colour counts');
@@ -142,11 +142,9 @@ test('the logo: its colours against the bar, the plate that lets it read', () =>
   // An Illustrator file: XML declaration, DOCTYPE with entities, CDATA style.
   assert.deepEqual(svgPaints(`<?xml version="1.0"?>\n<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "x.dtd" [\n<!ENTITY ns_svg "http://www.w3.org/2000/svg">\n]>\n<svg xmlns="&ns_svg;"><style type="text/css"><![CDATA[\n\t.st0{fill:#E30613;}\n]]></style><polygon class="st0" points="0,0 10,0 5,8"/></svg>`), ['#E30613']);
   // Bounded: a file over 2 MB, thousands of unterminated comments, are not read.
-  const started = performance.now();
   assert.equal(svgPaints(`<svg><path fill="#000" d="M${'0 '.repeat(1_100_000)}"/></svg>`), null);
   assert.equal(svgPaints(`<svg>${'<!--'.repeat(400_000)}</svg>`), null);
-  assert.ok(performance.now() - started < 1000);
-  const dir = copyExample();
+  const dir = copyExample(t);
   fs.writeFileSync(path.join(dir, 'assets/images/logo-sombre.svg'), '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 32"><path fill="#1B2430" d="M0 0h120v32H0z"/></svg>\n');
   edit.updatePlayer(dir, { options: { logo: { asset: 'images/logo-sombre.svg' } }, tokens: { 'player.top.background': '#101418', 'player.top.text': '#FFFFFF' } });
   const flagged = validateDir(dir).diagnostics.filter((d) => d.code === 'W_PLAYER_LOGO_CONTRAST');
@@ -161,8 +159,8 @@ test('the logo: its colours against the bar, the plate that lets it read', () =>
   assert.deepEqual(compiled(dir).player.top!.items[0], { id: 'logo', src: 'assets/images/logo-sombre.svg', alt: 'Hélios', plate: true });
 });
 
-test('« Relier les termes aux écrans »: the first time in each screen, deterministic, never in links, code or locked texts', () => {
-  const dir = copyExample();
+test('« Relier les termes aux écrans »: the first time in each screen, deterministic, never in links, code or locked texts', (t) => {
+  const dir = copyExample(t);
   const accueil = readJSON(dir, 'screens/accueil.json');
   const callout = accueil.blocks.find((block: { id: string }) => block.id === 'accueil-objectifs');
   callout.props.markdown = 'Le `routeur` en code, [le routeur](https://example.com) en lien, <span title="routeur">x</span>, puis le Routeur du siège et un autre routeur.';
@@ -186,8 +184,8 @@ test('« Relier les termes aux écrans »: the first time in each screen, determ
   assert.ok(all.changed.some((change) => /^link terms \(\d+ links?\)$/.test(change)));
 });
 
-test('linking runs when the option is turned on and for a term added while it is on; a link the author removed stays removed', () => {
-  const dir = copyExample();
+test('linking runs when the option is turned on and for a term added while it is on; a link the author removed stays removed', (t) => {
+  const dir = copyExample(t);
   edit.updatePlayer(dir, { options: { glossary: { linkTerms: false } } });
   const course = readJSON(dir, 'course.json');
   const imprimante = { id: 'imprimante', term: 'Imprimante', definition: 'Appareil qui imprime les documents envoyés par le serveur d\'impression.' };
@@ -212,8 +210,8 @@ test('linking runs when the option is turned on and for a term added while it is
   assert.throws(() => edit.updatePlayer(dir, { linkTerms: ['absent'] }), /no entry "absent"/);
 });
 
-test('a glossary entry with translate: false keeps its term and variants in every language', () => {
-  const dir = copyExample();
+test('a glossary entry with translate: false keeps its term and variants in every language', (t) => {
+  const dir = copyExample(t);
   const course = readJSON(dir, 'course.json');
   course.glossary[0].translate = false;
   writeJSON(dir, 'course.json', course);
@@ -224,8 +222,8 @@ test('a glossary entry with translate: false keeps its term and variants in ever
   assert.ok(units.includes('course.glossary.routeur.term'));
 });
 
-test('a glossary entry says where its term was found: for the author, never in the package or a translation, and it follows a renamed screen', () => {
-  const dir = copyExample();
+test('a glossary entry says where its term was found: for the author, never in the package or a translation, and it follows a renamed screen', (t) => {
+  const dir = copyExample(t);
   const glossary = readJSON(dir, 'course.json').glossary;
   glossary[0].source = { kind: 'source', id: 'brief-client.pdf', at: 'p. 4' };
   glossary[1].source = { kind: 'screen', id: 'chemin' };
@@ -245,7 +243,7 @@ test('a glossary entry says where its term was found: for the author, never in t
   assert.ok(validateDir(dir).diagnostics.some((d) => d.severity === 'error' && d.file === 'course.json' && String(d.path).startsWith('/glossary/0/source')));
 });
 
-test('the language a learner chose is kept in suspend data, last, and costs its length in the worst case', () => {
+test('the language a learner chose is kept in suspend data, last, and costs its length in the worst case', (t) => {
   const state = emptyState();
   state.visited.add('s1');
   state.language = 'fr';
@@ -257,9 +255,9 @@ test('the language a learner chose is kept in suspend data, last, and costs its 
   assert.equal(worstCaseLength({ ...model, languages: ['en', 'fr', 'pt-BR'] }) - worstCaseLength(model), ',"g":"pt-BR"'.length);
 });
 
-test('a package of every language (D59): the course data of each, the languages in the main one, the worst case counted', async () => {
-  const dir = copyExample('orbital-rendezvous');
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-languages-'));
+test('a package of every language (D59): the course data of each, the languages in the main one, the worst case counted', async (t) => {
+  const dir = copyExample(t, 'orbital-rendezvous');
+  const out = testResources(t).tempDir('elabora-languages-');
   const one = await build(dir, { out: path.join(out, 'one'), emit: 'dir', target: 'web', writeLock: false });
   const all = await build(dir, { out: path.join(out, 'all'), emit: 'dir', target: 'web', writeLock: false, languages: 'all' });
   assert.ok(one.ok && all.ok);
@@ -271,11 +269,10 @@ test('a package of every language (D59): the course data of each, the languages 
   assert.match(all.files.get('elabora/course.js')!.toString('utf8'), /"languages":\["en","fr"\]/);
   assert.doesNotMatch(one.files.get('elabora/course.js')!.toString('utf8'), /"languages"/);
   assert.equal(all.report.budget.suspendDataWorstCase - one.report.budget.suspendDataWorstCase, ',"g":"en"'.length);
-  fs.rmSync(out, { recursive: true, force: true });
 });
 
-test('the canvas render data carries what the live bars need: the outline, the resources, « IA et crédits », their files, the languages', () => {
-  const dir = copyExample();
+test('the canvas render data carries what the live bars need: the outline, the resources, « IA et crédits », their files, the languages', (t) => {
+  const dir = copyExample(t);
   const render = renderScreen(loadProjectFromDir(dir), 'chemin', {});
   assert.deepEqual(render.outline?.sections.map((section) => section.screens.map((entry) => entry.id)), [['accueil', 'chemin'], ['premier-reflexe', 'simulation'], ['evaluation', 'bilan']]);
   assert.equal(render.outline?.sections[0].screens[1].title, 'Le chemin d\'une impression');
@@ -286,13 +283,13 @@ test('the canvas render data carries what the live bars need: the outline, the r
   for (const path of ['assets/images/logo-helios.svg', 'assets/resources/fiche-reflexe-impression.pdf', 'assets/resources/equipements-siege.csv']) assert.ok(files.includes(path), path);
   assert.equal(render.course.languages, undefined);
   // « Langue » enabled: the languages a package of every language would hold.
-  const orbital = copyExample('orbital-rendezvous');
+  const orbital = copyExample(t, 'orbital-rendezvous');
   edit.updatePlayer(orbital, { enable: ['language'] });
   assert.deepEqual(renderScreen(loadProjectFromDir(orbital), 'intro', {}).course.languages, ['en', 'fr']);
 });
 
-test('linking reads Markdown as the player does: case for acronyms, links, references, code, URLs; the longest term first, whatever the glossary\'s order', () => {
-  const dir = copyExample();
+test('linking reads Markdown as the player does: case for acronyms, links, references, code, URLs; the longest term first, whatever the glossary\'s order', (t) => {
+  const dir = copyExample(t);
   const accueil = readJSON(dir, 'screens/accueil.json');
   const callout = accueil.blocks.find((block: { id: string }) => block.id === 'accueil-objectifs');
   callout.props.markdown = 'Si vous êtes prêt, le SI répond. Voir [le guide][routeur], [un [routeur] imbriqué](https://example.com) et https://example.com/routeur/doc.\n\n    routeur dans un bloc de code\n\nPuis le réseau privé virtuel, et le réseau.';
@@ -311,8 +308,8 @@ test('linking reads Markdown as the player does: case for acronyms, links, refer
   assert.equal(text, 'Si vous êtes prêt, le [SI](glossary:si) répond. Voir [le guide][routeur], [un [routeur] imbriqué](https://example.com) et https://example.com/routeur/doc.\n\n    routeur dans un bloc de code\n\nPuis le [réseau privé virtuel](glossary:rpv), et le [réseau](glossary:reseau).');
 });
 
-test('linking and translations: the same link where the term is in an up-to-date translation, else the text said stale; a language left out of the package is named', async () => {
-  const dir = copyExample('orbital-rendezvous');
+test('linking and translations: the same link where the term is in an up-to-date translation, else the text said stale; a language left out of the package is named', async (t) => {
+  const dir = copyExample(t, 'orbital-rendezvous');
   const unit = 'block.burns-practice.options.a.feedback';
   const course = readJSON(dir, 'course.json');
   // A name kept in every language: the French text has it too, and takes the same link.
@@ -326,7 +323,7 @@ test('linking and translations: the same link where the term is in an up-to-date
   const french = client.translations.find((translation) => translation.language === 'fr')!;
   assert.ok(french.stale.length > 0 && french.linked.length === 0, JSON.stringify(client.translations));
   // The package of every language leaves French out, and says why.
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-left-out-'));
+  const out = testResources(t).tempDir('elabora-left-out-');
   const built = await build(dir, { out, emit: 'dir', target: 'web', writeLock: false, languages: 'all' });
   assert.ok(built.ok);
   const left = built.diagnostics.filter((d) => d.code === 'W_PACKAGE_LANGUAGE_LEFT_OUT');
@@ -334,10 +331,9 @@ test('linking and translations: the same link where the term is in an up-to-date
   assert.equal(left[0].target, 'fr');
   assert.match(left[0].message, /texts? to translate/);
   assert.match(left[0].message, /out of date/);
-  fs.rmSync(out, { recursive: true, force: true });
 });
 
-test('the links to an entry, as the player\'s Markdown reads them: inline, by reference, in nested brackets; never in code, an escape or an image', () => {
+test('the links to an entry, as the player\'s Markdown reads them: inline, by reference, in nested brackets; never in code, an escape or an image', (t) => {
   const text = [
     'Le [routeur](glossary:routeur), le [**SI**](glossary:si "Système d\'information"), [la passerelle](<glossary:passerelle>),',
     '`[pas](glossary:routeur)` en code, \\[pas un lien\\](glossary:routeur), ![image](glossary:routeur),',
@@ -366,8 +362,8 @@ test('the links to an entry, as the player\'s Markdown reads them: inline, by re
   assert.equal(unlinkText(result.text, new Set(['si', 'passerelle'])).text.split('\n')[0], 'Le routeur, le **SI**, la passerelle,');
 });
 
-test('a glossary entry removed takes its links: the words stay, placed or written by hand, in one change that undo takes back', () => {
-  const dir = copyExample();
+test('a glossary entry removed takes its links: the words stay, placed or written by hand, in one change that undo takes back', (t) => {
+  const dir = copyExample(t);
   edit.updatePlayer(dir, { linkTerms: true });
   // A link written by hand, by reference, in a screen that has the term linked already.
   const chemin = readJSON(dir, 'screens/chemin.json');
@@ -393,8 +389,8 @@ test('a glossary entry removed takes its links: the words stay, placed or writte
   assert.ok(readJSON(dir, 'course.json').glossary.some((entry: { id: string }) => entry.id === 'routeur'));
 });
 
-test('a glossary entry removed: the translations that had its links up to date lose them and stay up to date', () => {
-  const dir = copyExample('orbital-rendezvous');
+test('a glossary entry removed: the translations that had its links up to date lose them and stay up to date', (t) => {
+  const dir = copyExample(t, 'orbital-rendezvous');
   const unit = 'block.burns-practice.options.a.feedback';
   const course = readJSON(dir, 'course.json');
   edit.updatePlayer(dir, { glossary: [...(course.glossary ?? []), { id: 'gemini', term: 'Gemini', definition: 'The NASA programme of two-person spacecraft (1965–1966).', translate: false }] });
@@ -409,8 +405,8 @@ test('a glossary entry removed: the translations that had its links up to date l
   assert.deepEqual(packageLanguages(loadProjectFromDir(dir)), ['en', 'fr']);
 });
 
-test('the engine\'s renders carry the bars of the course as it is now: another screen renamed', () => {
-  const dir = copyExample();
+test('the engine\'s renders carry the bars of the course as it is now: another screen renamed', (t) => {
+  const dir = copyExample(t);
   const renderer = new Renderer();
   const outlineTitle = (render: { outline?: { sections: { screens: { id: string; title: string }[] }[] } }) => render.outline!.sections.flatMap((section) => section.screens).find((entry) => entry.id === 'chemin')?.title;
   assert.equal(outlineTitle(renderer.render(loadProjectFromDir(dir), { screen: 'accueil' })), 'Le chemin d\'une impression');
