@@ -79,7 +79,7 @@ npm workspaces, TypeScript in strict mode:
 
 ## Testing
 
-See [Contributing: tests](CONTRIBUTING.md#tests) for the behaviour standards and commands. Run `npm test`, `npm run typecheck` and `npm run test:e2e` before finishing a change; the policy says when the LMS matrix is required.
+See [Contributing: tests](CONTRIBUTING.md#tests) for behaviour standards, required checks and repeat runs.
 
 ## Status
 

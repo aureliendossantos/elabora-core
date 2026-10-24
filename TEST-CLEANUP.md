@@ -1,6 +1,6 @@
 # Test cleanup ledger
 
-Branch: `test-policy-cleanup`. Baseline: `96df988`. Worktree: `.test-policy/elabora-core` in the parent workspace. Counts include blank lines. Commit each completed test file with its ledger update. The inventory below is the resume queue, ordered by subsystem risk first, then size during review.
+Branch: `test-policy-cleanup`. Baseline: `96df988`. Worktree: `.test-policy/elabora-core` in the parent workspace. Counts include blank lines. Commit each completed test file with its ledger update. The inventory below lists all test files; reviewed changes started with edit/undo and session consistency, then the larger suites. Pending rows are an explicit resume queue, not claims of completed review.
 
 ## Policy and scope
 
@@ -17,29 +17,17 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Defect | Count | Example |
 | --- | ---: | --- |
-
 | Implementation coupling | 18 | ops: private computeDiff comparison and exact chosen diff scripts |
-
 | Duplicate assertions | 1 | ops: identical notes restoration asserted twice |
-
 | Shared mutable fixtures | 4 | ops: module-level change ID counter replaced with content-derived IDs |
-
 | Fixed-delay synchronization | 21 | engine-session: sleep(400) before checking watcher results |
-
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
-
 | Duplicate computation | 1 | engine-project-state: full validator run twice per assertion |
-
 | Unseeded randomness | 9 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
-
 | Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
-
 | Low-value assertion | 1 | engine-store: repeated hash equality replaced with hash invalidation after a write |
-
 | Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
-
 | Resource cleanup | 40 | validate: copied fixtures were never removed |
-
 | Wall-clock timing | 4 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 
 ## Production changes
@@ -48,7 +36,9 @@ None.
 
 ## Human questions / proposed refactors
 
-None yet.
+Proposed, not applied: give `watchFolders` an explicit readiness acknowledgement on every platform, matching FsStore. Its macOS integration test currently probes the real stream because the public API has no ready signal. Keep the real-filesystem regression; a test-only delay cannot fix this API limitation.
+
+Further review should prioritize the CLI transport suite (715 lines), ElevenLabs (675), dialogue (575), fonts (547), plan-document (523), sources (511), and remaining browser scenarios. These include valuable public-output contracts; size alone is not a reason to remove them.
 
 ## Files
 
