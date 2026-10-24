@@ -39,7 +39,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
 
-| Private layout assertions | 1 | charts-matrix imported label placement helpers instead of measuring rendered labels |
+| Private layout assertions | 2 | charts-matrix imported label placement helpers instead of measuring rendered labels |
 
 ## Production changes
 
@@ -88,7 +88,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/browser.test.ts` | 57 | — | Pending |
 | `test/unit/canvas-host.test.ts` | 134 | — | Pending |
 | `test/unit/charts-before-after.test.ts` | 86 | 43 | Passed chart units and desktop/phone browser layout; public output replaces private geometry/dodge formulas; crowded and coincident labels checked by actual DOM bounds |
-| `test/unit/charts-cycle.test.ts` | 112 | — | Pending |
+| `test/unit/charts-cycle.test.ts` | 112 | 106 | Passed chart units and browser layout; rendered clockwise order and visible bounds replace private stage/arc formulas and constants |
 | `test/unit/charts-donut.test.ts` | 99 | — | Pending |
 | `test/unit/charts-levels.test.ts` | 103 | — | Pending |
 | `test/unit/charts-matrix.test.ts` | 98 | — | Pending |
