@@ -17,9 +17,9 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Defect | Count | Example |
 | --- | ---: | --- |
-| Implementation coupling | 18 | ops: private computeDiff comparison and exact chosen diff scripts |
+| Implementation coupling | 19 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 1 | ops: identical notes restoration asserted twice |
-| Shared mutable fixtures | 4 | ops: module-level change ID counter replaced with content-derived IDs |
+| Shared mutable fixtures | 7 | ops: module-level change ID counter replaced with content-derived IDs |
 | Fixed-delay synchronization | 21 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 1 | engine-project-state: full validator run twice per assertion |
@@ -27,7 +27,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 1 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 40 | validate: copied fixtures were never removed |
+| Resource cleanup | 48 | validate: copied fixtures were never removed |
 | Wall-clock timing | 4 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 
 | Duplicate fixtures | 2 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
@@ -105,7 +105,7 @@ Further review should prioritize the CLI transport suite (715 lines), ElevenLabs
 | `test/unit/edit-journal.test.ts` | 225 | — | Pending |
 | `test/unit/edit.test.ts` | 223 | — | Pending |
 | `test/unit/electron-runtime.test.ts` | 21 | — | Pending |
-| `test/unit/elevenlabs.test.ts` | 675 | — | Pending |
+| `test/unit/elevenlabs.test.ts` | 675 | 688 | Native seed 104729 passed (17 plus 1 opt-in live skip); fresh quota/rate/cache/request fixtures, explicit library-voice search, preserved paid-generation, dialogue, CLI and engine contracts |
 | `test/unit/engine-agents.test.ts` | 189 | — | Pending |
 | `test/unit/engine-build.test.ts` | 127 | — | Pending |
 | `test/unit/engine-canvas.test.ts` | 133 | — | Pending |

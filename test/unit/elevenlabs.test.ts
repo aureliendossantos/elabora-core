@@ -1,4 +1,4 @@
-import { test, before, after } from 'node:test';
+import { test, before, after, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -7,7 +7,7 @@ import http from 'node:http';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import type { AddressInfo } from 'node:net';
-import { copyExample, readJSON, writeJSON, codes, ROOT } from '../helpers.ts';
+import { copyExample as copyCourse, readJSON, writeJSON, codes, ROOT } from '../helpers.ts';
 import { narrate, hasFfmpeg } from '../narration.ts';
 import { lineDirections, maskDirections, withoutDirections, playsDirections } from '@elabora/core/narration/directions';
 import { modelName, voiceFit, voiceModel } from '@elabora/core/narration/voice-fit';
@@ -19,7 +19,7 @@ import { generateNarration, estimateNarration, setSpeakerVoice, voiceTakes, voic
 import type { VoiceInfo } from '@elabora/node/voice/index';
 import { splitDialogue, synthesize, wordsFromAlignment, speechBounds, SAMPLE_RATE } from '@elabora/node/voice/elevenlabs/index';
 import { COST_BOOK } from '@elabora/core/ai/cost-ledger.generated';
-import { chargedShare, expectedCharge, recordCharge, forgetQuota, noteSpent, remember, keyId } from '@elabora/node/voice/elevenlabs/costs';
+import { chargedShare, expectedCharge, recordCharge, forgetQuota, forgetVoiceRates, noteSpent, remember, keyId } from '@elabora/node/voice/elevenlabs/costs';
 import { APPROVAL_SHARE, covers, needsApproval, quotaPercent } from '@elabora/core/ai/quota';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { validateDir } from '@elabora/node/project-reader';
@@ -35,6 +35,14 @@ const run = promisify(execFile);
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
 const KEY = 'sk_test0123456789abcdefghijklmnop';
 const RATE = SAMPLE_RATE;
+
+const temporary: string[] = [];
+const temporaryDir = (prefix: string) => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  temporary.push(dir);
+  return dir;
+};
+const copyExample = () => { const dir = copyCourse(); temporary.push(dir); return dir; };
 
 interface Seen { method: string; url: string; key: string | undefined; body: any }
 const seen: Seen[] = [];
@@ -134,12 +142,23 @@ before(async () => {
     process.env.ELABORA_ELEVENLABS_URL = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
     process.env.ELEVENLABS_API_KEY = KEY;
   }
-  process.env.ELABORA_ELEVENLABS_CACHE = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-elevenlabs-cache-'));
-  process.env.ELABORA_ELEVENLABS_KEY_FILE = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-elevenlabs-key-')), 'key');
 });
 
-after(() => {
-  server.close();
+// Every case is a fresh computer/account. The old shared quota included other cases' paid calls.
+beforeEach(() => {
+  seen.length = 0; limit = 40000; charge = 0.11; forbid = null;
+  forgetQuota(); forgetVoiceRates(); setSessionKey(null);
+  if (!live) process.env.ELEVENLABS_API_KEY = KEY;
+  process.env.ELABORA_ELEVENLABS_CACHE = temporaryDir('elabora-elevenlabs-cache-');
+  process.env.ELABORA_ELEVENLABS_KEY_FILE = path.join(temporaryDir('elabora-elevenlabs-key-'), 'key');
+});
+afterEach(() => {
+  setSessionKey(null); forgetQuota(); forgetVoiceRates();
+  for (const dir of temporary.splice(0)) fs.rmSync(dir, { recursive: true, force: true });
+});
+
+after(async () => {
+  await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
   for (const [name, value] of [['ELABORA_ELEVENLABS_URL', saved.url], ['ELEVENLABS_API_KEY', saved.key], ['ELABORA_ELEVENLABS_CACHE', saved.cache], ['ELABORA_ELEVENLABS_KEY_FILE', saved.file]] as const) {
     if (value === undefined) delete process.env[name]; else process.env[name] = value;
   }
@@ -265,6 +284,8 @@ test('elevenlabs: voices searched and looked up, the account read with its key m
 });
 
 test('elevenlabs: under 1 % of the quota a line is said at once; from 1 % it waits for the share approved', { skip: NO_FFMPEG }, async () => {
+  // A library voice is priced from the search that selected it, not another test's warmed cache.
+  await voiceProvider('elevenlabs').search!({ provider: 'elevenlabs', language: 'fr' });
   const dir = narrated();
   await setSpeakerVoice(dir, { speaker: 'leila', voice: 'acc0unt0voice0000001', provider: 'elevenlabs' });
   await setSpeakerVoice(dir, { speaker: 'marc', voice: 'library0voice0000002', provider: 'elevenlabs', name: 'Marc - Support agent', settings: { model: 'eleven_v4', stability: 0.3 } });
@@ -401,9 +422,9 @@ test('elevenlabs: a dialogue asks where each turn is heard, once, in the whole e
   assert.equal(calls, 1);
   assert.equal(asked!.sampleRate, SAMPLE_RATE);
   assert.ok(Math.abs(asked!.samples.length / SAMPLE_RATE - (plain.lines[1].start + plain.lines[1].samples.length / SAMPLE_RATE)) < 0.3, 'the aligner is given the whole exchange, not a line');
-  // The second turn is heard 0.5 s after the service's time for it: its words move with it.
-  assert.ok(Math.abs(heard.lines[1].words[0].start - plain.lines[1].words[0].start - 0.5) < 0.02, `${heard.lines[1].words[0].start} against ${plain.lines[1].words[0].start}`);
-  assert.deepEqual(heard.lines.map((l) => l.start), plain.lines.map((l) => l.start), 'cut in the same silence');
+  // Words are aligned in the whole exchange, regardless of which silence the line was cut in.
+  assert.ok(Math.abs(heard.lines[1].start + heard.lines[1].words[0].start - 2.2) < 0.002);
+  assert.deepEqual(heard.lines.map(line => line.words.map(word => word.text)), plain.lines.map(line => line.words.map(word => word.text)));
   // An aligner that finds nothing (or fails to) leaves the service's times.
   const none = await provider.synthesizeDialogue!({ ...request, hear: async () => null });
   assert.deepEqual(none.lines.map((l) => l.words), plain.lines.map((l) => l.words));
@@ -491,8 +512,6 @@ test('quota: costs said as a share of the month, one threshold, an approval that
 });
 
 test('elevenlabs: what the service charges teaches the estimates, and a generation charged far more than allowed stops', { skip: NO_FFMPEG }, async () => {
-  const cache = process.env.ELABORA_ELEVENLABS_CACHE;
-  process.env.ELABORA_ELEVENLABS_CACHE = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-elevenlabs-cache-'));
   charge = 7;
   forgetQuota();
   try {
@@ -510,7 +529,6 @@ test('elevenlabs: what the service charges teaches the estimates, and a generati
     assert.deepEqual([again.lines.length, again.credits, again.needsApproval], [1, 41, false], 'the next estimate follows');
   } finally {
     charge = 0.11;
-    process.env.ELABORA_ELEVENLABS_CACHE = cache;
     forgetQuota();
   }
 });
@@ -520,45 +538,40 @@ test('elevenlabs: what the service charges teaches the estimates, and a generati
 // The estimate came from the 0.11 of the first two days (v4's launch discount, over by the morning of the
 // 13th); a Starter plan is charged 0.4 of the list price, for every model, as the ledger measured (D36).
 test('elevenlabs: a Starter plan is estimated at the ledger\'s undiscounted 0.4 of the list price, a rise is followed, a discount is not counted on, a plan not measured is told the list price, then its own requests', () => {
-  const cache = process.env.ELABORA_ELEVENLABS_CACHE;
-  process.env.ELABORA_ELEVENLABS_CACHE = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-elevenlabs-rates-'));
-  try {
-    const credits = (characters: number, plan: string | null = 'starter', model = 'eleven_v4') => Math.ceil(characters * (model === 'eleven_v4_turbo' ? 0.5 : 1) * chargedShare(plan, model));
-    assert.ok(credits(1163) >= 465 && credits(1163) < 470, 'the course: 465 charged');
-    assert.ok([12, 13].includes(credits(30)), 'the experiment: 30 characters, 12 credits charged (13 told: the average is a little over 0.4)');
-    assert.equal(credits(25, 'starter', 'eleven_v4_turbo'), 5, 'on Turbo: 25 characters, 5 credits');
-    assert.equal(expectedCharge('starter').from, 'ledger');
-    const charge = (billed: number, plan = 'starter', list = 100) => recordCharge({ model: 'eleven_v4', plan, list, billed, rate: 1, kind: 'speech' });
-    // A discount the ledger does not know: 0.11 recorded, and not believed to go on.
-    for (let i = 0; i < 12; i++) charge(11);
-    assert.equal(chargedShare('starter'), STARTER);
-    // A rise is followed at once, by the last requests; never past the list price.
-    for (let i = 0; i < 12; i++) charge(80);
-    assert.deepEqual([chargedShare('starter'), expectedCharge('starter').from], [0.8, 'own']);
-    for (let i = 0; i < 12; i++) charge(100);
-    assert.equal(chargedShare('starter'), 1);
-    // The model's list price is no longer the period's: the ledger and the requests made at the old price are not used.
-    assert.deepEqual([chargedShare('starter', 'eleven_v4', 2), expectedCharge('starter', 'eleven_v4', 2).from], [1, 'list']);
-    // A request too small to say a share (8 credits for 74 characters) is not counted.
-    fs.rmSync(path.join(process.env.ELABORA_ELEVENLABS_CACHE, 'charges.json'));
-    charge(30, 'starter', 30);
-    assert.equal(chargedShare('starter'), STARTER);
-    // A plan the ledger has not measured: the list price, then what its own requests say, and a quarter more.
-    assert.equal(chargedShare('creator'), 1);
-    assert.equal(chargedShare(null), 1);
-    for (let i = 0; i < 3; i++) charge(40, 'creator');
-    assert.deepEqual([chargedShare('creator'), expectedCharge('creator').from], [0.5, 'own']);
-    assert.equal(chargedShare('starter'), STARTER);
-    // A model the ledger has not measured: the list price.
-    assert.equal(chargedShare('starter', 'eleven_v5'), 1);
-    // rates.json, kept before the ledger without dates, is dropped once a charge is kept.
-    fs.writeFileSync(path.join(process.env.ELABORA_ELEVENLABS_CACHE, 'rates.json'), '{}');
-    charge(40);
-    assert.equal(fs.existsSync(path.join(process.env.ELABORA_ELEVENLABS_CACHE, 'rates.json')), false);
-  } finally {
-    process.env.ELABORA_ELEVENLABS_CACHE = cache;
-  }
+  const credits = (characters: number, plan: string | null = 'starter', model = 'eleven_v4') => Math.ceil(characters * (model === 'eleven_v4_turbo' ? 0.5 : 1) * chargedShare(plan, model));
+  assert.ok(credits(1163) >= 465 && credits(1163) < 470, 'the course: 465 charged');
+  assert.ok([12, 13].includes(credits(30)), 'the experiment: 30 characters, 12 credits charged (13 told: the average is a little over 0.4)');
+  assert.equal(credits(25, 'starter', 'eleven_v4_turbo'), 5, 'on Turbo: 25 characters, 5 credits');
+  assert.equal(expectedCharge('starter').from, 'ledger');
+  const charge = (billed: number, plan = 'starter', list = 100) => recordCharge({ model: 'eleven_v4', plan, list, billed, rate: 1, kind: 'speech' });
+  // A discount the ledger does not know: 0.11 recorded, and not believed to go on.
+  for (let i = 0; i < 12; i++) charge(11);
+  assert.equal(chargedShare('starter'), STARTER);
+  // A rise is followed at once, by the last requests; never past the list price.
+  for (let i = 0; i < 12; i++) charge(80);
+  assert.deepEqual([chargedShare('starter'), expectedCharge('starter').from], [0.8, 'own']);
+  for (let i = 0; i < 12; i++) charge(100);
+  assert.equal(chargedShare('starter'), 1);
+  // The model's list price is no longer the period's: the ledger and the requests made at the old price are not used.
+  assert.deepEqual([chargedShare('starter', 'eleven_v4', 2), expectedCharge('starter', 'eleven_v4', 2).from], [1, 'list']);
+  // A request too small to say a share (8 credits for 74 characters) is not counted.
+  fs.rmSync(path.join(process.env.ELABORA_ELEVENLABS_CACHE, 'charges.json'));
+  charge(30, 'starter', 30);
+  assert.equal(chargedShare('starter'), STARTER);
+  // A plan the ledger has not measured: the list price, then what its own requests say, and a quarter more.
+  assert.equal(chargedShare('creator'), 1);
+  assert.equal(chargedShare(null), 1);
+  for (let i = 0; i < 3; i++) charge(40, 'creator');
+  assert.deepEqual([chargedShare('creator'), expectedCharge('creator').from], [0.5, 'own']);
+  assert.equal(chargedShare('starter'), STARTER);
+  // A model the ledger has not measured: the list price.
+  assert.equal(chargedShare('starter', 'eleven_v5'), 1);
+  // rates.json, kept before the ledger without dates, is dropped once a charge is kept.
+  fs.writeFileSync(path.join(process.env.ELABORA_ELEVENLABS_CACHE, 'rates.json'), '{}');
+  charge(40);
+  assert.equal(fs.existsSync(path.join(process.env.ELABORA_ELEVENLABS_CACHE, 'rates.json')), false);
 });
+
 
 test('elevenlabs: a voice priced above its model keeps its price after a restart (its rate kept on the computer)', async () => {
   const { estimateCredits } = await import('@elabora/node/voice/elevenlabs/index');
@@ -587,7 +600,7 @@ test('elevenlabs: an imitation of the service has answers of its own in the cach
 });
 
 test('elevenlabs: the cache lives beside the key, out of Chromium\'s Cache folder; what was kept before is moved once', async () => {
-  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-el-home-'));
+  const home = temporaryDir('elabora-el-home-');
   const script = `
     import fs from 'node:fs'; import path from 'node:path';
     import { localDataRoot } from '@elabora/node/data-dir';
@@ -606,7 +619,7 @@ test('elevenlabs: the cache lives beside the key, out of Chromium\'s Cache folde
 
 test('cli: the key is read from the input and never shown; from 1 % of the quota a paid generation waits for --spend <percent> (exit 3)', { skip: NO_FFMPEG }, async () => {
   const dir = narrated();
-  const env: NodeJS.ProcessEnv = { ...process.env, ELABORA_ELEVENLABS_CACHE: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-elevenlabs-cache-')) };
+  const env: NodeJS.ProcessEnv = { ...process.env, ELABORA_ELEVENLABS_CACHE: temporaryDir('elabora-elevenlabs-cli-') };
   delete env.ELEVENLABS_API_KEY;
   const elabora = (args: string[], input?: string) => new Promise<{ code: number; stdout: string; stderr: string }>((resolve) => {
     const child = execFile(process.execPath, [path.join(ROOT, 'bin/elabora.js'), ...args], { cwd: dir, env, encoding: 'utf8' }, (error, stdout, stderr) => resolve({ code: error ? (error as { code?: number }).code ?? 1 : 0, stdout, stderr }));
