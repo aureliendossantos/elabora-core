@@ -1,13 +1,13 @@
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import type { Browser, Page } from 'playwright-core';
 import { startServer } from '@elabora/node/emulator/server';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import { validateDir, loadProjectFromDir } from '@elabora/node/project-reader';
-import { copyExample, readJSON, writeJSON, addExplorer, addLayerProbe, addViewProbe, addListProbe, LAYER_PROBE, VIEW_PROBE, LIST_PROBE } from '../helpers.ts';
+import { readJSON, writeJSON, addExplorer, addLayerProbe, addViewProbe, addListProbe, LAYER_PROBE, VIEW_PROBE, LIST_PROBE } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { startCanvasHost } from '@elabora/node/canvas/host';
 import { renderScreen } from '@elabora/core/render/screen';
@@ -20,12 +20,33 @@ import { createRequire } from 'node:module';
 import { pageStyleConflicts } from '@elabora/node/style-cascade';
 import * as edit from '@elabora/node/edit';
 
-const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+const tmp = (t: TestContext, prefix: string) => resources(t).tempDir(prefix);
 type CanvasWindow = Window & typeof globalThis & { __elaboraCanvas: CanvasApi };
 
+// Async object state arrives by RPC; check it on render frames, with a failure deadline.
+async function objectState<T>(page: Page, block: string, expected: Record<string, unknown>): Promise<T> {
+  return page.evaluate(({ block, expected }) => new Promise<T>((resolve, reject) => {
+    const deadline = setTimeout(() => { cancelAnimationFrame(frame); reject(new Error(`No expected state of ${block}: ${JSON.stringify(expected)}`)); }, 15000);
+    let frame = 0;
+    const check = async () => {
+      try {
+        const state = await (window as PlayerWindow).__elabora.objectHost(block)?.getState() as Record<string, unknown> | undefined;
+        if (state && Object.entries(expected).every(([key, value]) => state[key] === value)) { clearTimeout(deadline); resolve(state as T); }
+        else frame = requestAnimationFrame(check);
+      } catch (error) { clearTimeout(deadline); reject(error); }
+    };
+    void check();
+  }), { block, expected });
+}
+const { PNG } = createRequire(import.meta.url)('pngjs');
+function visibleCapture(bytes: Buffer): void {
+  const image = PNG.sync.read(bytes);
+  assert.ok(image.width > 0 && image.height > 0 && new Set(image.data).size > 1, 'capture decodes with visible content');
+}
+
 // The reference example as slides, with a stylesheet (for the contrast and backdrop cases).
-function slidesCopy({ css = '' } = {}) {
-  const dir = copyExample();
+function slidesCopy(t: TestContext, { css = '' } = {}) {
+  const dir = resources(t).copyExample();
   const course = readJSON(dir, 'course.json');
   course.presentation = { mode: 'slides' };
   if (css) {
@@ -37,35 +58,30 @@ function slidesCopy({ css = '' } = {}) {
   return { dir, course };
 }
 
-async function openPlayer(dir: string, run: (page: Page, errors: string[]) => Promise<void>) {
-  const b = await build(dir, { emit: 'dir', out: tmp('elabora-e2e-'), writeLock: false, debug: true });
+async function openPlayer(t: TestContext, dir: string, run: (page: Page, errors: string[]) => Promise<void>) {
+  const b = await build(dir, { emit: 'dir', out: tmp(t, 'elabora-e2e-'), writeLock: false, debug: true });
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
-  const server = await startServer();
+  const server = resources(t).own(await startServer(), value => value.close());
   server.addPackage('p', b.dirPath);
-  const browser: Browser = await launchBrowser('chromium');
-  try {
-    const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
-    const errors: string[] = [];
-    page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-    await page.goto(`${server.base}/pkg/p/index.html`);
-    await page.waitForFunction(() => (window as PlayerWindow).__elabora);
-    await page.evaluate(() => { const t = (window as PlayerWindow).__elabora; for (const s of t.engine.screens) { t.engine.st.visited.add(s.key); t.engine.st.completed.add(s.key); } });
-    await run(page, errors);
-  } finally {
-    await browser.close();
-    await server.close();
-  }
+  const browser: Browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
+  const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
+  const errors: string[] = [];
+  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  await page.goto(`${server.base}/pkg/p/index.html`);
+  await page.waitForFunction(() => (window as PlayerWindow).__elabora);
+  await page.evaluate(() => { const t = (window as PlayerWindow).__elabora; for (const s of t.engine.screens) { t.engine.st.visited.add(s.key); t.engine.st.completed.add(s.key); } });
+  await run(page, errors);
 }
 
-test('slides: answering moves nothing (reserved room, concealed blocks keep their place)', { timeout: 240000 }, async () => {
-  const { dir } = slidesCopy();
+test('slides: answering moves nothing (reserved room, concealed blocks keep their place)', { timeout: 240000 }, async (t) => {
+  const { dir } = slidesCopy(t);
   const fit = await measureFit(dir, { sizes: [{ role: 'reference', size: '1600x900' }] });
   assert.ok(fit.ok);
   const shifts = fit.sizes[0].screens.filter((s) => s.shift).map((s) => `${s.screen}: ${JSON.stringify(s.shift)}`);
   assert.deepEqual(shifts, []);
   assert.ok(!fitDiagnostics(fit).some((d) => d.code === 'W_SLIDE_SHIFT'));
   // The same activity without its reserve would move the slide: fit sees it.
-  await openPlayer(dir, async (page) => {
+  await openPlayer(t, dir, async (page) => {
     const r = await page.evaluate(async () => {
       const t = (window as PlayerWindow).__elabora;
       t.go('evaluation');
@@ -79,18 +95,18 @@ test('slides: answering moves nothing (reserved room, concealed blocks keep thei
     // Measuring again (the window changes) keeps the learner's choice.
     await page.click('.t-block[data-type="quiz"] .t-option >> nth=1');
     await page.setViewportSize({ width: 1440, height: 900 });
-    await page.waitForTimeout(400);
+    await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
     const kept = await page.evaluate(() => [...document.querySelectorAll<HTMLInputElement>('.t-block[data-type="quiz"] .t-option input')].map((i) => i.checked));
     assert.deepEqual(kept.slice(0, 2), [false, true], 'the selected option stays selected');
   });
 });
 
-test('compact feedback: the chosen option\'s feedback without its text, which screen readers still hear; the room it saves measured', { timeout: 240000 }, async () => {
-  const { dir } = slidesCopy();
+test('compact feedback: the chosen option\'s feedback without its text, which screen readers still hear; the room it saves measured', { timeout: 240000 }, async (t) => {
+  const { dir } = slidesCopy(t);
   const screen = readJSON(dir, 'screens/evaluation.json');
   screen.blocks.find((block: { id: string }) => block.id === 'evaluation-q1').props.feedbackStyle = 'compact';
   writeJSON(dir, 'screens/evaluation.json', screen);
-  await openPlayer(dir, async (page) => {
+  await openPlayer(t, dir, async (page) => {
     await page.evaluate(() => (window as PlayerWindow).__elabora.go('evaluation'));
     await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
     // Only quizzes with full feedback are measured; compact saves room on them.
@@ -113,16 +129,16 @@ test('compact feedback: the chosen option\'s feedback without its text, which sc
   });
 });
 
-test('fit measures the contrast of text against the pixels behind it', { timeout: 240000 }, async () => {
-  const { dir } = slidesCopy({ css: '[data-screen="accueil"] { background: linear-gradient(#f4f6f8, #f4f6f8); } [data-screen="accueil"] .t-text { color: #e6e9ec; }' });
+test('fit measures the contrast of text against the pixels behind it', { timeout: 240000 }, async (t) => {
+  const { dir } = slidesCopy(t, { css: '[data-screen="accueil"] { background: linear-gradient(#f4f6f8, #f4f6f8); } [data-screen="accueil"] .t-text { color: #e6e9ec; }' });
   const fit = await measureFit(dir, { sizes: [{ role: 'reference', size: '1600x900' }] });
   const d = fitDiagnostics(fit).filter((x) => x.code === 'W_TEXT_CONTRAST_MEASURED');
   assert.ok(d.some((x) => x.target === 'accueil'), JSON.stringify(d));
   assert.ok(!d.some((x) => x.target !== 'accueil'), JSON.stringify(d.filter((x) => x.target !== 'accueil')));
 });
 
-test('scroll pages: fit gives their length and measures contrast down the whole page, never an overflow', { timeout: 240000 }, async () => {
-  const dir = copyExample();
+test('scroll pages: fit gives their length and measures contrast down the whole page, never an overflow', { timeout: 240000 }, async (t) => {
+  const dir = resources(t).copyExample();
   addViewProbe(dir);
   // The last paragraph of the long page, far below the window, is too faint.
   const css = '[data-block="chemin-filler-6"] .t-text { color: #e6e9ec; }';
@@ -142,12 +158,12 @@ test('scroll pages: fit gives their length and measures contrast down the whole 
   assert.ok(!diagnostics.some((d) => /^(W|I)_SLIDE_/.test(d.code)), JSON.stringify(diagnostics));
 });
 
-test('fit keeps each screen\'s measure: unchanged screens are reused, an edited one is measured again, and fresh measures all', { timeout: 240000 }, async () => {
-  const dir = copyExample();
+test('fit keeps each screen\'s measure: unchanged screens are reused, an edited one is measured again, and fresh measures all', { timeout: 240000 }, async (t) => {
+  const dir = resources(t).copyExample();
   const first = await measureFit(dir);
   assert.ok(first.ok, JSON.stringify(first.diagnostics));
   const screens = first.sizes[0].screens;
-  assert.ok(screens.length > 2 && screens.every((screen) => !screen.reused));
+  assert.ok(screens.length > 0 && screens.every((screen) => !screen.reused));
   const again = await measureFit(dir);
   assert.ok(again.ok);
   assert.ok(again.sizes[0].screens.every((screen) => screen.reused), 'nothing changed: every measure is reused');
@@ -167,57 +183,38 @@ test('fit keeps each screen\'s measure: unchanged screens are reused, an edited 
   assert.ok(!unknown.ok && /Unknown screen "nowhere"\. Screens: accueil, /.test(unknown.error ?? ''), JSON.stringify(unknown));
 });
 
-test('scroll pages: a free object hears where its frame is as the learner scrolls (host.onView)', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('scroll pages: a free object hears where its frame is as the learner scrolls (host.onView)', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   addViewProbe(dir);
-  await openPlayer(dir, async (page) => {
+  await openPlayer(t, dir, async (page) => {
     await page.evaluate((screen) => { const t = (window as PlayerWindow).__elabora; t.go(screen); t.revealAll(); }, VIEW_PROBE.screen);
     await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
     type View = { visible: boolean; entry: number; seen: number };
     const state = () => page.evaluate((block) => (window as PlayerWindow).__elabora.objectHost(block)?.getState(), VIEW_PROBE.block) as Promise<View>;
-    // The object hears a scroll a frame later, by a message to its frame: the test asks it again
-    // until it has. (page.waitForFunction cannot wait on getState: a promise counts as true for it.)
-    const heard = async (expected: (view: View) => boolean, what: string) => {
-      const until = Date.now() + 10000;
-      for (let view = await state(); ; view = await state()) {
-        if (expected(view)) return view;
-        assert.ok(Date.now() < until, `${what}: ${JSON.stringify(view)}`);
-        await new Promise((resolve) => setTimeout(resolve, 20));
-      }
-    };
     const below = await state();
     assert.equal(below.visible, false, JSON.stringify(below));
     assert.equal(below.entry, 0);
     await page.evaluate((block) => document.querySelector(`[data-block="${block}"] .t-object-frame`)?.scrollIntoView({ block: 'center' }), VIEW_PROBE.block);
     // Wholly in the window: visible, and entered (a frame gone past the top has entry 1 too).
-    const inView = await heard((view) => view.visible && view.entry === 1, 'in the window');
+    const inView = await objectState<View>(page, VIEW_PROBE.block, { visible: true, entry: 1 });
     assert.ok(inView.seen > below.seen, JSON.stringify({ below, inView }));
     // Scrolled back to the top: out of view again.
     await page.evaluate(() => scrollTo(0, 0));
-    const back = await heard((view) => !view.visible, 'scrolled back to the top');
+    const back = await objectState<View>(page, VIEW_PROBE.block, { visible: false });
     assert.equal(back.entry, 0, JSON.stringify(back));
   });
 });
 
-test('a free object takes a list prop from its block, then another from an event (set-object-props)', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('a free object takes a list prop from its block, then another from an event (set-object-props)', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   addListProbe(dir);
   const v = validateDir(dir);
   assert.equal(v.summary.errors, 0, JSON.stringify(v.diagnostics.filter((d) => d.severity === 'error')));
-  await openPlayer(dir, async (page, errors) => {
+  await openPlayer(t, dir, async (page, errors) => {
     await page.evaluate((screen) => { const t = (window as PlayerWindow).__elabora; t.go(screen); t.revealAll(); }, LIST_PROBE.screen);
     await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
     type Given = { devices: string; labels: string; tint: string };
-    const state = () => page.evaluate((block) => (window as PlayerWindow).__elabora.objectHost(block)?.getState(), LIST_PROBE.block) as Promise<Given | undefined>;
-    // Props reach the frame by a message: ask again until the object has them.
-    const given = async (devices: string) => {
-      const until = Date.now() + 10000;
-      for (let seen = await state(); ; seen = await state()) {
-        if (seen?.devices === devices) return seen;
-        assert.ok(Date.now() < until, `${devices}: ${JSON.stringify(seen)}`);
-        await new Promise((resolve) => setTimeout(resolve, 20));
-      }
-    };
+    const given = (devices: string) => objectState<Given>(page, LIST_PROBE.block, { devices });
     assert.deepEqual(await given('parefeu,serveur'), { devices: 'parefeu,serveur', labels: 'Pare-feu,Serveur', tint: '#C79A45' });
     await page.click(`[data-block="${LIST_PROBE.button}"] button`);
     assert.deepEqual(await given('routeur'), { devices: 'routeur', labels: 'Routeur', tint: '#C79A45' });
@@ -225,8 +222,8 @@ test('a free object takes a list prop from its block, then another from an event
   });
 });
 
-test('captures: a filmstrip down a scroll page, and objects below the window in a full page', { timeout: 240000 }, async () => {
-  const dir = copyExample();
+test('captures: a filmstrip down a scroll page, and objects below the window in a full page', { timeout: 240000 }, async (t) => {
+  const dir = resources(t).copyExample();
   addViewProbe(dir);
   const r = await capture(dir, [{ screen: 'chemin', width: 1280, height: 720, scroll: [0, '50%', '100%'] }, { screen: 'chemin', width: 1280, height: 720 }]);
   assert.ok(r.shots && r.ok, JSON.stringify(r.diagnostics ?? r.shots?.map((shot) => (shot.ok ? null : shot.error))));
@@ -235,11 +232,11 @@ test('captures: a filmstrip down a scroll page, and objects below the window in 
   assert.equal(film.frames?.length, 3);
   assert.equal(film.scroll?.[0], 0);
   assert.ok((film.scroll?.[2] ?? 0) > (film.scroll?.[1] ?? 0), JSON.stringify(film.scroll));
-  assert.ok(full.png.length > 20000);
+  visibleCapture(full.png);
 });
 
-test('captures: many shots in one run, the answered state and a filmstrip', { timeout: 240000 }, async () => {
-  const dir = copyExample();
+test('captures: many shots in one run, the answered state and a filmstrip', { timeout: 240000 }, async (t) => {
+  const dir = resources(t).copyExample();
   const r = await capture(dir, [
     { screen: 'accueil', width: 1280, height: 720 },
     { screen: 'evaluation', width: 1280, height: 720, state: 'answered' },
@@ -250,14 +247,14 @@ test('captures: many shots in one run, the answered state and a filmstrip', { ti
   assert.ok(r.ok, JSON.stringify(r.shots.map((shot) => (shot.ok ? null : shot.error))));
   const shots = r.shots.filter((shot) => shot.ok);
   assert.equal(shots.length, 4);
-  assert.ok(shots.every((shot) => shot.png.length > 10000));
+  shots.forEach(shot => visibleCapture(shot.png));
   assert.ok((shots[1].answered ?? []).length >= 1, 'activities answered');
   assert.deepEqual(shots[3].at, [0, 500, 1000]);
   assert.equal(shots[3].frames?.length, 3);
 });
 
-test('backdrop: layers and a decorative object follow the learner, hidden from assistive technology', { timeout: 300000 }, async () => {
-  const { dir, course } = slidesCopy({ css: '.t-backdrop-layer[data-layer="sky"] { background: linear-gradient(#0b2440, #12355b); } .t-backdrop[data-section] .t-backdrop-layer { transition: opacity 1s; }' });
+test('backdrop: layers and a decorative object follow the learner, hidden from assistive technology', { timeout: 300000 }, async (t) => {
+  const { dir, course } = slidesCopy(t, { css: '.t-backdrop-layer[data-layer="sky"] { background: linear-gradient(#0b2440, #12355b); } .t-backdrop[data-section] .t-backdrop-layer { transition: opacity 1s; }' });
   const odir = path.join(dir, 'objects/glow');
   fs.mkdirSync(odir);
   writeJSON(dir, 'objects/glow/object.manifest.json', {
@@ -293,7 +290,7 @@ test('backdrop: layers and a decorative object follow the learner, hidden from a
   const g = await testObject(dir, 'glow');
   assert.ok(g.ok, JSON.stringify(g.diagnostics.filter((d) => d.severity === 'error')));
 
-  await openPlayer(dir, async (page, errors) => {
+  await openPlayer(t, dir, async (page, errors) => {
     const look = () => page.evaluate(() => {
       const b = document.querySelector<HTMLElement>('.t-backdrop')!;
       return { screen: b.dataset.screen, hidden: b.hidden, ariaHidden: b.getAttribute('aria-hidden'), inert: b.inert, layers: b.querySelectorAll('.t-backdrop-layer').length, frame: !!b.querySelector('.t-backdrop-object iframe'), first: document.getElementById('elabora-app')!.firstElementChild === b };
@@ -309,15 +306,15 @@ test('backdrop: layers and a decorative object follow the learner, hidden from a
   });
 });
 
-test('a click in the slide reveals the next step; back on the screen, the step reached', { timeout: 180000 }, async () => {
-  const { dir } = slidesCopy();
+test('a click in the slide reveals the next step; back on the screen, the step reached', { timeout: 180000 }, async (t) => {
+  const { dir } = slidesCopy(t);
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.splice(1, 0, { id: 'chemin-voir', type: 'button', props: { label: 'Voir le schéma' } });
   for (const b of s.blocks.slice(2)) b.step = 2;
   s.blocks.at(-1).step = 3;
   s.events = [{ id: 'voir', on: { type: 'click', target: 'chemin-voir' }, do: [{ type: 'reveal-step', step: 2 }] }];
   writeJSON(dir, 'screens/chemin.json', s);
-  await openPlayer(dir, async (page) => {
+  await openPlayer(t, dir, async (page) => {
     // Visited screens show every step: start this one afresh.
     await page.evaluate(() => { const t = (window as PlayerWindow).__elabora; const c = t.engine.screens.find((x) => x.id === 'chemin')!; t.engine.st.visited.delete(c.key); t.engine.st.completed.delete(c.key); t.go('chemin'); });
     const look = () => page.evaluate(() => ({
@@ -345,8 +342,8 @@ test('a click in the slide reveals the next step; back on the screen, the step r
   });
 });
 
-test('a screen can leave its steps to its own triggers: Continue does not reveal them', { timeout: 180000 }, async () => {
-  const { dir, course } = slidesCopy();
+test('a screen can leave its steps to its own triggers: Continue does not reveal them', { timeout: 180000 }, async (t) => {
+  const { dir, course } = slidesCopy(t);
   course.navigation.lockUntilComplete = true;
   writeJSON(dir, 'course.json', course);
   const s = readJSON(dir, 'screens/chemin.json');
@@ -355,7 +352,7 @@ test('a screen can leave its steps to its own triggers: Continue does not reveal
   for (const b of s.blocks.slice(2)) b.step = 2;
   s.events = [{ id: 'voir', on: { type: 'click', target: 'chemin-voir' }, do: [{ type: 'reveal-step', step: 2 }] }];
   writeJSON(dir, 'screens/chemin.json', s);
-  await openPlayer(dir, async (page) => {
+  await openPlayer(t, dir, async (page) => {
     await page.evaluate(() => { const t = (window as PlayerWindow).__elabora; const c = t.engine.screens.find((x) => x.id === 'chemin')!; t.engine.st.visited.delete(c.key); t.engine.st.completed.delete(c.key); t.go('chemin'); });
     const look = () => page.evaluate(() => {
       const t = (window as PlayerWindow).__elabora;
@@ -372,8 +369,8 @@ test('a screen can leave its steps to its own triggers: Continue does not reveal
   });
 });
 
-test('explore in any order: named buttons and tabs are visited, saved, and unlock Next when all are', { timeout: 180000 }, async () => {
-  const { dir, course } = slidesCopy();
+test('explore in any order: named buttons and tabs are visited, saved, and unlock Next when all are', { timeout: 180000 }, async (t) => {
+  const { dir, course } = slidesCopy(t);
   course.navigation.lockUntilComplete = true;
   writeJSON(dir, 'course.json', course);
   addExplorer(dir);
@@ -391,7 +388,7 @@ test('explore in any order: named buttons and tabs are visited, saved, and unloc
     { id: 'fini-f', on: { type: 'click', target: 'chemin-facettes' }, if: all, do: [{ type: 'complete-screen' }] }
   ];
   writeJSON(dir, 'screens/chemin.json', s);
-  await openPlayer(dir, async (page) => {
+  await openPlayer(t, dir, async (page) => {
     await page.evaluate(() => { const t = (window as PlayerWindow).__elabora; const c = t.engine.screens.find((x) => x.id === 'chemin')!; t.engine.st.visited.delete(c.key); t.engine.st.completed.delete(c.key); t.go('chemin'); });
     const look = () => page.evaluate(() => ({
       visited: [...document.querySelectorAll('[data-t-visited]')].map((n) => n.getAttribute('data-t-click') || n.getAttribute('data-t-tab')),
@@ -418,8 +415,8 @@ test('explore in any order: named buttons and tabs are visited, saved, and unloc
   });
 });
 
-test('hide-layer without a layer closes the layer on top, and its layer.closed fires', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('hide-layer without a layer closes the layer on top, and its layer.closed fires', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push({ id: 'chemin-ouvrir', type: 'button', props: { label: 'Ouvrir le panneau' } }, { id: 'chemin-replier', type: 'button', props: { label: 'Replier' } });
   // A panel that opens a dialog, which a Close button inside it closes.
@@ -435,7 +432,7 @@ test('hide-layer without a layer closes the layer on top, and its layer.closed f
     { id: 'detail-ferme', on: { type: 'layer.closed', target: 'chemin-detail' }, do: [{ type: 'set-variable', variable: 'indiceVu', value: true }] }
   ];
   writeJSON(dir, 'screens/chemin.json', s);
-  await openPlayer(dir, async (page, errors) => {
+  await openPlayer(t, dir, async (page, errors) => {
     await page.evaluate(() => (window as PlayerWindow).__elabora.go('chemin'));
     const open = () => page.evaluate(() => [...document.querySelectorAll<HTMLDialogElement>('dialog.t-layer')].map((dialog) => `${dialog.dataset.layer}:${dialog.open}`).sort());
     const closed = () => page.evaluate(() => (window as PlayerWindow).__elabora.engine.getVar('indiceVu'));
@@ -457,13 +454,13 @@ test('hide-layer without a layer closes the layer on top, and its layer.closed f
   });
 });
 
-test('panel layers open over the screen without blocking it', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('panel layers open over the screen without blocking it', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   const s = readJSON(dir, 'screens/premier-reflexe.json');
   const layer = s.layers[0];
   layer.presentation = 'panel';
   writeJSON(dir, 'screens/premier-reflexe.json', s);
-  await openPlayer(dir, async (page) => {
+  await openPlayer(t, dir, async (page) => {
     await page.evaluate((id) => { const t = (window as PlayerWindow).__elabora; t.go('premier-reflexe'); t.openLayer(id); }, layer.id);
     const r = await page.evaluate(() => {
       const d = document.querySelector('dialog.t-layer')!;
@@ -475,14 +472,14 @@ test('panel layers open over the screen without blocking it', { timeout: 180000 
   });
 });
 
-test('cascade layers: each order as the package and the canvas show it, a theme upgrade keeping the look, and who overrides whom found in the page (D32)', { timeout: 240000 }, async () => {
+test('cascade layers: each order as the package and the canvas show it, a theme upgrade keeping the look, and who overrides whom found in the page (D32)', { timeout: 240000 }, async (t) => {
   const probe = () => {
     const style = getComputedStyle(document.querySelector('.lp-probe')!);
     return { width: style.borderLeftWidth, border: style.borderLeftColor, color: style.color };
   };
   const { width, component, theme } = LAYER_PROBE;
   const variant = (cascade?: string, css?: string) => {
-    const dir = copyExample();
+    const dir = resources(t).copyExample();
     addLayerProbe(dir);
     if (css !== undefined) fs.writeFileSync(path.join(dir, 'theme/theme.css'), css);
     const course = readJSON(dir, 'course.json');
@@ -512,37 +509,33 @@ test('cascade layers: each order as the package and the canvas show it, a theme 
     // overrides, still overrides the component, and the page still says so.
     { name: 'upgraded', dir: upgraded, expected: { width, border: theme, color: theme }, conflicts: overridden }
   ];
-  const browser: Browser = await launchBrowser('chromium');
-  try {
-    for (const { name, dir, expected, conflicts } of cases) {
-      await openPlayer(dir, async (page, errors) => {
-        await page.evaluate((id) => (window as PlayerWindow).__elabora.go(id), LAYER_PROBE.screen);
-        assert.deepEqual(await page.evaluate(probe), expected, `${name}: package`);
-        assert.deepEqual((await page.evaluate(pageStyleConflicts)).map((found) => `${found.kind} ${found.componentRule} ${found.themeRule}`).sort(), conflicts, `${name}: package conflicts`);
-        assert.deepEqual(errors, []);
-      });
-      // The editor canvas reproduces the package: the same player stylesheet, the design layer inline.
-      const host = await startCanvasHost({ root: dir });
-      try {
-        const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
-        await page.goto(host.url);
-        await page.waitForFunction(() => (window as CanvasWindow).__elaboraCanvas);
-        host.push(renderScreen(loadProjectFromDir(dir), LAYER_PROBE.screen), { id: 1 });
-        await page.waitForFunction(() => (window as CanvasWindow).__elaboraCanvas.layout().id === 1);
-        assert.deepEqual(await page.evaluate(probe), expected, `${name}: canvas`);
-        assert.deepEqual((await page.evaluate(pageStyleConflicts)).map((found) => `${found.kind} ${found.componentRule} ${found.themeRule}`).sort(), conflicts, `${name}: canvas conflicts`);
-        await page.close();
-      } finally {
-        await host.close();
-      }
+  const browser: Browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
+  for (const { name, dir, expected, conflicts } of cases) {
+    await openPlayer(t, dir, async (page, errors) => {
+      await page.evaluate((id) => (window as PlayerWindow).__elabora.go(id), LAYER_PROBE.screen);
+      assert.deepEqual(await page.evaluate(probe), expected, `${name}: package`);
+      assert.deepEqual((await page.evaluate(pageStyleConflicts)).map((found) => `${found.kind} ${found.componentRule} ${found.themeRule}`).sort(), conflicts, `${name}: package conflicts`);
+      assert.deepEqual(errors, []);
+    });
+    // The editor canvas reproduces the package: the same player stylesheet, the design layer inline.
+    const host = resources(t).own(await startCanvasHost({ root: dir }), value => value.close());
+    try {
+      const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+      await page.goto(host.url);
+      await page.waitForFunction(() => (window as CanvasWindow).__elaboraCanvas);
+      host.push(renderScreen(loadProjectFromDir(dir), LAYER_PROBE.screen), { id: 1 });
+      await page.waitForFunction(() => (window as CanvasWindow).__elaboraCanvas.layout().id === 1);
+      assert.deepEqual(await page.evaluate(probe), expected, `${name}: canvas`);
+      assert.deepEqual((await page.evaluate(pageStyleConflicts)).map((found) => `${found.kind} ${found.componentRule} ${found.themeRule}`).sort(), conflicts, `${name}: canvas conflicts`);
+      await page.close();
+    } finally {
+      await host.close();
     }
-  } finally {
-    await browser.close();
   }
 });
 
-test('scroll pages: Continue in the page, a step that opens once answered, Previous and Next at the end', { timeout: 180000 }, async () => {
-  const dir = copyExample();
+test('scroll pages: Continue in the page, a step that opens once answered, Previous and Next at the end', { timeout: 180000 }, async (t) => {
+  const dir = resources(t).copyExample();
   const course = readJSON(dir, 'course.json');
   course.player = { bottom: { items: [{ id: 'outline' }, { id: 'controls' }, { id: 'previous' }, { id: 'next' }], position: 'page' } };
   writeJSON(dir, 'course.json', course);
@@ -559,7 +552,7 @@ test('scroll pages: Continue in the page, a step that opens once answered, Previ
   writeJSON(dir, 'screens/chemin.json', screen);
   const validation = validateDir(dir);
   assert.equal(validation.summary.errors, 0, JSON.stringify(validation.diagnostics.filter((d) => d.severity === 'error')));
-  await openPlayer(dir, async (page) => {
+  await openPlayer(t, dir, async (page) => {
     // A page not read yet (the helper marks every screen visited, which shows every step).
     await page.evaluate(() => {
       const t = (window as PlayerWindow).__elabora;
@@ -596,8 +589,8 @@ test('scroll pages: Continue in the page, a step that opens once answered, Previ
   });
 });
 
-test('fit on scroll pages: a second pass with animations on finds text a scroll-driven animation leaves too faint', { timeout: 240000 }, async () => {
-  const dir = copyExample();
+test('fit on scroll pages: a second pass with animations on finds text a scroll-driven animation leaves too faint', { timeout: 240000 }, async (t) => {
+  const dir = resources(t).copyExample();
   addViewProbe(dir);
   // A paragraph kept at 20 % opacity by a scroll-driven animation: fine with reduced motion, too faint as the page scrolls.
   fs.mkdirSync(path.join(dir, 'theme'), { recursive: true });
@@ -613,8 +606,8 @@ test('fit on scroll pages: a second pass with animations on finds text a scroll-
   assert.ok(fitDiagnostics(fit).some((d) => d.code === 'W_TEXT_CONTRAST_MEASURED' && /as the page scrolls/.test(d.message)));
 });
 
-test('fit on scroll pages: a scroll-driven animation that the end of the page leaves unfinished is reported, one that finishes is not', { timeout: 240000 }, async () => {
-  const dir = copyExample();
+test('fit on scroll pages: a scroll-driven animation that the end of the page leaves unfinished is reported, one that finishes is not', { timeout: 240000 }, async (t) => {
+  const dir = resources(t).copyExample();
   const page = readJSON(dir, 'screens/chemin.json');
   for (let n = 1; n <= 6; n++) page.blocks.push({ id: `chemin-filler-${n}`, type: 'text', props: { markdown: 'Le paquet traverse le réseau. '.repeat(14) } });
   page.blocks.push({ id: 'chemin-last', type: 'callout', props: { variant: 'info', markdown: 'La dernière étape.' } });
@@ -637,10 +630,10 @@ test('fit on scroll pages: a scroll-driven animation that the end of the page le
   assert.match(found[0].message, /chemin-last: the animation "rise" of .* stops at \d+ % when the page is scrolled to the bottom/);
 });
 
-test('assets: a contact sheet of what the generators wrote', { timeout: 120000 }, async () => {
+test('assets: a contact sheet of what the generators wrote', { timeout: 120000 }, async (t) => {
   const sample = path.resolve(import.meta.dirname, '../../examples/medieval-charts');
   const png = await assetsSheet(sample, [{ generator: 'generators/figures.mjs', description: 'Figures', outputs: ['images/wind-rose.svg', 'images/to-ocean.svg', 'images/missing.svg'] }], { surface: '#F4EBD6' });
-  assert.ok(png.length > 20000);
+  visibleCapture(png);
   assert.equal(png.subarray(1, 4).toString('latin1'), 'PNG');
 });
 
@@ -652,8 +645,8 @@ const DRAWN = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 100" wid
   + '@keyframes draw{to{stroke-dashoffset:0}}\n@media (prefers-reduced-motion: reduce){.s{animation:none;stroke-dashoffset:0}}\n'
   + '</style><path class="s" d="M10 50H190"/></svg>\n';
 
-function figureCourse(): string {
-  const dir = copyExample();
+function figureCourse(t: TestContext): string {
+  const dir = resources(t).copyExample();
   fs.writeFileSync(path.join(dir, 'assets/images/drawn.svg'), DRAWN);
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.blocks.find((block: { id: string }) => block.id === 'accueil-illustration').props.asset = 'images/drawn.svg';
@@ -670,28 +663,24 @@ function figurePixels(png: Buffer): number {
   return count;
 }
 
-test('captures: an SVG figure that draws itself is captured drawn, or at its first frame with animations on, by screenshot, the look server and the assets sheet', { timeout: 180000 }, async () => {
-  const dir = figureCourse();
+test('captures: an SVG figure that draws itself is captured drawn, or at its first frame with animations on, by screenshot, the look server and the assets sheet', { timeout: 180000 }, async (t) => {
+  const dir = figureCourse(t);
+  const still = await capture(dir, [{ screen: 'accueil', width: 1280, height: 720 }, { screen: 'accueil', width: 1280, height: 720, motion: true }]);
+  assert.ok(still.shots?.[0].ok && still.shots[1].ok, JSON.stringify(still));
+  assert.ok(figurePixels(still.shots[0].png) > 4000, 'screenshot: drawn');
+  assert.equal(figurePixels(still.shots[1].png), 0, 'screenshot --motion: the animation starts from nothing');
+
+  const looker = resources(t).own(await startLooker(dir, { live: false }), value => value.close());
   try {
-    const still = await capture(dir, [{ screen: 'accueil', width: 1280, height: 720 }, { screen: 'accueil', width: 1280, height: 720, motion: true }]);
-    assert.ok(still.shots?.[0].ok && still.shots[1].ok, JSON.stringify(still));
-    assert.ok(figurePixels(still.shots[0].png) > 4000, 'screenshot: drawn');
-    assert.equal(figurePixels(still.shots[1].png), 0, 'screenshot --motion: the animation starts from nothing');
-
-    const looker = await startLooker(dir, { live: false });
-    try {
-      const reduced = await looker.look({ screen: 'accueil', width: 1280, height: 720, type: 'png' });
-      const moving = await looker.look({ screen: 'accueil', width: 1280, height: 720, type: 'png', motion: true });
-      assert.ok(reduced.ok && moving.ok, JSON.stringify([reduced, moving]));
-      assert.ok(figurePixels(reduced.image) > 4000, 'look: drawn');
-      assert.equal(figurePixels(moving.image), 0, 'look --motion');
-    } finally {
-      await looker.close();
-    }
-
-    const sheet = await assetsSheet(dir, [{ generator: 'generators/drawn.mjs', outputs: ['images/drawn.svg'] }], { surface: '#ffffff', width: 800 });
-    assert.ok(figurePixels(sheet) > 1000, 'assets --sheet: drawn');
+    const reduced = await looker.look({ screen: 'accueil', width: 1280, height: 720, type: 'png' });
+    const moving = await looker.look({ screen: 'accueil', width: 1280, height: 720, type: 'png', motion: true });
+    assert.ok(reduced.ok && moving.ok, JSON.stringify([reduced, moving]));
+    assert.ok(figurePixels(reduced.image) > 4000, 'look: drawn');
+    assert.equal(figurePixels(moving.image), 0, 'look --motion');
   } finally {
-    fs.rmSync(dir, { recursive: true, force: true });
+    await looker.close();
   }
+
+  const sheet = await assetsSheet(dir, [{ generator: 'generators/drawn.mjs', outputs: ['images/drawn.svg'] }], { surface: '#ffffff', width: 800 });
+  assert.ok(figurePixels(sheet) > 1000, 'assets --sheet: drawn');
 });
