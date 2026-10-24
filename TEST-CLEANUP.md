@@ -11,10 +11,12 @@ Test public behaviour, use real domain objects, fake only uncontrolled boundarie
 - Baseline `npm test`: **769 passed, 6 skipped** (775 cases).
 - Full default-order unit run after the main cleanup: **788 passed, 6 skipped** (794 cases); typecheck passed. Individual changed files passed before each commit.
 - Native randomization with seed **104729** reproduced two ElevenLabs order defects: an estimate got a 41-credit ceiling instead of 82 without a previous library search, and account remaining quota was 38,779 instead of 38,800 after another case spent credits. A focused rerun reproduced both; fresh per-test service/cache/quota state and explicit search setup fixed them (17 passed, one opt-in live skip).
-- Final native randomized full-unit reruns in progress: **104729, 130363, 155921**. Reproduce with `node --test --test-random-seed=<seed> --test-concurrency=4 --test-global-setup=test/isolate.ts "test/unit/*.test.ts"`.
+- Final native randomized full-unit runs each passed **788 tests, 6 skipped** with seeds **104729, 130363, 155921**. Reproduce with `node --test --test-random-seed=<seed> --test-concurrency=2 --test-global-setup=test/isolate.ts "test/unit/*.test.ts"`. Each final run includes both ElevenLabs and download-isolation fixes.
+- Native seed **130363** exposed a third order defect: a custom download kind remained registered when another case expected only built-ins. A disposable-process extension check and fresh model files fix it; the focused seed passes all four cases.
 - Earlier repeats with shuffled CLI file arguments are repeat evidence only: Node sorts those arguments. They are not randomized runs.
-- Required browser suite in progress. The matrix is not required: no player/emulator/layout/sample production sources changed.
-- No production code changed. Native Windows and live paid-provider checks are not claimed as passes.
+- Browser suite: **118 passed, 3 skipped** (121 cases). Two Edge cases require an installed Microsoft Edge; the Electron PDF case requires `ELABORA_ELECTRON_EXECUTABLE`. The matrix is not required: no player/emulator/layout/sample production sources changed.
+- Final documentation link/structure checks: **7 passed**. Typecheck and `npm run release:check` passed.
+- Changed test files: **4,407 → 4,198 lines (209 fewer)** across ten files. No production code changed. Native Windows and live paid-provider checks are not claimed as passes.
 
 ## Recurring defects
 
@@ -34,8 +36,8 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
 | Resource cleanup | 50 | validate: copied fixtures were never removed |
 | Wall-clock timing | 4 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
-
 | Duplicate fixtures | 2 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
+| Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
 
 ## Production changes
 
@@ -45,7 +47,7 @@ No production code changed. CI discovered a pre-existing release-metadata error 
 
 Proposed, not applied: give `watchFolders` an explicit readiness acknowledgement on every platform, matching FsStore. Its macOS integration test currently probes the real stream because the public API has no ready signal. Keep the real-filesystem regression; a test-only delay cannot fix this API limitation.
 
-Further review should prioritize the CLI transport suite (715 lines), ElevenLabs (675), dialogue (575), fonts (547), plan-document (523), sources (511), and remaining browser scenarios. These include valuable public-output contracts; size alone is not a reason to remove them.
+Further review should prioritize the CLI transport suite (715 lines), cloud (638), dialogue (575), fonts (547), plan-document (523), sources (511), and remaining browser scenarios. These include valuable public-output contracts; size alone is not a reason to remove them.
 
 ## Files
 
@@ -170,7 +172,12 @@ Further review should prioritize the CLI transport suite (715 lines), ElevenLabs
 | `test/unit/web-target.test.ts` | 321 | — | Pending |
 | `test/unit/zip-writer.test.ts` | 90 | — | Pending |
 | `test/unit/zip.test.ts` | 19 | — | Pending |
+| `README.md` | 86 | 90 | Policy complete; canonical standards in CONTRIBUTING |
+| `CONTRIBUTING.md` | 51 | 55 | Policy complete; canonical standards in CONTRIBUTING |
+| `AGENTS.md` | 29 | 29 | Policy complete; canonical standards in CONTRIBUTING |
+| `.sampo/changesets/layer-captions-bare-canvas.md` | 5 | 6 | Metadata only; restore mandatory root release target so CI can run |
+| `.sampo/changesets/player-motion.md` | 10 | 11 | Metadata only; restore mandatory root release target so CI can run |
 
 ## Remaining work
 
-Review the pending inventory. Start with edit/undo, session consistency, validation and persistence in core; update/download state, agent detection, quotas and generation in app. Then work down the largest suites. Preserve every unique behaviour. Record environmental limits and any failures without disguising them as passes.
+Ten core files were rewritten, starting with edit/undo, session consistency, validation and persistence. Continue the pending inventory with the CLI transport, cloud, dialogue, fonts, plan-document and sources suites, then the remaining browser scenarios. The app ledger records its completed 17-file audit and proposed refactors. Preserve every unique behaviour and record environmental limits separately from passes.
