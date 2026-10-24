@@ -27,14 +27,14 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Implementation coupling | 41 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 5 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
-| Fixed-delay synchronization | 32 | engine-session: sleep(400) before checking watcher results |
+| Fixed-delay synchronization | 36 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
 | Unseeded randomness | 34 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 6 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 5 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 104 | validate: copied fixtures were never removed |
+| Resource cleanup | 107 | validate: copied fixtures were never removed |
 | Wall-clock timing | 9 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -57,7 +57,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/e2e/canvas-live.test.ts` | 233 | — | Pending |
 | `test/e2e/canvas.test.ts` | 473 | — | Pending |
 | `test/e2e/character.test.ts` | 136 | — | Pending |
-| `test/e2e/charts.test.ts` | 182 | — | Pending |
+| `test/e2e/charts.test.ts` | 182 | 222 | Passed all 4 cases with native seed 155921 plus focused layout rerun; own course/build/browser/server resources, explicit browser clock for entrance, animation/event waits; actual visible label non-overlap at desktop/phone widths replaces geometry guesses |
 | `test/e2e/design.test.ts` | 697 | — | Pending |
 | `test/e2e/dialogues.test.ts` | 559 | — | Pending |
 | `test/e2e/edge.test.ts` | 122 | — | Pending |
