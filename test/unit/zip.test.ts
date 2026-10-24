@@ -13,7 +13,7 @@ test('ZIP output is deterministic and readable', () => {
   assert.ok(one.equals(two));
   const back = readZip(one);
   assert.deepEqual([...back.files.keys()], ['a/x.json', 'b.txt', 'img.png']);
-  assert.equal(back.files.get('b.txt')?.toString(), 'bbbb'.repeat(100));
+  assert.deepEqual(back.files, files);
   assert.equal(back.meta.find((m) => m.name === 'img.png')?.method, 0);
   assert.equal(back.meta.find((m) => m.name === 'b.txt')?.method, 8);
 });

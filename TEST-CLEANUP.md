@@ -175,7 +175,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/voice.test.ts` | 434 | 445 | 15 passed, 2 explicit unavailable-model skips with native seed 130363; owned courses/sessions, seeded download bytes, file notification gates and controllable external voice service replace sleeps/polling; separate named rejection cases and one recovery replace repeated retry checks; native inference seam proposal recorded |
 | `test/unit/web-target.test.ts` | 321 | — | Pending |
 | `test/unit/zip-writer.test.ts` | 90 | 87 | Passed 3 native-seeded cases; own directories, seeded high-entropy payloads, round-trip every entry and compare reordered public writes; controlled mtimes and limit errors replace elapsed-time and private writer comparison |
-| `test/unit/zip.test.ts` | 19 | — | Pending |
+| `test/unit/zip.test.ts` | 19 | 19 | Passed native-seeded cases; retained CRC reference and deterministic ordered ZIP; now compares every restored entry rather than one file |
 | `README.md` | 86 | 90 | Policy complete; canonical standards in CONTRIBUTING |
 | `CONTRIBUTING.md` | 51 | 55 | Policy complete; canonical standards in CONTRIBUTING |
 | `AGENTS.md` | 29 | 29 | Policy complete; canonical standards in CONTRIBUTING |
