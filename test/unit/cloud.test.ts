@@ -1,4 +1,4 @@
-import { after, before, beforeEach, test } from 'node:test';
+import { afterEach, beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -15,36 +15,41 @@ import { ROOT, copyExample, readJSON, writeJSON } from '../helpers.ts';
 import { FakeCloud, FAKE_CODE } from '../cloud-fake.ts';
 
 // The core's client of Elabora's hosting (docs/decisions.md D43) against a fake of the API's protocol
-// version 3 (test/cloud-fake.ts): signing in by a code read from the input, the token only in its
+// version 6 (test/cloud-fake.ts): signing in by a code read from the input, the token only in its
 // 0600 file, publishing by hashes (a second publication sends nothing, big files in parts), the API's
 // refusals carried to the author, reviews, and comments placed in the course's sources for an AI.
 // No e-mail, no network: the fake listens on 127.0.0.1.
 // POSIX mode checks apply only outside Windows, whose file permissions use ACLs.
 
 const BIN = path.join(ROOT, 'bin/elabora.js');
-const fake = new FakeCloud();
-const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-cloud-test-'));
+let fake: FakeCloud;
 const copies: string[] = [];
+const clients: Client[] = [];
 const copy = (source: string) => { const dir = copyExample(source); copies.push(dir); return dir; };
 
-before(async () => { process.env.ELABORA_CLOUD_URL = await fake.start(); });
-after(async () => {
+const savedEnvironment = { ...process.env };
+afterEach(async () => {
+  await Promise.all(clients.splice(0).map(client => client.close()));
   await fake.stop();
-  fs.rmSync(scratch, { recursive: true, force: true });
-  for (const dir of copies) fs.rmSync(dir, { recursive: true, force: true });
+  for (const dir of copies.splice(0)) fs.rmSync(dir, { recursive: true, force: true });
+  fs.rmSync(credentials, { recursive: true, force: true });
+  setSessionStore(null);
+  for (const name of Object.keys(process.env).filter(name => name.startsWith('ELABORA_CLOUD_'))) {
+    if (savedEnvironment[name] === undefined) delete process.env[name]; else process.env[name] = savedEnvironment[name];
+  }
 });
 
 // Every test keeps its credentials in a folder of its own.
 let credentials = '';
-beforeEach(() => {
-  credentials = fs.mkdtempSync(path.join(scratch, 'credentials-'));
+beforeEach(async () => {
+  fake = new FakeCloud();
+  process.env.ELABORA_CLOUD_URL = await fake.start();
+  credentials = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-cloud-test-'));
   process.env.ELABORA_CLOUD_SESSION_FILE = path.join(credentials, 'elabora-session');
   process.env.ELABORA_CLOUD_INVITATION_FILE = path.join(credentials, 'elabora-invitation');
   process.env.ELABORA_CLOUD_AI_KEY_FILE = path.join(credentials, 'elabora-ai-key');
   delete process.env.ELABORA_CLOUD_KEY_FILE;
   delete process.env.ELABORA_CLOUD_SPACE;
-  fake.limits = { singlePutMaxBytes: 64 * 1024 * 1024, partBytes: 32 * 1024 * 1024 };
-  fake.quota = null;
 });
 
 interface Run { status: number | null; stdout: string; stderr: string }
@@ -111,8 +116,7 @@ test('account login: the code is read from the input, the session kept in a 0600
 
 test('setSessionStore: the session lives where the app keeps it, never in the file; read, updated and forgotten there', async () => {
   let kept: SessionRecord | null = null;
-  const calls: string[] = [];
-  setSessionStore({ read: () => { calls.push('read'); return kept; }, write: (record) => { calls.push('write'); kept = record; }, remove: () => { calls.push('remove'); const had = kept !== null; kept = null; return had; } });
+  setSessionStore({ read: () => kept, write: (record) => { kept = record; }, remove: () => { const had = kept !== null; kept = null; return had; } });
   try {
     const signed = await verifySignIn('store@example.org', FAKE_CODE, { device: 'Elabora · macOS' });
     assert.equal(signed.file, null);
@@ -130,7 +134,6 @@ test('setSessionStore: the session lives where the app keeps it, never in the fi
     await verifySignIn('store@example.org', FAKE_CODE);
     assert.deepEqual(await signOut(), { kind: 'session', source: 'session-store', endedOnServer: true, forgotten: true });
     assert.equal(kept, null);
-    assert.ok(calls.includes('write') && calls.includes('remove'));
     // A store that cannot read gives no session (not a crash).
     setSessionStore({ read: () => { throw new Error('locked'); }, write: () => {}, remove: () => false });
     assert.equal(resolveCredential(), null);
@@ -427,6 +430,7 @@ test('MCP: the author\'s AI reads reviews and placed comments; no tool publishes
   for (const readOnly of [false, true]) {
     const server = createMcpServer(dir, { readOnly });
     const client = new Client({ name: 'cloud-test', version: '1' });
+    clients.push(client);
     const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
     await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
     const { tools } = await client.listTools();
@@ -438,18 +442,17 @@ test('MCP: the author\'s AI reads reviews and placed comments; no tool publishes
     const answer = JSON.parse(((await client.callTool({ name: 'elabora_review_comments', arguments: { state: 'open' } })).content as { text: string }[])[0].text);
     const [comment] = answer.reviews[0].comments;
     assert.deepEqual([comment.place.screen.file, comment.place.block.type, comment.text], ['screens/accueil.json', 'callout', 'Objectifs : trop vagues.']);
-    await client.close();
   }
   // Signed out: the tool says to ask the author, never for a code.
   fs.rmSync(process.env.ELABORA_CLOUD_SESSION_FILE!);
   const server = createMcpServer(dir);
   const client = new Client({ name: 'cloud-test', version: '1' });
+    clients.push(client);
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
   const refused = await client.callTool({ name: 'elabora_review_comments', arguments: {} });
   assert.equal(refused.isError, true);
   assert.match((refused.content as { text: string }[])[0].text, /Ask the author to give you a read-only AI key .*or to sign in from a terminal/);
-  await client.close();
 });
 
 test('AI key: made with the session and kept in a 0600 file; agents read with it, and everything else says a session is needed', async () => {
@@ -476,13 +479,13 @@ test('AI key: made with the session and kept in a 0600 file; agents read with it
 
   const server = createMcpServer(dir, { readOnly: true });
   const client = new Client({ name: 'cloud-test', version: '1' });
+    clients.push(client);
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
   const list = JSON.parse(((await client.callTool({ name: 'elabora_review_list', arguments: {} })).content as { text: string }[])[0].text);
   assert.deepEqual([list.space, list.publications, list.reviews.map((r: { id: string }) => r.id)], ['ai-key-author', [], [review]], 'found by the versions\' course, without the publications');
   const answer = JSON.parse(((await client.callTool({ name: 'elabora_review_comments', arguments: {} })).content as { text: string }[])[0].text);
   assert.deepEqual([answer.reviews[0].comments[0].place.line.id, answer.reviews[0].comments[0].text], ['marc-appel', 'Trop long.']);
-  await client.close();
   assert.ok(fake.aiKeys.get(first.aiKey.id)!.lastUsedAt, 'the MCP tools read with the AI key');
 
   // In place of the session: what agents can reach here only reads.

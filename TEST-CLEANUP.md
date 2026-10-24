@@ -24,9 +24,9 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Defect | Count | Example |
 | --- | ---: | --- |
-| Implementation coupling | 30 | ops: private computeDiff comparison and exact chosen diff scripts |
+| Implementation coupling | 31 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 4 | ops: identical notes restoration asserted twice |
-| Shared mutable fixtures | 9 | ops: module-level change ID counter replaced with content-derived IDs |
+| Shared mutable fixtures | 10 | ops: module-level change ID counter replaced with content-derived IDs |
 | Fixed-delay synchronization | 29 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
@@ -34,7 +34,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 1 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 81 | validate: copied fixtures were never removed |
+| Resource cleanup | 82 | validate: copied fixtures were never removed |
 | Wall-clock timing | 6 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 4 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -96,7 +96,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/charts.test.ts` | 186 | — | Pending |
 | `test/unit/cli-projects.test.ts` | 266 | — | Pending |
 | `test/unit/cli.test.ts` | 715 | 684 | Passed 28 native-seeded cases; real CLI/MCP transport, refusal, privacy, journal/undo, translation and permission contracts preserved; failure-safe context ownership closes clients/servers before removing copies |
-| `test/unit/cloud.test.ts` | 638 | — | Pending |
+| `test/unit/cloud.test.ts` | 638 | 641 | Passed 20 native-seeded cases with a fresh fake service/credential store per case, restored cloud environment and failure-safe client cleanup; redundant storage mock-call tracking removed; real publishing/privacy/account/review contracts retained |
 | `test/unit/compile.test.ts` | 156 | — | Pending |
 | `test/unit/components.test.ts` | 313 | — | Pending |
 | `test/unit/costs.test.ts` | 200 | — | Pending |
