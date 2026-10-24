@@ -130,7 +130,7 @@ None yet.
 | `test/unit/interop.test.ts` | 92 | — | Pending |
 | `test/unit/journal.test.ts` | 437 | 437 | Passed 14 cases; explicit lock entry/release gates and child stdin handshake; no elapsed-time assertions or fixed sleeps; sequence/history/binary/undo contracts retained |
 | `test/unit/layer-timeline.test.ts` | 265 | — | Pending |
-| `test/unit/library.test.ts` | 840 | 845 | Passed 21 cases; deterministic high-entropy media and explicit trash ages, isolated environment, age/concurrency cases split; archives/history/security/streaming retained |
+| `test/unit/library.test.ts` | 840 | 843 | Passed 21 cases; deterministic media/retention, restored environment and owned temporary data; public archive/trash contracts retained |
 | `test/unit/local-ai-platform.test.ts` | 50 | — | Pending |
 | `test/unit/look.test.ts` | 122 | — | Pending |
 | `test/unit/media-project.test.ts` | 286 | — | Pending |

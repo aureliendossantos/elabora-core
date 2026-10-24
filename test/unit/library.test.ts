@@ -22,14 +22,12 @@ import { isIgnoredPath } from '@elabora/node/project-files';
 import { seededRandom } from '../mutations.ts';
 
 // Every test works in its own library, in a temp folder (ELABORA_LIBRARY): never the user's.
-beforeEach(t => {
-  const saved = { ELABORA_DATA_DIR: process.env.ELABORA_DATA_DIR, ELABORA_LIBRARY: process.env.ELABORA_LIBRARY };
-  delete process.env.ELABORA_DATA_DIR;
-  t.after(() => {
-    for (const [key, value] of Object.entries(saved)) {
-      if (value === undefined) delete process.env[key]; else process.env[key] = value;
-    }
-  });
+const savedEnvironment = { ELABORA_DATA_DIR: process.env.ELABORA_DATA_DIR, ELABORA_LIBRARY: process.env.ELABORA_LIBRARY };
+beforeEach(() => { delete process.env.ELABORA_DATA_DIR; });
+afterEach(() => {
+  for (const [key, value] of Object.entries(savedEnvironment)) {
+    if (value === undefined) delete process.env[key]; else process.env[key] = value;
+  }
 });
 const temporary: string[] = [];
 afterEach(() => {
