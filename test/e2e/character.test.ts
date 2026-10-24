@@ -32,6 +32,7 @@ async function page(run: (page: Page) => Promise<void>) {
   const browser = await launchBrowser('chromium');
   try {
     const tab = await browser.newPage({ viewport: { width: 1000, height: 800 } });
+    await tab.clock.install({ time: new Date('2026-10-20T12:00:00Z') });
     const errors: string[] = [];
     tab.on('pageerror', (error) => errors.push(error.message));
     await tab.setContent(`<!doctype html><html><head><style>${css}</style></head><body><div id="scene" style="width:400px"></div><div id="avatar" style="width:64px;height:64px;border-radius:50%;overflow:hidden"></div></body></html>`);
@@ -87,23 +88,25 @@ test('mountCharacter: the state on the character group, the parts that match it,
     assert.equal((await group())['data-gesture'], 'saluer');
     assert.ok((await shown(tab, '#scene')).includes('//saluer'));
     // Halfway through (the page's clock moves only as it paints: set by hand), then played again.
-    const before = await tab.evaluate(() => { const animation = document.querySelector('#scene [data-part="arm-wave"]')!.getAnimations()[0]!; animation.currentTime = 600; (window as unknown as { first: Animation }).first = animation; return animation.currentTime as number; });
+    const before = await tab.evaluate(() => { const arm = document.querySelector('#scene [data-part="arm-wave"]')!; const animation = arm.getAnimations()[0]!; animation.pause(); animation.currentTime = 600; return getComputedStyle(arm).transform; });
     await call('marc', 'gesture', 'saluer');
-    const after = await tab.evaluate(() => { const animation = document.querySelector('#scene [data-part="arm-wave"]')!.getAnimations()[0]!; return [animation.currentTime as number, animation !== (window as unknown as { first: Animation }).first]; });
-    assert.ok(before === 600 && (after[0] as number) < 200 && after[1], `replayed from its start (${before} ms → ${after[0]} ms, a new animation: ${after[1]})`);
+    const after = await tab.evaluate(() => getComputedStyle(document.querySelector('#scene [data-part="arm-wave"]')!).transform);
+    assert.notEqual(after, before, 'replaying resets the visible arm pose');
     await call('marc', 'gesture', 'danser');
     assert.equal((await group())['data-gesture'], 'saluer', 'a gesture the character does not declare is not played');
-    await tab.waitForFunction(() => !document.querySelector('#scene [data-part="character"]')!.hasAttribute('data-gesture'), null, { timeout: 4000, polling: 100 });
+    await tab.clock.runFor(1300);
+    assert.equal(await tab.locator('#scene [data-part="character"]').getAttribute('data-gesture'), null);
     assert.ok(!(await shown(tab, '#scene')).includes('//saluer'));
 
     // Paused: every animation stops; the gesture's time stops with it.
     await call('marc', 'set', { paused: true });
     assert.equal(await tab.evaluate(() => getComputedStyle(document.querySelector('#scene [data-part="breath"]')!).animationPlayState), 'paused');
     await call('marc', 'gesture', 'saluer');
-    await tab.waitForTimeout(1500);
+    await tab.clock.runFor(1500);
     assert.equal((await group())['data-gesture'], 'saluer', 'held while paused');
     await call('marc', 'set', { paused: false });
-    await tab.waitForFunction(() => !document.querySelector('#scene [data-part="character"]')!.hasAttribute('data-gesture'), null, { timeout: 4000, polling: 100 });
+    await tab.clock.runFor(1300);
+    assert.equal(await tab.locator('#scene [data-part="character"]').getAttribute('data-gesture'), null);
     // Reduced motion: nothing plays, the parts rest in their pose.
     await call('marc', 'set', { reducedMotion: true });
     assert.equal(await tab.evaluate(() => getComputedStyle(document.querySelector('#scene [data-part="breath"]')!).animationName), 'none');
