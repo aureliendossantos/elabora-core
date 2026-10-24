@@ -1,33 +1,23 @@
-import { after, describe, test } from 'node:test';
+import { describe, test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
+import { bytes } from '../bytes.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
-import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { createMcpServer } from '@elabora/cli/mcp';
 import { readJournal } from '@elabora/node/journal/index';
-import { ROOT, copyExample } from '../helpers.ts';
+import { ROOT } from '../helpers.ts';
 
 // `elabora projects`, `elabora export` and `elabora import` as people and agents call them, each case on a
 // library of its own in a temp folder (ELABORA_LIBRARY): never the user's library.
 
 const BIN = path.join(ROOT, 'bin/elabora.js');
-const temporary: string[] = [];
-after(() => { for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true }); });
-const tempDir = (prefix: string): string => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-  temporary.push(dir);
-  return dir;
-};
-const example = (name = 'diagnostic-reseau'): string => {
-  const dir = copyExample(path.join(ROOT, 'examples', name));
-  temporary.push(dir);
-  return dir;
-};
-const freshLibrary = (): string => path.join(tempDir('elabora-cli-library-'), 'Library');
+const tempDir = (t: TestContext, prefix: string) => resources(t).tempDir(prefix);
+const example = (t: TestContext, name = 'diagnostic-reseau') => resources(t).copyExample(path.join(ROOT, 'examples', name));
+const freshLibrary = (t: TestContext) => path.join(tempDir(t, 'elabora-cli-library-'), 'Library');
 
 interface Run {
   status: number | null;
@@ -58,8 +48,8 @@ async function json(library: string, args: string[]): Promise<any> {
 
 // Each case has its own library and folders: they run side by side (each spawns the command several times).
 describe('elabora projects, export and import', { concurrency: true }, () => {
-  test('elabora projects: create, list, path, rename, duplicate', async () => {
-    const library = freshLibrary();
+  test('elabora projects: create, list, path, rename, duplicate', async (t) => {
+    const library = freshLibrary(t);
     assert.match((await ok(library, ['projects', 'list'])).stdout, /^No projects in the library /);
     assert.equal((await ok(library, ['projects', 'path'])).stdout, `${library}\n`);
 
@@ -93,8 +83,8 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     assert.equal((await elabora(library, ['projects', 'list', '--nope'])).status, 2);
   });
 
-  test('elabora projects trash: trash, list, restore, empty', async () => {
-    const library = freshLibrary();
+  test('elabora projects trash: trash, list, restore, empty', async (t) => {
+    const library = freshLibrary(t);
     await ok(library, ['projects', 'create', 'jete', '--title', 'Jeté']);
     const [project] = (await json(library, ['projects', 'list', '--json'])).projects;
     assert.match((await ok(library, ['projects', 'trash', project.id.slice(0, 8)])).stdout, /^✔ Moved "Jeté" to the trash \(\d{8}T\d{9}Z-[0-9a-f-]{36}\)\./);
@@ -121,15 +111,15 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     assert.equal((await elabora(library, ['projects', 'trash', 'restore', 'nope'])).status, 1);
   });
 
-  test('elabora export and import: archives, folders, existing courses', async () => {
-    const library = freshLibrary();
-    const dir = example();
+  test('elabora export and import: archives, folders, existing courses', async (t) => {
+    const library = freshLibrary(t);
+    const dir = example(t);
     // The default archive is dist/<course-id>.elabora in the project.
     const exported = await ok(library, ['export', dir]);
     const archive = path.join(dir, 'dist', 'diagnostic-reseau.elabora');
     assert.match(exported.stdout, new RegExp(`^✔ Exported diagnostic-reseau to ${archive.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\([\\d.]+ [KM]B, \\d+ files\\)\\.\n$`));
     assert.ok(fs.existsSync(archive));
-    const elsewhere = path.join(tempDir('elabora-cli-archive-'), 'x.elabora');
+    const elsewhere = path.join(tempDir(t, 'elabora-cli-archive-'), 'x.elabora');
     const result = await json(library, ['export', dir, '--out', elsewhere, '--history', '--json']);
     assert.equal(result.file, elsewhere);
     assert.equal(result.courseId, 'diagnostic-reseau');
@@ -159,19 +149,19 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     assert.match(replaced.stdout, /The replaced files are in the trash \(\S+\)\. Backup version [0-9a-f]+ holds the project as it was\./);
     assert.match((await ok(library, ['import', elsewhere, '--copy'])).stdout, /History: \d+ version\(s\) and \d+ month\(s\) of journal added\./);
     // --replace before the archive, without an id: the archive is its value.
-    const single = freshLibrary();
+    const single = freshLibrary(t);
     await ok(single, ['import', archive]);
     assert.match((await ok(single, ['import', '--replace', archive])).stdout, /^✔ Replaced project [0-9a-f]{8} with "Diagnostiquer/);
 
     // A folder: always a new project.
-    const fromFolder = await ok(library, ['import', example('planetary-gearset')]);
+    const fromFolder = await ok(library, ['import', example(t, 'planetary-gearset')]);
     assert.match(fromFolder.stdout, /^✔ Imported "Planetary gearsets: one gearset, many ratios" \(planetary-gearset\) as project/);
     const folderReplace = await elabora(library, ['import', dir, '--replace']);
     assert.equal(folderReplace.status, 1);
     assert.match(folderReplace.stderr, /A folder is always imported as a new project/);
     assert.equal((await elabora(library, ['import', archive, '--replace', '--copy'])).status, 2);
     assert.equal((await elabora(library, ['import'])).status, 2);
-    const damaged = path.join(tempDir('elabora-cli-damaged-'), 'x.elabora');
+    const damaged = path.join(tempDir(t, 'elabora-cli-damaged-'), 'x.elabora');
     fs.writeFileSync(damaged, 'not a zip');
     const refused = await elabora(library, ['import', damaged]);
     assert.equal(refused.status, 1);
@@ -181,13 +171,13 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     assert.equal((await json(library, ['projects', 'list', '--json'])).projects.length, 4);
   });
 
-  test('elabora export and import: progress on stderr for large projects, results on stdout', async () => {
-    const library = freshLibrary();
-    const dir = example();
+  test('elabora export and import: progress on stderr for large projects, results on stdout', async (t) => {
+    const library = freshLibrary(t);
+    const dir = example(t);
     fs.mkdirSync(path.join(dir, 'assets', 'video'), { recursive: true });
     const handle = fs.openSync(path.join(dir, 'assets', 'video', 'x.mp4'), 'w');
-    for (let i = 0; i < 40; i++) fs.writeSync(handle, crypto.randomBytes(1024 * 1024));
-    fs.closeSync(handle);
+    try { for (let i = 0; i < 40; i++) fs.writeSync(handle, bytes(1024 * 1024, i + 1)); }
+    finally { fs.closeSync(handle); }
     const exported = await ok(library, ['export', dir, '--json']);
     assert.equal(JSON.parse(exported.stdout).courseId, 'diagnostic-reseau');
     assert.match(exported.stderr, /^Reading the files: \d+% \([\d.]+ MB of 4\d\.\d MB\)$/m);
@@ -196,51 +186,51 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     assert.equal(JSON.parse(imported.stdout).status, 'imported');
     assert.match(imported.stderr, /^Extracting and checking: 100% /m);
     // Small projects: nothing on stderr.
-    const small = example('planetary-gearset');
+    const small = example(t, 'planetary-gearset');
     assert.equal((await ok(library, ['export', small])).stderr, '');
   });
 
-  test('elabora projects path --set: another folder for the library, projects moved along', async () => {
+  test('elabora projects path --set: another folder for the library, projects moved along', async (t) => {
     // The location setting lives in the user's Elabora settings: a temp home folder stands for it.
-    const home = tempDir('elabora-cli-home-');
+    const home = tempDir(t, 'elabora-cli-home-');
     const env = { HOME: home, USERPROFILE: home, LOCALAPPDATA: path.join(home, 'AppData', 'Local'), XDG_DATA_HOME: path.join(home, '.local', 'share'), ELABORA_LOCAL_DATA_DIR: '' };
     const settings = path.join(home, process.platform === 'darwin' ? 'Library/Application Support/Elabora' : process.platform === 'win32' ? 'AppData/Local/Elabora' : '.local/share/elabora', 'settings.json');
     const first = (await ok('', ['projects', 'path'], env)).stdout.trim();
     assert.ok(first.startsWith(home), first);
     await ok('', ['projects', 'create', 'deplace', '--title', 'Déplacé'], env);
-    const target = path.join(tempDir('elabora-cli-disk-'), 'Elabora');
+    const target = path.join(tempDir(t, 'elabora-cli-disk-'), 'Elabora');
     assert.match((await ok('', ['projects', 'path', '--set', target, '--move'], env)).stdout, /^✔ Moved the library to .*: 1 project\(s\), .* by renaming its folder\.\n$/);
     assert.equal(JSON.parse(fs.readFileSync(settings, 'utf8')).libraryPath, target);
     assert.equal((await ok('', ['projects', 'path'], env)).stdout, `${target}\n`);
-    const copyTarget = tempDir('elabora-cli-disk-');
+    const copyTarget = tempDir(t, 'elabora-cli-disk-');
     assert.match((await ok('', ['projects', 'path', '--set', copyTarget, '--copy'], env)).stdout, /by copying and checking every file\.\n$/);
     assert.equal(fs.existsSync(target), false);
     const listed = JSON.parse((await elabora('', ['projects', 'list', '--json'], env)).stdout);
     assert.equal(listed.library, copyTarget);
     assert.equal(listed.projects.length, 1);
     // Only a folder of its own: not one with other files in it.
-    const busy = tempDir('elabora-cli-busy-');
+    const busy = tempDir(t, 'elabora-cli-busy-');
     fs.writeFileSync(path.join(busy, 'mine.txt'), 'x');
     const refused = await elabora('', ['projects', 'path', '--set', busy, '--move'], env);
     assert.equal(refused.status, 1);
     assert.match(refused.stderr, /is not empty/);
     // ELABORA_LIBRARY wins and cannot be changed by the command.
-    const fixed = await elabora(freshLibrary(), ['projects', 'path', '--set', tempDir('elabora-cli-x-')], env);
+    const fixed = await elabora(freshLibrary(t), ['projects', 'path', '--set', tempDir(t, 'elabora-cli-x-')], env);
     assert.equal(fixed.status, 1);
     assert.match(fixed.stderr, /ELABORA_LIBRARY is set/);
   });
 
-  test('MCP: elabora_projects_list and elabora_projects_path find a project\'s folder, read only', async () => {
-    const library = freshLibrary();
-    await ok(library, ['import', example('planetary-gearset')]);
-    await ok(library, ['import', example('diagnostic-reseau')]);
+  test('MCP: elabora_projects_list and elabora_projects_path find a project\'s folder, read only', async (t) => {
+    const library = freshLibrary(t);
+    await ok(library, ['import', example(t, 'planetary-gearset')]);
+    await ok(library, ['import', example(t, 'diagnostic-reseau')]);
     const previous = process.env.ELABORA_LIBRARY;
     process.env.ELABORA_LIBRARY = library;
     try {
-      const server = createMcpServer(example(), { readOnly: true });
+      const server = resources(t).own(createMcpServer(example(t), { readOnly: true }), value => value.close());
       const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
       await server.connect(serverSide);
-      const client = new Client({ name: 'test', version: '1' });
+      const client = resources(t).own(new Client({ name: 'test', version: '1' }), value => value.close());
       await client.connect(clientSide);
       const call = async (name: string, args: Record<string, unknown> = {}) => {
         const result = await client.callTool({ name, arguments: args });

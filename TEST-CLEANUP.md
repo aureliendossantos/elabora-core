@@ -96,7 +96,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/unit/charts-process.test.ts` | 84 | 83 | Passed 5 native-seeded cases; public markup/accessibility/order/table/escaping/highlight/determinism retained; duplicate link-count assertion removed |
 | `test/unit/charts-proportion.test.ts` | 69 | 75 | Passed 5 native-seeded cases; public icon positions/counts/format/escaping replace private geometry and self-referential item constant; 100 seed-71 totals/share invariants added |
 | `test/unit/charts.test.ts` | 186 | 187 | Passed chart units; context-owned course and public curve/gap invariants replace exact chosen Bezier and dodge coordinates |
-| `test/unit/cli-projects.test.ts` | 266 | — | Pending |
+| `test/unit/cli-projects.test.ts` | 266 | 256 | All 6 native-seeded cases passed; context-owned library/course/archive fixtures and MCP connection; seeded 40 MB progress input and failure-safe file descriptor; actual CLI workflows and isolated home retained |
 | `test/unit/cli.test.ts` | 715 | 684 | Passed 28 native-seeded cases; real CLI/MCP transport, refusal, privacy, journal/undo, translation and permission contracts preserved; failure-safe context ownership closes clients/servers before removing copies |
 | `test/unit/cloud.test.ts` | 638 | 641 | Passed 20 native-seeded cases with a fresh fake service/credential store per case, restored cloud environment and failure-safe client cleanup; redundant storage mock-call tracking removed; real publishing/privacy/account/review contracts retained |
 | `test/unit/compile.test.ts` | 156 | 160 | Passed native-seeded checks; Build packaging, SCORM, failures and live preview checks retained; every course/output is context-owned |
