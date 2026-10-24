@@ -1,14 +1,14 @@
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import type { Page } from 'playwright-core';
 import { startServer } from '@elabora/node/emulator/server';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import { build } from '@elabora/node/build';
 import { capture } from '@elabora/node/preview';
-import { copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { settled, readJSON, writeJSON } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { narrate, voice, hasFfmpeg } from '../narration.ts';
 
@@ -19,7 +19,7 @@ import { narrate, voice, hasFfmpeg } from '../narration.ts';
 // sine tones; the clock is virtual.
 
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
-const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+const tmp = (t: TestContext, prefix: string) => resources(t).tempDir(prefix);
 const SPEAKERS = [{ id: 'narratrice', name: 'Narratrice' }, { id: 'guide', name: 'La guide' }];
 const REGLE = [
   { id: 'r1', speaker: 'guide', text: 'Un rappel de la règle.', seconds: 1 },
@@ -29,8 +29,8 @@ const REGLE = [
 // Slides; accueil narrated (l1, l2); at the end of l1 the dialog « Rappel de la règle » opens and
 // speaks, its schema coming at « poste », a cue at « réseau », and it closes itself once it has spoken;
 // at l2 the panel « Aide » speaks over the screen, which waits for it.
-function course({ seek = 'free' }: { seek?: 'seen' | 'free' } = {}) {
-  const dir = copyExample();
+function course(t: TestContext, { seek = 'free' }: { seek?: 'seen' | 'free' } = {}) {
+  const dir = resources(t).copyExample();
   const data = readJSON(dir, 'course.json');
   data.presentation = { mode: 'slides' };
   writeJSON(dir, 'course.json', data);
@@ -61,26 +61,21 @@ function course({ seek = 'free' }: { seek?: 'seen' | 'free' } = {}) {
   return dir;
 }
 
-async function player(dir: string, run: (page: Page) => Promise<void>) {
-  const b = await build(dir, { emit: 'dir', out: tmp('elabora-layer-'), writeLock: false, debug: true });
+async function player(t: TestContext, dir: string, run: (page: Page) => Promise<void>) {
+  const b = await build(dir, { emit: 'dir', out: tmp(t, 'elabora-layer-'), writeLock: false, debug: true });
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
   assert.ok(fs.existsSync(path.join(b.dirPath, 'narration/accueil.regle.m4a')), 'the layer\'s track');
-  const server = await startServer();
+  const server = resources(t).own(await startServer(), value => value.close());
   server.addPackage('p', b.dirPath);
-  const browser = await launchBrowser('chromium');
-  try {
-    const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
-    const errors: string[] = [];
-    page.on('pageerror', (error) => errors.push(error.message));
-    await page.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
-    await page.goto(`${server.base}/pkg/p/index.html`);
-    await page.waitForFunction(() => (window as PlayerWindow).__elabora);
-    await run(page);
-    assert.deepEqual(errors, []);
-  } finally {
-    await browser.close();
-    await server.close();
-  }
+  const browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
+  const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
+  await page.goto(`${server.base}/pkg/p/index.html`);
+  await page.waitForFunction(() => (window as PlayerWindow).__elabora);
+  await run(page);
+  assert.deepEqual(errors, []);
 }
 
 const state = (page: Page) => page.evaluate(() => {
@@ -106,8 +101,8 @@ const wordTime = (page: Page, layer: string, line: string, word: string) => page
   return screen.layers.find((candidate) => candidate.id === layerId)!.narration.lines.find((candidate) => candidate.id === lineId)!.words.find((entry) => entry[0] === text)![1];
 }, [layer, line, word] as const);
 
-test('a dialog that speaks holds the screen, brings its blocks at its words, fires its cues and closes itself at its end', { skip: NO_FFMPEG, timeout: 120000 }, async () => {
-  await player(course(), async (page) => {
+test('a dialog that speaks holds the screen, brings its blocks at its words, fires its cues and closes itself at its end', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
+  await player(t, course(t), async (page) => {
     let s = await state(page);
     assert.equal(s.screen?.playing, true, 'the screen\'s narration starts');
     assert.equal(s.regle, null, 'no layer timeline before the layer opens');
@@ -150,8 +145,8 @@ test('a dialog that speaks holds the screen, brings its blocks at its words, fir
   });
 });
 
-test('a layer\'s bar: seek (free) recomputes what is seen and fires nothing, the learner\'s Pause stops it, its shortcuts, reopened at 0', { skip: NO_FFMPEG, timeout: 120000 }, async () => {
-  await player(course(), async (page) => {
+test('a layer\'s bar: seek (free) recomputes what is seen and fires nothing, the learner\'s Pause stops it, its shortcuts, reopened at 0', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
+  await player(t, course(t), async (page) => {
     await page.evaluate(() => (window as PlayerWindow).__elabora.timeline.pause());
     // The screen's transcript holds each layer's lines under its title.
     await page.click('.t-timeline-transcript-btn');
@@ -202,8 +197,8 @@ test('a layer\'s bar: seek (free) recomputes what is seen and fires nothing, the
   });
 });
 
-test('a chart whose items come with the voice follows its layer\'s timeline, not the screen\'s (D60, D62)', { skip: NO_FFMPEG, timeout: 120000 }, async () => {
-  const dir = course();
+test('a chart whose items come with the voice follows its layer\'s timeline, not the screen\'s (D60, D62)', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
+  const dir = course(t);
   const accueil = readJSON(dir, 'screens/accueil.json');
   accueil.layers[0].blocks.push({ id: 'ordre', type: 'bars', props: { takeaway: 'Le poste d\'abord', rows: [
     { id: 'poste', label: 'Poste', value: 70, at: { line: 'r2', word: 'poste' } },
@@ -211,7 +206,7 @@ test('a chart whose items come with the voice follows its layer\'s timeline, not
   ] } });
   accueil.events = accueil.events.filter((event: { id: string }) => event.id !== 'ferme-regle');
   writeJSON(dir, 'screens/accueil.json', accueil);
-  await player(dir, async (page) => {
+  await player(t, dir, async (page) => {
     await page.evaluate(() => (window as PlayerWindow).__elabora.timeline.pause());
     await page.evaluate(() => (window as PlayerWindow).__elabora.openLayer('regle'));
     await page.evaluate(() => (window as PlayerWindow).__elabora.timeline.layer('regle')?.pause());
@@ -224,19 +219,19 @@ test('a chart whose items come with the voice follows its layer\'s timeline, not
     assert.equal(await label('poste'), 0);
     const poste = await wordTime(page, 'regle', 'r2', 'poste');
     await page.evaluate((t) => (window as PlayerWindow).__elabora.timeline.layer('regle')?.seek(t), poste + 0.05);
-    await page.waitForTimeout(300);
+    await settled(page.locator('[data-block="ordre"]'));
     assert.deepEqual(await spoken(), ['poste'], 'at « poste » in the layer');
     assert.equal(await label('poste'), 1);
     assert.equal(await label('reseau'), 0);
     const reseau = await wordTime(page, 'regle', 'r2', 'réseau');
     await page.evaluate((t) => (window as PlayerWindow).__elabora.timeline.layer('regle')?.seek(t), reseau + 0.05);
-    await page.waitForTimeout(300);
+    await settled(page.locator('[data-block="ordre"]'));
     assert.deepEqual(await spoken(), ['reseau']);
   });
 });
 
-test('captures of a layer at a moment of its own timeline', { skip: NO_FFMPEG, timeout: 120000 }, async () => {
-  const dir = course();
+test('captures of a layer at a moment of its own timeline', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
+  const dir = course(t);
   const result = await capture(dir, [{ screen: 'accueil', layer: 'regle', at: ['r2', 'r2:poste', 'r1:end'], width: 1280, height: 720 }]);
   assert.ok(result.ok, JSON.stringify(result));
   const shot = result.shots![0];
@@ -246,51 +241,42 @@ test('captures of a layer at a moment of its own timeline', { skip: NO_FFMPEG, t
   assert.match(failed && !failed.ok ? failed.error : '', /No line "l2" in the narration of layer "regle"/);
 });
 
-test('the editor\'s canvas: the layer shown at a moment of its timeline, its timed blocks in the layout; a look and its sheet of the layer', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
+test('the editor\'s canvas: the layer shown at a moment of its timeline, its timed blocks in the layout; a look and its sheet of the layer', { skip: NO_FFMPEG, timeout: 180000 }, async (t) => {
   const { startCanvasHost } = await import('@elabora/node/canvas/host');
   const { loadProjectFromDir } = await import('@elabora/node/project-reader');
   const { renderScreen } = await import('@elabora/core/render/screen');
   const { screenTimeline, blockTimings } = await import('@elabora/core/narration/timeline');
   const { startLooker } = await import('@elabora/node/look');
   type CanvasWindow = Window & typeof globalThis & { __elaboraCanvas: import('@elabora/player/canvas').CanvasApi };
-  const dir = course();
+  const dir = course(t);
   const project = loadProjectFromDir(dir);
   const coming = blockTimings(screenTimeline(project, 'accueil', { layer: 'regle' })!).get('consigne-schema')!.in!;
-  const host = await startCanvasHost({ root: dir });
-  const browser = await launchBrowser('chromium');
-  try {
-    const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
-    await page.setContent(`<iframe src="${host.url}" style="width: 1280px; height: 720px; border: 0"></iframe>`);
-    const frame = await (await page.waitForSelector('iframe')).contentFrame();
-    await frame!.waitForFunction(() => (window as CanvasWindow).__elaboraCanvas);
-    host.push(renderScreen(project, 'accueil', { layer: 'regle', at: { time: 0.5 } }), { id: 1 });
-    const blockAt = async (id: number) => {
-      await frame!.waitForFunction((wanted) => (window as CanvasWindow).__elaboraCanvas.layout().id === wanted, id);
-      return frame!.evaluate(() => (window as CanvasWindow).__elaboraCanvas.layout().blocks.find((block) => block.id === 'consigne-schema')!);
-    };
-    let block = await blockAt(1);
-    assert.deepEqual([block.timed?.state, block.hidden], ['before', true], 'at 0.5 s of the layer\'s timeline, before « poste »');
-    // Without the player's bars (the editor's Diapositive), no caption covers the layer while r1 is said, as none covers the screen.
-    assert.equal(await frame!.evaluate(() => document.querySelector('dialog.t-layer[data-layer="regle"] .t-timeline-band:not([hidden])')?.textContent ?? null), null, 'no caption over the layer in the bare canvas');
-    const post = (view: Record<string, unknown>, id: number) => page.evaluate(({ view: sent, id: sentId, token }) => document.querySelector('iframe')!.contentWindow!.postMessage({ type: 'elabora/view', id: sentId, token, view: sent }, '*'), { view, id, token: host.token });
-    await post({ at: { time: coming.at + 1 } }, 2);
-    block = await blockAt(2);
-    assert.deepEqual([block.timed?.state, block.hidden], ['shown', false]);
-    assert.equal(await frame!.evaluate(() => (window as CanvasWindow).__elaboraCanvas.layout().blocks.some((entry) => entry.id === 'accueil-illustration' && entry.hidden)), false, 'the screen under it shows its end');
-  } finally {
-    await browser.close();
-    await host.close();
-  }
-  const looker = await startLooker(dir, { live: false });
-  try {
-    const at = await looker.look({ screen: 'accueil', layer: 'regle', at: 'r2:poste', width: 1280, height: 720 });
-    assert.ok(at.ok, JSON.stringify(at));
-    const sheet = await looker.look({ screen: 'accueil', layer: 'regle', sheet: true, width: 1280, height: 720 });
-    assert.ok(sheet.ok, JSON.stringify(sheet));
-    const labels = sheet.marks!.map((mark) => mark.label);
-    assert.ok(labels.some((label) => /r2 « poste » · consigne-schema comes/.test(label)), labels.join('\n'));
-    assert.ok(labels.some((label) => /r2 « réseau » · repere fires/.test(label)), labels.join('\n'));
-  } finally {
-    await looker.close();
-  }
+  const host = resources(t).own(await startCanvasHost({ root: dir }), value => value.close());
+  const browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
+  const page = await browser.newPage({ viewport: { width: 1400, height: 900 } });
+  await page.setContent(`<iframe src="${host.url}" style="width: 1280px; height: 720px; border: 0"></iframe>`);
+  const frame = await (await page.waitForSelector('iframe')).contentFrame();
+  await frame!.waitForFunction(() => (window as CanvasWindow).__elaboraCanvas);
+  host.push(renderScreen(project, 'accueil', { layer: 'regle', at: { time: 0.5 } }), { id: 1 });
+  const blockAt = async (id: number) => {
+    await frame!.waitForFunction((wanted) => (window as CanvasWindow).__elaboraCanvas.layout().id === wanted, id);
+    return frame!.evaluate(() => (window as CanvasWindow).__elaboraCanvas.layout().blocks.find((block) => block.id === 'consigne-schema')!);
+  };
+  let block = await blockAt(1);
+  assert.deepEqual([block.timed?.state, block.hidden], ['before', true], 'at 0.5 s of the layer\'s timeline, before « poste »');
+  // Without the player's bars (the editor's Diapositive), no caption covers the layer while r1 is said, as none covers the screen.
+  assert.equal(await frame!.evaluate(() => document.querySelector('dialog.t-layer[data-layer="regle"] .t-timeline-band:not([hidden])')?.textContent ?? null), null, 'no caption over the layer in the bare canvas');
+  const post = (view: Record<string, unknown>, id: number) => page.evaluate(({ view: sent, id: sentId, token }) => document.querySelector('iframe')!.contentWindow!.postMessage({ type: 'elabora/view', id: sentId, token, view: sent }, '*'), { view, id, token: host.token });
+  await post({ at: { time: coming.at + 1 } }, 2);
+  block = await blockAt(2);
+  assert.deepEqual([block.timed?.state, block.hidden], ['shown', false]);
+  assert.equal(await frame!.evaluate(() => (window as CanvasWindow).__elaboraCanvas.layout().blocks.some((entry) => entry.id === 'accueil-illustration' && entry.hidden)), false, 'the screen under it shows its end');
+  const looker = resources(t).own(await startLooker(dir, { live: false }), value => value.close());
+  const at = await looker.look({ screen: 'accueil', layer: 'regle', at: 'r2:poste', width: 1280, height: 720 });
+  assert.ok(at.ok, JSON.stringify(at));
+  const sheet = await looker.look({ screen: 'accueil', layer: 'regle', sheet: true, width: 1280, height: 720 });
+  assert.ok(sheet.ok, JSON.stringify(sheet));
+  const labels = sheet.marks!.map((mark) => mark.label);
+  assert.ok(labels.some((label) => /r2 « poste » · consigne-schema comes/.test(label)), labels.join('\n'));
+  assert.ok(labels.some((label) => /r2 « réseau » · repere fires/.test(label)), labels.join('\n'));
 });

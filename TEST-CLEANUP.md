@@ -27,7 +27,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Implementation coupling | 47 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 5 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
-| Fixed-delay synchronization | 51 | engine-session: sleep(400) before checking watcher results |
+| Fixed-delay synchronization | 53 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
 | Unseeded randomness | 34 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
@@ -65,7 +65,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/e2e/edge.test.ts` | 122 | — | Pending |
 | `test/e2e/engine-canvas.test.ts` | 128 | 91 | Focused seed 130363 passed; commands and external writes reach actual DOM while the free object keeps its marker and frame; removed machine-speed budgets |
 | `test/e2e/fonts.test.ts` | 124 | 112 | Focused seed 130363 passed both browser regressions; actual Unicode/font loading, licence and embedded font rendering retained; own sources/builds/server/browser |
-| `test/e2e/layer-timeline.test.ts` | 296 | — | Pending |
+| `test/e2e/layer-timeline.test.ts` | 296 | 282 | Native seed 104729 passed all five behaviours; real layer pauses, captions, cues, seek/reopen and captures retained; effect completion replaces fixed chart waits; owned resources |
 | `test/e2e/lms.test.ts` | 103 | 95 | Focused seed 104729 passed all four; legacy unload warning, stalled step and browser emulation retained; load event replaces delayed stall start |
 | `test/e2e/look.test.ts` | 357 | 353 | Focused seed 104729 passed all six workflows; look reuse, code reload, scrolling, object actions and refused opaque-frame behaviour; response events replace sleeps |
 | `test/e2e/media.test.ts` | 96 | 82 | Focused seed 104729 passed; iframe navigation, loaded metadata and seeked events synchronize actual video controls; own fixture and browser |
