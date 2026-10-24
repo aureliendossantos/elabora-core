@@ -101,7 +101,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/unit/cloud.test.ts` | 638 | 641 | Passed 20 native-seeded cases with a fresh fake service/credential store per case, restored cloud environment and failure-safe client cleanup; redundant storage mock-call tracking removed; real publishing/privacy/account/review contracts retained |
 | `test/unit/compile.test.ts` | 156 | 160 | Passed native-seeded checks; Build packaging, SCORM, failures and live preview checks retained; every course/output is context-owned |
 | `test/unit/components.test.ts` | 313 | 315 | Passed 12 native-seeded cases; owned course/component/output fixtures; separate unknown-property and invalid-list diagnostics replace summed assertion; build, detach, fallback, libraries and migration contracts retained |
-| `test/unit/costs.test.ts` | 200 | — | Pending |
+| `test/unit/costs.test.ts` | 200 | 201 | Native-seeded cases passed; fixed date for all cost estimates and owned ledger/server; real pricing-period/discount/own-charge and append-once history behaviours retained |
 | `test/unit/course-state.test.ts` | 127 | 130 | Passed native-seeded checks; All scoring, resume, completion and event behaviours retained with owned courses |
 | `test/unit/data-dir.test.ts` | 35 | 37 | Passed native-seeded case; disposable processes still test process-cached settings; owned parent keeps renamed project and relocated blobs isolated |
 | `test/unit/design.test.ts` | 394 | 394 | Passed 23 native-seeded cases; owned fixtures/output; theme precedence checked through real upgrades instead of private property-family labels; removed function-truthiness assertion |

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import http from 'node:http';
 import type { AddressInfo } from 'node:net';
@@ -13,7 +13,7 @@ import { recordElevenLabs } from '../../scripts/costs-record.ts';
 
 // The ledger of what paid AI services charge (docs/decisions.md D36, ai-costs/README.md).
 
-test('costs: the averages shipped are generated from the ledger as it is, and every measurement has its one period', () => {
+test('costs: the averages shipped are generated from the ledger as it is, and every measurement has its one period', (t) => {
   const ledger = readLedger();
   const measurements = readMeasurements();
   assert.deepEqual(ledgerProblems(ledger, measurements), []);
@@ -25,7 +25,7 @@ test('costs: the averages shipped are generated from the ledger as it is, and ev
   assert.equal(share('eleven_v4_turbo').from, 'ledger');
   assert.equal(share('eleven_v3').from, 'ledger');
   assert.deepEqual(share('eleven_multilingual_v2'), { share: 1, from: 'list', period: 'elevenlabs/eleven_multilingual_v2/starter/2026-10-13' }, 'one measurement is too few');
-  assert.equal(expectedShare(COST_BOOK, { provider: 'elevenlabs', model: 'eleven_v4', plan: 'creator' }).share, 1, 'a plan not measured');
+  assert.equal(expectedShare(COST_BOOK, { provider: 'elevenlabs', model: 'eleven_v4', plan: 'creator', now: Date.parse('2026-10-14T00:00:00Z') }).share, 1, 'a plan not measured');
 });
 
 // A made-up service whose prices move: a list price, a discount that starts and ends, a new model.
@@ -44,7 +44,7 @@ const bookOf = (ledger: CostLedger, measurements: Measurement[]): CostBook => {
 };
 const providers = { voices: { billed: 'credits', listMultipliers: ['voice_rate'] } };
 
-test('costs: a discount that starts and ends: its figures are taken off while it runs, never used after, and one without a rate or an end is not counted on', () => {
+test('costs: a discount that starts and ends: its figures are taken off while it runs, never used after, and one without a rate or an end is not counted on', (t) => {
   const ledger: CostLedger = {
     providers,
     periods: [
@@ -72,7 +72,7 @@ test('costs: a discount that starts and ends: its figures are taken off while it
   assert.equal(ask(35, own).share, 1, 'the author\'s own requests in it neither');
 });
 
-test('costs: a new model, or a model whose list price changed, starts from the list price; an empty period too', () => {
+test('costs: a new model, or a model whose list price changed, starts from the list price; an empty period too', (t) => {
   const ledger: CostLedger = { providers, periods: [period('v/m1/basic/1', 'm1', 1, null), period('v/m2/basic/1', 'm2', 1, null, 0.5), period('v/m3/basic/1', 'm3', 1, null)] };
   const book = bookOf(ledger, [
     measured('m1', 2, 100, 40, 'v/m1/basic/1'), measured('m1', 3, 100, 40, 'v/m1/basic/1'), measured('m1', 4, 100, 40, 'v/m1/basic/1'),
@@ -87,7 +87,7 @@ test('costs: a new model, or a model whose list price changed, starts from the l
   assert.deepEqual(ask('m3'), { share: 1, from: 'list', period: 'v/m3/basic/1' }, 'two measurements are too few');
 });
 
-test('costs: the author\'s own requests take over where the ledger has none, follow a rise at once, and stay in their period and list price', () => {
+test('costs: the author\'s own requests take over where the ledger has none, follow a rise at once, and stay in their period and list price', (t) => {
   const ledger: CostLedger = { providers, periods: [period('v/m1/basic/1', 'm1', 1, 10), period('v/m1/basic/10', 'm1', 10, null)] };
   const book = bookOf(ledger, [measured('m1', 11, 100, 40, 'v/m1/basic/10'), measured('m1', 12, 100, 40, 'v/m1/basic/10'), measured('m1', 13, 100, 40, 'v/m1/basic/10')]);
   const charge = (day: number, billed: number, extra: Partial<OwnCharge> = {}): OwnCharge => ({ provider: 'voices', model: 'm1', plan: 'basic', date: new Date(at(day)).toISOString(), list: 100, billed, rates: { characters: 1 }, ...extra });
@@ -112,7 +112,7 @@ test('costs: the author\'s own requests take over where the ledger has none, fol
   assert.deepEqual(expectedShare(book, { provider: 'voices', model: 'm1', plan: null, now: at(20), own: [2, 3, 4, 14].map((day) => charge(day, 11, { plan: null })) }), { share: 1, from: 'list', period: null });
 });
 
-test('costs: the check names a measurement with no period, in two, or under another period than its date\'s', () => {
+test('costs: the check names a measurement with no period, in two, or under another period than its date\'s', (t) => {
   const ledger: CostLedger = { providers, periods: [period('v/m1/basic/1', 'm1', 1, 10), period('v/m1/basic/8', 'm1', 8, null)] };
   const problems = ledgerProblems(ledger, [
     measured('m1', 9, 100, 40, 'v/m1/basic/1'),
@@ -133,7 +133,7 @@ test('costs: the check names a measurement with no period, in two, or under anot
   assert.throws(() => aiCostsModule(ledger, [measured('m9', 5, 100, 40, 'v/m9/basic/1')]), /no price period/);
 });
 
-test('costs: the same ledger holds a language model\'s tokens, priced per million and by settings (batch), billed in dollars', () => {
+test('costs: the same ledger holds a language model\'s tokens, priced per million and by settings (batch), billed in dollars', (t) => {
   const ledger: CostLedger = {
     providers: { llm: { billed: 'usd', priceSettings: ['batch'] } },
     periods: [{
@@ -150,8 +150,8 @@ test('costs: the same ledger holds a language model\'s tokens, priced per millio
   assert.equal(expectedShare(book, { provider: 'llm', model: 'model-a', plan: 'standard', settings: { batch: true }, now: at(5) }).from, 'ledger');
 });
 
-test('costs: npm run costs:record appends the history\'s new requests once, with what GET /v1/models says, and says a discount the period lacks', async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-costs-'));
+test('costs: npm run costs:record appends the history\'s new requests once, with what GET /v1/models says, and says a discount the period lacks', async (t) => {
+  const dir = resources(t).tempDir('elabora-costs-');
   fs.writeFileSync(path.join(dir, 'key'), 'sk_test_ledger_key\n');
   const ledger: CostLedger = {
     providers: { elevenlabs: { billed: 'credits', priceSettings: [], listMultipliers: ['voice_rate'] } },
@@ -178,6 +178,7 @@ test('costs: npm run costs:record appends the history\'s new requests once, with
     response.writeHead(404); response.end();
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => server.close());
   const options = { ledgerDir: dir, keyFile: path.join(dir, 'key'), baseUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}`, now: new Date('2026-10-13T11:00:00Z') };
   try {
     const first = await recordElevenLabs(options);
