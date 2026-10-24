@@ -1,10 +1,9 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import type { Frame } from 'playwright-core';
 import { build } from '@elabora/node/build';
 import { startServer } from '@elabora/node/emulator/server';
 import { launchBrowser } from '@elabora/node/emulator/browser';
@@ -21,7 +20,7 @@ const tools = await findMediaTools().catch(() => null);
 // is in the package, plays, and seeks (range requests).
 test('a large course built at the low media quality plays and seeks its videos in the LMS emulator', { timeout: 600000 }, async (t) => {
   if (!tools) return t.skip('ffmpeg and ffprobe not found');
-  const work = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-e2e-media-'));
+  const work = resources(t).tempDir('elabora-e2e-media-');
   const dir = path.join(work, 'course');
   const size = process.env.ELABORA_E2E_FULL ? [] : ['--screens', '20', '--video-mb', '30', '--videos', '2'];
   execFileSync(process.execPath, [path.join(ROOT, 'scripts/make-large-course.ts'), dir, ...size], { stdio: 'ignore' });
@@ -34,15 +33,16 @@ test('a large course built at the low media quality plays and seeks its videos i
   assert.deepEqual([shipped.videoCodec, shipped.width, shipped.height, shipped.faststart], ['h264', 854, 480, true]);
   assert.ok(shipped.size < fs.statSync(path.join(dir, 'assets/video/lecture-1.mp4')).size / 3, 'the rendition is much lighter than the master');
 
-  const server = await startServer();
+  const server = resources(t).own(await startServer(), value => value.close());
   server.addPackage('large', built.dirPath);
-  const browser = await launchBrowser('chromium');
+  const browser = resources(t).own(await launchBrowser('chromium'), value => value.close());
   try {
     const page = await browser.newPage();
     const videoStatuses: number[] = [];
     page.on('response', (response) => { if (response.url().endsWith('.mp4')) videoStatuses.push(response.status()); });
     await page.goto(`${server.base}/lms/launch.html?pkg=large&profile=moodle&mode=iframe&reg=media`);
-    const frame = await contentFrame(page.frames.bind(page), () => page.waitForTimeout(100));
+    const frame = page.frames().find(frame => /\/pkg\//.test(frame.url())) ?? await page.waitForEvent('framenavigated', { predicate: frame => /\/pkg\//.test(frame.url()) });
+    await frame.waitForFunction(() => (window as PlayerWindow).__elabora);
     if (!(await playsMedia(frame))) return t.skip(NO_MEDIA_CODECS);
     // Screens are open in order: the ones before count as seen, as previews do.
     await frame.evaluate(() => {
@@ -50,13 +50,9 @@ test('a large course built at the low media quality plays and seeks its videos i
       for (const screen of elabora.engine.screens) { elabora.engine.st.visited.add(screen.key); elabora.engine.st.completed.add(screen.key); }
       elabora.go('lecture-1-screen');
     });
+    await frame.waitForSelector('video');
     const played = await frame.evaluate(async () => {
-      let video: HTMLVideoElement | null = null;
-      for (let i = 0; i < 100 && !video; i++) {
-        video = document.querySelector('video');
-        if (!video) await new Promise((resolve) => setTimeout(resolve, 100));
-      }
-      if (!video) throw new Error(`no video on the screen (${(window as PlayerWindow).__elabora.screen})`);
+      const video = document.querySelector('video')!;
       video.muted = true;
       await new Promise<void>((resolve, reject) => {
         if (video.readyState >= 1) return resolve();
@@ -65,12 +61,13 @@ test('a large course built at the low media quality plays and seeks its videos i
       });
       await video.play();
       // Playing: the position moves (a loaded machine may take a while to start).
-      for (let i = 0; i < 100 && video.currentTime === 0; i++) await new Promise((resolve) => setTimeout(resolve, 100));
+      if (video.currentTime === 0) await new Promise<void>(resolve => video.addEventListener('timeupdate', () => resolve(), { once: true }));
       const playing = video.currentTime;
       const target = Math.floor(video.duration * 0.6);
+      video.pause();
+      const seeked = new Promise(resolve => video.addEventListener('seeked', resolve, { once: true }));
       video.currentTime = target;
-      await new Promise((resolve) => video.addEventListener('seeked', resolve, { once: true }));
-      await new Promise((resolve) => setTimeout(resolve, 400));
+      await seeked;
       return { width: video.videoWidth, height: video.videoHeight, duration: video.duration, playing, target, after: video.currentTime, error: video.error?.code ?? null };
     });
     assert.deepEqual([played.width, played.height, played.error], [854, 480, null]);
@@ -83,14 +80,3 @@ test('a large course built at the low media quality plays and seeks its videos i
     fs.rmSync(work, { recursive: true, force: true });
   }
 });
-
-async function contentFrame(frames: () => Frame[], pause: () => Promise<void>): Promise<Frame> {
-  for (let i = 0; i < 150; i++) {
-    for (const frame of frames()) {
-      if (!/\/pkg\//.test(frame.url())) continue;
-      if (await frame.evaluate(() => typeof (window as Partial<PlayerWindow>).__elabora === 'object').catch(() => false)) return frame;
-    }
-    await pause();
-  }
-  throw new Error('content frame not found');
-}
