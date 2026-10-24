@@ -34,7 +34,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 6 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 9 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 115 | validate: copied fixtures were never removed |
+| Resource cleanup | 116 | validate: copied fixtures were never removed |
 | Wall-clock timing | 14 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -62,7 +62,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/e2e/charts.test.ts` | 182 | 228 | Passed crowded six-label desktop/phone layout and five-stage cycle; verifies visible labels and SVG bounds |
 | `test/e2e/design.test.ts` | 697 | 686 | Native seed 104729 passed 21 behaviours; public object state and decoded captures replace waits/byte quotas; capture variation compares pixels, including uniform non-grey failure; final suite repeat queued |
 | `test/e2e/dialogues.test.ts` | 559 | — | Pending |
-| `test/e2e/edge.test.ts` | 122 | — | Pending |
+| `test/e2e/edge.test.ts` | 122 | 125 | Reviewed and typechecked; two native seed 130363 cases skip because Edge is absent; real SwiftShader comparison and fallback preserved, captures decoded, resources owned; Linux CI exercises installed Edge |
 | `test/e2e/engine-canvas.test.ts` | 128 | 91 | Focused seed 130363 passed; commands and external writes reach actual DOM while the free object keeps its marker and frame; removed machine-speed budgets |
 | `test/e2e/fonts.test.ts` | 124 | 112 | Focused seed 130363 passed both browser regressions; actual Unicode/font loading, licence and embedded font rendering retained; own sources/builds/server/browser |
 | `test/e2e/layer-timeline.test.ts` | 296 | 282 | Native seed 104729 passed all five behaviours; real layer pauses, captions, cues, seek/reopen and captures retained; effect completion replaces fixed chart waits; owned resources |

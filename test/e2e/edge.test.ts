@@ -1,8 +1,8 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import type { Browser, LaunchOptions } from 'playwright-core';
 import { CHROMIUM_CHANNELS, launchBrowser, launchChromium } from '@elabora/node/emulator/browser';
@@ -67,8 +67,8 @@ async function draw(browser: Browser): Promise<{ version: string; renderer: stri
 }
 
 test('Edge draws in software as Chrome does: the same SwiftShader, the same pixels', { timeout: 60000 }, async (t) => {
-  const chrome = await only('chrome');
-  const edge = await only('msedge');
+  const chrome = resources(t).own(await only('chrome'), value => value?.close());
+  const edge = resources(t).own(await only('msedge'), value => value?.close());
   try {
     if (!chrome || !edge) return t.skip(`${chrome ? 'Microsoft Edge' : 'Google Chrome'} is not installed`);
     const [a, b] = [await draw(chrome), await draw(edge)];
@@ -102,7 +102,7 @@ test('a missing Chrome executable falls back to the installed Edge and renders a
   const version = available.version();
   await available.close();
   const { chromium } = require('playwright-core') as typeof import('playwright-core');
-  const missing = path.join(os.tmpdir(), 'elabora-missing-chrome', 'chrome.exe');
+  const missing = path.join(resources(t).tempDir('elabora-missing-chrome-'), 'chrome.exe');
   assert.ok(!fs.existsSync(missing));
   const attempts: LaunchOptions[] = [];
   const options = { headless: true, args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist', '--disable-features=IsolateSandboxedIframes'] };
@@ -116,7 +116,10 @@ test('a missing Chrome executable falls back to the installed Edge and renders a
     assert.equal(browser.version(), version);
     const result = await draw(browser);
     assert.match(result.renderer, /SwiftShader/);
-    assert.ok(result.png.length > 20000);
+    const { PNG } = require('pngjs');
+    const capture = PNG.sync.read(result.png);
+    assert.deepEqual([capture.width, capture.height], [480, 400]);
+    assert.ok(capture.data.some((value: number, index: number) => value !== capture.data[index % 4]), 'a rendered scene contains visible variation');
     t.diagnostic(`Missing Chrome → Edge ${result.version}, ${result.png.length} byte capture`);
   } finally { await browser.close(); }
 });
