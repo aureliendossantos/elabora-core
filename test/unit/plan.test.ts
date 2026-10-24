@@ -1,4 +1,5 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -9,7 +10,7 @@ import { planDiff, revertPlanChange } from '@elabora/core/project/plan-diff';
 import { planCourse } from '@elabora/core/project/plan-order';
 import type { Plan } from '@elabora/core/project/model';
 import { initProject } from '@elabora/node/scaffold';
-import { copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
+import { readJSON, writeJSON, codes } from '../helpers.ts';
 import * as edit from '@elabora/node/edit';
 
 // The plan's versions (docs/decisions.md D52): plan.json is the working copy, written at any time;
@@ -19,14 +20,13 @@ const PERSON = { author: { kind: 'human' as const, name: 'Aurélien' } };
 const AGENT = { author: { kind: 'agent' as const, name: 'claude-code' } };
 
 // The example without its versions: a plan nobody validated yet.
-function withoutVersions(): string {
-  const dir = copyExample();
+function withoutVersions(dir: string): string {
   fs.rmSync(path.join(dir, 'plan-versions'), { recursive: true, force: true });
   return dir;
 }
 
-test('a plan without a validated version is a draft; a person makes V1, the client validates it, and release builds take it', () => {
-  const dir = withoutVersions();
+test('a plan without a validated version is a draft; a person makes V1, the client validates it, and release builds take it', (t) => {
+  const dir = withoutVersions(resources(t).copyExample());
   assert.equal(planState(loadProjectFromDir(dir)), 'draft');
   assert.ok(codes(validateDir(dir, { release: true }).diagnostics).includes('E_PLAN_NOT_APPROVED'));
   assert.ok(codes(validateDir(dir).diagnostics).includes('W_PLAN_DRAFT'));
@@ -48,8 +48,8 @@ test('a plan without a validated version is a draft; a person makes V1, the clie
   assert.throws(() => edit.approvePlan(dir, { by: 'Claire Martin' }, PERSON), /V1 is already validated, by Claire Martin, Hélios Énergie on 2026-10-05/);
 });
 
-test('the plan is written at any time; what changed since the validated version is a warning, never a refusal, and counts twice', () => {
-  const dir = copyExample(); // V1, validated, and the working copy as it is
+test('the plan is written at any time; what changed since the validated version is a warning, never a refusal, and counts twice', (t) => {
+  const dir = resources(t).copyExample(); // V1, validated, and the working copy as it is
   assert.equal(planState(loadProjectFromDir(dir)), 'approved');
   edit.writePlan(dir, { patch: [{ op: 'replace', path: '/objectives/1/criterion', value: '3 diagnostics réussis sur 3' }] }, AGENT);
   assert.equal(planState(loadProjectFromDir(dir)), 'modified');
@@ -78,8 +78,8 @@ test('the plan is written at any time; what changed since the validated version 
   assert.throws(() => edit.approvePlan(dir, { version: 'V9', by: 'Claire Martin' }, PERSON), /no version V9/);
 });
 
-test('versions and their validation are a person\'s: an agent is refused, whatever its tool', () => {
-  const dir = copyExample();
+test('versions and their validation are a person\'s: an agent is refused, whatever its tool', (t) => {
+  const dir = resources(t).copyExample();
   edit.writePlan(dir, { patch: [{ op: 'replace', path: '/title', value: 'Autre' }] }, AGENT);
   for (const run of [() => edit.createPlanVersion(dir, {}, AGENT), () => edit.approvePlan(dir, { by: 'Claire Martin' }, AGENT)]) {
     assert.throws(run, (error: Error & { code?: string }) => error.code === 'E_PLAN_PERSON_ONLY' && /Only a person .* Nothing was written/.test(error.message));
@@ -87,8 +87,8 @@ test('versions and their validation are a person\'s: an agent is refused, whatev
   assert.ok(!fs.existsSync(path.join(dir, 'plan-versions/V2.json')));
 });
 
-test('a text kept « à l\'identique »: an agent never changes it, the author does, and the change is flagged', () => {
-  const dir = withoutVersions();
+test('a text kept « à l\'identique »: an agent never changes it, the author does, and the change is flagged', (t) => {
+  const dir = withoutVersions(resources(t).copyExample());
   const plan = readJSON(dir, 'plan.json');
   plan.items[0].lockedTexts[0].verbatim = true;
   writeJSON(dir, 'plan.json', plan);
@@ -111,8 +111,8 @@ test('a text kept « à l\'identique »: an agent never changes it, the author d
   assert.equal(readJSON(dir, 'plan.json').items[0].lockedTexts[0].text, 'Lundi matin, Marc vous appelle.');
 });
 
-test('a version never changes: one edited by hand does not hold together and is not counted', () => {
-  const dir = copyExample();
+test('a version never changes: one edited by hand does not hold together and is not counted', (t) => {
+  const dir = resources(t).copyExample();
   const version = readJSON(dir, 'plan-versions/V1.json');
   version.plan.title = 'Retouché à la main';
   writeJSON(dir, 'plan-versions/V1.json', version);
@@ -126,8 +126,8 @@ test('a version never changes: one edited by hand does not hold together and is 
   assert.ok(validateDir(dir).diagnostics.some((d) => d.code === 'E_SCHEMA' && d.file === 'plan.json'));
 });
 
-test('the diff of two plans, element by element and matched by ids', () => {
-  const dir = copyExample();
+test('the diff of two plans, element by element and matched by ids', (t) => {
+  const dir = resources(t).copyExample();
   const base = readJSON(dir, 'plan.json');
   const plan = structuredClone(base);
   plan.title = 'Diagnostiquer une panne';
@@ -171,7 +171,7 @@ test('the diff of two plans, element by element and matched by ids', () => {
 
 // The part an item belongs to, not the field it is written in (D50): an item without one continues
 // the part before it, and a plan without parts takes those of the course's sections.
-test('the diff compares the parts items belong to: one that says the part it already continued did not change part', () => {
+test('the diff compares the parts items belong to: one that says the part it already continued did not change part', (t) => {
   const plan = (parts: Record<string, string>, order = ['A', 'B', 'C', 'D']) => ({ items: order.map((id) => ({ id, kind: 'exposition', title: id, ...(parts[id] ? { part: parts[id] } : {}) })) }) as unknown as Plan;
   const summary = (before: Plan, after: Plan, course?: ReturnType<typeof planCourse>) => planDiff(before, after, course).changes.map((change) => [change.key, change.moved ?? null, change.part ?? null]);
   const base = plan({ A: 'Un', C: 'Deux' }); // A and B in Un, C and D in Deux
@@ -191,8 +191,8 @@ test('the diff compares the parts items belong to: one that says the part it alr
   assert.deepEqual(summary(bare, plan({ A: 'Un', B: 'Un', C: 'Deux', D: 'Deux' }, ['A', 'C', 'B', 'D']), course), [['item:B', { from: 2, to: 3 }, null]], 'a swap: one moved, and none changed part');
 });
 
-test('one change undone (« Revenir à la V1 »): the element as the version has it, in its place there', () => {
-  const dir = copyExample();
+test('one change undone (« Revenir à la V1 »): the element as the version has it, in its place there', (t) => {
+  const dir = resources(t).copyExample();
   const base = readJSON(dir, 'plan.json');
   const plan = structuredClone(base);
   plan.items[1].title = 'Autre titre';
@@ -214,8 +214,8 @@ test('one change undone (« Revenir à la V1 »): the element as the version has
   assert.throws(() => edit.revertPlanChange(dir, { key: 'item:ITEM-4' }, AGENT), /Nothing changed in item:ITEM-4 since V1/);
 });
 
-test('notes for the client: one per change in no version yet, frozen with the next version; those on changes undone go', () => {
-  const dir = copyExample();
+test('notes for the client: one per change in no version yet, frozen with the next version; those on changes undone go', (t) => {
+  const dir = resources(t).copyExample();
   assert.throws(() => edit.setPlanNote(dir, { target: 'item:ITEM-2', text: 'Pourquoi' }, AGENT), /No change item:ITEM-2 since V1/);
   edit.writePlan(dir, { patch: [{ op: 'replace', path: '/items/1/title', value: 'Le chemin des paquets' }, { op: 'replace', path: '/items/2/title', value: 'Le réflexe' }] }, AGENT);
   edit.setPlanNote(dir, { target: 'item:ITEM-2', text: 'Le mot du métier.' }, PERSON);
@@ -228,15 +228,15 @@ test('notes for the client: one per change in no version yet, frozen with the ne
   assert.ok(!fs.existsSync(path.join(dir, 'plan-versions/notes.json')), 'no note waits any more');
 });
 
-test('exporting records the send on the version it shows; it never makes one', () => {
-  const dir = copyExample();
+test('exporting records the send on the version it shows; it never makes one', (t) => {
+  const dir = resources(t).copyExample();
   edit.recordPlanSend(dir, { version: 'V1', format: 'docx', date: '2026-10-16' }, AGENT);
   assert.deepEqual(readJSON(dir, 'plan-versions/V1.json').sends, [{ date: '2026-10-16', format: 'docx' }]);
   assert.throws(() => edit.recordPlanSend(dir, { version: 'V2', format: 'pdf' }, AGENT), /no version V2/);
   assert.equal(fs.readdirSync(path.join(dir, 'plan-versions')).length, 1);
 });
 
-test('write_plan: the whole plan or a patch, its schema checked first; a plan\'s old state is dropped', () => {
+test('write_plan: the whole plan or a patch, its schema checked first; a plan\'s old state is dropped', (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-write-'));
   try {
     const dir = path.join(root, 'c');
@@ -270,7 +270,7 @@ test('write_plan: the whole plan or a patch, its schema checked first; a plan\'s
   }
 });
 
-test('a draft says what the agent decided by itself and asks one question; validating a version removes both (D51)', () => {
+test('a draft says what the agent decided by itself and asks one question; validating a version removes both (D51)', (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-decided-'));
   try {
     const dir = path.join(root, 'c');
@@ -320,14 +320,14 @@ test('a draft says what the agent decided by itself and asks one question; valid
   }
 });
 
-test('versions and notes stay with the course (its archive, its backups), never in a SCORM or web package; a release lists the changes since the validated version', async () => {
+test('versions and notes stay with the course (its archive, its backups), never in a SCORM or web package; a release lists the changes since the validated version', async (t) => {
   const { build } = await import('@elabora/node/build');
   const { readZip } = await import('@elabora/node/zip');
   const { exportProject } = await import('@elabora/node/library/index');
   const { createVersion } = await import('@elabora/node/backups/index');
   const { proofMarkdown } = await import('@elabora/core/compile/proof');
   const { ROOT } = await import('../helpers.ts');
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau')); // V2 validated, two changes since, a note
+  const dir = resources(t).copyExample(path.join(ROOT, 'examples/diagnostic-reseau')); // V2 validated, two changes since, a note
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-versions-build-'));
   try {
     for (const options of [{ release: true }, { release: true, target: 'web' as const }]) {
