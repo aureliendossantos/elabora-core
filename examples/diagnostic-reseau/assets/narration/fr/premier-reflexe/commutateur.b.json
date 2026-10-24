@@ -1,0 +1,106 @@
+{
+  "screen": "premier-reflexe",
+  "line": "commutateur.b",
+  "language": "fr",
+  "textHash": "sha256:57f17b99405be5508bca81bf06ac734f0e8d3163f01a27d838cc58be845245ff",
+  "duration": 2.88,
+  "provider": "elevenlabs",
+  "voice": "YxrwjAKoUKULGd0g8K9Y",
+  "generated": true,
+  "audioHash": "sha256:40f41bbf6abaa36371ebfeedaa0fbf8133d4dff3bcf1c384b969edf39942cb6f",
+  "createdAt": "2026-10-23T23:43:02Z",
+  "take": 1,
+  "spokenHash": "sha256:57f17b99405be5508bca81bf06ac734f0e8d3163f01a27d838cc58be845245ff",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Lucie (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Je cherche encore, je vous tiens au courant dès que j'en sais plus.",
+  "mouth": "coooooowwssoowwwccooooocccccccccccoooooooooowwwwwcwwoowwooossssssoooossssscccsssssscccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Je",
+      "start": 0.04,
+      "end": 0.155,
+      "score": 1
+    },
+    {
+      "text": "cherche",
+      "start": 0.161,
+      "end": 0.457,
+      "score": 0.995
+    },
+    {
+      "text": "encore",
+      "start": 0.463,
+      "end": 0.819,
+      "score": 1
+    },
+    {
+      "text": "je",
+      "start": 1.128,
+      "end": 1.242,
+      "score": 0.999
+    },
+    {
+      "text": "vous",
+      "start": 1.249,
+      "end": 1.39,
+      "score": 0.996
+    },
+    {
+      "text": "tiens",
+      "start": 1.39,
+      "end": 1.551,
+      "score": 0.97
+    },
+    {
+      "text": "au",
+      "start": 1.551,
+      "end": 1.645,
+      "score": 0.999
+    },
+    {
+      "text": "courant",
+      "start": 1.652,
+      "end": 1.927,
+      "score": 0.998
+    },
+    {
+      "text": "dès",
+      "start": 1.994,
+      "end": 2.115,
+      "score": 1
+    },
+    {
+      "text": "que",
+      "start": 2.115,
+      "end": 2.216,
+      "score": 1
+    },
+    {
+      "text": "j'",
+      "start": 2.216,
+      "end": 2.256,
+      "score": 0.683
+    },
+    {
+      "text": "en",
+      "start": 2.256,
+      "end": 2.357,
+      "score": 0.969
+    },
+    {
+      "text": "sais",
+      "start": 2.357,
+      "end": 2.498,
+      "score": 0.992
+    },
+    {
+      "text": "plus",
+      "start": 2.498,
+      "end": 2.753,
+      "score": 1
+    }
+  ]
+}

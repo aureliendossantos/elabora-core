@@ -1,0 +1,100 @@
+{
+  "screen": "practice",
+  "line": "neil-no-need",
+  "language": "en",
+  "textHash": "sha256:50aa303cc98839ecdeb238e7b0b419f6223e3476576c2aac252f8fadb73b224f",
+  "duration": 3.07,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:570e4230f22a53cb0138386a0b49a87dc7f8a9681388956e214b201ee959146d",
+  "createdAt": "2026-10-24T02:41:47Z",
+  "take": 1,
+  "spokenHash": "sha256:50aa303cc98839ecdeb238e7b0b419f6223e3476576c2aac252f8fadb73b224f",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[a little too quickly] No need to call, you've got me right here. It takes two minutes.",
+  "mouth": "ccwwwwwwwsssccoowwoooosscccoooosswwwwcoosswwwwoooooooooccccccccoocwwwssscssswwoocsssssccssscc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "No",
+      "start": 0.06,
+      "end": 0.181,
+      "score": 0.917
+    },
+    {
+      "text": "need",
+      "start": 0.181,
+      "end": 0.341,
+      "score": 0.751
+    },
+    {
+      "text": "to",
+      "start": 0.341,
+      "end": 0.442,
+      "score": 0.996
+    },
+    {
+      "text": "call",
+      "start": 0.442,
+      "end": 0.774,
+      "score": 0.923
+    },
+    {
+      "text": "you've",
+      "start": 0.883,
+      "end": 1.084,
+      "score": 0.937
+    },
+    {
+      "text": "got",
+      "start": 1.084,
+      "end": 1.204,
+      "score": 0.995
+    },
+    {
+      "text": "me",
+      "start": 1.204,
+      "end": 1.365,
+      "score": 0.914
+    },
+    {
+      "text": "right",
+      "start": 1.365,
+      "end": 1.625,
+      "score": 0.996
+    },
+    {
+      "text": "here",
+      "start": 1.625,
+      "end": 1.918,
+      "score": 0.994
+    },
+    {
+      "text": "It",
+      "start": 2.107,
+      "end": 2.207,
+      "score": 0.994
+    },
+    {
+      "text": "takes",
+      "start": 2.207,
+      "end": 2.448,
+      "score": 0.993
+    },
+    {
+      "text": "two",
+      "start": 2.448,
+      "end": 2.669,
+      "score": 1
+    },
+    {
+      "text": "minutes",
+      "start": 2.669,
+      "end": 3.062,
+      "score": 0.94
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "screen": "practice",
+  "line": "neil-letter",
+  "language": "en",
+  "textHash": "sha256:a2bc354c8a3cf070c83e9d2b3fb6d26ac20f7bfee4c312d0935ec24fb6debb0d",
+  "duration": 2.3,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:ef5d34fc26ca088d18d0d259b1c77ba6acbafcce754767178d4ee35a180b79e9",
+  "createdAt": "2026-10-24T02:41:48Z",
+  "take": 1,
+  "spokenHash": "sha256:a2bc354c8a3cf070c83e9d2b3fb6d26ac20f7bfee4c312d0935ec24fb6debb0d",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Of course. You'll have it in five minutes.",
+  "mouth": "cssccwwwwwoosssssscccccccccccwwwooowwwwoooossccwwwwooocccooosscooooocc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Of",
+      "start": 0.041,
+      "end": 0.162,
+      "score": 0.999
+    },
+    {
+      "text": "course",
+      "start": 0.162,
+      "end": 0.616,
+      "score": 0.994
+    },
+    {
+      "text": "You'll",
+      "start": 0.928,
+      "end": 1.15,
+      "score": 0.977
+    },
+    {
+      "text": "have",
+      "start": 1.15,
+      "end": 1.271,
+      "score": 0.999
+    },
+    {
+      "text": "it",
+      "start": 1.271,
+      "end": 1.352,
+      "score": 0.959
+    },
+    {
+      "text": "in",
+      "start": 1.352,
+      "end": 1.524,
+      "score": 0.999
+    },
+    {
+      "text": "five",
+      "start": 1.554,
+      "end": 1.856,
+      "score": 0.97
+    },
+    {
+      "text": "minutes",
+      "start": 1.856,
+      "end": 2.251,
+      "score": 0.985
+    }
+  ]
+}

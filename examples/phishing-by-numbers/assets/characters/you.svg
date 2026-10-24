@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600"
+     data-character="you"
+     data-expressions="neutral smiling focused worried relieved annoyed"
+     data-default-expression="neutral"
+     data-gestures="wave:1.2 nod:0.8 listen:1.6"
+     data-portrait="92 120 216 216">
+<style>
+/* You, in Finance at Quillon Freight, on the phone: one flat colour per custom property, with its default. */
+.skin{fill:var(--character-skin,#EDC3A0)}
+.skin-shade{fill:var(--character-skin-shade,#D9A783)}
+.hair{fill:var(--character-hair,#7A3E24)}
+.top{fill:var(--character-top,#C9704C)}
+.top-shade{fill:var(--character-top-shade,#B45F3D)}
+.gear{fill:var(--character-gear,#34303D)}
+.gear-soft{fill:var(--character-gear-soft,#4E4958)}
+.ink{fill:var(--character-ink,#241F2B)}
+.mouth{fill:var(--character-mouth,#6A2E33)}
+.tongue{fill:var(--character-tongue,#D3726A)}
+.teeth{fill:var(--character-teeth,#FFFFFF)}
+.cheek{fill:var(--character-cheek,#E0806B);opacity:.3}
+.accent{fill:var(--character-accent,#5B3DF5)}
+.sweat{fill:var(--character-sweat,#A8C8E6)}
+.ink-line{fill:none;stroke:var(--character-ink,#241F2B);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+.brow{fill:none;stroke:var(--character-hair,#7A3E24);stroke-width:8;stroke-linecap:round}
+.crease{fill:none;stroke:var(--character-skin-line,#C08A68);stroke-width:5;stroke-linecap:round}
+.frame{fill:none;stroke:var(--character-ink,#241F2B);stroke-width:4.5}
+.band{fill:none;stroke:var(--character-gear,#34303D);stroke-width:11;stroke-linecap:round}
+.boom{fill:none;stroke:var(--character-gear,#34303D);stroke-width:6;stroke-linecap:round}
+.sleeve{fill:none;stroke:var(--character-top-shade,#B45F3D);stroke-width:54;stroke-linecap:round}
+
+/* Movements: origins in units of the viewBox. */
+[data-part="breath"],[data-part="head"],[data-part="arm-wave"],[data-part="hand-wave"],[data-part="arm-listen"]{transform-box:view-box}
+[data-part="breath"]{animation:breathe 5.4s ease-in-out infinite alternate}
+[data-part="head"]{transform-origin:200px 330px}
+[data-part="arm-wave"]{transform-origin:334px 560px}
+[data-part="hand-wave"]{transform-origin:338px 320px}
+[data-part="arm-listen"]{transform-origin:80px 600px}
+[data-part="eyes-closed"]{opacity:0;animation:blink 6.7s linear infinite}
+[data-part="character"][data-gesture="wave"] [data-part="arm-wave"]{animation:raise 1.2s ease-in-out both}
+[data-part="character"][data-gesture="wave"] [data-part="hand-wave"]{animation:wave 1.2s ease-in-out both}
+[data-part="character"][data-gesture="nod"] [data-part="head"]{animation:nod .8s ease-in-out both}
+[data-part="character"][data-gesture="listen"] [data-part="arm-listen"]{animation:listen 1.6s ease-in-out both}
+@keyframes breathe{from{transform:translateY(0px)}to{transform:translateY(-2.5px)}}
+@keyframes blink{0%,61%,63.4%,100%{opacity:0}61.2%,63.2%{opacity:1}}
+@keyframes raise{
+0%,100%{transform:translate(40px,420px) rotate(12deg)}
+22%,82%{transform:translate(0px,0px) rotate(0deg)}
+52%{transform:translate(0px,-4px) rotate(1.5deg)}}
+@keyframes wave{
+0%,22%,82%,100%{transform:rotate(0deg)}
+34%{transform:rotate(14deg)}
+46%{transform:rotate(-9deg)}
+58%{transform:rotate(14deg)}
+70%{transform:rotate(-9deg)}}
+@keyframes nod{
+0%,46%,100%{transform:translateY(0px) scaleY(1)}
+22%{transform:translateY(8px) scaleY(.975)}
+70%{transform:translateY(6px) scaleY(.982)}}
+@keyframes listen{
+0%,100%{transform:translate(-30px,400px) rotate(-10deg)}
+22%,80%{transform:translate(0px,0px) rotate(0deg)}
+50%{transform:translate(0px,-3px) rotate(-1.5deg)}}
+
+/* Paused: everything stops. Reduced motion: nothing loops, a gesture rests in its final pose. */
+[data-part="character"][data-paused] *{animation-play-state:paused!important}
+[data-part="character"][data-reduced-motion] *{animation:none!important}
+[data-part="character"][data-reduced-motion][data-gesture="nod"] [data-part="head"]{transform:translateY(6px)}
+</style>
+<g data-part="character">
+ <g data-part="breath">
+  <g data-part="body">
+   <rect class="skin-shade" x="172" y="290" width="56" height="92" rx="24"/>
+   <path class="top" d="M64 640V480C64 412 110 374 172 366H228C290 374 336 412 336 480V640Z"/>
+   <path class="skin-shade" d="M170 365Q200 404 230 365Z"/>
+   <path class="top-shade" d="M168 366L200 420L190 640H150L140 380Z"/>
+   <path class="top-shade" d="M232 366L200 420L210 640H250L260 380Z"/>
+   <circle class="accent" cx="222" cy="470" r="6"/>
+  </g>
+  <g data-part="head">
+   <circle class="skin" cx="121" cy="240" r="16"/>
+   <circle class="skin" cx="279" cy="240" r="16"/>
+   <ellipse class="skin" cx="200" cy="226" rx="80" ry="95"/>
+   <path class="hair" d="M112 262C98 176 138 118 202 118C266 118 304 176 288 262C284 272 276 276 268 274C276 230 268 196 252 176C228 192 178 196 150 174C134 196 126 232 132 274C124 276 116 272 112 262Z"/>
+   <path class="crease" d="M200 250Q193 268 207 271"/>
+   <circle class="cheek" cx="154" cy="278" r="14"/>
+   <circle class="cheek" cx="246" cy="278" r="14"/>
+
+   <g data-expression="neutral">
+    <path class="brow" d="M150 207Q167 199 184 204M216 204Q233 199 250 207"/>
+    <ellipse class="ink" cx="167" cy="239" rx="7.5" ry="9.5"/>
+    <ellipse class="ink" cx="233" cy="239" rx="7.5" ry="9.5"/>
+   </g>
+   <g data-expression="smiling">
+    <path class="brow" d="M150 200Q167 189 184 197M216 197Q233 189 250 200"/>
+    <ellipse class="ink" cx="167" cy="238" rx="7" ry="8.5"/>
+    <ellipse class="ink" cx="233" cy="238" rx="7" ry="8.5"/>
+    <circle class="cheek" cx="154" cy="276" r="15"/>
+    <circle class="cheek" cx="246" cy="276" r="15"/>
+   </g>
+   <g data-expression="focused">
+    <path class="brow" d="M152 210L184 207M216 207L248 210"/>
+    <path class="ink" d="M159 238H175A8 8 0 0 1 159 238Z"/>
+    <path class="ink" d="M225 238H241A8 8 0 0 1 225 238Z"/>
+   </g>
+   <g data-expression="worried">
+    <path class="brow" d="M150 208Q166 205 183 193M217 193Q234 205 250 208"/>
+    <ellipse class="ink" cx="167" cy="240" rx="8" ry="10.5"/>
+    <ellipse class="ink" cx="233" cy="240" rx="8" ry="10.5"/>
+    <circle class="teeth" cx="170" cy="235" r="2.5"/>
+    <circle class="teeth" cx="236" cy="235" r="2.5"/>
+    <path class="sweat" d="M266 172C260 184 258 191 262 196A7 7 0 0 0 274 191C274 186 271 180 266 172Z"/>
+   </g>
+   <g data-expression="relieved">
+    <path class="brow" d="M150 202Q167 193 184 199M216 199Q233 193 250 202"/>
+    <path class="ink-line" d="M157 240Q167 248 177 240M223 240Q233 248 243 240"/>
+   </g>
+   <g data-expression="annoyed">
+    <path class="brow" d="M150 199L184 212M216 212L250 199"/>
+    <path class="ink" d="M158 236H176A9 9 0 0 1 158 236Z"/>
+    <path class="ink" d="M224 236H242A9 9 0 0 1 224 236Z"/>
+   </g>
+
+   <g data-part="eyes-closed">
+    <ellipse class="skin" cx="167" cy="239" rx="12.5" ry="13.5"/>
+    <ellipse class="skin" cx="233" cy="239" rx="12.5" ry="13.5"/>
+    <path class="ink-line" d="M156 242Q167 248 178 242M222 242Q233 248 244 242"/>
+   </g>
+   <g data-part="glasses">
+    <rect class="frame" x="145" y="222" width="44" height="34" rx="12"/>
+    <rect class="frame" x="211" y="222" width="44" height="34" rx="12"/>
+    <path class="frame" d="M189 236Q200 230 211 236"/>
+   </g>
+
+   <path data-mouth="closed" class="ink-line" d="M186 293Q200 300 214 293"/>
+   <ellipse data-mouth="small" class="mouth" cx="200" cy="295" rx="9.5" ry="6"/>
+   <g data-mouth="open">
+    <ellipse class="mouth" cx="200" cy="296" rx="13" ry="10.5"/>
+    <ellipse class="tongue" cx="200" cy="302" rx="7.5" ry="4.2"/>
+   </g>
+   <g data-mouth="wide">
+    <ellipse class="mouth" cx="200" cy="298" rx="16" ry="15"/>
+    <ellipse class="tongue" cx="200" cy="306" rx="9.5" ry="5.5"/>
+    <rect class="teeth" x="190.5" y="285" width="19" height="5" rx="2.5"/>
+   </g>
+   <g data-mouth="closed" data-expression="smiling">
+    <path class="mouth" d="M183 288Q200 292 217 288Q214 308 200 308Q186 308 183 288Z"/>
+    <path class="teeth" d="M187 290Q200 293 213 290L212 295Q200 297 188 295Z"/>
+   </g>
+   <path data-mouth="closed" data-expression="focused" class="ink-line" d="M192 295L210 293"/>
+   <path data-mouth="closed" data-expression="worried" class="ink-line" d="M189 299Q200 291 211 299"/>
+   <path data-mouth="closed" data-expression="relieved" class="ink-line" d="M185 291Q200 304 215 291"/>
+   <path data-mouth="closed" data-expression="annoyed" class="ink-line" d="M187 297L213 294"/>
+
+   <g data-part="headset">
+    <path class="band" d="M114 232C106 120 294 120 286 232"/>
+    <rect class="gear" x="98" y="206" width="34" height="64" rx="16"/>
+    <rect class="gear" x="268" y="206" width="34" height="64" rx="16"/>
+    <rect class="gear-soft" x="106" y="218" width="18" height="40" rx="9"/>
+    <rect class="gear-soft" x="276" y="218" width="18" height="40" rx="9"/>
+    <path class="boom" d="M116 266C118 300 138 312 160 310"/>
+    <rect class="gear" x="156" y="302" width="20" height="15" rx="7.5"/>
+    <circle class="accent" cx="111" cy="248" r="3.5"/>
+   </g>
+  </g>
+  <g data-part="arm-wave" data-gesture="wave">
+   <path class="sleeve" d="M316 640Q318 482 338 346"/>
+   <g data-part="hand-wave">
+    <ellipse class="skin" cx="305" cy="294" rx="10.5" ry="18" transform="rotate(-30 305 294)"/>
+    <rect class="skin" x="312" y="242" width="52" height="78" rx="26"/>
+    <path class="crease" style="stroke-width:3.5" d="M330 250V271M346 250V271"/>
+   </g>
+   <rect class="top" x="313" y="314" width="50" height="18" rx="9"/>
+  </g>
+  <g data-part="arm-listen" data-gesture="listen">
+   <path class="sleeve" d="M70 640L92 330"/>
+   <rect class="skin" x="70" y="222" width="50" height="86" rx="25" transform="rotate(-8 95 265)"/>
+   <ellipse class="skin" cx="124" cy="290" rx="10" ry="17" transform="rotate(28 124 290)"/>
+   <rect class="top" x="68" y="306" width="50" height="18" rx="9" transform="rotate(-6 93 315)"/>
+  </g>
+ </g>
+</g>
+</svg>

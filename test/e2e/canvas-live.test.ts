@@ -193,7 +193,8 @@ test('the live bars: « Langue » lists the languages a package of every languag
 });
 
 test('an event that goes to the next screen names the screen after the one shown, when the canvas has shown others before', { timeout: 180000 }, async () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  // The frozen fixture: its first-reflex screen is still a decision block (the sample's is a dialogue).
+  const dir = copyExample();
   const file = path.join(dir, 'screens/premier-reflexe.json');
   const screen = JSON.parse(fs.readFileSync(file, 'utf8'));
   screen.events = [...(screen.events ?? []), { id: 'reflexe-suite', on: { type: 'decision.selected', target: 'reflexe-choix', option: 'a' }, do: [{ type: 'go-to', screen: 'next' }] }];

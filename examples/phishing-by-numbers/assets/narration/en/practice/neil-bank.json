@@ -1,0 +1,100 @@
+{
+  "screen": "practice",
+  "line": "neil-bank",
+  "language": "en",
+  "textHash": "sha256:94df7456a7abd096a4427100cda6166c43a9a689a48e8f4d365deab516ed63dc",
+  "duration": 3.635,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:b591866dc52629b24c2b9cdd591fac04e78493c5c8b27f4356421ac3e1e92907",
+  "createdAt": "2026-10-24T02:41:45Z",
+  "take": 1,
+  "spokenHash": "sha256:94df7456a7abd096a4427100cda6166c43a9a689a48e8f4d365deab516ed63dc",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Our bank's changed, so Friday's payment needs to go to the new account.",
+  "mouth": "ccwwwcccwwoosssssoooooooossscssssswwwooooccccwwwwwwwooocccoowwcoooossoooosscssswwwwcccooooowwoooocssssoosssccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Our",
+      "start": 0.08,
+      "end": 0.221,
+      "score": 0.916
+    },
+    {
+      "text": "bank's",
+      "start": 0.221,
+      "end": 0.542,
+      "score": 0.944
+    },
+    {
+      "text": "changed",
+      "start": 0.542,
+      "end": 1.016,
+      "score": 0.814
+    },
+    {
+      "text": "so",
+      "start": 1.044,
+      "end": 1.337,
+      "score": 0.996
+    },
+    {
+      "text": "Friday's",
+      "start": 1.486,
+      "end": 1.888,
+      "score": 0.993
+    },
+    {
+      "text": "payment",
+      "start": 1.888,
+      "end": 2.29,
+      "score": 0.983
+    },
+    {
+      "text": "needs",
+      "start": 2.29,
+      "end": 2.51,
+      "score": 0.983
+    },
+    {
+      "text": "to",
+      "start": 2.51,
+      "end": 2.611,
+      "score": 0.988
+    },
+    {
+      "text": "go",
+      "start": 2.611,
+      "end": 2.751,
+      "score": 1
+    },
+    {
+      "text": "to",
+      "start": 2.751,
+      "end": 2.872,
+      "score": 0.969
+    },
+    {
+      "text": "the",
+      "start": 2.872,
+      "end": 3.013,
+      "score": 0.813
+    },
+    {
+      "text": "new",
+      "start": 3.013,
+      "end": 3.213,
+      "score": 1
+    },
+    {
+      "text": "account",
+      "start": 3.213,
+      "end": 3.635,
+      "score": 0.987
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-grave",
+  "language": "fr",
+  "textHash": "sha256:6f699f8b83a13d0df760de47d50201c74e77b6fbfb1f39b83ada7dffac841045",
+  "duration": 1.32,
+  "provider": "elevenlabs",
+  "voice": "kENkNtk0xyzG09WW40xE",
+  "generated": true,
+  "audioHash": "sha256:7003f16ef6dc09b3701f4699760e961aa652b836b72ccec4cb9d6a1537efec63",
+  "createdAt": "2026-10-23T23:42:36Z",
+  "take": 1,
+  "spokenHash": "sha256:6f699f8b83a13d0df760de47d50201c74e77b6fbfb1f39b83ada7dffac841045",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Marcel (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Et donc, c'est grave ?",
+  "mouth": "coooowwwooocccccccccccsssssooowwwssssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Et",
+      "start": 0.021,
+      "end": 0.115,
+      "score": 0.496
+    },
+    {
+      "text": "donc",
+      "start": 0.142,
+      "end": 0.42,
+      "score": 0.996
+    },
+    {
+      "text": "c'",
+      "start": 0.731,
+      "end": 0.792,
+      "score": 0.801
+    },
+    {
+      "text": "est",
+      "start": 0.792,
+      "end": 0.894,
+      "score": 0.999
+    },
+    {
+      "text": "grave",
+      "start": 0.894,
+      "end": 1.253,
+      "score": 1
+    }
+  ]
+}

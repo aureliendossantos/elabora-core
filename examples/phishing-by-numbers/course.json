@@ -57,6 +57,30 @@
           "voice": "CvD6hF1BJzAFN428j1cO",
           "name": "Kristen - Warm, Corporate and Steady"
         }
+      },
+      "narrator": true
+    },
+    {
+      "id": "neil",
+      "name": "Neil",
+      "color": "color.primary",
+      "look": {
+        "svg": "characters/neil.svg"
+      },
+      "voices": {
+        "en": {
+          "provider": "elevenlabs",
+          "voice": "nXIYu9FT5meibkBbZFT7",
+          "name": "James - Sales Professional"
+        }
+      }
+    },
+    {
+      "id": "you",
+      "name": "You",
+      "color": "color.accent",
+      "look": {
+        "svg": "characters/you.svg"
       }
     }
   ],

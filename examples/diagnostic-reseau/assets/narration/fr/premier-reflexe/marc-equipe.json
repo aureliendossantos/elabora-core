@@ -1,0 +1,82 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-equipe",
+  "language": "fr",
+  "textHash": "sha256:dc8df128b7f8080cf286e3dca38514494a1a80b5a43de1b424b8a41c6f5d6478",
+  "duration": 2.75,
+  "provider": "elevenlabs",
+  "voice": "kENkNtk0xyzG09WW40xE",
+  "generated": true,
+  "audioHash": "sha256:719c4023677212220640680311b2fac195059713451e6301667dfc206f703d91",
+  "createdAt": "2026-10-23T23:43:26Z",
+  "take": 1,
+  "spokenHash": "sha256:dc8df128b7f8080cf286e3dca38514494a1a80b5a43de1b424b8a41c6f5d6478",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Marcel (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[agacé] L'équipe réseau ? Je ne sais même pas qui appeler.",
+  "mouth": "cccooooocssoocoossswwssoooooccccccccccccsswwwccoowwcwwwccccooccssssoocccwwooocccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "L'",
+      "start": 0.1,
+      "end": 0.201,
+      "score": 0.586
+    },
+    {
+      "text": "équipe",
+      "start": 0.201,
+      "end": 0.542,
+      "score": 0.993
+    },
+    {
+      "text": "réseau",
+      "start": 0.542,
+      "end": 0.937,
+      "score": 0.832
+    },
+    {
+      "text": "Je",
+      "start": 1.325,
+      "end": 1.439,
+      "score": 0.999
+    },
+    {
+      "text": "ne",
+      "start": 1.445,
+      "end": 1.54,
+      "score": 0.998
+    },
+    {
+      "text": "sais",
+      "start": 1.546,
+      "end": 1.706,
+      "score": 0.956
+    },
+    {
+      "text": "même",
+      "start": 1.706,
+      "end": 1.921,
+      "score": 1
+    },
+    {
+      "text": "pas",
+      "start": 1.927,
+      "end": 2.048,
+      "score": 0.983
+    },
+    {
+      "text": "qui",
+      "start": 2.048,
+      "end": 2.202,
+      "score": 0.995
+    },
+    {
+      "text": "appeler",
+      "start": 2.248,
+      "end": 2.583,
+      "score": 0.762
+    }
+  ]
+}

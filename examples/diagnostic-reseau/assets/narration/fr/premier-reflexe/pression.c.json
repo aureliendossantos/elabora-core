@@ -1,0 +1,94 @@
+{
+  "screen": "premier-reflexe",
+  "line": "pression.c",
+  "language": "fr",
+  "textHash": "sha256:a9aeba50e2c1b7480cacadcf4de9550b365f34fa30483bfb4ec7ddb383a63f3d",
+  "duration": 2.715,
+  "provider": "elevenlabs",
+  "voice": "YxrwjAKoUKULGd0g8K9Y",
+  "generated": true,
+  "audioHash": "sha256:bd49234744326f97ecd805c183a7eba275730e0d1b46c2096485a705d51215ce",
+  "createdAt": "2026-10-23T23:42:33Z",
+  "take": 1,
+  "spokenHash": "sha256:a9aeba50e2c1b7480cacadcf4de9550b365f34fa30483bfb4ec7ddb383a63f3d",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Lucie (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "D'accord, je le redémarre tout de suite, ce sera plus rapide.",
+  "mouth": "cwwwwssssoossccccccccoooooooowwwwcwwwwcooossssssscooocccooooosssscooooooccoooccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "D'",
+      "start": 0.04,
+      "end": 0.101,
+      "score": 0.505
+    },
+    {
+      "text": "accord",
+      "start": 0.101,
+      "end": 0.436,
+      "score": 0.999
+    },
+    {
+      "text": "je",
+      "start": 0.704,
+      "end": 0.818,
+      "score": 0.999
+    },
+    {
+      "text": "le",
+      "start": 0.825,
+      "end": 0.939,
+      "score": 0.999
+    },
+    {
+      "text": "redémarre",
+      "start": 0.945,
+      "end": 1.307,
+      "score": 0.994
+    },
+    {
+      "text": "tout",
+      "start": 1.307,
+      "end": 1.408,
+      "score": 1
+    },
+    {
+      "text": "de",
+      "start": 1.408,
+      "end": 1.488,
+      "score": 0.962
+    },
+    {
+      "text": "suite",
+      "start": 1.488,
+      "end": 1.723,
+      "score": 0.995
+    },
+    {
+      "text": "ce",
+      "start": 1.891,
+      "end": 1.985,
+      "score": 1
+    },
+    {
+      "text": "sera",
+      "start": 1.991,
+      "end": 2.166,
+      "score": 0.998
+    },
+    {
+      "text": "plus",
+      "start": 2.172,
+      "end": 2.313,
+      "score": 1
+    },
+    {
+      "text": "rapide",
+      "start": 2.313,
+      "end": 2.649,
+      "score": 1
+    }
+  ]
+}

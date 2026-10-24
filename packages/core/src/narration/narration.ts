@@ -227,7 +227,7 @@ export function narrationLines(project: Project, screenId: string, language = pr
       speaker: speaker?.id ?? null, speakerName: name, text, textHash, spoken, spokenHash, settings: delivery.settings, settingsHash: delivery.hash, audio, sidecar: sidecarPath, status, reasons, causes,
       duration: audioFile?.kind === 'binary' ? probed ?? sidecar?.duration ?? null : null,
       speakerVoice: speakerVoiceOf(speaker?.voices?.[language]),
-      provider: sidecar?.provider ?? null, voice: sidecar?.voice ?? null, generated: sidecar?.generated ?? null, words: sidecar?.words ?? null, aligner: sidecar?.aligner ?? null,
+      provider: sidecar?.provider ?? null, voice: sidecar?.voice ?? null, generated: sidecar?.generated ?? null, words: Array.isArray(sidecar?.words) ? sidecar.words : null, aligner: sidecar?.aligner ?? null,
       take: sidecar?.take ?? null, credit: sidecar?.credit ?? null, model: sidecar?.model ?? null,
       mouth: typeof sidecar?.mouth === 'string' && isMouth(sidecar.mouth) ? sidecar.mouth : null
     };

@@ -1,0 +1,106 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-midi",
+  "language": "fr",
+  "textHash": "sha256:0b94a78f7a78ce4c5fe3998a6b1073b956e799696ae4e62021a9161439f16a69",
+  "duration": 4.32,
+  "provider": "elevenlabs",
+  "voice": "kENkNtk0xyzG09WW40xE",
+  "generated": true,
+  "audioHash": "sha256:31fa635548a7db7a41c539c7368940981b8f8fcb0dd340a77ed33d5f211c9aa4",
+  "createdAt": "2026-10-23T23:43:09Z",
+  "take": 1,
+  "spokenHash": "sha256:0b94a78f7a78ce4c5fe3998a6b1073b956e799696ae4e62021a9161439f16a69",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Marcel (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[agacé] Dès que vous en savez plus… La paie part à midi, je vous rappelle.",
+  "mouth": "ccccccoooccoosssoossoosssscooooooocccccoooosssscccccccccccccccccccwwwccccoooocccwwwwwwooocssssswwccccccccssoosssswwwcccwwwwssccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Dès",
+      "start": 0.141,
+      "end": 0.322,
+      "score": 0.995
+    },
+    {
+      "text": "que",
+      "start": 0.322,
+      "end": 0.462,
+      "score": 0.996
+    },
+    {
+      "text": "vous",
+      "start": 0.462,
+      "end": 0.637,
+      "score": 0.932
+    },
+    {
+      "text": "en",
+      "start": 0.683,
+      "end": 0.777,
+      "score": 1
+    },
+    {
+      "text": "savez",
+      "start": 0.864,
+      "end": 1.179,
+      "score": 1
+    },
+    {
+      "text": "plus",
+      "start": 1.226,
+      "end": 1.581,
+      "score": 1
+    },
+    {
+      "text": "La",
+      "start": 2.19,
+      "end": 2.305,
+      "score": 1
+    },
+    {
+      "text": "paie",
+      "start": 2.371,
+      "end": 2.606,
+      "score": 0.702
+    },
+    {
+      "text": "part",
+      "start": 2.632,
+      "end": 2.813,
+      "score": 1
+    },
+    {
+      "text": "à",
+      "start": 2.813,
+      "end": 2.887,
+      "score": 0.999
+    },
+    {
+      "text": "midi",
+      "start": 2.934,
+      "end": 3.249,
+      "score": 1
+    },
+    {
+      "text": "je",
+      "start": 3.516,
+      "end": 3.631,
+      "score": 0.998
+    },
+    {
+      "text": "vous",
+      "start": 3.637,
+      "end": 3.778,
+      "score": 0.999
+    },
+    {
+      "text": "rappelle",
+      "start": 3.778,
+      "end": 4.193,
+      "score": 1
+    }
+  ]
+}

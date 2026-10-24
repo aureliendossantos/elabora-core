@@ -1,0 +1,88 @@
+{
+  "screen": "practice",
+  "line": "neil-today",
+  "language": "en",
+  "textHash": "sha256:fe21bf6dfa4e22bbdd3c09d85500a044ad5ea101684b8594b7b9d7574a6f16fc",
+  "duration": 2.77,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:684582ecabe7c0d65b3f0aac35f960a65f5dfc8f2e3c9126405079a11ab21d72",
+  "createdAt": "2026-10-24T02:41:53Z",
+  "take": 1,
+  "spokenHash": "sha256:fe21bf6dfa4e22bbdd3c09d85500a044ad5ea101684b8594b7b9d7574a6f16fc",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Can't you just change it today? I'll stay on the line.",
+  "mouth": "ccoowwwwooocwwwsscsswwoossssscooowwwwwwwccccccccccccccccwwoossscwwwooooooooooosssccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Can't",
+      "start": 0.06,
+      "end": 0.261,
+      "score": 0.993
+    },
+    {
+      "text": "you",
+      "start": 0.261,
+      "end": 0.381,
+      "score": 1
+    },
+    {
+      "text": "just",
+      "start": 0.381,
+      "end": 0.602,
+      "score": 1
+    },
+    {
+      "text": "change",
+      "start": 0.602,
+      "end": 0.883,
+      "score": 1
+    },
+    {
+      "text": "it",
+      "start": 0.883,
+      "end": 0.984,
+      "score": 0.999
+    },
+    {
+      "text": "today",
+      "start": 0.984,
+      "end": 1.397,
+      "score": 0.999
+    },
+    {
+      "text": "I'll",
+      "start": 1.867,
+      "end": 2.048,
+      "score": 0.921
+    },
+    {
+      "text": "stay",
+      "start": 2.048,
+      "end": 2.248,
+      "score": 0.999
+    },
+    {
+      "text": "on",
+      "start": 2.248,
+      "end": 2.349,
+      "score": 0.999
+    },
+    {
+      "text": "the",
+      "start": 2.349,
+      "end": 2.449,
+      "score": 1
+    },
+    {
+      "text": "line",
+      "start": 2.449,
+      "end": 2.77,
+      "score": 0.959
+    }
+  ]
+}

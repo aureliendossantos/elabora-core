@@ -24,6 +24,8 @@ import { isTimedLayer } from '@elabora/core/narration/timeline';
 import { timelineVoiceLines } from '@elabora/core/narration/voice-lines';
 import { lineAnchor } from '@elabora/core/narration/narration';
 import { resolveAt } from '@elabora/core/narration/anchor-text';
+import { findDialogue } from '@elabora/core/dialogue/project';
+import { playDialogue } from '@elabora/core/dialogue/play';
 import { codeVersion } from './code-version.ts';
 import { findLookServer, lookServerFile, parseLookAction, TOKEN_HEADER } from './look-client.ts';
 import type { LookAction, LookRequest, LookResult, LookServerInfo } from './look-client.ts';
@@ -161,7 +163,20 @@ export async function startLooker(dir: string, { port = 0, live = true }: Looker
       if ('error' in action) return { ok: false, error: action.error };
       actions.push(action);
     }
-    if (actions.length && !request.block) return { ok: false, error: 'act drives the free object of a block: give block too.' };
+    if (actions.length && !request.block) return { ok: false, error: 'act drives the free object of a block, or chooses in a dialogue block: give block too.' };
+    // A dialogue block (D61): its choices, played by the core's walk, then the thread shown at rest
+    // after them by the canvas (RenderView.dialogue), as the app's editor shows a path.
+    const dialogueRef = request.block ? findDialogue(project, request.block) : null;
+    let dialogue: { block: string; choices: string[] } | undefined;
+    let played: ReturnType<typeof playDialogue> | undefined;
+    if (dialogueRef && dialogueRef.screen === screen) {
+      const other = actions.find((action) => action.kind !== 'choose');
+      if (other) return { ok: false, error: `${other.source}: a dialogue block takes choose:<option> (one per decision met, retries included).` };
+      const choices = actions.map((action) => (action as Extract<LookAction, { kind: 'choose' }>).option);
+      played = playDialogue(project, dialogueRef, choices, { language: request.language });
+      if (!played.ok) return { ok: false, error: `${played.error}${played.offered.length ? ` (offered: ${played.offered.join(', ')})` : ''}` };
+      dialogue = { block: dialogueRef.id, choices };
+    } else if (actions.some((action) => action.kind === 'choose')) return { ok: false, error: `choose: is for a dialogue block of this screen, and "${request.block}" is not one.` };
     if (actions.length && downThePage) return { ok: false, error: 'act plays once, before one capture: not with a sheet or several scroll positions.' };
     if (marks && (request.block || actions.length || request.scale)) return { ok: false, error: `A sheet of a timed screen captures the window at each mark: not with block, act or scale (look at a mark with at).` };
     if (request.scale !== undefined && request.scale !== 1 && request.scale !== 2) return { ok: false, error: `scale is 1 or 2 (not ${String(request.scale)}).` };
@@ -179,7 +194,7 @@ export async function startLooker(dir: string, { port = 0, live = true }: Looker
     const view = { screen, state: request.state === 'answered' ? 'answered' as const : 'initial' as const, step: request.step ?? null, layer: request.layer ?? null, language: request.language, ...(at ? { at } : {}) };
     let render;
     try {
-      render = renderScreen(project, screen, { state: view.state, step: view.step ?? undefined, layer: view.layer ?? undefined, language: view.language, ...(at ? { at } : {}) });
+      render = renderScreen(project, screen, { state: view.state, step: view.step ?? undefined, layer: view.layer ?? undefined, language: view.language, ...(at ? { at } : {}), ...(dialogue ? { dialogue } : {}) });
     } catch (error) {
       return { ok: false, error: errorMessage(error) };
     }
@@ -245,11 +260,21 @@ export async function startLooker(dir: string, { port = 0, live = true }: Looker
         return contactSheet(tab.context().browser()!, frames, `${screen}${request.block ? ` — ${request.block}` : ''}: down the page${view.language ? ` (${view.language})` : ''}`);
       }
       const [stop] = await scrollStops(tab, positions.length ? positions : [request.block!]);
-      const top = await scrollWindow(tab, stop.top);
+      // A dialogue taller than the window: its end, where the last choices led, above the bottom bar.
+      const end = played && !positions.length ? await tab.evaluate((id) => {
+        const node = document.querySelector(`[data-block="${CSS.escape(id)}"]`);
+        if (!node) return null;
+        const bar = document.querySelector('.t-bar-bottom')?.getBoundingClientRect().height ?? 0;
+        return Math.round(scrollY + node.getBoundingClientRect().bottom - (innerHeight - bar) + 16);
+      }, request.block!) : null;
+      const top = await scrollWindow(tab, end !== null && end > stop.top ? end : stop.top);
       scrolled = [{ ...stop, top }];
       // Objects that follow the scroll hear where they are, then draw.
       if (objects.length) await tab.waitForTimeout(450);
-      if (actions.length) {
+      if (played) {
+        await settle(tab, { min: 300, max: 1500 });
+        acted = { actions: actions.map((action) => action.source), state: { waiting: played.waiting, offered: played.offered, ended: played.ended, ending: played.ending?.id ?? null, score: played.score }, events: [] };
+      } else if (actions.length) {
         const frame = await objectFrameOf(tab, request.block!);
         if (typeof frame === 'string') throw new Error(frame);
         const before = await tab.evaluate((id) => ((window as LookWindow).__elaboraCanvas.objectHost(id) as ObjectHost | undefined)?.emitted.length ?? 0, request.block!);

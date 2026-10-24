@@ -1,0 +1,82 @@
+{
+  "screen": "practice",
+  "line": "neil-direct",
+  "language": "en",
+  "textHash": "sha256:3d7311920d80c30ddf667c98da6cf7d9b906a2ead0d23281b82a199eb6eee247",
+  "duration": 3.25,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:535996813dfd1a8a66b3424ca19d1f6ca186b17abb1b614476d31f745c7b0f6a",
+  "createdAt": "2026-10-24T02:41:57Z",
+  "take": 1,
+  "spokenHash": "sha256:3d7311920d80c30ddf667c98da6cf7d9b906a2ead0d23281b82a199eb6eee247",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Perfect, it's my direct line. I'll wait for your call.",
+  "mouth": "ccwwwwwssooocccssccccccccoosssscoooowwooowwwwcooowwooossssccccccccccccwwooowwwwccoooooccoooooosscc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Perfect",
+      "start": 0.02,
+      "end": 0.553,
+      "score": 0.998
+    },
+    {
+      "text": "it's",
+      "start": 0.843,
+      "end": 1.003,
+      "score": 0.997
+    },
+    {
+      "text": "my",
+      "start": 1.003,
+      "end": 1.164,
+      "score": 1
+    },
+    {
+      "text": "direct",
+      "start": 1.164,
+      "end": 1.585,
+      "score": 0.939
+    },
+    {
+      "text": "line",
+      "start": 1.585,
+      "end": 1.958,
+      "score": 0.987
+    },
+    {
+      "text": "I'll",
+      "start": 2.307,
+      "end": 2.488,
+      "score": 0.995
+    },
+    {
+      "text": "wait",
+      "start": 2.488,
+      "end": 2.648,
+      "score": 0.95
+    },
+    {
+      "text": "for",
+      "start": 2.648,
+      "end": 2.749,
+      "score": 0.974
+    },
+    {
+      "text": "your",
+      "start": 2.749,
+      "end": 2.909,
+      "score": 0.838
+    },
+    {
+      "text": "call",
+      "start": 2.909,
+      "end": 3.222,
+      "score": 0.252
+    }
+  ]
+}

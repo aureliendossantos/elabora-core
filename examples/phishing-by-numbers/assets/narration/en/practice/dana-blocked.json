@@ -1,0 +1,136 @@
+{
+  "screen": "practice",
+  "line": "dana-blocked",
+  "language": "en",
+  "textHash": "sha256:81ff67f80b1aafc8c62918eb6581e1cb977e76c4b0524c7544a0082d5ec534d3",
+  "duration": 7.69,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:9ae699a66ebeedcfacc7928f4c232a2ea8d5865c08ba3dfb92aaf21d24033ccd",
+  "createdAt": "2026-10-24T02:42:02Z",
+  "take": 1,
+  "spokenHash": "sha256:81ff67f80b1aafc8c62918eb6581e1cb977e76c4b0524c7544a0082d5ec534d3",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "The real Harlow has never heard of Neil. Eleven minutes later, the desk blocks the sender in every inbox.",
+  "mouth": "cooooooooooooooccoowwooooowwwssooocwwwwwwwoosswwsscwwwoooosssoosssoooooocccccccccccccccccccccccccccccooowwwsssssscoooooccccoowwwwoooooocccccccwwwwcwwwwwcccccccccwwwwwwccccccsssssswwwwoooooocooooccccwwwsssoooossooooooocoooccsscccccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "The",
+      "start": 0.04,
+      "end": 0.22,
+      "score": 0.996
+    },
+    {
+      "text": "real",
+      "start": 0.22,
+      "end": 0.521,
+      "score": 0.95
+    },
+    {
+      "text": "Harlow",
+      "start": 0.521,
+      "end": 0.981,
+      "score": 0.936
+    },
+    {
+      "text": "has",
+      "start": 0.981,
+      "end": 1.233,
+      "score": 0.998
+    },
+    {
+      "text": "never",
+      "start": 1.322,
+      "end": 1.662,
+      "score": 1
+    },
+    {
+      "text": "heard",
+      "start": 1.662,
+      "end": 1.923,
+      "score": 0.995
+    },
+    {
+      "text": "of",
+      "start": 1.923,
+      "end": 2.063,
+      "score": 0.996
+    },
+    {
+      "text": "Neil",
+      "start": 2.063,
+      "end": 2.415,
+      "score": 0.526
+    },
+    {
+      "text": "Eleven",
+      "start": 3.364,
+      "end": 3.745,
+      "score": 1
+    },
+    {
+      "text": "minutes",
+      "start": 3.745,
+      "end": 4.125,
+      "score": 0.95
+    },
+    {
+      "text": "later",
+      "start": 4.125,
+      "end": 4.518,
+      "score": 0.97
+    },
+    {
+      "text": "the",
+      "start": 4.706,
+      "end": 4.866,
+      "score": 0.988
+    },
+    {
+      "text": "desk",
+      "start": 4.866,
+      "end": 5.279,
+      "score": 0.895
+    },
+    {
+      "text": "blocks",
+      "start": 5.327,
+      "end": 5.748,
+      "score": 0.964
+    },
+    {
+      "text": "the",
+      "start": 5.748,
+      "end": 5.908,
+      "score": 0.999
+    },
+    {
+      "text": "sender",
+      "start": 5.908,
+      "end": 6.348,
+      "score": 0.811
+    },
+    {
+      "text": "in",
+      "start": 6.348,
+      "end": 6.52,
+      "score": 1
+    },
+    {
+      "text": "every",
+      "start": 6.669,
+      "end": 7.009,
+      "score": 0.987
+    },
+    {
+      "text": "inbox",
+      "start": 7.009,
+      "end": 7.502,
+      "score": 0.989
+    }
+  ]
+}

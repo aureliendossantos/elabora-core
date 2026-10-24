@@ -1,0 +1,70 @@
+{
+  "screen": "practice",
+  "line": "neil-rolling",
+  "language": "en",
+  "textHash": "sha256:e365230d8d1708fa140d9946ae7f1a63f26cc51ca433acf4ee86d597c7e6820d",
+  "duration": 2.92,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:fa766b3eff447154adb743a639f39e79532f296242f2fbdcb26b0e988e7a59ca",
+  "createdAt": "2026-10-24T02:41:58Z",
+  "take": 1,
+  "spokenHash": "sha256:e365230d8d1708fa140d9946ae7f1a63f26cc51ca433acf4ee86d597c7e6820d",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Brilliant. Your trucks will keep rolling, I promise.",
+  "mouth": "ccwwwwwwooossccooccccccccccooocssswwoosssoocooooocwwwwwoooosssccssssccccwwwooooccooooocc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Brilliant",
+      "start": 0.02,
+      "end": 0.555,
+      "score": 0.978
+    },
+    {
+      "text": "Your",
+      "start": 0.886,
+      "end": 1.067,
+      "score": 0.999
+    },
+    {
+      "text": "trucks",
+      "start": 1.067,
+      "end": 1.309,
+      "score": 0.945
+    },
+    {
+      "text": "will",
+      "start": 1.309,
+      "end": 1.47,
+      "score": 0.999
+    },
+    {
+      "text": "keep",
+      "start": 1.47,
+      "end": 1.692,
+      "score": 1
+    },
+    {
+      "text": "rolling",
+      "start": 1.692,
+      "end": 2.126,
+      "score": 0.926
+    },
+    {
+      "text": "I",
+      "start": 2.235,
+      "end": 2.356,
+      "score": 1
+    },
+    {
+      "text": "promise",
+      "start": 2.356,
+      "end": 2.911,
+      "score": 0.892
+    }
+  ]
+}

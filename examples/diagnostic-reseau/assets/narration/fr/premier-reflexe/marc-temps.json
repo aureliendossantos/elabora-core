@@ -1,0 +1,94 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-temps",
+  "language": "fr",
+  "textHash": "sha256:aede38fd7ffc816f1492e1495e295bdbef0a9f600ada3a733982a34578272e4e",
+  "duration": 2.835,
+  "provider": "elevenlabs",
+  "voice": "kENkNtk0xyzG09WW40xE",
+  "generated": true,
+  "audioHash": "sha256:071d4c865b2ce4c1d27fb948e885e58473006740cbe12c79f6b31c2925052863",
+  "createdAt": "2026-10-23T23:42:28Z",
+  "take": 1,
+  "spokenHash": "sha256:aede38fd7ffc816f1492e1495e295bdbef0a9f600ada3a733982a34578272e4e",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Marcel (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Donc ce n'est pas lui ? On a perdu cinq minutes, là.",
+  "mouth": "cccwwwoossccssssooooccwwooooocccccccccccccccooooocccoossssssscoooocwwwwwwwccoooooccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Donc",
+      "start": 0.101,
+      "end": 0.336,
+      "score": 0.997
+    },
+    {
+      "text": "ce",
+      "start": 0.442,
+      "end": 0.543,
+      "score": 0.999
+    },
+    {
+      "text": "n'",
+      "start": 0.543,
+      "end": 0.603,
+      "score": 0.544
+    },
+    {
+      "text": "est",
+      "start": 0.603,
+      "end": 0.704,
+      "score": 0.999
+    },
+    {
+      "text": "pas",
+      "start": 0.704,
+      "end": 0.804,
+      "score": 0.999
+    },
+    {
+      "text": "lui",
+      "start": 0.804,
+      "end": 0.979,
+      "score": 0.999
+    },
+    {
+      "text": "On",
+      "start": 1.468,
+      "end": 1.562,
+      "score": 0.999
+    },
+    {
+      "text": "a",
+      "start": 1.589,
+      "end": 1.683,
+      "score": 0.995
+    },
+    {
+      "text": "perdu",
+      "start": 1.689,
+      "end": 1.944,
+      "score": 1
+    },
+    {
+      "text": "cinq",
+      "start": 2.011,
+      "end": 2.192,
+      "score": 1
+    },
+    {
+      "text": "minutes",
+      "start": 2.192,
+      "end": 2.574,
+      "score": 0.999
+    },
+    {
+      "text": "là",
+      "start": 2.574,
+      "end": 2.688,
+      "score": 1
+    }
+  ]
+}

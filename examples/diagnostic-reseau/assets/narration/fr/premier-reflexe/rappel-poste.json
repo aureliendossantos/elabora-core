@@ -1,0 +1,76 @@
+{
+  "screen": "premier-reflexe",
+  "line": "rappel-poste",
+  "language": "fr",
+  "textHash": "sha256:4a1980e9ec5e02b160fddfa3ca4c7585538bb98a72763ed2db7487e10fd26afe",
+  "duration": 3.382,
+  "provider": "pocket-tts",
+  "voice": "claire",
+  "generated": true,
+  "audioHash": "sha256:c1a1573071e64e6099e52897cb1adf0ad3954945059e6e155776528f0275b7dd",
+  "createdAt": "2026-10-23T23:45:25Z",
+  "take": 2,
+  "spokenHash": "sha256:584e6212092b0eee715751c5f39e64eb321b18567d139c69a3dcbe4f408f50e8",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Claire » d’après un enregistrement du corpus CML-TTS (Frederico S. Oliveira, Edresson Casanova, Arnaldo Candido Junior, Anderson S. Soares, Arlindo R. Galvão Filho ; CEIA, Université fédérale de Goiás), https://openslr.org/146/, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/) ; enregistrement nettoyé par Kyutai, puis transformé en voix de synthèse.",
+  "model": "pocket-tts/french_24l@d29db79",
+  "text": "La règle SUP-NET-04, la voici : partez toujours du poste.",
+  "mouth": "oooowwwoooosscssccoocwwsssssooooocwwwwooccccccccwwwoooossscoooccccccccooocwwwcooooooosssccccssoocccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "La",
+      "start": 0,
+      "end": 0.074,
+      "score": 0.663
+    },
+    {
+      "text": "règle",
+      "start": 0.101,
+      "end": 0.356,
+      "score": 0.979
+    },
+    {
+      "text": "SUP-NET-04",
+      "start": 0.403,
+      "end": 1.463,
+      "score": 0.946
+    },
+    {
+      "text": "la",
+      "start": 1.611,
+      "end": 1.711,
+      "score": 1
+    },
+    {
+      "text": "voici",
+      "start": 1.711,
+      "end": 2.047,
+      "score": 1
+    },
+    {
+      "text": "partez",
+      "start": 2.295,
+      "end": 2.597,
+      "score": 0.745
+    },
+    {
+      "text": "toujours",
+      "start": 2.597,
+      "end": 2.859,
+      "score": 0.998
+    },
+    {
+      "text": "du",
+      "start": 2.859,
+      "end": 2.973,
+      "score": 1
+    },
+    {
+      "text": "poste",
+      "start": 3,
+      "end": 3.336,
+      "score": 0.951
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "format": "elabora-lock/1",
-  "next": 13,
+  "next": 26,
   "keys": {
     "screen:accueil": "0",
     "screen:chemin": "1",
@@ -14,7 +14,20 @@
     "quiz:evaluation-q1": "9",
     "quiz:evaluation-q2": "a",
     "var:bonsReflexes": "b",
-    "var:indiceVu": "c"
+    "var:indiceVu": "c",
+    "dialogue:appel-marc": "d",
+    "choice:appel-marc#appel.a": "e",
+    "choice:appel-marc#appel.b": "f",
+    "choice:appel-marc#appel.c": "g",
+    "choice:appel-marc#pression.a": "h",
+    "choice:appel-marc#pression.b": "i",
+    "choice:appel-marc#pression.c": "j",
+    "choice:appel-marc#commutateur.a": "k",
+    "choice:appel-marc#commutateur.b": "l",
+    "choice:appel-marc#commutateur.c": "m",
+    "ending:appel-marc#maitrise": "n",
+    "ending:appel-marc#en-route": "o",
+    "ending:appel-marc#a-revoir": "p"
   },
   "components": {
     "network-path": "1.0.0",

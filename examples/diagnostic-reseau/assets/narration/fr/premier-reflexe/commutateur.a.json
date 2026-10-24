@@ -1,0 +1,112 @@
+{
+  "screen": "premier-reflexe",
+  "line": "commutateur.a",
+  "language": "fr",
+  "textHash": "sha256:914a25967390990dd11e8b1d899826f5df775d781fe84f96f615ab40c50c4a08",
+  "duration": 3.9,
+  "provider": "elevenlabs",
+  "voice": "YxrwjAKoUKULGd0g8K9Y",
+  "generated": true,
+  "audioHash": "sha256:6e27ca4051cfb94a2a86a9f97cf190b75af3b289ff31a2821cd786949a2e1b2d",
+  "createdAt": "2026-10-23T23:42:43Z",
+  "take": 1,
+  "spokenHash": "sha256:e8d3153efce898b62dc9ff83e565818dd7f3f7f7e3e21f278b0612a0846f7462",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Lucie (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Poste et commutateur sont bons. Je passe au routeur et vous rappelle à 10 h.",
+  "mouth": "ccwwwwssccccooocwwcccsswwssssscsssoooocoooccccccccccoooocwwoooooooooccoooowwwwwwwcooooosssooooccwwoooosssssssoossccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Poste",
+      "start": 0.02,
+      "end": 0.356,
+      "score": 0.815
+    },
+    {
+      "text": "et",
+      "start": 0.402,
+      "end": 0.503,
+      "score": 0.977
+    },
+    {
+      "text": "commutateur",
+      "start": 0.503,
+      "end": 1.039,
+      "score": 0.983
+    },
+    {
+      "text": "sont",
+      "start": 1.066,
+      "end": 1.247,
+      "score": 0.962
+    },
+    {
+      "text": "bons",
+      "start": 1.247,
+      "end": 1.461,
+      "score": 0.993
+    },
+    {
+      "text": "Je",
+      "start": 1.729,
+      "end": 1.843,
+      "score": 0.986
+    },
+    {
+      "text": "passe",
+      "start": 1.87,
+      "end": 2.071,
+      "score": 0.99
+    },
+    {
+      "text": "au",
+      "start": 2.071,
+      "end": 2.165,
+      "score": 0.989
+    },
+    {
+      "text": "routeur",
+      "start": 2.171,
+      "end": 2.647,
+      "score": 0.948
+    },
+    {
+      "text": "et",
+      "start": 2.734,
+      "end": 2.848,
+      "score": 0.998
+    },
+    {
+      "text": "vous",
+      "start": 2.955,
+      "end": 3.076,
+      "score": 0.995
+    },
+    {
+      "text": "rappelle",
+      "start": 3.076,
+      "end": 3.357,
+      "score": 0.938
+    },
+    {
+      "text": "à",
+      "start": 3.357,
+      "end": 3.431,
+      "score": 0.999
+    },
+    {
+      "text": "10",
+      "start": 3.438,
+      "end": 3.612,
+      "score": 0.999
+    },
+    {
+      "text": "h",
+      "start": 3.619,
+      "end": 3.894,
+      "score": 0.989
+    }
+  ]
+}

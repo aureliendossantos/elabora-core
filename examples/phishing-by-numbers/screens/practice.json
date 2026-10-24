@@ -8,52 +8,297 @@
   "completeWhen": "interactions-done",
   "blocks": [
     {
-      "id": "practice-email",
-      "type": "callout",
-      "style": "email",
+      "id": "bank-call",
+      "type": "dialogue",
       "props": {
-        "variant": "info",
-        "title": "New bank details before Friday’s payment",
-        "markdown": "**From:** Accounts, Harlow Tyres `accounts@harlow-tyres-billing.com`\n\nHello, our bank has changed. Please pay this week’s invoice (£18,400) to the account below and confirm today, so the payment is not delayed.\n\nIBAN: GB33 BUKB 2020 1555 5555 55"
-      }
-    },
-    {
-      "id": "practice-choice",
-      "type": "decision",
-      "props": {
-        "prompt": "You work in Finance. What do you do?",
+        "title": "Your turn: the call from Harlow Tyres",
+        "learner": "you",
+        "style": "scene",
+        "mode": "practice",
         "objective": "OBJ-1",
-        "allowChange": true,
-        "options": [
+        "scene": {
+          "background": "characters/call-backdrop.svg",
+          "cast": [
+            {
+              "speaker": "neil",
+              "position": "left"
+            },
+            {
+              "speaker": "you",
+              "position": "right"
+            }
+          ]
+        },
+        "nodes": [
           {
-            "id": "report",
-            "label": "Press Report, and leave the payment as it is",
-            "correct": true,
-            "feedback": "**Right.** It asks for money, in a hurry, from an address Harlow has never used. Report sends it to the desk; if the change were real, Finance would confirm it by calling Harlow on the number already on file."
+            "id": "call",
+            "title": "The call",
+            "lines": [
+              {
+                "id": "dana-call",
+                "speaker": "guide",
+                "text": "Tuesday, 4:40 pm. This morning, Finance got an email from Harlow Tyres. Now the phone rings.",
+                "cues": [
+                  {
+                    "at": {
+                      "word": "email"
+                    },
+                    "do": [
+                      {
+                        "type": "show-layer",
+                        "layer": "the-email"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "neil-hello",
+                "speaker": "neil",
+                "expression": "smiling",
+                "text": "Hi, it's Neil from accounts at Harlow Tyres. Did you get our email this morning?"
+              },
+              {
+                "id": "neil-bank",
+                "speaker": "neil",
+                "text": "Our bank's changed, so Friday's payment needs to go to the new account."
+              }
+            ],
+            "prompt": "What do you say?",
+            "options": [
+              {
+                "id": "a",
+                "text": "I'll check it, then call Harlow back on the number we have on file.",
+                "quality": "good",
+                "reply": [
+                  {
+                    "id": "neil-no-need",
+                    "speaker": "neil",
+                    "expression": "pressing",
+                    "text": "[a little too quickly] No need to call, you've got me right here. It takes two minutes."
+                  }
+                ],
+                "feedback": "A change of bank details is checked by calling the supplier back on the number already on file, never a number from the email or the call."
+              },
+              {
+                "id": "b",
+                "text": "Could you send us the change on Harlow's letterhead, signed?",
+                "quality": "ok",
+                "reply": [
+                  {
+                    "id": "neil-letter",
+                    "speaker": "neil",
+                    "expression": "smiling",
+                    "text": "Of course. You'll have it in five minutes."
+                  }
+                ],
+                "feedback": "A letterhead is as easy to fake as an email. Only a call back on the number on file reaches the real Harlow."
+              },
+              {
+                "id": "c",
+                "text": "No problem, I'll update it now. What are the new details?",
+                "quality": "bad",
+                "reply": [
+                  {
+                    "id": "neil-iban",
+                    "speaker": "neil",
+                    "expression": "relieved",
+                    "text": "Lovely. It's all in the email, just copy the account number across."
+                  }
+                ],
+                "feedback": "Never change bank details on a caller's word: in 2024, a fake invoice cost us 48,000 pounds that way.",
+                "retry": true
+              }
+            ],
+            "next": "pressure"
           },
           {
-            "id": "reply",
-            "label": "Reply and ask them to confirm the change",
-            "correct": false,
-            "feedback": "**Not this.** Your reply goes to the attacker, who will gladly confirm. Report the email; a real change is checked by calling the supplier on the number already on file, never one in the email."
+            "id": "pressure",
+            "title": "The pressure",
+            "lines": [
+              {
+                "id": "neil-friday",
+                "speaker": "neil",
+                "expression": "pressing",
+                "text": "Look, if this isn't paid by Friday, our director stops your deliveries.",
+                "cues": [
+                  {
+                    "at": {
+                      "word": "Friday"
+                    },
+                    "gesture": "watch"
+                  }
+                ]
+              },
+              {
+                "id": "neil-today",
+                "speaker": "neil",
+                "text": "Can't you just change it today? I'll stay on the line."
+              }
+            ],
+            "prompt": "How do you answer the deadline?",
+            "options": [
+              {
+                "id": "a",
+                "text": "I understand. Nothing changes until I've called Harlow back.",
+                "quality": "good",
+                "reply": [
+                  {
+                    "id": "neil-fine",
+                    "speaker": "neil",
+                    "expression": "annoyed",
+                    "text": "[sighs] Fine. Don't blame me when your trucks stop."
+                  }
+                ],
+                "feedback": "The deadline is there to stop you checking. Holding the rule under pressure is exactly what the call-back is for."
+              },
+              {
+                "id": "b",
+                "text": "I'll ask my manager, then call you back on this number.",
+                "quality": "ok",
+                "reply": [
+                  {
+                    "id": "neil-direct",
+                    "speaker": "neil",
+                    "expression": "smiling",
+                    "text": "Perfect, it's my direct line. I'll wait for your call."
+                  }
+                ],
+                "feedback": "Asking is good, but calling him back reaches him again. Only the number already on file reaches the real Harlow."
+              },
+              {
+                "id": "c",
+                "text": "OK, as it's urgent, I'll change it now. Just this once.",
+                "quality": "bad",
+                "reply": [
+                  {
+                    "id": "neil-rolling",
+                    "speaker": "neil",
+                    "expression": "relieved",
+                    "text": "Brilliant. Your trucks will keep rolling, I promise."
+                  }
+                ],
+                "feedback": "Urgency is the lure's oldest lever. Once the money has left, it is usually gone for good.",
+                "retry": true
+              }
+            ],
+            "next": "inbox"
           },
           {
-            "id": "forward",
-            "label": "Forward it to your manager so they can decide",
-            "correct": false,
-            "feedback": "**Not this.** Forwarding passes the lure to someone who can approve the payment. Report it: the desk checks it in minutes and warns Finance if needed."
+            "id": "inbox",
+            "title": "The email",
+            "objective": "OBJ-2",
+            "lines": [
+              {
+                "id": "dana-hangs-up",
+                "speaker": "guide",
+                "text": "Neil hangs up. His email is still in your inbox."
+              }
+            ],
+            "prompt": "What do you do with the email?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Press Report, then call Harlow on the number on file.",
+                "quality": "good",
+                "do": [
+                  {
+                    "type": "hide-layer",
+                    "layer": "the-email"
+                  }
+                ],
+                "reply": [
+                  {
+                    "id": "dana-blocked",
+                    "speaker": "guide",
+                    "text": "The real Harlow has never heard of Neil. Eleven minutes later, the desk blocks the sender in every inbox."
+                  }
+                ],
+                "feedback": "Report sends it to the desk, who block it for all 1,200 inboxes; the call back on file proves the change was fake."
+              },
+              {
+                "id": "b",
+                "text": "Forward it to my manager, so they can decide.",
+                "quality": "ok",
+                "reply": [
+                  {
+                    "id": "dana-manager",
+                    "speaker": "guide",
+                    "text": "Between two meetings, your manager almost approves the new account."
+                  }
+                ],
+                "feedback": "Forwarding passes the lure to someone who can approve the payment. Report it: the desk checks it in minutes."
+              },
+              {
+                "id": "c",
+                "text": "Reply to the email and ask them to confirm the change.",
+                "quality": "bad",
+                "reply": [
+                  {
+                    "id": "dana-confirmed",
+                    "speaker": "guide",
+                    "text": "Ten minutes later, a cheerful answer arrives: confirmed, thanks, Neil."
+                  }
+                ],
+                "feedback": "Your reply goes to the attacker, who gladly confirms. Report the email, then call back on the number on file."
+              }
+            ],
+            "end": true
+          }
+        ],
+        "endings": [
+          {
+            "id": "stopped",
+            "title": "Fraud stopped",
+            "text": "You kept to the call-back rule under pressure, and your report protected 1,200 inboxes.",
+            "if": [
+              {
+                "score": {
+                  "op": "gte",
+                  "value": 90
+                }
+              }
+            ]
+          },
+          {
+            "id": "close-call",
+            "title": "Close call",
+            "text": "Nothing was paid, but one answer left a door open. Go back to the fair choice to hear the safer one.",
+            "if": [
+              {
+                "score": {
+                  "op": "gte",
+                  "value": 70
+                }
+              }
+            ]
+          },
+          {
+            "id": "at-risk",
+            "title": "Money at risk",
+            "text": "A fraudster needs only one yes. Replay the call: each mistake shows what it costs."
           }
         ]
       }
     }
   ],
-  "narration": {
-    "lines": [
-      {
-        "id": "l1",
-        "speaker": "guide",
-        "text": "Your turn. This email reached Finance this morning. What do you do?"
-      }
-    ]
-  }
+  "layers": [
+    {
+      "id": "the-email",
+      "title": "The email from Harlow Tyres",
+      "presentation": "panel",
+      "blocks": [
+        {
+          "id": "practice-email",
+          "type": "callout",
+          "style": "email",
+          "props": {
+            "variant": "info",
+            "title": "New bank details before Friday’s payment",
+            "markdown": "**From:** Accounts, Harlow Tyres `accounts@harlow-tyres-billing.com`\n\nHello, our bank has changed. Please pay this week’s invoice (£18,400) to the account below and confirm today, so the payment is not delayed.\n\nIBAN: GB33 BUKB 2020 1555 5555 55"
+          }
+        }
+      ]
+    }
+  ]
 }

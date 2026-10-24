@@ -1,0 +1,118 @@
+{
+  "screen": "practice",
+  "line": "dana-call",
+  "language": "en",
+  "textHash": "sha256:aa10f9166c0a0ac5d0d944a565a11e7b6fc51e4376be10fc5eef6bd08e37798d",
+  "duration": 8.165,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:d64353702834544de16fd483ef8fb2bdb85969a473f51096245fb9a31d8229c5",
+  "createdAt": "2026-10-24T02:41:44Z",
+  "take": 1,
+  "spokenHash": "sha256:aa10f9166c0a0ac5d0d944a565a11e7b6fc51e4376be10fc5eef6bd08e37798d",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Tuesday, 4:40 pm. This morning, Finance got an email from Harlow Tyres. Now the phone rings.",
+  "mouth": "ccsssoooossswwoossscccccccccccccwwwwooccccwwooooooocsscoooooocsssccccccccccccccccccccccccwwwsssscwwoooooooooocccccccwwwoooooosscccwwwwooooocooooocwwoooooccoowwcssswwoooooosssssswwwoosssssssccccccccccccccccccccccwwwwwwwwwcccwwooooosssssooossscccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Tuesday",
+      "start": 0.06,
+      "end": 0.652,
+      "score": 0.961
+    },
+    {
+      "text": "4:40",
+      "start": 1.021,
+      "end": 1.721,
+      "score": 0.985
+    },
+    {
+      "text": "pm",
+      "start": 1.721,
+      "end": 2.153,
+      "score": 0.907
+    },
+    {
+      "text": "This",
+      "start": 2.962,
+      "end": 3.182,
+      "score": 0.999
+    },
+    {
+      "text": "morning",
+      "start": 3.182,
+      "end": 3.654,
+      "score": 0.979
+    },
+    {
+      "text": "Finance",
+      "start": 3.842,
+      "end": 4.323,
+      "score": 0.994
+    },
+    {
+      "text": "got",
+      "start": 4.323,
+      "end": 4.523,
+      "score": 0.999
+    },
+    {
+      "text": "an",
+      "start": 4.523,
+      "end": 4.695,
+      "score": 0.998
+    },
+    {
+      "text": "email",
+      "start": 4.743,
+      "end": 5.123,
+      "score": 0.718
+    },
+    {
+      "text": "from",
+      "start": 5.123,
+      "end": 5.343,
+      "score": 0.959
+    },
+    {
+      "text": "Harlow",
+      "start": 5.343,
+      "end": 5.764,
+      "score": 0.719
+    },
+    {
+      "text": "Tyres",
+      "start": 5.764,
+      "end": 6.316,
+      "score": 0.927
+    },
+    {
+      "text": "Now",
+      "start": 7.044,
+      "end": 7.245,
+      "score": 1
+    },
+    {
+      "text": "the",
+      "start": 7.245,
+      "end": 7.385,
+      "score": 0.999
+    },
+    {
+      "text": "phone",
+      "start": 7.385,
+      "end": 7.645,
+      "score": 0.915
+    },
+    {
+      "text": "rings",
+      "start": 7.645,
+      "end": 8.017,
+      "score": 0.452
+    }
+  ]
+}

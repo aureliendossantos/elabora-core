@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600"
+     data-character="neil"
+     data-expressions="neutral smiling pressing annoyed relieved"
+     data-default-expression="smiling"
+     data-gestures="watch:1.6 nod:0.8"
+     data-portrait="94 118 212 212">
+<style>
+/* Neil, the caller who says he is from Harlow Tyres: one flat colour per custom property, with its default. */
+.skin{fill:var(--character-skin,#D9A27E)}
+.skin-shade{fill:var(--character-skin-shade,#C2876A)}
+.hair{fill:var(--character-hair,#5E4030)}
+.stubble{fill:var(--character-hair,#5E4030);opacity:.1}
+.top{fill:var(--character-top,#55677F)}
+.top-shade{fill:var(--character-top-shade,#485A71)}
+.shirt{fill:var(--character-shirt,#EDEAE3)}
+.gear{fill:var(--character-gear,#2E2B36)}
+.screen{fill:var(--character-gear-soft,#4B4757)}
+.ink{fill:var(--character-ink,#28232F)}
+.mouth{fill:var(--character-mouth,#6A2E33)}
+.tongue{fill:var(--character-tongue,#D3726A)}
+.teeth{fill:var(--character-teeth,#FFFFFF)}
+.cheek{fill:var(--character-cheek,#DE7C66);opacity:.26}
+.accent{fill:var(--character-accent,#E0A43A)}
+.ink-line{fill:none;stroke:var(--character-ink,#28232F);stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+.brow{fill:none;stroke:var(--character-hair,#5E4030);stroke-width:8;stroke-linecap:round}
+.crease{fill:none;stroke:var(--character-skin-line,#A86E52);stroke-width:5;stroke-linecap:round}
+.button{fill:var(--character-top-shade,#485A71)}
+.sleeve{fill:none;stroke:var(--character-top-shade,#485A71);stroke-width:56;stroke-linecap:round}
+.forearm{fill:none;stroke:var(--character-top-deep,#3E4E64);stroke-width:50;stroke-linecap:round}
+
+/* Movements: origins in units of the viewBox. */
+[data-part="breath"],[data-part="head"],[data-part="arm-watch"],[data-part="forearm-watch"]{transform-box:view-box}
+[data-part="breath"]{animation:breathe 4.6s ease-in-out infinite alternate}
+[data-part="head"]{transform-origin:200px 330px}
+[data-part="arm-watch"]{transform-origin:330px 600px}
+[data-part="forearm-watch"]{transform-origin:300px 478px}
+[data-part="eyes-closed"]{opacity:0;animation:blink 5.1s linear infinite}
+[data-part="character"][data-gesture="watch"] [data-part="arm-watch"]{animation:raise 1.6s ease-in-out both}
+[data-part="character"][data-gesture="watch"] [data-part="forearm-watch"]{animation:tap 1.6s ease-in-out both}
+[data-part="character"][data-gesture="nod"] [data-part="head"]{animation:nod .8s ease-in-out both}
+@keyframes breathe{from{transform:translateY(0px)}to{transform:translateY(-2.5px)}}
+@keyframes blink{0%,52%,55%,100%{opacity:0}52.2%,54.8%{opacity:1}}
+@keyframes raise{
+0%,100%{transform:translate(30px,330px) rotate(10deg)}
+20%,84%{transform:translate(0px,0px) rotate(0deg)}}
+@keyframes tap{
+0%,20%,84%,100%{transform:rotate(0deg)}
+34%,58%{transform:rotate(-5deg)}
+46%,70%{transform:rotate(1deg)}}
+@keyframes nod{
+0%,46%,100%{transform:translateY(0px) scaleY(1)}
+22%{transform:translateY(8px) scaleY(.975)}
+70%{transform:translateY(6px) scaleY(.982)}}
+
+/* Paused: everything stops. Reduced motion: nothing loops, a gesture rests in its final pose. */
+[data-part="character"][data-paused] *{animation-play-state:paused!important}
+[data-part="character"][data-reduced-motion] *{animation:none!important}
+[data-part="character"][data-reduced-motion][data-gesture="nod"] [data-part="head"]{transform:translateY(6px)}
+</style>
+<g data-part="character">
+ <g data-part="breath">
+  <g data-part="body">
+   <rect class="skin-shade" x="171" y="290" width="58" height="90" rx="25"/>
+   <path class="top" d="M56 640V478C56 406 104 368 170 360H230C296 368 344 406 344 478V640Z"/>
+   <path class="skin-shade" d="M172 360L200 404L228 360Z"/>
+   <path class="top-shade" d="M164 352L200 400L176 420L146 368Z"/>
+   <path class="top-shade" d="M236 352L200 400L224 420L254 368Z"/>
+   <rect class="top-shade" x="193" y="404" width="14" height="70" rx="7"/>
+   <circle class="shirt" cx="200" cy="422" r="4"/>
+   <circle class="shirt" cx="200" cy="450" r="4"/>
+  </g>
+  <g data-part="head">
+   <circle class="skin" cx="283" cy="238" r="17"/>
+   <circle class="skin-shade" cx="288" cy="240" r="6"/>
+   <ellipse class="skin" cx="200" cy="222" rx="83" ry="98"/>
+   <ellipse class="stubble" cx="200" cy="286" rx="66" ry="36"/>
+   <path class="hair" d="M122 214C114 178 124 132 166 110C196 96 240 96 268 112C294 128 302 162 292 198C289 208 286 216 282 224C278 202 272 186 260 174C238 168 210 172 186 160C170 168 152 178 142 192C134 200 128 208 122 214Z"/>
+   <path class="hair" d="M150 128C176 104 222 98 256 110C236 108 206 112 186 124C172 132 160 132 150 128Z"/>
+   <path class="crease" d="M199 248Q191 268 206 272"/>
+   <circle class="cheek" cx="150" cy="276" r="15"/>
+   <circle class="cheek" cx="250" cy="276" r="15"/>
+
+   <g data-expression="neutral">
+    <path class="brow" d="M146 203Q164 195 182 200M218 200Q236 195 254 203"/>
+    <ellipse class="ink" cx="164" cy="236" rx="7.5" ry="9.5"/>
+    <ellipse class="ink" cx="236" cy="236" rx="7.5" ry="9.5"/>
+   </g>
+   <g data-expression="smiling">
+    <path class="brow" d="M146 196Q164 185 182 193M218 193Q236 185 254 196"/>
+    <path class="ink" d="M156 238A8 8 0 0 1 172 238Z"/>
+    <path class="ink" d="M228 238A8 8 0 0 1 244 238Z"/>
+    <circle class="cheek" cx="150" cy="274" r="16"/>
+    <circle class="cheek" cx="250" cy="274" r="16"/>
+   </g>
+   <g data-expression="pressing">
+    <path class="brow" d="M144 198L182 207M218 207L256 198"/>
+    <ellipse class="ink" cx="164" cy="237" rx="8.5" ry="10.5"/>
+    <ellipse class="ink" cx="236" cy="237" rx="8.5" ry="10.5"/>
+    <path class="crease" style="stroke-width:3.5" d="M195 196V210M205 196V210"/>
+   </g>
+   <g data-expression="annoyed">
+    <path class="brow" d="M146 195L182 209M218 209L254 195"/>
+    <path class="ink" d="M155 233H173A9 9 0 0 1 155 233Z"/>
+    <path class="ink" d="M227 233H245A9 9 0 0 1 227 233Z"/>
+   </g>
+   <g data-expression="relieved">
+    <path class="brow" d="M146 198Q164 189 182 195M218 195Q236 189 254 198"/>
+    <path class="ink-line" d="M154 237Q164 246 174 237M226 237Q236 246 246 237"/>
+   </g>
+
+   <g data-part="eyes-closed">
+    <ellipse class="skin" cx="164" cy="236" rx="13" ry="14"/>
+    <ellipse class="skin" cx="236" cy="236" rx="13" ry="14"/>
+    <path class="ink-line" d="M153 239Q164 245 175 239M225 239Q236 245 247 239"/>
+   </g>
+
+   <path data-mouth="closed" class="ink-line" d="M185 292Q200 299 215 292"/>
+   <ellipse data-mouth="small" class="mouth" cx="200" cy="294" rx="10" ry="6"/>
+   <g data-mouth="open">
+    <ellipse class="mouth" cx="200" cy="295" rx="14" ry="11"/>
+    <ellipse class="tongue" cx="200" cy="301" rx="8" ry="4.5"/>
+   </g>
+   <g data-mouth="wide">
+    <ellipse class="mouth" cx="200" cy="297" rx="17" ry="16"/>
+    <ellipse class="tongue" cx="200" cy="306" rx="10" ry="6"/>
+    <rect class="teeth" x="190" y="283" width="20" height="5" rx="2.5"/>
+   </g>
+   <g data-mouth="closed" data-expression="smiling">
+    <path class="mouth" d="M178 286Q200 291 222 286Q218 309 200 309Q182 309 178 286Z"/>
+    <path class="teeth" d="M183 288Q200 292 217 288L216 294Q200 297 184 294Z"/>
+   </g>
+   <path data-mouth="small" data-expression="smiling" class="mouth" d="M184 288Q200 292 216 288Q213 303 200 303Q187 303 184 288Z"/>
+   <g data-mouth="open" data-expression="smiling">
+    <path class="mouth" d="M180 286Q200 291 220 286Q217 311 200 311Q183 311 180 286Z"/>
+    <path class="teeth" d="M184 288Q200 292 216 288L215 293Q200 296 185 293Z"/>
+   </g>
+   <g data-mouth="wide" data-expression="smiling">
+    <path class="mouth" d="M178 284Q200 290 222 284Q219 317 200 317Q181 317 178 284Z"/>
+    <path class="teeth" d="M182 286Q200 291 218 286L217 292Q200 296 183 292Z"/>
+    <ellipse class="tongue" cx="200" cy="310" rx="10" ry="5"/>
+   </g>
+   <path data-mouth="closed" data-expression="pressing" class="ink-line" d="M186 296Q200 291 214 296"/>
+   <path data-mouth="closed" data-expression="annoyed" class="ink-line" d="M186 297L214 292"/>
+   <path data-mouth="closed" data-expression="relieved" class="ink-line" d="M184 290Q200 303 216 290"/>
+  </g>
+  <g data-part="arm-phone">
+   <path class="sleeve" d="M76 640Q70 470 104 352"/>
+   <rect class="gear" x="112" y="190" width="30" height="96" rx="9" transform="rotate(-10 127 238)"/>
+   <rect class="screen" x="117" y="198" width="20" height="78" rx="5" transform="rotate(-10 127 238)"/>
+   <rect class="skin" x="84" y="232" width="52" height="82" rx="26" transform="rotate(-10 110 273)"/>
+   <ellipse class="skin" cx="140" cy="262" rx="10" ry="18" transform="rotate(24 140 262)"/>
+   <rect class="top" x="80" y="306" width="52" height="18" rx="9" transform="rotate(-8 106 315)"/>
+  </g>
+  <g data-part="arm-watch" data-gesture="watch">
+   <path class="sleeve" style="stroke:var(--character-top-deep,#3E4E64)" d="M332 640Q340 520 304 478"/>
+   <g data-part="forearm-watch">
+    <path class="forearm" d="M300 478L206 442"/>
+    <rect class="accent" x="214" y="420" width="16" height="48" rx="6" transform="rotate(21 222 444)"/>
+    <rect class="skin" x="158" y="414" width="52" height="54" rx="24" transform="rotate(21 184 441)"/>
+   </g>
+  </g>
+ </g>
+</g>
+</svg>

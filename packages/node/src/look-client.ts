@@ -38,15 +38,18 @@ export interface LookRequest {
   // unless scroll says where). With scroll, motion or block, the result says what moves (motion).
   block?: string;
   scale?: 1 | 2; // a close-up drawn at twice its size
-  // Actions played in order inside the frame of the free object block before the capture (parseLookAction).
+  // Actions played in order inside the frame of the free object block before the capture, or the
+  // choices of a dialogue block, shown at rest after them (parseLookAction).
   act?: string[];
   // JPEG by default (PNG for a close-up up to 2 megapixels): designed pages (textures, gradients) take seconds to encode as PNG.
   type?: ImageType;
 }
 
 // An action on a free object (elabora look --act): click:<text>, click:role=<role>[name=<name>],
-// key:<key> (Playwright's names: Enter, ArrowRight, a), drag:x,y->x,y (0 to 1 across the object).
+// key:<key> (Playwright's names: Enter, ArrowRight, a), drag:x,y->x,y (0 to 1 across the object);
+// on a dialogue block, choose:<option> (one per decision met, retries included, as dialogue play).
 export type LookAction =
+  | { kind: 'choose'; source: string; option: string }
   | { kind: 'click'; source: string; text?: string; role?: string; name?: string }
   | { kind: 'key'; source: string; key: string }
   | { kind: 'drag'; source: string; from: [number, number]; to: [number, number] };
@@ -59,10 +62,11 @@ export function parseLookAction(source: string): LookAction | { error: string } 
     return { kind, source, text: rest.trim() };
   }
   if (kind === 'key' && rest.trim()) return { kind, source, key: rest.trim() };
+  if (kind === 'choose' && /^[a-z0-9]{1,8}$/.test(rest.trim())) return { kind, source, option: rest.trim() };
   const share = '(0|1|0?\\.\\d+|1\\.0+)';
   const drag = new RegExp(`^${share},${share}->${share},${share}$`).exec(rest.replace(/\s+/g, ''));
   if (kind === 'drag' && drag) return { kind, source, from: [Number(drag[1]), Number(drag[2])], to: [Number(drag[3]), Number(drag[4])] };
-  return { error: `Action "${source}": click:<text>, click:role=<role>[name=<name>], key:<key> or drag:x,y->x,y (0 to 1 across the object).` };
+  return { error: `Action "${source}": click:<text>, click:role=<role>[name=<name>], key:<key> or drag:x,y->x,y (0 to 1 across the object) for a free object; choose:<option> for a dialogue.` };
 }
 
 export type LookResult =

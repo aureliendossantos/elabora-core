@@ -1,0 +1,94 @@
+{
+  "screen": "practice",
+  "line": "neil-friday",
+  "language": "en",
+  "textHash": "sha256:f4d643fe4f5ff0c156dc21aa09009747c6d8334405614b5c9ee6fc57059aa6fe",
+  "duration": 4.24,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:758d659999ef627e8d3560ad15b970a209bc6e575048499c3a9726b7c9cd1318",
+  "createdAt": "2026-10-24T02:41:52Z",
+  "take": 1,
+  "spokenHash": "sha256:f4d643fe4f5ff0c156dc21aa09009747c6d8334405614b5c9ee6fc57059aa6fe",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Look, if this isn't paid by Friday, our director stops your deliveries.",
+  "mouth": "ccwwwoocccssssscccoosscwwooooooooooocwwwwwccwwwssccwwwwwwwwwwssooooossccoooooowwwwwwwwcoossssscwwwccsssooocooowwooooooossssssscc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Look",
+      "start": 0.06,
+      "end": 0.373,
+      "score": 0.997
+    },
+    {
+      "text": "if",
+      "start": 0.623,
+      "end": 0.744,
+      "score": 0.999
+    },
+    {
+      "text": "this",
+      "start": 0.744,
+      "end": 0.945,
+      "score": 0.997
+    },
+    {
+      "text": "isn't",
+      "start": 0.945,
+      "end": 1.186,
+      "score": 0.957
+    },
+    {
+      "text": "paid",
+      "start": 1.186,
+      "end": 1.407,
+      "score": 0.991
+    },
+    {
+      "text": "by",
+      "start": 1.407,
+      "end": 1.639,
+      "score": 1
+    },
+    {
+      "text": "Friday",
+      "start": 1.668,
+      "end": 2.222,
+      "score": 0.994
+    },
+    {
+      "text": "our",
+      "start": 2.452,
+      "end": 2.592,
+      "score": 0.999
+    },
+    {
+      "text": "director",
+      "start": 2.592,
+      "end": 3.095,
+      "score": 0.983
+    },
+    {
+      "text": "stops",
+      "start": 3.095,
+      "end": 3.396,
+      "score": 0.983
+    },
+    {
+      "text": "your",
+      "start": 3.396,
+      "end": 3.557,
+      "score": 0.999
+    },
+    {
+      "text": "deliveries",
+      "start": 3.557,
+      "end": 4.191,
+      "score": 0.709
+    }
+  ]
+}
