@@ -128,7 +128,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/fonts.test.ts` | 547 | 540 | Passed 15 native-seeded cases; public catalogue/license/font-byte/embedding/refusal/build contracts retained; per-test folders and failure-safe MCP/session disposal; arbitrary family-count and basename constraints removed |
 | `test/unit/format.test.ts` | 77 | 76 | Passed 6 native-seeded cases; generated registry, accepted samples, diagnostics and dereferencing retained; removes arbitrary fixture-count coverage quota |
 | `test/unit/i18n.test.ts` | 260 | — | Pending |
-| `test/unit/ignored.test.ts` | 55 | — | Pending |
+| `test/unit/ignored.test.ts` | 55 | 56 | Passed both native-seeded cases; context-owned course; finding waivers remain keyed to content and survive moves |
 | `test/unit/import.test.ts` | 427 | — | Pending |
 | `test/unit/interop.test.ts` | 92 | — | Pending |
 | `test/unit/journal.test.ts` | 437 | 437 | Passed 14 cases; explicit lock entry/release gates and child stdin handshake; no elapsed-time assertions or fixed sleeps; sequence/history/binary/undo contracts retained |

@@ -1,13 +1,14 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import { validateDir } from '@elabora/node/project-reader';
 import * as edit from '@elabora/node/edit';
-import { copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { readJSON, writeJSON } from '../helpers.ts';
 
 // Warnings on the author's own words that a check may misjudge carry a key (D31): the author ignores
 // one, and it comes back when what it found changes.
-test('content heuristics may be ignored by the author, each until the text it read changes', () => {
-  const dir = copyExample();
+test('content heuristics may be ignored by the author, each until the text it read changes', (t) => {
+  const dir = resources(t).copyExample();
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.blocks.push(
     { id: 'accueil-maxime', type: 'quiz', props: { stem: 'Nietzsche écrit : « Ce qui ne me tue pas me rend plus fort. » Que veut-il dire ?', mode: 'single', options: [
@@ -34,8 +35,8 @@ test('content heuristics may be ignored by the author, each until the text it re
   assert.deepEqual(keyed().filter((d) => !d.ignored).map((d) => d.code).sort(), ['W_QUIZ_NEGATION'], 'the option count changed too: 3 options is no finding');
 });
 
-test('a neuromyth named to be refuted is ignored in its block only, and moving the block keeps the choice', () => {
-  const dir = copyExample();
+test('a neuromyth named to be refuted is ignored in its block only, and moving the block keeps the choice', (t) => {
+  const dir = resources(t).copyExample();
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.blocks.push(
     { id: 'accueil-mythe', type: 'text', props: { markdown: 'Les « styles d’apprentissage » ? Les études ne les confirment pas.' } },
