@@ -24,7 +24,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Defect | Count | Example |
 | --- | ---: | --- |
-| Implementation coupling | 47 | ops: private computeDiff comparison and exact chosen diff scripts |
+| Implementation coupling | 55 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 5 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
 | Fixed-delay synchronization | 53 | engine-session: sleep(400) before checking watcher results |
@@ -75,7 +75,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/e2e/player-items.test.ts` | 265 | 251 | Focused seed 155921 passed all seven; virtual PDF fallback timers and public popup/screen/progress/storage behaviour replace listener counters and real waits |
 | `test/e2e/player.test.ts` | 150 | 146 | Focused seed 155921 passed all four; virtual tooltip clock and DOM conditions retain learner controls, navigation and reload behaviour |
 | `test/e2e/review.test.ts` | 299 | 303 | Focused seed 155921 passed; explicit browser message acknowledgements and event log replace fixed waits and polling; review origin/refusal behaviours retained |
-| `test/e2e/timeline.test.ts` | 461 | — | Pending |
+| `test/e2e/timeline.test.ts` | 461 | 438 | Native seed 130363 passed all ten; virtual playhead checks computed opacity, translation, scale and stroke completion instead of Animation objects; cues, seek, captures and canvas contracts retained; owned resources |
 | `test/e2e/web.test.ts` | 150 | 149 | Focused seed 130363 passed; local progress survives reload, none persists nothing, free navigation reaches end across three built targets; owned resources |
 | `test/matrix/lms-matrix.test.ts` | 26 | 26 | Native seed 130363 passed; real sample validation, packaging, LMS launch modes and browser gates retained; own copied inputs, outputs and browser resources |
 | `test/matrix/medieval.test.ts` | 45 | 41 | Native seed 130363 passed; real sample validation, packaging, LMS launch modes and browser gates retained; own copied inputs, outputs and browser resources |
