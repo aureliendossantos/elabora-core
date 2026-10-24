@@ -32,7 +32,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
 | Unseeded randomness | 34 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
-| Low-value assertion | 4 | engine-store: repeated hash equality replaced with hash invalidation after a write |
+| Low-value assertion | 5 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 5 | validate: counted two errors without identifying their prop paths |
 | Resource cleanup | 104 | validate: copied fixtures were never removed |
 | Wall-clock timing | 9 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
@@ -135,7 +135,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/media-project.test.ts` | 286 | — | Pending |
 | `test/unit/media.test.ts` | 315 | — | Pending |
 | `test/unit/migrate.test.ts` | 86 | — | Pending |
-| `test/unit/model-mirrors.test.ts` | 71 | — | Pending |
+| `test/unit/model-mirrors.test.ts` | 71 | 71 | Passed 2 native-seeded cases; pin/hash/size/origin and real fake-network install/reuse/tamper refusal retained; model families available rather than arbitrary file-count quota |
 | `test/unit/model-versions.test.ts` | 126 | 132 | Passed 4 native-seeded cases; fake request gate and filesystem event replace polling; cancellation must reject; context-owned leases/install/folders preserve compatible-model use, deferred deletion and resume contracts |
 | `test/unit/narration.test.ts` | 346 | — | Pending |
 | `test/unit/object-gates.test.ts` | 35 | 35 | Passed 2 native-seeded cases; test-owned snapshot folder; frame plan boundaries and real baseline pruning retained |

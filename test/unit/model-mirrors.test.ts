@@ -26,7 +26,7 @@ test('every downloaded model file is pinned to a revision of Elabora\'s mirror o
     ...BUNDLES.flatMap(bundle => bundle.files),
     ...Object.values(ENCODERS)
   ];
-  assert.ok(files.length >= 24,'the aligners, the transcriber and the voices are all counted');
+  assert.ok(ALIGNER_MODELS.length && TRANSCRIBER_MODELS.length && BUNDLES.length && Object.keys(ENCODERS).length, 'each supported model family is available');
   for (const file of files) {
     const [, owner, repository, revision] = /^([^/]+)\/([^/]+)\/resolve\/([0-9a-f]{40})\/.+$/.exec(file.url) ?? [];
     assert.ok(owner, `${file.url} is <owner>/<repository>/resolve/<revision>/<path>`);
