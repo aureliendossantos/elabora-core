@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { emptyState, encodeState, decodeState, worstCaseLength } from '@elabora/player/state-codec';
 import { readLock, assignKeys, buildStateModel } from '@elabora/core/compile/state-model';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
@@ -25,8 +26,9 @@ test('corrupt or foreign suspend data starts a fresh state', () => {
   for (const input of ['not json', '{"v":99}', '']) assert.deepEqual(decodeState(input), emptyState(), input);
 });
 
-test('keys are permanent: inserting a screen keeps every existing key', () => {
+test('keys are permanent: inserting a screen keeps every existing key', t => {
   const dir = copyExample();
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const lock = readLock(loadProjectFromDir(dir));
   const before: Record<string, string> = assignKeys(loadProjectFromDir(dir), lock).keys;
   edit.createScreen(dir, { id: 'nouvel-ecran', title: 'Nouvel écran', covers: ['ITEM-2'], after: 'accueil' });
@@ -35,8 +37,9 @@ test('keys are permanent: inserting a screen keeps every existing key', () => {
   assert.ok(after['screen:nouvel-ecran']);
 });
 
-test('the worst case grows with persisted string variables', () => {
+test('the worst case grows with persisted string variables', t => {
   const dir = copyExample();
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   const p = loadProjectFromDir(dir);
   const { keys } = assignKeys(p, readLock(p), { dryRun: true });
   const base = worstCaseLength(buildStateModel(p, keys));
