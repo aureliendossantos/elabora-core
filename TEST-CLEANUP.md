@@ -24,17 +24,17 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Defect | Count | Example |
 | --- | ---: | --- |
-| Implementation coupling | 21 | ops: private computeDiff comparison and exact chosen diff scripts |
+| Implementation coupling | 23 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 4 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 9 | ops: module-level change ID counter replaced with content-derived IDs |
 | Fixed-delay synchronization | 21 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
-| Duplicate computation | 1 | engine-project-state: full validator run twice per assertion |
+| Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
 | Unseeded randomness | 13 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 | Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 1 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 59 | validate: copied fixtures were never removed |
+| Resource cleanup | 61 | validate: copied fixtures were never removed |
 | Wall-clock timing | 4 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 2 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -121,7 +121,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/engine-session.test.ts` | 413 | 364 | Passed 14 cases; event-driven watcher waits, fixed 128-write concurrency regression, per-test sessions; persistence/diagnostics/undo/protocol retained |
 | `test/unit/engine-store.test.ts` | 194 | 175 | Passed 9 cases; event/readiness waits and fixed-size concurrent writes; resources close in reverse ownership order before folders are removed |
 | `test/unit/fit-cache.test.ts` | 72 | — | Pending |
-| `test/unit/fonts.test.ts` | 547 | — | Pending |
+| `test/unit/fonts.test.ts` | 547 | 540 | Passed 15 native-seeded cases; public catalogue/license/font-byte/embedding/refusal/build contracts retained; per-test folders and failure-safe MCP/session disposal; arbitrary family-count and basename constraints removed |
 | `test/unit/format.test.ts` | 77 | — | Pending |
 | `test/unit/i18n.test.ts` | 260 | — | Pending |
 | `test/unit/ignored.test.ts` | 55 | — | Pending |
