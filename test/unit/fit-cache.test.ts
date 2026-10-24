@@ -4,7 +4,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { fitKey, screenRenders } from '@elabora/node/fit-cache';
-import { ROOT, copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, readJSON, writeJSON } from '../helpers.ts';
+
+import { resources } from '../resources.ts';
 
 // The keys of fit's measures, screen by screen: what changed is measured again, nothing else.
 const BROWSER = { engine: 'chromium', version: '154.0.1' };
@@ -15,7 +17,8 @@ function keys(dir: string, { code = '0.1.0+abc', browser = BROWSER, size = '1600
 }
 const changed = (before: Map<string, string>, after: Map<string, string>) => [...before.keys()].filter((id) => before.get(id) !== after.get(id)).sort();
 
-test('fit keys: a screen file, a component, the object code and an image change the screens they touch; the theme, every screen', () => {
+test('fit keys: a screen file, a component, the object code and an image change the screens they touch; the theme, every screen', (t) => {
+  const { copyExample } = resources(t);
   const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
   const all = [...keys(dir).keys()].sort();
   let before = keys(dir);
@@ -62,7 +65,8 @@ test('fit keys: a screen file, a component, the object code and an image change 
   assert.deepEqual(changed(before, keys(fixture)), ['accueil']);
 });
 
-test('fit keys: the code that measures (the player included), the browser, the system, the size, its role and the presentation are part of the key', () => {
+test('fit keys: the code that measures (the player included), the browser, the system, the size, its role and the presentation are part of the key', (t) => {
+  const { copyExample } = resources(t);
   const dir = copyExample();
   const base = keys(dir);
   for (const other of [{ code: '0.1.0+def' }, { browser: { engine: 'chromium', version: '155.0.0' } }, { browser: { engine: 'electron', version: '154.0.1' } }, { platform: 'win32-x64' }, { size: '1280x720' }, { role: 'minimum' }, { mode: 'slides' }]) {

@@ -41,7 +41,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Private layout assertions | 7 | charts-matrix imported label placement helpers instead of measuring rendered labels |
 
-| Fixture lifetime | 3 | copied courses lacked per-case failure cleanup |
+| Fixture lifetime | 4 | copied courses lacked per-case failure cleanup |
 
 ## Production changes
 
@@ -124,7 +124,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/engine-project-state.test.ts` | 92 | 92 | Passed; incremental findings/content equal full validation, including component content after no-op saves |
 | `test/unit/engine-session.test.ts` | 413 | 364 | Passed 14 cases; event-driven watcher waits, fixed 128-write concurrency regression, per-test sessions; persistence/diagnostics/undo/protocol retained |
 | `test/unit/engine-store.test.ts` | 194 | 175 | Passed 9 cases; event/readiness waits and fixed-size concurrent writes; resources close in reverse ownership order before folders are removed |
-| `test/unit/fit-cache.test.ts` | 72 | — | Pending |
+| `test/unit/fit-cache.test.ts` | 72 | 76 | Passed native-seeded checks; Public fit key invalidation scenarios retained with context-owned fixtures |
 | `test/unit/fonts.test.ts` | 547 | 540 | Passed 15 native-seeded cases; public catalogue/license/font-byte/embedding/refusal/build contracts retained; per-test folders and failure-safe MCP/session disposal; arbitrary family-count and basename constraints removed |
 | `test/unit/format.test.ts` | 77 | 76 | Passed 6 native-seeded cases; generated registry, accepted samples, diagnostics and dereferencing retained; removes arbitrary fixture-count coverage quota |
 | `test/unit/i18n.test.ts` | 260 | — | Pending |
