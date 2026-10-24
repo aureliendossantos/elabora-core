@@ -193,25 +193,21 @@ test('engine: what can transcribe, a line\'s recording heard, both flows as comm
     const session = resources(t).own(await openProject(dir, { backups: { onOpen: false, prune: false }, rescanIntervalMs: 0, media: { enabled: false } }), value => value.close());
     const events: string[] = [];
     session.subscribe(({ event }) => events.push(event.type));
-    try {
-      assert.ok(session.transcribers().local?.installed);
-      const line = await session.transcribeLine({ screen: 'accueil', line: 'l2' });
-      assert.ok(line.transcript.text === 'Rien ne marche.' && line.before.startsWith('Ni l'), JSON.stringify(line));
-      assert.ok(events.includes('transcribeProgress'));
-      // Through the protocol, as the app asks.
-      const recording = await session.handle({ kind: 'request', id: 'r', type: 'transcribeRecording', params: { file } });
-      assert.ok(recording.ok && (recording.result as { text: string }).text === 'Et le copieur ?');
-      const added = await session.run('add_narration_line_with_audio', { screen: 'accueil', file, text: 'Et le copieur ?' });
-      assert.ok(added.change);
-      assert.equal(narrationLines(session.project, 'accueil')!.at(-1)!.text, 'Et le copieur ?');
-      const written = await session.run('set_narration_text_from_audio', { screen: 'accueil', line: 'l2', text: 'Rien ne marche.' });
-      assert.ok(written.change);
-      assert.equal(narrationLines(session.project, 'accueil')!.find((candidate) => candidate.id === 'l2')!.status, 'ok');
-      const missing = await session.handle({ kind: 'request', id: 'm', type: 'transcribeLine', params: { screen: 'accueil', line: 'l1' } });
-      assert.ok(!missing.ok && missing.error.code === 'E_NARRATION_GENERATED');
-    } finally {
-      await session.close();
-    }
+    assert.ok(session.transcribers().local?.installed);
+    const line = await session.transcribeLine({ screen: 'accueil', line: 'l2' });
+    assert.ok(line.transcript.text === 'Rien ne marche.' && line.before.startsWith('Ni l'), JSON.stringify(line));
+    assert.ok(events.includes('transcribeProgress'));
+    // Through the protocol, as the app asks.
+    const recording = await session.handle({ kind: 'request', id: 'r', type: 'transcribeRecording', params: { file } });
+    assert.ok(recording.ok && (recording.result as { text: string }).text === 'Et le copieur ?');
+    const added = await session.run('add_narration_line_with_audio', { screen: 'accueil', file, text: 'Et le copieur ?' });
+    assert.ok(added.change);
+    assert.equal(narrationLines(session.project, 'accueil')!.at(-1)!.text, 'Et le copieur ?');
+    const written = await session.run('set_narration_text_from_audio', { screen: 'accueil', line: 'l2', text: 'Rien ne marche.' });
+    assert.ok(written.change);
+    assert.equal(narrationLines(session.project, 'accueil')!.find((candidate) => candidate.id === 'l2')!.status, 'ok');
+    const missing = await session.handle({ kind: 'request', id: 'm', type: 'transcribeLine', params: { screen: 'accueil', line: 'l1' } });
+    assert.ok(!missing.ok && missing.error.code === 'E_NARRATION_GENERATED');
   });
 });
 
