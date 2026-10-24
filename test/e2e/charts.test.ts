@@ -179,13 +179,13 @@ test('with a voice: each item comes at its word and takes the spotlight, the oth
 
 test('chart labels remain readable without overlapping at desktop and phone widths', { timeout: 180000 }, async (t) => {
   const dir = chartsCourse(t);
-  const items = ['Accounting and purchasing', 'Sales', 'Customer support in Lyon', 'Human resources'].map((label, i) => ({ id: `i${i}`, label, title: label, date: String(2020 + i), before: 10 + i, after: 20 + i, x: 0.25 + i * 0.12, y: 0.4 + i * 0.1 }));
+  const items = ['Accounting and purchasing', 'Sales', 'Customer support in Lyon and Grenoble', 'IT', 'Human resources', 'Legal'].map((label, i) => ({ id: `i${i}`, label, title: label, date: String(2020 + i), before: i < 3 ? 10 : 10 + i, after: 20 + i, x: 0.25 + i * 0.12, y: 0.4 + i * 0.1 }));
   const screen = readJSON(dir, 'screens/chemin.json');
   for (const type of ['before-after', 'matrix', 'milestones', 'cycle']) {
     const props = type === 'before-after' ? { beforeLabel: 'Before', afterLabel: 'After', items: items.map(({ id, label, before, after }) => ({ id, label, before, after })) }
       : type === 'matrix' ? { x: { label: 'Likelihood' }, y: { label: 'Impact' }, quadrants: { topLeft: 'Plan', topRight: 'Act', bottomLeft: 'Accept', bottomRight: 'Fix' }, items: items.map(({ id, label, x, y }) => ({ id, label, x, y })) }
       : type === 'milestones' ? { items: items.map(({ id, title, date }) => ({ id, title, date })) }
-      : { items: items.map(({ id, title }) => ({ id, title })) };
+      : { items: items.slice(0, 5).map(({ id, title }) => ({ id, title })) };
     screen.blocks.push({ id: `layout-${type}`, type, props: { takeaway: 'Teams in the review', ...props } });
   }
   writeJSON(dir, 'screens/chemin.json', screen);
@@ -215,7 +215,13 @@ test('chart labels remain readable without overlapping at desktop and phone widt
             assert.ok(box.right <= other.x + 1 || other.right <= box.x + 1 || box.bottom <= other.y + 1 || other.bottom <= box.y + 1, `${type} at ${width}: ${box.text} overlaps ${other.text}`);
           }
         }
-        assert.ok(visible >= items.length, `${type} at ${width}: every item has a visible label`);
+        assert.ok(visible >= (type === 'cycle' ? 5 : items.length), `${type} at ${width}: every item has a visible label`);
+        if (type === 'cycle' && width === 1600) {
+          assert.equal(await chart.locator('svg').evaluate(element => {
+            const svg = element as SVGSVGElement, box = svg.getBBox(), view = svg.viewBox.baseVal;
+            return box.x >= view.x && box.y >= view.y && box.x + box.width <= view.x + view.width && box.y + box.height <= view.y + view.height;
+          }), true, 'the cropped plot contains every arc');
+        }
       }
     }
   }, { motion: false });

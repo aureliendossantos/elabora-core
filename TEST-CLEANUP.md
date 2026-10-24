@@ -59,7 +59,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/e2e/canvas-live.test.ts` | 233 | — | Pending |
 | `test/e2e/canvas.test.ts` | 473 | — | Pending |
 | `test/e2e/character.test.ts` | 136 | — | Pending |
-| `test/e2e/charts.test.ts` | 182 | 222 | Passed all 4 cases with native seed 155921 plus focused layout rerun; own course/build/browser/server resources, explicit browser clock for entrance, animation/event waits; actual visible label non-overlap at desktop/phone widths replaces geometry guesses |
+| `test/e2e/charts.test.ts` | 182 | 228 | Passed crowded six-label desktop/phone layout and five-stage cycle; verifies visible labels and SVG bounds |
 | `test/e2e/design.test.ts` | 697 | — | Pending |
 | `test/e2e/dialogues.test.ts` | 559 | — | Pending |
 | `test/e2e/edge.test.ts` | 122 | — | Pending |
