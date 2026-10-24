@@ -71,7 +71,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/e2e/media.test.ts` | 96 | 82 | Focused seed 104729 passed; iframe navigation, loaded metadata and seeked events synchronize actual video controls; own fixture and browser |
 | `test/e2e/narration.test.ts` | 437 | — | Pending |
 | `test/e2e/object.test.ts` | 372 | 372 | Focused seed 104729 passed all fourteen cases; real object gate failures, states, event sequences, dry WebGL readback and decoded captures; no elapsed-time/PNG-size budgets |
-| `test/e2e/plan-document.test.ts` | 61 | — | Pending |
+| `test/e2e/plan-document.test.ts` | 61 | 61 | Reviewed unchanged; focused seed 104729 passed tagged A4 outline, date, deterministic bytes and export; Electron case requires opt-in executable |
 | `test/e2e/player-items.test.ts` | 265 | — | Pending |
 | `test/e2e/player.test.ts` | 150 | — | Pending |
 | `test/e2e/review.test.ts` | 299 | — | Pending |
