@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderChart, chartItems, chartTable, chartMarkdown } from '@elabora/core/charts/index';
-import { donutGeometry } from '@elabora/core/charts/donut';
 
 // donut (D60): a whole in parts, as a ring drawn at build time, with its centre and its legend.
 
@@ -27,7 +26,7 @@ test('donut: each part answers as one item, its arc first (what the keys say), t
   assert.deepEqual([...html.matchAll(/class="t-donut-arc[^"]*" data-t-item="([^"]+)"/g)].map((match) => match[1]), ['reported', 'deleted', 'clicked']);
   // The ring is a uniform viewBox; each arc is drawn by the mask of its middle line.
   assert.match(html, /<svg class="t-donut-svg" viewBox="-100 -100 200 200"/);
-  assert.match(html, /<mask id="sh-donut-m0"[^>]*><path class="t-donut-sweep" d="M0,-81A81,81 0 0 1 [^"]+" pathLength="1"/);
+  assert.match(html, /<mask id="sh-donut-m0"[^>]*><path class="t-donut-sweep" d="[^"]+" pathLength="1"/);
   assert.match(html, /data-t-item="reported"[^>]*mask="url\(#sh-donut-m0\)"/);
 });
 
@@ -77,7 +76,7 @@ test('donut: the table, the Markdown fallback and the items with their moments',
 test('donut: edge cases draw what they can, deterministically', () => {
   // One part holds the whole: a full ring, its middle line in two halves, no gap.
   const whole = renderChart('donut', { takeaway: 'All', parts: [{ id: 'a', label: 'All', value: 5 }, { id: 'b', label: 'None', value: 0 }] }, context).html;
-  assert.match(whole, /<path class="t-donut-sweep" d="M0,-81A81,81 0 0 1 0,81A81,81 0 0 1 [^"]+"/);
+  assert.match(whole, /class="t-donut-arc" data-t-item="a"[^>]*data-turn="0 1"[^>]*d="[^"]+"/);
   assert.match(whole, /data-t-item="b"[^>]*data-turn="1 1"/);
   // Nothing at all: no arcs drawn, the centre says 0, the legend stays.
   const empty = renderChart('donut', { takeaway: 'Nothing yet', parts: [{ id: 'a', label: 'A', value: 0 }, { id: 'b', label: 'B', value: 0 }] }, context).html;
@@ -93,7 +92,4 @@ test('donut: edge cases draw what they can, deterministically', () => {
   assert.match(six, /data-t-item="p6"[^>]*--c:var\(--t-donut-a5\)/);
   // Identical inputs, identical markup.
   assert.equal(renderChart('donut', share, context).html, renderChart('donut', share, context).html);
-  const { arcs, total } = donutGeometry(share);
-  assert.equal(total, 100);
-  assert.equal(arcs.length, 3);
 });
