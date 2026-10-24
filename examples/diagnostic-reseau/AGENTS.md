@@ -46,3 +46,6 @@ If `elabora` is not on PATH (on macOS, Elabora installs it from Réglages › Ou
 
 ## Notes for this course
 <!-- What agents should know about this course: its audience, its voice, decisions taken. Elabora never changes this part. -->
+
+- Marc speaks with one voice in the whole module (ElevenLabs Marcel - Warm and Conversational), Leïla with ElevenLabs Lucie - Professional Customer Care Agent; Claire, the guide, keeps her local voice (Pocket TTS claire): she is outside the story.
+- « Premier réflexe » is the dialogue `appel-marc` (messaging, practice, scored by quality: one of the three diagnostics of OBJ-2's criterion). Its ending `a-revoir` opens the layer `rappel-regle`, which Claire says while the path appears on « poste »; `maitrise` on the scored run sets `bonsReflexes`.
