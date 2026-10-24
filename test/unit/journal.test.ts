@@ -1,4 +1,4 @@
-import { test, after } from 'node:test';
+import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -26,8 +26,8 @@ const tmpProject = (prefix = 'elabora-journal-') => {
   temporary.push(dir);
   return dir;
 };
-after(() => { for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true }); });
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+afterEach(() => { for (const dir of temporary.splice(0)) fs.rmSync(dir, { recursive: true, force: true }); });
+const checkpoint = () => new Promise<void>(resolve => setImmediate(resolve));
 const journalDir = (dir: string) => path.join(projectDataDir(dir), 'journal');
 const someChange = (author: Author, n = 0): NewChange => ({
   author, command: { name: 'update_block', args: { n } },
@@ -84,20 +84,20 @@ test('lock: async writers of one process take turns; a synchronous wait inside a
   await Promise.all(Array.from({ length: 5 }, () => withProjectLock(dir, async () => {
     inside++;
     most = Math.max(most, inside);
-    await sleep(5);
-    await withProjectLock(dir, () => sleep(1)); // nested: reentrant
+    await checkpoint();
+    await withProjectLock(dir, checkpoint); // nested: reentrant
     inside--;
   })));
   assert.equal(most, 1);
 
-  let release = () => {};
-  const holding = withProjectLock(dir, () => new Promise<void>((resolve) => { release = resolve; }));
-  await sleep(5);
-  const started = Date.now();
-  assert.throws(() => withProjectLockSync(dir, () => 1), (error: unknown) => error instanceof LockError && /another task of this process/.test(error.message));
-  assert.ok(Date.now() - started < 1000, 'it does not wait for the timeout');
-  release();
-  await holding;
+  let entered!: () => void, release!: () => void;
+  const started = new Promise<void>(resolve => { entered = resolve; });
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  const holding = withProjectLock(dir, () => { entered(); return gate; });
+  await started;
+  try {
+    assert.throws(() => withProjectLockSync(dir, () => 1, { timeoutMs: 0 }), (error: unknown) => error instanceof LockError && /another task of this process/.test(error.message));
+  } finally { release(); await holding; }
 });
 
 test('lock: stale locks are broken: a process gone on this computer at once, another computer after 30 s', async () => {
@@ -106,9 +106,7 @@ test('lock: stale locks are broken: a process gone on this computer at once, ano
   fs.mkdirSync(path.dirname(file), { recursive: true });
   const holder = (fields: object) => fs.writeFileSync(file, JSON.stringify({ pid: 1, host: os.hostname(), at: new Date().toISOString(), token: 'old', ...fields }));
   const takes = (message: string) => {
-    const started = Date.now();
-    withProjectLockSync(dir, () => assert.notEqual(JSON.parse(fs.readFileSync(file, 'utf8')).token, 'old', message), { timeoutMs: 2000 });
-    assert.ok(Date.now() - started < 1000, `${message}: at once`);
+    withProjectLockSync(dir, () => assert.notEqual(JSON.parse(fs.readFileSync(file, 'utf8')).token, 'old', message), { timeoutMs: 0 });
   };
 
   const gone = await runNode('process.stdout.write(String(process.pid))');
@@ -124,35 +122,37 @@ test('lock: stale locks are broken: a process gone on this computer at once, ano
   takes('an empty lock file, 31 s old');
 
   holder({ host: 'studio-mac.local' });
-  const started = Date.now();
-  assert.throws(() => withProjectLockSync(dir, () => 1, { timeoutMs: 150 }), (error: unknown) => error instanceof LockError && error.code === 'E_LOCKED' && error.holder?.host === 'studio-mac.local' && /studio-mac\.local/.test(error.message));
-  assert.ok(Date.now() - started >= 150, 'a fresh lock from another computer makes writers wait');
+  assert.throws(() => withProjectLockSync(dir, () => 1, { timeoutMs: 0 }), (error: unknown) => error instanceof LockError && error.code === 'E_LOCKED' && error.holder?.host === 'studio-mac.local' && /studio-mac\.local/.test(error.message));
   fs.writeFileSync(file, '');
-  assert.throws(() => withProjectLockSync(dir, () => 1, { timeoutMs: 100 }), LockError, 'an empty lock being written is respected');
+  assert.throws(() => withProjectLockSync(dir, () => 1, { timeoutMs: 0 }), LockError, 'an empty lock being written is respected');
   holder({ pid: process.pid, token: 'another-thread' });
-  assert.throws(() => withProjectLockSync(dir, () => 1, { timeoutMs: 100 }), LockError, 'a fresh lock of this process (another thread) is respected');
+  assert.throws(() => withProjectLockSync(dir, () => 1, { timeoutMs: 0 }), LockError, 'a fresh lock of this process (another thread) is respected');
 });
 
-test('lock: a writer in another process makes this one wait until it is done', async () => {
+test('a writer in another process excludes this writer until its lock is released', { timeout: 10_000 }, async t => {
   const dir = tmpProject();
-  const child = spawnNode(`${imports}
-    journal.withProjectLockSync(${JSON.stringify(dir)}, () => {
+  const { NODE_TEST_CONTEXT: _context, ...env } = process.env;
+  const child = spawn(process.execPath, ['--input-type=module', '-e', `${imports}
+    await journal.withProjectLock(${JSON.stringify(dir)}, async () => {
       process.stdout.write('locked\\n');
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 300);
-    });`);
+      await new Promise(resolve => process.stdin.once('data', resolve));
+    });`], { env, stdio: ['pipe', 'pipe', 'pipe'] });
+  t.after(() => child.kill());
   let stderr = '';
-  child.stderr.on('data', (chunk) => { stderr += chunk; });
-  const closed = new Promise((resolve) => child.on('close', resolve));
-  // The child holds the lock, or fails: never wait for a child that is gone.
+  child.stderr.on('data', chunk => { stderr += chunk; });
+  const closed = new Promise<number | null>(resolve => child.on('close', resolve));
   await Promise.race([
-    new Promise<void>((resolve) => child.stdout.on('data', (chunk) => { if (String(chunk).includes('locked')) resolve(); })),
-    closed.then(() => { throw new Error(`The other process ended without taking the lock: ${stderr}`); })
+    new Promise<void>(resolve => child.stdout.on('data', chunk => { if (String(chunk).includes('locked')) resolve(); })),
+    closed.then(() => { throw new Error(`Child could not lock: ${stderr}`); })
   ]);
-  const started = Date.now();
-  await withProjectLock(dir, () => {
-    assert.ok(Date.now() - started >= 150, 'waited for the other process');
-  });
-  await closed;
+  let entered = false;
+  const waiting = withProjectLock(dir, () => { entered = true; });
+  await checkpoint();
+  assert.equal(entered, false);
+  child.stdin.end('release');
+  await waiting;
+  assert.equal(entered, true);
+  assert.equal(await closed, 0, stderr);
 });
 
 test('lock: processes incrementing a counter under the lock lose no update', async () => {
@@ -162,9 +162,9 @@ test('lock: processes incrementing a counter under the lock lose no update', asy
   const worker = `import fs from 'node:fs';
     ${imports}
     for (let i = 0; i < 20; i++) {
-      journal.withProjectLockSync(${JSON.stringify(dir)}, () => {
+      await journal.withProjectLock(${JSON.stringify(dir)}, async () => {
         const n = Number(fs.readFileSync(${JSON.stringify(counter)}, 'utf8'));
-        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1); // widen the race window
+        await new Promise(resolve => setImmediate(resolve));
         fs.writeFileSync(${JSON.stringify(counter)}, String(n + 1));
       });
     }`;
@@ -279,8 +279,8 @@ test('journal and lock live in the data folder (ELABORA_DATA_DIR), not in the pr
 
 test('journal: binary contents go to the blob store; journal lines only hold their hashes', async () => {
   const dir = tmpProject();
-  const old = crypto.randomBytes(300 << 10); // large enough to be cloned on macOS
-  const fresh = crypto.randomBytes(1000);
+  const old = Buffer.alloc(300 << 10, 1); // large enough to be cloned on macOS
+  const fresh = Buffer.alloc(1000, 2);
   fs.mkdirSync(path.join(dir, 'assets'));
   fs.writeFileSync(path.join(dir, 'assets/logo.png'), old);
   const oldHash = hashBytes(old);

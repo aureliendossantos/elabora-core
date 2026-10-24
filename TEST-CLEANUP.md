@@ -24,13 +24,13 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Shared mutable fixtures | 4 | ops: module-level change ID counter replaced with content-derived IDs |
 
-| Fixed-delay synchronization | 17 | engine-session: sleep(400) before checking watcher results |
+| Fixed-delay synchronization | 21 | engine-session: sleep(400) before checking watcher results |
 
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 
 | Duplicate computation | 1 | engine-project-state: full validator run twice per assertion |
 
-| Unseeded randomness | 7 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
+| Unseeded randomness | 9 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 
 | Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
 
@@ -39,6 +39,8 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Weak assertion | 1 | validate: counted two errors without identifying their prop paths |
 
 | Resource cleanup | 38 | validate: copied fixtures were never removed |
+
+| Wall-clock timing | 4 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 
 ## Production changes
 
@@ -126,7 +128,7 @@ None yet.
 | `test/unit/ignored.test.ts` | 55 | — | Pending |
 | `test/unit/import.test.ts` | 427 | — | Pending |
 | `test/unit/interop.test.ts` | 92 | — | Pending |
-| `test/unit/journal.test.ts` | 437 | — | Pending |
+| `test/unit/journal.test.ts` | 437 | 437 | Passed 14 cases; explicit lock entry/release gates and child stdin handshake; no elapsed-time assertions or fixed sleeps; sequence/history/binary/undo contracts retained |
 | `test/unit/layer-timeline.test.ts` | 265 | — | Pending |
 | `test/unit/library.test.ts` | 840 | 845 | Passed 21 cases; deterministic high-entropy media and explicit trash ages, isolated environment, age/concurrency cases split; archives/history/security/streaming retained |
 | `test/unit/local-ai-platform.test.ts` | 50 | — | Pending |
