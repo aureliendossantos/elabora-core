@@ -107,7 +107,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/course-state.test.ts` | 127 | 130 | Passed native-seeded checks; All scoring, resume, completion and event behaviours retained with owned courses |
 | `test/unit/data-dir.test.ts` | 35 | 37 | Passed native-seeded case; disposable processes still test process-cached settings; owned parent keeps renamed project and relocated blobs isolated |
 | `test/unit/design.test.ts` | 394 | — | Pending |
-| `test/unit/dialogue-player.test.ts` | 199 | — | Pending |
+| `test/unit/dialogue-player.test.ts` | 199 | 202 | Passed 8 native-seeded cases; owned dialogue fixtures; full learner resume, score, conditions, completion and label contracts retained without arbitrary label count |
 | `test/unit/dialogue-voice.test.ts` | 376 | — | Pending |
 | `test/unit/dialogue.test.ts` | 575 | 577 | Passed 19 native-seeded cases; every reachable path preserves walk and score after save/resume, owned courses, graph geometry rather than exact rank/curve choices; duplicate budget/stability checks removed |
 | `test/unit/diff-mcp.test.ts` | 74 | — | Pending |
