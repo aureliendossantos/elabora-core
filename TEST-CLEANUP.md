@@ -81,7 +81,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/matrix/medieval.test.ts` | 45 | — | Pending |
 | `test/matrix/phishing.test.ts` | 41 | — | Pending |
 | `test/matrix/planetary.test.ts` | 84 | — | Pending |
-| `test/unit/add-resource.test.ts` | 107 | 108 | Native-seeded cases passed; per-case source files and owned sessions/MCP clients; exact imported bytes replace size-only check |
+| `test/unit/add-resource.test.ts` | 107 | 104 | Native-seeded cases passed; per-case source files and owned sessions/MCP clients; exact imported bytes replace size-only check; consolidated duplicate cleanup under context ownership |
 | `test/unit/agent-rules.test.ts` | 105 | 106 | Native-seeded cases passed; own copied course; generated revisions, preservation of author notes, update/undo and published rule-text regressions retained |
 | `test/unit/align.test.ts` | 469 | 477 | Passed native seed 155921 with two explicit unavailable-model skips; seeded CTC oracle retained; context-owned narration/model/recording folders and session/worker disposal, real-case environment restored |
 | `test/unit/backups.test.ts` | 456 | 465 | Passed all 14 native-seeded cases; reproducible media with distinct edit seeds, owned project folders, hash-race clock controlled; child readiness/release gates replace synchronized wall-clock start; live-lock refusal uses zero timeout; retention/restore/GC contracts retained |

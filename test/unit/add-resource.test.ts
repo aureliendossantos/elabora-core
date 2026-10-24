@@ -72,18 +72,14 @@ test('any file: a name taken by another file, a spreadsheet titled by its name, 
 test('the engine runs add_resource as a change of the app', async (t) => {
   const dir = resources(t).copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
   const session = resources(t).own(await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 }), value => value.close());
-  try {
-    await session.flush();
-    const pdf = write('Charte.pdf', titled('Charte informatique du groupe'));
-    const result = await session.run('add_resource', { path: pdf }, { kind: 'human' });
-    assert.deepEqual(result.files, ['assets/resources/charte.pdf', 'course.json']);
-    assert.deepEqual((result.result as { resource: unknown }).resource, { id: 'charte', title: 'Charte informatique du groupe', asset: 'resources/charte.pdf' });
-    const copied = session.readFile('assets/resources/charte.pdf');
-    assert.equal(copied.kind, 'binary');
-    assert.deepEqual(fs.readFileSync(path.join(dir, 'assets/resources/charte.pdf')), fs.readFileSync(pdf));
-  } finally {
-    await session.close();
-  }
+  await session.flush();
+  const pdf = write('Charte.pdf', titled('Charte informatique du groupe'));
+  const result = await session.run('add_resource', { path: pdf }, { kind: 'human' });
+  assert.deepEqual(result.files, ['assets/resources/charte.pdf', 'course.json']);
+  assert.deepEqual((result.result as { resource: unknown }).resource, { id: 'charte', title: 'Charte informatique du groupe', asset: 'resources/charte.pdf' });
+  const copied = session.readFile('assets/resources/charte.pdf');
+  assert.equal(copied.kind, 'binary');
+  assert.deepEqual(fs.readFileSync(path.join(dir, 'assets/resources/charte.pdf')), fs.readFileSync(pdf));
 });
 
 test('elabora player --add-resource and elabora_player addResources', async (t) => {
