@@ -41,6 +41,8 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Private layout assertions | 7 | charts-matrix imported label placement helpers instead of measuring rendered labels |
 
+| Fixture lifetime | 1 | copied courses lacked per-case failure cleanup |
+
 ## Production changes
 
 No production code changed. CI discovered a pre-existing release-metadata error before tests could run: `.sampo/changesets/layer-captions-bare-canvas.md` and `player-motion.md` named only `npm/@elabora/player`, although the release policy requires `npm/elabora` too. Added the matching root patch target to each in a separate metadata-only commit; the original change texts and player targets are preserved. `npm run release:check` then passed.
@@ -99,7 +101,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/cli-projects.test.ts` | 266 | — | Pending |
 | `test/unit/cli.test.ts` | 715 | 684 | Passed 28 native-seeded cases; real CLI/MCP transport, refusal, privacy, journal/undo, translation and permission contracts preserved; failure-safe context ownership closes clients/servers before removing copies |
 | `test/unit/cloud.test.ts` | 638 | 641 | Passed 20 native-seeded cases with a fresh fake service/credential store per case, restored cloud environment and failure-safe client cleanup; redundant storage mock-call tracking removed; real publishing/privacy/account/review contracts retained |
-| `test/unit/compile.test.ts` | 156 | — | Pending |
+| `test/unit/compile.test.ts` | 156 | 160 | Passed native-seeded checks; Build packaging, SCORM, failures and live preview checks retained; every course/output is context-owned |
 | `test/unit/components.test.ts` | 313 | — | Pending |
 | `test/unit/costs.test.ts` | 200 | — | Pending |
 | `test/unit/course-state.test.ts` | 127 | — | Pending |

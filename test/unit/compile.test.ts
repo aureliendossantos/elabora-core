@@ -1,7 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { readZip } from '@elabora/node/zip';
@@ -9,14 +8,16 @@ import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { readLock, assignKeys } from '@elabora/core/compile/state-model';
 import { compileCourseData, compileScreen, createCompileContext } from '@elabora/core/compile/course-data';
 import type { AudioProps } from '@elabora/player/course-data';
-import { ROOT, copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, readJSON, writeJSON } from '../helpers.ts';
 import { build } from '@elabora/node/build';
 import { preview } from '@elabora/node/preview';
+import { resources } from '../resources.ts';
 
-test('build is deterministic and produces a valid SCORM 1.2 package', async () => {
+test('build is deterministic and produces a valid SCORM 1.2 package', async (t) => {
+  const { copyExample, tempDir } = resources(t);
   const dir = copyExample();
-  const out1 = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-b1-'));
-  const out2 = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-b2-'));
+  const out1 = tempDir('elabora-b1-');
+  const out2 = tempDir('elabora-b2-');
   const a = await build(dir, { profiles: ['moodle'], out: out1 });
   const b = await build(dir, { profiles: ['moodle'], out: out2 });
   assert.ok(a.ok && b.ok && a.zipPath, JSON.stringify(a.diagnostics.filter((d) => d.severity === 'error')));
@@ -39,17 +40,19 @@ test('build is deterministic and produces a valid SCORM 1.2 package', async () =
   for (const item of ['ITEM-1', 'ITEM-2', 'ITEM-3', 'ITEM-4', 'ITEM-5', 'ITEM-6']) assert.ok(proof.includes(item), item);
 });
 
-test('build stops on validation errors', async () => {
+test('build stops on validation errors', async (t) => {
+  const { copyExample, tempDir } = resources(t);
   const dir = copyExample();
   const s = readJSON(dir, 'screens/chemin.json');
   s.covers = ['ITEM-99'];
   writeJSON(dir, 'screens/chemin.json', s);
-  const r = await build(dir, { out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-b3-')) });
+  const r = await build(dir, { out: tempDir('elabora-b3-') });
   assert.equal(r.ok, false);
   assert.ok(r.diagnostics.some((d) => d.code === 'E_PLAN_REFERENCE'));
 });
 
-test('a preview shows the course with the errors that only stop a delivery; when it cannot be built, its page says why until a change builds', { timeout: 60000 }, async () => {
+test('a preview shows the course with the errors that only stop a delivery; when it cannot be built, its page says why until a change builds', { timeout: 60000 }, async (t) => {
+  const { copyExample, tempDir, own } = resources(t);
   const dir = copyExample();
   // An image without alt (rule F3), a plan item that does not exist (A1), a file Docebo refuses (LMS-8).
   fs.writeFileSync(path.join(dir, 'assets/images/schema.php'), '<?php echo 1;');
@@ -59,10 +62,10 @@ test('a preview shows the course with the errors that only stop a delivery; when
   writeJSON(dir, 'screens/chemin.json', s);
   const errors = (r: { diagnostics: { severity: string; code: string }[] }) => r.diagnostics.filter((d) => d.severity === 'error').map((d) => d.code).sort();
   const options = { profiles: ['docebo'], emit: 'dir' as const, writeLock: false, media: 'link' as const };
-  const shown = await build(dir, { ...options, out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-p1-')), preview: true });
+  const shown = await build(dir, { ...options, out: tempDir('elabora-p1-'), preview: true });
   assert.ok(shown.ok && shown.dirPath && fs.existsSync(path.join(shown.dirPath, 'index.html')));
   assert.deepEqual(errors(shown), ['E_FORBIDDEN_EXTENSION', 'E_IMAGE_ALT_MISSING', 'E_PLAN_REFERENCE']);
-  const delivered = await build(dir, { ...options, out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-p2-')) });
+  const delivered = await build(dir, { ...options, out: tempDir('elabora-p2-') });
   assert.equal(delivered.ok, false);
 
   // An error of the course itself (a prop the schema does not know) stops the preview too: its
@@ -70,39 +73,38 @@ test('a preview shows the course with the errors that only stop a delivery; when
   s.blocks[0].props.level = 'huge';
   writeJSON(dir, 'screens/chemin.json', s);
   let rebuilt: () => void = () => {};
-  const session = await preview(dir, { port: 0, onRebuild: () => rebuilt() });
-  try {
-    assert.equal(session.result.ok, false);
-    const page = await (await fetch(session.urls.standalone)).text();
-    assert.match(page, /An error is preventing this course from being shown/);
-    assert.match(page, /Please ask your agent to fix this error/);
-    assert.match(page, /Does not match the schema<\/strong> <code>screens\/chemin\.json<\/code>/);
-    assert.doesNotMatch(page, /without text alternative/);
-    assert.match(page, /\/preview-events\/preview/);
-    const done = new Promise<void>((resolve) => { rebuilt = resolve; });
-    delete s.blocks[0].props.level;
-    writeJSON(dir, 'screens/chemin.json', s);
-    await done;
-    assert.match(await (await fetch(session.urls.standalone)).text(), /elabora\/course\.js/);
-  } finally {
-    await session.close();
-  }
+  const session = own(await preview(dir, { port: 0, onRebuild: () => rebuilt() }), value => value.close());
+  assert.equal(session.result.ok, false);
+  const page = await (await fetch(session.urls.standalone)).text();
+  assert.match(page, /An error is preventing this course from being shown/);
+  assert.match(page, /Please ask your agent to fix this error/);
+  assert.match(page, /Does not match the schema<\/strong> <code>screens\/chemin\.json<\/code>/);
+  assert.doesNotMatch(page, /without text alternative/);
+  assert.match(page, /\/preview-events\/preview/);
+  const done = new Promise<void>((resolve) => { rebuilt = resolve; });
+  delete s.blocks[0].props.level;
+  writeJSON(dir, 'screens/chemin.json', s);
+  await done;
+  assert.match(await (await fetch(session.urls.standalone)).text(), /elabora\/course\.js/);
+
 });
 
-test('package rules of the target LMS are enforced', async () => {
+test('package rules of the target LMS are enforced', async (t) => {
+  const { copyExample, tempDir } = resources(t);
   const dir = copyExample();
   fs.writeFileSync(path.join(dir, 'assets/images/schema.php'), '<?php echo 1;');
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push({ id: 'chemin-php', type: 'image', props: { asset: 'images/schema.php', alt: 'Schéma' } });
   writeJSON(dir, 'screens/chemin.json', s);
-  const docebo = await build(dir, { profiles: ['docebo'], out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-b4-')) });
+  const docebo = await build(dir, { profiles: ['docebo'], out: tempDir('elabora-b4-') });
   assert.equal(docebo.ok, false);
   assert.ok(docebo.diagnostics.some((d) => d.code === 'E_FORBIDDEN_EXTENSION'));
-  const moodle = await build(dir, { profiles: ['moodle'], out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-b5-')) });
+  const moodle = await build(dir, { profiles: ['moodle'], out: tempDir('elabora-b5-') });
   assert.ok(moodle.ok, 'Moodle documents no forbidden extension');
 });
 
-test('one screen compiles on its own, as the course data holds it', () => {
+test('one screen compiles on its own, as the course data holds it', (t) => {
+  const { copyExample } = resources(t);
   for (const example of ['diagnostic-reseau', 'planetary-gearset', 'orbital-rendezvous']) {
     const project = loadProjectFromDir(path.join(ROOT, 'examples', example));
     const { keys } = assignKeys(project, readLock(project), { dryRun: true });
@@ -130,7 +132,8 @@ test('one screen compiles on its own, as the course data holds it', () => {
   assert.deepEqual(compiled.events.map((event) => event.do), [[{ type: 'hide-layer' }]]);
 });
 
-test('a decorative sound says so in the course data', () => {
+test('a decorative sound says so in the course data', (t) => {
+  const { copyExample } = resources(t);
   const dir = copyExample();
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push(
@@ -144,9 +147,10 @@ test('a decorative sound says so in the course data', () => {
   assert.deepEqual(audio, [['chemin-recit', false, '<p>Marc raconte.</p>'], ['chemin-ambiance', true, '']]);
 });
 
-test('a package folder left in dist by an earlier build is written again with the ZIP', async () => {
+test('a package folder left in dist by an earlier build is written again with the ZIP', async (t) => {
+  const { copyExample, tempDir } = resources(t);
   const dir = copyExample();
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-dist-'));
+  const out = tempDir('elabora-dist-');
   const first = await build(dir, { emit: 'both', out, writeLock: false });
   assert.ok(first.ok && first.dirPath);
   fs.writeFileSync(path.join(first.dirPath, 'index.html'), 'stale');
