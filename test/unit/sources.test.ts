@@ -1,4 +1,4 @@
-import { test, after } from 'node:test';
+import { test, afterEach, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -15,7 +15,7 @@ import { validateProject } from '@elabora/core/validate/index';
 import { build } from '@elabora/node/build';
 import { readZip } from '@elabora/node/zip';
 import { createVersion, listVersions, restore } from '@elabora/node/backups/index';
-import { duplicateProject, exportProject, getProject, importArchive, importFolder, inspectArchive, libraryRoot, listProjects } from '@elabora/node/library/index';
+import { duplicateProject, exportProject, getProject, importArchive, importFolder, inspectArchive, listProjects } from '@elabora/node/library/index';
 import { TRANSCRIBER_MODELS, disposeTranscriber } from '@elabora/node/transcribe/index';
 import { ROOT, codes, copyExample, readJSON, writeJSON } from '../helpers.ts';
 import { hasFfmpeg, FFMPEG } from '../narration.ts';
@@ -31,14 +31,26 @@ import { briefDocx, png, textPdf, workshopPptx } from '../sources-fixtures.ts';
 // program of the machine is used by any reader: what the tests read is what any computer reads.
 
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg is not installed';
-const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-sources-'));
-const made: string[] = [temp];
-after(() => { for (const dir of made) fs.rmSync(dir, { recursive: true, force: true }); });
-after(disposeTranscriber);
-delete process.env.ELABORA_DATA_DIR;
+let temp: string;
+const made: string[] = [];
+const clients: Client[] = [];
+const savedEnvironment = { ...process.env };
+beforeEach(() => {
+  temp = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-sources-'));
+  made.push(temp);
+  delete process.env.ELABORA_DATA_DIR;
+});
+afterEach(async () => {
+  await Promise.all(clients.splice(0).map(client => client.close()));
+  await disposeTranscriber();
+  for (const dir of made.splice(0).reverse()) fs.rmSync(dir, { recursive: true, force: true });
+  for (const name of ['ELABORA_DATA_DIR', 'ELABORA_LIBRARY']) {
+    if (savedEnvironment[name] === undefined) delete process.env[name]; else process.env[name] = savedEnvironment[name];
+  }
+});
 
 const course = () => { const dir = copyExample(); made.push(dir); return dir; };
-const write = (name: string, data: Buffer | string) => { const file = path.join(temp, crypto.randomBytes(4).toString('hex'), name); fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, data); return file; };
+const write = (name: string, data: Buffer | string) => { const file = path.join(fs.mkdtempSync(path.join(temp, 'input-')), name); fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, data); return file; };
 const text = (dir: string, rel: string) => fs.readFileSync(path.join(dir, rel), 'utf8');
 
 function withEnv<T>(env: Record<string, string | undefined>, run: () => Promise<T>): Promise<T> {
@@ -48,8 +60,8 @@ function withEnv<T>(env: Record<string, string | undefined>, run: () => Promise<
 }
 
 // The tests' transcriber: a made-up model installed as a download leaves it, answering from a file.
-const fakeModels = path.join(temp, 'transcribers');
 function transcriberEnv(texts: Record<string, string>): Record<string, string> {
+  const fakeModels = path.join(temp, 'transcribers');
   const body = Buffer.from('not a mod.');
   const sha256 = crypto.createHash('sha256').update(body).digest('hex');
   fs.writeFileSync(path.join(temp, 'transcribers.json'), JSON.stringify({ [TRANSCRIBER_MODELS[0].id]: [{ name: 'model.bin', url: 'x/model.bin', size: body.length, sha256 }] }));
@@ -265,7 +277,7 @@ test('a readable version is written again when its source changes, not when the 
   const file = path.join(dir, 'sources', name);
   const madeAt = (await listSources(dir))[0].readable.madeAt;
   // Touched: the same content, a new time.
-  const later = new Date(Date.now() + 60_000);
+  const later = new Date(fs.statSync(file).mtimeMs + 60_000);
   fs.utimesSync(file, later, later);
   const touched = await listSources(dir);
   assert.equal(touched[0].readable.status, 'ready');
@@ -436,7 +448,6 @@ test('library: a module\'s copy and its import from a folder carry its sources; 
   assert.equal(replaced.status, 'imported');
   assert.deepEqual(files(getProject(fromArchive.project.id).path), files(dir));
   assert.ok(listProjects().every((project) => project.error === null), JSON.stringify(listProjects().map((project) => project.error)));
-  assert.ok(libraryRoot());
 });
 
 // ── the command line ──
@@ -486,6 +497,7 @@ test('MCP: elabora_source_add, elabora_sources and elabora_source_read (in parts
     const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
     await server.connect(serverSide);
     const client = new Client({ name: 'test-agent', version: '1' });
+    clients.push(client);
     await client.connect(clientSide);
     return client;
   };
@@ -503,9 +515,7 @@ test('MCP: elabora_source_add, elabora_sources and elabora_source_read (in parts
   const page = await call('elabora_source_read', { file: 'atelier.pptx', offset: 100 });
   assert.equal(page.content[1].text, read.content[1].text?.slice(100));
   assert.equal((await call('elabora_source_read', { file: 'absent.docx' })).isError, true);
-  await client.close();
   const reader = await connect(true);
   const names = (await reader.listTools()).tools.map((tool) => tool.name);
   assert.ok(names.includes('elabora_sources') && names.includes('elabora_source_read') && !names.includes('elabora_source_add'), names.join(' '));
-  await reader.close();
 });
