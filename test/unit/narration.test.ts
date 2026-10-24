@@ -1,8 +1,9 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
+import { readJSON, writeJSON, codes } from '../helpers.ts';
 import { narrate, voice, hasFfmpeg, toneM4a } from '../narration.ts';
 import * as edit from '@elabora/node/edit';
 import { importNarration, setNarrationAudio } from '@elabora/node/narration/audio';
@@ -26,8 +27,7 @@ const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
 const SPEAKERS = [{ id: 'narratrice', name: 'Narratrice' }, { id: 'marc', name: 'Marc' }];
 
 // The example's first screen, narrated in two steps: two lines with audio in step 1, one in step 2.
-function narrated({ audio = true, advance }: { audio?: boolean; advance?: 'learner' | 'auto' | 'next-screen' } = {}) {
-  const dir = copyExample();
+function narrated(dir: string, { audio = true, advance }: { audio?: boolean; advance?: 'learner' | 'auto' | 'next-screen' } = {}) {
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.blocks[1].step = 2;
   screen.blocks[2].step = 2;
@@ -40,7 +40,7 @@ function narrated({ audio = true, advance }: { audio?: boolean; advance?: 'learn
   return dir;
 }
 
-test('timing: lines end to end with their pauses, a step gap, a segment per step (one without lines too)', () => {
+test('timing: lines end to end with their pauses, a step gap, a segment per step (one without lines too)', (t) => {
   const timing = narrationTiming([
     { id: 'l1', step: 1, text: 'Un.', duration: 2 },
     { id: 'l2', step: 1, text: 'Deux.', duration: 1, pauseBefore: 0 },
@@ -54,7 +54,7 @@ test('timing: lines end to end with their pauses, a step gap, a segment per step
   assert.deepEqual(narrationTiming([{ id: 'a', step: 1, text: 'a', duration: 1 }, { id: 'b', step: 1, text: 'b', duration: 1 }]).lines.map((line) => line.start), [0, 1.4]);
 });
 
-test('captions: sentences cut to two lines at most, timed in proportion to their length; WebVTT with voices', () => {
+test('captions: sentences cut to two lines at most, timed in proportion to their length; WebVTT with voices', (t) => {
   const long = 'Plus rien ne marche au deuxième étage : ni l’imprimante, ni le partage de fichiers. C’est la troisième fois cette semaine, et mon directeur attend un rapport pour midi.';
   const chunks = captionChunks(long);
   assert.ok(chunks.length >= 2 && chunks.every((chunk) => chunk.length <= 84), JSON.stringify(chunks));
@@ -64,7 +64,7 @@ test('captions: sentences cut to two lines at most, timed in proportion to their
   assert.equal(narrationVtt(timing.lines.map((line) => ({ ...line, speaker: 'Léa' }))), 'WEBVTT\n\n1\n00:00:00.000 --> 00:00:01.500\n<v Léa>A &lt; B &amp; C\n');
 });
 
-test('text hash: Unicode NFC, whitespace runs, trimmed; line anchors', () => {
+test('text hash: Unicode NFC, whitespace runs, trimmed; line anchors', (t) => {
   assert.equal(narrationTextHash('  Café\n crème '), narrationTextHash('Café crème'));
   assert.notEqual(narrationTextHash('Café'), narrationTextHash('Cafe'));
   assert.deepEqual(lineAnchor('l2'), { line: 'l2', edge: 'start' });
@@ -72,8 +72,8 @@ test('text hash: Unicode NFC, whitespace runs, trimmed; line anchors', () => {
   assert.equal(lineAnchor('2s'), null);
 });
 
-test('narration lines: audio ok, missing, out of date (text, audio, voice), untranslated', { skip: NO_FFMPEG }, () => {
-  const dir = narrated();
+test('narration lines: audio ok, missing, out of date (text, audio, voice), untranslated', { skip: NO_FFMPEG }, (t) => {
+  const dir = narrated(resources(t).copyExample());
   let lines = narrationLines(loadProjectFromDir(dir), 'accueil')!;
   assert.deepEqual(lines.map((line) => line.status), ['ok', 'ok', 'ok']);
   assert.deepEqual(lines.map((line) => line.speakerName), ['Narratrice', 'Narratrice', 'Marc'], 'a line without speaker: the first one');
@@ -96,8 +96,8 @@ test('narration lines: audio ok, missing, out of date (text, audio, voice), untr
   assert.deepEqual(narrationLines(loadProjectFromDir(dir), 'accueil', 'en')!.map((line) => line.status), ['untranslated', 'untranslated', 'untranslated']);
 });
 
-test('validator: script, pace, redundancy (E4), cues and audio', { skip: NO_FFMPEG }, () => {
-  const dir = narrated({ advance: 'next-screen' });
+test('validator: script, pace, redundancy (E4), cues and audio', { skip: NO_FFMPEG }, (t) => {
+  const dir = narrated(resources(t).copyExample(), { advance: 'next-screen' });
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.narration.lines.push(
     { id: 'l3', text: 'Encore une fois.', speaker: 'personne' },
@@ -119,7 +119,7 @@ test('validator: script, pace, redundancy (E4), cues and audio', { skip: NO_FFMP
   assert.equal(found.filter((d) => d.code === 'E_TIMELINE_CUE').length, 3, 'an unknown line, a trigger and an action on a screen without narration');
   assert.equal(found.find((d) => d.code === 'W_NARRATION_DUPLICATED')?.target, 'accueil-situation');
   // A long step (estimated from its text): more than 90 s.
-  const long = narrated({ audio: false });
+  const long = narrated(resources(t).copyExample(), { audio: false });
   const script = readJSON(long, 'screens/accueil.json');
   script.narration.lines[0].text = 'Une phrase de narration qui dure. '.repeat(45);
   writeJSON(long, 'screens/accueil.json', script);
@@ -128,9 +128,9 @@ test('validator: script, pace, redundancy (E4), cues and audio', { skip: NO_FFMP
   assert.match(report.find((d) => d.code === 'W_NARRATION_AUDIO_MISSING')?.message ?? '', /no narration audio in fr yet/);
   // auto chains the steps in the screen and waits for Next: no time limit (only next-screen is one),
   // also as the course's default.
-  const auto = narrated({ advance: 'auto' });
+  const auto = narrated(resources(t).copyExample(), { advance: 'auto' });
   assert.ok(!codes(validateDir(auto).diagnostics).includes('W_AUTO_ADVANCE'));
-  const byDefault = narrated();
+  const byDefault = narrated(resources(t).copyExample());
   const defaults = readJSON(byDefault, 'course.json');
   defaults.narration = { advance: 'next-screen', seek: 'free' };
   writeJSON(byDefault, 'course.json', defaults);
@@ -138,11 +138,11 @@ test('validator: script, pace, redundancy (E4), cues and audio', { skip: NO_FFMP
   const data = renderScreen(loadProjectFromDir(byDefault), 'accueil').course.screens[0].narration!;
   assert.deepEqual([data.advance, data.seek], ['next-screen', 'free'], 'the course\'s defaults reach the course data');
   // A narrated course with its audio, as written: no finding of its own.
-  assert.deepEqual(codes(validateDir(narrated()).diagnostics).filter((code) => /NARRATION|TIMELINE|SEGMENT|AUTO_ADVANCE/.test(code)), []);
+  assert.deepEqual(codes(validateDir(narrated(resources(t).copyExample())).diagnostics).filter((code) => /NARRATION|TIMELINE|SEGMENT|AUTO_ADVANCE/.test(code)), []);
 });
 
-test('steps of lines: reveal-step reaches them, screen parts list the lines, the state model counts them', () => {
-  const dir = narrated({ audio: false });
+test('steps of lines: reveal-step reaches them, screen parts list the lines, the state model counts them', (t) => {
+  const dir = narrated(resources(t).copyExample(), { audio: false });
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.narration.lines.push({ id: 'l4', step: 3, text: 'Une étape sans bloc.' });
   screen.events = [{ id: 'go-3', on: { type: 'screen.enter' }, do: [{ type: 'reveal-step', step: 3 }] }];
@@ -156,8 +156,8 @@ test('steps of lines: reveal-step reaches them, screen parts list the lines, the
   assert.deepEqual(parts.narration?.lines.map((line) => [line.id, line.step, line.speaker]), [['l1', 1, null], ['l2', 1, null], ['l3', 2, 'marc'], ['l4', 3, null]]);
 });
 
-test('translation: lines and speaker names are units; a translated line has its own audio', () => {
-  const dir = narrated({ audio: false });
+test('translation: lines and speaker names are units; a translated line has its own audio', (t) => {
+  const dir = narrated(resources(t).copyExample(), { audio: false });
   const units = extractUnits(loadProjectFromDir(dir));
   const unit = units.find((candidate) => candidate.id === 'screen.accueil.narration.l3.text');
   assert.equal(unit?.text, 'Ça bloque toute la comptabilité !');
@@ -165,8 +165,8 @@ test('translation: lines and speaker names are units; a translated line has its 
   assert.equal(units.find((candidate) => candidate.id === 'course.speaker.marc.name')?.pointer, '/speakers/1/name');
 });
 
-test('course data: lines, times, captions and segments; the canvas gets them without a track', () => {
-  const render = renderScreen(loadProjectFromDir(narrated({ audio: false })), 'accueil');
+test('course data: lines, times, captions and segments; the canvas gets them without a track', (t) => {
+  const render = renderScreen(loadProjectFromDir(narrated(resources(t).copyExample(), { audio: false })), 'accueil');
   const narration = render.course.screens[0].narration!;
   assert.equal(narration.src, null);
   assert.equal(narration.advance, 'learner');
@@ -177,8 +177,8 @@ test('course data: lines, times, captions and segments; the canvas gets them wit
   assert.equal(narration.lines[2].cues[0].text, 'Ça bloque toute la comptabilité !');
 });
 
-test('elabora timeline: steps, lines, audio and the events on the timeline, as text', { skip: NO_FFMPEG }, () => {
-  const dir = narrated();
+test('elabora timeline: steps, lines, audio and the events on the timeline, as text', { skip: NO_FFMPEG }, (t) => {
+  const dir = narrated(resources(t).copyExample());
   const screen = readJSON(dir, 'screens/accueil.json');
   screen.events = [{ id: 'cue-l2', on: { type: 'timeline.reached', at: { line: 'l2' } }, do: [{ type: 'set-variable', variable: 'indiceVu', value: true }] }];
   writeJSON(dir, 'screens/accueil.json', screen);
@@ -191,8 +191,8 @@ test('elabora timeline: steps, lines, audio and the events on the timeline, as t
   assert.match(text, /cue-l2: timeline\.reached l2 at 0:01\.9 → set-variable variable=indiceVu value=true/);
 });
 
-test('narration edits: lines added, changed, moved and removed (with their audio), as undoable changes', { skip: NO_FFMPEG }, () => {
-  const dir = narrated();
+test('narration edits: lines added, changed, moved and removed (with their audio), as undoable changes', { skip: NO_FFMPEG }, (t) => {
+  const dir = narrated(resources(t).copyExample());
   const added = edit.addNarrationLine(dir, { screen: 'accueil', line: { text: 'Une dernière chose.', step: 2 } });
   assert.equal(added.line, 'l4');
   edit.updateNarrationLine(dir, { screen: 'accueil', line: 'l4', speaker: 'marc', pauseBefore: 1 });
@@ -209,8 +209,8 @@ test('narration edits: lines added, changed, moved and removed (with their audio
   assert.ok(screen.narration.lines.some((line: { id: string }) => line.id === 'l2'));
 });
 
-test('a speaker removed: its lines go to another speaker, or to none, in one undoable change', () => {
-  const dir = narrated({ audio: false });
+test('a speaker removed: its lines go to another speaker, or to none, in one undoable change', (t) => {
+  const dir = narrated(resources(t).copyExample(), { audio: false });
   const course = readJSON(dir, 'course.json');
   course.speakers[1].voices = { fr: { provider: 'pocket-tts', voice: 'jean' } };
   writeJSON(dir, 'course.json', course);
@@ -232,8 +232,8 @@ test('a speaker removed: its lines go to another speaker, or to none, in one und
   assert.ok(readJSON(dir, 'screens/accueil.json').narration.lines.every((line: { speaker?: string }) => line.speaker === undefined));
 });
 
-test('a renamed screen takes the audio of its lines along, their sidecars naming it', { skip: NO_FFMPEG }, () => {
-  const dir = narrated();
+test('a renamed screen takes the audio of its lines along, their sidecars naming it', { skip: NO_FFMPEG }, (t) => {
+  const dir = narrated(resources(t).copyExample());
   edit.rename(dir, { from: 'accueil', to: 'bienvenue' });
   assert.ok(fs.existsSync(path.join(dir, 'assets/narration/fr/bienvenue/l1.m4a')));
   assert.ok(!fs.existsSync(path.join(dir, 'assets/narration/fr/accueil')) || !fs.readdirSync(path.join(dir, 'assets/narration/fr/accueil')).length);
@@ -241,8 +241,8 @@ test('a renamed screen takes the audio of its lines along, their sidecars naming
   assert.deepEqual(narrationLines(loadProjectFromDir(dir), 'bienvenue')!.map((line) => line.status), ['ok', 'ok', 'ok']);
 });
 
-test('a recorded voice imported for a line: converted to M4A mono, its silences trimmed, its sidecar written', { skip: NO_FFMPEG }, async () => {
-  const dir = narrated({ audio: false });
+test('a recorded voice imported for a line: converted to M4A mono, its silences trimmed, its sidecar written', { skip: NO_FFMPEG }, async (t) => {
+  const dir = narrated(resources(t).copyExample(), { audio: false });
   const recording = path.join(dir, 'take.wav');
   fs.mkdirSync(path.dirname(recording), { recursive: true });
   // 0.8 s of silence, 2 s of voice, 1 s of silence.
@@ -260,7 +260,7 @@ test('a recorded voice imported for a line: converted to M4A mono, its silences 
   assert.equal(narrationLines(loadProjectFromDir(dir), 'accueil')![2].status, 'ok');
 });
 
-test('course state: timeline.reached matches its line and edge', () => {
+test('course state: timeline.reached matches its line and edge', (t) => {
   const course = {
     screens: [{ id: 's', key: '1', section: 'a', title: 'S', showTitle: true, required: true, completeWhen: 'viewed', covers: [], blocks: [], layers: [], events: [
       { id: 'start', on: { type: 'timeline.reached', at: { line: 'l2' } }, do: [{ type: 'complete-screen' }] },
@@ -275,8 +275,8 @@ test('course state: timeline.reached matches its line and edge', () => {
   assert.deepEqual(state.eventsFor(screen, 'timeline.reached', { line: 'l1', edge: 'start' }), []);
 });
 
-test('LESSON.md: a decorative sound has no transcript to export; narration is reported as lost', () => {
-  const dir = narrated({ audio: false });
+test('LESSON.md: a decorative sound has no transcript to export; narration is reported as lost', (t) => {
+  const dir = narrated(resources(t).copyExample(), { audio: false });
   const screen = readJSON(dir, 'screens/chemin.json');
   screen.blocks.push({ id: 'ambiance', type: 'audio', props: { asset: 'audio/ambiance.m4a', title: 'Ambiance', decorative: true } });
   writeJSON(dir, 'screens/chemin.json', screen);
@@ -286,7 +286,7 @@ test('LESSON.md: a decorative sound has no transcript to export; narration is re
   assert.ok(exported.losses.some((loss) => /narration \(3 lines/.test(loss.loss)), JSON.stringify(exported.losses));
 });
 
-test('pronunciations: whole words, case-sensitive, the longest first, the line\'s before the course\'s', () => {
+test('pronunciations: whole words, case-sensitive, the longest first, the line\'s before the course\'s', (t) => {
   assert.equal(applyPronunciations('La P-12 et la P-120, pas la p-12.', [{ text: 'P-12', say: 'pé douze' }, { text: 'P-120', say: 'pé cent vingt' }]), 'La pé douze et la pé cent vingt, pas la p-12.');
   assert.equal(applyPronunciations('RDV à 9 h 30.', [{ text: '9 h 30', say: 'neuf heures trente' }, { text: 'h', say: 'ache' }]), 'RDV à neuf heures trente.');
   const course = { pronunciations: { fr: [{ text: 'P-12', say: 'pé douze' }] } } as unknown as Course;
@@ -294,8 +294,8 @@ test('pronunciations: whole words, case-sensitive, the longest first, the line\'
   assert.equal(spokenTextOf(course, {}, 'Prenez la P-12.', 'en'), 'Prenez la P-12.', 'each language has its own list');
 });
 
-test('a generated voice remembers what it was told to say and how: another pronunciation or delivery makes it out of date, another model does not', { skip: NO_FFMPEG }, async () => {
-  const dir = narrated({ audio: false });
+test('a generated voice remembers what it was told to say and how: another pronunciation or delivery makes it out of date, another model does not', { skip: NO_FFMPEG }, async (t) => {
+  const dir = narrated(resources(t).copyExample(), { audio: false });
   const course = readJSON(dir, 'course.json');
   course.speakers[0].voices = { fr: { provider: 'pocket-tts', voice: 'camille', settings: { speed: 1 } } };
   writeJSON(dir, 'course.json', course);
@@ -334,7 +334,7 @@ test('a generated voice remembers what it was told to say and how: another pronu
 });
 
 // Credits of CC-BY voices name their sources and licence by address: the player makes them links.
-test('credits: their web addresses become links, without the punctuation that ends them', () => {
+test('credits: their web addresses become links, without the punctuation that ends them', (t) => {
   const credit = 'Pocket TTS, https://huggingface.co/kyutai/pocket-tts, CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/) ; voix de Kyutai (CC0), https://huggingface.co/kyutai/tts-voices.';
   assert.deepEqual(textAndAddresses(credit), [
     { text: 'Pocket TTS, ' }, { href: 'https://huggingface.co/kyutai/pocket-tts' },

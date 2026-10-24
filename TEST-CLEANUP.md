@@ -141,7 +141,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/migrate.test.ts` | 86 | — | Pending |
 | `test/unit/model-mirrors.test.ts` | 71 | 71 | Passed 2 native-seeded cases; pin/hash/size/origin and real fake-network install/reuse/tamper refusal retained; model families available rather than arbitrary file-count quota |
 | `test/unit/model-versions.test.ts` | 126 | 132 | Passed 4 native-seeded cases; fake request gate and filesystem event replace polling; cancellation must reject; context-owned leases/install/folders preserve compatible-model use, deferred deletion and resume contracts |
-| `test/unit/narration.test.ts` | 346 | — | Pending |
+| `test/unit/narration.test.ts` | 346 | 346 | Native-seeded cases passed; owned narrated courses; timing, captions, status, editing, speaker, recording, pronunciation and credits contracts retained |
 | `test/unit/object-gates.test.ts` | 35 | 35 | Passed 2 native-seeded cases; test-owned snapshot folder; frame plan boundaries and real baseline pruning retained |
 | `test/unit/ops.test.ts` | 929 | 757 | Passed 41 cases; shared seeded generator and real snapshot reader replace duplicate support machinery; public replay/undo properties and all named boundaries retained |
 | `test/unit/package-limits.test.ts` | 131 | — | Pending |
