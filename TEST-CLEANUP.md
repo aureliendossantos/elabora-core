@@ -83,7 +83,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/matrix/medieval.test.ts` | 45 | — | Pending |
 | `test/matrix/phishing.test.ts` | 41 | — | Pending |
 | `test/matrix/planetary.test.ts` | 84 | — | Pending |
-| `test/unit/add-resource.test.ts` | 107 | — | Pending |
+| `test/unit/add-resource.test.ts` | 107 | 108 | Native-seeded cases passed; per-case source files and owned sessions/MCP clients; exact imported bytes replace size-only check |
 | `test/unit/agent-rules.test.ts` | 105 | — | Pending |
 | `test/unit/align.test.ts` | 469 | 477 | Passed native seed 155921 with two explicit unavailable-model skips; seeded CTC oracle retained; context-owned narration/model/recording folders and session/worker disposal, real-case environment restored |
 | `test/unit/backups.test.ts` | 456 | 465 | Passed all 14 native-seeded cases; reproducible media with distinct edit seeds, owned project folders, hash-race clock controlled; child readiness/release gates replace synchronized wall-clock start; live-lock refusal uses zero timeout; retention/restore/GC contracts retained |

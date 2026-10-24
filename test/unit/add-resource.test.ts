@@ -1,12 +1,12 @@
-import { test } from 'node:test';
+import { test, beforeEach, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import * as edit from '@elabora/node/edit';
 import { addResource } from '@elabora/node/edit/resources';
 import { validateDir } from '@elabora/node/project-reader';
-import { ROOT, copyExample, readJSON } from '../helpers.ts';
+import { ROOT, readJSON } from '../helpers.ts';
 import { textPdf } from '../sources-fixtures.ts';
 import { openProject } from '@elabora/engine';
 import { spawnSync } from 'node:child_process';
@@ -18,12 +18,13 @@ import { createMcpServer } from '@elabora/cli/mcp';
 // resources in one journaled change; its title given, else the PDF's own, else its name; undone, the
 // copy goes.
 
-const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-resource-files-'));
+let outside: string;
+beforeEach(t => { outside = resources(t as TestContext).tempDir('elabora-resource-files-'); });
 const write = (name: string, content: Buffer | string) => { const file = path.join(outside, name); fs.writeFileSync(file, content); return file; };
 const titled = (title: string) => Buffer.from(textPdf(['Page']).toString('latin1').replace('/Root 1 0 R >>', `/Root 1 0 R /Info 99 0 R >>`).replace('trailer', `99 0 obj\n<< /Title (${title}) >>\nendobj\ntrailer`), 'latin1');
 
-test('a PDF is copied under a readable name, titled by its own title, in one change that undo takes back', () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+test('a PDF is copied under a readable name, titled by its own title, in one change that undo takes back', (t) => {
+  const dir = resources(t as TestContext).copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
   const pdf = write('Procédure_SUP-NET-04 (v2).pdf', titled('Procédure de diagnostic réseau'));
   const added = addResource(dir, { path: pdf });
   assert.equal(added.op, 'add_resource');
@@ -47,8 +48,8 @@ test('a PDF is copied under a readable name, titled by its own title, in one cha
   assert.equal(readJSON(dir, 'course.json').resources.length, 2);
 });
 
-test('any file: a name taken by another file, a spreadsheet titled by its name, a CSV kept byte for byte', () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+test('any file: a name taken by another file, a spreadsheet titled by its name, a CSV kept byte for byte', (t) => {
+  const dir = resources(t).copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
   // A file named as one already there, with another content.
   const sheet = addResource(dir, { path: write('equipements-siege.csv', 'nom;adresse\nimprimante;10.0.0.4\n') });
   assert.equal(sheet.path, 'assets/resources/equipements-siege-2.csv');
@@ -68,9 +69,9 @@ test('any file: a name taken by another file, a spreadsheet titled by its name, 
   assert.throws(() => addResource(dir, { path: path.join(outside, 'absent.pdf') }), /No file at/);
 });
 
-test('the engine runs add_resource as a change of the app', async () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
-  const session = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 });
+test('the engine runs add_resource as a change of the app', async (t) => {
+  const dir = resources(t).copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const session = resources(t).own(await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 }), value => value.close());
   try {
     await session.flush();
     const pdf = write('Charte.pdf', titled('Charte informatique du groupe'));
@@ -79,24 +80,24 @@ test('the engine runs add_resource as a change of the app', async () => {
     assert.deepEqual((result.result as { resource: unknown }).resource, { id: 'charte', title: 'Charte informatique du groupe', asset: 'resources/charte.pdf' });
     const copied = session.readFile('assets/resources/charte.pdf');
     assert.equal(copied.kind, 'binary');
-    assert.equal(fs.readFileSync(path.join(dir, 'assets/resources/charte.pdf')).length, fs.statSync(pdf).size);
+    assert.deepEqual(fs.readFileSync(path.join(dir, 'assets/resources/charte.pdf')), fs.readFileSync(pdf));
   } finally {
     await session.close();
   }
 });
 
-test('elabora player --add-resource and elabora_player addResources', async () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+test('elabora player --add-resource and elabora_player addResources', async (t) => {
+  const dir = resources(t).copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
   const run = spawnSync(process.execPath, [path.join(ROOT, 'bin/elabora.js'), 'player', dir, '--add-resource', write('Guide.pdf', textPdf(['Guide'])), '--title', 'Guide du technicien', '--json'], { encoding: 'utf8' });
   assert.equal(run.status, 0, run.stderr);
   const printed = JSON.parse(run.stdout) as { added: { resource: { id: string; title: string } }[] };
   assert.deepEqual(printed.added.map((entry) => entry.resource), [{ id: 'guide', title: 'Guide du technicien', asset: 'resources/guide.pdf' }]);
   const refused = spawnSync(process.execPath, [path.join(ROOT, 'bin/elabora.js'), 'player', dir, '--title', 'Sans fichier'], { encoding: 'utf8' });
   assert.notEqual(refused.status, 0);
-  const server = createMcpServer(dir);
+  const server = resources(t).own(createMcpServer(dir), value => value.close());
   const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
   await server.connect(serverSide);
-  const client = new Client({ name: 'test', version: '1' });
+  const client = resources(t).own(new Client({ name: 'test', version: '1' }), value => value.close());
   await client.connect(clientSide);
   const result = await client.callTool({ name: 'elabora_player', arguments: { addResources: [{ path: write('Annuaire.pdf', titled('Annuaire du support')) }], enable: ['display'] } });
   const body = JSON.parse((result.content as { text: string }[])[0].text) as { added: { resource: { title: string }; titleFrom: string; change: unknown }[]; change: unknown };
