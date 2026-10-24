@@ -163,7 +163,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/scaffold.test.ts` | 128 | — | Pending |
 | `test/unit/schema.test.ts` | 40 | 36 | Passed 5 native-seeded cases; full strict registry compile check already lives in format.test.ts; real profile/schema/action boundaries retained without arbitrary profile count |
 | `test/unit/sources.test.ts` | 511 | 521 | Passed 21 native-seeded cases; fresh input/model folders and restored library/data environment per case; await transcriber/client disposal before removal; mtime edits relative to fixture; import/readability/privacy/build-byte/archive contracts preserved |
-| `test/unit/state-golden.test.ts` | 40 | — | Pending |
+| `test/unit/state-golden.test.ts` | 40 | 36 | Passed native-seeded cases; pinned legacy bytes retained; decode compares complete learner state rather than selected fields and re-encoding |
 | `test/unit/state.test.ts` | 53 | 50 | Passed; 100 full-state persistence cases, complete corruption fallback, permanent keys and budget growth; test-owned course folders |
 | `test/unit/svg-inline.test.ts` | 99 | — | Pending |
 | `test/unit/template-fields.test.ts` | 27 | — | Pending |

@@ -32,9 +32,5 @@ test('suspend data encoding is pinned', () => {
 });
 
 test('pinned suspend data decodes to the same state', () => {
-  const back = decodeState(GOLDEN);
-  assert.equal(encodeState(back), GOLDEN);
-  assert.deepEqual([...back.visits], ['v1', 'v0']);
-  assert.deepEqual(back.numerics.m, { value: null, attempts: 0 });
-  assert.equal(back.vars.name, 'Zoé, « x »');
+  assert.deepEqual(decodeState(GOLDEN), sampleState());
 });
