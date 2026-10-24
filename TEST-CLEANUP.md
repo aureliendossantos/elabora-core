@@ -87,7 +87,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/agent-rules.test.ts` | 105 | — | Pending |
 | `test/unit/align.test.ts` | 469 | 477 | Passed native seed 155921 with two explicit unavailable-model skips; seeded CTC oracle retained; context-owned narration/model/recording folders and session/worker disposal, real-case environment restored |
 | `test/unit/backups.test.ts` | 456 | 465 | Passed all 14 native-seeded cases; reproducible media with distinct edit seeds, owned project folders, hash-race clock controlled; child readiness/release gates replace synchronized wall-clock start; live-lock refusal uses zero timeout; retention/restore/GC contracts retained |
-| `test/unit/browser.test.ts` | 57 | — | Pending |
+| `test/unit/browser.test.ts` | 57 | 50 | Passed native-seeded cases; named channel/fallback cases inspect usable returned browser; value comparison replaces argument identity and mock-call-only checks |
 | `test/unit/canvas-host.test.ts` | 134 | 135 | Passed native-seeded cases; owns host, late event stream and narrated course; actual HTTP/SSE/render, MIME/range and unlisted-file refusals retained |
 | `test/unit/charts-before-after.test.ts` | 86 | 43 | Passed chart units and desktop/phone browser layout; public output replaces private geometry/dodge formulas; crowded and coincident labels checked by actual DOM bounds |
 | `test/unit/charts-cycle.test.ts` | 112 | 106 | Passed chart units and browser layout; rendered clockwise order and visible bounds replace private stage/arc formulas and constants |

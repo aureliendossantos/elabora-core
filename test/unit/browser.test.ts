@@ -6,14 +6,13 @@ import { CHROMIUM_CHANNELS, launchChromium } from '@elabora/node/emulator/browse
 // A Playwright chromium whose channels are installed or not, or fail to start: what each launch got.
 function fakeChromium(installed: Record<string, 'starts' | string>) {
   const launches: LaunchOptions[] = [];
-  const browser = { close: async () => {} } as unknown as Browser;
   return {
     launches,
     launch: async (options: LaunchOptions = {}) => {
       launches.push(options);
       const channel = options.channel ?? 'playwright';
       const state = installed[channel];
-      if (state === 'starts') return browser;
+      if (state === 'starts') return { version: () => channel, close: async () => {} } as unknown as Browser;
       if (state) throw new Error(`browserType.launch: ${state}\nCall log: …`);
       if (channel === 'playwright') throw new Error('browserType.launch: Executable doesn\'t exist at /cache/chromium_headless_shell-1243/chrome-mac/headless_shell');
       throw new Error(`browserType.launch: Chromium distribution '${channel}' is not found at /Applications/${channel}\nRun "npx playwright install ${channel}"`);
@@ -23,25 +22,19 @@ function fakeChromium(installed: Record<string, 'starts' | string>) {
 
 const options = { headless: true, args: ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--disable-features=IsolateSandboxedIframes'] };
 
-test('Chromium is the installed Google Chrome, else Microsoft Edge, else Playwright’s Chromium, each launched with the same options', async () => {
-  const chrome = fakeChromium({ chrome: 'starts', msedge: 'starts' });
-  await launchChromium(chrome, CHROMIUM_CHANNELS, options);
-  assert.deepEqual(chrome.launches, [{ ...options, channel: 'chrome' }]);
-
-  const edge = fakeChromium({ msedge: 'starts', playwright: 'starts' });
-  await launchChromium(edge, CHROMIUM_CHANNELS, options);
-  assert.deepEqual(edge.launches, [{ ...options, channel: 'chrome' }, { ...options, channel: 'msedge' }]);
-
-  const own = fakeChromium({ playwright: 'starts' });
-  await launchChromium(own, CHROMIUM_CHANNELS, options);
-  assert.deepEqual(own.launches.map((launch) => launch.channel), ['chrome', 'msedge', undefined]);
-  assert.ok(own.launches.every((launch) => launch.args === options.args && launch.headless === true));
-
-  // An order of one's own: Edge alone.
-  const only = fakeChromium({ chrome: 'starts', msedge: 'starts' });
-  await launchChromium(only, ['msedge'], options);
-  assert.deepEqual(only.launches.map((launch) => launch.channel), ['msedge']);
-});
+for (const [name, installed, channels, selected] of [
+  ['Chrome takes priority', { chrome: 'starts', msedge: 'starts' }, CHROMIUM_CHANNELS, 'chrome'],
+  ['Edge is used when Chrome is absent', { msedge: 'starts', playwright: 'starts' }, CHROMIUM_CHANNELS, 'msedge'],
+  ['bundled Chromium is the final fallback', { playwright: 'starts' }, CHROMIUM_CHANNELS, 'playwright'],
+  ['an explicit channel excludes the others', { chrome: 'starts', msedge: 'starts' }, ['msedge'], 'msedge']
+] as const) {
+  test(name, async () => {
+    const chromium = fakeChromium(installed);
+    const browser = await launchChromium(chromium, [...channels], options);
+    assert.equal(browser.version(), selected);
+    assert.deepEqual(chromium.launches.at(-1), { ...options, ...(selected === 'playwright' ? {} : { channel: selected }) });
+  });
+}
 
 test('without a browser, the message says which were looked for and to install Google Chrome, npx only as an aside', async () => {
   await assert.rejects(launchChromium(fakeChromium({}), CHROMIUM_CHANNELS, options), (error: Error) => {
