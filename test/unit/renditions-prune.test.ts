@@ -1,26 +1,25 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { renditionsDir } from '@elabora/node/media/index';
 import { pruneProjectData } from '@elabora/node/project-data';
 import { projectFileHash } from '@elabora/node/file-hash';
 import { presetHash } from '@elabora/core/media/presets';
-import { copyExample } from '../helpers.ts';
+import { resources } from '../resources.ts';
 
 const DAY = 24 * 60 * 60 * 1000;
 
-test('pruning removes week-old renditions of masters gone or of changed preset parameters, and keeps the rest', async () => {
-  const dir = copyExample();
+test('pruning removes week-old renditions of masters gone or of changed preset parameters, and keeps the rest', async (t) => {
+  const dir = resources(t).copyExample();
   fs.mkdirSync(path.join(dir, 'assets/video'), { recursive: true });
-  fs.writeFileSync(path.join(dir, 'assets/video/clip.mp4'), crypto.randomBytes(4096));
+  fs.writeFileSync(path.join(dir, 'assets/video/clip.mp4'), Buffer.alloc(4096, 7));
   const master = (await projectFileHash(dir, 'assets/video/clip.mp4')).slice('sha256:'.length, 'sha256:'.length + 32);
   const gone = 'f'.repeat(32);
   const current = `medium-${presetHash('medium', 'video')}`;
   const cache = renditionsDir(dir);
   fs.mkdirSync(cache, { recursive: true });
-  const now = new Date();
+  const now = new Date('2026-10-20T12:00:00Z');
   const old = new Date(now.getTime() - 10 * DAY);
   const files: Record<string, Date> = {
     [`${master}-${current}.mp4`]: old,           // in use: kept, however old
@@ -38,7 +37,7 @@ test('pruning removes week-old renditions of masters gone or of changed preset p
   assert.deepEqual(fs.readdirSync(cache).sort(), [`${gone}-low-${presetHash('low', 'video')}.mp4`, `${master}-${current}.mp4`].sort());
 });
 
-test('pruning a project without renditions does nothing', async () => {
-  const dir = copyExample();
+test('pruning a project without renditions does nothing', async (t) => {
+  const dir = resources(t).copyExample();
   assert.deepEqual((await pruneProjectData(dir)).renditions, { removed: 0, bytesFreed: 0 });
 });

@@ -30,11 +30,11 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Fixed-delay synchronization | 32 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
-| Unseeded randomness | 32 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
+| Unseeded randomness | 33 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 4 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 5 | validate: counted two errors without identifying their prop paths |
-| Resource cleanup | 97 | validate: copied fixtures were never removed |
+| Resource cleanup | 99 | validate: copied fixtures were never removed |
 | Wall-clock timing | 9 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
@@ -152,7 +152,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/releases.test.ts` | 38 | — | Pending |
 | `test/unit/rename.test.ts` | 118 | — | Pending |
 | `test/unit/render.test.ts` | 147 | — | Pending |
-| `test/unit/renditions-prune.test.ts` | 44 | — | Pending |
+| `test/unit/renditions-prune.test.ts` | 44 | 43 | Passed 2 native-seeded cases; fixed public now/mtime ages and bytes, owned course copies; keeps current/recent renditions and removes old obsolete data |
 | `test/unit/review-bridge.test.ts` | 278 | — | Pending |
 | `test/unit/robustness-commands.test.ts` | 155 | — | Pending |
 | `test/unit/robustness.test.ts` | 93 | — | Pending |
