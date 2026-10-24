@@ -1,4 +1,4 @@
-import { test, after } from 'node:test';
+import { test, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -8,7 +8,7 @@ import crypto from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { ROOT } from '../helpers.ts';
-import { downloadKinds, installDownload, optionalDownloads, registerDownloadKind, uninstallDownload } from '@elabora/node/downloads/index';
+import { downloadKinds, installDownload, optionalDownloads, uninstallDownload } from '@elabora/node/downloads/index';
 import { alignerFor, alignerInstalled, holdAligner } from '@elabora/node/align/models';
 import { modelsRoot } from '@elabora/node/voice/pocket/models';
 import { holdTranscriber, transcriberFor, transcriberInstalled } from '@elabora/node/transcribe/models';
@@ -23,7 +23,7 @@ const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-downloads-'));
 after(() => fs.rmSync(temp, { recursive: true, force: true }));
 
 // The aligners as made-up models of 40 KB and 20 KB, from a server of this test; the voices too.
-const bodies: Record<string, Buffer> = { 'fr.onnx': crypto.randomBytes(40_000), 'en.onnx': crypto.randomBytes(20_000), 'voice.bin': crypto.randomBytes(10_000), 'stt.onnx': crypto.randomBytes(30_000) };
+const bodies: Record<string, Buffer> = { 'fr.onnx': Buffer.alloc(40_000, 1), 'en.onnx': Buffer.alloc(20_000, 2), 'voice.bin': Buffer.alloc(10_000, 3), 'stt.onnx': Buffer.alloc(30_000, 4) };
 let requests = 0;
 const server = http.createServer((request, response) => {
   requests++;
@@ -42,6 +42,11 @@ Object.assign(process.env, {
   ELABORA_VOICE_MODELS_DIR: path.join(temp, 'voices'), ELABORA_VOICE_MODELS_URL: url, ELABORA_VOICE_MODELS_MANIFEST: path.join(temp, 'voices.json'),
   ELABORA_ALIGNER_MODELS_DIR: path.join(temp, 'aligners'), ELABORA_ALIGNER_MODELS_URL: url, ELABORA_ALIGNER_MODELS_MANIFEST: path.join(temp, 'aligners.json'),
   ELABORA_TRANSCRIBER_MODELS_DIR: path.join(temp, 'transcribers'), ELABORA_TRANSCRIBER_MODELS_URL: url, ELABORA_TRANSCRIBER_MODELS_MANIFEST: path.join(temp, 'transcribers.json')
+});
+
+beforeEach(() => {
+  requests = 0;
+  for (const folder of ['voices', 'aligners', 'transcribers']) fs.rmSync(path.join(temp, folder), { recursive: true, force: true });
 });
 
 test('downloads: the local voices and the word aligners by language, what each is for, sized, installed, refused while in use, removed', async () => {
@@ -66,9 +71,10 @@ test('downloads: the local voices and the word aligners by language, what each i
 
   // Words being placed with it (an alignment holds it): refused, then removed.
   const release = await holdAligner(alignerFor('fr')!);
-  assert.equal(optionalDownloads({ kind: 'aligner', language: 'fr' })[0].inUse, true);
-  await assert.rejects(uninstallDownload('aligner-fr'), (error: Error & { code?: string }) => error.code === 'E_ALIGN_IN_USE' && /in use: words are being placed with it/.test(error.message));
-  release();
+  try {
+    assert.equal(optionalDownloads({ kind: 'aligner', language: 'fr' })[0].inUse, true);
+    await assert.rejects(uninstallDownload('aligner-fr'), (error: Error & { code?: string }) => error.code === 'E_ALIGN_IN_USE' && /in use: words are being placed with it/.test(error.message));
+  } finally { release(); }
   const removed = await uninstallDownload('aligner-fr');
   assert.ok(removed.freed >= 40_000);
   assert.equal(optionalDownloads({ kind: 'aligner', language: 'fr' })[0].installed, false);
@@ -97,13 +103,19 @@ test('downloads: the transcriber is one download for every language it hears, re
   assert.ok(transcriberInstalled(transcriberFor('fr-CA')!) && transcriberFor('en')?.id === transcriberFor('de')?.id);
   assert.equal(transcriberFor('ja'), null, 'Parakeet hears 25 European languages');
   const release = await holdTranscriber(transcriberFor('fr')!);
-  await assert.rejects(uninstallDownload('transcriber'), (error: Error & { code?: string }) => error.code === 'E_TRANSCRIBE_IN_USE' && /a recording is being transcribed with it/.test(error.message));
-  release();
+  try {
+    await assert.rejects(uninstallDownload('transcriber'), (error: Error & { code?: string }) => error.code === 'E_TRANSCRIBE_IN_USE' && /a recording is being transcribed with it/.test(error.message));
+  } finally { release(); }
   assert.ok((await uninstallDownload('transcriber')).freed >= 30_000);
   assert.equal(optionalDownloads({ kind: 'transcriber' })[0].installed, false);
 });
 
-test('downloads: a new kind only registers (its list, install, removal)', async () => {
+test('a registered download kind lists, installs and removes through the public API', async () => {
+  // The registry has process lifetime and no unregister API. Exercise extensions in their own
+  // process so that built-in-kind tests never depend on running before this one.
+  const script = `
+    import assert from 'node:assert/strict';
+    import { registerDownloadKind, optionalDownloads, installDownload, uninstallDownload } from '@elabora/node/downloads/index';
   let there = false;
   registerDownloadKind({
     kind: 'test-kind', title: 'Test kind', serves: 'tests', without: 'nothing',
@@ -114,6 +126,8 @@ test('downloads: a new kind only registers (its list, install, removal)', async 
   assert.deepEqual(optionalDownloads({ kind: 'test-kind' }).map(({ id, language, installed, size }) => ({ id, language, installed, size })), [{ id: 'test-kind', language: null, installed: false, size: 7 }]);
   assert.equal((await installDownload('test-kind')).installed, true);
   assert.deepEqual(await uninstallDownload('test-kind'), { id: 'test-kind', freed: 5 });
+  `;
+  await execFileAsync(process.execPath, ['--input-type=module', '-e', script], { cwd: ROOT, env: process.env });
 });
 
 test('cli: elabora downloads list, install and uninstall; voice uninstall is the voices\' part', async () => {
