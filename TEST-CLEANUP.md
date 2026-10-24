@@ -153,7 +153,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/player.test.ts` | 240 | 241 | Native-seeded player cases passed; context-owned fixtures preserve compiled bars, accessibility, navigation, editing and translation contracts |
 | `test/unit/project-files.test.ts` | 124 | 115 | Passed 7 native-seeded cases; deterministic SHA oracle and owned courses, public snapshot/hash invalidation replace cache JSON tampering; real cache reuse under unreadable content remains checked by backups |
 | `test/unit/purity.test.ts` | 53 | 53 | Passed 3 native-seeded cases; public LMS catalogue compared with checked-in data instead of private PROFILE_FILES import/order; required cross-browser architecture and generated-template guards retained |
-| `test/unit/releases.test.ts` | 38 | — | Pending |
+| `test/unit/releases.test.ts` | 38 | 38 | Reviewed unchanged; passed real Sampo release preparation, workspace versions/lock/dependency updates, changelog preservation and changeset consumption in isolated Git fixture |
 | `test/unit/rename.test.ts` | 118 | 118 | Native-seeded cases passed; dispose courses/builds after each case; reference propagation, learner keys, translation and exact undo contracts retained |
 | `test/unit/render.test.ts` | 147 | 148 | Passed native-seeded checks; Public incremental/full render and CSS/package parity retained; owns fixtures and checks output rather than private render context |
 | `test/unit/renditions-prune.test.ts` | 44 | 43 | Passed 2 native-seeded cases; fixed public now/mtime ages and bytes, owned course copies; keeps current/recent renditions and removes old obsolete data |
