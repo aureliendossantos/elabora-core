@@ -1,7 +1,7 @@
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { validateDir } from '@elabora/node/project-reader';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
@@ -12,11 +12,11 @@ import { checkTemplate } from '@elabora/core/validate/components';
 import { createReporter } from '@elabora/core/diagnostics/index';
 import { exportLessonMd } from '@elabora/node/lesson-md';
 import type { Block, PlanItem, PlanQuestion, PlanQuestionOption } from '@elabora/format';
-import { ROOT, copyExample, readJSON, writeJSON, writeFixture as write, codes } from '../helpers.ts';
+import { ROOT, readJSON, writeJSON, writeFixture as write, codes } from '../helpers.ts';
 import { build } from '@elabora/node/build';
 import * as edit from '@elabora/node/edit';
 
-const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-comp-'));
+const tmp = (t: TestContext) => resources(t).tempDir('elabora-comp-');
 const errors = (dir: string) => validateDir(dir).diagnostics.filter((d) => d.severity === 'error');
 
 // A small card component with a list, a token, a slot and an explicit fallback.
@@ -38,7 +38,7 @@ function addCard(dir: string, extra: Record<string, unknown> = {}) {
 }
 const card = (id: string, props: Record<string, unknown> = {}, blocks?: Block[]): Block => ({ id, type: 'key-card', props: { title: 'Ping first', body: 'Check the **link**.', steps: [{ label: 'Cable' }, { label: 'Switch' }], accent: 'color.primary', ...props }, ...(blocks ? { blocks } : {}) });
 
-test('templates: bindings, lists, conditions, Markdown, tokens and escaping', () => {
+test('templates: bindings, lists, conditions, Markdown, tokens and escaping', (t) => {
   const tpl = parseTemplate('<div class="c c--{{size}}" style="--a: {{accent}}"><p data-if="label">{{label}}</p><div>{{body}}</div><ul><li data-each="items" data-if="!hidden">{{@number}} {{name}}</li></ul><img src="{{photo}}" alt=""><h3 data-if="level == 3">{{label}}</h3></div>');
   const schema = { type: 'object', properties: { size: { enum: ['s', 'l'] }, accent: { type: 'string', 'x-kind': 'token' }, label: { type: 'string' }, body: { type: 'string', 'x-kind': 'markdown' }, photo: { type: 'string', 'x-kind': 'asset' }, level: { type: 'integer' }, items: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, hidden: { type: 'boolean' } } } } } };
   const r = renderTemplate(tpl, { props: { size: 'l', accent: 'color.copper', label: 'A <b>', body: 'x **y**', photo: 'images/a.png', level: 3, items: [{ name: 'one' }, { name: 'two', hidden: true }] }, schema, id: 'b1' });
@@ -47,11 +47,13 @@ test('templates: bindings, lists, conditions, Markdown, tokens and escaping', ()
   const a = analyzeTemplate(tpl, schema);
   assert.deepEqual([...a.usedProps].sort(), ['accent', 'body', 'items', 'label', 'level', 'photo', 'size']);
   assert.equal(a.unknown.length, 0);
-  assert.equal(analyzeTemplate(parseTemplate('<p>{{nope}}</p><i data-each="label"></i>'), schema).unknown.length + analyzeTemplate(parseTemplate('<i data-each="label"></i>'), schema).badEach.length, 2);
+  const invalid = analyzeTemplate(parseTemplate('<p>{{nope}}</p><i data-each="label"></i>'), schema);
+  assert.equal(invalid.unknown.length, 1);
+  assert.equal(invalid.badEach.length, 1);
 });
 
-test('built-in templates follow the rules agents follow', () => {
-  const project = loadProjectFromDir(copyExample());
+test('built-in templates follow the rules agents follow', (t) => {
+  const project = loadProjectFromDir(resources(t).copyExample());
   const reg = getRegistry(project);
   for (const id of Object.keys(BUILTINS).filter((t) => BUILTINS[t].render === 'template')) {
     const reporter = createReporter();
@@ -62,14 +64,14 @@ test('built-in templates follow the rules agents follow', () => {
   }
 });
 
-test('a course component: props, slots, fallback, rendering and stylesheet', async () => {
-  const dir = copyExample();
+test('a course component: props, slots, fallback, rendering and stylesheet', async (t) => {
+  const dir = resources(t).copyExample();
   addCard(dir);
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push(card('chemin-card', {}, [{ id: 'chemin-card-note', type: 'text', slot: 'more', props: { markdown: 'Then the switch.' } }]));
   writeJSON(dir, 'screens/chemin.json', s);
   assert.deepEqual(errors(dir), []);
-  const r = await build(dir, { out: tmp(), emit: 'both' });
+  const r = await build(dir, { out: tmp(t), emit: 'both' });
   assert.ok(r.ok && r.dirPath, JSON.stringify(r.diagnostics.filter((d) => d.severity === 'error')));
   const data = fs.readFileSync(path.join(r.dirPath, 'elabora/course.js'), 'utf8');
   assert.match(data, /"type":"key-card","width":"full","html":"<div class=\\"kc\\" style=\\"--kc: var\(--t-color-primary\)\\"><h2>Ping first<\/h2>/);
@@ -87,8 +89,8 @@ test('a course component: props, slots, fallback, rendering and stylesheet', asy
   for (const code of ['E_COMPONENT_PROPS', 'E_UNKNOWN_REFERENCE', 'E_COMPONENT_SLOT', 'E_COMPONENT_UNKNOWN']) assert.ok(c.includes(code), code);
 });
 
-test('fallback: native blocks with the same text, plan links kept; losses are reported', () => {
-  const dir = copyExample();
+test('fallback: native blocks with the same text, plan links kept; losses are reported', (t) => {
+  const dir = resources(t).copyExample();
   addCard(dir);
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push(card('chemin-card', {}, [{ id: 'chemin-card-note', type: 'text', slot: 'more', props: { markdown: 'Then the switch.' } }]));
@@ -107,8 +109,8 @@ test('fallback: native blocks with the same text, plan links kept; losses are re
   assert.ok(!codes(validateDir(dir).diagnostics).includes('W_COMPONENT_FALLBACK_LOSS'));
 });
 
-test('duplicate and detach: copies get new ids; detach keeps the id and the content', () => {
-  const dir = copyExample();
+test('duplicate and detach: copies get new ids; detach keeps the id and the content', (t) => {
+  const dir = resources(t).copyExample();
   addCard(dir);
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push(card('chemin-card', {}, [{ id: 'chemin-card-note', type: 'text', slot: 'more', props: { markdown: 'Then the switch.' } }]));
@@ -136,8 +138,8 @@ test('duplicate and detach: copies get new ids; detach keeps the id and the cont
   assert.ok(!readJSON(dir, 'screens/chemin.json').blocks.find((b: Block) => b.id === 'chemin-card-copy').blocks);
 });
 
-test('fork of quiz: headless template, extra props, plan question, same state key and scoring', async () => {
-  const dir = copyExample();
+test('fork of quiz: headless template, extra props, plan question, same state key and scoring', async (t) => {
+  const dir = resources(t).copyExample();
   const r = edit.forkComponent(dir, { component: 'quiz', id: 'card-quiz', title: 'Card quiz' });
   assert.equal(r.component, 'card-quiz');
   const m = readJSON(dir, 'components/card-quiz/component.json');
@@ -157,7 +159,7 @@ test('fork of quiz: headless template, extra props, plan question, same state ke
   q.props.options = planQ.options.map((o: PlanQuestionOption, i: number) => ({ id: o.id, icon: i % 2 ? 'b' : 'a' }));
   writeJSON(dir, `screens/${sid}.json`, s);
   assert.deepEqual(errors(dir), []);
-  const b = await build(dir, { out: tmp(), emit: 'both' });
+  const b = await build(dir, { out: tmp(t), emit: 'both' });
   assert.ok(b.ok && b.dirPath);
   const data = JSON.parse(fs.readFileSync(path.join(b.dirPath, 'elabora/course.js'), 'utf8').replace(/^window\.ELABORA_COURSE = |;\s*$/g, ''));
   // Blocks of the compiled course data, slots included.
@@ -189,8 +191,8 @@ test('fork of quiz: headless template, extra props, plan question, same state ke
   assert.ok(codes(validateDir(dir).diagnostics).includes('E_QUIZ_SOURCE'));
 });
 
-test('screen layouts are screen-level components; block components cannot be layouts', () => {
-  const dir = copyExample();
+test('screen layouts are screen-level components; block components cannot be layouts', (t) => {
+  const dir = resources(t).copyExample();
   addCard(dir);
   const s = readJSON(dir, 'screens/chemin.json');
   s.layout = 'key-card';
@@ -198,13 +200,13 @@ test('screen layouts are screen-level components; block components cannot be lay
   assert.ok(codes(validateDir(dir).diagnostics).includes('E_COMPONENT_LEVEL'));
 });
 
-test('migrations: steps run on every instance, are checked, and are undoable', async () => {
-  const dir = copyExample();
+test('migrations: steps run on every instance, are checked, and are undoable', async (t) => {
+  const dir = resources(t).copyExample();
   addCard(dir);
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push(card('chemin-card'), card('chemin-card-2', { title: 'Swap the cable' }));
   writeJSON(dir, 'screens/chemin.json', s);
-  assert.ok((await build(dir, { out: tmp() })).ok); // records key-card 1.0.0 in the lock
+  assert.ok((await build(dir, { out: tmp(t) })).ok); // records key-card 1.0.0 in the lock
   // 2.0.0 renames title → heading.
   const m = readJSON(dir, 'components/key-card/component.json');
   m.version = '2.0.0';
@@ -230,10 +232,10 @@ test('migrations: steps run on every instance, are checked, and are undoable', a
   assert.equal(readJSON(dir, 'elabora.lock.json').components['key-card'], '1.0.0');
 });
 
-test('libraries: add pins a copy, local edits are reported, upgrade and publish', () => {
-  const lib = tmp();
+test('libraries: add pins a copy, local edits are reported, upgrade and publish', (t) => {
+  const lib = tmp(t);
   write(lib, 'library.json', { id: 'acme', title: 'ACME design system' });
-  const dir = copyExample();
+  const dir = resources(t).copyExample();
   addCard(dir);
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push(card('chemin-card'));
@@ -245,7 +247,7 @@ test('libraries: add pins a copy, local edits are reported, upgrade and publish'
   assert.ok(!codes(validateDir(dir).diagnostics).includes('W_COMPONENT_DIVERGED'));
 
   // Another course adds it.
-  const other = copyExample();
+  const other = resources(t).copyExample();
   const a = edit.addLibraryComponent(other, { library: lib, component: 'key-card' });
   assert.equal(a.to, '1.0.0');
   assert.ok(!codes(validateDir(other).diagnostics).includes('W_COMPONENT_DIVERGED'));
@@ -261,13 +263,13 @@ test('libraries: add pins a copy, local edits are reported, upgrade and publish'
   assert.ok(!codes(validateDir(other).diagnostics).includes('W_COMPONENT_DIVERGED'));
 });
 
-test('exports and the client view use the fallback', () => {
-  const dir = copyExample();
+test('exports and the client view use the fallback', (t) => {
+  const dir = resources(t).copyExample();
   addCard(dir);
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push(card('chemin-card'));
   writeJSON(dir, 'screens/chemin.json', s);
-  const out = tmp();
+  const out = tmp(t);
   const r = exportLessonMd(loadProjectFromDir(dir), out);
   const file = r.files.find((f) => f.endsWith('-chemin.md'));
   assert.ok(file);
@@ -276,7 +278,7 @@ test('exports and the client view use the fallback', () => {
   assert.ok(r.losses.some((l) => /component key-card exported through its fallback/.test(l.loss)));
 });
 
-test('the planetary sample uses course components, a fork of quiz and screen layouts', () => {
+test('the planetary sample uses course components, a fork of quiz and screen layouts', (t) => {
   const dir = path.join(ROOT, 'examples/planetary-gearset');
   const project = loadProjectFromDir(dir);
   const reg = getRegistry(project);
@@ -287,8 +289,8 @@ test('the planetary sample uses course components, a fork of quiz and screen lay
   assert.equal(v.summary.errors + v.summary.warnings, 0, JSON.stringify(v.diagnostics.filter((d) => d.severity !== 'info')));
 });
 
-test('template headings marked data-t-heading follow the page: one level under the heading before the instance', async () => {
-  const dir = copyExample();
+test('template headings marked data-t-heading follow the page: one level under the heading before the instance', async (t) => {
+  const dir = resources(t).copyExample();
   write(dir, 'components/fact-card/component.json', {
     id: 'fact-card', title: 'Fact card', version: '1.0.0', level: 'block', category: 'content',
     props: { type: 'object', additionalProperties: false, required: ['title', 'detail', 'body'], properties: { title: { type: 'string', 'x-translatable': true }, detail: { type: 'string', 'x-translatable': true }, body: { type: 'string', 'x-kind': 'markdown', 'x-translatable': true } } }
@@ -301,7 +303,7 @@ test('template headings marked data-t-heading follow the page: one level under t
   writeJSON(dir, 'screens/chemin.json', screen);
   const diagnostics = validateDir(dir).diagnostics.filter((d) => d.code === 'E_HEADING_ORDER' || d.code === 'E_COMPONENT_HOOK');
   assert.deepEqual(diagnostics, []);
-  const b = await build(dir, { emit: 'dir', out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-headings-')), writeLock: false });
+  const b = await build(dir, { emit: 'dir', out: resources(t).tempDir('elabora-headings-'), writeLock: false });
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error')));
   const data = fs.readFileSync(path.join(b.dirPath, 'elabora/course.js'), 'utf8');
   const html = (id: string) => JSON.parse(data.slice(data.indexOf('{'), data.lastIndexOf('}') + 1)).screens.flatMap((s: { blocks: { id: string; html?: string }[] }) => s.blocks).find((block: { id: string }) => block.id === id).html as string;
