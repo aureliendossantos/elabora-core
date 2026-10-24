@@ -120,7 +120,7 @@ None yet.
 | `test/unit/engine-media.test.ts` | 208 | — | Pending |
 | `test/unit/engine-project-state.test.ts` | 92 | 92 | Passed; incremental findings/content equal full validation, including component content after no-op saves |
 | `test/unit/engine-session.test.ts` | 413 | 364 | Passed 14 cases; event-driven watcher waits, fixed 128-write concurrency regression, per-test sessions; persistence/diagnostics/undo/protocol retained |
-| `test/unit/engine-store.test.ts` | 194 | 160 | Passed 9 cases; readiness probes and event waits replace sleeps; fixed concurrent writes, snapshot parity, mutation-aware hashing and path refusal retained |
+| `test/unit/engine-store.test.ts` | 194 | 175 | Passed 9 cases; event/readiness waits and fixed-size concurrent writes; resources close in reverse ownership order before folders are removed |
 | `test/unit/fit-cache.test.ts` | 72 | — | Pending |
 | `test/unit/fonts.test.ts` | 547 | — | Pending |
 | `test/unit/format.test.ts` | 77 | — | Pending |

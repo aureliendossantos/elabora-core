@@ -8,9 +8,24 @@ import { FsStore, readSnapshot, watchFolders } from '@elabora/node/store/index';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { copyExample } from '../helpers.ts';
 
+// Node's after hooks run in registration order. Close watchers before removing their folders.
+const resources = new WeakMap<TestContext, (() => void)[]>();
+function own(t: TestContext, dispose: () => void) {
+  let stack = resources.get(t);
+  if (!stack) {
+    stack = []; resources.set(t, stack);
+    t.after(() => {
+      const errors: unknown[] = [];
+      for (const close of stack!.reverse()) { try { close(); } catch (error) { errors.push(error); } }
+      if (errors.length) throw new AggregateError(errors, 'Resource cleanup failed');
+    });
+  }
+  stack.push(dispose);
+}
+
 function project(t: TestContext) {
   const dir = copyExample();
-  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  own(t, () => fs.rmSync(dir, { recursive: true, force: true }));
   return dir;
 }
 
@@ -26,7 +41,7 @@ function reported(events: EventEmitter, predicate: () => boolean) {
 async function watch(t: TestContext, dir: string) {
   const seen = new Set<string>(), events = new EventEmitter();
   let stop = () => {};
-  t.after(() => stop());
+  own(t, () => stop());
   await new Promise<void>(ready => {
     stop = new FsStore(dir).watch(paths => { paths.forEach(rel => seen.add(rel)); events.emit('change'); }, ready);
   });
@@ -122,7 +137,7 @@ for (const name of ['FsStore', 'watchFolders'] as const) test(`${name} reports r
   const dir = project(t);
   const events = new EventEmitter(), seen = new Set<string>();
   let unknown = false, stop = () => {};
-  t.after(() => stop());
+  own(t, () => stop());
   const onChange = (paths: string[]) => { unknown ||= paths.length === 0; paths.forEach(rel => seen.add(rel)); events.emit('change'); };
   if (name === 'FsStore') await new Promise<void>(ready => { stop = new FsStore(dir).watch(onChange, ready); });
   else stop = watchFolders(dir, onChange);
