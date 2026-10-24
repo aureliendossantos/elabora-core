@@ -1,6 +1,6 @@
 # Test cleanup ledger
 
-Branch: `test-policy-cleanup`. Baseline: `96df988`. Worktree: `.test-policy/elabora-core` in the parent workspace. Counts include blank lines. Commit each completed test file with its ledger update. The inventory below lists all test files; reviewed changes started with edit/undo and session consistency, then the larger suites. Pending rows are an explicit resume queue, not claims of completed review.
+Branch: `test-policy-cleanup`. Baseline: `96df988`. Worktree: `.test-policy/elabora-core` in the parent workspace. Counts include blank lines. Commit each completed test file with its ledger update. The inventory below lists all test files; reviewed changes started with edit/undo and session consistency, then the larger suites. All 119 automated test files have been reviewed; rows distinguish completed validation from the remaining final checks.
 
 ## Policy and scope
 
@@ -8,15 +8,14 @@ Test public behaviour, use real domain objects, fake only uncontrolled boundarie
 
 ## Validation
 
-- Baseline `npm test`: **769 passed, 6 skipped** (775 cases).
-- First-checkpoint default-order unit run: **788 passed, 6 skipped** (794 cases); typecheck passed. Individual changed files passed before each commit.
-- Native randomization with seed **104729** reproduced two ElevenLabs order defects: an estimate got a 41-credit ceiling instead of 82 without a previous library search, and account remaining quota was 38,779 instead of 38,800 after another case spent credits. A focused rerun reproduced both; fresh per-test service/cache/quota state and explicit search setup fixed them (17 passed, one opt-in live skip).
-- First-checkpoint native randomized full-unit runs each passed **788 tests, 6 skipped** with seeds **104729, 130363, 155921**. Reproduce with `node --test --test-random-seed=<seed> --test-concurrency=2 --test-global-setup=test/isolate.ts "test/unit/*.test.ts"`. Each final run includes both ElevenLabs and download-isolation fixes.
-- Native seed **130363** exposed a third order defect: a custom download kind remained registered when another case expected only built-ins. A disposable-process extension check and fresh model files fix it; the focused seed passes all four cases.
-- Earlier repeats with shuffled CLI file arguments are repeat evidence only: Node sorts those arguments. They are not randomized runs.
-- First-checkpoint browser suite: **118 passed, 3 skipped** (121 cases). Two Edge cases require an installed Microsoft Edge; the Electron PDF case requires `ELABORA_ELECTRON_EXECUTABLE`. The resumed audit also ran all 8 matrix cases successfully with native seed 130363.
-- Final documentation link/structure checks: **7 passed**. Typecheck and `npm run release:check` passed.
-- First-checkpoint changed test files: **4,407 → 4,198 lines (209 fewer)** across ten files. No production code changed. Native Windows and live paid-provider checks are not claimed as passes.
+- Baseline: **769 passed, 6 skipped** (775 unit cases).
+- Completed full native random-order unit runs: **791 passed, 6 skipped** (797 cases) with seeds **104729** and **130363**. Seed **155921** is running. Reproduce with `node --test --test-random-seed=<seed> --test-concurrency=2 --test-global-setup=test/isolate.ts "test/unit/*.test.ts"`.
+- Random order reproduced three setup defects: ElevenLabs estimates needed a previous library search; account quota included another case's spending; a custom download kind leaked into a built-in registry assertion. Fresh per-case service/cache/quota state, explicit prerequisites and a disposable extension process fixed them. Focused reruns and completed full runs pass.
+- Focused native-seeded browser groups pass: canvas/live/web 16 cases, object/look/LMS 24, design/layer timelines 26, player/items 11, review protocol, fonts, engine canvas and workflow. Narration and timeline each pass all ten cases. Final dialogue integration and complete browser repeats are running.
+- Matrix: **8 passed** on both native seeds **130363** and **155921**. Strict typecheck and `npm run release:check` passed.
+- First-checkpoint complete browser suite: **118 passed, 3 skipped** (121 cases). Final complete-browser seed **104729** is running. Two Edge cases require installed Microsoft Edge; Electron PDF requires `ELABORA_ELECTRON_EXECUTABLE`. No unavailable/native Windows or paid-provider checks are claimed as passes.
+- Earlier repeats with shuffled CLI arguments are repeat evidence only: Node sorts arguments; native seeds randomize execution within files too.
+- Test files: **26,924 → 26,401 lines at this checkpoint**; shared test utilities add 73 net lines. Final totals are refreshed after the last dialogue commit. No production runtime code changed; the metadata-only CI repair is recorded below.
 
 ## Recurring defects
 
@@ -49,7 +48,7 @@ No production code changed. CI discovered a pre-existing release-metadata error 
 
 Proposed, not applied: give `watchFolders` an explicit readiness acknowledgement on every platform, matching FsStore. Its macOS integration test currently probes the real stream because the public API has no ready signal. Keep the real-filesystem regression; a test-only delay cannot fix this API limitation.
 
-The critical and complete unit inventory has been reviewed; the browser inventory is still in progress. Keep native inference rejection regressions until the proposed inference seam can replace their prototype fixture. The look-server integration still needs a bounded OS process-exit poll: propose exposing completion of daemon shutdown so this can await a termination signal without changing production during cleanup.
+No human answer is required to finish this test-only audit. All automated files have been reviewed. Keep native inference rejection regressions until the proposed inference seam can replace their prototype fixture. The look-server integration still needs a bounded OS process-exit poll: propose exposing completion of daemon shutdown so this can await a termination signal without changing production during cleanup.
 
 ## Files
 
@@ -190,4 +189,4 @@ PocketModel constructs native ONNX inference internally and has a private constr
 
 ## Remaining work
 
-Complete the pending browser rows, then run the complete unit and browser suites repeatedly with native random ordering, refresh totals, and fold findings into the canonical policy. All unit files have focused passing runs; the complete resumed unit run with seed 104729 is in progress. The app ledger records its completed 17-file audit and proposed refactors. Preserve every unique behaviour and record environmental limits separately from passes.
+Finish dialogue integration validation and its per-file commit. Complete the native full-browser repeats and third full-unit seed, refresh final counts/results, update the core PR, and verify CI and Git publication. App automated audit and final sibling-core repeat are complete. Production testability proposals above, native-only execution and the app's separate manual desktop catalogue remain explicit follow-up scope, not automated passes.
