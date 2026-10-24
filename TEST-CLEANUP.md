@@ -31,8 +31,8 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
 | Unseeded randomness | 14 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
-| Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
-| Low-value assertion | 2 | engine-store: repeated hash equality replaced with hash invalidation after a write |
+| Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
+| Low-value assertion | 3 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
 | Resource cleanup | 97 | validate: copied fixtures were never removed |
 | Wall-clock timing | 6 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
@@ -157,7 +157,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/robustness-commands.test.ts` | 155 | — | Pending |
 | `test/unit/robustness.test.ts` | 93 | — | Pending |
 | `test/unit/scaffold.test.ts` | 128 | — | Pending |
-| `test/unit/schema.test.ts` | 40 | — | Pending |
+| `test/unit/schema.test.ts` | 40 | 36 | Passed 5 native-seeded cases; full strict registry compile check already lives in format.test.ts; real profile/schema/action boundaries retained without arbitrary profile count |
 | `test/unit/sources.test.ts` | 511 | 521 | Passed 21 native-seeded cases; fresh input/model folders and restored library/data environment per case; await transcriber/client disposal before removal; mtime edits relative to fixture; import/readability/privacy/build-byte/archive contracts preserved |
 | `test/unit/state-golden.test.ts` | 40 | — | Pending |
 | `test/unit/state.test.ts` | 53 | 50 | Passed; 100 full-state persistence cases, complete corruption fallback, permanent keys and budget growth; test-owned course folders |
