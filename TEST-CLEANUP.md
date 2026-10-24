@@ -182,6 +182,8 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 
 | `test/cloud-fake.ts` | 451 | 454 | Test-only hosting fake now uses instance-owned deterministic IDs and time; existing 20 cloud contracts passed with seed 155921 |
 
+| `test/events.ts` | 0 | 27 | Shared test-only event log and subscription waits; real failure deadline stays active while domain timers are faked; 19 engine cases passed |
+
 ## Remaining work
 
 Audit resumed after the first ten rewritten core files. The remaining inventory is being reviewed to completion. Ten initial core files were rewritten, starting with edit/undo, session consistency, validation and persistence. Continue the pending inventory with the CLI transport, cloud, dialogue, fonts, plan-document and sources suites, then the remaining browser scenarios. The app ledger records its completed 17-file audit and proposed refactors. Preserve every unique behaviour and record environmental limits separately from passes.
