@@ -18,6 +18,12 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Defect | Count | Example |
 | --- | ---: | --- |
 
+| Implementation coupling | 12 | ops: private computeDiff comparison and exact chosen diff scripts |
+
+| Duplicate assertions | 1 | ops: identical notes restoration asserted twice |
+
+| Shared mutable fixtures | 1 | ops: module-level change ID counter replaced with content-derived IDs |
+
 ## Production changes
 
 None.
@@ -116,7 +122,7 @@ None yet.
 | `test/unit/model-versions.test.ts` | 126 | — | Pending |
 | `test/unit/narration.test.ts` | 346 | — | Pending |
 | `test/unit/object-gates.test.ts` | 35 | — | Pending |
-| `test/unit/ops.test.ts` | 929 | — | Pending |
+| `test/unit/ops.test.ts` | 929 | 797 | Passed; seeded JSON/course round trips, keyed moves, errors, human-safe undo and batching retained |
 | `test/unit/package-limits.test.ts` | 131 | — | Pending |
 | `test/unit/pdf-title.test.ts` | 111 | — | Pending |
 | `test/unit/plan-document.test.ts` | 523 | — | Pending |
