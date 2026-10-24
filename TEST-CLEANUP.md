@@ -110,7 +110,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/dialogue-player.test.ts` | 199 | 202 | Passed 8 native-seeded cases; owned dialogue fixtures; full learner resume, score, conditions, completion and label contracts retained without arbitrary label count |
 | `test/unit/dialogue-voice.test.ts` | 376 | 376 | Native-seeded cases passed; owned dialogue courses/recordings/builds and shared seeded noise; sanitizer, character, transcription, voice packaging and review contracts retained without registry count |
 | `test/unit/dialogue.test.ts` | 575 | 577 | Passed 19 native-seeded cases; every reachable path preserves walk and score after save/resume, owned courses, graph geometry rather than exact rank/curve choices; duplicate budget/stability checks removed |
-| `test/unit/diff-mcp.test.ts` | 74 | — | Pending |
+| `test/unit/diff-mcp.test.ts` | 74 | 77 | Passed native-seeded cases; owned clients/servers/projects/builds; verifies actual disk edit and read-only refusal, removes arbitrary tool count |
 | `test/unit/docs.test.ts` | 127 | — | Pending |
 | `test/unit/downloads.test.ts` | 147 | 161 | Native seed 130363 passed all 4 cases; extension registration isolated in a child, model files reset per case, real download/hash/install/removal and in-use refusals retained |
 | `test/unit/edit-journal.test.ts` | 225 | 216 | Passed native-seeded cases; owns fixtures, seeded binaries and scoped Date; output/error semantics replace identity, exact retry count and elapsed-speed checks |
