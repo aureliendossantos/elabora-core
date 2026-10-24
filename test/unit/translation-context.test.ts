@@ -1,9 +1,11 @@
-import { test, after } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
+import { extractUnits } from '@elabora/core/i18n/units';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { openProject } from '@elabora/engine';
-import type { OpenOptions, Session } from '@elabora/engine';
+import type { OpenOptions } from '@elabora/engine';
 import * as edit from '@elabora/node/edit';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { translationFile } from '@elabora/node/translate';
@@ -12,20 +14,14 @@ import { readXliff, toXliff } from '@elabora/core/i18n/xliff';
 import { screenTranslation, translatedCourse, translationStatus } from '@elabora/core/i18n/translate';
 import { renderScreen } from '@elabora/core/render/screen';
 import type { Block } from '@elabora/format';
-import { copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { readJSON, writeJSON } from '../helpers.ts';
 
 // The app's « Traduction » beyond its table: a screen's texts in a language with where the canvas
 // shows each (« En contexte »), the screen rendered while translations that break the text are being
 // fixed, texts translated in batches (a language starts with them), the translated plan approved by a
 // person, and a language built as its own package by the engine (« Versions »).
 
-const temporary: string[] = [];
-const sessions: Session[] = [];
-after(async () => {
-  for (const session of sessions) await session.close().catch(() => {});
-  for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true });
-});
-const copy = () => { const dir = copyExample(); temporary.push(dir); return dir; };
+const copy = (t: TestContext) => resources(t).copyExample();
 
 // Every unit translated as its source prefixed (maths, links and placeholders kept); units the prefix
 // would make too long keep their source.
@@ -38,15 +34,15 @@ function translateAll(dir: string, language: string): void {
   write(new Set(status?.exists ? status.problems.map((problem) => problem.id) : []));
 }
 
-test('a language starts with its first texts, translated in one change; a refused text refuses the batch', () => {
-  const dir = copy();
+test('a language starts with its first texts, translated in one change; a refused text refuses the batch', (t) => {
+  const dir = copy(t);
   assert.equal(fs.existsSync(translationFile(dir, 'en')), false);
   const result = edit.translateText(dir, { language: 'en', texts: [{ unit: 'screen.chemin.title', target: 'The path of a print job' }, { unit: 'course.title', target: 'Diagnosing a network fault' }] });
   assert.deepEqual(result.units, ['screen.chemin.title', 'course.title']);
   const units = readXliff(fs.readFileSync(translationFile(dir, 'en'), 'utf8')).units;
   assert.equal(units.get('screen.chemin.title')?.target, 'The path of a print job');
   assert.equal(units.get('course.title')?.state, 'translated');
-  assert.ok(units.size > 20, 'every unit of the course is in the file');
+  assert.deepEqual([...units.keys()].sort(), extractUnits(loadProjectFromDir(dir)).map(unit => unit.id).sort(), 'every unit is exported');
   assert.equal(readJournal(dir).filter((entry) => entry.type === 'change').length, 1);
   // A unit the course does not have, or a translation that loses the source's bold… is not checked;
   // an unknown unit refuses everything.
@@ -55,8 +51,8 @@ test('a language starts with its first texts, translated in one change; a refuse
   assert.throws(() => edit.translateText(dir, { language: 'en' }), /a unit and its target, or texts/);
 });
 
-test('a screen in a language: its texts with the block and the field that show them, the plan\'s included', () => {
-  const dir = copy();
+test('a screen in a language: its texts with the block and the field that show them, the plan\'s included', (t) => {
+  const dir = copy(t);
   edit.translateText(dir, { language: 'en', texts: [{ unit: 'screen.chemin.title', target: 'The path of a print job' }, { unit: 'plan.text.TXT-2', target: 'Always follow the path in order: **workstation → switch → router → firewall → print server**. Skip no step.' }] });
   const project = loadProjectFromDir(dir);
   const chemin = screenTranslation(project, { screen: 'chemin', language: 'en' });
@@ -81,8 +77,8 @@ test('a screen in a language: its texts with the block and the field that show t
   assert.throws(() => screenTranslation(project, { screen: 'absent', language: 'en' }), /No screen "absent"/);
 });
 
-test('a screen renders in a language while a translation breaks the text: that one keeps its source', () => {
-  const dir = copy();
+test('a screen renders in a language while a translation breaks the text: that one keeps its source', (t) => {
+  const dir = copy(t);
   const screen = readJSON(dir, 'screens/chemin.json');
   screen.blocks.find((block: Block) => block.id === 'chemin-regle').step = 2;
   screen.steps = { 2: { label: 'Voir la règle' } };
@@ -101,8 +97,8 @@ test('a screen renders in a language while a translation breaks the text: that o
   assert.equal(render.course.screens[0]?.steps?.['2']?.label, 'Voir la règle');
 });
 
-test('the translated plan approved as a change, undone like any other', () => {
-  const dir = copy();
+test('the translated plan approved as a change, undone like any other', (t) => {
+  const dir = copy(t);
   translateAll(dir, 'en');
   const before = translationStatus(loadProjectFromDir(dir), { to: 'en' })[0];
   assert.equal(before?.exists && before.plan, 'not approved');
@@ -119,11 +115,10 @@ test('the translated plan approved as a change, undone like any other', () => {
 
 const QUIET: OpenOptions = { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 };
 
-test('engine: a screen\'s texts in a language, and a language built as its own package into dist', async () => {
-  const dir = copy();
+test('engine: a screen\'s texts in a language, and a language built as its own package into dist', async (t) => {
+  const dir = copy(t);
   writeJSON(dir, 'course.json', { ...readJSON(dir, 'course.json'), delivery: { lms: ['moodle'] } });
-  const session = await openProject(dir, QUIET);
-  sessions.push(session);
+  const session = resources(t).own(await openProject(dir, QUIET), value => value.close());
   await session.flush();
   const request = async <T>(type: string, params: unknown): Promise<{ ok: true; result: T } | { ok: false; error: { kind: string; message: string } }> => {
     const response = await session.handle({ kind: 'request', id: type, type, params } as never);
