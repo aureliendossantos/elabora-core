@@ -1,194 +1,160 @@
-import { test, after } from 'node:test';
+import { test } from 'node:test';
+import type { TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
+import { EventEmitter } from 'node:events';
 import { FsStore, readSnapshot, watchFolders } from '@elabora/node/store/index';
 import { readProjectFiles } from '@elabora/node/project-reader';
 import { copyExample } from '../helpers.ts';
 
-// FsStore (the Store of a course folder) and snapshots read from a store: the same files as the
-// CLI's synchronous reader, atomic writes, watching.
-
-const temporary: string[] = [];
-after(() => { for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true }); });
-const project = () => {
+function project(t: TestContext) {
   const dir = copyExample();
-  temporary.push(dir);
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   return dir;
-};
+}
 
-test('a snapshot read from FsStore is the snapshot the CLI reads', async () => {
-  const dir = project();
-  fs.mkdirSync(path.join(dir, 'dist'), { recursive: true });
-  fs.writeFileSync(path.join(dir, 'dist/course.zip'), 'zip');
-  fs.writeFileSync(path.join(dir, '.DS_Store'), 'x');
-  fs.writeFileSync(path.join(dir, 'screens/chemin.json.42.tmp'), '{');
-  fs.writeFileSync(path.join(dir, 'screens/chemin (1).json'), fs.readFileSync(path.join(dir, 'screens/chemin.json')));
-  const store = new FsStore(dir);
-  const snapshot = await readSnapshot(store);
-  const expected = readProjectFiles(dir);
-  assert.deepEqual([...snapshot.files.keys()].sort(), [...expected.files.keys()].sort());
-  for (const [rel, file] of expected.files) {
-    const read = snapshot.files.get(rel);
-    if (file.kind === 'text') assert.equal(read?.kind === 'text' && read.text, file.text, rel);
-    else assert.deepEqual(read?.kind === 'binary' && [read.size, read.hash], [file.size, file.hash], rel);
+// Subscribe before acting. The timer bounds failure; successful waits never depend on elapsed time.
+function reported(events: EventEmitter, predicate: () => boolean) {
+  return new Promise<void>((resolve, reject) => {
+    const check = () => { if (predicate()) { clearTimeout(timer); events.off('change', check); resolve(); } };
+    const timer = setTimeout(() => { events.off('change', check); reject(new Error('Expected filesystem change was not reported')); }, 5000);
+    events.on('change', check);
+    check();
+  });
+}
+async function watch(t: TestContext, dir: string) {
+  const seen = new Set<string>(), events = new EventEmitter();
+  let stop = () => {};
+  t.after(() => stop());
+  await new Promise<void>(ready => {
+    stop = new FsStore(dir).watch(paths => { paths.forEach(rel => seen.add(rel)); events.emit('change'); }, ready);
+  });
+  return { seen, events, stop, until: (predicate: () => boolean) => reported(events, predicate) };
+}
+
+test('an FsStore snapshot contains the same content and artefacts as the CLI reader', async t => {
+  const dir = project(t);
+  for (const [rel, text] of [['dist/course.zip', 'zip'], ['.DS_Store', 'x'], ['screens/chemin.json.42.tmp', '{'], ['screens/chemin (1).json', fs.readFileSync(path.join(dir, 'screens/chemin.json'), 'utf8')]]) {
+    fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true });
+    fs.writeFileSync(path.join(dir, rel), text);
   }
+  const snapshot = await readSnapshot(new FsStore(dir));
+  const expected = readProjectFiles(dir);
+  assert.deepEqual([...snapshot.files].sort(), [...expected.files].sort());
   assert.deepEqual(snapshot.artefacts, expected.artefacts);
   assert.equal(snapshot.stats.get('course.json')?.size, fs.statSync(path.join(dir, 'course.json')).size);
 });
 
-test('FsStore writes atomically, removes, refuses paths outside the project and hashes from its cache', async () => {
-  const dir = project();
-  const store = new FsStore(dir);
+test('FsStore persists text and bytes without leaving temporary files', async t => {
+  const dir = project(t), store = new FsStore(dir);
   await store.write('notes/new.md', '# Note\n');
-  assert.equal(await store.readText('notes/new.md'), '# Note\n');
-  assert.deepEqual(fs.readdirSync(path.join(dir, 'notes')), ['new.md'], 'no temporary file left');
   await store.write('assets/data.bin', new Uint8Array([1, 2, 3]));
+  assert.equal(await store.readText('notes/new.md'), '# Note\n');
+  assert.deepEqual(fs.readdirSync(path.join(dir, 'notes')), ['new.md']);
   assert.deepEqual([...await store.readBytes('assets/data.bin')], [1, 2, 3]);
-  const hash = await store.hash('assets/data.bin');
-  assert.equal(hash, 'sha256:039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81');
-  assert.equal(await store.hash('assets/data.bin'), hash);
+  assert.equal(await store.hash('assets/data.bin'), 'sha256:039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81');
+  await store.write('assets/data.bin', new Uint8Array([4, 5, 6]));
+  assert.notEqual(await store.hash('assets/data.bin'), 'sha256:039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81');
+});
+
+test('removing an absent file is harmless', async t => {
+  const store = new FsStore(project(t));
+  await store.write('notes/new.md', 'note');
   await store.remove('notes/new.md');
-  await store.remove('notes/new.md'); // gone already: fine
+  await store.remove('notes/new.md');
   assert.equal(await store.stat('notes/new.md'), null);
+});
+
+test('FsStore refuses paths outside the project', async t => {
+  const store = new FsStore(project(t));
   await assert.rejects(store.write('../outside.txt', 'x'), /Not a project-relative/);
   await assert.rejects(store.readText('/etc/hosts'), /Not a project-relative/);
 });
 
-test('FsStore watches the folder recursively and leaves tool folders and temporary files out', async () => {
-  const dir = project();
-  const store = new FsStore(dir);
-  const seen = new Set<string>();
-  const stop = store.watch((paths) => { for (const rel of paths) seen.add(rel); });
-  try {
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    fs.writeFileSync(path.join(dir, 'screens/chemin.json'), fs.readFileSync(path.join(dir, 'screens/chemin.json'), 'utf8').replace('Imprimer', 'Imprimer !'));
-    fs.mkdirSync(path.join(dir, '.elabora'), { recursive: true });
-    fs.writeFileSync(path.join(dir, '.elabora/lock'), 'x');
-    fs.writeFileSync(path.join(dir, 'screens/x.json.1.tmp'), 'x');
-    const deadline = Date.now() + 5000;
-    while (!seen.has('screens/chemin.json') && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 20));
-    assert.ok(seen.has('screens/chemin.json'));
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    assert.ok(![...seen].some((rel) => rel.startsWith('.elabora') || rel.endsWith('.tmp')), [...seen].join(', '));
-  } finally {
-    stop();
+test('a ready FsStore reports recursive content writes and filters tool and temporary paths', async t => {
+  const dir = project(t);
+  const log = await watch(t, dir);
+  fs.mkdirSync(path.join(dir, '.elabora'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.elabora/lock'), 'x');
+  fs.writeFileSync(path.join(dir, 'screens/x.json.1.tmp'), 'x');
+  fs.writeFileSync(path.join(dir, 'screens/chemin.json'), '{}');
+  await log.until(() => log.seen.has('screens/chemin.json'));
+  assert.ok(![...log.seen].some(rel => rel.startsWith('.elabora') || rel.endsWith('.tmp')));
+});
+
+// Regression: watcher startup used to rebuild the process's FSEvents stream and lose writes.
+test('each ready FsStore reports an immediate write while other stores remain open', async t => {
+  for (let i = 0; i < 4; i++) await watch(t, project(t));
+  for (let i = 0; i < 10; i++) {
+    const dir = project(t), log = await watch(t, dir);
+    fs.writeFileSync(path.join(dir, 'course.json'), `{ "n": ${i} }\n`);
+    await log.until(() => log.seen.has('course.json'));
+    log.stop();
+    assert.ok(![...log.seen].some(rel => rel.startsWith('.elabora')));
+    const tool = path.join(dir, '.elabora');
+    assert.deepEqual(fs.existsSync(tool) ? fs.readdirSync(tool).filter(name => name.endsWith('.probe')) : [], []);
   }
 });
 
-// On macOS the watchers of a process share one FSEvents stream, built again whenever one starts; a
-// write made meanwhile is lost (measured: 1 open in 24 with other folders watched). FsStore says
-// when its watcher reports (onReady, after a probe in .elabora/ there): a write made then is seen.
-test('FsStore says when its watcher is live: a write made as soon as it is ready is reported, its probe neither reported nor left', async () => {
-  const folder = () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-watch-'));
-    temporary.push(dir);
-    fs.writeFileSync(path.join(dir, 'course.json'), '{}\n');
-    return dir;
-  };
-  const others = Array.from({ length: 4 }, () => new FsStore(folder()).watch(() => {}));
-  try {
-    for (let i = 0; i < 10; i++) {
-      const dir = folder();
-      const reported: string[] = [];
-      let stop = () => {};
-      await new Promise<void>((ready) => { stop = new FsStore(dir).watch((paths) => reported.push(...paths), ready); });
-      try {
-        fs.writeFileSync(path.join(dir, 'course.json'), `{ "n": ${i} }\n`);
-        const deadline = Date.now() + 3000;
-        while (!reported.includes('course.json') && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 10));
-        assert.ok(reported.includes('course.json'), `open ${i}: ${JSON.stringify(reported)}`);
-        assert.ok(!reported.some((rel) => rel.startsWith('.elabora')), reported.join(', '));
-      } finally {
-        stop();
-      }
-      await new Promise((resolve) => setTimeout(resolve, 30));
-      const tool = path.join(dir, '.elabora');
-      assert.deepEqual(fs.existsSync(tool) ? fs.readdirSync(tool).filter((name) => name.endsWith('.probe')) : [], []);
-    }
-  } finally {
-    for (const stop of others) stop();
-  }
-});
-
-// On macOS each start or stop of a watcher rebuilds the stream of its thread, losing what was written
-// from about 16 ms before to 10 ms after for every watcher of that thread. FsStore watches from a
-// thread of its own: a preview's seven watchers coming and going in the process take nothing from it
-// (before, 47 to 102 writes of about 460 were never reported).
-test('FsStore reports every write while other watchers of the process start and stop', async () => {
-  const dir = project();
+test('FsStore reports every write across other watchers starting and stopping', async t => {
+  const dir = project(t), log = await watch(t, dir), other = project(t);
   fs.mkdirSync(path.join(dir, 'notes'));
-  const reported = new Set<string>();
-  let stop = () => {};
-  await new Promise<void>((ready) => {
-    stop = new FsStore(dir).watch((paths) => {
-      // Unknown changes: what a listing would find now.
-      if (!paths.length) for (const name of fs.readdirSync(path.join(dir, 'notes'))) reported.add(`notes/${name}`);
-      for (const rel of paths) reported.add(rel);
-    }, ready);
-  });
-  const other = project();
-  const folders = ['screens', 'assets', 'objects', 'one', 'two', 'three', 'four'].map((name) => path.join(other, name));
+  const folders = ['screens', 'assets', 'objects', 'one', 'two', 'three', 'four'].map(name => path.join(other, name));
   for (const folder of folders) fs.mkdirSync(folder, { recursive: true });
   let written = 0;
-  const writer = setInterval(() => fs.writeFileSync(path.join(dir, `notes/w-${written++}.md`), 'x'), 1);
-  try {
-    for (let i = 0; i < 4; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 60));
-      const watchers = folders.map((folder) => fs.watch(folder, { recursive: true }));
-      await new Promise((resolve) => setTimeout(resolve, 60));
-      for (const watcher of watchers) watcher.close();
-    }
-    await new Promise((resolve) => setTimeout(resolve, 60));
-  } finally {
-    clearInterval(writer);
+  for (let cycle = 0; cycle < 4; cycle++) {
+    const watchers = folders.map(folder => fs.watch(folder, { recursive: true }));
+    try {
+      for (let i = 0; i < 32; i++) {
+        fs.writeFileSync(path.join(dir, `notes/w-${written++}.md`), 'x');
+        await new Promise<void>(resolve => setImmediate(resolve));
+        if (i === 16) for (const watcher of watchers) watcher.close();
+      }
+    } finally { for (const watcher of watchers) watcher.close(); }
   }
-  const missed = () => Array.from({ length: written }, (_, n) => `notes/w-${n}.md`).filter((rel) => !reported.has(rel));
-  const deadline = Date.now() + 3000;
-  while (missed().length && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 20));
-  stop();
-  assert.ok(written > 20, `${written} writes`);
-  assert.deepEqual(missed(), [], `${missed().length} of ${written} writes never reported`);
+  await log.until(() => Array.from({ length: written }, (_, n) => `notes/w-${n}.md`).every(rel => log.seen.has(rel)));
+  assert.equal(written, 128);
 });
 
-// Linux's recursive watcher (Node) loses a file once it is replaced by a rename; FsStore watches
-// folder by folder there (watchFolders), which is tested on every system too.
-const watchers: [string, (dir: string, onChange: (paths: string[]) => void) => () => void][] = [
-  ['FsStore', (dir, onChange) => new FsStore(dir).watch(onChange)],
-  ['watchFolders', watchFolders]
-];
-for (const [name, watch] of watchers) {
-  test(`${name}: a file replaced by a rename, then written in place, is seen both times; so is a file in a new folder`, async () => {
-    const dir = project();
-    const events: string[][] = [];
-    const stop = watch(dir, (paths) => events.push(paths));
-    const seen = async (rel: string, orUnknown = false) => {
-      const deadline = Date.now() + 5000;
-      const found = () => events.some((paths) => paths.includes(rel) || (orUnknown && paths.length === 0));
-      while (!found() && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 20));
-      assert.ok(found(), `${rel}: ${JSON.stringify(events)}`);
-      events.length = 0;
-    };
+// Linux must keep watching after a rename. watchFolders is also exercised on other systems.
+for (const name of ['FsStore', 'watchFolders'] as const) test(`${name} reports replacements and subsequent writes in existing and new folders`, async t => {
+  const dir = project(t);
+  const events = new EventEmitter(), seen = new Set<string>();
+  let unknown = false, stop = () => {};
+  t.after(() => stop());
+  const onChange = (paths: string[]) => { unknown ||= paths.length === 0; paths.forEach(rel => seen.add(rel)); events.emit('change'); };
+  if (name === 'FsStore') await new Promise<void>(ready => { stop = new FsStore(dir).watch(onChange, ready); });
+  else stop = watchFolders(dir, onChange);
+  const expect = async (rel: string, orUnknown = false) => {
+    await reported(events, () => seen.has(rel) || (orUnknown && unknown));
+    seen.clear(); unknown = false;
+  };
+  // watchFolders has no readiness callback. Probe the actual OS stream until it acknowledges
+  // a write; macOS starts/rebuilds FSEvents asynchronously when a folder watcher is added.
+  const ready = async (rel: string) => {
+    let timedOut = false;
+    const timer = setTimeout(() => { timedOut = true; }, 5000);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      const file = path.join(dir, 'screens/chemin.json');
-      const text = fs.readFileSync(file, 'utf8');
-      fs.writeFileSync(`${file}.1.tmp`, text.replace('Imprimer', 'Un'));
-      fs.renameSync(`${file}.1.tmp`, file);
-      await seen('screens/chemin.json');
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      fs.writeFileSync(file, text.replace('Imprimer', 'Deux'));
-      await seen('screens/chemin.json');
-
-      fs.mkdirSync(path.join(dir, 'assets/new'), { recursive: true });
-      fs.writeFileSync(path.join(dir, 'assets/new/a.txt'), 'a');
-      await seen('assets/new/a.txt', true);
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      fs.writeFileSync(path.join(dir, 'assets/new/a.txt'), 'b');
-      await seen('assets/new/a.txt');
-    } finally {
-      stop();
-    }
-  });
-}
+      for (let n = 0; !seen.has(rel); n++) {
+        assert.ok(!timedOut, `watcher did not acknowledge ${rel}`);
+        fs.writeFileSync(path.join(dir, rel), String(n));
+        await new Promise<void>(resolve => setImmediate(resolve));
+      }
+    } finally { clearTimeout(timer); }
+    seen.clear(); unknown = false;
+  };
+  if (name === 'watchFolders') await ready('ready.txt');
+  const file = path.join(dir, 'screens/chemin.json');
+  fs.writeFileSync(`${file}.1.tmp`, '{"title":"one"}');
+  fs.renameSync(`${file}.1.tmp`, file);
+  await expect('screens/chemin.json');
+  fs.writeFileSync(file, '{"title":"two"}');
+  await expect('screens/chemin.json');
+  fs.mkdirSync(path.join(dir, 'assets/new'));
+  fs.writeFileSync(path.join(dir, 'assets/new/a.txt'), 'a');
+  await expect('assets/new/a.txt', true);
+  if (name === 'watchFolders') await ready('assets/new/ready.txt');
+  fs.writeFileSync(path.join(dir, 'assets/new/a.txt'), 'b');
+  await expect('assets/new/a.txt');
+});

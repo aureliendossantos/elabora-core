@@ -22,9 +22,9 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Duplicate assertions | 1 | ops: identical notes restoration asserted twice |
 
-| Shared mutable fixtures | 3 | ops: module-level change ID counter replaced with content-derived IDs |
+| Shared mutable fixtures | 4 | ops: module-level change ID counter replaced with content-derived IDs |
 
-| Fixed-delay synchronization | 7 | engine-session: sleep(400) before checking watcher results |
+| Fixed-delay synchronization | 17 | engine-session: sleep(400) before checking watcher results |
 
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 
@@ -33,6 +33,8 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Unseeded randomness | 7 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 
 | Duplicate behaviours | 1 | library: restore already exercised by dedicated history-preserving restore tests |
+
+| Low-value assertion | 1 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 
 ## Production changes
 
@@ -112,7 +114,7 @@ None yet.
 | `test/unit/engine-media.test.ts` | 208 | — | Pending |
 | `test/unit/engine-project-state.test.ts` | 92 | 92 | Passed; incremental findings/content equal full validation, including component content after no-op saves |
 | `test/unit/engine-session.test.ts` | 413 | 364 | Passed 14 cases; event-driven watcher waits, fixed 128-write concurrency regression, per-test sessions; persistence/diagnostics/undo/protocol retained |
-| `test/unit/engine-store.test.ts` | 194 | — | Pending |
+| `test/unit/engine-store.test.ts` | 194 | 160 | Passed 9 cases; readiness probes and event waits replace sleeps; fixed concurrent writes, snapshot parity, mutation-aware hashing and path refusal retained |
 | `test/unit/fit-cache.test.ts` | 72 | — | Pending |
 | `test/unit/fonts.test.ts` | 547 | — | Pending |
 | `test/unit/format.test.ts` | 77 | — | Pending |
