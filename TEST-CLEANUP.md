@@ -27,15 +27,15 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Implementation coupling | 32 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 4 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
-| Fixed-delay synchronization | 29 | engine-session: sleep(400) before checking watcher results |
+| Fixed-delay synchronization | 30 | engine-session: sleep(400) before checking watcher results |
 | Tautology | 1 | engine-session: flatMap length compared to reduce of the same lengths |
 | Duplicate computation | 3 | engine-project-state: full validator run twice per assertion |
-| Unseeded randomness | 14 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
+| Unseeded randomness | 30 | library: randomBytes fixtures for archives, history tampering and 50 MB streaming |
 | Duplicate behaviours | 2 | library: restore already exercised by dedicated history-preserving restore tests |
 | Low-value assertion | 4 | engine-store: repeated hash equality replaced with hash invalidation after a write |
 | Weak assertion | 3 | validate: counted two errors without identifying their prop paths |
 | Resource cleanup | 97 | validate: copied fixtures were never removed |
-| Wall-clock timing | 6 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
+| Wall-clock timing | 8 | journal: sub-second acquisition assertions replaced by zero-timeout contracts and explicit exclusion |
 | Duplicate fixtures | 5 | ops: custom PRNG and recursive filesystem scanner duplicated existing test/runtime utilities |
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
 
@@ -82,7 +82,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/add-resource.test.ts` | 107 | — | Pending |
 | `test/unit/agent-rules.test.ts` | 105 | — | Pending |
 | `test/unit/align.test.ts` | 469 | 477 | Passed native seed 155921 with two explicit unavailable-model skips; seeded CTC oracle retained; context-owned narration/model/recording folders and session/worker disposal, real-case environment restored |
-| `test/unit/backups.test.ts` | 456 | — | Pending |
+| `test/unit/backups.test.ts` | 456 | 465 | Passed all 14 native-seeded cases; reproducible media with distinct edit seeds, owned project folders, hash-race clock controlled; child readiness/release gates replace synchronized wall-clock start; live-lock refusal uses zero timeout; retention/restore/GC contracts retained |
 | `test/unit/browser.test.ts` | 57 | — | Pending |
 | `test/unit/canvas-host.test.ts` | 134 | — | Pending |
 | `test/unit/charts-before-after.test.ts` | 86 | — | Pending |

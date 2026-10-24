@@ -1,4 +1,4 @@
-import { test, after } from 'node:test';
+import { test, beforeEach, type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -7,6 +7,8 @@ import crypto from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { ROOT } from '../helpers.ts';
+import { resources } from '../resources.ts';
+import { bytes } from '../bytes.ts';
 import {
   createVersion, shouldTakeVersion, restore, prune, collectGarbage, nameVersion, deleteVersion,
   listVersions, readVersion, diffVersions, status, retentionPlan, withBackupsLock, BackupsLockedError,
@@ -21,18 +23,8 @@ const canChmod = process.platform !== 'win32' && process.getuid?.() !== 0;
 
 // A project in a temp folder. Times are set a minute back: files written just now are not cached
 // (they could still change within the same timestamp tick).
-const temporary: string[] = [];
-after(() => {
-  for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true });
-});
-const tempDir = (prefix: string): string => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-  temporary.push(dir);
-  return dir;
-};
-
-function project(files: Record<string, string | Buffer>): string {
-  const dir = tempDir('elabora-backups-');
+function project(t: TestContext, files: Record<string, string | Buffer>): string {
+  const dir = resources(t).tempDir('elabora-backups-');
   for (const [rel, content] of Object.entries(files)) write(dir, rel, content);
   return dir;
 }
@@ -40,6 +32,7 @@ function project(files: Record<string, string | Buffer>): string {
 // the last at least: a rewrite of the same size never shares its predecessor's time, which would
 // make it look unchanged (random offsets did, about once in 500 writes).
 let lastWrite = 0;
+beforeEach(() => { lastWrite = 0; });
 function write(dir: string, rel: string, content: string | Buffer): void {
   const file = path.join(dir, rel);
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -50,7 +43,6 @@ function write(dir: string, rel: string, content: string | Buffer): void {
 }
 const read = (dir: string, rel: string) => fs.readFileSync(path.join(dir, rel), 'utf8');
 const exists = (dir: string, rel: string) => fs.existsSync(path.join(dir, rel));
-const random = (bytes: number) => crypto.randomBytes(bytes);
 
 async function created(dir: string, options: Parameters<typeof createVersion>[1]): Promise<Version> {
   const v = await createVersion(dir, options);
@@ -58,11 +50,11 @@ async function created(dir: string, options: Parameters<typeof createVersion>[1]
   return v;
 }
 
-test('backups: an unchanged project gives no version, a change gives one', async () => {
-  const dir = project({
+test('backups: an unchanged project gives no version, a change gives one', async (t) => {
+  const dir = project(t, {
     'course.json': '{"a":1}\n',
     'screens/intro.json': '{}\n',
-    'assets/img.png': random(2000),
+    'assets/img.png': bytes(2000),
     'dist/package.zip': 'build output',
     '.elabora/journal/2026-10.jsonl': '{}\n',
   });
@@ -94,8 +86,8 @@ test('backups: an unchanged project gives no version, a change gives one', async
   assert.equal(readVersion(dir, named.id.slice(0, 5)).id, named.id);
 });
 
-test('backups: full restore makes the project match the version, after saving the current state', async () => {
-  const dir = project({ 'course.json': '{"v":1}\n', 'screens/a.json': '{"a":1}\n', 'assets/clip.mp4': random(5000) });
+test('backups: full restore makes the project match the version, after saving the current state', async (t) => {
+  const dir = project(t, { 'course.json': '{"v":1}\n', 'screens/a.json': '{"a":1}\n', 'assets/clip.mp4': bytes(5000) });
   const v1 = await created(dir, { reason: 'manual', now: T0 });
   write(dir, 'course.json', '{"v":2}\n');
   fs.rmSync(path.join(dir, 'assets/clip.mp4'));
@@ -125,12 +117,12 @@ test('backups: full restore makes the project match the version, after saving th
   assert.equal(exists(dir, 'assets/clip.mp4'), false);
 });
 
-test('backups: partial restore writes the selected files and never deletes', async () => {
-  const dir = project({ 'screens/s1.json': '1\n', 'screens/s2.json': '2\n', 'assets/a.png': random(100) });
+test('backups: partial restore writes the selected files and never deletes', async (t) => {
+  const dir = project(t, { 'screens/s1.json': '1\n', 'screens/s2.json': '2\n', 'assets/a.png': bytes(100) });
   const v1 = await created(dir, { reason: 'manual', now: T0 });
   write(dir, 'screens/s1.json', '1b\n');
   write(dir, 'screens/s2.json', '2b\n');
-  write(dir, 'assets/a.png', random(100));
+  write(dir, 'assets/a.png', bytes(100, 2));
   write(dir, 'screens/s3.json', '3\n');
 
   const r1 = await restore(dir, v1.id, { paths: ['screens/s1.json', 'assets/*.png', 'nothing/**'], now: T0 + HOUR });
@@ -144,14 +136,14 @@ test('backups: partial restore writes the selected files and never deletes', asy
   assert.equal(read(dir, 'screens/s3.json'), '3\n', 'a partial restore never deletes');
 });
 
-test('backups: skipped media, sync conflict copies and symbolic links are not content', async () => {
-  const outside = tempDir('elabora-outside-');
+test('backups: skipped media, sync conflict copies and symbolic links are not content', async (t) => {
+  const outside = resources(t).tempDir('elabora-outside-');
   fs.writeFileSync(path.join(outside, 'secret.txt'), 'outside the project');
-  const dir = project({
+  const dir = project(t, {
     'course.json': '{}\n',
     'screens/intro.json': '{"id":"intro"}\n',
     'screens/intro (conflicted copy).json': '{"id":"intro","other":1}\n',
-    'assets/video/raw.mov': random(3000),
+    'assets/video/raw.mov': bytes(3000),
   });
   if (process.platform !== 'win32') {
     fs.symlinkSync(path.join(outside, 'secret.txt'), path.join(dir, 'assets/link.txt'));
@@ -176,8 +168,8 @@ test('backups: skipped media, sync conflict copies and symbolic links are not co
   if (process.platform !== 'win32') assert.equal(fs.readFileSync(path.join(outside, 'secret.txt'), 'utf8'), 'outside the project');
 });
 
-test('backups: restore across file and folder swaps, never through a symbolic link', async () => {
-  const dir = project({ 'assets/a': 'a file\n', 'assets/b/x.json': '{}\n', 'screens/s.json': '1\n' });
+test('backups: restore across file and folder swaps, never through a symbolic link', async (t) => {
+  const dir = project(t, { 'assets/a': 'a file\n', 'assets/b/x.json': '{}\n', 'screens/s.json': '1\n' });
   const v1 = await created(dir, { reason: 'manual', now: T0 });
   fs.rmSync(path.join(dir, 'assets/a'));
   write(dir, 'assets/a/inner.json', '{}\n');
@@ -188,7 +180,7 @@ test('backups: restore across file and folder swaps, never through a symbolic li
   assert.equal(read(dir, 'assets/b/x.json'), '{}\n');
 
   if (process.platform === 'win32') return;
-  const outside = tempDir('elabora-outside-');
+  const outside = resources(t).tempDir('elabora-outside-');
   fs.rmSync(path.join(dir, 'screens'), { recursive: true });
   fs.symlinkSync(outside, path.join(dir, 'screens'));
   const result = await restore(dir, v1.id, { now: T0 + 2 * HOUR });
@@ -196,8 +188,8 @@ test('backups: restore across file and folder swaps, never through a symbolic li
   assert.deepEqual(fs.readdirSync(outside), [], 'nothing is written outside the project');
 });
 
-test('backups: cloud placeholders keep their content; manifests with unsafe paths are not trusted', async () => {
-  const dir = project({ 'course.json': '{}\n', 'assets/intro.mp4': random(3000) });
+test('backups: cloud placeholders keep their content; manifests with unsafe paths are not trusted', async (t) => {
+  const dir = project(t, { 'course.json': '{}\n', 'assets/intro.mp4': bytes(3000) });
   const v1 = await created(dir, { reason: 'manual', now: T0 });
   // iCloud evicted the video: only its stub is on this computer.
   fs.rmSync(path.join(dir, 'assets/intro.mp4'));
@@ -219,10 +211,10 @@ test('backups: cloud placeholders keep their content; manifests with unsafe path
   }
 });
 
-test('backups: an unreadable file keeps its previous content and is never overwritten', { skip: !canChmod }, async () => {
-  const dir = project({ 'course.json': '{"v":1}\n', 'assets/locked.bin': random(1000) });
+test('backups: an unreadable file keeps its previous content and is never overwritten', { skip: !canChmod }, async (t) => {
+  const dir = project(t, { 'course.json': '{"v":1}\n', 'assets/locked.bin': bytes(1000) });
   const v1 = await created(dir, { reason: 'manual', now: T0 });
-  write(dir, 'assets/locked.bin', random(1200));
+  write(dir, 'assets/locked.bin', bytes(1200));
   write(dir, 'course.json', '{"v":2}\n');
   fs.chmodSync(path.join(dir, 'assets/locked.bin'), 0o000);
   try {
@@ -238,8 +230,9 @@ test('backups: an unreadable file keeps its previous content and is never overwr
   }
 });
 
-test('backups: the hash cache avoids reading unchanged files again', { skip: !canChmod }, async () => {
-  const dir = project({ 'course.json': '{"v":1}\n', 'assets/big.bin': random(1 << 20) });
+test('backups: the hash cache avoids reading unchanged files again', { skip: !canChmod }, async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: Date.now() });
+  const dir = project(t, { 'course.json': '{"v":1}\n', 'assets/big.bin': bytes(1 << 20) });
   const reports: VersionReport[] = [];
   const v1 = await created(dir, { reason: 'manual', now: T0, onReport: (r) => reports.push(r) });
   assert.equal(reports[0].hashedFiles, 2);
@@ -321,13 +314,13 @@ test('backups: the retention schedule over a simulated year', () => {
   assert.ok(kept.length < 27 + 6 * 9 + 23 + 48 + 4, `${kept.length} versions kept`);
 });
 
-test('backups: a year of versions and pruning keeps the store consistent', async () => {
-  const dir = project({ 'course.json': '{}\n', 'assets/clip.bin': random(10_000) });
+test('backups: a year of versions and pruning keeps the store consistent', async (t) => {
+  const dir = project(t, { 'course.json': '{}\n', 'assets/clip.bin': bytes(10_000) });
   let now = T0;
   for (let i = 0; i < 40; i++) {
     now += 9 * DAY;
     write(dir, 'course.json', `{"i":${i}}\n`);
-    if (i % 3 === 0) write(dir, 'assets/clip.bin', random(10_000));
+    if (i % 3 === 0) write(dir, 'assets/clip.bin', bytes(10_000, i + 2));
     await created(dir, { reason: 'auto', name: i === 5 ? 'Published 1.0' : null, now });
     await prune(dir, { now, graceMs: 0 });
   }
@@ -350,9 +343,9 @@ test('backups: a year of versions and pruning keeps the store consistent', async
   assert.deepEqual(stored.filter((h) => !referenced.has(h)), [], 'no blob is left that no version uses');
 });
 
-test('backups: a deleted 50 MB video leaves the store after 30 days, unless a named version has it', async () => {
+test('backups: a deleted 50 MB video leaves the store after 30 days, unless a named version has it', async (t) => {
   for (const named of [false, true]) {
-    const dir = project({ 'course.json': '{}\n', 'assets/video/intro.mp4': random(50 << 20) });
+    const dir = project(t, { 'course.json': '{}\n', 'assets/video/intro.mp4': bytes(50 << 20) });
     const v1 = await created(dir, { reason: 'manual', name: named ? 'Published 1.0' : null, now: T0 });
     const hash = v1.files['assets/video/intro.mp4'].hash;
     fs.rmSync(path.join(dir, 'assets/video/intro.mp4'));
@@ -380,8 +373,8 @@ test('backups: a deleted 50 MB video leaves the store after 30 days, unless a na
   }
 });
 
-test('backups: garbage collection keeps referenced, recent and other referrers\' blobs', async () => {
-  const dir = project({ 'course.json': '{}\n' });
+test('backups: garbage collection keeps referenced, recent and other referrers\' blobs', async (t) => {
+  const dir = project(t, { 'course.json': '{}\n' });
   const v1 = await created(dir, { reason: 'manual', now: T0 });
   const orphan = putBytes(dir, 'orphan');
   const journal = putBytes(dir, 'journal blob');
@@ -411,8 +404,8 @@ test('backups: garbage collection keeps referenced, recent and other referrers\'
   assert.equal(hasBlob(dir, v1.files['course.json'].hash), false);
 });
 
-test('backups: status and when an automatic version is due', async () => {
-  const dir = project({ 'course.json': '{}\n', 'assets/a.bin': random(4096) });
+test('backups: status and when an automatic version is due', async (t) => {
+  const dir = project(t, { 'course.json': '{}\n', 'assets/a.bin': bytes(4096) });
   assert.equal(shouldTakeVersion(dir, { now: T0 }), true);
   assert.equal(status(dir).versions, 0);
   const v1 = await created(dir, { reason: 'auto', now: T0 });
@@ -426,16 +419,32 @@ test('backups: status and when an automatic version is due', async () => {
   assert.equal(s.storedBytes, 4096 + 3);
 });
 
-test('backups: the lock serialises processes and stale locks are broken', async () => {
-  const dir = project(Object.fromEntries(Array.from({ length: 8 }, (_, i) => [`assets/f${i}.bin`, random(1 << 20)])));
+test('backups: the lock serialises processes and stale locks are broken', async (t) => {
+  const dir = project(t, Object.fromEntries(Array.from({ length: 8 }, (_, i) => [`assets/f${i}.bin`, bytes(1 << 20)])));
   const module = pathToFileURL(path.join(ROOT, 'packages/node/src/backups/index.ts')).href;
   const script = `import { createVersion } from ${JSON.stringify(module)};
-await new Promise((r) => setTimeout(r, Math.max(0, Number(process.env.START) - Date.now())));
+console.log('ready');
+await new Promise(resolve => process.stdin.once('data', resolve));
 const v = await createVersion(process.env.DIR, { reason: 'auto' });
 console.log(JSON.stringify(v && v.id));`;
-  const env = { ...process.env, DIR: dir, START: String(Date.now() + 400) };
-  const run = () => new Promise<string>((resolve, reject) => execFile(process.execPath, ['--input-type=module', '-e', script], { env }, (error, stdout) => (error ? reject(error) : resolve(stdout.trim()))));
-  const outputs = await Promise.all([run(), run()]);
+  const env = { ...process.env, DIR: dir };
+  const run = () => {
+    let ready!: () => void, failed!: (error: Error) => void;
+    const started = new Promise<void>((resolve, reject) => { ready = resolve; failed = reject; });
+    let child: ReturnType<typeof execFile>;
+    const result = new Promise<string>((resolve, reject) => {
+      child = execFile(process.execPath, ['--input-type=module', '-e', script], { env, timeout: 30000 }, (error, stdout) => {
+        if (error) { failed(error); reject(error); } else resolve(String(stdout).trim().split('\n').at(-1)!);
+      });
+      resources(t).own(child, value => value.kill());
+      child.stdout!.once('data', () => ready());
+    });
+    return { started, result, release: () => child!.stdin!.end('go\n') };
+  };
+  const children = [run(), run()];
+  await Promise.all(children.map(child => child.started));
+  for (const child of children) child.release();
+  const outputs = await Promise.all(children.map(child => child.result));
   const ids = outputs.map((o) => JSON.parse(o) as string | null);
   assert.equal(ids.filter(Boolean).length, 1, `one process takes the version, the other finds nothing changed: ${outputs}`);
   assert.equal(listVersions(dir).length, 1);
@@ -444,13 +453,13 @@ console.log(JSON.stringify(v && v.id));`;
   // Held by a live process: wait, then give up.
   const lock = path.join(dir, '.elabora/backups/lock');
   fs.writeFileSync(lock, JSON.stringify({ token: 'x', pid: process.pid, host: os.hostname(), purpose: 'test' }));
-  await assert.rejects(withBackupsLock(dir, 'test', async () => 1, { waitMs: 150 }), BackupsLockedError);
+  await assert.rejects(withBackupsLock(dir, 'test', async () => 1, { waitMs: 0 }), BackupsLockedError);
   // Not refreshed for more than 60 s: its holder died.
-  const old = new Date(Date.now() - 61_000);
+  const old = new Date(fs.statSync(lock).mtimeMs - 61_000);
   fs.utimesSync(lock, old, old);
-  assert.equal(await withBackupsLock(dir, 'test', async () => 2, { waitMs: 150 }), 2);
+  assert.equal(await withBackupsLock(dir, 'test', async () => 2, { waitMs: 0 }), 2);
   // Left on this computer by a process that is gone: broken at once.
   const gone = await new Promise<number>((resolve) => { const child = execFile(process.execPath, ['-e', '0'], () => resolve(child.pid!)); });
   fs.writeFileSync(lock, JSON.stringify({ token: 'y', pid: gone, host: os.hostname(), purpose: 'test' }));
-  assert.equal(await withBackupsLock(dir, 'test', async () => 3, { waitMs: 150 }), 3);
+  assert.equal(await withBackupsLock(dir, 'test', async () => 3, { waitMs: 0 }), 3);
 });
