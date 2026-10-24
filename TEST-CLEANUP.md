@@ -130,7 +130,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/i18n.test.ts` | 260 | — | Pending |
 | `test/unit/ignored.test.ts` | 55 | 56 | Passed both native-seeded cases; context-owned course; finding waivers remain keyed to content and survive moves |
 | `test/unit/import.test.ts` | 427 | 427 | Native-seeded cases passed; each synthetic import fixture is disposed after its case instead of suite end; detection, conversions, losses, settings, library and CLI contracts retained |
-| `test/unit/interop.test.ts` | 92 | — | Pending |
+| `test/unit/interop.test.ts` | 92 | 91 | Passed native-seeded cases; owns export folders/courses; LESSON parsing, schema-valid conversion, losses and multi-select round trip retained |
 | `test/unit/journal.test.ts` | 437 | 437 | Passed 14 cases; explicit lock entry/release gates and child stdin handshake; no elapsed-time assertions or fixed sleeps; sequence/history/binary/undo contracts retained |
 | `test/unit/layer-timeline.test.ts` | 265 | 263 | Passed 10 native-seeded cases; own layered courses and both build outputs; preserves independent layer tracks, cue routing, translations, commands and deterministic packages; removed registry-count assertion |
 | `test/unit/library.test.ts` | 840 | 843 | Passed 21 cases; deterministic media/retention, restored environment and owned temporary data; public archive/trash contracts retained |

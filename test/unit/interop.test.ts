@@ -1,13 +1,13 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { parseLessonMd, lessonToScreen } from '@elabora/core/interop/lesson-md';
 import { exportLessonMd } from '@elabora/node/lesson-md';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { validateSchema } from '@elabora/format/schemas';
-import { EXAMPLE, copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { EXAMPLE, readJSON, writeJSON } from '../helpers.ts';
 
 const SAMPLE = `---
 title: Fire Safety Basics
@@ -30,14 +30,14 @@ correct-feedback: Staying calm helps you make better decisions.
 :::
 `;
 
-test('LESSON.md blocks are parsed with their properties', () => {
+test('LESSON.md blocks are parsed with their properties', (t) => {
   const { title, blocks } = parseLessonMd(SAMPLE);
   assert.equal(title, 'Fire Safety Basics');
   assert.deepEqual(blocks.map((b) => b.type), ['text', 'knowledge-check']);
   assert.equal(blocks[1].props.maxattempts, '3');
 });
 
-test('a LESSON.md lesson becomes a schema-valid Elabora screen', () => {
+test('a LESSON.md lesson becomes a schema-valid Elabora screen', (t) => {
   const r = lessonToScreen(SAMPLE, { id: 'fire', covers: ['ITEM-1'], title: undefined });
   assert.deepEqual(validateSchema('screen', r.screen), []);
   const quiz = r.screen.blocks.find((b) => b.type === 'quiz');
@@ -48,8 +48,8 @@ test('a LESSON.md lesson becomes a schema-valid Elabora screen', () => {
   assert.match(String(r.screen.blocks[0].props.markdown), /^### What to do/);
 });
 
-test('export writes one lesson per screen and a loss report', () => {
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-lmd-'));
+test('export writes one lesson per screen and a loss report', (t) => {
+  const out = resources(t).tempDir('elabora-lmd-');
   const r = exportLessonMd(loadProjectFromDir(EXAMPLE), out);
   assert.equal(r.files.length, 7);
   const evaluation = fs.readFileSync(path.join(out, '05-evaluation.md'), 'utf8');
@@ -60,8 +60,7 @@ test('export writes one lesson per screen and a loss report', () => {
 });
 
 test('LESSON.md multiple-select export and import preserve multiple correct answers', (t) => {
-  const dir = copyExample();
-  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const dir = resources(t).copyExample();
   const options = [
     { id: 'a', text: 'Safety goggles', correct: true },
     { id: 'b', text: 'Laptop', correct: false },
