@@ -178,7 +178,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `.sampo/changesets/layer-captions-bare-canvas.md` | 5 | 6 | Metadata only; restore mandatory root release target so CI can run |
 | `.sampo/changesets/player-motion.md` | 10 | 11 | Metadata only; restore mandatory root release target so CI can run |
 
-| `test/resources.ts` | 0 | 29 | Shared test-only ownership helper: context-scoped copies/folders and reverse-order disposal; used by subsequent audit files |
+| `test/resources.ts` | 0 | 28 | Shared test-only ownership helper: context-scoped copies/folders and reverse-order disposal; used by subsequent audit files |
 
 ## Remaining work
 

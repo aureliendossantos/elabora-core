@@ -7,7 +7,7 @@ import { copyExample } from './helpers.ts';
 // Register ownership as soon as a resource exists. Dependants close before their files, even
 // after an assertion fails; one failed disposer must not prevent the others from running.
 export function resources(context: TestContext) {
-  const disposers: (() => void | Promise<void>)[] = [];
+  const disposers: (() => unknown)[] = [];
   context.after(async () => {
     const failures: unknown[] = [];
     for (const dispose of disposers.reverse()) {
@@ -15,7 +15,7 @@ export function resources(context: TestContext) {
     }
     if (failures.length) throw new AggregateError(failures, 'Test resource cleanup failed');
   });
-  function own<T>(value: T, dispose: (value: T) => void | Promise<void>): T {
+  function own<T>(value: T, dispose: (value: T) => unknown): T {
     disposers.push(() => dispose(value));
     return value;
   }
