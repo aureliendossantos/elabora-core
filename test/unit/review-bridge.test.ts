@@ -260,17 +260,13 @@ test('elabora build --review-origin, repeatable; MCP elabora_build web.review; t
   await client.close();
 
   const session = resources(t).own(await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 }), value => value.close());
-  try {
-    const response = await session.handle({ kind: 'request', id: 'r1', type: 'build', params: { target: 'web', web: { review: { origins: [REVUE, 'http://localhost:5173'] } } } }) as ResponseMessage;
-    assert.equal(response.ok, true, JSON.stringify(response));
-    const view = (response.ok ? response.result : null) as BuildView;
-    assert.ok(view.ok && view.dir && fs.existsSync(path.join(view.dir, 'elabora/review.js')));
-    for (const web of [{ review: REVUE }, { review: { origins: REVUE } }, { review: { origins: [1] } }, { review: { origins: [REVUE], comments: true } }]) {
-      const answer = await session.handle({ kind: 'request', id: 'r2', type: 'build', params: { target: 'web', web } }) as ResponseMessage;
-      assert.equal(answer.ok, false, JSON.stringify(web));
-      if (!answer.ok) assert.equal(answer.error.kind, 'bad-request', JSON.stringify(web));
-    }
-  } finally {
-    await session.close();
+  const response = await session.handle({ kind: 'request', id: 'r1', type: 'build', params: { target: 'web', web: { review: { origins: [REVUE, 'http://localhost:5173'] } } } }) as ResponseMessage;
+  assert.equal(response.ok, true, JSON.stringify(response));
+  const view = (response.ok ? response.result : null) as BuildView;
+  assert.ok(view.ok && view.dir && fs.existsSync(path.join(view.dir, 'elabora/review.js')));
+  for (const web of [{ review: REVUE }, { review: { origins: REVUE } }, { review: { origins: [1] } }, { review: { origins: [REVUE], comments: true } }]) {
+    const answer = await session.handle({ kind: 'request', id: 'r2', type: 'build', params: { target: 'web', web } }) as ResponseMessage;
+    assert.equal(answer.ok, false, JSON.stringify(web));
+    if (!answer.ok) assert.equal(answer.error.kind, 'bad-request', JSON.stringify(web));
   }
 });
