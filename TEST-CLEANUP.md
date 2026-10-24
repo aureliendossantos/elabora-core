@@ -24,7 +24,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Defect | Count | Example |
 | --- | ---: | --- |
-| Implementation coupling | 31 | ops: private computeDiff comparison and exact chosen diff scripts |
+| Implementation coupling | 32 | ops: private computeDiff comparison and exact chosen diff scripts |
 | Duplicate assertions | 4 | ops: identical notes restoration asserted twice |
 | Shared mutable fixtures | 12 | ops: module-level change ID counter replaced with content-derived IDs |
 | Fixed-delay synchronization | 29 | engine-session: sleep(400) before checking watcher results |
@@ -148,7 +148,7 @@ Further review should prioritize the CLI transport suite (715 lines), cloud (638
 | `test/unit/player-items.test.ts` | 422 | — | Pending |
 | `test/unit/player.test.ts` | 240 | — | Pending |
 | `test/unit/project-files.test.ts` | 124 | — | Pending |
-| `test/unit/purity.test.ts` | 53 | — | Pending |
+| `test/unit/purity.test.ts` | 53 | 53 | Passed 3 native-seeded cases; public LMS catalogue compared with checked-in data instead of private PROFILE_FILES import/order; required cross-browser architecture and generated-template guards retained |
 | `test/unit/releases.test.ts` | 38 | — | Pending |
 | `test/unit/rename.test.ts` | 118 | — | Pending |
 | `test/unit/render.test.ts` | 147 | — | Pending |

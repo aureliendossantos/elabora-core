@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../helpers.ts';
 import { builtinTemplatesModule, OUTPUT } from '../../scripts/gen-builtin-templates.ts';
-import { PROFILE_FILES, listProfiles } from '@elabora/core/lms/profiles';
+import { listProfiles } from '@elabora/core/lms/profiles';
 
 // format, player, fonts and core run in browsers and workers too: no Node module, no process, no
 // Buffer, and no import of the Node packages (docs/architecture.md, Packages).
@@ -45,9 +45,9 @@ test('the built-in templates module is generated from the current templates', ()
   assert.equal(fs.readFileSync(OUTPUT, 'utf8'), builtinTemplatesModule(), 'run npm run generate');
 });
 
-test('every LMS profile file is imported, in file name order', () => {
-  const onDisk = fs.readdirSync(path.join(ROOT, 'packages/core/profiles')).filter((f) => f.endsWith('.json')).sort();
-  assert.deepEqual(PROFILE_FILES.map(([f]) => f), onDisk, 'add the profile to packages/core/src/lms/profiles.ts');
-  for (const [f, p] of PROFILE_FILES) assert.deepEqual(p, JSON.parse(fs.readFileSync(path.join(ROOT, 'packages/core/profiles', f), 'utf8')));
-  assert.equal(listProfiles().length, onDisk.length);
+test('the LMS catalogue exposes every checked-in profile', () => {
+  const folder = path.join(ROOT, 'packages/core/profiles');
+  const expected = fs.readdirSync(folder).filter(file => file.endsWith('.json')).map(file => JSON.parse(fs.readFileSync(path.join(folder, file), 'utf8')));
+  const byId = (a: { id: string }, b: { id: string }) => a.id.localeCompare(b.id);
+  assert.deepEqual(listProfiles().sort(byId), expected.sort(byId));
 });
