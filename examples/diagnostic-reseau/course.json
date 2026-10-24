@@ -213,8 +213,28 @@
       "name": "Marc",
       "voices": {
         "fr": {
-          "provider": "pocket-tts",
-          "voice": "henri"
+          "provider": "elevenlabs",
+          "voice": "kENkNtk0xyzG09WW40xE",
+          "name": "Marcel - Warm and Conversational"
+        }
+      },
+      "color": "color.primary",
+      "look": {
+        "svg": "personnages/marc.svg"
+      }
+    },
+    {
+      "id": "leila",
+      "name": "Leïla",
+      "color": "color.accent",
+      "look": {
+        "svg": "personnages/leila.svg"
+      },
+      "voices": {
+        "fr": {
+          "provider": "elevenlabs",
+          "voice": "YxrwjAKoUKULGd0g8K9Y",
+          "name": "Lucie - Professional Customer Care Agent"
         }
       }
     }
@@ -222,5 +242,17 @@
   "narration": {
     "advance": "learner",
     "seek": "seen"
+  },
+  "pronunciations": {
+    "fr": [
+      {
+        "text": "10 h",
+        "say": "dix heures"
+      },
+      {
+        "text": "SUP-NET-04",
+        "say": "sup nette zéro quatre"
+      }
+    ]
   }
 }

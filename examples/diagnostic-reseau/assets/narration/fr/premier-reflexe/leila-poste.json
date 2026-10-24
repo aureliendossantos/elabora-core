@@ -1,0 +1,82 @@
+{
+  "screen": "premier-reflexe",
+  "line": "leila-poste",
+  "language": "fr",
+  "textHash": "sha256:6ca658e01e373351ab3769cd0406a697e5d8bf62d487f2fb9ebc667801719995",
+  "duration": 2.79,
+  "provider": "elevenlabs",
+  "voice": "YxrwjAKoUKULGd0g8K9Y",
+  "generated": true,
+  "audioHash": "sha256:b298c632568787baa15606907fada446110d1dd799550f7655fa32ba25d50c43",
+  "createdAt": "2026-10-23T23:42:04Z",
+  "take": 1,
+  "spokenHash": "sha256:6ca658e01e373351ab3769cd0406a697e5d8bf62d487f2fb9ebc667801719995",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Lucie (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Partons de votre poste, alors : l'intranet s'ouvre bien ?",
+  "mouth": "ccwwwcoooooooooossssscccoosssscooooossccccccccccccccwwwwwwcwwoooosssssooooooocwwwwcc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Partons",
+      "start": 0.02,
+      "end": 0.341,
+      "score": 0.993
+    },
+    {
+      "text": "de",
+      "start": 0.341,
+      "end": 0.435,
+      "score": 0.999
+    },
+    {
+      "text": "votre",
+      "start": 0.442,
+      "end": 0.676,
+      "score": 1
+    },
+    {
+      "text": "poste",
+      "start": 0.743,
+      "end": 1.044,
+      "score": 0.994
+    },
+    {
+      "text": "alors",
+      "start": 1.044,
+      "end": 1.379,
+      "score": 0.969
+    },
+    {
+      "text": "l'",
+      "start": 1.746,
+      "end": 1.807,
+      "score": 0.727
+    },
+    {
+      "text": "intranet",
+      "start": 1.807,
+      "end": 2.242,
+      "score": 0.845
+    },
+    {
+      "text": "s'",
+      "start": 2.248,
+      "end": 2.308,
+      "score": 0.657
+    },
+    {
+      "text": "ouvre",
+      "start": 2.308,
+      "end": 2.543,
+      "score": 1
+    },
+    {
+      "text": "bien",
+      "start": 2.569,
+      "end": 2.744,
+      "score": 0.995
+    }
+  ]
+}

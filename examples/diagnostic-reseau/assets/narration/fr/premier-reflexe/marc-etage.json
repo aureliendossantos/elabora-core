@@ -1,0 +1,76 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-etage",
+  "language": "fr",
+  "textHash": "sha256:c87aa9da2dca0eefa6bd04cb6a36eeba97089b47fade5d167ce52d66a8ec0c87",
+  "duration": 3.005,
+  "provider": "elevenlabs",
+  "voice": "kENkNtk0xyzG09WW40xE",
+  "generated": true,
+  "audioHash": "sha256:56ce73cf5d03589d6a543fb2b097ecc41fe39dc9e1a62313566e0a9380cc96a3",
+  "createdAt": "2026-10-23T23:42:34Z",
+  "take": 1,
+  "spokenHash": "sha256:c87aa9da2dca0eefa6bd04cb6a36eeba97089b47fade5d167ce52d66a8ec0c87",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Marcel (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[inquiet] Attendez… plus personne n'imprime à l'étage, maintenant.",
+  "mouth": "ccoocoowwwoooocccccccccccccccccccccsscccssssssswwwwwwooccssscooooooccwwooossscsscccoooooccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Attendez",
+      "start": 0.06,
+      "end": 0.455,
+      "score": 0.98
+    },
+    {
+      "text": "plus",
+      "start": 1.102,
+      "end": 1.276,
+      "score": 1
+    },
+    {
+      "text": "personne",
+      "start": 1.282,
+      "end": 1.683,
+      "score": 0.999
+    },
+    {
+      "text": "n'",
+      "start": 1.683,
+      "end": 1.763,
+      "score": 0.673
+    },
+    {
+      "text": "imprime",
+      "start": 1.763,
+      "end": 2.097,
+      "score": 0.999
+    },
+    {
+      "text": "à",
+      "start": 2.104,
+      "end": 2.144,
+      "score": 0.999
+    },
+    {
+      "text": "l'",
+      "start": 2.144,
+      "end": 2.204,
+      "score": 0.615
+    },
+    {
+      "text": "étage",
+      "start": 2.204,
+      "end": 2.558,
+      "score": 0.998
+    },
+    {
+      "text": "maintenant",
+      "start": 2.564,
+      "end": 2.939,
+      "score": 1
+    }
+  ]
+}

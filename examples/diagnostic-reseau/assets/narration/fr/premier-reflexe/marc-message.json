@@ -1,0 +1,70 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-message",
+  "language": "fr",
+  "textHash": "sha256:4a6b0b58090f296f3424f84cecb8fed10f6c5bd0e93626f187d45cebb943cd68",
+  "duration": 3.515,
+  "provider": "elevenlabs",
+  "voice": "kENkNtk0xyzG09WW40xE",
+  "generated": true,
+  "audioHash": "sha256:6ad55996141602725d8982cc18a76cfa9e552efb3b9dd9f26b4edeceeede1ca9",
+  "createdAt": "2026-10-23T23:41:51Z",
+  "take": 1,
+  "spokenHash": "sha256:4a6b0b58090f296f3424f84cecb8fed10f6c5bd0e93626f187d45cebb943cd68",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Marcel (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[agacé] Aucun. Le document part, et puis… plus rien.",
+  "mouth": "cccooocwwwwwcccccccccccccccoooowwwcoocoooocccwwwooooooooccccooooccoooooocccccccccccccccccccccwwwwooosssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Aucun",
+      "start": 0.101,
+      "end": 0.416,
+      "score": 1
+    },
+    {
+      "text": "Le",
+      "start": 0.884,
+      "end": 0.998,
+      "score": 0.941
+    },
+    {
+      "text": "document",
+      "start": 1.024,
+      "end": 1.4,
+      "score": 1
+    },
+    {
+      "text": "part",
+      "start": 1.446,
+      "end": 1.822,
+      "score": 1
+    },
+    {
+      "text": "et",
+      "start": 2.029,
+      "end": 2.143,
+      "score": 1
+    },
+    {
+      "text": "puis",
+      "start": 2.149,
+      "end": 2.404,
+      "score": 0.982
+    },
+    {
+      "text": "plus",
+      "start": 3.053,
+      "end": 3.214,
+      "score": 1
+    },
+    {
+      "text": "rien",
+      "start": 3.214,
+      "end": 3.429,
+      "score": 1
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "screen": "premier-reflexe",
+  "line": "commutateur.c",
+  "language": "fr",
+  "textHash": "sha256:1f1d5922cbbe6013100bdc827debdd33f08ae63aeee9ea6526add75043b9cb6d",
+  "duration": 3.16,
+  "provider": "elevenlabs",
+  "voice": "YxrwjAKoUKULGd0g8K9Y",
+  "generated": true,
+  "audioHash": "sha256:c50df669899c1c3b71b3f8cdbfb87168546e4073977833f54d84e8a1628ba4c7",
+  "createdAt": "2026-10-23T23:43:23Z",
+  "take": 1,
+  "spokenHash": "sha256:1f1d5922cbbe6013100bdc827debdd33f08ae63aeee9ea6526add75043b9cb6d",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Lucie (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Votre poste n'y est pour rien : voyez plutôt avec l'équipe réseau.",
+  "mouth": "ccooossssssccwwooccwwwwwwwcsssssoooooooccccccccccccwwwwwwwccwwsssswwwwoocooocsssscssooooooosscc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Votre",
+      "start": 0.061,
+      "end": 0.316,
+      "score": 1
+    },
+    {
+      "text": "poste",
+      "start": 0.383,
+      "end": 0.638,
+      "score": 1
+    },
+    {
+      "text": "n'",
+      "start": 0.644,
+      "end": 0.684,
+      "score": 0.739
+    },
+    {
+      "text": "y",
+      "start": 0.684,
+      "end": 0.759,
+      "score": 0.999
+    },
+    {
+      "text": "est",
+      "start": 0.765,
+      "end": 0.866,
+      "score": 1
+    },
+    {
+      "text": "pour",
+      "start": 0.866,
+      "end": 1.04,
+      "score": 0.999
+    },
+    {
+      "text": "rien",
+      "start": 1.067,
+      "end": 1.302,
+      "score": 1
+    },
+    {
+      "text": "voyez",
+      "start": 1.691,
+      "end": 1.953,
+      "score": 0.964
+    },
+    {
+      "text": "plutôt",
+      "start": 1.953,
+      "end": 2.254,
+      "score": 0.962
+    },
+    {
+      "text": "avec",
+      "start": 2.254,
+      "end": 2.456,
+      "score": 1
+    },
+    {
+      "text": "l'",
+      "start": 2.456,
+      "end": 2.516,
+      "score": 0.901
+    },
+    {
+      "text": "équipe",
+      "start": 2.516,
+      "end": 2.778,
+      "score": 0.979
+    },
+    {
+      "text": "réseau",
+      "start": 2.778,
+      "end": 3.093,
+      "score": 0.68
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "screen": "premier-reflexe",
+  "line": "appel.c",
+  "language": "fr",
+  "textHash": "sha256:b64df2ee653c17ea9a0f1d51b7a23de66fa9f4f028588b7cfd875ed3978fa89c",
+  "duration": 3.155,
+  "provider": "elevenlabs",
+  "voice": "YxrwjAKoUKULGd0g8K9Y",
+  "generated": true,
+  "audioHash": "sha256:6f4e6f717dff37a0ec1b8e16bf7a5ff0dab2d49ddad6d6b471706bf007451eac",
+  "createdAt": "2026-10-23T23:41:56Z",
+  "take": 1,
+  "spokenHash": "sha256:b64df2ee653c17ea9a0f1d51b7a23de66fa9f4f028588b7cfd875ed3978fa89c",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Lucie (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Je transfère au niveau 2 : avec la paie, c'est urgent.",
+  "mouth": "cssoosssswwssccooooowwwwwwwooosssoooccccccccccccccoooossswwwcccwwwoooocccsssooocooooooooooooccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Je",
+      "start": 0.04,
+      "end": 0.155,
+      "score": 1
+    },
+    {
+      "text": "transfère",
+      "start": 0.181,
+      "end": 0.657,
+      "score": 0.985
+    },
+    {
+      "text": "au",
+      "start": 0.663,
+      "end": 0.744,
+      "score": 0.999
+    },
+    {
+      "text": "niveau",
+      "start": 0.744,
+      "end": 1.019,
+      "score": 0.994
+    },
+    {
+      "text": "2",
+      "start": 1.065,
+      "end": 1.24,
+      "score": 0.907
+    },
+    {
+      "text": "avec",
+      "start": 1.668,
+      "end": 1.883,
+      "score": 1
+    },
+    {
+      "text": "la",
+      "start": 1.889,
+      "end": 2.023,
+      "score": 0.99
+    },
+    {
+      "text": "paie",
+      "start": 2.03,
+      "end": 2.325,
+      "score": 0.859
+    },
+    {
+      "text": "c'",
+      "start": 2.472,
+      "end": 2.532,
+      "score": 0.665
+    },
+    {
+      "text": "est",
+      "start": 2.532,
+      "end": 2.667,
+      "score": 0.977
+    },
+    {
+      "text": "urgent",
+      "start": 2.733,
+      "end": 3.109,
+      "score": 0.996
+    }
+  ]
+}
