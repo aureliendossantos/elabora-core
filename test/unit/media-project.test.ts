@@ -1,4 +1,5 @@
 import { test, before, after } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -64,7 +65,7 @@ const findings = (dir: string) => validateDir(dir).diagnostics;
 
 test('snapshot and validation: media verdicts, GPS as privacy, unreadable files, jobs under way, no ffprobe', async (t) => {
   if (!tools) return t.skip(NO_FFMPEG);
-  const dir = copyExample();
+  const dir = resources(t).own(copyExample(), removeProject);
   place(dir, 'phone.mov', 'assets/video/phone.mov');
   place(dir, 'master.mp4', 'assets/video/master.mp4');
   fs.writeFileSync(path.join(dir, 'assets/video/broken.mp4'), 'not a video');
@@ -107,12 +108,11 @@ test('snapshot and validation: media verdicts, GPS as privacy, unreadable files,
     if (saved === undefined) delete process.env.ELABORA_FFPROBE;
     else process.env.ELABORA_FFPROBE = saved;
   }
-  removeProject(dir);
 });
 
 test('build: masters stream into the ZIP; renditions below high, with references following a new extension', async (t) => {
   if (!tools) return t.skip(NO_FFMPEG);
-  const dir = copyExample();
+  const dir = resources(t).own(copyExample(), removeProject);
   place(dir, 'master.mp4', 'assets/video/master.mp4');
   place(dir, 'figure.png', 'assets/images/figure.png');
   fs.writeFileSync(path.join(dir, 'assets/video/master.vtt'), 'WEBVTT\n');
@@ -169,12 +169,11 @@ test('build: masters stream into the ZIP; renditions below high, with references
   assert.ok(linked.ok);
   assert.equal(linked.media.get('assets/images/coming.png'), null);
   assert.ok(!fs.existsSync(path.join(linked.dirPath!, 'assets/video/master.mp4')), 'the preview never copies media');
-  removeProject(dir);
 });
 
 test('optimize: the master next to the file, references follow, old file removed, all in one undoable change', async (t) => {
   if (!tools) return t.skip(NO_FFMPEG);
-  const dir = copyExample();
+  const dir = resources(t).own(copyExample(), removeProject);
   place(dir, 'phone.mov', 'assets/video/phone.mov');
   fs.writeFileSync(path.join(dir, 'assets/video/phone.vtt'), 'WEBVTT\n');
   addBlocks(dir, { id: 'clip', type: 'video', props: { asset: 'video/phone.mov', captions: 'video/phone.vtt', title: 'Clip', transcript: 'A test clip.' } } as Block);
@@ -186,12 +185,11 @@ test('optimize: the master next to the file, references follow, old file removed
   const optimised = await probeMedia(path.join(dir, 'assets/video/phone.mp4'), { tools });
   assert.deepEqual([optimised.container, optimised.location, optimised.faststart], ['mp4', false, true]);
   assert.ok(!findings(dir).some((d) => d.code === 'W_MEDIA_NOT_OPTIMIZED' || d.severity === 'error'));
-  removeProject(dir);
 });
 
 test('backups before edits leave out media that are not masters yet', async (t) => {
   if (!tools) return t.skip(NO_FFMPEG);
-  const dir = copyExample();
+  const dir = resources(t).own(copyExample(), removeProject);
   place(dir, 'phone.mov', 'assets/video/phone.mov');
   place(dir, 'master.mp4', 'assets/video/master.mp4');
   updateCourseSettings(dir, { description: 'Edited.' });
@@ -201,12 +199,11 @@ test('backups before edits leave out media that are not masters yet', async (t) 
   assert.ok(version.files['assets/video/master.mp4'], 'masters are sources');
   assert.ok(!version.files['assets/video/phone.mov'], 'raw media waiting for conversion are inputs');
   assert.ok(version.skipped.some((s) => s.path === 'assets/video/phone.mov'));
-  removeProject(dir);
 });
 
 test('elabora media import, status and optimize from the command line', async (t) => {
   if (!tools) return t.skip(NO_FFMPEG);
-  const dir = copyExample();
+  const dir = resources(t).own(copyExample(), removeProject);
   const elabora = (...args: string[]) => run(process.execPath, [path.join(ROOT, 'bin/elabora.js'), ...args], { cwd: dir }).then((r) => r.stdout, (e: { stdout: string; stderr: string; code: number }) => { throw new Error(`exit ${e.code}: ${e.stderr}${e.stdout}`); });
   const imported = JSON.parse(await elabora('media', 'import', dir, fixture('phone.mov'), '--name', 'Démo téléphone', '--json'));
   assert.deepEqual(imported.files.map((f: { path: string; status: string; action: string }) => [f.path, f.status, f.action]), [['assets/video/demo-telephone.mp4', 'done', 'remux']]);
@@ -217,11 +214,10 @@ test('elabora media import, status and optimize from the command line', async (t
   const optimised = JSON.parse(await elabora('media', 'optimize', dir, '--all', '--json'));
   assert.deepEqual(optimised.files.map((f: { from: string; to: string; status: string }) => [f.from, f.to, f.status]), [['assets/video/dropped.mov', 'assets/video/dropped.mp4', 'done']]);
   assert.ok(optimised.change, 'the old file was removed in a journaled change');
-  removeProject(dir);
 });
 
-test('replaceMediaReferences rewrites the asset props naming moved files and removes the old files', () => {
-  const dir = copyExample();
+test('replaceMediaReferences rewrites the asset props naming moved files and removes the old files', (t) => {
+  const dir = resources(t).own(copyExample(), removeProject);
   addBlocks(dir,
     { id: 'clip', type: 'video', props: { asset: 'video/a.mov', captions: 'video/a.vtt', poster: 'images/a.heic', title: 'A', transcript: 'A.' } } as Block,
     { id: 'other', type: 'image', props: { asset: 'images/keep.png', alt: 'Kept.' } } as Block);
@@ -238,7 +234,7 @@ test('replaceMediaReferences rewrites the asset props naming moved files and rem
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
-test('size of a package at each preset: estimated from bitrates, never above the master', () => {
+test('size of a package at each preset: estimated from bitrates, never above the master', (t) => {
   const video: MediaInfo = {
     kind: 'video', container: 'mp4', size: 50_000_000, duration: 49, bitrate: 8_200_000, videoCodec: 'h264', profile: 'High', pixelFormat: 'yuv420p',
     width: 1920, height: 1080, rotation: 0, pixelAspect: 1, fps: 30, videoBitrate: 8_050_000, hdr: null, alpha: false, animated: false,
@@ -253,11 +249,11 @@ test('size of a package at each preset: estimated from bitrates, never above the
   assert.equal(fileMedia(video).conformant, true);
 });
 
-test('files are served with range requests', async () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-serve-'));
+test('files are served with range requests', async (t) => {
+  const dir = resources(t).tempDir('elabora-serve-');
   const file = path.join(dir, 'clip.mp4');
   fs.writeFileSync(file, Buffer.from(Array.from({ length: 1000 }, (_, i) => i % 256)));
-  const server = http.createServer((request, response) => serveFile(request, response, file));
+  const server = resources(t).own(http.createServer((request, response) => serveFile(request, response, file)), value => new Promise<void>((resolve, reject) => { if (!value.listening) return resolve(); value.close(error => error ? reject(error) : resolve()); }));
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
   const { port } = server.address() as { port: number };
   const get = (headers: Record<string, string> = {}, method = 'GET') => new Promise<{ status: number; headers: http.IncomingHttpHeaders; body: Buffer }>((resolve, reject) => {
@@ -280,7 +276,6 @@ test('files are served with range requests', async () => {
     const head = await get({}, 'HEAD');
     assert.deepEqual([head.status, head.headers['content-length'], head.body.length], [200, '1000', 0]);
   } finally {
-    server.close();
-    fs.rmSync(dir, { recursive: true, force: true });
+    await new Promise<void>(resolve => server.close(() => resolve()));
   }
 });
