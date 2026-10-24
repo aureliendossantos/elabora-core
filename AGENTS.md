@@ -20,7 +20,7 @@ Read `docs/architecture.md` first (the packages, what each may import, the proje
 For observable changes, add an English Sampo changeset under `.sampo/changesets/`; do not duplicate it in the generated changelog. Target `npm/elabora` and the affected packages so the root changelog describes the change. Read `docs/releases.md` and `.agents/skills/release-core/SKILL.md` when preparing a core release. In a workspace with the sibling app checkout, a request to prepare an Elabora product release uses that checkout's `.agents/skills/release-elabora/SKILL.md`; it coordinates the product notes and pins the exact core commit. Clarify only when core-only versus product scope cannot be inferred.
 
 ## Rules
-1. Run `npm test` (seconds), `npm run typecheck` and `npm run test:e2e` (Chrome, about a minute) before finishing a change. All must pass. Run `npm run test:matrix` too (the LMS matrix and the sample courses, a few minutes) when a change touches the player, the emulator, the player's layout or a sample, and before a release; `npm run test:all` runs the three suites.
+1. Follow the testing standards and required checks in [CONTRIBUTING.md](CONTRIBUTING.md#tests). During test cleanup, update [TEST-CLEANUP.md](TEST-CLEANUP.md) and commit after each reviewed file.
 2. Never add `unload`/`beforeunload` handlers, synchronous XHR, `eval` or network access to the player.
 3. Builds must stay byte-identical for identical inputs (test: `build is deterministic`).
 4. After changing codes or their rules (`diagnostics/rules.ts`), profiles, block schemas, the CLI help, the agent tools or a decision: `npm run docs` (it writes docs/diagnostics.md, lms-profiles.md, blocks.md, cli.md, mcp-tools.md and the index docs/decisions.md).

@@ -13,23 +13,27 @@ node bin/elabora.js help
 
 Node 24 or later runs the TypeScript sources directly: there is no build step. ffmpeg is needed for media work and a browser for the browser suites; [Getting started](docs/getting-started.md) says where they are found.
 
-[`AGENTS.md`](AGENTS.md) is the map of the repository, package by package, and the rules every change follows. It is written for coding agents and holds for people too: read it before a first change. [Architecture](docs/architecture.md) is the contract behind it.
+[`AGENTS.md`](AGENTS.md) is the map of the repository, package by package, and the rules every change follows. It holds operational instructions for agents; the standards on this page apply to everyone. [Architecture](docs/architecture.md) is the contract behind it.
 
 ## Tests
 
+- Test observable behaviour through public APIs, returned values, emitted events, persisted files or rendered output. A behaviour-preserving refactor must keep tests green; do not pin private helpers, object identity, operation ordering or call counts unless that is a documented contract.
+- Use real domain objects and small fixtures. Replace only uncontrolled boundaries (network/services, OS/processes, clock and randomness); prefer stateful fakes to mock-call scripts. Assert the resulting behaviour, including failures and unchanged data after a refusal.
+- Give each test one behaviour and a name explaining it. Arrange its own inputs, act, then assert. Use named table cases for variations of that behaviour; share setup without hiding the action or expected outcome.
+- Keep tests independent: isolated temporary data, cleanup registered before the action, restored environment/globals and test-scoped fake clocks. Await completion or a subscribed event with a bounded failure timeout; never sleep to guess when work has finished. Use fixed timestamps and seeded generators that report the seed.
+- Check invariants with property tests (for example diff/apply/invert and encode/decode round trips), plus explicit boundary cases. Add a regression test for every bug fix. Coverage percentages and assertion counts are not targets.
+- Remove duplicates and tautologies only when each real behaviour remains checked. Do not weaken assertions or replace a test with a skip to make a run green. Propose substantial production refactors for testability before applying them.
+
 ```bash
-npm test             # unit suite, seconds
-npm run typecheck    # strict TypeScript, every package
-npm run test:e2e     # Chrome, about a minute
-npm run test:matrix  # the LMS matrix and the sample courses, a few minutes
-npm run test:all     # the three suites
+npm test             # unit and filesystem/service integration tests
+npm run typecheck    # strict TypeScript, including tests
+npm run test:e2e     # browser behaviour
+npm run test:matrix  # LMS launch modes and sample courses
 ```
 
-A change is finished when the unit suite, the typecheck and the end-to-end suite pass. Run the matrix as well when a change touches the player, the emulator, the player's layout or a sample course, and before a release.
+Before finishing, pass unit tests, typecheck and e2e. Also run the matrix for player, emulator, layout or sample changes and before releases. Repeat changed async tests and the full suite; vary file order with a recorded seed when investigating flakiness. A timeout bounds a failed wait; it must never stand in for synchronization. The [cleanup ledger](TEST-CLEANUP.md) records reviewed files, preserved behaviours and remaining work.
 
-The unit suite covers the schemas, the validator's rules, the plan, the state codec, the determinism of packages, the compiler, the status machine, edits and undo, LESSON.md, update diffs, the agent interfaces and these docs' links. The end-to-end suite runs the LMS emulator in Moodle with axe-core, checks that a package relying on `unload` is caught and that stuck runs and objects fail instead of hanging, runs the free-object gates (deliberately broken objects included), and checks slides: no layout shift when answering, contrast, captures, steps and resume. The matrix runs the other launch topologies (the SuccessFactors popup chain, Docebo's nested iframe), Chrome with `unload` deprecated and allowed, and the sample courses at desktop and phone widths.
-
-Continuous integration (`.github/workflows/ci.yml`) runs the typecheck and the three suites on Linux for every push to `main` and every pull request, the typecheck and the unit suite on Windows, and everything on macOS weekly and on demand, with GPL builds of ffmpeg. `.github/workflows/docs.yml` checks the documentation on every pull request, including those that change only Markdown.
+CI (`.github/workflows/ci.yml`) runs all three suites and typecheck on Linux, unit tests and typecheck on Windows, and all checks on macOS weekly and on demand. The docs workflow also checks Markdown-only changes.
 
 ## Documentation
 

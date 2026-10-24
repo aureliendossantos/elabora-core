@@ -77,6 +77,10 @@ npm workspaces, TypeScript in strict mode:
 | [`@elabora/engine`](packages/engine/) | The editing session the desktop app runs on |
 | [`@elabora/cli`](packages/cli/) | The `elabora` command line, the MCP server and the skills |
 
+## Testing
+
+See [Contributing: tests](CONTRIBUTING.md#tests) for the behaviour standards and commands. Run `npm test`, `npm run typecheck` and `npm run test:e2e` before finishing a change; the policy says when the LMS matrix is required.
+
 ## Status
 
 Version 0.1, October 2026, format `elabora/0.1`. SCORM 1.2 and a web target; no cmi5 or xAPI yet; Storyline and Rise imports in beta. [What 0.1 does not do yet](docs/getting-started.md#what-01-does-not-do-yet) · [Changelog](CHANGELOG.md)
