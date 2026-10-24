@@ -1,15 +1,16 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT, copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, readJSON, writeJSON } from '../helpers.ts';
 import * as edit from '@elabora/node/edit';
 import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
 import { findText } from '@elabora/core/commands/text';
 import { translationTable } from '@elabora/core/i18n/translate';
 
-test('edits are validated, journaled and undoable', () => {
-  const dir = copyExample();
+test('edits are validated, journaled and undoable', (t) => {
+  const dir = resources(t).copyExample();
   const before = fs.readFileSync(path.join(dir, 'screens/chemin.json'), 'utf8');
   const r = edit.addBlock(dir, { screen: 'chemin', block: { id: 'chemin-quiz', type: 'quiz', props: { stem: 'Q ?', mode: 'single', options: [{ id: 'a', text: 'A', correct: true }, { id: 'b', text: 'B', correct: false }] } }, after: 'chemin-regle' });
   assert.equal(r.ok, true);
@@ -22,8 +23,8 @@ test('edits are validated, journaled and undoable', () => {
   assert.equal(fs.readFileSync(path.join(dir, 'screens/chemin.json'), 'utf8'), before);
 });
 
-test('a block added without an id gets a free one; an id in use is refused', () => {
-  const dir = copyExample();
+test('a block added without an id gets a free one; an id in use is refused', (t) => {
+  const dir = resources(t).copyExample();
   const first = edit.addBlock(dir, { screen: 'chemin', block: { type: 'text', props: { markdown: 'Un.' } }, after: 'chemin-regle' });
   const second = edit.addBlock(dir, { screen: 'chemin', block: { type: 'text', props: { markdown: 'Deux.' } }, after: 'chemin-regle' });
   assert.equal(first.block, 'chemin-text');
@@ -32,8 +33,8 @@ test('a block added without an id gets a free one; an id in use is refused', () 
   assert.throws(() => edit.addBlock(dir, { screen: 'chemin', block: { id: 'chemin-regle', type: 'text', props: { markdown: 'Trois.' } } }), /already used/);
 });
 
-test('a layer or an event written without an id is new and gets a free one; a variable still used is not removed', () => {
-  const dir = copyExample();
+test('a layer or an event written without an id is new and gets a free one; a variable still used is not removed', (t) => {
+  const dir = resources(t).copyExample();
   const layer = edit.upsertLayer(dir, { screen: 'chemin', layer: { title: 'Pour aller plus loin', blocks: [{ type: 'text', props: { markdown: 'Plus loin.' } }] } });
   assert.equal(layer.layer, 'chemin-layer');
   assert.equal(readJSON(dir, 'screens/chemin.json').layers[0].blocks[0].id, 'chemin-layer-text');
@@ -58,8 +59,8 @@ test('a layer or an event written without an id is new and gets a free one; a va
   assert.throws(() => edit.removeVariable(dir, { id: 'indiceVu' }), /No variable/);
 });
 
-test('steps: a block of the screen takes a step (1 or null: from the start), the screen says how each step opens; a block of a layer has none', () => {
-  const dir = copyExample();
+test('steps: a block of the screen takes a step (1 or null: from the start), the screen says how each step opens; a block of a layer has none', (t) => {
+  const dir = resources(t).copyExample();
   edit.updateBlock(dir, { block: 'chemin-regle', step: 2 });
   edit.updateScreen(dir, { id: 'chemin', steps: { 2: { opens: 'continue', label: 'Voir la règle' } } });
   let screen = readJSON(dir, 'screens/chemin.json');
@@ -73,8 +74,8 @@ test('steps: a block of the screen takes a step (1 or null: from the start), the
   assert.throws(() => edit.updateBlock(dir, { block: 'rappel-texte', step: 2 }), /only blocks of the screen itself have a step/);
 });
 
-test('a variable renamed: course.json, the events that read or write it, its key for learners', () => {
-  const dir = copyExample();
+test('a variable renamed: course.json, the events that read or write it, its key for learners', (t) => {
+  const dir = resources(t).copyExample();
   // Its key in the lock, as a build gives it.
   writeJSON(dir, 'elabora.lock.json', { ...readJSON(dir, 'elabora.lock.json'), keys: { ...(readJSON(dir, 'elabora.lock.json').keys ?? {}), 'var:indiceVu': 'v9' } });
   edit.upsertEvent(dir, { screen: 'chemin', event: { on: { type: 'variable.changed', variable: 'indiceVu' }, if: [{ variable: 'indiceVu', op: 'eq', value: true }], do: [{ type: 'set-variable', variable: 'indiceVu', value: false }] } });
@@ -89,8 +90,8 @@ test('a variable renamed: course.json, the events that read or write it, its key
   assert.throws(() => edit.renameVariable(dir, { from: 'aideVue', to: 'Aide-vue' }), /not a valid variable name/);
 });
 
-test('a screen duplicated: after it in its section, new ids for its blocks, layers and events, its events pointing at its own', () => {
-  const dir = copyExample();
+test('a screen duplicated: after it in its section, new ids for its blocks, layers and events, its events pointing at its own', (t) => {
+  const dir = resources(t).copyExample();
   const result = edit.duplicateScreen(dir, { id: 'premier-reflexe', title: 'Premier réflexe (bis)' });
   assert.equal(result.screen, 'premier-reflexe-copy');
   assert.deepEqual(readJSON(dir, 'course.json').sections.find((s: { id: string }) => s.id === 'pratiquer').screens, ['premier-reflexe', 'premier-reflexe-copy', 'simulation']);
@@ -107,8 +108,8 @@ test('a screen duplicated: after it in its section, new ids for its blocks, laye
   assert.equal(validateDir(dir).summary.errors, 0);
 });
 
-test('a screen created with a layout of the course: its props written, its first block in the layout\'s default slot', () => {
-  const dir = copyExample(path.join(ROOT, 'examples/medieval-charts'));
+test('a screen created with a layout of the course: its props written, its first block in the layout\'s default slot', (t) => {
+  const dir = resources(t).copyExample(path.join(ROOT, 'examples/medieval-charts'));
   const first = readJSON(dir, 'course.json').sections[0];
   edit.createScreen(dir, { id: 'page-blanche', title: 'A blank page', covers: [readJSON(dir, 'plan.json').items[0].id], section: first.id, layout: 'folio', layoutProps: { eyebrow: 'Lesson 0' } });
   const screen = readJSON(dir, 'screens/page-blanche.json');
@@ -116,8 +117,8 @@ test('a screen created with a layout of the course: its props written, its first
   assert.equal(validateDir(dir).diagnostics.filter((d: { severity: string; file?: string }) => d.severity === 'error' && d.file === 'screens/page-blanche.json').length, 0);
 });
 
-test('a language started and translated text by text, as changes: stale when the source changes, a lost link refused, a new language started by its first text', () => {
-  const dir = copyExample();
+test('a language started and translated text by text, as changes: stale when the source changes, a lost link refused, a new language started by its first text', (t) => {
+  const dir = resources(t).copyExample();
   const started = edit.exportTranslationChange(dir, { to: 'en' });
   assert.equal(started.ok, true);
   assert.ok(fs.existsSync(path.join(dir, 'translations/en.xlf')));
@@ -146,8 +147,8 @@ test('a language started and translated text by text, as changes: stale when the
   assert.deepEqual(german.rows.filter((row) => row.status !== 'to-translate').map((row) => [row.id, row.target]), [[title.id, 'Der Weg eines Druckauftrags']]);
 });
 
-test('words found and replaced in one change: titles, blocks, an object\'s wording; never a link\'s address, code or the plan', () => {
-  const dir = copyExample();
+test('words found and replaced in one change: titles, blocks, an object\'s wording; never a link\'s address, code or the plan', (t) => {
+  const dir = resources(t).copyExample();
   edit.addBlock(dir, { screen: 'chemin', block: { id: 'chemin-lien', type: 'text', props: { markdown: 'Voir [la fiche de Marc](https://intranet.example.com/marc) et `marc.log`.' } } });
   const found = findText(loadProjectFromDir(dir), 'marc');
   assert.ok(found.some((match) => match.unit === 'screen.accueil.title' && match.screen === 'accueil' && match.block === null));
@@ -171,8 +172,8 @@ test('words found and replaced in one change: titles, blocks, an object\'s wordi
   assert.throws(() => edit.replaceText(dir, { find: 'introuvable', replace: 'x' }), /is not in the words/);
 });
 
-test('captions: a SubRip file becomes WebVTT under assets/captions, named after the video; undone at once', () => {
-  const dir = copyExample();
+test('captions: a SubRip file becomes WebVTT under assets/captions, named after the video; undone at once', (t) => {
+  const dir = resources(t).copyExample();
   edit.addBlock(dir, { screen: 'chemin', block: { id: 'chemin-video', type: 'video', props: { asset: 'video/demo.mp4', title: 'Démonstration' } } });
   const result = edit.setCaptions(dir, { block: 'chemin-video', text: '\uFEFF1\r\n00:00:01,000 --> 00:00:02,500\r\nBonjour Marc.\r\n' });
   assert.equal(result.captions, 'captions/chemin-video.vtt');
@@ -185,22 +186,22 @@ test('captions: a SubRip file becomes WebVTT under assets/captions, named after 
   assert.equal(readJSON(dir, 'screens/chemin.json').blocks.at(-1).props.captions, undefined);
 });
 
-test('schema-invalid edits are refused before touching the disk', () => {
-  const dir = copyExample();
+test('schema-invalid edits are refused before touching the disk', (t) => {
+  const dir = resources(t).copyExample();
   const before = fs.readFileSync(path.join(dir, 'screens/chemin.json'), 'utf8');
   assert.throws(() => edit.addBlock(dir, { screen: 'chemin', block: { id: 'x', type: 'quiz', props: { stem: 1 } } }), (e) => e instanceof edit.EditError && e.diagnostics.some((d) => d.code === 'E_SCHEMA'));
   assert.equal(fs.readFileSync(path.join(dir, 'screens/chemin.json'), 'utf8'), before);
 });
 
-test('free-object planRefs cannot be changed outside a change request', () => {
-  const dir = copyExample();
+test('free-object planRefs cannot be changed outside a change request', (t) => {
+  const dir = resources(t).copyExample();
   const m = readJSON(dir, 'objects/diagnostic-reseau/object.manifest.json');
   m.planRefs.objectives = ['OBJ-1'];
   assert.throws(() => edit.writeObjectFile(dir, { object: 'diagnostic-reseau', file: 'object.manifest.json', content: JSON.stringify(m) }), /propose_plan_change/);
 });
 
-test('screens: create, move, delete', () => {
-  const dir = copyExample();
+test('screens: create, move, delete', (t) => {
+  const dir = resources(t).copyExample();
   edit.createScreen(dir, { id: 'rappel', title: 'Rappel', covers: ['ITEM-6'], section: 'valider' });
   assert.ok(readJSON(dir, 'course.json').sections[2].screens.includes('rappel'));
   edit.moveScreen(dir, { id: 'rappel', after: 'accueil' });
@@ -209,8 +210,8 @@ test('screens: create, move, delete', () => {
   assert.ok(!fs.existsSync(path.join(dir, 'screens/rappel.json')));
 });
 
-test('course delivery: update_course sets the media preset, checked against the schema', () => {
-  const dir = copyExample();
+test('course delivery: update_course sets the media preset, checked against the schema', (t) => {
+  const dir = resources(t).copyExample();
   edit.updateCourseSettings(dir, { delivery: { mediaQuality: 'low' } });
   assert.deepEqual(readJSON(dir, 'course.json').delivery, { mediaQuality: 'low' });
   const before = fs.readFileSync(path.join(dir, 'course.json'), 'utf8');
