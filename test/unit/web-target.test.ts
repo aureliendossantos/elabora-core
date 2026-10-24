@@ -1,7 +1,7 @@
-import { test, after } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import zlib from 'node:zlib';
 import { spawn } from 'node:child_process';
@@ -18,24 +18,22 @@ import { readZip } from '@elabora/node/zip';
 import { createMcpServer } from '@elabora/cli/mcp';
 import { openProject } from '@elabora/engine';
 import type { BuildView, ResponseMessage } from '@elabora/engine';
-import { ROOT, copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
+import { ROOT, readJSON, writeJSON, codes } from '../helpers.ts';
 import { narrate } from '../narration.ts';
 
 // The web target (docs/decisions.md D41): a module for a plain web server, its adapter (progress
 // local or none), its free navigation, its index.html, and the build, CLI, MCP and engine settings.
 
-const temporary: string[] = [];
-after(() => { for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true }); });
-const tmp = (prefix: string) => { const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix)); temporary.push(dir); return dir; };
-const course = () => { const dir = copyExample(); temporary.push(dir); return dir; };
+const tmp = (t: TestContext, prefix: string) => resources(t).tempDir(prefix);
+const course = (t: TestContext) => resources(t).copyExample();
 
 // localStorage as the adapter uses it, with what was written.
-function memoryStorage(initial: Record<string, string> = {}): WebStorage & { items: Map<string, string>; writes: number } {
+function memoryStorage(initial: Record<string, string> = {}): WebStorage & { items: Map<string, string> } {
   const items = new Map(Object.entries(initial));
   const storage = {
-    items, writes: 0,
+    items,
     getItem: (key: string) => items.get(key) ?? null,
-    setItem: (key: string, value: string) => { storage.writes++; items.set(key, value); },
+    setItem: (key: string, value: string) => { items.set(key, value); },
     removeItem: (key: string) => { items.delete(key); }
   };
   return storage;
@@ -61,7 +59,7 @@ function png(file: string): string {
   return file;
 }
 
-test('web adapter, progress local: the location, status, score and suspend data are kept for the next visit, not the LMS journal', () => {
+test('web adapter, progress local: the location, status, score and suspend data are kept for the next visit, not the LMS journal', (t) => {
   const storage = memoryStorage();
   const first = createWebAdapter('reseau', { progress: 'local', storage });
   assert.equal(first.kind, 'web');
@@ -77,7 +75,7 @@ test('web adapter, progress local: the location, status, score and suspend data 
   first.setAlways('cmi.interactions.0.id', 'q1');
   first.setAlways('cmi.interactions.0.result', 'correct');
   assert.equal(first.get('cmi.interactions._count'), '1');
-  assert.equal(storage.writes, 0, 'nothing is written before a commit');
+  assert.deepEqual([...storage.items], [], 'nothing is written before a commit');
   assert.equal(first.commit(), true);
   const saved = JSON.parse(storage.items.get(webStorageKey('reseau')) ?? '{}');
   assert.deepEqual(saved, { 'cmi.core.lesson_location': 's7', 'cmi.core.lesson_status': 'incomplete', 'cmi.core.score.raw': '80', 'cmi.suspend_data': '{"v":3,"s":"s1.s7"}' });
@@ -98,7 +96,7 @@ test('web adapter, progress local: the location, status, score and suspend data 
   assert.equal(storage.items.has(webStorageKey('reseau')), false);
 });
 
-test('web adapter, progress local: unreadable, foreign or refused storage gives a fresh start and never throws', () => {
+test('web adapter, progress local: unreadable, foreign or refused storage gives a fresh start and never throws', (t) => {
   const storage = memoryStorage({ [webStorageKey('reseau')]: '{not json', [webStorageKey('other')]: JSON.stringify({ 'cmi.core.lesson_location': 3, 'cmi.launch_data': 'x' }) });
   const broken = createWebAdapter('reseau', { progress: 'local', storage });
   broken.initialize();
@@ -120,7 +118,7 @@ test('web adapter, progress local: unreadable, foreign or refused storage gives 
   assert.equal(none.commit(), true);
 });
 
-test('web adapter, progress none: nothing is read or written, even with storage at hand', () => {
+test('web adapter, progress none: nothing is read or written, even with storage at hand', (t) => {
   const storage = memoryStorage({ [webStorageKey('reseau')]: JSON.stringify({ 'cmi.core.lesson_location': 's7', 'cmi.suspend_data': 'x' }) });
   const visit = createWebAdapter('reseau', { progress: 'none', storage });
   visit.initialize();
@@ -129,12 +127,12 @@ test('web adapter, progress none: nothing is read or written, even with storage 
   visit.set('cmi.core.lesson_location', 's2');
   visit.commit();
   visit.finish();
-  assert.equal(storage.writes, 0);
+  assert.deepEqual([...storage.items.values()], [JSON.stringify({ 'cmi.core.lesson_location': 's7', 'cmi.suspend_data': 'x' })]);
   assert.equal(visit.get('cmi.core.lesson_location'), 's2', 'the page keeps it while it is open');
 });
 
-test('free navigation opens the course data: mode free, no lock, the outline shown, narrations seekable; authored keeps the course rules', () => {
-  const dir = course();
+test('free navigation opens the course data: mode free, no lock, the outline shown, narrations seekable; authored keeps the course rules', (t) => {
+  const dir = course(t);
   const source = readJSON(dir, 'course.json');
   source.navigation = { ...source.navigation, mode: 'linear', lockUntilComplete: true };
   source.player = { bottom: { items: [{ id: 'outline', enabled: false }, { id: 'previous' }, { id: 'next' }] } };
@@ -158,8 +156,8 @@ test('free navigation opens the course data: mode free, no lock, the outline sho
   assert.equal(compileCourseData(project, keys, { buildId: 'b' }).delivery, undefined);
 });
 
-test('a module for the web is checked against no LMS: no profile, suspend data budget or LMS of delivery.lms', () => {
-  const dir = course();
+test('a module for the web is checked against no LMS: no profile, suspend data budget or LMS of delivery.lms', (t) => {
+  const dir = course(t);
   const source = readJSON(dir, 'course.json');
   source.delivery = { ...source.delivery, lms: ['no-such-lms'] };
   writeJSON(dir, 'course.json', source);
@@ -170,11 +168,11 @@ test('a module for the web is checked against no LMS: no profile, suspend data b
   assert.deepEqual(web.context.options.profiles, []);
 });
 
-test('build --target web: a folder to serve and its ZIP, no manifest, its own index.html, deterministic', async () => {
-  const dir = course();
-  const image = png(path.join(tmp('elabora-share-'), 'cover.png'));
+test('build --target web: a folder to serve and its ZIP, no manifest, its own index.html, deterministic', async (t) => {
+  const dir = course(t);
+  const image = png(path.join(tmp(t, 'elabora-share-'), 'cover.png'));
   const web = { progress: 'none', navigation: 'free', noindex: true, url: 'https://example.org/modules/reseau', image } as const;
-  const [a, b] = [await build(dir, { target: 'web', web, out: tmp('elabora-w1-') }), await build(dir, { target: 'web', web, out: tmp('elabora-w2-') })];
+  const [a, b] = [await build(dir, { target: 'web', web, out: tmp(t, 'elabora-w1-') }), await build(dir, { target: 'web', web, out: tmp(t, 'elabora-w2-') })];
   assert.ok(a.ok && b.ok && a.zipPath && a.dirPath, JSON.stringify(a.diagnostics.filter((d) => d.severity === 'error')));
   assert.ok(a.zipPath.endsWith('diagnostic-reseau-1.0.0-web.zip') && a.dirPath?.endsWith('diagnostic-reseau-1.0.0-web'), `${a.zipPath} ${a.dirPath}`);
   assert.equal(a.report.package.sha256, b.report.package.sha256, 'deterministic');
@@ -212,13 +210,13 @@ test('build --target web: a folder to serve and its ZIP, no manifest, its own in
 
   // The defaults: a publication, as designed, kept in the browser; indexable; a SCORM package of
   // the same course is unchanged by all this.
-  const plain = await build(dir, { target: 'web', out: tmp('elabora-w3-') });
+  const plain = await build(dir, { target: 'web', out: tmp(t, 'elabora-w3-') });
   assert.ok(plain.ok);
   assert.deepEqual(plain.report.web, { ...WEB_DEFAULTS, noindex: false, url: null, image: null });
   const plainHtml = fs.readFileSync(path.join(plain.dirPath ?? '', 'index.html'), 'utf8');
   assert.doesNotMatch(plainHtml, /robots|canonical|og:image|og:url/);
   assert.match(plainHtml, /<meta name="twitter:card" content="summary">/);
-  const scorm = await build(dir, { profiles: ['moodle'], out: tmp('elabora-w4-') });
+  const scorm = await build(dir, { profiles: ['moodle'], out: tmp(t, 'elabora-w4-') });
   assert.ok(scorm.ok && scorm.zipPath && scorm.zipPath.endsWith('-scorm12.zip'));
   const scormFiles = readZip(fs.readFileSync(scorm.zipPath)).files;
   assert.ok(scormFiles.has('imsmanifest.xml'));
@@ -228,9 +226,9 @@ test('build --target web: a folder to serve and its ZIP, no manifest, its own in
   assert.equal(scorm.report.web, undefined);
 });
 
-test('build --target web: a wrong address or image stops it, an image without address warns, wrong settings are refused', async () => {
-  const dir = course();
-  const out = tmp('elabora-w5-');
+test('build --target web: a wrong address or image stops it, an image without address warns, wrong settings are refused', async (t) => {
+  const dir = course(t);
+  const out = tmp(t, 'elabora-w5-');
   const svg = path.join(dir, 'assets/images', fs.readdirSync(path.join(dir, 'assets/images')).find((name) => name.endsWith('.svg')) ?? '');
   for (const web of [{ url: 'example.org/reseau' }, { url: 'ftp://example.org/' }, { url: 'https://example.org/?a=1' }, { image: 'assets/none.png' }, { image: svg }]) {
     const result = await build(dir, { target: 'web', web, out });
@@ -263,9 +261,9 @@ function elabora(args: string[]): Promise<{ status: number | null; stdout: strin
   });
 }
 
-test('elabora build --target web: the settings as flags, checked before building', async () => {
-  const dir = course();
-  const out = tmp('elabora-w6-');
+test('elabora build --target web: the settings as flags, checked before building', async (t) => {
+  const dir = course(t);
+  const out = tmp(t, 'elabora-w6-');
   const refused = await Promise.all([
     elabora(['build', dir, '--progress', 'none']), elabora(['build', dir, '--target', 'web', '--profile', 'moodle']), elabora(['build', dir, '--target', 'web', '--progress', 'session']),
     elabora(['build', dir, '--target', 'web', '--navigation', 'open']), elabora(['build', dir, '--target', 'cmi5']), elabora(['build', dir, '--noindex'])
@@ -280,12 +278,12 @@ test('elabora build --target web: the settings as flags, checked before building
   assert.ok(fs.existsSync(path.join(printed.dir, 'index.html')) && fs.existsSync(printed.zip));
 });
 
-test('MCP elabora_build target web, and the engine build request with web settings', async () => {
-  const dir = course();
-  const server = createMcpServer(dir);
+test('MCP elabora_build target web, and the engine build request with web settings', async (t) => {
+  const dir = course(t);
+  const server = resources(t).own(createMcpServer(dir), value => value.close());
   const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
   await server.connect(serverSide);
-  const client = new Client({ name: 'test', version: '1' });
+  const client = resources(t).own(new Client({ name: 'test', version: '1' }), value => value.close());
   await client.connect(clientSide);
   const call = async (args: Record<string, unknown>) => {
     const result = await client.callTool({ name: 'elabora_build', arguments: args });
@@ -300,22 +298,18 @@ test('MCP elabora_build target web, and the engine build request with web settin
   assert.equal((await call({ target: 'web', profiles: ['moodle'] })).isError, true);
   await client.close();
 
-  const session = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 });
-  try {
-    const response = await session.handle({ kind: 'request', id: 'w1', type: 'build', params: { target: 'web', web: { progress: 'local', noindex: true } } }) as ResponseMessage;
-    assert.equal(response.ok, true, JSON.stringify(response));
-    const view = (response.ok ? response.result : null) as BuildView;
-    assert.equal(view.ok, true);
-    assert.ok(view.zip?.endsWith('-web.zip') && view.dir && fs.existsSync(path.join(view.dir, 'index.html')));
-    assert.match(fs.readFileSync(path.join(view.dir, 'index.html'), 'utf8'), /noindex/);
-    const scorm = await session.handle({ kind: 'request', id: 'w2', type: 'build', params: {} }) as ResponseMessage;
-    assert.equal(scorm.ok && (scorm.result as BuildView).dir, null);
-    for (const params of [{ target: 'xapi' }, { target: 'web', profiles: ['moodle'] }, { web: { progress: 'none' } }, { target: 'web', web: { progress: 'session' } }, { target: 'web', web: { navigation: 1 } }, { target: 'web', web: { noindex: 'yes' } }, { target: 'web', web: { colour: 'red' } }, { target: 'web', web: 'free' }]) {
-      const refused = await session.handle({ kind: 'request', id: 'w3', type: 'build', params }) as ResponseMessage;
-      assert.equal(refused.ok, false, JSON.stringify(params));
-      if (!refused.ok) assert.equal(refused.error.kind, 'bad-request', JSON.stringify(params));
-    }
-  } finally {
-    await session.close();
+  const session = resources(t).own(await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 }), value => value.close());
+  const response = await session.handle({ kind: 'request', id: 'w1', type: 'build', params: { target: 'web', web: { progress: 'local', noindex: true } } }) as ResponseMessage;
+  assert.equal(response.ok, true, JSON.stringify(response));
+  const view = (response.ok ? response.result : null) as BuildView;
+  assert.equal(view.ok, true);
+  assert.ok(view.zip?.endsWith('-web.zip') && view.dir && fs.existsSync(path.join(view.dir, 'index.html')));
+  assert.match(fs.readFileSync(path.join(view.dir, 'index.html'), 'utf8'), /noindex/);
+  const scorm = await session.handle({ kind: 'request', id: 'w2', type: 'build', params: {} }) as ResponseMessage;
+  assert.equal(scorm.ok && (scorm.result as BuildView).dir, null);
+  for (const params of [{ target: 'xapi' }, { target: 'web', profiles: ['moodle'] }, { web: { progress: 'none' } }, { target: 'web', web: { progress: 'session' } }, { target: 'web', web: { navigation: 1 } }, { target: 'web', web: { noindex: 'yes' } }, { target: 'web', web: { colour: 'red' } }, { target: 'web', web: 'free' }]) {
+    const refused = await session.handle({ kind: 'request', id: 'w3', type: 'build', params }) as ResponseMessage;
+    assert.equal(refused.ok, false, JSON.stringify(params));
+    if (!refused.ok) assert.equal(refused.error.kind, 'bad-request', JSON.stringify(params));
   }
 });

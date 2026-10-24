@@ -171,7 +171,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/unit/validate.test.ts` | 627 | 631 | Passed 32 cases; preserves all diagnostic rules, checks exact prop paths, cleans every copied fixture; removes internal check-name assertion |
 | `test/unit/voice-models.test.ts` | 252 | 253 | Native-seeded cases passed; per-case models and restored environment, seeded downloads, owned generation gates; outputs replace fake provider install counters |
 | `test/unit/voice.test.ts` | 434 | 445 | 15 passed, 2 explicit unavailable-model skips with native seed 130363; owned courses/sessions, seeded download bytes, file notification gates and controllable external voice service replace sleeps/polling; separate named rejection cases and one recovery replace repeated retry checks; native inference seam proposal recorded |
-| `test/unit/web-target.test.ts` | 321 | — | Pending |
+| `test/unit/web-target.test.ts` | 321 | 315 | All native-seeded cases passed; owns builds/course/client/server/session; fake browser storage checked by kept content instead of write counters; packaging/privacy/CLI/MCP/engine contracts retained |
 | `test/unit/zip-writer.test.ts` | 90 | 87 | Passed 3 native-seeded cases; own directories, seeded high-entropy payloads, round-trip every entry and compare reordered public writes; controlled mtimes and limit errors replace elapsed-time and private writer comparison |
 | `test/unit/zip.test.ts` | 19 | 19 | Passed native-seeded cases; retained CRC reference and deterministic ordered ZIP; now compares every restored entry rather than one file |
 | `README.md` | 86 | 90 | Policy complete; canonical standards in CONTRIBUTING |
