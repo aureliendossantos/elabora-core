@@ -1,7 +1,7 @@
-import { test } from 'node:test';
+import { test, type TestContext } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { validateDir } from '@elabora/node/project-reader';
 import { renderMarkdown, mathErrors } from '@elabora/core/compile/markdown';
@@ -12,32 +12,32 @@ import { encodeState, decodeState, emptyState } from '@elabora/player/state-code
 import { runGenerators } from '@elabora/node/generators';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { readZip } from '@elabora/node/zip';
-import { ROOT, copyExample, readJSON, writeJSON, codes, addLayerProbe, LAYER_PROBE } from '../helpers.ts';
+import { ROOT, readJSON, writeJSON, codes, addLayerProbe, LAYER_PROBE } from '../helpers.ts';
 import { build } from '@elabora/node/build';
 import { runtimeFiles } from '@elabora/node/bundles';
 import { BASE_LAYER } from '@elabora/core/render/styles';
-import { propertyFamily, splitOverrides, upgradeTheme } from '@elabora/core/render/cascade';
+import { splitOverrides, upgradeTheme } from '@elabora/core/render/cascade';
 import { literalColors } from '@elabora/core/project/css';
 import { renderScreen } from '@elabora/core/render/screen';
 
 const write = (dir: string, rel: string, content: string) => { fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true }); fs.writeFileSync(path.join(dir, rel), content); };
-const out = () => fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-design-'));
+const out = (t: TestContext) => resources(t).tempDir('elabora-design-');
 
 // ── Maths ──
-test('maths: $…$ and $$…$$ render as MathML at build time, prices stay text', () => {
+test('maths: $…$ and $$…$$ render as MathML at build time, prices stay text', (t) => {
   assert.match(renderMarkdown('Speed $n_c = 278$ rpm.'), /<math><mrow><msub><mi>n<\/mi><mi>c<\/mi><\/msub>/);
   assert.match(renderMarkdown('$$\\frac{1}{2}$$'), /<div class="t-math-display"><math display="block"/);
   assert.equal(renderMarkdown('It costs $5 and $6.'), '<p>It costs $5 and $6.</p>');
   assert.equal(mathErrors('ok $x^2$ but $\\frac{1}{2$').length, 1);
 });
 
-test('maths: punctuation around inline maths stays on its line', () => {
+test('maths: punctuation around inline maths stays on its line', (t) => {
   assert.match(renderMarkdown('At 500 km ($T = 5676$ s), $x$, done.'), /<span class="t-nobr">\(<math>.*?<\/math><\/span> s\), <span class="t-nobr"><math><mi>x<\/mi><\/math>,<\/span> done\./);
   assert.equal(renderMarkdown('Alone $x$ here'), '<p>Alone <math><mi>x</mi></math> here</p>');
 });
 
-test('maths: LaTeX errors are reported with E_MATH_PARSE', () => {
-  const dir = copyExample();
+test('maths: LaTeX errors are reported with E_MATH_PARSE', (t) => {
+  const dir = resources(t).copyExample();
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks.push({ id: 'chemin-eq', type: 'math', props: { tex: '\\frac{a}{', caption: 'Débit $\\sqrt{x$' } });
   writeJSON(dir, 'screens/chemin.json', s);
@@ -46,7 +46,7 @@ test('maths: LaTeX errors are reported with E_MATH_PARSE', () => {
 });
 
 // ── Numeric answers ──
-test('numeric: locale-aware parsing', () => {
+test('numeric: locale-aware parsing', (t) => {
   assert.equal(parseNumber('1,385', 'en'), 1385);
   assert.equal(parseNumber('1,5', 'fr'), 1.5);
   assert.equal(parseNumber('1 385,5', 'fr'), 1385.5);
@@ -55,7 +55,7 @@ test('numeric: locale-aware parsing', () => {
   assert.equal(parseNumber('abc', 'en'), null);
 });
 
-test('numeric: tolerance, misconceptions, course state and scoring', () => {
+test('numeric: tolerance, misconceptions, course state and scoring', (t) => {
   const props = { answer: 722.2, tolerance: { absolute: 1.5 }, misconceptions: [{ id: 'inv', value: 1384.6, feedback: 'x' }], attempts: 2 };
   assert.equal(gradeNumeric(props, 722).correct, true);
   assert.equal(gradeNumeric(props, 1384.6).misconception?.id, 'inv');
@@ -79,8 +79,8 @@ test('numeric: tolerance, misconceptions, course state and scoring', () => {
   assert.deepEqual((decodeState(encodeState(st)).numerics as Record<string, unknown>).k, { value: -0.25, attempts: 2 });
 });
 
-test('numeric: feedback required, ambiguous misconception, plan question type', () => {
-  const dir = copyExample();
+test('numeric: feedback required, ambiguous misconception, plan question type', (t) => {
+  const dir = resources(t).copyExample();
   const s = readJSON(dir, 'screens/evaluation.json');
   s.blocks.push({ id: 'eval-calc', type: 'numeric', props: { stem: 'Débit ?', answer: 100, tolerance: { percent: 5 }, feedback: { correct: 'Oui.', incorrect: '' }, misconceptions: [{ id: 'near', value: 103, feedback: 'Trop proche' }] } });
   s.blocks.push({ id: 'eval-wrong-ref', type: 'numeric', props: { questionRef: 'Q-1' } });
@@ -96,8 +96,8 @@ function addLayout(dir: string, { html, css = '', slots }: { html?: string; css?
   write(dir, 'components/split/component.css', css || '.t-layout--split .g { display: grid; grid-template-columns: 1fr 2fr; }');
 }
 
-test('layouts: slots are checked and the template is shipped with the screen', async () => {
-  const dir = copyExample();
+test('layouts: slots are checked and the template is shipped with the screen', async (t) => {
+  const dir = resources(t).copyExample();
   addLayout(dir);
   const s = readJSON(dir, 'screens/chemin.json');
   s.layout = 'split';
@@ -105,7 +105,7 @@ test('layouts: slots are checked and the template is shipped with the screen', a
   writeJSON(dir, 'screens/chemin.json', s);
   const ok = validateDir(dir);
   assert.equal(ok.summary.errors, 0, JSON.stringify(ok.diagnostics.filter((d) => d.severity === 'error')));
-  const r = await build(dir, { out: out(), emit: 'both' });
+  const r = await build(dir, { out: out(t), emit: 'both' });
   assert.ok(r.ok && r.dirPath);
   const data = fs.readFileSync(path.join(r.dirPath, 'elabora/course.js'), 'utf8');
   assert.match(data, /"layout":\{"id":"split","lineage":\["split"\],"fullBleed":false,"defaultSlot":"main","html":"<div class=\\"g\\"><div data-title><\/div><div data-slot=\\"side\\">/);
@@ -119,8 +119,8 @@ test('layouts: slots are checked and the template is shipped with the screen', a
   assert.equal(c.filter((x) => x === 'E_COMPONENT_SLOT').length, 2);
 });
 
-test('layouts: templates hold structure only (no script, no text, decorative SVG hidden)', () => {
-  const dir = copyExample();
+test('layouts: templates hold structure only (no script, no text, decorative SVG hidden)', (t) => {
+  const dir = resources(t).copyExample();
   addLayout(dir, { html: '<div data-slot="side"></div><div data-slot="main"><script>x()</script></div><p>Bonjour</p><svg><path d="M0 0"/></svg><img src="https://x.org/a.png">' });
   const s = readJSON(dir, 'screens/chemin.json');
   s.layout = 'split';
@@ -129,8 +129,8 @@ test('layouts: templates hold structure only (no script, no text, decorative SVG
   for (const code of ['E_COMPONENT_TEMPLATE', 'W_COMPONENT_TEXT', 'W_COMPONENT_DECORATION']) assert.ok(c.includes(code), code);
 });
 
-test('styles must be declared by the theme', () => {
-  const dir = copyExample();
+test('styles must be declared by the theme', (t) => {
+  const dir = resources(t).copyExample();
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks[0].style = 'card';
   s.style = 'dark';
@@ -143,8 +143,8 @@ test('styles must be declared by the theme', () => {
 });
 
 // ── Theme stylesheet, fonts, custom tokens ──
-test('theme: stylesheet rules, fonts and custom tokens', async () => {
-  const dir = copyExample();
+test('theme: stylesheet rules, fonts and custom tokens', async (t) => {
+  const dir = resources(t).copyExample();
   write(dir, 'theme/theme.css', '.t-callout { color: #123456; background: url("https://cdn.example.com/bg.png"); }\n.t-x::before { content: "Attention"; }\n@import "other.css";\n');
   const course = readJSON(dir, 'course.json');
   course.theme.stylesheet = 'theme/theme.css';
@@ -157,7 +157,7 @@ test('theme: stylesheet rules, fonts and custom tokens', async () => {
   write(dir, 'theme/theme.css', '.t-callout { background: var(--t-color-blueprint) url("img/bg.svg"); }\n');
   write(dir, 'theme/img/bg.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>');
   write(dir, 'theme/fonts/demo.woff2', 'not really a font');
-  const r = await build(dir, { out: out(), emit: 'both' });
+  const r = await build(dir, { out: out(t), emit: 'both' });
   assert.ok(r.ok && r.dirPath, JSON.stringify(r.diagnostics.filter((d) => d.severity === 'error')));
   for (const f of ['theme/theme.css', 'theme/img/bg.svg', 'theme/fonts/demo.woff2']) assert.ok(fs.existsSync(path.join(r.dirPath, f)), f);
   const html = fs.readFileSync(path.join(r.dirPath, 'index.html'), 'utf8');
@@ -167,18 +167,18 @@ test('theme: stylesheet rules, fonts and custom tokens', async () => {
 });
 
 // ── Cascade layers ──
-test('cascade layers: the course\'s order first in every stylesheet that names its layers, the player\'s layer alone first in elabora/player.css', async () => {
+test('cascade layers: the course\'s order first in every stylesheet that names its layers, the player\'s layer alone first in elabora/player.css', async (t) => {
   const LEGACY = '@layer elabora.base, elabora.components, elabora.theme, elabora.overrides;';
   const CURRENT = '@layer elabora.base, elabora.theme, elabora.components, elabora.overrides;';
   for (const [cascade, order] of [[undefined, LEGACY], ['components-over-theme', CURRENT]] as const) {
-    const dir = copyExample();
+    const dir = resources(t).copyExample();
     addLayerProbe(dir);
     write(dir, 'theme/theme.css', `.lp-probe { color: red; }\n@layer overrides {\n  .t-block--layer-probe .lp-probe { background: url(img/bg.svg); }\n}\n`);
     write(dir, 'theme/img/bg.svg', '<svg xmlns="http://www.w3.org/2000/svg"/>');
     const course = readJSON(dir, 'course.json');
     if (cascade) course.theme.cascade = cascade; else delete course.theme.cascade;
     writeJSON(dir, 'course.json', course);
-    const r = await build(dir, { out: out(), emit: 'dir', writeLock: false });
+    const r = await build(dir, { out: out(t), emit: 'dir', writeLock: false });
     assert.ok(r.ok && r.dirPath, JSON.stringify(r.diagnostics.filter((d) => d.severity === 'error')));
     const packaged = (name: string) => fs.readFileSync(path.join(r.dirPath!, name), 'utf8');
     // A browser orders layers where their names first appear. index.html loads elabora/player.css
@@ -209,7 +209,7 @@ test('cascade layers: the course\'s order first in every stylesheet that names i
   }
 });
 
-test('cascade: @layer overrides blocks found at the top only, the course told when its theme still overrides its components', () => {
+test('cascade: @layer overrides blocks found at the top only, the course told when its theme still overrides its components', (t) => {
   const css = '/* a { } */ .a { color: red; }\n@layer overrides {\n  .b { content: "}"; }\n}\n@media print { @layer overrides { .c { color: blue; } } }\n@layer overrides { .d { background: url(x;y.png); } }\n';
   const split = splitOverrides(css);
   assert.equal(split.nested, 1);
@@ -217,7 +217,7 @@ test('cascade: @layer overrides blocks found at the top only, the course told wh
   assert.equal(split.defaults.split('\n').length, css.split('\n').length);
   assert.ok(!split.defaults.includes('.b') && split.defaults.includes('@media print { @layer overrides'));
 
-  const dir = copyExample();
+  const dir = resources(t).copyExample();
   addLayerProbe(dir);
   const legacy = readJSON(dir, 'course.json');
   delete legacy.theme.cascade;
@@ -232,15 +232,17 @@ test('cascade: @layer overrides blocks found at the top only, the course told wh
   assert.ok(!c.includes('I_THEME_CASCADE_OLD') && c.includes('W_STYLE_OVERRIDES_NESTED'));
 });
 
-test('cascade: properties that act on one another share a family', () => {
+test('a theme upgrade preserves precedence for interacting CSS properties', (t) => {
   const same = [['margin', 'margin-block-start', 'margin-top'], ['inset', 'top', 'inset-inline'], ['font', 'line-height', 'font-variant-numeric'], ['white-space', 'text-wrap-mode'], ['gap', 'column-gap', 'grid-template-columns', 'columns'], ['width', 'max-inline-size', 'aspect-ratio'], ['-webkit-mask-image', 'mask'], ['word-wrap', 'overflow-wrap'], ['place-items', 'align-items', 'justify-self']];
-  for (const group of same) assert.equal(new Set(group.map(propertyFamily)).size, 1, group.join(' '));
-  assert.notEqual(propertyFamily('color'), propertyFamily('background-color'));
-  assert.equal(propertyFamily('--t-gap'), '--t-gap');
-  assert.equal(propertyFamily('all'), '*');
+  for (const group of same) for (const property of group) {
+    const upgraded = upgradeTheme(`.a { ${property}: initial; }`, [`.b { ${group[0]}: initial; }`]);
+    assert.match(splitOverrides(upgraded.css).overrides, new RegExp(`${property}: initial`), group.join(' '));
+  }
+  assert.equal(upgradeTheme('.a { color: red; }', ['.b { background-color: blue; }']).moved, 0);
+  assert.equal(upgradeTheme('.a { --t-gap: 1rem; }', ['.b { --t-gap: 2rem; }']).moved, 1);
 });
 
-test('cascade: a theme upgrade moves to @layer overrides what the components also set, and nothing else', () => {
+test('cascade: a theme upgrade moves to @layer overrides what the components also set, and nothing else', (t) => {
   const theme = [
     '/* Paper */',
     'html { background: var(--t-surface); }',
@@ -279,8 +281,8 @@ test('cascade: a theme upgrade moves to @layer overrides what the components als
 });
 
 // ── Figures and generators ──
-test('figures: words inside an SVG are reported, numbers are not', () => {
-  const dir = copyExample();
+test('figures: words inside an SVG are reported, numbers are not', (t) => {
+  const dir = resources(t).copyExample();
   write(dir, 'assets/images/chemin-impression.svg', '<svg xmlns="http://www.w3.org/2000/svg"><text>1</text><text>450</text></svg>');
   write(dir, 'assets/images/ticket-marc.svg', '<svg xmlns="http://www.w3.org/2000/svg"><text>1</text></svg>');
   assert.ok(!codes(validateDir(dir).diagnostics).includes('W_ASSET_SVG_TEXT'));
@@ -288,8 +290,8 @@ test('figures: words inside an SVG are reported, numbers are not', () => {
   assert.ok(codes(validateDir(dir).diagnostics).includes('W_ASSET_SVG_TEXT'));
 });
 
-test('generators: provenance, stale inputs and hand edits', async () => {
-  const dir = copyExample();
+test('generators: provenance, stale inputs and hand edits', async (t) => {
+  const dir = resources(t).copyExample();
   write(dir, 'generators/_lib.mjs', 'export const shape = (c) => `<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10" fill="${c}"/></svg>`;\n');
   write(dir, 'generators/badge.mjs', "import { shape } from './_lib.mjs';\nexport default async function ({ tokens, write }) { write('images/badge.svg', shape(tokens['color.accent'])); }\n");
   assert.ok(codes(validateDir(dir).diagnostics).includes('W_GENERATED_ASSET_STALE'), 'never run');
@@ -307,13 +309,13 @@ test('generators: provenance, stale inputs and hand edits', async () => {
   assert.ok(c.includes('W_GENERATED_ASSET_STALE') && c.includes('W_GENERATED_ASSET_EDITED'));
 });
 
-test('the planetary sample validates without errors or warnings', () => {
+test('the planetary sample validates without errors or warnings', (t) => {
   const r = validateDir(path.join(ROOT, 'examples/planetary-gearset'), { profiles: ['moodle'] });
   assert.equal(r.summary.errors + r.summary.warnings, 0, JSON.stringify(r.diagnostics.filter((d) => d.severity !== 'info'), null, 1));
 });
 
-test('free objects: relative imports are analysed with the same rules', () => {
-  const dir = copyExample();
+test('free objects: relative imports are analysed with the same rules', (t) => {
+  const dir = resources(t).copyExample();
   const od = path.join(dir, 'objects/diagnostic-reseau');
   fs.writeFileSync(path.join(od, 'util.js'), 'export const jitter = () => Math.random();\nexport function get(parent) { return parent; }\n');
   fs.appendFileSync(path.join(od, 'object.js'), "\nimport { jitter } from './util.js';\n");
@@ -322,8 +324,8 @@ test('free objects: relative imports are analysed with the same rules', () => {
 });
 
 // ── Size classes and steps ──
-test('size classes: font sizes in px in a course stylesheet are reported, rem and clamp() with rem bounds are not', () => {
-  const dir = copyExample();
+test('size classes: font sizes in px in a course stylesheet are reported, rem and clamp() with rem bounds are not', (t) => {
+  const dir = resources(t).copyExample();
   const course = readJSON(dir, 'course.json');
   course.theme.stylesheet = 'theme/theme.css';
   writeJSON(dir, 'course.json', course);
@@ -333,8 +335,8 @@ test('size classes: font sizes in px in a course stylesheet are reported, rem an
   assert.equal(diags[0].measured, 2);
 });
 
-test('steps: compiled with the block, out-of-order steps flagged in scroll presentation, nested steps flagged', async () => {
-  const dir = copyExample();
+test('steps: compiled with the block, out-of-order steps flagged in scroll presentation, nested steps flagged', async (t) => {
+  const dir = resources(t).copyExample();
   const s = readJSON(dir, 'screens/chemin.json');
   s.blocks[0].step = 2;
   writeJSON(dir, 'screens/chemin.json', s);
@@ -345,7 +347,7 @@ test('steps: compiled with the block, out-of-order steps flagged in scroll prese
   writeJSON(dir, 'screens/chemin.json', s);
   c = codes(validateDir(dir).diagnostics);
   assert.ok(!c.includes('W_STEP_ORDER'));
-  const r = await build(dir, { emit: 'dir', out: out() });
+  const r = await build(dir, { emit: 'dir', out: out(t) });
   assert.ok(r.ok && r.dirPath);
   const js = fs.readFileSync(path.join(r.dirPath, 'elabora', 'course.js'), 'utf8');
   assert.match(js, new RegExp(`"id":"${s.blocks[s.blocks.length - 1].id}"[^}]*"step":2`));
@@ -361,31 +363,29 @@ test('steps: compiled with the block, out-of-order steps flagged in scroll prese
   assert.ok(c.includes('W_STEP_PLACEMENT'), 'a step on a block of a layer');
 });
 
-test('object gates: the last full run is recorded and the dossier tells passed from stale', async () => {
+test('object gates: the last full run is recorded and the dossier tells passed from stale', async (t) => {
   const { writeGatesRecord, gatesStatus } = await import('@elabora/node/objects/gates-record');
-  const { proofMarkdown } = await import('@elabora/core/compile/proof');
-  const dir = copyExample();
+  const dir = resources(t).copyExample();
   const odir = path.join(dir, 'objects/diagnostic-reseau');
   fs.rmSync(path.join(odir, 'object.gates.json'), { force: true }); // the example may carry its own record
   assert.equal(gatesStatus(odir).status, 'not-run');
   writeGatesRecord(odir, { object: 'diagnostic-reseau', elabora: '0.1.0', at: '2026-10-05T10:00:00Z', ok: true, gates: { smoke: 'passed' }, perf: { bootMs: 420 } });
   assert.equal(gatesStatus(odir).status, 'passed');
-  const r = await build(dir, { out: out() });
+  const r = await build(dir, { out: out(t) });
   assert.ok(r.ok, JSON.stringify(r.diagnostics.filter((d) => d.severity === 'error')));
   const md = fs.readFileSync(r.reportPath.replace(/\.report\.json$/, '.proof.md'), 'utf8');
   assert.match(md, /portes 2 à 6 réussies le 2026-10-05/);
   assert.doesNotMatch(md, /Smoke test in SCORM Cloud/, 'pending items in the course language');
   fs.appendFileSync(path.join(odir, 'object.js'), '\n// changed\n');
   assert.equal(gatesStatus(odir).status, 'stale');
-  assert.ok(proofMarkdown);
 });
 
-test('colours of masks are not charter colours: only their alpha counts', () => {
+test('colours of masks are not charter colours: only their alpha counts', (t) => {
   assert.deepEqual(literalColors('.a { mask-image: radial-gradient(#000 40%, transparent); -webkit-mask-image: conic-gradient(#000 var(--sweep), transparent 0); }'), []);
   assert.deepEqual(literalColors('.a { mask: linear-gradient(#000, transparent); background: #123456; }'), ['#123456']);
 });
 
-test('fit: an overflowing slide names the quizzes whose compact feedback would reserve less room', async () => {
+test('fit: an overflowing slide names the quizzes whose compact feedback would reserve less room', async (t) => {
   const { fitDiagnostics } = await import('@elabora/node/preview');
   const screen = { screen: 'evaluation', overflow: 120, spare: 0, windows: 1.2, below: ['q2'], feedback: [{ block: 'q1', px: 57 }, { block: 'q2', px: 40 }] };
   const [overflow] = fitDiagnostics({ ok: true, mode: 'slides', sizes: [{ role: 'reference', size: '1600x900', screens: [screen] }] });
