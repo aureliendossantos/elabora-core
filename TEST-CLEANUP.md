@@ -125,7 +125,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/unit/fit-cache.test.ts` | 72 | 76 | Passed native-seeded checks; Public fit key invalidation scenarios retained with context-owned fixtures |
 | `test/unit/fonts.test.ts` | 547 | 540 | Passed 15 native-seeded cases; public catalogue/license/font-byte/embedding/refusal/build contracts retained; per-test folders and failure-safe MCP/session disposal; arbitrary family-count and basename constraints removed |
 | `test/unit/format.test.ts` | 77 | 76 | Passed 6 native-seeded cases; generated registry, accepted samples, diagnostics and dereferencing retained; removes arbitrary fixture-count coverage quota |
-| `test/unit/i18n.test.ts` | 260 | — | Pending |
+| `test/unit/i18n.test.ts` | 260 | 262 | Native-seeded cases passed; own course/export folders and two-entrant gate replaces translation-copy sleep; exact exported unit completeness replaces arbitrary unit count |
 | `test/unit/ignored.test.ts` | 55 | 56 | Passed both native-seeded cases; context-owned course; finding waivers remain keyed to content and survive moves |
 | `test/unit/import.test.ts` | 427 | 427 | Native-seeded cases passed; each synthetic import fixture is disposed after its case instead of suite end; detection, conversions, losses, settings, library and CLI contracts retained |
 | `test/unit/interop.test.ts` | 92 | 91 | Passed native-seeded cases; owns export folders/courses; LESSON parsing, schema-valid conversion, losses and multi-select round trip retained |

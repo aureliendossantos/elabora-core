@@ -1,7 +1,7 @@
 import { test } from 'node:test';
+import { resources } from '../resources.ts';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { formatMessage } from '@elabora/player/message';
 import { labelsFor, labelKeys, labelLanguages, formatLabel } from '@elabora/player/labels';
@@ -14,9 +14,9 @@ import { exportTranslation, translationStatus, buildTranslation, approveTranslat
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { validateDir } from '@elabora/node/project-reader';
 import type { Block } from '@elabora/format';
-import { copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
+import { readJSON, writeJSON, codes } from '../helpers.ts';
 
-test('messages: values, plurals and selects follow the language', () => {
+test('messages: values, plurals and selects follow the language', (t) => {
   assert.equal(formatMessage('Requirement {i} of {n}', { i: 1, n: 3 }), 'Requirement 1 of 3');
   const orbits = 'within {n, plural, one {# orbit} other {# orbits}}';
   assert.equal(formatMessage(orbits, { n: 1 }), 'within 1 orbit');
@@ -27,7 +27,7 @@ test('messages: values, plurals and selects follow the language', () => {
   assert.equal(formatMessage('{gap} km', { gap: 1234.5 }, 'fr'), '1 234,5 km');
 });
 
-test('player labels: every language has every label, with plurals', () => {
+test('player labels: every language has every label, with plurals', (t) => {
   for (const lang of labelLanguages()) {
     const L = labelsFor(lang);
     for (const k of labelKeys()) assert.ok(L[k], `${lang}.${k}`);
@@ -36,7 +36,7 @@ test('player labels: every language has every label, with plurals', () => {
   assert.ok(['fr', 'en', 'de', 'es', 'it', 'nl', 'pt'].every((l) => labelLanguages().includes(l)));
 });
 
-test('XLIFF: units survive a round trip, special characters included', () => {
+test('XLIFF: units survive a round trip, special characters included', (t) => {
   const units = [{ id: 'a.b', source: 'x < y & "z"\n\n$$\\frac{1}{2}$$', target: 'x < y & « z »', state: 'translated', notes: [{ category: 'format', text: 'markdown' }] }, { id: 'c', source: 'Only source' }];
   const back = readXliff(toXliff({ srcLang: 'en', trgLang: 'fr', original: 'c@1', units }));
   assert.equal(back.srcLang, 'en');
@@ -47,7 +47,7 @@ test('XLIFF: units survive a round trip, special characters included', () => {
   assert.equal(back.units.get('c')?.target, null);
 });
 
-test('XLIFF: word anchors as inline markers, read back where they were, other inline tags kept as text', () => {
+test('XLIFF: word anchors as inline markers, read back where they were, other inline tags kept as text', (t) => {
   const source = "Ni l'imprimante & le partage ne marchent.";
   const target = 'Neither the printer & sharing work.';
   const units = [{ id: 'l2', source, sourceMarks: [{ id: 'w-imprimante', start: 5, end: 15 }, { id: 'w-partage', start: 21, end: 28 }], target, targetMarks: [{ id: 'w-imprimante', start: 12, end: 19 }], state: 'translated' }];
@@ -66,8 +66,8 @@ test('XLIFF: word anchors as inline markers, read back where they were, other in
   assert.deepEqual(read.targetMarks, units[0].targetMarks);
 });
 
-test('translation units: plan, screens, blocks and free objects, with stable ids', () => {
-  const units = extractUnits(loadProjectFromDir(copyExample()));
+test('translation units: plan, screens, blocks and free objects, with stable ids', (t) => {
+  const units = extractUnits(loadProjectFromDir(resources(t).copyExample()));
   const ids = new Set(units.map((u) => u.id));
   assert.ok(ids.has('course.title'));
   assert.ok([...ids].some((id) => id.startsWith('plan.text.')));
@@ -78,8 +78,8 @@ test('translation units: plan, screens, blocks and free objects, with stable ids
   assert.equal(ids.size, units.length, 'unique ids');
 });
 
-test('translation: the words of a free-object list, also when a block leaves the list to the manifest', () => {
-  const dir = copyExample();
+test('translation: the words of a free-object list, also when a block leaves the list to the manifest', (t) => {
+  const dir = resources(t).copyExample();
   const mf = 'objects/diagnostic-reseau/object.manifest.json';
   const m = readJSON(dir, mf);
   m.props.properties.stops = {
@@ -110,8 +110,8 @@ const withDeviceLabels = (dir: string): void => {
   writeJSON(dir, mf, m);
 };
 
-test('translation: how a free object\'s choices read in the editor, translated in its block; not words learners find', () => {
-  const dir = copyExample();
+test('translation: how a free object\'s choices read in the editor, translated in its block; not words learners find', (t) => {
+  const dir = resources(t).copyExample();
   withDeviceLabels(dir);
   const units = extractUnits(loadProjectFromDir(dir)).filter((u) => u.id.includes('.enumLabels.'));
   assert.deepEqual(units.map((u) => [u.id, u.text, u.pointer]), [
@@ -138,8 +138,8 @@ test('translation: how a free object\'s choices read in the editor, translated i
   assert.deepEqual((screen.blocks[1].props as { enumLabels: unknown }).enumLabels, { failingDevice: english });
 });
 
-test('how a free object\'s choices read: the block\'s words over the manifest\'s, for event editors (screenParts)', () => {
-  const dir = copyExample();
+test('how a free object\'s choices read: the block\'s words over the manifest\'s, for event editors (screenParts)', (t) => {
+  const dir = resources(t).copyExample();
   withDeviceLabels(dir);
   const s = readJSON(dir, 'screens/simulation.json');
   s.blocks[1].props.enumLabels = { failingDevice: { routeur: 'Routeur de l\'étage' } };
@@ -149,11 +149,12 @@ test('how a free object\'s choices read: the block\'s words over the manifest\'s
   assert.equal(scene?.object?.props.find((prop) => prop.name === 'packetSpeed')?.enumLabels, undefined);
 });
 
-test('translation: export, status, build, approval, then a stale unit when the source changes', async () => {
-  const dir = copyExample();
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-tr-'));
+test('translation: export, status, build, approval, then a stale unit when the source changes', async (t) => {
+  const dir = resources(t).copyExample();
+  const out = resources(t).tempDir('elabora-tr-');
   const r = exportTranslation(dir, { to: 'en' });
-  assert.ok(r.units > 20 && r.toTranslate === r.units);
+  assert.equal(r.units, extractUnits(loadProjectFromDir(dir)).length);
+  assert.equal(r.toTranslate, r.units);
   // Translate: here, every target is its source prefixed (maths and placeholders kept).
   const x = readXliff(fs.readFileSync(translationFile(dir, 'en'), 'utf8'));
   fs.writeFileSync(translationFile(dir, 'en'), toXliff({ srcLang: 'fr', trgLang: 'en', original: 'x', units: [...x.units.values()].map((u) => ({ id: u.id, source: u.source, target: `EN ${u.source}`.slice(0, 190), state: 'translated' })) }));
@@ -199,32 +200,33 @@ test('translation: export, status, build, approval, then a stale unit when the s
   await assert.rejects(() => buildTranslation(dir, { to: 'en', out }), /stale/);
 });
 
-test('translation checks use isolated copies, exclude Git and sources, and clean up after failure', async () => {
-  const dir = copyExample();
-  try {
-    exportTranslation(dir, { to: 'en' });
-    fs.mkdirSync(path.join(dir, '.git'), { recursive: true });
-    fs.writeFileSync(path.join(dir, '.git', 'config'), 'private repository configuration');
-    fs.mkdirSync(path.join(dir, 'sources'), { recursive: true });
-    fs.writeFileSync(path.join(dir, 'sources', 'private.txt'), 'client brief');
-    const paths: string[] = [];
-    await Promise.all([0, 1].map(() => withCourseLanguage(dir, { language: 'en', allowMissing: true }, async (root) => {
-      paths.push(root);
-      assert.equal(readJSON(root, 'course.json').language, 'en');
-      assert.equal(fs.existsSync(path.join(root, '.git')), false);
-      assert.equal(fs.existsSync(path.join(root, 'sources')), false);
-      await new Promise((resolve) => setTimeout(resolve, 5));
-      assert.ok(fs.existsSync(path.join(root, 'course.json')), 'other calls cannot remove this copy');
-    })));
-    assert.notEqual(paths[0], paths[1]);
-    assert.ok(paths.every((root) => !fs.existsSync(root)));
-    await assert.rejects(withCourseLanguage(dir, { language: 'en', allowMissing: true }, () => { throw new Error('check failed'); }), /check failed/);
-    assert.deepEqual(fs.readdirSync(path.join(dir, '.elabora', 'translations')), []);
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+test('translation checks use isolated copies, exclude Git and sources, and clean up after failure', async (t) => {
+  const dir = resources(t).copyExample();
+  exportTranslation(dir, { to: 'en' });
+  fs.mkdirSync(path.join(dir, '.git'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.git', 'config'), 'private repository configuration');
+  fs.mkdirSync(path.join(dir, 'sources'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'sources', 'private.txt'), 'client brief');
+  const paths: string[] = [];
+  let release!: () => void;
+  const bothEntered = new Promise<void>(resolve => { release = resolve; });
+  await Promise.all([0, 1].map(() => withCourseLanguage(dir, { language: 'en', allowMissing: true }, async (root) => {
+    paths.push(root);
+    if (paths.length === 2) release();
+    assert.equal(readJSON(root, 'course.json').language, 'en');
+    assert.equal(fs.existsSync(path.join(root, '.git')), false);
+    assert.equal(fs.existsSync(path.join(root, 'sources')), false);
+    await bothEntered;
+    assert.ok(fs.existsSync(path.join(root, 'course.json')), 'other calls cannot remove this copy');
+  })));
+  assert.notEqual(paths[0], paths[1]);
+  assert.ok(paths.every((root) => !fs.existsSync(root)));
+  await assert.rejects(withCourseLanguage(dir, { language: 'en', allowMissing: true }, () => { throw new Error('check failed'); }), /check failed/);
+  assert.deepEqual(fs.readdirSync(path.join(dir, '.elabora', 'translations')), []);
 });
 
-test('translation: a translation that loses maths or a placeholder is refused', () => {
-  const dir = copyExample();
+test('translation: a translation that loses maths or a placeholder is refused', (t) => {
+  const dir = resources(t).copyExample();
   const sc = readJSON(dir, 'screens/accueil.json');
   const block = sc.blocks.find((b: Block) => typeof b.props?.markdown === 'string');
   block.props.markdown += ' Ratio $x^2$.';
@@ -239,7 +241,7 @@ test('translation: a translation that loses maths or a placeholder is refused', 
   assert.ok(st.problems.some((p) => p.id === withMath.id && /maths/.test(p.message)));
 });
 
-test('player labels: scroll presentation names its screens pages, course.ui still has the last word', () => {
+test('player labels: scroll presentation names its screens pages, course.ui still has the last word', (t) => {
   assert.equal(labelsFor('fr', {}, 'scroll').screenOf, 'Page {n} sur {total}');
   assert.equal(labelsFor('fr', {}, 'slides').screenOf, 'Écran {n} sur {total}');
   assert.equal(labelsFor('en', {}, 'scroll').locked, 'Complete the activity on this page to continue.');
@@ -247,8 +249,8 @@ test('player labels: scroll presentation names its screens pages, course.ui stil
   assert.equal(labelsFor('en', { screenOf: 'Lesson {n} of {total}' }, 'scroll').screenOf, 'Lesson {n} of {total}');
 });
 
-test('translation units: the text of a Continue button that opens a step', () => {
-  const dir = copyExample();
+test('translation units: the text of a Continue button that opens a step', (t) => {
+  const dir = resources(t).copyExample();
   const screen = readJSON(dir, 'screens/chemin.json');
   screen.blocks.find((block: Block) => block.id === 'chemin-regle').step = 2;
   screen.steps = { 2: { label: 'Voir la règle' } };
