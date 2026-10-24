@@ -70,7 +70,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/e2e/look.test.ts` | 357 | 353 | Focused seed 104729 passed all six workflows; look reuse, code reload, scrolling, object actions and refused opaque-frame behaviour; response events replace sleeps |
 | `test/e2e/media.test.ts` | 96 | 82 | Focused seed 104729 passed; iframe navigation, loaded metadata and seeked events synchronize actual video controls; own fixture and browser |
 | `test/e2e/narration.test.ts` | 437 | — | Pending |
-| `test/e2e/object.test.ts` | 372 | 372 | Focused seed 104729 passed all fourteen cases; real object gate failures, states, event sequences, dry WebGL readback and decoded captures; no elapsed-time/PNG-size budgets |
+| `test/e2e/object.test.ts` | 372 | 372 | Native seed 104729 passed fourteen behaviours; gates, event order and dry WebGL readback retained; decoded captures require variation between pixels; final suite repeat queued |
 | `test/e2e/plan-document.test.ts` | 61 | 61 | Reviewed unchanged; focused seed 104729 passed tagged A4 outline, date, deterministic bytes and export; Electron case requires opt-in executable |
 | `test/e2e/player-items.test.ts` | 265 | 251 | Focused seed 155921 passed all seven; virtual PDF fallback timers and public popup/screen/progress/storage behaviour replace listener counters and real waits |
 | `test/e2e/player.test.ts` | 150 | 146 | Focused seed 155921 passed all four; virtual tooltip clock and DOM conditions retain learner controls, navigation and reload behaviour |

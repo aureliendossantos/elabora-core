@@ -15,7 +15,7 @@ const { PNG } = createRequire(import.meta.url)('pngjs');
 const visibleImage = (bytes: Uint8Array) => {
   const image = PNG.sync.read(Buffer.from(bytes));
   assert.ok(image.width > 0 && image.height > 0);
-  assert.ok(new Set(image.data).size > 1, 'the capture has visible content');
+  assert.ok(image.data.some((value: number, index: number) => value !== image.data[index % 4]), 'the capture has visible content');
 };
 
 test('the example free object passes gates 2 to 6', { timeout: 180000 }, async (t) => {
