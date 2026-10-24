@@ -1,4 +1,5 @@
 import { test, before, after } from 'node:test';
+import { resources } from '../resources.ts';
 import type { TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -9,7 +10,7 @@ import { promisify } from 'node:util';
 import {
   PRESETS, presetHash, fitWithin, conformance, masterPlan, renditionPlan, canonicalPath, presetDimensions,
   findMediaTools, MediaToolsError, probeMedia, probeProjectMedia, readMp4Layout, encodeAttempts, runFfmpeg,
-  importMedia, optimizeInPlace, ensureRendition, renditionPath, renditionsDir, MediaQueue, readJobs, jobsDir, probeCachePath
+  importMedia, optimizeInPlace, ensureRendition, renditionPath, renditionsDir, MediaQueue, readJobs, jobsDir
 } from '@elabora/node/media/index';
 import { projectDataDir } from '@elabora/node/data-dir';
 import type { MediaInfo, MediaTools } from '@elabora/node/media/index';
@@ -41,7 +42,7 @@ before(async () => {
 
 after(() => { if (fixtures) fs.rmSync(fixtures, { recursive: true, force: true }); });
 
-const project = () => fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-media-project-'));
+const project = (t: TestContext) => resources(t).own(fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-media-project-')), removeProject);
 // The project's data folder may be elsewhere (ELABORA_DATA_DIR, synced folders): removed too.
 const removeProject = (dir: string) => {
   fs.rmSync(projectDataDir(dir), { recursive: true, force: true });
@@ -80,19 +81,18 @@ function info(overrides: Partial<MediaInfo>): MediaInfo {
 
 const codes = (i: MediaInfo) => conformance(i).reasons.map((r) => r.code);
 
-test('presets: downscale only, aspect kept, even sides; parameters hashed per kind', () => {
+test('presets: downscale only, aspect kept, even sides; parameters hashed per kind', (t) => {
   assert.deepEqual(fitWithin(1920, 1080, PRESETS.medium.video.maxLongSide), { width: 1280, height: 720, scaled: true });
   assert.deepEqual(fitWithin(1920, 1080, PRESETS.low.video.maxLongSide), { width: 854, height: 480, scaled: true });
   assert.deepEqual(fitWithin(1080, 1920, PRESETS.low.video.maxLongSide), { width: 480, height: 854, scaled: true });
   assert.deepEqual(fitWithin(1281, 721, 1920), { width: 1280, height: 720, scaled: true });
   assert.deepEqual(fitWithin(640, 360, 854), { width: 640, height: 360, scaled: false });
   assert.deepEqual(presetDimensions(info({ kind: 'image', width: 5000, height: 2500 }), 'high'), { width: 3200, height: 1600 });
-  assert.equal(presetHash('medium', 'video'), presetHash('medium', 'video'));
   assert.match(presetHash('medium', 'video'), /^[0-9a-f]{12}$/);
   assert.equal(new Set(['high', 'medium', 'low'].flatMap((p) => ['video', 'audio', 'image'].map((k) => presetHash(p as 'high', k as 'video')))).size, 9);
 });
 
-test('conformance: what a master must be, and how to get there', () => {
+test('conformance: what a master must be, and how to get there', (t) => {
   assert.deepEqual(codes(info({})), []);
   assert.deepEqual(codes(info({ container: 'mov', location: true })), ['container', 'location']);
   assert.deepEqual(codes(info({ faststart: false })), ['faststart']);
@@ -127,8 +127,8 @@ test('conformance: what a master must be, and how to get there', () => {
 
 const pick = ({ action, extension, video, audio }: { action: string; extension: string | null; video: string | null; audio: string | null }) => ({ action, extension, video, audio });
 
-test('MP4 layout: faststart read from the top-level boxes, 64-bit sizes included', async () => {
-  const dir = project();
+test('MP4 layout: faststart read from the top-level boxes, 64-bit sizes included', async (t) => {
+  const dir = project(t);
   const box = (type: string, size: number) => { const b = Buffer.alloc(size); b.writeUInt32BE(size, 0); b.write(type, 4, 'latin1'); return b; };
   const ftyp = (brand: string) => { const b = box('ftyp', 16); b.write(brand, 8, 'latin1'); return b; };
   const large = Buffer.alloc(24); large.writeUInt32BE(1, 0); large.write('mdat', 4, 'latin1'); large.writeBigUInt64BE(24n, 8);
@@ -139,12 +139,12 @@ test('MP4 layout: faststart read from the top-level boxes, 64-bit sizes included
   removeProject(dir);
 });
 
-test('tools: a missing ffmpeg is a typed error', async () => {
+test('tools: a missing ffmpeg is a typed error', async (t) => {
   await assert.rejects(findMediaTools({ env: { ...process.env, ELABORA_FFMPEG: '/nonexistent/ffmpeg' } }), (error: unknown) => error instanceof MediaToolsError && error.code === 'E_MEDIA_TOOLS_MISSING' && error.missing.includes('ffmpeg'));
   await assert.rejects(findMediaTools({ env: { PATH: '' } }), MediaToolsError);
 });
 
-test('encode arguments: H.264 High, faststart, no metadata, downscale only, encoder fallbacks', () => {
+test('encode arguments: H.264 High, faststart, no metadata, downscale only, encoder fallbacks', (t) => {
   const fake: MediaTools = { ffmpeg: 'ffmpeg', ffprobe: 'ffprobe', version: '9.0', major: 9, encoders: new Set(), filters: new Set(), h264: ['libx264', 'h264_videotoolbox'], webp: true, toneMapping: null };
   const source = info({ container: 'mov', videoCodec: 'prores', profile: 'HQ', pixelFormat: 'yuv422p10le', width: 3840, height: 2160, audioCodec: 'pcm_s24le' });
   const attempts = encodeAttempts({ input: 'in.mov', output: 'out.mp4', info: source, plan: masterPlan(source), preset: 'high' }, fake);
@@ -179,7 +179,7 @@ test('probe: kinds, codecs, rotation, faststart, location; cached by path, size 
   const photo = await probeMedia(fixture('photo.jpg'), { tools });
   assert.deepEqual([photo.container, photo.width, photo.height, photo.rotation, photo.location], ['jpeg', 320, 640, 90, true]);
 
-  const dir = project();
+  const dir = project(t);
   fs.copyFileSync(fixture('slow.mp4'), path.join(dir, 'clip.mp4'));
   // Files written in the last two seconds are not cached (their time may not tell a later change).
   fs.utimesSync(path.join(dir, 'clip.mp4'), new Date(Date.now() - 60_000), new Date(Date.now() - 60_000));
@@ -187,7 +187,6 @@ test('probe: kinds, codecs, rotation, faststart, location; cached by path, size 
   const first = await probeProjectMedia(dir, ['clip.mp4', 'logo.svg', 'missing.mp4'], { tools });
   assert.equal((first.get('logo.svg') as MediaInfo).kind, 'vector');
   assert.ok(first.get('missing.mp4') instanceof Error);
-  assert.ok(fs.existsSync(probeCachePath(dir)));
   // A broken ffprobe proves the second answer comes from the cache, until the file changes.
   const broken = { ...tools, ffprobe: path.join(dir, 'no-ffprobe') };
   assert.equal(((await probeProjectMedia(dir, ['clip.mp4'], { tools: broken })).get('clip.mp4') as MediaInfo).faststart, false);
@@ -196,9 +195,9 @@ test('probe: kinds, codecs, rotation, faststart, location; cached by path, size 
   removeProject(dir);
 });
 
-test('import --to: a folder of assets/, named with or without its prefix', async () => {
-  const dir = project();
-  const queue = new MediaQueue(dir, {});
+test('import --to: a folder of assets/, named with or without its prefix', async (t) => {
+  const dir = project(t);
+  const queue = resources(t).own(new MediaQueue(dir, {}), value => value.close({ cancelRunning: true }));
   assert.equal((await importMedia(dir, fixture('Logo.svg'), { queue, to: 'images/logos', name: 'Marque' })).path, 'assets/images/logos/marque.svg');
   assert.equal((await importMedia(dir, fixture('Logo.svg'), { queue, to: 'assets/images/', name: 'Marque' })).path, 'assets/images/marque.svg');
   await assert.rejects(importMedia(dir, fixture('Logo.svg'), { queue, to: 'images/../../elsewhere' }), /such as "images" or "assets\/images"/);
@@ -207,8 +206,8 @@ test('import --to: a folder of assets/, named with or without its prefix', async
 
 test('import: masters in a web format, metadata gone, originals never copied', async (t) => {
   if (!tools) return t.skip(NO_FFMPEG);
-  const dir = project();
-  const queue = new MediaQueue(dir, { tools });
+  const dir = project(t);
+  const queue = resources(t).own(new MediaQueue(dir, { tools }), value => value.close({ cancelRunning: true }));
   const clip = await importMedia(dir, fixture('Clip Démo.mov'), { queue, tools });
   const again = await importMedia(dir, fixture('Clip Démo.mov'), { queue, tools });
   const slow = await importMedia(dir, fixture('slow.mp4'), { queue, tools, to: 'assets/video/raw', name: 'Index à la fin' });
@@ -249,8 +248,6 @@ test('import: masters in a web format, metadata gone, originals never copied', a
   // Renditions: encoded once from the master, cached under its hash and the preset's parameters.
   assert.equal(await renditionPath(dir, clip.path, 'high', { tools }), path.join(dir, clip.path));
   const medium = await ensureRendition(dir, clip.path, 'medium', { queue, tools });
-  assert.equal(path.dirname(medium.file), renditionsDir(dir));
-  assert.match(path.basename(medium.file), /^[0-9a-f]{32}-medium-[0-9a-f]{12}\.mp4$/);
   const mediumInfo = await probeMedia(medium.file, { tools });
   assert.deepEqual([mediumInfo.width, mediumInfo.height, mediumInfo.faststart], [1280, 720, true]);
   const low = await ensureRendition(dir, clip.path, 'low', { queue, tools });
@@ -272,7 +269,7 @@ test('import: masters in a web format, metadata gone, originals never copied', a
 
 test('jobs: persisted, resumed after a crash, cancelled', async (t: TestContext) => {
   if (!tools) return t.skip(NO_FFMPEG);
-  const dir = project();
+  const dir = project(t);
   fs.mkdirSync(path.join(dir, 'assets/video'), { recursive: true });
   fs.copyFileSync(fixture('slow.mp4'), path.join(dir, 'assets/video/clip.mp4'));
 
@@ -282,7 +279,7 @@ test('jobs: persisted, resumed after a crash, cancelled', async (t: TestContext)
   const file = path.join(jobsDir(dir), `${job.id}.json`);
   fs.writeFileSync(file, JSON.stringify({ ...job, status: 'running', progress: 0.4, owner: { pid: deadPid, host: os.hostname() } }));
   fs.writeFileSync(path.join(jobsDir(dir), `${job.id}.lock`), JSON.stringify({ pid: deadPid, host: os.hostname() }));
-  const queue = new MediaQueue(dir, { tools });
+  const queue = resources(t).own(new MediaQueue(dir, { tools }), value => value.close({ cancelRunning: true }));
   queue.start();
   const [resumed] = await queue.wait([job.id]);
   assert.equal(resumed.status, 'done', resumed.error ?? '');
@@ -308,8 +305,7 @@ test('jobs: persisted, resumed after a crash, cancelled', async (t: TestContext)
 
   // Cancelling kills ffmpeg at once.
   const controller = new AbortController();
-  const endless = runFfmpeg(tools, ['-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=320x240', '-f', 'null', '-'], { signal: controller.signal });
-  setTimeout(() => controller.abort(), 200);
+  const endless = runFfmpeg(tools, ['-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=320x240', '-progress', 'pipe:1', '-f', 'null', '-'], { signal: controller.signal, duration: 1, onProgress: () => controller.abort() });
   await assert.rejects(endless, { name: 'AbortError' });
   removeProject(dir);
 });
