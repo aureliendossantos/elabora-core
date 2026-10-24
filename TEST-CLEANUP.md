@@ -158,7 +158,7 @@ The critical and complete unit inventory has been reviewed; the browser inventor
 | `test/unit/review-bridge.test.ts` | 278 | 276 | Passed native-seeded cases; owned projects/builds/MCP/session; object content rather than insertion order; origin filtering, anchors and review delivery contracts retained |
 | `test/unit/robustness-commands.test.ts` | 155 | 158 | Passed native-seeded checks; 240 seeded command replay/undo invariants; owns courses and now compares binary hashes as well as paths and text |
 | `test/unit/robustness.test.ts` | 93 | 96 | Passed native-seeded checks; 250 seeded reader and incremental/full validation invariants; own fixtures and report reproducing seed |
-| `test/unit/scaffold.test.ts` | 128 | — | Pending |
+| `test/unit/scaffold.test.ts` | 128 | 124 | All native-seeded cases passed; context-owned folders and restored data/library environment; real course creation, language fallback, brief validation and notes retained |
 | `test/unit/schema.test.ts` | 40 | 36 | Passed 5 native-seeded cases; full strict registry compile check already lives in format.test.ts; real profile/schema/action boundaries retained without arbitrary profile count |
 | `test/unit/sources.test.ts` | 511 | 521 | Passed 21 native-seeded cases; fresh input/model folders and restored library/data environment per case; await transcriber/client disposal before removal; mtime edits relative to fixture; import/readability/privacy/build-byte/archive contracts preserved |
 | `test/unit/state-golden.test.ts` | 40 | 36 | Passed native-seeded cases; pinned legacy bytes retained; decode compares complete learner state rather than selected fields and re-encoding |
