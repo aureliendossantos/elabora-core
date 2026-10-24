@@ -111,3 +111,22 @@ export function courseWithDialogue(dialogue: unknown = MARC_DIALOGUE): string {
   });
   return dir;
 }
+
+// The dialogues' test module (test/fixtures/dialogues/): the fixture course with Marc and Leïla drawn
+// as characters (agent B's SVGs, D61), a messaging dialogue (appel: practice, scored by quality, a cue
+// that shows a block, a retry, a final decision) and a scene (rencontre: assessment, the office
+// backdrop, the cast left and right). presentation: slides (default) or scroll.
+export const DIALOGUES_FIXTURE = path.join(path.dirname(new URL(import.meta.url).pathname), 'fixtures/dialogues');
+// Navigation is free (tests go to a screen directly) unless locked is asked.
+export function dialogueCourse({ presentation = 'slides', screens = ['appel', 'rencontre'], locked = false }: { presentation?: 'slides' | 'scroll'; screens?: string[]; locked?: boolean } = {}): string {
+  const dir = copyExample();
+  const course = readJSON(dir, 'course.json');
+  if (!locked) course.navigation = { mode: 'free', lockUntilComplete: false };
+  course.speakers = JSON.parse(fs.readFileSync(path.join(DIALOGUES_FIXTURE, 'speakers.json'), 'utf8'));
+  course.presentation = { mode: presentation };
+  course.sections.find((section: { id: string }) => section.id === 'pratiquer').screens.unshift(...screens);
+  writeJSON(dir, 'course.json', course);
+  fs.cpSync(path.join(DIALOGUES_FIXTURE, 'assets'), path.join(dir, 'assets'), { recursive: true });
+  for (const screen of screens) fs.copyFileSync(path.join(DIALOGUES_FIXTURE, 'screens', `${screen}.json`), path.join(dir, 'screens', `${screen}.json`));
+  return dir;
+}

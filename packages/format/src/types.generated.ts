@@ -503,6 +503,18 @@ export type Theme = {
     'player.radius'?: number;
     /** Size of the bars: comfortable (default: 56 and 72 px high at the reference window, 44 px buttons) or compact (48 and 60 px, for screens that need the room). */
     'player.density'?: 'comfortable' | 'compact';
+    /** A character's bubble in a dialogue (D61). Default: color.text at 5 % on color.surface. */
+    'dialog.bubble'?: Color;
+    /** The learner's bubble in a dialogue. Default: color.accent at 12 % on color.surface. */
+    'dialog.learner'?: Color;
+    /** Text of the bubbles (contrast ≥ 4.5:1 with dialog.bubble and dialog.learner). Default: color.text. */
+    'dialog.text'?: Color;
+    /** The words a voiced line has said, as its ink reveals them (contrast ≥ 4.5:1 with both bubbles). Default: dialog.text. */
+    'dialog.wordSpoken'?: Color;
+    /** The words of a voiced line still to be said (contrast ≥ 4.5:1 with both bubbles: they stay readable). Default: color.muted. */
+    'dialog.wordUnspoken'?: Color;
+    /** The trainer's notes in a dialogue: their rule and icon (contrast ≥ 3:1 with color.surface). Default: color.primary. */
+    'dialog.note'?: Color;
   };
   /** Extra design tokens, for example {"color.blueprint": "#0F2A47", "space.section": "72px"}. Each becomes the CSS variable --t-<name with dots as hyphens> (--t-color-blueprint) in the player and in free objects, and can be bound to free-object props with x-token. Editors show them next to the charter tokens. */
   custom?: { [key: string]: string | number };
@@ -1420,7 +1432,7 @@ export type DialogueProps = {
    * @default 'practice'
    */
   mode?: 'practice' | 'assessment' | 'exploration';
-  /** How the learner may go back (default: the mode's). none: never (retry options continue instead). retry: « Choisir autrement » right after a consequence, and options with retry come back. after-end: retry, then « Reprendre d'ici » on any past choice and « Recommencer » once the first end is reached. anytime: « Reprendre d'ici » from the first choice. The first run to an end is the only one scored, whatever the policy; a final decision cannot be revisited, nor anything before it. */
+  /** How the learner may go back (default: the mode's). none: never (retry options continue instead). retry: « Choisir autrement » right after a consequence, and options with retry come back. after-end: retry, then « Reprendre d'ici » on any past choice and « Recommencer » once the first end is reached. anytime: « Reprendre d'ici » from the first choice. The first run to an end is the only one scored, whatever the policy; a final decision cannot be revisited, nor anything before it, but once the dialogue has ended « Recommencer » still starts a new run. */
   revisit?: 'none' | 'retry' | 'after-end' | 'anytime';
   /** What the dialogue's score (0 to 1, like any activity) is made of (default: the mode's). quality: good 1, ok 0.5, bad 0, the mean over the decisions met. points: the sum of the options' points over the highest sum a path can reach (computed on the graph). ending: the score of the ending reached. none: not scored. Scored dialogues count in the course score with weight, and record one choice interaction per decision of the first run. */
   scoring?: 'none' | 'quality' | 'points' | 'ending';

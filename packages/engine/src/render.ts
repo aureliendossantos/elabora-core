@@ -47,7 +47,8 @@ export class Renderer {
     // On the layer shown when it has a timeline of its own (D62).
     const at = params.at ? momentTime(project, params.screen, params.at, params.language, params.layer) : null;
     // So does ghost (the steps after the first faded).
-    const viewOf = (render: RenderedScreen): RenderedScreen => (at || params.ghost ? { ...render, view: { ...render.view, ...(at ? { at } : {}), ...(params.ghost ? { ghost: true } : {}) } } : render);
+    // And a dialogue's path (D61).
+    const viewOf = (render: RenderedScreen): RenderedScreen => (at || params.ghost || params.dialogue ? { ...render, view: { ...render.view, ...(at ? { at } : {}), ...(params.ghost ? { ghost: true } : {}), ...(params.dialogue ? { dialogue: params.dialogue } : {}) } } : render);
     // A render made with the bars as they were is made again (their files may differ too).
     const chrome = this.chrome(project, params.language);
     const known = this.#memo.get(key);
