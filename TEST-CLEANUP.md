@@ -1,10 +1,12 @@
-# Test cleanup ledger
+# Test cleanup audit — October 2026
 
-Branch: `test-policy-cleanup`. Baseline: `96df988`. Worktree: `.test-policy/elabora-core` in the parent workspace. Counts include blank lines. Commit each completed test file with its ledger update. The inventory below lists all test files; reviewed changes started with edit/undo and session consistency, then the larger suites. All 119 automated test files have been reviewed; rows record completed validation and retained native/API limits.
+This is the completed audit record for PR #3, retained as review evidence. Its counts and validation results describe that audit; future changes do not update it or repeat its process. Ongoing standards live in [CONTRIBUTING.md](CONTRIBUTING.md#tests).
+
+Branch: `test-policy-cleanup`. Baseline: `96df988`. Worktree: `.test-policy/elabora-core` in the parent workspace. Counts include blank lines. The inventory below lists all test files; reviewed changes started with edit/undo and session consistency, then the larger suites. All 119 automated test files have been reviewed; rows record completed validation and retained native/API limits.
 
 ## Policy and scope
 
-Test public behaviour, use real domain objects, fake only uncontrolled boundaries, own and clean up each test's state, and use seeded invariants. No production changes without a ledger entry; propose substantial testability refactors for human review. Core owns the shared standards in CONTRIBUTING; app CONTRIBUTING adds its commands. Recurring app findings about fail-closed runners, explicit pinned/native fixtures, personal credentials and actual animation/layout completion are folded back into that shared policy.
+Test public behaviour, use real domain objects, fake only uncontrolled boundaries, own and clean up each test's state, and use seeded invariants. The audit recorded production changes and left substantial testability refactors as proposals. Core owns the shared standards in CONTRIBUTING; app CONTRIBUTING adds its commands. Recurring app findings about fail-closed runners, explicit pinned/native fixtures, personal credentials and actual animation/layout completion are folded back into that shared policy.
 
 ## Validation
 
@@ -21,7 +23,7 @@ Test public behaviour, use real domain objects, fake only uncontrolled boundarie
 
 ## Recurring defects
 
-Counts are confirmed sites changed, not estimates of the whole repository. Updated after each file.
+Counts are confirmed sites changed, not estimates of the whole repository. Recorded during the audit.
 
 | Defect | Count | Example |
 | --- | ---: | --- |
@@ -51,7 +53,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 No production code changed. CI discovered a pre-existing release-metadata error before tests could run: `.sampo/changesets/layer-captions-bare-canvas.md` and `player-motion.md` named only `npm/@elabora/player`, although the release policy requires `npm/elabora` too. Added the matching root patch target to each in a separate metadata-only commit; the original change texts and player targets are preserved. `npm run release:check` then passed.
 
-## Human questions / proposed refactors
+## Optional future refactors
 
 Proposed, not applied: give `watchFolders` an explicit readiness acknowledgement on every platform, matching FsStore. Its macOS integration test currently probes the real stream because the public API has no ready signal. Keep the real-filesystem regression; a test-only delay cannot fix this API limitation.
 

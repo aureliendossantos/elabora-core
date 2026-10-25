@@ -79,7 +79,7 @@ npm workspaces, TypeScript in strict mode:
 
 ## Testing
 
-See [Contributing: tests](CONTRIBUTING.md#tests) for behaviour standards, required checks and repeat runs.
+See [Contributing: tests](CONTRIBUTING.md#tests) for behaviour standards, checks appropriate to each change.
 
 ## Status
 

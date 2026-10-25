@@ -17,12 +17,10 @@ Node 24 or later runs the TypeScript sources directly: there is no build step. f
 
 ## Tests
 
-- Test observable behaviour: public results, events, persisted content and visible output. A behaviour-preserving refactor must keep tests green. Check decoded captures and restored files rather than byte quotas, private caches or animation objects. Assert ordering and counts only when they are documented behaviour.
-- Use real domain objects and small fixtures. Fake only uncontrolled boundaries such as services, subprocesses, clocks and randomness; prefer stateful fakes. Assert outcomes and unchanged data after refusals, rather than mock calls or printed results. A runner must fail on reported errors and reject invalid or empty execution requests.
-- Name each test after one behaviour. Arrange its own inputs, act, then assert; use named table cases for variations. Remove duplicates only when every distinct behaviour remains checked. Coverage and assertion counts are not targets.
-- Own temporary data and processes immediately, register failure cleanup, and restore globals/environment. Give each case fresh service quota/cache state and its own prerequisites; subprocess fixtures own their environment and use portable native paths. Isolate process-lifetime registries in a child process when no public reset exists. Pin fixture revisions, fail clearly when prerequisites are missing, and copy native models into owned storage; never inherit personal credentials or silently substitute a different fixture.
-- Await completion, browser events or protocol acknowledgements; subscribe before acting. A timeout bounds failure; never sleep or use elapsed-time budgets to synchronize. Pause virtual clocks for timer-sensitive actions and advance them explicitly. Await actual resize/layout and animation completion before measuring visible geometry. Use fixed timestamps and reproducible seeds. Prepare watched folders before subscribing, await readiness before writes, and rescan on unnamed invalidations. Stop watchers before deleting their folders.
-- Use property tests for invariants and explicit boundary cases; add a regression test for every bug fix. Check complete persisted state and diagnostic codes/paths. Propose substantial production refactors for testability before applying them; never weaken assertions or add skips to hide failures.
+- Test observable behaviour: public results, events, persisted content and visible output. Preserve distinct behaviours when removing duplicate checks; coverage, assertion counts and line counts are not targets.
+- Use small, real domain fixtures. Fake uncontrolled boundaries such as services, clocks and randomness. Each test owns its data, credentials and processes, registers cleanup, and restores any globals or environment it changes. Pin external fixtures and report missing prerequisites explicitly.
+- Await completion signals, browser events or protocol acknowledgements, subscribing before acting. Use timeouts to bound failures, not fixed sleeps to synchronize. Control clocks for timing-sensitive tests and wait for layout or animation completion before measuring it. Watchers must be ready before writes and stopped before cleanup.
+- Name tests after the behaviour they check. Assert outcomes, including unchanged data after refusals and restored state after undo. Add regressions for bugs; use reproducible seeds when generating cases. Runners must report errors as failures and reject empty or invalid requests. Never weaken assertions or hide failures with skips.
 
 ```bash
 npm test             # unit and filesystem/service integration tests
@@ -31,7 +29,9 @@ npm run test:e2e     # browser behaviour
 npm run test:matrix  # LMS launch modes and sample courses
 ```
 
-Before finishing, pass unit tests, typecheck and e2e. Run the matrix for player, emulator, layout or sample changes and before releases. Repeat changed async tests and complete suites in native random order. On Node 24.19+, use `node --test --test-random-seed=104729 --test-global-setup=test/isolate.ts "test/unit/*.test.ts"`; record seeds, failures and unavailable checks in the [cleanup ledger](TEST-CLEANUP.md). Shuffling file arguments alone does not randomize execution.
+For code changes, run unit tests, typecheck and e2e once before finishing. Run the matrix for player, emulator, layout or sample changes and before releases. During iteration, run the affected tests; documentation-only changes need the documentation checks, not the runtime suites.
+
+Repeat affected tests or use randomized order when investigating timing or shared-state risks. Broaden the run when failures or the scope of a change justify it; multiple seeds and repeated full suites are not routine requirements. Record relevant results and unavailable checks in the PR description. [TEST-CLEANUP.md](TEST-CLEANUP.md) is a historical audit, not a checklist to maintain.
 
 CI (`.github/workflows/ci.yml`) runs all three suites and typecheck on Linux, unit tests and typecheck on Windows, and all checks on macOS weekly and on demand. The docs workflow also checks Markdown-only changes.
 

@@ -79,4 +79,4 @@ interface Store {
 - English in code, comments and messages to agents. Full words in names (`reporter`, not `rep`; `planIndex`, not `pidx`). Files in kebab-case.
 - Comments explain why, briefly, as in the existing code.
 - Diagnostic codes, CLI commands and MCP tool names are a public interface: change them only with a Sampo changeset (`docs/releases.md`) and updated skills.
-- Tests with `node:test`. A change keeps `npm test`, `npm run typecheck` and `npm run test:e2e` passing; `npm run test:matrix` before merging changes to the player, the emulator or the samples.
+- Tests with `node:test`. Follow [Contributing: tests](../CONTRIBUTING.md#tests) for validation appropriate to the change.
