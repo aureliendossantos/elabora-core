@@ -40,7 +40,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Private layout assertions | 7 | charts-matrix imported label placement helpers instead of measuring rendered labels |
 | Fixture lifetime | 9 | copied courses lacked per-case failure cleanup |
 
-| Reproduced browser timing races | 1 | player tooltip: an automatically advancing fake clock could expire the flash before pointer assertions |
+| Reproduced browser timing races | 2 | player tooltip: an automatically advancing fake clock could expire the flash before pointer assertions |
 
 | Uncontrolled virtual clocks | 2 | player: install initializes time but does not pause its progression |
 
@@ -72,7 +72,7 @@ No human answer is required to finish this test-only audit. All automated files 
 | `test/e2e/lms.test.ts` | 103 | 95 | Focused seed 104729 passed all four; legacy unload warning, stalled step and browser emulation retained; load event replaces delayed stall start |
 | `test/e2e/look.test.ts` | 357 | 353 | Focused seed 104729 passed all six workflows; look reuse, code reload, scrolling, object actions and refused opaque-frame behaviour; response events replace sleeps |
 | `test/e2e/media.test.ts` | 96 | 82 | Focused seed 104729 passed; iframe navigation, loaded metadata and seeked events synchronize actual video controls; own fixture and browser |
-| `test/e2e/narration.test.ts` | 437 | 428 | Native seed 130363 passed all ten; actual packaged audio/caption byte accounting replaces size quotas; narrated controls, resume, real audio-clock and emulator contracts retained; owned resources |
+| `test/e2e/narration.test.ts` | 437 | 434 | All ten cases passed at 130363; full load exposed a missed short last-segment window; revised early-ended AAC regression passed at 155921 and 104729 using real media seek and same-task event; native audio-clock fidelity test retained |
 | `test/e2e/object.test.ts` | 372 | 372 | Native seed 104729 passed fourteen behaviours; gates, event order and dry WebGL readback retained; decoded captures require variation between pixels; final suite repeat queued |
 | `test/e2e/plan-document.test.ts` | 61 | 61 | Reviewed unchanged; focused seed 104729 passed tagged A4 outline, date, deterministic bytes and export; Electron case requires opt-in executable |
 | `test/e2e/player-items.test.ts` | 265 | 256 | All seven cases previously passed at 155921; revised PDF case passed at 155921 with paused clock, explicit rendering/time advances and HEAD-header acknowledgement; real viewer/download/inline fallback contracts retained |
