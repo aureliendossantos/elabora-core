@@ -47,6 +47,8 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | CI environment leaks | 1 | release fixture: inherited GITHUB_REF_NAME=3/merge overrode its main branch |
 
+| Watcher setup boundaries | 1 | engine-store: named-file event check created its target folder after Linux watcher readiness |
+
 ## Production changes
 
 No production code changed. CI discovered a pre-existing release-metadata error before tests could run: `.sampo/changesets/layer-captions-bare-canvas.md` and `player-motion.md` named only `npm/@elabora/player`, although the release policy requires `npm/elabora` too. Added the matching root patch target to each in a separate metadata-only commit; the original change texts and player targets are preserved. `npm run release:check` then passed.
@@ -127,7 +129,7 @@ No human answer is required to finish this test-only audit. All automated files 
 | `test/unit/engine-media.test.ts` | 208 | 190 | Passed 6 native-seeded cases; public media/change events and rescan replace polling/sleep, owned sessions and unique source folders; real conversion/undo/import/verdict/folder-race regressions retained |
 | `test/unit/engine-project-state.test.ts` | 92 | 92 | Passed; incremental findings/content equal full validation, including component content after no-op saves |
 | `test/unit/engine-session.test.ts` | 413 | 364 | Passed 14 cases; event-driven watcher waits, fixed 128-write concurrency regression, per-test sessions; persistence/diagnostics/undo/protocol retained |
-| `test/unit/engine-store.test.ts` | 194 | 175 | Passed 9 cases; event/readiness waits and fixed-size concurrent writes; resources close in reverse ownership order before folders are removed |
+| `test/unit/engine-store.test.ts` | 194 | 178 | All nine store cases pass at native seeds 104729/130363; create named-path test folder before watcher readiness; separate new-folder/unknown-invalidation regression retained |
 | `test/unit/fit-cache.test.ts` | 72 | 76 | Passed native-seeded checks; Public fit key invalidation scenarios retained with context-owned fixtures |
 | `test/unit/fonts.test.ts` | 547 | 540 | Passed 15 native-seeded cases; public catalogue/license/font-byte/embedding/refusal/build contracts retained; per-test folders and failure-safe MCP/session disposal; arbitrary family-count and basename constraints removed |
 | `test/unit/format.test.ts` | 77 | 76 | Passed 6 native-seeded cases; generated registry, accepted samples, diagnostics and dereferencing retained; removes arbitrary fixture-count coverage quota |

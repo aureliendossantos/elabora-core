@@ -113,8 +113,11 @@ test('each ready FsStore reports an immediate write while other stores remain op
 });
 
 test('FsStore reports every write across other watchers starting and stopping', async t => {
-  const dir = project(t), log = await watch(t, dir), other = project(t);
+  const dir = project(t), other = project(t);
+  // This checks writes in a watched folder. New folders may report an unnamed invalidation,
+  // covered separately below; create this folder before the readiness acknowledgement.
   fs.mkdirSync(path.join(dir, 'notes'));
+  const log = await watch(t, dir);
   const folders = ['screens', 'assets', 'objects', 'one', 'two', 'three', 'four'].map(name => path.join(other, name));
   for (const folder of folders) fs.mkdirSync(folder, { recursive: true });
   let written = 0;
