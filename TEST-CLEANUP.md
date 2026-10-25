@@ -1,6 +1,6 @@
 # Test cleanup ledger
 
-Branch: `test-policy-cleanup`. Baseline: `96df988`. Worktree: `.test-policy/elabora-core` in the parent workspace. Counts include blank lines. Commit each completed test file with its ledger update. The inventory below lists all test files; reviewed changes started with edit/undo and session consistency, then the larger suites. All 119 automated test files have been reviewed; rows distinguish completed validation from the remaining final checks.
+Branch: `test-policy-cleanup`. Baseline: `96df988`. Worktree: `.test-policy/elabora-core` in the parent workspace. Counts include blank lines. Commit each completed test file with its ledger update. The inventory below lists all test files; reviewed changes started with edit/undo and session consistency, then the larger suites. All 119 automated test files have been reviewed; rows record completed validation and retained native/API limits.
 
 ## Policy and scope
 
@@ -197,4 +197,4 @@ PocketModel constructs native ONNX inference internally and has a private constr
 
 ## Remaining work
 
-No core test-audit implementation or local validation remains: all 119 automated test files are reviewed, every completed file is committed, and the final complete unit/browser/matrix checks pass. Current CI results are available on PR #3. The app's additional executable desktop scenarios are now correctly inventoried and under review in its own ledger; they are not all manual captures. The proposed production testability seams above remain proposals as requested. Native-only/model/live-provider limits remain explicit and are not counted as passes.
+No core test-audit implementation or local validation remains: all 119 automated test files are reviewed, every completed file is committed, and the final complete unit/browser/matrix checks pass. Current CI results are available on PR #3. The companion app audit is also complete: 20 Node test files, 68 desktop scripts and additional checks, with asserted workflows distinguished from manual captures. Its private GitHub Actions job was blocked before startup by account billing/spending access; local app validation passed. The proposed production testability seams above remain proposals as requested. Native-only/model/live-provider limits remain explicit and are not counted as passes.
