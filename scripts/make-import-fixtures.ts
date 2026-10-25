@@ -92,6 +92,47 @@ export function riseLocaleFiles(): Files {
   return files;
 }
 
+// A web export of 2026: the player page only has a config block, the course is the call
+// `__jsonp("runtime-data.js", "<base64>")` of runtime-data.js beside it, with the settings Rise adds
+// next to the course.
+export function riseRuntimeFiles(): Files {
+  const files: Files = new Map();
+  files.set('index.html', '<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Sécurité au poste de travail</title><script type="application/json" id="__CONFIG__">\n{"remoteManifest":{"learn_distribution_frontend":{".js":["learn_dist/entry.js"]}},"assetTargetPrefixes":{"media":"assets","font":"lib/fonts"}}\n</script></head><body><div id="app"></div></body></html>\n');
+  files.set('runtime-data.js', `__jsonp("runtime-data.js","${b64({ ...riseCourse(), settings: { lang: 'fr' }, deliveryPolicy: {}, exportAggregate: {}, partnerContent: [] })}")\n`);
+  files.set('assets/desk.png', png(16, 12, [200, 210, 220]));
+  files.set('assets/plan.png', png(20, 14, [230, 220, 200]));
+  return files;
+}
+
+// The same, with the publication of a Storyline block under assets/ (Rise's own Storyline block:
+// the course stays the Rise course, the block is reported).
+export function riseRuntimeWithStorylineFiles(): Files {
+  const files = riseRuntimeFiles();
+  for (const [name, content] of storylinePublishedFiles()) files.set(`assets/ABCDEFGHIJKLMNOP/${name}`, content);
+  return files;
+}
+
+// A course of 2026 holding an older export in a folder of its own (a project folder that kept its
+// previous export): the root course is the one the player page boots.
+export function riseRuntimeWithOlderExportFiles(): Files {
+  const files = riseRuntimeFiles();
+  const root = riseCourse();
+  files.set('runtime-data.js', `__jsonp("runtime-data.js","${b64({ ...root, course: { ...(root.course as object), title: 'Le cours de la racine' } })}")\n`);
+  for (const [name, content] of riseLocaleFiles()) files.set(name, content);
+  return files;
+}
+
+// A SCORM export of 2017: the course itself (no wrapper) in a script of the page, `var data = '…'`.
+export function riseLegacyFiles(): Files {
+  const files: Files = new Map();
+  files.set('imsmanifest.xml', '<?xml version="1.0"?><manifest identifier="fixture"><organizations default="articulate_rise"/><resources><resource identifier="r" type="webcontent" href="scormdriver/indexAPI.html"/></resources></manifest>\n');
+  files.set('scormdriver/indexAPI.html', '<!doctype html><title>launch</title>\n');
+  files.set('scormcontent/index.html', `<!doctype html><html><head><title>Rise</title></head><body><div id="app"></div><script>var data = '${b64((riseCourse() as { course: unknown }).course)}';\nwindow.start(data)</script></body></html>\n`);
+  files.set('scormcontent/assets/desk.png', png(16, 12, [200, 210, 220]));
+  files.set('scormcontent/assets/plan.png', png(20, 14, [230, 220, 200]));
+  return files;
+}
+
 // ── Storyline, published ─────────────────────────────────────────────
 const span = (text: string, size = 16, bold = false) => `<span style="font-family: 'Articulate Charset0_v8MBBDD1F1C','Articulate'; font-size:${size}px;">${bold ? `<b style="font-family: 'ArticulateBold CharBoldC2572EF3','Articulate';">${text}</b>` : text}</span>`;
 const textObject = (id: string, x: number, y: number, width: number, height: number, html: string, extra: Record<string, unknown> = {}) => ({ kind: 'vectorshape', id, accType: 'text', xPos: x, yPos: y, width, height, textLib: [{ kind: 'textdata', id: '01', vartext: `<p style="text-align:left">${html}</p>` }], ...extra });
@@ -238,6 +279,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, 'rise-scorm.zip'), zipOf(riseScormFiles()));
   writeFolder(path.join(out, 'rise-web'), riseLocaleFiles());
+  writeFolder(path.join(out, 'rise-2026'), riseRuntimeFiles());
+  fs.writeFileSync(path.join(out, 'rise-2017.zip'), zipOf(riseLegacyFiles()));
   fs.writeFileSync(path.join(out, 'storyline-published.zip'), zipOf(storylinePublishedFiles()));
   writeFolder(path.join(out, 'storyline-published'), storylinePublishedFiles());
   fs.writeFileSync(path.join(out, 'fixture.story'), zipOf(storySourceFiles()));
