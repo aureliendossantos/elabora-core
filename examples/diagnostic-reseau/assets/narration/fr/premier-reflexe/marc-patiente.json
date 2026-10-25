@@ -1,0 +1,58 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-patiente",
+  "language": "fr",
+  "textHash": "sha256:1dcdb61db0678f46f724dcfc1fe1d352a6f1e3462b167d4c65721c5032cd6fcd",
+  "duration": 3.38,
+  "provider": "elevenlabs",
+  "voice": "kENkNtk0xyzG09WW40xE",
+  "generated": true,
+  "audioHash": "sha256:708c7d2a55b47e0577f708570bbdce3d05211ad685e1a7f670354a37791377ee",
+  "createdAt": "2026-10-23T23:42:19Z",
+  "take": 1,
+  "spokenHash": "sha256:1dcdb61db0678f46f724dcfc1fe1d352a6f1e3462b167d4c65721c5032cd6fcd",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Marcel (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[soupire] Deux minutes… D'accord, je patiente.",
+  "mouth": "ccccccccccccccccooowwwcooooosscccsscccccccccccccccccccccwwwwccwwwwwoooccccccccccssoocccsssssoooccssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Deux",
+      "start": 0.523,
+      "end": 0.718,
+      "score": 1
+    },
+    {
+      "text": "minutes",
+      "start": 0.724,
+      "end": 1.181,
+      "score": 1
+    },
+    {
+      "text": "D'",
+      "start": 1.851,
+      "end": 1.932,
+      "score": 0.5
+    },
+    {
+      "text": "accord",
+      "start": 1.932,
+      "end": 2.328,
+      "score": 0.972
+    },
+    {
+      "text": "je",
+      "start": 2.676,
+      "end": 2.79,
+      "score": 1
+    },
+    {
+      "text": "patiente",
+      "start": 2.837,
+      "end": 3.313,
+      "score": 1
+    }
+  ]
+}

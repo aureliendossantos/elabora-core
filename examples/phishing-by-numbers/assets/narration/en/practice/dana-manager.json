@@ -1,0 +1,82 @@
+{
+  "screen": "practice",
+  "line": "dana-manager",
+  "language": "en",
+  "textHash": "sha256:c6ea5dbc58351241eb79227a307744cd464264d3c8d73973923e5a46fe15c77c",
+  "duration": 4.18,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:a0cf72922754f90c794b91be6c9ea29de43c7bf6d6d07560f550f0bc1f3215e8",
+  "createdAt": "2026-10-24T02:42:04Z",
+  "take": 1,
+  "spokenHash": "sha256:c6ea5dbc58351241eb79227a307744cd464264d3c8d73973923e5a46fe15c77c",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Between two meetings, your manager almost approves the new account.",
+  "mouth": "cccccssssoooosssssoooocwwwwwoosssoossscccccoowwwwwwcoooooocooooocccwwwwwsscsssoocoooccccoooooossssccoowwooooocccoowwwssccccccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Between",
+      "start": 0.04,
+      "end": 0.503,
+      "score": 1
+    },
+    {
+      "text": "two",
+      "start": 0.503,
+      "end": 0.724,
+      "score": 1
+    },
+    {
+      "text": "meetings",
+      "start": 0.724,
+      "end": 1.278,
+      "score": 0.99
+    },
+    {
+      "text": "your",
+      "start": 1.467,
+      "end": 1.668,
+      "score": 0.954
+    },
+    {
+      "text": "manager",
+      "start": 1.668,
+      "end": 2.202,
+      "score": 0.992
+    },
+    {
+      "text": "almost",
+      "start": 2.311,
+      "end": 2.753,
+      "score": 0.973
+    },
+    {
+      "text": "approves",
+      "start": 2.753,
+      "end": 3.316,
+      "score": 0.993
+    },
+    {
+      "text": "the",
+      "start": 3.316,
+      "end": 3.437,
+      "score": 0.998
+    },
+    {
+      "text": "new",
+      "start": 3.437,
+      "end": 3.617,
+      "score": 0.974
+    },
+    {
+      "text": "account",
+      "start": 3.617,
+      "end": 4.091,
+      "score": 0.999
+    }
+  ]
+}

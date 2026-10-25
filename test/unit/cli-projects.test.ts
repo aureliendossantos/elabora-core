@@ -127,7 +127,7 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     // The default archive is dist/<course-id>.elabora in the project.
     const exported = await ok(library, ['export', dir]);
     const archive = path.join(dir, 'dist', 'diagnostic-reseau.elabora');
-    assert.match(exported.stdout, new RegExp(`^✔ Exported diagnostic-reseau to ${archive.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\(\\d+ KB, \\d+ files\\)\\.\n$`));
+    assert.match(exported.stdout, new RegExp(`^✔ Exported diagnostic-reseau to ${archive.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\([\\d.]+ [KM]B, \\d+ files\\)\\.\n$`));
     assert.ok(fs.existsSync(archive));
     const elsewhere = path.join(tempDir('elabora-cli-archive-'), 'x.elabora');
     const result = await json(library, ['export', dir, '--out', elsewhere, '--history', '--json']);
@@ -190,7 +190,7 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     fs.closeSync(handle);
     const exported = await ok(library, ['export', dir, '--json']);
     assert.equal(JSON.parse(exported.stdout).courseId, 'diagnostic-reseau');
-    assert.match(exported.stderr, /^Reading the files: \d+% \([\d.]+ MB of 40\.\d MB\)$/m);
+    assert.match(exported.stderr, /^Reading the files: \d+% \([\d.]+ MB of 4\d\.\d MB\)$/m);
     assert.match(exported.stderr, /^Writing the archive: 100% \([\d.]+ MB of [\d.]+ MB\)$/m);
     const imported = await ok(library, ['import', path.join(dir, 'dist', 'diagnostic-reseau.elabora'), '--json']);
     assert.equal(JSON.parse(imported.stdout).status, 'imported');

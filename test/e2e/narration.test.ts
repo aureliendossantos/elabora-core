@@ -13,7 +13,7 @@ import { build } from '@elabora/node/build';
 import { capture, measureFit } from '@elabora/node/preview';
 import { startLooker } from '@elabora/node/look';
 import { testPackage } from '@elabora/node/emulator/run';
-import { NO_MEDIA_CODECS, copyExample, playsMedia, readJSON, writeJSON } from '../helpers.ts';
+import { NO_MEDIA_CODECS, copyExample, isClosed, playsMedia, readJSON, writeJSON } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { narrate, hasFfmpeg, toneM4a } from '../narration.ts';
 
@@ -229,8 +229,7 @@ test('the bar: an APG seek slider at the keyboard, shortcuts with modifiers, cap
     await page.click('.t-timeline-settings label:has(input[value="2"])');
     assert.equal(await page.locator('.t-timeline-rate-badge').textContent(), '2×');
     await page.keyboard.press('Escape');
-    await page.locator('.t-timeline-settings').waitFor({ state: 'hidden', timeout: 2000 }); // it fades out
-    assert.ok(await page.locator('.t-timeline-settings').isHidden());
+    assert.ok(await isClosed(page.locator('.t-timeline-settings')));
     await page.keyboard.press('Control+Alt+KeyP');
     const before = (await state(page)).timeline!.time;
     await advance(page, 0.5);
@@ -248,8 +247,7 @@ test('the bar: an APG seek slider at the keyboard, shortcuts with modifiers, cap
     assert.deepEqual(await page.locator('[data-sheet="about"] .t-about-credits p').allTextContents(), ['Voix de synthèse : sinusoïdes de test (domaine public).']);
     assert.match(await page.locator('[data-sheet="about"] [data-about="ai"]').innerText(), /Voix générée par IA/);
     // One side panel at a time: « IA et crédits » took the transcript's place.
-    await page.locator('.t-timeline-transcript').waitFor({ state: 'hidden', timeout: 2000 }); // it may be fading out
-    assert.ok(await page.locator('.t-timeline-transcript').isHidden());
+    assert.ok(await isClosed(page.locator('.t-timeline-transcript')));
     await page.keyboard.press('Escape');
     await page.click('.t-timeline-transcript-btn');
     // A line already heard takes the playhead there; one not heard yet cannot be reached.

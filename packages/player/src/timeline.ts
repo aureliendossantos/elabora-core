@@ -22,6 +22,8 @@ import { createSheet } from './sheet.ts';
 import type { Labels } from './labels.ts';
 import type { Tooltip } from './tooltip.ts';
 import type { NarrationData, NarrationLineData, SegmentData } from './course-data.ts';
+import { transcriptSection } from './transcript.ts';
+import type { TranscriptSection } from './transcript.ts';
 
 export interface TimelinePrefs {
   captions: boolean;
@@ -147,6 +149,8 @@ export interface TimelineOptions {
   keys?: () => boolean;
   // The transcript adds the lines of each layer that speaks, under its title (D62).
   transcriptLayers?: readonly { title: string; lines: readonly NarrationLineData[] }[];
+  // And the path each dialogue of the screen has gone so far (D61), read when the transcript opens.
+  transcriptDialogues?: () => TranscriptSection[];
 }
 
 // ── Clocks ──────────────────────────────────────────────────────────
@@ -213,6 +217,8 @@ function virtualClock(): Clock & { advance(seconds: number): void } {
 export type Timeline = ReturnType<typeof createTimeline>;
 
 export function createTimeline(options: TimelineOptions) {
+  // The layer whose own timeline this is (D62), if any: its captions get a room of their own.
+  const layerDialog = options.host?.closest('dialog.t-layer') ?? null;
   const { narration, view, labels, prefs } = options;
   const segments = narration.segments;
   const duration = narration.duration;
@@ -619,6 +625,8 @@ export function createTimeline(options: TimelineOptions) {
   const layerSections = (options.transcriptLayers ?? []).filter((layer) => layer.lines.length).map((layer) => element('section', { class: 't-timeline-transcript-step t-timeline-transcript-layer' },
     element('h3', { text: layer.title }),
     layer.lines.map((line) => element('p', { class: 't-timeline-line', 'data-line': line.id }, line.speaker ? element('strong', { class: 't-timeline-speaker', text: line.speaker }) : null, line.speaker ? element('span', { class: 't-sr-only', text: labels.colon }) : null, element('span', { class: 't-timeline-line-text', text: line.text })))));
+  const dialogueSections = element('div', { class: 't-timeline-transcript-dialogues' });
+  const fillDialogues = () => dialogueSections.replaceChildren(...(options.transcriptDialogues?.() ?? []).map((section) => transcriptSection({ ...section, dialogue: true }, labels)));
   const sheet = options.host && voiced && controls.transcript && !compact ? createSheet({
     name: 'transcript', title: labels.transcript, closeLabel: labels.close, tooltip, host: options.sheetHost ?? options.overlay,
     onToggle: (open) => transcriptButton.setAttribute('aria-expanded', String(open))
@@ -631,6 +639,7 @@ export function createTimeline(options: TimelineOptions) {
       ...(narration.generated ? [element('p', { class: 't-timeline-generated' }, icon('spark'), element('span', { text: labels.generatedVoice }))] : []),
       ...transcriptSteps,
       ...layerSections,
+      dialogueSections,
       ...(narration.credits?.length ? [element('section', { class: 't-timeline-credits' }, element('h3', { text: labels.credits }), narration.credits.map((credit) => linkedText('p', credit)))] : []));
   }
   // When the browser refused sound: one large Play button over the screen, inviting and nothing else
@@ -648,7 +657,7 @@ export function createTimeline(options: TimelineOptions) {
   function setCaptions(on: boolean): void { prefs.captions = on; choose(prefs, 'captions'); render(); }
   function toggleTranscript(open = !sheet?.isOpen): void {
     if (!sheet) return;
-    if (open) sheet.open(transcriptButton); else sheet.close();
+    if (open) { fillDialogues(); sheet.open(transcriptButton); } else sheet.close();
   }
   function showStart(): void { if (!startButton.isConnected) options.overlay.prepend(startButton); }
   function hideStart(): void { startButton.remove(); }
@@ -734,6 +743,9 @@ export function createTimeline(options: TimelineOptions) {
       }
     }
     captionsButton.setAttribute('aria-pressed', String(prefs.captions));
+    // In a layer (D62), captions on keep a room of their own under the layer's blocks, so they never
+    // cover its last lines; it comes with the learner's switch, never while the voice plays.
+    if (layerDialog && layerDialog.hasAttribute('data-captions') !== prefs.captions) layerDialog.toggleAttribute('data-captions', prefs.captions);
     muteButton.setAttribute('aria-pressed', String(prefs.muted));
     volumeInput.value = String(prefs.muted ? 0 : Math.round(prefs.volume * 100));
     rateBadge.textContent = prefs.rate === 1 ? '' : rateText(prefs.rate);
@@ -856,6 +868,8 @@ export function createTimeline(options: TimelineOptions) {
     focusSeek: () => (seek ?? playButton).focus({ preventScroll: true }),
     // The transcript's panel opened or closed (the editor's preview).
     transcript: (open: boolean) => toggleTranscript(open),
+    // A dialogue went on: its path in the open transcript follows.
+    refreshTranscript: () => { if (sheet?.isOpen) fillDialogues(); },
     get prefs() { return prefs; },
     lineAt: (line: string, edge: 'start' | 'end' = 'start') => { const found = narration.lines.find((candidate) => candidate.id === line); return found ? (edge === 'end' ? found.end : found.start) : null; },
     state() {

@@ -86,6 +86,8 @@ export async function playActions(page: Page, frame: Frame, actions: readonly Lo
         // Keys go to the focused frame: the object's, unless something in it holds the focus already.
         if (!await frame.evaluate(() => document.hasFocus())) await iframe.focus();
         await page.keyboard.press(action.key);
+      } else if (action.kind === 'choose') {
+        return `${action.source}: choose: is for a dialogue block, not a free object.`;
       } else {
         const box = await iframe.boundingBox();
         if (!box) return `${action.source}: the object's frame is not drawn.`;

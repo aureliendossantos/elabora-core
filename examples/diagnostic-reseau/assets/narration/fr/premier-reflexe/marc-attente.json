@@ -1,0 +1,94 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-attente",
+  "language": "fr",
+  "textHash": "sha256:8522821d7430af6a1adcc72a7a853d49c0711d700545931a7540abc7ad3c6aea",
+  "duration": 3.52,
+  "provider": "elevenlabs",
+  "voice": "kENkNtk0xyzG09WW40xE",
+  "generated": true,
+  "audioHash": "sha256:fe353b9c4bf0a52e2ee695c5cd6ebe4b78976171e6e3dc645714b9ae944939f8",
+  "createdAt": "2026-10-23T23:41:39Z",
+  "take": 1,
+  "spokenHash": "sha256:8522821d7430af6a1adcc72a7a853d49c0711d700545931a7540abc7ad3c6aea",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Marcel (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[inquiet] Alors, vous voyez ce qui bloque ? La paie doit partir avant midi.",
+  "mouth": "ccooooooosssccccccccccoossswwooooocccooocooooccssccccccccccccwwwcccwwwsssssccsssscoooowwwwwwwcoosssssccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Alors",
+      "start": 0.06,
+      "end": 0.396,
+      "score": 0.989
+    },
+    {
+      "text": "vous",
+      "start": 0.704,
+      "end": 0.865,
+      "score": 1
+    },
+    {
+      "text": "voyez",
+      "start": 0.865,
+      "end": 1.106,
+      "score": 0.999
+    },
+    {
+      "text": "ce",
+      "start": 1.106,
+      "end": 1.187,
+      "score": 0.999
+    },
+    {
+      "text": "qui",
+      "start": 1.187,
+      "end": 1.321,
+      "score": 0.999
+    },
+    {
+      "text": "bloque",
+      "start": 1.328,
+      "end": 1.643,
+      "score": 1
+    },
+    {
+      "text": "La",
+      "start": 2.032,
+      "end": 2.146,
+      "score": 1
+    },
+    {
+      "text": "paie",
+      "start": 2.193,
+      "end": 2.374,
+      "score": 0.717
+    },
+    {
+      "text": "doit",
+      "start": 2.374,
+      "end": 2.535,
+      "score": 1
+    },
+    {
+      "text": "partir",
+      "start": 2.535,
+      "end": 2.87,
+      "score": 1
+    },
+    {
+      "text": "avant",
+      "start": 2.897,
+      "end": 3.098,
+      "score": 1
+    },
+    {
+      "text": "midi",
+      "start": 3.098,
+      "end": 3.373,
+      "score": 1
+    }
+  ]
+}

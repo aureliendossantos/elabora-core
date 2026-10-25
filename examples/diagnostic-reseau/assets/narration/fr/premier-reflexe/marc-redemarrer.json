@@ -1,0 +1,64 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-redemarrer",
+  "language": "fr",
+  "textHash": "sha256:a4b1899dbe0ed726c702e1cb958d73d919bd77b70a92479cc7c3d43abf7127ce",
+  "duration": 1.71,
+  "provider": "elevenlabs",
+  "voice": "kENkNtk0xyzG09WW40xE",
+  "generated": true,
+  "audioHash": "sha256:20871de0f26a1073a0ae163964e487d41ffd2235395567ca6bc726574baf0252",
+  "createdAt": "2026-10-23T23:42:11Z",
+  "take": 1,
+  "spokenHash": "sha256:a4b1899dbe0ed726c702e1cb958d73d919bd77b70a92479cc7c3d43abf7127ce",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Marcel (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Vous ne pouvez pas juste le redémarrer ?",
+  "mouth": "cssswwwccssssscccoosssoossccoooooooooowwwcooooossccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Vous",
+      "start": 0.02,
+      "end": 0.161,
+      "score": 1
+    },
+    {
+      "text": "ne",
+      "start": 0.161,
+      "end": 0.255,
+      "score": 0.999
+    },
+    {
+      "text": "pouvez",
+      "start": 0.262,
+      "end": 0.517,
+      "score": 0.999
+    },
+    {
+      "text": "pas",
+      "start": 0.523,
+      "end": 0.658,
+      "score": 0.997
+    },
+    {
+      "text": "juste",
+      "start": 0.664,
+      "end": 0.98,
+      "score": 0.997
+    },
+    {
+      "text": "le",
+      "start": 1.026,
+      "end": 1.12,
+      "score": 0.999
+    },
+    {
+      "text": "redémarrer",
+      "start": 1.147,
+      "end": 1.643,
+      "score": 1
+    }
+  ]
+}

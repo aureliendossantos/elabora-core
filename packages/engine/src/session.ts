@@ -867,7 +867,7 @@ export class Session {
     }
     // A moment is sent when there is one, or to clear the one shown.
     const at = view.at ? momentTime(this.#state.project, view.screen, view.at, view.language, view.layer) : null;
-    const pages = canvas.host.view({ state: view.state, step: view.step, layer: view.layer, ...(at || before.at ? { at } : {}), ...(view.ghost !== undefined || before.ghost !== undefined ? { ghost: !!view.ghost } : {}) }, { id });
+    const pages = canvas.host.view({ state: view.state, step: view.step, layer: view.layer, ...(at || before.at ? { at } : {}), ...(view.ghost !== undefined || before.ghost !== undefined ? { ghost: !!view.ghost } : {}), ...(view.dialogue !== undefined || before.dialogue !== undefined ? { dialogue: view.dialogue ?? null } : {}) }, { id });
     return { id, pages, view: { ...view } };
   }
 
@@ -885,8 +885,8 @@ export class Session {
     if (!canvas?.view.screen) return;
     let render: RenderedScreen;
     try {
-      const { screen, state, step, layer, language, at, ghost } = canvas.view;
-      render = this.#renderer.render(this.#state.project, { screen: screen as string, state, step: step ?? undefined, layer: layer ?? undefined, language: language ?? undefined, ...(at ? { at } : {}), ...(ghost ? { ghost } : {}) });
+      const { screen, state, step, layer, language, at, ghost, dialogue } = canvas.view;
+      render = this.#renderer.render(this.#state.project, { screen: screen as string, state, step: step ?? undefined, layer: layer ?? undefined, language: language ?? undefined, ...(at ? { at } : {}), ...(ghost ? { ghost } : {}), ...(dialogue ? { dialogue } : {}) });
     } catch (error) {
       if (thrown) throw error;
       this.#emitError(error, 'rendering the screen shown on the canvas');

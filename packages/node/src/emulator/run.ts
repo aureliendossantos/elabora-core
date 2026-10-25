@@ -522,6 +522,28 @@ async function answerScreen(frame: Frame): Promise<void> {
           range.dispatchEvent(new Event('input', { bubbles: true }));
           node.querySelector<HTMLElement>('.t-trend-reveal:not([hidden])')?.click();
         }
+      } else if (behavior === 'dialogue') {
+        // A dialogue (D61): played to its end through its own buttons, the best option at each
+        // decision (good, else the most points), its lines hurried with « Suite » on the virtual clock.
+        type Option = { id: string; quality?: string; points?: number };
+        const nodes = (block.props?.nodes as { id: string; options?: Option[] }[] | undefined) || [];
+        const rank = (option: Option) => (option.quality === 'good' ? 1000 : option.quality === 'ok' ? 500 : option.quality === 'bad' ? 0 : 250) + (option.points || 0);
+        for (let turn = 0; turn < 400; turn++) {
+          const state = elabora.dialogues.state(block.id);
+          if (!state || state.phase === 'ended') break;
+          const start = node.querySelector<HTMLElement>('[data-t-start]');
+          if (state.phase === 'idle') { if (start && start.offsetParent) start.click(); else elabora.dialogues.start(block.id); }
+          else if (state.phase === 'choosing') {
+            const buttons = [...node.querySelectorAll<HTMLButtonElement>('[data-t-options] [data-option]:not([aria-disabled="true"])')];
+            const options = (nodes.find((candidate) => candidate.id === state.node)?.options || []).filter((option) => buttons.some((button) => button.dataset.option === option.id));
+            const best = options.sort((a, b) => rank(b) - rank(a))[0];
+            const button = buttons.find((candidate) => candidate.dataset.option === best?.id) || buttons[0];
+            if (!button) break;
+            button.click();
+          } else elabora.dialogues.next(block.id);
+          elabora.dialogues.advance(1);
+          await wait(10);
+        }
       }
       await wait(30);
       for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog[open]')) dialog.close();

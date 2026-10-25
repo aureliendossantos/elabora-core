@@ -1,7 +1,7 @@
 <section class="t-dialogue t-dialogue--{{style}}" data-t-group aria-label="{{title}}">
   <div class="t-dialogue-stage" data-if="style == scene" data-t-stage></div>
   <div class="t-dialogue-log" data-t-log></div>
+  <div class="t-dialogue-start" data-if="begins == click"><button type="button" class="t-btn t-btn--primary t-dialogue-start-btn" data-t-start></button></div>
   <div class="t-dialogue-options" data-t-options></div>
-  <div class="t-dialogue-debrief" data-if="debrief" data-t-debrief></div>
-  <button type="button" class="t-btn t-btn--primary t-dialogue-start" data-if="begins == click" data-t-start></button>
+  <div class="t-dialogue-debrief" data-if="debrief" data-t-debrief hidden></div>
 </section>

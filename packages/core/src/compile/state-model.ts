@@ -9,7 +9,9 @@ import { pendingMigrations } from '../components/migrate.ts';
 import { blockControls, controlEntity } from '../components/controls.ts';
 import type { StateModel } from '@elabora/player/state-codec';
 import { isRecord, recordOf, recordsOf, textOf, numberOr, isText } from './values.ts';
-import { dialogueEntities } from '../dialogue/keys.ts';
+import { dialogueEntities, dialogueKeys } from '../dialogue/keys.ts';
+import { dialogueData } from '../dialogue/data.ts';
+import { worstCaseDialogue } from '@elabora/player/dialogue/state';
 import { listOf, objectsIn } from '../util/values.ts';
 import { parseBlanks, blankMaxLength } from '@elabora/player/fill-in';
 
@@ -136,11 +138,12 @@ const LENGTH_CAP = 65536;
 const measuredLength = (value: unknown): number | undefined => (typeof value === 'number' && Number.isInteger(value) && value >= 0 ? Math.min(value, LENGTH_CAP) : undefined);
 
 // What the learner state may hold, by key: the player measures its worst case against the
-// suspend_data budget.
-export function buildStateModel(project: Project, keys: StateKeys): StateModel {
+// suspend_data budget. lock: the project's (a dialogue's bit fields keep the places of the options
+// and endings removed since, dialogue/keys.ts).
+export function buildStateModel(project: Project, keys: StateKeys, lock: Pick<StateLock, 'keys'> | null = null): StateModel {
   const index = planIndex(project.plan);
   const registry = getRegistry(project);
-  const model: StateModel = { screens: [], quizzes: [], numerics: [], decisions: [], variables: [], objects: [], toggleableBlocks: [], steppedScreens: [], controls: [], fillIns: [], sorts: [], reflections: [] };
+  const model: StateModel = { screens: [], quizzes: [], numerics: [], decisions: [], variables: [], objects: [], toggleableBlocks: [], steppedScreens: [], controls: [], dialogues: [], fillIns: [], sorts: [], reflections: [] };
   for (const { id } of screenOrder(project)) {
     const key = keys[`screen:${id}`];
     if (!key) continue;
@@ -180,6 +183,9 @@ export function buildStateModel(project: Project, keys: StateKeys): StateModel {
       const manifest = project.objects.get(textOf(props.object))?.manifest;
       const persistMax = manifest?.persistState?.enabled ? (measuredLength(manifest.persistState.maxLength) || 300) : 0;
       model.objects.push({ key, persistMax });
+    } else if (behavior === 'dialogue' && key) {
+      // Its longest progress, made of its longest keys (D61): measured with the same encoder.
+      model.dialogues!.push({ key, worst: worstCaseDialogue(dialogueData(props, { keys: dialogueKeys(block.id, keys, lock) })) });
     }
     if (keys[`block:${block.id}`]) model.toggleableBlocks.push(keys[`block:${block.id}`]);
     for (const name of blockControls(project, block).keys()) if (keys[controlEntity(block.id, name)]) model.controls.push(keys[controlEntity(block.id, name)]);

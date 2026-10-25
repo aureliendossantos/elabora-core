@@ -177,7 +177,21 @@ test('the first run is the only one scored: going back after the end, retry, res
   // After the end (practice: after-end), back to any decision before the final one is refused…
   assert.equal(canRevisit(run, 2), false, 'escalade is final');
   assert.equal(canRevisit(run, 0), false, 'nor before it');
-  assert.equal(canRestart(run), false);
+  // Starting over is a new run, not a revisit: it stays once the dialogue has ended.
+  assert.equal(canRestart(run), true, 'a final decision does not stop « Recommencer » after the end');
+  const again = restart(run);
+  assert.equal(again.walk.node, 'premiere-question');
+  assert.deepEqual(again.progress.scored, ['premiere-question.b~', 'premiere-question.a', 'ticket.a', 'escalade.a'], 'the scored run is kept');
+  // Before the end (anytime), a final decision closed on the path forbids starting over.
+  const finalTicket = (structuredClone(props.nodes) as { id: string; final?: boolean }[]).map(({ final, ...node }) => (node.id === 'ticket' ? { ...node, final: true } : node));
+  let midway = openDialogue(dialogueData({ ...structuredClone(props), revisit: 'anytime', nodes: finalTicket }));
+  midway = choose(midway, 'a');
+  assert.equal(canRestart(midway), true, 'nothing final closed yet');
+  midway = choose(midway, 'a');
+  assert.equal(canRestart(midway), false, 'ticket is final and closed, the dialogue goes on');
+  midway = choose(midway, 'a');
+  assert.equal(midway.walk.status, 'ended');
+  assert.equal(canRestart(midway), true);
   // …so without final decisions the learner explores, and the scored run stays.
   const open = dialogueData({ ...structuredClone(props), nodes: (structuredClone(props.nodes) as { final?: boolean }[]).map(({ final, ...node }) => node) });
   let explore = openDialogue(open);
@@ -388,6 +402,14 @@ test('show, play and paths: the script, a path and every path, as agents read th
   assert.equal(played.points, 10);
   assert.deepEqual(played.decisions.map((decision) => [decision.node, decision.letter, decision.kept]), [['premiere-question', 'C', 'a'], ['ticket', 'A', null], ['escalade', 'A', null]]);
   assert.ok(played.seconds > 30 && played.estimated);
+  // The steps say what they are, for a reader that words them itself (the app's « Jouer un chemin »).
+  assert.deepEqual(played.steps.filter((step) => step.kind === 'choice').map((step) => [step.node, step.option]), [['premiere-question', 'c'], ['premiere-question', 'a'], ['ticket', 'a'], ['escalade', 'a']]);
+  assert.deepEqual(played.steps.find((step) => step.kind === 'line' && step.option === 'c'), { kind: 'line', node: 'premiere-question', line: 'm3', role: 'character', option: 'c', text: 'Marc: Euh… c\'est « Soleil2026 ». C\'est normal de le dire ?' });
+  assert.equal(played.steps.at(-1)?.ending, 'a-revoir');
+  assert.equal(played.waiting, null);
+  const waiting = playDialogue(project, ref, ['b']);
+  assert.equal(waiting.waiting, 'ticket');
+  assert.deepEqual(waiting.offered, ['a', 'b', 'c']);
   const refused = playDialogue(project, ref, ['b', 'z']);
   assert.equal(refused.ok, false);
   assert.deepEqual(refused.offered, ['a', 'b', 'c']);
@@ -407,7 +429,9 @@ test('the map: placed by layers, deterministic, dashed edges going back', () => 
   const map = dialogueMap(data);
   assert.deepEqual(map, dialogueMap(marc()), 'deterministic');
   const rank = (id: string) => map.nodes.find((node) => node.id === id)!.rank;
-  assert.deepEqual(['appel', 'premiere-question', 'routeur-redemarre', 'ticket', 'escalade', 'bilan', 'end:maitrise', 'end:a-revoir'].map(rank), [0, 1, 2, 2, 3, 4, 5, 5]);
+  // The branch through « Conséquence B » comes back to the ticket forward: only the retry goes back.
+  assert.deepEqual(['appel', 'premiere-question', 'routeur-redemarre', 'ticket', 'escalade', 'bilan', 'end:maitrise', 'end:a-revoir'].map(rank), [0, 1, 2, 3, 4, 5, 6, 6]);
+  assert.deepEqual(map.edges.filter((edge) => edge.back).map((edge) => `${edge.from}>${edge.to}`), ['premiere-question>premiere-question']);
   const retry = map.edges.find((edge) => edge.from === 'premiere-question' && edge.option === 'c')!;
   assert.equal(retry.to, 'premiere-question');
   assert.equal(retry.back, true);
@@ -419,6 +443,33 @@ test('the map: placed by layers, deterministic, dashed edges going back', () => 
   assert.match(svg, /class="dm-edge dm-back"/);
   const loop = dialogue([{ id: 'a', options: [{ id: 'x', text: 'x', next: 'b' }] }, { id: 'b', lines: [{ id: 'l', text: 'b' }], next: 'a' }]);
   assert.ok(dialogueMap(loop).edges.some((edge) => edge.from === 'b' && edge.to === 'a' && edge.back));
+});
+
+test('the map going down, for a portrait page: rows by layer, the ways from the bottom with their letters', () => {
+  const across = dialogueMap(marc());
+  const map = dialogueMap(marc(), { direction: 'down' });
+  assert.equal(map.direction, 'down');
+  assert.deepEqual(map.nodes.map((node) => [node.id, node.rank]), across.nodes.map((node) => [node.id, node.rank]), 'the same layers');
+  // Each layer a row below the one before; a row's nodes side by side, never overlapping.
+  for (const node of map.nodes) for (const other of map.nodes) {
+    if (other.rank === node.rank + 1) assert.ok(other.y >= node.y + node.height, `${other.id} below ${node.id}`);
+    if (node !== other && node.rank === other.rank) assert.ok(node.x + node.width <= other.x || other.x + other.width <= node.x, `${node.id} and ${other.id} overlap`);
+  }
+  assert.ok(map.height > map.width, 'taller than wide');
+  // An option's own way leaves the node's bottom, its letter beside it (the common way from the middle,
+  // without); the retry goes back on the right.
+  const question = map.nodes.find((node) => node.id === 'premiere-question')!;
+  const b = map.edges.find((edge) => edge.from === 'premiere-question' && edge.option === 'b')!;
+  assert.equal(b.letter?.text, 'B');
+  assert.match(b.d, new RegExp(`^M \\d+ ${question.y + question.height} C`));
+  const retry = map.edges.find((edge) => edge.from === 'premiere-question' && edge.option === 'c')!;
+  assert.equal(retry.back, true);
+  assert.equal(retry.letter, undefined);
+  assert.match(dialogueMapSvg(map, { title: 'Carte' }), /<text class="dm-label dm-way" x="\d+" y="\d+">B<\/text>/);
+  // The client's page takes the map that reads best on A4: Marc's call (7 layers) goes down.
+  assert.match(dialogueDocumentHtml(marc(), { id: 'appel-marc', screen: 'appel', language: 'fr' }), /class="dm-label dm-way"/);
+  const short = dialogue([{ id: 'a', options: [{ id: 'x', text: 'x' }, { id: 'y', text: 'y' }] }]);
+  assert.doesNotMatch(dialogueDocumentHtml(short, { id: 'court', screen: 'appel', language: 'fr' }), /class="dm-label dm-way"/, 'a short one keeps going right');
 });
 
 test('the export for the client: the map then the script, in the course\'s language, as one page', async () => {

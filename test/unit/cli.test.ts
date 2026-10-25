@@ -705,9 +705,11 @@ test('look --act: actions keep their commas (a repeat flag) and are read before 
   ]);
   assert.deepEqual(parseLookAction('click:role=button[name=Sail]'), { kind: 'click', source: 'click:role=button[name=Sail]', role: 'button', name: 'Sail' });
   assert.deepEqual(parseLookAction('key:Enter'), { kind: 'key', source: 'key:Enter', key: 'Enter' });
+  assert.deepEqual(parseLookAction('choose:b'), { kind: 'choose', source: 'choose:b', option: 'b' });
+  assert.match((parseLookAction('choose:Not an id') as { error: string }).error, /choose:<option> for a dialogue/);
   assert.match((parseLookAction('drag:0.2,0.5->1.4,0.5') as { error: string }).error, /^Action "drag:0\.2,0\.5->1\.4,0\.5": click:<text>/);
   const run = await elabora(['look', COURSES[0].dir, '--act', 'tap:here']);
   assert.equal(run.status, 2);
   assert.match(run.stderr, /^Action "tap:here": /);
-  assert.deepEqual(await elabora(['look', COURSES[0].dir, '--act', 'key:Enter']), { status: 2, stdout: '', stderr: '--act drives the free object of a block: give --block <id>.\n' });
+  assert.deepEqual(await elabora(['look', COURSES[0].dir, '--act', 'key:Enter']), { status: 2, stdout: '', stderr: '--act drives the free object of a block, or chooses in a dialogue block: give --block <id>.\n' });
 });

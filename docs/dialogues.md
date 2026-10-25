@@ -148,7 +148,7 @@ One implementation, pure (no DOM, no Node), in `@elabora/player` `dialogue/`: th
 | `assessment` | `none`: no going back (`retry` options go on to the common way) | `debrief` | `quality` |
 | `exploration` | `anytime`: « Reprendre d'ici » from the first choice | `now` | `none` |
 
-Each setting stays changeable (`revisit: "retry"` alone gives « Choisir autrement » without going back after the end). A final decision cannot be revisited, nor anything before it.
+Each setting stays changeable (`revisit: "retry"` alone gives « Choisir autrement » without going back after the end). A final decision cannot be revisited, nor anything before it; once the dialogue has ended, « Recommencer » still starts it over, as a new run that leaves the scored run as it was.
 
 ## Score, completion, SCORM
 
@@ -176,6 +176,34 @@ A character is a speaker of `course.json` `speakers`, with:
 - `narrator: true`: its lines are narration, said with its voice.
 
 The block's template has the hooks of the `dialogue` behaviour ([Components](components.md#3-behaviours-headless-and-primitives)): `data-t-log` (the thread), `data-t-options` (the options' room), and optionally `data-t-group`, `data-t-stage`, `data-t-debrief`, `data-t-start`. A fork keeps the behaviour and changes the markup.
+
+## What the learner sees
+
+- **The thread** is a log (`role="log"`, polite): each bubble arrives whole, so a screen reader reads it once, « Marc : … » (the name is said, the drawn words are hidden from it). Three kinds of text: a character's bubble (its portrait and name in its colour, on the left), the learner's (on the right, a tint of `color.accent`), narration (centred, in italics, no bubble). A trainer's note (`feedback`, as `feedback` allows: now or in the debrief) is a card with a rule and an icon, its quality said in words (« Bon choix », « Choix moyen », « Choix à éviter »), never by colour alone.
+- **The options** come under the thread, in a room that keeps its height from the first line (the tallest set of options, measured): nothing moves when they come or go. They take the focus of nobody: once the learner chooses, the focus waits in the group « Votre réponse », which stays. A final decision says « Choix définitif » above its options; an option already explored (exploration, after the end) says « déjà exploré »; an unavailable one is greyed with its reason, or hidden.
+- **The pace.** `pace: "auto"`: the next line follows 0.4 to 0.8 s after a voice ends, and without a voice after `clamp(0.6, 0.4 + 0.02 × characters, 2)` seconds; a turn of the learner waits 0.8 s; a note 1 to 3.5 s by its length. « … » announces the next bubble in `messaging` only, and only without voice. `pace: "click"`: « Suite » after each line. During a turn, « Tout afficher » shows the whole line at once (the voice goes on), then becomes « Suite »; a click on the bubble or Entrée does the same. Pause and « Couper les voix » sit next to it.
+- **The reveal.** `ink`: every word is there from the start, those not said yet in a lighter ink (`dialog.wordUnspoken`, still readable), lit as the voice says them; `appear`: the letters of the word being said come in; `instant`: the line whole. Reduced motion and the « Affichage » setting « Texte : tout de suite » (shown when the module has a dialogue) make every line instant, and nothing slides.
+- **Voices.** Each line plays its own file; its words, its character's mouth and its cues follow the audio's own time, and the line ends on the audio's end (`ended`). Speed, volume and « Couper les voix » are the narration's (« Affichage » and the controls). When the browser refuses to play before a gesture, the line goes on silent at its own pace and its bubble shows « Écouter la réplique ». Each voiced bubble has « Réécouter »; going back has « Reprendre d'ici » on the learner's past answers (when `revisit` allows). A dialogue that speaks pauses the screen's narration and layers' voices; a voice that starts elsewhere (the narration, a video) pauses the dialogue.
+- **Going back.** « Choisir autrement » after a consequence (`retry` and up); « Reprendre d'ici » on a past answer; « Recommencer » at the end, and « Revenir à un choix » which brings the focus to the last answer the learner may take back. The end shows « N fins découvertes sur M » when the dialogue has several endings.
+- **The debrief** (`debrief: true`): the ending's title and text, the score, each decision with its question, the first choice (and « puis » what was kept after a retry), its quality in words and its note, and the endings found and not found. In slides it comes over the thread (« Revoir la conversation » shows the thread again); in scroll pages, under it.
+- **Slides and scroll.** In a slide the dialogue's box keeps the size the slide leaves it (`--t-dialog-fill`, between 12 and 32 rem for `messaging`): the thread scrolls inside it, anchored at its bottom, and « Nouveau message » appears when the learner has scrolled up. Nothing in the slide moves while the dialogue plays. In a scroll page the thread grows in the page. A dialogue begins (`begins: "auto"`) when it is seen; `begins: "click"` shows its title and « Commencer » over the empty thread.
+- **`scene`.** From 761 px wide: the backdrop, the `cast` standing at their positions (left, centre, right), the bubbles in a column between them (with a tail toward who speaks, the name in each bubble), the options below; the bubbles that do not fit turn as a page. « Historique » opens the whole thread over the scene (Échap closes it). Narrower, a `scene` dialogue becomes a thread with portraits under a band of its backdrop.
+- **Characters** act while their line plays: `speaking` and `talking` (the mouth on the envelope), the line's `expression`, gestures at their cue's time, the others `listening`; paused with the dialogue; a gesture plays once and the mouth stays closed under reduced motion.
+- **The transcript.** The screen's transcript has each dialogue's path so far, under the dialogue's title. A screen without narration whose dialogue (or a layer) speaks has a transcript all the same: its button in the player's controls item.
+- **Colours.** The theme's tokens, each with its default from the charter (checked for contrast, `E_THEME_CONTRAST`, as soon as the course sets one of them):
+
+| Token | Default | What |
+|---|---|---|
+| `dialog.bubble` | `color.text` at 5 % on `color.surface` | a character's bubble |
+| `dialog.learner` | `color.accent` at 12 % on `color.surface` | the learner's bubble |
+| `dialog.text` | `color.text` | text of the bubbles (≥ 4.5:1 on both) |
+| `dialog.wordSpoken` | `dialog.text` | the words said (≥ 4.5:1 on both bubbles) |
+| `dialog.wordUnspoken` | `color.muted` | the words still to be said (≥ 4.5:1 on both bubbles) |
+| `dialog.note` | `color.primary` | the notes' rule and icon (≥ 3:1 on `color.surface`) |
+
+They are the CSS variables `--t-dialog-bubble`, `--t-dialog-learner`, `--t-dialog-text`, `--t-dialog-word-spoken`, `--t-dialog-word-unspoken`, `--t-dialog-note`; a speaker's `color` gives `--t-dl-speaker` on its rows.
+
+**Editors and the Review.** The canvas shows a dialogue at rest after some choices, or at a node (`renderScreen(…, { dialogue: { block, choices, node } })`, the canvas's `elabora/view` message; [Rendering](architecture/rendering.md)). The player's debug handle has `window.__elabora.dialogues`: `state(block)`, `next(block)`, `choose(block, option)`, `advance(seconds)` on the virtual clock of tests, and for the Review `current()` (the line being said: `{ block, line, time }`) and `show(block, line)` (that line shown at rest, after the choices of the first path that says it). The LMS emulator plays each dialogue to its end through its buttons, choosing the best option at each decision.
 
 ## Voices
 
@@ -263,6 +291,7 @@ A character drawn in SVG is **one file** of the module (`assets/personnages/marc
 
 - `elabora dialogue show [dir] <block>` (MCP `elabora_dialogue_show`): the dialogue as a script, the name, the stage direction, the line; each option with its quality, points, effects and « then … »; a stable text that also serves diffs.
 - `elabora dialogue play [dir] <block> --choose b,a,a` (`elabora_dialogue_play`): the path of these choices, its lines and notes, the ending, the score, the decisions and the duration (the lines' audio, else estimated from the text). It fails when a choice is not offered, and says which were.
+- `elabora look [dir] --screen <screen> --block <block> --act choose:b --act choose:a` (`elabora_look` with `block` and `act`): the thread at rest after those choices, a close-up of the dialogue with its end in the window (the notes, the next options, the debrief), and the node waiting, the ending and the score.
 - `elabora dialogue paths [dir] <block>` (`elabora_dialogue_paths`): every path (2000 at most), the best and worst score, the endings and nodes reached and never reached, each path's duration.
 - `elabora dialogue export [dir] <block> --to html|pdf` (`elabora_dialogue_export`): the map, then the script, for the client, in the course's language. The PDF is printed by the plan's printer (D48). The app exports the same page.
 - `elabora_set_dialogue_node` writes one node whole (added after a node, first, or replaced in place), `elabora_remove_dialogue_node` removes one; the block itself is written with `elabora_add_block` and `elabora_update_block` like any block.

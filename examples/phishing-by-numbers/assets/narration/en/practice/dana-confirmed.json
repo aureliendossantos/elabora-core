@@ -1,0 +1,82 @@
+{
+  "screen": "practice",
+  "line": "dana-confirmed",
+  "language": "en",
+  "textHash": "sha256:24ac7d028e9323f24570879fd3b42c7f12251d2ff4e753c213fe1182a05ec4c2",
+  "duration": 4.93,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:9985090ff1656d9861ad0a4f131feb97a4475a77813a8edc60de647ba07f71d4",
+  "createdAt": "2026-10-24T02:42:05Z",
+  "take": 1,
+  "spokenHash": "sha256:24ac7d028e9323f24570879fd3b42c7f12251d2ff4e753c213fe1182a05ec4c2",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Ten minutes later, a cheerful answer arrives: confirmed, thanks, Neil.",
+  "mouth": "cssssssscoooooccccoowwooooooossscccwwwccoooooooocccwwwwwwwwwwwsssoooooooooooooossssssccccccccccccccwwwwwccwwwwwwwcoosscccccccccwwwwsssssswwoowwwwwcc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Ten",
+      "start": 0.04,
+      "end": 0.261,
+      "score": 1
+    },
+    {
+      "text": "minutes",
+      "start": 0.261,
+      "end": 0.621,
+      "score": 0.991
+    },
+    {
+      "text": "later",
+      "start": 0.621,
+      "end": 1.014,
+      "score": 0.977
+    },
+    {
+      "text": "a",
+      "start": 1.202,
+      "end": 1.355,
+      "score": 0.998
+    },
+    {
+      "text": "cheerful",
+      "start": 1.363,
+      "end": 1.876,
+      "score": 0.995
+    },
+    {
+      "text": "answer",
+      "start": 1.924,
+      "end": 2.325,
+      "score": 0.959
+    },
+    {
+      "text": "arrives",
+      "start": 2.325,
+      "end": 2.818,
+      "score": 0.965
+    },
+    {
+      "text": "confirmed",
+      "start": 3.307,
+      "end": 3.98,
+      "score": 0.861
+    },
+    {
+      "text": "thanks",
+      "start": 4.229,
+      "end": 4.569,
+      "score": 0.978
+    },
+    {
+      "text": "Neil",
+      "start": 4.569,
+      "end": 4.902,
+      "score": 0.503
+    }
+  ]
+}

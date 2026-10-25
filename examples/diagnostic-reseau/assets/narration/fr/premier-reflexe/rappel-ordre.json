@@ -1,0 +1,130 @@
+{
+  "screen": "premier-reflexe",
+  "line": "rappel-ordre",
+  "language": "fr",
+  "textHash": "sha256:467b391198ece3a5833a738f4a7abe4b2a059dbfebcd966aedd84555fa8a6c1d",
+  "duration": 4.96,
+  "provider": "pocket-tts",
+  "voice": "claire",
+  "generated": true,
+  "audioHash": "sha256:cd55f559cc4c812e3e6d6617bff7db8fec58c2016bc4c018553357414231cbfa",
+  "createdAt": "2026-10-23T23:41:23Z",
+  "take": 1,
+  "spokenHash": "sha256:467b391198ece3a5833a738f4a7abe4b2a059dbfebcd966aedd84555fa8a6c1d",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Claire » d’après un enregistrement du corpus CML-TTS (Frederico S. Oliveira, Edresson Casanova, Arnaldo Candido Junior, Anderson S. Soares, Arlindo R. Galvão Filho ; CEIA, Université fédérale de Goiás), https://openslr.org/146/, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/) ; enregistrement nettoyé par Kyutai, puis transformé en voix de synthèse.",
+  "model": "pocket-tts/french_24l@d29db79",
+  "text": "Puis remontez le chemin dans l'ordre, sans sauter d'étape, même quand la cause vous paraît évidente.",
+  "mouth": "ccccccsswwwwwcoosswwoosssscwwooooowwwwwwoossccccccccoossoocwwooooccwwoocccccccccccccwwcsssoooooccssssssssssccoooooocwwwssssoosssccccccccccccccccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Puis",
+      "start": 0.161,
+      "end": 0.335,
+      "score": 0.992
+    },
+    {
+      "text": "remontez",
+      "start": 0.341,
+      "end": 0.677,
+      "score": 0.996
+    },
+    {
+      "text": "le",
+      "start": 0.683,
+      "end": 0.763,
+      "score": 1
+    },
+    {
+      "text": "chemin",
+      "start": 0.763,
+      "end": 0.984,
+      "score": 0.994
+    },
+    {
+      "text": "dans",
+      "start": 0.984,
+      "end": 1.125,
+      "score": 1
+    },
+    {
+      "text": "l'",
+      "start": 1.125,
+      "end": 1.225,
+      "score": 0.85
+    },
+    {
+      "text": "ordre",
+      "start": 1.225,
+      "end": 1.48,
+      "score": 0.996
+    },
+    {
+      "text": "sans",
+      "start": 1.667,
+      "end": 1.827,
+      "score": 0.998
+    },
+    {
+      "text": "sauter",
+      "start": 1.827,
+      "end": 2.068,
+      "score": 0.984
+    },
+    {
+      "text": "d'",
+      "start": 2.068,
+      "end": 2.149,
+      "score": 0.627
+    },
+    {
+      "text": "étape",
+      "start": 2.149,
+      "end": 2.524,
+      "score": 1
+    },
+    {
+      "text": "même",
+      "start": 2.771,
+      "end": 2.952,
+      "score": 1
+    },
+    {
+      "text": "quand",
+      "start": 2.952,
+      "end": 3.113,
+      "score": 1
+    },
+    {
+      "text": "la",
+      "start": 3.113,
+      "end": 3.227,
+      "score": 1
+    },
+    {
+      "text": "cause",
+      "start": 3.233,
+      "end": 3.454,
+      "score": 1
+    },
+    {
+      "text": "vous",
+      "start": 3.454,
+      "end": 3.595,
+      "score": 0.998
+    },
+    {
+      "text": "paraît",
+      "start": 3.595,
+      "end": 3.87,
+      "score": 0.995
+    },
+    {
+      "text": "évidente",
+      "start": 3.936,
+      "end": 4.412,
+      "score": 0.988
+    }
+  ]
+}

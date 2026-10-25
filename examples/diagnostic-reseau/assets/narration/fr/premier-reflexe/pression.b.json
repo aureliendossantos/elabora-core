@@ -1,0 +1,88 @@
+{
+  "screen": "premier-reflexe",
+  "line": "pression.b",
+  "language": "fr",
+  "textHash": "sha256:66de13856ac8627a8ccf684b8e0981ed44da53d755304d964398955ef683d9fc",
+  "duration": 3.055,
+  "provider": "elevenlabs",
+  "voice": "YxrwjAKoUKULGd0g8K9Y",
+  "generated": true,
+  "audioHash": "sha256:ea1aaf1c153cd88826ad586ad76e39bb8cf2ae4f7ab397b326dc7cf67032468c",
+  "createdAt": "2026-10-23T23:42:27Z",
+  "take": 1,
+  "spokenHash": "sha256:66de13856ac8627a8ccf684b8e0981ed44da53d755304d964398955ef683d9fc",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Lucie (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Je jette un œil au serveur, puis je reviens au commutateur.",
+  "mouth": "ccssooowwwcwwwwwwwwwoossooosscoooowwoooccccccssoooooocsssoooooosswwwwwssooocccoooccoossscccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Je",
+      "start": 0.06,
+      "end": 0.175,
+      "score": 1
+    },
+    {
+      "text": "jette",
+      "start": 0.201,
+      "end": 0.416,
+      "score": 1
+    },
+    {
+      "text": "un",
+      "start": 0.422,
+      "end": 0.516,
+      "score": 1
+    },
+    {
+      "text": "œil",
+      "start": 0.523,
+      "end": 0.677,
+      "score": 0.984
+    },
+    {
+      "text": "au",
+      "start": 0.683,
+      "end": 0.764,
+      "score": 1
+    },
+    {
+      "text": "serveur",
+      "start": 0.764,
+      "end": 1.34,
+      "score": 0.85
+    },
+    {
+      "text": "puis",
+      "start": 1.447,
+      "end": 1.722,
+      "score": 0.976
+    },
+    {
+      "text": "je",
+      "start": 1.849,
+      "end": 1.964,
+      "score": 1
+    },
+    {
+      "text": "reviens",
+      "start": 1.99,
+      "end": 2.271,
+      "score": 0.999
+    },
+    {
+      "text": "au",
+      "start": 2.271,
+      "end": 2.365,
+      "score": 1
+    },
+    {
+      "text": "commutateur",
+      "start": 2.372,
+      "end": 2.968,
+      "score": 0.988
+    }
+  ]
+}

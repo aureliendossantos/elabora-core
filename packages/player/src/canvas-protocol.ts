@@ -4,7 +4,8 @@
 //
 //   host → canvas   window.postMessage (from the parent window), or window.__elaboraCanvas.receive()
 //     { type: 'elabora/render', id?, render }   show a screen, or update the one shown in place
-//     { type: 'elabora/view', id?, view }       change the step, the layer or the state shown
+//     { type: 'elabora/view', id?, view }       change the step, the layer, the state shown or a
+//                                             dialogue's path (view.dialogue)
 //     { type: 'elabora/scroll', by, at? }       a wheel turned over the host's overlay: scrolls as it
 //                                             would have under the pointer
 //   canvas → host   window.parent.postMessage, and window.__elaboraCanvas.onMessage listeners
@@ -83,6 +84,11 @@ export interface RenderView {
   // Every step shown, those after the first faded in their place (data-t-ghost): the editor's phone
   // width, where a narrated slide goes on step by step.
   ghost?: boolean;
+  // A dialogue of the screen (D61) as the learner sees it after these choices (option ids, one per
+  // decision, from its start), at rest: the thread so far, the options of the decision reached, or its
+  // end. node: then at that node (the author selected it in the graph). null or left out: each
+  // dialogue at its start, its first decision.
+  dialogue?: { block: string; choices?: string[]; node?: string } | null;
 }
 
 // The design layer, in cascade order after elabora/player.css: one style element per sheet.

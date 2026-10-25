@@ -17,6 +17,7 @@
 //   p: { screenKey: step } screens left before their last step: the step reached (resumed there)
 //   w: visited control keys joined by "." (buttons, tabs and disclosures the learner has used)
 //   g: the language chosen in a package of several languages (D59)
+//   t: { dialogueKey: "p|r|e|f" } each dialogue's progress (D61, dialogue/state.ts)
 //   f: { fillInKey: [attempts, "answer 1", "answer 2", …] } fill-in answers (D63): one string per blank,
 //      in reading order, "" for a blank left empty; what was typed, or the word chosen or placed
 //   r: { sortKey: "placement|attempts" } sort placements (D63), one character per entry (base 36,
@@ -76,6 +77,8 @@ export interface LearnerState {
   visits: Set<string>;
   // The language the learner chose in a package of several languages (D59).
   language?: string;
+  // Each dialogue's progress, as dialogue/state.ts encodes it (D61).
+  dialogues: Record<string, string>;
   // Activities of D63, by block key: fill-in answers, sort placements, saved reflections (text, or a scale's point).
   fillIns: Record<string, FillInAnswer>;
   sorts: Record<string, SortAnswer>;
@@ -98,13 +101,14 @@ interface EncodedState {
   p?: Record<string, number>;
   w?: string;
   g?: string;
+  t?: Record<string, string>;
   f?: Record<string, (number | string)[]>;
   r?: Record<string, string>;
   e?: Record<string, string | number>;
 }
 
 export function emptyState(): LearnerState {
-  return { visited: new Set(), completed: new Set(), quizzes: {}, numerics: {}, decisions: {}, vars: {}, objects: {}, objectsDone: {}, retakes: 0, visibility: {}, steps: {}, visits: new Set(), fillIns: {}, sorts: {}, reflections: {} };
+  return { visited: new Set(), completed: new Set(), quizzes: {}, numerics: {}, decisions: {}, vars: {}, objects: {}, objectsDone: {}, retakes: 0, visibility: {}, steps: {}, visits: new Set(), dialogues: {}, fillIns: {}, sorts: {}, reflections: {} };
 }
 
 // The fallbacks (|| [], || 0, || {}) accept states built by hand, without every field.
@@ -127,6 +131,7 @@ export function encodeState(state: LearnerState): string {
   if (Object.keys(state.steps || {}).length) encoded.p = { ...state.steps };
   if (state.visits?.size) encoded.w = [...state.visits].join('.');
   if (state.language) encoded.g = state.language;
+  if (Object.keys(state.dialogues || {}).length) encoded.t = { ...state.dialogues };
   const fillIns: Record<string, (number | string)[]> = {};
   for (const [key, answer] of Object.entries(state.fillIns || {})) fillIns[key] = [answer.attempts || 0, ...(answer.answers || []).map((text) => String(text ?? ''))];
   if (Object.keys(fillIns).length) encoded.f = fillIns;
@@ -165,6 +170,7 @@ export function decodeState(text: string): LearnerState {
   for (const [key, value] of entriesOf(decoded.p)) if (typeof value === 'number' && Number.isInteger(value) && value > 0) state.steps[key] = value;
   if (decoded.w) for (const key of String(decoded.w).split('.')) if (key) state.visits.add(key);
   if (typeof decoded.g === 'string' && /^[A-Za-z0-9-]{2,16}$/.test(decoded.g)) state.language = decoded.g;
+  for (const [key, value] of entriesOf(decoded.t)) if (typeof value === 'string') state.dialogues[key] = value;
   for (const [key, value] of entriesOf(decoded.f)) {
     if (!Array.isArray(value)) continue;
     const [attempts, ...answers] = value;
@@ -198,6 +204,8 @@ export interface StateModel {
   controls: string[];
   // The languages of a package of several languages (D59).
   languages?: string[];
+  // Dialogues (D61): the key of each one's progress and its longest progress (worstCaseDialogue).
+  dialogues?: { key: string; worst: string }[];
   // Activities of D63. A fill-in's blanks: typed, the longest answer kept (maxLength); menus and bank,
   // the longest word offered (longest). A sort's items. A reflection's text at its maxLength, or a
   // scale's highest point.
@@ -223,6 +231,7 @@ export function worstCaseState(model: StateModel): LearnerState {
   for (const key of model.toggleableBlocks || []) state.visibility[key] = 1;
   for (const screen of model.steppedScreens || []) state.steps[screen.key] = screen.step;
   for (const key of model.controls || []) state.visits.add(key);
+  for (const dialogue of model.dialogues || []) state.dialogues[dialogue.key] = dialogue.worst;
   // A package of several languages keeps the one chosen (D59): the longest code.
   if (model.languages?.length) state.language = model.languages.reduce((longest, code) => (code.length > longest.length ? code : longest), '');
   // Typed answers, like string variables, at their longest with every character escaped by JSON.

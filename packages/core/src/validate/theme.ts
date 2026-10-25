@@ -112,9 +112,60 @@ const PLAYER_SOURCES: Readonly<Record<string, string>> = {
   'player.accent': 'color.primary', 'player.onAccent': 'color.onPrimary', 'player.tooltip.background': 'color.text', 'player.tooltip.text': 'color.surface'
 };
 
+// A dialogue's colour (D61) as dialogue.css draws it: the course's, else its default from the charter
+// (the bubbles are mixes of it, color-mix in sRGB).
+export function dialogToken(tokens: Readonly<Record<string, string | number>>, name: string): string {
+  const own = tokens[name];
+  if (typeof own === 'string') return own;
+  const color = (key: string) => String(tokens[key] ?? DEFAULT_TOKENS[key]);
+  switch (name) {
+    case 'dialog.bubble': return mix(color('color.text'), color('color.surface'), 0.05);
+    case 'dialog.learner': return mix(color('color.accent'), color('color.surface'), 0.12);
+    case 'dialog.text': return color('color.text');
+    case 'dialog.wordSpoken': return dialogToken(tokens, 'dialog.text');
+    case 'dialog.wordUnspoken': return color('color.muted');
+    case 'dialog.note': return color('color.primary');
+    default: return color(name);
+  }
+}
+// color-mix(in srgb, a share, b): each channel mixed as written.
+function mix(a: string, b: string, share: number): string {
+  if (!isHex(a) || !isHex(b)) return a;
+  const channels = (hex: string) => [0, 2, 4].map((at) => parseInt(hex.slice(1 + at, 3 + at), 16));
+  const [x, y] = [channels(a), channels(b)];
+  return `#${x.map((value, index) => Math.round(value * share + y[index] * (1 - share)).toString(16).padStart(2, '0')).join('')}`;
+}
+
+// The dialogue's colours, read when the course sets one of them: text and both kinds of words on
+// both bubbles, the notes' marker on the page.
+const DIALOG_PAIRS: readonly (readonly [foreground: string, background: string, minimum: number, what: string])[] = [
+  ['dialog.text', 'dialog.bubble', 4.5, 'text of a character\'s bubble'],
+  ['dialog.text', 'dialog.learner', 4.5, 'text of the learner\'s bubble'],
+  ['dialog.wordSpoken', 'dialog.bubble', 4.5, 'words said in a character\'s bubble'],
+  ['dialog.wordSpoken', 'dialog.learner', 4.5, 'words said in the learner\'s bubble'],
+  ['dialog.wordUnspoken', 'dialog.bubble', 4.5, 'words still to be said in a character\'s bubble'],
+  ['dialog.wordUnspoken', 'dialog.learner', 4.5, 'words still to be said in the learner\'s bubble'],
+  ['dialog.note', 'color.surface', 3, 'the marker of the trainer\'s notes']
+];
+
 export function checkTheme(ctx: CourseCheckContext): void {
   const tokens = resolveTokens(ctx.course);
   const own = ctx.course?.theme?.tokens ?? {};
+  if (Object.keys(own).some((name) => name.startsWith('dialog.'))) {
+    for (const [foreground, background, minimum, what] of DIALOG_PAIRS) {
+      const a = dialogToken(tokens, foreground);
+      const b = dialogToken(tokens, background);
+      if (!isHex(a) || !isHex(b)) continue;
+      const ratio = contrastRatio(a, b);
+      if (ratio >= minimum) continue;
+      const token = foreground in own ? foreground : background in own ? background : foreground;
+      ctx.reporter.emit('E_THEME_CONTRAST', {
+        file: 'course.json', path: `/theme/tokens/${token}`, target: token,
+        measured: Math.round(ratio * 100) / 100, limit: minimum,
+        message: `${what}: ${foreground} ${a} on ${background} ${b} has a contrast of ${ratio.toFixed(2)}:1.`
+      });
+    }
+  }
   // A player pair whose colours all come from charter tokens already checked above says nothing new.
   const charterPair = (foreground: string, background: string) => !(foreground in own) && !(background in own) && foreground !== 'player.bottom.text' && background !== 'player.bottom.text';
   for (const [foreground, background, minimum, what] of PLAYER_PAIRS) {

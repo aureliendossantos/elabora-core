@@ -2,6 +2,7 @@ import type { Course, Project } from '../project/model.ts';
 import type { PlayerBar, PlayerItem } from '@elabora/format';
 import type { AboutData, PlayerBarData, PlayerData, PlayerItemData, PlayerItemId } from '@elabora/player/course-data';
 import { screenOrder, screenBlocks } from '../project/load.ts';
+import { getRegistry, behaviorOf } from '../components/registry.ts';
 import { narrationLines } from '../narration/narration.ts';
 import { momentsOf, cuesOf } from '../narration/timeline.ts';
 import { objectsIn } from '../util/values.ts';
@@ -162,6 +163,9 @@ export const itemEnabled = (config: PlayerConfig, id: PlayerItemId): boolean => 
 export interface PlayerContent {
   // A screen has a timeline (narrated, or timed in seconds): the controls show.
   timed: boolean;
+  // A screen without a timeline speaks all the same (a layer's narration, a dialogue): the controls
+  // show its transcript (D62, D61).
+  spoken?: boolean;
   resources: number;
   glossary: number;
   // « IA et crédits » has something to say: AI-generated voices or media, or credits.
@@ -179,7 +183,7 @@ export function hiddenBecause(item: ConfiguredItem, content: PlayerContent): str
   if (!item.enabled) return 'disabled';
   switch (item.id) {
     case 'logo': return !item.options.asset ? 'no image' : content.logo(item.options.asset) ? null : 'image missing';
-    case 'controls': return content.timed ? null : 'no narrated screen';
+    case 'controls': return content.timed || content.spoken ? null : 'no narrated screen';
     case 'resources': return content.resources ? null : 'no resource';
     case 'glossary': return content.glossary ? null : 'no glossary entry';
     case 'credits': return content.about ? null : 'no AI mention or credit';
@@ -213,6 +217,17 @@ export function screenIsTimed(project: Project, screenId: string): boolean {
   const screen = project.screens.get(screenId)?.data;
   if (!screen) return false;
   return objectsIn(screen.narration?.lines).length > 0 || momentsOf(project, screen).length > 0 || cuesOf(screen).length > 0;
+}
+
+// A screen whose layers speak or which holds a dialogue: it has a transcript (D62, D61).
+export function screenSpeaks(project: Project, screenId: string): boolean {
+  const screen = project.screens.get(screenId)?.data;
+  if (!screen) return false;
+  const records = (value: unknown): Record<string, unknown>[] => (Array.isArray(value) ? value.filter((item): item is Record<string, unknown> => typeof item === 'object' && item !== null && !Array.isArray(item)) : []);
+  // A dialogue, or a fork of it (its behaviour).
+  const registry = getRegistry(project);
+  const dialogue = (blocks: unknown): boolean => records(blocks).some((block) => (typeof block.type === 'string' && behaviorOf(registry, block.type) === 'dialogue') || dialogue(block.blocks));
+  return records(screen.layers).some((layer) => records((layer.narration as { lines?: unknown } | undefined)?.lines).length > 0 || dialogue(layer.blocks)) || dialogue(screen.blocks);
 }
 
 // What « IA et crédits » says of the course in a language (default: its own): the speakers whose
@@ -261,6 +276,7 @@ export function playerContent(project: Project, { web = false, languages = 1 }: 
   const about = aboutCourse(project);
   return {
     timed: screenOrder(project).some(({ id }) => screenIsTimed(project, id)),
+    spoken: screenOrder(project).some(({ id }) => screenSpeaks(project, id)),
     resources: objectsIn(course?.resources).length,
     glossary: objectsIn(course?.glossary).length,
     about: !!(about.ai || about.credits?.length),

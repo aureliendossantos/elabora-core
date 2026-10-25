@@ -1,6 +1,6 @@
 {
   "format": "elabora-lock/1",
-  "next": 16,
+  "next": 29,
   "keys": {
     "screen:intro": "0",
     "screen:origins": "1",
@@ -17,7 +17,20 @@
     "screen:practice": "c",
     "predict:drills-guess": "d",
     "quiz:clicked-quiz": "e",
-    "decision:practice-choice": "f"
+    "decision:practice-choice": "f",
+    "dialogue:bank-call": "g",
+    "choice:bank-call#call.a": "h",
+    "choice:bank-call#call.b": "i",
+    "choice:bank-call#call.c": "j",
+    "choice:bank-call#pressure.a": "k",
+    "choice:bank-call#pressure.b": "l",
+    "choice:bank-call#pressure.c": "m",
+    "choice:bank-call#inbox.a": "n",
+    "choice:bank-call#inbox.b": "o",
+    "choice:bank-call#inbox.c": "p",
+    "ending:bank-call#stopped": "q",
+    "ending:bank-call#close-call": "r",
+    "ending:bank-call#at-risk": "s"
   },
   "components": {}
 }

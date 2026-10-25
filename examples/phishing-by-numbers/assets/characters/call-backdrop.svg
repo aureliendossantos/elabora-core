@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" data-decor="appel-fournisseur">
+<style>
+/* A call between two places: on the left the caller's bare room (warm), on the right Finance at
+   Quillon Freight (cool, the module's ultramarine faded). Low contrast, everything between 82 and 98
+   of lightness, so that bubbles and characters stand in front; one bright point: the unread email. */
+.paper{fill:var(--decor-paper,#FBF9F4)}
+.wall-a{fill:var(--decor-wall-a,#F1E9DD)}
+.floor-a{fill:var(--decor-floor-a,#E8DECF)}
+.prop-a{fill:var(--decor-prop-a,#E1D6C5)}
+.prop-a2{fill:var(--decor-prop-a2,#D6C9B6)}
+.dial{fill:var(--decor-dial,#F8F3EA)}
+.hand{fill:none;stroke:var(--decor-prop-a2,#D6C9B6);stroke-width:7;stroke-linecap:round}
+.tick{fill:none;stroke:var(--decor-prop-a,#E1D6C5);stroke-width:5;stroke-linecap:round}
+.wall-b{fill:var(--decor-wall-b,#ECEBF4)}
+.floor-b{fill:var(--decor-floor-b,#E1E0EC)}
+.prop-b{fill:var(--decor-prop-b,#D9D8E6)}
+.prop-b2{fill:var(--decor-prop-b2,#CCCBDC)}
+.glass{fill:var(--decor-glass,#E9EDF1)}
+.far{fill:var(--decor-far,#DCE2E8)}
+.box-1{fill:var(--decor-box-1,#E3D9D2)}
+.box-2{fill:var(--decor-box-2,#D7DEE3)}
+.screen{fill:var(--decor-screen,#F6F6FA)}
+.line{fill:none;stroke:var(--decor-prop-b,#D9D8E6);stroke-width:6;stroke-linecap:round}
+.frame-b{fill:none;stroke:var(--decor-prop-b,#D9D8E6);stroke-width:10;stroke-linecap:round}
+.unread{fill:var(--decor-unread,#8E7BF7)}
+</style>
+<rect class="paper" width="1600" height="900"/>
+
+<g data-part="lieu-gauche">
+ <path class="wall-a" d="M16 900V40Q16 16 40 16H768Q792 16 792 40V900Z"/>
+ <path class="floor-a" d="M16 676H792V900H16Z"/>
+ <g data-part="horloge">
+  <circle class="prop-a" cx="148" cy="152" r="92"/>
+  <circle class="dial" cx="148" cy="152" r="78"/>
+  <path class="tick" d="M148 86V98M148 206V218M82 152H94M202 152H214"/>
+  <path class="hand" d="M148 152L130 106M148 152L188 186"/>
+  <circle class="prop-a2" cx="148" cy="152" r="7"/>
+ </g>
+ <g data-part="cartons">
+  <rect class="prop-a" x="560" y="596" width="196" height="96" rx="8"/>
+  <rect class="prop-a2" x="560" y="596" width="196" height="16" rx="6"/>
+  <rect class="prop-a" x="598" y="516" width="132" height="84" rx="8"/>
+  <rect class="prop-a2" x="598" y="516" width="132" height="14" rx="6"/>
+ </g>
+</g>
+
+<g data-part="lieu-droite">
+ <path class="wall-b" d="M808 900V40Q808 16 832 16H1560Q1584 16 1584 40V900Z"/>
+ <path class="floor-b" d="M808 676H1584V900H808Z"/>
+ <g data-part="fenetre">
+  <rect class="prop-b" x="840" y="56" width="300" height="212" rx="18"/>
+  <rect class="glass" x="852" y="68" width="276" height="188" rx="10"/>
+  <path class="far" d="M852 256V214H1128V256Z"/>
+  <rect class="box-1" x="868" y="170" width="92" height="44" rx="3"/>
+  <rect class="box-2" x="964" y="170" width="92" height="44" rx="3"/>
+  <rect class="box-2" x="916" y="124" width="92" height="44" rx="3"/>
+  <path class="frame-b" d="M1060 102V214M1060 102H1112M1086 102V128"/>
+  <path class="frame-b" d="M990 68V256M852 162H1128" style="stroke-width:8"/>
+ </g>
+ <g data-part="ecran">
+  <rect class="prop-b" x="1240" y="88" width="252" height="168" rx="16"/>
+  <rect class="screen" x="1252" y="100" width="228" height="144" rx="8"/>
+  <rect class="prop-b" x="1270" y="122" width="36" height="26" rx="4"/>
+  <path class="line" d="M1320 128H1452M1320 144H1410"/>
+  <rect class="prop-b" x="1270" y="168" width="36" height="26" rx="4"/>
+  <path class="line" d="M1320 174H1440M1320 190H1396"/>
+  <circle data-part="non-lu" class="unread" cx="1288" cy="135" r="7"/>
+  <rect class="prop-b2" x="1352" y="256" width="28" height="40" rx="4"/>
+  <rect class="prop-b2" x="1316" y="292" width="100" height="14" rx="7"/>
+ </g>
+</g>
+</svg>

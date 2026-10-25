@@ -1,0 +1,58 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-poste",
+  "language": "fr",
+  "textHash": "sha256:42e75dbfd7b3fd7217a7f74caf460729e1783a4f8c15bd024fa2bce4bd3b4d10",
+  "duration": 2.3,
+  "provider": "elevenlabs",
+  "voice": "kENkNtk0xyzG09WW40xE",
+  "generated": true,
+  "audioHash": "sha256:10869b9e47d2938178d6985c427ab383acbc61aed9101e665b0193a7bf505cef",
+  "createdAt": "2026-10-23T23:42:06Z",
+  "take": 1,
+  "spokenHash": "sha256:42e75dbfd7b3fd7217a7f74caf460729e1783a4f8c15bd024fa2bce4bd3b4d10",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Marcel (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Oui, sans souci. Mes mails aussi.",
+  "mouth": "ccwwoocccccccccccccwwwsssssscoooocccccccccccccccwwwcwwwwwoossccssscccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Oui",
+      "start": 0.061,
+      "end": 0.216,
+      "score": 1
+    },
+    {
+      "text": "sans",
+      "start": 0.605,
+      "end": 0.787,
+      "score": 0.999
+    },
+    {
+      "text": "souci",
+      "start": 0.787,
+      "end": 1.103,
+      "score": 0.971
+    },
+    {
+      "text": "Mes",
+      "start": 1.554,
+      "end": 1.695,
+      "score": 0.594
+    },
+    {
+      "text": "mails",
+      "start": 1.695,
+      "end": 1.937,
+      "score": 0.697
+    },
+    {
+      "text": "aussi",
+      "start": 1.937,
+      "end": 2.193,
+      "score": 0.983
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "screen": "practice",
+  "line": "neil-fine",
+  "language": "en",
+  "textHash": "sha256:02f6c5b2ee0d534fff06278e6a1c4971833cd823f9f454e663d2a24e220362e0",
+  "duration": 3.67,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:729996f90c41096a1212c6b243b158b6c1b069a5341c11f3321a3ce739889bb8",
+  "createdAt": "2026-10-24T02:41:55Z",
+  "take": 1,
+  "spokenHash": "sha256:02f6c5b2ee0d534fff06278e6a1c4971833cd823f9f454e663d2a24e220362e0",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[sighs] Fine. Don't blame me when your trucks stop.",
+  "mouth": "ccccccccccccccccccccccccooowwwooooooooocccccccccccccccccwwwwwssscwwwwcooocwwwwsssssoooccssssssccsscccoooocccccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Fine",
+      "start": 0.762,
+      "end": 1.295,
+      "score": 0.991
+    },
+    {
+      "text": "Don't",
+      "start": 1.865,
+      "end": 2.126,
+      "score": 0.979
+    },
+    {
+      "text": "blame",
+      "start": 2.126,
+      "end": 2.407,
+      "score": 0.996
+    },
+    {
+      "text": "me",
+      "start": 2.407,
+      "end": 2.607,
+      "score": 1
+    },
+    {
+      "text": "when",
+      "start": 2.607,
+      "end": 2.768,
+      "score": 0.999
+    },
+    {
+      "text": "your",
+      "start": 2.768,
+      "end": 2.948,
+      "score": 0.95
+    },
+    {
+      "text": "trucks",
+      "start": 2.948,
+      "end": 3.269,
+      "score": 0.838
+    },
+    {
+      "text": "stop",
+      "start": 3.269,
+      "end": 3.622,
+      "score": 0.91
+    }
+  ]
+}

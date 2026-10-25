@@ -335,7 +335,10 @@ look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|an
                                                     the free object of --block from inside its frame before the capture:
                                                     click:<text>, click:role=<role>[name=<n>], key:<key>, drag:x,y->x,y (0-1 across
                                                     the object); it reports the object's state and events, and the object keeps
-                                                    that state until the screen changes
+                                                    that state until the screen changes. On a dialogue block, choose:<option>
+                                                    (one per decision met, retries included, as dialogue play) shows its thread
+                                                    at rest after those choices, its end in the window: notes, the next options,
+                                                    or the debrief
 screenshot [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial,answered] [--step <n>] [--layer <id>]
            [--at 0,2000,4000|l1,l2:end | --scroll 0,25%,50%,1800] [--motion] [--viewport] [--out shot.png | --out-dir <dir>]
                                                     Render screens to PNG once images and free objects are ready. answered: every

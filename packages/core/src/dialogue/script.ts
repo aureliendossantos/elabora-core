@@ -105,6 +105,13 @@ export const SCRIPT_WORDS: Readonly<Record<'en' | 'fr', ScriptWords>> = {
   }
 };
 export const scriptWords = (language: string | undefined): ScriptWords => (/^fr\b/i.test(language ?? '') ? SCRIPT_WORDS.fr : SCRIPT_WORDS.en);
+// « Vous choisissez », « You choose »: a learner named in the second person (the default « You »,
+// an author's « Vous ») takes its verb; a named character takes the third person.
+export function choosesVerb(learner: string, language: 'fr' | 'en' = 'en'): string {
+  const second = /^(vous|you)$/i.test(learner.trim());
+  return language === 'fr' ? (second ? 'choisissez' : 'choisit') : (second ? 'choose' : 'chooses');
+}
+
 export const letterOf = (index: number): string => String.fromCharCode(65 + (index % 26));
 const signed = (value: number): string => (value > 0 ? `+${value}` : value < 0 ? `−${Math.abs(value)}` : '0');
 const quoted = (value: unknown): string => (typeof value === 'string' ? `« ${value} »` : String(value));
@@ -221,8 +228,7 @@ export function formatScript(script: DialogueScript): string {
     out.push(`${node.number}. ${node.title ?? node.id}${node.title ? `  [${node.id}]` : ''}${node.final ? '  — final decision' : ''}${node.objective ? `  (${node.objective})` : ''}`);
     for (const value of node.lines) out.push(...lineText(value, '   '));
     if (node.options.length) {
-      if (node.prompt) out.push(`   ${script.learner} chooses: ${node.prompt}`);
-      else out.push(`   ${script.learner} chooses:`);
+      out.push(`   ${script.learner} ${choosesVerb(script.learner)}:${node.prompt ? ` ${node.prompt}` : ''}`);
       for (const option of node.options) {
         const head = [option.quality, option.points ? signed(option.points) : '', ...option.marks].filter(Boolean).join(', ');
         out.push(`   ${option.letter} [${option.id}]${option.condition ? ` [if ${option.condition}]` : ''} « ${option.text || '…'} »${option.label ? ` (button: ${option.label})` : ''}${head ? `  ${head}` : ''}`);

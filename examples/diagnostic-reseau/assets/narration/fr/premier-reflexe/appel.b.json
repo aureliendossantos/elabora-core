@@ -1,0 +1,76 @@
+{
+  "screen": "premier-reflexe",
+  "line": "appel.b",
+  "language": "fr",
+  "textHash": "sha256:27e5624c3d95c94feb45ad21365e4d86ebfeadf043aeb851ef29cec21fe6fb4c",
+  "duration": 2.145,
+  "provider": "elevenlabs",
+  "voice": "YxrwjAKoUKULGd0g8K9Y",
+  "generated": true,
+  "audioHash": "sha256:3f0d704551c2930f0d6a9a89b8ba449ea56b66c7163202914a820fad28c7722f",
+  "createdAt": "2026-10-23T23:41:50Z",
+  "take": 1,
+  "spokenHash": "sha256:27e5624c3d95c94feb45ad21365e4d86ebfeadf043aeb851ef29cec21fe6fb4c",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Lucie (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Quel message s'affiche quand vous lancez l'impression ?",
+  "mouth": "ccwwwwwwcsscwwwwwooooooccsssssooccoosssoooooooooooocccsssssoooccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Quel",
+      "start": 0.02,
+      "end": 0.194,
+      "score": 1
+    },
+    {
+      "text": "message",
+      "start": 0.241,
+      "end": 0.615,
+      "score": 1
+    },
+    {
+      "text": "s'",
+      "start": 0.642,
+      "end": 0.702,
+      "score": 0.816
+    },
+    {
+      "text": "affiche",
+      "start": 0.702,
+      "end": 1.043,
+      "score": 0.841
+    },
+    {
+      "text": "quand",
+      "start": 1.043,
+      "end": 1.223,
+      "score": 0.478
+    },
+    {
+      "text": "vous",
+      "start": 1.223,
+      "end": 1.343,
+      "score": 0.764
+    },
+    {
+      "text": "lancez",
+      "start": 1.343,
+      "end": 1.604,
+      "score": 0.832
+    },
+    {
+      "text": "l'",
+      "start": 1.604,
+      "end": 1.644,
+      "score": 0.778
+    },
+    {
+      "text": "impression",
+      "start": 1.644,
+      "end": 2.059,
+      "score": 0.977
+    }
+  ]
+}

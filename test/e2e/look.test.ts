@@ -11,6 +11,7 @@ import { startServer } from '@elabora/node/emulator/server';
 import { build } from '@elabora/node/build';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import { ROOT, copyExample, readJSON, writeFixture, writeJSON } from '../helpers.ts';
+import { dialogueCourse } from '../dialogue-fixture.ts';
 
 // Looking while designing (docs/architecture/rendering.md, Looking while designing): a warm look after an
 // edit takes well under 2 s and keeps the free objects the edit did not touch; free objects show in
@@ -329,4 +330,28 @@ test('look --act: a click by text inside a free object changes its state; a miss
   assert.ok(!bad.ok && /is not a free object/.test(bad.error), JSON.stringify(bad));
   const alone = await looker.look({ screen: 'accueil', act: ['key:Enter'] });
   assert.ok(!alone.ok && /give block too/.test(alone.error), JSON.stringify(alone));
+});
+
+test('look --act choose: a dialogue block at rest after its choices, the end of its thread in the window; a choice not offered says which were', { timeout: 180000 }, async (t) => {
+  const dir = dialogueCourse({ presentation: 'scroll' });
+  const looker = await startLooker(dir, { live: false });
+  t.after(async () => { await looker.close(); fs.rmSync(dir, { recursive: true, force: true }); });
+
+  // c is retried (its first choice is the one scored), then b opens a short branch that comes back: the dialogue waits at « ticket ».
+  const path = await looker.look({ screen: 'appel', block: 'appel-marc', act: ['choose:c', 'choose:b'] });
+  assert.ok(path.ok && path.act, JSON.stringify(path));
+  assert.deepEqual(path.act, { actions: ['choose:c', 'choose:b'], state: { waiting: 'ticket', offered: ['a', 'b', 'c'], ended: false, ending: null, score: 0 }, events: [] });
+  assert.equal(path.type, 'png');
+  // The thread is long: the window shows its end (the options of « ticket »), not its top.
+  assert.ok(path.scrolled && path.scrolled[0].top > 0, JSON.stringify(path.scrolled));
+  const ended = await looker.look({ screen: 'appel', block: 'appel-marc', act: ['choose:a', 'choose:a', 'choose:a'] });
+  assert.ok(ended.ok && ended.act, JSON.stringify(ended));
+  assert.deepEqual(ended.act.state, { waiting: null, offered: [], ended: true, ending: 'maitrise', score: 100 });
+
+  const refused = await looker.look({ screen: 'appel', block: 'appel-marc', act: ['choose:d'] });
+  assert.ok(!refused.ok && /« d » is not offered at premiere-question.*\(offered: a, b, c\)$/.test(refused.error), JSON.stringify(refused));
+  const mixed = await looker.look({ screen: 'appel', block: 'appel-marc', act: ['choose:a', 'key:Enter'] });
+  assert.ok(!mixed.ok && /^key:Enter: a dialogue block takes choose:<option>/.test(mixed.error), JSON.stringify(mixed));
+  const elsewhere = await looker.look({ screen: 'appel', block: 'plan-etage', act: ['choose:a'] });
+  assert.ok(!elsewhere.ok && /choose: is for a dialogue block/.test(elsewhere.error), JSON.stringify(elsewhere));
 });

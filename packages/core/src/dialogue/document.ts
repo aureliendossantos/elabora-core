@@ -6,7 +6,7 @@
 import { escapeHtml } from '../util/html.ts';
 import { renderMarkdown } from '../compile/markdown.ts';
 import { dialogueMap, dialogueMapSvg } from './layout.ts';
-import { dialogueScript, scriptWords } from './script.ts';
+import { dialogueScript, scriptWords, choosesVerb } from './script.ts';
 import type { ScriptLine, DialogueScript } from './script.ts';
 import type { DialogueData } from '@elabora/player/dialogue/types';
 
@@ -17,7 +17,7 @@ interface DocumentWords {
   map: string;
   script: string;
   endings: string;
-  chooses: string;
+  chooses: (learner: string) => string;
   then: string;
   feedback: string;
   final: string;
@@ -29,7 +29,7 @@ interface DocumentWords {
 
 const WORDS: Readonly<Record<'fr' | 'en', DocumentWords>> = {
   fr: {
-    dialogue: 'Dialogue', map: 'Carte du dialogue', script: 'Script', endings: 'Fins', chooses: 'choisit', then: 'puis', feedback: 'Note du formateur', final: 'Choix définitif',
+    dialogue: 'Dialogue', map: 'Carte du dialogue', script: 'Script', endings: 'Fins', chooses: (learner) => choosesVerb(learner, 'fr'), then: 'puis', feedback: 'Note du formateur', final: 'Choix définitif',
     legend: 'Chaque case est un temps du dialogue ; les lettres sont les options de l\'apprenant. Les flèches en pointillés reviennent en arrière (réessayer, une boucle).', otherwise: 'sinon',
     qualities: { good: 'bonne', ok: 'moyenne', bad: 'mauvaise' },
     settings: (data) => [
@@ -39,9 +39,9 @@ const WORDS: Readonly<Record<'fr' | 'en', DocumentWords>> = {
     ]
   },
   en: {
-    dialogue: 'Dialogue', map: 'Map of the dialogue', script: 'Script', endings: 'Endings', chooses: 'chooses', then: 'then', feedback: 'Trainer\'s note', final: 'Final decision',
+    dialogue: 'Dialogue', map: 'Map of the dialogue', script: 'Script', endings: 'Endings', chooses: (learner) => choosesVerb(learner, 'en'), then: 'then', feedback: 'Trainer\'s note', final: 'Final decision',
     legend: 'Each box is a moment of the dialogue; letters are the learner\'s options. Dashed arrows go back (a retry, a loop).', otherwise: 'otherwise',
-    qualities: { good: 'good', ok: 'ok', bad: 'bad' },
+    qualities: { good: 'good', ok: 'fair', bad: 'poor' },
     settings: (data) => [
       { practice: 'Practice', assessment: 'Assessment', exploration: 'Exploration' }[data.mode],
       { none: 'not scored', quality: 'scored on the quality of the choices', points: 'scored in points', ending: 'scored by its ending' }[data.scoring],
@@ -60,12 +60,20 @@ export interface DialogueDocumentOptions {
   fontFaces?: string;
 }
 
+// What a map has on an A4 page in portrait, its margins and the map's frame taken off (CSS px).
+const PAGE = { width: 660, height: 900 };
+
 export function dialogueDocumentHtml(data: DialogueData, options: DialogueDocumentOptions): string {
   const language = options.language ?? 'en';
   const words = /^fr\b/i.test(language) ? WORDS.fr : WORDS.en;
   const scriptLanguage = scriptWords(language);
   const script = dialogueScript(data, { id: options.id, screen: options.screen, words: scriptLanguage });
-  const map = dialogueMap(data, { words: scriptLanguage });
+  // The map that reads best on a portrait page: its layers going right while they fit across it, else
+  // going down (a long dialogue), never drawn larger than itself.
+  const fit = (candidate: ReturnType<typeof dialogueMap>) => Math.min(1, PAGE.width / candidate.width, PAGE.height / candidate.height);
+  const across = dialogueMap(data, { words: scriptLanguage });
+  const down = dialogueMap(data, { words: scriptLanguage, direction: 'down' });
+  const map = fit(down) > fit(across) * 1.15 ? down : across;
   const svg = dialogueMapSvg(map, { title: `${words.map} · ${data.title}`, qualities: words.qualities });
   const head = [
     '<!doctype html>',
@@ -114,7 +122,7 @@ function scriptHtml(script: DialogueScript, words: DocumentWords): string {
     const parts: string[] = [`<article class="node" id="n-${escapeHtml(node.id)}">`, `<h3><span class="n">${node.number}</span> ${escapeHtml(node.title ?? node.id)}${node.final ? ` <span class="final">${escapeHtml(words.final)}</span>` : ''}</h3>`];
     for (const line of node.lines) parts.push(lineHtml(line));
     if (node.options.length) {
-      parts.push(`<p class="chooses"><span class="who">${escapeHtml(script.learner)}</span> ${escapeHtml(words.chooses)}${node.prompt ? ` · ${escapeHtml(node.prompt)}` : ''}</p>`, '<div class="options">');
+      parts.push(`<p class="chooses"><span class="who">${escapeHtml(script.learner)}</span> ${escapeHtml(words.chooses(script.learner))}${node.prompt ? ` · ${escapeHtml(node.prompt)}` : ''}</p>`, '<div class="options">');
       for (const option of node.options) {
         const quality = option.quality ? `<span class="quality q-${option.quality}">${escapeHtml(words.qualities[option.quality] ?? option.quality)}</span>` : '';
         const marks = [option.points ? `${option.points > 0 ? '+' : ''}${option.points}` : '', ...option.marks].filter(Boolean).map(escapeHtml).join(', ');
@@ -144,7 +152,7 @@ h3 { margin: 26px 0 10px; font-size: 15px; break-after: avoid; }
 h3 .n { color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 4px; }
 .meta { margin: 0; color: var(--muted); }
 .map-frame { border: 1px solid var(--line); border-radius: 12px; padding: 8px; background: var(--soft); overflow: auto; break-inside: avoid; }
-.map-frame svg { display: block; width: 100%; height: auto; }
+.map-frame svg { display: block; width: auto; max-width: 100%; height: auto; margin: 0 auto; }
 .legend { color: var(--muted); font-size: 12px; }
 .dm rect { fill: #fff; stroke: var(--line); }
 .dm-ending rect { fill: var(--soft); }
@@ -161,6 +169,7 @@ h3 .n { color: var(--muted); font-variant-numeric: tabular-nums; margin-right: 4
 .dm-back { stroke-dasharray: 4 4; }
 .dm-arrowhead { fill: #9aa0a6; }
 .dm .dm-label { fill: var(--muted); font-size: 11px; }
+.dm .dm-way { font-weight: 600; font-size: 10px; }
 .node { break-inside: avoid-page; }
 .line { margin: 0 0 10px 30px; }
 .who { margin: 0; font-size: 12px; font-weight: 600; color: #3c4043; }
