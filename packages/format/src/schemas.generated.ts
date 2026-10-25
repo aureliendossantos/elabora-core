@@ -19,6 +19,7 @@ import blocksFillInSchema from '../schemas/0.1/blocks/fill-in.schema.json' with 
 import blocksFreeObjectSchema from '../schemas/0.1/blocks/free-object.schema.json' with { type: 'json' };
 import blocksGallerySchema from '../schemas/0.1/blocks/gallery.schema.json' with { type: 'json' };
 import blocksHeadingSchema from '../schemas/0.1/blocks/heading.schema.json' with { type: 'json' };
+import blocksHotspotsSchema from '../schemas/0.1/blocks/hotspots.schema.json' with { type: 'json' };
 import blocksImageSchema from '../schemas/0.1/blocks/image.schema.json' with { type: 'json' };
 import blocksKeyFiguresSchema from '../schemas/0.1/blocks/key-figures.schema.json' with { type: 'json' };
 import blocksLevelsSchema from '../schemas/0.1/blocks/levels.schema.json' with { type: 'json' };
@@ -34,6 +35,7 @@ import blocksResultsSchema from '../schemas/0.1/blocks/results.schema.json' with
 import blocksSortSchema from '../schemas/0.1/blocks/sort.schema.json' with { type: 'json' };
 import blocksStackSchema from '../schemas/0.1/blocks/stack.schema.json' with { type: 'json' };
 import blocksStatementSchema from '../schemas/0.1/blocks/statement.schema.json' with { type: 'json' };
+import blocksStepsSchema from '../schemas/0.1/blocks/steps.schema.json' with { type: 'json' };
 import blocksTextSchema from '../schemas/0.1/blocks/text.schema.json' with { type: 'json' };
 import blocksTrendSchema from '../schemas/0.1/blocks/trend.schema.json' with { type: 'json' };
 import blocksVideoSchema from '../schemas/0.1/blocks/video.schema.json' with { type: 'json' };
@@ -74,6 +76,7 @@ export type SchemaName =
   | 'blocks/free-object'
   | 'blocks/gallery'
   | 'blocks/heading'
+  | 'blocks/hotspots'
   | 'blocks/image'
   | 'blocks/key-figures'
   | 'blocks/levels'
@@ -89,6 +92,7 @@ export type SchemaName =
   | 'blocks/sort'
   | 'blocks/stack'
   | 'blocks/statement'
+  | 'blocks/steps'
   | 'blocks/text'
   | 'blocks/trend'
   | 'blocks/video'
@@ -126,6 +130,7 @@ export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
   'blocks/free-object': blocksFreeObjectSchema,
   'blocks/gallery': blocksGallerySchema,
   'blocks/heading': blocksHeadingSchema,
+  'blocks/hotspots': blocksHotspotsSchema,
   'blocks/image': blocksImageSchema,
   'blocks/key-figures': blocksKeyFiguresSchema,
   'blocks/levels': blocksLevelsSchema,
@@ -141,6 +146,7 @@ export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
   'blocks/sort': blocksSortSchema,
   'blocks/stack': blocksStackSchema,
   'blocks/statement': blocksStatementSchema,
+  'blocks/steps': blocksStepsSchema,
   'blocks/text': blocksTextSchema,
   'blocks/trend': blocksTrendSchema,
   'blocks/video': blocksVideoSchema,
@@ -161,7 +167,7 @@ export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
 };
 
 /** Built-in block types (the native catalogue), in the order of block.schema.json. */
-export const BLOCK_TYPES: readonly BuiltinBlockType[] = ['heading', 'text', 'image', 'video', 'audio', 'callout', 'button', 'accordion', 'math', 'quiz', 'numeric', 'decision', 'dialogue', 'free-object', 'results', 'stack', 'key-figures', 'bars', 'donut', 'trend', 'proportion', 'before-after', 'levels', 'process', 'cycle', 'matrix', 'milestones', 'diagram', 'fill-in', 'sort', 'reflection', 'statement', 'divider', 'gallery', 'columns'];
+export const BLOCK_TYPES: readonly BuiltinBlockType[] = ['heading', 'text', 'image', 'video', 'audio', 'callout', 'button', 'accordion', 'math', 'quiz', 'numeric', 'decision', 'dialogue', 'free-object', 'results', 'stack', 'key-figures', 'bars', 'donut', 'trend', 'proportion', 'before-after', 'levels', 'process', 'cycle', 'matrix', 'milestones', 'diagram', 'fill-in', 'sort', 'reflection', 'statement', 'divider', 'gallery', 'columns', 'steps', 'hotspots'];
 
 /** A built-in screen layout (layouts/<id>.schema.json). */
 export type BuiltinLayoutType = 'opening';

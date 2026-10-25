@@ -11,6 +11,7 @@ import { checkInstance, checkKinds, headingSequence } from './components.ts';
 import { markdownToText } from '../compile/markdown.ts';
 import { checkChart } from './charts.ts';
 import { checkFillIn, checkSort, checkReflection, checkQuizPictures } from './activities.ts';
+import { checkSteps, checkHotspots } from './starter-interactions.ts';
 import { isChartType } from '../charts/index.ts';
 import { objectPropErrors, blockEnumLabelErrors, textContrasts, TEXT_CONTRAST } from './object-props.ts';
 import { resolveTokens } from './theme.ts';
@@ -277,6 +278,15 @@ function checkBlock(ctx: CourseCheckContext, { block, component, path, file, scr
       if ((props.count ?? 2) === 2) list(block.blocks).forEach((child, i) => { if (child?.slot === 'third') reporter.emit('W_COLUMNS_HIDDEN', { file, path: `${path}/blocks/${i}/slot`, target: child.id, message: `"${child.id}" is in the third column of "${id}", which shows two: it is not shown.` }); });
       break;
     case 'divider':
+      break;
+    // A steps block (« Étapes », not the screen's steps) and an interactive picture (D63).
+    case 'steps':
+      if (component.builtin) checkKinds(ctx, component.schema, props, file, at(), id);
+      checkSteps(ctx, { block, path, file });
+      break;
+    case 'hotspots':
+      if (component.builtin) checkKinds(ctx, component.schema, props, file, at(), id);
+      checkHotspots(ctx, { block, path, file });
       break;
   }
   if (component.root === 'text' && props.aside) checkMarkdown(ctx, props.aside, file, at('aside'), id);

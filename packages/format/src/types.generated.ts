@@ -891,7 +891,7 @@ export type ScreenLayerNarrationLine = VoiceLine & {
 /** A block placed on a screen, a layer or in a slot of a component instance. id identifies it in the whole course. type is a built-in type (the native catalogue, props in blocks/<type>.schema.json) or the id of a course component (components/<id>/component.json declares its props). */
 export type Block = {
   id: Slug;
-  /** Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, fill-in, sort, reflection, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram; content and structure: statement, divider, gallery, columns) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props. */
+  /** Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, fill-in, sort, reflection, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram; content and structure: statement, divider, gallery, columns; interactions: steps (« Étapes », not the screen's steps), hotspots) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props. */
   type: string;
   props: { [key: string]: unknown };
   /** Blocks placed in the slots of this component instance (each picks its slot with slot; without slot, the default slot). Only for components that declare slots. */
@@ -965,7 +965,9 @@ export type BuiltinBlockType =
   | 'statement'
   | 'divider'
   | 'gallery'
-  | 'columns';
+  | 'columns'
+  | 'steps'
+  | 'hotspots';
 
 /** A Block whose type is built in: its props follow the schema of that type. */
 export type BuiltinBlock =
@@ -1003,7 +1005,9 @@ export type BuiltinBlock =
   | StatementBlock
   | DividerBlock
   | GalleryBlock
-  | ColumnsBlock;
+  | ColumnsBlock
+  | StepsBlock
+  | HotspotsBlock;
 
 export type HeadingBlock = Omit<Block, 'type' | 'props'> & {
   type: 'heading';
@@ -1178,6 +1182,16 @@ export type GalleryBlock = Omit<Block, 'type' | 'props'> & {
 export type ColumnsBlock = Omit<Block, 'type' | 'props'> & {
   type: 'columns';
   props: ColumnsProps;
+};
+
+export type StepsBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'steps';
+  props: StepsProps;
+};
+
+export type HotspotsBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'hotspots';
+  props: HotspotsProps;
 };
 
 // blocks/accordion.schema.json
@@ -2050,6 +2064,68 @@ export type HeadingProps = {
   level?: 2 | 3 | 4;
 };
 
+// blocks/hotspots.schema.json
+
+/**
+ * hotspots block props
+ *
+ * An interactive picture (« Image interactive »; Rise's labeled graphic): markers on one picture, each opening a short text about the part it points at. Presentations: popover (the text floats by its marker), side (the text beside the picture), below (the text under the picture) and tour (the markers in order, one text at a time with Previous and Next). Markers are 44 px at least, numbered by default, and never pulse. In places narrower than 560 px (a phone, a column) the texts become a numbered list under the picture, the markers numbered on it; a tour stays a tour.
+ */
+export type HotspotsProps = {
+  /**
+   * popover: the text floats by its marker, over the picture; side: beside the picture; below: under it; tour: the markers in order, one text at a time under the picture with Previous and Next.
+   * @default 'popover'
+   */
+  presentation?: 'popover' | 'side' | 'below' | 'tour';
+  /** The picture the markers sit on. */
+  image: AssetPath;
+  /** What the picture shows as a whole. Required unless decorative is true. */
+  alt?: string;
+  /**
+   * True only when the markers' texts say everything the picture shows.
+   * @default false
+   */
+  decorative?: boolean;
+  /** Where the subject is. In places narrower than 560 px the picture is then shown half as large again, cropped at its sides around this point, so that its markers have room; a marker the crop leaves out stays at the picture's edge. Without focus the picture is never cropped. */
+  focus?: Focus;
+  /** The markers, in reading order (their numbers, and a tour's order). */
+  items: HotspotsItem[];
+  /**
+   * number: each marker shows its number; icon: each shows the icon (the list on narrow places keeps the numbers).
+   * @default 'number'
+   */
+  markerStyle?: 'number' | 'icon';
+  /**
+   * markerStyle icon: the icon of every marker.
+   * @default 'plus'
+   */
+  icon?: 'plus' | 'info' | 'question' | 'eye';
+  /** What to do or look for, shown above the picture (« Sélectionnez chaque repère… »). */
+  prompt?: string;
+  /**
+   * True if the picture was produced by an AI model; the player shows a mark and the build report lists it.
+   * @default false
+   */
+  generated?: boolean;
+};
+
+export type HotspotsItem = {
+  /** Stable id of the marker: its visited mark and its translations name it. */
+  id: string;
+  /** Where the marker points, across the whole picture before any crop: 0 its left edge, 1 its right edge. The editor and the player read it the same way. */
+  x: number;
+  /** Where the marker points, down the whole picture before any crop: 0 its top edge, 1 its bottom edge. */
+  y: number;
+  /** The part in a few words; the marker is named « 2. title ». */
+  title: string;
+  /** What to know about it: one or two sentences. */
+  markdown: Markdown;
+  /** A detail shown with the text (a close-up). */
+  image?: AssetPath;
+  /** What the detail shows; empty: decorative. */
+  alt?: string;
+};
+
 // blocks/image.schema.json
 
 /**
@@ -2720,6 +2796,89 @@ export type StatementProps = {
    * @default 'center'
    */
   align?: 'center' | 'start';
+};
+
+// blocks/steps.schema.json
+
+/**
+ * steps block props
+ *
+ * A steps block (« Étapes »): a process, a procedure or a story told in order, as items with a title and a text. Not the screen's steps (a screen's steps pace its blocks with Continue); a steps block is one block whose items the learner goes through. Presentations: carousel (one step at a time with Previous and Next, an optional intro and summary; Rise's process), timeline (« Frise »: the steps one under the other on a line, each with its date) and scroll (« Défilé »: the text scrolls while a figure stays in view beside it and changes with the step that crosses the middle of the window; native scroll, the page is never held). In slides a scroll steps block shows its steps one under the other, each with its picture.
+ */
+export type StepsProps = {
+  /**
+   * carousel: one step at a time, Previous and Next, the intro and summary first and last; timeline: the steps one under the other on a line, their date before them; scroll: the text scrolls beside a figure that follows it (above it, a picture per step, in narrow places, in slides and with less motion).
+   * @default 'carousel'
+   */
+  presentation?: 'carousel' | 'timeline' | 'scroll';
+  /** The steps, in order. */
+  items: StepsItem[];
+  /** carousel: the first item, before the steps (what the process is for, what to look for). The sequence's item intro. */
+  intro?: {
+    title: string;
+    markdown?: Markdown;
+    image?: AssetPath;
+    /** What the picture shows; empty: decorative. */
+    alt?: string;
+  };
+  /** carousel: the last item, after the steps (what to remember). The sequence's item summary: reaching it means every step was shown. */
+  summary?: {
+    title: string;
+    markdown?: Markdown;
+    image?: AssetPath;
+    /** What the picture shows; empty: decorative. */
+    alt?: string;
+  };
+  /**
+   * carousel and scroll: each step shows its number (the intro and the summary have none).
+   * @default true
+   */
+  numbered?: boolean;
+  /**
+   * scroll: how the figure follows the steps. replace: each step's image replaces the one before (a cross-fade; a step without image keeps it); build: each step's image is a layer added over figureImage, step n showing layers 1 to n; focus: figureImage alone, each step's region outlined and the rest dimmed.
+   * @default 'replace'
+   */
+  figure?: 'replace' | 'build' | 'focus';
+  /** scroll: the base of the figure (build: under the layers; focus: the picture whose regions the steps outline). */
+  figureImage?: AssetPath;
+  /** What figureImage shows. Required with figureImage. */
+  figureAlt?: string;
+  /**
+   * scroll: where the figure sits beside the text on wide places (end: after it, on the right in a left-to-right language; start: before it).
+   * @default 'end'
+   */
+  side?: 'end' | 'start';
+};
+
+export type StepsItem = {
+  /** Stable id of the step: its visited mark and its translations name it. Not intro nor summary (the carousel's first and last items). */
+  id: string;
+  /** The step in a few words. */
+  title: string;
+  /** What happens at this step: two or three sentences. */
+  markdown: Markdown;
+  /** A picture of the step. scroll: the figure while this step is current (replace), or the layer it adds over figureImage (build: a transparent PNG or SVG the size of figureImage). */
+  image?: AssetPath;
+  /** What the picture shows (build: the figure once this layer is added). Required with an image unless decorative is true. */
+  alt?: string;
+  /**
+   * True when the picture carries no information beyond the text.
+   * @default false
+   */
+  decorative?: boolean;
+  /** timeline: when (a year, a date, « Jour 1 », « T+30 min »), shown before the title. */
+  date?: string;
+  /** scroll with figure focus: the part of figureImage this step is about, from 0 to 1 of the whole picture (x, y: its top left corner; w, h: its width and height). The figure outlines it and dims the rest. */
+  region?: {
+    /** Left edge, from the picture's left (0) to its right (1). */
+    x: number;
+    /** Top edge, from the picture's top (0) to its bottom (1). */
+    y: number;
+    /** Width, as a share of the picture's width. */
+    w: number;
+    /** Height, as a share of the picture's height. */
+    h: number;
+  };
 };
 
 // blocks/text.schema.json

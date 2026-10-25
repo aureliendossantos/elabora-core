@@ -61,7 +61,10 @@ export const BUILTINS: Readonly<Record<string, { title: string; render: 'templat
   statement: { title: 'Statement', render: 'template' },
   divider: { title: 'Divider', render: 'template' },
   gallery: { title: 'Gallery', render: 'template' },
-  columns: { title: 'Columns', render: 'template' }
+  columns: { title: 'Columns', render: 'template' },
+  // Starter blocks (D63): steps (« Étapes »: carousel, timeline, scroll; not the screen's steps) and an interactive picture.
+  steps: { title: 'Steps', render: 'template' },
+  hotspots: { title: 'Interactive picture', render: 'template' }
 };
 
 // Built-in screen layouts (D63): screen-level components shipped with Elabora, their props in
@@ -103,8 +106,11 @@ export const BEHAVIORS: Readonly<Record<Behavior, BehaviorHooks>> = {
 // D63: sequence/item/prev/next/goto/position (one item at a time), card/face/flip (a flip card),
 // zoom/caption (an image opened in the lightbox), exclusive (one part open at a time), details (a
 // native disclosure that is visited), reveal (visited once it has been in view).
+// follow (D63, a steps block's scroll): a container of reveals whose current one, the one crossing the
+// middle of the window, the player writes on it as the page scrolls.
 export const PRIMITIVE_HOOKS = ['click', 'toggle', 'part', 'open', 'tabs', 'tab', 'panel', 'selected', 'label', 'bleed', 'compare', 'compare-label',
-  'sequence', 'item', 'prev', 'next', 'goto', 'position', 'card', 'face', 'flip', 'zoom', 'caption', 'exclusive', 'details', 'reveal'];
+  'sequence', 'item', 'prev', 'next', 'goto', 'position', 'card', 'face', 'flip', 'zoom', 'caption', 'exclusive', 'details', 'reveal',
+  'follow'];
 // Hooks of screen layouts only (D63): what the player writes about the screen, from its labels.
 // section (the title of the screen's section), lesson (« Leçon 2 sur 6 »), duration (« 6 min », the
 // reading time the build computes for the screen).

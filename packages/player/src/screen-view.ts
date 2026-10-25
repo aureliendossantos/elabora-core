@@ -118,7 +118,9 @@ export function createScreenView(options: ScreenViewOptions) {
   // visited, optional blocks (and what they hold) and blocks concealed by events aside.
   const waitsForExploring = (step: number | undefined) => step !== undefined && stepSettings(step).opens === 'explored';
   function leftAbove(step: number) {
-    const left = { answer: 0, explore: 0, cards: 0 };
+    // explore: every control left; by what they are, those that say so (cards, and the steps, events
+    // and markers of blocks that name their controls, D63).
+    const left = { answer: 0, explore: 0, cards: 0, steps: 0, events: 0, markers: 0 };
     const count = (blocks: readonly BlockData[] | undefined) => {
       for (const block of blocks || []) {
         if (block.optional || !courseState.blockVisible(block)) continue;
@@ -132,6 +134,7 @@ export function createScreenView(options: ScreenViewOptions) {
           named.add(control.name);
           left.explore++;
           if (control.hook === 'flip') left.cards++;
+          else if (block.explore) left[block.explore]++;
         }
         count(block.blocks);
       }
@@ -153,7 +156,10 @@ export function createScreenView(options: ScreenViewOptions) {
     if (!left) return '';
     const parts: string[] = [];
     if (left.answer) parts.push(options.formatLabel(labels.leftToAnswer, { n: left.answer }));
-    if (left.explore) parts.push(options.formatLabel(left.cards === left.explore ? labels.leftCards : labels.leftToExplore, { n: left.explore }));
+    // Each kind in its words when every control left says what it is; otherwise "items to explore".
+    const named = [[left.cards, labels.leftCards], [left.steps, labels.leftSteps], [left.events, labels.leftEvents], [left.markers, labels.leftMarkers]] as const;
+    if (left.explore && named.reduce((sum, [n]) => sum + n, 0) === left.explore) { for (const [n, label] of named) if (n) parts.push(options.formatLabel(label, { n })); }
+    else if (left.explore) parts.push(options.formatLabel(labels.leftToExplore, { n: left.explore }));
     return parts.join(' ');
   }
   const lockedWhy = () => (listening() ? labels.listen : exploreLocked() ? exploreReason() : labels.locked);

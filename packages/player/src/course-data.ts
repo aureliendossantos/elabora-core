@@ -335,6 +335,10 @@ export interface BlockBase {
   // Key of each named control (button, tab, disclosure) whose visited state is saved; '' names an
   // unnamed button.
   visits?: Record<string, string>;
+  // What its controls are, for the words of a locked Continue ("2 markers left to open"): the steps
+  // of a steps block (carousel, scroll), the events of its timeline, the markers of an interactive
+  // picture (D63). Without it, "items to explore" (cards say themselves).
+  explore?: 'steps' | 'events' | 'markers';
   // Slot of the template that receives blocks without a slot (components with slots).
   defaultSlot?: string | null;
   // Blocks placed in the slots of this component instance.

@@ -15,6 +15,9 @@
 //                             ="popover" also closes it on a click outside.
 //   data-t-details="<k>"      on <details>: a native disclosure, visited once opened.
 //   data-t-reveal="<k>"       visited once it has been in view.
+//   data-t-follow             a container of reveals (a steps block's scroll): the one crossing the
+//                             middle of the window is current, written on the container as
+//                             data-t-current="<k>" and --t-current (its rank, from 1) as the page scrolls.
 //
 // Items, cards, details and reveals are controls: visited once used (an item once shown, a card once
 // turned over, details once opened, a reveal once seen), saved with the learner's progress and read by
@@ -89,7 +92,7 @@ export function bindPrimitives(root: HTMLElement, context: PrimitiveContext): Bo
   const ownerOf = (node: Element) => node.closest('.t-block[data-block]') ?? node.closest('article.t-screen');
   const owner = root.matches('.t-block[data-block], article.t-screen') ? root : ownerOf(root);
   const hooks = (hook: string, within: ParentNode = root) => [...within.querySelectorAll<HTMLElement>(`[data-t-${hook}]`)].filter((node) => ownerOf(node) === owner || ownerOf(node) === null);
-  if (!root.querySelector('[data-t-sequence], [data-t-card], [data-t-zoom], [data-t-exclusive], [data-t-details], [data-t-reveal]')) return NO_PRIMITIVES;
+  if (!root.querySelector('[data-t-sequence], [data-t-card], [data-t-zoom], [data-t-exclusive], [data-t-details], [data-t-reveal], [data-t-follow]')) return NO_PRIMITIVES;
   const bound: BoundPrimitives = { controls: [], rooms: [], refresh() {}, showTallest() {}, dispose() {} };
   const disposers: (() => void)[] = [];
   const refreshers: (() => void)[] = [];
@@ -393,6 +396,42 @@ export function bindPrimitives(root: HTMLElement, context: PrimitiveContext): Bo
     }
     refreshers.push(() => { for (const node of reveals) check(node); });
     disposers.push(() => observer?.disconnect());
+  }
+
+  // ── Reveals followed as the page scrolls (a steps block's scroll, D63) ──
+  // Native scroll: nothing holds the page and nothing listens to scroll events. An observer tells when
+  // a reveal crosses the line in the middle of the window; that one is current, and stays current until
+  // another crosses it (between two, the one above the line). The stylesheet decides what follows it (a
+  // sticky figure on wide places, with motion), from data-t-following, data-t-current and --t-current;
+  // without the player, nothing is followed and each step keeps its own picture.
+  for (const box of hooks('follow')) {
+    const steps = hooks('reveal', box).filter((node) => node.closest('[data-t-follow]') === box);
+    if (!steps.length || typeof IntersectionObserver !== 'function') continue;
+    const names = steps.map((step) => step.getAttribute('data-t-reveal') ?? '');
+    let current = -1;
+    const set = (index: number) => {
+      if (index === current || index < 0) return;
+      current = index;
+      box.setAttribute('data-t-current', names[index]);
+      box.style.setProperty('--t-current', String(index + 1));
+    };
+    set(0);
+    box.setAttribute('data-t-following', '');
+    const crossing = new Set<Element>();
+    // The last step that holds (findLastIndex is newer than the browsers the player supports).
+    const last = (holds: (step: HTMLElement) => boolean) => { for (let i = steps.length - 1; i >= 0; i--) if (holds(steps[i])) return i; return -1; };
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) { if (entry.isIntersecting) crossing.add(entry.target); else crossing.delete(entry.target); }
+      let at = last((step) => crossing.has(step));
+      // None on the line: the last one above it (the first before them all).
+      if (at < 0) {
+        const middle = (window.innerHeight || document.documentElement.clientHeight) / 2;
+        at = Math.max(0, last((step) => step.getBoundingClientRect().top < middle));
+      }
+      set(at);
+    }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
+    for (const step of steps) observer.observe(step);
+    disposers.push(() => observer.disconnect());
   }
 
   bound.refresh = () => { for (const refresh of refreshers) refresh(); };
