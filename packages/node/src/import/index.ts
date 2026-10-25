@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { convertCourse, slugify } from '@elabora/core/import/convert';
 import type { ImportChoices, FontMapping } from '@elabora/core/import/convert';
-import { findRiseCourse, readRiseLocale, readRise, isRisePage } from '@elabora/core/import/rise';
+import { findRiseCourse, readRiseLocale, readRiseRuntime, readRise, isRisePage, isRiseRuntime, RISE_RUNTIME_FILES } from '@elabora/core/import/rise';
 import { parseProvidedData, readStorylinePublished } from '@elabora/core/import/storyline-published';
 import { readStorylineSource } from '@elabora/core/import/storyline-source';
 import type { StoryMediaFile } from '@elabora/core/import/storyline-source';
@@ -72,13 +72,26 @@ async function detectIn(source: ImportSource, file: string): Promise<DetectedImp
   if (source.container === 'folder' && source.has('course.json')) return result('elabora-folder', '', 'an Elabora course folder');
   if (source.has('story/story.xml')) return result('storyline-source', '', 'a Storyline project (.story)');
   const published = shortest(paths.filter((p) => p.endsWith('html5/data/js/data.js')));
-  // A Rise export can hold a Storyline block's publication in its assets: Rise is looked for first.
-  for (const page of shortest(paths.filter((p) => /(^|\/)index\.html$/.test(p))).slice(0, 8)) {
-    if (published.length && dirOf(published[0]).split('/').length < page.split('/').length) break;
-    const text = await source.readText(page, 32 * 1024 * 1024).catch(() => '');
-    if (isRisePage(text)) return result('rise', dirOf(page), 'a Rise 360 export');
+  const publishedRoot = published.length ? published[0].replace(/\/?html5\/data\/js\/data\.js$/, '') : null;
+  const depth = (root: string) => (root ? root.split('/').length : 0);
+  // Rise is looked for first: an export can hold a Storyline block's publication in its assets, and
+  // the Rise course is then what is imported. A Rise course is told by its player page (2017–2025:
+  // the data is in the page or in a locale file beside it) or by the `runtime-data.js` beside the
+  // page (2026); the one nearest the root wins (a root course before an older export nested in it),
+  // and a Storyline publication nearer the root than any of them is the course.
+  const candidates: { root: string; file: string; runtime: boolean }[] = [];
+  for (const file of paths) {
+    const runtime = RISE_RUNTIME_FILES.find((name) => file === name || file.endsWith(`/${name}`));
+    if (runtime) candidates.push({ root: file.slice(0, file.length - runtime.length).replace(/\/$/, ''), file, runtime: true });
   }
-  if (published.length) return result('storyline-published', published[0].replace(/\/?html5\/data\/js\/data\.js$/, ''), 'a course published by Storyline');
+  for (const page of shortest(paths.filter((p) => /(^|\/)index\.html$/.test(p))).slice(0, 8)) candidates.push({ root: dirOf(page), file: page, runtime: false });
+  candidates.sort((a, b) => depth(a.root) - depth(b.root) || Number(b.runtime) - Number(a.runtime) || a.file.localeCompare(b.file));
+  for (const { root, file, runtime } of candidates) {
+    if (publishedRoot !== null && depth(publishedRoot) < depth(root)) break;
+    const text = await source.readText(file, 32 * 1024 * 1024).catch(() => '');
+    if (runtime ? isRiseRuntime(text) : isRisePage(text)) return result('rise', root, 'a Rise 360 export');
+  }
+  if (publishedRoot !== null) return result('storyline-published', publishedRoot, 'a course published by Storyline');
   if (paths.some((p) => p.endsWith('.story'))) return result(null, '', 'an archive that holds .story files: import each .story file itself');
   return result(null, '', 'neither a Storyline project (.story), nor a course published by Storyline, nor a Rise 360 export');
 }
@@ -307,10 +320,18 @@ function keptOf(dir: string): { title?: string; id?: string; language?: string; 
 // The source read into the importer's model.
 async function readSource(kind: ImportKind, source: ImportSource, file: string): Promise<SourceCourse> {
   if (kind === 'rise') {
-    const page = findRiseCourse(await source.readText('index.html'));
-    let data = page.data;
-    if (!data && page.localeFile && source.has(page.localeFile)) data = readRiseLocale(await source.readText(page.localeFile));
-    if (!data) throw new ImportError('E_IMPORT_UNREADABLE', `${path.basename(file)}: the Rise course data was not found in its index.html.`);
+    const unreadable = (detail: string) => new ImportError('E_IMPORT_UNREADABLE', `${path.basename(file)}: ${detail}`);
+    let data: Record<string, unknown> | null = null;
+    try {
+      // The player page holds the course (2017–2025) or names its locale file; a 2026 export keeps it in runtime-data.js.
+      const page = source.has('index.html') ? findRiseCourse(await source.readText('index.html')) : null;
+      data = page?.data ?? null;
+      if (!data && page?.localeFile && source.has(page.localeFile)) data = readRiseLocale(await source.readText(page.localeFile));
+      for (const name of RISE_RUNTIME_FILES) if (!data && source.has(name)) data = readRiseRuntime(await source.readText(name));
+    } catch (error) {
+      throw unreadable(`the Rise course data cannot be decoded (${(error as Error).message}).`);
+    }
+    if (!data) throw unreadable('the Rise course data was not found in its index.html or runtime-data.js.');
     return readRise(data, { has: (name) => source.has(name) });
   }
   if (kind === 'storyline-published') {

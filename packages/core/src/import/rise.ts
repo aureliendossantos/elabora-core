@@ -2,8 +2,9 @@ import { htmlToMarkdown, htmlToText } from './html-markdown.ts';
 import type { SourceCourse, SourceSection, SourcePage, SourceItem, SourceMedia, SourceTrigger, ReaderLoss, SourceDialogueNode, SourceDialogueOption } from './model.ts';
 
 // Rise 360's exports (web, SCORM 1.2 and 2004, xAPI): the course is JSON, base64 in the player's
-// page or in a locale file beside it (docs/decisions.md D47). `findRiseCourse` finds it in the
-// page's text; `readRise` reads it into the importer's model. Lessons are pages that scroll,
+// page, in a locale file beside it or, since 2026, in `runtime-data.js` (docs/decisions.md D47).
+// `findRiseCourse` finds it in the page's text, `readRiseLocale` and `readRiseRuntime` in those
+// files; `readRise` reads it into the importer's model. Lessons are pages that scroll,
 // sections start course sections, quiz lessons are pages of questions with their results. No
 // Articulate code is read or kept: only the course's data and its media.
 
@@ -11,9 +12,15 @@ import type { SourceCourse, SourceSection, SourcePage, SourceItem, SourceMedia, 
 const PATTERNS: { re: RegExp; wrapped: boolean }[] = [
   { re: /deserialize\(\s*"([A-Za-z0-9+/=]+)"\s*\)/, wrapped: true }, // 2025–2026: __fetchCourse returns deserialize("…")
   { re: /window\.courseData\s*=\s*"([A-Za-z0-9+/=]+)"/, wrapped: true }, // 2021–2023
-  { re: /window\.course\s*=\s*'([A-Za-z0-9+/=]+)'/, wrapped: false } // 2018: the course itself
+  { re: /window\.course\s*=\s*'([A-Za-z0-9+/=]+)'/, wrapped: false }, // 2018: the course itself
+  // 2017: a script's `var data = '…'`, the course itself (base64 of a JSON object, so it starts with "eyJ").
+  { re: /\bvar data = '(eyJ[A-Za-z0-9+/=]{1000,})'/, wrapped: false }
 ];
 const LOCALE = /__resolveJsonp\(\s*"course:[^"]*"\s*,\s*"([A-Za-z0-9+/=]+)"\s*\)/;
+// 2026: `runtime-data.js` is `__jsonp("runtime-data.js","<base64 of {course, labelSet, settings, …}>")`.
+const RUNTIME = /__jsonp\(\s*"runtime-data\.js"\s*,\s*"([A-Za-z0-9+/=]+)"\s*\)/;
+// Where a 2026 export keeps it, relative to the folder of its player page and assets.
+export const RISE_RUNTIME_FILES = ['lib/runtime-data.js', 'runtime-data.js']; // the longest first: a path ends with both
 
 const decodeBase64 = (text: string): string => new TextDecoder().decode(Uint8Array.from(atob(text), (c: string) => c.charCodeAt(0)));
 
@@ -45,6 +52,15 @@ export function readRiseLocale(text: string): Record<string, unknown> | null {
   const match = LOCALE.exec(text);
   return match ? JSON.parse(decodeBase64(match[1])) as Record<string, unknown> : null;
 }
+
+// The course data of a 2026 export's `runtime-data.js`.
+export function readRiseRuntime(text: string): Record<string, unknown> | null {
+  const match = RUNTIME.exec(text);
+  return match ? JSON.parse(decodeBase64(match[1])) as Record<string, unknown> : null;
+}
+
+// Does this file look like a 2026 export's course data? (detection: its first bytes are enough)
+export const isRiseRuntime = (text: string): boolean => /^\s*__jsonp\(\s*"runtime-data\.js"\s*,\s*"[A-Za-z0-9+/=]{16}/.test(text.slice(0, 256));
 
 // Does this page look like a Rise player? (detection, before decoding)
 export const isRisePage = (indexHtml: string): boolean => PATTERNS.some(({ re }) => re.test(indexHtml)) || /__fetchCourse|__loadJsonp\('course:/.test(indexHtml);
@@ -80,6 +96,8 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
       const path = candidate.startsWith('assets/') ? candidate : `assets/${candidate}`;
       if (options.has(path)) return path;
     }
+    // A folder whose files were flattened beside the page (no assets/ folder) still holds them.
+    for (const candidate of candidates) if (!candidate.startsWith('assets/') && !/^[a-z]+:/i.test(candidate) && options.has(candidate)) return candidate;
     return candidates.length ? (candidates[0].startsWith('assets/') ? candidates[0] : `assets/${candidates[0]}`) : null;
   };
   const image = (holder: unknown): { media: SourceMedia; alt?: string } | null => {

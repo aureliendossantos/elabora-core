@@ -10,12 +10,12 @@ import * as edit from '@elabora/node/edit';
 import { listTrash } from '@elabora/node/library/index';
 import { htmlToMarkdown, htmlToText } from '@elabora/core/import/html-markdown';
 import { parseXml, deepText } from '@elabora/core/import/xml';
-import { findRiseCourse, readRiseLocale } from '@elabora/core/import/rise';
+import { findRiseCourse, readRiseLocale, readRiseRuntime, isRiseRuntime, isRisePage } from '@elabora/core/import/rise';
 import { parseProvidedData, storylineFontFamily } from '@elabora/core/import/storyline-published';
 import { layoutTree, flatten } from '@elabora/core/import/layout';
 import { convertCourse } from '@elabora/core/import/convert';
 import type { SourceCourse, SourceItem } from '@elabora/core/import/model';
-import { riseCourse, riseScormFiles, riseLocaleFiles, storylinePublishedFiles, storySourceFiles, zipOf, writeFolder } from '../../scripts/make-import-fixtures.ts';
+import { riseCourse, riseScormFiles, riseLocaleFiles, riseRuntimeFiles, riseRuntimeWithStorylineFiles, riseRuntimeWithOlderExportFiles, riseLegacyFiles, storylinePublishedFiles, storySourceFiles, zipOf, writeFolder } from '../../scripts/make-import-fixtures.ts';
 import { ROOT } from '../helpers.ts';
 
 // The Storyline and Rise importer (beta, docs/decisions.md D47) on synthetic modules written by
@@ -78,6 +78,27 @@ describe('reading the sources', () => {
     assert.equal((readRiseLocale(`__resolveJsonp("course:und","${b64}")`)?.course as { title: string }).title, 'Sécurité au poste de travail');
   });
 
+  test('the 2026 runtime-data.js and the 2017 var data are found; other pages are not Rise', () => {
+    const data = riseCourse();
+    const b64 = Buffer.from(JSON.stringify(data)).toString('base64');
+    const course = Buffer.from(JSON.stringify(data.course)).toString('base64');
+    const runtime = `__jsonp("runtime-data.js","${b64}")`;
+    assert.equal(isRiseRuntime(runtime), true);
+    assert.equal((readRiseRuntime(runtime)?.course as { title: string }).title, 'Sécurité au poste de travail');
+    // Another file, or another call, is not the course.
+    assert.equal(isRiseRuntime(`__jsonp("other.js","${b64}")`), false);
+    assert.equal(isRiseRuntime('console.log(1)'), false);
+    assert.equal(readRiseRuntime('__jsonp("other.js","AAAA")'), null);
+    // The 2017 page: the course itself, long base64 of a JSON object.
+    const legacy = `<script>var data = '${course}';</script>`;
+    assert.equal(isRisePage(legacy), true);
+    assert.equal((findRiseCourse(legacy).data?.course as { title: string }).title, 'Sécurité au poste de travail');
+    assert.equal(isRisePage(`<script>var data = 'not base64 at all';</script>`), false);
+    assert.equal(isRisePage(`<script>var data = '${'eyJ' + 'A'.repeat(20)}';</script>`), false);
+    // The 2026 page itself has only a config block: the course is in runtime-data.js.
+    assert.equal(findRiseCourse('<script type="application/json" id="__CONFIG__">{}</script>').data, null);
+  });
+
   test('a slide reads by its bands, then its columns, then top to bottom (D47)', () => {
     const item = (ref: string, x: number, y: number, width: number, height: number): SourceItem => ({ ref, kind: 'text', markdown: ref, box: { x, y, width, height } });
     const tree = layoutTree([item('right', 380, 120, 300, 200), item('footer', 40, 400, 640, 40), item('title', 40, 20, 640, 50), item('left-1', 40, 120, 300, 90), item('left-2', 40, 220, 300, 100)]);
@@ -114,6 +135,36 @@ describe('detecting what a file is', () => {
     const nestedResult = await detectImport(asZip('published.zip', nested));
     assert.deepEqual([nestedResult.kind, nestedResult.root], ['storyline-published', 'Préparer une intervention - Storyline output']);
     assert.equal((await detectImport(asZip('fixture.story', storySourceFiles()))).kind, 'storyline-source');
+  });
+
+  test('Rise 2026 (runtime-data.js) and 2017 (var data), whatever else the export holds', async () => {
+    const modern = await detectImport(asFolder(riseRuntimeFiles()));
+    assert.deepEqual([modern.kind, modern.root, modern.package], ['rise', '', 'web']);
+    // In a SCORM package, under scormcontent/ or its lib/.
+    const scorm = new Map<string, string | Uint8Array>([...riseRuntimeFiles()].map(([name, content]) => [`scormcontent/${name}`, content] as const));
+    scorm.set('imsmanifest.xml', '<manifest/>');
+    const zipped = await detectImport(asZip('rise-2026.zip', scorm));
+    assert.deepEqual([zipped.kind, zipped.root, zipped.package], ['rise', 'scormcontent', 'scorm']);
+    const lib = new Map([...riseRuntimeFiles()].map(([name, content]) => [name === 'runtime-data.js' ? 'lib/runtime-data.js' : name, content] as const));
+    const inLib = await detectImport(asFolder(lib));
+    assert.deepEqual([inLib.kind, inLib.root], ['rise', '']);
+    // Rise wins over the Storyline publication one of its blocks holds.
+    const withStory = await detectImport(asFolder(riseRuntimeWithStorylineFiles()));
+    assert.deepEqual([withStory.kind, withStory.root], ['rise', '']);
+    const withStoryZip = await detectImport(asZip('rise-story.zip', new Map([...riseRuntimeWithStorylineFiles()].map(([name, content]) => [`Cours/${name}`, content] as const))));
+    assert.deepEqual([withStoryZip.kind, withStoryZip.root], ['rise', 'Cours']);
+    // The course nearest the root, not an older export nested in it.
+    const older = await detectImport(asFolder(riseRuntimeWithOlderExportFiles()));
+    assert.deepEqual([older.kind, older.root], ['rise', '']);
+    const legacy = await detectImport(asZip('rise-2017.zip', riseLegacyFiles()));
+    assert.deepEqual([legacy.kind, legacy.root, legacy.package], ['rise', 'scormcontent', 'scorm']);
+    // A runtime-data.js that is not a Rise call is nothing; a Storyline publication alone stays Storyline.
+    const other = riseRuntimeFiles();
+    other.set('runtime-data.js', 'console.log("hello")');
+    assert.equal((await detectImport(asFolder(other))).kind, null);
+    const story = storylinePublishedFiles();
+    story.set('runtime-data.js', 'console.log("hello")');
+    assert.equal((await detectImport(asFolder(story))).kind, 'storyline-published');
   });
 
   test('Elabora archives and folders are told apart; anything else is not a source', async () => {
@@ -179,6 +230,41 @@ describe('importing', () => {
     await importCourse({ file: asZip('rise.zip', riseScormFiles()), dir: a });
     await importCourse({ file: asFolder(riseLocaleFiles()), dir: b });
     assert.deepEqual(screens(a), screens(b));
+  });
+
+  test('a Rise export of 2026 (runtime-data.js) or 2017 (var data) gives the same module as the other shapes', async () => {
+    const a = target();
+    await importCourse({ file: asZip('rise.zip', riseScormFiles()), dir: a });
+    const expected = screens(a);
+    const forms: [string, string][] = [
+      ['2026 web', asFolder(riseRuntimeFiles())],
+      ['2026 with a Storyline block\'s publication', asFolder(riseRuntimeWithStorylineFiles())],
+      ['2026 with an older export nested', asFolder(riseRuntimeWithOlderExportFiles())],
+      ['2017', asZip('rise-2017.zip', riseLegacyFiles())]
+    ];
+    for (const [name, file] of forms) {
+      const dir = target();
+      const result = await importCourse({ file, dir });
+      assert.equal(result.kind, 'rise', name);
+      assert.deepEqual(screens(dir), expected, name);
+      assert.ok(fs.existsSync(path.join(dir, 'assets', screens(dir)[1].blocks.find((block: { type: string }) => block.type === 'image').props.asset)), `${name}: the images are copied`);
+      const report = readJson(dir, IMPORT_REPORT_FILE);
+      assert.ok(report.losses.some((loss: { feature: string }) => loss.feature === 'Bloc Storyline dans Rise'), `${name}: the Storyline block is reported, not imported`);
+    }
+    // The root course is the one read.
+    const older = target();
+    await importCourse({ file: asFolder(riseRuntimeWithOlderExportFiles()), dir: older });
+    assert.equal(readJson(older, 'course.json').title, 'Le cours de la racine');
+    // A folder whose files were all copied beside the page, with no assets/ folder, keeps its images.
+    const flat = new Map([...riseRuntimeFiles()].map(([name, content]) => [name.replace(/^assets\//, ''), content] as const));
+    const flatDir = target();
+    await importCourse({ file: asFolder(flat), dir: flatDir });
+    assert.deepEqual(screens(flatDir), expected);
+    assert.ok(readJson(flatDir, IMPORT_REPORT_FILE).losses.every((loss: { code: string }) => loss.code !== 'media-missing'));
+    // A runtime-data.js that cannot be decoded is said, not a crash.
+    const broken = riseRuntimeFiles();
+    broken.set('runtime-data.js', '__jsonp("runtime-data.js","AAAAAAAAAAAAAAAAAAAAAAAA")');
+    await assert.rejects(importCourse({ file: asFolder(broken), dir: target() }), (error: unknown) => error instanceof ImportError && error.code === 'E_IMPORT_UNREADABLE' && /cannot be decoded/.test(error.message));
   });
 
   test('a published Storyline course: title, columns, layer, hotspot, triggers, question, results, notes', async () => {
