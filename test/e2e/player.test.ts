@@ -32,6 +32,7 @@ async function player(t: TestContext, dir: string, run: (page: Page) => Promise<
   await page.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
   await page.goto(`${server.base}/pkg/p/index.html`);
   await page.waitForFunction(() => (window as PlayerWindow).__elabora);
+  await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
   await page.evaluate(() => { const t = (window as PlayerWindow).__elabora; for (const s of t.engine.screens) t.engine.st.visited.add(s.key); });
   await run(page);
   assert.deepEqual(errors, []);
@@ -70,14 +71,17 @@ test('the controls in the top bar: their popups open downward and the captions s
 
 test('the tooltip: a refusal goes, a hint shown after it goes with the pointer, and nothing stays on the screen', { skip: NO_FFMPEG, timeout: 180000 }, async (t) => {
   await player(t, copyExample(t), async (page) => {
+    await page.clock.pauseAt('2026-10-21T12:00:00Z');
     await page.evaluate(() => { const t = (window as PlayerWindow).__elabora; t.timeline.play(); t.timeline.advance(1); });
     // A greyed Next: its reason, at once.
     await page.click('.t-nav-btn--next', { force: true });
     assert.match(await tip(page) ?? '', /\S/);
     // Another control hovered within the flash's time: its hint, which goes when the pointer leaves.
     await page.hover('.t-timeline-captions');
+    await page.clock.runFor(1000);
     await waitTip(page, 'Sous-titres');
     await page.mouse.move(800, 400);
+    await page.clock.runFor(1000);
     await page.waitForFunction(() => !document.getElementById('t-tip') || document.getElementById('t-tip')!.hidden);
     assert.equal(await tip(page), null, 'gone with the pointer');
     // A refusal whose tooltip the pointer goes onto: it goes when the pointer leaves it.
@@ -87,6 +91,7 @@ test('the tooltip: a refusal goes, a hint shown after it goes with the pointer, 
     await page.clock.runFor(5400);
     assert.notEqual(await tip(page), null, 'kept while hovered');
     await page.mouse.move(800, 400);
+    await page.clock.runFor(1000);
     await page.waitForFunction(() => !document.getElementById('t-tip') || document.getElementById('t-tip')!.hidden);
     assert.equal(await tip(page), null, 'gone once left');
   });

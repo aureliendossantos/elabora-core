@@ -40,6 +40,10 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Private layout assertions | 7 | charts-matrix imported label placement helpers instead of measuring rendered labels |
 | Fixture lifetime | 9 | copied courses lacked per-case failure cleanup |
 
+| Reproduced browser timing races | 1 | player tooltip: an automatically advancing fake clock could expire the flash before pointer assertions |
+
+| Uncontrolled virtual clocks | 1 | player: install initializes time but does not pause its progression |
+
 ## Production changes
 
 No production code changed. CI discovered a pre-existing release-metadata error before tests could run: `.sampo/changesets/layer-captions-bare-canvas.md` and `player-motion.md` named only `npm/@elabora/player`, although the release policy requires `npm/elabora` too. Added the matching root patch target to each in a separate metadata-only commit; the original change texts and player targets are preserved. `npm run release:check` then passed.
@@ -72,7 +76,7 @@ No human answer is required to finish this test-only audit. All automated files 
 | `test/e2e/object.test.ts` | 372 | 372 | Native seed 104729 passed fourteen behaviours; gates, event order and dry WebGL readback retained; decoded captures require variation between pixels; final suite repeat queued |
 | `test/e2e/plan-document.test.ts` | 61 | 61 | Reviewed unchanged; focused seed 104729 passed tagged A4 outline, date, deterministic bytes and export; Electron case requires opt-in executable |
 | `test/e2e/player-items.test.ts` | 265 | 251 | Focused seed 155921 passed all seven; virtual PDF fallback timers and public popup/screen/progress/storage behaviour replace listener counters and real waits |
-| `test/e2e/player.test.ts` | 150 | 146 | Focused seed 155921 passed all four; virtual tooltip clock and DOM conditions retain learner controls, navigation and reload behaviour |
+| `test/e2e/player.test.ts` | 150 | 151 | All four cases passed at native seed 155921; tooltip also passed at 104729 after pausing its clock and driving hover/leave timers; wait for player readiness; removes load-sensitive flash expiry race |
 | `test/e2e/review.test.ts` | 299 | 303 | Focused seed 155921 passed; explicit browser message acknowledgements and event log replace fixed waits and polling; review origin/refusal behaviours retained |
 | `test/e2e/timeline.test.ts` | 461 | 438 | Native seed 130363 passed all ten; virtual playhead checks computed opacity, translation, scale and stroke completion instead of Animation objects; cues, seek, captures and canvas contracts retained; owned resources |
 | `test/e2e/web.test.ts` | 150 | 149 | Focused seed 130363 passed; local progress survives reload, none persists nothing, free navigation reaches end across three built targets; owned resources |
