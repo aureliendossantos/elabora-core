@@ -45,6 +45,8 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Nonportable fixture paths | 1 | dialogue-fixture: URL.pathname doubled a Windows drive instead of decoding a native path |
 
+| CI environment leaks | 1 | release fixture: inherited GITHUB_REF_NAME=3/merge overrode its main branch |
+
 ## Production changes
 
 No production code changed. CI discovered a pre-existing release-metadata error before tests could run: `.sampo/changesets/layer-captions-bare-canvas.md` and `player-motion.md` named only `npm/@elabora/player`, although the release policy requires `npm/elabora` too. Added the matching root patch target to each in a separate metadata-only commit; the original change texts and player targets are preserved. `npm run release:check` then passed.
@@ -155,7 +157,7 @@ No human answer is required to finish this test-only audit. All automated files 
 | `test/unit/player.test.ts` | 240 | 241 | Native-seeded player cases passed; context-owned fixtures preserve compiled bars, accessibility, navigation, editing and translation contracts |
 | `test/unit/project-files.test.ts` | 124 | 115 | Passed 7 native-seeded cases; deterministic SHA oracle and owned courses, public snapshot/hash invalidation replace cache JSON tampering; real cache reuse under unreadable content remains checked by backups |
 | `test/unit/purity.test.ts` | 53 | 53 | Passed 3 native-seeded cases; public LMS catalogue compared with checked-in data instead of private PROFILE_FILES import/order; required cross-browser architecture and generated-template guards retained |
-| `test/unit/releases.test.ts` | 38 | 38 | Reviewed unchanged; passed real Sampo release preparation, workspace versions/lock/dependency updates, changelog preservation and changeset consumption in isolated Git fixture |
+| `test/unit/releases.test.ts` | 38 | 40 | Reproduced CI PR ref failure locally; disposable Git/Sampo fixture now owns a minimal subprocess environment, preserving real release/changelog assertions; 18 affected cases passed at both seeds |
 | `test/unit/rename.test.ts` | 118 | 118 | Native-seeded cases passed; dispose courses/builds after each case; reference propagation, learner keys, translation and exact undo contracts retained |
 | `test/unit/render.test.ts` | 147 | 148 | Passed native-seeded checks; Public incremental/full render and CSS/package parity retained; owns fixtures and checks output rather than private render context |
 | `test/unit/renditions-prune.test.ts` | 44 | 43 | Passed 2 native-seeded cases; fixed public now/mtime ages and bytes, owned course copies; keeps current/recent renditions and removes old obsolete data |
