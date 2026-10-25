@@ -1,0 +1,6 @@
+<!-- Decoration: only a line is read, as a separator. The number is a counter of the screen (CSS). -->
+<hr class="t-divider t-divider--line t-divider--{{size}}" data-if="presentation == line">
+<div class="t-divider t-divider--{{presentation}} t-divider--{{size}}" data-if="presentation != line" data-restart="{{restart}}" aria-hidden="true">
+  <span class="t-divider-ornament" data-if="presentation == ornament"></span>
+  <span class="t-divider-number" data-if="presentation == number"></span>
+</div>

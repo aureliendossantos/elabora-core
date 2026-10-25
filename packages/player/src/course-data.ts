@@ -255,6 +255,10 @@ export interface ScreenLayout {
   fullBleed: boolean;
   defaultSlot: string | null;
   html: string;
+  // What its layout hooks show (D63), when its template has them: the screen's section and rank
+  // among the screens (data-t-section, data-t-lesson), its reading time in minutes (data-t-duration).
+  place?: { section: string; n: number; total: number };
+  minutes?: number;
 }
 
 export interface LayerData {
@@ -312,7 +316,7 @@ export interface BlockBase {
   id: string;
   // Built-in type or course component id.
   type: string;
-  width: 'full' | 'wide' | 'half';
+  width: 'full' | 'wide' | 'half' | 'bleed';
   // The component and its parents, when it extends another one.
   lineage?: string[];
   hidden?: true;

@@ -238,6 +238,8 @@ export function aboutCourse(project: Project, { language, credits: authorCredits
       if (!isRecord(block.props) || block.props.generated !== true) continue;
       media.add(block.type === 'video' ? 'video' : block.type === 'audio' ? 'audio' : 'image');
     }
+    // A layout's picture (an opening's, D63).
+    if (isRecord(screen.layoutProps) && screen.layoutProps.generated === true) media.add('image');
   }
   const credits = [...new Set([...(authorCredits ?? (Array.isArray(course?.credits) ? course.credits : []).filter((line): line is string => typeof line === 'string')), ...voiceCredits].filter((line) => line.trim()))];
   const ai = voiced || media.size ? { ...(voiced ? { voices: [...voices] } : {}), ...(media.size ? { media: (['image', 'video', 'audio'] as const).filter((kind) => media.has(kind)) } : {}) } : null;

@@ -28,6 +28,14 @@ export type PatchOperation = {
 /** Path of a file inside the course assets/ folder, relative to assets/ (for example images/router.png). ASCII letters, digits, '-', '_', '.', '/' only, so every LMS accepts the file name. */
 export type AssetPath = string;
 
+/** Focal point of an image: where its subject is, from 0 (left, top) to 1 (right, bottom). An image cropped to fit its place (a band, a grid cell, a phone) keeps this point in view; without it, the crop keeps the middle. */
+export type Focus = {
+  /** Across, from the left edge (0) to the right edge (1). */
+  x: number;
+  /** Down, from the top edge (0) to the bottom edge (1). */
+  y: number;
+};
+
 /** Colour as a 6-digit hex value, for example #12355B. */
 export type Color = string;
 
@@ -775,9 +783,9 @@ export type Screen = {
   title: string;
   /** Plan items this screen implements. No screen without a plan item (guardrail A1). */
   covers: PlanId[];
-  /** Layout of the screen: the id of a screen-level component (components/<id>/, level "screen"), an HTML/CSS template with named slots. Blocks choose their slot with slot; blocks without slot go to the default slot. Without layout, blocks stack in one column. */
+  /** Layout of the screen: a built-in layout (opening: the head of a lesson, then its page) or the id of a screen-level component (components/<id>/, level "screen"), an HTML/CSS template with named slots. Blocks choose their slot with slot; blocks without slot go to the default slot. Without layout, blocks stack in one column. */
   layout?: Slug;
-  /** Values of the props declared by the layout component (a kicker, a background token…). Text and Markdown props may be { "textRef": "TXT-n" }. */
+  /** Values of the props declared by the layout (layouts/<id>.schema.json for a built-in one, the component's props otherwise: a kicker, an image, a background token…). Text and Markdown props may be { "textRef": "TXT-n" }. */
   layoutProps?: { [key: string]: unknown };
   /** Named screen style declared in course.json theme.styles.screen. */
   style?: string;
@@ -871,7 +879,7 @@ export type ScreenLayerNarrationLine = VoiceLine & {
 /** A block placed on a screen, a layer or in a slot of a component instance. id identifies it in the whole course. type is a built-in type (the native catalogue, props in blocks/<type>.schema.json) or the id of a course component (components/<id>/component.json declares its props). */
 export type Block = {
   id: Slug;
-  /** Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, fill-in, sort, reflection, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props. */
+  /** Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, fill-in, sort, reflection, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram; content and structure: statement, divider, gallery, columns) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props. */
   type: string;
   props: { [key: string]: unknown };
   /** Blocks placed in the slots of this component instance (each picks its slot with slot; without slot, the default slot). Only for components that declare slots. */
@@ -892,10 +900,10 @@ export type Block = {
     out?: Moment;
   };
   /**
-   * Layout hint in the default column layout. Two consecutive half blocks sit side by side on wide screens and stack on small ones. Inside a layout slot, the layout CSS decides.
+   * Layout hint in the default column layout: full (the reading column), wide (the wide column), half (two consecutive half blocks sit side by side on wide screens and stack on small ones), bleed (edge to edge of the window in scroll presentation, of the slide in slides; the text inside keeps the reading width). Inside a layout slot, the layout CSS decides: bleed fills the slot.
    * @default 'full'
    */
-  width?: 'full' | 'wide' | 'half';
+  width?: 'full' | 'wide' | 'half' | 'bleed';
   /** Slot that receives this block: a slot of the screen layout for blocks of the screen, a slot of the component instance for blocks inside its blocks. Reading order follows the template, then the block order. */
   slot?: Slug;
   /** Named style declared for this type: in course.json theme.styles.<type> or in the component's styles (also those of its parents). */
@@ -941,7 +949,11 @@ export type BuiltinBlockType =
   | 'diagram'
   | 'fill-in'
   | 'sort'
-  | 'reflection';
+  | 'reflection'
+  | 'statement'
+  | 'divider'
+  | 'gallery'
+  | 'columns';
 
 /** A Block whose type is built in: its props follow the schema of that type. */
 export type BuiltinBlock =
@@ -975,7 +987,11 @@ export type BuiltinBlock =
   | DiagramBlock
   | FillInBlock
   | SortBlock
-  | ReflectionBlock;
+  | ReflectionBlock
+  | StatementBlock
+  | DividerBlock
+  | GalleryBlock
+  | ColumnsBlock;
 
 export type HeadingBlock = Omit<Block, 'type' | 'props'> & {
   type: 'heading';
@@ -1130,6 +1146,26 @@ export type SortBlock = Omit<Block, 'type' | 'props'> & {
 export type ReflectionBlock = Omit<Block, 'type' | 'props'> & {
   type: 'reflection';
   props: ReflectionProps;
+};
+
+export type StatementBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'statement';
+  props: StatementProps;
+};
+
+export type DividerBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'divider';
+  props: DividerProps;
+};
+
+export type GalleryBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'gallery';
+  props: GalleryProps;
+};
+
+export type ColumnsBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'columns';
+  props: ColumnsProps;
 };
 
 // blocks/accordion.schema.json
@@ -1306,6 +1342,31 @@ export type CalloutProps = {
   /** Use markdown or textRef, not both. */
   markdown?: Markdown;
   textRef?: PlanId;
+};
+
+// blocks/columns.schema.json
+
+/**
+ * columns block props
+ *
+ * Columns (« Colonnes »): two or three columns of blocks side by side (slots first, second, third), stacked in reading order on narrow screens. Use it for content read side by side: two cases compared, a figure and its explanation, three short points.
+ */
+export type ColumnsProps = {
+  /**
+   * Two or three columns.
+   * @default 2
+   */
+  count?: 2 | 3;
+  /**
+   * equal; wide-start: the first column is twice as wide; wide-end: the last column is twice as wide.
+   * @default 'equal'
+   */
+  widths?: 'equal' | 'wide-start' | 'wide-end';
+  /**
+   * Vertical alignment of the columns: at their top, or centred on each other.
+   * @default 'start'
+   */
+  align?: 'start' | 'center';
 };
 
 // blocks/cycle.schema.json
@@ -1739,6 +1800,31 @@ export type DialogueEnding = {
   score?: number;
 };
 
+// blocks/divider.schema.json
+
+/**
+ * divider block props
+ *
+ * A divider (« Séparateur ») between the parts of a long page: line (a thin rule, a separator for screen readers), ornament (the theme's drawing, a small mark by default), number (the number of the part, counted on the page: 01, 02…) or space (room only). Decoration: screen readers skip it, except a line, which is an <hr>.
+ */
+export type DividerProps = {
+  /**
+   * line: a thin rule; ornament: the theme's drawing (a small mark by default); number: the part's number, counted from the first number divider of the screen (01, 02…); space: room only.
+   * @default 'line'
+   */
+  presentation?: 'line' | 'ornament' | 'number' | 'space';
+  /**
+   * How much room it takes above and below.
+   * @default 'medium'
+   */
+  size?: 'medium' | 'small' | 'large';
+  /**
+   * number: count from 01 again here.
+   * @default false
+   */
+  restart?: boolean;
+};
+
 // blocks/donut.schema.json
 
 /**
@@ -1882,6 +1968,57 @@ export type FreeObjectProps = {
   weight?: number;
 };
 
+// blocks/gallery.schema.json
+
+/**
+ * gallery block props
+ *
+ * A gallery (« Galerie »): several images shown together. Presentations: grid (in columns, cropped to one ratio), mosaic (in columns at their own proportions), carousel (one at a time; until the player has its sequence, it shows as a grid) and compare (exactly two images, the second over the first, with a slider to move between them: before and after).
+ */
+export type GalleryProps = {
+  /**
+   * grid: columns of images cropped to ratio; mosaic: columns of images at their own proportions; carousel: one image at a time (shown as a grid for now); compare: two images, one over the other, and a slider between them.
+   * @default 'grid'
+   */
+  presentation?: 'grid' | 'mosaic' | 'carousel' | 'compare';
+  /** The images, in reading order. */
+  images: GalleryImage[];
+  /**
+   * grid and mosaic: columns on wide screens (fewer on narrow ones).
+   * @default 3
+   */
+  columns?: number;
+  /**
+   * grid: the shape every image is cropped to, around its focus.
+   * @default '4:3'
+   */
+  ratio?: '4:3' | '1:1' | '3:2' | '16:9' | '3:4';
+  /** A caption for the whole gallery. */
+  caption?: string;
+  /**
+   * True if images of the gallery were produced by an AI model; the player shows a mark and the build report lists it.
+   * @default false
+   */
+  generated?: boolean;
+};
+
+export type GalleryImage = {
+  /** Stable id of the image in the gallery (translations name it). */
+  id: string;
+  asset: AssetPath;
+  /** What the image shows. Required unless decorative is true. */
+  alt?: string;
+  /** A short caption under the image (compare: the label of its side). */
+  caption?: string;
+  /** Where the subject is, kept in view when the image is cropped. */
+  focus?: Focus;
+  /**
+   * True only if the image carries no information.
+   * @default false
+   */
+  decorative?: boolean;
+};
+
 // blocks/heading.schema.json
 
 /**
@@ -1906,9 +2043,14 @@ export type HeadingProps = {
 /**
  * image block props
  *
- * An image from the assets folder.
+ * An image from the assets folder, in one of five presentations: centered (in the reading column, the default), wide (wider than the text), band (edge to edge, cropped to a height around its focal point), beside (a title and a text beside it, stacked on narrow screens) or over (a title and a text over it, edge to edge, on the theme's scrim).
  */
 export type ImageProps = {
+  /**
+   * centered: in the reading column, as it is; wide: across the wide column; band: edge to edge of the window (of the slide in slides), cropped to height around focus; beside: title and markdown beside the image, which takes share of the width on side (stacked under it on narrow screens); over: title and markdown over the image, edge to edge, on the theme's scrim.
+   * @default 'centered'
+   */
+  presentation?: 'centered' | 'wide' | 'band' | 'beside' | 'over';
   asset: AssetPath;
   /** Text alternative. Required unless decorative is true. */
   alt?: string;
@@ -1923,6 +2065,27 @@ export type ImageProps = {
    * @default false
    */
   generated?: boolean;
+  /** Where the subject is (0 to 1 across and down): crops keep it in view (band, over, beside on phones). */
+  focus?: Focus;
+  /** beside and over: a heading for the text (it follows the page's headings). */
+  title?: string;
+  /** beside and over: the text that goes with the image. Over an image, keep it to one or two sentences. */
+  markdown?: Markdown;
+  /**
+   * beside: the side of the image (start: left in left-to-right languages).
+   * @default 'start'
+   */
+  side?: 'start' | 'end';
+  /**
+   * beside: the share of the width the image takes.
+   * @default 'half'
+   */
+  share?: 'half' | 'third' | 'two-thirds';
+  /**
+   * band and over: how tall the image is (the crop keeps focus in view). Over grows with its text.
+   * @default 'medium'
+   */
+  height?: 'medium' | 'short' | 'tall';
   /**
    * SVG only: the drawing goes into the page instead of an <img>, so that the draw effect of a timing traces its strokes and the theme's CSS and currentColor reach its shapes. Sanitized when it is built: no script, no event handler, no link or reference out of the drawing; its ids prefixed with the block's, its own <style> scoped to it. Named by alt (role img), or hidden when decorative. Keep it for figures that need it: an inline drawing is part of the page's weight.
    * @default false
@@ -2501,18 +2664,66 @@ export type StackProps = {
   duration?: number;
 };
 
+// blocks/statement.schema.json
+
+/**
+ * statement block props
+ *
+ * A statement (« Énoncé »): the one idea of a page to remember, set large. Presentations: statement (large text), ruled (between two rules), quote (a quotation mark before it) and image (over a picture, edge to edge, on the theme's scrim). With an author it is a quotation in every presentation: a figure with its blockquote and a caption naming the author, their role, and an optional round portrait.
+ */
+export type StatementProps = {
+  /**
+   * statement: large text; ruled: between two rules; quote: a quotation mark before it; image: over image, edge to edge of the window (of the slide in slides), on the theme's scrim.
+   * @default 'statement'
+   */
+  presentation?: 'statement' | 'ruled' | 'quote' | 'image';
+  /** The statement, one or two sentences. Use markdown or textRef, not both. */
+  markdown?: Markdown;
+  /** Id of a validated text of the plan: the statement shows the plan's wording. */
+  textRef?: PlanId;
+  /** Who said or wrote it: the statement becomes a quotation (figure, blockquote, caption). */
+  author?: string;
+  /** With author: who they are (their role, a book, a date). */
+  role?: string;
+  /** With author: a portrait shown round beside the caption. Decorative: the caption names the person. */
+  portrait?: AssetPath;
+  /** image presentation: the picture under the text. */
+  image?: AssetPath;
+  /** image presentation: what the picture shows. Required unless decorative is true. */
+  alt?: string;
+  /**
+   * image presentation: true when the picture carries no information beyond the text.
+   * @default false
+   */
+  decorative?: boolean;
+  /**
+   * True if the picture or the portrait was produced by an AI model; the player shows a mark and the build report lists it.
+   * @default false
+   */
+  generated?: boolean;
+  /** image presentation: where the subject of the picture is, kept in view when it is cropped. */
+  focus?: Focus;
+  /**
+   * Where the text sits: centred, or at the start of the line.
+   * @default 'center'
+   */
+  align?: 'center' | 'start';
+};
+
 // blocks/text.schema.json
 
 /**
  * text block props
  *
- * Rich text in the Elabora Markdown subset.
+ * Rich text in the Elabora Markdown subset, with an optional note in the margin (aside): beside the text on wide windows, after it, indented, on narrow ones.
  */
 export type TextProps = {
   /** Text content. Use markdown or textRef, not both. */
   markdown?: Markdown;
   /** Id of a validated text of the plan: the block shows the plan's wording, and rewording it writes the plan. */
   textRef?: PlanId;
+  /** A note in the margin: beside the text on wide windows, after it, indented, on narrow ones; read after the text by screen readers. */
+  aside?: Markdown;
 };
 
 // blocks/trend.schema.json
@@ -2632,6 +2843,42 @@ export type VideoProps = {
   poster?: AssetPath;
   /** @default false */
   generated?: boolean;
+};
+
+// layouts/opening.schema.json
+
+/** An opening (« Ouverture »), a built-in screen layout: the head of a lesson, then its page. The head holds an eyebrow (the section and « Leçon 2 sur 6 » unless you write one), the screen's title, a lead and the reading time; presentations: title (the head alone, in the reading column), band (the title over an image edge to edge, on the theme's scrim), split (the title and the lead beside the image) and cover (the first view of the page: the image fills the window, the title over it). Its slots: question, a question asked before the lesson (a quiz or a reflection), and body, the page (the default slot), laid out as the default column. */
+export type OpeningLayoutProps = {
+  /**
+   * title: the head alone, in the reading column; band: the title over image, edge to edge, on the theme's scrim; split: the title and lead beside image; cover: image fills the first view of the page, the title over it.
+   * @default 'title'
+   */
+  presentation?: 'title' | 'band' | 'split' | 'cover';
+  /** A short line above the title. Empty: the player writes the section's title and « Leçon {n} sur {total} ». */
+  eyebrow?: string;
+  /** One or two sentences under the title: what the lesson brings. */
+  lead?: Markdown;
+  /** band, split and cover: the picture of the lesson. */
+  image?: AssetPath;
+  /** What the picture shows. Required with an image unless decorative is true. */
+  alt?: string;
+  /**
+   * True when the picture carries no information.
+   * @default false
+   */
+  decorative?: boolean;
+  /**
+   * True if the picture was produced by an AI model; the player shows a mark and the build report lists it.
+   * @default false
+   */
+  generated?: boolean;
+  /** Where the subject of the picture is, kept in view when it is cropped. */
+  focus?: Focus;
+  /**
+   * Show the reading time of the page (« 6 min »), computed by the build from its words, its media and its narration.
+   * @default true
+   */
+  duration?: boolean;
 };
 
 // event.schema.json

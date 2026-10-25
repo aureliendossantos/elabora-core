@@ -1,7 +1,7 @@
 import { dialogueData } from '../dialogue/data.ts';
 import { dialogueScript, scriptMarkdown, scriptWords } from '../dialogue/script.ts';
 import { schemaId } from '@elabora/format';
-import { planIndex, resolveBlockProps, screenOrder, readingOrder, screenLayout } from '../project/load.ts';
+import { planIndex, resolveBlockProps, resolveTextRefs, screenOrder, readingOrder, screenLayout } from '../project/load.ts';
 import { getRegistry } from '../components/registry.ts';
 import { fallbackBlocks } from '../components/fallback.ts';
 import { isChartType, chartMarkdown } from '../charts/index.ts';
@@ -70,15 +70,47 @@ export function lessonMdExport(project: Project): LessonMdExport {
       return fallbackBlocks(registry, block, { resolve });
     });
     if (screen.layout) lose(id, null, `layout ${screen.layout} (blocks exported in reading order)`);
+    // An opening's head (D63): its picture and its lead, before the page.
+    if (registry.get(screen.layout ?? '')?.root === 'opening') {
+      const head = recordOf(resolveTextRefs(screen.layoutProps ?? {}, index));
+      if (head.image) directive('image', { src: copyAsset(head.image), alt: head.decorative ? '' : oneLine(head.alt) });
+      if (head.lead) directive('text', {}, String(head.lead));
+    }
     if (screen.narration) lose(id, null, `narration (${recordsOf(screen.narration.lines).length} lines: LESSON.md has no voice-over)`);
     for (const block of natives) {
       // Props as the file holds them (an invalid value shows as it is).
       const props = resolve(block);
       switch (block.type) {
         case 'heading': directive('text', {}, `${'#'.repeat(Math.max(1, (Number(props.level) || 2) - 1))} ${props.text}`); break;
-        case 'text': directive('text', {}, optionalTextOf(props.markdown)); if (props.textRef) lose(id, block.id, `link to locked text ${props.textRef} (exported as plain text)`); break;
+        case 'text':
+          directive('text', {}, optionalTextOf(props.markdown));
+          if (props.textRef) lose(id, block.id, `link to locked text ${props.textRef} (exported as plain text)`);
+          if (props.aside) { directive('note', { variant: 1 }, String(props.aside)); lose(id, block.id, 'margin note (exported as a note after the text)'); }
+          break;
         case 'callout': directive('note', { variant: 1 }, `${props.title ? `**${props.title}**\n\n` : ''}${props.markdown}`); break;
-        case 'image': directive('image', { src: copyAsset(props.asset), alt: props.decorative ? '' : oneLine(props.alt), caption: oneLine(props.caption) }); if (props.generated) lose(id, block.id, 'AI-generated marking'); break;
+        case 'image':
+          directive('image', { src: copyAsset(props.asset), alt: props.decorative ? '' : oneLine(props.alt), caption: oneLine(props.caption) });
+          if (props.generated) lose(id, block.id, 'AI-generated marking');
+          // beside and over (D63): the text that goes with the picture, after it.
+          if (props.title || props.markdown) directive('text', {}, `${props.title ? `### ${oneLine(props.title)}\n\n` : ''}${optionalTextOf(props.markdown) ?? ''}`);
+          if (props.presentation && props.presentation !== 'centered') lose(id, block.id, `image presentation ${props.presentation}`);
+          break;
+        // Starter blocks (D63) as native text: a statement as a quotation, a gallery as its images, a
+        // divider as nothing, columns as their blocks one after the other (they follow).
+        case 'statement': {
+          const by = [props.author, props.role].filter(Boolean).map(oneLine).join(', ');
+          directive('text', {}, `${String(optionalTextOf(props.markdown) ?? '').split('\n').map((line) => `> ${line}`.trimEnd()).join('\n')}${by ? `\n>\n> — ${by}` : ''}`);
+          lose(id, block.id, `statement${props.presentation && props.presentation !== 'statement' ? ` (${props.presentation})` : ''} exported as a quotation in a text block`);
+          if (props.textRef) lose(id, block.id, `link to locked text ${props.textRef} (exported as plain text)`);
+          break;
+        }
+        case 'gallery':
+          for (const image of recordsOf(props.images)) directive('image', { src: copyAsset(image.asset), alt: image.decorative ? '' : oneLine(image.alt), caption: oneLine(image.caption) });
+          if (props.caption) directive('text', {}, String(props.caption));
+          lose(id, block.id, `gallery (${props.presentation || 'grid'}) exported as its images one after the other`);
+          break;
+        case 'columns': lose(id, block.id, 'columns (their blocks exported one after the other)'); break;
+        case 'divider': break;
         case 'video':
         case 'audio':
           directive(block.type, { src: copyAsset(props.asset), caption: oneLine(props.title) });

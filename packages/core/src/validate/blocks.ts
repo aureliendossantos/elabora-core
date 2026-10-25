@@ -7,7 +7,8 @@ import { withinTolerance } from '@elabora/player/numeric';
 import { blockControls, CONTROL_NAME, NAMED_CONTROL_HOOKS } from '../components/controls.ts';
 import type { ComponentDescriptor } from '../components/registry.ts';
 import type { Block, Event, Plan } from '../project/model.ts';
-import { checkInstance, headingSequence } from './components.ts';
+import { checkInstance, checkKinds, headingSequence } from './components.ts';
+import { markdownToText } from '../compile/markdown.ts';
 import { checkChart } from './charts.ts';
 import { checkFillIn, checkSort, checkReflection, checkQuizPictures } from './activities.ts';
 import { isChartType } from '../charts/index.ts';
@@ -42,6 +43,7 @@ export function checkBlocks(ctx: CourseCheckContext, screen: ScreenFile): void {
       eventTargets.get(event.on.target)?.push(event);
     }
   }
+  checkQuoteRepeats(ctx, screen);
   for (const { block, path } of screenBlocks(data, file)) {
     if (block === null || block === undefined) continue;
     const component = registry.get(block.type);
@@ -94,6 +96,7 @@ function checkBlock(ctx: CourseCheckContext, { block, component, path, file, scr
   const id = block.id;
   const at = (sub?: string) => `${path}/props${sub ? `/${sub}` : ''}`;
   const eventsOn = (target: string) => eventTargets.get(target) || [];
+  if (component.builtin && component.level === 'screen') { reporter.emit('E_COMPONENT_LEVEL', { file, path: `${path}/type`, target: id, message: `${component.id} is a screen layout: use it as the screen's layout ("layout": "${component.id}"), not as a block.` }); return; }
   if (!component.builtin) checkInstance(ctx, block, component, path, file);
   // Buttons of components (data-t-click, unnamed or named): each needs a click event that listens to
   // it; tabs and disclosures act by themselves. Names bound to props are checked once rendered.
@@ -199,6 +202,7 @@ function checkBlock(ctx: CourseCheckContext, { block, component, path, file, scr
       if (!props.decorative && !alt.trim()) reporter.emit('E_IMAGE_ALT_MISSING', { file, path: at('alt'), target: id, message: `Image "${id}" has no alt text and is not marked decorative.` });
       else if (alt && ALT_SUSPECT.test(alt.trim())) reporter.emit('W_IMAGE_ALT_SUSPECT', { file, path: at('alt'), target: id, key: findingKey(`${id}/alt`, alt), message: `Alt "${alt}" of image "${id}" does not describe information.` });
       checkAsset(ctx, props.asset, file, at('asset'), id);
+      checkMarkdown(ctx, props.markdown, file, at('markdown'), id);
       if (props.generated) reporter.emit('I_GENERATED_MEDIA', { file, path, target: id, message: `Image "${id}" is AI-generated.` });
       break;
     }
@@ -254,6 +258,47 @@ function checkBlock(ctx: CourseCheckContext, { block, component, path, file, scr
     }
     case 'results':
       break;
+    // Starter blocks (D63): their assets and Markdown as a component's, their pictures named.
+    case 'statement':
+      if (component.builtin) checkKinds(ctx, component.schema, props, file, at(), id);
+      if (!!props.markdown === !!props.textRef) reporter.emit('E_BLOCK_TEXT_SOURCE', { file, path: at(), target: id, message: `Statement "${id}": set exactly one of markdown or textRef.` });
+      if (props.presentation === 'image' && props.image && !props.decorative && !text(props.alt).trim()) reporter.emit('E_IMAGE_ALT_MISSING', { file, path: at('alt'), target: id, message: `The picture of statement "${id}" has no alt text and is not marked decorative.` });
+      if (props.generated) reporter.emit('I_GENERATED_MEDIA', { file, path, target: id, message: `Statement "${id}" shows an AI-generated picture.` });
+      break;
+    case 'gallery': {
+      if (component.builtin) checkKinds(ctx, component.schema, props, file, at(), id);
+      const images = list(props.images).map(fieldsOf);
+      images.forEach((image, i) => { if (!image.decorative && !text(image.alt).trim()) reporter.emit('E_IMAGE_ALT_MISSING', { file, path: at(`images/${i}/alt`), target: id, message: `Image "${image.id}" of gallery "${id}" has no alt text and is not marked decorative.` }); });
+      if (props.presentation === 'compare' && images.length !== 2) reporter.emit('E_GALLERY_COMPARE', { file, path: at('images'), target: id, measured: images.length, message: `Gallery "${id}" compares ${images.length} image${images.length === 1 ? '' : 's'}: before and after takes two.` });
+      if (props.generated) reporter.emit('I_GENERATED_MEDIA', { file, path, target: id, message: `Gallery "${id}" shows AI-generated images.` });
+      break;
+    }
+    case 'columns':
+      if ((props.count ?? 2) === 2) list(block.blocks).forEach((child, i) => { if (child?.slot === 'third') reporter.emit('W_COLUMNS_HIDDEN', { file, path: `${path}/blocks/${i}/slot`, target: child.id, message: `"${child.id}" is in the third column of "${id}", which shows two: it is not shown.` }); });
+      break;
+    case 'divider':
+      break;
+  }
+  if (component.root === 'text' && props.aside) checkMarkdown(ctx, props.aside, file, at('aside'), id);
+}
+
+// A statement whose words a text block of its screen also says (D63): the text of the statement,
+// as plain text, found in a text block (or a text's aside) of the screen, its layers included.
+function checkQuoteRepeats(ctx: CourseCheckContext, screen: ScreenFile): void {
+  const { reporter, registry, planIndex } = ctx;
+  const plain = (value: unknown) => markdownToText(value).toLowerCase().replace(/[\s\u00a0\u202f]+/g, ' ').replace(/[«»“”"‘’'.,;:!?…—–-]+/g, '').trim();
+  const located = [...screenBlocks(screen.data, screen.file)].filter((location) => location.block);
+  const texts = located.filter(({ block }) => registry.get(block.type)?.root === 'text').map(({ block }) => {
+    const props = resolveBlockProps(block, planIndex, registry);
+    return `${plain(props.markdown)} ${plain(props.aside)}`;
+  });
+  if (!texts.length) return;
+  for (const { block, path } of located) {
+    if (registry.get(block.type)?.root !== 'statement') continue;
+    const props = resolveBlockProps(block, planIndex, registry);
+    const said = plain(props.markdown);
+    if (said.length < 12 || !texts.some((found) => found.includes(said))) continue;
+    reporter.emit('W_QUOTE_REPEATS', { file: screen.file, path: `${path}/props/markdown`, target: block.id, message: `${props.author ? 'The quotation' : 'The statement'} "${block.id}" repeats words a text block of screen "${screen.id}" already says: « ${markdownToText(props.markdown).slice(0, 60)} ».` });
   }
 }
 

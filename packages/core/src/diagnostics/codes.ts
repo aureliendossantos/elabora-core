@@ -77,6 +77,10 @@ export const CODES = {
   E_QUIZ_PICTURE: { severity: 'error', title: 'Quiz on pictures without its pictures or zones', fix: 'presentation images: give each option its image and alt. presentation image: give the quiz its image and alt, and each option its x and y (0 to 1 from the top left of the picture). A plan question (questionRef) has no pictures: write the question inline, or fork the quiz to add them to the plan\'s options.' },
   W_UNREACHABLE_LAYER: { severity: 'warning', title: 'Layer never shown', fix: 'Add a show-layer action or remove the layer.' },
   W_COMPLETION_MISMATCH: { severity: 'warning', title: 'Screen completes before its activity', fix: 'Use completeWhen: "interactions-done" on screens with quizzes, decisions or free objects.' },
+  // Starter blocks (D63).
+  W_QUOTE_REPEATS: { severity: 'warning', title: 'Statement that repeats a text of its screen', fix: 'A statement (or a quotation) whose words are also in a text block of the screen reads twice, as a decorative pull quote does: say it once. Keep the statement for the one idea to remember and cut the sentence from the text, or keep the text and remove the statement.', rule: 'E4' },
+  W_COLUMNS_HIDDEN: { severity: 'warning', title: 'Block in a column that is not shown', fix: 'Columns with count 2 show the slots first and second only: move the block into one of them, or set count to 3.' },
+  E_GALLERY_COMPARE: { severity: 'error', title: 'Before and after without exactly two images', fix: 'A gallery in the compare presentation shows two images, the first before and the second after: keep two, or choose grid or mosaic for more.' },
 
   // ── Accessibility ──────────────────────────────────────────────────
   E_IMAGE_ALT_MISSING: { severity: 'error', title: 'Image without text alternative', fix: 'Write alt as the information the image carries, or set decorative: true if it carries none.', rule: 'F3' },

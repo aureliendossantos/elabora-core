@@ -48,6 +48,16 @@
       "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9._/-]{1,200}$",
       "x-kind": "asset"
     },
+    "focus": {
+      "description": "Focal point of an image: where its subject is, from 0 (left, top) to 1 (right, bottom). An image cropped to fit its place (a band, a grid cell, a phone) keeps this point in view; without it, the crop keeps the middle.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number", "minimum": 0, "maximum": 1, "description": "Across, from the left edge (0) to the right edge (1)." },
+        "y": { "type": "number", "minimum": 0, "maximum": 1, "description": "Down, from the top edge (0) to the bottom edge (1)." }
+      }
+    },
     "color": {
       "description": "Colour as a 6-digit hex value, for example #12355B.",
       "type": "string",

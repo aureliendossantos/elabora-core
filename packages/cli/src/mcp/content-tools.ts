@@ -49,14 +49,14 @@ export const moveScreen = defineTool({
 export const addBlock = defineTool({
   name: 'elabora_add_block',
   description: 'Add a block {id, type, props} (built-in type or course component) to a screen, one of its layers, or the slots of a component instance (parent + block.slot). Read elabora_get_schema(<type>) first. Component instances may carry blocks (their slot contents). Without an id the block gets a free one (<screen>-<type>), returned as block.',
-  inputSchema: objectSchema({ screen: SLUG, block: formatValue<AddBlockArgs['block']>()({ type: 'object', properties: { id: SLUG, type: SLUG, props: { type: 'object' }, blocks: { type: 'array', items: { type: 'object' } }, hidden: { type: 'boolean' }, width: { enum: ['full', 'wide', 'half'] }, slot: { type: 'string', description: 'Slot of the screen layout, or of the parent component instance.' }, style: { type: 'string', description: 'Named style of the type (theme.styles or the component styles).' } }, required: ['type', 'props'] }), layer: SLUG, parent: { ...SLUG, description: 'Component instance receiving the block in one of its slots.' }, after: SLUG, position: { type: 'integer', minimum: 0 } }, ['screen', 'block']),
+  inputSchema: objectSchema({ screen: SLUG, block: formatValue<AddBlockArgs['block']>()({ type: 'object', properties: { id: SLUG, type: SLUG, props: { type: 'object' }, blocks: { type: 'array', items: { type: 'object' } }, hidden: { type: 'boolean' }, width: { enum: ['full', 'wide', 'half', 'bleed'] }, slot: { type: 'string', description: 'Slot of the screen layout, or of the parent component instance.' }, style: { type: 'string', description: 'Named style of the type (theme.styles or the component styles).' } }, required: ['type', 'props'] }), layer: SLUG, parent: { ...SLUG, description: 'Component instance receiving the block in one of its slots.' }, after: SLUG, position: { type: 'integer', minimum: 0 } }, ['screen', 'block']),
   handler: (args, { root, author }) => editResult(edit.addBlock(root, args, { author }))
 });
 
 export const updateBlock = defineTool({
   name: 'elabora_update_block',
   description: 'Edit a block by id (anywhere, slots included): props are merged (a prop set to null is removed); also hidden, width, note, optional (true: extra the learner may skip, not waited for by steps that open once explored nor by interactions-done), slot and style (null removes), and step (a block of the screen itself: the step that reveals it; null or 1: from the start). For free-object blocks, props.props holds the declared prop values.',
-  inputSchema: objectSchema({ block: SLUG, props: { type: 'object' }, hidden: { type: 'boolean' }, width: { enum: ['full', 'wide', 'half'] }, note: { type: 'string' }, optional: { type: 'boolean' }, slot: { type: ['string', 'null'] }, style: { type: ['string', 'null'] }, step: { type: ['integer', 'null'], minimum: 1, maximum: 12 } }, ['block']),
+  inputSchema: objectSchema({ block: SLUG, props: { type: 'object' }, hidden: { type: 'boolean' }, width: { enum: ['full', 'wide', 'half', 'bleed'] }, note: { type: 'string' }, optional: { type: 'boolean' }, slot: { type: ['string', 'null'] }, style: { type: ['string', 'null'] }, step: { type: ['integer', 'null'], minimum: 1, maximum: 12 } }, ['block']),
   handler: (args, { root, author }) => editResult(edit.updateBlock(root, args, { author }))
 });
 

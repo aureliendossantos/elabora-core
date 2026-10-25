@@ -32,6 +32,7 @@ import { isPredict } from '../charts/predict.ts';
 import { withoutDirections } from '../narration/directions.ts';
 import { inlineSvg, replaceImage } from '../render/svg-inline.ts';
 import { readText } from '../project/files.ts';
+import { pageMinutes } from '../project/duration.ts';
 import type { ScreenTimeline, TimelineMoment } from '../narration/timeline.ts';
 import { playerConfig, playerContent, shownPlayer, aboutCourse, withItemEnabled } from '../player/config.ts';
 
@@ -261,7 +262,7 @@ export function compileScreen(project: Project, screenId: string, context: Compi
     }),
     events: objectsIn(screen.events).filter(isEventData).map((event) => seekTimes(event, timeline, layerTimelines, lineTimelines(screen))),
     // Screen layout: a screen-level component rendered with the screen's layoutProps.
-    ...(layout?.tpl ? { layout: compileLayout(screen, layout, layout.tpl, context) } : {})
+    ...(layout?.tpl ? { layout: compileLayout(project, screenId, screen, layout, layout.tpl, context) } : {})
   };
   return { screen: data, objects: scope.objects };
 }
@@ -340,10 +341,25 @@ function compileSteps(steps: NonNullable<Screen['steps']>): NonNullable<ScreenDa
   return out;
 }
 
-function compileLayout(screen: Screen, layout: ComponentDescriptor, template: ParsedTemplate, context: CompileContext): ScreenLayout {
+function compileLayout(project: Project, screenId: string, screen: Screen, layout: ComponentDescriptor, template: ParsedTemplate, context: CompileContext): ScreenLayout {
   const props = applyDefaults(layout.schema, resolveTextRefs(screen.layoutProps || {}, context.planIndex));
   const html = renderTemplate(template, { props, schema: layout.schema, id: screen.id, language: context.course.language, assetPath: context.assetPath, fields: context.fields }).html;
-  return { id: layout.id, lineage: layout.lineage, fullBleed: layout.fullBleed, defaultSlot: layout.defaultSlot, html };
+  return { id: layout.id, lineage: layout.lineage, fullBleed: layout.fullBleed, defaultSlot: layout.defaultSlot, html, ...layoutFacts(project, screenId, html, context) };
+}
+
+// What the layout hooks of a screen show (D63), when its template has them: its place in the course
+// (data-t-section, data-t-lesson: the title of its section, its rank among the screens) and its
+// reading time (data-t-duration). The player words them from its labels.
+function layoutFacts(project: Project, screenId: string, html: string, context: CompileContext): Pick<ScreenLayout, 'place' | 'minutes'> {
+  const has = (hook: string) => html.includes(`data-t-${hook}`);
+  const facts: Pick<ScreenLayout, 'place' | 'minutes'> = {};
+  if (has('section') || has('lesson')) {
+    const order = screenOrder(project);
+    const section = objectsIn(context.course.sections).find((candidate) => candidate.id === context.sectionOf.get(screenId));
+    facts.place = { section: textOf(section?.title), n: order.findIndex((entry) => entry.id === screenId) + 1, total: order.length };
+  }
+  if (has('duration')) facts.minutes = pageMinutes(project, screenId);
+  return facts;
 }
 
 // A block shown empty: the player renders its html (none), whatever its type.

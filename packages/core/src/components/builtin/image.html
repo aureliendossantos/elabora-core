@@ -1,6 +1,46 @@
-<figure class="t-figure">
+<figure class="t-figure" data-if="presentation == centered">
   <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
   <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
   <figcaption data-if="caption">{{caption}}</figcaption>
   <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
 </figure>
+<figure class="t-figure t-image t-image--wide" data-if="presentation == wide">
+  <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+  <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+  <figcaption data-if="caption">{{caption}}</figcaption>
+  <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
+</figure>
+<figure class="t-figure t-image t-image--band t-image--{{height}}" data-if="presentation == band" data-t-bleed style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}">
+  <div class="t-image-frame">
+    <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+    <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+  </div>
+  <figcaption class="t-image-caption" data-if="caption">{{caption}}</figcaption>
+  <p class="t-genmark t-image-caption" data-if="generated" data-t-label="generated"></p>
+</figure>
+<div class="t-image t-image--beside t-image--{{side}} t-image--{{share}}" data-if="presentation == beside">
+  <figure class="t-figure" style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}">
+    <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+    <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+    <figcaption data-if="caption">{{caption}}</figcaption>
+    <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
+  </figure>
+  <div class="t-image-text">
+    <h2 class="t-image-title" data-t-heading data-if="title">{{title}}</h2>
+    <div class="t-text" data-if="markdown">{{markdown}}</div>
+  </div>
+</div>
+<div class="t-image t-image--over t-image--{{height}}" data-if="presentation == over" data-t-bleed style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}">
+  <div class="t-image-frame">
+    <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+    <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+  </div>
+  <div class="t-image-overlay">
+    <div class="t-image-text">
+      <h2 class="t-image-title" data-t-heading data-if="title">{{title}}</h2>
+      <div class="t-text" data-if="markdown">{{markdown}}</div>
+    </div>
+  </div>
+  <p class="t-image-caption" data-if="caption">{{caption}}</p>
+  <p class="t-genmark t-image-caption" data-if="generated" data-t-label="generated"></p>
+</div>

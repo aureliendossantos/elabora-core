@@ -332,6 +332,239 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-status--passed strong, .t-status--completed strong { color: var(--t-success); }
 .t-status--failed strong { color: var(--t-error); }
 
+/* ── Starter blocks for scroll courses (docs/decisions.md D63) ─────────────────────────────────
+   Calm and editorial by default, every colour, font and corner from the theme's tokens. What a
+   theme tunes without overriding: --t-scrim and --t-on-scrim (the veil under text over a picture
+   and that text's colour), --t-ornament and --t-ornament-color (the divider's drawing), --t-band-short,
+   --t-band-medium, --t-band-tall (the heights of bands), --t-aside-width (the margin note). */
+
+/* Edge to edge (block width bleed, a template's data-t-bleed): as wide as the screen's area (#t-main,
+   without the window's scrollbar: --t-page-width, measured by the player), whatever the reading
+   column. In a layout's slot, the slot's width. What is inside keeps the reading width (--t-bleed-gutter
+   for templates). #t-main clips the rest, so that a rounding never makes the page scroll sideways. */
+.t-main { overflow-x: clip; }
+/* The page's side margin, as #t-main pads the default column. */
+:root { --t-gutter: 1.25rem; }
+@media (max-width: 760px) { :root { --t-gutter: 0.875rem; } }
+.t-w-bleed { --t-bleed-gutter: max(var(--t-gutter), calc((100% - var(--t-content-width, 47.5rem)) / 2)); }
+:is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block.t-w-bleed { max-width: none; width: auto; justify-self: stretch; margin-inline: calc((100% - var(--t-page-width, 100vw)) / 2); }
+.t-slot > .t-block.t-w-bleed { margin-inline: 0; }
+/* A band breathes: a little more room around it than between paragraphs. */
+:is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block.t-w-bleed:not(:first-child) { margin-top: .75rem; }
+:is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block.t-w-bleed:not(:last-child) { margin-bottom: .75rem; }
+.t-w-bleed:not(:has(> [data-t-bleed])) > :not(.t-figure) { max-width: var(--t-content-width, 47.5rem); margin-inline: auto; padding-inline: var(--t-gutter); box-sizing: content-box; }
+.t-w-bleed > .t-figure img { width: 100%; border-radius: 0; }
+/* A picture cropped to its place keeps its focal point (focus: --focus-x, --focus-y, 0 to 1). */
+:is(.t-image, .t-gallery, .t-statement, .t-opening) img { object-position: calc(var(--focus-x, .5) * 100%) calc(var(--focus-y, .5) * 100%); }
+/* Wider than the text: a wide image, an image beside its text, a gallery, three columns. */
+:is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block:is(:has(> .t-image--wide, > .t-image--beside, > .t-gallery:not(.t-gallery--compare), > .t-columns--3)) { max-width: var(--t-wide-width, 68.75rem); }
+.t-block--image, .t-block--gallery, .t-block--columns { container-type: inline-size; }
+:root { --t-band-short: clamp(11rem, 24vw, 17rem); --t-band-medium: clamp(15rem, 34vw, 26rem); --t-band-tall: clamp(20rem, 50vw, 38rem); }
+[data-presentation="slides"] { --t-band-short: min(clamp(11rem, 24vw, 17rem), 26vh); --t-band-medium: min(clamp(15rem, 34vw, 26rem), 40vh); --t-band-tall: min(clamp(20rem, 50vw, 38rem), 58vh); }
+
+/* Statement (« Énoncé »): the idea to keep, set large in the heading font; its key words in the
+   course's colour. */
+.t-statement { --t-statement-size: clamp(1.5rem, 1.05rem + 1.35vw, 2.125rem); position: relative; margin: 0; padding: 1.75rem 0; text-align: center; }
+.t-statement--start { text-align: start; }
+.t-statement-quote { margin: 0; }
+.t-statement-text { margin: 0 auto; max-width: 34em; font: 600 var(--t-statement-size)/1.28 var(--t-font-heading); letter-spacing: -0.012em; color: var(--t-text); text-wrap: balance; }
+.t-statement--start .t-statement-text { margin-inline: 0; }
+.t-statement-text > :is(p, ul, ol) { margin: 0; }
+.t-statement-text > * + * { margin-top: .55em; }
+.t-statement-text strong { color: var(--t-primary); font-weight: inherit; }
+.t-statement--statement::before { content: ""; display: block; width: 2.75rem; height: 3px; margin: 0 auto 1.5rem; border-radius: 2px; background: var(--t-accent); }
+.t-statement--statement.t-statement--start::before { margin-inline: 0; }
+.t-statement--ruled { padding-block: 2.25rem; border-block: 1px solid color-mix(in srgb, var(--t-text) 20%, transparent); }
+.t-statement--quote .t-statement-text { font-weight: 500; }
+.t-statement-mark { display: block; width: 2.5rem; height: auto; margin: 0 auto 1.125rem; fill: var(--t-accent); }
+.t-statement--start .t-statement-mark { margin-inline: 0; }
+.t-statement-by { display: inline-flex; align-items: center; gap: .75rem; margin-top: 1.375rem; text-align: start; }
+.t-statement--center .t-statement-by { justify-content: center; }
+.t-statement-portrait { flex: none; width: 3rem; height: 3rem; border-radius: 50%; object-fit: cover; box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-text) 12%, transparent); }
+.t-statement-who { display: flex; flex-direction: column; line-height: 1.35; }
+.t-statement-author { font-weight: 700; font-size: 1rem; }
+.t-statement-role { color: var(--t-muted); font-size: .875rem; }
+.t-statement .t-genmark { margin-top: 1rem; }
+/* Over a picture: edge to edge, the text on the scrim; without a picture, on the course's colour. */
+.t-statement--image { display: grid; isolation: isolate; padding: 0; color: var(--t-on-primary); background: var(--t-primary); }
+.t-statement--image > :is(.t-statement-media, .t-statement-scrim) { grid-area: 1 / 1; }
+.t-statement-media { position: relative; z-index: -1; }
+.t-statement-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 0; }
+.t-statement-scrim { display: grid; align-content: center; min-height: var(--t-band-medium); padding: clamp(2.5rem, 6vw, 4.5rem) var(--t-bleed-gutter, 1.25rem); }
+.t-statement--image:has(> .t-statement-media) { color: var(--t-on-scrim, #fff); }
+.t-statement--image:has(> .t-statement-media) .t-statement-scrim { background: var(--t-scrim, linear-gradient(to top, rgb(10 13 18 / .78), rgb(10 13 18 / .52) 55%, rgb(10 13 18 / .46))); }
+/* Text over a picture keeps the scrim's colour whatever the theme says of its headings and text
+   (important in elabora.base outweighs the later layers): a theme changes it with --t-on-scrim. */
+.t-statement--image :is(.t-statement-text, .t-statement-text *, .t-statement-author, .t-statement-role, .t-genmark) { color: inherit !important; }
+.t-statement--image .t-statement-role { opacity: .88; }
+.t-slot > .t-w-bleed :is(.t-statement--image, .t-image--band .t-image-frame, .t-image--over) { border-radius: var(--t-radius); overflow: hidden; }
+
+/* Divider (« Séparateur »): decoration between the parts of a page. The number is the screen's count
+   of parts (01, 02…); restart counts again from its block. The ornament is a mask: a theme draws its
+   own with --t-ornament (an url() of an SVG, its colour --t-ornament-color), or restyles
+   .t-divider-ornament. */
+.t-screen { counter-reset: t-part; }
+.t-block:has(> .t-divider--number) { counter-increment: t-part; }
+.t-block:has(> .t-divider[data-restart="true"]) { counter-reset: t-part; counter-increment: t-part; }
+.t-divider { --t-divider-room: 1.25rem; margin: var(--t-divider-room) 0; border: 0; color: color-mix(in srgb, var(--t-text) 22%, transparent); }
+.t-divider--small { --t-divider-room: .25rem; }
+.t-divider--large { --t-divider-room: 3rem; }
+.t-divider--line { height: 1px; background: currentColor; }
+.t-divider--space { height: calc(var(--t-divider-room) * .5); }
+.t-divider--ornament { display: flex; justify-content: center; }
+.t-divider-ornament { display: block; width: 6rem; height: 1rem; background: var(--t-ornament-color, var(--t-accent)); -webkit-mask: var(--t-ornament, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 16'%3E%3Cpath d='M48 2.5 53.5 8 48 13.5 42.5 8Z'/%3E%3Cpath d='M14 7.25h22v1.5H14ZM60 7.25h22v1.5H60Z'/%3E%3Ccircle cx='8' cy='8' r='1.6'/%3E%3Ccircle cx='88' cy='8' r='1.6'/%3E%3C/svg%3E")) center / contain no-repeat; mask: var(--t-ornament, url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 16'%3E%3Cpath d='M48 2.5 53.5 8 48 13.5 42.5 8Z'/%3E%3Cpath d='M14 7.25h22v1.5H14ZM60 7.25h22v1.5H60Z'/%3E%3Ccircle cx='8' cy='8' r='1.6'/%3E%3Ccircle cx='88' cy='8' r='1.6'/%3E%3C/svg%3E")) center / contain no-repeat; }
+.t-divider--number { display: flex; align-items: center; gap: 1rem; }
+.t-divider--number::after { content: ""; flex: 1; height: 1px; background: currentColor; }
+.t-divider-number::before { content: counter(t-part, decimal-leading-zero); font: 600 1.5rem/1 var(--t-font-heading); font-variant-numeric: tabular-nums; letter-spacing: .02em; color: var(--t-primary); }
+
+/* Image presentations: wide, band, beside, over (centered is the figure as it always was). */
+.t-image { margin: 0; }
+.t-image--wide img { width: 100%; }
+.t-image--band, .t-image--over { --t-band: var(--t-band-medium); }
+:is(.t-image--band, .t-image--over).t-image--short { --t-band: var(--t-band-short); }
+:is(.t-image--band, .t-image--over).t-image--tall { --t-band: var(--t-band-tall); }
+.t-image--band .t-image-frame { height: var(--t-band); overflow: hidden; }
+.t-image--band .t-image-frame img, .t-image--over .t-image-frame img { width: 100%; height: 100%; max-width: none; object-fit: cover; border-radius: 0; }
+.t-image--band > .t-image-caption, .t-image--over > .t-image-caption { margin-inline: auto; padding-inline: var(--t-bleed-gutter, 0); }
+.t-image--over > .t-image-caption { margin: 0.375rem 0 0; color: var(--t-muted); font-size: 0.9375rem; }
+.t-image--beside { display: grid; grid-template-columns: minmax(0, var(--t-beside-image, 1fr)) minmax(0, var(--t-beside-text, 1fr)); gap: 1.25rem clamp(1.5rem, 4cqi, 3rem); align-items: center; }
+.t-image--third { --t-beside-image: 1fr; --t-beside-text: 2fr; }
+.t-image--two-thirds { --t-beside-image: 2fr; --t-beside-text: 1fr; }
+.t-image--end { grid-template-columns: minmax(0, var(--t-beside-text, 1fr)) minmax(0, var(--t-beside-image, 1fr)); }
+.t-image--end > .t-figure { order: 2; }
+.t-image--beside .t-figure img { width: 100%; max-height: min(34rem, 80vh); object-fit: cover; }
+.t-image-title { margin: 0 0 .5rem; font-size: clamp(1.25rem, 1.1rem + .5vw, 1.5rem); }
+.t-image--over { display: grid; isolation: isolate; color: var(--t-on-scrim, #fff); }
+.t-image--over > :is(.t-image-frame, .t-image-overlay) { grid-area: 1 / 1; }
+.t-image--over .t-image-frame { position: relative; z-index: -1; }
+.t-image--over .t-image-frame img { position: absolute; inset: 0; }
+.t-image-overlay { display: grid; align-content: end; min-height: var(--t-band); padding: clamp(2rem, 5vw, 3.5rem) var(--t-bleed-gutter, 1.25rem); background: var(--t-scrim, linear-gradient(to top, rgb(10 13 18 / .78), rgb(10 13 18 / .52) 55%, rgb(10 13 18 / .46))); }
+.t-image--over .t-image-text { max-width: 36rem; }
+.t-image--over .t-image-overlay :is(.t-image-title, .t-text, .t-text *) { color: inherit !important; }
+.t-image--over .t-image-title { font-size: clamp(1.5rem, 1.15rem + 1.2vw, 2.25rem); line-height: 1.15; }
+.t-image--over .t-text { font-size: 1.125rem; }
+.t-image--over > .t-genmark { padding-inline: var(--t-bleed-gutter, 0); color: var(--t-muted); }
+@container (max-width: 560px) {
+  .t-image--beside, .t-image--end { grid-template-columns: minmax(0, 1fr); }
+  .t-image--end > .t-figure { order: 0; }
+  .t-image--beside .t-figure img { max-height: 24rem; object-fit: cover; }
+}
+
+/* Gallery (« Galerie »): a grid of crops to one ratio, a mosaic of whole images, or before and after.
+   A carousel is laid out as a grid until the player has its sequence. */
+.t-gallery { margin: 0; --t-gallery-columns: 3; --t-gallery-ratio: 4 / 3; }
+.t-gallery[data-columns="2"] { --t-gallery-columns: 2; }
+.t-gallery[data-columns="4"] { --t-gallery-columns: 4; }
+.t-gallery[data-ratio="1:1"] { --t-gallery-ratio: 1; }
+.t-gallery[data-ratio="3:2"] { --t-gallery-ratio: 3 / 2; }
+.t-gallery[data-ratio="16:9"] { --t-gallery-ratio: 16 / 9; }
+.t-gallery[data-ratio="3:4"] { --t-gallery-ratio: 3 / 4; }
+.t-gallery-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(var(--t-gallery-columns), minmax(0, 1fr)); gap: 1rem; }
+.t-gallery-item { margin: 0; min-width: 0; }
+.t-gallery-item .t-figure img { width: 100%; }
+.t-gallery:is(.t-gallery--grid, .t-gallery--carousel) .t-gallery-item img { aspect-ratio: var(--t-gallery-ratio); object-fit: cover; }
+.t-gallery-item figcaption { margin-top: .5rem; font-size: .875rem; line-height: 1.4; }
+.t-gallery--mosaic .t-gallery-list { display: block; columns: var(--t-gallery-columns); column-gap: 1rem; }
+.t-gallery--mosaic .t-gallery-item { break-inside: avoid; margin-bottom: 1rem; }
+.t-gallery-caption { margin-top: .75rem; color: var(--t-muted); font-size: .9375rem; }
+@container (max-width: 640px) { .t-gallery[data-columns] { --t-gallery-columns: 2; } .t-gallery-list { gap: .75rem; } .t-gallery--mosaic .t-gallery-list { column-gap: .75rem; } }
+@container (max-width: 300px) { .t-gallery[data-columns] { --t-gallery-columns: 1; } }
+/* Before and after (data-t-compare): the second picture over the first, clipped at the line the
+   range sets (--t-compare); the range covers both, invisible, its handle drawn on the line. */
+.t-compare { --t-compare: 50%; position: relative; overflow: hidden; border-radius: var(--t-radius); touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.t-compare-side { margin: 0; }
+.t-compare-side img { display: block; width: 100%; height: auto; border-radius: 0; }
+.t-compare-after { position: absolute; inset: 0; clip-path: inset(0 0 0 var(--t-compare)); }
+.t-compare-after img { height: 100%; object-fit: cover; }
+.t-compare::before { content: ""; position: absolute; z-index: 2; top: 0; bottom: 0; inset-inline-start: var(--t-compare); width: 2px; translate: -1px 0; background: #fff; box-shadow: 0 0 0 1px rgb(10 13 18 / .18); pointer-events: none; }
+.t-compare::after { content: ""; position: absolute; z-index: 3; top: 50%; inset-inline-start: var(--t-compare); width: 2.75rem; height: 2.75rem; translate: -50% -50%; border-radius: 50%; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f2933' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 7 4 12l5 5M15 7l5 5-5 5'/%3E%3C/svg%3E") center / 1.375rem no-repeat; box-shadow: 0 2px 10px rgb(10 13 18 / .28); pointer-events: none; transition: scale var(--t-dur-press) var(--t-ease-out); }
+.t-compare:has(.t-compare-range:active)::after { scale: calc(1 - .06 * var(--t-move)); }
+.t-compare:has(.t-compare-range:focus-visible)::after { outline: 3px solid var(--t-focus); outline-offset: 3px; }
+.t-compare-range { position: absolute; z-index: 4; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; appearance: none; -webkit-appearance: none; background: transparent; }
+.t-compare-range::-webkit-slider-thumb { -webkit-appearance: none; width: 2.75rem; height: 100%; }
+.t-compare-range::-moz-range-thumb { width: 2.75rem; height: 100%; border: 0; }
+.t-compare-label { position: absolute; z-index: 1; top: .75rem; inset-inline-start: .75rem; max-width: calc(50% - 2.5rem); margin: 0; padding: .25rem .625rem; border-radius: 999px; background: rgb(10 13 18 / .72); color: #fff; font-size: .8125rem; font-weight: 600; line-height: 1.35; }
+.t-compare-after .t-compare-label { inset-inline-start: auto; inset-inline-end: .75rem; }
+
+/* Columns (« Colonnes »): two or three, stacked in reading order in narrow containers. */
+.t-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem clamp(1.5rem, 4cqi, 2.5rem); align-items: start; }
+.t-columns--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.t-columns--2.t-columns--wide-start { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+.t-columns--2.t-columns--wide-end { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); }
+.t-columns--3.t-columns--wide-start { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr); }
+.t-columns--3.t-columns--wide-end { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 2fr); }
+.t-columns--center { align-items: center; }
+.t-columns > .t-slot[data-empty] { display: flex; }
+.t-columns--2 > [data-slot="third"] { display: none; }
+@container (max-width: 560px) {
+  .t-columns, .t-columns:is(.t-columns--3, .t-columns--wide-start, .t-columns--wide-end) { grid-template-columns: minmax(0, 1fr); }
+  .t-columns > .t-slot[data-empty] { display: none; }
+}
+
+/* A text's note in the margin (aside): after the text, indented, in narrow windows; beside it, level
+   with its first line, where the window leaves room beside the reading column. */
+.t-aside { margin: .875rem 0 0; padding-inline-start: 1rem; border-inline-start: 2px solid color-mix(in srgb, var(--t-accent) 60%, transparent); color: var(--t-muted); font-size: .9375rem; line-height: 1.5; }
+@media (min-width: 1180px) and (not ((orientation: portrait) and (max-width: 1100px))) {
+  :is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block--text.t-w-full:has(> .t-aside) { display: grid; grid-template-columns: 100% var(--t-aside-width, 13.5rem); column-gap: 2.5rem; align-items: start; }
+  :is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block--text.t-w-full > .t-aside { margin: .25rem 0 0; }
+}
+
+/* Opening (« Ouverture »), a built-in screen layout: the head of a lesson, then its page as the default
+   column. The layout owns the page (full bleed): its head may go edge to edge. */
+.t-opening { --t-opening-gutter: max(var(--t-gutter), calc((100% - var(--t-content-width, 47.5rem)) / 2)); }
+.t-opening-head { position: relative; display: grid; isolation: isolate; }
+.t-opening-copy { position: relative; padding: clamp(2.5rem, 6vw, 4.5rem) var(--t-opening-gutter) clamp(1.25rem, 2.5vw, 2rem); }
+.t-opening-eyebrow { margin: 0 0 1rem; color: var(--t-primary); font-size: .8125rem; font-weight: 700; letter-spacing: .08em; line-height: 1.4; text-transform: uppercase; }
+.t-opening-section:not(:empty) + .t-opening-lesson::before { content: "·"; margin-inline: .55em; }
+.t-opening .t-screen-title { max-width: 18em; margin: 0; font-size: clamp(2.125rem, 1.35rem + 2.6vw, 3.5rem); line-height: 1.08; letter-spacing: -0.02em; text-wrap: balance; }
+.t-opening-lead { max-width: 36em; margin-top: 1.25rem; font-size: clamp(1.125rem, 1.02rem + .35vw, 1.3125rem); line-height: 1.5; }
+.t-opening-meta { display: flex; align-items: center; gap: .4rem; margin: 1.5rem 0 0; color: var(--t-muted); font-size: .875rem; font-weight: 600; }
+.t-opening-clock { flex: none; width: 1rem; height: 1rem; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.t-opening--title .t-opening-copy::after { content: ""; display: block; width: 2.75rem; height: 3px; margin-top: 1.75rem; border-radius: 2px; background: var(--t-accent); }
+.t-opening-media { position: relative; }
+.t-opening-media img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.t-opening-media .t-genmark { position: absolute; inset-inline-end: .75rem; bottom: .5rem; margin: 0; padding: .125rem .5rem; border-radius: 999px; color: #fff; background: rgb(10 13 18 / .6); }
+.t-opening--title .t-opening-media { max-width: var(--t-wide-width, 68.75rem); width: calc(100% - 2.5rem); margin: 0 auto; }
+.t-opening--title .t-opening-media img { aspect-ratio: 21 / 9; height: auto; border-radius: var(--t-radius); }
+/* band and cover: the picture behind the head, the text at its foot on the scrim. */
+.t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-head { color: var(--t-on-primary); background: var(--t-primary); }
+.t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-copy { align-self: end; }
+.t-opening--band .t-opening-head { min-height: clamp(22rem, 44vw, 34rem); }
+.t-opening--cover .t-opening-head { min-height: calc(100svh - var(--t-bar-top, 0px) - var(--t-bar-bottom, 0px)); }
+.t-opening:is(.t-opening--band, .t-opening--cover) :is(.t-opening-copy, .t-opening-media) { grid-area: 1 / 1; }
+.t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-media { z-index: -2; }
+.t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-media img { position: absolute; inset: 0; }
+.t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-head:has(> .t-opening-media) { color: var(--t-on-scrim, #fff); }
+.t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-head:has(> .t-opening-media) .t-opening-copy { --t-opening-fade: clamp(5rem, 12vw, 9rem); padding-top: var(--t-opening-fade); }
+/* The scrim under the text fades in above it: no edge across the picture. */
+.t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-head:has(> .t-opening-media) .t-opening-copy::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--t-scrim, linear-gradient(to top, rgb(10 13 18 / .78), rgb(10 13 18 / .52) 55%, rgb(10 13 18 / .46))); -webkit-mask: linear-gradient(transparent, #000 var(--t-opening-fade)); mask: linear-gradient(transparent, #000 var(--t-opening-fade)); }
+.t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-copy :is(.t-opening-eyebrow, .t-opening-eyebrow *, .t-screen-title, .t-opening-lead, .t-opening-lead *, .t-opening-meta) { color: inherit !important; }
+.t-opening--cover .t-opening-copy { padding-bottom: clamp(2.5rem, 7vh, 4.5rem); }
+/* split: the head beside the picture; the picture above it in narrow windows. */
+.t-opening--split .t-opening-head:has(> .t-opening-media) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: clamp(24rem, 40vw, 36rem); }
+.t-opening--split .t-opening-head:has(> .t-opening-media) .t-opening-copy { align-self: center; padding: clamp(2.5rem, 5vw, 4rem) clamp(1.5rem, 4vw, 3.5rem) clamp(2.5rem, 5vw, 4rem) max(1.25rem, calc((var(--t-page-width, 100vw) - var(--t-wide-width, 68.75rem)) / 2)); }
+.t-opening--split .t-opening-media img { position: absolute; inset: 0; }
+@container (max-width: 760px) {
+  .t-opening--split .t-opening-head:has(> .t-opening-media) { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .t-opening--split .t-opening-media { order: -1; aspect-ratio: 3 / 2; }
+  .t-opening--split .t-opening-head:has(> .t-opening-media) .t-opening-copy { padding: 2rem 1.25rem 1.25rem; }
+  .t-opening--band .t-opening-head { min-height: 22rem; }
+  .t-opening--title .t-opening-media { width: calc(100% - 1.75rem); }
+  .t-opening--title .t-opening-media img { aspect-ratio: 3 / 2; }
+}
+/* In slides the opening is the slide: its head takes the room its page leaves (a cover, all of it). */
+[data-presentation="slides"] .t-screen.t-layout--opening { display: flex; flex-direction: column; align-self: stretch; margin-block: 0; flex: 1; }
+[data-presentation="slides"] .t-opening { display: flex; flex: 1; flex-direction: column; }
+[data-presentation="slides"] .t-opening-head { flex: 1 0 auto; }
+[data-presentation="slides"] .t-opening:is(.t-opening--band, .t-opening--cover, .t-opening--split) .t-opening-head { min-height: min(22rem, 45vh); }
+/* The question before the lesson, then the page: the default column, under the head. */
+.t-opening-question.t-slot { width: 100%; max-width: calc(var(--t-content-width, 47.5rem) + 2.5rem); margin: 0 auto; padding: clamp(1.75rem, 4vw, 2.5rem) 1.25rem 0; }
+.t-opening-body.t-slot { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 1.5rem; width: 100%; max-width: calc(var(--t-wide-width, 68.75rem) + 2.5rem); margin: 0 auto; padding: clamp(1.75rem, 4vw, 2.75rem) 1.25rem 2.5rem; }
+.t-opening-body.t-slot > .t-block { grid-column: 1 / -1; width: 100%; max-width: var(--t-content-width, 47.5rem); justify-self: center; }
+.t-opening-body.t-slot > .t-block.t-w-wide { max-width: none; }
+.t-opening-body.t-slot > .t-block.t-w-half { grid-column: span 1; max-width: none; }
+@media (max-width: 760px) { .t-opening-body.t-slot > .t-block.t-w-half { grid-column: 1 / -1; } .t-opening-body.t-slot { padding: 1.5rem .875rem 2rem; } .t-opening-question.t-slot { padding-inline: .875rem; } }
+
 
 .t-dialog { max-width: min(40rem, calc(100vw - 2rem)); border: 0; border-radius: calc(var(--t-radius) + 4px); padding: 1.5rem; color: var(--t-text); background: var(--t-surface); box-shadow: 0 20px 60px rgba(0,0,0,.25); }
 .t-dialog::backdrop { background: rgba(15, 23, 42, .45); }

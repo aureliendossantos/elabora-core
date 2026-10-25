@@ -17,7 +17,7 @@
     "type": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]{0,47}$",
-      "description": "Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, fill-in, sort, reflection, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props."
+      "description": "Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, fill-in, sort, reflection, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram; content and structure: statement, divider, gallery, columns) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props."
     },
     "props": {
       "type": "object"
@@ -59,10 +59,11 @@
       "enum": [
         "full",
         "wide",
-        "half"
+        "half",
+        "bleed"
       ],
       "default": "full",
-      "description": "Layout hint in the default column layout. Two consecutive half blocks sit side by side on wide screens and stack on small ones. Inside a layout slot, the layout CSS decides."
+      "description": "Layout hint in the default column layout: full (the reading column), wide (the wide column), half (two consecutive half blocks sit side by side on wide screens and stack on small ones), bleed (edge to edge of the window in scroll presentation, of the slide in slides; the text inside keeps the reading width). Inside a layout slot, the layout CSS decides: bleed fills the slot."
     },
     "slot": {
       "$ref": "defs.schema.json#/$defs/slug",
@@ -670,6 +671,82 @@
         "properties": {
           "props": {
             "$ref": "blocks/reflection.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "statement"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/statement.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "divider"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/divider.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "gallery"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/gallery.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "columns"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/columns.schema.json"
           }
         }
       }

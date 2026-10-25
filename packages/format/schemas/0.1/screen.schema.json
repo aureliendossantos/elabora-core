@@ -36,11 +36,11 @@
     },
     "layout": {
       "$ref": "defs.schema.json#/$defs/slug",
-      "description": "Layout of the screen: the id of a screen-level component (components/<id>/, level \"screen\"), an HTML/CSS template with named slots. Blocks choose their slot with slot; blocks without slot go to the default slot. Without layout, blocks stack in one column."
+      "description": "Layout of the screen: a built-in layout (opening: the head of a lesson, then its page) or the id of a screen-level component (components/<id>/, level \"screen\"), an HTML/CSS template with named slots. Blocks choose their slot with slot; blocks without slot go to the default slot. Without layout, blocks stack in one column."
     },
     "layoutProps": {
       "type": "object",
-      "description": "Values of the props declared by the layout component (a kicker, a background token…). Text and Markdown props may be { \"textRef\": \"TXT-n\" }."
+      "description": "Values of the props declared by the layout (layouts/<id>.schema.json for a built-in one, the component's props otherwise: a kicker, an image, a background token…). Text and Markdown props may be { \"textRef\": \"TXT-n\" }."
     },
     "style": {
       "type": "string",

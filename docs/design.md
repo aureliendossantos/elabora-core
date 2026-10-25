@@ -100,6 +100,18 @@ The design layer is ordered in cascade layers (docs/decisions.md D32). A later l
 
 `.t-screen` is a CSS container (`container-type: inline-size`): layouts adapt with `@container (max-width: 820px) { … }`, which also works in narrow LMS frames.
 
+### Bands, pictures and ornaments (D63)
+The starter blocks (statement, divider, gallery, columns, the image's presentations, a text's margin note, the layout `opening`) are styled by the player from the theme's tokens: they follow any charter. What a theme tunes without overriding them:
+
+- **Full bleed.** `width: "bleed"` on a block, or `data-t-bleed` on a template's root, takes the block edge to edge: the window's width in scroll presentation (without its scrollbar), the slide's in slides, the slot's in a layout's slot. The player keeps the width of the screen's area in `--t-page-width` on `#t-main` (the bleed margins are `calc((100% - var(--t-page-width)) / 2)`) and `#t-main` clips sideways overflow, so the page never scrolls sideways. Text inside keeps the reading width: a native block's content is held at `--t-content-width`; a template pads its text with `var(--t-bleed-gutter)`. A band breathes a little more than a paragraph (`.t-block.t-w-bleed`).
+- **Focal point.** `focus: { "x": 0..1, "y": 0..1 }` on an image is written as `--focus-x` and `--focus-y` on its element and read as `object-position` wherever the picture is cropped (a band, a grid, an opening, a beside image on a phone). Without it, crops keep the middle.
+- **Scrim.** Text over a picture (statement `image`, image `over`, opening `band` and `cover`) sits on `--t-scrim` (any background: a colour with opacity, a gradient; by default a dark veil, 46 % at the top to 78 % at the foot) in `--t-on-scrim` (white by default). Set them in the theme stylesheet (`.t-screen { --t-scrim: … }`) or as custom tokens `scrim` and `onScrim`. `elabora fit` measures that text against the pixels behind it: lighten the scrim only as far as `W_TEXT_CONTRAST_MEASURED` stays away, on the lightest picture of the course. Without a picture, these blocks sit on the course's colour (`color.primary`, text `color.onPrimary`).
+- **Ornament.** The divider's `ornament` is a mask painted in `--t-ornament-color` (default `color.accent`): a theme draws its own with `--t-ornament: url(…)` (an SVG of the course, its shape only: the colour comes from the mask), or restyles `.t-divider-ornament` (size, mask, background).
+- **Bands' heights.** `--t-band-short`, `--t-band-medium`, `--t-band-tall` (in rem, smaller in slides); the margin note's width, `--t-aside-width` (13.5rem).
+- **Counters.** A number divider shows the screen's counter `t-part` (`decimal-leading-zero`), counted on the blocks; `restart` starts it again.
+- Hooks: `.t-statement` (`--statement`, `--ruled`, `--quote`, `--image`, `--center`, `--start`; `.t-statement-text`, `.t-statement-mark`, `.t-statement-by`, `.t-statement-portrait`, `.t-statement-author`, `.t-statement-role`, `.t-statement-scrim`), `.t-divider` (`--line`, `--ornament`, `--number`, `--space`, `--small`, `--medium`, `--large`; `.t-divider-ornament`, `.t-divider-number`), `.t-image` (`--wide`, `--band`, `--beside`, `--over`, `--start`, `--end`, `--half`, `--third`, `--two-thirds`, `--short`, `--medium`, `--tall`; `.t-image-frame`, `.t-image-text`, `.t-image-title`, `.t-image-overlay`, `.t-image-caption`), `.t-gallery` (`--grid`, `--mosaic`, `--carousel`, `--compare`, `[data-columns]`, `[data-ratio]`; `.t-gallery-list`, `.t-gallery-item`, `.t-gallery-caption`, `.t-compare`, `.t-compare-before`, `.t-compare-after`, `.t-compare-label`, `.t-compare-range`, `--t-compare`), `.t-columns` (`--2`, `--3`, `--equal`, `--wide-start`, `--wide-end`, `--start`, `--center`; `.t-column`), `.t-aside`, `.t-opening` (`--title`, `--band`, `--split`, `--cover`; `.t-opening-head`, `.t-opening-copy`, `.t-opening-eyebrow`, `.t-opening-lead`, `.t-opening-meta`, `.t-opening-media`, `.t-opening-question`, `.t-opening-body`).
+- They move nothing by themselves: no entrance, no loop. A theme's scroll-driven entrance applies to them as to any block (§2, *Scroll-driven design*).
+
 ## 2. Window sizes, slides and steps
 
 ### Size classes
@@ -197,6 +209,7 @@ Screen layouts are **screen-level components** (`components/<id>/` with `"level"
 
 - A screen uses it with `"layout": "figure-split"` (and `"layoutProps"` when the layout declares props); each block chooses `"slot": "figure"`; blocks without slot go to the default slot. The title goes into the `data-title` element (or before the template).
 - `fullBleed: true` removes the page padding and width so bands can span the window.
+- **Built-in layout `opening`** (« Ouverture », D63): the head of a lesson (eyebrow, title, lead, reading time; presentations `title`, `band`, `split`, `cover`), then a `question` slot and the page (`body`, laid out as the default column, `wide`, `half` and `bleed` included). It owns the page (full bleed). `"layout": "opening", "layoutProps": { "presentation": "band", "image": "images/harbour.jpg", "alt": "…", "lead": "…" }`.
 - Scope layout CSS with `.t-layout--<id>`, component CSS with `.t-block--<id>`.
 
 ## 4. Figures and generators

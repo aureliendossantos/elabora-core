@@ -1,0 +1,30 @@
+<!-- Reading order: the statement, then who said it. The quotation mark and the rules are decoration. -->
+<div class="t-statement t-statement--{{presentation}} t-statement--{{align}}" data-if="presentation != image">
+  <svg class="t-statement-mark" data-if="presentation == quote" aria-hidden="true" viewBox="0 0 48 36"><path d="M0 36V21.6C0 9.9 5.4 2.7 16.2 0l2.1 4.6C12.4 6.8 9.4 10.6 9.2 16H18v20H0Zm27 0V21.6C27 9.9 32.4 2.7 43.2 0l2.1 4.6C39.4 6.8 36.4 10.6 36.2 16H45v20H27Z"/></svg>
+  <figure class="t-statement-quote" data-if="author">
+    <blockquote class="t-statement-text">{{markdown}}</blockquote>
+    <figcaption class="t-statement-by">
+      <img class="t-statement-portrait" data-if="portrait" src="{{portrait}}" alt="" loading="lazy" decoding="async">
+      <span class="t-statement-who"><span class="t-statement-author">{{author}}</span><span class="t-statement-role" data-if="role">{{role}}</span></span>
+    </figcaption>
+  </figure>
+  <div class="t-statement-text" data-if="!author">{{markdown}}</div>
+  <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
+</div>
+<div class="t-statement t-statement--image t-statement--{{align}}" data-if="presentation == image" data-t-bleed style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}">
+  <div class="t-statement-media" data-if="image">
+    <img data-if="decorative" src="{{image}}" alt="" loading="lazy" decoding="async">
+    <img data-if="!decorative" src="{{image}}" alt="{{alt}}" loading="lazy" decoding="async">
+  </div>
+  <div class="t-statement-scrim">
+    <figure class="t-statement-quote" data-if="author">
+      <blockquote class="t-statement-text">{{markdown}}</blockquote>
+      <figcaption class="t-statement-by">
+        <img class="t-statement-portrait" data-if="portrait" src="{{portrait}}" alt="" loading="lazy" decoding="async">
+        <span class="t-statement-who"><span class="t-statement-author">{{author}}</span><span class="t-statement-role" data-if="role">{{role}}</span></span>
+      </figcaption>
+    </figure>
+    <div class="t-statement-text" data-if="!author">{{markdown}}</div>
+    <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
+  </div>
+</div>
