@@ -1,13 +1,15 @@
 import type {
   CourseData, WebDelivery, PlayerData, ResourceData, GlossaryData, AboutData, ScreenData, ScreenLayout, BlockData, EventData, Condition as ConditionData, Action as ActionData, Backdrop, ObjectDefinition, TokenValues,
-  QuizProps, NumericProps, NumericTolerance, DecisionProps, DialogueProps, ObjectBlockProps, ResultsProps, VideoProps, AudioProps, AspectRatio, NarrationData, MomentData, TimingData
+  QuizProps, NumericProps, NumericTolerance, FillInProps, SortProps, ReflectionProps, DecisionProps, DialogueProps, ObjectBlockProps, ResultsProps, VideoProps, AudioProps, AspectRatio, NarrationData, MomentData, TimingData
 } from '@elabora/player/course-data';
 import type { DataSchema, DataType } from '@elabora/player/data-schema';
 import { planIndex, resolveBlockProps, resolveTextRefs, screenOrder } from '../project/load.ts';
 import { walkHeadings } from '../components/headings.ts';
 import type { PlanIndex } from '../project/load.ts';
 import type { Project, Course, Screen, Block, Event, Condition, Action, ObjectManifest, ObjectEvent } from '../project/model.ts';
-import { renderMarkdown } from './markdown.ts';
+import { renderMarkdown, markdownToText } from './markdown.ts';
+import { markBlanks, placeBlanks } from './blanks.ts';
+import { parseBlanks, blankMaxLength, stableShuffle } from '@elabora/player/fill-in';
 import { resolveTokens, withPlayerTokens } from '../validate/theme.ts';
 import { getRegistry } from '../components/registry.ts';
 import type { Registry, ComponentDescriptor } from '../components/registry.ts';
@@ -383,8 +385,11 @@ function compileBlock(block: Block, scope: ScreenScope): BlockData {
   // The fields are written in the order of the course data: id … style, key, vkey, html … defaultSlot, props, blocks.
   const head = { id: block.id, type: block.type, width: block.width || 'full', ...(descriptor.lineage.length > 1 ? { lineage: descriptor.lineage } : {}) };
   // vkey: visibility changed by events.
-  const template = descriptor.render === 'template' && descriptor.tpl ? templateData(block, descriptor, descriptor.tpl, props, context, scope.headingBefore.get(block.id)) : null;
+  // A fill-in's text renders with a marker where each blank is, then each marker becomes its hook (D63).
+  const fillIn = descriptor.root === 'fill-in';
+  const template = descriptor.render === 'template' && descriptor.tpl ? templateData(block, descriptor, descriptor.tpl, fillIn ? { ...props, markdown: markBlanks(props.markdown) } : props, context, scope.headingBefore.get(block.id)) : null;
   if (template && descriptor.root === 'image') template.html = inlineImage(template.html, block, props, scope);
+  if (template && fillIn) template.html = placeBlanks(template.html);
   const rendered = {
     ...(visibilityKey ? { vkey: visibilityKey } : {}),
     ...(template ?? {})
@@ -413,6 +418,9 @@ function compileBlock(block: Block, scope: ScreenScope): BlockData {
   switch (descriptor.root) {
     case 'quiz': return { ...head, behavior: 'quiz', ...placement, key: activityKey('quiz'), ...rendered, props: quizProps(props), ...children };
     case 'numeric': return { ...head, behavior: 'numeric', ...placement, key: activityKey('numeric'), ...rendered, props: numericProps(props), ...children };
+    case 'fill-in': return { ...head, behavior: 'fill-in', ...placement, key: activityKey('fill-in'), ...rendered, props: fillInProps(props, block.id), ...children };
+    case 'sort': return { ...head, behavior: 'sort', ...placement, key: activityKey('sort'), ...rendered, props: sortProps(props, block.id), ...children };
+    case 'reflection': return { ...head, behavior: 'reflection', ...placement, key: activityKey('reflection'), ...rendered, props: reflectionProps(props), ...children };
     case 'decision': return { ...head, behavior: 'decision', ...placement, key: activityKey('decision'), ...rendered, props: decisionProps(props), ...children };
     case 'dialogue': return { ...head, behavior: 'dialogue', ...placement, key: activityKey('dialogue'), ...rendered, props: dialogueProps(block.id, props, scope), ...children };
     case 'free-object': {
@@ -454,6 +462,7 @@ function quizProps(props: Record<string, unknown>): QuizProps {
     mode: props.mode === 'multiple' ? 'multiple' : 'single', objective: optionalTextOf(props.objective), scored: props.scored !== false, weight: numberOr(props.weight, 1),
     attempts: numberOr(props.attempts, 1), showCorrectAnswer: props.showCorrectAnswer !== false,
     ...(props.feedbackStyle === 'compact' ? { feedbackStyle: 'compact' as const } : {}),
+    ...(props.presentation === 'images' || props.presentation === 'image' ? { presentation: props.presentation } : {}),
     options: recordsOf(props.options).map((option) => ({ id: textOf(option.id), text: textOf(option.text), correct: !!option.correct, feedbackHtml: renderMarkdown(option.feedback) })),
     ...questionRefOf(props)
   };
@@ -467,6 +476,48 @@ function numericProps(props: Record<string, unknown>): NumericProps {
     feedback: { correctHtml: renderMarkdown(feedback.correct), incorrectHtml: renderMarkdown(feedback.incorrect) },
     misconceptions: recordsOf(props.misconceptions).map((misconception) => ({ id: textOf(misconception.id), value: expectedNumberOf(misconception.value), tolerance: toleranceOf(misconception.tolerance), feedbackHtml: renderMarkdown(misconception.feedback) })),
     ...questionRefOf(props)
+  };
+}
+
+// D63's activities. A fill-in: its blanks' answers (out of the text), and the words its menus or its
+// bank offer, shuffled the same way at every build.
+function fillInProps(props: Record<string, unknown>, blockId: string): FillInProps {
+  const presentation = props.presentation === 'menus' || props.presentation === 'bank' ? props.presentation : 'typed';
+  const blanks = parseBlanks(props.markdown).map((blank) => ({ answers: blank.answers, maxLength: blankMaxLength(blank) }));
+  const distractors = (Array.isArray(props.distractors) ? props.distractors : []).filter(isText).map((word) => word.trim()).filter(Boolean);
+  const firsts = blanks.map((blank) => blank.answers[0]).filter(isText);
+  // menus: each word once; bank: a word per blank (two blanks may take the same word), then the distractors.
+  const words = presentation === 'menus' ? stableShuffle([...new Set([...firsts, ...distractors])], blockId) : presentation === 'bank' ? stableShuffle([...firsts, ...distractors], blockId) : [];
+  const feedback = recordOf(props.feedback);
+  return {
+    presentation, objective: optionalTextOf(props.objective), scored: props.scored !== false, weight: numberOr(props.weight, 1), attempts: numberOr(props.attempts, 1),
+    showCorrectAnswer: props.showCorrectAnswer !== false, ignoreAccents: props.ignoreAccents === true, blanks, words,
+    feedback: { correctHtml: renderMarkdown(feedback.correct), incorrectHtml: renderMarkdown(feedback.incorrect) }
+  };
+}
+
+// A sort: its items in the author's order with the index of their target, and the order they show in.
+function sortProps(props: Record<string, unknown>, blockId: string): SortProps {
+  const presentation = props.presentation === 'categories' || props.presentation === 'order' ? props.presentation : 'pairs';
+  const labelOf = (entry: Record<string, unknown>) => textOf(entry.text) || textOf(entry.alt) || textOf(entry.id);
+  const targets = presentation === 'order' ? [] : recordsOf(props.targets).map((target) => ({ id: textOf(target.id), label: labelOf(target) }));
+  const items = recordsOf(props.items).map((item) => ({ id: textOf(item.id), label: labelOf(item), target: presentation === 'order' ? -1 : targets.findIndex((target) => target.id === item.target) }));
+  const feedback = recordOf(props.feedback);
+  return {
+    presentation, objective: optionalTextOf(props.objective), scored: props.scored !== false, weight: numberOr(props.weight, 1), attempts: numberOr(props.attempts, 1),
+    showCorrectAnswer: props.showCorrectAnswer !== false, items, targets, shuffled: stableShuffle(items.map((_, index) => index), blockId),
+    feedback: { correctHtml: renderMarkdown(feedback.correct), incorrectHtml: renderMarkdown(feedback.incorrect) }
+  };
+}
+
+// A reflection: never scored; its prompt as text for « Mes réponses ».
+function reflectionProps(props: Record<string, unknown>): ReflectionProps {
+  const scale = recordOf(props.scale);
+  const integer = (value: unknown, fallback: number) => (typeof value === 'number' && Number.isInteger(value) ? value : fallback);
+  return {
+    presentation: props.presentation === 'scale' ? 'scale' : 'text', objective: optionalTextOf(props.objective), prompt: markdownToText(props.prompt),
+    maxLength: integer(props.maxLength, 500), rows: integer(props.rows, 4), modelHtml: renderMarkdown(props.model), download: props.download === true,
+    scale: { min: integer(scale.min, 1), max: integer(scale.max, 5), minLabel: textOf(scale.minLabel), maxLabel: textOf(scale.maxLabel) }
   };
 }
 

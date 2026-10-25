@@ -144,7 +144,7 @@ export function renameId(context: CommandContext, { from, to }: RenameArgs): Com
     const renamedEntity = (entity: string): string => {
       const [, prefix, id, name] = /^([a-z]+):([^#]*)(#.*)?$/.exec(entity) ?? [];
       const ofScreen = kind === 'screen' && prefix === 'screen';
-      const ofBlock = kind === 'block' && ['quiz', 'numeric', 'decision', 'dialogue', 'choice', 'ending', 'object', 'block', 'visit'].includes(prefix);
+      const ofBlock = kind === 'block' && ['quiz', 'numeric', 'fillin', 'sort', 'reflection', 'decision', 'dialogue', 'choice', 'ending', 'object', 'block', 'visit'].includes(prefix);
       return (ofScreen || ofBlock) && id === from ? (references++, `${prefix}:${to}${name ?? ''}`) : entity;
     };
     const keys = Object.fromEntries(Object.entries(lock.keys).map(([entity, key]) => [renamedEntity(entity), key]));

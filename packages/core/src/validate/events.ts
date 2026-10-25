@@ -16,7 +16,8 @@ import { isTimedScreen, isTimedLayer, lineTimelines } from '../narration/timelin
 const TRIGGER_TARGET: Readonly<Record<string, { test: (component: ComponentDescriptor, block: Block) => boolean; what: string }>> = {
   click: { test: (component) => CONTROL_HOOKS.some((hook) => hooksOf(component).has(hook)), what: 'button (or a component with controls: data-t-click buttons, tabs, disclosures, sequence items, flip cards, details or elements brought into view)' },
   // A trend in predict mode is submitted when the learner reveals the line (D60).
-  'quiz.submitted': { test: (component, block) => component.behavior === 'quiz' || component.behavior === 'numeric' || isPredict(component.root, fieldsOf(block.props)), what: 'quiz, numeric or predicting trend block' },
+  // A fill-in or a sort is submitted like a quiz, right when all its blanks or items are (D63).
+  'quiz.submitted': { test: (component, block) => component.behavior === 'quiz' || component.behavior === 'numeric' || component.behavior === 'fill-in' || component.behavior === 'sort' || isPredict(component.root, fieldsOf(block.props)), what: 'quiz, numeric, fill-in, sort or predicting trend block' },
   'decision.selected': { test: (component) => component.behavior === 'decision', what: 'decision block' },
   'object.event': { test: (component) => component.behavior === 'object', what: 'free-object block' },
   'dialogue.started': { test: (component) => component.behavior === 'dialogue', what: 'dialogue block' },
@@ -27,7 +28,7 @@ const TRIGGER_TARGET: Readonly<Record<string, { test: (component: ComponentDescr
 };
 const ORDER_OPERATORS = ['gt', 'gte', 'lt', 'lte'];
 // Behaviours that make a block an activity a step can wait for (screen.steps opens "answered").
-const STEP_ACTIVITIES = new Set(['quiz', 'numeric', 'decision', 'dialogue', 'object', 'predict']);
+const STEP_ACTIVITIES = new Set(['quiz', 'numeric', 'fill-in', 'sort', 'reflection', 'decision', 'dialogue', 'object', 'predict']);
 
 const controlNames = (controls: Map<string, unknown>) => [...controls.keys()].map((name) => name || '(unnamed)').join(', ');
 

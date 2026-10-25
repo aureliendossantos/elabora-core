@@ -172,7 +172,9 @@ export function extractUnits(project: Project): TranslationUnit[] {
       const descriptor = registry.get(block.type);
       if (!descriptor) continue;
       const where = `${descriptor.title || block.type} on screen "${screen.title}"`;
-      walkProps(descriptor.schema, block.props, `${path}/props`, `block.${block.id}`, descriptor.builtin, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: where, ...voiced.get(pointer) }));
+      // A fill-in's text holds its blanks (D63): translated with their sentence, kept as blanks.
+      const blanks = descriptor.root === 'fill-in' ? `${path}/props/markdown` : null;
+      walkProps(descriptor.schema, block.props, `${path}/props`, `block.${block.id}`, descriptor.builtin, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: pointer === blanks ? `${where}: a text with blanks, [[answer|other accepted answer]]: translate the answers inside the brackets with their sentence, keep the double brackets and the | between the answers` : where, ...voiced.get(pointer) }));
       if (descriptor.root === 'free-object') objectUnits(project, block, path, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: options.note || where }));
       if (descriptor.root === 'trend') followPoints(units, block, path);
       if (descriptor.root === 'diagram') diagramUnits(block, path, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: `${options.note} (${where})` }));
@@ -306,14 +308,16 @@ export function setAt(document: object, pointer: string, value: unknown): void {
   }
 }
 
-// What must survive translation: maths, links and code in Markdown; placeholders in ICU strings.
+// What must survive translation: maths, links, code and the blanks of a fill-in ([[…]], D63) in
+// Markdown; placeholders in ICU strings.
 export function invariants(text: unknown, format: UnitFormat): Record<string, number | string> {
   const source = String(text || '');
   if (format === 'markdown') {
     return {
       maths: (source.match(/\$\$[\s\S]+?\$\$|\$(?!\s)[^$\n]+?\$/g) || []).length,
       links: (source.match(/\]\([^)]+\)/g) || []).length,
-      code: (source.match(/`[^`]+`/g) || []).length
+      code: (source.match(/`[^`]+`/g) || []).length,
+      blanks: (source.match(/\[\[[^[\]\n]*\]\]/g) || []).length
     };
   }
   if (format === 'icu' || /\{[A-Za-z_]\w*\}/.test(source)) {

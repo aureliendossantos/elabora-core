@@ -19,6 +19,7 @@ const PATHS = {
   chevronLeft: '<path d="M14.5 6l-6 6 6 6"/>',
   chevronRight: '<path d="M9.5 6l6 6-6 6"/>',
   chevronDown: '<path d="M6 9.5l6 6 6-6"/>',
+  chevronUp: '<path d="M6 14.5l6-6 6 6"/>',
   folder: '<path d="M3 7.5V6a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2V9"/><path d="M3.6 10.2A1.5 1.5 0 0 1 5 9h15.3a1.5 1.5 0 0 1 1.4 1.9l-1.9 7.6a2 2 0 0 1-1.9 1.5H5a2 2 0 0 1-2-2v-7z"/>',
   book: '<path d="M12 6.5C10.3 5.2 7.8 4.5 4 4.5v13c3.8 0 6.3.7 8 2 1.7-1.3 4.2-2 8-2v-13c-3.8 0-6.3.7-8 2z"/><path d="M12 6.5v13"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><circle cx="12" cy="7.6" r="1.1" fill="currentColor" stroke="none"/>',

@@ -17,7 +17,7 @@
     "type": {
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]{0,47}$",
-      "description": "Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props."
+      "description": "Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, fill-in, sort, reflection, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props."
     },
     "props": {
       "type": "object"
@@ -613,6 +613,63 @@
         "properties": {
           "props": {
             "$ref": "blocks/diagram.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "fill-in"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/fill-in.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "sort"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/sort.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "reflection"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/reflection.schema.json"
           }
         }
       }

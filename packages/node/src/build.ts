@@ -687,7 +687,7 @@ function buildReport({ project, course, plan, registry, profiles, keys, suspendD
       lockedTexts: (item.lockedTexts || []).map((text) => ({ id: text.id, usedBy: usedBy('textRef', text.id) })),
       questions: (item.questions || []).map((question) => ({ id: question.id, usedBy: usedBy('questionRef', question.id) })),
       activities: data.screens.filter((compiled) => screens.some((screen) => screen.id === compiled.id))
-        .flatMap((compiled) => flat(compiled.blocks).filter((block) => ['quiz', 'numeric', 'decision', 'object'].includes(block.behavior ?? '')).map((block) => `${block.type}:${block.id}`))
+        .flatMap((compiled) => flat(compiled.blocks).filter((block) => ['quiz', 'numeric', 'fill-in', 'sort', 'reflection', 'decision', 'object'].includes(block.behavior ?? '')).map((block) => `${block.type}:${block.id}`))
     };
   });
   const generated: BuildReport['generatedMedia'] = [];

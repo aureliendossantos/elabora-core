@@ -11,6 +11,7 @@ import type { StateModel } from '@elabora/player/state-codec';
 import { isRecord, recordOf, recordsOf, textOf, numberOr, isText } from './values.ts';
 import { dialogueEntities } from '../dialogue/keys.ts';
 import { listOf, objectsIn } from '../util/values.ts';
+import { parseBlanks, blankMaxLength } from '@elabora/player/fill-in';
 
 // elabora.lock.json gives every stateful element a short, permanent key (base 36 counter), and
 // records the version of each course component its instances were written for (migrations).
@@ -42,7 +43,7 @@ export type StateKeys = Record<string, string>;
 
 // Activities keep learner state under an entity named by their behaviour, so a fork of the quiz
 // block (an image quiz…) keeps learner state like a quiz.
-const ACTIVITY_STATE_PREFIX = { quiz: 'quiz', numeric: 'numeric', decision: 'decision', dialogue: 'dialogue', object: 'object', predict: 'predict' } as const;
+const ACTIVITY_STATE_PREFIX = { quiz: 'quiz', numeric: 'numeric', 'fill-in': 'fillin', sort: 'sort', reflection: 'reflection', decision: 'decision', dialogue: 'dialogue', object: 'object', predict: 'predict' } as const;
 export type ActivityBehavior = keyof typeof ACTIVITY_STATE_PREFIX;
 const isActivity = (behavior: Behavior | 'predict' | null): behavior is ActivityBehavior => behavior !== null && behavior in ACTIVITY_STATE_PREFIX;
 export const activityEntity = (behavior: ActivityBehavior, blockId: string): string => `${ACTIVITY_STATE_PREFIX[behavior]}:${blockId}`;
@@ -139,7 +140,7 @@ const measuredLength = (value: unknown): number | undefined => (typeof value ===
 export function buildStateModel(project: Project, keys: StateKeys): StateModel {
   const index = planIndex(project.plan);
   const registry = getRegistry(project);
-  const model: StateModel = { screens: [], quizzes: [], numerics: [], decisions: [], variables: [], objects: [], toggleableBlocks: [], steppedScreens: [], controls: [] };
+  const model: StateModel = { screens: [], quizzes: [], numerics: [], decisions: [], variables: [], objects: [], toggleableBlocks: [], steppedScreens: [], controls: [], fillIns: [], sorts: [], reflections: [] };
   for (const { id } of screenOrder(project)) {
     const key = keys[`screen:${id}`];
     if (!key) continue;
@@ -160,6 +161,19 @@ export function buildStateModel(project: Project, keys: StateKeys): StateModel {
     } else if (behavior === 'predict' && key) {
       // A guess is kept like a numeric answer (D60).
       model.numerics.push({ key, maxAttempts: 1 });
+    } else if (behavior === 'fill-in' && key) {
+      // Typed: what the field keeps; menus and words to place: the longest word offered.
+      const blanks = parseBlanks(props.markdown);
+      const offered = [...blanks.map((blank) => blank.answers[0] ?? ''), ...(Array.isArray(props.distractors) ? props.distractors : []).filter(isText)];
+      const longest = offered.reduce((found, word) => (JSON.stringify(word).length > JSON.stringify(found).length ? word : found), '');
+      const typed = props.presentation !== 'menus' && props.presentation !== 'bank';
+      model.fillIns!.push({ key, maxAttempts: numberOr(props.attempts, 1), blanks: blanks.map((blank) => (typed ? { maxLength: blankMaxLength(blank) } : { longest })) });
+    } else if (behavior === 'sort' && key) {
+      model.sorts!.push({ key, maxAttempts: numberOr(props.attempts, 1), items: recordsOf(props.items).length });
+    } else if (behavior === 'reflection' && key) {
+      // A text at its maxLength, as a persisted string variable is counted.
+      const scale = recordOf(props.scale);
+      model.reflections!.push(props.presentation === 'scale' ? { key, scaleMax: typeof scale.max === 'number' ? scale.max : 5 } : { key, maxLength: measuredLength(props.maxLength) ?? 500 });
     } else if (behavior === 'decision' && key) {
       model.decisions.push({ key, longestOptionId: optionIds().reduce((longest, id) => (id.length > longest.length ? id : longest), '') });
     } else if (behavior === 'object' && key) {

@@ -19,7 +19,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["component"],
-      "description": "Fork: the component this one was derived from. Without props, template, slots or fallback, the parent's are used; propsExtend adds props to the parent's. A fork of quiz, numeric, decision or results keeps that behaviour (scoring, saved state, SCORM records), so its template must provide the behaviour hooks.",
+      "description": "Fork: the component this one was derived from. Without props, template, slots or fallback, the parent's are used; propsExtend adds props to the parent's. A fork of quiz, numeric, fill-in, sort, reflection, decision or results keeps that behaviour (scoring, saved state, SCORM records), so its template must provide the behaviour hooks.",
       "properties": {
         "component": { "$ref": "defs.schema.json#/$defs/slug" },
         "version": { "type": "string", "maxLength": 40, "description": "Version of the parent when the fork was made (to see later changes of the parent)." }

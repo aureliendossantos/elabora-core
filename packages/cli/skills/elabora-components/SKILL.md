@@ -1,6 +1,6 @@
 ---
 name: elabora-components
-description: Create, fork and maintain Elabora components (components/<id>/): block types and screen layouts rendered from a props schema and a template, headless forks of quiz/numeric/decision, fallbacks, migrations and libraries. Use when a structure or look repeats across screens, when an activity needs a different markup, or when editing component.json, template.html or component.css.
+description: Create, fork and maintain Elabora components (components/<id>/): block types and screen layouts rendered from a props schema and a template, headless forks of quiz/numeric/fill-in/sort/reflection/decision, fallbacks, migrations and libraries. Use when a structure or look repeats across screens, when an activity needs a different markup, or when editing component.json, template.html or component.css.
 ---
 
 # Components in Elabora
@@ -10,7 +10,7 @@ A component is a block type (or a screen layout) the course defines: a **props s
 ## Decide first
 - One-off look, same structure → a **named style** on a built-in block (`theme.styles`), not a component.
 - A structure that repeats, with its own fields (a ratio card, a case-study card, a step timeline) → a **component** (`elabora_create_component`).
-- An activity that must look different (image options, cards, a slider-like numeric) → **fork** `quiz`, `numeric` or `decision` (`elabora_fork_component`): the player keeps scoring, saved state, SCORM records, focus and feedback; you only write the markup with its hooks.
+- An activity that must look different (image options, cards, a slider-like numeric) → **fork** `quiz`, `numeric`, `fill-in`, `sort`, `reflection` or `decision` (`elabora_fork_component`): the player keeps scoring, saved state, SCORM records, focus and feedback; you only write the markup with its hooks.
 - A screen arrangement (hero band, figure and explanation, dark stage) → a **screen-level** component (`level: "screen"`), used as `screen.layout`.
 - Needs code (simulation, 3D, drag physics) → a free object, not a component.
 

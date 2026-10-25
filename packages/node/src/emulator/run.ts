@@ -453,7 +453,7 @@ async function answerScreen(frame: Frame): Promise<void> {
     const screen = elabora.engine.screens[elabora.engine.screenIndex.get(elabora.screen ?? '') ?? -1];
     const flat = (blocks: PlayerBlock[] | undefined): PlayerBlock[] => (blocks || []).flatMap((block) => [block, ...flat(block.blocks)]);
     const quote = (value: unknown) => String(value).replace(/["\\]/g, '\\$&');
-    const builtinBehaviors: Record<string, string> = { quiz: 'quiz', numeric: 'numeric', decision: 'decision', 'free-object': 'object' };
+    const builtinBehaviors: Record<string, string> = { quiz: 'quiz', numeric: 'numeric', 'fill-in': 'fill-in', sort: 'sort', reflection: 'reflection', decision: 'decision', 'free-object': 'object' };
     for (const block of flat(screen.blocks)) {
       const node = document.querySelector(`[data-block="${block.id}"]`);
       if (!node) continue;
@@ -467,6 +467,46 @@ async function answerScreen(frame: Frame): Promise<void> {
       } else if (behavior === 'numeric') {
         const input = node.querySelector<HTMLInputElement>('input[data-t-input]');
         if (input && !input.readOnly) { input.value = String(block.props?.answer); node.querySelector<HTMLElement>('[data-t-submit]:not([hidden])')?.click(); }
+      } else if (behavior === 'fill-in') {
+        // Each blank's first answer: typed, chosen in its list, or its word placed (choose the word, then the blank).
+        const props = block.props as { presentation: string; blanks: { answers: string[] }[] };
+        props.blanks.forEach((blank, index) => {
+          const slot = node.querySelector(`[data-t-blank="${index + 1}"]`);
+          const answer = blank.answers[0] ?? '';
+          const field = slot?.querySelector<HTMLInputElement | HTMLSelectElement>('input, select');
+          if (field && !(field as HTMLInputElement).readOnly && !field.disabled) { field.value = answer; field.dispatchEvent(new Event('input', { bubbles: true })); field.dispatchEvent(new Event('change', { bubbles: true })); }
+          const word = [...node.querySelectorAll<HTMLButtonElement>('.t-word:not(.is-used)')].find((button) => button.textContent === answer);
+          const place = slot?.querySelector<HTMLButtonElement>('button');
+          if (word && place && !word.disabled) { word.click(); place.click(); }
+        });
+        node.querySelector<HTMLElement>('[data-t-submit]:not([hidden])')?.click();
+      } else if (behavior === 'sort') {
+        // Each item to its target (choose it, then the target's button); order: each item, in turn, to its place.
+        const props = block.props as { presentation: string; items: { id: string; target: number }[]; targets: { id: string }[] };
+        const item = (id: string) => node.querySelector<HTMLButtonElement>(`[data-t-sort-item="${quote(id)}"]`);
+        if (props.presentation === 'order') {
+          props.items.forEach((entry, position) => {
+            const rows = [...node.querySelectorAll<HTMLElement>('[data-t-sort-item]')];
+            const there = rows[position];
+            const moved = item(entry.id);
+            if (moved && there && there !== moved && !moved.disabled) { moved.click(); there.click(); }
+          });
+        } else {
+          for (const entry of props.items) {
+            const target = props.targets[entry.target];
+            const place = target && node.querySelector<HTMLButtonElement>(`[data-t-sort-target="${quote(target.id)}"] [data-t-place]`);
+            const moved = item(entry.id);
+            if (moved && place && !moved.disabled) { moved.click(); place.click(); }
+          }
+        }
+        node.querySelector<HTMLElement>('[data-t-submit]:not([hidden])')?.click();
+      } else if (behavior === 'reflection') {
+        // A few words, or the scale's highest point; then Save.
+        const field = node.querySelector<HTMLTextAreaElement>('textarea');
+        if (field) { field.value = 'Ma réponse, avec "des guillemets",\nsur deux lignes.'; field.dispatchEvent(new Event('input', { bubbles: true })); }
+        const points = node.querySelectorAll<HTMLInputElement>('input[type="radio"]');
+        points[points.length - 1]?.click();
+        node.querySelector<HTMLElement>('[data-t-submit]:not([hidden])')?.click();
       } else if (behavior === 'decision') {
         const options = block.props?.options || [];
         const best = options.find((option) => option.correct) || options[0];

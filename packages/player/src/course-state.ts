@@ -2,12 +2,16 @@
 // the SCORM 1.2 status machine. No DOM here: the player wires it to the page.
 
 import { emptyState, encodeState, decodeState } from './state-codec.ts';
-import type { NumericAnswer, QuizAnswer } from './state-codec.ts';
+import type { FillInAnswer, NumericAnswer, QuizAnswer, SortAnswer } from './state-codec.ts';
 import { gradeNumeric } from './numeric.ts';
+import { gradeFillIn } from './fill-in.ts';
+import type { FillInGrade } from './fill-in.ts';
+import { gradeSort, sortComplete } from './sort.ts';
+import type { SortGrade } from './sort.ts';
 import { fieldOf } from './json.ts';
 import type {
-  Action, ActivityBlock, Behavior, BlockByBehavior, BlockData, Condition, CourseData, DecisionBlock, DecisionOption, LayerData, Misconception,
-  NumericBlock, ObjectBlock, PredictBlock, QuizBlock, ScreenData, Trigger, TriggerType, VariableData, VariableValue
+  Action, ActivityBlock, Behavior, BlockByBehavior, BlockData, Condition, CourseData, DecisionBlock, DecisionOption, FillInBlock, LayerData, Misconception,
+  NumericBlock, ObjectBlock, PredictBlock, QuizBlock, ReflectionBlock, ScreenData, SortBlock, Trigger, TriggerType, VariableData, VariableValue
 } from './course-data.ts';
 
 // The reported lesson status never goes down. Statuses the LMS may return that are not here rank as
@@ -17,12 +21,12 @@ const rank = (status: string): number => RANK[status] ?? NaN;
 
 // Activities are recognised by their behaviour: a fork of the quiz block scores like a quiz. The
 // compiler gives every activity its behaviour; built-in types stand for it in hand-written data.
-const BUILTIN_BEHAVIOR: Readonly<Record<string, Behavior | undefined>> = { quiz: 'quiz', numeric: 'numeric', decision: 'decision', 'free-object': 'object', results: 'results' };
+const BUILTIN_BEHAVIOR: Readonly<Record<string, Behavior | undefined>> = { quiz: 'quiz', numeric: 'numeric', 'fill-in': 'fill-in', sort: 'sort', reflection: 'reflection', decision: 'decision', 'free-object': 'object', results: 'results' };
 export const behaviorOf = (block: BlockData): Behavior | null => block.behavior || BUILTIN_BEHAVIOR[block.type] || null;
 export function hasBehavior<K extends Behavior>(block: BlockData, behavior: K): block is BlockByBehavior[K] {
   return behaviorOf(block) === behavior;
 }
-const ACTIVITIES = new Set<Behavior | null>(['quiz', 'numeric', 'decision', 'object', 'predict']);
+const ACTIVITIES = new Set<Behavior | null>(['quiz', 'numeric', 'fill-in', 'sort', 'reflection', 'decision', 'object', 'predict']);
 export const isActivity = (block: BlockData): block is ActivityBlock => ACTIVITIES.has(behaviorOf(block));
 
 // Blocks of a list and the blocks placed in their slots, depth first.
@@ -39,7 +43,7 @@ export function requiredBlocks(blocks: readonly BlockData[] | undefined, out: Bl
 }
 
 // What changed, for onChange.
-export type ChangeKind = 'variable' | 'quiz' | 'numeric' | 'decision' | 'object' | 'object-state' | 'visibility' | 'visited' | 'step' | 'completion' | 'visit' | 'retake';
+export type ChangeKind = 'variable' | 'quiz' | 'numeric' | 'fill-in' | 'sort' | 'reflection' | 'decision' | 'object' | 'object-state' | 'visibility' | 'visited' | 'step' | 'completion' | 'visit' | 'retake';
 
 export interface CourseStateOptions {
   // cmi.suspend_data saved by the previous sessions.
@@ -67,6 +71,12 @@ export interface QuizResult {
 
 export interface NumericResult extends QuizResult {
   misconception: Misconception | null;
+}
+
+// A fill-in or a sort submitted: its result, with a mark per blank or per item and the share right.
+export interface PartialResult extends QuizResult {
+  marks: boolean[];
+  score: number;
 }
 
 export interface Score {
@@ -188,6 +198,69 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     changed('numeric');
     return { correct: grade.correct, misconception: grade.misconception, final, attemptsLeft: (block.props.attempts || 1) - answer.attempts };
   }
+  // ── fill-in (D63): one answer per blank; the share of blanks right ──
+  const fillInState = (block: FillInBlock): FillInAnswer | null => learner.fillIns[block.key] || null;
+  const fillInGrade = (block: FillInBlock, answers: readonly string[]): FillInGrade => gradeFillIn(block.props.blanks, answers, { ignoreAccents: block.props.ignoreAccents });
+  function fillInFinal(block: FillInBlock): boolean {
+    const answer = fillInState(block);
+    if (!answer) return false;
+    return fillInGrade(block, answer.answers).correct || answer.attempts >= (block.props.attempts || 1);
+  }
+  // answers: what the learner typed, or the word chosen or placed, per blank ('' left empty).
+  function answerFillIn(blockId: string, answers: readonly string[]): PartialResult | null {
+    const block = blockIndex.get(blockId)?.block;
+    if (!block || !hasBehavior(block, 'fill-in') || fillInFinal(block)) return null;
+    const previous = fillInState(block) || { answers: [], attempts: 0 };
+    const kept = block.props.blanks.map((blank, index) => String(answers[index] ?? '').slice(0, blank.maxLength));
+    const answer = { answers: kept, attempts: previous.attempts + 1 };
+    learner.fillIns[block.key] = answer;
+    const grade = fillInGrade(block, kept);
+    const final = grade.correct || answer.attempts >= (block.props.attempts || 1);
+    changed('fill-in');
+    return { correct: grade.correct, final, attemptsLeft: (block.props.attempts || 1) - answer.attempts, marks: grade.marks, score: grade.score };
+  }
+
+  // ── sort (D63): pairs, categories or order; the share of items placed right ──
+  const sortState = (block: SortBlock): SortAnswer | null => learner.sorts[block.key] || null;
+  const sortGrade = (block: SortBlock, placement: readonly number[]): SortGrade => gradeSort(block.props, placement);
+  function sortFinal(block: SortBlock): boolean {
+    const answer = sortState(block);
+    if (!answer) return false;
+    return sortGrade(block, answer.placement).correct || answer.attempts >= (block.props.attempts || 1);
+  }
+  // placement: sort.ts; every item placed (sortComplete), else refused.
+  function answerSort(blockId: string, placement: readonly number[]): PartialResult | null {
+    const block = blockIndex.get(blockId)?.block;
+    if (!block || !hasBehavior(block, 'sort') || sortFinal(block) || !sortComplete(block.props, placement)) return null;
+    const previous = sortState(block) || { placement: [], attempts: 0 };
+    const answer = { placement: [...placement], attempts: previous.attempts + 1 };
+    learner.sorts[block.key] = answer;
+    const grade = sortGrade(block, answer.placement);
+    const final = grade.correct || answer.attempts >= (block.props.attempts || 1);
+    changed('sort');
+    return { correct: grade.correct, final, attemptsLeft: (block.props.attempts || 1) - answer.attempts, marks: grade.marks, score: grade.score };
+  }
+
+  // ── reflection (D63): never scored; answered once saved ──
+  const reflectionOf = (block: ReflectionBlock): string | number | null => learner.reflections[block.key] ?? null;
+  // value: the text written (cut at maxLength), or a point of the scale. Empty text is not saved.
+  function saveReflection(blockId: string, value: string | number): boolean {
+    const block = blockIndex.get(blockId)?.block;
+    if (!block || !hasBehavior(block, 'reflection')) return false;
+    const { presentation, maxLength, scale } = block.props;
+    let next: string | number;
+    if (presentation === 'scale') {
+      if (typeof value !== 'number' || !Number.isInteger(value) || value < scale.min || value > scale.max) return false;
+      next = value;
+    } else {
+      next = String(value).slice(0, maxLength);
+      if (!next.trim()) return false;
+    }
+    learner.reflections[block.key] = next;
+    changed('reflection');
+    return true;
+  }
+
   // A trend in predict mode (D60): the learner's guess at the last point, kept like a numeric answer;
   // close when within the tolerance of the real value.
   const predictState = (block: PredictBlock): number | null => learner.numerics[block.key]?.value ?? null;
@@ -269,6 +342,9 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
   function activityDone(block: BlockData): boolean {
     if (hasBehavior(block, 'quiz')) return quizFinal(block);
     if (hasBehavior(block, 'numeric')) return numericFinal(block);
+    if (hasBehavior(block, 'fill-in')) return fillInFinal(block);
+    if (hasBehavior(block, 'sort')) return sortFinal(block);
+    if (hasBehavior(block, 'reflection')) return reflectionOf(block) !== null;
     if (hasBehavior(block, 'decision')) return !!learner.decisions[block.key];
     if (hasBehavior(block, 'object')) return block.key in learner.objectsDone;
     if (hasBehavior(block, 'predict')) return predictState(block) !== null;
@@ -278,6 +354,8 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
   function activityAnswered(block: BlockData): boolean {
     if (hasBehavior(block, 'quiz')) return !!quizState(block);
     if (hasBehavior(block, 'numeric')) return !!numericState(block);
+    if (hasBehavior(block, 'fill-in')) return !!fillInState(block);
+    if (hasBehavior(block, 'sort')) return !!sortState(block);
     return activityDone(block);
   }
   function screenComplete(screen: ScreenData): boolean { return learner.completed.has(screen.key); }
@@ -309,7 +387,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
   function scoredItems(): ActivityBlock[] {
     const out: ActivityBlock[] = [];
     for (const screen of screens) for (const block of flatBlocks(screen.blocks)) {
-      if ((hasBehavior(block, 'quiz') || hasBehavior(block, 'numeric')) && block.props.scored !== false) out.push(block);
+      if ((hasBehavior(block, 'quiz') || hasBehavior(block, 'numeric') || hasBehavior(block, 'fill-in') || hasBehavior(block, 'sort')) && block.props.scored !== false) out.push(block);
       else if ((hasBehavior(block, 'decision') || hasBehavior(block, 'object')) && block.props.scored) out.push(block);
       else if (hasBehavior(block, 'predict') && block.props.predict.scored) out.push(block);
     }
@@ -318,12 +396,16 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
   function itemScore(block: ActivityBlock): number {
     if (hasBehavior(block, 'quiz')) { const answer = quizState(block); return answer && quizIsCorrect(block, answer.selected) ? 1 : 0; }
     if (hasBehavior(block, 'numeric')) { const answer = numericState(block); return answer && gradeNumeric(block.props, answer.value).correct ? 1 : 0; }
+    // Partial credit: the share of blanks right, of items placed right.
+    if (hasBehavior(block, 'fill-in')) { const answer = fillInState(block); return answer ? fillInGrade(block, answer.answers).score : 0; }
+    if (hasBehavior(block, 'sort')) { const answer = sortState(block); return answer ? sortGrade(block, answer.placement).score : 0; }
     if (hasBehavior(block, 'decision')) { const option = block.props.options.find((candidate) => candidate.id === learner.decisions[block.key]); return option?.correct ? 1 : 0; }
     if (hasBehavior(block, 'object')) return learner.objectsDone[block.key] ?? 0;
     if (hasBehavior(block, 'predict')) { const guess = predictState(block); return guess !== null && predictClose(block, guess) ? 1 : 0; }
     return 0;
   }
-  const weightOf = (block: ActivityBlock): number => (hasBehavior(block, 'predict') ? block.props.predict.weight : block.props.weight) || 1;
+  // A reflection is never scored (it has no weight).
+  const weightOf = (block: ActivityBlock): number => (hasBehavior(block, 'predict') ? block.props.predict.weight : hasBehavior(block, 'reflection') ? 1 : block.props.weight) || 1;
   function score(): Score {
     const items = scoredItems();
     if (!items.length) return { raw: null, decided: true, items: 0 };
@@ -363,6 +445,8 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     for (const block of scored) {
       if (hasBehavior(block, 'quiz')) delete learner.quizzes[block.key];
       if (hasBehavior(block, 'numeric') || hasBehavior(block, 'predict')) delete learner.numerics[block.key];
+      if (hasBehavior(block, 'fill-in')) delete learner.fillIns[block.key];
+      if (hasBehavior(block, 'sort')) delete learner.sorts[block.key];
       if (hasBehavior(block, 'decision')) delete learner.decisions[block.key];
       if (hasBehavior(block, 'object')) { delete learner.objectsDone[block.key]; delete learner.objects[block.key]; }
     }
@@ -432,6 +516,9 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     getVar, setVar, incrementVar,
     answerQuiz, quizState, quizFinal, quizIsCorrect,
     answerNumeric, numericState, numericFinal,
+    answerFillIn, fillInState, fillInFinal, fillInGrade,
+    answerSort, sortState, sortFinal, sortGrade,
+    saveReflection, reflectionOf,
     answerPredict, predictState, predictClose,
     chooseDecision, decisionOf: (block: DecisionBlock): string | null => learner.decisions[block.key] || null,
     completeObject, objectDone: (block: ObjectBlock): boolean => block.key in learner.objectsDone, saveObjectState, objectSavedState,

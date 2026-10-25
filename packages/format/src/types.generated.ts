@@ -111,6 +111,13 @@ export type NumericFeedback = {
   incorrect: Markdown;
 };
 
+/** Feedback of a fill-in or sort activity (guardrail D1): correct says why the answer holds, incorrect what to look at again. Shown under the activity once it is submitted; without incorrect feedback, W_ACTIVITY_NO_FEEDBACK. */
+export type ActivityFeedback = {
+  correct?: Markdown;
+  /** Shown while some answers are wrong: explain the rule or the clue, without giving the answers (they show in place after the last try). */
+  incorrect?: Markdown;
+};
+
 /** Values learners get with a typical error, each with feedback that names the error. They are checked before the generic incorrect feedback. */
 export type Misconceptions = Misconception[];
 
@@ -864,7 +871,7 @@ export type ScreenLayerNarrationLine = VoiceLine & {
 /** A block placed on a screen, a layer or in a slot of a component instance. id identifies it in the whole course. type is a built-in type (the native catalogue, props in blocks/<type>.schema.json) or the id of a course component (components/<id>/component.json declares its props). */
 export type Block = {
   id: Slug;
-  /** Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props. */
+  /** Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, fill-in, sort, reflection, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props. */
   type: string;
   props: { [key: string]: unknown };
   /** Blocks placed in the slots of this component instance (each picks its slot with slot; without slot, the default slot). Only for components that declare slots. */
@@ -931,7 +938,10 @@ export type BuiltinBlockType =
   | 'cycle'
   | 'matrix'
   | 'milestones'
-  | 'diagram';
+  | 'diagram'
+  | 'fill-in'
+  | 'sort'
+  | 'reflection';
 
 /** A Block whose type is built in: its props follow the schema of that type. */
 export type BuiltinBlock =
@@ -962,7 +972,10 @@ export type BuiltinBlock =
   | CycleBlock
   | MatrixBlock
   | MilestonesBlock
-  | DiagramBlock;
+  | DiagramBlock
+  | FillInBlock
+  | SortBlock
+  | ReflectionBlock;
 
 export type HeadingBlock = Omit<Block, 'type' | 'props'> & {
   type: 'heading';
@@ -1102,6 +1115,21 @@ export type MilestonesBlock = Omit<Block, 'type' | 'props'> & {
 export type DiagramBlock = Omit<Block, 'type' | 'props'> & {
   type: 'diagram';
   props: DiagramProps;
+};
+
+export type FillInBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'fill-in';
+  props: FillInProps;
+};
+
+export type SortBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'sort';
+  props: SortProps;
+};
+
+export type ReflectionBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'reflection';
+  props: ReflectionProps;
 };
 
 // blocks/accordion.schema.json
@@ -1763,6 +1791,52 @@ export type DonutPart = {
   at?: Anchor;
 };
 
+// blocks/fill-in.schema.json
+
+/**
+ * fill-in block props
+ *
+ * « Texte à trous »: a text with blanks the learner fills, typed, chosen from menus or placed from a bank of words. Blanks are written in the Markdown as [[answer|other accepted answer]]; the build turns them into blanks and keeps their answers out of the text. Scored by the share of its blanks right; correct when all are. After the last try the right answers show in place.
+ */
+export type FillInProps = {
+  /**
+   * How the learner fills the blanks: typed (a field per blank), menus (a list per blank: every blank's answer and the distractors, in a fixed shuffled order), bank (the words to place: choose a word, then its blank; drag works too with a mouse). Switching it never changes the words.
+   * @default 'typed'
+   */
+  presentation?: 'typed' | 'menus' | 'bank';
+  /** Instruction or question above the text (Complétez la procédure.). */
+  stem?: Markdown;
+  /** The text with its blanks: [[answer]] or [[answer|other accepted|another]]. The first answer is the one shown after the last try (and the word a bank or a menu offers). Translate the answers with their sentence. */
+  markdown: Markdown;
+  /** menus and bank: wrong words offered with the answers. */
+  distractors?: string[];
+  /**
+   * typed: accept an answer written without its accents (« eleve » for « élève »). Case, spaces around the word and the form of quotes and apostrophes never count.
+   * @default false
+   */
+  ignoreAccents?: boolean;
+  feedback?: ActivityFeedback;
+  /** Plan objective measured. */
+  objective?: PlanId;
+  /**
+   * Counts in the course score (the share of its blanks right).
+   * @default true
+   */
+  scored?: boolean;
+  /** @default 1 */
+  weight?: number;
+  /**
+   * Tries before the answers are final.
+   * @default 1
+   */
+  attempts?: number;
+  /**
+   * After the last try, show the right answer in each wrong blank.
+   * @default true
+   */
+  showCorrectAnswer?: boolean;
+};
+
 // blocks/free-object.schema.json
 
 /**
@@ -2222,9 +2296,18 @@ export type ProportionProps = {
 /**
  * quiz block props
  *
- * A single- or multiple-choice question with elaborated feedback. Either reuse a validated plan question (questionRef) or write the question inline (stem, mode, options) for non-locked practice.
+ * A single- or multiple-choice question with elaborated feedback. Either reuse a validated plan question (questionRef) or write the question inline (stem, mode, options) for non-locked practice. presentation text lists the options; images shows them as picture cards (each option's image and alt); image places them as numbered zones on one picture (image, alt; each option's x and y), named « Zone 1 »… for screen readers until the answer is final.
  */
 export type QuizProps = {
+  /**
+   * text: the options as a list. images: a grid of picture cards, each option with its image and alt. image: one picture (image, alt) with the options as zones placed at their x and y.
+   * @default 'text'
+   */
+  presentation?: 'text' | 'images' | 'image';
+  /** image: the picture the zones are placed on. */
+  image?: AssetPath;
+  /** image: what the picture shows, without naming the zones' answers. */
+  alt?: string;
   /** Id of a plan question. When set, do not set stem, mode or options. */
   questionRef?: PlanId;
   stem?: Markdown;
@@ -2261,6 +2344,64 @@ export type QuizOption = {
   text: string;
   correct: boolean;
   feedback?: Markdown;
+  /** images: the option's picture. */
+  image?: AssetPath;
+  /** images: what the option's picture shows. */
+  alt?: string;
+  /** image: where the zone is across the picture, 0 (left edge) to 1 (right edge). */
+  x?: number;
+  /** image: where the zone is down the picture, 0 (top) to 1 (bottom). */
+  y?: number;
+};
+
+// blocks/reflection.schema.json
+
+/**
+ * reflection block props
+ *
+ * « Réflexion »: a prompt the learner answers in their own words (text) or on a scale (scale). Never scored: it counts as answered once saved. Saving shows a confirmation and, when model is given, an expert's answer to compare with. With download, a button gives « Mes réponses », a text file of every reflection of the course made in the browser.
+ */
+export type ReflectionProps = {
+  /**
+   * text: the learner writes. scale: the learner picks a point from scale.min to scale.max.
+   * @default 'text'
+   */
+  presentation?: 'text' | 'scale';
+  /** The question, tied to the learner's own experience. */
+  prompt: Markdown;
+  /**
+   * text: the longest answer, in characters. The build counts it in the LMS's saved data as a persisted string variable.
+   * @default 500
+   */
+  maxLength?: number;
+  /**
+   * text: the height of the field, in lines.
+   * @default 4
+   */
+  rows?: number;
+  /** An expert's answer, shown once the learner has saved theirs, to compare with. */
+  model?: Markdown;
+  /**
+   * Offer « Mes réponses »: a text file of every reflection of the course and the learner's answers, made in the browser (nothing is sent).
+   * @default false
+   */
+  download?: boolean;
+  /** scale: the points offered, and what their ends mean. */
+  scale?: {
+    /** @default 1 */
+    min?: number;
+    /**
+     * SCORM 1.2 records a likert answer as one character: 9 at most.
+     * @default 5
+     */
+    max?: number;
+    /** What the lowest point means (Pas du tout). */
+    minLabel?: string;
+    /** What the highest point means (Tout à fait). */
+    maxLabel?: string;
+  };
+  /** Plan objective the reflection serves (recorded with its interaction). */
+  objective?: PlanId;
 };
 
 // blocks/results.schema.json
@@ -2283,6 +2424,61 @@ export type ResultsProps = {
   passedMessage?: Markdown;
   failedMessage?: Markdown;
   completedMessage?: Markdown;
+};
+
+// blocks/sort.schema.json
+
+/**
+ * sort block props
+ *
+ * « Classer »: items the learner places, by choosing an item then where it goes (a mouse may also drag): each with its match (pairs), into two to four categories (categories), or in order (order). Scored by the share of its items placed right; correct when all are. After the last try each item shows whether it was right, and where it belonged.
+ */
+export type SortProps = {
+  /**
+   * pairs: each item goes to its own target, each target takes one item. categories: two to four targets, each taking several items. order: no targets, the items are put in order (written in the right order, shown shuffled).
+   * @default 'pairs'
+   */
+  presentation?: 'pairs' | 'categories' | 'order';
+  /** The instruction (Associez chaque symptôme à sa cause.). */
+  stem?: Markdown;
+  /** What the learner places, in the right order for order (they are shown in a fixed shuffled order). */
+  items?: {
+    id: string;
+    text?: string;
+    image?: AssetPath;
+    /** What the image shows. Required with image. */
+    alt?: string;
+    /** pairs and categories: the id of the target the item belongs to. */
+    target?: string;
+  }[];
+  /** pairs and categories: where items go (two to four categories; as many targets as items for pairs). */
+  targets?: {
+    id: string;
+    text?: string;
+    image?: AssetPath;
+    /** What the image shows. Required with image. */
+    alt?: string;
+  }[];
+  feedback?: ActivityFeedback;
+  /** Plan objective measured. */
+  objective?: PlanId;
+  /**
+   * Counts in the course score (the share of its items placed right).
+   * @default true
+   */
+  scored?: boolean;
+  /** @default 1 */
+  weight?: number;
+  /**
+   * Tries before the placements are final.
+   * @default 1
+   */
+  attempts?: number;
+  /**
+   * After the last try, each item placed wrong says where it belonged.
+   * @default true
+   */
+  showCorrectAnswer?: boolean;
 };
 
 // blocks/stack.schema.json
@@ -2556,7 +2752,7 @@ export type ComponentManifest = {
    * @default 'block'
    */
   level?: 'block' | 'screen';
-  /** Fork: the component this one was derived from. Without props, template, slots or fallback, the parent's are used; propsExtend adds props to the parent's. A fork of quiz, numeric, decision or results keeps that behaviour (scoring, saved state, SCORM records), so its template must provide the behaviour hooks. */
+  /** Fork: the component this one was derived from. Without props, template, slots or fallback, the parent's are used; propsExtend adds props to the parent's. A fork of quiz, numeric, fill-in, sort, reflection, decision or results keeps that behaviour (scoring, saved state, SCORM records), so its template must provide the behaviour hooks. */
   extends?: {
     component: Slug;
     /** Version of the parent when the fork was made (to see later changes of the parent). */

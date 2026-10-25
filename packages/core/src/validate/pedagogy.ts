@@ -8,7 +8,7 @@ import { list, fieldsOf, text, byId, hasId } from './guards.ts';
 
 // Course-level pedagogical heuristics (guardrails B1, E3) and screen completion coherence.
 // Activities are recognised by behaviour (forks of quiz count), blocks in slots included.
-const ACTIVITY_BEHAVIORS = new Set(['quiz', 'numeric', 'decision', 'dialogue', 'object', 'predict']);
+const ACTIVITY_BEHAVIORS = new Set(['quiz', 'numeric', 'fill-in', 'sort', 'reflection', 'decision', 'dialogue', 'object', 'predict']);
 const STREAK_LIMIT = 4; // exposition screens in a row before a warning (guardrail B1, to calibrate)
 // Text density. Slides: a screen is one view. Scroll presentation: a screen is a page (a lesson),
 // read in stretches between things to do; a very long page is two lessons.
@@ -60,6 +60,7 @@ export function checkScreenPedagogy(ctx: CourseCheckContext, screen: ScreenFile)
     const locked = props.textRef ? byId(planIndex.texts, props.textRef)?.text : null;
     let count = words(props.markdown || locked || props.text || props.stem || props.prompt);
     if (component.root === 'quiz' || component.root === 'decision') count += list(props.options).reduce((sum: number, option) => { const fields = fieldsOf(option); return sum + words(fields.text || fields.label); }, 0);
+    if (component.root === 'sort') count += [...list(props.items), ...list(props.targets)].reduce((sum: number, entry) => sum + words(fieldsOf(entry).text), 0);
     return count;
   };
   const count = blocks.reduce((sum, block) => sum + wordsOf(block), 0);

@@ -9,6 +9,7 @@
 //             data-t-unit, data-t-expected, data-t-group.
 //   decision  data-t-prompt, data-t-choice="<id>" (a <button> per option), data-t-feedback.
 //   results   data-t-score, data-t-status, data-t-message, data-t-retry (all optional).
+//   fill-in, sort, reflection (D63): activities.ts.
 // Any template: data-t-click (button firing the screen event "click"; ="<name>" names it), data-t-toggle="<part>"
 // with data-t-part="<part>" (disclosure; data-t-open shows it first), data-t-tabs with data-t-tab="<k>" and
 // data-t-panel="<k>" (tabs; data-t-selected picks the first), data-t-label="<label id>" (player label).
@@ -35,6 +36,7 @@ import { parseNumber, gradeNumeric, formatNumber } from './numeric.ts';
 import { createCharts } from './charts/behavior.ts';
 import { bindPrimitives } from './primitives.ts';
 import type { BoundPrimitives, PrimitiveHook } from './primitives.ts';
+import { createActivities } from './activities.ts';
 
 export interface BehaviorContext {
   courseState: CourseState;
@@ -53,6 +55,8 @@ export interface BehaviorContext {
   // A control was visited without an event (shown when its block came into view): steps that wait
   // for exploration look again.
   onVisited?(): void;
+  // The course's title (« Mes réponses » of reflections).
+  courseTitle?: string;
 }
 
 // Renders one possible outcome of an activity (dry run).
@@ -77,9 +81,11 @@ export interface Control {
 // SCORM 1.2 responses and patterns name choices by letter: a, b, c…
 const letter = (index: number) => String.fromCharCode(97 + index);
 
-export function createBehaviors({ courseState, labels, language, formatLabel, announce, recordInteraction, trigger, retake, still = false, onVisited }: BehaviorContext) {
+export function createBehaviors({ courseState, labels, language, formatLabel, announce, recordInteraction, trigger, retake, still = false, onVisited, courseTitle }: BehaviorContext) {
   // Charts and diagrams (D60): their own behaviour (charts/behavior.ts).
   const charts = createCharts({ courseState, labels, language, formatLabel, announce, recordInteraction, trigger, still });
+  // Fill-in, sort and reflection (D63): activities.ts.
+  const activities = createActivities({ courseState, labels, formatLabel, announce, recordInteraction, trigger, courseTitle });
   // Controls of each template root (bound before the slots are filled), and the refresh of each results block.
   const controlsOf = new WeakMap<Element, Control[]>();
   const refreshers = new WeakMap<Element, () => void>();
@@ -237,6 +243,13 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
       return { option, node, input, optionFeedback, flag };
     }).filter((item) => item !== null);
     const syncSelected = () => { for (const item of items) item.node.classList.toggle('is-selected', item.input.checked); };
+    // Zones on a picture (presentation image): named « Zone n » until the answer is final, so that the
+    // options' words do not give away where the answer is; then by their words.
+    const nameZones = (final: boolean) => items.forEach((item, index) => {
+      if (props.presentation === 'image' && !final) item.input.setAttribute('aria-label', formatLabel(labels.zone, { n: index + 1 }));
+      else item.input.removeAttribute('aria-label');
+    });
+    nameZones(false);
     // Compact feedback: the chosen option's text is not shown again (it is marked where it is),
     // only read to screen readers. Read when the result shows, so that a reserved room can be
     // measured both ways (screen-view.ts feedbackRooms).
@@ -261,6 +274,7 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
       }
       if (result.final) {
         group.setAttribute('data-t-final', '');
+        nameZones(true);
         for (const item of items) {
           item.input.disabled = true;
           if (props.showCorrectAnswer !== false && item.option.correct) {
@@ -468,6 +482,9 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
   function run(wrap: HTMLElement, block: BlockData, dry: boolean): Outcome[] | undefined {
     if (hasBehavior(block, 'quiz')) return quiz(wrap, block, dry);
     if (hasBehavior(block, 'numeric')) return numeric(wrap, block, dry);
+    if (hasBehavior(block, 'fill-in')) return activities.fillIn(wrap, block, dry);
+    if (hasBehavior(block, 'sort')) return activities.sort(wrap, block, dry);
+    if (hasBehavior(block, 'reflection')) return activities.reflection(wrap, block, dry);
     if (hasBehavior(block, 'decision')) return decision(wrap, block, dry);
     if (hasBehavior(block, 'results')) return results(wrap, block, dry);
     if (hasBehavior(block, 'chart') || hasBehavior(block, 'predict')) return charts.bind(wrap, block, dry);
@@ -478,6 +495,7 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
     primitives,
     noteShown,
     charts,
+    activities,
     // Binds the behaviour of an activity or results block to its markup (nothing for other blocks).
     bind(wrap: HTMLElement, block: BlockData): void { run(wrap, block, false); },
     // Dry run: the possible outcomes of an activity or results block (none for other blocks).

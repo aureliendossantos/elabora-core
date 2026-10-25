@@ -206,13 +206,18 @@ export function checkTemplate(ctx: Pick<CheckContext, 'project' | 'reporter'>, c
         if (!/^\s*\{\{\s*id\s*\}\}\s*$/.test(found.value)) report('E_COMPONENT_HOOK', found.line, `data-t-${hook}="{{id}}": the hook carries the option id.`);
       }
     }
-    for (const hook of ['submit', 'feedback', 'stem', 'prompt', 'group']) {
+    for (const hook of ['submit', 'feedback', 'stem', 'prompt', 'group', 'text', 'response', 'bank', 'pool']) {
       const found = present.get(hook) || [];
       if (found.length > 1 || found.some((x) => x.inEach)) report('E_COMPONENT_HOOK', found[1]?.line || found[0]?.line, `data-t-${hook} appears once, outside data-each.`);
     }
     for (const found of present.get('input') || []) {
       if (component.behavior === 'quiz' && !found.within.includes('option')) report('E_COMPONENT_HOOK', found.line, 'data-t-input goes inside the data-t-option element.');
     }
+    // A sort's target holds the button that places there and, optionally, where its items go.
+    for (const found of [...(present.get('place') || []), ...(present.get('zone') || [])]) {
+      if (component.behavior === 'sort' && !found.within.includes('sort-target')) report('E_COMPONENT_HOOK', found.line, `data-t-${found.hook} goes inside the data-t-sort-target element.`);
+    }
+    if (component.behavior === 'sort' && present.has('sort-target') && !present.has('place')) report('E_COMPONENT_HOOK', null, `${id} keeps the sort behaviour: each data-t-sort-target needs a <button data-t-place> inside.`);
     for (const found of [...(present.get('option-feedback') || []), ...(present.get('flag') || [])]) {
       const beside = found.each === 'options' && /^\s*\{\{\s*id\s*\}\}\s*$/.test(found.value || '');
       if (component.behavior === 'quiz' && !found.within.includes('option') && !beside) report('E_COMPONENT_HOOK', found.line, `data-t-${found.hook} goes inside the data-t-option element, or next to it as data-t-${found.hook}="{{id}}" in the same data-each="options".`);

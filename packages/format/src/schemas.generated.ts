@@ -13,6 +13,7 @@ import blocksDecisionSchema from '../schemas/0.1/blocks/decision.schema.json' wi
 import blocksDiagramSchema from '../schemas/0.1/blocks/diagram.schema.json' with { type: 'json' };
 import blocksDialogueSchema from '../schemas/0.1/blocks/dialogue.schema.json' with { type: 'json' };
 import blocksDonutSchema from '../schemas/0.1/blocks/donut.schema.json' with { type: 'json' };
+import blocksFillInSchema from '../schemas/0.1/blocks/fill-in.schema.json' with { type: 'json' };
 import blocksFreeObjectSchema from '../schemas/0.1/blocks/free-object.schema.json' with { type: 'json' };
 import blocksHeadingSchema from '../schemas/0.1/blocks/heading.schema.json' with { type: 'json' };
 import blocksImageSchema from '../schemas/0.1/blocks/image.schema.json' with { type: 'json' };
@@ -25,7 +26,9 @@ import blocksNumericSchema from '../schemas/0.1/blocks/numeric.schema.json' with
 import blocksProcessSchema from '../schemas/0.1/blocks/process.schema.json' with { type: 'json' };
 import blocksProportionSchema from '../schemas/0.1/blocks/proportion.schema.json' with { type: 'json' };
 import blocksQuizSchema from '../schemas/0.1/blocks/quiz.schema.json' with { type: 'json' };
+import blocksReflectionSchema from '../schemas/0.1/blocks/reflection.schema.json' with { type: 'json' };
 import blocksResultsSchema from '../schemas/0.1/blocks/results.schema.json' with { type: 'json' };
+import blocksSortSchema from '../schemas/0.1/blocks/sort.schema.json' with { type: 'json' };
 import blocksStackSchema from '../schemas/0.1/blocks/stack.schema.json' with { type: 'json' };
 import blocksTextSchema from '../schemas/0.1/blocks/text.schema.json' with { type: 'json' };
 import blocksTrendSchema from '../schemas/0.1/blocks/trend.schema.json' with { type: 'json' };
@@ -60,6 +63,7 @@ export type SchemaName =
   | 'blocks/diagram'
   | 'blocks/dialogue'
   | 'blocks/donut'
+  | 'blocks/fill-in'
   | 'blocks/free-object'
   | 'blocks/heading'
   | 'blocks/image'
@@ -72,7 +76,9 @@ export type SchemaName =
   | 'blocks/process'
   | 'blocks/proportion'
   | 'blocks/quiz'
+  | 'blocks/reflection'
   | 'blocks/results'
+  | 'blocks/sort'
   | 'blocks/stack'
   | 'blocks/text'
   | 'blocks/trend'
@@ -104,6 +110,7 @@ export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
   'blocks/diagram': blocksDiagramSchema,
   'blocks/dialogue': blocksDialogueSchema,
   'blocks/donut': blocksDonutSchema,
+  'blocks/fill-in': blocksFillInSchema,
   'blocks/free-object': blocksFreeObjectSchema,
   'blocks/heading': blocksHeadingSchema,
   'blocks/image': blocksImageSchema,
@@ -116,7 +123,9 @@ export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
   'blocks/process': blocksProcessSchema,
   'blocks/proportion': blocksProportionSchema,
   'blocks/quiz': blocksQuizSchema,
+  'blocks/reflection': blocksReflectionSchema,
   'blocks/results': blocksResultsSchema,
+  'blocks/sort': blocksSortSchema,
   'blocks/stack': blocksStackSchema,
   'blocks/text': blocksTextSchema,
   'blocks/trend': blocksTrendSchema,
@@ -137,4 +146,4 @@ export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
 };
 
 /** Built-in block types (the native catalogue), in the order of block.schema.json. */
-export const BLOCK_TYPES: readonly BuiltinBlockType[] = ['heading', 'text', 'image', 'video', 'audio', 'callout', 'button', 'accordion', 'math', 'quiz', 'numeric', 'decision', 'dialogue', 'free-object', 'results', 'stack', 'key-figures', 'bars', 'donut', 'trend', 'proportion', 'before-after', 'levels', 'process', 'cycle', 'matrix', 'milestones', 'diagram'];
+export const BLOCK_TYPES: readonly BuiltinBlockType[] = ['heading', 'text', 'image', 'video', 'audio', 'callout', 'button', 'accordion', 'math', 'quiz', 'numeric', 'decision', 'dialogue', 'free-object', 'results', 'stack', 'key-figures', 'bars', 'donut', 'trend', 'proportion', 'before-after', 'levels', 'process', 'cycle', 'matrix', 'milestones', 'diagram', 'fill-in', 'sort', 'reflection'];
