@@ -9,13 +9,14 @@ Test public behaviour, use real domain objects, fake only uncontrolled boundarie
 ## Validation
 
 - Baseline: **769 passed, 6 skipped** (775 unit cases).
-- Completed full native random-order unit runs: **791 passed, 6 skipped** (797 cases) with seeds **104729** and **130363**. Seed **155921** is running. Reproduce with `node --test --test-random-seed=<seed> --test-concurrency=2 --test-global-setup=test/isolate.ts "test/unit/*.test.ts"`.
+- Completed full native random-order unit runs: **791 passed, 6 skipped** (797 cases) with seeds **104729, 130363 and 155921**. Reproduce with `node --test --test-random-seed=<seed> --test-concurrency=2 --test-global-setup=test/isolate.ts "test/unit/*.test.ts"`.
 - Random order reproduced three setup defects: ElevenLabs estimates needed a previous library search; account quota included another case's spending; a custom download kind leaked into a built-in registry assertion. Fresh per-case service/cache/quota state, explicit prerequisites and a disposable extension process fixed them. Focused reruns and completed full runs pass.
-- Focused native-seeded browser groups pass: canvas/live/web 16 cases, object/look/LMS 24, design/layer timelines 26, player/items 11, review protocol, fonts, engine canvas and workflow. Narration and timeline each pass all ten cases. Final dialogue integration and complete browser repeats are running.
+- Focused native-seeded browser groups pass: canvas/live/web 16 cases, object/look/LMS 24, design/layer timelines 26, player/items 11, review protocol, fonts, engine canvas and workflow. Narration and timeline each pass all ten cases. Dialogue integration passed all ten cases at 130363; its latest-state LMS acknowledgement also passed at 155921. Complete browser repeats are running.
 - Matrix: **8 passed** on both native seeds **130363** and **155921**. Strict typecheck and `npm run release:check` passed.
 - First-checkpoint complete browser suite: **118 passed, 3 skipped** (121 cases). Final complete-browser seed **104729** is running. Two Edge cases require installed Microsoft Edge; Electron PDF requires `ELABORA_ELECTRON_EXECUTABLE`. No unavailable/native Windows or paid-provider checks are claimed as passes.
+- The full-browser seed **104729** exposed two timing races under load: the tooltip clock was still advancing between commands, and audio polling could miss the short last-segment interval. Paused timer control/readiness and a real AAC seek with a same-task ended event replace those races. Focused checks pass: all four player cases at 155921, tooltip at 104729, early AAC end at 104729/155921 and controlled PDF fallback at 155921. The PDF boundary acknowledges HEAD headers rather than waiting for an absent response body.
 - Earlier repeats with shuffled CLI arguments are repeat evidence only: Node sorts arguments; native seeds randomize execution within files too.
-- Test files: **26,924 → 26,401 lines at this checkpoint**; shared test utilities add 73 net lines. Final totals are refreshed after the last dialogue commit. No production runtime code changed; the metadata-only CI repair is recorded below.
+- Test files: **26,924 → 26,417 lines (507 fewer)**; shared test utilities add 73 net lines, for **434 fewer test-code lines overall**. No production runtime code changed; the metadata-only CI repair is recorded below.
 
 ## Recurring defects
 
@@ -39,10 +40,10 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Reproduced order dependencies | 3 | ElevenLabs rate estimate needed a previous test to search a library voice |
 | Private layout assertions | 7 | charts-matrix imported label placement helpers instead of measuring rendered labels |
 | Fixture lifetime | 9 | copied courses lacked per-case failure cleanup |
-
 | Reproduced browser timing races | 2 | player tooltip: an automatically advancing fake clock could expire the flash before pointer assertions |
-
 | Uncontrolled virtual clocks | 2 | player: install initializes time but does not pause its progression |
+
+| Nonportable fixture paths | 1 | dialogue-fixture: URL.pathname doubled a Windows drive instead of decoding a native path |
 
 ## Production changes
 
@@ -182,6 +183,7 @@ No human answer is required to finish this test-only audit. All automated files 
 | `AGENTS.md` | 29 | 29 | Policy complete; canonical standards in CONTRIBUTING |
 | `.sampo/changesets/layer-captions-bare-canvas.md` | 5 | 6 | Metadata only; restore mandatory root release target so CI can run |
 | `.sampo/changesets/player-motion.md` | 10 | 11 | Metadata only; restore mandatory root release target so CI can run |
+| `test/dialogue-fixture.ts` | 132 | 132 | Canonical file-URL-decoded ROOT fixes Windows drive duplication and encoded paths; all 18 affected fixture/store/release cases passed at seeds 104729 and 130363 |
 | `test/resources.ts` | 0 | 34 | Shared test-only ownership helper: one context-owned stack even across helper calls; reverse-order disposal keeps dependants ahead of files |
 | `test/cloud-fake.ts` | 451 | 454 | Test-only hosting fake now uses instance-owned deterministic IDs and time; existing 20 cloud contracts passed with seed 155921 |
 | `test/events.ts` | 0 | 27 | Shared test-only event log and subscription waits; real failure deadline stays active while domain timers are faked; 19 engine cases passed |
@@ -193,4 +195,4 @@ PocketModel constructs native ONNX inference internally and has a private constr
 
 ## Remaining work
 
-Finish dialogue integration validation and its per-file commit. Complete the native full-browser repeats and third full-unit seed, refresh final counts/results, update the core PR, and verify CI and Git publication. App automated audit and final sibling-core repeat are complete. Production testability proposals above, native-only execution and the app's separate manual desktop catalogue remain explicit follow-up scope, not automated passes.
+All 119 automated test files are reviewed and committed. The first complete browser seed 104729 finished with 117 passes, two timing failures and three environment skips (122 cases); both failures are fixed and focused reruns pass. Complete the final full-browser seed 155921 against the committed fixes. CI also exposed inherited PR metadata in the Sampo fixture, a doubled Windows drive in dialogue fixtures, and a newly-created folder outside the named-path watcher check's setup; affected cases pass at 104729/130363 after isolating environment/paths and preparing the watched folder before readiness. Verify the full CI rerun and final unit repeat. Then refresh the final ledger/PR and verify CI and Git publication. All three complete unit seeds, both matrix seeds, typecheck, release metadata and the app final sibling-core repeat passed. Production testability proposals above, native-only execution and the app's separate manual desktop catalogue remain follow-up scope, not automated passes.
