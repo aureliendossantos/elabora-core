@@ -42,7 +42,7 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 
 | Reproduced browser timing races | 1 | player tooltip: an automatically advancing fake clock could expire the flash before pointer assertions |
 
-| Uncontrolled virtual clocks | 1 | player: install initializes time but does not pause its progression |
+| Uncontrolled virtual clocks | 2 | player: install initializes time but does not pause its progression |
 
 ## Production changes
 
@@ -75,7 +75,7 @@ No human answer is required to finish this test-only audit. All automated files 
 | `test/e2e/narration.test.ts` | 437 | 428 | Native seed 130363 passed all ten; actual packaged audio/caption byte accounting replaces size quotas; narrated controls, resume, real audio-clock and emulator contracts retained; owned resources |
 | `test/e2e/object.test.ts` | 372 | 372 | Native seed 104729 passed fourteen behaviours; gates, event order and dry WebGL readback retained; decoded captures require variation between pixels; final suite repeat queued |
 | `test/e2e/plan-document.test.ts` | 61 | 61 | Reviewed unchanged; focused seed 104729 passed tagged A4 outline, date, deterministic bytes and export; Electron case requires opt-in executable |
-| `test/e2e/player-items.test.ts` | 265 | 251 | Focused seed 155921 passed all seven; virtual PDF fallback timers and public popup/screen/progress/storage behaviour replace listener counters and real waits |
+| `test/e2e/player-items.test.ts` | 265 | 256 | All seven cases previously passed at 155921; revised PDF case passed at 155921 with paused clock, explicit rendering/time advances and HEAD-header acknowledgement; real viewer/download/inline fallback contracts retained |
 | `test/e2e/player.test.ts` | 150 | 151 | All four cases passed at native seed 155921; tooltip also passed at 104729 after pausing its clock and driving hover/leave timers; wait for player readiness; removes load-sensitive flash expiry race |
 | `test/e2e/review.test.ts` | 299 | 303 | Focused seed 155921 passed; explicit browser message acknowledgements and event log replace fixed waits and polling; review origin/refusal behaviours retained |
 | `test/e2e/timeline.test.ts` | 461 | 438 | Native seed 130363 passed all ten; virtual playhead checks computed opacity, translation, scale and stroke completion instead of Animation objects; cues, seek, captures and canvas contracts retained; owned resources |

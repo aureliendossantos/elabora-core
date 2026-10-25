@@ -112,9 +112,11 @@ test('the bars\' popups open toward the room: « Affichage » at the start of a 
 test('a PDF\'s preview: the browser\'s viewer when the server sends a PDF, the file\'s card when it would be a download', { skip: NO_FFMPEG, timeout: 180000 }, async (t) => {
   const dir = copyExample(t);
   await player(t, dir, async (page) => {
+    await page.clock.pauseAt('2026-10-21T12:00:00Z');
     const open = async () => {
       if (await page.locator('dialog.t-viewer[open]').count()) await page.keyboard.press('Escape');
       if (!await page.locator('.t-sheet[data-sheet="resources"]:not([hidden])').count()) await page.click('.t-resources-btn');
+      await page.clock.runFor(1000);
       await page.click('button.t-resource[data-resource="fiche-reflexe"]');
       await page.waitForSelector('dialog.t-viewer[open]');
     };
@@ -137,7 +139,10 @@ test('a PDF\'s preview: the browser\'s viewer when the server sends a PDF, the f
     assert.equal(await page.locator('dialog[open] .t-viewer-download').count(), 1);
     // A server that refuses HEAD: a download still gets the card, after 8 s of an empty frame…
     headRefused = true;
+    const refused = page.waitForResponse(response => response.request().method() === 'HEAD' && response.url().includes('fiche-reflexe-impression.pdf') && response.status() === 405);
     await open();
+    await refused;
+    await page.evaluate(() => Promise.resolve());
     await page.clock.runFor(3000);
     assert.equal(await page.locator('dialog[open] .t-viewer-empty').count(), 0, 'not before the frame had its time');
     await page.clock.runFor(5100);
