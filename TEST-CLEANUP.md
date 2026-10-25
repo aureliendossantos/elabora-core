@@ -4,7 +4,7 @@ Branch: `test-policy-cleanup`. Baseline: `96df988`. Worktree: `.test-policy/elab
 
 ## Policy and scope
 
-Test public behaviour, use real domain objects, fake only uncontrolled boundaries, own and clean up each test's state, and use seeded invariants. No production changes without a ledger entry; propose substantial testability refactors for human review. Core owns the shared standards in CONTRIBUTING; app CONTRIBUTING adds its commands.
+Test public behaviour, use real domain objects, fake only uncontrolled boundaries, own and clean up each test's state, and use seeded invariants. No production changes without a ledger entry; propose substantial testability refactors for human review. Core owns the shared standards in CONTRIBUTING; app CONTRIBUTING adds its commands. Recurring app findings about fail-closed runners, explicit pinned/native fixtures, personal credentials and actual animation/layout completion are folded back into that shared policy.
 
 ## Validation
 
@@ -43,11 +43,8 @@ Counts are confirmed sites changed, not estimates of the whole repository. Updat
 | Fixture lifetime | 9 | copied courses lacked per-case failure cleanup |
 | Reproduced browser timing races | 2 | player tooltip: an automatically advancing fake clock could expire the flash before pointer assertions |
 | Uncontrolled virtual clocks | 2 | player: install initializes time but does not pause its progression |
-
 | Nonportable fixture paths | 1 | dialogue-fixture: URL.pathname doubled a Windows drive instead of decoding a native path |
-
 | CI environment leaks | 1 | release fixture: inherited GITHUB_REF_NAME=3/merge overrode its main branch |
-
 | Watcher setup boundaries | 1 | engine-store: named-file event check created its target folder after Linux watcher readiness |
 
 ## Production changes
@@ -58,7 +55,7 @@ No production code changed. CI discovered a pre-existing release-metadata error 
 
 Proposed, not applied: give `watchFolders` an explicit readiness acknowledgement on every platform, matching FsStore. Its macOS integration test currently probes the real stream because the public API has no ready signal. Keep the real-filesystem regression; a test-only delay cannot fix this API limitation.
 
-No human answer is required to finish this test-only audit. All automated files have been reviewed. Keep native inference rejection regressions until the proposed inference seam can replace their prototype fixture. The look-server integration still needs a bounded OS process-exit poll: propose exposing completion of daemon shutdown so this can await a termination signal without changing production during cleanup.
+No human answer is required to finish this test cleanup audit. All automated files have been reviewed. Keep native inference rejection regressions until the proposed inference seam can replace their prototype fixture. The look-server integration still needs a bounded OS process-exit poll: propose exposing completion of daemon shutdown so this can await a termination signal without changing production during cleanup.
 
 ## Files
 
