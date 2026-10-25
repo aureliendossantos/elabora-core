@@ -1,13 +1,25 @@
 <figure class="t-figure" data-if="presentation == centered">
-  <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
-  <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
-  <figcaption data-if="caption">{{caption}}</figcaption>
+  <span class="t-media" data-if="!zoom">
+    <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+    <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+  </span>
+  <button class="t-zoom" data-if="zoom" data-t-zoom>
+    <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+    <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+  </button>
+  <figcaption data-if="caption" data-t-caption>{{caption}}</figcaption>
   <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
 </figure>
 <figure class="t-figure t-image t-image--wide" data-if="presentation == wide">
-  <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
-  <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
-  <figcaption data-if="caption">{{caption}}</figcaption>
+  <span class="t-media" data-if="!zoom">
+    <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+    <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+  </span>
+  <button class="t-zoom" data-if="zoom" data-t-zoom>
+    <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+    <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+  </button>
+  <figcaption data-if="caption" data-t-caption>{{caption}}</figcaption>
   <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
 </figure>
 <figure class="t-figure t-image t-image--band t-image--{{height}}" data-if="presentation == band" data-t-bleed style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}">
@@ -20,9 +32,15 @@
 </figure>
 <div class="t-image t-image--beside t-image--{{side}} t-image--{{share}}" data-if="presentation == beside">
   <figure class="t-figure" style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}">
-    <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
-    <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
-    <figcaption data-if="caption">{{caption}}</figcaption>
+    <span class="t-media" data-if="!zoom">
+      <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+      <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+    </span>
+    <button class="t-zoom" data-if="zoom" data-t-zoom>
+      <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+      <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+    </button>
+    <figcaption data-if="caption" data-t-caption>{{caption}}</figcaption>
     <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
   </figure>
   <div class="t-image-text">

@@ -156,17 +156,23 @@ function speakersOf(data: DialogueData, course: Course | null | undefined, asset
   const out: Record<string, DialogueSpeakerData> = {};
   for (const speaker of objectsIn(course?.speakers)) {
     if (!named.has(speaker.id)) continue;
-    const own = isRecord(speaker.look) ? speaker.look : null;
-    const expressions = own && isRecord(own.expressions) ? Object.fromEntries(Object.entries(own.expressions).filter(([, file]) => typeof file === 'string').map(([name, file]) => [name, assetPath(file as string)])) : null;
-    const drawn = own && typeof own.svg === 'string' ? look?.(speaker.id, own.svg) ?? null : null;
-    out[speaker.id] = {
-      name: speaker.name,
-      ...(speaker.narrator === true ? { narrator: true } : {}),
-      ...(typeof speaker.color === 'string' ? { color: speaker.color } : {}),
-      ...(own ? { look: { ...(typeof own.svg === 'string' ? { svg: assetPath(own.svg) } : {}), ...(typeof own.portrait === 'string' ? { portrait: assetPath(own.portrait) } : {}), ...(expressions && Object.keys(expressions).length ? { expressions } : {}), ...(drawn ? drawn : {}) } } : {})
-    };
+    out[speaker.id] = speakerData(speaker, assetPath, look);
   }
   return Object.fromEntries(Object.keys(out).sort().map((id) => [id, out[id]]));
+}
+
+// What the player shows of a speaker of course.json (a dialogue's character, a speech block's, D63):
+// its name, colour and look, its pictures as package paths and its SVG sanitized for the page.
+export function speakerData(speaker: NonNullable<Course['speakers']>[number], assetPath: (name: string) => string, look?: DialogueDataOptions['look']): DialogueSpeakerData {
+  const own = isRecord(speaker.look) ? speaker.look : null;
+  const expressions = own && isRecord(own.expressions) ? Object.fromEntries(Object.entries(own.expressions).filter(([, file]) => typeof file === 'string').map(([name, file]) => [name, assetPath(file as string)])) : null;
+  const drawn = own && typeof own.svg === 'string' ? look?.(speaker.id, own.svg) ?? null : null;
+  return {
+    name: speaker.name,
+    ...(speaker.narrator === true ? { narrator: true } : {}),
+    ...(typeof speaker.color === 'string' ? { color: speaker.color } : {}),
+    ...(own ? { look: { ...(typeof own.svg === 'string' ? { svg: assetPath(own.svg) } : {}), ...(typeof own.portrait === 'string' ? { portrait: assetPath(own.portrait) } : {}), ...(expressions && Object.keys(expressions).length ? { expressions } : {}), ...(drawn ? drawn : {}) } } : {})
+  };
 }
 
 // When a cue falls in its line, in seconds from the line's start, as the timeline resolves an anchor

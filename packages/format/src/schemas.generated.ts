@@ -32,6 +32,7 @@ import blocksQuizSchema from '../schemas/0.1/blocks/quiz.schema.json' with { typ
 import blocksReflectionSchema from '../schemas/0.1/blocks/reflection.schema.json' with { type: 'json' };
 import blocksResultsSchema from '../schemas/0.1/blocks/results.schema.json' with { type: 'json' };
 import blocksSortSchema from '../schemas/0.1/blocks/sort.schema.json' with { type: 'json' };
+import blocksSpeechSchema from '../schemas/0.1/blocks/speech.schema.json' with { type: 'json' };
 import blocksStackSchema from '../schemas/0.1/blocks/stack.schema.json' with { type: 'json' };
 import blocksStatementSchema from '../schemas/0.1/blocks/statement.schema.json' with { type: 'json' };
 import blocksTextSchema from '../schemas/0.1/blocks/text.schema.json' with { type: 'json' };
@@ -87,6 +88,7 @@ export type SchemaName =
   | 'blocks/reflection'
   | 'blocks/results'
   | 'blocks/sort'
+  | 'blocks/speech'
   | 'blocks/stack'
   | 'blocks/statement'
   | 'blocks/text'
@@ -139,6 +141,7 @@ export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
   'blocks/reflection': blocksReflectionSchema,
   'blocks/results': blocksResultsSchema,
   'blocks/sort': blocksSortSchema,
+  'blocks/speech': blocksSpeechSchema,
   'blocks/stack': blocksStackSchema,
   'blocks/statement': blocksStatementSchema,
   'blocks/text': blocksTextSchema,
@@ -161,7 +164,7 @@ export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
 };
 
 /** Built-in block types (the native catalogue), in the order of block.schema.json. */
-export const BLOCK_TYPES: readonly BuiltinBlockType[] = ['heading', 'text', 'image', 'video', 'audio', 'callout', 'button', 'accordion', 'math', 'quiz', 'numeric', 'decision', 'dialogue', 'free-object', 'results', 'stack', 'key-figures', 'bars', 'donut', 'trend', 'proportion', 'before-after', 'levels', 'process', 'cycle', 'matrix', 'milestones', 'diagram', 'fill-in', 'sort', 'reflection', 'statement', 'divider', 'gallery', 'columns'];
+export const BLOCK_TYPES: readonly BuiltinBlockType[] = ['heading', 'text', 'image', 'video', 'audio', 'callout', 'button', 'accordion', 'math', 'quiz', 'numeric', 'decision', 'dialogue', 'free-object', 'results', 'stack', 'key-figures', 'bars', 'donut', 'trend', 'proportion', 'before-after', 'levels', 'process', 'cycle', 'matrix', 'milestones', 'diagram', 'fill-in', 'sort', 'reflection', 'statement', 'divider', 'gallery', 'columns', 'speech'];
 
 /** A built-in screen layout (layouts/<id>.schema.json). */
 export type BuiltinLayoutType = 'opening';

@@ -2,9 +2,9 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://elabora.studio/schemas/0.1/blocks/gallery.schema.json",
   "title": "gallery block props",
-  "description": "A gallery (« Galerie »): several images shown together. Presentations: grid (in columns, cropped to one ratio), mosaic (in columns at their own proportions), carousel (one at a time; until the player has its sequence, it shows as a grid) and compare (exactly two images, the second over the first, with a slider to move between them: before and after).",
+  "description": "A gallery (« Galerie »): several images shown together. Presentations: grid (in columns, cropped to one ratio), mosaic (in columns at their own proportions), carousel (one at a time with its caption, Previous and Next, a thumbnail per image) and compare (exactly two images, the second over the first, with a slider to move between them: before and after).",
   "x-category": "content",
-  "x-ai-instructions": "Use a gallery when the images are read together: variants to compare, examples of one category, the steps of a result. Each image needs alt (what it shows that matters here) unless it is decorative, and a caption when the learner must tell the images apart. compare takes exactly two images of the same framing: the first is before (or left), the second after. Keep grids to 2 to 8 images; more belong in separate parts.",
+  "x-ai-instructions": "Use a gallery when the images are read together: variants to compare, examples of one category, the steps of a result. Each image needs alt (what it shows that matters here) unless it is decorative, and a caption when the learner must tell the images apart. compare takes exactly two images of the same framing: the first is before (or left), the second after. Keep grids to 2 to 8 images and a carousel to 5 (learners often stop at the first ones: W_ITEMS_MANY); more belong in separate parts. Set zoom when a detail matters (a screenshot, a map): each image opens at full size.",
   "type": "object",
   "additionalProperties": false,
   "required": ["images"],
@@ -13,7 +13,7 @@
       "enum": ["grid", "mosaic", "carousel", "compare"],
       "default": "grid",
       "x-group": "design",
-      "description": "grid: columns of images cropped to ratio; mosaic: columns of images at their own proportions; carousel: one image at a time (shown as a grid for now); compare: two images, one over the other, and a slider between them."
+      "description": "grid: columns of images cropped to ratio; mosaic: columns of images at their own proportions; carousel: one image at a time, whole in a frame of ratio, with Previous, Next and thumbnails; compare: two images, one over the other, and a slider between them."
     },
     "images": {
       "type": "array",
@@ -35,7 +35,8 @@
       }
     },
     "columns": { "type": "integer", "minimum": 2, "maximum": 4, "default": 3, "x-group": "design", "description": "grid and mosaic: columns on wide screens (fewer on narrow ones)." },
-    "ratio": { "enum": ["4:3", "1:1", "3:2", "16:9", "3:4"], "default": "4:3", "x-group": "design", "description": "grid: the shape every image is cropped to, around its focus." },
+    "ratio": { "enum": ["4:3", "1:1", "3:2", "16:9", "3:4"], "default": "4:3", "x-group": "design", "description": "grid: the shape every image is cropped to, around its focus; carousel: the frame every image is shown whole in." },
+    "zoom": { "type": "boolean", "default": false, "description": "grid, mosaic and carousel: each image opens at full size in the player's lightbox, with its caption, and previous and next between the images." },
     "caption": { "type": "string", "maxLength": 300, "x-translatable": true, "description": "A caption for the whole gallery." },
     "generated": { "type": "boolean", "default": false, "description": "True if images of the gallery were produced by an AI model; the player shows a mark and the build report lists it." }
   }

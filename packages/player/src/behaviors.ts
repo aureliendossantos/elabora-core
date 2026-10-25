@@ -40,6 +40,7 @@ import { bindPrimitives } from './primitives.ts';
 import type { BoundPrimitives, PrimitiveHook } from './primitives.ts';
 import { createActivities } from './activities.ts';
 import { createDialogues } from './dialogue/view.ts';
+import { bindSpeech } from './speech.ts';
 import type { DialogueHost } from './dialogue/view.ts';
 
 export interface BehaviorContext {
@@ -238,8 +239,9 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
       if (!block?.visits || !controls?.length || wrap.closest('[inert]')) continue;
       let seen = false;
       for (const control of controls) {
-        // A sequence's item once it shows, details open from the start (D63).
-        const shown = control.hook === 'tab' ? control.node.getAttribute('aria-selected') === 'true'
+        // A sequence's item once it shows, details open from the start (D63). A tab that is not
+        // rendered (tabs shown as an accordion in a narrow container) shows nothing.
+        const shown = control.hook === 'tab' ? control.node.getAttribute('aria-selected') === 'true' && control.node.getClientRects().length > 0
           : control.hook === 'toggle' ? control.node.getAttribute('aria-expanded') === 'true'
           : control.hook === 'item' || (control.hook === 'details' && (control.node as HTMLDetailsElement).open);
         if (shown && !control.node.closest('[hidden]') && courseState.visitControl(block.id, control.name)) seen = true;
@@ -522,6 +524,7 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
     if (hasBehavior(block, 'results')) return results(wrap, block, dry);
     if (hasBehavior(block, 'chart') || hasBehavior(block, 'predict')) return charts.bind(wrap, block, dry);
     if (hasBehavior(block, 'dialogue')) { if (!dry) dialogues.bind(wrap, block); return undefined; }
+    if (hasBehavior(block, 'speech')) { bindSpeech(wrap, block, labels); return undefined; }
     return undefined;
   }
 

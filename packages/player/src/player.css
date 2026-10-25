@@ -450,8 +450,8 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
   .t-image--beside .t-figure img { max-height: 24rem; object-fit: cover; }
 }
 
-/* Gallery (« Galerie »): a grid of crops to one ratio, a mosaic of whole images, or before and after.
-   A carousel is laid out as a grid until the player has its sequence. */
+/* Gallery (« Galerie »): a grid of crops to one ratio, a mosaic of whole images, a carousel (one at a
+   time, below), or before and after. */
 .t-gallery { margin: 0; --t-gallery-columns: 3; --t-gallery-ratio: 4 / 3; }
 .t-gallery[data-columns="2"] { --t-gallery-columns: 2; }
 .t-gallery[data-columns="4"] { --t-gallery-columns: 4; }
@@ -462,13 +462,42 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-gallery-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(var(--t-gallery-columns), minmax(0, 1fr)); gap: 1rem; }
 .t-gallery-item { margin: 0; min-width: 0; }
 .t-gallery-item .t-figure img { width: 100%; }
-.t-gallery:is(.t-gallery--grid, .t-gallery--carousel) .t-gallery-item img { aspect-ratio: var(--t-gallery-ratio); object-fit: cover; }
+.t-gallery--grid .t-gallery-item img { aspect-ratio: var(--t-gallery-ratio); object-fit: cover; }
 .t-gallery-item figcaption { margin-top: .5rem; font-size: .875rem; line-height: 1.4; }
 .t-gallery--mosaic .t-gallery-list { display: block; columns: var(--t-gallery-columns); column-gap: 1rem; }
 .t-gallery--mosaic .t-gallery-item { break-inside: avoid; margin-bottom: 1rem; }
 .t-gallery-caption { margin-top: .75rem; color: var(--t-muted); font-size: .9375rem; }
 @container (max-width: 640px) { .t-gallery[data-columns] { --t-gallery-columns: 2; } .t-gallery-list { gap: .75rem; } .t-gallery--mosaic .t-gallery-list { column-gap: .75rem; } }
 @container (max-width: 300px) { .t-gallery[data-columns] { --t-gallery-columns: 1; } }
+/* Zoom (D63): an image that opens at full size in the lightbox is a button around it, a small
+   magnifier in its corner. Without zoom the image's wrapper is not a box (t-media). */
+.t-media { display: contents; }
+.t-zoom { position: relative; display: inline-block; max-width: 100%; padding: 0; border: 0; border-radius: var(--t-radius); color: inherit; background: none; font: inherit; vertical-align: top; cursor: zoom-in; }
+:is(.t-image--wide, .t-image--beside, .t-gallery) .t-zoom { display: block; width: 100%; }
+.t-zoom::after { content: ""; position: absolute; top: .5rem; inset-inline-end: .5rem; width: 2rem; height: 2rem; border-radius: 50%; background: rgb(10 13 18 / .58) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6'/%3E%3Cpath d='M15 15l5 5M10.5 8v5M8 10.5h5'/%3E%3C/svg%3E") center / 1.125rem no-repeat; opacity: .85; pointer-events: none; transition: opacity var(--t-dur-item) ease, scale var(--t-dur-press, 120ms) var(--t-ease-out); }
+.t-zoom:hover::after { opacity: 1; scale: calc(1 + .06 * var(--t-move)); }
+/* The gallery's carousel: one image whole in its frame (ratio), its caption, then Previous, a
+   thumbnail per image, where the learner is and Next; narrow containers keep the arrows and the
+   position (a swipe moves too). */
+.t-gallery-carousel { display: grid; gap: .75rem; }
+.t-gallery-slides { display: grid; }
+.t-gallery-slide { min-width: 0; margin: 0; }
+.t-gallery--carousel .t-gallery-slide img { width: 100%; max-width: none; max-height: min(60vh, 34rem); aspect-ratio: var(--t-gallery-ratio); object-fit: contain; background: color-mix(in srgb, var(--t-text) 5%, var(--t-surface)); }
+[data-presentation="slides"] .t-gallery--carousel .t-gallery-slide img { max-height: 52vh; }
+.t-gallery-slide figcaption { margin-top: .5rem; font-size: .9375rem; line-height: 1.45; }
+.t-gallery-nav { display: flex; align-items: center; gap: .5rem; }
+.t-gallery-arrow { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; padding: 0; border: 1px solid color-mix(in srgb, var(--t-text) 22%, transparent); border-radius: 50%; color: var(--t-text); background: var(--t-surface); cursor: pointer; }
+.t-gallery-arrow svg { width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.t-gallery-thumbs { display: flex; flex: 1; justify-content: center; gap: .375rem; min-width: 0; margin: 0; padding: 0; list-style: none; }
+.t-gallery-thumb { display: block; width: 3.5rem; height: 2.625rem; padding: 0; overflow: hidden; border: 0; border-radius: calc(var(--t-radius) * .6); background: color-mix(in srgb, var(--t-text) 6%, var(--t-surface)); opacity: .62; cursor: pointer; transition: opacity var(--t-dur-item) ease, box-shadow var(--t-dur-item) ease; }
+.t-gallery-thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: calc(var(--focus-x, .5) * 100%) calc(var(--focus-y, .5) * 100%); border-radius: 0; }
+.t-gallery-thumb:hover { opacity: .9; }
+.t-gallery-thumb[aria-current="true"] { opacity: 1; box-shadow: 0 0 0 2px var(--t-surface), 0 0 0 4px var(--t-primary); }
+.t-gallery-position { flex: none; min-width: 3.5rem; color: var(--t-muted); font-size: .9375rem; font-variant-numeric: tabular-nums; text-align: center; }
+@container (max-width: 560px) {
+  .t-gallery-thumbs { display: none; }
+  .t-gallery-nav { justify-content: center; }
+}
 /* Before and after (data-t-compare): the second picture over the first, clipped at the line the
    range sets (--t-compare); the range covers both, invisible, its handle drawn on the line. */
 .t-compare { --t-compare: 50%; position: relative; overflow: hidden; border-radius: var(--t-radius); touch-action: pan-y; user-select: none; -webkit-user-select: none; }
@@ -485,6 +514,111 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-compare-range::-moz-range-thumb { width: 2.75rem; height: 100%; border: 0; }
 .t-compare-label { position: absolute; z-index: 1; top: .75rem; inset-inline-start: .75rem; max-width: calc(50% - 2.5rem); margin: 0; padding: .25rem .625rem; border-radius: 999px; background: rgb(10 13 18 / .72); color: #fff; font-size: .8125rem; font-weight: 600; line-height: 1.35; }
 .t-compare-after .t-compare-label { inset-inline-start: auto; inset-inline-end: .75rem; }
+
+/* Panels (« Panneaux », D63): one list of items as an accordion, tabs, a grid of flip cards or a stack
+   of them. The prompt says what to think of before opening. What shows one thing at a time keeps the
+   room of its tallest (tabs: the panels share one cell; cards: the rows share the tallest card; the
+   stack: the sequence's room). */
+.t-block--accordion { container-type: inline-size; }
+.t-panels-prompt { margin: 0 0 1rem; padding-inline-start: .875rem; border-inline-start: 3px solid var(--t-accent); color: var(--t-text); font-size: 1rem; font-style: italic; line-height: 1.5; }
+.t-panels-image { display: block; width: 100%; max-height: 18rem; aspect-ratio: 16 / 9; margin: .25rem 0 .875rem; object-fit: contain; border-radius: calc(var(--t-radius) * .75); background: color-mix(in srgb, var(--t-text) 4%, var(--t-surface)); }
+.t-panels-content > :last-child, .t-panels-content > .t-text > :last-child, .t-panels-tabpanel > .t-text > :last-child, .t-panels-back > .t-text > :last-child { margin-bottom: 0; }
+/* Tabs: two marks of the tab shown (its colour, a rule under it). */
+.t-panels-tablist { display: flex; flex-wrap: wrap; gap: .25rem; box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--t-text) 14%, transparent); }
+.t-panels-tab { position: relative; min-height: 2.75rem; padding: .5rem 1rem; border: 0; border-radius: var(--t-radius) var(--t-radius) 0 0; color: var(--t-muted); background: none; font: inherit; font-weight: 600; line-height: 1.3; text-align: start; cursor: pointer; transition: color var(--t-dur-item) ease, background-color var(--t-dur-item) ease; }
+.t-panels-tab:hover { color: var(--t-text); background: color-mix(in srgb, var(--t-text) 4%, transparent); }
+.t-panels-tab[aria-selected="true"] { color: var(--t-primary); }
+.t-panels-tab[aria-selected="true"]::after { content: ""; position: absolute; inset-inline: .625rem; bottom: 0; height: 3px; border-radius: 3px 3px 0 0; background: var(--t-primary); }
+.t-panels-tabpanels { display: grid; padding: 1.25rem .125rem .25rem; }
+.t-panels-tabpanel { grid-area: 1 / 1; min-width: 0; }
+.t-panels-tabpanel[hidden] { display: block !important; visibility: hidden; }
+.t-panels-tabpanel:not([hidden]) { animation: t-panels-in var(--t-dur-item) ease; }
+@keyframes t-panels-in { from { opacity: 0; } }
+/* Narrow containers: the tabs' items as an accordion (one rendered at a time, so one in the
+   accessibility tree). */
+.t-panels-narrow { display: none; }
+@container (max-width: 560px) {
+  .t-panels--tabs .t-panels-tabs { display: none; }
+  .t-panels--tabs .t-panels-narrow { display: block; }
+}
+/* Cards: the front (the image cropped around its focus, the title) and the back (the text). The
+   flip button covers its face, so a press anywhere on the card turns it; its words are the hint. */
+.t-panels-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(13rem, calc(50% - .5rem)), 1fr)); grid-auto-rows: 1fr; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+/* Cards take the wide column; four cards in a medium container go two by two. */
+:is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block:has(> .t-panels--cards) { max-width: var(--t-wide-width, 68.75rem); }
+@container (max-width: 900px) { .t-panels-cards:has(> :nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.t-panels-cell { display: grid; min-width: 0; }
+.t-panels-card { min-height: 11rem; }
+.t-panels-face { position: relative; display: flex; flex-direction: column; min-width: 0; overflow: hidden; border-radius: calc(var(--t-radius) + 4px); }
+.t-panels-front { color: var(--t-text); background: color-mix(in srgb, var(--t-primary) 8%, var(--t-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-primary) 16%, transparent); }
+.t-panels-front:not(:has(.t-panels-cover)) { justify-content: center; }
+.t-panels-cover { display: block; flex: none; width: 100%; max-height: 10rem; aspect-ratio: 3 / 2; object-fit: cover; object-position: calc(var(--focus-x, .5) * 100%) calc(var(--focus-y, .5) * 100%); }
+.t-panels-title { margin: 0; padding: 1rem 1.125rem .25rem; color: inherit; font-size: 1.125rem; line-height: 1.3; overflow-wrap: anywhere; }
+.t-panels-front:not(:has(.t-panels-cover)) .t-panels-title { padding-top: 1.5rem; font-size: 1.25rem; text-align: center; }
+.t-panels-back { padding: 1.125rem 1.125rem 0; color: var(--t-text); background: var(--t-surface); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-text) 16%, transparent); }
+.t-panels-back > .t-text { font-size: .9375rem; line-height: 1.5; }
+.t-panels-back > .t-text :is(a, button) { position: relative; z-index: 1; }
+.t-panels-flip { display: flex; align-items: center; gap: .375rem; min-height: 2.75rem; margin-top: auto; padding: .5rem 1.125rem .75rem; border: 0; color: var(--t-primary); background: none; font: inherit; font-size: .875rem; font-weight: 600; line-height: 1.3; text-align: start; cursor: pointer; }
+.t-panels-front:not(:has(.t-panels-cover)) .t-panels-flip { justify-content: center; margin-top: 0; }
+.t-panels-front:not(:has(.t-panels-cover)) .t-panels-title { margin-top: auto; }
+.t-panels-front:not(:has(.t-panels-cover)) .t-panels-flip { margin-bottom: auto; }
+.t-panels-back .t-panels-flip { padding-inline: 0; }
+.t-panels-flip::before { content: ""; flex: none; width: 1.125rem; height: 1.125rem; background: currentColor; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 11a8 8 0 0 0-14.3-4.9L4 8'/%3E%3Cpath d='M4 3v5h5'/%3E%3Cpath d='M4 13a8 8 0 0 0 14.3 4.9L20 16'/%3E%3Cpath d='M20 21v-5h-5'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 11a8 8 0 0 0-14.3-4.9L4 8'/%3E%3Cpath d='M4 3v5h5'/%3E%3Cpath d='M4 13a8 8 0 0 0 14.3 4.9L20 16'/%3E%3Cpath d='M20 21v-5h-5'/%3E%3C/svg%3E") center / contain no-repeat; }
+.t-panels-flip::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.t-panels-flip:focus-visible { outline: none; }
+.t-panels-flip:focus-visible::after { outline: 3px solid var(--t-focus); outline-offset: -3px; }
+.t-panels-face:has(.t-panels-flip:hover) { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-primary) 40%, transparent); }
+/* Without the hint, the button keeps its icon; its words are only its name. */
+.t-panels[data-hint="false"] .t-panels-flip { font-size: 0; }
+@container (max-width: 560px) {
+  .t-panels-title { padding: .75rem .875rem .125rem; font-size: 1rem; }
+  .t-panels-front:not(:has(.t-panels-cover)) .t-panels-title { font-size: 1.0625rem; }
+  .t-panels-back { padding: .875rem .875rem 0; }
+  .t-panels-back > .t-text { font-size: .875rem; }
+  .t-panels-flip { padding: .375rem .875rem .625rem; font-size: .8125rem; }
+  .t-panels-cover { max-height: 7rem; }
+}
+/* Stack: one card at a time, a second card's edge under it, Previous, where the learner is, Next. */
+.t-panels-stack { display: grid; justify-items: center; gap: .75rem; }
+.t-panels-stack-items { position: relative; display: grid; width: 100%; max-width: 32rem; padding-bottom: .5rem; }
+.t-panels-stack-items::after { content: ""; position: absolute; z-index: -1; inset: auto .875rem 0; height: 2rem; border-radius: 0 0 calc(var(--t-radius) + 4px) calc(var(--t-radius) + 4px); background: color-mix(in srgb, var(--t-primary) 5%, var(--t-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-primary) 14%, transparent); }
+.t-panels-stack-items { isolation: isolate; }
+.t-panels-stack-item { display: grid; min-width: 0; }
+.t-panels--stack .t-panels-card { min-height: 14rem; }
+.t-panels-nav { display: flex; align-items: center; gap: .75rem; }
+.t-panels-arrow { display: inline-flex; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; padding: 0; border: 1px solid color-mix(in srgb, var(--t-text) 22%, transparent); border-radius: 50%; color: var(--t-text); background: var(--t-surface); cursor: pointer; }
+.t-panels-arrow svg { width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.t-panels-position { min-width: 3.5rem; color: var(--t-muted); font-size: .9375rem; font-variant-numeric: tabular-nums; text-align: center; }
+
+/* A character speaking (« Personnage », D63): its round portrait beside its bubbles, its name above
+   them in its colour; the bubbles take the dialogues' colours (dialog.* tokens). A thought is a
+   cloud, its tail two small rounds. Nothing moves: the character rests. */
+.t-block--speech { container-type: inline-size; }
+.t-speech { --t-sp-bubble: var(--t-dialog-bubble, color-mix(in srgb, var(--t-text) 5%, var(--t-surface))); --t-sp-text: var(--t-dialog-text, var(--t-text)); --t-sp-avatar: 4rem; display: flex; align-items: flex-start; gap: .875rem; }
+.t-speech--end { flex-direction: row-reverse; }
+.t-speech-portrait { flex: none; width: var(--t-sp-avatar); height: var(--t-sp-avatar); overflow: hidden; border-radius: 50%; background: color-mix(in srgb, var(--t-speech-color, var(--t-text)) 12%, var(--t-surface)); }
+.t-speech-portrait .t-character-initial { width: 100%; height: 100%; font-size: 1.375rem; color: color-mix(in srgb, var(--t-speech-color, var(--t-text)) 70%, var(--t-text)); }
+.t-speech-lines { display: flex; flex-direction: column; align-items: flex-start; gap: .375rem; min-width: 0; max-width: min(36rem, 100%); }
+.t-speech--end .t-speech-lines { align-items: flex-end; }
+.t-speech-name { margin: .25rem .375rem 0; font-size: .875rem; font-weight: 650; line-height: 1.2; color: color-mix(in srgb, var(--t-speech-color, var(--t-muted)) 72%, var(--t-sp-text)); }
+.t-speech-name:empty { display: none; }
+.t-speech-bubble { position: relative; min-width: 0; max-width: 100%; padding: .75rem 1.125rem .8125rem; border-radius: 1.25rem; color: var(--t-sp-text); background: var(--t-sp-bubble); line-height: 1.5; overflow-wrap: anywhere; }
+.t-speech-bubble > .t-text > :last-child { margin-bottom: 0; }
+.t-speech-bubble > .t-text > :first-child { margin-top: 0; }
+/* The first bubble points to the character. */
+.t-speech--speech.t-speech--start .t-speech-name + .t-speech-bubble, .t-speech--speech.t-speech--start .t-speech-lines > .t-speech-bubble:first-child { border-top-left-radius: .375rem; }
+.t-speech--speech.t-speech--end .t-speech-name + .t-speech-bubble, .t-speech--speech.t-speech--end .t-speech-lines > .t-speech-bubble:first-child { border-top-right-radius: .375rem; }
+.t-speech--speech .t-speech-name + .t-speech-bubble::before, .t-speech--speech .t-speech-lines > .t-speech-bubble:first-child::before { content: ""; position: absolute; top: 0; inset-inline-start: -.4375rem; width: .875rem; height: .875rem; background: inherit; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.t-speech--speech.t-speech--end .t-speech-name + .t-speech-bubble::before, .t-speech--speech.t-speech--end .t-speech-lines > .t-speech-bubble:first-child::before { inset-inline: auto -.4375rem; clip-path: polygon(0 0, 100% 0, 0 100%); }
+.t-speech--thought .t-speech-bubble { border-radius: 1.75rem; font-style: italic; }
+.t-speech--thought .t-speech-name + .t-speech-bubble { margin-inline-start: .875rem; }
+.t-speech--thought.t-speech--end .t-speech-name + .t-speech-bubble { margin-inline: 0 .875rem; }
+.t-speech--thought .t-speech-name + .t-speech-bubble::before, .t-speech--thought .t-speech-name + .t-speech-bubble::after { content: ""; position: absolute; border-radius: 50%; background: var(--t-sp-bubble); }
+.t-speech--thought .t-speech-name + .t-speech-bubble::before { top: 1.25rem; inset-inline-start: -.875rem; width: .75rem; height: .75rem; }
+.t-speech--thought .t-speech-name + .t-speech-bubble::after { top: 1.875rem; inset-inline-start: -1.375rem; width: .4375rem; height: .4375rem; }
+.t-speech--thought.t-speech--end .t-speech-name + .t-speech-bubble::before { inset-inline: auto -.875rem; }
+.t-speech--thought.t-speech--end .t-speech-name + .t-speech-bubble::after { inset-inline: auto -1.375rem; }
+@container (max-width: 560px) { .t-speech { --t-sp-avatar: 3rem; gap: .625rem; } }
 
 /* Columns (« Colonnes »): two or three, stacked in reading order in narrow containers. */
 .t-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.5rem clamp(1.5rem, 4cqi, 2.5rem); align-items: start; }

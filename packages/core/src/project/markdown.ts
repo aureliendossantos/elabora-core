@@ -105,7 +105,21 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
               break;
             case 'video': case 'audio': L.push(`${indent}- ${tag}${b.type} "${p.title}"${p.decorative ? ' (decorative)' : ''}${p.generated ? ' [AI-generated]' : ''}`); break;
             case 'button': L.push(`${indent}- ${tag}button "${p.label}"`); break;
-            case 'accordion': L.push(`${indent}- ${tag}accordion: ${recordsOf(p.items).map((i) => i.title).join(' · ')}`); break;
+            // Panels (D63): agents read the presentation and the titles; clients read each panel.
+            case 'accordion':
+              if (agent) L.push(`${indent}- ${tag}accordion${p.presentation && p.presentation !== 'accordion' ? ` (${p.presentation})` : ''}: ${recordsOf(p.items).map((i) => i.title).join(' · ')}${p.prompt ? ` · prompt « ${short(p.prompt, 120)} »` : ''}`);
+              else {
+                if (p.prompt) L.push(`${indent}- _${short(p.prompt, 600)}_`);
+                for (const item of recordsOf(p.items)) L.push(`${indent}- **${item.title}** ${short(item.markdown, 2000)}`);
+              }
+              break;
+            // A character speaking (D63): « **Name:** text ».
+            case 'speech': {
+              const speaker = recordsOf(project.course?.speakers).find((entry) => entry.id === p.speaker);
+              const name = speaker?.name ?? p.speaker;
+              recordsOf(p.lines).forEach((line, i) => L.push(`${indent}- ${i ? '' : tag}${agent && !i ? `speech (${p.speaker}${p.kind === 'thought' ? ', thought' : ''}) ` : ''}**${name}:** ${short(line.markdown, agent ? 160 : 2000)}`));
+              break;
+            }
             case 'quiz': {
               L.push(`${indent}- ${tag}${agent ? '' : 'Question : '}${short(p.stem, 300)}${p.objective ? ` (${p.objective})` : ''}${p.scored === false ? ' — not scored' : ''}`);
               for (const o of recordsOf(p.options)) L.push(`${indent}  - [${o.correct ? 'x' : ' '}] ${agent ? `\`${o.id}\` ` : ''}${o.text}${!agent && o.feedback ? ` — _${short(o.feedback, 300)}_` : ''}`);

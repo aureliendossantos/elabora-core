@@ -121,6 +121,13 @@ export function bindPrimitives(root: HTMLElement, context: PrimitiveContext): Bo
     for (const button of previous) labelButton(button, labels.previousItem);
     for (const button of next) labelButton(button, labels.nextItem);
     for (const node of positions) node.setAttribute('aria-hidden', 'true');
+    // A goto button without words (a thumbnail whose picture is decorative, a dot) is named by the
+    // item it shows: « 2 sur 5 ».
+    for (const button of gotos) {
+      const index = names.indexOf(button.getAttribute('data-t-goto') ?? '');
+      const named = button.textContent?.trim() || button.hasAttribute('aria-label') || button.hasAttribute('aria-labelledby') || [...button.querySelectorAll('img')].some((image) => image.alt.trim());
+      if (index >= 0 && !named) button.setAttribute('aria-label', formatLabel(labels.itemOf, { n: index + 1, count: items.length }));
+    }
     let current = Math.max(0, items.findIndex((item) => item.hasAttribute('data-t-selected')));
     const show = (index: number, { used = false, direction = 0, animate = true }: { used?: boolean; direction?: number; animate?: boolean } = {}) => {
       if (index < 0 || index >= items.length) return;

@@ -120,7 +120,21 @@ export function lessonMdExport(project: Project): LessonMdExport {
             lose(id, block.id, `${block.type === 'video' ? 'captions file and ' : ''}transcript as a property (transcript exported as a text block)`);
           } else if (block.type === 'video' && props.captions) lose(id, block.id, 'captions file');
           break;
-        case 'accordion': directive('accordion', { allowMultiple: props.allowMultiple !== false }, recordsOf(props.items).map((item) => `## ${oneLine(item.title)}\n\n${item.markdown}`).join('\n\n')); break;
+        // Panels (D63): an accordion whatever their presentation, the prompt before it, an item's
+        // image at the top of its panel.
+        case 'accordion':
+          if (props.prompt) directive('text', {}, `_${oneLine(props.prompt)}_`);
+          directive('accordion', { allowMultiple: props.allowMultiple !== false }, recordsOf(props.items).map((item) => `## ${oneLine(item.title)}\n\n${item.image ? `![${oneLine(item.alt)}](${copyAsset(item.image)})\n\n` : ''}${item.markdown}`).join('\n\n'));
+          if (props.presentation && props.presentation !== 'accordion') lose(id, block.id, `panels presented as ${props.presentation} (exported as an accordion)`);
+          break;
+        // A character speaking (D63): « **Name:** text », a paragraph per line.
+        case 'speech': {
+          const speaker = recordsOf(project.course?.speakers).find((entry) => entry.id === props.speaker);
+          const name = oneLine(speaker?.name ?? props.speaker);
+          directive('text', {}, recordsOf(props.lines).map((line) => `**${name}:** ${String(line.markdown ?? '').trim()}`).join('\n\n'));
+          lose(id, block.id, `character speaking (${props.kind === 'thought' ? 'thought' : 'speech'} bubbles exported as paragraphs, without the portrait)`);
+          break;
+        }
         case 'button': directive('button', { text: oneLine(props.label), style: props.variant === 'primary' ? 'primary' : 'secondary' }); lose(id, block.id, 'button events (what the button does)'); break;
         case 'quiz': {
           const options = recordsOf(props.options);

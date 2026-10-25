@@ -891,7 +891,7 @@ export type ScreenLayerNarrationLine = VoiceLine & {
 /** A block placed on a screen, a layer or in a slot of a component instance. id identifies it in the whole course. type is a built-in type (the native catalogue, props in blocks/<type>.schema.json) or the id of a course component (components/<id>/component.json declares its props). */
 export type Block = {
   id: Slug;
-  /** Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, fill-in, sort, reflection, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram; content and structure: statement, divider, gallery, columns) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props. */
+  /** Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, fill-in, sort, reflection, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram; content and structure: statement, divider, gallery, columns; interaction: speech) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props. */
   type: string;
   props: { [key: string]: unknown };
   /** Blocks placed in the slots of this component instance (each picks its slot with slot; without slot, the default slot). Only for components that declare slots. */
@@ -965,7 +965,8 @@ export type BuiltinBlockType =
   | 'statement'
   | 'divider'
   | 'gallery'
-  | 'columns';
+  | 'columns'
+  | 'speech';
 
 /** A Block whose type is built in: its props follow the schema of that type. */
 export type BuiltinBlock =
@@ -1003,7 +1004,8 @@ export type BuiltinBlock =
   | StatementBlock
   | DividerBlock
   | GalleryBlock
-  | ColumnsBlock;
+  | ColumnsBlock
+  | SpeechBlock;
 
 export type HeadingBlock = Omit<Block, 'type' | 'props'> & {
   type: 'heading';
@@ -1180,26 +1182,52 @@ export type ColumnsBlock = Omit<Block, 'type' | 'props'> & {
   props: ColumnsProps;
 };
 
+export type SpeechBlock = Omit<Block, 'type' | 'props'> & {
+  type: 'speech';
+  props: SpeechProps;
+};
+
 // blocks/accordion.schema.json
 
 /**
  * accordion block props
  *
- * Expandable panels for optional detail. Revealing content is not practice (guardrail B2).
+ * Panels (« Panneaux »): titled items the learner opens one by one, in four presentations of the same items: accordion (panels that open in place, the default), tabs (one panel at a time under a row of tabs; an accordion in narrow containers), cards (a grid of flip cards: the title and the image in front, the text behind) and stack (the flip cards one at a time, with Previous and Next). Revealing content is not practice (guardrail B2): follow it with a question when the learner must remember it.
  */
 export type AccordionProps = {
+  /**
+   * accordion: panels that open in place (allowMultiple: several at once); tabs: a row of tabs, one panel shown at a time in the room of the tallest (an accordion in containers narrower than 560 px); cards: a grid of flip cards, title and image in front, text behind (two columns on phones); stack: the flip cards one at a time, with Previous, Next and where the learner is.
+   * @default 'accordion'
+   */
+  presentation?: 'accordion' | 'tabs' | 'cards' | 'stack';
+  /** What to think about before opening or turning over (above the panels): « Before you turn each card, say what you think it means. » */
+  prompt?: string;
   items: AccordionItem[];
   /**
-   * Allow several panels open at once.
+   * accordion: allow several panels open at once.
    * @default true
    */
   allowMultiple?: boolean;
+  /**
+   * cards and stack: show « Turn the card over » on each card (else only its button's name says it, for screen readers).
+   * @default true
+   */
+  hint?: boolean;
 };
 
 export type AccordionItem = {
+  /** Stable id of the item: its visited state, translations and conversions name it. */
   id: string;
+  /** The panel's title, the tab's label, the card's front (tabs: 24 characters at most). */
   title: string;
+  /** What the panel shows once opened (the back of a card). */
   markdown: Markdown;
+  /** An image of the item: on the front of a card, at the top of a panel. */
+  image?: AssetPath;
+  /** What the image shows. Required with image; an empty alt ("") marks it decorative. */
+  alt?: string;
+  /** Where the subject of the image is, kept in view when a card crops it. */
+  focus?: Focus;
 };
 
 // blocks/audio.schema.json
@@ -1985,11 +2013,11 @@ export type FreeObjectProps = {
 /**
  * gallery block props
  *
- * A gallery (« Galerie »): several images shown together. Presentations: grid (in columns, cropped to one ratio), mosaic (in columns at their own proportions), carousel (one at a time; until the player has its sequence, it shows as a grid) and compare (exactly two images, the second over the first, with a slider to move between them: before and after).
+ * A gallery (« Galerie »): several images shown together. Presentations: grid (in columns, cropped to one ratio), mosaic (in columns at their own proportions), carousel (one at a time with its caption, Previous and Next, a thumbnail per image) and compare (exactly two images, the second over the first, with a slider to move between them: before and after).
  */
 export type GalleryProps = {
   /**
-   * grid: columns of images cropped to ratio; mosaic: columns of images at their own proportions; carousel: one image at a time (shown as a grid for now); compare: two images, one over the other, and a slider between them.
+   * grid: columns of images cropped to ratio; mosaic: columns of images at their own proportions; carousel: one image at a time, whole in a frame of ratio, with Previous, Next and thumbnails; compare: two images, one over the other, and a slider between them.
    * @default 'grid'
    */
   presentation?: 'grid' | 'mosaic' | 'carousel' | 'compare';
@@ -2001,10 +2029,15 @@ export type GalleryProps = {
    */
   columns?: number;
   /**
-   * grid: the shape every image is cropped to, around its focus.
+   * grid: the shape every image is cropped to, around its focus; carousel: the frame every image is shown whole in.
    * @default '4:3'
    */
   ratio?: '4:3' | '1:1' | '3:2' | '16:9' | '3:4';
+  /**
+   * grid, mosaic and carousel: each image opens at full size in the player's lightbox, with its caption, and previous and next between the images.
+   * @default false
+   */
+  zoom?: boolean;
   /** A caption for the whole gallery. */
   caption?: string;
   /**
@@ -2079,6 +2112,11 @@ export type ImageProps = {
   generated?: boolean;
   /** Where the subject is (0 to 1 across and down): crops keep it in view (band, over, beside on phones). */
   focus?: Focus;
+  /**
+   * centered, wide and beside: the image opens at full size in the player's lightbox, with its caption (a detailed figure, a screenshot).
+   * @default false
+   */
+  zoom?: boolean;
   /** beside and over: a heading for the text (it follows the page's headings). */
   title?: string;
   /** beside and over: the text that goes with the image. Over an image, keep it to one or two sentences. */
@@ -2654,6 +2692,37 @@ export type SortProps = {
    * @default true
    */
   showCorrectAnswer?: boolean;
+};
+
+// blocks/speech.schema.json
+
+/**
+ * speech block props
+ *
+ * A character (« Personnage »): a speaker of the course says something to the learner, in bubbles beside its portrait. Its name, colour and look come from course.json speakers (an SVG character or a portrait picture; without a look, its initial). Several lines are several bubbles, one under the other. kind thought draws them as a thought.
+ */
+export type SpeechProps = {
+  /** A speaker of course.json speakers: its name, colour and look. */
+  speaker: Slug;
+  /** What the character says, a bubble per line, in order. */
+  lines: SpeechLine[];
+  /**
+   * Where the portrait is: start (left in left-to-right languages) or end, the bubbles beside it.
+   * @default 'start'
+   */
+  side?: 'start' | 'end';
+  /**
+   * speech: speech bubbles; thought: thought bubbles (what the character thinks, not says).
+   * @default 'speech'
+   */
+  kind?: 'speech' | 'thought';
+};
+
+export type SpeechLine = {
+  /** Stable id of the line (translations name it). */
+  id: string;
+  /** The line, one or two sentences. */
+  markdown: Markdown;
 };
 
 // blocks/stack.schema.json

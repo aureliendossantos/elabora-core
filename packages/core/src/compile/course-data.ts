@@ -1,6 +1,6 @@
 import type {
   CourseData, WebDelivery, PlayerData, ResourceData, GlossaryData, AboutData, ScreenData, ScreenLayout, BlockData, EventData, Condition as ConditionData, Action as ActionData, Backdrop, ObjectDefinition, TokenValues,
-  QuizProps, NumericProps, NumericTolerance, FillInProps, SortProps, ReflectionProps, DecisionProps, DialogueProps, ObjectBlockProps, ResultsProps, VideoProps, AudioProps, AspectRatio, NarrationData, MomentData, TimingData
+  QuizProps, NumericProps, NumericTolerance, FillInProps, SortProps, ReflectionProps, DecisionProps, DialogueProps, ObjectBlockProps, ResultsProps, SpeechProps, VideoProps, AudioProps, AspectRatio, NarrationData, MomentData, TimingData
 } from '@elabora/player/course-data';
 import type { DataSchema, DataType } from '@elabora/player/data-schema';
 import { planIndex, resolveBlockProps, resolveTextRefs, screenOrder } from '../project/load.ts';
@@ -19,7 +19,7 @@ import { applyDefaults } from '../components/props.ts';
 import { controlsOf, controlEntity } from '../components/controls.ts';
 import { activityEntity, readLock } from './state-model.ts';
 import type { StateKeys, StateLock, ActivityBehavior } from './state-model.ts';
-import { dialogueData } from '../dialogue/data.ts';
+import { dialogueData, speakerData } from '../dialogue/data.ts';
 import { dialogueVoices } from '../dialogue/voices.ts';
 import type { PackagedLines } from '../dialogue/voices.ts';
 import { characterInline } from '../dialogue/character.ts';
@@ -446,6 +446,7 @@ function compileBlock(block: Block, scope: ScreenScope): BlockData {
       return { ...head, type: 'free-object', behavior: 'object', ...placement, key: activityKey('object'), ...rendered, props: objectProps, ...children };
     }
     case 'results': return { ...head, behavior: 'results', ...placement, ...rendered, props: resultsProps(props), ...children };
+    case 'speech': return { ...head, behavior: 'speech', ...placement, ...rendered, props: speechProps(props, scope), ...children };
     case 'video': return { ...head, type: 'video', ...placement, ...rendered, props: videoProps(props, context.assetPath), ...children };
     case 'audio': return { ...head, type: 'audio', ...placement, ...rendered, props: audioProps(props, context.assetPath), ...children };
     default: return { ...head, ...placement, ...rendered, ...children };
@@ -560,6 +561,19 @@ function dialogueProps(blockId: string, props: Record<string, unknown>, scope: S
     },
     env: { variable: (id) => { const value = variables.get(id); return typeof value === 'number' || typeof value === 'boolean' || typeof value === 'string' ? value : undefined; } }
   });
+}
+
+// A character speaking (D63): its speaker's name, colour and look, as a dialogue's (its SVG sanitized).
+function speechProps(props: Record<string, unknown>, scope: ScreenScope): SpeechProps {
+  const { context, project } = scope;
+  const speaker = objectsIn(context.course.speakers).find((entry) => entry.id === props.speaker);
+  return {
+    speaker: speaker ? speakerData(speaker, context.assetPath, (id, svg) => {
+      const source = readText(project.files, `assets/${svg}`);
+      const drawn = source === null ? null : characterInline(source, id);
+      return drawn ? { inline: drawn.inline, manifest: drawn.manifest } : null;
+    }) : null
+  };
 }
 
 function objectBlockProps(props: Record<string, unknown>, scope: ScreenScope): ObjectBlockProps | null {

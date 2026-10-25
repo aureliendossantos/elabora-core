@@ -7,7 +7,7 @@
 
 import type { JsonObject } from './json.ts';
 import type { DataSchema } from './data-schema.ts';
-import type { DialogueData, DialogueEventCondition } from './dialogue/types.ts';
+import type { DialogueData, DialogueEventCondition, DialogueSpeakerData } from './dialogue/types.ts';
 
 export interface CourseData {
   format: string;
@@ -277,7 +277,7 @@ export interface LayerData {
 // needs to score, save and record them; video, audio and free objects are rendered by code from
 // their props; every other block is HTML rendered from its component template.
 
-export type Behavior = 'quiz' | 'numeric' | 'fill-in' | 'sort' | 'reflection' | 'decision' | 'dialogue' | 'object' | 'results' | 'chart' | 'predict';
+export type Behavior = 'quiz' | 'numeric' | 'fill-in' | 'sort' | 'reflection' | 'decision' | 'dialogue' | 'object' | 'results' | 'chart' | 'predict' | 'speech';
 
 export type BlockData =
   | QuizBlock
@@ -293,6 +293,7 @@ export type BlockData =
   | AudioBlock
   | ChartBlock
   | PredictBlock
+  | SpeechBlock
   | ContentBlock;
 
 export interface BlockByBehavior {
@@ -307,6 +308,7 @@ export interface BlockByBehavior {
   results: ResultsBlock;
   chart: ChartBlock;
   predict: PredictBlock;
+  speech: SpeechBlock;
 }
 
 // Blocks whose answers count: they have a key in the learner state.
@@ -462,6 +464,16 @@ export interface PredictData {
   scored: boolean;
   weight: number;
   objective?: string;
+}
+
+// A character speaking (D63): the speaker as course.json gives it (its name, colour and look, its SVG
+// sanitized), or null when the course has no such speaker (E_SPEECH_SPEAKER).
+export interface SpeechBlock extends BlockBase {
+  behavior: 'speech';
+  props: SpeechProps;
+}
+export interface SpeechProps {
+  speaker: DialogueSpeakerData | null;
 }
 
 // Headings, text, images, callouts, buttons… and course components without a behaviour.

@@ -21,6 +21,7 @@
     "caption": { "type": "string", "maxLength": 300, "x-translatable": true },
     "generated": { "type": "boolean", "default": false, "description": "True if produced by an AI model; the player shows a mark and the build report lists it." },
     "focus": { "$ref": "../defs.schema.json#/$defs/focus", "description": "Where the subject is (0 to 1 across and down): crops keep it in view (band, over, beside on phones)." },
+    "zoom": { "type": "boolean", "default": false, "description": "centered, wide and beside: the image opens at full size in the player's lightbox, with its caption (a detailed figure, a screenshot)." },
     "title": { "type": "string", "maxLength": 120, "x-translatable": true, "description": "beside and over: a heading for the text (it follows the page's headings)." },
     "markdown": { "type": "string", "$ref": "../defs.schema.json#/$defs/markdown", "maxLength": 1500, "x-translatable": true, "description": "beside and over: the text that goes with the image. Over an image, keep it to one or two sentences." },
     "side": { "enum": ["start", "end"], "default": "start", "x-group": "design", "description": "beside: the side of the image (start: left in left-to-right languages)." },

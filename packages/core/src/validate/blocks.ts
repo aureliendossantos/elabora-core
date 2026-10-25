@@ -11,6 +11,7 @@ import { checkInstance, checkKinds, headingSequence } from './components.ts';
 import { markdownToText } from '../compile/markdown.ts';
 import { checkChart } from './charts.ts';
 import { checkFillIn, checkSort, checkReflection, checkQuizPictures } from './activities.ts';
+import { checkPanels, checkGalleryCarousel, checkSpeech } from './panels.ts';
 import { isChartType } from '../charts/index.ts';
 import { objectPropErrors, blockEnumLabelErrors, textContrasts, TEXT_CONTRAST } from './object-props.ts';
 import { resolveTokens } from './theme.ts';
@@ -195,7 +196,10 @@ function checkBlock(ctx: CourseCheckContext, { block, component, path, file, scr
       if (!eventsOn(id).some((event) => event.on.type === 'click')) reporter.emit('W_DEAD_BUTTON', { file, path, target: id, message: `Button "${id}" has no click event.` });
       break;
     case 'accordion':
-      list(props.items).forEach((item, i) => checkMarkdown(ctx, fieldsOf(item).markdown, file, at(`items/${i}/markdown`), id));
+      checkPanels(ctx, { block, component, file, at }, props);
+      break;
+    case 'speech':
+      checkSpeech(ctx, { block, component, file, at }, props);
       break;
     case 'image': {
       const alt = text(props.alt);
@@ -269,6 +273,7 @@ function checkBlock(ctx: CourseCheckContext, { block, component, path, file, scr
       if (component.builtin) checkKinds(ctx, component.schema, props, file, at(), id);
       const images = list(props.images).map(fieldsOf);
       images.forEach((image, i) => { if (!image.decorative && !text(image.alt).trim()) reporter.emit('E_IMAGE_ALT_MISSING', { file, path: at(`images/${i}/alt`), target: id, message: `Image "${image.id}" of gallery "${id}" has no alt text and is not marked decorative.` }); });
+      checkGalleryCarousel(ctx, { block, component, file, at }, props);
       if (props.presentation === 'compare' && images.length !== 2) reporter.emit('E_GALLERY_COMPARE', { file, path: at('images'), target: id, measured: images.length, message: `Gallery "${id}" compares ${images.length} image${images.length === 1 ? '' : 's'}: before and after takes two.` });
       if (props.generated) reporter.emit('I_GENERATED_MEDIA', { file, path, target: id, message: `Gallery "${id}" shows AI-generated images.` });
       break;

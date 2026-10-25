@@ -1,0 +1,11 @@
+<!-- A character speaking (« Personnage », D63): its portrait, its name, its bubbles. The player
+     writes the name and mounts the portrait from course.json speakers; each line reads « Name: … ». -->
+<div class="t-speech t-speech--{{kind}} t-speech--{{side}}">
+  <div class="t-speech-portrait" data-t-portrait></div>
+  <div class="t-speech-lines">
+    <p class="t-speech-name" data-t-speaker></p>
+    <div class="t-speech-bubble" data-each="lines" data-t-line="{{id}}">
+      <div class="t-text">{{markdown}}</div>
+    </div>
+  </div>
+</div>

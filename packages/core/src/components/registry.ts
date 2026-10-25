@@ -20,7 +20,7 @@ import corePackage from '../../package.json' with { type: 'json' };
 
 const VERSION = corePackage.version;
 
-export type Behavior = 'quiz' | 'numeric' | 'fill-in' | 'sort' | 'reflection' | 'decision' | 'dialogue' | 'results' | 'object' | 'chart';
+export type Behavior = 'quiz' | 'numeric' | 'fill-in' | 'sort' | 'reflection' | 'decision' | 'dialogue' | 'results' | 'object' | 'chart' | 'speech';
 
 export const BUILTINS: Readonly<Record<string, { title: string; render: 'template' | 'code'; behavior?: Behavior }>> = {
   heading: { title: 'Heading', render: 'template' },
@@ -61,7 +61,9 @@ export const BUILTINS: Readonly<Record<string, { title: string; render: 'templat
   statement: { title: 'Statement', render: 'template' },
   divider: { title: 'Divider', render: 'template' },
   gallery: { title: 'Gallery', render: 'template' },
-  columns: { title: 'Columns', render: 'template' }
+  columns: { title: 'Columns', render: 'template' },
+  // A character speaking (D63): the player writes its name and mounts its portrait from course.json speakers.
+  speech: { title: 'Character', render: 'template', behavior: 'speech' }
 };
 
 // Built-in screen layouts (D63): screen-level components shipped with Elabora, their props in
@@ -94,7 +96,10 @@ export const BEHAVIORS: Readonly<Record<Behavior, BehaviorHooks>> = {
   dialogue: { required: ['log', 'options'], optional: ['group', 'stage', 'debrief', 'start'], tags: { start: ['button'] } },
   results: { required: [], anyOf: ['score', 'status', 'message'], optional: ['score', 'status', 'message', 'retry'], tags: { retry: ['button'] } },
   object: { required: [] },
-  chart: { required: [] }
+  chart: { required: [] },
+  // A character speaking (D63): the player prefixes each line with the speaker's name for screen
+  // readers, writes the name in speaker and mounts the portrait in portrait.
+  speech: { required: ['line'], optional: ['speaker', 'portrait'], each: { line: 'lines' } }
 };
 // Hooks any template may use: click (a button firing the screen event "click"), toggle/part
 // (disclosure), tabs/tab/panel (tabs), label (a player label, translated by the course language),

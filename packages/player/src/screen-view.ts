@@ -28,6 +28,24 @@ import type { TranscriptBar } from './transcript.ts';
 import type { Action } from './course-data.ts';
 import type { DialoguePresentation } from './dialogue/walk.ts';
 
+
+// What a control left to explore is, for the words that say what is left (D63): a card to turn
+// over, a panel to open, a tab to show, an image or a card to see (a gallery's carousel, a stack of
+// cards), else an item. A name held by a tab and a panel (tabs shown as an accordion in a narrow
+// container) is what is rendered.
+type LeftKind = 'cards' | 'panels' | 'tabs' | 'images' | 'cardsToSee' | 'items';
+const LEFT_LABELS: Readonly<Record<LeftKind, 'leftCards' | 'leftPanels' | 'leftTabs' | 'leftImages' | 'leftCardsToSee' | 'leftToExplore'>> = {
+  cards: 'leftCards', panels: 'leftPanels', tabs: 'leftTabs', images: 'leftImages', cardsToSee: 'leftCardsToSee', items: 'leftToExplore'
+};
+function leftKind(block: BlockData, hooks: ReadonlySet<string>, nodes: readonly HTMLElement[]): LeftKind {
+  const root = block.lineage?.[block.lineage.length - 1] ?? block.type;
+  if (hooks.has('item')) return root === 'gallery' ? 'images' : hooks.has('flip') ? 'cardsToSee' : 'items';
+  if (hooks.has('flip')) return 'cards';
+  if (hooks.has('tab') && hooks.has('details')) return nodes.some((node) => node.hasAttribute('data-t-tab') && node.getClientRects().length > 0) ? 'tabs' : 'panels';
+  if (hooks.has('tab')) return 'tabs';
+  if (hooks.has('details')) return 'panels';
+  return 'items';
+}
 export interface ScreenViewOptions {
   // #elabora-app (data-presentation) and #t-main, where the screen goes.
   app: HTMLElement;
@@ -118,20 +136,27 @@ export function createScreenView(options: ScreenViewOptions) {
   // visited, optional blocks (and what they hold) and blocks concealed by events aside.
   const waitsForExploring = (step: number | undefined) => step !== undefined && stepSettings(step).opens === 'explored';
   function leftAbove(step: number) {
-    const left = { answer: 0, explore: 0, cards: 0 };
+    const left = { answer: 0, explore: 0, kinds: new Map<LeftKind, number>() };
     const count = (blocks: readonly BlockData[] | undefined) => {
       for (const block of blocks || []) {
         if (block.optional || !courseState.blockVisible(block)) continue;
         if (isActivity(block) && !courseState.activityAnswered(block)) left.answer++;
         const node = main.querySelector<HTMLElement>(`[data-block="${CSS.escape(block.id)}"]`);
-        // The controls of its template, by name (a name is one control, whatever holds it).
-        const controls = node ? behaviors.controls(node) : Object.keys(block.visits || {}).map((name) => ({ name, hook: 'click' as const }));
-        const named = new Set<string>();
+        // The controls of its template, by name (a name is one control, whatever holds it: a tab and
+        // the panel that shows it in a narrow container, a stack's item and its card).
+        const controls = node ? behaviors.controls(node) : Object.keys(block.visits || {}).map((name) => ({ name, hook: 'click' as const, node: null }));
+        const named = new Map<string, { hooks: Set<string>; nodes: HTMLElement[] }>();
         for (const control of controls) {
-          if (named.has(control.name) || !block.visits?.[control.name] || courseState.controlVisited(block.id, control.name)) continue;
-          named.add(control.name);
+          if (!block.visits?.[control.name] || courseState.controlVisited(block.id, control.name)) continue;
+          const entry = named.get(control.name) ?? { hooks: new Set<string>(), nodes: [] };
+          entry.hooks.add(control.hook);
+          if (control.node) entry.nodes.push(control.node);
+          named.set(control.name, entry);
+        }
+        for (const { hooks, nodes } of named.values()) {
+          const kind = leftKind(block, hooks, nodes);
           left.explore++;
-          if (control.hook === 'flip') left.cards++;
+          left.kinds.set(kind, (left.kinds.get(kind) ?? 0) + 1);
         }
         count(block.blocks);
       }
@@ -147,13 +172,15 @@ export function createScreenView(options: ScreenViewOptions) {
     return left.answer + left.explore ? left : null;
   }
   const exploreLocked = () => exploreLeft() !== null;
-  // Locked, it says what is left: "1 question left to answer. 2 cards left to turn over."
+  // Locked, it says what is left: "1 question left to answer. 2 cards left to turn over." Things of
+  // one kind are named (cards, panels, tabs, images); things of several kinds are items to explore.
   function exploreReason(): string {
     const left = exploreLeft();
     if (!left) return '';
     const parts: string[] = [];
     if (left.answer) parts.push(options.formatLabel(labels.leftToAnswer, { n: left.answer }));
-    if (left.explore) parts.push(options.formatLabel(left.cards === left.explore ? labels.leftCards : labels.leftToExplore, { n: left.explore }));
+    const kinds = [...left.kinds.keys()];
+    if (left.explore) parts.push(options.formatLabel(kinds.length === 1 ? labels[LEFT_LABELS[kinds[0]]] : labels.leftToExplore, { n: left.explore }));
     return parts.join(' ');
   }
   const lockedWhy = () => (listening() ? labels.listen : exploreLocked() ? exploreReason() : labels.locked);

@@ -62,8 +62,9 @@ test('the image block keeps its markup in its default presentation, and asks for
   const project = loadProjectFromDir(copyExample());
   const image = getRegistry(project).get('image')!;
   const render = (props: Record<string, unknown>) => renderTemplate(image.tpl!, { props: applyDefaults(image.schema, props), schema: image.schema, id: 'b' }).html;
-  assert.equal(render({ asset: 'images/a.png', alt: 'A', caption: 'C' }), '<figure class="t-figure"><img src="assets/images/a.png" alt="A" loading="lazy" decoding="async"><figcaption>C</figcaption></figure>');
-  assert.equal(render({ asset: 'images/a.png', decorative: true }), '<figure class="t-figure"><img src="assets/images/a.png" alt="" loading="lazy" decoding="async"></figure>');
+  // Its image in a wrapper that is no box (t-media, display: contents), a button when it zooms (D63).
+  assert.equal(render({ asset: 'images/a.png', alt: 'A', caption: 'C' }), '<figure class="t-figure"><span class="t-media"><img src="assets/images/a.png" alt="A" loading="lazy" decoding="async"></span><figcaption data-t-caption>C</figcaption></figure>');
+  assert.equal(render({ asset: 'images/a.png', decorative: true }), '<figure class="t-figure"><span class="t-media"><img src="assets/images/a.png" alt="" loading="lazy" decoding="async"></span></figure>');
   // A band asks for the whole width from its root; its focal point is written only when given.
   assert.match(render({ asset: 'images/a.png', alt: 'A', presentation: 'band' }), /^<figure class="t-figure t-image t-image--band t-image--medium" data-t-bleed><div class="t-image-frame">/);
   assert.match(render({ asset: 'images/a.png', alt: 'A', presentation: 'band', focus: { x: 0.25, y: 0.75 } }), /data-t-bleed style="--focus-x: 0.25; --focus-y: 0.75"/);

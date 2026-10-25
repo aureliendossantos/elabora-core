@@ -1,14 +1,69 @@
-<!-- A carousel shows as a grid until the player has its sequence primitive (D63). -->
-<figure class="t-gallery t-gallery--{{presentation}}" data-if="presentation != compare" data-columns="{{columns}}" data-ratio="{{ratio}}">
+<!-- zoom: each image is a button that opens it in the player's lightbox, with its caption, and previous
+     and next between the images of the gallery. -->
+<figure class="t-gallery t-gallery--{{presentation}}" data-if="presentation == grid" data-columns="{{columns}}" data-ratio="{{ratio}}">
   <ul class="t-gallery-list" role="list">
     <li class="t-gallery-item" data-each="images">
       <figure class="t-figure" style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}">
-        <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
-        <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
-        <figcaption data-if="caption">{{caption}}</figcaption>
+        <span class="t-media" data-if="!zoom">
+          <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+          <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+        </span>
+        <button class="t-zoom" data-if="zoom" data-t-zoom>
+          <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+          <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+        </button>
+        <figcaption data-if="caption" data-t-caption>{{caption}}</figcaption>
       </figure>
     </li>
   </ul>
+  <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
+  <figcaption class="t-gallery-caption" data-if="caption">{{caption}}</figcaption>
+</figure>
+<figure class="t-gallery t-gallery--{{presentation}}" data-if="presentation == mosaic" data-columns="{{columns}}">
+  <ul class="t-gallery-list" role="list">
+    <li class="t-gallery-item" data-each="images">
+      <figure class="t-figure">
+        <span class="t-media" data-if="!zoom">
+          <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+          <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+        </span>
+        <button class="t-zoom" data-if="zoom" data-t-zoom>
+          <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+          <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+        </button>
+        <figcaption data-if="caption" data-t-caption>{{caption}}</figcaption>
+      </figure>
+    </li>
+  </ul>
+  <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
+  <figcaption class="t-gallery-caption" data-if="caption">{{caption}}</figcaption>
+</figure>
+<!-- carousel: one image at a time with its caption (a sequence: the room of the tallest is kept),
+     Previous and Next, a thumbnail per image (wide containers) and where the learner is. -->
+<figure class="t-gallery t-gallery--carousel" data-if="presentation == carousel" data-ratio="{{ratio}}">
+  <div class="t-gallery-carousel" data-t-sequence>
+    <div class="t-gallery-slides">
+      <figure class="t-gallery-slide t-figure" data-each="images" data-t-item="{{id}}">
+        <span class="t-media" data-if="!zoom">
+          <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+          <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+        </span>
+        <button class="t-zoom" data-if="zoom" data-t-zoom>
+          <img data-if="decorative" src="{{asset}}" alt="" loading="lazy" decoding="async">
+          <img data-if="!decorative" src="{{asset}}" alt="{{alt}}" loading="lazy" decoding="async">
+        </button>
+        <figcaption data-if="caption" data-t-caption>{{caption}}</figcaption>
+      </figure>
+    </div>
+    <div class="t-gallery-nav">
+      <button class="t-gallery-arrow" data-t-prev><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg></button>
+      <ol class="t-gallery-thumbs">
+        <li data-each="images"><button class="t-gallery-thumb" data-t-goto="{{id}}" style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}"><img src="{{asset}}" alt="" loading="lazy" decoding="async"></button></li>
+      </ol>
+      <span class="t-gallery-position" data-t-position></span>
+      <button class="t-gallery-arrow" data-t-next><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></button>
+    </div>
+  </div>
   <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
   <figcaption class="t-gallery-caption" data-if="caption">{{caption}}</figcaption>
 </figure>
