@@ -171,7 +171,7 @@ export function readStorylinePublished(input: PublishedStoryline): SourceCourse 
     }
     if (questionItems.length) {
       // The question's own text on the slide is its stem: kept once, in the question.
-      const stems = new Set(questionItems.map((item) => ('stem' in item ? plain(item.stem) : '')));
+      const stems = new Set(questionItems.map((item) => ('stem' in item && item.stem ? plain(item.stem) : 'prompt' in item ? plain(item.prompt) : '')));
       page.items = page.items.filter((item) => !(item.kind === 'text' && stems.has(plain(item.markdown))));
       const top = Math.min(...page.items.map((item) => item.box?.y ?? 0).filter((y) => y > 0), 9999);
       for (const item of questionItems) page.items.push({ ...item, box: { x: 0, y: top + 1, width: slideSize?.width ?? 720, height: 1 } });
