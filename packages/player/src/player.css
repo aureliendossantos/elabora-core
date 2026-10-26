@@ -1200,3 +1200,196 @@ details[data-t-details][open]::details-content { opacity: 1; }
 /* A Continue that waits for exploration says what is left under it; its line stays once unlocked. */
 .t-continue-hint { margin: 0; color: var(--t-muted); font-size: 0.9375rem; text-align: center; }
 .t-continue-hint[data-t-empty] { visibility: hidden; }
+
+/* ── Steps (« Étapes », D63): a steps block, not the screen's steps ─────────────────────────────
+   carousel: one step at a time in a card, its room the tallest step's (the sequence keeps it);
+   timeline (« Frise »): the steps on a line, their dates before them, a dot that fills once seen;
+   scroll (« Défilé »): the text scrolls beside a figure that follows it (data-t-follow). On wide places,
+   with motion and the player, the figure stays in view while the step crossing the middle of the window
+   decides what it shows; otherwise (a phone, a column, a slide, less motion, no script) each step shows
+   its own picture above its words. Native scroll always; the figure changes by fading (opacity only). */
+.t-block--steps, .t-block--hotspots { container-type: inline-size; }
+:is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block:is(:has(> .t-steps--scroll, > .t-hotspots--side)) { max-width: var(--t-wide-width, 68.75rem); }
+.t-steps { margin: 0; }
+.t-steps-title { margin: 0 0 .5rem; font-size: 1.25rem; line-height: 1.3; }
+.t-steps-body > :last-child { margin-bottom: 0; }
+.t-steps-picture { margin: 0; }
+.t-steps-picture img { display: block; width: 100%; height: auto; border-radius: var(--t-radius); }
+.t-steps-number { display: inline-grid; place-items: center; min-width: 2rem; height: 2rem; margin: 0 0 .625rem; padding: 0 .5rem; border-radius: 999px; color: var(--t-primary); background: color-mix(in srgb, var(--t-primary) 13%, var(--t-surface)); font-weight: 700; font-size: .9375rem; line-height: 1; font-variant-numeric: tabular-nums; }
+/* Previous, the steps, where the learner is, Next: the carousel's and the tour's. 44 px arrows; the
+   steps as 24 px targets around a small dot (a step seen darker, the step shown in the course's colour). */
+.t-steps-nav, .t-hotspots-nav { display: flex; align-items: center; gap: .75rem; }
+.t-steps-arrow { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 2.75rem; height: 2.75rem; padding: 0; border: 1px solid color-mix(in srgb, var(--t-text) 22%, transparent); border-radius: 50%; color: var(--t-text); background: var(--t-surface); cursor: pointer; transition: scale var(--t-dur-press) var(--t-ease-out); }
+.t-steps-arrow svg { width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.t-steps-arrow:not([aria-disabled="true"]):active { scale: calc(1 - .06 * var(--t-move)); }
+.t-steps-dots { display: flex; flex-wrap: wrap; gap: .125rem; margin: 0; padding: 0; list-style: none; }
+.t-steps-dot { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.t-steps-dot::before { content: ""; width: .625rem; height: .625rem; border-radius: 50%; background: color-mix(in srgb, var(--t-text) 22%, transparent); transition: background var(--t-dur-item) ease, scale var(--t-dur-item) var(--t-ease-out); }
+.t-steps-dot--end::before { border-radius: 2px; }
+.t-steps-dot[data-t-visited]::before { background: color-mix(in srgb, var(--t-text) 50%, transparent); }
+.t-steps-dot[aria-current="true"]::before { background: var(--t-primary); scale: calc(1 + .25 * var(--t-move)); }
+.t-steps-position { margin-inline-start: auto; color: var(--t-muted); font-size: .9375rem; font-variant-numeric: tabular-nums; }
+/* carousel */
+.t-steps--carousel { display: grid; gap: 1.25rem; padding: 1.5rem 1.75rem 1.25rem; border-radius: var(--t-radius); background: color-mix(in srgb, var(--t-primary) 5%, var(--t-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-text) 8%, transparent); }
+.t-steps--carousel .t-steps-item { display: grid; gap: 1.25rem; align-content: start; }
+.t-steps--carousel .t-steps-picture img { max-height: 18rem; object-fit: contain; }
+.t-steps-start { margin-top: 1.25rem; }
+@container (min-width: 560px) { .t-steps--carousel .t-steps-item:has(> .t-steps-picture) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); align-items: start; } }
+@container (max-width: 420px) {
+  .t-steps--carousel { padding: 1.125rem 1rem 1rem; }
+  .t-steps--carousel .t-steps-dots { display: none; }
+}
+/* timeline: date | line and dot | words; on narrow places the date above the words. */
+.t-steps--timeline { --t-steps-date: 8.5rem; list-style: none; margin: 0; padding: 0; display: grid; }
+.t-steps--timeline:not(:has(.t-steps-date)) { --t-steps-date: 0rem; }
+.t-steps-event { position: relative; display: grid; grid-template-columns: var(--t-steps-date) 2.75rem minmax(0, 1fr); padding-bottom: 2.25rem; }
+.t-steps-event:last-child { padding-bottom: 0; }
+.t-steps-date { grid-column: 1; margin: .1rem 0 0; color: var(--t-primary); font-weight: 700; font-size: 1.0625rem; line-height: 1.35; text-align: end; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.t-steps-event > .t-steps-words { grid-column: 3; }
+.t-steps-event .t-steps-picture { margin: .25rem 0 .75rem; }
+.t-steps-event .t-steps-picture img { max-height: 16rem; width: auto; max-width: 100%; }
+.t-steps-event::before { content: ""; position: absolute; inset-block: 1.25rem -.25rem; inset-inline-start: calc(var(--t-steps-date) + 1.375rem - 1px); width: 2px; border-radius: 1px; background: color-mix(in srgb, var(--t-text) 14%, transparent); transition: background var(--t-dur-reveal) ease; }
+.t-steps-event:last-child::before { display: none; }
+.t-steps-event::after { content: ""; position: absolute; inset-block-start: .4rem; inset-inline-start: calc(var(--t-steps-date) + 1.375rem - 7px); width: 14px; height: 14px; box-sizing: border-box; border: 2px solid var(--t-primary); border-radius: 50%; background: var(--t-surface); transition: background var(--t-dur-reveal) ease; }
+.t-steps-event[data-t-visited]::after { background: var(--t-primary); }
+.t-steps-event[data-t-visited]:has(+ .t-steps-event[data-t-visited])::before { background: color-mix(in srgb, var(--t-primary) 55%, transparent); }
+@container (max-width: 559px) {
+  .t-steps--timeline { --t-steps-date: 0rem; }
+  .t-steps-event { grid-template-columns: 0 2.25rem minmax(0, 1fr); }
+  .t-steps-event::before { inset-inline-start: calc(1.125rem - 1px); }
+  .t-steps-event::after { inset-inline-start: calc(1.125rem - 7px); }
+  .t-steps-date { grid-column: 3; margin: 0 0 .25rem; text-align: start; font-size: 1rem; }
+}
+/* scroll: by default (and as it ends up on phones, in slides, with less motion, without the player)
+   each step with its own picture; the following figure is not shown. */
+.t-steps--scroll { position: relative; }
+.t-steps-stage { display: none; }
+.t-steps-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2.5rem; }
+.t-steps-step { display: grid; gap: 1rem; align-content: start; }
+.t-steps-own:not(:has(*)) { display: none; }
+.t-steps-own .t-steps-picture img { max-height: 24rem; width: auto; max-width: 100%; margin-inline: auto; }
+/* build: the base and the layers up to the step, stacked; focus: the whole picture, the step's part outlined. */
+.t-steps-stack { display: grid; }
+.t-steps-stack > img { grid-area: 1 / 1; }
+.t-steps-stack > .t-steps-layer { opacity: clamp(0, calc(var(--step) - var(--layer) + 1), 1); }
+.t-steps-spot { position: relative; width: fit-content; max-width: 100%; margin-inline: auto; overflow: hidden; border-radius: var(--t-radius); }
+.t-steps-spot img { border-radius: 0; }
+.t-steps-region { position: absolute; left: calc(var(--rx) * 100%); top: calc(var(--ry) * 100%); width: calc(var(--rw) * 100%); height: calc(var(--rh) * 100%); border-radius: 6px; box-shadow: 0 0 0 3px var(--t-primary), 0 0 0 100vmax rgb(10 13 18 / .32); pointer-events: none; }
+@media (prefers-reduced-motion: no-preference) {
+  @container (min-width: 560px) {
+    #elabora-app:not([data-presentation="slides"]) .t-steps--scroll[data-t-following] { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); grid-template-areas: "list stage"; column-gap: clamp(1.5rem, 5cqi, 3.5rem); align-items: start; }
+    #elabora-app:not([data-presentation="slides"]) .t-steps--scroll.t-steps--side-start[data-t-following] { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); grid-template-areas: "stage list"; }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] > .t-steps-list { grid-area: list; gap: 0; padding-block: 8svh 30svh; }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-step { min-height: 72svh; align-content: center;
+      --t-steps-on: clamp(0, calc(1 - max(var(--t-current, 1) - var(--step), var(--step) - var(--t-current, 1))), 1); }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-number { color: color-mix(in srgb, var(--t-on-primary) calc(var(--t-steps-on) * 100%), var(--t-primary)); background: color-mix(in srgb, var(--t-primary) calc(13% + var(--t-steps-on) * 87%), var(--t-surface)); transition: color var(--t-dur-reveal) ease, background var(--t-dur-reveal) ease; }
+    /* Each step's own picture stays for screen readers (the figure is hidden from them). */
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-own { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] > .t-steps-stage { grid-area: stage; position: sticky; top: var(--t-bar-top, 0px); display: grid; place-items: center; height: calc(100svh - var(--t-bar-top, 0px) - var(--t-bar-bottom, 0px)); padding-block: 1.5rem; }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-frame { --t-steps-room: calc(100svh - var(--t-bar-top, 0px) - var(--t-bar-bottom, 0px) - 3rem); position: relative; display: grid; width: fit-content; max-width: 100%; overflow: hidden; border-radius: var(--t-radius); }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-frame img { grid-area: 1 / 1; display: block; max-width: 100%; max-height: var(--t-steps-room); }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-layers { display: contents; }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-frame .t-steps-base { width: auto; height: auto; }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-frame .t-steps-layer { width: 100%; height: 100%; object-fit: contain; opacity: clamp(0, calc(var(--t-current, 1) - var(--layer) + 1), 1); transition: opacity var(--t-dur-reveal) ease; will-change: opacity; }
+    /* Each layer is its own composited layer, painted once (a picture shown for the first time would
+       otherwise be decoded on the frame it starts fading in). */
+    /* replace: each picture covers the one before it (the same size, or on the page's colour). */
+    #elabora-app:not([data-presentation="slides"]) .t-steps--replace[data-t-following] .t-steps-frame { width: 100%; }
+    #elabora-app:not([data-presentation="slides"]) .t-steps--replace[data-t-following] .t-steps-frame .t-steps-layer { background: var(--t-surface); }
+    #elabora-app:not([data-presentation="slides"]) .t-steps--replace[data-t-following] .t-steps-frame .t-steps-layer:first-of-type { background: none; }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-regions { display: contents; }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-frame .t-steps-region { opacity: clamp(0, calc(1 - max(var(--t-current, 1) - var(--layer), var(--layer) - var(--t-current, 1))), 1); transition: opacity var(--t-dur-reveal) ease; will-change: opacity; }
+  }
+}
+/* The words arrive softly as they scroll in (scroll-driven where the browser can; nothing otherwise). */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    #elabora-app:not([data-presentation="slides"]) :is(.t-steps-event, .t-steps-step) > .t-steps-words { animation: t-steps-arrive linear both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
+  }
+}
+@keyframes t-steps-arrive { from { opacity: .45; translate: 0 calc(1rem * var(--t-move)); } }
+
+/* ── Interactive picture (« Image interactive », D63) ───────────────────────────────────────────
+   Markers at x, y of the whole picture (0 to 1), 44 px, numbered, with a ring that reads on any picture;
+   they never pulse. popover: the text floats by its marker inside the picture, below it when the marker
+   is in the top half and above it otherwise, scrolling inside itself rather than leaving the picture;
+   side and below: the texts share one place (the room of the longest, the hint while none is open);
+   tour: one text at a time under the picture. Narrower than 560 px the texts are a numbered list under
+   the picture (a tour stays a tour), and a picture with a focal point is shown half as large again,
+   cropped at its sides around it; a marker the crop leaves out stays at the edge. */
+.t-hotspots { display: grid; gap: .875rem; margin: 0; }
+.t-hotspots-prompt { margin: 0; color: var(--t-muted); font-size: .9375rem; }
+.t-hotspots-figure { position: relative; display: grid; gap: 1.25rem; align-items: start; }
+.t-hotspots-frame { position: relative; grid-area: 1 / 1; overflow: hidden; border-radius: var(--t-radius); }
+.t-hotspots-picture { position: relative; --t-hotspots-from: 0; --t-hotspots-span: 1; }
+.t-hotspots-image { display: block; width: 100%; height: auto; }
+.t-hotspots-marker { position: absolute; z-index: 1;
+  left: clamp(calc(var(--t-hotspots-from) * 100% + 26px), calc(var(--x, .5) * 100%), calc((var(--t-hotspots-from) + var(--t-hotspots-span)) * 100% - 26px));
+  top: clamp(26px, calc(var(--y, .5) * 100%), calc(100% - 26px)); translate: -50% -50%;
+  display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 3px solid var(--t-surface); border-radius: 50%;
+  color: var(--t-on-primary); background: var(--t-primary); font: inherit; font-weight: 700; font-size: 1rem; line-height: 1; font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 1px rgb(10 13 18 / .25), 0 2px 8px rgb(10 13 18 / .35); cursor: pointer;
+  transition: background var(--t-dur-item) ease, color var(--t-dur-item) ease, border-color var(--t-dur-item) ease, scale var(--t-dur-press) var(--t-ease-out); }
+.t-hotspots-marker:focus-visible { z-index: 3; outline: 3px solid var(--t-focus); outline-offset: 2px; }
+.t-hotspots-marker:active { scale: calc(1 - .06 * var(--t-move)); }
+.t-hotspots-marker[data-t-visited] { background: color-mix(in srgb, var(--t-primary) 72%, var(--t-text)); }
+.t-hotspots-marker:is([aria-expanded="true"], [aria-current="true"]) { color: var(--t-primary); background: var(--t-surface); border-color: var(--t-primary); }
+.t-hotspots-icon, .t-hotspots-icon svg { display: block; width: 22px; height: 22px; }
+.t-hotspots-icon svg { fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.t-hotspots-icon circle { fill: currentColor; stroke: none; }
+.t-hotspots-panels { margin: 0; padding: 0; list-style: none; }
+.t-hotspots-panel { color: var(--t-text); }
+.t-hotspots-tag { float: inline-start; display: grid; place-items: center; min-width: 1.75rem; height: 1.75rem; margin: 0 .625rem 0 0; padding: 0 .375rem; border-radius: 999px; color: var(--t-on-primary); background: var(--t-primary); font-weight: 700; font-size: .875rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.t-hotspots-title { margin: 0 0 .5rem; font-size: 1.125rem; line-height: 1.4; }
+.t-hotspots-body { clear: both; }
+.t-hotspots-body > :last-child { margin-bottom: 0; }
+.t-hotspots-detail { margin: 0 0 .75rem; clear: both; }
+.t-hotspots-detail img { display: block; max-width: 100%; max-height: 12rem; border-radius: calc(var(--t-radius) * .75); }
+/* popover */
+.t-hotspots--popover .t-hotspots-panels { position: relative; z-index: 2; grid-area: 1 / 1; align-self: stretch; pointer-events: none; }
+.t-hotspots--popover .t-hotspots-entry { display: contents; }
+.t-hotspots--popover .t-hotspots-panel { --t-hotspots-pw: min(21rem, calc(100% - 1rem)); --t-hotspots-above: clamp(0, calc((var(--y, .5) - .5) * 1000), 1);
+  position: absolute; width: var(--t-hotspots-pw); left: clamp(.5rem, calc(var(--x, .5) * 100% - var(--t-hotspots-pw) / 2), calc(100% - var(--t-hotspots-pw) - .5rem));
+  top: calc(var(--y, .5) * 100% + 30px - var(--t-hotspots-above) * 60px); translate: 0 calc(var(--t-hotspots-above) * -100%);
+  max-height: calc((var(--t-hotspots-above) * var(--y, .5) + (1 - var(--t-hotspots-above)) * (1 - var(--y, .5))) * 100% - 38px); overflow-y: auto; overscroll-behavior: contain;
+  padding: .875rem 1rem 1rem; border-radius: var(--t-radius); background: var(--t-surface); pointer-events: auto;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-text) 10%, transparent), 0 12px 32px rgb(15 23 42 / .2);
+  transition: opacity var(--t-dur-pop) ease, scale var(--t-dur-pop) var(--t-ease-out); }
+@starting-style { .t-hotspots--popover .t-hotspots-panel:not([hidden]) { opacity: 0; scale: calc(1 - .04 * var(--t-move)); } }
+/* side and below: the texts in one place, the longest's room kept. */
+.t-hotspots-room { display: grid; min-width: 0; }
+.t-hotspots-room > * { grid-area: 1 / 1; min-width: 0; }
+:is(.t-hotspots--side, .t-hotspots--below) .t-hotspots-room { grid-area: auto; padding: 1.125rem 1.25rem; border-radius: var(--t-radius); background: color-mix(in srgb, var(--t-primary) 5%, var(--t-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-text) 8%, transparent); }
+:is(.t-hotspots--side, .t-hotspots--below) .t-hotspots-panels { display: grid; }
+:is(.t-hotspots--side, .t-hotspots--below) .t-hotspots-entry { display: contents; }
+:is(.t-hotspots--side, .t-hotspots--below) .t-hotspots-panel { grid-area: 1 / 1; min-width: 0; transition: opacity var(--t-dur-item) ease, visibility var(--t-dur-item); }
+:is(.t-hotspots--side, .t-hotspots--below) .t-hotspots-panel[hidden] { display: block !important; visibility: hidden; opacity: 0; }
+.t-hotspots-hint { margin: 0; align-self: center; color: var(--t-muted); font-size: .9375rem; transition: opacity var(--t-dur-item) ease; }
+.t-hotspots-room:has(.t-hotspots-panel:not([hidden])) .t-hotspots-hint { visibility: hidden; opacity: 0; }
+@container (min-width: 720px) { .t-hotspots--side .t-hotspots-figure { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); } }
+/* tour: the texts one at a time under the picture (the sequence keeps the longest's room), then the nav. */
+.t-hotspots--tour .t-hotspots-room { padding: 1.125rem 1.25rem; border-radius: var(--t-radius); background: color-mix(in srgb, var(--t-primary) 5%, var(--t-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-text) 8%, transparent); }
+.t-hotspots--tour .t-hotspots-frame { grid-area: auto; }
+:is(.t-hotspots--tour, .t-hotspots--side, .t-hotspots--below) .t-hotspots-detail img { max-height: 8rem; }
+/* Under the picture, a detail sits beside its text rather than above it. */
+@container (min-width: 560px) { :is(.t-hotspots--tour, .t-hotspots--below) .t-hotspots-detail { float: inline-end; clear: none; max-width: 35%; margin: 0 0 .5rem 1.25rem; } :is(.t-hotspots--tour, .t-hotspots--below) .t-hotspots-body { clear: none; } }
+/* Narrow places: a numbered list under the picture; the marker pressed lights its entry. */
+@container (max-width: 559px) {
+  .t-hotspots[data-focus] .t-hotspots-picture { --t-hotspots-from: calc(var(--focus-x, .5) / 3); --t-hotspots-span: calc(2 / 3); width: 150%; margin-inline-start: calc(var(--focus-x, .5) * -50%); }
+  .t-hotspots[data-focus] .t-hotspots-picture:dir(rtl) { margin-inline-start: 0; margin-inline-end: calc((1 - var(--focus-x, .5)) * -50%); }
+  .t-hotspots:not(.t-hotspots--tour) .t-hotspots-figure { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .t-hotspots:not(.t-hotspots--tour) .t-hotspots-room { display: block; padding: 0; background: none; box-shadow: none; }
+  .t-hotspots:not(.t-hotspots--tour) .t-hotspots-hint { display: none; }
+  .t-hotspots:not(.t-hotspots--tour) .t-hotspots-panels { position: static; grid-area: auto; display: grid; gap: .5rem; pointer-events: auto; }
+  .t-hotspots:not(.t-hotspots--tour) .t-hotspots-entry { display: block; }
+  .t-hotspots:not(.t-hotspots--tour) .t-hotspots-panel, .t-hotspots:not(.t-hotspots--tour) .t-hotspots-panel[hidden] { display: block !important; visibility: visible; opacity: 1; position: static; width: auto; max-height: none; translate: none; overflow: visible; padding: .75rem .875rem; border-radius: var(--t-radius); background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-text) 10%, transparent); transition: background var(--t-dur-item) ease, box-shadow var(--t-dur-item) ease; }
+  .t-hotspots:not(.t-hotspots--tour) .t-hotspots-panel:not([hidden]) { background: color-mix(in srgb, var(--t-primary) 8%, var(--t-surface)); box-shadow: inset 0 0 0 2px var(--t-primary); }
+  .t-hotspots--tour .t-hotspots-room { padding: 1rem; }
+}
+/* In slides the picture keeps to the slide's height (the texts under it too), its markers on it. */
+@container (min-width: 560px) {
+  [data-presentation="slides"] .t-hotspots-picture { width: fit-content; max-width: 100%; margin-inline: auto; }
+  [data-presentation="slides"] .t-hotspots-image { width: auto; max-width: 100%; max-height: min(34rem, 60vh); }
+  [data-presentation="slides"] :is(.t-hotspots--below, .t-hotspots--tour) .t-hotspots-image { max-height: min(22rem, 38vh); }
+  [data-presentation="slides"] .t-steps-event { padding-bottom: 1.5rem; }
+}

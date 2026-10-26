@@ -408,7 +408,8 @@ function compileBlock(block: Block, scope: ScreenScope): BlockData {
   if (template && fillIn) template.html = placeBlanks(template.html);
   const rendered = {
     ...(visibilityKey ? { vkey: visibilityKey } : {}),
-    ...(template ?? {})
+    ...(template ?? {}),
+    ...(template?.visits ? exploreOf(descriptor.root, props) : {})
   };
   const nested = objectsIn(block.blocks);
   const children = nested.length ? { blocks: nested.map((child) => compileBlock(child, scope)) } : {};
@@ -451,6 +452,14 @@ function compileBlock(block: Block, scope: ScreenScope): BlockData {
     case 'audio': return { ...head, type: 'audio', ...placement, ...rendered, props: audioProps(props, context.assetPath), ...children };
     default: return { ...head, ...placement, ...rendered, ...children };
   }
+}
+
+// What the controls of a steps block or an interactive picture (and their forks) are, for the words of
+// a locked Continue (D63): steps, a timeline's events, markers.
+function exploreOf(root: string | null, props: Record<string, unknown>): { explore?: 'steps' | 'events' | 'markers' } {
+  if (root === 'steps') return { explore: props.presentation === 'timeline' ? 'events' : 'steps' };
+  if (root === 'hotspots') return { explore: 'markers' };
+  return {};
 }
 
 // An image block (or a fork) with inline: true and an SVG asset: the drawing in the page in place of

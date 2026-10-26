@@ -33,11 +33,13 @@ import type { DialoguePresentation } from './dialogue/walk.ts';
 // over, a panel to open, a tab to show, an image or a card to see (a gallery's carousel, a stack of
 // cards), else an item. A name held by a tab and a panel (tabs shown as an accordion in a narrow
 // container) is what is rendered.
-type LeftKind = 'cards' | 'panels' | 'tabs' | 'images' | 'cardsToSee' | 'items';
-const LEFT_LABELS: Readonly<Record<LeftKind, 'leftCards' | 'leftPanels' | 'leftTabs' | 'leftImages' | 'leftCardsToSee' | 'leftToExplore'>> = {
-  cards: 'leftCards', panels: 'leftPanels', tabs: 'leftTabs', images: 'leftImages', cardsToSee: 'leftCardsToSee', items: 'leftToExplore'
+type LeftKind = 'cards' | 'panels' | 'tabs' | 'images' | 'cardsToSee' | 'steps' | 'events' | 'markers' | 'items';
+const LEFT_LABELS: Readonly<Record<LeftKind, 'leftCards' | 'leftPanels' | 'leftTabs' | 'leftImages' | 'leftCardsToSee' | 'leftSteps' | 'leftEvents' | 'leftMarkers' | 'leftToExplore'>> = {
+  cards: 'leftCards', panels: 'leftPanels', tabs: 'leftTabs', images: 'leftImages', cardsToSee: 'leftCardsToSee', steps: 'leftSteps', events: 'leftEvents', markers: 'leftMarkers', items: 'leftToExplore'
 };
 function leftKind(block: BlockData, hooks: ReadonlySet<string>, nodes: readonly HTMLElement[]): LeftKind {
+  // Blocks that say what their controls are: a steps block's steps or events, a picture's markers.
+  if (block.explore) return block.explore;
   const root = block.lineage?.[block.lineage.length - 1] ?? block.type;
   if (hooks.has('item')) return root === 'gallery' ? 'images' : hooks.has('flip') ? 'cardsToSee' : 'items';
   if (hooks.has('flip')) return 'cards';

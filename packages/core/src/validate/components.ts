@@ -447,4 +447,9 @@ function checkPrimitives(hooks: readonly TemplateHook[], report: (code: string, 
     if (exclusive.value !== '' && exclusive.value !== 'popover') report('E_COMPONENT_HOOK', exclusive.line, `data-t-exclusive is empty or "popover", not "${exclusive.value}".`);
     if (!holds(exclusive, 'toggle')) report('E_COMPONENT_HOOK', exclusive.line, 'data-t-exclusive holds the data-t-toggle buttons of the parts it keeps one at a time.');
   }
+  // Reveals followed as the page scrolls (a steps block's scroll): the reveals inside, not nested.
+  for (const follow of of('follow')) {
+    if (!holds(follow, 'reveal')) report('E_COMPONENT_HOOK', follow.line, 'data-t-follow holds the data-t-reveal elements it follows (the steps).');
+    if (holds(follow, 'follow')) report('E_COMPONENT_HOOK', follow.line, 'data-t-follow holds another data-t-follow: one figure follows one list of steps.');
+  }
 }

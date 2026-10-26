@@ -1,0 +1,98 @@
+<!-- An interactive picture (« Image interactive », D63): markers placed at x, y (0 to 1 of the whole picture)
+     on the picture, each opening its text. popover: the text floats by its marker (data-t-exclusive="popover":
+     one open, Escape or a press outside closes it); side and below: the texts share one place beside or under
+     the picture, the room of the longest kept; tour: the markers in order (data-t-sequence, the markers its goto
+     buttons). Narrower than 560 px, the texts are a numbered list under the picture; each entry also counts
+     once seen there (data-t-reveal, the same name as its marker). -->
+<div class="t-hotspots t-hotspots--popover t-hotspots--{{markerStyle}}" data-if="presentation == popover" data-focus="{{focus.x}}" style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}">
+  <p class="t-hotspots-prompt" data-if="prompt">{{prompt}}</p>
+  <div class="t-hotspots-figure" data-t-exclusive="popover">
+    <div class="t-hotspots-frame">
+      <div class="t-hotspots-picture">
+        <img class="t-hotspots-image" src="{{image}}" alt="{{alt}}" decoding="async">
+        <button class="t-hotspots-marker" data-each="items" data-t-toggle="{{id}}" style="--x: {{x}}; --y: {{y}}" aria-label="{{@number}}. {{title}}">
+          <span class="t-hotspots-number" data-if="markerStyle == number" aria-hidden="true">{{@number}}</span>
+          <span class="t-hotspots-icon" data-if="markerStyle == icon">
+            <svg data-if="icon == plus" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></svg>
+            <svg data-if="icon == info" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 10.5v7"/><circle cx="12" cy="6.75" r="1.25"/></svg>
+            <svg data-if="icon == question" aria-hidden="true" viewBox="0 0 24 24"><path d="M9.2 9.2a2.9 2.9 0 1 1 4.1 2.6c-.8.4-1.3 1.1-1.3 2v.7"/><circle cx="12" cy="17.6" r="1.1"/></svg>
+            <svg data-if="icon == eye" aria-hidden="true" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.75"/></svg>
+          </span>
+        </button>
+      </div>
+    </div>
+    <ol class="t-hotspots-panels">
+      <li class="t-hotspots-entry" data-each="items" data-t-reveal="{{id}}" style="--x: {{x}}; --y: {{y}}">
+        <div class="t-hotspots-panel" data-t-part="{{id}}">
+          <p class="t-hotspots-tag" aria-hidden="true">{{@number}}</p>
+          <h3 class="t-hotspots-title" data-t-heading>{{title}}</h3>
+          <figure class="t-hotspots-detail" data-if="image"><img src="{{image}}" alt="{{alt}}" loading="lazy" decoding="async"></figure>
+          <div class="t-hotspots-body t-text">{{markdown}}</div>
+        </div>
+      </li>
+    </ol>
+  </div>
+  <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
+</div>
+<div class="t-hotspots t-hotspots--{{presentation}} t-hotspots--{{markerStyle}}" data-if="presentation != popover" data-focus="{{focus.x}}" style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}">
+  <p class="t-hotspots-prompt" data-if="prompt">{{prompt}}</p>
+  <div class="t-hotspots-figure" data-if="presentation != tour" data-t-exclusive>
+    <div class="t-hotspots-frame">
+      <div class="t-hotspots-picture">
+        <img class="t-hotspots-image" src="{{image}}" alt="{{alt}}" decoding="async">
+        <button class="t-hotspots-marker" data-each="items" data-t-toggle="{{id}}" style="--x: {{x}}; --y: {{y}}" aria-label="{{@number}}. {{title}}">
+          <span class="t-hotspots-number" data-if="markerStyle == number" aria-hidden="true">{{@number}}</span>
+          <span class="t-hotspots-icon" data-if="markerStyle == icon">
+            <svg data-if="icon == plus" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></svg>
+            <svg data-if="icon == info" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 10.5v7"/><circle cx="12" cy="6.75" r="1.25"/></svg>
+            <svg data-if="icon == question" aria-hidden="true" viewBox="0 0 24 24"><path d="M9.2 9.2a2.9 2.9 0 1 1 4.1 2.6c-.8.4-1.3 1.1-1.3 2v.7"/><circle cx="12" cy="17.6" r="1.1"/></svg>
+            <svg data-if="icon == eye" aria-hidden="true" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.75"/></svg>
+          </span>
+        </button>
+      </div>
+    </div>
+    <div class="t-hotspots-room">
+      <p class="t-hotspots-hint" data-t-label="hotspotsHint"></p>
+      <ol class="t-hotspots-panels">
+        <li class="t-hotspots-entry" data-each="items" data-t-reveal="{{id}}">
+          <div class="t-hotspots-panel" data-t-part="{{id}}">
+            <p class="t-hotspots-tag" aria-hidden="true">{{@number}}</p>
+            <h3 class="t-hotspots-title" data-t-heading>{{title}}</h3>
+            <figure class="t-hotspots-detail" data-if="image"><img src="{{image}}" alt="{{alt}}" loading="lazy" decoding="async"></figure>
+            <div class="t-hotspots-body t-text">{{markdown}}</div>
+          </div>
+        </li>
+      </ol>
+    </div>
+  </div>
+  <div class="t-hotspots-figure" data-if="presentation == tour" data-t-sequence>
+    <div class="t-hotspots-frame">
+      <div class="t-hotspots-picture">
+        <img class="t-hotspots-image" src="{{image}}" alt="{{alt}}" decoding="async">
+        <button class="t-hotspots-marker" data-each="items" data-t-goto="{{id}}" style="--x: {{x}}; --y: {{y}}" aria-label="{{@number}}. {{title}}">
+          <span class="t-hotspots-number" data-if="markerStyle == number" aria-hidden="true">{{@number}}</span>
+          <span class="t-hotspots-icon" data-if="markerStyle == icon">
+            <svg data-if="icon == plus" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></svg>
+            <svg data-if="icon == info" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 10.5v7"/><circle cx="12" cy="6.75" r="1.25"/></svg>
+            <svg data-if="icon == question" aria-hidden="true" viewBox="0 0 24 24"><path d="M9.2 9.2a2.9 2.9 0 1 1 4.1 2.6c-.8.4-1.3 1.1-1.3 2v.7"/><circle cx="12" cy="17.6" r="1.1"/></svg>
+            <svg data-if="icon == eye" aria-hidden="true" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.75"/></svg>
+          </span>
+        </button>
+      </div>
+    </div>
+    <div class="t-hotspots-room">
+      <section class="t-hotspots-panel" data-each="items" data-t-item="{{id}}">
+        <p class="t-hotspots-tag" aria-hidden="true">{{@number}}</p>
+        <h3 class="t-hotspots-title" data-t-heading>{{title}}</h3>
+        <figure class="t-hotspots-detail" data-if="image"><img src="{{image}}" alt="{{alt}}" decoding="async"></figure>
+        <div class="t-hotspots-body t-text">{{markdown}}</div>
+      </section>
+    </div>
+    <div class="t-hotspots-nav">
+      <button class="t-steps-arrow" data-t-prev><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M14.5 6l-6 6 6 6"/></svg></button>
+      <span class="t-steps-position" data-t-position></span>
+      <button class="t-steps-arrow" data-t-next><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></svg></button>
+    </div>
+  </div>
+  <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
+</div>

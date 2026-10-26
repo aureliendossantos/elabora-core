@@ -98,6 +98,21 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
               if (p.caption && !agent) L.push(`${indent}  _${p.caption}_`);
               break;
             case 'columns': if (agent) L.push(`${indent}- ${tag}columns (${p.count || 2}${p.widths && p.widths !== 'equal' ? `, ${p.widths}` : ''})`); break;
+            // A steps block (« Étapes ») and an interactive picture (D63): their items in order.
+            case 'steps': {
+              const presentation = String(p.presentation || 'carousel');
+              const ends = presentation === 'carousel' ? { intro: recordOf(p.intro), summary: recordOf(p.summary) } : { intro: {}, summary: {} };
+              L.push(`${indent}- ${tag}${agent ? `steps (${presentation}${presentation === 'scroll' ? `, figure ${p.figure || 'replace'}` : ''}): ` : ''}${recordsOf(p.items).map((item) => item.title).join(' → ')}`);
+              const line = (title: unknown, body: unknown, extra = '') => L.push(`${indent}  - ${extra}**${title}**${body ? ` ${short(body, agent ? 120 : 1200)}` : ''}`);
+              if (ends.intro.title) line(ends.intro.title, ends.intro.markdown);
+              if (!agent || presentation === 'timeline') recordsOf(p.items).forEach((item, index) => line(item.title, agent ? '' : item.markdown, item.date ? `${item.date} — ` : p.numbered !== false && presentation !== 'timeline' ? `${index + 1}. ` : ''));
+              if (ends.summary.title) line(ends.summary.title, ends.summary.markdown);
+              break;
+            }
+            case 'hotspots':
+              L.push(`${indent}- ${tag}${agent ? `hotspots (${p.presentation || 'popover'}) \`${p.image}\` ` : ''}${p.decorative ? '(decorative)' : `"${p.alt}"`}${p.prompt ? ` — ${p.prompt}` : ''}`);
+              recordsOf(p.items).forEach((item, index) => L.push(`${indent}  - ${index + 1}. **${item.title}**${agent ? ` (${item.x}, ${item.y})` : ` ${short(item.markdown, 1200)}`}`));
+              break;
             case 'callout': L.push(`${indent}- ${tag}[${p.variant || 'info'}] ${p.title ? `**${p.title}** ` : ''}${short(p.markdown, agent ? 160 : 2000)}`); break;
             case 'image':
               L.push(`${indent}- ${tag}${agent ? `\`${p.asset}\` ` : ''}image${agent && p.presentation && p.presentation !== 'centered' ? ` (${p.presentation})` : ''}: ${p.decorative ? '(decorative)' : `"${p.alt}"`}${p.generated ? ' [AI-generated]' : ''}`);

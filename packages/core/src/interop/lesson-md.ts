@@ -110,6 +110,30 @@ export function lessonMdExport(project: Project): LessonMdExport {
           lose(id, block.id, `gallery (${props.presentation || 'grid'}) exported as its images one after the other`);
           break;
         case 'columns': lose(id, block.id, 'columns (their blocks exported one after the other)'); break;
+        // A steps block (« Étapes ») as its steps under headings, dated on a timeline, each with its
+        // picture; an interactive picture as the picture then its markers' texts, numbered.
+        case 'steps': {
+          const carousel = !props.presentation || props.presentation === 'carousel';
+          const part = (item: Record<string, unknown>, title: string) => {
+            directive('text', {}, `## ${title}${item.markdown ? `\n\n${item.markdown}` : ''}`);
+            if (item.image) directive('image', { src: copyAsset(item.image), alt: item.decorative ? '' : oneLine(item.alt) });
+          };
+          if (carousel && props.intro) part(recordOf(props.intro), oneLine(recordOf(props.intro).title));
+          if (props.presentation === 'scroll' && props.figureImage) directive('image', { src: copyAsset(props.figureImage), alt: oneLine(props.figureAlt) });
+          recordsOf(props.items).forEach((item, index) => part(item, `${props.presentation === 'timeline' && item.date ? `${oneLine(item.date)} — ` : props.numbered !== false && props.presentation !== 'timeline' ? `${index + 1}. ` : ''}${oneLine(item.title)}`));
+          if (carousel && props.summary) part(recordOf(props.summary), oneLine(recordOf(props.summary).title));
+          lose(id, block.id, `steps (${props.presentation || 'carousel'}) exported as its steps one after the other`);
+          break;
+        }
+        case 'hotspots':
+          directive('image', { src: copyAsset(props.image), alt: props.decorative ? '' : oneLine(props.alt) });
+          if (props.prompt) directive('text', {}, String(props.prompt));
+          recordsOf(props.items).forEach((item, index) => {
+            directive('text', {}, `## ${index + 1}. ${oneLine(item.title)}\n\n${item.markdown ?? ''}`);
+            if (item.image) directive('image', { src: copyAsset(item.image), alt: oneLine(item.alt) });
+          });
+          lose(id, block.id, `interactive picture (${props.presentation || 'popover'}) exported as its picture and its markers' texts, numbered (their places on the picture are lost)`);
+          break;
         case 'divider': break;
         case 'video':
         case 'audio':
