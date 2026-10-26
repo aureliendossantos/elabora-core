@@ -26,7 +26,10 @@ export function addBlock(context: CommandContext, args: AddBlockArgs): CommandOu
   const id = block.id || freshId(ids, `${screenId}-${block.type}`);
   const draft = new Draft(context.files);
   const screen = draft.json<Screen>(screenFile(screenId));
-  insertAt(targetList(screen, { layer, parent, screen: screenId }), { props: {}, ...block, id } as Block, { after, position });
+  const added = { props: {}, ...block, id } as Block;
+  // Extra the learner may skip (D63): only written when true.
+  if (added.optional !== true) delete added.optional;
+  insertAt(targetList(screen, { layer, parent, screen: screenId }), added, { after, position });
   draft.writeJson(screenFile(screenId), screen);
   return { files: draft.files(), result: { block: id } };
 }

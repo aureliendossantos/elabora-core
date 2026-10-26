@@ -82,7 +82,11 @@ export function checkScreenPedagogy(ctx: CourseCheckContext, screen: ScreenFile)
     else if (longest.words > WORDS_PER_STRETCH) reporter.emit('W_TEXT_DENSITY', { file, target: id, measured: longest.words, limit: WORDS_PER_STRETCH, key: `${id}/stretch/${longest.first}@${longest.words}`, message: `Page "${id}" has about ${longest.words} words to read in a row, from "${longest.first}" to "${longest.last}", with nothing to do.` });
   }
 
-  if (hasActivity(ctx, blocks) && (data.completeWhen || 'viewed') === 'viewed') {
+  // Optional blocks (D63) do not count for interactions-done, nor the blocks of their slots: an
+  // optional activity alone does not ask for it.
+  const required = [...screenBlocks(data, file)].filter((location) => !location.layer && location.block !== null && location.block !== undefined
+    && location.block.optional !== true && location.parent?.optional !== true).map((location) => location.block);
+  if (hasActivity(ctx, required) && (data.completeWhen || 'viewed') === 'viewed') {
     reporter.emit('W_COMPLETION_MISMATCH', { file, path: '/completeWhen', target: id, message: `Screen "${id}" has an activity but completes as soon as it is viewed.` });
   }
 }
