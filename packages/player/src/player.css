@@ -1156,13 +1156,15 @@ details[data-t-details][open]::details-content { opacity: 1; }
     #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-frame img { grid-area: 1 / 1; display: block; max-width: 100%; max-height: var(--t-steps-room); }
     #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-layers { display: contents; }
     #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-frame .t-steps-base { width: auto; height: auto; }
-    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-frame .t-steps-layer { width: 100%; height: 100%; object-fit: contain; opacity: clamp(0, calc(var(--t-current, 1) - var(--layer) + 1), 1); transition: opacity var(--t-dur-reveal) ease; }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-frame .t-steps-layer { width: 100%; height: 100%; object-fit: contain; opacity: clamp(0, calc(var(--t-current, 1) - var(--layer) + 1), 1); transition: opacity var(--t-dur-reveal) ease; will-change: opacity; }
+    /* Each layer is its own composited layer, painted once (a picture shown for the first time would
+       otherwise be decoded on the frame it starts fading in). */
     /* replace: each picture covers the one before it (the same size, or on the page's colour). */
     #elabora-app:not([data-presentation="slides"]) .t-steps--replace[data-t-following] .t-steps-frame { width: 100%; }
     #elabora-app:not([data-presentation="slides"]) .t-steps--replace[data-t-following] .t-steps-frame .t-steps-layer { background: var(--t-surface); }
     #elabora-app:not([data-presentation="slides"]) .t-steps--replace[data-t-following] .t-steps-frame .t-steps-layer:first-of-type { background: none; }
     #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-regions { display: contents; }
-    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-frame .t-steps-region { opacity: clamp(0, calc(1 - max(var(--t-current, 1) - var(--layer), var(--layer) - var(--t-current, 1))), 1); transition: opacity var(--t-dur-reveal) ease; }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-frame .t-steps-region { opacity: clamp(0, calc(1 - max(var(--t-current, 1) - var(--layer), var(--layer) - var(--t-current, 1))), 1); transition: opacity var(--t-dur-reveal) ease; will-change: opacity; }
   }
 }
 /* The words arrive softly as they scroll in (scroll-driven where the browser can; nothing otherwise). */
