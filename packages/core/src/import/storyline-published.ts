@@ -137,7 +137,8 @@ export function readStorylinePublished(input: PublishedStoryline): SourceCourse 
     const questionItems: SourceItem[] = [];
     for (const interaction of interactions) {
       const item = readInteraction(interaction, consumed, feedbackLayers);
-      if (item) questionItems.push(item);
+      if (Array.isArray(item)) questionItems.push(...item);
+      else if (item) questionItems.push(item);
     }
     if (questionItems.length) page.kind = 'question';
     const slideGroups = obj(slide.actionGroups);
@@ -336,7 +337,7 @@ export function readStorylinePublished(input: PublishedStoryline): SourceCourse 
   }
 
   // A question of data.js: its kind, its choices and which are correct.
-  function readInteraction(interaction: Json, consumed: Set<string>, feedbackLayers: Map<string, 'correct' | 'incorrect'>): SourceItem | null {
+  function readInteraction(interaction: Json, consumed: Set<string>, feedbackLayers: Map<string, 'correct' | 'incorrect'>): SourceItem | SourceItem[] | null {
     const type = str(interaction.type);
     const id = str(interaction.id);
     const stem = plainToMarkdown(str(interaction.lmstext)) || 'Question';
@@ -370,9 +371,52 @@ export function readStorylinePublished(input: PublishedStoryline): SourceCourse 
         if (statement && str(statement.operator) === 'eq' && Number.isFinite(value)) return { ref: id, kind: 'numeric', stem, answer: value };
       }
     }
+    const activity = readActivity(interaction, id, stem, choices, label);
+    if (activity) return activity;
     const names: Record<string, string> = { fillin: 'Texte à trous (Storyline fill in the blank)', matching: 'Association (Storyline matching)', sequence: 'Remise en ordre (Storyline sequence)', hotspot: 'Zone à cliquer (Storyline hotspot)', wordbank: 'Banque de mots (Storyline word bank)', likert: 'Échelle de Likert (Storyline survey)', numeric: 'Réponse numérique en intervalle (Storyline numeric)', multiplechoice: 'Question sans réponse juste (Storyline survey)', multipleresponse: 'Question sans réponse juste (Storyline survey)' };
     const lines = [...choices, ...list(interaction.statements)].map((choice) => `- ${label(choice)}`);
     return { ref: id, kind: 'fallback', feature: names[type] ?? `Question Storyline (${type || 'inconnue'})`, markdown: [stem, ...lines].join('\n\n'), detail: 'sa consigne et ses éléments en texte' };
+  }
+
+  // The activities of D63 in data.js: a matching or a drag and drop (statements paired with choices by
+  // the right answer) as a sort in pairs, a sequence (choices in the right answer's order) as a sort in
+  // order, a fill in the blank (the accepted answers) and a word bank (words to place) as a fill-in,
+  // a Likert scale (statements rated on its choices) as reflections on a scale. Surveys are not scored.
+  function readActivity(interaction: Json, id: string, stem: string, choices: Json[], label: (choice: Json) => string): SourceItem | SourceItem[] | null {
+    const type = str(interaction.type);
+    const scored = interaction.issurvey !== true;
+    const statements = list(interaction.statements);
+    const key = (value: unknown) => str(value).replace(/^(choices|statements)\./, '').replace(/^(choice|statement)_/, '');
+    const choiceById = new Map(choices.map((choice) => [key(choice.id), choice]));
+    const statementById = new Map(statements.map((statement) => [key(statement.id), statement]));
+    const right = list(obj(list(interaction.answers).find((answer) => str(answer.status) === 'correct')?.evaluate).statements);
+    const flat = (entries: Json[]): Json[] => entries.flatMap((entry) => [entry, ...flat(list(entry.statements))]);
+    const evaluated = flat(right);
+    const pairs = evaluated.filter((entry) => str(entry.choiceid) && str(entry.statementid)).map((entry) => ({ statement: statementById.get(key(entry.statementid)), choice: choiceById.get(key(entry.choiceid)) })).filter((pair) => pair.statement && pair.choice) as { statement: Json; choice: Json }[];
+    if ((type === 'matching' || type === 'wordbank') && pairs.length >= 2) {
+      return { ref: id, kind: 'sort', presentation: 'pairs', stem, items: pairs.map((pair) => ({ text: label(pair.statement), target: key(pair.choice.id) })), targets: [...new Set(pairs.map((pair) => pair.choice))].map((choice) => ({ ref: key(choice.id), text: label(choice) })), scored };
+    }
+    if (type === 'sequence') {
+      const order = evaluated.map((entry) => choiceById.get(key(entry.choiceid))).filter((choice): choice is Json => !!choice);
+      const items = (order.length >= 2 ? [...new Set(order)] : choices).map((choice) => ({ text: label(choice) }));
+      if (items.length >= 2) return { ref: id, kind: 'sort', presentation: 'order', stem, items, scored };
+    }
+    const words = (value: string) => value.replace(/[|[\]]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (type === 'fillin') {
+      const compared = evaluated.map((entry) => (typeof entry.valueb === 'string' && str(entry.typeb) !== 'property' ? entry.valueb : '')).filter(Boolean);
+      const accepted = [...new Set([...choices.map(label), ...compared].map(words).filter(Boolean))];
+      if (accepted.length) return { ref: id, kind: 'fill-in', stem, markdown: `[[${accepted.join('|')}]]`, scored };
+    }
+    if (type === 'wordbank') {
+      const answer = choiceById.get(key(evaluated.find((entry) => str(entry.choiceid))?.choiceid));
+      if (answer) return { ref: id, kind: 'fill-in', presentation: 'bank', stem, markdown: `[[${words(label(answer))}]]`, distractors: choices.filter((choice) => choice !== answer).map((choice) => words(label(choice))).filter(Boolean), scored };
+    }
+    if (type === 'likert' && choices.length >= 2 && choices.length <= 10) {
+      const scale = { min: 1, max: Math.min(9, choices.length), minLabel: label(choices[0]), maxLabel: label(choices[Math.min(9, choices.length) - 1]) };
+      const rows = statements.length ? statements : [{ id, lmstext: '' }];
+      return rows.map((row, i) => ({ ref: `${id}-${i + 1}`, kind: 'reflection', prompt: [i === 0 ? stem : '', htmlToText(str(row.lmstext))].filter(Boolean).join('\n\n') || stem, scale }) as SourceItem);
+    }
+    return null;
   }
 
   // An object's or a layer's event as a trigger of the model.

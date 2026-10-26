@@ -217,6 +217,33 @@ export function storylinePublishedFiles(): Files {
   return files;
 }
 
+// A published Storyline course whose questions are the activities of D63: a drag and drop matching
+// (statements paired with choices by the right answer, as data.js writes it), a sequence, a fill in
+// the blank, a word bank and a Likert scale. The texts are ours.
+export function storylineActivitiesFiles(): Files {
+  const files: Files = new Map();
+  const choice = (id: string, text: string) => ({ kind: 'choice', id: `choice_${id}`, lmstext: text });
+  const statement = (id: string, text: string) => ({ kind: 'statement', id: `statement_${id}`, lmstext: text });
+  const right = (statements: unknown[]) => ({ kind: 'answer', id: 'right', status: 'correct', evaluate: { statements } });
+  const wrong = { kind: 'answer', id: 'wrong', status: 'incorrect', evaluate: { statements: [{ kind: 'other' }] } };
+  const interactions: Record<string, unknown> = {
+    match: { kind: 'interaction', id: 'match1', lmsId: 'MatchingDragDrop', type: 'matching', lmstext: 'Associez chaque geste à son but.', choices: [choice('c1', 'protéger la victime'), choice('c2', 'faire venir les secours'), choice('c3', 'garder la victime en vie')], statements: [statement('s1', 'Baliser la zone'), statement('s2', 'Appeler le 15'), statement('s3', 'Masser le cœur')], answers: [right([{ kind: 'pair', choiceid: 'choices.choice_c1', statementid: 'statements.statement_s1' }, { kind: 'pair', choiceid: 'choices.choice_c2', statementid: 'statements.statement_s2' }, { kind: 'pair', choiceid: 'choices.choice_c3', statementid: 'statements.statement_s3' }]), wrong] },
+    order: { kind: 'interaction', id: 'order1', type: 'sequence', lmstext: 'Remettez les gestes dans l\'ordre.', choices: [choice('o2', 'Alerter'), choice('o1', 'Protéger'), choice('o3', 'Secourir')], answers: [right([{ kind: 'order', choiceid: 'choices.choice_o1' }, { kind: 'order', choiceid: 'choices.choice_o2' }, { kind: 'order', choiceid: 'choices.choice_o3' }]), wrong] },
+    blank: { kind: 'interaction', id: 'blank1', type: 'fillin', lmstext: 'Quel numéro appelez-vous pour le SAMU ?', choices: [choice('f1', '15'), choice('f2', 'le 15')], answers: [right([{ kind: 'compare', operator: 'eq', valuea: 'blank1.$Text', typea: 'property', valueb: '15', typeb: 'string' }]), wrong] },
+    bank: { kind: 'interaction', id: 'bank1', type: 'wordbank', lmstext: 'Le geste qui sauve en cas d\'arrêt du cœur est le …', choices: [choice('w1', 'massage cardiaque'), choice('w2', 'garrot'), choice('w3', 'bouche-à-bouche')], answers: [right([{ kind: 'equals', choiceid: 'choices.choice_w1' }]), wrong] },
+    scale: { kind: 'interaction', id: 'likert1', type: 'likert', issurvey: true, lmstext: 'Où en êtes-vous ?', choices: [choice('l1', 'Pas du tout'), choice('l2', 'Un peu'), choice('l3', 'Assez'), choice('l4', 'Tout à fait')], statements: [statement('q1', 'Je sais protéger une victime.'), statement('q2', 'Je sais alerter les secours.')], answers: [] }
+  };
+  const slides = Object.entries(interactions).map(([name, interaction], i) => ({ kind: 'slide', id: `act${i + 1}`, title: `Activité ${i + 1}`, html5url: `html5/data/js/act${i + 1}.js`, interactions: [interaction], name }));
+  const data = { version: '3.90.0.0', projectId: 'activities', courseId: 'activities_course', variables: [], quizzes: [], assetLib: [], scenes: [{ kind: 'scene', id: 'sceneActs', sceneNumber: 1, slides: slides.map(({ name: _name, ...slide }) => slide) }] };
+  const frame = { navData: { outline: { links: [{ kind: 'slidelink', slideid: '_player.sceneActs', displaytext: 'S\'entraîner aux premiers secours', links: [] }] } }, notesData: [] };
+  files.set('story.html', '<!doctype html><title>Premiers secours : s\'entraîner</title>\n');
+  files.set('meta.xml', '<?xml version="1.0"?><meta><project id="activities" title="Premiers secours : s\'entraîner" /><application name="Articulate Storyline" version="3.90.0.0" /></meta>\n');
+  files.set('html5/data/js/data.js', provide('data', data));
+  files.set('html5/data/js/frame.js', provide('frame', frame));
+  for (const slide of slides) files.set(slide.html5url, provide('slide', { slideLayers: [{ kind: 'slidelayer', isBaseLayer: true, objects: [] }] }));
+  return files;
+}
+
 // ── Storyline, source (.story) ───────────────────────────────────────
 const BOM = '\uFEFF';
 const xml = (body: string) => `${BOM}<?xml version="1.0" encoding="utf-8" standalone="yes"?>${body}`;

@@ -15,7 +15,7 @@ import { parseProvidedData, storylineFontFamily } from '@elabora/core/import/sto
 import { layoutTree, flatten } from '@elabora/core/import/layout';
 import { convertCourse } from '@elabora/core/import/convert';
 import type { SourceCourse, SourceItem } from '@elabora/core/import/model';
-import { riseCourse, riseScormFiles, riseLocaleFiles, riseRuntimeFiles, riseRuntimeWithStorylineFiles, riseRuntimeWithOlderExportFiles, riseLegacyFiles, storylinePublishedFiles, storySourceFiles, zipOf, writeFolder } from '../../scripts/make-import-fixtures.ts';
+import { riseCourse, riseScormFiles, riseLocaleFiles, riseRuntimeFiles, riseRuntimeWithStorylineFiles, riseRuntimeWithOlderExportFiles, riseLegacyFiles, storylinePublishedFiles, storylineActivitiesFiles, storySourceFiles, zipOf, writeFolder } from '../../scripts/make-import-fixtures.ts';
 import { ROOT } from '../helpers.ts';
 
 // The Storyline and Rise importer (beta, docs/decisions.md D47) on synthetic modules written by
@@ -318,6 +318,25 @@ describe('importing', () => {
     assert.equal(report.decisions.find((decision) => decision.id === 'fonts')!.title, '10 textes en Articulate passent en Source Sans 3');
     assert.ok(report.losses.some((loss) => loss.code === 'javascript' && loss.status === 'dropped'));
     assert.ok(report.losses.some((loss) => loss.code === 'variable' && loss.feature === 'NonUtilisee'));
+  });
+
+  test('a published Storyline course\'s matching, sequence, fill in the blank, word bank and Likert questions become D63\'s activities', async () => {
+    const dir = target();
+    const result = await importCourse({ file: asFolder(storylineActivitiesFiles()), dir });
+    assert.equal(result.kind, 'storyline-published');
+    assert.deepEqual(result.validation.errors, 0, JSON.stringify(validateDir(dir).diagnostics.filter((d: { severity: string }) => d.severity === 'error')));
+    const blocks = screens(dir).flatMap(allBlocks).filter((block) => block.type !== 'text');
+    assert.deepEqual(blocks.map((block) => `${block.type}${block.props.presentation ? `:${block.props.presentation}` : ''}`), ['sort', 'sort:order', 'fill-in', 'fill-in:bank', 'reflection:scale', 'reflection:scale']);
+    const [match, order, blank, bank, scale] = blocks;
+    assert.deepEqual(match.props.items, [{ id: 'i1', text: 'Baliser la zone', target: 't1' }, { id: 'i2', text: 'Appeler le 15', target: 't2' }, { id: 'i3', text: 'Masser le cœur', target: 't3' }]);
+    assert.deepEqual(match.props.targets, [{ id: 't1', text: 'protéger la victime' }, { id: 't2', text: 'faire venir les secours' }, { id: 't3', text: 'garder la victime en vie' }]);
+    assert.deepEqual((order.props.items as { text: string }[]).map((item) => item.text), ['Protéger', 'Alerter', 'Secourir'], 'the right order, not the order of the choices');
+    assert.equal(blank.props.markdown, '[[15|le 15]]');
+    assert.deepEqual([bank.props.markdown, bank.props.distractors], ['[[massage cardiaque]]', ['garrot', 'bouche-à-bouche']]);
+    assert.deepEqual(scale.props.scale, { min: 1, max: 4, minLabel: 'Pas du tout', maxLabel: 'Tout à fait' });
+    assert.equal(scale.props.prompt, 'Où en êtes-vous ?\n\nJe sais protéger une victime.');
+    const report = readJson(dir, IMPORT_REPORT_FILE);
+    assert.ok(!report.losses.some((loss: { feature: string }) => /Association|Remise en ordre|Texte à trous|Banque de mots|Likert/.test(loss.feature)), JSON.stringify(report.losses));
   });
 
   test('a Storyline source (.story): texts, pictures, hidden objects, conditions, questions, the Content Library left out', async () => {
