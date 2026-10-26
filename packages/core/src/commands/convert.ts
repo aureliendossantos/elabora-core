@@ -762,6 +762,9 @@ function wordsOf(built: Built, progress: ConversionTarget['progress']): { fr: Co
 
 // The possible targets of a block, with what each keeps, loses and adds; refused ones with their reason.
 export function conversionsFor(project: Project, blockId: string): ConversionList {
+  // A course component converts into nothing (detach it first): no targets, not an error.
+  const place = findBlock(project, blockId);
+  if (!getRegistry(project).get(place.block.type)?.builtin) return { block: blockId, from: { type: place.block.type }, targets: [], refused: [] };
   const source = sourceOf(project, blockId);
   const targets: ConversionTarget[] = [];
   const refused: RefusedConversion[] = [];

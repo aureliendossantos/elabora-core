@@ -293,3 +293,29 @@ test('convert: the engine answers conversions in the app\'s language and runs co
     await session.close();
   }
 });
+
+test('add_block takes optional (only written when true); W_COMPLETION_MISMATCH leaves optional activities out', () => {
+  const dir = course();
+  const data = readJSON(dir, 'screens/convertir.json');
+  data.completeWhen = 'viewed';
+  data.blocks = data.blocks.filter((block: { type: string }) => !['quiz', 'sort', 'fill-in', 'reflection'].includes(block.type));
+  writeJSON(dir, 'screens/convertir.json', data);
+  const mismatch = () => validateDir(dir).diagnostics.filter((d) => d.code === 'W_COMPLETION_MISMATCH' && d.file === 'screens/convertir.json').length;
+  assert.equal(mismatch(), 0);
+  const quiz = { type: 'quiz', props: { stem: 'Un exercice en plus ?', mode: 'single', options: [{ id: 'a', text: 'Oui', correct: true, feedback: 'Oui.' }, { id: 'b', text: 'Non', correct: false, feedback: 'Non.' }] } };
+  const added = edit.addBlock(dir, { screen: 'convertir', block: { ...quiz, id: 'cv-extra', optional: true } });
+  assert.equal(added.block, 'cv-extra');
+  assert.equal(screenBlock(dir, 'cv-extra').optional, true);
+  assert.equal(mismatch(), 0, 'an optional activity does not ask for interactions-done');
+  edit.addBlock(dir, { screen: 'convertir', block: { ...quiz, id: 'cv-required', optional: false } });
+  assert.equal('optional' in screenBlock(dir, 'cv-required'), false, 'optional: false is not written');
+  assert.equal(mismatch(), 1);
+  // A course component (a fork of the quiz) converts into nothing: no targets, not an error; convert_block says to detach it.
+  edit.forkComponent(dir, { component: 'quiz', id: 'quiz-maison', title: 'Quiz maison' });
+  edit.updateBlock(dir, { block: 'cv-extra', props: {} });
+  const forked = readJSON(dir, 'screens/convertir.json');
+  forked.blocks.find((block: { id: string }) => block.id === 'cv-extra').type = 'quiz-maison';
+  writeJSON(dir, 'screens/convertir.json', forked);
+  assert.deepEqual(conversionsFor(loadProjectFromDir(dir), 'cv-extra'), { block: 'cv-extra', from: { type: 'quiz-maison' }, targets: [], refused: [] });
+  assert.throws(() => convert(dir, 'cv-extra', 'quiz', 'images'), /course component: detach it first/);
+});
