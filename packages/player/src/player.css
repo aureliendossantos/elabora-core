@@ -1223,7 +1223,7 @@ details[data-t-details][open]::details-content { opacity: 1; }
 .t-steps-arrow svg { width: 1.25rem; height: 1.25rem; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .t-steps-arrow:not([aria-disabled="true"]):active { scale: calc(1 - .06 * var(--t-move)); }
 .t-steps-dots { display: flex; flex-wrap: wrap; gap: .125rem; margin: 0; padding: 0; list-style: none; }
-.t-steps-dot { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.t-steps-dot { display: grid; place-items: center; width: max(1.5rem, 24px); height: max(1.5rem, 24px); padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
 .t-steps-dot::before { content: ""; width: .625rem; height: .625rem; border-radius: 50%; background: color-mix(in srgb, var(--t-text) 22%, transparent); transition: background var(--t-dur-item) ease, scale var(--t-dur-item) var(--t-ease-out); }
 .t-steps-dot--end::before { border-radius: 2px; }
 .t-steps-dot[data-t-visited]::before { background: color-mix(in srgb, var(--t-text) 50%, transparent); }
