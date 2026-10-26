@@ -77,6 +77,12 @@ const STATEMENTS: Record<string, Record<string, unknown>> = { a: {}, b: { presen
 // Rise's image variants as the presentations of an image (D63); hero is Rise's centred image.
 const IMAGE_PRESENTATIONS: Record<string, 'wide' | 'band' | 'beside' | 'over' | undefined> = { full: 'wide', banner: 'band', 'text aside': 'beside', 'text overlay': 'over' };
 
+// An embed's address: originalUrl and src may hold the frame's HTML (an <iframe> pasted), whose src it is.
+function embedUrl(embed: Json): string {
+  const frameSrc = (value: string) => /src=["']([^"']+)["']/.exec(value)?.[1] ?? '';
+  return [str(embed.originalUrl), str(embed.src)].map((value) => (/^(https?:)?\/\//.test(value) ? value : frameSrc(value)).replace(/^\/\//, 'https://')).find((value) => /^https?:/.test(value)) ?? '';
+}
+
 // A Rise chart as a chart of D60 when its values fit one: pie → donut, bar → bars, line → trend.
 function riseChart(block: Json, variant: string, items: Json[], ref: string): SourceItem | null {
   const values = items.map((item) => ({ label: htmlToText(str(item.type) || str(item.label)), value: Number(str(item.value)) }));
@@ -293,9 +299,7 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
             if (path) push(page, { ref, kind: 'video', media: { path, kind: 'video' }, title });
           } else if (variant === 'embed' || media.embed) {
             const embed = obj(media.embed);
-            // originalUrl and src may hold the frame's HTML (an <iframe> pasted): its src is the address.
-            const frameSrc = (value: string) => /src=["']([^"']+)["']/.exec(value)?.[1] ?? '';
-            const url = [str(embed.originalUrl), str(embed.src)].map((value) => (/^(https?:)?\/\//.test(value) ? value.replace(/^\/\//, 'https://') : frameSrc(value).replace(/^\/\//, 'https://'))).find((value) => /^https?:/.test(value)) ?? '';
+            const url = embedUrl(embed);
             const label = htmlToText(str(embed.title)) || title || url || 'Contenu intégré';
             push(page, { ref, kind: 'fallback', feature: 'Contenu intégré (Rise embed)', markdown: /^https?:/.test(url) ? `[${label.replace(/[[\]]/g, '')}](${url})` : label, detail: 'un lien à la place du cadre' });
           } else if (variant === 'attachment' || media.attachment) {
@@ -346,14 +350,26 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
     switch (variant || family) {
       case 'accordion':
       case 'tabs': {
-        // Panels and tabs (D63): an item's picture goes with it; its video or embed does not.
+        // Panels and tabs (D63): an item's picture goes with it; its embed becomes a link in its text;
+        // its video or sound, which a panel cannot hold, follows the panels.
+        const after: SourceItem[] = [];
+        const where = variant === 'tabs' ? 'un onglet' : 'un panneau';
         const panels = items.map((item) => {
           const found = image(item);
-          const other = Object.keys(obj(item.media)).filter((key) => key !== 'image' && key !== 'tmp');
-          if (other.length) losses.push({ page: page.title, item: ref, feature: `${other.includes('video') ? 'Vidéo' : 'Contenu intégré'} dans ${variant === 'tabs' ? 'un onglet' : 'un panneau'} (Rise ${variant})`, detail: htmlToText(str(item.title)) });
-          return { title: htmlToText(str(item.title)), markdown: htmlToMarkdown(str(item.description)), ...(found ? { media: found.media, ...(found.alt ? { alt: found.alt } : {}) } : {}) };
+          const media = obj(item.media);
+          const title = htmlToText(str(item.title));
+          let markdown = htmlToMarkdown(str(item.description));
+          const url = embedUrl(obj(media.embed));
+          if (url) markdown = `${markdown}${markdown ? '\n\n' : ''}[${(htmlToText(str(obj(media.embed).title)) || url).replace(/[[\]]/g, '')}](${url})`;
+          else if (media.embed) losses.push({ page: page.title, item: ref, feature: `Contenu intégré dans ${where} (Rise ${variant})`, detail: title });
+          for (const kind of ['video', 'audio'] as const) {
+            const path = media[kind] ? mediaFile(obj(media[kind])) : null;
+            if (path) after.push({ ref: nextRef(kind), kind, media: { path, kind }, title: title || undefined, fallbackOf: { feature: `${kind === 'video' ? 'Vidéo' : 'Son'} dans ${where} (Rise ${variant})`, detail: 'après les panneaux' } } as SourceItem);
+          }
+          return { title, markdown, ...(found ? { media: found.media, ...(found.alt ? { alt: found.alt } : {}) } : {}) };
         });
         push(page, { ref, kind: 'accordion', ...(variant === 'tabs' ? { presentation: 'tabs' as const } : {}), items: panels });
+        for (const item of after) push(page, item);
         return;
       }
       case 'labeledgraphic': {

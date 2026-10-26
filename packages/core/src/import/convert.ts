@@ -143,6 +143,18 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
   const mediaNames = new Set<string>();
   const mediaByPath = new Map<string, string>();
   const media: ConvertedMedia[] = [];
+  const stripCopy = (name: string): string | null => {
+    const extension = /\.[^./]+$/.exec(name)?.[0] ?? '';
+    const stem = name.slice(0, name.length - extension.length);
+    const match = /-[A-Z0-9][A-Z0-9-]{2,}$/.exec(stem.replace(/^.*\//, ''));
+    return match ? `${stem.slice(0, stem.length - match[0].length)}${extension}` : null;
+  };
+  const looksLikeCopy = (name: string): boolean => {
+    const original = stripCopy(name);
+    if (original && mediaNames.has(original)) return true;
+    for (const other of mediaNames) if (stripCopy(other) === name) return true;
+    return false;
+  };
   const assetFor = (medium: SourceMedia, hint: string, kind: SourceMedia['kind'] | 'captions' = medium.kind): string => {
     const known = mediaByPath.get(medium.path);
     if (known) return known;
@@ -150,7 +162,9 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
     const folder = MEDIA_FOLDER[kind];
     const stem = slugify(hint || medium.path.replace(/^.*\//, '').replace(/\.[^.]+$/, ''), folder.replace(/s$/, ''), 40);
     let name = `${folder}/${stem}${extension}`;
-    for (let n = 2; mediaNames.has(name); n++) name = `${folder}/${stem}-${n}${extension}`;
+    // A name that a sync service's conflict copy would have (« carte-3-2 » beside « carte ») is not
+    // loaded (W_SYNC_CONFLICT_COPY): such names are numbered with an underscore instead.
+    for (let n = 2; mediaNames.has(name) || looksLikeCopy(name); n++) name = `${folder}/${stem}${looksLikeCopy(`${folder}/${stem}-${n}${extension}`) ? '_' : '-'}${n}${extension}`;
     mediaNames.add(name);
     mediaByPath.set(medium.path, name);
     media.push({ from: medium.path, to: `assets/${name}` });
@@ -553,7 +567,7 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
           const empty = entries.length && entries.some((at) => { const list = at.slice(0, -1).reduce<unknown>((node, key) => (node as Json)?.[key as string], props); return Array.isArray(list) && !list.length; });
           if (!whole || empty) {
             counts.items--;
-            if (item.otherwise) return itemBlocksOf(item.otherwise, inLayer);
+            if (item.otherwise) return itemBlocks(item.otherwise, inLayer);
             counts.items++;
             counts.notYet++;
             lose('unsupported', 'not-yet', label, where(), words === 'fr' ? 'ses images sont introuvables' : 'its pictures are missing');

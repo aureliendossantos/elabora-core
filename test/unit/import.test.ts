@@ -15,7 +15,7 @@ import { parseProvidedData, storylineFontFamily } from '@elabora/core/import/sto
 import { layoutTree, flatten } from '@elabora/core/import/layout';
 import { convertCourse } from '@elabora/core/import/convert';
 import type { SourceCourse, SourceItem } from '@elabora/core/import/model';
-import { riseCourse, riseScormFiles, riseLocaleFiles, riseRuntimeFiles, riseRuntimeWithStorylineFiles, riseRuntimeWithOlderExportFiles, riseLegacyFiles, storylinePublishedFiles, storylineActivitiesFiles, storySourceFiles, zipOf, writeFolder } from '../../scripts/make-import-fixtures.ts';
+import { riseCourse, riseScormFiles, riseLocaleFiles, riseRuntimeFiles, riseRuntimeWithStorylineFiles, riseRuntimeWithOlderExportFiles, riseLegacyFiles, riseStarterFiles, storylinePublishedFiles, storylineActivitiesFiles, storySourceFiles, zipOf, writeFolder } from '../../scripts/make-import-fixtures.ts';
 import { ROOT } from '../helpers.ts';
 
 // The Storyline and Rise importer (beta, docs/decisions.md D47) on synthetic modules written by
@@ -277,6 +277,54 @@ describe('importing', () => {
     const broken = riseRuntimeFiles();
     broken.set('runtime-data.js', '__jsonp("runtime-data.js","AAAAAAAAAAAAAAAAAAAAAAAA")');
     await assert.rejects(importCourse({ file: asFolder(broken), dir: target() }), (error: unknown) => error instanceof ImportError && error.code === 'E_IMPORT_UNREADABLE' && /cannot be decoded/.test(error.message));
+  });
+
+  test('Rise blocks land on D63\'s blocks: statements, quotes, image presentations, galleries, columns, dividers, cards, steps, an interactive picture, sorting, matching, a chart', async () => {
+    const dir = target();
+    const result = await importCourse({ file: asFolder(riseStarterFiles()), dir });
+    assert.equal(result.kind, 'rise');
+    assert.deepEqual(result.validation.errors, 0, JSON.stringify(validateDir(dir).diagnostics.filter((d: { severity: string }) => d.severity === 'error')));
+    const [lesson, map] = screens(dir).sort((a, b) => (a.id === 'comprendre' ? -1 : b.id === 'comprendre' ? 1 : 0));
+    const shown = (block: { type: string; props: Record<string, unknown> }) => `${block.type}${block.props.presentation ? `:${block.props.presentation}` : ''}`;
+    assert.deepEqual(lesson.blocks.map(shown), [
+      'statement', 'statement:ruled', 'callout', 'statement:quote', 'statement:image', 'image:band', 'image:beside', 'image:over', 'gallery', 'gallery:carousel',
+      'divider:number', 'divider', 'columns', 'accordion:cards', 'accordion:stack', 'steps', 'steps:timeline', 'hotspots', 'accordion', 'sort:categories', 'sort:categories', 'sort', 'donut', 'text'
+    ]);
+    const block = (type: string, n = 0) => lesson.blocks.filter((entry: { type: string }) => entry.type === type)[n];
+    assert.deepEqual(block('statement', 1).props, { presentation: 'ruled', align: 'start', markdown: '**La règle**\n\nProtéger, alerter, secourir.' });
+    const quote = block('statement', 2).props;
+    assert.deepEqual([quote.markdown, quote.author], ['On n\'a jamais regretté d\'avoir appelé.', 'Une régulatrice du SAMU']);
+    assert.ok(fs.existsSync(path.join(dir, 'assets', quote.portrait as string)));
+    assert.deepEqual(block('statement', 3).props.focus, { x: 0.5, y: 0.5 });
+    assert.deepEqual(block('image').props.focus, { x: 0.5, y: 0.333 }, 'Rise\'s crop as the focal point');
+    assert.deepEqual([block('image', 1).props.markdown, block('image', 1).props.share], ['Les mains au centre de la poitrine, bras tendus.', 'third']);
+    assert.equal(block('image', 2).props.markdown, 'Restez calme.');
+    const gallery = block('gallery').props;
+    assert.deepEqual((gallery.images as { id: string; caption?: string }[]).map((image) => [image.id, image.caption]), [['i1', 'Le boîtier'], ['i3', undefined]], 'the missing picture goes, the others keep their ids');
+    assert.deepEqual(block('columns').blocks.map((child: { slot: string; props: { markdown: string } }) => [child.slot, child.props.markdown]), [['first', '**Adulte**\n\nDeux mains.'], ['second', 'Un enfant : une main.']]);
+    assert.deepEqual(block('accordion').props.items.map((item: { title: string; image?: string; alt?: string }) => [item.title, !!item.image, item.alt]), [['PLS', false, undefined], ['Un défibrillateur', true, 'Un défibrillateur']]);
+    const steps = block('steps').props;
+    assert.deepEqual([steps.intro, steps.summary], [{ title: 'Le massage', markdown: 'Trois temps à retenir.' }, { title: 'À retenir', markdown: 'Ne vous arrêtez pas.' }]);
+    assert.deepEqual(steps.items.map((item: { id: string; title: string; decorative?: boolean }) => [item.id, item.title, item.decorative]), [['i1', 'Placer les mains', true], ['i2', 'Appuyer', undefined]], 'a hidden step stays out; a picture without alt is decorative');
+    assert.deepEqual(block('steps', 1).props.items.map((item: { date: string }) => item.date), ['0 min', '3 min']);
+    const hotspots = block('hotspots').props;
+    assert.deepEqual(hotspots.items.map((item: { x: number; y: number; title: string; alt?: string }) => [item.x, item.y, item.title, item.alt]), [[0.105, 0.8, 'Bouton', 'Le bouton vert'], [0.6, 0.2, 'Électrodes', undefined]]);
+    assert.match(block('accordion', 2).note ?? '', /Image interactive/, 'a labeled graphic whose picture is missing falls back to panels');
+    assert.deepEqual(block('sort').props.targets, [{ id: 't1', text: 'À faire' }, { id: 't2', text: 'À éviter' }]);
+    assert.deepEqual([block('sort').props.items.length, block('sort', 1).props.items.length, block('sort').props.scored], [7, 7, false], 'fourteen cards make two sorts of seven, unscored');
+    assert.deepEqual(block('sort', 2).props.items, [{ id: 'i1', text: 'Protéger', target: 't1' }, { id: 'i2', text: 'Alerter', target: 't2' }]);
+    assert.deepEqual(block('sort', 2).props.feedback, { correct: 'Relisez les gestes.', incorrect: 'Relisez les gestes.' });
+    assert.deepEqual(block('donut').props, { takeaway: 'Qui agit ?', parts: [{ id: 'p1', label: 'Témoins', value: 40 }, { id: 'p2', label: 'Personne', value: 60 }], unit: '%' });
+    assert.equal(block('text').props.markdown, '[https://video.example.org/geste](https://video.example.org/geste)', 'an embed pasted as HTML is a link');
+    // Continue after the steps waits for them to be explored; after the matching, for its answer.
+    assert.deepEqual(lesson.steps, { 2: { opens: 'explored', label: 'Continuer' }, 3: { opens: 'answered', label: 'Suite' } });
+    // The 2017 map lesson: its text, then its interactive picture.
+    assert.deepEqual(map.blocks.map((entry: { type: string }) => entry.type), ['text', 'hotspots']);
+    const report = readJson(dir, IMPORT_REPORT_FILE);
+    const features = report.losses.map((loss: { feature: string; status: string }) => `${loss.status} ${loss.feature}`);
+    assert.ok(features.some((feature: string) => /^fallback Activité de tri/.test(feature)), JSON.stringify(features));
+    assert.ok(features.some((feature: string) => /^not-yet .*absente\.png/.test(feature)), JSON.stringify(features));
+    for (const pattern of [/Onglets/, /Cartes à retourner/, /Processus/, /Frise/, /Citation/, /Association/, /Galerie/, /Graphique/]) assert.ok(!features.some((feature: string) => pattern.test(feature)), `${pattern}: ${JSON.stringify(features)}`);
   });
 
   test('a published Storyline course: title, columns, layer, hotspot, triggers, question, results, notes', async () => {
