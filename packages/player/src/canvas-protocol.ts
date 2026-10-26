@@ -8,6 +8,8 @@
 //                                             dialogue's path (view.dialogue)
 //     { type: 'elabora/scroll', by, at? }       a wheel turned over the host's overlay: scrolls as it
 //                                             would have under the pointer
+//     { type: 'elabora/focus', block, x, y }   a block's focal point for the moment (the inspector's
+//                                             drag): its pictures' crop follows, without a render
 //   canvas → host   window.parent.postMessage, and window.__elaboraCanvas.onMessage listeners
 //     { type: 'elabora/ready', chrome, protocol? }  the canvas listens
 //     { type: 'elabora/layout', … }             where every block is (selection and handles)
@@ -111,6 +113,9 @@ export type HostMessage =
   // wheel with it, and passes it on: by, the distance in CSS px of the canvas viewport; at, where
   // the pointer is there. What can still scroll that way under the point scrolls, else the page.
   | { type: 'elabora/scroll'; token?: string; by: { x: number; y: number }; at?: { x: number; y: number } }
+  // The focal point being dragged in the inspector (D63): x and y from 0 to 1 become the block's
+  // --focus-x and --focus-y (object-position) until the next render gives the saved one.
+  | { type: 'elabora/focus'; token?: string; block: string; x: number; y: number }
   | PreviewHostMessage;
 
 // The host's messages of the player's preview (chrome=live).

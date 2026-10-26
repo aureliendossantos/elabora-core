@@ -22,6 +22,7 @@ export const COMMANDS: { readonly [Name in CommandName]: Runner<Name> } = {
   move_block: edit.moveBlock,
   duplicate_block: edit.duplicateBlock,
   detach_block: edit.detachBlock,
+  convert_block: edit.convertBlock,
   upsert_layer: edit.upsertLayer,
   remove_layer: edit.removeLayer,
   upsert_event: edit.upsertEvent,

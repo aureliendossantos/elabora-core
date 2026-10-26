@@ -63,6 +63,7 @@ export function describeChange(change: ChangeLike): string {
     case 'move_block': return `moved block ${of('block')}`;
     case 'duplicate_block': return `duplicated block ${of('block')}`;
     case 'detach_block': return `detached block ${of('block')} from its component`;
+    case 'convert_block': return `converted block ${of('block')} into ${of('to', 'type')}${field(args, 'to', 'presentation') ? ` (${of('to', 'presentation')})` : ''}`;
     case 'upsert_layer': return field(args, 'layer', 'id') ? `wrote layer ${of('layer', 'id')} of ${of('screen')}` : `added a layer to ${of('screen')}`;
     case 'remove_layer': return `removed layer ${of('id')} from ${of('screen')}`;
     case 'upsert_event': return field(args, 'event', 'id') ? `wrote event ${of('event', 'id')} of ${of('screen')}` : `added an event to ${of('screen')}`;

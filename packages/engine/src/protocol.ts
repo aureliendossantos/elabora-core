@@ -18,7 +18,7 @@ import type { AlignerView, AlignProgress, AlignResult } from '@elabora/node/alig
 import type { TranscribeProgress, Transcript, TranscriberView, TranscriptionEstimate, TranscriptionService } from '@elabora/node/transcribe/types';
 import type { NarrationPeaks, ImportedFile, LineFromAudioFileArgs, TextFromAudioFileArgs } from '@elabora/node/narration/types';
 import type {
-  CreateScreenArgs, UpdateScreenArgs, MoveScreenArgs, AddBlockArgs, UpdateBlockArgs, MoveBlockArgs, DuplicateBlockArgs, UpdateCourseArgs, UpdatePlayerArgs, IgnoreFindingsArgs,
+  CreateScreenArgs, UpdateScreenArgs, MoveScreenArgs, AddBlockArgs, ConvertBlockArgs, ConvertTarget, UpdateBlockArgs, MoveBlockArgs, DuplicateBlockArgs, UpdateCourseArgs, UpdatePlayerArgs, IgnoreFindingsArgs,
   CreateObjectArgs, WriteObjectFileArgs, CreateComponentArgs, ForkComponentArgs,
   WriteComponentFileArgs, MigrateComponentsArgs, AddLibraryComponentArgs, CommandDiagnostic, AddFontArgs, FontRequest, SettleImportReportArgs, AddResourceRequest,
   SetCaptionsArgs, UpsertLayerArgs, UpsertEventArgs, RenameArgs, DuplicateScreenArgs,
@@ -57,6 +57,9 @@ export interface CommandArgs {
   move_block: MoveBlockArgs;
   duplicate_block: DuplicateBlockArgs;
   detach_block: { block: string };
+  // « Transformer en… » (D63): the block becomes another type or presentation, its id and its items'
+  // ids kept, its translations following; one undoable change. The conversions request lists the targets.
+  convert_block: ConvertBlockArgs;
   upsert_layer: UpsertLayerArgs;
   remove_layer: { screen: string; id: string };
   upsert_event: UpsertEventArgs;
@@ -250,6 +253,18 @@ export interface GenerateVoiceParams {
   // dialogue: runs of several speakers said as one exchange.
   approvedPercent?: number;
   dialogue?: boolean;
+}
+
+export type ConversionsParams = { block: string; language?: string; probe?: false } | { probe: true; block?: string; language?: string };
+
+export interface ConversionsView {
+  supported: true;
+  block?: string;
+  from?: ConvertTarget;
+  // Sentences in the language asked for; progress: whether learners who started keep their progress
+  // in the block (lost: the lock entities they lose).
+  targets: { to: ConvertTarget; kept: string; lost: string; added: string; progress: { kept: boolean; lost: string[] } }[];
+  refused: { to: ConvertTarget; reason: string }[];
 }
 
 export interface RunResult {
@@ -524,6 +539,10 @@ export interface Requests {
   importNarrationFiles: { params: { files: string[]; screen?: string; language?: string; keepSilence?: boolean }; result: { language: string; files: ImportedFile[] } };
   // The course's words that hold a text (not the plan's validated texts): where each one is.
   findText: { params: { query: string; caseSensitive?: boolean }; result: TextMatch[] };
+  // « Transformer en… » (D63): what a block may become, and for each what is kept, lost and added, in
+  // language (fr, else en); refused targets with their reason. { probe: true } answers { supported: true }
+  // with no targets (an app asks once whether the engine converts).
+  conversions: { params: ConversionsParams; result: ConversionsView };
   // The course's languages (translations/<lang>.xlf) and how far each is; one as a bilingual table.
   translationStatus: { params: { to?: string }; result: TranslationStatus[] };
   translationTable: { params: { language: string }; result: TranslationTable };

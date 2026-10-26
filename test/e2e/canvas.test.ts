@@ -226,6 +226,32 @@ test('canvas: the layout gives the texts of each block the author can point at (
   });
 });
 
+test('canvas: elabora/focus moves a picture\'s crop at once, without a render; the saved focus comes back with the next render', { timeout: 120000 }, async () => {
+  const base = loadProjectFromDir(EXAMPLE);
+  const project = withScreen(base, 'chemin', (screen) => { screen.blocks.splice(1, 0, { id: 'chemin-bande', type: 'image', props: { presentation: 'band', asset: 'images/chemin-impression.svg', alt: 'Le chemin d\'une impression', focus: { x: 0.2, y: 0.3 } } } as Block); });
+  const context = createRenderContext(project);
+  await withCanvas(project.root, context, async ({ page, show, errors }) => {
+    await show(project, 'chemin');
+    const position = () => page.evaluate(() => getComputedStyle(document.querySelector('[data-block="chemin-bande"] img')!).objectPosition);
+    const layoutId = () => page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.layout().id);
+    assert.equal(await position(), '20% 30%');
+    const before = await layoutId();
+    const focus = (message: Extract<HostMessage, { type: 'elabora/focus' }>) => page.evaluate((sent) => (window as CanvasWindow).__elaboraCanvas.receive(sent), message);
+    await focus({ type: 'elabora/focus', block: 'chemin-bande', x: 0.75, y: 1.4 });
+    assert.equal(await position(), '75% 100%', 'clamped to the picture');
+    assert.equal(await layoutId(), before, 'no render');
+    await show(project, 'chemin');
+    assert.equal(await position(), '20% 30%', 'a render gives the saved focus');
+    const told: unknown[] = [];
+    await page.exposeFunction('tell', (message: unknown) => told.push(message));
+    await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.onMessage((message) => (window as unknown as { tell: (m: unknown) => void }).tell(message)));
+    await focus({ type: 'elabora/focus', block: 'absent', x: 0.5, y: 0.5 });
+    for (let i = 0; i < 50 && !told.length; i++) await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.deepEqual(told, [{ type: 'elabora/error', id: null, message: 'elabora/focus: no block "absent" on the screen shown.' }]);
+    assert.deepEqual(errors, []);
+  });
+});
+
 test('canvas: a wheel passed on by the host scrolls what can still go that way under the pointer, else the page; from the parent window with the token only', { timeout: 120000 }, async () => {
   const project = loadProjectFromDir(path.join(ROOT, 'examples', 'medieval-charts'));
   const context = createRenderContext(project);

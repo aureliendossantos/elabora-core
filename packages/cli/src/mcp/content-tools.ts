@@ -89,6 +89,13 @@ export const detachBlock = defineTool({
   handler: (args, { root, author }) => editResult(edit.detachBlock(root, args, { author }))
 });
 
+export const convertBlock = defineTool({
+  name: 'elabora_convert_block',
+  description: 'Change the form of content without rewriting it (« Transformer en… », D63): a block becomes another presentation of its type, or another type that holds the same content (panels ↔ steps ↔ interactive picture ↔ gallery, panels → a sort in pairs, steps → a sort in order or a process or milestones chart, statement ↔ callout ↔ text, image ↔ gallery of one, a text\'s bulleted list → panels or steps), in place, in one undoable change. Its id and its items\' ids are kept, so visited marks and translations follow; the result says what is kept, lost and added (starts empty), and whether learners who started lose their progress in the block. Without to, or with dryRun, nothing is written: the possible targets and those refused with their reason. Prefer it to removing a block and writing another one. language: fr or en for the sentences (default en).',
+  inputSchema: objectSchema({ block: SLUG, to: { type: 'object', properties: { type: SLUG, presentation: { type: 'string', description: 'A presentation of the target type (default: its default one).' } }, required: ['type'], additionalProperties: false, description: 'The type to convert into, and its presentation.' }, dryRun: { type: 'boolean' }, language: { enum: ['en', 'fr'] } }, ['block']),
+  handler: (args, { root, author }) => editResult(edit.convertBlock(root, args, { author }))
+});
+
 export const rename = defineTool({
   name: 'elabora_rename',
   description: 'Give a section, screen, layer, block or event another id, in one undoable change: every reference follows (sections, events, translation units, stylesheet selectors), a screen file takes the new name, and elabora.lock.json keeps the element\'s key, so learners in progress keep their progress. Refused when the new id is used or not a slug. Waivers of the plan that name the id follow too (waivers: how many).',
