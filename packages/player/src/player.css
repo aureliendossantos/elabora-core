@@ -1140,12 +1140,12 @@ details[data-t-details][open]::details-content { opacity: 1; }
 .t-steps-stack > .t-steps-layer { opacity: clamp(0, calc(var(--step) - var(--layer) + 1), 1); }
 .t-steps-spot { position: relative; width: fit-content; max-width: 100%; margin-inline: auto; overflow: hidden; border-radius: var(--t-radius); }
 .t-steps-spot img { border-radius: 0; }
-.t-steps-region { position: absolute; left: calc(var(--rx) * 100%); top: calc(var(--ry) * 100%); width: calc(var(--rw) * 100%); height: calc(var(--rh) * 100%); border-radius: 6px; box-shadow: 0 0 0 3px var(--t-primary), 0 0 0 100vmax rgb(10 13 18 / .4); pointer-events: none; }
+.t-steps-region { position: absolute; left: calc(var(--rx) * 100%); top: calc(var(--ry) * 100%); width: calc(var(--rw) * 100%); height: calc(var(--rh) * 100%); border-radius: 6px; box-shadow: 0 0 0 3px var(--t-primary), 0 0 0 100vmax rgb(10 13 18 / .32); pointer-events: none; }
 @media (prefers-reduced-motion: no-preference) {
   @container (min-width: 560px) {
     #elabora-app:not([data-presentation="slides"]) .t-steps--scroll[data-t-following] { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); grid-template-areas: "list stage"; column-gap: clamp(1.5rem, 5cqi, 3.5rem); align-items: start; }
     #elabora-app:not([data-presentation="slides"]) .t-steps--scroll.t-steps--side-start[data-t-following] { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); grid-template-areas: "stage list"; }
-    #elabora-app:not([data-presentation="slides"]) [data-t-following] > .t-steps-list { grid-area: list; gap: 0; padding-block: 28svh 36svh; }
+    #elabora-app:not([data-presentation="slides"]) [data-t-following] > .t-steps-list { grid-area: list; gap: 0; padding-block: 8svh 30svh; }
     #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-step { min-height: 72svh; align-content: center;
       --t-steps-on: clamp(0, calc(1 - max(var(--t-current, 1) - var(--step), var(--step) - var(--t-current, 1))), 1); }
     #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-number { color: color-mix(in srgb, var(--t-on-primary) calc(var(--t-steps-on) * 100%), var(--t-primary)); background: color-mix(in srgb, var(--t-primary) calc(13% + var(--t-steps-on) * 87%), var(--t-surface)); transition: color var(--t-dur-reveal) ease, background var(--t-dur-reveal) ease; }
@@ -1194,7 +1194,7 @@ details[data-t-details][open]::details-content { opacity: 1; }
   color: var(--t-on-primary); background: var(--t-primary); font: inherit; font-weight: 700; font-size: 1rem; line-height: 1; font-variant-numeric: tabular-nums;
   box-shadow: 0 0 0 1px rgb(10 13 18 / .25), 0 2px 8px rgb(10 13 18 / .35); cursor: pointer;
   transition: background var(--t-dur-item) ease, color var(--t-dur-item) ease, border-color var(--t-dur-item) ease, scale var(--t-dur-press) var(--t-ease-out); }
-.t-hotspots-marker:focus-visible { outline: 3px solid var(--t-focus); outline-offset: 2px; }
+.t-hotspots-marker:focus-visible { z-index: 3; outline: 3px solid var(--t-focus); outline-offset: 2px; }
 .t-hotspots-marker:active { scale: calc(1 - .06 * var(--t-move)); }
 .t-hotspots-marker[data-t-visited] { background: color-mix(in srgb, var(--t-primary) 72%, var(--t-text)); }
 .t-hotspots-marker:is([aria-expanded="true"], [aria-current="true"]) { color: var(--t-primary); background: var(--t-surface); border-color: var(--t-primary); }
@@ -1234,6 +1234,7 @@ details[data-t-details][open]::details-content { opacity: 1; }
 /* tour: the texts one at a time under the picture (the sequence keeps the longest's room), then the nav. */
 .t-hotspots--tour .t-hotspots-room { padding: 1.125rem 1.25rem; border-radius: var(--t-radius); background: color-mix(in srgb, var(--t-primary) 5%, var(--t-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-text) 8%, transparent); }
 .t-hotspots--tour .t-hotspots-frame { grid-area: auto; }
+:is(.t-hotspots--tour, .t-hotspots--side, .t-hotspots--below) .t-hotspots-detail img { max-height: 8rem; }
 /* Narrow places: a numbered list under the picture; the marker pressed lights its entry. */
 @container (max-width: 559px) {
   .t-hotspots[data-focus] .t-hotspots-picture { --t-hotspots-from: calc(var(--focus-x, .5) / 3); --t-hotspots-span: calc(2 / 3); width: 150%; margin-inline-start: calc(var(--focus-x, .5) * -50%); }
