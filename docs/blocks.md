@@ -47,6 +47,7 @@ Template `packages/core/src/components/builtin/image.html`: fork it to change th
 | `caption` | string |  |  |
 | `generated` | boolean |  | True if produced by an AI model; the player shows a mark and the build report lists it. Default false. |
 | `focus` | focus |  | Where the subject is (0 to 1 across and down): crops keep it in view (band, over, beside on phones). |
+| `zoom` | boolean |  | centered, wide and beside: the image opens at full size in the player's lightbox, with its caption (a detailed figure, a screenshot). Default false. |
 | `title` | string |  | beside and over: a heading for the text (it follows the page's headings). |
 | `markdown` | markdown |  | beside and over: the text that goes with the image. Over an image, keep it to one or two sentences. |
 | `side` | "start" \| "end" |  | beside: the side of the image (start: left in left-to-right languages). Default "start". |
@@ -120,14 +121,19 @@ Template `packages/core/src/components/builtin/button.html`: fork it to change t
 
 ## `accordion` (structure)
 
-Expandable panels for optional detail. Revealing content is not practice (guardrail B2).
+Panels (« Panneaux »): titled items the learner opens one by one, in four presentations of the same items: accordion (panels that open in place, the default), tabs (one panel at a time under a row of tabs; an accordion in narrow containers), cards (a grid of flip cards: the title and the image in front, the text behind) and stack (the flip cards one at a time, with Previous and Next). Revealing content is not practice (guardrail B2): follow it with a question when the learner must remember it.
+
+> Use panels for optional or parallel detail the learner may read in any order, not for the main thread of a page nor for content to compare side by side. Choose accordion for 3 to 7 independent sections a learner picks from (long bodies, phones); tabs for 2 to 5 parallel facets of one subject with short labels (one or two words, 24 characters at most); cards for a few terms or claims to recall before turning over (a front of a few words, a back of one to three sentences: write prompt to say what to think of first); stack for a short series of cards seen one at a time. Switching presentation keeps the items: write titles and bodies that work in all four. Give an item an image only when it carries information (alt says what), and keep bodies to a few sentences (about 120 to 270 characters).
 
 Template `packages/core/src/components/builtin/accordion.html`: fork it to change the markup.
 
 | Prop | Type | Required | Description |
 |---|---|---|---|
+| `presentation` | "accordion" \| "tabs" \| "cards" \| "stack" |  | accordion: panels that open in place (allowMultiple: several at once); tabs: a row of tabs, one panel shown at a time in the room of the tallest (an accordion in containers narrower than 560 px); cards: a grid of flip cards, title and image in front, text behind (two columns on phones); stack: the flip cards one at a time, with Previous, Next and where the learner is. Default "accordion". |
+| `prompt` | string |  | What to think about before opening or turning over (above the panels): « Before you turn each card, say what you think it means. » |
 | `items` | array | yes |  |
-| `allowMultiple` | boolean |  | Allow several panels open at once. Default true. |
+| `allowMultiple` | boolean |  | accordion: allow several panels open at once. Default true. |
+| `hint` | boolean |  | cards and stack: show « Turn the card over » on each card (else only its button's name says it, for screen readers). Default true. |
 
 ## `math` (content)
 
@@ -641,18 +647,19 @@ Template `packages/core/src/components/builtin/divider.html`: fork it to change 
 
 ## `gallery` (content)
 
-A gallery (« Galerie »): several images shown together. Presentations: grid (in columns, cropped to one ratio), mosaic (in columns at their own proportions), carousel (one at a time; until the player has its sequence, it shows as a grid) and compare (exactly two images, the second over the first, with a slider to move between them: before and after).
+A gallery (« Galerie »): several images shown together. Presentations: grid (in columns, cropped to one ratio), mosaic (in columns at their own proportions), carousel (one at a time with its caption, Previous and Next, a thumbnail per image) and compare (exactly two images, the second over the first, with a slider to move between them: before and after).
 
-> Use a gallery when the images are read together: variants to compare, examples of one category, the steps of a result. Each image needs alt (what it shows that matters here) unless it is decorative, and a caption when the learner must tell the images apart. compare takes exactly two images of the same framing: the first is before (or left), the second after. Keep grids to 2 to 8 images; more belong in separate parts.
+> Use a gallery when the images are read together: variants to compare, examples of one category, the steps of a result. Each image needs alt (what it shows that matters here) unless it is decorative, and a caption when the learner must tell the images apart. compare takes exactly two images of the same framing: the first is before (or left), the second after. Keep grids to 2 to 8 images and a carousel to 5 (learners often stop at the first ones: W_ITEMS_MANY); more belong in separate parts. Set zoom when a detail matters (a screenshot, a map): each image opens at full size.
 
 Template `packages/core/src/components/builtin/gallery.html`: fork it to change the markup.
 
 | Prop | Type | Required | Description |
 |---|---|---|---|
-| `presentation` | "grid" \| "mosaic" \| "carousel" \| "compare" |  | grid: columns of images cropped to ratio; mosaic: columns of images at their own proportions; carousel: one image at a time (shown as a grid for now); compare: two images, one over the other, and a slider between them. Default "grid". |
+| `presentation` | "grid" \| "mosaic" \| "carousel" \| "compare" |  | grid: columns of images cropped to ratio; mosaic: columns of images at their own proportions; carousel: one image at a time, whole in a frame of ratio, with Previous, Next and thumbnails; compare: two images, one over the other, and a slider between them. Default "grid". |
 | `images` | array | yes | The images, in reading order. |
 | `columns` | integer |  | grid and mosaic: columns on wide screens (fewer on narrow ones). Default 3. |
-| `ratio` | "4:3" \| "1:1" \| "3:2" \| "16:9" \| "3:4" |  | grid: the shape every image is cropped to, around its focus. Default "4:3". |
+| `ratio` | "4:3" \| "1:1" \| "3:2" \| "16:9" \| "3:4" |  | grid: the shape every image is cropped to, around its focus; carousel: the frame every image is shown whole in. Default "4:3". |
+| `zoom` | boolean |  | grid, mosaic and carousel: each image opens at full size in the player's lightbox, with its caption, and previous and next between the images. Default false. |
 | `caption` | string |  | A caption for the whole gallery. |
 | `generated` | boolean |  | True if images of the gallery were produced by an AI model; the player shows a mark and the build report lists it. Default false. |
 
@@ -669,6 +676,21 @@ Template `packages/core/src/components/builtin/columns.html`: fork it to change 
 | `count` | 2 \| 3 |  | Two or three columns. Default 2. |
 | `widths` | "equal" \| "wide-start" \| "wide-end" |  | equal; wide-start: the first column is twice as wide; wide-end: the last column is twice as wide. Default "equal". |
 | `align` | "start" \| "center" |  | Vertical alignment of the columns: at their top, or centred on each other. Default "start". |
+
+## `speech` (content)
+
+A character (« Personnage »): a speaker of the course says something to the learner, in bubbles beside its portrait. Its name, colour and look come from course.json speakers (an SVG character or a portrait picture; without a look, its initial). Several lines are several bubbles, one under the other. kind thought draws them as a thought.
+
+> Use a character to give a voice to someone the learner will meet (a colleague who asks, a client who complains, an expert who warns), or a guide who frames a page in a conversational tone, in one to three short lines (a sentence or two each). It is not a dialogue: nothing to choose (for choices, use a dialogue block). The speaker must be in course.json speakers, with a name and ideally a look; the same character keeps one side (side) in a module. Write what the character says in its own words, never the lesson's text in quotes.
+
+Template `packages/core/src/components/builtin/speech.html`: fork it to change the markup; the fork keeps the speech behaviour and must provide `data-t-line`.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `speaker` | slug | yes | A speaker of course.json speakers: its name, colour and look. |
+| `lines` | array | yes | What the character says, a bubble per line, in order. |
+| `side` | "start" \| "end" |  | Where the portrait is: start (left in left-to-right languages) or end, the bubbles beside it. Default "start". |
+| `kind` | "speech" \| "thought" |  | speech: speech bubbles; thought: thought bubbles (what the character thinks, not says). Default "speech". |
 
 # Built-in screen layouts
 

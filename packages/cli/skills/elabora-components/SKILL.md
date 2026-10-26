@@ -11,6 +11,7 @@ A component is a block type (or a screen layout) the course defines: a **props s
 - One-off look, same structure → a **named style** on a built-in block (`theme.styles`), not a component.
 - A structure that repeats, with its own fields (a ratio card, a case-study card, a step timeline) → a **component** (`elabora_create_component`).
 - An activity that must look different (image options, cards, a slider-like numeric) → **fork** `quiz`, `numeric`, `fill-in`, `sort`, `reflection` or `decision` (`elabora_fork_component`): the player keeps scoring, saved state, SCORM records, focus and feedback; you only write the markup with its hooks.
+- Before writing panels, tabs, flip cards, a carousel of images or a character in a bubble, try the built-ins: `accordion` (`presentation` `accordion`, `tabs`, `cards`, `stack`), `gallery` (`carousel`, `zoom`) and `speech`. A `speech` fork keeps its behaviour: each `data-t-line="{{id}}"` in `data-each="lines"` reads « Name: … », the player writes the name in `data-t-speaker` and mounts the portrait in `data-t-portrait`.
 - A screen arrangement (hero band, figure and explanation, dark stage) → a **screen-level** component (`level: "screen"`), used as `screen.layout`.
 - Needs code (simulation, 3D, drag physics) → a free object, not a component.
 
