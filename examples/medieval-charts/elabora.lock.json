@@ -28,7 +28,7 @@
     "visit:gallery-callback#italy": "n"
   },
   "components": {
-    "chart-notes": "1.0.0",
+    "chart-notes": "2.0.0",
     "diptych": "1.1.0",
     "folio": "1.2.0",
     "gloss": "1.0.0",

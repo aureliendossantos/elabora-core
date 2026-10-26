@@ -95,36 +95,36 @@
       "type": "chart-notes",
       "width": "wide",
       "props": {
+        "presentation": "below",
         "image": "images/chart-whole.svg",
         "alt": "The portolan chart from the opening of the course: the Mediterranean and the Black Sea on a calfskin, tilted, with rhumb lines, harbour names written at every angle, a wind rose and a scale of miles.",
-        "ratio": 1.96,
-        "notes": [
+        "caption": "So, did they get it wrong? No: the chart answers a pilot's questions, which way and how far, better than any map of its time.",
+        "items": [
           {
             "id": "north",
-            "x": 54,
-            "y": 8,
             "marker": "No north?",
             "title": "“There is no north on this map”",
-            "body": "It was never meant to hang on a wall. On board, the chart lies flat on the table and the pilot turns it to face the course, so it needs no top. Every wind rose still shows the north, by its Tramontana point."
+            "x": 0.54,
+            "y": 0.08,
+            "markdown": "It was never meant to hang on a wall. On board, the chart lies flat on the table and the pilot turns it to face the course, so it needs no top. Every wind rose still shows the north, by its Tramontana point."
           },
           {
             "id": "names",
-            "x": 24,
-            "y": 60,
             "marker": "Names every way",
             "title": "“The names run in every direction”",
-            "body": "Each harbour is written inland, at right angles to the coast, so the coastline itself stays clear. Turn the chart and the names of the coast ahead read the right way up."
+            "x": 0.24,
+            "y": 0.6,
+            "markdown": "Each harbour is written inland, at right angles to the coast, so the coastline itself stays clear. Turn the chart and the names of the coast ahead read the right way up."
           },
           {
             "id": "italy",
-            "x": 55,
-            "y": 31,
             "marker": "Italy lying down",
             "title": "“Italy is lying down”",
-            "body": "The whole sea is turned about 9° from a modern map. The leading explanation: the chart was built from compass bearings, and the compass then pointed several degrees east of true north. Steered by compass, the chart still brings a ship to the right harbour."
+            "x": 0.53,
+            "y": 0.37,
+            "markdown": "The whole sea is turned about 9° from a modern map. The leading explanation: the chart was built from compass bearings, and the compass then pointed several degrees east of true north. Steered by compass, the chart still brings a ship to the right harbour."
           }
-        ],
-        "caption": "So, did they get it wrong? No: the chart answers a pilot's questions, which way and how far, better than any map of its time."
+        ]
       }
     }
   ]
