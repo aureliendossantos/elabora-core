@@ -137,6 +137,7 @@ Generated from `packages/core/src/diagnostics/codes.ts` by `npm run docs`. Codes
 | `E_OP_INVALID` | Invalid edit | See the message: a block cannot move into itself, and ids are permanent (remove the element and add it again to give it another id). |  |
 | `E_PLAN_PERSON_ONLY` | A person's decision on the plan | Making a version of the plan and recording the client's validation are the author's: in Elabora (Plan › Versions) or in a terminal. An agent writes the plan, then tells the author it is ready to send. |  |
 | `E_PLAN_VERBATIM_LOCKED` | A text kept « à l'identique » is the author's to change | The client wants this text as signed: an agent never changes its words, its flag or removes it. Leave it as it is, or ask the author, who changes it in Elabora (the text, « Déverrouiller »). |  |
+| `E_CONVERT_REFUSED` | A block that does not fit the type it is converted into | The message says what does not fit (too many items, a text too long, a picture missing). Shorten or complete the block first, or choose another target: elabora convert &lt;screen&gt; &lt;block&gt; --dry-run lists the possible ones. |  |
 | `E_GATE_SMOKE` | Gate 2 failed: mount/run/dispose | See console errors in the message. |  |
 | `E_GATE_BEHAVIOUR` | Gate 3 failed: behaviour test | Fix the code or, if the expected behaviour changed, the test (with a reason). |  |
 | `E_GATE_BUDGET` | Gate 4 failed: budget exceeded | Reduce draw calls, triangles or textures, or raise the budget with a justification. |  |

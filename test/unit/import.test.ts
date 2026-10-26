@@ -15,7 +15,7 @@ import { parseProvidedData, storylineFontFamily } from '@elabora/core/import/sto
 import { layoutTree, flatten } from '@elabora/core/import/layout';
 import { convertCourse } from '@elabora/core/import/convert';
 import type { SourceCourse, SourceItem } from '@elabora/core/import/model';
-import { riseCourse, riseScormFiles, riseLocaleFiles, riseRuntimeFiles, riseRuntimeWithStorylineFiles, riseRuntimeWithOlderExportFiles, riseLegacyFiles, storylinePublishedFiles, storySourceFiles, zipOf, writeFolder } from '../../scripts/make-import-fixtures.ts';
+import { riseCourse, riseScormFiles, riseLocaleFiles, riseRuntimeFiles, riseRuntimeWithStorylineFiles, riseRuntimeWithOlderExportFiles, riseLegacyFiles, riseStarterFiles, storylinePublishedFiles, storylineActivitiesFiles, storySourceFiles, zipOf, writeFolder } from '../../scripts/make-import-fixtures.ts';
 import { ROOT } from '../helpers.ts';
 
 // The Storyline and Rise importer (beta, docs/decisions.md D47) on synthetic modules written by
@@ -195,14 +195,25 @@ describe('importing', () => {
     assert.deepEqual(course.completion, { reportAs: 'passed-incomplete', masteryScore: 80 });
     const [quiz, lesson] = screens(dir);
     const blocks = allBlocks(lesson);
-    assert.deepEqual(blocks.map((block) => block.type).slice(0, 8), ['heading', 'text', 'callout', 'text', 'image', 'accordion', 'accordion', 'quiz']);
+    assert.deepEqual(blocks.map((block) => block.type), ['heading', 'text', 'statement', 'text', 'image', 'accordion', 'accordion', 'quiz', 'fill-in', 'hotspots', 'button', 'divider']);
+    // Statement B (D63): between two rules, its heading in bold.
+    assert.deepEqual(blocks[2].props, { presentation: 'ruled', markdown: '**À retenir**\n\nChaque objet a sa place.' });
     assert.equal(blocks[1].props.markdown, 'Un poste rangé évite **les chutes** et *les pertes*. Voir [le guide](https://example.org/guide).');
     assert.equal(blocks[4].props.alt, 'Un bureau rangé, vu de dessus');
     assert.ok(fs.existsSync(path.join(dir, 'assets', blocks[4].props.asset as string)));
-    // Tabs have no block yet: an accordion, with a note for the author.
-    assert.match(blocks[6].note ?? '', /Onglets/);
-    // The continue divider: what follows is step 2, opened once the question above is answered when one is.
+    // Tabs are panels shown as tabs (D63), not a fallback any more.
+    assert.equal(blocks[6].props.presentation, 'tabs');
+    assert.equal(blocks[6].note, undefined);
+    // The continue divider that waits for the block above: step 2, opened once the tabs are explored.
     assert.equal(blocks[7].step, 2);
+    assert.deepEqual(lesson.steps, { 2: { opens: 'explored', label: 'Suite' } });
+    // A knowledge check's fill in the blank is a fill-in, its blank where the text had one.
+    assert.equal(blocks[8].props.markdown, 'Un poste rangé évite les [[chutes]].');
+    // The labeled graphic is an interactive picture, its markers where Rise placed them (percent).
+    assert.deepEqual(blocks[9].props.items, [{ id: 'i1', x: 0.2, y: 0.3, title: 'Porte', markdown: 'Toujours dégagée.' }]);
+    assert.equal(blocks[9].props.alt, 'Plan du bureau');
+    assert.ok(fs.existsSync(path.join(dir, 'assets', blocks[9].props.image as string)));
+    assert.deepEqual(blocks[11].props, { presentation: 'space' });
     assert.equal((blocks[7].props.options as { feedback: string }[])[1].feedback, 'Non : on peut s\'y prendre les pieds.');
     // The button to a lesson is a button and an event.
     const button = blocks.find((block) => block.type === 'button')!;
@@ -216,7 +227,8 @@ describe('importing', () => {
     assert.equal(report.beta, true);
     assert.match(report.summary, /^2 leçons de l'export Rise deviennent 2 écrans/);
     const features = report.losses.map((loss: { feature: string }) => loss.feature);
-    for (const feature of ['Onglets (Rise tabs)', 'Texte à trous (Rise fill in the blank)', 'Image interactive (Rise labeled graphic)', 'Bloc Storyline dans Rise']) assert.ok(features.includes(feature), feature);
+    assert.ok(features.includes('Bloc Storyline dans Rise'));
+    for (const feature of ['Onglets (Rise tabs)', 'Texte à trous (Rise fill in the blank)', 'Image interactive (Rise labeled graphic)']) assert.ok(!features.includes(feature), feature);
     assert.ok(report.losses.every((loss: { message: string; status: string }) => loss.message && ['fallback', 'not-yet', 'dropped'].includes(loss.status)));
     // The plan is a draft with one item per screen, every screen covering its own.
     const plan = readJson(dir, 'plan.json');
@@ -267,6 +279,54 @@ describe('importing', () => {
     await assert.rejects(importCourse({ file: asFolder(broken), dir: target() }), (error: unknown) => error instanceof ImportError && error.code === 'E_IMPORT_UNREADABLE' && /cannot be decoded/.test(error.message));
   });
 
+  test('Rise blocks land on D63\'s blocks: statements, quotes, image presentations, galleries, columns, dividers, cards, steps, an interactive picture, sorting, matching, a chart', async () => {
+    const dir = target();
+    const result = await importCourse({ file: asFolder(riseStarterFiles()), dir });
+    assert.equal(result.kind, 'rise');
+    assert.deepEqual(result.validation.errors, 0, JSON.stringify(validateDir(dir).diagnostics.filter((d: { severity: string }) => d.severity === 'error')));
+    const [lesson, map] = screens(dir).sort((a, b) => (a.id === 'comprendre' ? -1 : b.id === 'comprendre' ? 1 : 0));
+    const shown = (block: { type: string; props: Record<string, unknown> }) => `${block.type}${block.props.presentation ? `:${block.props.presentation}` : ''}`;
+    assert.deepEqual(lesson.blocks.map(shown), [
+      'statement', 'statement:ruled', 'callout', 'statement:quote', 'statement:image', 'image:band', 'image:beside', 'image:over', 'gallery', 'gallery:carousel',
+      'divider:number', 'divider', 'columns', 'accordion:cards', 'accordion:stack', 'steps', 'steps:timeline', 'hotspots', 'accordion', 'sort:categories', 'sort:categories', 'sort', 'donut', 'text'
+    ]);
+    const block = (type: string, n = 0) => lesson.blocks.filter((entry: { type: string }) => entry.type === type)[n];
+    assert.deepEqual(block('statement', 1).props, { presentation: 'ruled', align: 'start', markdown: '**La règle**\n\nProtéger, alerter, secourir.' });
+    const quote = block('statement', 2).props;
+    assert.deepEqual([quote.markdown, quote.author], ['On n\'a jamais regretté d\'avoir appelé.', 'Une régulatrice du SAMU']);
+    assert.ok(fs.existsSync(path.join(dir, 'assets', quote.portrait as string)));
+    assert.deepEqual(block('statement', 3).props.focus, { x: 0.5, y: 0.5 });
+    assert.deepEqual(block('image').props.focus, { x: 0.5, y: 0.333 }, 'Rise\'s crop as the focal point');
+    assert.deepEqual([block('image', 1).props.markdown, block('image', 1).props.share], ['Les mains au centre de la poitrine, bras tendus.', 'third']);
+    assert.equal(block('image', 2).props.markdown, 'Restez calme.');
+    const gallery = block('gallery').props;
+    assert.deepEqual((gallery.images as { id: string; caption?: string }[]).map((image) => [image.id, image.caption]), [['i1', 'Le boîtier'], ['i3', undefined]], 'the missing picture goes, the others keep their ids');
+    assert.deepEqual(block('columns').blocks.map((child: { slot: string; props: { markdown: string } }) => [child.slot, child.props.markdown]), [['first', '**Adulte**\n\nDeux mains.'], ['second', 'Un enfant : une main.']]);
+    assert.deepEqual(block('accordion').props.items.map((item: { title: string; image?: string; alt?: string }) => [item.title, !!item.image, item.alt]), [['PLS', false, undefined], ['Un défibrillateur', true, 'Un défibrillateur']]);
+    const steps = block('steps').props;
+    assert.deepEqual([steps.intro, steps.summary], [{ title: 'Le massage', markdown: 'Trois temps à retenir.' }, { title: 'À retenir', markdown: 'Ne vous arrêtez pas.' }]);
+    assert.deepEqual(steps.items.map((item: { id: string; title: string; decorative?: boolean }) => [item.id, item.title, item.decorative]), [['i1', 'Placer les mains', true], ['i2', 'Appuyer', undefined]], 'a hidden step stays out; a picture without alt is decorative');
+    assert.deepEqual(block('steps', 1).props.items.map((item: { date: string }) => item.date), ['0 min', '3 min']);
+    const hotspots = block('hotspots').props;
+    assert.deepEqual(hotspots.items.map((item: { x: number; y: number; title: string; alt?: string }) => [item.x, item.y, item.title, item.alt]), [[0.105, 0.8, 'Bouton', 'Le bouton vert'], [0.6, 0.2, 'Électrodes', undefined]]);
+    assert.match(block('accordion', 2).note ?? '', /Image interactive/, 'a labeled graphic whose picture is missing falls back to panels');
+    assert.deepEqual(block('sort').props.targets, [{ id: 't1', text: 'À faire' }, { id: 't2', text: 'À éviter' }]);
+    assert.deepEqual([block('sort').props.items.length, block('sort', 1).props.items.length, block('sort').props.scored], [7, 7, false], 'fourteen cards make two sorts of seven, unscored');
+    assert.deepEqual(block('sort', 2).props.items, [{ id: 'i1', text: 'Protéger', target: 't1' }, { id: 'i2', text: 'Alerter', target: 't2' }]);
+    assert.deepEqual(block('sort', 2).props.feedback, { correct: 'Relisez les gestes.', incorrect: 'Relisez les gestes.' });
+    assert.deepEqual(block('donut').props, { takeaway: 'Qui agit ?', parts: [{ id: 'p1', label: 'Témoins', value: 40 }, { id: 'p2', label: 'Personne', value: 60 }], unit: '%' });
+    assert.equal(block('text').props.markdown, '[https://video.example.org/geste](https://video.example.org/geste)', 'an embed pasted as HTML is a link');
+    // Continue after the steps waits for them to be explored; after the matching, for its answer.
+    assert.deepEqual(lesson.steps, { 2: { opens: 'explored', label: 'Continuer' }, 3: { opens: 'answered', label: 'Suite' } });
+    // The 2017 map lesson: its text, then its interactive picture.
+    assert.deepEqual(map.blocks.map((entry: { type: string }) => entry.type), ['text', 'hotspots']);
+    const report = readJson(dir, IMPORT_REPORT_FILE);
+    const features = report.losses.map((loss: { feature: string; status: string }) => `${loss.status} ${loss.feature}`);
+    assert.ok(features.some((feature: string) => /^fallback Activité de tri/.test(feature)), JSON.stringify(features));
+    assert.ok(features.some((feature: string) => /^not-yet .*absente\.png/.test(feature)), JSON.stringify(features));
+    for (const pattern of [/Onglets/, /Cartes à retourner/, /Processus/, /Frise/, /Citation/, /Association/, /Galerie/, /Graphique/]) assert.ok(!features.some((feature: string) => pattern.test(feature)), `${pattern}: ${JSON.stringify(features)}`);
+  });
+
   test('a published Storyline course: title, columns, layer, hotspot, triggers, question, results, notes', async () => {
     const dir = target();
     const result = await importCourse({ file: asZip('published.zip', storylinePublishedFiles()), dir });
@@ -306,6 +366,25 @@ describe('importing', () => {
     assert.equal(report.decisions.find((decision) => decision.id === 'fonts')!.title, '10 textes en Articulate passent en Source Sans 3');
     assert.ok(report.losses.some((loss) => loss.code === 'javascript' && loss.status === 'dropped'));
     assert.ok(report.losses.some((loss) => loss.code === 'variable' && loss.feature === 'NonUtilisee'));
+  });
+
+  test('a published Storyline course\'s matching, sequence, fill in the blank, word bank and Likert questions become D63\'s activities', async () => {
+    const dir = target();
+    const result = await importCourse({ file: asFolder(storylineActivitiesFiles()), dir });
+    assert.equal(result.kind, 'storyline-published');
+    assert.deepEqual(result.validation.errors, 0, JSON.stringify(validateDir(dir).diagnostics.filter((d: { severity: string }) => d.severity === 'error')));
+    const blocks = screens(dir).flatMap(allBlocks).filter((block) => block.type !== 'text');
+    assert.deepEqual(blocks.map((block) => `${block.type}${block.props.presentation ? `:${block.props.presentation}` : ''}`), ['sort', 'sort:order', 'fill-in', 'fill-in:bank', 'reflection:scale', 'reflection:scale']);
+    const [match, order, blank, bank, scale] = blocks;
+    assert.deepEqual(match.props.items, [{ id: 'i1', text: 'Baliser la zone', target: 't1' }, { id: 'i2', text: 'Appeler le 15', target: 't2' }, { id: 'i3', text: 'Masser le cœur', target: 't3' }]);
+    assert.deepEqual(match.props.targets, [{ id: 't1', text: 'protéger la victime' }, { id: 't2', text: 'faire venir les secours' }, { id: 't3', text: 'garder la victime en vie' }]);
+    assert.deepEqual((order.props.items as { text: string }[]).map((item) => item.text), ['Protéger', 'Alerter', 'Secourir'], 'the right order, not the order of the choices');
+    assert.equal(blank.props.markdown, '[[15|le 15]]');
+    assert.deepEqual([bank.props.markdown, bank.props.distractors], ['[[massage cardiaque]]', ['garrot', 'bouche-à-bouche']]);
+    assert.deepEqual(scale.props.scale, { min: 1, max: 4, minLabel: 'Pas du tout', maxLabel: 'Tout à fait' });
+    assert.equal(scale.props.prompt, 'Où en êtes-vous ?\n\nJe sais protéger une victime.');
+    const report = readJson(dir, IMPORT_REPORT_FILE);
+    assert.ok(!report.losses.some((loss: { feature: string }) => /Association|Remise en ordre|Texte à trous|Banque de mots|Likert/.test(loss.feature)), JSON.stringify(report.losses));
   });
 
   test('a Storyline source (.story): texts, pictures, hidden objects, conditions, questions, the Content Library left out', async () => {

@@ -15,6 +15,8 @@ import { screenParts } from '@elabora/core/project/parts';
 import { screenEstimates } from '@elabora/core/project/duration';
 import { findText } from '@elabora/core/commands/text';
 import type { TextMatch } from '@elabora/core/commands/text';
+import { conversionTargets } from '@elabora/core/commands/convert';
+import { CommandError } from '@elabora/core/commands/context';
 import { screenTranslation, translationStatus, translationTable } from '@elabora/core/i18n/translate';
 import type { ScreenTranslation, TranslationStatus, TranslationTable } from '@elabora/core/i18n/translate';
 import { buildTranslation } from '@elabora/node/translate';
@@ -89,7 +91,7 @@ import { EngineError, protocolError } from './errors.ts';
 import type {
   BackupSummary, BuildParams, BuildView, CanvasInfo, CanvasMoment, CanvasView, ChangeSource, ChangeView, CommandArgs, CommandName, DiagnosticsView, EngineEvent, EventMessage, FileEntry, FileView,
   FormatMigrationView, FormatStatus, HistoryView, MarkResult, MediaImportResult, MediaJobInfo, ProjectSummary, RenderScreenParams, RequestMessage,
-  RequestResult, RequestType, ResponseMessage, RestoreView, RunResult, ScreenView, TranslationBuildParams, TranslationBuildView, UndoView, VoiceView, GenerateVoiceParams, AlignNarrationParams
+  RequestResult, RequestType, ResponseMessage, RestoreView, RunResult, ScreenView, TranslationBuildParams, TranslationBuildView, UndoView, VoiceView, GenerateVoiceParams, AlignNarrationParams, ConversionsParams, ConversionsView
 } from './protocol.ts';
 import { listVoices, voiceProvider, voiceProviders, generateNarration, estimateNarration, setSpeakerVoice, voiceTakes, voiceSample, setSessionKey, maskKey, takeDialogue } from '@elabora/node/voice/index';
 import type { VoiceQuery, VoiceSearchResult, VoiceAccount, VoiceEstimate } from '@elabora/node/voice/index';
@@ -429,6 +431,7 @@ export class Session {
       case 'transcribeLine': return this.transcribeLine(request.params);
       case 'importNarrationFiles': return this.importNarrationFiles(request.params);
       case 'findText': return this.findText(request.params.query, request.params.caseSensitive);
+      case 'conversions': return this.conversions(request.params);
       case 'translationStatus': return this.translationStatus(request.params.to);
       case 'translationTable': return this.translationTable(request.params.language);
       case 'screenTranslation': return this.screenTranslation(request.params.screen, request.params.language);
@@ -759,6 +762,19 @@ export class Session {
         async (args) => ({ change: (await this.run('set_narration_audio', args, author)).change }));
     } catch (error) {
       throw new EngineError('refused', error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  // « Transformer en… » (D63): the targets of a block, in the app's language.
+  conversions(params: ConversionsParams): ConversionsView {
+    this.#assertOpen();
+    if (params?.probe === true) return { supported: true, targets: [], refused: [] };
+    if (typeof params?.block !== 'string') throw new EngineError('bad-request', 'conversions takes block: a block id (or probe: true)');
+    try {
+      return { supported: true, ...conversionTargets(this.#state.project, params.block, params.language) };
+    } catch (error) {
+      if (error instanceof CommandError) throw new EngineError('not-found', error.message);
+      throw error;
     }
   }
 
@@ -1928,7 +1944,7 @@ export class Session {
 // Every request of the protocol, checked complete by the compiler (a request missing here would be
 // refused as bad-request).
 const REQUEST_TYPES: Record<RequestType, true> = {
-  summary: true, readFile: true, listFiles: true, readScreen: true, screenParts: true, findText: true, translationStatus: true,
+  summary: true, readFile: true, listFiles: true, readScreen: true, screenParts: true, findText: true, conversions: true, translationStatus: true,
   translationTable: true, screenTranslation: true, buildTranslation: true, run: true, undo: true, undoBatch: true, history: true, mark: true,
   diagnostics: true, importMedia: true, mediaJobs: true, cancelMediaJob: true, backups: true, createBackup: true, restoreBackup: true,
   renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, migrate: true, build: true, close: true, narration: true, voices: true,

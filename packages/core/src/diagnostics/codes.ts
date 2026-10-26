@@ -298,6 +298,7 @@ export const CODES = {
   E_OP_INVALID: { severity: 'error', title: 'Invalid edit', fix: 'See the message: a block cannot move into itself, and ids are permanent (remove the element and add it again to give it another id).' },
   E_PLAN_PERSON_ONLY: { severity: 'error', title: 'A person\'s decision on the plan', fix: 'Making a version of the plan and recording the client\'s validation are the author\'s: in Elabora (Plan › Versions) or in a terminal. An agent writes the plan, then tells the author it is ready to send.' },
   E_PLAN_VERBATIM_LOCKED: { severity: 'error', title: 'A text kept « à l\'identique » is the author\'s to change', fix: 'The client wants this text as signed: an agent never changes its words, its flag or removes it. Leave it as it is, or ask the author, who changes it in Elabora (the text, « Déverrouiller »).' },
+  E_CONVERT_REFUSED: { severity: 'error', title: 'A block that does not fit the type it is converted into', fix: 'The message says what does not fit (too many items, a text too long, a picture missing). Shorten or complete the block first, or choose another target: elabora convert <screen> <block> --dry-run lists the possible ones.' },
 
   // ── Object test gates and LMS emulation (runtime findings) ─────────
   E_GATE_SMOKE: { severity: 'error', title: 'Gate 2 failed: mount/run/dispose', fix: 'See console errors in the message.' },

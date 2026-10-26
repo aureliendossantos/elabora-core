@@ -4,7 +4,7 @@ import * as commands from '@elabora/core/commands/index';
 import type {
   CreateScreenArgs, UpdateScreenArgs, MoveScreenArgs, AddBlockArgs, UpdateBlockArgs, MoveBlockArgs, DuplicateBlockArgs, UpdateCourseArgs, IgnoreFindingsArgs, CreateObjectArgs,
   WriteObjectFileArgs, ObjectTemplates, CreateComponentArgs, ForkComponentArgs, WriteComponentFileArgs,
-  MigrateComponentsArgs, AddLibraryComponentArgs, RenameArgs, AddFontArgs, SetCaptionsArgs, UpsertLayerArgs, UpsertEventArgs, DuplicateScreenArgs, ReplaceTextArgs, ExportTranslationArgs, TranslateUnitArgs, ApproveTranslationArgs, SettleImportReportArgs
+  MigrateComponentsArgs, AddLibraryComponentArgs, RenameArgs, AddFontArgs, SetCaptionsArgs, ConvertBlockArgs, UpsertLayerArgs, UpsertEventArgs, DuplicateScreenArgs, ReplaceTextArgs, ExportTranslationArgs, TranslateUnitArgs, ApproveTranslationArgs, SettleImportReportArgs
 } from '@elabora/core/commands/index';
 import type { Variable } from '@elabora/core/project/model';
 import type { MigrationSteps } from '@elabora/core/components/migrate';
@@ -77,6 +77,13 @@ export function duplicateBlock(dir: string, args: DuplicateBlockArgs, options?: 
 
 export function detachBlock(dir: string, args: { block: string }, options?: EditOptions) {
   return runCommand(dir, { name: 'detach_block', args, run: (context) => commands.detachBlock(context, args) }, options);
+}
+
+// « Transformer en… » (D63): the block becomes another type or presentation in place, its id and its
+// items' ids kept, its translations following; without to, or with dryRun, nothing is written and the
+// result says what it would do (the possible targets, without to).
+export function convertBlock(dir: string, args: ConvertBlockArgs, options?: EditOptions) {
+  return runCommand(dir, { name: 'convert_block', args, run: (context) => commands.convertBlock(context, args) }, options);
 }
 
 // Gives a section, screen, layer, block or event another id: its references, the screen file and

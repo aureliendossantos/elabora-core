@@ -497,6 +497,9 @@ component add [dir] <id> --library <dir> [--as <id>] [--upgrade] [--force]   Cop
 component publish [dir] <id> --library <dir>        Copy a course component into a library
 block duplicate [dir] <block> [--id <new id>]       Copy a block (and the blocks of its slots)
 block detach [dir] <block>                          Replace a component instance by its native fallback
+convert [dir] <screen> <block> --to <type>[:<presentation>] [--dry-run] [--lang fr] [--json]
+                                                    « Transformer en… »: the block as another type or presentation, its id,
+                                                    items and translations kept; without --to, the possible targets
 ```
 
 ## Free objects

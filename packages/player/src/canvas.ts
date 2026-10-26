@@ -120,11 +120,12 @@ function post(message: CanvasMessage) {
 function receive(message: HostMessage) {
   // A wheel passed on: nothing to render; the scroll reports where the blocks went.
   if (message.type === 'elabora/scroll') { scrollFrom(message.by, message.at); return; }
+  if (message.type === 'elabora/focus') { focusLive(message.block, message.x, message.y); return; }
   if (message.type === 'elabora/highlight' || message.type === 'elabora/open' || message.type === 'elabora/close') { preview(message); return; }
   const started = performance.now();
   const id = message.id ?? null;
   try {
-    if (message.type === 'elabora/render') render(message.render);
+    if (message.type === 'elabora/render') { endLiveFocus(); render(message.render); }
     else if (mounted) applyView(mounted, { ...mounted.requested, ...message.view }, false);
     // Blocks rendered anew (and layers opened) ask for the changed files with their hash.
     versionUrls();
@@ -143,11 +144,35 @@ window.addEventListener('message', (event) => {
   if (data.type === 'elabora/render' && isRender(data.render)) receive({ type: 'elabora/render', id: idOf(data.id), render: data.render });
   else if (data.type === 'elabora/view' && isRecord(data.view)) receive({ type: 'elabora/view', id: idOf(data.id), view: viewOf(data.view) });
   else if (data.type === 'elabora/scroll' && isPoint(data.by)) receive({ type: 'elabora/scroll', by: data.by, ...(isPoint(data.at) ? { at: data.at } : {}) });
+  else if (data.type === 'elabora/focus' && typeof data.block === 'string' && typeof data.x === 'number' && typeof data.y === 'number') receive({ type: 'elabora/focus', block: data.block, x: data.x, y: data.y });
   else if (data.type === 'elabora/highlight' || data.type === 'elabora/open' || data.type === 'elabora/close') {
     const message = previewMessage(data);
     if (message) receive(message);
   }
 });
+
+// A focal point being dragged (D63): the block's pictures take it as their object-position at once;
+// the render that follows the saved change gives the same. Every element of the block that sets its
+// own --focus-x and --focus-y (a picture's figure, a band, a statement over an image) takes it, and the
+// block itself for those that inherit it.
+// A render gives every element its own value again (a block left unchanged keeps its elements).
+const liveFocus = new Map<HTMLElement, [string, string]>();
+function focusLive(blockId: string, x: number, y: number) {
+  const block = document.querySelector<HTMLElement>(`[data-block="${CSS.escape(blockId)}"]`);
+  if (!block) { post({ type: 'elabora/error', id: null, message: `elabora/focus: no block "${blockId}" on the screen shown.` }); return; }
+  const clamp = (value: number) => String(Math.round(Math.min(1, Math.max(0, value)) * 1000) / 1000);
+  for (const element of [block, ...block.querySelectorAll<HTMLElement>('[style*="--focus-x"]')]) {
+    if (!liveFocus.has(element)) liveFocus.set(element, [element.style.getPropertyValue('--focus-x'), element.style.getPropertyValue('--focus-y')]);
+    element.style.setProperty('--focus-x', clamp(x));
+    element.style.setProperty('--focus-y', clamp(y));
+  }
+}
+function endLiveFocus() {
+  for (const [element, values] of liveFocus) {
+    ['--focus-x', '--focus-y'].forEach((name, i) => (values[i] ? element.style.setProperty(name, values[i]) : element.style.removeProperty(name)));
+  }
+  liveFocus.clear();
+}
 
 // ── The player's preview (chrome=live, elabora-player-preview/1) ──────
 const PANELS: readonly PreviewPanel[] = ['resources', 'glossary', 'about', 'outline', 'display', 'language', 'transcript'];

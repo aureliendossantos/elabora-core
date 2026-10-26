@@ -69,6 +69,25 @@ const variableId = (name: string): string => {
   return /^[a-z]/.test(id) ? id : `v${id}`.slice(0, 32);
 };
 
+// The blocks of D63 whose controls the learner visits (a step that waits for exploration has something to wait for).
+const EXPLORABLE = new Set(['accordion', 'steps', 'hotspots', 'gallery', 'sort', 'fill-in', 'reflection', 'quiz']);
+
+// A value in props at a path of keys and indexes, set or removed (a picture's alt and focus go with it).
+function setAt(root: Json, at: readonly (string | number)[], value: unknown): void {
+  let node: Json = root;
+  for (const key of at.slice(0, -1)) node = node[key as string] as Json;
+  node[at[at.length - 1] as string] = value;
+}
+function unsetAt(root: Json, at: readonly (string | number)[]): void {
+  let node: Json | undefined = root;
+  for (const key of at.slice(0, -1)) node = node?.[key as string] as Json | undefined;
+  if (!node) return;
+  const key = at[at.length - 1] as string;
+  delete node[key];
+  if (key === 'image') { delete node.alt; delete node.focus; delete node.decorative; }
+  if (key === 'figureImage') { delete node.figureAlt; }
+}
+
 const plainText = (markdown: string): string => markdown.replace(/\\([\\`*_[\]$#>+-])/g, '$1').replace(/[*_`]/g, '').replace(/\s+/g, ' ').trim();
 const clip = (text: string, max: number): string => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text);
 
@@ -124,6 +143,18 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
   const mediaNames = new Set<string>();
   const mediaByPath = new Map<string, string>();
   const media: ConvertedMedia[] = [];
+  const stripCopy = (name: string): string | null => {
+    const extension = /\.[^./]+$/.exec(name)?.[0] ?? '';
+    const stem = name.slice(0, name.length - extension.length);
+    const match = /-[A-Z0-9][A-Z0-9-]{2,}$/.exec(stem.replace(/^.*\//, ''));
+    return match ? `${stem.slice(0, stem.length - match[0].length)}${extension}` : null;
+  };
+  const looksLikeCopy = (name: string): boolean => {
+    const original = stripCopy(name);
+    if (original && mediaNames.has(original)) return true;
+    for (const other of mediaNames) if (stripCopy(other) === name) return true;
+    return false;
+  };
   const assetFor = (medium: SourceMedia, hint: string, kind: SourceMedia['kind'] | 'captions' = medium.kind): string => {
     const known = mediaByPath.get(medium.path);
     if (known) return known;
@@ -131,7 +162,9 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
     const folder = MEDIA_FOLDER[kind];
     const stem = slugify(hint || medium.path.replace(/^.*\//, '').replace(/\.[^.]+$/, ''), folder.replace(/s$/, ''), 40);
     let name = `${folder}/${stem}${extension}`;
-    for (let n = 2; mediaNames.has(name); n++) name = `${folder}/${stem}-${n}${extension}`;
+    // A name that a sync service's conflict copy would have (« carte-3-2 » beside « carte ») is not
+    // loaded (W_SYNC_CONFLICT_COPY): such names are numbered with an underscore instead.
+    for (let n = 2; mediaNames.has(name) || looksLikeCopy(name); n++) name = `${folder}/${stem}${looksLikeCopy(`${folder}/${stem}-${n}${extension}`) ? '_' : '-'}${n}${extension}`;
     mediaNames.add(name);
     mediaByPath.set(medium.path, name);
     media.push({ from: medium.path, to: `assets/${name}` });
@@ -155,7 +188,7 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
     let texts = 0;
     let headings = 0;
     for (const section of source.sections) for (const page of section.pages) for (const item of page.items) {
-      if (item.kind === 'text' || item.kind === 'callout' || item.kind === 'accordion') texts++;
+      if (item.kind === 'text' || item.kind === 'callout' || item.kind === 'accordion' || item.kind === 'block' || item.kind === 'fill-in' || item.kind === 'sort') texts++;
       if (item.kind === 'heading') headings++;
     }
     if (source.fonts.body && texts) fontUse.set(source.fonts.body, { texts, headings: source.fonts.heading === source.fonts.body ? headings : 0 });
@@ -297,14 +330,20 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
       else decide('timing', 'together', { screen: screenId }, undefined, undefined, timed.length);
     }
     let activityAbove = false;
+    // Something to explore above (D63): an activity, or a block whose controls are visited.
+    let explorableAbove = false;
     for (const item of ordered) {
-      if (item.kind === 'quiz' || item.kind === 'numeric') activityAbove = true;
+      if (item.kind === 'quiz' || item.kind === 'numeric' || item.kind === 'fill-in' || item.kind === 'sort' || item.kind === 'reflection') activityAbove = true;
+      if (activityAbove || item.kind === 'accordion' || item.kind === 'dialogue' || (item.kind === 'block' && EXPLORABLE.has(item.type) && (item.type !== 'gallery' || item.props.presentation === 'carousel'))) explorableAbove = true;
       if (item.kind === 'continue') {
         if (step >= 12) { lose('steps', 'fallback', item.label || 'Continue', where()); continue; }
         step++;
         const setting: Json = {};
         // Opening once answered needs an activity above (E_STEP_UNREACHABLE): else Continue opens it.
         if (item.opens === 'answered' && activityAbove) setting.opens = 'answered';
+        // Once explored needs something to explore above (W_STEP_SETTING_UNUSED); else once answered, else Continue.
+        else if (item.opens === 'explored' && explorableAbove) setting.opens = 'explored';
+        else if (item.opens === 'explored' && activityAbove) setting.opens = 'answered';
         if (item.label && item.label.length <= 40) setting.label = item.label;
         if (Object.keys(setting).length) stepSettings[String(step)] = setting;
         counts.items++;
@@ -386,7 +425,7 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
     };
     const itemBlocksOf = (item: SourceItem, inLayer: boolean): Block[] => {
       counts.items++;
-      const label = item.name || ('media' in item && item.media ? item.media.path.replace(/^.*\//, '') : '') || item.ref;
+      const label = item.name || ('media' in item && item.media && !Array.isArray(item.media) ? item.media.path.replace(/^.*\//, '') : '') || (item.kind === 'block' ? item.type : '') || item.ref;
       const isClickable = clickable.has(item.ref);
       if (item.hidden && !shownLater.has(item.ref) && !inLayer) {
         // Hidden and never shown by a trigger Elabora keeps: a state the importer cannot reach.
@@ -416,6 +455,11 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
             else if (alt) props.alt = clip(alt, 250);
             else props.decorative = true;
             if (item.caption) props.caption = clip(item.caption, 300);
+            if (item.presentation && item.presentation !== 'centered') props.presentation = item.presentation;
+            if (item.focus) props.focus = item.focus;
+            if (item.title && (item.presentation === 'beside' || item.presentation === 'over')) props.title = clip(item.title, 120);
+            if (item.markdown && (item.presentation === 'beside' || item.presentation === 'over')) props.markdown = item.markdown.slice(0, 1500);
+            if (item.share && item.presentation === 'beside') props.share = item.share;
             const block = newBlock('image', props, item);
             if (!item.decorative && !alt) {
               decide('alt-missing', 'decorative', { screen: screenId, block: block.id });
@@ -424,6 +468,8 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
             return block;
           });
           if (kept && isClickable) return [kept, clickableButton(item, item.alt || item.name || '', 'clickable')];
+          // A picture left out with a text beside or over it: the text stays.
+          if (!kept && item.markdown?.trim()) return [newBlock('text', { markdown: item.markdown }, item)];
           return kept ? [kept] : [];
         }
         case 'video': {
@@ -454,10 +500,83 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
           counts.kept++;
           return [newBlock('callout', { variant: item.variant ?? 'info', ...(item.title ? { title: clip(item.title, 120) } : {}), markdown: item.markdown }, item)];
         case 'accordion': {
-          const entries = item.items.filter((entry) => entry.title.trim() || entry.markdown.trim()).slice(0, 12);
+          const entries = item.items.filter((entry) => entry.title.trim() || entry.markdown.trim() || entry.media).slice(0, 12);
           if (!entries.length) { counts.dropped++; lose('unsupported', 'dropped', label, where(), words === 'fr' ? 'vide' : 'empty'); return []; }
           counts.kept++;
-          return [newBlock('accordion', { items: entries.map((entry, i) => ({ id: `i${i + 1}`, title: clip(entry.title.trim() || `${i + 1}`, 200), markdown: entry.markdown.trim() || '—' })) }, item)];
+          const items = entries.map((entry, i) => {
+            const panel: Json = { id: `i${i + 1}`, title: clip(entry.title.trim() || `${i + 1}`, item.presentation === 'tabs' ? 200 : 200), markdown: entry.markdown.trim() || (entry.media ? '' : '—') };
+            if (entry.media && keepsMedium(entry.media, label)) panel.image = assetFor(entry.media, entry.alt || entry.title || ''), panel.alt = clip((entry.alt ?? '').trim(), 250);
+            return panel;
+          });
+          return [newBlock('accordion', { ...(item.presentation && item.presentation !== 'accordion' ? { presentation: item.presentation } : {}), items }, item)];
+        }
+        case 'fill-in': {
+          const blanks = [...item.markdown.matchAll(/\[\[[^\]]+\]\]/g)].length;
+          if (!blanks) return [fallbackBlock(item, words === 'fr' ? 'Texte à trous' : 'Fill in the blank', item.stem || item.markdown, words === 'fr' ? 'aucune réponse attendue' : 'no expected answer')];
+          counts.kept++;
+          if (item.scored !== false) hasScored = true;
+          const props: Json = {
+            ...(item.presentation && item.presentation !== 'typed' ? { presentation: item.presentation } : {}),
+            ...(item.stem ? { stem: item.stem } : {}), markdown: item.markdown,
+            ...(item.distractors?.length ? { distractors: [...new Set(item.distractors.map((word) => clip(word.trim(), 60)).filter(Boolean))].slice(0, 8) } : {}),
+            ...activityFeedback(item), ...(item.scored === false ? { scored: false } : {})
+          };
+          return [newBlock('fill-in', props, item)];
+        }
+        case 'sort': {
+          const usable = item.items.filter((entry) => entry.text.trim());
+          const targets = item.targets ?? [];
+          const tooLong = [...usable, ...targets].some((entry) => entry.text.trim().length > 200);
+          const fits = usable.length >= 2 && usable.length <= 12 && !tooLong && (item.presentation === 'order' || (targets.length >= 1 && targets.length <= 12 && (item.presentation !== 'categories' || (targets.length >= 2 && targets.length <= 4))));
+          if (!fits) {
+            const lines = item.presentation === 'order' ? usable.map((entry, i) => `${i + 1}. ${entry.text}`) : usable.map((entry) => `- ${entry.text} → ${targets.find((target) => target.ref === entry.target)?.text ?? '?'}`);
+            return [fallbackBlock(item, words === 'fr' ? 'Activité de classement' : 'Sorting activity', [item.stem, lines.join('\n')].filter(Boolean).join('\n\n'), tooLong ? (words === 'fr' ? 'des éléments de plus de 200 caractères' : 'items over 200 characters') : (words === 'fr' ? `${usable.length} éléments, ${targets.length} cibles` : `${usable.length} items, ${targets.length} targets`))];
+          }
+          counts.kept++;
+          if (item.scored !== false) hasScored = true;
+          const targetIds = new Map(targets.map((target, i) => [target.ref, `t${i + 1}`]));
+          const props: Json = {
+            ...(item.presentation !== 'pairs' ? { presentation: item.presentation } : {}),
+            ...(item.stem ? { stem: item.stem } : {}),
+            items: usable.map((entry, i) => ({ id: `i${i + 1}`, text: entry.text.trim(), ...(item.presentation !== 'order' && entry.target && targetIds.has(entry.target) ? { target: targetIds.get(entry.target) } : {}) })),
+            ...(item.presentation !== 'order' ? { targets: targets.map((target) => ({ id: targetIds.get(target.ref), text: target.text.trim() })) } : {}),
+            ...activityFeedback(item), ...(item.scored === false ? { scored: false } : {})
+          };
+          return [newBlock('sort', props, item)];
+        }
+        case 'reflection': {
+          counts.kept++;
+          const scale = item.scale ? { min: Math.max(0, Math.min(1, item.scale.min)), max: Math.max(2, Math.min(9, item.scale.max)), ...(item.scale.minLabel ? { minLabel: clip(item.scale.minLabel, 60) } : {}), ...(item.scale.maxLabel ? { maxLabel: clip(item.scale.maxLabel, 60) } : {}) } : null;
+          return [newBlock('reflection', { ...(scale ? { presentation: 'scale', scale } : {}), prompt: item.prompt }, item)];
+        }
+        case 'block': {
+          const props = structuredClone(item.props);
+          const entries: (string | number)[][] = [];
+          let whole = true;
+          for (const medium of item.media ?? []) {
+            if (keepsMedium(medium.media, label)) { setAt(props, medium.at, assetFor(medium.media, medium.hint || '')); continue; }
+            if (medium.missing === 'block') { whole = false; break; }
+            if (medium.missing === 'entry') entries.push(medium.at.slice(0, -1));
+            else unsetAt(props, medium.at);
+          }
+          // Entries whose medium is not kept go, the last first (indexes stay right).
+          for (const at of entries.sort((a, b) => Number(b[b.length - 1]) - Number(a[a.length - 1]))) {
+            const list = at.slice(0, -1).reduce<unknown>((node, key) => (node as Json)?.[key as string], props);
+            if (Array.isArray(list)) list.splice(Number(at[at.length - 1]), 1);
+          }
+          const empty = entries.length && entries.some((at) => { const list = at.slice(0, -1).reduce<unknown>((node, key) => (node as Json)?.[key as string], props); return Array.isArray(list) && !list.length; });
+          if (!whole || empty) {
+            counts.items--;
+            if (item.otherwise) return itemBlocks(item.otherwise, inLayer);
+            counts.items++;
+            counts.notYet++;
+            lose('unsupported', 'not-yet', label, where(), words === 'fr' ? 'ses images sont introuvables' : 'its pictures are missing');
+            return [];
+          }
+          counts.kept++;
+          const children = (item.children ?? []).flatMap(({ slot, item: child }) => itemBlocks(child, inLayer).map((block) => ({ ...block, slot })));
+          for (const child of children) delete (child as Json).step;
+          return [newBlock(item.type, props, item, children.length ? { blocks: children } : {})];
         }
         case 'quiz': {
           let options = item.options.filter((option) => option.text.trim());
@@ -564,6 +683,22 @@ export function convertCourse(source: SourceCourse, options: ConvertOptions = {}
           lose(item.feature.toLowerCase().includes('javascript') ? 'javascript' : 'unsupported', item.feature.toLowerCase().includes('javascript') ? 'dropped' : 'not-yet', item.feature, where(), item.detail);
           return [];
       }
+    };
+
+    // A medium a block holds (a panel's picture, a gallery's image): kept when its file is there,
+    // else reported; the block itself is counted by its item.
+    const keepsMedium = (medium: SourceMedia, label: string): boolean => {
+      const name = medium.path.replace(/^.*\//, '');
+      if (medium.contentLibrary) { decide('content-library', 'drop', { screen: screenId }); lose('content-library', 'dropped', name, where()); return false; }
+      if (!SUPPORTED_MEDIA[medium.kind].test(medium.path)) { lose('media-format', 'not-yet', `${label} : ${name}`, where(), medium.path.replace(/^.*\./, '.')); return false; }
+      if (!hasMedia(medium.path)) { lose('media-missing', 'not-yet', `${label} : ${name}`, where(), medium.path); return false; }
+      counts.media++;
+      return true;
+    };
+    const activityFeedback = (item: { correctFeedback?: string; incorrectFeedback?: string }): Json => {
+      const correct = item.correctFeedback || (feedbackLayers.find((layer) => layer.feedback === 'correct') ? layerText(feedbackLayers.find((layer) => layer.feedback === 'correct')!) : '');
+      const incorrect = item.incorrectFeedback || (feedbackLayers.find((layer) => layer.feedback === 'incorrect') ? layerText(feedbackLayers.find((layer) => layer.feedback === 'incorrect')!) : '');
+      return correct || incorrect ? { feedback: { ...(correct ? { correct } : {}), ...(incorrect ? { incorrect } : {}) } } : {};
     };
 
     const fallbackBlock = (item: SourceItem, feature: string, markdown: string, detail?: string): Block => {

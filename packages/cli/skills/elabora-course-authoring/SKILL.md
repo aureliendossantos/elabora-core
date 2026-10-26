@@ -11,6 +11,7 @@ The working `plan.json` fixes what is taught, said and assessed; screens impleme
 - **New course, objectives, plan decisions, revisions or renames:** `plan-and-maintenance`.
 - **Create/edit screens, native blocks, media, events or interactive practice:** `screens-and-events`.
 - **Build/test, web packaging, online review comments or undo:** `delivery-and-review`.
+- **Which starter block for what the learner does, recipes, changing a block's form (« Transformer en… »):** load `elabora-blocks`.
 - **Voice, timed visuals and paid-provider quota:** load separate skill `elabora-narration`.
 - **Translation or Storyline/Rise imports:** load `elabora-translation` or `elabora-importing`.
 - **Pedagogy, design, component structure or free objects:** load their specialist skills, not all of them by default.

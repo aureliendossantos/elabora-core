@@ -24,7 +24,7 @@ Skills are **not automatically loaded** just because they are listed here. With 
 
 | Task | Guidance to load |
 | --- | --- |
-| Planning, screens, events, review or delivery | `elabora-course-authoring` (then only the relevant reference) |
+| Planning, screens, events, review or delivery | `elabora-course-authoring` (then only the relevant reference); starter blocks: `elabora-blocks` |
 | Visual styling, layouts, fonts, generated figures | `elabora-visual-design` |
 | The learner's player: its bars, resources, glossary, credits | `elabora_player` / `elabora player` (then `elabora-visual-design` to fit it to the theme) |
 | Reusable blocks, activity forks, migrations | `elabora-components` |

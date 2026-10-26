@@ -71,6 +71,67 @@ export function riseCourse(): Record<string, unknown> {
   };
 }
 
+// A Rise course of every family D63 reads (statements, quotes, image presentations, galleries,
+// columns, dividers, panels, flip cards, steps, an interactive picture, sorting, matching, a chart),
+// and a 2017 map lesson. One gallery image and one labeled graphic's picture are missing on purpose.
+export function riseStarterCourse(): Record<string, unknown> {
+  const html = (text: string) => `<p>${text}</p>`;
+  const picture = (file: string, alt = '', extra: Record<string, unknown> = {}) => ({ media: { image: { key: `rise/courses/x/${file}`, crushedKey: file, useCrushedKey: true, ...(alt ? { alt } : {}), ...extra } } });
+  const cards = Array.from({ length: 14 }, (_, i) => ({ id: `card${i + 1}`, title: `Carte ${i + 1}`, pileId: (i % 2) + 1 }));
+  return {
+    course: {
+      id: 'fixture-rise-starter', title: 'Les gestes qui sauvent', navigationMode: 'free',
+      lessons: [
+        {
+          id: 'lesson-a', type: 'blocks', title: 'Comprendre', items: [
+            { id: 's1', type: 'text', family: 'impact', variant: 'a', items: [{ paragraph: html('Un témoin qui agit double les chances de survie.') }] },
+            { id: 's2', type: 'text', family: 'impact', variant: 'd', items: [{ heading: 'La règle', paragraph: html('Protéger, alerter, secourir.') }] },
+            { id: 's3', type: 'text', family: 'impact', variant: 'note', items: [{ paragraph: html('Le 112 marche dans toute l\'Europe.') }] },
+            { id: 'q1', type: 'quote', family: 'quote', variant: 'c', items: [{ paragraph: html('On n\'a jamais regretté d\'avoir appelé.'), name: '<p>Une régulatrice du SAMU</p>', ...{ avatar: picture('portrait.png') } }] },
+            { id: 'q2', type: 'quote', family: 'quote', variant: 'background', items: [{ paragraph: html('Chaque minute compte.'), name: '', background: picture('fond.png', '', { dimensions: { top: 100, left: 0, width: 400, height: 100, originalWidth: 400, originalHeight: 300 } }) }] },
+            { id: 'i1', type: 'image', family: 'image', variant: 'banner', items: [{ ...picture('bande.png', 'Une rue passante', { dimensions: { top: 50, left: 0, width: 400, height: 100, originalWidth: 400, originalHeight: 300 } }), caption: '' }] },
+            { id: 'i2', type: 'image', family: 'image', variant: 'text aside', settings: { imageSize: 'small' }, items: [{ ...picture('geste.png', 'Deux mains sur un thorax'), paragraph: html('Les mains au centre de la poitrine, bras tendus.') }] },
+            { id: 'i3', type: 'image', family: 'image', variant: 'text overlay', items: [{ ...picture('fond.png'), caption: html('Restez calme.') }] },
+            { id: 'g1', type: 'image', family: 'gallery', variant: 'three column', items: [{ ...picture('a.png', 'Un défibrillateur'), caption: html('Le boîtier') }, { ...picture('absente.png', 'Absente'), caption: html('Absente') }, { ...picture('b.png', 'Les électrodes') }] },
+            { id: 'g2', type: 'image', family: 'gallery', variant: 'centered', items: [{ ...picture('a.png', 'Un défibrillateur') }, { ...picture('b.png', 'Les électrodes') }] },
+            { id: 'd1', type: 'divider', family: 'divider', variant: 'numbered divider', items: [] },
+            { id: 'd2', type: 'divider', family: 'divider', variant: 'divider', items: [] },
+            { id: 'c1', type: 'text', family: 'text', variant: 'two column', items: [{ heading: 'Adulte', paragraph: html('Deux mains.') }, { paragraph: html('Un enfant : une main.') }] },
+            { id: 'f1', type: 'interactive', family: 'flashcard', variant: 'flashcard', items: [{ front: { description: html('PLS') }, back: { description: html('Position latérale de sécurité.') } }, { front: { type: 'fullimage', ...picture('a.png', 'Un défibrillateur') }, back: { description: html('Il analyse le rythme du cœur.') } }] },
+            { id: 'f2', type: 'interactive', family: 'flashcard', variant: 'stack', items: [{ front: { description: html('DAE') }, back: { description: html('Défibrillateur automatisé externe.') } }] },
+            { id: 'p1', type: 'interactive', family: 'interactive-fullscreen', variant: 'process', items: [
+              { id: '1', type: 'intro', title: 'Le massage', description: html('Trois temps à retenir.') },
+              { id: '2', type: 'summary', title: 'À retenir', description: html('Ne vous arrêtez pas.') },
+              { id: '3', type: 'step', title: 'Placer les mains', description: html('Au centre de la poitrine.'), ...picture('geste.png') },
+              { id: '4', type: 'step', title: 'Appuyer', description: html('Cinq centimètres, cent fois par minute.') },
+              { id: '5', type: 'step', title: 'Caché', description: html('Jamais vu.'), isHidden: true }
+            ] },
+            { id: 'cont1', type: 'divider', family: 'continue', variant: 'continue', items: [{ title: 'Continuer', type: 'completeBlock' }] },
+            { id: 't1', type: 'interactive', family: 'interactive-fullscreen', variant: 'timeline', items: [{ date: '0 min', title: 'L\'arrêt', description: html('La victime ne respire plus.') }, { date: '3 min', title: 'Le massage', description: html('Un témoin commence.') }] },
+            { id: 'h1', type: 'interactive', family: 'interactive-fullscreen', variant: 'labeledgraphic', ...picture('plan.png', 'Un défibrillateur ouvert'), items: [{ x: '10.5', y: '80', title: 'Bouton', description: html('Il démarre l\'appareil.'), ...picture('b.png', 'Le bouton vert') }, { x: '60', y: '20', title: 'Électrodes', description: html('Collées sur la peau nue.') }] },
+            { id: 'h2', type: 'interactive', family: 'interactive-fullscreen', variant: 'labeledgraphic', ...picture('introuvable.png', 'Rien'), items: [{ x: '50', y: '50', title: 'Ici', description: html('Un repère.') }] },
+            { id: 'sort1', type: 'interactive', family: 'interactive-fullscreen', variant: 'sorting', piles: [{ id: 1, title: 'À faire' }, { id: 2, title: 'À éviter' }], items: cards },
+            { id: 'kc1', type: 'knowledgeCheck', family: 'knowledgeCheck', variant: 'matching', items: [{ type: 'MATCHING', title: html('Associez.'), feedback: html('Relisez les gestes.'), answers: [{ title: 'Protéger', matchTitle: 'baliser' }, { title: 'Alerter', matchTitle: 'appeler' }] }] },
+            { id: 'cont2', type: 'divider', family: 'continue', variant: 'continue', items: [{ title: 'Suite', type: 'completeBlock' }] },
+            { id: 'ch1', type: 'chart', family: 'chart', variant: 'pie', title: html('Qui agit ?'), settings: { valueType: 'percentage' }, items: [{ type: 'Témoins', value: '40' }, { type: 'Personne', value: '60' }] },
+            { id: 'e1', type: 'multimedia', family: 'multimedia', variant: 'embed', items: [{ media: { embed: { type: 'embed', embedType: 'iframe', src: '<iframe src="https://video.example.org/geste" width="560"></iframe>', originalUrl: '<iframe src="https://video.example.org/geste" width="560"></iframe>' } } }] }
+          ]
+        },
+        { id: 'lesson-map', type: 'map', title: 'Le défibrillateur', description: html('Sélectionnez chaque repère.'), media: { image: { key: 'rise/courses/x/plan.png', crushedKey: 'plan.png', useCrushedKey: true } }, items: [{ x: '25', y: '25', title: 'Écran', description: html('Il dit quoi faire.') }] }
+      ]
+    },
+    labelSet: { id: 'labels', iso639Code: 'fr', labels: {} }
+  };
+}
+
+export function riseStarterFiles(): Files {
+  const files: Files = new Map();
+  files.set('index.html', '<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>Les gestes qui sauvent</title><script type="application/json" id="__CONFIG__">\n{"remoteManifest":{}}\n</script></head><body><div id="app"></div></body></html>\n');
+  files.set('runtime-data.js', `__jsonp("runtime-data.js","${b64({ ...riseStarterCourse(), settings: { lang: 'fr' } })}")\n`);
+  for (const [file, rgb] of [['portrait.png', [200, 150, 120]], ['fond.png', [30, 40, 60]], ['bande.png', [90, 90, 90]], ['geste.png', [220, 200, 180]], ['a.png', [200, 40, 40]], ['b.png', [40, 160, 60]], ['plan.png', [230, 220, 200]]] as const) files.set(`assets/${file}`, png(40, 30, [...rgb] as [number, number, number]));
+  return files;
+}
+
 // A SCORM 1.2 export (the 2025–2026 page: deserialize("…")), as a ZIP's files.
 export function riseScormFiles(): Files {
   const files: Files = new Map();
@@ -214,6 +275,33 @@ export function storylinePublishedFiles(): Files {
   files.set('html5/data/js/6slideThree.js', provide('slide', slide3));
   files.set('mobile/5bgPicture.png', png(72, 54, [20, 40, 80]));
   files.set('mobile/5photo.png', png(30, 20, [180, 120, 60]));
+  return files;
+}
+
+// A published Storyline course whose questions are the activities of D63: a drag and drop matching
+// (statements paired with choices by the right answer, as data.js writes it), a sequence, a fill in
+// the blank, a word bank and a Likert scale. The texts are ours.
+export function storylineActivitiesFiles(): Files {
+  const files: Files = new Map();
+  const choice = (id: string, text: string) => ({ kind: 'choice', id: `choice_${id}`, lmstext: text });
+  const statement = (id: string, text: string) => ({ kind: 'statement', id: `statement_${id}`, lmstext: text });
+  const right = (statements: unknown[]) => ({ kind: 'answer', id: 'right', status: 'correct', evaluate: { statements } });
+  const wrong = { kind: 'answer', id: 'wrong', status: 'incorrect', evaluate: { statements: [{ kind: 'other' }] } };
+  const interactions: Record<string, unknown> = {
+    match: { kind: 'interaction', id: 'match1', lmsId: 'MatchingDragDrop', type: 'matching', lmstext: 'Associez chaque geste à son but.', choices: [choice('c1', 'protéger la victime'), choice('c2', 'faire venir les secours'), choice('c3', 'garder la victime en vie')], statements: [statement('s1', 'Baliser la zone'), statement('s2', 'Appeler le 15'), statement('s3', 'Masser le cœur')], answers: [right([{ kind: 'pair', choiceid: 'choices.choice_c1', statementid: 'statements.statement_s1' }, { kind: 'pair', choiceid: 'choices.choice_c2', statementid: 'statements.statement_s2' }, { kind: 'pair', choiceid: 'choices.choice_c3', statementid: 'statements.statement_s3' }]), wrong] },
+    order: { kind: 'interaction', id: 'order1', type: 'sequence', lmstext: 'Remettez les gestes dans l\'ordre.', choices: [choice('o2', 'Alerter'), choice('o1', 'Protéger'), choice('o3', 'Secourir')], answers: [right([{ kind: 'order', choiceid: 'choices.choice_o1' }, { kind: 'order', choiceid: 'choices.choice_o2' }, { kind: 'order', choiceid: 'choices.choice_o3' }]), wrong] },
+    blank: { kind: 'interaction', id: 'blank1', type: 'fillin', lmstext: 'Quel numéro appelez-vous pour le SAMU ?', choices: [choice('f1', '15'), choice('f2', 'le 15')], answers: [right([{ kind: 'compare', operator: 'eq', valuea: 'blank1.$Text', typea: 'property', valueb: '15', typeb: 'string' }]), wrong] },
+    bank: { kind: 'interaction', id: 'bank1', type: 'wordbank', lmstext: 'Le geste qui sauve en cas d\'arrêt du cœur est le …', choices: [choice('w1', 'massage cardiaque'), choice('w2', 'garrot'), choice('w3', 'bouche-à-bouche')], answers: [right([{ kind: 'equals', choiceid: 'choices.choice_w1' }]), wrong] },
+    scale: { kind: 'interaction', id: 'likert1', type: 'likert', issurvey: true, lmstext: 'Où en êtes-vous ?', choices: [choice('l1', 'Pas du tout'), choice('l2', 'Un peu'), choice('l3', 'Assez'), choice('l4', 'Tout à fait')], statements: [statement('q1', 'Je sais protéger une victime.'), statement('q2', 'Je sais alerter les secours.')], answers: [] }
+  };
+  const slides = Object.entries(interactions).map(([name, interaction], i) => ({ kind: 'slide', id: `act${i + 1}`, title: `Activité ${i + 1}`, html5url: `html5/data/js/act${i + 1}.js`, interactions: [interaction], name }));
+  const data = { version: '3.90.0.0', projectId: 'activities', courseId: 'activities_course', variables: [], quizzes: [], assetLib: [], scenes: [{ kind: 'scene', id: 'sceneActs', sceneNumber: 1, slides: slides.map(({ name: _name, ...slide }) => slide) }] };
+  const frame = { navData: { outline: { links: [{ kind: 'slidelink', slideid: '_player.sceneActs', displaytext: 'S\'entraîner aux premiers secours', links: [] }] } }, notesData: [] };
+  files.set('story.html', '<!doctype html><title>Premiers secours : s\'entraîner</title>\n');
+  files.set('meta.xml', '<?xml version="1.0"?><meta><project id="activities" title="Premiers secours : s\'entraîner" /><application name="Articulate Storyline" version="3.90.0.0" /></meta>\n');
+  files.set('html5/data/js/data.js', provide('data', data));
+  files.set('html5/data/js/frame.js', provide('frame', frame));
+  for (const slide of slides) files.set(slide.html5url, provide('slide', { slideLayers: [{ kind: 'slidelayer', isBaseLayer: true, objects: [] }] }));
   return files;
 }
 

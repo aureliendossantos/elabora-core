@@ -1,6 +1,6 @@
 # Agent tools
 
-Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `npm run docs`. The same 99 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
+Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `npm run docs`. The same 100 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
 
 ## Reading
 
@@ -500,6 +500,17 @@ Replace a component instance by its fallback: native blocks with the same conten
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `block` | string | yes |  |
+
+### `elabora_convert_block`
+
+Change the form of content without rewriting it (« Transformer en… », D63): a block becomes another presentation of its type, or another type that holds the same content (panels ↔ steps ↔ interactive picture ↔ gallery, panels → a sort in pairs, steps → a sort in order or a process or milestones chart, statement ↔ callout ↔ text, image ↔ gallery of one, a text's bulleted list → panels or steps), in place, in one undoable change. Its id and its items' ids are kept, so visited marks and translations follow; the result says what is kept, lost and added (starts empty), and whether learners who started lose their progress in the block. Without to, or with dryRun, nothing is written: the possible targets and those refused with their reason. Prefer it to removing a block and writing another one. language: fr or en for the sentences (default en).
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `block` | string | yes |  |
+| `to` | object |  | The type to convert into, and its presentation. |
+| `dryRun` | boolean |  |  |
+| `language` | "en" \| "fr" |  |  |
 
 ### `elabora_upsert_layer`
 

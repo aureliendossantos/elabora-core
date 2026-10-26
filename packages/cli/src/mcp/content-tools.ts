@@ -49,7 +49,7 @@ export const moveScreen = defineTool({
 export const addBlock = defineTool({
   name: 'elabora_add_block',
   description: 'Add a block {id, type, props} (built-in type or course component) to a screen, one of its layers, or the slots of a component instance (parent + block.slot). Read elabora_get_schema(<type>) first. Component instances may carry blocks (their slot contents). Without an id the block gets a free one (<screen>-<type>), returned as block.',
-  inputSchema: objectSchema({ screen: SLUG, block: formatValue<AddBlockArgs['block']>()({ type: 'object', properties: { id: SLUG, type: SLUG, props: { type: 'object' }, blocks: { type: 'array', items: { type: 'object' } }, hidden: { type: 'boolean' }, width: { enum: ['full', 'wide', 'half', 'bleed'] }, slot: { type: 'string', description: 'Slot of the screen layout, or of the parent component instance.' }, style: { type: 'string', description: 'Named style of the type (theme.styles or the component styles).' } }, required: ['type', 'props'] }), layer: SLUG, parent: { ...SLUG, description: 'Component instance receiving the block in one of its slots.' }, after: SLUG, position: { type: 'integer', minimum: 0 } }, ['screen', 'block']),
+  inputSchema: objectSchema({ screen: SLUG, block: formatValue<AddBlockArgs['block']>()({ type: 'object', properties: { id: SLUG, type: SLUG, props: { type: 'object' }, blocks: { type: 'array', items: { type: 'object' } }, hidden: { type: 'boolean' }, width: { enum: ['full', 'wide', 'half', 'bleed'] }, slot: { type: 'string', description: 'Slot of the screen layout, or of the parent component instance.' }, style: { type: 'string', description: 'Named style of the type (theme.styles or the component styles).' }, optional: { type: 'boolean', description: 'Extra the learner may skip (a transcript, more detail): not waited for by steps that open once explored nor by interactions-done.' } }, required: ['type', 'props'] }), layer: SLUG, parent: { ...SLUG, description: 'Component instance receiving the block in one of its slots.' }, after: SLUG, position: { type: 'integer', minimum: 0 } }, ['screen', 'block']),
   handler: (args, { root, author }) => editResult(edit.addBlock(root, args, { author }))
 });
 
@@ -87,6 +87,13 @@ export const detachBlock = defineTool({
   description: 'Replace a component instance by its fallback: native blocks with the same content (plan links kept), then the blocks of its slots. The first block keeps the id (a fork of quiz becomes a quiz, learner state kept).',
   inputSchema: objectSchema({ block: SLUG }, ['block']),
   handler: (args, { root, author }) => editResult(edit.detachBlock(root, args, { author }))
+});
+
+export const convertBlock = defineTool({
+  name: 'elabora_convert_block',
+  description: 'Change the form of content without rewriting it (« Transformer en… », D63): a block becomes another presentation of its type, or another type that holds the same content (panels ↔ steps ↔ interactive picture ↔ gallery, panels → a sort in pairs, steps → a sort in order or a process or milestones chart, statement ↔ callout ↔ text, image ↔ gallery of one, a text\'s bulleted list → panels or steps), in place, in one undoable change. Its id and its items\' ids are kept, so visited marks and translations follow; the result says what is kept, lost and added (starts empty), and whether learners who started lose their progress in the block. Without to, or with dryRun, nothing is written: the possible targets and those refused with their reason. Prefer it to removing a block and writing another one. language: fr or en for the sentences (default en).',
+  inputSchema: objectSchema({ block: SLUG, to: { type: 'object', properties: { type: SLUG, presentation: { type: 'string', description: 'A presentation of the target type (default: its default one).' } }, required: ['type'], additionalProperties: false, description: 'The type to convert into, and its presentation.' }, dryRun: { type: 'boolean' }, language: { enum: ['en', 'fr'] } }, ['block']),
+  handler: (args, { root, author }) => editResult(edit.convertBlock(root, args, { author }))
 });
 
 export const rename = defineTool({

@@ -24,17 +24,31 @@ export interface Box {
 export type SourceItemBody =
   | { kind: 'text'; markdown: string; fontSize?: number; fonts?: string[]; heading?: boolean }
   | { kind: 'heading'; text: string; level?: 2 | 3 | 4 }
-  | { kind: 'image'; media: SourceMedia; alt?: string; decorative?: boolean; caption?: string }
+  // presentation and what goes with it (D63): a title and a text beside or over it, a band's crop.
+  | { kind: 'image'; media: SourceMedia; alt?: string; decorative?: boolean; caption?: string; presentation?: 'centered' | 'wide' | 'band' | 'beside' | 'over'; focus?: { x: number; y: number }; title?: string; markdown?: string; share?: 'half' | 'third' | 'two-thirds' }
   | { kind: 'video'; media: SourceMedia; title?: string; captions?: SourceMedia; transcript?: string; poster?: SourceMedia }
   | { kind: 'audio'; media: SourceMedia; title?: string; transcript?: string }
   | { kind: 'button'; label: string }
   | { kind: 'callout'; markdown: string; title?: string; variant?: 'info' | 'tip' | 'warning' | 'important' }
-  | { kind: 'accordion'; items: { title: string; markdown: string }[] }
+  // presentation: panels, tabs, flip cards or cards one at a time (D63); an item's picture when it has one.
+  | { kind: 'accordion'; presentation?: 'accordion' | 'tabs' | 'cards' | 'stack'; items: { title: string; markdown: string; media?: SourceMedia; alt?: string }[] }
   | { kind: 'quiz'; stem: string; mode: 'single' | 'multiple'; options: { text: string; correct: boolean; feedback?: string }[]; correctFeedback?: string; incorrectFeedback?: string; attempts?: number; scored?: boolean }
   | { kind: 'numeric'; stem: string; answer: number; tolerance?: number; unit?: string; correctFeedback?: string; incorrectFeedback?: string; scored?: boolean }
   | { kind: 'results' }
+  // The activities of D63: a text with blanks ([[answer|other]]), items to place (pairs, categories,
+  // order: items in the right order), a question answered on a scale.
+  | { kind: 'fill-in'; stem?: string; markdown: string; presentation?: 'typed' | 'menus' | 'bank'; distractors?: string[]; correctFeedback?: string; incorrectFeedback?: string; scored?: boolean }
+  | { kind: 'sort'; presentation: 'pairs' | 'categories' | 'order'; stem?: string; items: { text: string; target?: string }[]; targets?: { ref: string; text: string }[]; correctFeedback?: string; incorrectFeedback?: string; scored?: boolean }
+  | { kind: 'reflection'; prompt: string; scale?: { min: number; max: number; minLabel?: string; maxLabel?: string } }
+  // A native block of D60 or D63 (statement, divider, gallery, columns, steps, hotspots, a chart)
+  // with its props as Elabora writes them, its media to copy and where each goes in the props. What
+  // happens when a medium cannot be kept: its prop is left out (unset), the list entry holding it
+  // goes (entry), or the item becomes otherwise (block, and when nothing would be left). children:
+  // items placed in the block's slots (columns).
+  | { kind: 'block'; type: string; props: Record<string, unknown>; media?: SourceBlockMedia[]; otherwise?: SourceItem; children?: { slot: string; item: SourceItem }[] }
   // A Rise continue divider: what follows opens with Continue, or once the activities above are answered.
-  | { kind: 'continue'; opens: 'continue' | 'answered'; label?: string }
+  // explored: once the blocks above are explored (Rise's "complete block above"), D63.
+  | { kind: 'continue'; opens: 'continue' | 'answered' | 'explored'; label?: string }
   // A shape or line without text: decoration, which the design layer redraws if it must.
   | { kind: 'shape' }
   // A feature Elabora has no block for yet: what can be kept of it (its text, a medium) and why.
@@ -44,6 +58,13 @@ export type SourceItemBody =
   // A branching conversation (Rise's scenario block): its moments, each a few lines and the learner's
   // answers with where they go; what is not kept (the characters' poses, the backdrops) in lost.
   | { kind: 'dialogue'; title?: string; nodes: SourceDialogueNode[]; lost?: { feature: string; detail?: string }[] };
+
+export interface SourceBlockMedia {
+  at: (string | number)[]; // where the asset path goes in the block's props
+  media: SourceMedia;
+  hint?: string; // a name for the asset file
+  missing: 'unset' | 'entry' | 'block';
+}
 
 export interface SourceDialogueNode {
   ref: string;
