@@ -26,8 +26,17 @@
       "id": "world-chart",
       "type": "layered-figure",
       "props": {
-        "base": "images/chart-whole.svg",
-        "alt": "A portolan chart of the Mediterranean and the Black Sea on a calfskin: rhumb lines in three colours, harbour names written inland at every angle, a wind rose, a scale of miles. The whole sea is tilted, Italy lying almost flat.",
+        "presentation": "scroll",
+        "figure": "build",
+        "items": [
+          {
+            "id": "chart",
+            "title": "The chart on the wall",
+            "markdown": "A portolan chart drawn in Majorca around 1375, redrawn so it can be read.",
+            "image": "images/chart-whole.svg",
+            "alt": "A portolan chart of the Mediterranean and the Black Sea on a calfskin: rhumb lines in three colours, harbour names written inland at every angle, a wind rose, a scale of miles. The whole sea is tilted, Italy lying almost flat."
+          }
+        ],
         "still": true,
         "ratio": 1.96,
         "labels": [
@@ -136,46 +145,72 @@
     },
     {
       "id": "world-isidore",
-      "type": "gloss",
+      "type": "text",
       "props": {
         "markdown": "Around 630, Isidore of Seville summed up the known world in a diagram any student could draw from memory. An **O**, the Ocean, encircles the land. Inside it, a **T** of waters divides the land into three parts: the Mediterranean is the stem, the Don and the Nile are the arms. Asia, the largest part, fills the upper half.",
-        "gloss": "Isidore's *Etymologiae*, an encyclopaedia read all through the Middle Ages."
+        "aside": "Isidore's *Etymologiae*, an encyclopaedia read all through the Middle Ages."
       }
     },
     {
       "id": "world-to",
       "type": "layered-figure",
       "props": {
-        "base": "images/to-ocean.svg",
-        "alt": "A T-O world map: a ring of ocean round a disc divided by a T of waters into Asia above, Europe bottom left and Africa bottom right, with Jerusalem at the crossing and Paradise at the top.",
-        "baseReveal": "sweep",
-        "size": "compact",
-        "layers": [
+        "presentation": "scroll",
+        "figure": "build",
+        "figureImage": "images/to-ocean.svg",
+        "figureAlt": "A T-O world map: a ring of ocean round a disc divided by a T of waters into Asia above, Europe bottom left and Africa bottom right, with Jerusalem at the crossing and Paradise at the top.",
+        "items": [
           {
-            "asset": "images/to-asia.svg",
+            "id": "asia",
+            "title": "Asia",
+            "markdown": "The largest part of the world fills the upper half, towards the rising sun.",
+            "image": "images/to-asia.svg",
+            "decorative": true,
             "reveal": "fade"
           },
           {
-            "asset": "images/to-europe.svg",
+            "id": "europe",
+            "title": "Europe",
+            "markdown": "Europe takes the lower left quarter.",
+            "image": "images/to-europe.svg",
+            "decorative": true,
             "reveal": "fade"
           },
           {
-            "asset": "images/to-africa.svg",
+            "id": "africa",
+            "title": "Africa",
+            "markdown": "Africa takes the lower right quarter.",
+            "image": "images/to-africa.svg",
+            "decorative": true,
             "reveal": "fade"
           },
           {
-            "asset": "images/to-tee.svg",
+            "id": "tee",
+            "title": "The T of waters",
+            "markdown": "The Mediterranean is the stem of the T, the Don and the Nile its arms.",
+            "image": "images/to-tee.svg",
+            "decorative": true,
             "reveal": "wipe"
           },
           {
-            "asset": "images/to-jerusalem.svg",
+            "id": "jerusalem",
+            "title": "Jerusalem",
+            "markdown": "Jerusalem sits where the waters of the T cross, at the centre of the world.",
+            "image": "images/to-jerusalem.svg",
+            "decorative": true,
             "reveal": "drop"
           },
           {
-            "asset": "images/to-paradise.svg",
+            "id": "paradise",
+            "title": "Paradise",
+            "markdown": "Paradise sits in the far east, at the top of the map.",
+            "image": "images/to-paradise.svg",
+            "decorative": true,
             "reveal": "drop"
           }
         ],
+        "baseReveal": "sweep",
+        "size": "compact",
         "labels": [
           {
             "text": "Oriens · East",
@@ -274,22 +309,24 @@
     },
     {
       "id": "world-hereford",
-      "type": "gloss",
+      "type": "text",
       "props": {
         "markdown": "The great world maps of the thirteenth century fill the T-O with everything a learned Christian knew. On the **Hereford map**, drawn around 1300, **Jerusalem** sits at the centre and Paradise at the top, among cities and rivers, scenes from the Bible and the animals and peoples of distant lands. It is a book in one picture, made to be read and meditated, not a guide to any road.",
-        "gloss": "Hereford Cathedral, England. Its Mediterranean is a narrow ribbon: the map shows *what* the world holds, not *where*."
+        "aside": "Hereford Cathedral, England. Its Mediterranean is a narrow ribbon: the map shows *what* the world holds, not *where*."
       }
     },
     {
       "id": "world-hereford-detail",
-      "type": "layered-figure",
+      "type": "image",
       "props": {
-        "base": "images/hereford-detail-africa.jpg",
+        "presentation": "beside",
+        "asset": "images/hereford-detail-africa.jpg",
         "alt": "Detail of the Hereford map south of the Nile: a river in blue, people with faces on their chests or shoulders, a basilisk, a lion, beasts and their red and black labels, beside a band of dark ocean.",
-        "still": true,
-        "ratio": 0.61,
-        "size": "full",
-        "caption": "South of the Nile on the Hereford map: people with faces on their chests, a basilisk and other beasts. Detail, from a printed reproduction."
+        "side": "end",
+        "share": "third",
+        "zoom": true,
+        "markdown": "South of the Nile on the Hereford map: people with faces on their chests, a basilisk and other beasts.",
+        "caption": "Detail, from a printed reproduction."
       }
     },
     {

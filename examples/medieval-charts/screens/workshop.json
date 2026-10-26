@@ -198,10 +198,10 @@
     },
     {
       "id": "workshop-tilt",
-      "type": "gloss",
+      "type": "text",
       "props": {
         "markdown": "Lay a modern map over the finished chart and the whole Mediterranean seems **turned about 9° anticlockwise**. The chart is not careless. The usual explanation: it was built from compass bearings, and the compass of the time pointed several degrees east of true north. Draw every bearing with the compass's north at the top, and the whole sea turns the other way. Steering by the same compass, a pilot still reaches the right harbour.",
-        "gloss": "Historians still debate how the first charts were compiled, and how closely the tilt matches the compass of the day. Take this as the leading explanation, not a settled fact."
+        "aside": "Historians still debate how the first charts were compiled, and how closely the tilt matches the compass of the day. Take this as the leading explanation, not a settled fact."
       },
       "step": 3
     },
@@ -210,19 +210,29 @@
       "type": "layered-figure",
       "width": "wide",
       "props": {
-        "base": "images/tilt-modern.svg",
-        "alt": "Two outlines of the Mediterranean at the same scale: a dashed modern map, true north up, and the chart in ink, turned about 9° anticlockwise. In a corner, a dashed needle points to true north, a red compass needle about 9° east of it.",
-        "ratio": 2,
-        "layers": [
+        "presentation": "scroll",
+        "figure": "build",
+        "figureImage": "images/tilt-modern.svg",
+        "figureAlt": "Two outlines of the Mediterranean at the same scale: a dashed modern map, true north up, and the chart in ink, turned about 9° anticlockwise. In a corner, a dashed needle points to true north, a red compass needle about 9° east of it.",
+        "items": [
           {
-            "asset": "images/tilt-chart.svg",
+            "id": "chart",
+            "title": "The chart",
+            "markdown": "The chart in ink, drawn with the compass's north at the top, turned about 9° from the modern map.",
+            "image": "images/tilt-chart.svg",
+            "decorative": true,
             "reveal": "fade"
           },
           {
-            "asset": "images/tilt-needles.svg",
+            "id": "needles",
+            "title": "Two norths",
+            "markdown": "A dashed needle points to true north, the red compass needle about 9° east of it.",
+            "image": "images/tilt-needles.svg",
+            "decorative": true,
             "reveal": "drop"
           }
         ],
+        "ratio": 2,
         "labels": [
           {
             "text": "The chart",
