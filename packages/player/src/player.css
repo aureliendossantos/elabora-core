@@ -1235,6 +1235,8 @@ details[data-t-details][open]::details-content { opacity: 1; }
 .t-hotspots--tour .t-hotspots-room { padding: 1.125rem 1.25rem; border-radius: var(--t-radius); background: color-mix(in srgb, var(--t-primary) 5%, var(--t-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-text) 8%, transparent); }
 .t-hotspots--tour .t-hotspots-frame { grid-area: auto; }
 :is(.t-hotspots--tour, .t-hotspots--side, .t-hotspots--below) .t-hotspots-detail img { max-height: 8rem; }
+/* Under the picture, a detail sits beside its text rather than above it. */
+@container (min-width: 560px) { :is(.t-hotspots--tour, .t-hotspots--below) .t-hotspots-detail { float: inline-end; clear: none; max-width: 35%; margin: 0 0 .5rem 1.25rem; } :is(.t-hotspots--tour, .t-hotspots--below) .t-hotspots-body { clear: none; } }
 /* Narrow places: a numbered list under the picture; the marker pressed lights its entry. */
 @container (max-width: 559px) {
   .t-hotspots[data-focus] .t-hotspots-picture { --t-hotspots-from: calc(var(--focus-x, .5) / 3); --t-hotspots-span: calc(2 / 3); width: 150%; margin-inline-start: calc(var(--focus-x, .5) * -50%); }
@@ -1247,4 +1249,11 @@ details[data-t-details][open]::details-content { opacity: 1; }
   .t-hotspots:not(.t-hotspots--tour) .t-hotspots-panel, .t-hotspots:not(.t-hotspots--tour) .t-hotspots-panel[hidden] { display: block !important; visibility: visible; opacity: 1; position: static; width: auto; max-height: none; translate: none; overflow: visible; padding: .75rem .875rem; border-radius: var(--t-radius); background: none; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-text) 10%, transparent); transition: background var(--t-dur-item) ease, box-shadow var(--t-dur-item) ease; }
   .t-hotspots:not(.t-hotspots--tour) .t-hotspots-panel:not([hidden]) { background: color-mix(in srgb, var(--t-primary) 8%, var(--t-surface)); box-shadow: inset 0 0 0 2px var(--t-primary); }
   .t-hotspots--tour .t-hotspots-room { padding: 1rem; }
+}
+/* In slides the picture keeps to the slide's height (the texts under it too), its markers on it. */
+@container (min-width: 560px) {
+  [data-presentation="slides"] .t-hotspots-picture { width: fit-content; max-width: 100%; margin-inline: auto; }
+  [data-presentation="slides"] .t-hotspots-image { width: auto; max-width: 100%; max-height: min(34rem, 60vh); }
+  [data-presentation="slides"] :is(.t-hotspots--below, .t-hotspots--tour) .t-hotspots-image { max-height: min(22rem, 38vh); }
+  [data-presentation="slides"] .t-steps-event { padding-bottom: 1.5rem; }
 }

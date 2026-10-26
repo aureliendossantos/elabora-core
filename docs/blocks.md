@@ -670,6 +670,47 @@ Template `packages/core/src/components/builtin/columns.html`: fork it to change 
 | `widths` | "equal" \| "wide-start" \| "wide-end" |  | equal; wide-start: the first column is twice as wide; wide-end: the last column is twice as wide. Default "equal". |
 | `align` | "start" \| "center" |  | Vertical alignment of the columns: at their top, or centred on each other. Default "start". |
 
+## `steps` (interaction)
+
+A steps block (« Étapes »): a process, a procedure or a story told in order, as items with a title and a text. Not the screen's steps (a screen's steps pace its blocks with Continue); a steps block is one block whose items the learner goes through. Presentations: carousel (one step at a time with Previous and Next, an optional intro and summary; Rise's process), timeline (« Frise »: the steps one under the other on a line, each with its date) and scroll (« Défilé »: the text scrolls while a figure stays in view beside it and changes with the step that crosses the middle of the window; native scroll, the page is never held). In slides a scroll steps block shows its steps one under the other, each with its picture.
+
+> Use a steps block for what happens in order: three to seven steps (W_ITEMS_MANY over seven in a carousel), each a title of a few words (about 23 characters) and two or three sentences (120 to 270 characters). carousel: a process to follow; give it an intro (what the process is for) and a summary (what to remember) when it has more than three steps. timeline: dated events (date on every item). scroll: a figure that changes with the text; figure replace (each step's image in turn), build (each step's image a transparent layer over figureImage, stacking up) or focus (one figureImage, each step's region outlined). Each image needs alt unless decorative. In slides prefer carousel: a scroll steps block shows its steps one under the other there (W_STEPS_SCROLL_SLIDES). Never call it « Étapes » steps of the screen: those are screen.steps.
+
+Template `packages/core/src/components/builtin/steps.html`: fork it to change the markup.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `presentation` | "carousel" \| "timeline" \| "scroll" |  | carousel: one step at a time, Previous and Next, the intro and summary first and last; timeline: the steps one under the other on a line, their date before them; scroll: the text scrolls beside a figure that follows it (above it, a picture per step, in narrow places, in slides and with less motion). Default "carousel". |
+| `items` | array | yes | The steps, in order. |
+| `intro` | object |  | carousel: the first item, before the steps (what the process is for, what to look for). The sequence's item intro. |
+| `summary` | object |  | carousel: the last item, after the steps (what to remember). The sequence's item summary: reaching it means every step was shown. |
+| `numbered` | boolean |  | carousel and scroll: each step shows its number (the intro and the summary have none). Default true. |
+| `figure` | "replace" \| "build" \| "focus" |  | scroll: how the figure follows the steps. replace: each step's image replaces the one before (a cross-fade; a step without image keeps it); build: each step's image is a layer added over figureImage, step n showing layers 1 to n; focus: figureImage alone, each step's region outlined and the rest dimmed. Default "replace". |
+| `figureImage` | assetPath |  | scroll: the base of the figure (build: under the layers; focus: the picture whose regions the steps outline). |
+| `figureAlt` | string |  | What figureImage shows. Required with figureImage. |
+| `side` | "end" \| "start" |  | scroll: where the figure sits beside the text on wide places (end: after it, on the right in a left-to-right language; start: before it). Default "end". |
+
+## `hotspots` (interaction)
+
+An interactive picture (« Image interactive »; Rise's labeled graphic): markers on one picture, each opening a short text about the part it points at. Presentations: popover (the text floats by its marker), side (the text beside the picture), below (the text under the picture) and tour (the markers in order, one text at a time with Previous and Next). Markers are 44 px at least, numbered by default, and never pulse. In places narrower than 560 px (a phone, a column) the texts become a numbered list under the picture, the markers numbered on it; a tour stays a tour.
+
+> Use it when the learner must find parts on one picture (a machine, a screen, a document, a map): three to six markers (W_ITEMS_MANY over eight), each a title of a few words (about 15 characters) and one or two sentences (120 to 270 characters). x and y place each marker from 0 to 1 of the whole picture (0, 0 its top left), whatever crops it later: point at the part itself. Markers closer than 44 px on a phone overlap (W_HOTSPOTS_CLOSE): move them apart or split the picture. tour when the parts have an order (a path, a procedure); otherwise popover. Give the picture its alt (what it shows as a whole); the markers carry the details.
+
+Template `packages/core/src/components/builtin/hotspots.html`: fork it to change the markup.
+
+| Prop | Type | Required | Description |
+|---|---|---|---|
+| `presentation` | "popover" \| "side" \| "below" \| "tour" |  | popover: the text floats by its marker, over the picture; side: beside the picture; below: under it; tour: the markers in order, one text at a time under the picture with Previous and Next. Default "popover". |
+| `image` | assetPath | yes | The picture the markers sit on. |
+| `alt` | string |  | What the picture shows as a whole. Required unless decorative is true. |
+| `decorative` | boolean |  | True only when the markers' texts say everything the picture shows. Default false. |
+| `focus` | focus |  | Where the subject is. In places narrower than 560 px the picture is then shown half as large again, cropped at its sides around this point, so that its markers have room; a marker the crop leaves out stays at the picture's edge. Without focus the picture is never cropped. |
+| `items` | array | yes | The markers, in reading order (their numbers, and a tour's order). |
+| `markerStyle` | "number" \| "icon" |  | number: each marker shows its number; icon: each shows the icon (the list on narrow places keeps the numbers). Default "number". |
+| `icon` | "plus" \| "info" \| "question" \| "eye" |  | markerStyle icon: the icon of every marker. Default "plus". |
+| `prompt` | string |  | What to do or look for, shown above the picture (« Sélectionnez chaque repère… »). |
+| `generated` | boolean |  | True if the picture was produced by an AI model; the player shows a mark and the build report lists it. Default false. |
+
 # Built-in screen layouts
 
 Generated from `packages/format/schemas/0.1/layouts/`. A screen uses one with `"layout": "<id>"` and its `layoutProps`; blocks choose a slot with `slot` (docs/components.md).

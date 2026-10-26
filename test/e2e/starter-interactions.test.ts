@@ -144,10 +144,8 @@ test('steps timeline: each event visited once in view, its dot filled; the date 
     assert.ok(first.length >= 1 && first.length < 5, JSON.stringify(first));
     await page.$eval('[data-t-reveal="serveur"]', (node) => node.scrollIntoView({ block: 'center' }));
     await page.waitForFunction((id) => document.querySelectorAll(`[data-block="${id}"] [data-t-reveal][data-t-visited]`).length === 5, block);
-    await page.waitForTimeout(500);
-    const dot = await page.$eval('[data-t-reveal="serveur"]', (node) => getComputedStyle(node, '::after').backgroundColor);
-    const primary = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--t-primary').trim());
-    assert.ok(dot !== 'rgb(255, 255, 255)' && primary, `the dot fills (${dot})`);
+    // The dot fills once seen (a colour that changes, nothing that moves).
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('[data-t-reveal="serveur"]')!, '::after').backgroundColor !== 'rgb(255, 255, 255)', undefined, { timeout: 10000 });
     // Wide: the date before the line; on a phone, above the title.
     const date = await box(page, '[data-t-reveal="poste"] .t-steps-date');
     const title = await box(page, '[data-t-reveal="poste"] .t-steps-title');
@@ -173,9 +171,11 @@ const figure = (page: Page, block: string) => page.evaluate((id) => {
   };
 }, block);
 // Scrolls the page so that a step's top is just above the middle of the window, then waits out the fades.
+// The observer tells the player soon after a scroll; the fades are then waited out (a loaded computer may be slow).
 const reach = async (page: Page, step: string) => {
   await page.$eval(`[data-t-reveal="${step}"]`, (node) => window.scrollBy(0, node.getBoundingClientRect().top - innerHeight / 2 + 40));
-  await page.waitForTimeout(700);
+  await page.waitForFunction((name) => document.querySelector(`[data-t-reveal="${name}"]`)?.closest('[data-t-follow]')?.getAttribute('data-t-current') === name, step, { timeout: 10000 });
+  await page.evaluate(() => Promise.all(document.getAnimations().filter((animation) => animation instanceof CSSTransition).map((animation) => animation.finished.catch(() => undefined))));
 };
 
 test('steps scroll (replace): native scroll, the figure stays in view and shows the step crossing the middle; each step visited', { timeout: 180000 }, async () => {
