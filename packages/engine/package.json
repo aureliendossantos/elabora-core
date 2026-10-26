@@ -14,8 +14,8 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@elabora/format": "0.1.0",
-    "@elabora/core": "0.1.0",
-    "@elabora/node": "0.1.0"
+    "@elabora/format": "workspace:*",
+    "@elabora/core": "workspace:*",
+    "@elabora/node": "workspace:*"
   }
 }

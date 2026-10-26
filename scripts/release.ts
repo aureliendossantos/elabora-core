@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync, spawnSync } from 'node:child_process';
+import { parse } from 'yaml';
 
 const root = path.resolve(import.meta.dirname, '..');
 const read = (file: string) => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
@@ -17,10 +18,19 @@ try {
   // A release has one tag, v<version> (D56): a package published on its own would need tags of its own.
   for (const file of manifests) if (read(file).private !== true) throw new Error(`${file}: the core packages are private; publishing one needs its own tags and a decision (D56)`);
   if (command === 'check' || command === 'publish') {
-    const lock = read('package-lock.json');
+    const lock = parse(fs.readFileSync(path.join(root, 'pnpm-lock.yaml'), 'utf8'));
     for (const file of manifests) {
-      const key = file === 'package.json' ? '' : path.posix.dirname(file);
-      if (lock.packages[key]?.version !== pkg.version) throw new Error(`${file}: refresh package-lock.json`);
+      const key = file === 'package.json' ? '.' : path.posix.dirname(file);
+      const importer = lock.importers?.[key];
+      if (!importer) throw new Error(`${file}: refresh pnpm-lock.yaml`);
+      const manifest = read(file);
+      for (const kind of ['dependencies', 'devDependencies', 'optionalDependencies']) {
+        const declared = manifest[kind] ?? {};
+        const locked = importer[kind] ?? {};
+        if (Object.keys(declared).length !== Object.keys(locked).length || Object.entries(declared).some(([name, specifier]) => locked[name]?.specifier !== specifier)) {
+          throw new Error(`${file}: refresh pnpm-lock.yaml (${kind})`);
+        }
+      }
     }
     // A changeset that names only a package puts its text in that package's changelog, and the
     // root changelog (the GitHub Release) says « Bumped due to fixed dependency group policy ».

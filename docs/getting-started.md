@@ -16,7 +16,7 @@ Run the core from a checkout: validate, build, test and preview the sample cours
 ```bash
 git clone https://github.com/aureliendossantos/elabora-core.git
 cd elabora-core
-npm install
+pnpm install --frozen-lockfile
 ```
 
 `node bin/elabora.js` is the `elabora` command in a checkout; `node bin/elabora.js help` lists every command ([Command line](cli.md)).

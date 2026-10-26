@@ -7,9 +7,11 @@ Thank you for looking at the code. This page says how to set up a checkout, what
 ```bash
 git clone https://github.com/aureliendossantos/elabora-core.git
 cd elabora-core
-npm install
+pnpm install --frozen-lockfile
 node bin/elabora.js help
 ```
+
+Use pnpm 11.22.0 (pinned in `packageManager`); install it with `npm install --global pnpm@11.22.0` if needed. When switching an existing checkout from npm, remove its root and package `node_modules` folders before installing. Commit `pnpm-lock.yaml` when dependencies change. Internal packages use `workspace:*` and stay symlinked so Node can execute their TypeScript sources directly.
 
 Node 24 or later runs the TypeScript sources directly: there is no build step. ffmpeg is needed for media work and a browser for the browser suites; [Getting started](docs/getting-started.md) says where they are found.
 
@@ -23,10 +25,10 @@ Node 24 or later runs the TypeScript sources directly: there is no build step. f
 - Name tests after the behaviour they check. Assert outcomes, including unchanged data after refusals and restored state after undo. Add regressions for bugs; use reproducible seeds when generating cases. Runners must report errors as failures and reject empty or invalid requests. Never weaken assertions or hide failures with skips.
 
 ```bash
-npm test             # unit and filesystem/service integration tests
-npm run typecheck    # strict TypeScript, including tests
-npm run test:e2e     # browser behaviour
-npm run test:matrix  # LMS launch modes and sample courses
+pnpm test             # unit and filesystem/service integration tests
+pnpm run typecheck    # strict TypeScript, including tests
+pnpm run test:e2e     # browser behaviour
+pnpm run test:matrix  # LMS launch modes and sample courses
 ```
 
 For code changes, run unit tests, typecheck and e2e once before finishing. Run the matrix for player, emulator, layout or sample changes and before releases. During iteration, run the affected tests; documentation-only changes need the documentation checks, not the runtime suites.
@@ -41,8 +43,8 @@ The documentation is the Markdown of [`docs/`](docs/), plus [`SPEC.md`](SPEC.md)
 
 - **[`docs/index.md`](docs/index.md) is the map.** A new page gets one line there, `- [Title](file.md): what it helps with.`, under its section; the site's navigation, its `llms.txt` and `elabora docs` read it. The test `every docs page is on the map` fails otherwise.
 - **Links are relative** (`[components](components.md)`, `[the schemas](../packages/format/schemas/0.1/)`): they work on GitHub, and the site turns them into its own pages or into GitHub links. The test `docs links resolve` checks every link and anchor, and every `docs/….md` path and `Dn` named in the code, the skills and the course rules.
-- **Generated pages say so in their first lines**: [blocks](docs/blocks.md), [diagnostics](docs/diagnostics.md), [LMS profiles](docs/lms-profiles.md), the [command line](docs/cli.md), the [agent tools](docs/mcp-tools.md) and the [decision index](docs/decisions.md). Change their source (schemas, the code catalogue, profiles, the help, the tools, a decision) and run `npm run docs`; CI fails when a generated page is out of date.
-- **A decision** is a new file `docs/decisions/Dnn.md` that starts with `# Dn. Title (date)`: what was decided, why, and *Revisit if:*. Run `npm run docs` to add it to the index. A decision that replaces or revises another says so in both. New runtime dependencies need one.
+- **Generated pages say so in their first lines**: [blocks](docs/blocks.md), [diagnostics](docs/diagnostics.md), [LMS profiles](docs/lms-profiles.md), the [command line](docs/cli.md), the [agent tools](docs/mcp-tools.md) and the [decision index](docs/decisions.md). Change their source (schemas, the code catalogue, profiles, the help, the tools, a decision) and run `pnpm run docs`; CI fails when a generated page is out of date.
+- **A decision** is a new file `docs/decisions/Dnn.md` that starts with `# Dn. Title (date)`: what was decided, why, and *Revisit if:*. Run `pnpm run docs` to add it to the index. A decision that replaces or revises another says so in both. New runtime dependencies need one.
 - **Architecture** lives in [`docs/architecture.md`](docs/architecture.md) and one page per subsystem in [`docs/architecture/`](docs/architecture/). Code comments cite the page and section (`docs/architecture/media.md`).
 - Write for a reader who has only the repository: no private notes, people's names or tracker numbers; say what was measured and how instead.
 

@@ -24,11 +24,12 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha || github.sha }}
           fetch-depth: 0
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-      - run: npm ci --ignore-scripts
-      - run: npm run release:check -- --required
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm run release:check --required
       - name: Tag and publish the core changelog (no npm publication)
         env:
           GH_TOKEN: ${{ github.token }}

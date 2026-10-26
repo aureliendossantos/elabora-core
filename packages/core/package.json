@@ -14,8 +14,8 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@elabora/format": "0.1.0",
-    "@elabora/player": "0.1.0",
+    "@elabora/format": "workspace:*",
+    "@elabora/player": "workspace:*",
     "acorn": "^8.15.0",
     "acorn-walk": "^8.3.4",
     "d3-array": "3.2.4",

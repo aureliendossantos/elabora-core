@@ -21,7 +21,7 @@ Elabora core takes a module from the plan a client validated to a compliant SCOR
 
 ```bash
 git clone https://github.com/aureliendossantos/elabora-core.git && cd elabora-core
-npm install
+pnpm install --frozen-lockfile
 node bin/elabora.js validate examples/diagnostic-reseau --profile moodle
 node bin/elabora.js build examples/diagnostic-reseau --profile moodle
 node bin/elabora.js preview examples/diagnostic-reseau
@@ -65,7 +65,7 @@ The whole map is [`docs/index.md`](docs/index.md), also published at [elabora.st
 
 ## Packages
 
-npm workspaces, TypeScript in strict mode:
+pnpm workspaces, TypeScript in strict mode:
 
 | Package | Role |
 |---|---|
