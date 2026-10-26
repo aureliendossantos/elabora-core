@@ -348,26 +348,84 @@
     },
     {
       "id": "world-diptych",
-      "type": "diptych",
+      "type": "columns",
       "width": "wide",
+      "style": "diptych",
       "props": {
-        "leaves": [
-          {
-            "eyebrow": "For readers and pilgrims",
-            "title": "Mappa mundi",
-            "image": "images/leaf-mappa.svg",
-            "imageAlt": "A round world map: a ring of ocean, three parts divided by a T of waters, a city at the centre and a golden island at the top.",
-            "body": "**Purpose**: to show the world's history and what it means.\n\n**At the top**: the east, and Paradise.\n\n**Made from**: books: the Bible, Roman geographers, travellers' tales.\n\n**Used**: in churches and libraries, to read and to meditate."
-          },
-          {
-            "eyebrow": "For pilots",
-            "title": "Portolan chart",
-            "image": "images/leaf-portolan.svg",
-            "imageAlt": "A corner of a sea chart: the coast of Spain and the Balearic Islands, harbour names written across the land, and black, green and red lines radiating from two points.",
-            "body": "**Purpose**: to sail from one harbour to the next.\n\n**At the top**: nothing: you turn the chart.\n\n**Made from**: compass bearings and the miles between harbours.\n\n**Used**: on board, at the chart table, with a ruler and dividers."
+        "count": 2
+      },
+      "blocks": [
+        {
+          "id": "world-mappa-image",
+          "type": "image",
+          "slot": "first",
+          "props": {
+            "asset": "images/leaf-mappa.svg",
+            "alt": "A round world map: a ring of ocean, three parts divided by a T of waters, a city at the centre and a golden island at the top."
           }
-        ]
-      }
+        },
+        {
+          "id": "world-mappa-for",
+          "type": "text",
+          "slot": "first",
+          "style": "eyebrow",
+          "props": {
+            "markdown": "For readers and pilgrims"
+          }
+        },
+        {
+          "id": "world-mappa-title",
+          "type": "heading",
+          "slot": "first",
+          "props": {
+            "text": "Mappa mundi",
+            "level": 3
+          }
+        },
+        {
+          "id": "world-mappa-body",
+          "type": "text",
+          "slot": "first",
+          "props": {
+            "markdown": "**Purpose**: to show the world's history and what it means.\n\n**At the top**: the east, and Paradise.\n\n**Made from**: books: the Bible, Roman geographers, travellers' tales.\n\n**Used**: in churches and libraries, to read and to meditate."
+          }
+        },
+        {
+          "id": "world-portolan-image",
+          "type": "image",
+          "slot": "second",
+          "props": {
+            "asset": "images/leaf-portolan.svg",
+            "alt": "A corner of a sea chart: the coast of Spain and the Balearic Islands, harbour names written across the land, and black, green and red lines radiating from two points."
+          }
+        },
+        {
+          "id": "world-portolan-for",
+          "type": "text",
+          "slot": "second",
+          "style": "eyebrow",
+          "props": {
+            "markdown": "For pilots"
+          }
+        },
+        {
+          "id": "world-portolan-title",
+          "type": "heading",
+          "slot": "second",
+          "props": {
+            "text": "Portolan chart",
+            "level": 3
+          }
+        },
+        {
+          "id": "world-portolan-body",
+          "type": "text",
+          "slot": "second",
+          "props": {
+            "markdown": "**Purpose**: to sail from one harbour to the next.\n\n**At the top**: nothing: you turn the chart.\n\n**Made from**: compass bearings and the miles between harbours.\n\n**Used**: on board, at the chart table, with a ruler and dividers."
+          }
+        }
+      ]
     },
     {
       "id": "world-atlas",
