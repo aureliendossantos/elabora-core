@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.1/component.schema.json",
   "id": "flip-cards",
   "title": "Flip cards",
   "description": "A grid of cards: a term on the front, its explanation on the back. Built on the player's flip card (data-t-card): a button turns each card, the face away is out of reach, and a card is as tall as its taller face.",

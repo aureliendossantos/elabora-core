@@ -585,7 +585,7 @@ test('text density: a component\'s alternative text is not reading, its caption 
   const dir = copyExample();
   const words = (count: number) => Array.from({ length: count }, (_, index) => `mot${index}`).join(' ');
   fs.mkdirSync(path.join(dir, 'components/figure-caption'), { recursive: true });
-  writeJSON(dir, 'components/figure-caption/component.json', { $schema: 'https://elabora.studio/schemas/0.1/component.schema.json', id: 'figure-caption', title: 'Figure', version: '1.0.0', level: 'block', category: 'media', description: 'Une image et sa légende.',
+  writeJSON(dir, 'components/figure-caption/component.json', { $schema: 'https://elabora.studio/schemas/0.1.1/component.schema.json', id: 'figure-caption', title: 'Figure', version: '1.0.0', level: 'block', category: 'media', description: 'Une image et sa légende.',
     props: { type: 'object', additionalProperties: false, required: ['image', 'alt', 'caption'], properties: {
       image: { type: 'string', 'x-kind': 'asset' }, alt: { type: 'string', 'x-translatable': true }, caption: { type: 'string', 'x-translatable': true } } } });
   fs.writeFileSync(path.join(dir, 'components/figure-caption/template.html'), '<figure class="figure-caption"><img src="{{image}}" alt="{{alt}}"><figcaption>{{caption}}</figcaption></figure>\n');

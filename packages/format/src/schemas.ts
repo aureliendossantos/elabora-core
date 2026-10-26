@@ -3,12 +3,14 @@ import type { ErrorObject, ValidateFunction } from 'ajv/dist/2020.js';
 import formats from 'ajv-formats';
 import type { JsonSchema } from './json-schema.ts';
 import type { Block, BuiltinBlock, BuiltinBlockType } from './types.generated.ts';
-import { BLOCK_TYPES, LAYOUT_TYPES, SCHEMA_VERSION, SCHEMAS } from './schemas.generated.ts';
+import { BLOCK_TYPES, LAYOUT_TYPES, FORMAT_VERSION, SCHEMA_VERSION, SCHEMAS } from './schemas.generated.ts';
 import type { BuiltinLayoutType, SchemaName } from './schemas.generated.ts';
 
 export type { BuiltinLayoutType, ErrorObject, SchemaName, ValidateFunction };
-export { SCHEMA_VERSION };
-export const FORMAT = `elabora/${SCHEMA_VERSION}` as const;
+export { FORMAT_VERSION, SCHEMA_VERSION };
+// What a course declares (course.json format): its major and minor version. The schemas have a
+// patch version of their own (SCHEMA_VERSION, D64): additive changes publish a new one.
+export const FORMAT = `elabora/${FORMAT_VERSION}` as const;
 export const SCHEMA_BASE = `https://elabora.studio/schemas/${SCHEMA_VERSION}/` as const;
 
 // Built-in block types (the native catalogue). Course components (components/<id>/) add more.

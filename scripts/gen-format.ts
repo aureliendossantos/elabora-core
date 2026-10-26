@@ -8,7 +8,10 @@ import path from 'node:path';
 import type { JsonSchema } from '@elabora/format/json-schema';
 
 // The format version the packages implement: its schemas are in packages/format/schemas/<version>/.
-const SCHEMA_VERSION = '0.1';
+// The version of the schemas (their folder and $id): additive changes to a published version are
+// published as its next patch, 0.1.1 (D64). The format a course declares stays elabora/<FORMAT_VERSION>.
+const SCHEMA_VERSION = '0.1.1';
+const FORMAT_VERSION = '0.1';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const SCHEMA_DIR = `packages/format/schemas/${SCHEMA_VERSION}`;
@@ -451,6 +454,7 @@ import type { BuiltinBlockType } from './types.generated.ts';
 ${files.map((f) => `import ${variable(f)} from '../schemas/${SCHEMA_VERSION}/${f.file}' with { type: 'json' };`).join('\n')}
 
 export const SCHEMA_VERSION = ${printValue(SCHEMA_VERSION)};
+export const FORMAT_VERSION = ${printValue(FORMAT_VERSION)};
 
 /** Name of a schema of the format: its path in schemas/${SCHEMA_VERSION}/ without .schema.json. */
 export type SchemaName =

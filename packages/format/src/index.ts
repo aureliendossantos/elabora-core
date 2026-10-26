@@ -1,6 +1,7 @@
 // @elabora/format: the course format as data (JSON Schemas), as types and as a schema registry.
 export {
   FORMAT,
+  FORMAT_VERSION,
   SCHEMA_VERSION,
   SCHEMA_BASE,
   BLOCK_TYPES,

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1/course.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.1/course.schema.json",
   "format": "elabora/0.1",
   "id": "medieval-charts",
   "title": "Drawing the sea: how medieval chart-makers worked",

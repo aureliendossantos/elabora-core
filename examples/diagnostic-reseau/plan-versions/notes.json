@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1/plan-notes.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.1/plan-notes.schema.json",
   "notes": [
     {
       "target": "text:TXT-2",

@@ -6,7 +6,7 @@ import { CODES } from '@elabora/core/diagnostics/codes';
 import { RULES } from '@elabora/core/diagnostics/rules';
 import type { CodeInfo } from '@elabora/core/diagnostics/codes';
 import { listProfiles } from '@elabora/core/lms/profiles';
-import { getSchema, BLOCK_TYPES, LAYOUT_TYPES, SCHEMA_VERSION } from '@elabora/format/schemas';
+import { getSchema, BLOCK_TYPES, LAYOUT_TYPES, FORMAT_VERSION, SCHEMA_VERSION } from '@elabora/format/schemas';
 import type { JsonSchema } from '@elabora/format';
 import { BUILTINS, BEHAVIORS } from '@elabora/core/components/registry';
 import { GROUPS } from '@elabora/cli/main';
@@ -36,7 +36,7 @@ p += '\n## Notes\n';
 for (const x of listProfiles()) if (x.notes?.length) p += `\n**${prose(x.name)}**\n${x.notes.map((n) => `- ${prose(n)}`).join('\n')}\n${x.sources.length ? `- Sources: ${x.sources.map((s) => `[${s.title}](${s.url})`).join(' · ')}\n` : ''}`;
 fs.writeFileSync('docs/lms-profiles.md', p);
 
-let b = `# Built-in block catalogue (format ${SCHEMA_VERSION})\n\nGenerated from \`packages/format/schemas/${SCHEMA_VERSION}/blocks/\` and the built-in components (\`packages/core/src/components/builtin/\`). Agents: call \`elabora_get_schema <type>\` for the full schema; course components are listed by \`elabora_list_components\` (docs/components.md).\n`;
+let b = `# Built-in block catalogue (format elabora/${FORMAT_VERSION}, schemas ${SCHEMA_VERSION})\n\nGenerated from \`packages/format/schemas/${SCHEMA_VERSION}/blocks/\` and the built-in components (\`packages/core/src/components/builtin/\`). Agents: call \`elabora_get_schema <type>\` for the full schema; course components are listed by \`elabora_list_components\` (docs/components.md).\n`;
 for (const t of BLOCK_TYPES) {
   const s = getSchema(`blocks/${t}`);
   const bi = BUILTINS[t];
