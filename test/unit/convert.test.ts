@@ -54,7 +54,7 @@ function course(): string {
 }
 
 const screenBlock = (dir: string, id: string, screen = 'convertir') => readJSON(dir, `screens/${screen}.json`).blocks.find((block: { id: string }) => block.id === id);
-const convert = (dir: string, block: string, type: string, presentation?: string) => edit.convertBlock(dir, { block, to: { type, ...(presentation ? { presentation } : {}) } });
+const convert = (dir: string, block: string, type: string, presentation?: string) => edit.convertBlock(dir, { block, to: { type, ...(presentation ? { presentation } : {}) } }) as ReturnType<typeof edit.convertBlock> & { kept: string; lost: string; added: string; progress: { kept: boolean; lost: string[] } };
 const errorsOf = (dir: string, screen = 'convertir') => validateDir(dir).diagnostics.filter((d) => d.severity === 'error' && d.file === `screens/${screen}.json`).map((d) => `${d.code} ${d.message}`);
 const refusal = (dir: string, block: string, type: string, presentation?: string) => assert.throws(() => convert(dir, block, type, presentation), (error: Error & { code?: string }) => { assert.equal(error.code, 'E_CONVERT_REFUSED', error.message); return true; });
 
