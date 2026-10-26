@@ -49,6 +49,28 @@ export type ChromiumChannel = 'chrome' | 'msedge' | 'playwright';
 export const CHROMIUM_CHANNELS: readonly ChromiumChannel[] = ['chrome', 'msedge', 'playwright'];
 const CHANNEL_NAMES: Record<ChromiumChannel, string> = { chrome: 'Google Chrome', msedge: 'Microsoft Edge', playwright: 'Playwright’s Chromium' };
 
+// The command line every Chromium started here gets (Electron's worker, Chrome, Edge, Playwright's).
+// reducedMotion: the whole browser prefers reduced motion. A page's own setting (Playwright's
+// reducedMotion, emulated media) does not reach an SVG shown through <img> or a CSS image: its
+// own document starts its animations from nothing, and a figure that draws itself is captured empty.
+// --hide-scrollbars: a classic scrollbar (macOS with a mouse plugged in, Windows, Linux) takes 15 px
+// of the window and the page is laid out in the rest, so a capture at 375 px would be 360 px wide
+// (a screenshot of the whole page is as wide as the layout), with the scrollbar's strip showing in a
+// capture of the window, and an object's snapshots would depend on the author's mouse. Phones draw
+// theirs over the page, as does headless Chrome, which hides them (Playwright's own switch): with
+// the same one, Electron (a worker built before the app hid them itself included) and a headed
+// Chrome draw the page at the window's whole width.
+export function chromiumArgs({ unload = 'default', rendering = 'software', reducedMotion = false }: { unload?: UnloadVariant; rendering?: Rendering; reducedMotion?: boolean } = {}): string[] {
+  const args = ['--enable-unsafe-swiftshader', ...(rendering === 'software' ? ['--use-angle=swiftshader'] : []), '--ignore-gpu-blocklist', '--hide-scrollbars', ...(reducedMotion ? ['--force-prefers-reduced-motion'] : [])];
+  // Sandboxed frames stay in the page's process: in their own process, full-page screenshots
+  // leave free objects unpainted below the first viewport.
+  const disabled = ['IsolateSandboxedIframes'];
+  if (unload === 'deprecated') args.push('--enable-features=DeprecateUnload');
+  if (unload === 'allowed') disabled.push('DeprecateUnload', 'DeprecateUnloadByAllowList');
+  args.push(`--disable-features=${disabled.join(',')}`);
+  return args;
+}
+
 // Browser launcher shared by the emulator, object tests and previews.
 // Chromium is the first of `channels` that starts; Firefox and WebKit need
 // `npx playwright install firefox webkit`. WebGL works headless in both renderings.
@@ -58,16 +80,7 @@ export async function launchBrowser(name = 'chromium', options: { headed?: boole
   let playwright: typeof import('playwright-core');
   try { playwright = require('playwright-core'); } catch { throw new Error('playwright-core is not installed: npm install playwright-core'); }
   if (['chromium', 'electron', 'chrome', 'msedge', 'playwright'].includes(name)) {
-    // reducedMotion: the whole browser prefers reduced motion. A page's own setting (Playwright's
-    // reducedMotion, emulated media) does not reach an SVG shown through <img> or a CSS image: its
-    // own document starts its animations from nothing, and a figure that draws itself is captured empty.
-    const args = ['--enable-unsafe-swiftshader', ...(rendering === 'software' ? ['--use-angle=swiftshader'] : []), '--ignore-gpu-blocklist', ...(reducedMotion ? ['--force-prefers-reduced-motion'] : [])];
-    // Sandboxed frames stay in the page's process: in their own process, full-page screenshots
-    // leave free objects unpainted below the first viewport.
-    const disabled = ['IsolateSandboxedIframes'];
-    if (unload === 'deprecated') args.push('--enable-features=DeprecateUnload');
-    if (unload === 'allowed') disabled.push('DeprecateUnload', 'DeprecateUnloadByAllowList');
-    args.push(`--disable-features=${disabled.join(',')}`);
+    const args = chromiumArgs({ unload, rendering, reducedMotion });
     const runtime = (name === 'electron' || (name === 'chromium' && options.channels === undefined)) ? findElectronRuntime() : null;
     if (runtime) return launchElectron(playwright, runtime, args, headed);
     if (name === 'electron') throw new Error('Elabora’s bundled browser is unavailable. Open the installed Elabora app once, then run the command again.');

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import type { Browser, LaunchOptions } from 'playwright-core';
-import { CHROMIUM_CHANNELS, launchChromium } from '@elabora/node/emulator/browser';
+import { CHROMIUM_CHANNELS, chromiumArgs, launchChromium } from '@elabora/node/emulator/browser';
 
 // A Playwright chromium whose channels are installed or not, or fail to start: what each launch got.
 function fakeChromium(installed: Record<string, 'starts' | string>) {
@@ -54,4 +54,15 @@ test('without a browser, the message says which were looked for and to install G
     return true;
   });
   await assert.rejects(launchChromium(fakeChromium({}), ['msedge'], options), /^Error: Cannot open a browser: Microsoft Edge is not installed on this computer\. Install Google Chrome \(https:\/\/www\.google\.com\/chrome\/\), then run the command again\.$/);
+});
+
+test('every Chromium is started without scrollbars: a classic one takes 15 px of a 375 px page, and a capture then lacks them', () => {
+  assert.deepEqual(chromiumArgs(), ['--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--ignore-gpu-blocklist', '--hide-scrollbars', '--disable-features=IsolateSandboxedIframes']);
+  for (const rendering of ['software', 'gpu'] as const) for (const unload of ['default', 'deprecated', 'allowed'] as const) for (const reducedMotion of [false, true]) {
+    assert.ok(chromiumArgs({ rendering, unload, reducedMotion }).includes('--hide-scrollbars'), JSON.stringify({ rendering, unload, reducedMotion }));
+  }
+  assert.equal(chromiumArgs({ rendering: 'gpu' }).includes('--use-angle=swiftshader'), false);
+  assert.ok(chromiumArgs({ reducedMotion: true }).includes('--force-prefers-reduced-motion'));
+  assert.ok(chromiumArgs({ unload: 'deprecated' }).includes('--enable-features=DeprecateUnload'));
+  assert.ok(chromiumArgs({ unload: 'allowed' }).includes('--disable-features=IsolateSandboxedIframes,DeprecateUnload,DeprecateUnloadByAllowList'));
 });
