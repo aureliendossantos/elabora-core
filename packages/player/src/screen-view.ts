@@ -37,6 +37,8 @@ type LeftKind = 'cards' | 'panels' | 'tabs' | 'images' | 'cardsToSee' | 'steps' 
 const LEFT_LABELS: Readonly<Record<LeftKind, 'leftCards' | 'leftPanels' | 'leftTabs' | 'leftImages' | 'leftCardsToSee' | 'leftSteps' | 'leftEvents' | 'leftMarkers' | 'leftToExplore'>> = {
   cards: 'leftCards', panels: 'leftPanels', tabs: 'leftTabs', images: 'leftImages', cardsToSee: 'leftCardsToSee', steps: 'leftSteps', events: 'leftEvents', markers: 'leftMarkers', items: 'leftToExplore'
 };
+// The order in which the kinds left are said.
+const LEFT_ORDER: readonly LeftKind[] = ['cards', 'cardsToSee', 'panels', 'tabs', 'images', 'steps', 'events', 'markers'];
 function leftKind(block: BlockData, hooks: ReadonlySet<string>, nodes: readonly HTMLElement[]): LeftKind {
   // Blocks that say what their controls are: a steps block's steps or events, a picture's markers.
   if (block.explore) return block.explore;
@@ -174,15 +176,22 @@ export function createScreenView(options: ScreenViewOptions) {
     return left.answer + left.explore ? left : null;
   }
   const exploreLocked = () => exploreLeft() !== null;
-  // Locked, it says what is left: "1 question left to answer. 2 cards left to turn over." Things of
-  // one kind are named (cards, panels, tabs, images); things of several kinds are items to explore.
+  // Locked, it says what is left: "1 question left to answer. 2 cards left to turn over." Each kind is
+  // named (cards, panels, tabs, images, steps, events, markers); controls that do not say what they
+  // are make the whole an "items to explore".
   function exploreReason(): string {
     const left = exploreLeft();
     if (!left) return '';
     const parts: string[] = [];
     if (left.answer) parts.push(options.formatLabel(labels.leftToAnswer, { n: left.answer }));
-    const kinds = [...left.kinds.keys()];
-    if (left.explore) parts.push(options.formatLabel(kinds.length === 1 ? labels[LEFT_LABELS[kinds[0]]] : labels.leftToExplore, { n: left.explore }));
+    // Each kind in its words when every control left says what it is (« Il reste 2 étapes à voir.
+    // Il reste 1 repère à ouvrir. »); otherwise one count of items to explore.
+    if (left.explore && !left.kinds.has('items')) {
+      for (const kind of LEFT_ORDER) {
+        const n = left.kinds.get(kind);
+        if (n) parts.push(options.formatLabel(labels[LEFT_LABELS[kind]], { n }));
+      }
+    } else if (left.explore) parts.push(options.formatLabel(labels.leftToExplore, { n: left.explore }));
     return parts.join(' ');
   }
   const lockedWhy = () => (listening() ? labels.listen : exploreLocked() ? exploreReason() : labels.locked);

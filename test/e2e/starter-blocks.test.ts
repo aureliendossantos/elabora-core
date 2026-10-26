@@ -168,7 +168,9 @@ test('opening: the section and the lesson in its eyebrow, the reading time named
   const section = course.sections.find((candidate: { screens: string[] }) => candidate.screens.includes('chemin'));
   await player(dir, async (page) => {
     const eyebrow = await page.$eval('.t-opening-eyebrow', (node) => [...node.children].map((child) => child.textContent));
-    assert.deepEqual(eyebrow, [section.title, `Leçon ${order.indexOf('chemin') + 1} sur ${order.length}`]);
+    // A course in several sections counts its lessons by section.
+    const lesson = course.sections.length > 1 ? `Leçon ${course.sections.indexOf(section) + 1} sur ${course.sections.length}` : `Leçon ${order.indexOf('chemin') + 1} sur ${order.length}`;
+    assert.deepEqual(eyebrow, [section.title, lesson]);
     const duration = await page.$eval('[data-t-duration]', (node) => ({ text: node.textContent, hidden: node.querySelector('.t-sr-only')?.textContent }));
     assert.match(duration.text ?? '', /^Temps de lecture : \d+ min$/);
     assert.equal(duration.hidden, 'Temps de lecture : ');

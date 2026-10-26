@@ -117,7 +117,11 @@ test('opening: the build gives the player its place in the course and the page\'
   const chemin = data.screens.find((screen) => screen.id === 'chemin')!;
   const order = data.screens.map((screen) => screen.id);
   const section = project.course!.sections.find((candidate) => candidate.screens.includes('chemin'))!;
-  assert.deepEqual(chemin.layout?.place, { section: section.title, n: order.indexOf('chemin') + 1, total: order.length });
+  // A course in sections counts lessons by section; one in a single section, by screen.
+  const sections = project.course!.sections;
+  assert.deepEqual(chemin.layout?.place, sections.length > 1
+    ? { section: section.title, n: sections.indexOf(section) + 1, total: sections.length }
+    : { section: section.title, n: order.indexOf('chemin') + 1, total: order.length });
   assert.ok((chemin.layout?.minutes ?? 0) >= 3, JSON.stringify(chemin.layout?.minutes));
   assert.match(chemin.layout!.html, /data-t-section/);
   assert.match(chemin.layout!.html, /data-t-duration/);
