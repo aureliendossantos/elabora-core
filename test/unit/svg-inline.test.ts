@@ -86,7 +86,7 @@ test('an image block with inline: true has its SVG in the page, named by its alt
   writeJSON(dir, 'screens/accueil.json', screen);
   const rendered = renderScreen(loadProjectFromDir(dir), 'accueil');
   const html = JSON.stringify(rendered.course.screens[0].blocks?.find((block) => block.id === 'accueil-trace'));
-  assert.match(html, /<figure class=\\"t-figure\\"><svg viewBox=\\"0 0 10 10\\" class=\\"t-figure-svg\\" data-t-svg=\\"t-svg-accueil-trace\\" role=\\"img\\" aria-label=\\"Un trait\\" focusable=\\"false\\"><path id=\\"t-svg-accueil-trace-a\\"/);
+  assert.match(html, /<figure class=\\"t-figure\\"><span class=\\"t-media\\"><svg viewBox=\\"0 0 10 10\\" class=\\"t-figure-svg\\" data-t-svg=\\"t-svg-accueil-trace\\" role=\\"img\\" aria-label=\\"Un trait\\" focusable=\\"false\\"><path id=\\"t-svg-accueil-trace-a\\"/);
   assert.ok(!html.includes('<img') && !html.includes('script'));
   let c = codes(validateDir(dir).diagnostics);
   assert.ok(c.includes('W_SVG_INLINE_SANITIZED'), 'a script removed');
