@@ -17,7 +17,7 @@ import type { CourseData } from '@elabora/player/course-data';
 import { ROOT } from '../helpers.ts';
 import { build } from '@elabora/node/build';
 
-const EXAMPLES = ['diagnostic-reseau', 'planetary-gearset', 'orbital-rendezvous'];
+const EXAMPLES = ['diagnostic-reseau', 'planetary-gearset', 'orbital-rendezvous', 'coffee-in-brief'];
 const COURSE_FIELDS = ['format', 'id', 'title', 'language', 'version', 'ui', 'navigation', 'completion', 'tracking', 'tokens', 'presentation', 'fonts', 'backdrop', 'variables'] as const;
 
 // A screen file of a project replaced in memory (an edit the engine would apply).
