@@ -1,0 +1,311 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "brewing",
+  "title": "Brewing a pour-over",
+  "covers": [
+    "ITEM-6"
+  ],
+  "layout": "opening",
+  "layoutProps": {
+    "presentation": "title",
+    "lead": "You will brew hundreds of pour-overs. Here is the bar's recipe, and what to change when a cup tastes wrong."
+  },
+  "completeWhen": "interactions-done",
+  "steps": {
+    "2": {
+      "opens": "explored"
+    },
+    "3": {
+      "opens": "answered"
+    }
+  },
+  "blocks": [
+    {
+      "id": "brew-pre",
+      "type": "quiz",
+      "slot": "question",
+      "props": {
+        "mode": "single",
+        "scored": false,
+        "objective": "OBJ-4",
+        "stem": "Before you start: your pour-over tastes sour and thin. What would you change first?",
+        "options": [
+          {
+            "id": "a",
+            "text": "Use a darker roast",
+            "correct": false,
+            "feedback": "A darker roast changes the coffee, not the brew: the same mistake would make it sour too. The lesson shows what to change."
+          },
+          {
+            "id": "b",
+            "text": "Add more water to the cup",
+            "correct": false,
+            "feedback": "More water would make it thinner still. Keep your answer in mind: the lesson shows what to change."
+          },
+          {
+            "id": "c",
+            "text": "Grind the coffee finer",
+            "correct": true,
+            "feedback": "A good instinct. You will see why below: a sour cup is one the water passed through too fast."
+          }
+        ]
+      }
+    },
+    {
+      "id": "brew-station",
+      "type": "hotspots",
+      "width": "wide",
+      "props": {
+        "presentation": "tour",
+        "image": "images/pour-station.svg",
+        "alt": "A pour-over station: a grinder, a paper dripper on a glass carafe on a scale, and a kettle.",
+        "prompt": "Follow the bar's recipe, step by step.",
+        "items": [
+          {
+            "id": "grinder",
+            "x": 0.16,
+            "y": 0.42,
+            "title": "Grind fresh",
+            "markdown": "Weigh 20 g of beans and grind them medium-fine, like coarse sand, just before you brew: ground coffee goes stale in minutes."
+          },
+          {
+            "id": "dripper",
+            "x": 0.48,
+            "y": 0.3,
+            "title": "Rinse the filter",
+            "markdown": "Rinse the paper filter with hot water and pour that water away. It warms the carafe and takes away the taste of paper."
+          },
+          {
+            "id": "scale",
+            "x": 0.48,
+            "y": 0.79,
+            "title": "Let it bloom",
+            "markdown": "Add the coffee, set the scale to zero and pour about 40 g of water. Wait 30 seconds while the grounds bubble and let out their gas."
+          },
+          {
+            "id": "kettle",
+            "x": 0.81,
+            "y": 0.47,
+            "title": "Pour in circles",
+            "markdown": "Pour slowly in circles up to 320 g of water, at about 94 °C. The water should drain in about three minutes; then serve."
+          }
+        ]
+      }
+    },
+    {
+      "id": "brew-h-extraction",
+      "type": "heading",
+      "props": {
+        "text": "What extraction means",
+        "level": 2
+      }
+    },
+    {
+      "id": "brew-extraction",
+      "type": "text",
+      "props": {
+        "markdown": "Brewing dissolves part of the ground coffee in water: that is **extraction**. Acids dissolve first, then sugars, then bitter compounds. Too little extraction and the cup is **sour** and thin; too much, and it is **bitter** and dry. Grind, time, temperature and ratio all move it."
+      }
+    },
+    {
+      "id": "brew-fixes",
+      "type": "accordion",
+      "optional": true,
+      "props": {
+        "presentation": "accordion",
+        "prompt": "For your shift: what to do when a cup tastes wrong.",
+        "items": [
+          {
+            "id": "sour",
+            "title": "Sour and thin",
+            "markdown": "Under-extracted: the water passed too fast, or it was too cool. Grind finer, and check the kettle is at temperature."
+          },
+          {
+            "id": "bitter",
+            "title": "Bitter and dry",
+            "markdown": "Over-extracted: the grind is too fine or the brew too long. Grind coarser, so that the water drains in about three minutes."
+          },
+          {
+            "id": "weak",
+            "title": "Weak and watery",
+            "markdown": "Too little coffee for the water. Check the dose on the scale: 20 g of coffee for 320 g of water."
+          },
+          {
+            "id": "slow",
+            "title": "The water drains slowly",
+            "markdown": "The grind is too fine, or fine particles are clogging the filter. Grind coarser, and pour more gently."
+          }
+        ]
+      }
+    },
+    {
+      "id": "brew-ratio",
+      "type": "numeric",
+      "step": 2,
+      "props": {
+        "objective": "OBJ-4",
+        "attempts": 2,
+        "stem": "Our recipe is 1 part coffee to 16 parts water. How many grams of water for 20 g of coffee?",
+        "answer": 320,
+        "unit": "g",
+        "feedback": {
+          "correct": "Yes: 20 × 16 = 320 g. That is why we brew on a scale: you pour by weight, not by eye.",
+          "incorrect": "Each gram of coffee takes 16 grams of water: multiply the coffee by 16."
+        },
+        "misconceptions": [
+          {
+            "id": "added",
+            "value": 36,
+            "feedback": "You added 20 and 16. The ratio is a multiplication: 16 grams of water for each gram of coffee."
+          },
+          {
+            "id": "divided",
+            "value": 1.25,
+            "feedback": "You divided 20 by 16. Each gram of coffee takes 16 grams of water: multiply instead."
+          }
+        ]
+      }
+    },
+    {
+      "id": "brew-rule",
+      "type": "fill-in",
+      "step": 2,
+      "props": {
+        "presentation": "typed",
+        "objective": "OBJ-4",
+        "attempts": 2,
+        "stem": "Complete the rule of thumb you will use at the bar.",
+        "markdown": "A sour cup is [[under-extracted|underextracted|under extracted]]: grind [[finer|more finely]]. A bitter cup is [[over-extracted|overextracted|over extracted]]: grind [[coarser|more coarsely]].",
+        "feedback": {
+          "correct": "That is the rule: sour means too little extraction, so slow the water down with a finer grind; bitter means too much, so grind coarser.",
+          "incorrect": "Think of the order things dissolve in: acids first, bitter compounds last. Which cup stopped too early, and which went on too long?"
+        }
+      }
+    },
+    {
+      "id": "brew-space",
+      "type": "divider",
+      "step": 3,
+      "props": {
+        "presentation": "space",
+        "size": "large"
+      }
+    },
+    {
+      "id": "brew-methods",
+      "type": "gallery",
+      "step": 3,
+      "props": {
+        "presentation": "carousel",
+        "ratio": "4:3",
+        "zoom": true,
+        "caption": "Four ways we brew at Fernhill.",
+        "images": [
+          {
+            "id": "pourover",
+            "asset": "images/brew-pourover.svg",
+            "alt": "A paper dripper on a glass carafe.",
+            "caption": "Pour-over: clean and bright, our filter of the day"
+          },
+          {
+            "id": "press",
+            "asset": "images/brew-press.svg",
+            "alt": "A French press full of coffee, its plunger up.",
+            "caption": "French press: a metal mesh lets the oils through, for a heavier cup"
+          },
+          {
+            "id": "espresso",
+            "asset": "images/brew-espresso.svg",
+            "alt": "An espresso machine pouring two streams into a small cup.",
+            "caption": "Espresso: hot water under pressure, in about 25 to 30 seconds"
+          },
+          {
+            "id": "moka",
+            "asset": "images/brew-moka.svg",
+            "alt": "A moka pot on a stove ring.",
+            "caption": "Moka pot: steam pressure on a stove, strong and rich"
+          }
+        ]
+      }
+    },
+    {
+      "id": "brew-h-storing",
+      "type": "heading",
+      "step": 3,
+      "props": {
+        "text": "Storing beans",
+        "level": 2
+      }
+    },
+    {
+      "id": "brew-dos",
+      "type": "columns",
+      "step": 3,
+      "props": {
+        "count": 2
+      },
+      "blocks": [
+        {
+          "id": "brew-do",
+          "type": "callout",
+          "slot": "first",
+          "props": {
+            "variant": "tip",
+            "title": "Do",
+            "markdown": "- Keep beans in their bag, valve and seal closed\n- Store them cool, dry and dark\n- Grind just before you brew"
+          }
+        },
+        {
+          "id": "brew-dont",
+          "type": "callout",
+          "slot": "second",
+          "props": {
+            "variant": "warning",
+            "title": "Don't",
+            "markdown": "- Keep them in the fridge\n- Leave the grinder's hopper full overnight\n- Grind the day's coffee in the morning"
+          }
+        }
+      ]
+    },
+    {
+      "id": "brew-h-words",
+      "type": "heading",
+      "step": 3,
+      "props": {
+        "text": "Key words",
+        "level": 2
+      }
+    },
+    {
+      "id": "brew-words",
+      "type": "accordion",
+      "step": 3,
+      "props": {
+        "presentation": "stack",
+        "prompt": "Say what each word means before you turn the card.",
+        "items": [
+          {
+            "id": "bloom",
+            "title": "Bloom",
+            "markdown": "The first small pour that wets the grounds and lets their gas escape, so that the rest of the water reaches the coffee evenly."
+          },
+          {
+            "id": "extraction",
+            "title": "Extraction",
+            "markdown": "The part of the ground coffee that dissolves in the water: too little tastes sour, too much tastes bitter."
+          },
+          {
+            "id": "ratio",
+            "title": "Ratio",
+            "markdown": "Coffee to water, by weight. Ours is 1 to 16: 20 g of coffee for 320 g of water."
+          },
+          {
+            "id": "drawdown",
+            "title": "Drawdown",
+            "markdown": "The time the water takes to drain through the bed of coffee. About three minutes for our pour-over."
+          }
+        ]
+      }
+    }
+  ]
+}

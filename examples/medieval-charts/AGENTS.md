@@ -46,3 +46,9 @@ If `elabora` is not on PATH (on macOS, Elabora installs it from Réglages › Ou
 
 ## Notes for this course
 <!-- What agents should know about this course: its audience, its voice, decisions taken. Elabora never changes this part. -->
+
+- Audience and voice: volunteer guides of a fictional maritime museum; plain, warm English, the visitor's puzzles as the thread (no north, names in every direction, Italy lying down), answered on the last page.
+- Scroll figures are « Étapes » forks (steps, scroll, figure build), not code: `workshop` (a sticky figure whose layers and labels follow the stage the player marks current, `--t-current`; stages numbered in Roman numerals) and `layered-figure` (a figure assembling itself as it scrolls into view, with sweep, wipe and drop reveals, ratio, size and `still`). Their items are the layers: decorative, the figure's `figureAlt` describing it whole; a layered figure's step titles and texts name the layers for text views and exports. The chart on the first page is a layered figure of one layer, shown `still`.
+- `chart-notes` is a fork of « Image interactive » (hotspots, below) whose markers carry words (`marker`); on phones the built-in's numbered list.
+- Glosses are text blocks with an `aside`, styled by `theme/theme.css` as a scribe's note in the margin; the comparison of the two kinds of map is a `columns` block in the theme style `diptych` (leaves that open flat), its eyebrows the text style `eyebrow`.
+- Kept as components, because a built-in would lose them: `folio` (the page's band with the turning rose or a figure slot beside the title, which `opening` does not have) and `wind-rose` (the winds as tabs round the dial, which turns to the wind chosen; panels as tabs would lose the dial).

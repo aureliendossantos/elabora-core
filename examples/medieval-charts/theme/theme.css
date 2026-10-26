@@ -123,3 +123,47 @@ h1, h2, h3, h4 { font-weight: 500; letter-spacing: -.005em; text-wrap: balance; 
 .t-continue { position: relative; padding-block: 1.25rem 0.5rem; }
 .t-continue::before { content: ""; position: absolute; left: 0; right: 0; top: 2.6rem; height: 1px; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--t-color-sepia) 55%, transparent) 15%, color-mix(in srgb, var(--t-color-sepia) 55%, transparent) 85%, transparent); }
 .t-continue-btn { position: relative; min-width: 14rem; padding-inline: 2rem; font-variant-caps: all-small-caps; letter-spacing: .14em; font-size: 1.25rem; box-shadow: 0 0 0 0.75rem var(--t-surface), 0 8px 18px -10px var(--t-color-vellum-shadow); }
+
+/* A text's aside (D63) is a scribe's gloss: on wide windows in the right margin, level with the text;
+   on narrow ones after the text, indented, behind a red rule. */
+.t-block--text:has(> .t-aside) { position: relative; }
+.t-block--text > .t-aside { display: flex; gap: .65rem; margin: 1rem 0 0; padding: .15rem 0 .15rem 1.1rem; border: 0; border-left: 1px solid color-mix(in srgb, var(--t-color-vermilion) 55%, transparent);
+  color: var(--t-color-ink-soft); font-size: 1rem; line-height: 1.45; font-style: italic; }
+.t-block--text > .t-aside::before { content: "¶"; flex: none; margin-top: -.05rem; color: var(--t-color-vermilion); font-style: normal; font-weight: 700; font-size: 1.15rem; line-height: 1.3; }
+.t-block--text > .t-aside em { font-style: normal; }
+.t-block--text > .t-aside > p { margin: 0; }
+@container (min-width: 1140px) {
+  .t-block--text > .t-aside { position: absolute; top: .3rem; left: calc(100% + 3rem); width: 15.5rem; margin: 0; padding: 0; border: 0; }
+}
+
+/* Columns in the diptych style: two leaves of vellum hinged in the middle, a round miniature, an eyebrow,
+   a title and the points of comparison; they open flat as the block scrolls into view, and stack on
+   narrow windows. */
+.t-block--columns[data-style="diptych"] .t-columns { gap: 0; align-items: stretch; perspective: 1800px; }
+.t-block--columns[data-style="diptych"] .t-column[data-slot="third"] { display: none; }
+.t-block--columns[data-style="diptych"] .t-column { position: relative; display: grid; align-content: start; justify-items: start; gap: .35rem; padding: 2.1rem 2.4rem 2.3rem; background: var(--t-color-vellum-light);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-color-sepia) 30%, transparent), 0 24px 44px -26px var(--t-color-vellum-shadow); }
+.t-block--columns[data-style="diptych"] .t-column:first-child { border-radius: 4px 0 0 4px; transform-origin: 100% 50%; background: linear-gradient(90deg, var(--t-color-vellum-light) 80%, color-mix(in srgb, var(--t-color-vellum-deep) 80%, var(--t-color-vellum-light))); }
+.t-block--columns[data-style="diptych"] .t-column:nth-child(2) { border-radius: 0 4px 4px 0; transform-origin: 0% 50%; background: linear-gradient(270deg, var(--t-color-vellum-light) 80%, color-mix(in srgb, var(--t-color-vellum-deep) 80%, var(--t-color-vellum-light))); }
+.t-block--columns[data-style="diptych"] .t-column > .t-block { width: 100%; margin: 0; }
+.t-block--columns[data-style="diptych"] .t-block--image .t-figure { margin: 0 0 .8rem; }
+.t-block--columns[data-style="diptych"] .t-block--image img { width: 8.5rem; height: 8.5rem; border-radius: 50%; box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-color-sepia) 35%, transparent), 0 10px 22px -14px var(--t-color-vellum-shadow); object-fit: cover; }
+.t-block--text[data-style="eyebrow"] .t-text p { margin: 0; color: var(--t-primary); font-variant-caps: all-small-caps; letter-spacing: .14em; font-size: 1.1rem; font-weight: 600; }
+.t-block--columns[data-style="diptych"] .t-block--heading :is(h2, h3, h4) { margin: 0 0 .5rem; font-size: 2rem; line-height: 1.1; }
+.t-block--columns[data-style="diptych"] .t-block--text:not([data-style]) p { margin: 0 0 .55rem; }
+.t-block--columns[data-style="diptych"] .t-block--text:not([data-style]) strong { font-variant-caps: all-small-caps; letter-spacing: .06em; font-weight: 650; color: var(--t-color-ink); }
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .t-block--columns[data-style="diptych"] .t-columns { view-timeline: --mc-dip block; }
+    /* Keep the opening fifth unchanged, accelerate to flat at 60%, then hold. */
+    .t-block--columns[data-style="diptych"] .t-column { animation: linear(0, .2 20%, .325 30%, .5 40%, .725 50%, 1 60%, 1) both; animation-timeline: --mc-dip; animation-range: entry 40% cover 52%; }
+    .t-block--columns[data-style="diptych"] .t-column:first-child { animation-name: mc-open-left; }
+    .t-block--columns[data-style="diptych"] .t-column:nth-child(2) { animation-name: mc-open-right; }
+  }
+}
+@keyframes mc-open-left { from { transform: rotateY(58deg); opacity: .35; } to { transform: none; opacity: 1; } }
+@keyframes mc-open-right { from { transform: rotateY(-58deg); opacity: .35; } to { transform: none; opacity: 1; } }
+@container (max-width: 760px) {
+  .t-block--columns[data-style="diptych"] .t-columns { grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+  .t-block--columns[data-style="diptych"] .t-column:is(:first-child, :nth-child(2)) { border-radius: 4px; background: var(--t-color-vellum-light); padding: 1.6rem 1.4rem 1.7rem; animation: none !important; }
+}

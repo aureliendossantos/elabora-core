@@ -42,38 +42,53 @@
       "type": "workshop",
       "width": "wide",
       "props": {
-        "base": "images/ws-skin.svg",
-        "alt": "A portolan chart on a calfskin: rhumb lines radiating from sixteen points round a circle, Majorca, Cagliari and Marseille joined by a triangle of bearings, coasts, harbour names across the land, coloured islands, a scale and a wind rose.",
-        "stages": [
+        "presentation": "scroll",
+        "figure": "build",
+        "side": "start",
+        "figureImage": "images/ws-skin.svg",
+        "figureAlt": "A portolan chart on a calfskin: rhumb lines radiating from sixteen points round a circle, Majorca, Cagliari and Marseille joined by a triangle of bearings, coasts, harbour names across the land, coloured islands, a scale and a wind rose.",
+        "items": [
           {
+            "id": "circle",
             "title": "Prick the hidden circle",
-            "body": "The work starts on a single calfskin, scraped and dried into vellum; the animal's neck stays on the west side. With dividers, the chart-maker draws a large circle that will never be inked, and pricks **sixteen points** evenly round it. On surviving charts, the pinholes are still there.",
-            "layer": "images/ws-circle.svg"
+            "markdown": "The work starts on a single calfskin, scraped and dried into vellum; the animal's neck stays on the west side. With dividers, the chart-maker draws a large circle that will never be inked, and pricks **sixteen points** evenly round it. On surviving charts, the pinholes are still there.",
+            "image": "images/ws-circle.svg",
+            "decorative": true
           },
           {
+            "id": "rhumbs",
             "title": "Rule the rhumb lines",
-            "body": "From the centre and each of the sixteen points, lines run in thirty-two directions across the skin: **black** for the eight principal winds, **green** for the half-winds, **red** for the quarter-winds. Lines of one direction are parallel: wherever you are, a line of your course is never far.",
-            "layer": "images/ws-rhumbs.svg"
+            "markdown": "From the centre and each of the sixteen points, lines run in thirty-two directions across the skin: **black** for the eight principal winds, **green** for the half-winds, **red** for the quarter-winds. Lines of one direction are parallel: wherever you are, a line of your course is never far.",
+            "image": "images/ws-rhumbs.svg",
+            "decorative": true
           },
           {
+            "id": "harbours",
             "title": "Fix the harbours",
-            "body": "Historians reconstruct the next step like this. Prick Majorca. A pilot's book says Cagliari lies **Levante, 450 miles** from it: lay a ruler along a black Levante line, open the dividers to 450 miles on the scale, and prick Cagliari. Do the same for Marseille. Then **check**: another pilot puts Cagliari *Scirocco*, 450 miles from Marseille. The red line lands on the same pinprick: the triangle closes.",
-            "layer": "images/ws-plot.svg"
+            "markdown": "Historians reconstruct the next step like this. Prick Majorca. A pilot's book says Cagliari lies **Levante, 450 miles** from it: lay a ruler along a black Levante line, open the dividers to 450 miles on the scale, and prick Cagliari. Do the same for Marseille. Then **check**: another pilot puts Cagliari *Scirocco*, 450 miles from Marseille. The red line lands on the same pinprick: the triangle closes.",
+            "image": "images/ws-plot.svg",
+            "decorative": true
           },
           {
+            "id": "coasts",
             "title": "Draw the coasts",
-            "body": "Harbour after harbour, each one checked against several others, the pinpricks grow into a net. Only then does the chart-maker ink the coast from one to the next, drawing the capes and bays a sailor must know larger than life.",
-            "layer": "images/ws-coasts.svg"
+            "markdown": "Harbour after harbour, each one checked against several others, the pinpricks grow into a net. Only then does the chart-maker ink the coast from one to the next, drawing the capes and bays a sailor must know larger than life.",
+            "image": "images/ws-coasts.svg",
+            "decorative": true
           },
           {
+            "id": "names",
             "title": "Write the names",
-            "body": "Hundreds of harbours are written in, across the land and at right angles to the coast, so that the coastline itself stays clear: the great harbours in **red**, the others in black. To read them, you turn the chart round on the table. A portolan chart has no top.",
-            "layer": "images/ws-names.svg"
+            "markdown": "Hundreds of harbours are written in, across the land and at right angles to the coast, so that the coastline itself stays clear: the great harbours in **red**, the others in black. To read them, you turn the chart round on the table. A portolan chart has no top.",
+            "image": "images/ws-names.svg",
+            "decorative": true
           },
           {
+            "id": "finish",
             "title": "Add the scale and the colours",
-            "body": "Last come a **scale of miles**, divided in fifties and tens, the bright colours of the islands, and in richer charts wind roses, flags and kings. A cross often marks the east point of the rose: the way to the Holy Land.",
-            "layer": "images/ws-finish.svg"
+            "markdown": "Last come a **scale of miles**, divided in fifties and tens, the bright colours of the islands, and in richer charts wind roses, flags and kings. A cross often marks the east point of the rose: the way to the Holy Land.",
+            "image": "images/ws-finish.svg",
+            "decorative": true
           }
         ],
         "labels": [
@@ -183,10 +198,10 @@
     },
     {
       "id": "workshop-tilt",
-      "type": "gloss",
+      "type": "text",
       "props": {
         "markdown": "Lay a modern map over the finished chart and the whole Mediterranean seems **turned about 9° anticlockwise**. The chart is not careless. The usual explanation: it was built from compass bearings, and the compass of the time pointed several degrees east of true north. Draw every bearing with the compass's north at the top, and the whole sea turns the other way. Steering by the same compass, a pilot still reaches the right harbour.",
-        "gloss": "Historians still debate how the first charts were compiled, and how closely the tilt matches the compass of the day. Take this as the leading explanation, not a settled fact."
+        "aside": "Historians still debate how the first charts were compiled, and how closely the tilt matches the compass of the day. Take this as the leading explanation, not a settled fact."
       },
       "step": 3
     },
@@ -195,19 +210,29 @@
       "type": "layered-figure",
       "width": "wide",
       "props": {
-        "base": "images/tilt-modern.svg",
-        "alt": "Two outlines of the Mediterranean at the same scale: a dashed modern map, true north up, and the chart in ink, turned about 9° anticlockwise. In a corner, a dashed needle points to true north, a red compass needle about 9° east of it.",
-        "ratio": 2,
-        "layers": [
+        "presentation": "scroll",
+        "figure": "build",
+        "figureImage": "images/tilt-modern.svg",
+        "figureAlt": "Two outlines of the Mediterranean at the same scale: a dashed modern map, true north up, and the chart in ink, turned about 9° anticlockwise. In a corner, a dashed needle points to true north, a red compass needle about 9° east of it.",
+        "items": [
           {
-            "asset": "images/tilt-chart.svg",
+            "id": "chart",
+            "title": "The chart",
+            "markdown": "The chart in ink, drawn with the compass's north at the top, turned about 9° from the modern map.",
+            "image": "images/tilt-chart.svg",
+            "decorative": true,
             "reveal": "fade"
           },
           {
-            "asset": "images/tilt-needles.svg",
+            "id": "needles",
+            "title": "Two norths",
+            "markdown": "A dashed needle points to true north, the red compass needle about 9° east of it.",
+            "image": "images/tilt-needles.svg",
+            "decorative": true,
             "reveal": "drop"
           }
         ],
+        "ratio": 2,
         "labels": [
           {
             "text": "The chart",

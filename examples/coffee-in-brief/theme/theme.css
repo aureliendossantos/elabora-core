@@ -1,0 +1,6 @@
+/* Fernhill Coffee: warm paper, espresso ink, a roasted-brown primary and a cherry-red accent. The
+   starter blocks keep their built-in look; the theme only gives the headings their colour and the
+   page a little more air between parts. */
+.t-block--heading h2 { color: var(--t-primary); }
+.t-block--heading h3 { color: var(--t-color-espresso); }
+.t-block--divider + .t-block--heading { margin-top: 0; }

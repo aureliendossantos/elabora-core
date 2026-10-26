@@ -1,0 +1,213 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "roast-and-flavour",
+  "title": "Roast and flavour",
+  "covers": [
+    "ITEM-5"
+  ],
+  "completeWhen": "interactions-done",
+  "steps": {
+    "2": {
+      "opens": "explored"
+    },
+    "3": {
+      "opens": "answered"
+    }
+  },
+  "blocks": [
+    {
+      "id": "flavour-mina",
+      "type": "speech",
+      "props": {
+        "speaker": "mina",
+        "lines": [
+          {
+            "id": "stronger",
+            "markdown": "Customers will tell you a dark roast is *stronger*. Before you agree, see what the roast really changes."
+          }
+        ]
+      }
+    },
+    {
+      "id": "flavour-levels",
+      "type": "steps",
+      "width": "wide",
+      "props": {
+        "presentation": "scroll",
+        "figure": "replace",
+        "numbered": false,
+        "items": [
+          {
+            "id": "light",
+            "title": "Light roast",
+            "image": "images/roast-light.svg",
+            "alt": "A pile of light brown, dry-looking beans.",
+            "markdown": "Dropped soon after first crack. The coffee keeps the taste of its origin and process: fruit, flowers, a bright acidity. Most of our pour-overs are light."
+          },
+          {
+            "id": "medium",
+            "title": "Medium roast",
+            "image": "images/roast-medium.svg",
+            "alt": "A pile of medium brown beans.",
+            "markdown": "A little longer: the acidity softens and caramel and nuts come forward. A balanced cup that suits most customers."
+          },
+          {
+            "id": "medium-dark",
+            "title": "Medium-dark roast",
+            "image": "images/roast-medium-dark.svg",
+            "alt": "A pile of dark brown beans with a few shiny spots.",
+            "markdown": "Near the second crack, oil starts to show on the beans. Chocolate and spice take over from fruit, and the body grows heavier."
+          },
+          {
+            "id": "dark",
+            "title": "Dark roast",
+            "image": "images/roast-dark.svg",
+            "alt": "A pile of almost black, oily beans.",
+            "markdown": "Shiny with oil, close to black. The roast's smoky, bitter taste covers the origin: two very different coffees end up tasting alike."
+          }
+        ]
+      }
+    },
+    {
+      "id": "flavour-h-myths",
+      "type": "heading",
+      "props": {
+        "text": "Myths you will hear at the counter",
+        "level": 2
+      }
+    },
+    {
+      "id": "flavour-myths",
+      "type": "accordion",
+      "props": {
+        "presentation": "cards",
+        "prompt": "Before you turn each card, decide: myth or fact?",
+        "items": [
+          {
+            "id": "caffeine",
+            "title": "Dark roast has more caffeine",
+            "markdown": "Myth. Roasting barely changes the caffeine. A dark bean is lighter, so a scoop of dark beans may even hold a little less. A strong taste is not strength."
+          },
+          {
+            "id": "fridge",
+            "title": "Beans keep best in the fridge",
+            "markdown": "Myth. A fridge is damp and full of smells that beans soak up. Keep them airtight, cool and dark, and use them within a few weeks."
+          },
+          {
+            "id": "espresso",
+            "title": "Espresso is a kind of bean",
+            "markdown": "Myth. Espresso is a way of brewing: hot water pushed through fine grounds under pressure. Any bean can make an espresso; roasters choose the ones that taste best that way."
+          },
+          {
+            "id": "fresh",
+            "title": "The fresher the roast, the better",
+            "markdown": "Not quite. Beans need a few days to let out their gas after roasting. After that, they are at their best for a few weeks."
+          }
+        ]
+      }
+    },
+    {
+      "id": "flavour-bean",
+      "type": "hotspots",
+      "props": {
+        "presentation": "below",
+        "image": "images/bean-closeup.svg",
+        "alt": "A single roasted coffee bean, seen large, its centre cut running down the middle.",
+        "prompt": "Read a roasted bean as a roaster does.",
+        "items": [
+          {
+            "id": "cut",
+            "x": 0.5,
+            "y": 0.42,
+            "title": "The centre cut",
+            "markdown": "Where the two seeds faced each other in the cherry. A cut much paler than the rest of the bean can mean it was roasted too fast."
+          },
+          {
+            "id": "chaff",
+            "x": 0.53,
+            "y": 0.66,
+            "title": "Chaff",
+            "markdown": "Flakes of silverskin caught in the cut. Most of it blows away in the roaster; what stays is harmless."
+          },
+          {
+            "id": "oil",
+            "x": 0.31,
+            "y": 0.3,
+            "title": "Oil",
+            "markdown": "Oil on the surface means a dark roast, or beans roasted long ago. A light roast should look dry."
+          },
+          {
+            "id": "colour",
+            "x": 0.76,
+            "y": 0.52,
+            "title": "The colour",
+            "markdown": "An even brown: a medium roast. Roasters measure the colour with a meter, to roast each batch the same."
+          }
+        ]
+      }
+    },
+    {
+      "id": "flavour-check",
+      "type": "quiz",
+      "step": 2,
+      "props": {
+        "mode": "single",
+        "scored": false,
+        "objective": "OBJ-3",
+        "stem": "A customer loves the berry notes of our natural Ethiopia. Which roast keeps them best?",
+        "options": [
+          {
+            "id": "a",
+            "text": "A dark roast, so the notes come out stronger",
+            "correct": false,
+            "feedback": "A dark roast covers the origin with its own smoky taste: the berries would be the first thing to go."
+          },
+          {
+            "id": "b",
+            "text": "A light roast, dropped soon after first crack",
+            "correct": true,
+            "feedback": "Yes: a light roast keeps the fruit of the origin and of the natural process."
+          },
+          {
+            "id": "c",
+            "text": "A medium-dark roast, for more body",
+            "correct": false,
+            "feedback": "More body, but chocolate and spice take over from the fruit at that level."
+          }
+        ]
+      }
+    },
+    {
+      "id": "flavour-confidence",
+      "type": "reflection",
+      "step": 2,
+      "props": {
+        "presentation": "scale",
+        "objective": "OBJ-3",
+        "prompt": "How sure do you feel explaining to a customer what the roast changes, and what it does not?",
+        "scale": {
+          "min": 1,
+          "max": 5,
+          "minLabel": "Not sure at all",
+          "maxLabel": "Ready to explain"
+        }
+      }
+    },
+    {
+      "id": "flavour-statement",
+      "type": "statement",
+      "step": 3,
+      "width": "bleed",
+      "props": {
+        "presentation": "image",
+        "image": "images/cups.svg",
+        "alt": "Three cups of coffee on a dark counter, from amber to almost black.",
+        "focus": {
+          "x": 0.5,
+          "y": 0.72
+        },
+        "markdown": "Roast changes a coffee's flavour far more than its caffeine."
+      }
+    }
+  ]
+}

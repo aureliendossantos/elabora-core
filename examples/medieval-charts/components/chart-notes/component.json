@@ -2,87 +2,34 @@
   "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
   "id": "chart-notes",
   "title": "Chart with notes",
-  "description": "A large figure with numbered markers set on it: selecting a marker shows its note under the figure (a question someone asked about that spot, and its answer). Markers already read carry a gilt dot. Arrow keys move from one marker to the next.",
-  "instructions": "Two to six markers, each with a short label of a few words where it sits on the figure (x and y in % of the figure). Keep each note to two or three sentences. Exploring them is optional unless an event requires it.",
-  "category": "interaction",
-  "version": "1.0.0",
-  "level": "block",
-  "props": {
-    "type": "object",
-    "additionalProperties": false,
-    "required": [
-      "image",
-      "alt",
-      "notes"
-    ],
+  "description": "« Image interactive » in the course's folio style: a large figure with markers set on it, each named by a few words (a question someone asked about that spot) and numbered; selecting a marker shows its note under the figure, on a leaf of vellum, in the room of the longest. Markers already read carry a gilt dot. In narrow places the notes are a numbered list under the figure.",
+  "instructions": "Three to five markers, each a short phrase on the figure (marker, two or three words), a title (the question, in the visitor's words) and one to three sentences (the answer). x and y from 0 to 1 of the whole picture, on the spot itself.",
+  "version": "2.0.0",
+  "extends": {
+    "component": "hotspots",
+    "version": "0.1.0"
+  },
+  "propsExtend": {
     "properties": {
-      "image": {
-        "type": "string",
-        "x-kind": "asset",
-        "description": "The figure, drawn without words."
+      "presentation": {
+        "enum": [
+          "below"
+        ],
+        "default": "below",
+        "description": "below: the notes under the figure, one at a time (the only presentation of this style)."
       },
-      "alt": {
-        "type": "string",
-        "maxLength": 250,
-        "x-translatable": true,
-        "description": "Text alternative of the figure."
-      },
-      "ratio": {
-        "type": "number",
-        "minimum": 0.5,
-        "maximum": 3,
-        "default": 1.96,
-        "x-group": "design",
-        "description": "Width ÷ height of the figure."
-      },
-      "notes": {
-        "type": "array",
-        "minItems": 2,
-        "maxItems": 6,
+      "items": {
         "items": {
-          "type": "object",
-          "additionalProperties": false,
           "required": [
-            "id",
-            "x",
-            "y",
-            "marker",
-            "title",
-            "body"
+            "marker"
           ],
           "properties": {
-            "id": {
-              "type": "string",
-              "pattern": "^[a-z][a-z0-9-]{0,23}$"
-            },
-            "x": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 100,
-              "description": "Horizontal position of the marker, in % of the figure."
-            },
-            "y": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 100,
-              "description": "Vertical position of the marker, in % of the figure."
-            },
             "marker": {
               "type": "string",
-              "maxLength": 32,
+              "minLength": 1,
+              "maxLength": 28,
               "x-translatable": true,
-              "description": "Label of the marker on the figure."
-            },
-            "title": {
-              "type": "string",
-              "maxLength": 90,
-              "x-translatable": true,
-              "description": "Heading of the note."
-            },
-            "body": {
-              "type": "string",
-              "x-kind": "markdown",
-              "x-translatable": true
+              "description": "The words on the marker, two or three (the note's title says the rest)."
             }
           }
         }
@@ -91,29 +38,25 @@
         "type": "string",
         "x-kind": "markdown",
         "maxLength": 300,
-        "x-translatable": true
+        "x-translatable": true,
+        "description": "Under the figure, in italics."
       }
     }
   },
   "fallback": [
     {
-      "type": "image",
+      "type": "hotspots",
       "props": {
-        "asset": "{{image}}",
-        "alt": "{{alt}}"
-      }
-    },
-    {
-      "type": "accordion",
-      "props": {
-        "items": {
-          "$each": "notes",
-          "as": {
-            "id": "{{id}}",
-            "title": "{{marker}}: {{title}}",
-            "markdown": "{{body}}"
-          }
-        }
+        "presentation": "below",
+        "image": "{{image}}",
+        "alt": "{{alt}}",
+        "decorative": "{{decorative}}",
+        "focus": "{{focus}}",
+        "prompt": "{{prompt}}",
+        "markerStyle": "{{markerStyle}}",
+        "icon": "{{icon}}",
+        "generated": "{{generated}}",
+        "items": "{{items}}"
       }
     },
     {
@@ -126,26 +69,19 @@
   ],
   "examples": [
     {
-      "title": "Two notes on the chart",
+      "title": "One note",
       "props": {
+        "presentation": "below",
         "image": "images/chart-whole.svg",
-        "alt": "A portolan chart of the Mediterranean on its calfskin",
-        "notes": [
+        "alt": "A portolan chart",
+        "items": [
           {
             "id": "north",
-            "x": 52,
-            "y": 8,
+            "x": 0.54,
+            "y": 0.08,
             "marker": "No north?",
             "title": "“There is no north on this map”",
-            "body": "The chart lies flat on the table and turns with the course."
-          },
-          {
-            "id": "italy",
-            "x": 50,
-            "y": 38,
-            "marker": "Italy lying down",
-            "title": "“Italy is lying down”",
-            "body": "The chart follows the compass."
+            "markdown": "The pilot turns the chart to face the course."
           }
         ]
       }

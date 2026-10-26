@@ -1,18 +1,29 @@
-<!-- Reading order: the figure and its markers (tabs), then the note of the marker selected. -->
-<div class="mc-notes" data-t-tabs>
-  <figure class="mc-notes-figure">
-    <div class="mc-notes-stage" style="--ratio: {{ratio}}">
-      <img class="mc-notes-image" src="{{image}}" alt="{{alt}}">
-      <div class="mc-notes-markers">
-        <button data-each="notes" type="button" class="mc-notes-marker" data-t-tab="{{id}}" style="--x: {{x}}; --y: {{y}}">{{marker}}</button>
+<!-- « Image interactive » in the folio style. Reading order: the figure and its markers (each named by its
+     words, numbered), the caption, then the note of the marker open (data-t-exclusive: one at a time, in
+     the room of the longest; a numbered list in narrow places, each entry counted once seen). -->
+<div class="t-hotspots t-hotspots--below t-hotspots--number mc-notes">
+  <p class="t-hotspots-prompt" data-if="prompt">{{prompt}}</p>
+  <div class="t-hotspots-figure" data-t-exclusive>
+    <div class="t-hotspots-frame mc-notes-frame">
+      <div class="t-hotspots-picture mc-notes-stage">
+        <img class="t-hotspots-image mc-notes-image" src="{{image}}" alt="{{alt}}" decoding="async">
+        <button class="t-hotspots-marker mc-notes-marker" data-each="items" data-t-toggle="{{id}}" style="--x: {{x}}; --y: {{y}}"><span class="mc-notes-number" aria-hidden="true">{{@number}}</span><span class="mc-notes-words">{{marker}}</span></button>
       </div>
     </div>
-    <figcaption class="mc-notes-caption" data-if="caption">{{caption | inline}}</figcaption>
-  </figure>
-  <div class="mc-notes-panels">
-    <section data-each="notes" class="mc-notes-panel" data-t-panel="{{id}}">
-      <h3 class="mc-notes-title" data-t-heading>{{title}}</h3>
-      <div class="mc-notes-body t-text">{{body}}</div>
-    </section>
+    <p class="mc-notes-caption" data-if="caption">{{caption | inline}}</p>
+    <div class="t-hotspots-room mc-notes-room">
+      <p class="t-hotspots-hint" data-t-label="hotspotsHint"></p>
+      <ol class="t-hotspots-panels">
+        <li class="t-hotspots-entry" data-each="items" data-t-reveal="{{id}}">
+          <div class="t-hotspots-panel mc-notes-panel" data-t-part="{{id}}">
+            <p class="t-hotspots-tag mc-notes-tag" aria-hidden="true">{{@number}}</p>
+            <h3 class="t-hotspots-title mc-notes-title" data-t-heading>{{title}}</h3>
+            <figure class="t-hotspots-detail" data-if="image"><img src="{{image}}" alt="{{alt}}" loading="lazy" decoding="async"></figure>
+            <div class="t-hotspots-body t-text mc-notes-body">{{markdown}}</div>
+          </div>
+        </li>
+      </ol>
+    </div>
   </div>
+  <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
 </div>

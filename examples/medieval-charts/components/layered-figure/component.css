@@ -1,4 +1,6 @@
-/* A figure in layers, assembled as it scrolls into view; labels placed in % of the figure. */
+/* A figure in layers, a fork of « Étapes » (steps, figure build), assembled as it scrolls into view: the
+   base, then each step's layer (--layer, from 1) and each label (--label, from 1) a little later than the
+   one before; labels placed in % of the figure. Any number of layers and labels. */
 @property --mc-sweep { syntax: '<angle>'; inherits: false; initial-value: 360deg; }
 @property --mc-wipe { syntax: '<percentage>'; inherits: false; initial-value: 100%; }
 .mc-layers { margin: 0; display: grid; justify-items: center; gap: 1rem; }
@@ -47,16 +49,9 @@
     .mc-reveal--drop { animation-name: mc-drop; }
     .mc-reveal--wipe { animation-name: mc-wipe; }
     .mc-layers-base { animation-range: entry 30% cover 38%; }
-    .mc-layers-layer { animation-range: cover calc(30% + var(--mc-i, 0) * 3.5%) cover calc(38% + var(--mc-i, 0) * 3.5%); }
-    .mc-layers-layer:nth-of-type(2) { --mc-i: 0; } .mc-layers-layer:nth-of-type(3) { --mc-i: 1; } .mc-layers-layer:nth-of-type(4) { --mc-i: 2; }
-    .mc-layers-layer:nth-of-type(5) { --mc-i: 3; } .mc-layers-layer:nth-of-type(6) { --mc-i: 4; } .mc-layers-layer:nth-of-type(7) { --mc-i: 5; }
-    .mc-layers-layer:nth-of-type(8) { --mc-i: 6; } .mc-layers-layer:nth-of-type(9) { --mc-i: 7; }
+    .mc-layers-layer { animation-range: cover calc(30% + (var(--layer, 1) - 1) * 3.5%) cover calc(38% + (var(--layer, 1) - 1) * 3.5%); }
     .mc-layers-label--name, .mc-layers-label--name-rubric, .mc-layers-label--bubble, .mc-layers-label--bubble-below { animation-name: mc-fade !important; }
-    .mc-layers-label { animation-name: mc-label; animation-range: cover calc(34% + var(--mc-i, 0) * 1%) cover calc(40% + var(--mc-i, 0) * 1%); }
-    .mc-layers-label:nth-of-type(2) { --mc-i: 1; } .mc-layers-label:nth-of-type(3) { --mc-i: 2; } .mc-layers-label:nth-of-type(4) { --mc-i: 3; }
-    .mc-layers-label:nth-of-type(5) { --mc-i: 4; } .mc-layers-label:nth-of-type(6) { --mc-i: 5; } .mc-layers-label:nth-of-type(7) { --mc-i: 6; }
-    .mc-layers-label:nth-of-type(8) { --mc-i: 7; } .mc-layers-label:nth-of-type(9) { --mc-i: 8; } .mc-layers-label:nth-of-type(10) { --mc-i: 9; }
-    .mc-layers-label:nth-of-type(11) { --mc-i: 10; } .mc-layers-label:nth-of-type(12) { --mc-i: 11; }
+    .mc-layers-label { animation-name: mc-label; animation-range: cover calc(34% + (var(--label, 1) - 1) * 1%) cover calc(40% + (var(--label, 1) - 1) * 1%); }
   }
 }
 @supports (animation-timeline: view()) {

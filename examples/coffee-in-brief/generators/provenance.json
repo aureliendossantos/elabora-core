@@ -1,0 +1,225 @@
+{
+  "format": "elabora-generated/1",
+  "assets": {
+    "images/altitude.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:bd66629136c0e022efbfeb5829902ac109b1e0c70d1014723296f61e9acbb23c"
+    },
+    "images/bean-black.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:e34488b3c708f6e14aab7148ca27a6542dfbb8a700dfd32bbd627c5004f2a3d4"
+    },
+    "images/bean-closeup.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:ce635d9a6106e2053eaffa14f73864e6e1f154095dfdd67a665f57f044e34609"
+    },
+    "images/bean-healthy.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:8667f0390a89bc61a64aa725a99018d8d62d66bc4dc569734ccc837c7363dfcf"
+    },
+    "images/bean-peaberry.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:e92c8396de5b0125843ca5084697bad362d5669793cdce6bbdd545ec466de32f"
+    },
+    "images/beans-dark.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:7ac3aa7ece01926dde47f0f0ecfb8ae9f7fa4f18534aa77e4afb2853e7800904"
+    },
+    "images/beans-green.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:ebfc89d00a3cb3bf720d77739756e66628d539408fcf711e2be4053d588393a5"
+    },
+    "images/beans-roasted.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:03de536e4577a0a6aaacf0eb507841e0a86db2dfcc32c90c92902847f616d409"
+    },
+    "images/branch.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:2d32d862659f40f4d1c287c89f56171995f4dffb368489b77e7cd7a6fad70705"
+    },
+    "images/brew-espresso.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:c1a41ae49387c5e78b29eee31652587b72339756573d00df3f884867c6886dfd"
+    },
+    "images/brew-moka.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:e043c237763d64775b8a63c0581a4d6c94f405b517957a35285e38a8bcde5b2f"
+    },
+    "images/brew-pourover.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:027456086732a7caf19aad50528cd331be05102b09f10921bc09248bff741bf2"
+    },
+    "images/brew-press.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:7f33eb031ffc46ca40735d45c90071ad48515fcdf6494f9db5f8aaf3c6db61d9"
+    },
+    "images/cherry-section.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:effc4329528b5f445736f6d08987cb74c8ab26a2d3afc2134c74dc8804f13d34"
+    },
+    "images/cups.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:2d6c9570df225a9f7dd480cb1ca10b5e640a2c21ab59667187eb3c9da5578a80"
+    },
+    "images/curve-axes.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:ec211e691b8082a7a42d103223a52bb7fef0085743e5e34623b102d8acb2f7d7"
+    },
+    "images/curve-browning.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:ea095c7cba968eb5932f8518672e38c606047a2f8cce4d80be3c0feaa38a64c9"
+    },
+    "images/curve-crack.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:17e95d04220715a639ec6bfd624f5d951be532dcd2802d384c487cb064d6c271"
+    },
+    "images/curve-drop.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:b3944abba05d2b0b93190dc7868dbc3a048696888d87687813a69186992b16c8"
+    },
+    "images/curve-drying.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:aaf12966f19ffec02a621de9b6279cb0c591406b13712657cad27a439bd54c1e"
+    },
+    "images/dry-honey.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:0e6878ed75af0809d03ab1260e8a3d38cfa9653b780c9b50500e0e06fdaf8178"
+    },
+    "images/dry-natural.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:451fbb3cd9976ab2e47a19beb0155f31a6151c37952f0bf48f4d76e6b4ad99fe"
+    },
+    "images/dry-washed.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:b690fd40abdf0b378b27b4778f996d985a58dbe3c1501eb0c1093fb12a33577c"
+    },
+    "images/drying-beds.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:0875c4834408616ff28c678a5ea1e5cf60893991dddf269e2fe779b1186fd35f"
+    },
+    "images/farm-slope.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:19e88e789bb3fe7cef2f1b67b8779e4ca47594b026954c75f28bf4c31a6b80aa"
+    },
+    "images/grading-tray.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:81d6536516ae62008ad3b6a57248c0082f4971cbde57467041abf299d32f2edf"
+    },
+    "images/green-scoop.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:2b9d1a78914f687c68cfb6034303f743e209c6d37bdadbde89bdade58547bd18"
+    },
+    "images/port-sacks.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:dcc47e4f9cfd0af4f12350956ca19a8c828035582f88ddac71387755d6e93acb"
+    },
+    "images/pour-station.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:5e7e8a1398332b0c63b76a0db9a14b3165cf5c774d95321901fd5c792609d6f2"
+    },
+    "images/producer.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:819871369eb63ba2e1234237a0018bd33662fd601b95f9240ae7565332950923"
+    },
+    "images/roast-dark.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:9a449073b5696338430a3970bc060bb2a2aa28c02f6a5bf4ab3653230e3e4d0d"
+    },
+    "images/roast-light.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:67af0d8976443dbc614ce3118d65c7a4dc02b2d526e5465f008d4499f4ffe41e"
+    },
+    "images/roast-medium-dark.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:bf2816866bf9133874cc9a2568b722a190dfdb400c638f4373318d59f2cb5962"
+    },
+    "images/roast-medium.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:08919bc863bd89343552829afda44a5551419fd1dd0af043e687b1bc7edd3a8a"
+    },
+    "images/roaster-diagram.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:5a0cfe9405987764444b7ce77644e408f87f6fb7fe39748aaa3220a43388b5d6"
+    },
+    "images/roaster-window.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:f1323d2fb208186c0913769d811c4b2387f6e70e3867193d452eb821045c45b9"
+    },
+    "images/sacks-stack.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:054d65cb0a711e3c19de97dfd9f28480cd9dcb7d9b2a93395dd7a80d60d60f16"
+    },
+    "images/ship.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:a7cddd9448999594b7333cb22a7532ad5e6c26d57a3879a31b3f251d57c480c4"
+    },
+    "images/step-dry.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:e9f48af9734e56e3b5c2d5bd114750d2c8b305efd647e585c9d8ba6870541a86"
+    },
+    "images/step-float.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:029687dad517db21e954b7a3153bec1bd80497f754d11dd0f0a68705464a92d2"
+    },
+    "images/step-hull.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:4af508fee7dba84bfc3ba4bbe10abea4b49ea892eac3ceb8a3db019f263681ef"
+    },
+    "images/step-pick.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:6b4ddc4282a2d8a3f803a432ee65bd293be7fcf9a623b1c31c92b126e46940ec"
+    },
+    "images/step-pulp.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:9c72878e91e2c432e500137f0beff73aa149c3388cfe356ad8b1a2feca01bb5b"
+    },
+    "images/warehouse.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:a41e852ea3bd72cfe82f2cbf0309888a4b8fa8c31f2c0eb924dc51b40b23eb9e",
+      "outputHash": "sha256:e1d0b194f673c5d15e1ba5523fa329fea8344228052e622bd82c868000cae759"
+    }
+  }
+}

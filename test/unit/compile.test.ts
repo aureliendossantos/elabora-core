@@ -103,7 +103,7 @@ test('package rules of the target LMS are enforced', async () => {
 });
 
 test('one screen compiles on its own, as the course data holds it', () => {
-  for (const example of ['diagnostic-reseau', 'planetary-gearset', 'orbital-rendezvous']) {
+  for (const example of ['diagnostic-reseau', 'planetary-gearset', 'orbital-rendezvous', 'coffee-in-brief']) {
     const project = loadProjectFromDir(path.join(ROOT, 'examples', example));
     const { keys } = assignKeys(project, readLock(project), { dryRun: true });
     const data = compileCourseData(project, keys, { buildId: 'test' });
