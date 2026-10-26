@@ -1,17 +1,19 @@
-<!-- Reading order: the figure (its text alternative describes the finished chart), then the stages. -->
-<div class="mc-workshop">
+<!-- « Étapes » in the folio style. Reading order: the figure (its text alternative describes the finished
+     chart), then the stages. data-t-follow: the stage crossing the middle of the window is current, and
+     the figure shows the layers and labels up to it (--t-current). -->
+<div class="mc-workshop mc-workshop--side-{{side}} mc-workshop--numbered-{{numbered}}" data-t-follow>
   <div class="mc-workshop-figure">
     <div class="mc-workshop-stage">
-      <img class="mc-workshop-base" src="{{base}}" alt="{{alt}}">
-      <img data-each="stages" class="mc-workshop-layer" src="{{layer}}" alt="">
-      <span data-each="labels" class="mc-workshop-label mc-workshop-label--{{tone}} mc-workshop-label--s{{stage}}" style="--x: {{x}}; --y: {{y}}; --angle: {{angle}}">{{text}}</span>
+      <img class="mc-workshop-base" src="{{figureImage}}" alt="{{figureAlt}}" decoding="async">
+      <img data-each="items" data-if="image" class="mc-workshop-layer" src="{{image}}" alt="" decoding="async" style="--layer: {{@number}}">
+      <span data-each="labels" class="mc-workshop-label mc-workshop-label--{{tone}}" style="--x: {{x}}; --y: {{y}}; --angle: {{angle}}; --layer: {{stage}}">{{text}}</span>
     </div>
   </div>
   <ol class="mc-workshop-steps">
-    <li data-each="stages" class="mc-workshop-step">
+    <li data-each="items" class="mc-workshop-step" data-t-reveal="{{id}}">
       <div class="mc-workshop-card">
         <h3 class="mc-workshop-title" data-t-heading>{{title}}</h3>
-        <div class="mc-workshop-body t-text">{{body}}</div>
+        <div class="mc-workshop-body t-text">{{markdown}}</div>
       </div>
     </li>
   </ol>

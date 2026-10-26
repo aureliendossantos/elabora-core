@@ -2,65 +2,36 @@
   "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
   "id": "workshop",
   "title": "Scrolling workshop",
-  "description": "A figure that builds up while the learner reads: the figure stays in view (beside the text on wide windows, at the top on narrow ones) and each stage of the text, as it scrolls past, adds its layer and its labels (harbour names, a bearing). Without scroll-driven animations, or with reduced motion, the figure shows complete beside the stages.",
-  "instructions": "Two to six stages. Draw every layer in the frame of the base image; the stage's text must explain what its layer adds. Labels are words over the figure, placed in % of it and tied to the stage that inks them: keep them few and short.",
-  "category": "content",
-  "version": "1.2.0",
-  "level": "block",
-  "props": {
-    "type": "object",
-    "additionalProperties": false,
-    "required": [
-      "base",
-      "alt",
-      "stages"
-    ],
+  "description": "« Étapes » in the course's folio style: a figure that builds up while the learner reads. The figure stays in view (beside the stages on wide windows, at the top on narrow ones) and each stage, as it crosses the middle of the window, inks its layer and its labels (harbour names, a bearing); the stages are numbered in Roman numerals on leaves of vellum. With reduced motion, or without the player, the figure shows complete beside the stages.",
+  "instructions": "A steps block in scroll presentation with figure build: figureImage is the figure before the first stage, each item's image the layer that stage adds (drawn in the frame of figureImage); the stage's text must explain what its layer adds. labels are words over the figure, placed in % of it and tied to the stage (from 1) that inks them: keep them few and short.",
+  "version": "2.0.0",
+  "extends": {
+    "component": "steps",
+    "version": "0.1.0"
+  },
+  "propsExtend": {
     "properties": {
-      "base": {
-        "type": "string",
-        "x-kind": "asset",
-        "description": "What the figure shows before the first stage."
+      "presentation": {
+        "enum": [
+          "scroll"
+        ],
+        "default": "scroll",
+        "description": "scroll: the stages scroll beside the figure that builds up (the only presentation of this style)."
       },
-      "alt": {
-        "type": "string",
-        "maxLength": 250,
-        "x-translatable": true,
-        "description": "Text alternative of the finished figure."
+      "figure": {
+        "enum": [
+          "build"
+        ],
+        "default": "build",
+        "description": "build: each stage's image is a layer added over figureImage."
       },
-      "stages": {
-        "type": "array",
-        "minItems": 2,
-        "maxItems": 6,
-        "items": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": [
-            "title",
-            "body",
-            "layer"
-          ],
-          "properties": {
-            "title": {
-              "type": "string",
-              "maxLength": 60,
-              "x-translatable": true
-            },
-            "body": {
-              "type": "string",
-              "x-kind": "markdown",
-              "x-translatable": true
-            },
-            "layer": {
-              "type": "string",
-              "x-kind": "asset",
-              "description": "What this stage adds to the figure."
-            }
-          }
-        }
+      "side": {
+        "default": "start",
+        "description": "Where the figure sits beside the stages on wide windows (start: before them, on the left in a left-to-right language; end: after them)."
       },
       "labels": {
         "type": "array",
-        "maxItems": 12,
+        "maxItems": 24,
         "default": [],
         "description": "Words over the figure, each appearing with its stage.",
         "items": {
@@ -93,8 +64,8 @@
             "stage": {
               "type": "integer",
               "minimum": 1,
-              "maximum": 6,
-              "description": "The stage (from 1) whose layer the label goes with."
+              "maximum": 20,
+              "description": "The stage (from 1, in the order of items) whose layer the label goes with."
             },
             "angle": {
               "type": "number",
@@ -120,17 +91,17 @@
   },
   "fallback": [
     {
-      "type": "image",
+      "type": "steps",
       "props": {
-        "asset": "{{base}}",
-        "alt": "{{alt}}"
-      }
-    },
-    {
-      "$each": "stages",
-      "type": "text",
-      "props": {
-        "markdown": "**{{title}}**\n\n{{body}}"
+        "presentation": "scroll",
+        "figure": "build",
+        "side": "{{side}}",
+        "numbered": "{{numbered}}",
+        "figureImage": "{{figureImage}}",
+        "figureAlt": "{{figureAlt}}",
+        "items": "{{items}}",
+        "intro": "{{intro}}",
+        "summary": "{{summary}}"
       }
     },
     {
@@ -145,18 +116,22 @@
     {
       "title": "Two stages",
       "props": {
-        "base": "images/ws-skin.svg",
-        "alt": "A chart in the making",
-        "stages": [
+        "presentation": "scroll",
+        "figure": "build",
+        "figureImage": "images/ws-skin.svg",
+        "figureAlt": "A chart in the making",
+        "items": [
           {
+            "id": "circle",
             "title": "Prick the circle",
-            "body": "Sixteen points round a hidden circle.",
-            "layer": "images/ws-circle.svg"
+            "markdown": "Sixteen points round a hidden circle.",
+            "image": "images/ws-circle.svg"
           },
           {
+            "id": "rhumbs",
             "title": "Rule the lines",
-            "body": "Thirty-two directions from each point.",
-            "layer": "images/ws-rhumbs.svg"
+            "markdown": "Thirty-two directions from each point.",
+            "image": "images/ws-rhumbs.svg"
           }
         ]
       }
