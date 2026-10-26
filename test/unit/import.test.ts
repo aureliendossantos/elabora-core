@@ -195,14 +195,25 @@ describe('importing', () => {
     assert.deepEqual(course.completion, { reportAs: 'passed-incomplete', masteryScore: 80 });
     const [quiz, lesson] = screens(dir);
     const blocks = allBlocks(lesson);
-    assert.deepEqual(blocks.map((block) => block.type).slice(0, 8), ['heading', 'text', 'callout', 'text', 'image', 'accordion', 'accordion', 'quiz']);
+    assert.deepEqual(blocks.map((block) => block.type), ['heading', 'text', 'statement', 'text', 'image', 'accordion', 'accordion', 'quiz', 'fill-in', 'hotspots', 'button', 'divider']);
+    // Statement B (D63): between two rules, its heading in bold.
+    assert.deepEqual(blocks[2].props, { presentation: 'ruled', markdown: '**À retenir**\n\nChaque objet a sa place.' });
     assert.equal(blocks[1].props.markdown, 'Un poste rangé évite **les chutes** et *les pertes*. Voir [le guide](https://example.org/guide).');
     assert.equal(blocks[4].props.alt, 'Un bureau rangé, vu de dessus');
     assert.ok(fs.existsSync(path.join(dir, 'assets', blocks[4].props.asset as string)));
-    // Tabs have no block yet: an accordion, with a note for the author.
-    assert.match(blocks[6].note ?? '', /Onglets/);
-    // The continue divider: what follows is step 2, opened once the question above is answered when one is.
+    // Tabs are panels shown as tabs (D63), not a fallback any more.
+    assert.equal(blocks[6].props.presentation, 'tabs');
+    assert.equal(blocks[6].note, undefined);
+    // The continue divider that waits for the block above: step 2, opened once the tabs are explored.
     assert.equal(blocks[7].step, 2);
+    assert.deepEqual(lesson.steps, { 2: { opens: 'explored', label: 'Suite' } });
+    // A knowledge check's fill in the blank is a fill-in, its blank where the text had one.
+    assert.equal(blocks[8].props.markdown, 'Un poste rangé évite les [[chutes]].');
+    // The labeled graphic is an interactive picture, its markers where Rise placed them (percent).
+    assert.deepEqual(blocks[9].props.items, [{ id: 'i1', x: 0.2, y: 0.3, title: 'Porte', markdown: 'Toujours dégagée.' }]);
+    assert.equal(blocks[9].props.alt, 'Plan du bureau');
+    assert.ok(fs.existsSync(path.join(dir, 'assets', blocks[9].props.image as string)));
+    assert.deepEqual(blocks[11].props, { presentation: 'space' });
     assert.equal((blocks[7].props.options as { feedback: string }[])[1].feedback, 'Non : on peut s\'y prendre les pieds.');
     // The button to a lesson is a button and an event.
     const button = blocks.find((block) => block.type === 'button')!;
@@ -216,7 +227,8 @@ describe('importing', () => {
     assert.equal(report.beta, true);
     assert.match(report.summary, /^2 leçons de l'export Rise deviennent 2 écrans/);
     const features = report.losses.map((loss: { feature: string }) => loss.feature);
-    for (const feature of ['Onglets (Rise tabs)', 'Texte à trous (Rise fill in the blank)', 'Image interactive (Rise labeled graphic)', 'Bloc Storyline dans Rise']) assert.ok(features.includes(feature), feature);
+    assert.ok(features.includes('Bloc Storyline dans Rise'));
+    for (const feature of ['Onglets (Rise tabs)', 'Texte à trous (Rise fill in the blank)', 'Image interactive (Rise labeled graphic)']) assert.ok(!features.includes(feature), feature);
     assert.ok(report.losses.every((loss: { message: string; status: string }) => loss.message && ['fallback', 'not-yet', 'dropped'].includes(loss.status)));
     // The plan is a draft with one item per screen, every screen covering its own.
     const plan = readJson(dir, 'plan.json');

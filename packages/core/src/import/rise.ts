@@ -1,5 +1,5 @@
 import { htmlToMarkdown, htmlToText } from './html-markdown.ts';
-import type { SourceCourse, SourceSection, SourcePage, SourceItem, SourceMedia, SourceTrigger, ReaderLoss, SourceDialogueNode, SourceDialogueOption } from './model.ts';
+import type { SourceCourse, SourceSection, SourcePage, SourceItem, SourceMedia, SourceTrigger, ReaderLoss, SourceDialogueNode, SourceDialogueOption, SourceBlockMedia } from './model.ts';
 
 // Rise 360's exports (web, SCORM 1.2 and 2004, xAPI): the course is JSON, base64 in the player's
 // page, in a locale file beside it or, since 2026, in `runtime-data.js` (docs/decisions.md D47).
@@ -70,6 +70,26 @@ const obj = (value: unknown): Json => (value && typeof value === 'object' && !Ar
 const list = (value: unknown): Json[] => (Array.isArray(value) ? value.filter((entry) => entry && typeof entry === 'object') as Json[] : []);
 const str = (value: unknown): string => (typeof value === 'string' ? value : typeof value === 'number' ? String(value) : '');
 
+const clip = (text: string, max: number): string => (text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text);
+const round3 = (value: number): number => Math.round(value * 1000) / 1000;
+// Statements A to D (D63): their presentation and alignment.
+const STATEMENTS: Record<string, Record<string, unknown>> = { a: {}, b: { presentation: 'ruled' }, c: { align: 'start' }, d: { presentation: 'ruled', align: 'start' } };
+// Rise's image variants as the presentations of an image (D63); hero is Rise's centred image.
+const IMAGE_PRESENTATIONS: Record<string, 'wide' | 'band' | 'beside' | 'over' | undefined> = { full: 'wide', banner: 'band', 'text aside': 'beside', 'text overlay': 'over' };
+
+// A Rise chart as a chart of D60 when its values fit one: pie → donut, bar → bars, line → trend.
+function riseChart(block: Json, variant: string, items: Json[], ref: string): SourceItem | null {
+  const values = items.map((item) => ({ label: htmlToText(str(item.type) || str(item.label)), value: Number(str(item.value)) }));
+  if (!values.length || values.some((entry) => !entry.label || !Number.isFinite(entry.value))) return null;
+  const takeaway = clip(htmlToText(str(block.title)) || htmlToText(str(block.valuesLabel)) || htmlToText(str(block.itemsLabel)) || values.map((entry) => entry.label).join(', '), 160);
+  const unit = str(obj(block.settings).valueType) === 'percentage' ? { unit: '%' } : {};
+  const kind = variant || 'bar';
+  if (kind === 'pie' && values.length >= 2 && values.length <= 6 && values.every((entry) => entry.value >= 0)) return { ref, kind: 'block', type: 'donut', props: { takeaway, parts: values.map((entry, i) => ({ id: `p${i + 1}`, label: clip(entry.label, 60), value: entry.value })), ...unit } };
+  if (kind === 'bar' && values.length <= 12) return { ref, kind: 'block', type: 'bars', props: { takeaway, rows: values.map((entry, i) => ({ id: `r${i + 1}`, label: clip(entry.label, 80), value: entry.value })), sort: 'none', ...unit } };
+  if (kind === 'line' && values.length >= 2 && values.length <= 40) return { ref, kind: 'block', type: 'trend', props: { takeaway, points: values.map((entry) => ({ x: clip(entry.label, 40), y: entry.value })), ...unit } };
+  return null;
+}
+
 export interface ReadRiseOptions {
   // Whether the export holds a file (paths relative to the player page's folder).
   has: (path: string) => boolean;
@@ -100,12 +120,22 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
     for (const candidate of candidates) if (!candidate.startsWith('assets/') && !/^[a-z]+:/i.test(candidate) && options.has(candidate)) return candidate;
     return candidates.length ? (candidates[0].startsWith('assets/') ? candidates[0] : `assets/${candidates[0]}`) : null;
   };
-  const image = (holder: unknown): { media: SourceMedia; alt?: string } | null => {
+  const image = (holder: unknown): { media: SourceMedia; alt?: string; focus?: { x: number; y: number } } | null => {
     const media = obj(obj(obj(holder).media).image);
     const path = mediaFile(media);
     if (!path) return null;
-    return { media: { path, kind: 'image' }, alt: str(media.alt) || undefined };
+    // Rise's crop (dimensions: the part of the original kept) gives the focal point: its centre.
+    const crop = obj(media.dimensions);
+    const [left, top, width, height, fullWidth, fullHeight] = ['left', 'top', 'width', 'height', 'originalWidth', 'originalHeight'].map((key) => Number(crop[key]));
+    const focus = [left, top, width, height, fullWidth, fullHeight].every(Number.isFinite) && fullWidth > 0 && fullHeight > 0 && (width < fullWidth || height < fullHeight)
+      ? { x: round3(Math.min(1, Math.max(0, (left + width / 2) / fullWidth))), y: round3(Math.min(1, Math.max(0, (top + height / 2) / fullHeight))) } : undefined;
+    const alt = str(media.alt).replace(/^"+|"+$/g, '').trim();
+    return { media: { path, kind: 'image' }, ...(alt ? { alt } : {}), ...(focus ? { focus } : {}) };
   };
+  // A medium of a native block: where it goes in the props, what happens when it cannot be kept.
+  const blockMedium = (found: { media: SourceMedia }, at: (string | number)[], missing: SourceBlockMedia['missing'], hint = ''): SourceBlockMedia => ({ at, media: found.media, missing, ...(hint ? { hint } : {}) });
+  // A picture's text alternative in a native block: alt, or decorative when the source gives none.
+  const altOf = (found: { alt?: string }): Record<string, unknown> => (found.alt ? { alt: clip(found.alt, 250) } : { decorative: true });
 
   const sections: SourceSection[] = [];
   let section: SourceSection | null = null;
@@ -113,6 +143,8 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
     if (!section) { section = { ref: 'section-0', title: str(course.title) || 'Module', pages: [] }; sections.push(section); }
     return section;
   };
+  // The types of the blocks since the last Continue of the lesson: what a Continue that waits waits for.
+  let above: string[] = [];
   const lessonIds = new Set(list(course.lessons).map((lesson) => str(lesson.id)));
   let passingScore: number | undefined;
 
@@ -126,9 +158,14 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
       continue;
     }
     const page: SourcePage = { ref: str(lesson.id) || nextRef('lesson'), title, kind: type === 'quiz' ? 'question' : 'content', positioned: false, items: [], layers: [], triggers: [] };
+    above = [];
     if (type === 'quiz') readQuizLesson(lesson, page);
-    else for (const block of list(lesson.items)) readBlock(block, page);
-    if (type !== 'quiz' && type !== 'blocks' && type !== '') losses.push({ page: title, feature: `Rise lesson "${type}"`, detail: 'read as a lesson of blocks' });
+    // 2017's interactive lessons: a labeled graphic (map) or a sorting activity, its text first.
+    else if (type === 'map' || type === 'sorting') {
+      text(page, lesson.description);
+      readInteractive(lesson, page, str(lesson.id) || nextRef('block'), 'interactive-fullscreen', type === 'map' ? 'labeledgraphic' : 'sorting', list(lesson.items), type);
+    } else for (const block of list(lesson.items)) readBlock(block, page);
+    if (type !== 'quiz' && type !== 'blocks' && type !== '' && type !== 'map' && type !== 'sorting') losses.push({ page: title, feature: `Rise lesson "${type}"`, detail: 'read as a lesson of blocks' });
     ensureSection().pages.push(page);
   }
 
@@ -149,18 +186,31 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
     const items = list(block.items);
     const ref = str(block.id) || nextRef('block');
     const feature = `${family || type}${variant && variant !== family ? ` (${variant})` : ''}`;
+    if (!(type === 'divider' && family === 'continue')) above.push(type);
     switch (type) {
       case 'text': {
         if (family === 'impact') {
           for (const item of items) {
             const markdown = htmlToMarkdown(str(item.paragraph));
             const title = htmlToText(str(item.heading));
-            if (markdown || title) push(page, { ref, kind: 'callout', variant: variant === 'note' ? 'info' : 'important', ...(title && variant !== 'note' ? { title } : {}), markdown: markdown || title });
+            if (!markdown && !title) continue;
+            if (variant === 'note') { push(page, { ref, kind: 'callout', variant: 'info', markdown: markdown || title }); continue; }
+            // Statements A to D (D63): large, between rules, at the start of the line; a heading in bold before.
+            const body = title && markdown ? `**${title.replace(/[*_]/g, '')}**\n\n${markdown}` : markdown || title;
+            if (body.length <= 400) push(page, { ref, kind: 'block', type: 'statement', props: { ...STATEMENTS[variant], markdown: body } });
+            else push(page, { ref, kind: 'callout', variant: 'important', ...(title ? { title: clip(title, 120) } : {}), markdown: markdown || title, fallbackOf: { feature: `Énoncé (Rise statement ${variant.toUpperCase()})`, detail: 'un encadré : plus de 400 caractères' } });
           }
           return;
         }
         if (variant === 'two column') {
-          for (const item of items) text(page, item.paragraph, { width: 'half' });
+          // Columns (D63): each column's heading in bold, then its text.
+          const columns = items.map((item) => {
+            const heading = htmlToText(str(item.heading));
+            const body = htmlToMarkdown(str(item.paragraph));
+            return heading && body ? `**${heading.replace(/[*_]/g, '')}**\n\n${body}` : body || (heading ? `**${heading.replace(/[*_]/g, '')}**` : '');
+          }).filter(Boolean);
+          if (columns.length >= 2 && columns.length <= 3) push(page, { ref, kind: 'block', type: 'columns', props: columns.length === 3 ? { count: 3 } : {}, children: columns.map((markdown, i) => ({ slot: ['first', 'second', 'third'][i], item: { ref: `${ref}-${i}`, kind: 'text', markdown } as SourceItem })) });
+          else for (const markdown of columns) push(page, { ref: nextRef('text'), kind: 'text', markdown });
           return;
         }
         for (const item of items) {
@@ -174,7 +224,19 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
           const quote = htmlToMarkdown(str(item.paragraph));
           if (!quote) continue;
           const name = htmlToText(str(item.name));
-          push(page, { ref, kind: 'text', markdown: `${quote.split('\n').map((line) => `> ${line}`.trimEnd()).join('\n')}${name ? `\n\n— ${name}` : ''}`, fallbackOf: { feature: 'Citation (Rise quote)' } });
+          const asText: SourceItem = { ref, kind: 'text', markdown: `${quote.split('\n').map((line) => `> ${line}`.trimEnd()).join('\n')}${name ? `\n\n— ${name}` : ''}`, fallbackOf: { feature: 'Citation (Rise quote)', detail: 'plus de 400 caractères' } };
+          if (quote.length > 400) { push(page, asText); continue; }
+          // A quotation (D63): its author, their portrait unless it is Rise's default one; on its picture (Quote on image).
+          const props: Record<string, unknown> = { presentation: 'quote', markdown: quote, ...(name ? { author: clip(name, 80) } : {}) };
+          const media: SourceBlockMedia[] = [];
+          const portrait = image(item.avatar);
+          const settings = obj(block.settings);
+          if (portrait && settings.avatar !== false && !/block-defaults\/avatar/.test(str(obj(obj(obj(item.avatar).media).image).key)) && name) { props.portrait = ''; media.push(blockMedium(portrait, ['portrait'], 'unset', `${name}-portrait`)); }
+          const backdrop = variant === 'background' ? image(item.background) : null;
+          if (backdrop) {
+            const onPicture = { ...props, presentation: 'image', image: '', ...altOf(backdrop), ...(backdrop.focus ? { focus: backdrop.focus } : {}) };
+            push(page, { ref, kind: 'block', type: 'statement', props: onPicture, media: [...media, blockMedium(backdrop, ['image'], 'block')], otherwise: { ref, kind: 'block', type: 'statement', props, media } });
+          } else push(page, { ref, kind: 'block', type: 'statement', props, media });
         }
         return;
       case 'list': {
@@ -186,16 +248,36 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
         return;
       }
       case 'image': {
-        const gallery = family === 'gallery';
+        if (family === 'gallery') {
+          // A gallery (D63): Rise's grids of two to four columns, or its carousel (centered).
+          const media: SourceBlockMedia[] = [];
+          const images = items.map((item) => ({ item, found: image(item) })).filter((entry) => entry.found).slice(0, 24).map(({ item, found }, i) => {
+            media.push(blockMedium(found!, ['images', i, 'asset'], 'entry'));
+            const caption = htmlToText(str(item.caption));
+            return { id: `i${i + 1}`, asset: '', ...altOf(found!), ...(caption ? { caption: clip(caption, 200) } : {}), ...(found!.focus ? { focus: found!.focus } : {}) };
+          });
+          if (!images.length) return;
+          const columns = { 'two column': 2, 'four column': 4 }[variant];
+          push(page, { ref, kind: 'block', type: 'gallery', props: { ...(variant === 'centered' ? { presentation: 'carousel' } : {}), images, ...(columns ? { columns } : {}), ...(obj(block.settings).zoomOnClick === true ? { zoom: true } : {}) }, media });
+          return;
+        }
+        const presentation = IMAGE_PRESENTATIONS[variant];
         items.forEach((item, i) => {
           const found = image(item);
-          if (!found) return;
+          if (!found) { if (str(item.paragraph) || (variant === 'text overlay' && str(item.caption))) text(page, str(item.paragraph) || item.caption); return; }
           const caption = htmlToText(str(item.caption));
-          const imageItem: SourceItem = { ref: `${ref}-${i}`, kind: 'image', media: found.media, alt: found.alt, ...(caption ? { caption } : {}) };
-          if (gallery && i === 0) imageItem.fallbackOf = { feature: `Galerie (Rise ${variant || 'gallery'})`, detail: 'images l\'une sous l\'autre' };
-          if (variant === 'text aside' && i === 0) imageItem.width = 'half';
-          push(page, imageItem);
-          if (!gallery && str(item.paragraph)) text(page, item.paragraph, variant === 'text aside' ? { width: 'half' } : {});
+          // Beside and over: the text goes with the picture (over: Rise keeps it in the caption).
+          const words = presentation === 'beside' ? htmlToMarkdown(str(item.paragraph)) : presentation === 'over' ? htmlToMarkdown(str(item.caption)) || htmlToMarkdown(str(item.paragraph)) : '';
+          const together = words.length <= 1500 && (presentation !== 'over' || words.length <= 400);
+          const shown = together ? presentation : presentation === 'over' ? 'band' : 'centered';
+          const size = str(obj(block.settings).imageSize);
+          push(page, {
+            ref: `${ref}-${i}`, kind: 'image', media: found.media, ...(found.alt ? { alt: found.alt } : {}),
+            ...(caption && presentation !== 'over' ? { caption } : {}), ...(shown && shown !== 'centered' ? { presentation: shown } : {}), ...(found.focus ? { focus: found.focus } : {}),
+            ...(together && words ? { markdown: words } : {}), ...(shown === 'beside' && size === 'small' ? { share: 'third' as const } : shown === 'beside' && size === 'large' ? { share: 'two-thirds' as const } : {})
+          } as SourceItem);
+          if (!together && words) push(page, { ref: nextRef('text'), kind: 'text', markdown: words });
+          else if (!presentation && str(item.paragraph)) text(page, item.paragraph);
         });
         return;
       }
@@ -211,8 +293,10 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
             if (path) push(page, { ref, kind: 'video', media: { path, kind: 'video' }, title });
           } else if (variant === 'embed' || media.embed) {
             const embed = obj(media.embed);
-            const url = str(embed.originalUrl) || (/src="([^"]+)"/.exec(str(embed.src))?.[1] ?? str(embed.src));
-            const label = str(embed.title) || title || url;
+            // originalUrl and src may hold the frame's HTML (an <iframe> pasted): its src is the address.
+            const frameSrc = (value: string) => /src=["']([^"']+)["']/.exec(value)?.[1] ?? '';
+            const url = [str(embed.originalUrl), str(embed.src)].map((value) => (/^(https?:)?\/\//.test(value) ? value.replace(/^\/\//, 'https://') : frameSrc(value).replace(/^\/\//, 'https://'))).find((value) => /^https?:/.test(value)) ?? '';
+            const label = htmlToText(str(embed.title)) || title || url || 'Contenu intégré';
             push(page, { ref, kind: 'fallback', feature: 'Contenu intégré (Rise embed)', markdown: /^https?:/.test(url) ? `[${label.replace(/[[\]]/g, '')}](${url})` : label, detail: 'un lien à la place du cadre' });
           } else if (variant === 'attachment' || media.attachment) {
             const name = str(obj(media.attachment).filename) || title || 'fichier';
@@ -230,6 +314,8 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
         for (const item of items) readQuestion(item, page, ref, false);
         return;
       case 'chart': {
+        const chart = riseChart(block, variant, items, ref);
+        if (chart) { push(page, chart); return; }
         const rows = items.map((item) => `| ${htmlToText(str(item.type) || str(item.label)).replace(/\|/g, '/')} | ${str(item.value)} |`);
         const head = `| ${htmlToText(str(block.itemsLabel)) || ' '} | ${htmlToText(str(block.valuesLabel)) || ' '} |\n| --- | --- |`;
         push(page, { ref, kind: 'fallback', feature: `Graphique (Rise ${variant || 'chart'})`, markdown: `${htmlToText(str(block.title)) ? `**${htmlToText(str(block.title))}**\n\n` : ''}${head}\n${rows.join('\n')}`, detail: 'un tableau de ses valeurs' });
@@ -239,8 +325,13 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
         if (family === 'continue') {
           const item = items[0] ?? {};
           const completion = str(item.type);
-          push(page, { ref, kind: 'continue', opens: completion === 'completeBlock' || completion === 'completeAll' ? 'answered' : 'continue', label: htmlToText(str(item.title)) || undefined });
-        } else push(page, { ref, kind: 'shape', name: `Rise ${variant || 'divider'}` });
+          // "Complete block above" or "complete all above": once explored (D63), or once answered when
+          // what it waits for is knowledge checks only.
+          const waitedFor = completion === 'completeBlock' ? above.slice(-1) : above;
+          const opens = completion !== 'completeBlock' && completion !== 'completeAll' ? 'continue' : waitedFor.length && waitedFor.every((kind) => kind === 'knowledgeCheck') ? 'answered' : 'explored';
+          push(page, { ref, kind: 'continue', opens, label: htmlToText(str(item.title)) || undefined });
+          above = [];
+        } else push(page, { ref, kind: 'block', type: 'divider', props: variant === 'numbered divider' ? { presentation: 'number' } : variant === 'spacing divider' ? { presentation: 'space' } : {} });
         return;
       case 'custom':
         push(page, { ref, kind: 'unsupported', feature: 'Bloc personnalisé (Rise custom block)' });
@@ -254,33 +345,89 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
     const entries = (titleKey: string, bodyKey: string) => items.map((item) => ({ title: htmlToText(str(item[titleKey])), markdown: htmlToMarkdown(str(item[bodyKey])) }));
     switch (variant || family) {
       case 'accordion':
-        push(page, { ref, kind: 'accordion', items: entries('title', 'description') });
+      case 'tabs': {
+        // Panels and tabs (D63): an item's picture goes with it; its video or embed does not.
+        const panels = items.map((item) => {
+          const found = image(item);
+          const other = Object.keys(obj(item.media)).filter((key) => key !== 'image' && key !== 'tmp');
+          if (other.length) losses.push({ page: page.title, item: ref, feature: `${other.includes('video') ? 'Vidéo' : 'Contenu intégré'} dans ${variant === 'tabs' ? 'un onglet' : 'un panneau'} (Rise ${variant})`, detail: htmlToText(str(item.title)) });
+          return { title: htmlToText(str(item.title)), markdown: htmlToMarkdown(str(item.description)), ...(found ? { media: found.media, ...(found.alt ? { alt: found.alt } : {}) } : {}) };
+        });
+        push(page, { ref, kind: 'accordion', ...(variant === 'tabs' ? { presentation: 'tabs' as const } : {}), items: panels });
         return;
-      case 'tabs':
-        push(page, { ref, kind: 'accordion', items: entries('title', 'description'), fallbackOf: { feature: 'Onglets (Rise tabs)', detail: 'un accordéon' } });
-        return;
+      }
       case 'labeledgraphic': {
+        // An interactive picture (D63): Rise places its markers in percent of the picture.
         const found = image(block);
-        if (found) push(page, { ref: `${ref}-image`, kind: 'image', media: found.media, alt: found.alt });
-        push(page, { ref, kind: 'accordion', items: items.map((item, i) => ({ title: `${i + 1}. ${htmlToText(str(item.title)) || ''}`.trim(), markdown: htmlToMarkdown(str(item.description)) })), fallbackOf: { feature: 'Image interactive (Rise labeled graphic)', detail: 'l\'image, puis ses repères dans un accordéon' } });
+        const markers = items.slice(0, 20);
+        const asPanels: SourceItem = { ref, kind: 'accordion', items: markers.map((item, i) => ({ title: `${i + 1}. ${htmlToText(str(item.title)) || ''}`.trim(), markdown: htmlToMarkdown(str(item.description)) })), fallbackOf: { feature: 'Image interactive (Rise labeled graphic)', detail: 'ses repères dans des panneaux : l\'image est introuvable' } };
+        if (!found || !markers.length) { push(page, asPanels); return; }
+        const media: SourceBlockMedia[] = [blockMedium(found, ['image'], 'block')];
+        const place = (value: unknown) => round3(Math.min(1, Math.max(0, (Number(value) || 50) / 100)));
+        const hotspots = markers.map((item, i) => {
+          const detail = image(item);
+          if (detail) media.push(blockMedium(detail, ['items', i, 'image'], 'unset'));
+          return { id: `i${i + 1}`, x: place(item.x), y: place(item.y), title: clip(htmlToText(str(item.title)) || `${i + 1}`, 80), markdown: htmlToMarkdown(str(item.description)), ...(detail ? { image: '', alt: clip(detail.alt ?? '', 250) } : {}) };
+        });
+        if (items.length > 20) losses.push({ page: page.title, item: ref, feature: 'Repères au-delà de vingt (Rise labeled graphic)', detail: `${items.length - 20}` });
+        push(page, { ref, kind: 'block', type: 'hotspots', props: { image: '', ...altOf(found), ...(found.focus ? { focus: found.focus } : {}), items: hotspots }, media, otherwise: asPanels });
         return;
       }
       case 'process':
       case 'timeline': {
-        const parts = items.filter((item) => item.isHidden !== true).map((item) => {
-          const title = [htmlToText(str(item.date)), htmlToText(str(item.title))].filter(Boolean).join(' — ');
-          const body = htmlToMarkdown(str(item.description));
-          return `${title ? `### ${title}\n\n` : ''}${body}`.trim();
-        }).filter(Boolean);
-        if (parts.length) push(page, { ref, kind: 'text', markdown: parts.join('\n\n'), fallbackOf: { feature: variant === 'process' ? 'Processus (Rise process)' : 'Frise (Rise timeline)', detail: 'ses étapes en un texte' } });
+        // Steps (D63): Rise's process as a carousel with its intro and summary, its timeline as a frise.
+        const visible = items.filter((item) => item.isHidden !== true);
+        const kindOf = (item: Json) => (variant === 'process' ? str(item.type) || 'step' : 'step');
+        const media: SourceBlockMedia[] = [];
+        const part = (item: Json, at: (string | number)[], fallbackTitle: string): { title: string; markdown: string; picture: Record<string, unknown> } => {
+          const found = image(item);
+          if (found) media.push(blockMedium(found, [...at, 'image'], 'unset'));
+          const other = obj(item.media).audio || obj(item.media).embed || obj(item.media).video;
+          if (other) losses.push({ page: page.title, item: ref, feature: `Son ou vidéo d'une étape (Rise ${variant})`, detail: htmlToText(str(item.title)) });
+          return { title: clip(htmlToText(str(item.title)) || fallbackTitle, 120), markdown: htmlToMarkdown(str(item.description)), picture: found ? { image: '', ...(found.alt ? { alt: clip(found.alt, 250) } : {}) } : {} };
+        };
+        const all = visible.filter((item) => kindOf(item) === 'step');
+        const steps = all.slice(0, 20);
+        const intro = visible.find((item) => kindOf(item) === 'intro');
+        const summary = visible.find((item) => kindOf(item) === 'summary');
+        if (!steps.length) { for (const item of [intro, summary]) if (item) text(page, `${str(item.title) ? `<h3>${str(item.title)}</h3>` : ''}${str(item.description)}`); return; }
+        const props: Record<string, unknown> = {
+          ...(variant === 'timeline' ? { presentation: 'timeline' } : {}),
+          items: steps.map((item, i) => {
+            const { title, markdown, picture } = part(item, ['items', i], `${i + 1}`);
+            // A step's picture without alt is decorative (its text says what matters).
+            const shown = 'image' in picture && !('alt' in picture) ? { ...picture, decorative: true } : picture;
+            return { id: `i${i + 1}`, title, markdown, ...shown, ...(variant === 'timeline' && htmlToText(str(item.date)) ? { date: clip(htmlToText(str(item.date)), 40) } : {}) };
+          })
+        };
+        // The intro's and the summary's pictures: an empty alt when the source gives none (decorative).
+        for (const [key, item] of [['intro', intro], ['summary', summary]] as const) {
+          if (!item) continue;
+          const { title, markdown, picture } = part(item, [key], key === 'intro' ? 'Introduction' : 'Synthèse');
+          props[key] = { title, ...(markdown ? { markdown } : {}), ...('image' in picture ? { image: '', alt: String(picture.alt ?? '') } : {}) };
+        }
+        if (all.length > 20) losses.push({ page: page.title, item: ref, feature: `Étapes au-delà de vingt (Rise ${variant})`, detail: `${all.length - 20}` });
+        push(page, { ref, kind: 'block', type: 'steps', props, media });
         return;
       }
       case 'flashcard':
       case 'stack': {
-        const side = (card: Json) => htmlToText(str(obj(card).description)) || (obj(card).media ? '(image)' : '');
-        push(page, { ref, kind: 'accordion', items: items.map((item, i) => ({ title: side(item.front as Json) || `${i + 1}`, markdown: htmlToMarkdown(str(obj(item.back).description)) || side(item.back as Json) })), fallbackOf: { feature: 'Cartes à retourner (Rise flashcards)', detail: 'un accordéon' } });
+        // Flip cards (D63): the front's words as the title and its picture, the back's words behind.
+        const side = (card: Json) => htmlToText(str(obj(card).description));
+        const cards = items.map((item, i) => {
+          const front = obj(item.front);
+          const back = obj(item.back);
+          const found = image(front);
+          if (image(back) && str(back.type) === 'fullimage') losses.push({ page: page.title, item: ref, feature: 'Image au dos d\'une carte (Rise flashcard)', detail: side(front) || `${i + 1}` });
+          const title = side(front) || (found?.alt ? clip(found.alt, 200) : `${i + 1}`);
+          return { title: clip(title, 200), markdown: htmlToMarkdown(str(back.description)) || side(back), ...(found ? { media: found.media, alt: found.alt ?? '' } : {}) };
+        });
+        push(page, { ref, kind: 'accordion', presentation: variant === 'stack' ? 'stack' : 'cards', items: cards });
         return;
       }
+      case 'knowledge':
+        for (const item of items) readQuestion(item, page, ref, false);
+        return;
       case 'button':
       case 'button stack': {
         for (const item of items) {
@@ -305,9 +452,18 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
         return;
       }
       case 'sorting': {
+        // Sort into categories (D63), unscored as Rise's is; more than twelve cards make several.
         const piles = list(block.piles);
-        const lines = piles.map((pile) => `**${htmlToText(str(pile.title))}** : ${items.filter((item) => str(item.pileId) === str(pile.id)).map((item) => htmlToText(str(item.title))).join(', ')}`);
-        push(page, { ref, kind: 'fallback', feature: 'Activité de tri (Rise sorting)', markdown: lines.join('\n\n'), detail: 'ses piles et leurs cartes en texte' });
+        const cards = items.map((item) => ({ text: clip(htmlToText(str(item.title)), 200), target: `pile-${str(item.pileId)}` })).filter((card) => card.text);
+        const targets = piles.map((pile) => ({ ref: `pile-${str(pile.id)}`, text: clip(htmlToText(str(pile.title)) || str(pile.id), 200) }));
+        const chunks = Math.max(1, Math.ceil(cards.length / 12));
+        for (let n = 0; n < chunks; n++) {
+          const share = cards.slice(Math.round((n * cards.length) / chunks), Math.round(((n + 1) * cards.length) / chunks));
+          push(page, {
+            ref: n ? `${ref}-${n + 1}` : ref, kind: 'sort', presentation: 'categories', items: share, targets, scored: false,
+            ...(n === 0 && chunks > 1 ? { fallbackOf: { feature: 'Activité de tri (Rise sorting)', detail: `${chunks} activités de douze cartes au plus` } } : {})
+          });
+        }
         return;
       }
       case 'scenario': {
@@ -417,12 +573,25 @@ export function readRise(data: Json, options: ReadRiseOptions): SourceCourse {
       });
       return;
     }
+    const feedback = (): { correctFeedback?: string; incorrectFeedback?: string } => {
+      const same = htmlToMarkdown(str(item.feedback));
+      const correct = htmlToMarkdown(str(item.feedbackCorrect)) || same;
+      const incorrect = htmlToMarkdown(str(item.feedbackIncorrect)) || same;
+      return { ...(correct ? { correctFeedback: correct } : {}), ...(incorrect ? { incorrectFeedback: incorrect } : {}) };
+    };
     if (type === 'FILL_IN_THE_BLANK') {
-      push(page, { ref, kind: 'fallback', feature: 'Texte à trous (Rise fill in the blank)', markdown: stem, detail: `réponses acceptées : ${answers.map((answer) => htmlToText(str(answer.title))).join(' / ')}` });
+      // A text with one blank (D63), typed; Rise accepts any of its answers.
+      const accepted = [...new Set(answers.map((answer) => htmlToText(str(answer.title)).replace(/[|[\]]/g, ' ').replace(/\s+/g, ' ').trim()).filter(Boolean))];
+      if (!accepted.length) { push(page, { ref, kind: 'fallback', feature: 'Texte à trous (Rise fill in the blank)', markdown: stem, detail: 'aucune réponse acceptée' }); return; }
+      const blank = `[[${accepted.join('|')}]]`;
+      const marker = /(?:\\_){2,}|_{2,}/;
+      push(page, { ref, kind: 'fill-in', ...(marker.test(stem) ? { markdown: stem.replace(marker, blank) } : { stem, markdown: blank }), ...feedback() });
       return;
     }
     if (type === 'MATCHING') {
-      push(page, { ref, kind: 'fallback', feature: 'Association (Rise matching)', markdown: `${stem}\n\n${answers.map((answer) => `- ${htmlToText(str(answer.title))} → ${htmlToText(str(answer.matchTitle))}`).join('\n')}`, detail: 'les paires en texte' });
+      // Pairs to match (D63): each left side to its right side.
+      const pairs = answers.map((answer, i) => ({ text: htmlToText(str(answer.title)), match: htmlToText(str(answer.matchTitle)), ref: `match-${i + 1}` })).filter((pair) => pair.text && pair.match);
+      push(page, { ref, kind: 'sort', presentation: 'pairs', stem, items: pairs.map((pair) => ({ text: pair.text, target: pair.ref })), targets: pairs.map((pair) => ({ ref: pair.ref, text: pair.match })), ...feedback() });
       return;
     }
     if (type === 'DRAW_FROM_QUESTION_BANK') {
