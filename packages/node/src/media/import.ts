@@ -6,7 +6,7 @@ import { isSafeRelativePath, slugify, toPosix } from './files.ts';
 import { getMediaQueue, isFinished } from './jobs.ts';
 import type { MediaJob, MediaQueue } from './jobs.ts';
 import { probeMedia, probeProjectFile } from './probe.ts';
-import { withProjectLockSync } from '../journal/lock.ts';
+import { withProjectLock } from '../journal/lock.ts';
 import { findMediaTools } from './tools.ts';
 import type { MediaTools } from './tools.ts';
 
@@ -51,7 +51,9 @@ export async function importMedia(projectDir: string, inputPath: string, options
   const extension = plan.extension ?? normaliseExtension(extensionOf(input));
   const queue = options.queue ?? getMediaQueue(root, { tools });
   const base = slugify(options.name ?? path.basename(input, path.extname(input)));
-  const { output, job } = withProjectLockSync(root, () => {
+  // The async lock waits for another task of this process holding it (the previous file's import,
+  // an engine command) instead of refusing, as the synchronous one must.
+  const { output, job } = await withProjectLock(root, () => {
     const output = uniquePath(root, `${folder}/${base}${extension}`, queue.reservedOutputs());
     return { output, job: queue.add({ type: 'import', input, output, preset: 'high' }, { start: false }) };
   });
@@ -81,7 +83,7 @@ export async function optimizeInPlace(projectDir: string, relPath: string, optio
   const pending = queue.list().find((j) => j.type === 'optimize' && j.input === rel && !isFinished(j.status));
   if (pending) return { from: rel, to: pending.output, job: pending, info, plan };
   const target = plan.extension && plan.extension !== extensionOf(rel) ? replaceExtension(rel, plan.extension) : rel;
-  const { to, job } = withProjectLockSync(root, () => {
+  const { to, job } = await withProjectLock(root, () => {
     const to = target === rel ? rel : uniquePath(root, target, queue.reservedOutputs());
     return { to, job: queue.add({ type: 'optimize', input: rel, output: to, preset: 'high', replaces: rel, keepOriginal: options.keepOriginal }, { start: false }) };
   });

@@ -12,6 +12,7 @@ import {
   importMedia, optimizeInPlace, ensureRendition, renditionPath, renditionsDir, MediaQueue, readJobs, jobsDir, probeCachePath
 } from '@elabora/node/media/index';
 import { projectDataDir } from '@elabora/node/data-dir';
+import { withProjectLock } from '@elabora/node/journal/lock';
 import type { MediaInfo, MediaTools } from '@elabora/node/media/index';
 
 const run = promisify(execFile);
@@ -202,6 +203,21 @@ test('import --to: a folder of assets/, named with or without its prefix', async
   assert.equal((await importMedia(dir, fixture('Logo.svg'), { queue, to: 'images/logos', name: 'Marque' })).path, 'assets/images/logos/marque.svg');
   assert.equal((await importMedia(dir, fixture('Logo.svg'), { queue, to: 'assets/images/', name: 'Marque' })).path, 'assets/images/marque.svg');
   await assert.rejects(importMedia(dir, fixture('Logo.svg'), { queue, to: 'images/../../elsewhere' }), /such as "images" or "assets\/images"/);
+  await queue.wait();
+});
+
+// The app imports several files one after the other: an import waits for the lock another task
+// of this process holds (the previous file's import, an engine command) instead of refusing it.
+test('import waits for the project lock held by another task of this process', async () => {
+  const dir = project();
+  const queue = new MediaQueue(dir, {});
+  let release = () => {};
+  const holding = withProjectLock(dir, () => new Promise<void>((resolve) => { release = resolve; }));
+  const importing = importMedia(dir, fixture('Logo.svg'), { queue, name: 'Attente' });
+  await new Promise((resolve) => setTimeout(resolve, 40));
+  release();
+  await holding;
+  assert.equal((await importing).path, 'assets/images/attente.svg');
   await queue.wait();
 });
 
