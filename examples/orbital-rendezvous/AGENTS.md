@@ -1,4 +1,4 @@
-<!-- elabora:rules revision=12 sha256=757c5b653c23b2fe · Elabora keeps the rules down to « elabora:rules end » up to date while nobody edits them; write your own notes after it. -->
+<!-- elabora:rules revision=13 sha256=70058bb78c66483c · Elabora keeps the rules down to « elabora:rules end » up to date while nobody edits them; write your own notes after it. -->
 # AGENTS.md — Elabora course project
 
 This folder is an Elabora course (`elabora/0.1`). **Read this file and “Notes for this course” below before editing.** Load detailed guidance only for the task at hand.
@@ -28,6 +28,7 @@ Skills are **not automatically loaded** just because they are listed here. With 
 | Planning, screens, events, review or delivery | `elabora-course-authoring` (then only the relevant reference) |
 | Visual styling, layouts, fonts, generated figures | `elabora-visual-design` |
 | The learner's player: its bars, resources, glossary, credits | `elabora_player` / `elabora player` (then `elabora-visual-design` to fit it to the theme) |
+| Which starter block for what the learner does, recipes, converting a block | `elabora-blocks` |
 | Reusable blocks, activity forks, migrations | `elabora-components` |
 | Custom simulations/interactions | `elabora-free-objects` (and `threejs-r186` for three.js) |
 | Objectives, questions, feedback, cognitive load | `elabora-pedagogy` |
