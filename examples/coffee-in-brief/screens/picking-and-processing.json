@@ -1,0 +1,220 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "picking-and-processing",
+  "title": "Picking and processing",
+  "covers": [
+    "ITEM-2"
+  ],
+  "completeWhen": "interactions-done",
+  "steps": {
+    "2": {
+      "opens": "explored"
+    }
+  },
+  "blocks": [
+    {
+      "id": "picking-intro",
+      "type": "text",
+      "props": {
+        "markdown": "A coffee shrub flowers after the rains, and its cherries ripen over weeks, not all at once. That is why the best farms pick by hand, branch by branch, several times in a season."
+      }
+    },
+    {
+      "id": "picking-branch",
+      "type": "image",
+      "props": {
+        "asset": "images/branch.svg",
+        "alt": "A coffee branch with clusters of cherries at four stages of ripeness: green, yellow, red and dark red.",
+        "caption": "One branch, four stages: green, yellow, red, then dark red. Only the red ones are ready to pick."
+      }
+    },
+    {
+      "id": "picking-steps",
+      "type": "steps",
+      "props": {
+        "presentation": "carousel",
+        "intro": {
+          "title": "From tree to sack",
+          "markdown": "Five steps turn a ripe cherry into green coffee ready to ship. Watch for the step where each farm decides how much fruit stays on the seed."
+        },
+        "items": [
+          {
+            "id": "pick",
+            "title": "Pick the ripe cherries",
+            "markdown": "Pickers take only the red cherries and come back to the same shrubs every week or two. A good picker fills a basket or two a day.",
+            "image": "images/step-pick.svg",
+            "alt": "A hand picking red cherries from a branch into a basket."
+          },
+          {
+            "id": "sort",
+            "title": "Sort them in water",
+            "markdown": "The cherries go into a tank of water. Unripe and damaged ones float and are skimmed off; dense, ripe ones sink and go on.",
+            "image": "images/step-float.svg",
+            "alt": "A tank of water: pale cherries float at the top, red cherries lie at the bottom."
+          },
+          {
+            "id": "pulp",
+            "title": "Take off the fruit",
+            "markdown": "For a washed coffee, a pulper strips the skin and pulp on the day of picking. The sticky mucilage stays until fermentation loosens it and a rinse washes it away.",
+            "image": "images/step-pulp.svg",
+            "alt": "A pulping machine: cherries go in at the top, skins fall out on one side and pale seeds on the other."
+          },
+          {
+            "id": "dry",
+            "title": "Dry them for weeks",
+            "markdown": "The seeds, or the whole cherries for a natural, dry in the sun on patios or raised beds, raked several times a day, until about 11 % of their weight is water.",
+            "image": "images/step-dry.svg",
+            "alt": "Pale seeds spread on a raised drying bed under the sun."
+          },
+          {
+            "id": "hull",
+            "title": "Hull and grade",
+            "markdown": "At the dry mill, machines crack off the parchment and sort the green beans by size, density and colour. Then the beans are bagged, ready to ship.",
+            "image": "images/step-hull.svg",
+            "alt": "Beans in their pale parchment, an arrow, then green beans and flakes of husk."
+          }
+        ],
+        "summary": {
+          "title": "What to remember",
+          "markdown": "Only ripe cherries, then fruit off or fruit on while the seed dries: that choice, washed or natural, is the first thing that shapes the taste."
+        }
+      }
+    },
+    {
+      "id": "picking-band",
+      "type": "image",
+      "width": "bleed",
+      "props": {
+        "presentation": "band",
+        "asset": "images/drying-beds.svg",
+        "alt": "Rows of raised drying beds covered with dark red cherries, green hills behind.",
+        "focus": {
+          "x": 0.5,
+          "y": 0.62
+        },
+        "height": "short"
+      }
+    },
+    {
+      "id": "picking-h-process",
+      "type": "heading",
+      "props": {
+        "text": "Three ways to process",
+        "level": 2
+      }
+    },
+    {
+      "id": "picking-tabs",
+      "type": "accordion",
+      "props": {
+        "presentation": "tabs",
+        "items": [
+          {
+            "id": "washed",
+            "title": "Washed",
+            "markdown": "The fruit comes off before drying; fermentation and a rinse clean the seed. Expect a clean, bright cup: citrus, flowers, a crisp acidity. It takes a lot of water at the mill."
+          },
+          {
+            "id": "natural",
+            "title": "Natural",
+            "markdown": "The whole cherry dries in the sun for three to four weeks, the seed inside. Expect a heavier, fruity cup: berries, wine, sometimes chocolate. It is the oldest method, common where water is scarce."
+          },
+          {
+            "id": "honey",
+            "title": "Honey",
+            "markdown": "The skin comes off, but some of the sticky mucilage stays on the seed while it dries. Expect a cup in between: sweet and round, cleaner than a natural."
+          }
+        ]
+      }
+    },
+    {
+      "id": "picking-gallery",
+      "type": "gallery",
+      "props": {
+        "presentation": "grid",
+        "columns": 3,
+        "ratio": "4:3",
+        "zoom": true,
+        "caption": "What each process leaves to dry.",
+        "images": [
+          {
+            "id": "washed",
+            "asset": "images/dry-washed.svg",
+            "alt": "Seeds in clean, pale parchment.",
+            "caption": "Washed: clean, pale parchment"
+          },
+          {
+            "id": "honey",
+            "asset": "images/dry-honey.svg",
+            "alt": "Seeds in sticky, amber parchment.",
+            "caption": "Honey: sticky, amber parchment"
+          },
+          {
+            "id": "natural",
+            "asset": "images/dry-natural.svg",
+            "alt": "Whole cherries dried dark red, almost black, and wrinkled.",
+            "caption": "Natural: whole dried cherries"
+          }
+        ]
+      }
+    },
+    {
+      "id": "picking-sort",
+      "type": "sort",
+      "step": 2,
+      "props": {
+        "presentation": "categories",
+        "scored": false,
+        "objective": "OBJ-1",
+        "attempts": 2,
+        "stem": "Washed or natural? Place each description where it belongs.",
+        "targets": [
+          {
+            "id": "washed",
+            "text": "Washed"
+          },
+          {
+            "id": "natural",
+            "text": "Natural"
+          }
+        ],
+        "items": [
+          {
+            "id": "whole",
+            "text": "Dried whole, the seed inside the cherry",
+            "target": "natural"
+          },
+          {
+            "id": "tanks",
+            "text": "Fermented in tanks, then rinsed",
+            "target": "washed"
+          },
+          {
+            "id": "berries",
+            "text": "Notes of blueberry and red wine",
+            "target": "natural"
+          },
+          {
+            "id": "citrus",
+            "text": "Clean, with a bright citrus acidity",
+            "target": "washed"
+          },
+          {
+            "id": "water",
+            "text": "Needs a lot of water at the mill",
+            "target": "washed"
+          },
+          {
+            "id": "scarce",
+            "text": "Common where water is scarce",
+            "target": "natural"
+          }
+        ],
+        "feedback": {
+          "correct": "Right: fruit off and washed gives a clean, bright cup; fruit on gives the berries and the weight of a natural, and saves water.",
+          "incorrect": "Ask yourself one question for each: is the fruit still on the seed while it dries? If it is, the coffee is a natural."
+        }
+      }
+    }
+  ]
+}

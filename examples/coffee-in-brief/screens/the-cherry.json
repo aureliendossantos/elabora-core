@@ -1,0 +1,219 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "the-cherry",
+  "title": "A coffee bean is a seed",
+  "covers": [
+    "ITEM-1"
+  ],
+  "layout": "opening",
+  "layoutProps": {
+    "presentation": "cover",
+    "image": "images/farm-slope.svg",
+    "alt": "Rows of coffee shrubs on a green hillside at dawn, red cherries on their branches, shade trees behind.",
+    "focus": {
+      "x": 0.72,
+      "y": 0.62
+    },
+    "lead": "Before you serve a coffee, meet the fruit it comes from. By the end of this lesson you can tell a customer what a coffee bean is, and why the farm it grew on matters."
+  },
+  "completeWhen": "interactions-done",
+  "steps": {
+    "2": {
+      "opens": "explored"
+    },
+    "3": {
+      "opens": "answered"
+    }
+  },
+  "blocks": [
+    {
+      "id": "cherry-pre",
+      "type": "quiz",
+      "slot": "question",
+      "props": {
+        "stem": "Before you start: botanically, what is a coffee bean?",
+        "mode": "single",
+        "scored": false,
+        "objective": "OBJ-1",
+        "options": [
+          {
+            "id": "a",
+            "text": "A legume, like a pea or a bean",
+            "correct": false,
+            "feedback": "A tempting guess from the name, but coffee is not a legume: the lesson shows what it really is."
+          },
+          {
+            "id": "b",
+            "text": "The seed of a fruit",
+            "correct": true,
+            "feedback": "Yes: the seed of a cherry. Keep it in mind as you read: everything that happens to that fruit shows in the cup."
+          },
+          {
+            "id": "c",
+            "text": "A nut that grows in a hard shell",
+            "correct": false,
+            "feedback": "It does grow in a shell of sorts, the parchment, but inside a soft fruit: you will meet it below."
+          }
+        ]
+      }
+    },
+    {
+      "id": "cherry-mina",
+      "type": "speech",
+      "props": {
+        "speaker": "mina",
+        "lines": [
+          {
+            "id": "welcome",
+            "markdown": "Welcome to Fernhill! I train every new barista here, and I will walk you through this module."
+          },
+          {
+            "id": "why",
+            "markdown": "The question customers ask most is *where does this coffee come from?* By Friday you will answer it in a sentence."
+          }
+        ]
+      }
+    },
+    {
+      "id": "cherry-h-grows",
+      "type": "heading",
+      "props": {
+        "text": "Where coffee grows",
+        "level": 2
+      }
+    },
+    {
+      "id": "cherry-belt",
+      "type": "text",
+      "props": {
+        "markdown": "Coffee grows in a belt around the equator, between the tropics, often on small, steep farms. Two species fill almost every cup: **arabica**, grown high up where the air is cool, and **robusta**, hardier, grown lower down in the heat.\n\nCool air slows the ripening of the cherries. That slower ripening is one reason high-grown arabica tastes sweeter and more complex.",
+        "aside": "Robusta has about twice the caffeine of arabica. Roasters use it in espresso blends for its body and its crema."
+      }
+    },
+    {
+      "id": "cherry-altitude",
+      "type": "image",
+      "width": "wide",
+      "props": {
+        "presentation": "wide",
+        "asset": "images/altitude.svg",
+        "alt": "A mountain in two bands of farms: dark, upright arabica shrubs high on its slopes, broader robusta shrubs lower down, where it is warmer.",
+        "caption": "High on the slope, often above 1,000 m: arabica. Lower down, in hotter air: robusta.",
+        "zoom": true
+      }
+    },
+    {
+      "id": "cherry-ornament",
+      "type": "divider",
+      "props": {
+        "presentation": "ornament"
+      }
+    },
+    {
+      "id": "cherry-h-inside",
+      "type": "heading",
+      "props": {
+        "text": "Inside the cherry",
+        "level": 2
+      }
+    },
+    {
+      "id": "cherry-section",
+      "type": "hotspots",
+      "props": {
+        "presentation": "popover",
+        "image": "images/cherry-section.svg",
+        "alt": "A coffee cherry cut in half: a red skin, a pale layer of fruit, and two seeds side by side, each in a papery shell.",
+        "prompt": "Select each marker to see what each layer of the cherry becomes.",
+        "items": [
+          {
+            "id": "skin",
+            "x": 0.67,
+            "y": 0.29,
+            "title": "The skin",
+            "markdown": "Thin and red when ripe. In a washed coffee it comes off on the day of picking; in a natural it dries on the seed for weeks."
+          },
+          {
+            "id": "pulp",
+            "x": 0.6,
+            "y": 0.7,
+            "title": "Pulp and mucilage",
+            "markdown": "A sweet, sticky fruit, only a few millimetres thick. How much of it stays on the seed while it dries is what separates a washed, a honey and a natural coffee."
+          },
+          {
+            "id": "parchment",
+            "x": 0.21,
+            "y": 0.44,
+            "title": "The parchment",
+            "markdown": "A papery shell round each seed. It protects the bean while it dries and rests, and the dry mill removes it just before the coffee ships."
+          },
+          {
+            "id": "bean",
+            "x": 0.31,
+            "y": 0.6,
+            "title": "The bean",
+            "markdown": "Two seeds facing each other, flat side to flat side, under a thin silverskin. Green and hard: this is the green coffee a roaster buys."
+          }
+        ]
+      }
+    },
+    {
+      "id": "cherry-find",
+      "type": "quiz",
+      "step": 2,
+      "props": {
+        "presentation": "image",
+        "image": "images/cherry-section.svg",
+        "alt": "The same coffee cherry cut in half, with four numbered zones on its layers.",
+        "stem": "On this cherry, find the layer that the dry mill removes just before the coffee ships.",
+        "mode": "single",
+        "scored": false,
+        "objective": "OBJ-1",
+        "attempts": 2,
+        "options": [
+          {
+            "id": "a",
+            "text": "The skin",
+            "correct": false,
+            "feedback": "The skin comes off long before, at the wet mill or with the dried fruit of a natural.",
+            "x": 0.67,
+            "y": 0.29
+          },
+          {
+            "id": "b",
+            "text": "The pulp",
+            "correct": false,
+            "feedback": "The pulp goes before drying (washed) or with the dried fruit (natural), not at the end.",
+            "x": 0.6,
+            "y": 0.7
+          },
+          {
+            "id": "c",
+            "text": "The parchment",
+            "correct": true,
+            "feedback": "Yes: the parchment protects the bean until the dry mill hulls it, just before the green coffee is bagged.",
+            "x": 0.21,
+            "y": 0.44
+          },
+          {
+            "id": "d",
+            "text": "The bean",
+            "correct": false,
+            "feedback": "The bean is what ships: everything around it is removed.",
+            "x": 0.31,
+            "y": 0.6
+          }
+        ]
+      }
+    },
+    {
+      "id": "cherry-statement",
+      "type": "statement",
+      "step": 3,
+      "props": {
+        "presentation": "statement",
+        "textRef": "TXT-1"
+      }
+    }
+  ]
+}

@@ -1,0 +1,206 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "coffee-in-brief",
+  "title": "From cherry to cup: coffee in brief",
+  "language": "en",
+  "version": "1.0.0",
+  "sections": [
+    {
+      "id": "farm",
+      "title": "On the farm",
+      "screens": [
+        "the-cherry",
+        "picking-and-processing"
+      ]
+    },
+    {
+      "id": "journey",
+      "title": "Across the sea",
+      "screens": [
+        "green-coffee"
+      ]
+    },
+    {
+      "id": "roastery",
+      "title": "In the roastery",
+      "screens": [
+        "roasting",
+        "roast-and-flavour"
+      ]
+    },
+    {
+      "id": "bar",
+      "title": "Behind the bar",
+      "screens": [
+        "brewing",
+        "with-customers"
+      ]
+    }
+  ],
+  "variables": [],
+  "theme": {
+    "cascade": "components-over-theme",
+    "fonts": [
+      {
+        "family": "Playfair Display",
+        "src": "theme/fonts/playfair-display/playfair-display-latin-wght-normal.woff2",
+        "weight": "400 900"
+      },
+      {
+        "family": "Playfair Display",
+        "src": "theme/fonts/playfair-display/playfair-display-latin-wght-italic.woff2",
+        "weight": "400 900",
+        "style": "italic"
+      },
+      {
+        "family": "Source Sans 3",
+        "src": "theme/fonts/source-sans-3/source-sans-3-latin-wght-normal.woff2",
+        "weight": "200 900"
+      },
+      {
+        "family": "Source Sans 3",
+        "src": "theme/fonts/source-sans-3/source-sans-3-latin-wght-italic.woff2",
+        "weight": "200 900",
+        "style": "italic"
+      }
+    ],
+    "tokens": {
+      "font.heading": "\"Playfair Display\", Didot, \"Bodoni MT\", Georgia, serif",
+      "font.body": "\"Source Sans 3\", \"Segoe UI\", system-ui, -apple-system, Arial, sans-serif",
+      "color.primary": "#6E3519",
+      "color.onPrimary": "#FFFFFF",
+      "color.accent": "#A8361F",
+      "color.surface": "#FBF7F1",
+      "color.text": "#2B1D14",
+      "color.muted": "#6B5646",
+      "color.success": "#2E6B3A",
+      "color.error": "#B3261E",
+      "color.focus": "#1F5FBF",
+      "radius": 12,
+      "player.top.background": "#FBF7F1",
+      "player.top.text": "#2B1D14",
+      "player.bottom.background": "#FBF7F1",
+      "player.progress": "#A8361F",
+      "player.radius": 12
+    },
+    "custom": {
+      "color.espresso": "#2B1D14",
+      "color.crema": "#E9C99A",
+      "color.cream": "#FBF7F1",
+      "color.paper": "#F3EBDD",
+      "color.leaf": "#4E7A3B",
+      "color.leaf-dark": "#2F5228",
+      "color.hill": "#86A36E",
+      "color.sky": "#DCE8E3",
+      "color.cherry": "#B8322A",
+      "color.cherry-dark": "#7E1C22",
+      "color.cherry-unripe": "#8DB04A",
+      "color.cherry-yellow": "#E2AE3E",
+      "color.pulp": "#F2D9B8",
+      "color.parchment": "#E9D6A9",
+      "color.green-bean": "#B4BD8B",
+      "color.green-bean-dark": "#8D9867",
+      "color.roast-light": "#B98252",
+      "color.roast-medium": "#7C4A26",
+      "color.roast-medium-dark": "#5A321A",
+      "color.roast-dark": "#33201A",
+      "color.jute": "#C6A36C",
+      "color.jute-dark": "#9A7A47",
+      "color.steel": "#8E979D",
+      "color.steel-dark": "#4F585E",
+      "color.copper": "#B8743A",
+      "color.water": "#7FB0C2",
+      "color.wood": "#8A5A36",
+      "color.wood-dark": "#4A2E1C"
+    },
+    "stylesheet": "theme/theme.css"
+  },
+  "navigation": {
+    "mode": "free",
+    "lockUntilComplete": true
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "logo",
+          "enabled": false
+        },
+        {
+          "id": "title"
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "outline"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "completion": {
+    "reportAs": "passed-incomplete",
+    "masteryScore": 75
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  },
+  "presentation": {
+    "mode": "scroll",
+    "contentWidth": 700,
+    "wideWidth": 1160
+  },
+  "description": "A 15-minute scroll module for the new baristas of Fernhill Coffee (a fictional café chain): where a coffee comes from, what processing and roasting do to its taste, and how to fix a bad brew at the bar. It uses every starter block of Elabora, the way a Rise author would.",
+  "durationMinutes": 15,
+  "speakers": [
+    {
+      "id": "mina",
+      "name": "Mina, head of training",
+      "color": "color.accent",
+      "look": {
+        "svg": "characters/mina.svg"
+      }
+    }
+  ],
+  "credits": [
+    "Every picture of this module is drawn by code for it (generators/figures.mjs) and released under CC0, like its texts.",
+    "Fernhill Coffee, its staff and its partner producers are fictional."
+  ],
+  "ui": {
+    "screenOf": "Lesson {n} of {total}"
+  }
+}

@@ -1,0 +1,216 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/plan.schema.json",
+  "id": "PLAN-FERNHILL-COFFEE-V1",
+  "title": "From cherry to cup: coffee in brief",
+  "businessGoal": "Give the new baristas of Fernhill Coffee (a fictional café chain) the story behind the beans they sell, so that in their first week they can answer customers' questions about origin, processing and roast, and fix a sour or bitter pour-over without calling a shift lead.",
+  "audience": {
+    "role": "New baristas and shift leads of Fernhill Coffee, in their first week",
+    "priorKnowledge": "low",
+    "notes": "Most drink coffee and have pulled a few shots, but have never seen a coffee farm or a roaster. They take the module on a phone during the onboarding week, between shifts, and will be asked the same questions by customers the next day."
+  },
+  "duration": {
+    "min": 12,
+    "max": 18
+  },
+  "sources": [
+    {
+      "id": "SRC-1",
+      "title": "Specialty Coffee Association, Coffee Brewing Control Chart and brewing recipes (ratios, extraction)",
+      "type": "trade standard"
+    },
+    {
+      "id": "SRC-2",
+      "title": "Specialty Coffee Association, Arabica Green Coffee Defect Handbook",
+      "type": "trade standard"
+    },
+    {
+      "id": "SRC-3",
+      "title": "Fernhill Coffee, bar recipe cards and storage rules (fictional internal procedure)",
+      "type": "internal procedure"
+    },
+    {
+      "id": "SRC-4",
+      "title": "Interviews with Fernhill's head roaster and partner producers (fictional)",
+      "type": "expert interview"
+    }
+  ],
+  "objectives": [
+    {
+      "id": "OBJ-1",
+      "short": "Origin and processing",
+      "statement": "Explain to a customer how a coffee's growing conditions and its processing (washed, natural, honey) shape what is in the cup.",
+      "bloom": "understand",
+      "criterion": "Five of six descriptions sorted under washed or natural; the parts of the cherry placed",
+      "sources": [
+        "SRC-4"
+      ]
+    },
+    {
+      "id": "OBJ-2",
+      "short": "Green coffee",
+      "statement": "Describe what happens to coffee between the farm and the roastery, and recognise on a sample the defects a grader removes.",
+      "bloom": "understand",
+      "criterion": "The full defect recognised on a sample; the stages of the journey put in order",
+      "sources": [
+        "SRC-2",
+        "SRC-4"
+      ]
+    },
+    {
+      "id": "OBJ-3",
+      "short": "Roast and flavour",
+      "statement": "Explain how the roast changes a coffee's flavour, and correct the common myths about roast and caffeine.",
+      "bloom": "understand",
+      "criterion": "The stages of a roast completed in a text; three of four myths answered",
+      "sources": [
+        "SRC-4"
+      ]
+    },
+    {
+      "id": "OBJ-4",
+      "short": "Brewing at the bar",
+      "statement": "Brew a pour-over to the bar's recipe and correct a sour or bitter cup by changing one variable.",
+      "bloom": "apply",
+      "criterion": "The water for a 1:16 brew computed; the cause of a sour and of a bitter cup named",
+      "sources": [
+        "SRC-1",
+        "SRC-3"
+      ]
+    }
+  ],
+  "items": [
+    {
+      "id": "ITEM-1",
+      "kind": "intro",
+      "title": "A coffee bean is a seed",
+      "part": "On the farm",
+      "objectives": [
+        "OBJ-1"
+      ],
+      "sources": [
+        "SRC-4"
+      ],
+      "description": "Opening question: what a coffee bean is. Mina, head of training, frames the module. Where coffee grows (altitude, arabica and robusta), the parts of the cherry on a cross-section to explore, then find the parchment on it.",
+      "lockedTexts": [
+        {
+          "id": "TXT-1",
+          "text": "Every coffee you pour started as the seed of a fruit, and what happened to that fruit shows in the cup."
+        }
+      ]
+    },
+    {
+      "id": "ITEM-2",
+      "kind": "practice",
+      "title": "Picking and processing",
+      "objectives": [
+        "OBJ-1"
+      ],
+      "sources": [
+        "SRC-4"
+      ],
+      "description": "Ripening is uneven; the five steps from tree to sack; washed, natural and honey processes and their tastes; what each leaves on the bean. Practice: sort six descriptions under washed or natural."
+    },
+    {
+      "id": "ITEM-3",
+      "kind": "practice",
+      "title": "Green coffee crosses the sea",
+      "part": "Across the sea",
+      "objectives": [
+        "OBJ-2"
+      ],
+      "sources": [
+        "SRC-2"
+      ],
+      "description": "A year in the life of one lot (timeline); what a buyer checks; a grader's tray and its defects; which bean a grader pulls; why green coffee travels well; the shipment in pictures."
+    },
+    {
+      "id": "ITEM-4",
+      "kind": "exposition",
+      "title": "Inside the roaster",
+      "part": "In the roastery",
+      "objectives": [
+        "OBJ-3"
+      ],
+      "sources": [
+        "SRC-4"
+      ],
+      "description": "The parts of a drum roaster, the roast curve and its phases (drying, browning, first crack, development), green and roasted beans compared, a fill-in on the stages, resting the beans."
+    },
+    {
+      "id": "ITEM-5",
+      "kind": "practice",
+      "title": "Roast and flavour",
+      "objectives": [
+        "OBJ-3"
+      ],
+      "sources": [
+        "SRC-4"
+      ],
+      "description": "Roast levels and their flavours; myths heard at the counter as flip cards; a roasted bean read up close; a check on roast and a natural coffee; confidence check."
+    },
+    {
+      "id": "ITEM-6",
+      "kind": "practice",
+      "title": "Brewing a pour-over",
+      "part": "Behind the bar",
+      "objectives": [
+        "OBJ-4"
+      ],
+      "sources": [
+        "SRC-1",
+        "SRC-3"
+      ],
+      "description": "Pre-question on a sour cup. The bar's pour-over in order on the station; extraction; fixing a cup; the water for a 1:16 brew; four ways to brew; storing beans; key words."
+    },
+    {
+      "id": "ITEM-7",
+      "kind": "assessment",
+      "title": "Talking coffee with customers",
+      "objectives": [
+        "OBJ-1",
+        "OBJ-2",
+        "OBJ-3",
+        "OBJ-4"
+      ],
+      "sources": [
+        "SRC-4"
+      ],
+      "description": "A producer's portrait and her words; customers' questions matched with answers; the journey in order; a summary to complete; a reflection on a customer's question, with a model answer; the score."
+    }
+  ],
+  "spacing": [
+    "D+2: brew the recipe with a shift lead",
+    "D+7: explain the coffee of the month",
+    "D+30: cupping with the head roaster"
+  ],
+  "waivers": [],
+  "decided": [
+    {
+      "topic": "audience",
+      "label": "A showcase of the starter blocks",
+      "choice": "Every starter block and presentation is used once at least, where it serves the content",
+      "why": "It is also Elabora's reference sample for Rise authors and agents: each block is there because the content asks for it, never as a catalogue.",
+      "items": [
+        "ITEM-1",
+        "ITEM-2",
+        "ITEM-3",
+        "ITEM-4",
+        "ITEM-5",
+        "ITEM-6",
+        "ITEM-7"
+      ]
+    },
+    {
+      "topic": "certainty",
+      "label": "Figures given as typical",
+      "choice": "Times, temperatures and altitudes given as typical values, not rules",
+      "why": "They vary with the farm, the roaster and the lot; the module gives the usual range and says so.",
+      "items": [
+        "ITEM-1",
+        "ITEM-3",
+        "ITEM-4",
+        "ITEM-6"
+      ]
+    }
+  ]
+}

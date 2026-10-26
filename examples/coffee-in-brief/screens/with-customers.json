@@ -1,0 +1,219 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "with-customers",
+  "title": "Talking coffee with customers",
+  "covers": [
+    "ITEM-7"
+  ],
+  "completeWhen": "interactions-done",
+  "steps": {
+    "2": {
+      "opens": "answered"
+    },
+    "3": {
+      "opens": "answered"
+    },
+    "4": {
+      "opens": "answered"
+    }
+  },
+  "blocks": [
+    {
+      "id": "customers-rosa",
+      "type": "image",
+      "props": {
+        "presentation": "beside",
+        "asset": "images/producer.svg",
+        "alt": "A portrait of a smiling woman in a straw hat, with coffee shrubs behind her.",
+        "side": "start",
+        "share": "third",
+        "focus": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "title": "Meet Rosa",
+        "markdown": "Rosa grows arabica at 1,700 m in the Andes with her family, on four hectares of steep slope. She picks by hand, dries her naturals on raised beds and sells them to us through her cooperative. She is a persona, drawn from the producers our roasters visit."
+      }
+    },
+    {
+      "id": "customers-quote",
+      "type": "statement",
+      "props": {
+        "presentation": "quote",
+        "author": "Rosa",
+        "role": "Producer, Andes (a persona)",
+        "portrait": "images/producer.svg",
+        "align": "start",
+        "markdown": "When a customer tastes the fruit in this coffee, they are tasting three weeks of my family turning the cherries in the sun."
+      }
+    },
+    {
+      "id": "customers-h-answer",
+      "type": "heading",
+      "props": {
+        "text": "Answer like a barista",
+        "level": 2
+      }
+    },
+    {
+      "id": "customers-pairs",
+      "type": "sort",
+      "props": {
+        "presentation": "pairs",
+        "objective": "OBJ-1",
+        "attempts": 2,
+        "stem": "Match each answer with the customer's question it replies to.",
+        "targets": [
+          {
+            "id": "berries",
+            "text": "“Why does this one taste of blueberries?”"
+          },
+          {
+            "id": "strong",
+            "text": "“Is the dark roast stronger?”"
+          },
+          {
+            "id": "sour",
+            "text": "“Why is my coffee sour?”"
+          },
+          {
+            "id": "ground",
+            "text": "“Why don't you sell it ground?”"
+          }
+        ],
+        "items": [
+          {
+            "id": "natural",
+            "text": "It is a natural: the fruit dried on the seed.",
+            "target": "berries"
+          },
+          {
+            "id": "caffeine",
+            "text": "Stronger in taste, not in caffeine.",
+            "target": "strong"
+          },
+          {
+            "id": "finer",
+            "text": "It ran too fast: I'll grind finer and brew again.",
+            "target": "sour"
+          },
+          {
+            "id": "stale",
+            "text": "Ground coffee goes stale in minutes.",
+            "target": "ground"
+          }
+        ],
+        "feedback": {
+          "correct": "Each answer names the cause in a few words: a customer remembers a reason, not a lecture.",
+          "incorrect": "Look for the cause each answer gives: the process, the roast, the extraction or freshness. Which question is it the cause of?"
+        }
+      }
+    },
+    {
+      "id": "customers-order",
+      "type": "sort",
+      "step": 2,
+      "props": {
+        "presentation": "order",
+        "objective": "OBJ-2",
+        "attempts": 2,
+        "stem": "Put the journey of a coffee in order, from the shrub to the cup.",
+        "items": [
+          {
+            "id": "pick",
+            "text": "Pick the ripe cherries"
+          },
+          {
+            "id": "process",
+            "text": "Take off the fruit, or dry the cherry whole"
+          },
+          {
+            "id": "dry",
+            "text": "Dry to about 11 % moisture"
+          },
+          {
+            "id": "hull",
+            "text": "Hull, grade and bag"
+          },
+          {
+            "id": "ship",
+            "text": "Ship the green coffee"
+          },
+          {
+            "id": "roast",
+            "text": "Roast, then rest"
+          },
+          {
+            "id": "brew",
+            "text": "Grind and brew"
+          }
+        ],
+        "feedback": {
+          "correct": "That is the whole journey: the farm decides the fruit and its processing, the roaster the roast, and you the brew.",
+          "incorrect": "Follow the bean: it leaves the farm green and dry, crosses the sea green, and is only roasted near the café."
+        }
+      }
+    },
+    {
+      "id": "customers-story",
+      "type": "fill-in",
+      "step": 2,
+      "props": {
+        "presentation": "bank",
+        "objective": "OBJ-3",
+        "attempts": 2,
+        "stem": "Complete the story you can tell a customer.",
+        "markdown": "Our coffee starts as the [[seed]] of a cherry. High-grown [[arabica]] ripens slowly in cool air. A [[natural]] dries in its fruit and tastes of berries; a washed coffee is cleaner and brighter. The roast brings out caramel and chocolate, but barely changes the [[caffeine]].",
+        "distractors": [
+          "robusta",
+          "leaf",
+          "oil"
+        ],
+        "feedback": {
+          "correct": "You can tell the whole story in four sentences: that is all most customers want.",
+          "incorrect": "Go back over the lessons in order: what part of the cherry the bean is, which species grows high, which process keeps the fruit, and what the roast barely changes."
+        }
+      }
+    },
+    {
+      "id": "customers-line",
+      "type": "divider",
+      "step": 3,
+      "props": {
+        "presentation": "line"
+      }
+    },
+    {
+      "id": "customers-reflect",
+      "type": "reflection",
+      "step": 3,
+      "props": {
+        "presentation": "text",
+        "objective": "OBJ-1",
+        "maxLength": 500,
+        "download": true,
+        "prompt": "A customer asks why Rosa's natural costs more than our house blend. What would you tell them, in two or three sentences?",
+        "model": "It is picked by hand, only the ripe cherries, and dried in its fruit for weeks, turned every day: that is a lot of work for one small farm. It tastes of berries you will not find in a blend, and more of the price goes back to the family who grew it."
+      }
+    },
+    {
+      "id": "customers-results",
+      "type": "results",
+      "step": 4,
+      "props": {
+        "allowRetry": true,
+        "passedMessage": "You are ready for the bar. Brew the recipe with your shift lead this week, and taste a sour and a bitter cup side by side.",
+        "failedMessage": "Not yet: look back at the lessons, then try again. Fruit on or off, roast and caffeine, and sour means grind finer."
+      }
+    },
+    {
+      "id": "customers-statement",
+      "type": "statement",
+      "step": 4,
+      "props": {
+        "presentation": "ruled",
+        "markdown": "Know the fruit, respect the roast, weigh the water."
+      }
+    }
+  ]
+}

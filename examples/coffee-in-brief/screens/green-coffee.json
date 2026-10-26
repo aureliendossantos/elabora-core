@@ -1,0 +1,302 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "green-coffee",
+  "title": "Green coffee crosses the sea",
+  "covers": [
+    "ITEM-3"
+  ],
+  "layout": "opening",
+  "layoutProps": {
+    "presentation": "band",
+    "image": "images/port-sacks.svg",
+    "alt": "Jute sacks of coffee stacked on a quay, a container ship and a crane behind.",
+    "focus": {
+      "x": 0.5,
+      "y": 0.7
+    },
+    "lead": "Green coffee keeps for months: that is how it crosses oceans. See what a buyer checks before a lot is shipped."
+  },
+  "completeWhen": "interactions-done",
+  "steps": {
+    "2": {
+      "opens": "explored"
+    },
+    "3": {
+      "opens": "answered"
+    }
+  },
+  "blocks": [
+    {
+      "id": "green-n1",
+      "type": "divider",
+      "props": {
+        "presentation": "number"
+      }
+    },
+    {
+      "id": "green-h-year",
+      "type": "heading",
+      "props": {
+        "text": "A year in the life of one lot",
+        "level": 2
+      }
+    },
+    {
+      "id": "green-year",
+      "type": "steps",
+      "props": {
+        "presentation": "timeline",
+        "items": [
+          {
+            "id": "flowers",
+            "date": "Month 0",
+            "title": "The shrubs flower",
+            "markdown": "After the first heavy rains, the shrubs flower white for a few days, with a scent close to jasmine. Every cherry of the harvest comes from these flowers."
+          },
+          {
+            "id": "harvest",
+            "date": "Months 7 to 9",
+            "title": "The harvest",
+            "markdown": "The cherries ripen over weeks and the pickers pass every week or two. Processing starts within hours of picking."
+          },
+          {
+            "id": "rest",
+            "date": "Months 9 to 10",
+            "title": "Drying and resting",
+            "markdown": "The beans dry for two to four weeks, then rest in their parchment for a month or more, so that their moisture evens out."
+          },
+          {
+            "id": "mill",
+            "date": "Month 10",
+            "title": "Milling and grading",
+            "markdown": "The dry mill hulls and sorts the beans. A grader counts the defects in a sample, and the lot is roasted lightly and tasted."
+          },
+          {
+            "id": "sea",
+            "date": "Months 11 to 12",
+            "title": "At sea, then roasted",
+            "markdown": "The sacks cross the ocean in a few weeks. Our roaster tastes the arrival sample, then roasts the lot for our cafés."
+          }
+        ]
+      }
+    },
+    {
+      "id": "green-n2",
+      "type": "divider",
+      "props": {
+        "presentation": "number"
+      }
+    },
+    {
+      "id": "green-h-checks",
+      "type": "heading",
+      "props": {
+        "text": "What a buyer checks",
+        "level": 2
+      }
+    },
+    {
+      "id": "green-checks",
+      "type": "columns",
+      "width": "wide",
+      "props": {
+        "count": 3
+      },
+      "blocks": [
+        {
+          "id": "green-moisture-h",
+          "type": "heading",
+          "slot": "first",
+          "props": {
+            "text": "Moisture",
+            "level": 3
+          }
+        },
+        {
+          "id": "green-moisture",
+          "type": "text",
+          "slot": "first",
+          "props": {
+            "markdown": "About 10 to 12 % of the bean's weight. Wetter beans can grow mould; drier ones age fast and taste flat."
+          }
+        },
+        {
+          "id": "green-defects-h",
+          "type": "heading",
+          "slot": "second",
+          "props": {
+            "text": "Defects",
+            "level": 3
+          }
+        },
+        {
+          "id": "green-defects",
+          "type": "text",
+          "slot": "second",
+          "props": {
+            "markdown": "A grader spreads a 350 g sample on a tray and counts what is wrong in it: black, broken or bitten beans, stones."
+          }
+        },
+        {
+          "id": "green-cup-h",
+          "type": "heading",
+          "slot": "third",
+          "props": {
+            "text": "The cup",
+            "level": 3
+          }
+        },
+        {
+          "id": "green-cup",
+          "type": "text",
+          "slot": "third",
+          "props": {
+            "markdown": "Last, a sample is roasted lightly and tasted, or *cupped*, to score its flavour and catch any fault."
+          }
+        }
+      ]
+    },
+    {
+      "id": "green-tray",
+      "type": "hotspots",
+      "width": "wide",
+      "props": {
+        "presentation": "side",
+        "image": "images/grading-tray.svg",
+        "alt": "A dark tray holding a sample of green coffee beans, a few of them damaged or out of place.",
+        "prompt": "Find what the grader pulls out of this sample.",
+        "items": [
+          {
+            "id": "black",
+            "x": 0.145,
+            "y": 0.265,
+            "title": "A black bean",
+            "markdown": "Dark all through: the cherry died on the shrub or fermented too long. A single one counts as a full defect, because it can give a whole cup a dirty, bitter taste."
+          },
+          {
+            "id": "broken",
+            "x": 0.665,
+            "y": 0.165,
+            "title": "A broken bean",
+            "markdown": "Cracked by the huller. Pieces roast faster than whole beans and scorch, which adds bitterness."
+          },
+          {
+            "id": "insect",
+            "x": 0.375,
+            "y": 0.645,
+            "title": "Insect damage",
+            "markdown": "Small holes left by the coffee berry borer, a beetle that lays its eggs in the cherry. A few are tolerated; many make the cup dull or sour."
+          },
+          {
+            "id": "stone",
+            "x": 0.785,
+            "y": 0.635,
+            "title": "A stone",
+            "markdown": "Picked up on the drying patio. It tastes of nothing, but it can break a grinder: graders count it heavily."
+          }
+        ]
+      }
+    },
+    {
+      "id": "green-pull",
+      "type": "quiz",
+      "step": 2,
+      "props": {
+        "presentation": "images",
+        "mode": "single",
+        "scored": false,
+        "objective": "OBJ-2",
+        "stem": "Which of these beans would a grader pull from the sample?",
+        "options": [
+          {
+            "id": "a",
+            "text": "A round, single bean",
+            "correct": false,
+            "feedback": "This is a peaberry: one round seed instead of two flat ones. It is not a defect; mills often sort peaberries out and sell them apart.",
+            "image": "images/bean-peaberry.svg",
+            "alt": "A round green bean with a cut running along it."
+          },
+          {
+            "id": "b",
+            "text": "A flat, even green bean",
+            "correct": false,
+            "feedback": "A flat, even bean with a clean centre cut is exactly what the grader hopes to see.",
+            "image": "images/bean-healthy.svg",
+            "alt": "A flat, oval green bean with a clean, even centre cut."
+          },
+          {
+            "id": "c",
+            "text": "A bean dark all through",
+            "correct": true,
+            "feedback": "Yes: a black bean is a full defect. One can taint a whole cup.",
+            "image": "images/bean-black.svg",
+            "alt": "A flat bean, dark brown to black all through."
+          }
+        ]
+      }
+    },
+    {
+      "id": "green-n3",
+      "type": "divider",
+      "step": 3,
+      "props": {
+        "presentation": "number"
+      }
+    },
+    {
+      "id": "green-h-travel",
+      "type": "heading",
+      "step": 3,
+      "props": {
+        "text": "Why green coffee travels well",
+        "level": 2
+      }
+    },
+    {
+      "id": "green-scoop",
+      "type": "image",
+      "step": 3,
+      "props": {
+        "presentation": "beside",
+        "asset": "images/green-scoop.svg",
+        "alt": "A metal scoop of pale green coffee beans over an open jute sack.",
+        "side": "end",
+        "share": "third",
+        "markdown": "Dried to about 11 % moisture and kept in its jute sack, often with a sealed bag inside, green coffee stays fresh for months. Roasted coffee goes stale within weeks. So coffee crosses the ocean green, and is roasted close to where it is drunk."
+      }
+    },
+    {
+      "id": "green-mosaic",
+      "type": "gallery",
+      "step": 3,
+      "width": "wide",
+      "optional": true,
+      "props": {
+        "presentation": "mosaic",
+        "columns": 3,
+        "zoom": true,
+        "caption": "The journey of a lot, from the dry mill to our roastery.",
+        "images": [
+          {
+            "id": "stack",
+            "asset": "images/sacks-stack.svg",
+            "alt": "Jute sacks stacked seven high.",
+            "caption": "Sacks of about 60 kg, stacked by lot"
+          },
+          {
+            "id": "ship",
+            "asset": "images/ship.svg",
+            "alt": "A container ship at sea, loaded with coloured containers.",
+            "caption": "A few weeks at sea, in containers"
+          },
+          {
+            "id": "warehouse",
+            "asset": "images/warehouse.svg",
+            "alt": "Sacks on pallets inside a warehouse.",
+            "caption": "The lot waits in our warehouse"
+          }
+        ]
+      }
+    }
+  ]
+}

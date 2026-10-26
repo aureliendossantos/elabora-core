@@ -1,0 +1,203 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "roasting",
+  "title": "Inside the roaster",
+  "covers": [
+    "ITEM-4"
+  ],
+  "layout": "opening",
+  "layoutProps": {
+    "presentation": "split",
+    "image": "images/roaster-window.svg",
+    "alt": "Coffee beans tumbling behind the round window of a roasting drum, glowing brown.",
+    "focus": {
+      "x": 0.5,
+      "y": 0.55
+    },
+    "lead": "A roast takes about twelve minutes and decides much of a coffee's taste. Follow one batch through our roaster."
+  },
+  "completeWhen": "interactions-done",
+  "steps": {
+    "2": {
+      "opens": "answered"
+    }
+  },
+  "blocks": [
+    {
+      "id": "roast-h-machine",
+      "type": "heading",
+      "props": {
+        "text": "The roaster, part by part",
+        "level": 2
+      }
+    },
+    {
+      "id": "roast-machine",
+      "type": "steps",
+      "width": "wide",
+      "props": {
+        "presentation": "scroll",
+        "figure": "focus",
+        "figureImage": "images/roaster-diagram.svg",
+        "figureAlt": "A drum roaster in section: a hopper on top, a drum of beans over a row of flames, a chimney and a chaff collector, and a round cooling tray beside it.",
+        "items": [
+          {
+            "id": "hopper",
+            "title": "Load the hopper",
+            "markdown": "The roaster weighs a batch of green beans and pours it into the hopper. When the drum is hot enough, a gate drops the beans in: that is the charge.",
+            "region": {
+              "x": 0.27,
+              "y": 0.04,
+              "w": 0.2,
+              "h": 0.2
+            }
+          },
+          {
+            "id": "drum",
+            "title": "Turn in the drum",
+            "markdown": "The drum turns so that every bean moves through the hot air and touches the hot metal evenly. A probe among the beans gives their temperature.",
+            "region": {
+              "x": 0.16,
+              "y": 0.25,
+              "w": 0.42,
+              "h": 0.33
+            }
+          },
+          {
+            "id": "burner",
+            "title": "Steer the heat",
+            "markdown": "Gas burners under the drum heat it. The roaster turns the flame up or down, minute by minute, to follow the profile written for this coffee.",
+            "region": {
+              "x": 0.18,
+              "y": 0.6,
+              "w": 0.38,
+              "h": 0.14
+            }
+          },
+          {
+            "id": "cooling",
+            "title": "Cool them fast",
+            "markdown": "At the end the beans fall into the cooling tray, where arms stir them and a fan pulls cold air through. Within minutes they stop roasting.",
+            "region": {
+              "x": 0.6,
+              "y": 0.56,
+              "w": 0.37,
+              "h": 0.26
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "roast-h-curve",
+      "type": "heading",
+      "props": {
+        "text": "The roast curve",
+        "level": 2
+      }
+    },
+    {
+      "id": "roast-curve",
+      "type": "steps",
+      "width": "wide",
+      "props": {
+        "presentation": "scroll",
+        "figure": "build",
+        "figureImage": "images/curve-axes.svg",
+        "figureAlt": "A graph of the beans' temperature, upwards, over twelve minutes of roasting, across.",
+        "items": [
+          {
+            "id": "drying",
+            "title": "Drying",
+            "image": "images/curve-drying.svg",
+            "alt": "The curve dips after the charge, then climbs through a band shaded yellow: the drying.",
+            "markdown": "Cold beans cool the drum at first: their temperature dips, then climbs. For four or five minutes they lose water and turn from green to pale yellow, smelling of hay."
+          },
+          {
+            "id": "browning",
+            "title": "Browning",
+            "image": "images/curve-browning.svg",
+            "alt": "The curve climbs more slowly through a band shaded light brown: the browning.",
+            "markdown": "From about 150 °C, sugars and proteins react and the beans turn brown, smelling of toast and caramel. The roaster eases the heat and the curve climbs more slowly."
+          },
+          {
+            "id": "crack",
+            "title": "First crack",
+            "image": "images/curve-crack.svg",
+            "alt": "A burst marks the curve near the top: the first crack.",
+            "markdown": "At around 200 °C, steam inside the beans breaks them open with a crack like popcorn. From here on, every few seconds change the flavour."
+          },
+          {
+            "id": "drop",
+            "title": "Development, then drop",
+            "image": "images/curve-drop.svg",
+            "alt": "The curve ends in a last band, the development, and an arrow down: the drop.",
+            "markdown": "The time after first crack is the development: a minute or two for a light roast, longer for a dark one. Then the beans drop into the cooling tray."
+          }
+        ]
+      }
+    },
+    {
+      "id": "roast-compare",
+      "type": "gallery",
+      "props": {
+        "presentation": "compare",
+        "caption": "The same beans before and after: roasted, they are larger, lighter in the hand and brown.",
+        "images": [
+          {
+            "id": "green",
+            "asset": "images/beans-green.svg",
+            "alt": "A handful of green coffee beans.",
+            "caption": "Green"
+          },
+          {
+            "id": "roasted",
+            "asset": "images/beans-roasted.svg",
+            "alt": "The same handful of beans, roasted brown and slightly larger.",
+            "caption": "Roasted"
+          }
+        ]
+      }
+    },
+    {
+      "id": "roast-fill",
+      "type": "fill-in",
+      "props": {
+        "presentation": "menus",
+        "scored": false,
+        "objective": "OBJ-3",
+        "attempts": 2,
+        "stem": "Complete what happens in the roaster.",
+        "markdown": "While drying, the beans lose [[water]]. Then sugars and proteins react and the beans turn [[brown]]. At first crack, [[steam]] breaks them open, and the time after it is the [[development]].",
+        "distractors": [
+          "oil",
+          "smoke",
+          "black",
+          "charge"
+        ],
+        "feedback": {
+          "correct": "Yes: water out, browning, then steam cracks the beans, and the development after it sets the roast level.",
+          "incorrect": "Follow the curve again: what leaves the beans first, what colour comes with the browning, and what is trapped inside them until it cracks them open?"
+        }
+      }
+    },
+    {
+      "id": "roast-rest",
+      "type": "image",
+      "step": 2,
+      "width": "bleed",
+      "props": {
+        "presentation": "over",
+        "asset": "images/beans-dark.svg",
+        "alt": "Freshly roasted dark beans, edge to edge.",
+        "focus": {
+          "x": 0.5,
+          "y": 0.5
+        },
+        "height": "medium",
+        "title": "Let them rest",
+        "markdown": "Fresh beans give off carbon dioxide for days, and the gas pushes the water away from the grounds. We rest ours a few days before we brew them."
+      }
+    }
+  ]
+}
