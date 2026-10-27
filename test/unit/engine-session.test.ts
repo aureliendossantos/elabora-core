@@ -411,3 +411,56 @@ test('opening a course brings its rules for agents up to date when nobody edited
   const change = changes(dir).at(-1)!;
   assert.deepEqual([change.author, change.command?.name], [{ kind: 'system' }, 'update_agent_rules']);
 });
+
+test('watch readiness gates opening and close reconciles a pending observed file', async () => {
+  const dir = copyExample();
+  temporary.push(dir);
+  const { store } = countingStore(dir);
+  let ready: (() => void) | undefined;
+  let changed: ((paths: string[]) => void) | undefined;
+  let stopped = false;
+  store.watch = (onChange, onReady) => {
+    changed = onChange;
+    ready = onReady;
+    return () => { stopped = true; };
+  };
+  let opened = false;
+  const opening = openProject(dir, { ...QUIET, store, debounceMs: 10_000 }).then((session) => { opened = true; return session; });
+  while (!ready) await sleep(1);
+  assert.equal(opened, false);
+  ready();
+  const session = await opening;
+  sessions.push(session);
+  await session.flush();
+  const events: EngineEvent[] = [];
+  session.subscribe(({ event }) => events.push(event));
+  const screen = readJSON(dir, 'screens/accueil.json');
+  screen.title = 'Pending at close';
+  fs.writeFileSync(path.join(dir, 'screens/accueil.json'), JSON.stringify(screen));
+  changed!(['screens/accueil.json']);
+  await session.close();
+  assert.equal(stopped, true);
+  assert.equal(session.project.screens.get('accueil')?.data.title, 'Pending at close');
+  assert.equal(changes(dir).filter((entry) => entry.author.kind === 'external').length, 1);
+  const changeIndex = events.findIndex(isChanged('watcher'));
+  const closedIndex = events.findIndex((event) => event.type === 'closed');
+  assert.ok(changeIndex >= 0 && closedIndex > changeIndex);
+});
+
+test('monitor consumes observed paths and restores unsettled paths for retry', async () => {
+  const { SessionMonitor } = await import('../../packages/engine/src/session-monitor.ts');
+  const dir = copyExample();
+  temporary.push(dir);
+  const { store } = countingStore(dir);
+  let refreshes = 0;
+  const monitor = new SessionMonitor(store, dir, new Map(), QUIET, () => false, async () => { refreshes++; }, () => {});
+  monitor.observeAll(['screens/accueil.json', 'assets/video/pending.mp4']);
+  assert.deepEqual(monitor.takePending((rel) => rel.startsWith('assets/')), ['screens/accueil.json']);
+  assert.deepEqual(monitor.pending(), ['assets/video/pending.mp4']);
+  monitor.observe('screens/accueil.json');
+  monitor.scheduleRetry();
+  await sleep(300);
+  assert.equal(refreshes, 1);
+  assert.deepEqual(monitor.pending(), ['assets/video/pending.mp4', 'screens/accueil.json']);
+  monitor.stop();
+});
