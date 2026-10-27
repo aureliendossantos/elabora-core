@@ -35,7 +35,6 @@ import type { ExportedPlanDocument, PlanDocumentFormat } from '@elabora/node/pla
 import type { ScreenParts } from '@elabora/core/project/parts';
 import { narrationView, timelineView, screenAt, timelineMarks } from '@elabora/core/narration/view';
 import type { TimelineView, ScreenAt, TimelineMark } from '@elabora/core/narration/view';
-import { narrationLines } from '@elabora/core/narration/narration';
 import { effectsOf } from '@elabora/core/narration/timeline';
 import type { EffectInfo } from '@elabora/core/narration/timeline';
 import type { NarrationView } from '@elabora/core/narration/view';
@@ -74,10 +73,10 @@ import { isMediaAsset, mediaStatus, probeAssets } from '@elabora/node/store/medi
 import { readDisk, readDiskSync, hashOf, toSourceFile, withUpdates, tryApply, pathsInside } from './disk.ts';
 import type { DiskRead, SessionStore } from './disk.ts';
 import { COMMANDS, commandResult, isCommandName, runNamedCommand } from './commands.ts';
-import { Renderer, affects, dependenciesOf, momentTime } from './render.ts';
-import type { Dependencies } from './render.ts';
-import { startCanvasHost } from '@elabora/node/canvas/host';
-import type { CanvasHost } from '@elabora/node/canvas/host';
+import { SessionCanvas } from './session-canvas.ts';
+import { SessionVoice } from './session-voice.ts';
+import { SessionMonitor } from './session-monitor.ts';
+import { momentTime } from './render.ts';
 import type { RenderedScreen } from '@elabora/core/render/screen';
 import { FORMAT } from '@elabora/format';
 import { projectFormat, compareFormats, formatNumbers } from '@elabora/core/format/version';
@@ -93,17 +92,13 @@ import type {
   FormatMigrationView, FormatStatus, HistoryView, MarkResult, MediaImportResult, MediaJobInfo, ProjectSummary, RenderScreenParams, RequestMessage,
   RequestResult, RequestType, ResponseMessage, RestoreView, RunResult, ScreenView, TranslationBuildParams, TranslationBuildView, UndoView, VoiceView, GenerateVoiceParams, AlignNarrationParams, ConversionsParams, ConversionsView
 } from './protocol.ts';
-import { listVoices, voiceProvider, voiceProviders, generateNarration, estimateNarration, setSpeakerVoice, voiceTakes, voiceSample, setSessionKey, maskKey, takeDialogue } from '@elabora/node/voice/index';
-import type { VoiceQuery, VoiceSearchResult, VoiceAccount, VoiceEstimate } from '@elabora/node/voice/index';
-import type { VoiceWriter, GenerateResult, TakeInfo } from '@elabora/node/voice/index';
-import { aligners, alignNarration } from '@elabora/node/align/index';
-import { estimateTranscription, transcribeAudio, transcribers } from '@elabora/node/transcribe/index';
-import type { TranscribeProgress, Transcript, TranscriberView, TranscriptionEstimate, TranscriptionService } from '@elabora/node/transcribe/index';
-import { transcribeNarrationLine } from '@elabora/node/narration/from-audio';
+import { takeDialogue } from '@elabora/node/voice/index';
+import type { VoiceQuery, VoiceSearchResult, VoiceAccount, VoiceEstimate, GenerateResult, TakeInfo } from '@elabora/node/voice/index';
+import type { Transcript, TranscriberView, TranscriptionEstimate, TranscriptionService } from '@elabora/node/transcribe/index';
+import type { AlignResult, AlignerView } from '@elabora/node/align/index';
 import { narrationPeaks } from '@elabora/node/narration/peaks';
 import { importNarrationFiles } from '@elabora/node/narration/audio';
 import type { NarrationPeaks, ImportedFile } from '@elabora/node/narration/types';
-import type { AlignWriter, AlignResult, AlignerView } from '@elabora/node/align/index';
 
 // An editing session (docs/architecture/engine.md): one project in memory for the desktop app.
 //   - Commands run one at a time through a write queue, as journaled changes under the project
@@ -160,8 +155,6 @@ const SETTLE_MS = 400;
 const MAX_SETTLE_MS = 2000;
 const SYSTEM: Author = { kind: 'system' };
 const EXTERNAL: Author = { kind: 'external' };
-// Longest wait at open for the store's watcher to report (FsStore gives up on its probe at 2 s).
-const WATCH_READY_MS = 3000;
 
 interface SessionInit {
   root: string;
@@ -201,14 +194,10 @@ export class Session {
   #entries: JournalEntry[];
   readonly #queue = new WriteQueue();
   readonly #listeners = new Set<(message: EventMessage) => void>();
-  readonly #stats: Map<string, FileInfo>;
-  readonly #dirty = new Set<string>();
+  readonly #stats: Map<string, FileInfo>; // size and time of each file when last read, for rescans
+  readonly #monitor: SessionMonitor;
   readonly #sources = new Map<number, ChangeSource>(); // journal entries the session appended, by sequence number
   readonly #media: MediaSupervisor | null;
-  #rescanNeeded = false;
-  #journalDirty = false;
-  #debounceTimer: NodeJS.Timeout | null = null;
-  #firstDirtyAt: number | null = null;
   #openBatch: { id: string; at: number } | null = null;
   #batchTimer: NodeJS.Timeout | null = null;
   #closures: { id: string; reason: 'idle' | 'human' | 'mark' | 'close' }[] = [];
@@ -216,20 +205,18 @@ export class Session {
   #versionInFlight: Promise<string | null> | null = null;
   #pruned = false;
   #timers: NodeJS.Timeout[] = [];
-  #unwatch: (() => void)[] = [];
   #closing: Promise<{ version: string | null }> | null = null;
   #closed = false;
   #gone = false;
   #settlingSince: number | null = null;
-  readonly #renderer = new Renderer();
+  readonly #canvas: SessionCanvas;
+  readonly #voice: SessionVoice;
   // Media: the hash each media file was probed at, what could not be read, whether ffprobe is there,
   // and whether media jobs started or finished since the media status was last given.
   readonly #mediaChecked = new Map<string, string>();
   readonly #unreadable = new Map<string, string>();
   #toolsMissing = false;
   #jobsChanged = false;
-  // chrome: what the bars showed in the last render pushed (the outline, the items that show…).
-  #canvas: { host: CanvasHost; view: CanvasView; shown: Dependencies | null; views: number; chrome: string | null } | null = null;
 
   constructor(init: SessionInit) {
     this.root = init.root;
@@ -240,6 +227,11 @@ export class Session {
     this.#stats = init.stats;
     this.#options = init.options;
     this.author = init.options.author ?? { kind: 'human' };
+    const project = () => this.#state.project;
+    const reportError = (error: unknown, context: string) => this.#emitError(error, context);
+    this.#canvas = new SessionCanvas({ root: this.root, project, reportError });
+    this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
+    this.#monitor = new SessionMonitor({ store: this.store, journalDir: this.#tail.dir, options: this.#options, closing: () => this.#closing !== null, refresh: () => this.#queue.run(() => this.#refresh()), reportError });
     for (const [rel, file] of init.state.files) if (file.kind === 'binary' && file.media) this.#mediaChecked.set(rel, file.hash ?? '');
     for (const { path: rel, message } of init.state.media?.unreadable ?? []) {
       this.#unreadable.set(rel, message);
@@ -252,7 +244,7 @@ export class Session {
         // Its output is awaited (I_MEDIA_PROCESSING), or not any more.
         if (job.status !== 'running' || job.progress === 0) {
           this.#jobsChanged = true;
-          this.#schedule();
+          this.#monitor.schedule();
         }
       },
       complete: (job) => this.#onMediaComplete(job),
@@ -266,44 +258,7 @@ export class Session {
   // reports what is written from then on (Store.watch, onReady; 3 s at most).
   async start(): Promise<void> {
     this.#resumeBatch();
-    if (this.#options.watch !== false) {
-      // The journal's watcher is a shortcut: what another Elabora tool journals it also writes in the
-      // folder, whose watcher reports it, and the journal is read before the files. On macOS it
-      // shares the process's FSEvents stream with the process's other watchers (a preview, other
-      // projects), built again whenever one starts or stops; the folder's has a thread of its own
-      // (FsStore), whose probe says when it reports.
-      try {
-        const watcher = fs.watch(this.#tail.dir, () => this.#onJournal());
-        watcher.on('error', (error) => this.#emitError(error, 'watching the journal'));
-        this.#unwatch.push(() => watcher.close());
-      } catch (error) {
-        this.#emitError(error, 'watching the journal');
-      }
-      const store = this.store;
-      if (store.watch) {
-        await new Promise<void>((resolve) => {
-          const timer = setTimeout(resolve, WATCH_READY_MS); // a store that never says
-          this.#unwatch.push(store.watch!((paths) => this.#onFiles(paths), () => {
-            clearTimeout(timer);
-            resolve();
-          }));
-        });
-      }
-      // What changed between reading the files and the watcher reporting them.
-      this.#rescanNeeded = true;
-      this.#journalDirty = true;
-      this.#schedule();
-    }
-    const rescanMs = this.#options.rescanIntervalMs ?? 15_000;
-    if (rescanMs > 0) {
-      const timer = setInterval(() => {
-        this.#rescanNeeded = true;
-        this.#journalDirty = true;
-        this.#schedule();
-      }, rescanMs);
-      timer.unref();
-      this.#timers.push(timer);
-    }
+    await this.#monitor.start();
     if (this.#media) {
       this.#media.start();
       // Media that are not conformant masters yet (dropped while the app was closed).
@@ -328,10 +283,8 @@ export class Session {
   // version, prunes the project's data if the session has not yet. Requests fail afterwards.
   close(options: CloseOptions = {}): Promise<{ version: string | null }> {
     this.#closing ??= (async () => {
-      for (const stop of this.#unwatch) stop();
-      this.#unwatch = [];
-      for (const timer of [...this.#timers, this.#debounceTimer, this.#batchTimer, this.#versionTimer]) if (timer) clearTimeout(timer);
-      this.#debounceTimer = null;
+      this.#monitor.stop();
+      for (const timer of [...this.#timers, this.#batchTimer, this.#versionTimer]) if (timer) clearTimeout(timer);
       // Results of the jobs that finish meanwhile are journaled by the queue, before what follows.
       const mode = options.media ?? 'cancel';
       if (mode !== 'leave') await this.#media?.close(mode);
@@ -344,8 +297,7 @@ export class Session {
       });
       if (this.#options.backups?.prune !== false && !this.#pruned) await this.#prune().catch((error) => this.#emitError(error, 'pruning the project data'));
       if (mode === 'leave') await this.#media?.close('leave');
-      await this.#canvas?.host.close();
-      this.#canvas = null;
+      await this.#canvas.close();
       if (this.store instanceof FsStore) this.store.flush();
       this.#closed = true;
       this.#emit({ type: 'closed' });
@@ -377,12 +329,10 @@ export class Session {
   async flush(options: { rescan?: boolean } = {}): Promise<void> {
     this.#assertOpen();
     if (options.rescan) {
-      this.#rescanNeeded = true;
-      this.#journalDirty = true;
+      this.#monitor.requestRescan();
+      this.#monitor.requestJournal();
     }
-    if (this.#debounceTimer) clearTimeout(this.#debounceTimer);
-    this.#debounceTimer = null;
-    this.#firstDirtyAt = null;
+    this.#monitor.clearScheduled();
     await this.#queue.run(() => this.#refresh());
   }
 
@@ -596,56 +546,6 @@ export class Session {
     return narrationPeaks(this.root, this.#state.project, screen, { ...(language ? { language } : {}), ...(typeof perSecond === 'number' ? { perSecond } : {}) });
   }
 
-  // Transcription (D46): what can transcribe the course's language here.
-  transcribers(language?: string): TranscriberView {
-    this.#assertOpen();
-    return transcribers(language || this.#state.project.course?.language || '');
-  }
-
-  // What a recording says, a text to check with its words; the model downloaded first with install,
-  // ElevenLabs with service (its share of the quota approved from 1 %). cancelVoice stops it.
-  async transcribeRecording({ file, language, install, service, approvedPercent }: { file: string; language?: string; install?: boolean; service?: TranscriptionService; approvedPercent?: number }): Promise<Transcript> {
-    this.#assertOpen();
-    if (typeof file !== 'string' || !path.isAbsolute(file)) throw new EngineError('bad-request', 'transcribeRecording takes file: the absolute path of a recording');
-    const lang = language || this.#state.project.course?.language || '';
-    try {
-      return await this.#voiceJob(null, (signal) => transcribeAudio(file, lang, { signal, ...this.#transcribing({ install, service, approvedPercent }) }));
-    } catch (error) { throw voiceError(error); }
-  }
-
-  // What transcribing a file, or a line's recording, with ElevenLabs takes of the author's quota.
-  async transcriptionEstimate({ file, screen, line, language }: { file?: string; screen?: string; line?: string; language?: string }): Promise<TranscriptionEstimate> {
-    this.#assertOpen();
-    let audio = file;
-    if (audio === undefined) {
-      if (typeof screen !== 'string' || typeof line !== 'string') throw new EngineError('bad-request', 'transcriptionEstimate takes a file (an absolute path), or a screen and a line');
-      const info = narrationLines(this.#state.project, screen, language || this.#state.project.course?.language || '')?.find((candidate) => candidate.id === line);
-      if (!info || info.status === 'missing') throw new EngineError('not-found', `Line "${line}" of "${screen}" has no audio`);
-      audio = path.join(this.root, info.audio);
-    }
-    if (!path.isAbsolute(audio)) throw new EngineError('bad-request', 'transcriptionEstimate takes file: the absolute path of a recording');
-    try {
-      return await estimateTranscription(audio);
-    } catch (error) { throw voiceError(error); }
-  }
-
-  // What a line's recording says beside its text now (« Régénérer le texte d'après l'audio » shows
-  // both before anything is written).
-  async transcribeLine({ screen, line, language, install, service, approvedPercent }: { screen: string; line: string; language?: string; install?: boolean; service?: TranscriptionService; approvedPercent?: number }): Promise<{ before: string; transcript: Transcript; audioHash: `sha256:${string}` | null }> {
-    this.#assertOpen();
-    if (!this.#state.project.screens.has(screen)) throw new EngineError('not-found', `No screen "${screen}"`);
-    try {
-      return await this.#voiceJob(screen, (signal) => transcribeNarrationLine(this.root, { screen, line, ...(language ? { language } : {}), signal, ...this.#transcribing({ install, service, approvedPercent }) }));
-    } catch (error) { throw voiceError(error); }
-  }
-
-  #transcribing({ install, service, approvedPercent }: { install?: boolean; service?: TranscriptionService; approvedPercent?: number }) {
-    return {
-      install: install === true, ...(service === 'elevenlabs' ? { service } : {}), ...(typeof approvedPercent === 'number' ? { approvedPercent } : {}),
-      onProgress: (progress: TranscribeProgress) => this.#emit({ type: 'transcribeProgress', progress })
-    };
-  }
-
   effects(): EffectInfo[] {
     this.#assertOpen();
     return effectsOf(this.#state.project);
@@ -834,7 +734,7 @@ export class Session {
   // One screen as the player shows it (memoised; the canvas shows the same).
   renderScreen(params: RenderScreenParams): RenderedScreen {
     this.#assertOpen();
-    return this.#renderer.render(this.#state.project, params);
+    return this.#canvas.render(params);
   }
 
   // The format of the files, and what the migrate option says to do about an older one.
@@ -848,90 +748,20 @@ export class Session {
     return { ...base, state: 'unknown' };
   }
 
-  // ── canvas ─────────────────────────────────────────────────────────
+  // ── canvas (session-canvas.ts) ─────────────────────────────────────
 
   // Starts the canvas host of the project (once): the app shows its page in a frame.
   async openCanvas(options: { port?: number; debug?: boolean } = {}): Promise<CanvasInfo> {
     this.#assertOpen();
-    if (!this.#canvas) {
-      const host = await startCanvasHost({ root: this.root, port: options.port, debug: options.debug });
-      this.#canvas = { host, view: { screen: null, state: 'initial', step: null, layer: null, language: null }, shown: null, views: 0, chrome: null };
-    }
-    const { host, view } = this.#canvas;
-    return { url: host.url, base: host.base, token: host.token, view: { ...view } };
+    return this.#canvas.open(options);
   }
 
-  // Another screen or language: a new render; the state, step or layer of the screen shown: a view
-  // change, the page keeps its nodes.
   async canvasView(change: Partial<CanvasView>): Promise<{ id: string; pages: number; view: CanvasView }> {
     this.#assertOpen();
-    const canvas = this.#canvas;
-    if (!canvas) throw new EngineError('not-available', 'No canvas: open it first (openCanvas)');
-    const before = canvas.view;
-    const view: CanvasView = { ...before, ...change };
-    const id = `view-${++canvas.views}`;
-    canvas.view = view;
-    if (view.screen === null) return { id, pages: canvas.host.pages, view: { ...view } };
-    if (!canvas.shown || view.screen !== before.screen || view.language !== before.language) {
-      try {
-        this.#pushCanvas(id, true);
-      } catch (error) {
-        canvas.view = before; // an unknown screen: the canvas keeps showing what it showed
-        throw error;
-      }
-      return { id, pages: canvas.host.pages, view: { ...view } };
-    }
-    // A moment is sent when there is one, or to clear the one shown.
-    const at = view.at ? momentTime(this.#state.project, view.screen, view.at, view.language, view.layer) : null;
-    const pages = canvas.host.view({ state: view.state, step: view.step, layer: view.layer, ...(at || before.at ? { at } : {}), ...(view.ghost !== undefined || before.ghost !== undefined ? { ghost: !!view.ghost } : {}), ...(view.dialogue !== undefined || before.dialogue !== undefined ? { dialogue: view.dialogue ?? null } : {}) }, { id });
-    return { id, pages, view: { ...view } };
+    return this.#canvas.view(change);
   }
 
-  async closeCanvas(): Promise<{ closed: boolean }> {
-    const canvas = this.#canvas;
-    this.#canvas = null;
-    if (canvas) await canvas.host.close();
-    return { closed: canvas !== null };
-  }
-
-  // Renders the screen shown and sends it to the canvas pages. thrown: errors go to the caller (a
-  // request) rather than to an error event (a change).
-  #pushCanvas(id: string | number, thrown = false): void {
-    const canvas = this.#canvas;
-    if (!canvas?.view.screen) return;
-    let render: RenderedScreen;
-    try {
-      const { screen, state, step, layer, language, at, ghost, dialogue } = canvas.view;
-      render = this.#renderer.render(this.#state.project, { screen: screen as string, state, step: step ?? undefined, layer: layer ?? undefined, language: language ?? undefined, ...(at ? { at } : {}), ...(ghost ? { ghost } : {}), ...(dialogue ? { dialogue } : {}) });
-    } catch (error) {
-      if (thrown) throw error;
-      this.#emitError(error, 'rendering the screen shown on the canvas');
-      return;
-    }
-    canvas.shown = dependenciesOf(render);
-    canvas.chrome = chromeKey({ outline: render.outline, player: render.course.player, about: render.course.about, languages: render.course.languages });
-    canvas.host.push(render, { id });
-  }
-
-  // After a change: renders it affects are forgotten, and the screen shown is sent again when it is
-  // one of them, with the change's sequence number as render id.
-  #renderChanges(): void {
-    const changed = this.#state.takeChanged();
-    if (!changed.length) return;
-    const shared = this.#renderer.invalidate(changed);
-    const canvas = this.#canvas;
-    if (!canvas?.view.screen || !canvas.shown) return;
-    if (shared || affects(canvas.shown, changed)) { this.#pushCanvas(this.#tail.lastSeq); return; }
-    // Another screen changed what the bars show (a title in the outline, a narration that brings the
-    // controls, a generated voice): the screen shown is sent again with them.
-    if (!changed.some((path) => path.startsWith('screens/') || path.startsWith('assets/'))) return;
-    let now: string;
-    try {
-      const chrome = this.#renderer.chrome(this.#state.project, canvas.view.language);
-      now = chromeKey(chrome);
-    } catch { return; }
-    if (now !== canvas.chrome) this.#pushCanvas(this.#tail.lastSeq);
-  }
+  async closeCanvas(): Promise<{ closed: boolean }> { return this.#canvas.close(); }
 
   // ── format ─────────────────────────────────────────────────────────
 
@@ -1007,12 +837,12 @@ export class Session {
   async #journalLock(params: BuildParams): Promise<number | null> {
     const entries = await this.#tail.read();
     if (entries.length) await this.#absorb(entries);
-    this.#dirty.delete(LOCK_FILE);
+    this.#monitor.forget(LOCK_FILE);
     const disk = await this.#readDisk(LOCK_FILE);
     const file = fileOf(disk);
     if (disk.kind === 'unstable' || !file || sameContent(this.#state.files.get(LOCK_FILE), file)) return null;
     if (file.kind !== 'text' || parseJSON(file.text).error !== undefined) {
-      this.#dirty.add(LOCK_FILE); // not the build's: left to the watcher
+      this.#monitor.observe(LOCK_FILE); // not the build's: left to the watcher
       return null;
     }
     return this.#journalChange({ updates: new Map([[LOCK_FILE, file]]), author: SYSTEM, command: { name: 'build', args: params }, source: 'engine' });
@@ -1101,132 +931,25 @@ export class Session {
     });
   }
 
-  // ── voices (docs/decisions.md D25) ─────────────────────────────────
+  // ── voices, alignment and transcription (session-voice.ts) ─────────
 
-  voices(language?: string): VoiceView[] {
-    this.#assertOpen();
-    return listVoices(language).map((voice) => ({ ...voice, ...(voiceProvider(voice.provider).status(voice.language) ?? { installed: false, size: 0 }) }));
-  }
-
-  // What the voices are making (a screen's lines, or a download without a screen): cancelVoice stops them.
-  #voiceJobs = new Set<{ screen: string | null; controller: AbortController }>();
-
-  async #voiceJob<T>(screen: string | null, run: (signal: AbortSignal) => Promise<T>): Promise<T> {
-    const job = { screen, controller: new AbortController() };
-    this.#voiceJobs.add(job);
-    try {
-      return await run(job.controller.signal);
-    } finally {
-      this.#voiceJobs.delete(job);
-    }
-  }
-
-  async installVoices(language: string): Promise<{ language: string; installed: boolean }> {
-    this.#assertOpen();
-    const providers = voiceProviders().filter((provider) => !provider.paid && provider.status(language));
-    if (!providers.length) throw new EngineError('not-found', `No voice speaks ${language}`);
-    return this.#voiceJob(null, async (signal) => {
-      try {
-        for (const provider of providers) {
-          await provider.install(language, { signal, onProgress: (p) => this.#emit({ type: 'voiceProgress', progress: { phase: 'install', fraction: p.total ? p.received / p.total : 0, received: p.received, total: p.total } }) });
-        }
-      } catch (error) {
-        if (signal.aborted) return { language, installed: false };
-        throw voiceError(error);
-      }
-      return { language, installed: true };
-    });
-  }
-
-  cancelVoice(screen?: string): { cancelled: number } {
-    this.#assertOpen();
-    let cancelled = 0;
-    for (const job of this.#voiceJobs) {
-      if (screen !== undefined && job.screen !== screen) continue;
-      if (!job.controller.signal.aborted) { job.controller.abort(); cancelled++; }
-    }
-    return { cancelled };
-  }
-
-  async voiceSample(params: { voice: string; provider?: string; language?: string; text: string; spend?: boolean; name?: string }): Promise<{ audio: Uint8Array; duration: number }> {
-    this.#assertOpen();
-    try {
-      return await voiceSample(params);
-    } catch (error) { throw voiceError(error); }
-  }
-
-  // The session writes what the voices make: through its queue, on its snapshot.
-  #voiceWriter(author: Author): VoiceWriter {
-    return {
-      project: () => this.#state.project,
-      setNarrationAudio: async (args) => {
-        const written = await this.run('set_narration_audio', args, author);
-        return { audio: typeof written.result.audio === 'string' ? written.result.audio : undefined, seq: written.change?.seq ?? null,
-          ...(typeof written.result.alignmentError === 'string' ? { alignmentError: written.result.alignmentError } : {}) };
-      },
-      updateSpeakers: async (speakers) => (await this.run('update_course', { speakers } as CommandArgs['update_course'], author)).change?.seq ?? null,
-      updateLinePause: async (screen, line, pause) => (await this.run('update_narration_line', { screen, line, pauseBefore: pause } as CommandArgs['update_narration_line'], author)).change?.seq ?? null
-    };
-  }
-
-  // The ElevenLabs key, in this process's memory only (when the app keeps it in the system's secure storage, D40).
-  setVoiceKey(key: string | null): { key: string | null } {
-    try { setSessionKey(key); } catch (error) { throw voiceError(error); }
-    return { key: key ? maskKey(key.trim()) : null };
-  }
-
-  async voiceAccount({ check }: { check?: boolean }): Promise<VoiceAccount> {
-    try { return await voiceProvider('elevenlabs').account!({ check }); } catch (error) { throw voiceError(error); }
-  }
-
-  async voiceSearch(query: VoiceQuery): Promise<VoiceSearchResult> {
-    try { return await voiceProvider('elevenlabs').search!({ ...query, provider: 'elevenlabs' }); } catch (error) { throw voiceError(error); }
-  }
-
-  async voiceEstimate(params: GenerateVoiceParams): Promise<VoiceEstimate> {
-    this.#assertOpen();
-    try { return await estimateNarration(this.root, params, this.#voiceWriter(this.author)); } catch (error) { throw voiceError(error); }
-  }
-
-  aligners(language?: string): AlignerView[] {
-    this.#assertOpen();
-    return aligners(language);
-  }
-
-  // Times the words of voiced lines, through the write queue (set_narration_words), cancelVoice stops it.
-  async alignNarration(params: AlignNarrationParams = {}, author: Author = this.author): Promise<AlignResult> {
-    this.#assertOpen();
-    const writer: AlignWriter = {
-      project: () => this.#state.project,
-      setNarrationWords: async (args) => (await this.run('set_narration_words', args, author)).change?.seq ?? null
-    };
-    try {
-      return await this.#voiceJob(params.screen ?? null, (signal) => alignNarration(this.root, {
-        ...params, signal, onProgress: (progress) => this.#emit({ type: 'alignProgress', ...(params.screen ? { screen: params.screen } : {}), progress })
-      }, undefined, writer));
-    } catch (error) { throw voiceError(error); }
-  }
-
-  async setSpeakerVoice({ speaker, voice, language, provider, name, settings }: { speaker: string; voice: string; language?: string; provider?: string; name?: string; settings?: Record<string, unknown> }, author: Author = this.author): Promise<{ change: number | null }> {
-    this.#assertOpen();
-    try {
-      return { change: await setSpeakerVoice(this.root, { speaker, voice, ...(language ? { language } : {}), ...(provider ? { provider } : {}), ...(name ? { name } : {}), ...(settings ? { settings } : {}) }, undefined, this.#voiceWriter(author)) };
-    } catch (error) { throw voiceError(error); }
-  }
-
-  async generateVoice(params: GenerateVoiceParams, author: Author = this.author): Promise<GenerateResult> {
-    this.#assertOpen();
-    try {
-      return await this.#voiceJob(params.screen, (signal) => generateNarration(this.root, { ...params, signal, onProgress: (progress) => this.#emit({ type: 'voiceProgress', screen: params.screen, progress }) }, undefined, this.#voiceWriter(author)));
-    } catch (error) { throw voiceError(error); }
-  }
-
-  voiceTakes({ screen, line, language }: { screen: string; line: string; language?: string }): { language: string; takes: TakeInfo[] } {
-    this.#assertOpen();
-    try {
-      return voiceTakes(this.root, { screen, line, ...(language ? { language } : {}) }, this.#state.project);
-    } catch (error) { throw voiceError(error); }
-  }
+  voices(language?: string): VoiceView[] { return this.#voice.voices(language); }
+  async installVoices(language: string): Promise<{ language: string; installed: boolean }> { return this.#voice.installVoices(language); }
+  cancelVoice(screen?: string): { cancelled: number } { return this.#voice.cancelVoice(screen); }
+  async voiceSample(params: { voice: string; provider?: string; language?: string; text: string; spend?: boolean; name?: string }): Promise<{ audio: Uint8Array; duration: number }> { return this.#voice.voiceSample(params); }
+  setVoiceKey(key: string | null): { key: string | null } { return this.#voice.setVoiceKey(key); }
+  async voiceAccount({ check }: { check?: boolean }): Promise<VoiceAccount> { return this.#voice.voiceAccount({ check }); }
+  async voiceSearch(query: VoiceQuery): Promise<VoiceSearchResult> { return this.#voice.voiceSearch(query); }
+  async voiceEstimate(params: GenerateVoiceParams): Promise<VoiceEstimate> { return this.#voice.voiceEstimate(params); }
+  aligners(language?: string): AlignerView[] { return this.#voice.aligners(language); }
+  async alignNarration(params: AlignNarrationParams = {}, author: Author = this.author): Promise<AlignResult> { return this.#voice.alignNarration(params, author); }
+  async setSpeakerVoice({ speaker, voice, language, provider, name, settings }: { speaker: string; voice: string; language?: string; provider?: string; name?: string; settings?: Record<string, unknown> }, author: Author = this.author): Promise<{ change: number | null }> { return this.#voice.setSpeakerVoice({ speaker, voice, language, provider, name, settings }, author); }
+  async generateVoice(params: GenerateVoiceParams, author: Author = this.author): Promise<GenerateResult> { return this.#voice.generateVoice(params, author); }
+  voiceTakes({ screen, line, language }: { screen: string; line: string; language?: string }): { language: string; takes: TakeInfo[] } { return this.#voice.voiceTakes({ screen, line, language }); }
+  transcribers(language?: string): TranscriberView { return this.#voice.transcribers(language); }
+  async transcribeRecording({ file, language, install, service, approvedPercent }: { file: string; language?: string; install?: boolean; service?: TranscriptionService; approvedPercent?: number }): Promise<Transcript> { return this.#voice.transcribeRecording({ file, language, install, service, approvedPercent }); }
+  async transcriptionEstimate({ file, screen, line, language }: { file?: string; screen?: string; line?: string; language?: string }): Promise<TranscriptionEstimate> { return this.#voice.transcriptionEstimate({ file, screen, line, language }); }
+  async transcribeLine({ screen, line, language, install, service, approvedPercent }: { screen: string; line: string; language?: string; install?: boolean; service?: TranscriptionService; approvedPercent?: number }): Promise<{ before: string; transcript: Transcript; audioHash: `sha256:${string}` | null }> { return this.#voice.transcribeLine({ screen, line, language, install, service, approvedPercent }); }
 
   async importMedia(input: string, options: { to?: string; name?: string } = {}, author: Author = this.author): Promise<MediaImportResult> {
     this.#assertOpen();
@@ -1364,7 +1087,7 @@ export class Session {
   async #syncWithDisk(): Promise<void> {
     const entries = await this.#tail.read();
     if (entries.length) await this.#absorb(entries);
-    if (this.#rescanNeeded) await this.#rescan();
+    if (this.#monitor.needsRescan) await this.#rescan();
     await this.#reconcileDirty();
   }
 
@@ -1403,7 +1126,7 @@ export class Session {
       applied ??= tryApply(this.#state.files, changes.flatMap((change) => change.ops));
       // When the operations do not apply, the snapshot was behind the journal: the disk is taken as it is.
       updates.set(rel, applied ? toSourceFile(this.root, rel, applied.get(rel)) : fileOf(disk));
-      this.#dirty.add(rel);
+      this.#monitor.observe(rel);
     }
     this.#state.update(updates);
     for (const [rel, file] of updates) if (file) this.#state.setBroken(rel, null);
@@ -1412,9 +1135,8 @@ export class Session {
   // Under the lock: files that changed on disk and that no journal entry explains, journaled as one
   // external change. A JSON file that does not parse is left as the snapshot has it (reported).
   async #reconcileDirty(): Promise<void> {
-    const paths = [...this.#dirty].filter((rel) => !this.#media?.owns(rel));
+    const paths = this.#monitor.takePending((rel) => this.#media?.owns(rel) ?? false);
     if (!paths.length) return;
-    for (const rel of paths) this.#dirty.delete(rel);
     // Read everything first: a folder removed brings its files, and while a binary file is still
     // being written the whole burst waits for it (an agent copying a video and editing the screen
     // that shows it makes one change), up to MAX_SETTLE_MS.
@@ -1431,8 +1153,8 @@ export class Session {
     }
     const settling = [...reads.values()].some((disk) => disk.kind === 'unstable');
     if (settling && Date.now() - (this.#settlingSince ??= Date.now()) < MAX_SETTLE_MS) {
-      for (const rel of paths) this.#dirty.add(rel);
-      this.#scheduleRetry();
+      for (const rel of paths) this.#monitor.observe(rel);
+      this.#monitor.scheduleRetry();
       return;
     }
     this.#settlingSince = null;
@@ -1441,7 +1163,7 @@ export class Session {
     const known = new Set(this.#state.files.keys());
     for (const [rel, disk] of reads) {
       if (disk.kind === 'unstable') {
-        this.#dirty.add(rel);
+        this.#monitor.observe(rel);
         continue;
       }
       const current = this.#state.files.get(rel);
@@ -1450,7 +1172,7 @@ export class Session {
         this.#state.setBroken(rel, null);
         if (current) updates.set(rel, null);
         // A new folder: its files are listed.
-        else if (!pathsInside(this.#state.files, rel).length) this.#rescanNeeded = true;
+        else if (!pathsInside(this.#state.files, rel).length) this.#monitor.requestRescan();
         continue;
       }
       if (!current) {
@@ -1479,15 +1201,15 @@ export class Session {
       updates.set(rel, disk.file);
     }
     this.#state.setArtefacts(artefacts);
-    if ([...this.#dirty].some((rel) => !this.#media?.owns(rel))) this.#scheduleRetry();
+    if (this.#monitor.pending().some((rel) => !this.#media?.owns(rel))) this.#monitor.scheduleRetry();
     if (!updates.size) return;
     try {
       await this.#journalChange({ updates, author: EXTERNAL, source: 'watcher' });
     } catch (error) {
       // A file changed again while its content was stored: everything is read again shortly.
       if (!(error instanceof JournalError)) throw error;
-      for (const rel of updates.keys()) this.#dirty.add(rel);
-      this.#scheduleRetry();
+      for (const rel of updates.keys()) this.#monitor.observe(rel);
+      this.#monitor.scheduleRetry();
       return;
     }
     await this.#recordOwn();
@@ -1557,7 +1279,7 @@ export class Session {
   // Validates what changed and tells the app (the canvas first); then the AI batches that ended.
   async #afterChange(): Promise<void> {
     await this.#refreshMedia();
-    this.#renderChanges();
+    this.#canvas.changed(this.#state.takeChanged(), this.#tail.lastSeq);
     const delta = this.#state.validate();
     if (delta) this.#emit(diagnosticsEvent(delta));
     await this.#flushClosures();
@@ -1628,60 +1350,23 @@ export class Session {
 
   // ── watching ───────────────────────────────────────────────────────
 
-  #onFiles(paths: string[]): void {
-    if (this.#closing) return;
-    if (!paths.length) this.#rescanNeeded = true;
-    for (const rel of paths) this.#dirty.add(rel);
-    this.#schedule();
-  }
-
-  #onJournal(): void {
-    if (this.#closing) return;
-    this.#journalDirty = true;
-    this.#schedule();
-  }
-
-  // Waits for a quiet moment (a burst of writes becomes one change), at most maxDelayMs.
-  #schedule(delay?: number): void {
-    if (this.#closing) return;
-    const now = Date.now();
-    this.#firstDirtyAt ??= now;
-    if (this.#debounceTimer) clearTimeout(this.#debounceTimer);
-    const quiet = delay ?? this.#options.debounceMs ?? 60;
-    const wait = Math.max(0, Math.min(quiet, this.#firstDirtyAt + (this.#options.maxDelayMs ?? 600) - now));
-    this.#debounceTimer = setTimeout(() => {
-      this.#debounceTimer = null;
-      this.#firstDirtyAt = null;
-      void this.#queue.run(() => this.#refresh()).catch((error) => this.#emitError(error, 'reconciling changes'));
-    }, wait);
-  }
-
-  #scheduleRetry(): void {
-    if (this.#closing || this.#debounceTimer) return;
-    this.#debounceTimer = setTimeout(() => {
-      this.#debounceTimer = null;
-      void this.#queue.run(() => this.#refresh()).catch((error) => this.#emitError(error, 'reconciling changes'));
-    }, 250);
-  }
-
   // What the watchers reported. The lock is taken only when something is new: the session's own
   // writes come back from the watchers as files that hold what the snapshot holds.
   async #refresh(final = false): Promise<void> {
     // A project folder moved or deleted while open is not a deletion of every file: nothing is
     // journaled, and the app is told (it closes the session).
     if (!fs.existsSync(this.root)) {
-      this.#dirty.clear();
+      this.#monitor.forgetAll();
       if (!this.#gone) this.#emit({ type: 'error', context: 'watching the project', message: `The project folder ${this.root} is gone (moved or deleted).` });
       this.#gone = true;
       return;
     }
     this.#gone = false;
     let needLock = false;
-    if (this.#journalDirty || final) {
-      this.#journalDirty = false;
+    if (this.#monitor.consumeJournal() || final) {
       needLock = await this.#tail.hasNew();
     }
-    if (this.#rescanNeeded || final) await this.#rescan();
+    if (this.#monitor.needsRescan || final) await this.#rescan();
     if (!needLock) needLock = await this.#dirtyChanged();
     if (needLock) await this.#locked(() => this.#syncWithDisk());
     await this.#afterChange();
@@ -1689,18 +1374,18 @@ export class Session {
 
   // Whether a reported file differs from the snapshot; the ones that do not are settled here.
   async #dirtyChanged(): Promise<boolean> {
-    for (const rel of [...this.#dirty]) {
+    for (const rel of this.#monitor.pending()) {
       if (this.#media?.owns(rel)) continue;
       const disk = await this.#readDisk(rel, true);
       if (disk.kind === 'unstable') return true;
       const current = this.#state.files.get(rel);
       if (disk.kind === 'missing') {
         if (current || pathsInside(this.#state.files, rel).length || this.#state.artefacts.some((artefact) => artefact.path === rel)) return true;
-        this.#dirty.delete(rel);
+        this.#monitor.forget(rel);
         continue;
       }
       if (!sameContent(current, disk.file)) return true;
-      this.#dirty.delete(rel);
+      this.#monitor.forget(rel);
       this.#state.setBroken(rel, null);
     }
     return false;
@@ -1708,17 +1393,17 @@ export class Session {
 
   // Lists the folder: files whose size or time changed since they were read, new and gone files.
   async #rescan(): Promise<void> {
-    this.#rescanNeeded = false;
+    this.#monitor.finishRescan();
     this.#jobsChanged = true; // jobs of other processes are seen through their job files
     const listed = await this.store.list();
     const seen = new Set<string>();
     for (const info of listed) {
       seen.add(info.path);
       const known = this.#stats.get(info.path);
-      if (!known || known.size !== info.size || known.mtimeMs !== info.mtimeMs) this.#dirty.add(info.path);
+      if (!known || known.size !== info.size || known.mtimeMs !== info.mtimeMs) this.#monitor.observe(info.path);
     }
-    for (const rel of this.#state.files.keys()) if (!seen.has(rel)) this.#dirty.add(rel);
-    for (const artefact of this.#state.artefacts) if (!seen.has(artefact.path)) this.#dirty.add(artefact.path);
+    for (const rel of this.#state.files.keys()) if (!seen.has(rel)) this.#monitor.observe(rel);
+    for (const artefact of this.#state.artefacts) if (!seen.has(artefact.path)) this.#monitor.observe(artefact.path);
   }
 
   async #readDisk(rel: string, settle = false): Promise<DiskRead> {
@@ -1880,9 +1565,9 @@ export class Session {
         }
       } finally {
         this.#media?.release(job);
-        this.#dirty.add(job.output);
-        if (job.replaces) this.#dirty.add(job.replaces);
-        this.#scheduleRetry();
+        this.#monitor.observe(job.output);
+        if (job.replaces) this.#monitor.observe(job.replaces);
+        this.#monitor.scheduleRetry();
         await this.#afterChange();
       }
     }).catch((error) => this.#emitError(error, `journaling media job ${job.id}`));
@@ -1953,19 +1638,9 @@ const REQUEST_TYPES: Record<RequestType, true> = {
   alignNarration: true, timeline: true, timelineAt: true, timelineMarks: true, narrationPeaks: true, importNarrationFiles: true, planVoiceover: true, planVersions: true, planDiff: true, planDocument: true, planDocumentPage: true, exportPlanDocument: true, dialogue: true, dialoguePlay: true, dialoguePage: true, exportDialogue: true, effects: true, transcribeRecording: true, transcribers: true, transcriptionEstimate: true, transcribeLine: true
 };
 
-// A voice tool's error, for the app: what was not found or not set is refused with its code.
-function voiceError(error: unknown): unknown {
-  if (error instanceof EngineError || !(error instanceof Error) || !('code' in error) || typeof error.code !== 'string' || !/^E_(VOICE|ALIGN|TRANSCRIBE|NARRATION)_/.test(error.code)) return error;
-  const kind = /^E_(VOICE|ALIGN|TRANSCRIBE)_(DOWNLOAD|RUNTIME|NOT_INSTALLED|LANGUAGE)$/.test(error.code) ? 'not-available' : /^E_(VOICE|ALIGN|NARRATION)_(SCREEN|LINE)$/.test(error.code) || error.code === 'E_VOICE_UNKNOWN' ? 'not-found' : 'refused';
-  return new EngineError(kind, error.message, { code: error.code });
-}
-
 const isRequestType = (type: string): type is RequestType => Object.hasOwn(REQUEST_TYPES, type);
 
 const fileOf = (disk: DiskRead): SourceFile | null => (disk.kind === 'file' ? disk.file : null);
-// What the bars show that depends on every screen, as compared between renders.
-const chromeKey = ({ outline, player, about, languages }: { outline?: unknown; player?: unknown; about?: { ai?: unknown; credits?: unknown }; languages?: unknown }): string =>
-  JSON.stringify({ outline, player, about: about && (about.ai || about.credits) ? about : null, languages: languages ?? null });
 
 // What the build request asks of @elabora/node build; the session's validation options by default,
 // so the package is checked as the app's findings are.
