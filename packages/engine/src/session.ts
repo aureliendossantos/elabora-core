@@ -359,7 +359,6 @@ export class Session {
     return this.#closing !== null;
   }
 
-  // ── state ──────────────────────────────────────────────────────────
 
   get files(): ProjectFiles { return this.#state.files; }
   get project(): Project { return this.#state.project; }
@@ -1911,7 +1910,6 @@ export class Session {
     await this.#journalChange({ updates, author, command, source: 'media', write });
   }
 
-  // ── events ─────────────────────────────────────────────────────────
 
   #emit(event: EngineEvent): void {
     const message: EventMessage = { kind: 'event', event };
@@ -1939,7 +1937,6 @@ export class Session {
   }
 }
 
-// ── helpers ──────────────────────────────────────────────────────────
 
 // Every request of the protocol, checked complete by the compiler (a request missing here would be
 // refused as bad-request).

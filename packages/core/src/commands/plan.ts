@@ -80,7 +80,6 @@ function writeWorkingPlan(context: CommandContext, draft: Draft, before: Plan | 
 
 const currentPlan = (draft: Draft): Plan | null => (draft.exists('plan.json') ? draft.json<Plan>('plan.json') : null);
 
-// ── writing the plan ─────────────────────────────────────────────────
 
 // The whole plan, or a JSON Patch of the plan as it is: at any time, by the author or their agent.
 // Items moved (a patch's move, a part changed) take their screens with them (D50).
@@ -194,7 +193,6 @@ export function revertPlanChange(context: CommandContext, { key, version }: Reve
   return { files: draft.files(), result: { key, version: versionLabel(base.number), ...followedResult(followed) } };
 }
 
-// ── versions ─────────────────────────────────────────────────────────
 
 const versionAt = (draft: Draft, number: number): PlanVersion => draft.json<PlanVersion>(planVersionFile(number));
 

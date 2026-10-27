@@ -72,7 +72,6 @@ export interface LinkResult {
   translations: LinkedTranslation[];
 }
 
-// ── What must not take a link ─────────────────────────────────────────
 // Ranges [start, end) of a Markdown text that hold no linkable word: code blocks, fences and display
 // maths as the player's Markdown (markdown-it) reads them, link reference definitions, and, inline:
 // code spans, maths, links (inline, reference, with nested brackets) and bracketed text, autolinks and
@@ -142,7 +141,6 @@ export function protectedRanges(text: string): [number, number][] {
   return ranges;
 }
 
-// ── Links to the glossary ─────────────────────────────────────────────
 // What a Markdown text links to the glossary, as the player's Markdown reads it: inline links
 // ([mot](glossary:id), with a title or the address in <…>), links by reference ([mot][ref], [ref][],
 // [ref]) and the definitions they use ([ref]: glossary:id). Nothing in code blocks, fences, display
@@ -263,7 +261,6 @@ export function unlinkText(text: string, terms: ReadonlySet<string>): { text: st
   return { text: unlinked, removed: spans.filter((span) => !span.definition).map(({ term, words }) => ({ term, words })) };
 }
 
-// ── Forms of the terms ────────────────────────────────────────────────
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const isUpper = (char: string) => char !== char.toLowerCase() && char === char.toUpperCase();
 const isLetter = (char: string) => /\p{L}/u.test(char);

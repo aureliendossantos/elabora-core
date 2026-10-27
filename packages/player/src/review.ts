@@ -71,7 +71,6 @@ function startBridge(origins: readonly string[]) {
   const app = document.getElementById('elabora-app') as HTMLElement;
   const screenOf = (): ScreenData | undefined => course.screens.find((screen) => screen.id === hooks.screen);
 
-  // ── ready ───────────────────────────────────────────────────────────
   function ready(): Omit<ReadyMessage, 'protocol'> {
     const sections = new Map<string, string>();
     for (const section of course.sections) for (const id of section.screens) sections.set(id, section.id);
@@ -83,7 +82,6 @@ function startBridge(origins: readonly string[]) {
     };
   }
 
-  // ── layout: text size, column, the margin kept for the page ─────────
   let inset = 0;
   let shift = 0;
   // The side padding (rem) and the column's cap (rem) of a screen with a column, read from a probe
@@ -156,7 +154,6 @@ function startBridge(origins: readonly string[]) {
     return widestColumn(size, { baseFontSize, capRem, paddingRem, scrollbar: scrollbar() });
   }
 
-  // ── location ────────────────────────────────────────────────────────
   const openLayer = (): string | null => {
     const open = [...document.querySelectorAll<HTMLDialogElement>('dialog.t-layer[open]')];
     return open.length ? open[open.length - 1].dataset.layer ?? null : null;
@@ -196,7 +193,6 @@ function startBridge(origins: readonly string[]) {
     return message;
   }
 
-  // ── blocks ──────────────────────────────────────────────────────────
   function blocks(): Omit<BlocksMessage, 'protocol'> {
     const screen = screenOf();
     const names = kindNames();
@@ -221,7 +217,6 @@ function startBridge(origins: readonly string[]) {
     return { type: 'blocks', screen: screen?.key ?? '', step: hooks.step.revealed, layer: openLayer(), frame: frame(), scroll: { x: round(scrollX), y: round(scrollY) }, blocks: listed };
   }
 
-  // ── Sending what changed ────────────────────────────────────────────
   const last = { layout: '', location: '', blocks: '' };
   function flush(force = false) {
     applyInset();
@@ -267,7 +262,6 @@ function startBridge(origins: readonly string[]) {
   }, 150);
   document.addEventListener('play', () => { if (held) { hooks.timeline.pause(); held.playing = true; } }, true);
 
-  // ── Key C ───────────────────────────────────────────────────────────
   // C is the page's « Commenter » key, but a key pressed while the focus is inside the module stays in
   // the module's frame: the page never hears it. The module tells it, unless the key was for the
   // module (a text field, a modifier, a handler that took it).
@@ -278,7 +272,6 @@ function startBridge(origins: readonly string[]) {
     post({ type: 'key', key: 'c' });
   });
 
-  // ── Receiving ───────────────────────────────────────────────────────
   // The narration paused by the page, and whether it played then.
   let held: { playing: boolean } | null = null;
   let highlighted: HTMLElement | null = null;
@@ -399,8 +392,7 @@ function startBridge(origins: readonly string[]) {
     return missing;
   }
 
-  // ── Dialogues (D61) ─────────────────────────────────────────────────
-  // The player's dialogues may say which line is being said (current) and show a line (show); the
+  // The player's dialogues (D61) may say which line is being said (current) and show a line (show); the
   // bridge reads them when they are there: a module whose player has neither still finds the
   // dialogue's block.
   type DialogueHooks = { current?: () => { block: string; line: string; time?: number } | null; show?: (block: string, line: string) => boolean };
@@ -431,7 +423,6 @@ function startBridge(origins: readonly string[]) {
     return { line: line.id, ...(line.text ? { said: line.text } : {}), ...(line.speaker ? { speaker: data.speakers[line.speaker]?.name ?? line.speaker } : {}), ...(said ? { word: said } : {}) };
   }
 
-  // ── Names ───────────────────────────────────────────────────────────
   function kindNames(): Readonly<Record<string, string>> {
     const language = course.language.toLowerCase().split('-')[0];
     return KIND_NAMES[language] ?? KIND_NAMES.en;

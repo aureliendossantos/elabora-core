@@ -106,7 +106,6 @@ test('predict, then reveal: the learner draws or sets the end, the real line com
     const button = chart.locator('.t-trend-reveal');
     assert.equal(await button.textContent(), 'Voir les vrais chiffres', 'the player\'s words in the course language');
     assert.equal(await button.isDisabled(), true, 'nothing drawn yet');
-    // The pointer draws July to November.
     const zone = (await chart.locator('.t-trend-zone').boundingBox())!;
     await page.mouse.move(zone.x + 8, zone.y + zone.height * 0.4);
     await page.mouse.down();
@@ -175,7 +174,6 @@ test('with a voice: each item comes at its word and takes the spotlight, the oth
     await page.mouse.move(0, 0);
     await page.locator('.t-block[data-block="origine"] .t-bars-track[data-t-item="mail"]').hover();
     await page.waitForFunction(() => document.querySelector('.t-block[data-block="origine"] .t-chart')?.classList.contains('is-focused') && document.querySelector('.t-block[data-block="origine"] .t-chart-tip')?.classList.contains('is-on'));
-    // Seeking back hides what had not come yet.
     await seek(0.2);
     assert.equal(await label('web'), 0);
   }, { motion: false, virtual: true });

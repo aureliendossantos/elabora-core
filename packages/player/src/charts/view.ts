@@ -48,7 +48,6 @@ export interface ChartView {
   outcomes?(dom: ChartDom): (() => void)[];
 }
 
-// ── counted figures ──
 // A figure counts from 0 (or from its count's from) to its value, then shows the text the core
 // wrote, so a counted figure always lands on the same characters.
 const written = new WeakMap<HTMLElement, string>();

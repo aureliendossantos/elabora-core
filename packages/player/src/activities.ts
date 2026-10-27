@@ -76,7 +76,6 @@ export function createActivities({ courseState, labels, formatLabel, announce, r
     if (focused) { feedback.tabIndex = -1; feedback.focus(); }
   };
 
-  // ── fill-in ──
   function fillIn(wrap: HTMLElement, block: FillInBlock, dry: boolean): Outcome[] | undefined {
     const props = block.props;
     const { presentation, blanks } = props;
@@ -308,7 +307,6 @@ export function createActivities({ courseState, labels, formatLabel, announce, r
     return undefined;
   }
 
-  // ── sort ──
   function sort(wrap: HTMLElement, block: SortBlock, dry: boolean): Outcome[] | undefined {
     const props = block.props;
     const order = props.presentation === 'order';
@@ -567,7 +565,6 @@ export function createActivities({ courseState, labels, formatLabel, announce, r
     return undefined;
   }
 
-  // ── reflection ──
   function reflection(wrap: HTMLElement, block: ReflectionBlock, dry: boolean): Outcome[] | undefined {
     const props = block.props;
     const scale = props.presentation === 'scale';

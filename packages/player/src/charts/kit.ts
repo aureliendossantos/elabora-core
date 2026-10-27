@@ -34,7 +34,6 @@ export function prefersLessMotion(): boolean {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
-// ── time ──
 export interface Clock {
   // Calls back every frame with the seconds since the clock started; returns a function that stops.
   frame(callback: (seconds: number) => void): () => void;
@@ -70,7 +69,6 @@ export function play(seconds: number, ease: Ease, onProgress: (p: number) => voi
   return { done, stop: () => stop() };
 }
 
-// ── numbers ──
 export interface NumberFormat { unit?: string; decimals?: number }
 const NARROW_SPACE = ' ';
 export function formatValue(value: number, format: NumberFormat, language: string): string {

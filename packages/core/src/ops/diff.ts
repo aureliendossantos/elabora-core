@@ -64,7 +64,6 @@ export function computeDiff(before: Files, after: Files): { ops: Op[]; exact: bo
   return { ops, exact };
 }
 
-// ── analysis ─────────────────────────────────────────────────────────
 
 interface Location { file: string; path: Segment[] }
 
@@ -194,7 +193,6 @@ function pairMoves(context: Context): void {
   }
 }
 
-// ── replay ───────────────────────────────────────────────────────────
 
 interface Replay { workspace: Workspace; origins: Map<Json[], Json[]>; ops: Op[] }
 
@@ -268,7 +266,6 @@ function cloneTracked(value: Json, origins: Map<Json[], Json[]>): Json {
   return out;
 }
 
-// ── helpers ──────────────────────────────────────────────────────────
 
 function wholeFileDiff(before: Files, after: Files): Op[] {
   const ops: Op[] = [];

@@ -12,7 +12,6 @@ import { MATH_NS, texToOmml } from './omml.ts';
 // named after its id in the plan (wordBookmarkName): a comment the client leaves in Word can later
 // be tied to the element it is on (planIdOfBookmark).
 
-// ── bookmarks ──
 
 // Word's bookmark names: a letter first, then letters, digits and « _ », 40 characters at most. A
 // plan's ids are capitals, digits, « - » and « _ » (^[A-Z][A-Z0-9_-]{0,31}$): « - » becomes « _ »
@@ -28,7 +27,6 @@ export function planIdOfBookmark(name: string): string | null {
   return match[1]!.replace(/_u|_/g, (found) => (found === '_u' ? '_' : '-'));
 }
 
-// ── XML ──
 
 // Characters XML 1.0 forbids are dropped; the rest escaped.
 const xml = (value: string): string => value
@@ -44,7 +42,6 @@ function wordLanguage(language: string): string {
   return ({ fr: 'fr-FR', en: 'en-US', de: 'de-DE', es: 'es-ES', it: 'it-IT', pt: 'pt-PT', nl: 'nl-NL' } as Record<string, string>)[language] ?? language;
 }
 
-// ── writer ──
 
 interface Context {
   ids: number; // annotation ids (bookmarks, revisions, comments)
@@ -260,7 +257,6 @@ function questionEntry(doc: PlanDocument, question: QuestionEntry, context: Cont
   return out;
 }
 
-// ── rich text ──
 
 function rich(text: RichText, context: Context, style: string, lead = ''): string[] {
   return blocks(text.blocks, context, style, lead, '');
@@ -345,7 +341,6 @@ function inline(content: readonly RichInline[], context: Context, date: string):
   }).join('');
 }
 
-// ── styles ──
 
 const FONT = 'Calibri';
 const MONO = 'Consolas';

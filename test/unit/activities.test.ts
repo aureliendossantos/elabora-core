@@ -24,7 +24,6 @@ import { addActivities } from '../activities-fixture.ts';
 // The activities of D63 (fill-in, sort, reflection) and the quiz on pictures: grading, saved state,
 // SCORM records, course data, checks, exports and translation.
 
-// ── fill-in ──
 test('fill-in blanks: [[answer|other]] read in order, empty answers left out', () => {
   assert.deepEqual(parseBlanks('Le [[routeur|routeur d’accès]] puis le [[ DNS ]], [[a||b]] et [[ ]].'), [{ answers: ['routeur', 'routeur d’accès'] }, { answers: ['DNS'] }, { answers: ['a', 'b'] }, { answers: [] }]);
   assert.deepEqual(parseBlanks('Pas de trou, un [lien](https://example.org) et [[x\ny]].'), []);
@@ -60,7 +59,6 @@ test('a stable shuffle: the same order at every build, never the written one', (
   assert.deepEqual(stableShuffle(['solo'], 'x'), ['solo']);
 });
 
-// ── sort ──
 test('sort grading: pairs and categories per item, order per position', () => {
   const pairs = { presentation: 'pairs' as const, items: [{ target: 0 }, { target: 1 }, { target: 2 }] };
   assert.deepEqual(gradeSort(pairs, [0, 2, 1]), { marks: [true, false, false], score: 1 / 3, correct: false });
@@ -75,7 +73,6 @@ test('sort grading: pairs and categories per item, order per position', () => {
   assert.ok(!sortComplete(order, [0, 0, 1, 2]), 'an item twice');
 });
 
-// ── SCORM 1.2 patterns ──
 // RTE 3.4.2.7: choice a single character; matching source.target pairs; sequencing characters in order;
 // likert one character; fill-in one line (CMIString255).
 const SCORM12 = {
@@ -110,7 +107,6 @@ test('SCORM interactions: valid SCORM 1.2 patterns for every activity', () => {
   }
 });
 
-// ── saved state ──
 // Pinned: what packages write must decode the same forever (state-golden.test.ts for the older fields).
 const GOLDEN = '{"v":1,"s":"0","f":{"7":[2,"routeur","l’adresse \\"IP\\"",""]},"r":{"8":"201|1","9":"-0|0"},"e":{"a":"Ma réponse\\nsur deux lignes","b":4}}';
 test('saved state: fill-in answers, sort placements and reflections in v1, pinned, and back', () => {
@@ -149,7 +145,6 @@ test('worst case: typed blanks at their longest, every character escaped; a refl
   assert.equal(asReflection, asVariable);
 });
 
-// ── the course: data, state, scoring ──
 function activityCourse() {
   const dir = copyExample();
   addActivities(dir);
@@ -233,7 +228,6 @@ test('course state: partial credit with weights, attempts, retake, a reflection 
   assert.equal(state.fillInState(trous), null);
   assert.equal(state.sortState(sort), null);
   assert.equal(state.reflectionOf(scale), 5);
-  // Saved and read back, the state is the same.
   const again = createCourseState(data, { suspendData: state.encode() });
   assert.equal(again.reflectionOf(reflection), 'x'.repeat(400));
 });
@@ -253,7 +247,6 @@ test('the state model and the budget: a course with too much reflection text for
   assert.ok(codes(validateDir(dir, { profiles: ['moodle'] }).diagnostics).includes('E_SUSPEND_DATA_BUDGET'));
 });
 
-// ── checks ──
 test('checks: E_FILLIN_NO_BLANK, E_SORT_TARGET, W_ACTIVITY_NO_FEEDBACK, E_QUIZ_PICTURE and the pictures\' alt', () => {
   const dir = copyExample();
   addActivities(dir);
@@ -313,7 +306,6 @@ test('forks keep their behaviour: hooks of fill-in, sort and reflection checked 
   for (const id of ['fill-in', 'sort', 'reflection']) assert.equal(registry.get(id)!.behavior, id);
 });
 
-// ── exports and translation ──
 test('exports: the client view, the agent view and LESSON.md give each activity as text', () => {
   const { project } = activityCourse();
   const client = projectMarkdown(project, { audience: 'client', screen: 'activites-trous' }) + projectMarkdown(project, { audience: 'client', screen: 'activites-classer' }) + projectMarkdown(project, { audience: 'client', screen: 'activites-reflexion' });

@@ -105,7 +105,6 @@ test('renderScreen: a screen edited since the context was made renders as with a
   const project = loadProjectFromDir(path.join(ROOT, 'examples', 'planetary-gearset'));
   const context = createRenderContext(project);
   const fresh = (edited: Project, id: string) => renderScreen(edited, id, {}, createRenderContext(edited));
-  // Text typed into a block.
   const firstText = (screen: Screen): Block => screen.blocks.find((block) => block.type === 'text')!;
   const typed = withScreen(project, 'anatomy', (screen) => { firstText(screen).props.markdown = 'Typed **now**.'; });
   const render = renderScreen(typed, 'anatomy', {}, context);

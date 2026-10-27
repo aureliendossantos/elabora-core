@@ -55,7 +55,6 @@
 }
 .t-chart-tip.is-on { opacity: 1; }
 
-/* ── bars ── */
 .t-bars-grid { display: grid; grid-template-columns: minmax(5rem, max-content) 1fr; align-items: center; gap: 0.5rem 1rem; }
 .t-bars-label { justify-self: end; max-width: 15rem; font-size: 0.9375rem; line-height: 1.25; text-align: right; text-wrap: balance; }
 .t-bars-track { position: relative; display: flex; align-items: center; gap: 0.625rem; min-height: 2.25rem; }
@@ -74,7 +73,6 @@
   .t-bars-label { justify-self: start; max-width: none; margin-top: 0.5rem; text-align: left; }
 }
 
-/* ── key figures ── */
 .t-figures-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr)); gap: 1rem; }
 .t-figures-card { position: relative; overflow: hidden; padding: 1.375rem 1.25rem 1.25rem; border-radius: var(--t-radius); background: color-mix(in oklab, var(--t-chart-ink) 4%, var(--t-chart-paper)); }
 .t-figures-figure { margin: 0; font-family: var(--t-font-heading, var(--t-font-body)); font-size: 2.75rem; font-weight: 700; line-height: 1; letter-spacing: -0.03em; white-space: nowrap; transition: color var(--t-chart-pull) ease; }
@@ -83,7 +81,6 @@
 .t-figures-meter { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: var(--t-chart-accent); transform-origin: 0 50%; scale: calc(var(--p, 0) * var(--t-progress, 1)) 1; }
 .t-chart.is-pulled .t-figures-card.is-hl .t-figures-figure { color: var(--t-chart-accent); }
 
-/* ── trend ── */
 .t-trend-plot { padding: 1.75rem 4.75rem 2.25rem 3rem; }
 .t-trend-area-box { position: relative; height: 16rem; touch-action: pan-y; }
 .t-trend-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }

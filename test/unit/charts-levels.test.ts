@@ -89,7 +89,6 @@ test('levels: items with their moments, the table, determinism and edge cases', 
   assert.deepEqual(chartTable('levels', funnel, context), { head: [], rows: [['Received the email', '1,240', ''], ['Opened it', '770', 'Most within the first hour.'], ['Clicked the link', '380', ''], ['Reported it', '61', '']] });
   assert.deepEqual(chartTable('levels', pyramid, context).rows[0], ['Audit', '']);
   assert.match(chartMarkdown('levels', { ...funnel, unit: '%' }, { ...context, language: 'fr' }), /\| Received the email \| 1\s240\s% \|/);
-  // Byte-identical for identical inputs.
   assert.equal(renderChart('levels', funnel, context).html, renderChart('levels', structuredClone(funnel), context).html);
   // One item, values of zero, nothing at all: drawn without failing.
   assert.match(renderChart('levels', { takeaway: 'One', items: [{ id: 'a', label: 'All', value: 0 }] }, context).html, /t-levels-row/);

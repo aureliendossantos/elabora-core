@@ -61,7 +61,6 @@ export function objectSchema<const Properties extends { readonly [name: string]:
   return { type: 'object', properties, required, additionalProperties: false };
 }
 
-// Shared property schemas.
 export const SLUG = { type: 'string', pattern: '^[a-z][a-z0-9-]{0,47}$' } as const;
 export const PLAN_ID = { type: 'string', pattern: '^[A-Z][A-Z0-9_-]{0,31}$' } as const;
 export const LANGUAGE = { type: 'string', pattern: '^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$', description: 'A BCP 47 tag: en, de, pt-BR.' } as const;

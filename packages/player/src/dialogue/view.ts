@@ -176,7 +176,7 @@ export function createDialogues(context: DialoguesContext) {
     root.toggleAttribute('data-t-learner-look', !!(learnerLook && (learnerLook.inline || learnerLook.portrait || learnerLook.expressions)));
     wrap.classList.add(`t-dialogue-look--${data.style}`);
 
-    // ── The parts the template gives (or that the player makes when a fork leaves them out) ──
+    // The parts the template gives (or that the player makes when a fork leaves them out).
     log.id ||= uniqueId('t-dialogue-log');
     log.setAttribute('role', 'log');
     log.setAttribute('aria-live', 'polite');
@@ -204,7 +204,6 @@ export function createDialogues(context: DialoguesContext) {
     log.addEventListener('keydown', (event) => { if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) requestAnimationFrame(scrolledByLearner); });
     log.addEventListener('scroll', () => { if (pinned()) { following = true; newMessage.hidden = true; } }, { passive: true });
 
-    // ── State ──
     let run: DialogueRun = courseState.dialogueRun(block);
     let beats: Beat[] = run.walk.beats;
     // What each beat shown put in the thread, by its key (a key changes when the beat would show otherwise).
@@ -226,7 +225,7 @@ export function createDialogues(context: DialoguesContext) {
     const revealMode = (): 'ink' | 'appear' | 'instant' => (instant() ? 'instant' : data.reveal);
     const rate = () => host().prefs().rate || 1;
 
-    // ── Scene: the backdrop and the cast (style scene) ──
+    // Scene: the backdrop and the cast (style scene).
     let backdrop: HTMLImageElement | null = null;
     let cast: { speaker: string; position: Side }[] = [];
     const historyButton = data.style === 'scene' ? element('button', { type: 'button', class: 't-dialogue-history-btn', 'aria-expanded': 'false', 'aria-controls': log.id, onclick: () => setHistory(!root.hasAttribute('data-t-history')) }, icon('history'), element('span', { text: labels.dialogueHistory })) : null;
@@ -266,7 +265,6 @@ export function createDialogues(context: DialoguesContext) {
     }
     setScene(data.scene, false);
 
-    // ── Where a bubble goes ──
     const sideOf = (role: 'character' | 'learner' | 'narration', speaker: string | undefined): Side => {
       if (role === 'narration') return 'center';
       if (data.style === 'scene') {
@@ -285,7 +283,7 @@ export function createDialogues(context: DialoguesContext) {
       return !!last && last.dataset.role === role && (last.dataset.speaker ?? '') === (speaker ?? '');
     };
 
-    // ── The thread in its box (slides): anchored at the bottom, scrolled by the learner ──
+    // The thread in its box (slides): anchored at the bottom, scrolled by the learner.
     const pinned = () => log.scrollHeight - log.scrollTop - log.clientHeight < 24;
     function scrollLog(smooth: boolean) {
       log.scrollTo?.({ top: log.scrollHeight, behavior: smooth && !reduced() && !still ? 'smooth' : 'auto' });
@@ -313,7 +311,7 @@ export function createDialogues(context: DialoguesContext) {
     }
     syncLogFocusable();
 
-    // ── Scene pages: two or three bubbles near the characters, then the page turns ──
+    // Scene pages: two or three bubbles near the characters, then the page turns.
     const paging = () => data.style === 'scene' && !phone() && !root.hasAttribute('data-t-history');
     const visibleRows = () => [...log.querySelectorAll<HTMLElement>(':scope > .t-dialogue-row:not([data-t-paged])')];
     function fits(node: HTMLElement): boolean {
@@ -340,7 +338,6 @@ export function createDialogues(context: DialoguesContext) {
       rows.slice(0, keep).forEach((row) => row.setAttribute('data-t-paged', ''));
     }
 
-    // ── Characters ──
     function characterState(view: CharacterView, speaker: string, speaking: string | undefined, talking: boolean, mouth: 'closed' | 'small' | 'open' | 'wide') {
       const own = speaker === speaking;
       view.set({
@@ -353,7 +350,6 @@ export function createDialogues(context: DialoguesContext) {
       for (const view of avatars) view.set({ speaking: false, talking: false, mouth: 'closed', listening: false, paused: userPaused, reducedMotion: reduced() });
     }
 
-    // ── Presenting the beats ──
     const keyOf = (walk: DialogueWalk, index: number): string => {
       const beat = walk.beats[index];
       switch (beat.type) {
@@ -548,7 +544,7 @@ export function createDialogues(context: DialoguesContext) {
       return true;
     }
 
-    // ── The loop: one step at a time, beats in order ──
+    // The loop: one step at a time, beats in order.
     function tick() {
       if (disposed) return;
       if (!wrap.isConnected) { dispose(); return; }
@@ -590,7 +586,6 @@ export function createDialogues(context: DialoguesContext) {
       syncRetry();
     }
 
-    // ── The room under the thread ──
     let turn: TurnControls | null = null;
     function setRoom(state: string, nodes: HTMLElement[], describedBy: string | null = null) {
       const focused = room.contains(document.activeElement) && document.activeElement !== room;
@@ -675,7 +670,6 @@ export function createDialogues(context: DialoguesContext) {
       return { ending: walk.ending, decisions, score: scoredRun ? result.score : null, others };
     }
 
-    // ── The learner's moves ──
     function chooseOption(option: string) {
       if (phase !== 'choosing') return;
       let moved: DialogueRun;
@@ -857,7 +851,7 @@ export function createDialogues(context: DialoguesContext) {
       if (on) host().hold(`dialogue:${block.id}`); else host().release(`dialogue:${block.id}`);
     }
 
-    // ── Showing at once: back on the screen, the editor's canvas, a jump of the canvas ──
+    // Showing at once: back on the screen, the editor's canvas, a jump of the canvas.
     function renderAll() {
       // Shown at once: no row comes in a fade.
       root.setAttribute('data-t-quiet', '');
@@ -871,7 +865,6 @@ export function createDialogues(context: DialoguesContext) {
       syncRetry();
     }
 
-    // ── Beginning ──
     function begin() {
       if (phase !== 'idle' || disposed) return;
       startButton?.closest('.t-dialogue-start')?.setAttribute('hidden', '');
@@ -920,8 +913,8 @@ export function createDialogues(context: DialoguesContext) {
       observer?.observe(wrap);
     }
 
-    // ── Slides: the box keeps its size, filling the room the slide leaves; the room keeps the
-    // height of the tallest set of options ──
+    // Slides: the box keeps its size, filling the room the slide leaves; the room keeps the
+    // height of the tallest set of options.
     const main = () => wrap.closest<HTMLElement>('.t-main');
     let sizing = false;
     function layout() {

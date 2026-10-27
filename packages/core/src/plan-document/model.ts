@@ -340,7 +340,6 @@ export function planDocument(project: Project, options: PlanDocumentOptions = {}
     return { status: change.status, summary: parts.join(' · '), note: notes.get(change.key) ?? null, verbatim: change.verbatim === true };
   };
 
-  // ── numbering ──
   type Objective = Plan['objectives'][number];
   type Item = Plan['items'][number];
   type Source = NonNullable<Plan['sources']>[number];
@@ -372,7 +371,6 @@ export function planDocument(project: Project, options: PlanDocumentOptions = {}
   };
   const oldNumber = (kind: 'objective' | 'item' | 'source', id: string) => String(list<{ id: string }>(was?.[kind === 'objective' ? 'objectives' : kind === 'item' ? 'items' : 'sources']).findIndex((entry) => entry.id === id) + 1);
 
-  // ── framing ──
   const audience = isRecord(plan.audience) ? plan.audience : {};
   const oldAudience = isRecord(was?.audience) ? was.audience : {};
   const framing: FramingEntry[] = [];

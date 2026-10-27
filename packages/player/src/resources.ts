@@ -44,7 +44,6 @@ export function fileSize(bytes: number, language: string): string {
 const IMAGES: ReadonlySet<string> = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'avif']);
 export const isPdf = (resource: ResourceData) => resource.kind === 'file' && resource.type === 'pdf';
 export const isImage = (resource: ResourceData) => resource.kind === 'file' && IMAGES.has(resource.type);
-// What opens in the preview: a PDF or an image.
 const previewed = (resource: ResourceData): boolean => isPdf(resource) || isImage(resource);
 const hostOf = (url: string) => /^https:\/\/([^/?#:]+)/.exec(url)?.[1] ?? url;
 
@@ -66,7 +65,6 @@ export function createResources(options: ResourcesOptions) {
         resource.kind === 'link' ? element('span', { class: 't-sr-only', text: ` (${labels.opensInTab})` }) : null),
       element('span', { class: 't-resource-action', 'aria-hidden': 'true' }, icon(shown ? 'chevronRight' : resource.kind === 'link' ? 'external' : 'download'))
     ];
-    // A PDF or an image opens its preview, a link a new tab; any other file is a download link.
     if (resource.kind === 'link') return element('li', {}, element('a', { class: 't-resource', 'data-resource': resource.id, 'data-kind': 'link', href: resource.url, target: '_blank', rel: 'noopener noreferrer', 'aria-describedby': infoId }, content));
     return element('li', {}, shown
       ? element('button', { type: 'button', class: 't-resource', 'data-resource': resource.id, 'aria-describedby': infoId, 'aria-haspopup': 'dialog', onclick: () => preview(resource) }, content)
@@ -74,7 +72,6 @@ export function createResources(options: ResourcesOptions) {
   }));
   sheet.body.append(list);
 
-  // ── The preview of a PDF or an image ───────────────────────────────
   let viewer: HTMLDialogElement | null = null;
   function preview(resource: FileResource) {
     viewer?.close();

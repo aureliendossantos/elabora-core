@@ -187,7 +187,6 @@ export function parseXml(source: string): XmlElement {
   return root!;
 }
 
-// Helpers to walk what parseXml gives.
 export const isElement = (node: XmlNode): node is XmlElement => typeof node !== 'string';
 export const elements = (element: XmlElement, name?: string): XmlElement[] => element.children.filter((child): child is XmlElement => isElement(child) && (name === undefined || child.name === name));
 export const child = (element: XmlElement | undefined, name: string): XmlElement | undefined => element?.children.find((node): node is XmlElement => isElement(node) && node.name === name);

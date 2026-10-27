@@ -62,8 +62,6 @@ function checkDialogue(ctx: CourseCheckContext, screen: ScreenFile, block: Block
   const layers = new Set(list(screenData.layers).map((layer) => layer?.id));
   const steps = new Set(screenSteps(screenData));
   const listed = (values: Iterable<string>) => [...values].slice(0, 12).join(', ') || 'none';
-
-  // ── ids ──
   const duplicates = (values: readonly { id: string }[], at: (index: number) => string, what: string) => {
     const seen = new Map<string, number>();
     values.forEach((value, index) => {
@@ -76,8 +74,6 @@ function checkDialogue(ctx: CourseCheckContext, screen: ScreenFile, block: Block
   duplicates(data.endings, (index) => `/endings/${index}/id`, 'endings');
   duplicates(data.vars, (index) => `/vars/${index}/id`, 'variables');
   data.nodes.forEach((node, index) => duplicates(node.options, (optionIndex) => `/nodes/${index}/options/${optionIndex}/id`, `options of node "${node.id}"`));
-
-  // ── speakers and looks ──
   const speakerKnown = (speaker: string | undefined, at: string, what: string) => {
     if (speaker !== undefined && !speakers.has(speaker)) emit('E_DIALOGUE_SPEAKER', at, `${what} names speaker "${speaker}", which course.json speakers does not have (speakers: ${listed(speakers.keys())}).`);
   };
@@ -88,8 +84,6 @@ function checkDialogue(ctx: CourseCheckContext, screen: ScreenFile, block: Block
     if (!looks.has(speaker)) looks.set(speaker, declaredLook(ctx, fieldsOf(speakers.get(speaker)?.look)));
     return looks.get(speaker)!;
   };
-
-  // ── conditions, effects, actions ──
   const condition = (value: DialogueCondition, at: string) => {
     if ('chosen' in value) {
       const [node, option] = value.chosen.split('.');
@@ -117,8 +111,6 @@ function checkDialogue(ctx: CourseCheckContext, screen: ScreenFile, block: Block
     if ((action.type === 'show-layer' || (action.type === 'hide-layer' && action.layer !== undefined)) && !hasId(layers, action.layer)) reporter.emit('E_ACTION_TARGET', { file, path: `${path}/props${where}/layer`, target: id, message: `Dialogue "${id}": ${action.type} names no layer "${action.layer ?? ''}" of screen "${screenId}".` });
     if (action.type === 'reveal-step' && !hasId(steps, action.step)) reporter.emit('E_ACTION_TARGET', { file, path: `${path}/props${where}/step`, target: id, message: `Dialogue "${id}": reveal-step ${action.step ?? ''}, a step screen "${screenId}" does not have.` });
   });
-
-  // ── lines ──
   const line = (value: DialogueLineData, at: string) => {
     if (value.id && value.speaker === undefined) {
       const where = lineIds.get(value.id);
@@ -146,8 +138,6 @@ function checkDialogue(ctx: CourseCheckContext, screen: ScreenFile, block: Block
     }
     conditions(value.if, `${at}/if`);
   };
-
-  // ── nodes ──
   const objective = (value: string | undefined, at: string) => {
     if (value !== undefined && project.plan && !hasId(planIndex.objectives, value)) reporter.emit('E_PLAN_REFERENCE', { file, path: `${path}/props${at}`, target: id, message: `Dialogue "${id}" names unknown objective "${value}".` });
   };
@@ -215,8 +205,6 @@ function checkDialogue(ctx: CourseCheckContext, screen: ScreenFile, block: Block
     emit('W_DIALOGUE_ENDINGS_UNCOVERED', '/endings', gap ? `no ending holds for a score ${gap}: the dialogue would end without title.` : 'every ending has a condition: when none holds, the dialogue ends without title.');
   }
   if (data.mode === 'practice' && (data.revisit === 'none' || data.revisit === 'retry')) emit('W_DIALOGUE_NO_RETURN', '/revisit', `practice with revisit ${data.revisit}: once the first run ends, the learner cannot see the other consequences.`);
-
-  // ── the graph ──
   if (!data.nodes.length) return;
   const edges = dialogueEdges(data);
   const jumps = screenJumps(screenData, id);

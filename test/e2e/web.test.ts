@@ -53,7 +53,7 @@ test('a module for the web on a static server: local progress survives a reload,
   try {
     browser = await launchBrowser('chromium');
 
-    // ── local: the learner comes back where they left ───────────────
+    // local: the learner comes back where they left
     const local = await browser.newContext();
     const page = await local.newPage();
     const errors: string[] = [];
@@ -104,7 +104,7 @@ test('a module for the web on a static server: local progress survives a reload,
     assert.deepEqual(errors, []);
     await local.close();
 
-    // ── none: nothing kept anywhere ─────────────────────────────────
+    // none: nothing kept anywhere
     const none = await browser.newContext();
     const visit = await none.newPage();
     await visit.goto(`${server.base}/none/index.html`);
@@ -129,7 +129,7 @@ test('a module for the web on a static server: local progress survives a reload,
     assert.deepEqual(await visit.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length, cookie: document.cookie })), { local: 0, session: 0, cookie: '' });
     await none.close();
 
-    // ── free: every screen open, nothing done first ─────────────────
+    // free: every screen open, nothing done first
     const free = await browser.newContext();
     const tour = await free.newPage();
     await tour.goto(`${server.base}/free/index.html`);

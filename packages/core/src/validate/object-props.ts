@@ -6,8 +6,6 @@ import { isRecord, fieldsOf, entriesOf } from './guards.ts';
 
 // The props of a free object: the schema their values are checked against (lists included), the
 // editor controls they declare, and the colours the object draws text in (x-text-on).
-
-// ── Values ───────────────────────────────────────────────────────────
 // A prop schema without its annotations (x-*, default, description), for ajv. Only keywords are
 // annotations: the names of fields (an item field called description) and data (enum, const) stay.
 const SUBSCHEMA = new Set(['items', 'not', 'if', 'then', 'else', 'contains', 'additionalProperties', 'unevaluatedProperties', 'unevaluatedItems', 'propertyNames']);
@@ -59,8 +57,6 @@ export function objectPropErrors(manifest: ObjectManifest, values: unknown): { p
   }
   return errors;
 }
-
-// ── Editor controls ──────────────────────────────────────────────────
 // The types each control edits. A list (type array, items) is rows of fields; range is a low and a
 // high number on one scale; vec2, vec3 and vec3-gizmo are a point of two or three numbers.
 const CONTROL_TYPES: Readonly<Record<string, readonly string[]>> = {
@@ -100,8 +96,6 @@ export function controlProblems(prop: unknown): { path: string; message: string 
   }
   return problems;
 }
-
-// ── Words of the choices ─────────────────────────────────────────────
 // Where a prop offers choices (an enum): the prop itself, the items of a list of simple values, or a
 // field of a list's items. key names it in a block's props.enumLabels (failingDevice, voyages.from);
 // path is its place under the prop schema; labels are its x-enum-labels (how each value reads in the
@@ -155,8 +149,6 @@ export function blockEnumLabelErrors(manifest: ObjectManifest, enumLabels: unkno
   }
   return errors;
 }
-
-// ── Text colours ─────────────────────────────────────────────────────
 // A colour prop the object draws text in names, with x-text-on, the colour that text is read on: a
 // colour prop of the manifest or a theme token. Material colours (brass, wood) need no theme token,
 // but text keeps the contrast WCAG asks for, with the defaults and with whatever a block sets.

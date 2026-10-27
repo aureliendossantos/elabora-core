@@ -299,7 +299,6 @@ export function templateSlotOrder(component: ComponentDescriptor | null | undefi
   return order;
 }
 
-// The screen layout (a screen-level component) of a screen, or null.
 export function screenLayout(project: Project, screen: Screen | null | undefined): ComponentDescriptor | null {
   if (!screen?.layout) return null;
   const d = getRegistry(project).get(screen.layout);

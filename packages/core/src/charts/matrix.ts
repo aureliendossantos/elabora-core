@@ -32,7 +32,6 @@ export function matrixItems(props: Record<string, unknown>): MatrixItem[] {
   });
 }
 
-// ── placing the labels ──
 // A plot to place on (px), the label's type (px: font size, widest line, line height), the dot's
 // radius and the gap to its label, and the quadrants' names (font size, inset from the corner).
 // The CSS (matrix.css) uses the same sizes: 14 px dots, labels 0.375 rem from them.

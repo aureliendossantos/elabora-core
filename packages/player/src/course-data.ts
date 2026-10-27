@@ -272,7 +272,6 @@ export interface LayerData {
   blocks: BlockData[];
 }
 
-// ── Blocks ──
 // Activities carry their behaviour (also for forks of a built-in activity) and the data the player
 // needs to score, save and record them; video, audio and free objects are rendered by code from
 // their props; every other block is HTML rendered from its component template.
@@ -646,7 +645,7 @@ export interface AudioProps {
   generated: boolean;
 }
 
-// ── Events (trigger → conditions → actions), as authored in the screen ──
+// Events (trigger → conditions → actions), as authored in the screen.
 
 export type TriggerType = 'screen.enter' | 'click' | 'quiz.submitted' | 'decision.selected' | 'object.event' | 'variable.changed' | 'layer.closed' | 'timeline.reached' | 'timeline.ended' | 'media.ended' | 'dialogue.started' | 'dialogue.node' | 'dialogue.line' | 'dialogue.chosen' | 'dialogue.ended';
 
@@ -709,7 +708,6 @@ export type Action =
   | { type: 'start-dialogue' | 'restart-dialogue'; block: string }
   | { type: 'goto-dialogue'; block: string; node: string };
 
-// ── Variables ──
 
 export interface VariableData {
   id: string;
@@ -725,7 +723,6 @@ export interface VariableData {
   key: string | null;
 }
 
-// ── Free objects ──
 
 export interface ObjectDefinition {
   id: string;

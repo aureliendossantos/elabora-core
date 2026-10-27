@@ -41,7 +41,6 @@ export function checkPlan(ctx: CourseCheckContext): void {
     }
   }
 
-  // Duplicate plan ids across all plan collections.
   const seen = new Map<string, string>();
   const claim = (id: string, path: string) => {
     if (seen.has(id)) reporter.emit('E_DUPLICATE_ID', { file: 'plan.json', path, target: id, message: `Plan id "${id}" is used twice (first at ${seen.get(id)}).` });
@@ -58,7 +57,6 @@ export function checkPlan(ctx: CourseCheckContext): void {
     list(item.questions).forEach((question, j) => { if (question != null) claim(question.id, pointer('items', i, 'questions', j, 'id')); });
   });
 
-  // Internal references of the plan.
   const unknownReference = (path: string, id: string, kind: string) => reporter.emit('E_PLAN_REFERENCE', { file: 'plan.json', path, target: id, message: `Unknown ${kind} "${id}".` });
   objectives.forEach((objective, i) => {
     if (objective == null) return;

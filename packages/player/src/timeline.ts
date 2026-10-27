@@ -153,7 +153,6 @@ export interface TimelineOptions {
   transcriptDialogues?: () => TranscriptSection[];
 }
 
-// ── Clocks ──────────────────────────────────────────────────────────
 interface Clock {
   time(): number;
   // Rejects when the browser refuses sound before a gesture.
@@ -243,7 +242,6 @@ export function createTimeline(options: TimelineOptions) {
   let refused = false;
   let disposed = false;
 
-  // ── The clock ─────────────────────────────────────────────────────
   const audio = narration.src && !options.virtual
     ? element('audio', { class: 't-timeline-audio', preload: 'auto', src: narration.src, 'aria-hidden': 'true' },
       narration.captions ? element('track', { kind: 'captions', src: narration.captions, default: false }) : null)
@@ -269,7 +267,6 @@ export function createTimeline(options: TimelineOptions) {
   clock.setMuted(prefs.muted);
   clock.setVolume(prefs.volume);
 
-  // ── Segments ──────────────────────────────────────────────────────
   const segmentOf = (step: number): SegmentData | undefined => segments.find((segment) => segment.step === step);
   // The step shown at a time: the last step reached whose segment has started.
   function displayStepAt(time: number): number {
@@ -295,7 +292,6 @@ export function createTimeline(options: TimelineOptions) {
     return reachedTime;
   }
 
-  // ── Playing ───────────────────────────────────────────────────────
   function play(): void {
     if (disposed) return;
     clearTimeout(advanceTimer);
@@ -407,7 +403,7 @@ export function createTimeline(options: TimelineOptions) {
     if (autoplay) play();
   }
 
-  // ── Seeking: what is seen is recomputed, nothing fires ──────────────
+  // Seeking recomputes the view without firing events.
   function seekTo(time: number, { user = true }: { user?: boolean } = {}): void {
     if (user && narration.seek === 'none') return;
     let target = Math.max(0, Math.min(duration, time));
@@ -463,7 +459,6 @@ export function createTimeline(options: TimelineOptions) {
     render();
   }
 
-  // ── Holds (modal layers) ──────────────────────────────────────────
   function hold(reason: string): void {
     const wasPlaying = playing;
     holds.add(reason);
@@ -474,7 +469,6 @@ export function createTimeline(options: TimelineOptions) {
     if (!holds.size && resumeAfterHold) { resumeAfterHold = false; play(); }
   }
 
-  // ── The bar ───────────────────────────────────────────────────────
   // In the player's controls item (docs/decisions.md D58), as the Lin pages 27 and 36 draw it: Play,
   // Replay the step, the seek bar (the part not heard yet dotted), the time, then Captions, the
   // settings (speeds, « M'arrêter à chaque étape », shortcuts), the volume and the transcript; in a
@@ -555,7 +549,6 @@ export function createTimeline(options: TimelineOptions) {
   });
   const volume = element('span', { class: 't-timeline-volume' }, muteButton, element('span', { class: 't-timeline-volume-pop' }, volumeInput));
   const transcriptButton = button('t-timeline-transcript-btn', 'transcript', labels.transcript, () => toggleTranscript(), { 'aria-expanded': 'false' });
-  // « … »: the volume and the transcript in a narrower window, and the settings on a phone.
   const moreId = uniqueId('more');
   const moreButton = button('t-timeline-more', 'more', labels.more, () => togglePopup(more, moreButton), { 'aria-expanded': 'false', 'aria-controls': moreId });
   const more = element('div', { id: moreId, class: 't-timeline-popup t-timeline-more-menu', hidden: true });
@@ -568,7 +561,6 @@ export function createTimeline(options: TimelineOptions) {
   const bar = element('div', { class: `t-timeline${compact ? ' t-timeline--compact' : ''}`, role: 'group', 'aria-label': options.label ?? labels.narration, 'data-seek': seekable ? narration.seek : 'none' },
     playButton, replayButton, seek, clockText, tools);
 
-  // Narrower windows: the volume and the transcript into « … »; phones: the settings too.
   const narrow = typeof matchMedia === 'function' ? matchMedia('(max-width: 1023px)') : null;
   const small = typeof matchMedia === 'function' ? matchMedia('(max-width: 760px)') : null;
   const anchorOf = (node: HTMLElement) => node.parentElement?.classList.contains('t-timeline-anchor') ? node.parentElement : node;

@@ -233,7 +233,6 @@ test('Word bookmarks are named after the plan\'s ids and read back', () => {
   assert.ok(wordBookmarkName('ABCDEFGHIJKLMNOPQRSTUVWXYZ-12345').length <= 40);
 });
 
-// ── the .docx as a package ──
 
 // Well-formed XML (tags balanced, attributes quoted and not repeated, entities known) whose prefixes
 // are declared: enough to catch what a hand-written writer gets wrong.
@@ -371,7 +370,6 @@ test('the PDF\'s dates become the document\'s day, bytes and offsets kept', () =
   assert.deepEqual(Buffer.from(finishPlanPdf(pdf, 'today')), pdf);
 });
 
-// ── interfaces ──
 
 function elabora(args: string[]): Promise<{ status: number | null; stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {

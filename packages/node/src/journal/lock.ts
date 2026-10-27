@@ -95,7 +95,6 @@ export async function withProjectLock<T>(dir: string, fn: () => T | Promise<T>, 
   }
 }
 
-// ── acquisition ──────────────────────────────────────────────────────
 
 type Attempt = { acquired: LockHolder } | { acquired: null; holder: LockHolder | null; raw: string | null; stale: boolean };
 
@@ -218,7 +217,6 @@ function lockedError(file: string, holder: LockHolder | null): LockError {
   return new LockError(`The project is locked by ${who}. If no Elabora tool is running, delete ${file}.`, holder);
 }
 
-// ── helpers ──────────────────────────────────────────────────────────
 
 function parseHolder(raw: string): LockHolder | null {
   try {

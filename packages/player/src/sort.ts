@@ -26,7 +26,6 @@ export interface SortGrade {
 export function gradeSort(sort: GradedSort, placement: readonly number[]): SortGrade {
   const count = sort.items.length;
   const marks = sort.presentation === 'order'
-    // Item i is right where the learner put it at position i.
     ? sort.items.map((_, index) => placement.indexOf(index) === index)
     : sort.items.map((item, index) => item.target >= 0 && placement[index] === item.target);
   const right = marks.filter(Boolean).length;

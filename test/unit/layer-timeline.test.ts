@@ -108,7 +108,6 @@ test('a layer\'s timeline: its lines from its opening, its blocks at its words, 
   assert.ok(!blockTimings(screen).has('consigne-schema'));
   assert.ok(isTimedLayer(project, project.screens.get('accueil')!.data, 'rappel'));
   assert.deepEqual(cuesOf(project.screens.get('accueil')!.data, { layer: 'rappel' }).map((cue) => cue.event), ['repere']);
-  // What editors read: the layer's view, its moment, its marks, the time of an anchor on it.
   assert.equal(timelineView(project, 'accueil', 'fr', { layer: 'rappel' })?.blocks[0]?.block, 'consigne-schema');
   assert.equal(screenAt(project, 'accueil', 3, 'fr', { layer: 'rappel' })?.line, 'r2');
   assert.ok(timelineMarks(project, 'accueil', 'fr', { layer: 'rappel' })!.some((mark) => mark.events.some((event) => event.block === 'consigne-schema')));

@@ -1,6 +1,6 @@
 import type { Diagnostic } from '@elabora/core/diagnostics/index';
 
-// ── Who wins between the theme and the components (docs/decisions.md D32) ──
+// Theme and component precedence (docs/decisions.md D32).
 // Measured in the page that shows a screen (a look, the fit of a package): for every rule of a
 // component stylesheet and every theme rule that match the same element and set the same property,
 // the page is asked which one shows. A declaration is taken out of its rule for a moment and the

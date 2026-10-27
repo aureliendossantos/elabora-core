@@ -11,7 +11,6 @@ import {
 import { computeDiff } from '@elabora/core/ops/diff';
 import { ROOT } from '../helpers.ts';
 
-// ── tools ────────────────────────────────────────────────────────────
 
 // Small seeded generator (mulberry32): a failing property names its seed, so it can be replayed.
 type Rng = ReturnType<typeof random>;
@@ -86,7 +85,6 @@ const filesOf = (docs: Map<string, Json>, others: Map<string, FileContent> = new
   return new Map([...files].sort(([a], [b]) => (a < b ? -1 : 1)));
 };
 
-// ── random documents and edits ───────────────────────────────────────
 
 const WORDS = ['alpha', 'beta', 'gamma', 'intro', 'quiz', 'été', 'naïve', '"quoted"', 'line\nbreak', '', 'tab\there', '日本'];
 const KEYS = ['title', 'props', 'markdown', 'type', 'hidden', 'width', 'note', 'style', 'text', 'a', 'b', 'c', 'x', 'y', 'über', 'with space', 'dot.key', 'blocks', 'layers', 'options', 'covers', 'tags', 'values'];
@@ -244,7 +242,6 @@ function mutate(rng: Rng, gen: Generator, docs: Map<string, Json>, steps: number
   }
 }
 
-// ── properties on random documents ───────────────────────────────────
 
 // ELABORA_SEEDS=50 npm test runs the properties on 50 times more seeds.
 const SEEDS = Math.max(1, Number(process.env.ELABORA_SEEDS) || 1);
@@ -367,7 +364,6 @@ function randomOp(rng: Rng, gen: Generator, files: Files): Op | null {
   return p.length && !element ? { op: 'set', file, path: p, value: gen.scalar() } : null;
 }
 
-// ── semantics ────────────────────────────────────────────────────────
 
 const sample = () => makeFiles({
   'course.json': formatJson({ id: 'c', title: 'Course', sections: [{ id: 's1', screens: ['a', 'b'] }, { id: 's2', screens: ['c'] }] }),
@@ -544,7 +540,6 @@ test('touchedFiles lists sources and destinations of moves', () => {
   ]), ['a.json', 'b.json', 'c.json']);
 });
 
-// ── the example projects, with realistic edits ───────────────────────
 
 const TEXT = /\.(json|md|css|html|js|mjs|svg|xlf|vtt|txt|csv|gitignore)$/i;
 
@@ -727,7 +722,6 @@ test('examples: a block moved to another screen is one move; a screen added is a
   ]);
 });
 
-// ── undo ─────────────────────────────────────────────────────────────
 
 let changeCounter = 0;
 function change(before: Files, after: Files): { id: string; ops: Op[]; inverse: Op[] } {
@@ -853,7 +847,6 @@ test('undo: a change whose inverse does not match its operations is refused', ()
   assert.throws(() => undoChanges(sample(), [{ id: 'bad', ops: [{ op: 'delete', file: 'notes.md' }], inverse: [] }]), (error: unknown) => error instanceof OpError && error.code === 'E_OP_INVALID');
 });
 
-// ── batches ──────────────────────────────────────────────────────────
 
 const agent: Author = { kind: 'agent', name: 'claude-code' };
 const human: Author = { kind: 'human' };

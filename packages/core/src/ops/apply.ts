@@ -214,7 +214,6 @@ function inverseOf(workspace: Workspace, op: Op): Op {
   }
 }
 
-// ── helpers ──────────────────────────────────────────────────────────
 
 // The write operation that gives a file this content.
 export function contentOp(file: string, content: FileContent, op?: Op): Op {

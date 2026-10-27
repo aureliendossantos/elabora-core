@@ -131,7 +131,7 @@ test('the review bridge: a page of another origin hears the module, takes it to 
     const frameOf = async (): Promise<Frame> => { for (;;) { const found = page.frames().find((frame) => frame.url().startsWith(`http://127.0.0.1:${modulePort}/m/`)); if (found) return found; await page.waitForTimeout(50); } };
     const module = await frameOf();
 
-    // ── ready, layout, location, blocks ───────────────────────────────
+    // ready, layout, location, blocks
     const ready = await heard<ReadyMessage>(page, 'ready');
     assert.equal(ready.protocol, REVIEW_PROTOCOL);
     assert.deepEqual({ build: ready.build, course: ready.course, language: ready.language, languages: ready.languages, presentation: ready.presentation },
@@ -156,14 +156,14 @@ test('the review bridge: a page of another origin hears the module, takes it to 
     const near = (rect: { x: number; y: number; width: number; height: number }) => Math.abs(rect.x - box.x) < 1 && Math.abs(rect.y - box.y) < 1 && Math.abs(rect.width - box.width) < 1 && Math.abs(rect.height - box.height) < 1;
     await heard<BlocksMessage>(page, 'blocks', (message) => message.blocks.length === 3 && near(message.blocks[1].rect));
 
-    // ── go: a step ────────────────────────────────────────────────────
+    // go: a step
     let since = await count(page);
     await send(page, { type: 'go', id: 'g1', anchor: { screen: keyOf('accueil'), step: 2 } });
     assert.deepEqual(await heard(page, 'went', (message) => message.re === 'g1', since), { protocol: REVIEW_PROTOCOL, type: 'went', re: 'g1', ok: true, missing: [] });
     await heard<LocationMessage>(page, 'location', (message) => message.step === 2, since);
     await heard<BlocksMessage>(page, 'blocks', (message) => message.blocks.find((block) => block.id === 'accueil-objectifs')?.hidden === false, since);
 
-    // ── go: a word, then a time, on a narrated screen ─────────────────
+    // go: a word, then a time, on a narrated screen
     since = await count(page);
     await send(page, { type: 'go', id: 'g2', anchor: { screen: keyOf('accueil'), line: 'l2', word: 'imprimante' } });
     await heard(page, 'went', (message) => message.re === 'g2' && message.type === 'went' && message.ok, since);
@@ -182,7 +182,7 @@ test('the review bridge: a page of another origin hears the module, takes it to 
     const missed = await heard(page, 'went', (message) => message.re === 'g4', since);
     assert.deepEqual(missed.type === 'went' && [missed.ok, missed.missing], [false, ['block', 'word']]);
 
-    // ── key C inside the module: the page's « Commenter » ─────────────
+    // key C inside the module: the page's « Commenter »
     since = await count(page);
     await module.locator('[data-block="accueil-situation"]').click();
     await page.keyboard.press('c');
@@ -204,7 +204,7 @@ test('the review bridge: a page of another origin hears the module, takes it to 
     assert.equal((await page.evaluate(() => (window as unknown as { received: Received[] }).received)).slice(since).filter((message) => message.type === 'key').length, 0);
     await module.evaluate(() => document.getElementById('typed')?.remove());
 
-    // ── pause and resume ──────────────────────────────────────────────
+    // pause and resume
     await module.evaluate(() => (window as unknown as { __elabora: { timeline: { play(): void } } }).__elabora.timeline.play());
     await heard<LocationMessage>(page, 'location', (message) => message.playing === true);
     since = await count(page);
@@ -221,7 +221,7 @@ test('the review bridge: a page of another origin hears the module, takes it to 
     await heard<LocationMessage>(page, 'location', (message) => message.playing === true && !message.held, since);
     await send(page, { type: 'pause' });
 
-    // ── go: a layer, and a block highlighted ──────────────────────────
+    // go: a layer, and a block highlighted
     since = await count(page);
     await send(page, { type: 'go', id: 'g5', anchor: { screen: keyOf('premier-reflexe'), layer: 'rappel-regle', block: 'rappel-texte' } });
     await heard(page, 'went', (message) => message.re === 'g5' && message.type === 'went' && message.ok, since);
@@ -234,7 +234,7 @@ test('the review bridge: a page of another origin hears the module, takes it to 
     await send(page, { type: 'go', id: 'g6', anchor: { screen: keyOf('premier-reflexe') } });
     await heard<LocationMessage>(page, 'location', (message) => message.screen === keyOf('premier-reflexe') && message.layer === null, since);
 
-    // ── layout: the column moves into the margin, its width kept ──────
+    // layout: the column moves into the margin, its width kept
     const column = () => module.evaluate(() => { const r = document.querySelector('#t-main > article.t-screen')!.getBoundingClientRect(); return { left: r.left, width: r.width, font: getComputedStyle(document.documentElement).fontSize }; });
     const before = await column();
     const firstX = await module.evaluate(() => document.querySelector('#t-main [data-block]')!.getBoundingClientRect().x);
@@ -261,7 +261,7 @@ test('the review bridge: a page of another origin hears the module, takes it to 
     assert.ok(Math.abs(back.left - before.left) < 0.01 && Math.abs(back.width - before.width) < 0.01 && back.font === before.font, JSON.stringify([back, before]));
     await send(page, { type: 'layout', inset: { right: 0 } });
 
-    // ── measure: another frame ────────────────────────────────────────
+    // measure: another frame
     since = await count(page);
     await send(page, { type: 'measure', id: 'm1', frame: { width: 1280, height: 744 } });
     const measured = await heard(page, 'measured', (message) => message.re === 'm1', since);
@@ -271,7 +271,7 @@ test('the review bridge: a page of another origin hears the module, takes it to 
     const larger = await heard(page, 'measured', (message) => message.re === 'm2', since);
     assert.deepEqual(larger.type === 'measured' && [larger.fontSize, larger.widest], [16, 1100]);
 
-    // ── another origin is not heard ───────────────────────────────────
+    // another origin is not heard
     since = await count(page);
     const sibling = page.frames().find((frame) => frame.url().endsWith('/sibling.html'));
     assert.ok(sibling);

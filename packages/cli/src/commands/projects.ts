@@ -39,7 +39,6 @@ const HELP = [
 
 const PROJECTS_USAGE = 'Usage: elabora projects list|path|create|duplicate|rename|trash …';
 
-// ── output ──
 
 function size(bytes: number): string {
   if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
@@ -110,7 +109,6 @@ function progressReporter(): { onProgress: (progress: Progress) => void; end: ()
   };
 }
 
-// ── projects ──
 
 const list = defineCommand({
   name: 'projects list',
@@ -243,7 +241,6 @@ const trash = defineCommand({
   }
 });
 
-// ── archives ──
 
 const exportCommand = defineCommand({
   name: 'export',

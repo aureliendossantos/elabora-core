@@ -241,7 +241,6 @@ function rulesOf(sheets: readonly string[]): Rule[] {
   return rules.sort((a, b) => a.specificity - b.specificity || a.order - b.order);
 }
 
-// --- Painting.
 
 interface Inherited { fill: Paint; stroke: Paint; color: Colour; fillOpacity: number; strokeOpacity: number; visible: boolean; strokeWidth: number }
 interface Frame { name: string; inert: boolean; opacity: number; effect: boolean; inherited: Inherited; measured: boolean; declared: Map<string, string>; attributes: Map<string, string> }

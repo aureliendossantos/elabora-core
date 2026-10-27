@@ -93,7 +93,6 @@ export function writeComponentFile(context: CommandContext, { component, file, c
   return { files: draft.files(), result: {} };
 }
 
-// ── migrations ───────────────────────────────────────────────────────
 
 export interface MigrateComponentsArgs {
   component?: string;
@@ -193,7 +192,6 @@ export function migrateComponents(context: CommandContext, args: MigrateComponen
   };
 }
 
-// ── libraries ────────────────────────────────────────────────────────
 // A library is a folder shared by several courses (a client's design system): library.json
 // ({ id, title }) and components/<id>/. A course never links to it at run time: it copies a
 // component (pinned, with origin and hash), upgrades it explicitly, and can publish its own.

@@ -192,7 +192,6 @@ function withRemoved<T>(before: readonly string[], after: readonly string[], cha
   let previous: string | null = null;
   for (const id of before) {
     if (!present.has(id)) {
-      // After the nearest earlier element still there.
       following.set(previous, [...(following.get(previous) ?? []), id]);
     } else previous = id;
   }

@@ -116,7 +116,6 @@ export function stripImageMetadata(input: string, output: string, container: Ima
   }
 }
 
-// --- JPEG
 
 interface JpegSegment { marker: number; payload: Buffer }
 
@@ -209,7 +208,6 @@ function copyJpegData(source: number, target: number, start: number): void {
   }
 }
 
-// --- PNG
 
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const PNG_METADATA = new Set(['eXIf', 'tEXt', 'zTXt', 'iTXt', 'tIME']);
@@ -243,7 +241,6 @@ function pngChunk(type: string, data: Buffer): Buffer {
   return out;
 }
 
-// --- WebP (RIFF)
 
 function webpChunks(handle: number): { chunks: Chunk[] } | null {
   const size = fs.fstatSync(handle).size;
@@ -271,7 +268,6 @@ function riffChunk(type: string, data: Buffer): Buffer {
   return out;
 }
 
-// --- EXIF (TIFF structure)
 
 function parseTiff(tiff: Uint8Array): { orientation: number | null; gps: boolean } {
   const none = { orientation: null, gps: false };
@@ -317,7 +313,6 @@ function minimalTiff(orientation: number): Buffer {
   return out;
 }
 
-// --- helpers
 
 function readAt(handle: number, position: number, length: number): Buffer {
   const buffer = Buffer.alloc(length);

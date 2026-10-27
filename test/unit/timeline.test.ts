@@ -142,7 +142,6 @@ test('set_block_timing: in and out as patches, null removes; the screen\'s timel
   assert.equal(block.in!.at, Math.round((l2.start + 0.6) * 1000) / 1000, "« imprimante » is the third word of l2 (ni, l', imprimante)");
   assert.equal(block.in!.estimated, false);
   assert.equal(block.out!.at, timeline.lines[2].start);
-  // The screen at a time, the editor's view, the agent's text.
   const middle = screenAt(project, 'accueil', block.in!.at + 0.4)!;
   assert.deepEqual(middle.blocks, [{ block: 'accueil-illustration', state: 'entering', progress: 0.5 }]);
   assert.equal(middle.line, 'l2');

@@ -23,7 +23,6 @@ import { renderScreen } from '@elabora/core/render/screen';
 const write = (dir: string, rel: string, content: string) => { fs.mkdirSync(path.dirname(path.join(dir, rel)), { recursive: true }); fs.writeFileSync(path.join(dir, rel), content); };
 const out = () => fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-design-'));
 
-// ── Maths ──
 test('maths: $…$ and $$…$$ render as MathML at build time, prices stay text', () => {
   assert.match(renderMarkdown('Speed $n_c = 278$ rpm.'), /<math><mrow><msub><mi>n<\/mi><mi>c<\/mi><\/msub>/);
   assert.match(renderMarkdown('$$\\frac{1}{2}$$'), /<div class="t-math-display"><math display="block"/);
@@ -45,7 +44,6 @@ test('maths: LaTeX errors are reported with E_MATH_PARSE', () => {
   assert.equal(c.filter((x) => x === 'E_MATH_PARSE').length, 2);
 });
 
-// ── Numeric answers ──
 test('numeric: locale-aware parsing', () => {
   assert.equal(parseNumber('1,385', 'en'), 1385);
   assert.equal(parseNumber('1,5', 'fr'), 1.5);
@@ -89,7 +87,6 @@ test('numeric: feedback required, ambiguous misconception, plan question type', 
   for (const code of ['E_FEEDBACK_MISSING', 'W_NUMERIC_AMBIGUOUS', 'E_QUIZ_SOURCE']) assert.ok(c.includes(code), code);
 });
 
-// ── Layouts, slots and styles ──
 function addLayout(dir: string, { html, css = '', slots }: { html?: string; css?: string; slots?: unknown[] } = {}) {
   write(dir, 'components/split/component.json', JSON.stringify({ id: 'split', title: 'Split', version: '1.0.0', level: 'screen', slots: slots || [{ id: 'side', label: 'Side', accepts: ['image', 'text'] }, { id: 'main', label: 'Main', default: true }] }));
   write(dir, 'components/split/template.html', html ?? '<div class="g"><div data-title></div><div data-slot="side"></div><div data-slot="main"></div><svg aria-hidden="true"><path d="M0 0H1"/></svg></div>');
@@ -142,7 +139,6 @@ test('styles must be declared by the theme', () => {
   assert.ok(!codes(validateDir(dir).diagnostics).includes('E_UNKNOWN_REFERENCE'));
 });
 
-// ── Theme stylesheet, fonts, custom tokens ──
 test('theme: stylesheet rules, fonts and custom tokens', async () => {
   const dir = copyExample();
   write(dir, 'theme/theme.css', '.t-callout { color: #123456; background: url("https://cdn.example.com/bg.png"); }\n.t-x::before { content: "Attention"; }\n@import "other.css";\n');
@@ -166,7 +162,6 @@ test('theme: stylesheet rules, fonts and custom tokens', async () => {
   assert.match(fs.readFileSync(path.join(r.dirPath, 'elabora/theme.css'), 'utf8'), /@font-face\{font-family:"Demo"/);
 });
 
-// ── Cascade layers ──
 test('cascade layers: the course\'s order first in every stylesheet that names its layers, the player\'s layer alone first in elabora/player.css', async () => {
   const LEGACY = '@layer elabora.base, elabora.components, elabora.theme, elabora.overrides;';
   const CURRENT = '@layer elabora.base, elabora.theme, elabora.components, elabora.overrides;';
@@ -278,7 +273,6 @@ test('cascade: a theme upgrade moves to @layer overrides what the components als
   assert.equal(upgradeTheme('.a { color: red; }\n', ['.b { all: unset; }']).moved, 1);
 });
 
-// ── Figures and generators ──
 test('figures: words inside an SVG are reported, numbers are not', () => {
   const dir = copyExample();
   write(dir, 'assets/images/chemin-impression.svg', '<svg xmlns="http://www.w3.org/2000/svg"><text>1</text><text>450</text></svg>');
@@ -321,7 +315,6 @@ test('free objects: relative imports are analysed with the same rules', () => {
   assert.deepEqual(d.map((x) => x.code), ['E_OBJECT_NONDETERMINISM']);
 });
 
-// ── Size classes and steps ──
 test('size classes: font sizes in px in a course stylesheet are reported, rem and clamp() with rem bounds are not', () => {
   const dir = copyExample();
   const course = readJSON(dir, 'course.json');

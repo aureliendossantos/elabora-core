@@ -45,7 +45,7 @@ export class FakeCloud {
   readonly sentCodes: { email: string; language: string }[] = [];
   readonly sessions = new Map<string, FakeSession>();
   readonly deletionCodes = new Set<string>(); // the accounts a deletion code was sent for (the code is FAKE_CODE)
-  readonly erased: string[] = []; // the ids of the accounts erased
+  readonly erased: string[] = [];
   readonly aiKeys = new Map<string, AiKey>();
   limits = { singlePutMaxBytes: 64 * 1024 * 1024, partBytes: 32 * 1024 * 1024 };
   quota: { storageBytes: number } | null = null; // an account's storage limit, checked at the announce
@@ -196,7 +196,6 @@ export class FakeCloud {
         }
         return this.#send(response, 200, { account: this.#account(account), next: account.handle ? null : 'choose-handle' });
       }
-      // The devices: list, and sign one out.
       if (parts[2] === 'sessions' && parts.length === 3 && method === 'GET') {
         const sessions = [...this.sessions.values()].filter((row) => row.account === account).map(({ account: _a, token: _t, ...row }) => ({ ...row, current: row.id === principal.session }));
         const aiKeys = [...this.aiKeys.values()].filter((key) => key.account === account).map(({ key: _k, account: _a, ...shown }) => shown);
@@ -251,7 +250,6 @@ export class FakeCloud {
     const blobs = this.blobs.get(space) ?? new Map<string, Buffer>();
     this.blobs.set(space, blobs);
 
-    // Publications.
     if (parts[3] === 'publications' && parts.length === 4 && method === 'GET') {
       return this.#send(response, 200, { publications: [...publications.values()].map((p) => this.#publication(space, p)) });
     }
@@ -348,7 +346,6 @@ export class FakeCloud {
       }
     }
 
-    // Reviews.
     if (parts[3] === 'reviews') {
       const id = parts[4];
       if (!id && method === 'POST') {

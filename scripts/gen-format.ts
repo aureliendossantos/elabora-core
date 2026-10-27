@@ -84,7 +84,6 @@ function loadSchemas(): SchemaFile[] {
   });
 }
 
-// ---------------------------------------------------------------------------------------------
 // types.generated.ts
 
 function typesModule(files: SchemaFile[]): string {
@@ -388,7 +387,6 @@ function docOf(schema: JsonSchema | boolean): string[] {
   return lines;
 }
 
-// ---------------------------------------------------------------------------------------------
 // Printing
 
 function printDeclaredType(type: TypeNode): string {
@@ -438,7 +436,6 @@ function printValue(value: unknown): string {
   return JSON.stringify(value);
 }
 
-// ---------------------------------------------------------------------------------------------
 // schemas.generated.ts
 
 function schemasModule(files: SchemaFile[]): string {
@@ -475,7 +472,6 @@ export const LAYOUT_TYPES: readonly BuiltinLayoutType[] = [${layouts.map(printVa
 `;
 }
 
-// ---------------------------------------------------------------------------------------------
 
 function pascal(text: string): string {
   return text.split(/[^A-Za-z0-9]+/).filter(Boolean).map((word) => word[0].toUpperCase() + word.slice(1)).join('');

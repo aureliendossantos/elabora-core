@@ -56,7 +56,6 @@ function runNode(code: string, env: Record<string, string> = {}): Promise<{ code
 }
 const imports = `const journal = await import(${JSON.stringify(MODULES.journal)});`;
 
-// ── lock ─────────────────────────────────────────────────────────────
 
 test('lock: held while the function runs, released after it and on errors, reentrant', () => {
   const dir = tmpProject();
@@ -174,7 +173,6 @@ test('lock: processes incrementing a counter under the lock lose no update', asy
   assert.ok(!fs.existsSync(lockPath(dir)));
 });
 
-// ── journal ──────────────────────────────────────────────────────────
 
 test('journal: entries get sequence numbers and batches, go to monthly files and read back in order', () => {
   const dir = tmpProject();
@@ -275,7 +273,6 @@ test('journal and lock live in the data folder (ELABORA_DATA_DIR), not in the pr
   assert.deepEqual(fs.readdirSync(path.join(dir, '.elabora')), ['project-id'], 'only the project id stays in the project');
 });
 
-// ── binary contents ──────────────────────────────────────────────────
 
 test('journal: binary contents go to the blob store; journal lines only hold their hashes', async () => {
   const dir = tmpProject();
@@ -327,7 +324,6 @@ test('file hashes of a change: text by its UTF-8 bytes, binary by its hash, null
   ]);
 });
 
-// ── author ───────────────────────────────────────────────────────────
 
 test('author of CLI changes: ELABORA_AUTHOR, then Claude Code or Codex, then a terminal or not', () => {
   assert.deepEqual(detectAuthor({ ELABORA_AUTHOR: 'human' }, false), { kind: 'human' });
@@ -344,7 +340,6 @@ test('author of CLI changes: ELABORA_AUTHOR, then Claude Code or Codex, then a t
   assert.deepEqual(detectAuthor({}, true), { kind: 'human' });
 });
 
-// ── end to end ───────────────────────────────────────────────────────
 
 // The project as operations see it (what the project snapshot will provide).
 function snapshot(dir: string): Files {

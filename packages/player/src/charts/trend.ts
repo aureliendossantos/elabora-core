@@ -35,7 +35,6 @@ interface Trend {
   end: HTMLElement | null;
   note: { element: HTMLElement; x: number } | null;
   rest: Map<HTMLElement, { left: string; top: string }>;
-  // Predict mode.
   predict: PredictBlock['props']['predict'] | null;
   from: number;
   revealed: boolean;
@@ -128,7 +127,6 @@ function settle(dom: ChartDom, trend: Trend): void {
   for (const element of [trend.start, trend.dot, trend.end]) if (element) { element.style.opacity = ''; element.style.translate = ''; }
 }
 
-// ── predict ──
 function guessPoints(trend: Trend): XY[] {
   const from = trend.points[trend.from];
   const out: XY[] = [from];

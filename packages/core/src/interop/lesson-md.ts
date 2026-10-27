@@ -21,7 +21,6 @@ import { objectsIn } from '../util/values.ts';
 
 const oneLine = (text: unknown): string => String(text || '').replace(/\s*\n\s*/g, ' ').trim();
 
-// ── export ───────────────────────────────────────────────────────────
 // The files of the export (output: name → text), the assets to copy into media/ (media: project path
 // → name in the export) and the losses. @elabora/node (lesson-md.ts) writes them into a folder.
 export interface ExportLoss {
@@ -240,7 +239,6 @@ export function lessonMdExport(project: Project): LessonMdExport {
   return { files: ['COURSE.md', ...files], losses, output, media: [...media].map(([name, from]) => ({ from, name })) };
 }
 
-// ── import ───────────────────────────────────────────────────────────
 const KNOWN_KEYS: Readonly<Record<string, readonly string[]>> = {
   image: ['src', 'alt', 'caption', 'width', 'align'], video: ['src', 'provider', 'caption'], audio: ['src', 'caption'],
   accordion: ['allowmultiple'], tabs: ['orientation'], process: ['orientation', 'style'], timeline: ['orientation', 'style'],

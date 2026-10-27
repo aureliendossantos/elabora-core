@@ -98,7 +98,6 @@ function parseEntry(line: string): JournalEntry | undefined {
       return value as JournalEntry;
     }
   } catch {
-    // cut short
   }
   return undefined;
 }

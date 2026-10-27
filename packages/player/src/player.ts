@@ -53,7 +53,6 @@ let labels = labelsFor(course.language, course.ui, course.presentation?.mode);
 const format = (label: string, values: Readonly<Record<string, unknown>>) => formatLabel(label, values, course.language);
 const app = document.getElementById('elabora-app') as HTMLElement; // index.html has it
 
-// ── LMS connection ────────────────────────────────────────────────────
 // A module built for the web never looks for an LMS: its progress stays in the browser or nowhere
 // (web.ts, D41). A SCORM package uses the LMS it finds, else keeps a preview's data in the tab.
 const delivery = course.delivery;
@@ -127,7 +126,6 @@ function recordInteraction({ id, type, objective, response, correctPattern, resu
   lms.setAlways(`${prefix}.result`, result);
 }
 
-// ── Session end ───────────────────────────────────────────────────────
 let ended = false;
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') syncNow();
@@ -155,7 +153,6 @@ function quit() {
 // Says a message in the live region (emptied first, so the same message is said again).
 const announce = (message: string) => { liveRegion.textContent = ''; setTimeout(() => { liveRegion.textContent = message; }, 30); };
 
-// ── The bars ──────────────────────────────────────────────────────────
 // The two bars of course.player (D58), the one tooltip, and the side panels: Resources, Glossary,
 // « IA et crédits » (the transcript is the narrated screen's own). They are mounted for the course
 // in the language shown, and mounted again when the learner chooses another (D59).
@@ -212,7 +209,6 @@ function mountBars() {
   if (course.tokens['player.density'] === 'compact') app.dataset.density = 'compact'; else delete app.dataset.density;
   document.documentElement.lang = course.language;
   document.title = course.title;
-  // « Affichage » and « Langue »: their menus.
   const narrated = [...(course.player.top?.items ?? []), ...(course.player.bottom?.items ?? [])].some((item) => item.id === 'controls');
   const dialogues = course.screens.some((screen) => [...flatBlocks(screen.blocks), ...(screen.layers ?? []).flatMap((layer) => flatBlocks(layer.blocks))].some((block) => hasBehavior(block, 'dialogue')));
   displayMenu = chrome.displayButton ? createDisplayMenu(chrome.displayButton, { labels, prefs: displayPrefs, narrated, dialogues, onChange: (prefs) => { applyDisplay(app, prefs); saveDisplayPrefs(packageId, keep, prefs); } }) : null;
@@ -262,7 +258,6 @@ function showEnded(message: string) {
   title.focus();
 }
 
-// ── Navigation ────────────────────────────────────────────────────────
 // Index of the screen shown (-1 before the first one).
 let current = -1;
 const currentScreen = (): ScreenData | undefined => courseState.screens[current];
@@ -393,7 +388,6 @@ function renderMenu() {
   menu.replaceChildren(where, ...lists, ...(keptHere ? [progressNote()] : []));
 }
 
-// ── Progress kept in this browser (the web target, progress local: keptHere) ──
 // The learner is told, quietly, that the progress stays in this browser, and may clear it: the
 // kept elements leave localStorage and the module starts again from the beginning.
 function progressNote(): HTMLElement {
@@ -444,7 +438,6 @@ function preloadNarration(screen: ScreenData | undefined) {
   preloaded = element('audio', { preload: 'auto', src });
 }
 
-// ── The screen ────────────────────────────────────────────────────────
 // Rendering, rooms, free objects, layers, steps, events and backdrop (screen-view.ts, shared with
 // the editor canvas). Events that leave the screen, end the course or retake it come back here.
 // The controls item of the player says what a narrated screen's bar shows (D58).
@@ -472,8 +465,7 @@ function mountView() {
   });
 }
 
-// ── Languages (D59) ───────────────────────────────────────────────────
-// A package of several languages holds the course in each (elabora/course.<lang>.js). The learner
+// A package of several languages (D59) holds the course in each (elabora/course.<lang>.js). The learner
 // switches from « Langue »: the bars and the screen are mounted again in that language, on the same
 // screen and step, with the same progress (it is keyed by element keys, the same in every language);
 // the LMS session goes on, and the language chosen is kept with the progress.
@@ -526,7 +518,6 @@ function mentionGeneratedVoice() {
   tooltip.flash(button, labels.generatedVoice, { duration: 6000 });
 }
 
-// ── Start ─────────────────────────────────────────────────────────────
 // In the language the learner chose last time (D59), else the course's own. The location is a
 // screen key; packages built before 2026-10-07 wrote the screen id.
 function boot() {

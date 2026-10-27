@@ -53,7 +53,6 @@ test('the walk: lines, a decision waiting, the common way, a branch that comes b
   // B: a branch, then back to ticket.
   const b = replay(data, ['premiere-question.b']);
   assert.deepEqual(b.seen, ['appel', 'premiere-question', 'routeur-redemarre', 'ticket']);
-  // Deterministic: the same path, the same beats.
   assert.deepEqual(replay(data, ['premiere-question.a', 'ticket.b']).beats, replay(data, ['premiere-question.a', 'ticket.b']).beats);
   // A line whose condition fails is skipped (confiance 1 after A, 0 after B).
   assert.ok(lineIds(replay(data, ['premiere-question.a', 'ticket.a']).beats).includes('m5'));

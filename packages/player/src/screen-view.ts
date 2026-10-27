@@ -115,7 +115,6 @@ export function createScreenView(options: ScreenViewOptions) {
   pageWidth();
   if (typeof ResizeObserver === 'function') new ResizeObserver(pageWidth).observe(main);
 
-  // ── Steps ─────────────────────────────────────────────────────────────
   // Blocks of a screen may carry a step; Continue reveals the next one before leaving the screen.
   // A pending step takes no room in scroll presentation and keeps its place in slides (the view
   // does not move). Back on a screen left part-way, the learner finds the step reached.
@@ -323,7 +322,6 @@ export function createScreenView(options: ScreenViewOptions) {
     node.scrollIntoView?.({ block: slides() ? 'nearest' : 'start', behavior: reduce ? 'auto' : 'smooth' });
   }
 
-  // ── Showing a screen ──────────────────────────────────────────────────
   // Leaving the screen shown: its objects stop and its layers close (their events still belong to it).
   function leave() {
     behaviors.dialogues.dispose();
@@ -353,7 +351,6 @@ export function createScreenView(options: ScreenViewOptions) {
     trigger('screen.enter', {});
   }
 
-  // ── The timeline of a narrated screen ─────────────────────────────────
   // It starts at the start of the step reached; a screen seen to its end waits at its end.
   const phone = () => typeof matchMedia === 'function' && matchMedia('(max-width: 760px)').matches;
   // A narrated slide's Continue moves between its kept place and the page as the window crosses the phone width.
@@ -564,7 +561,6 @@ export function createScreenView(options: ScreenViewOptions) {
     timed.apply(timeline.time);
   }
 
-  // ── Events ────────────────────────────────────────────────────────────
   // Events triggered by events nest up to this depth.
   let depth = 0;
   function trigger(type: TriggerType, info: TriggerInfo) {
@@ -651,7 +647,6 @@ export function createScreenView(options: ScreenViewOptions) {
   // While a dialogue speaks, the narration of the screen waits (and a layer's stops).
   const dialogueHolds = new Map<string, Timeline>();
 
-  // ── Screens and blocks ────────────────────────────────────────────────
   // Every block arrives as HTML rendered at build time from its component template (structure,
   // decoration and bound props, checked by the validator), with its slots and behaviour hooks. The
   // player places the blocks of each slot, then binds behaviours: what is scored, saved, announced
@@ -723,7 +718,6 @@ export function createScreenView(options: ScreenViewOptions) {
     });
   }
 
-  // ── Room for answers (slides) ─────────────────────────────────────────
   // In slides, answering must not move the slide: every activity reserves from the start the height
   // of its tallest outcome (feedback, flags, messages), measured on hidden copies at the same width,
   // and grows inside that room. A template whose feedback floats over its content opts out with
@@ -884,7 +878,6 @@ export function createScreenView(options: ScreenViewOptions) {
     return slotNamed(block.slot || defaultSlot) || slotNamed(defaultSlot) || host;
   }
 
-  // Blocks rendered by code, by type.
   const isVideo = (block: BlockData): block is VideoBlock => block.type === 'video';
   const isAudio = (block: BlockData): block is AudioBlock => block.type === 'audio';
   const isFreeObject = (block: BlockData): block is ObjectBlock => block.type === 'free-object';
@@ -996,7 +989,6 @@ export function createScreenView(options: ScreenViewOptions) {
     return html ? element('details', { class: 't-transcript' }, element('summary', { text: labels.transcript }), element('div', { class: 't-text', html })) : null;
   }
 
-  // ── Free objects ──────────────────────────────────────────────────────
   // The host of a block's object, and whether it failed to load (shown with its text version).
   type BlockObjectHost = ObjectHost & { failed?: () => boolean };
   const hosts = new Map<string, BlockObjectHost>();
@@ -1164,7 +1156,6 @@ export function createScreenView(options: ScreenViewOptions) {
     trigger('object.event', { target: block.id, name, payload });
   }
 
-  // ── Layers ────────────────────────────────────────────────────────────
   // The focused element, to give the focus back (HTML and SVG elements take it).
   const focusedElement = () => document.activeElement as (Element & HTMLOrSVGElement) | null;
   // Layers in the order they opened: hide-layer without a layer closes the one on top, a dialog
@@ -1224,7 +1215,6 @@ export function createScreenView(options: ScreenViewOptions) {
     heading.focus({ preventScroll: true });
   }
 
-  // ── Backdrop ──────────────────────────────────────────────────────────
   // Decoration behind every screen (theme.backdrop): layers painted by the theme stylesheet and an
   // optional decorative object, mounted once for the whole session. It follows the learner
   // (data-screen, data-section, data-step, data-variant; the object gets the same context) and is
@@ -1270,7 +1260,6 @@ export function createScreenView(options: ScreenViewOptions) {
     else { backdropHost.resume(); backdropHost.setContext(context); }
   }
 
-  // ── Updating in place (the editor canvas) ─────────────────────────────
   // New data for the screen shown: blocks whose data did not change keep their node (a free object
   // keeps running, a video keeps its frame), a component instance whose own data did not change
   // keeps its node and gets its slots refilled, other blocks are rendered again. Nodes move with

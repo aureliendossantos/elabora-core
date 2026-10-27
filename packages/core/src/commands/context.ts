@@ -170,7 +170,6 @@ export function assignFields<T extends object>(target: T, fields: Partial<Record
   }
 }
 
-// ── blocks ───────────────────────────────────────────────────────────
 
 // A block anywhere: on a screen, in a layer, or in the slots of a component instance. list: the
 // keys and indexes from the screen to the array holding it; path: the same with { id } selectors.

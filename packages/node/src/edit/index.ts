@@ -27,7 +27,6 @@ export { addResource, titleFromName } from './resources.ts';
 export { COMPONENT_FILES } from '@elabora/core/commands/index';
 export { componentHash, BUILTINS };
 
-// ── screens ──────────────────────────────────────────────────────────
 
 export function createScreen(dir: string, args: CreateScreenArgs, options?: EditOptions) {
   return runCommand(dir, { name: 'create_screen', args, run: (context) => commands.createScreen(context, args) }, options);
@@ -49,7 +48,6 @@ export function duplicateScreen(dir: string, args: DuplicateScreenArgs, options?
   return runCommand(dir, { name: 'duplicate_screen', args, run: (context) => commands.duplicateScreen(context, args) }, options);
 }
 
-// ── blocks ───────────────────────────────────────────────────────────
 
 // parent: put the block in a slot of a component instance (block.slot picks the slot).
 export function addBlock(dir: string, args: AddBlockArgs, options?: EditOptions) {
@@ -92,7 +90,6 @@ export function rename(dir: string, args: RenameArgs, options?: EditOptions) {
   return runCommand(dir, { name: 'rename', args, run: (context) => commands.renameId(context, args) }, options);
 }
 
-// ── layers, events, variables, course ────────────────────────────────
 
 export function upsertLayer(dir: string, args: UpsertLayerArgs, options?: EditOptions) {
   return runCommand(dir, { name: 'upsert_layer', args, run: (context) => commands.upsertLayer(context, args) }, options);
@@ -160,7 +157,6 @@ export function updatePlayer(dir: string, args: commands.UpdatePlayerArgs, optio
   return runCommand(dir, { name: 'update_player', args, run: (context) => commands.updatePlayer(context, args) }, options);
 }
 
-// ── objects and design files ─────────────────────────────────────────
 
 function objectTemplates(): ObjectTemplates {
   const read = (file: string) => fs.readFileSync(path.join(TEMPLATES_DIR, 'object', file), 'utf8');
@@ -321,7 +317,6 @@ export function setCaptions(dir: string, args: SetCaptionsArgs, options?: EditOp
   return runCommand(dir, { name: 'set_captions', args, run: (context) => commands.setCaptions(context, args) }, options);
 }
 
-// ── components ───────────────────────────────────────────────────────
 
 // A new component: block type (level block) or screen layout (level screen).
 export function createComponent(dir: string, args: CreateComponentArgs, options?: EditOptions) {

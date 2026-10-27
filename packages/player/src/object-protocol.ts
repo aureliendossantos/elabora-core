@@ -110,7 +110,7 @@ export interface DryReport {
 
 export type FrameMethod = keyof FrameMethods;
 
-// ── What the object code sees ──
+// What the object code sees.
 
 // The compiled object.js (self.__elaboraObject).
 export interface ObjectModule {

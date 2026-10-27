@@ -145,7 +145,6 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
 
   const changed = (change: ChangeKind) => onChange?.(change);
 
-  // ── variables ──
   function getVar(id: string): VariableValue | null | undefined { return variables.get(id)?.value; }
   function setVar(id: string, value: VariableValue): boolean {
     const variable = variables.get(id);
@@ -171,7 +170,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     return setVar(id, ((getVar(id) || 0) as number) + by);
   }
 
-  // ── items (quizzes, decisions, objects) ──
+  // items (quizzes, decisions, objects)
   const quizState = (block: QuizBlock): QuizAnswer | null => learner.quizzes[block.key] || null;
   function quizIsCorrect(block: QuizBlock, selected: readonly string[]): boolean {
     const correct = block.props.options.filter((option) => option.correct).map((option) => option.id).sort();
@@ -212,7 +211,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     changed('numeric');
     return { correct: grade.correct, misconception: grade.misconception, final, attemptsLeft: (block.props.attempts || 1) - answer.attempts };
   }
-  // ── fill-in (D63): one answer per blank; the share of blanks right ──
+  // fill-in (D63): one answer per blank; the share of blanks right
   const fillInState = (block: FillInBlock): FillInAnswer | null => learner.fillIns[block.key] || null;
   const fillInGrade = (block: FillInBlock, answers: readonly string[]): FillInGrade => gradeFillIn(block.props.blanks, answers, { ignoreAccents: block.props.ignoreAccents });
   function fillInFinal(block: FillInBlock): boolean {
@@ -234,7 +233,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     return { correct: grade.correct, final, attemptsLeft: (block.props.attempts || 1) - answer.attempts, marks: grade.marks, score: grade.score };
   }
 
-  // ── sort (D63): pairs, categories or order; the share of items placed right ──
+  // sort (D63): pairs, categories or order; the share of items placed right
   const sortState = (block: SortBlock): SortAnswer | null => learner.sorts[block.key] || null;
   const sortGrade = (block: SortBlock, placement: readonly number[]): SortGrade => gradeSort(block.props, placement);
   function sortFinal(block: SortBlock): boolean {
@@ -255,7 +254,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     return { correct: grade.correct, final, attemptsLeft: (block.props.attempts || 1) - answer.attempts, marks: grade.marks, score: grade.score };
   }
 
-  // ── reflection (D63): never scored; answered once saved ──
+  // reflection (D63): never scored; answered once saved
   const reflectionOf = (block: ReflectionBlock): string | number | null => learner.reflections[block.key] ?? null;
   // value: the text written (cut at maxLength), or a point of the scale. Empty text is not saved.
   function saveReflection(blockId: string, value: string | number): boolean {
@@ -357,7 +356,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     return block && hasBehavior(block, 'object') ? learner.objects[block.key] ?? null : null;
   };
 
-  // ── visibility (show-block / hide-block, persisted for keyed blocks) ──
+  // visibility (show-block / hide-block, persisted for keyed blocks)
   function blockVisible(block: BlockData): boolean {
     if (block.vkey && block.vkey in learner.visibility) return !!learner.visibility[block.vkey];
     return !block.hidden;
@@ -369,7 +368,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     changed('visibility');
   }
 
-  // ── controls (buttons, tabs, disclosures): visited once the learner has used them ──
+  // controls (buttons, tabs, disclosures): visited once the learner has used them
   // Keys come from the compiler (block.visits: name → key; '' for an unnamed button).
   function visitControl(blockId: string, name = ''): boolean {
     const key = blockIndex.get(blockId)?.block.visits?.[name];
@@ -388,7 +387,6 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     return keys.length > 0 && keys.every((key) => learner.visits.has(key));
   }
 
-  // ── screens ──
   function activitiesOf(screen: { blocks: readonly BlockData[] }): ActivityBlock[] { return flatBlocks(screen.blocks).filter(isActivity); }
   function activityDone(block: BlockData): boolean {
     if (hasBehavior(block, 'quiz')) return quizFinal(block);
@@ -435,7 +433,6 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     if (screen.completeWhen === 'interactions-done' && requiredBlocks(screen.blocks).filter(isActivity).every(activityDone)) markComplete(screen);
   }
 
-  // ── scoring and status ──
   function scoredItems(): ActivityBlock[] {
     const out: ActivityBlock[] = [];
     for (const screen of screens) for (const block of flatBlocks(screen.blocks)) {
@@ -514,7 +511,6 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     return first?.id;
   }
 
-  // ── events ──
   function matches(on: Trigger, type: TriggerType, info: TriggerInfo): boolean {
     if (on.type !== type) return false;
     if (on.target && on.target !== info.target) return false;

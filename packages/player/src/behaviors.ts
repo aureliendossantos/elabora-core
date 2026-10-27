@@ -253,7 +253,6 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
     if (visitedAny) onVisited?.();
   }
 
-  // ── quiz: single or multiple choice ──
   function quiz(wrap: HTMLElement, block: QuizBlock, dry: boolean): Outcome[] | undefined {
     const props = block.props;
     const { group } = labelGroup(wrap, 'stem');
@@ -359,7 +358,6 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
     return undefined;
   }
 
-  // ── numeric answer ──
   function numeric(wrap: HTMLElement, block: NumericBlock, dry: boolean): Outcome[] | undefined {
     const props = block.props;
     const { group, head: stem } = labelGroup(wrap, 'stem');
@@ -435,7 +433,6 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
     return undefined;
   }
 
-  // ── decision (scenario choice) ──
   function decision(wrap: HTMLElement, block: DecisionBlock, dry: boolean): Outcome[] | undefined {
     const props = block.props;
     const { group } = labelGroup(wrap, 'prompt');

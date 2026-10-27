@@ -35,7 +35,6 @@ import { errorMessage } from './util/values.ts';
 
 export * from './look-client.ts';
 
-// ── Looking while designing ───────────────────────────────────────────
 // A capture (preview.ts) builds the package, starts a browser, boots the course and its free objects,
 // and closes everything: seconds every time. A looker keeps one canvas server (canvas/host.ts) and one
 // browser drawing with the GPU, and shows a screen as the editor canvas does: rendered from the files
@@ -401,7 +400,6 @@ async function settle(page: Page, { min, max }: { min: number; max: number }): P
   }
 }
 
-// ── The look server ───────────────────────────────────────────────────
 export interface LookServer {
   info: LookServerInfo;
   // Resolves once it stopped (idle, stop request, or stop()).

@@ -121,7 +121,6 @@ export function importNarration(dir: string, { screen, line, language, file, voi
   return setNarrationAudio(dir, { screen, line, language, file, provider: 'recording', voice, generated: false, trim }, options);
 }
 
-// ── Recordings imported together ─────────────────────────────────────
 
 export type { ImportedFile } from './types.ts';
 

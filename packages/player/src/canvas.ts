@@ -116,7 +116,6 @@ function post(message: CanvasMessage) {
   for (const listener of listeners) listener(message);
 }
 
-// ── Receiving ─────────────────────────────────────────────────────────
 function receive(message: HostMessage) {
   // A wheel passed on: nothing to render; the scroll reports where the blocks went.
   if (message.type === 'elabora/scroll') { scrollFrom(message.by, message.at); return; }
@@ -225,7 +224,6 @@ function viewOf(value: Record<string, unknown>): Partial<RenderView> {
   return view;
 }
 
-// ── Rendering ─────────────────────────────────────────────────────────
 function render(data: ScreenRender) {
   const changed = noteFiles(data.files || []);
   if ((data.styles && data.styles.hash !== stylesHash) || [...changed].some((path) => sheets.some((sheet) => sheet.css.includes(`url("${path}`)))) {
@@ -443,7 +441,6 @@ function objectsChanged(before: Readonly<Record<string, ObjectDefinition>>, afte
   return Object.keys(after).some((id) => before[id] && JSON.stringify(before[id]) !== JSON.stringify(after[id]));
 }
 
-// ── Files changed at the same path ────────────────────────────────────
 const shortHash = (hash: string | null) => (hash ?? '').replace(/^sha256:/, '').slice(0, 12);
 // The paths whose hash changed since the page first used them.
 function noteFiles(files: readonly RenderFile[]): Set<string> {
@@ -501,7 +498,6 @@ function syncSheets(sheets: readonly RenderSheet[]) {
   for (const node of existing.values()) node.remove();
 }
 
-// ── Layout ────────────────────────────────────────────────────────────
 function timedOf(id: string): { timed?: NonNullable<BlockLayout['timed']> } {
   const view = mounted?.view;
   // A block of an open layer follows its layer's timeline (D62).

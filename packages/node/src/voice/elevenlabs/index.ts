@@ -44,8 +44,6 @@ export function settingsOf(settings: Readonly<Record<string, unknown>>): ElevenS
 // The text the model is given: with its stage directions for a model that plays them, else without.
 export const textFor = (text: string, model: string): string => playsDirections({ provider: PROVIDER, settings: { model } }) ? text.trim() : withoutDirections(text);
 
-// ── Voices ───────────────────────────────────────────────────────────
-
 const known = new Map<string, VoiceInfo>();
 
 interface VerifiedLanguage { language: string; model_id?: string | null; preview_url?: string | null }
@@ -192,8 +190,6 @@ export async function lookupVoice(id: string, signal?: AbortSignal): Promise<Voi
   }
 }
 
-// ── Account and costs ────────────────────────────────────────────────
-
 // The month's quota of the key in use, what this process spent included (D30).
 export async function quota(signal?: AbortSignal): Promise<Quota> {
   return readQuota({ signal, key: requireKey() });
@@ -283,8 +279,6 @@ async function charged(cost: number | null, cached: boolean, characters: number[
   noteSpent(cost ?? Math.ceil(ceiling * chargedShare(plan, model, rate, kind)));
   return cost;
 }
-
-// ── Speech ───────────────────────────────────────────────────────────
 
 // Words timed from the characters ElevenLabs timed, directions left out; times from the start of
 // the audio, shifted by offset (seconds cut before it).

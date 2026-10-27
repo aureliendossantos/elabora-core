@@ -98,7 +98,7 @@ export function bindPrimitives(root: HTMLElement, context: PrimitiveContext): Bo
   const refreshers: (() => void)[] = [];
   const tallest: (() => void)[] = [];
 
-  // ── One item at a time (the APG carousel, with buttons, never moving by itself) ──
+  // APG carousel: buttons control it; it never moves by itself.
   for (const box of hooks('sequence')) {
     const own = (node: HTMLElement) => node.closest('[data-t-sequence]') === box;
     const items = hooks('item', box).filter(own);
@@ -213,7 +213,7 @@ export function bindPrimitives(root: HTMLElement, context: PrimitiveContext): Bo
     });
   }
 
-  // ── Flip cards (TPGi's pattern: a button turns it; the hidden face is out of reach) ──
+  // TPGi flip-card pattern: the hidden face is out of reach.
   for (const card of hooks('card')) {
     const name = card.getAttribute('data-t-card') ?? '';
     const own = (node: HTMLElement) => node.closest('[data-t-card]') === card;
@@ -249,7 +249,6 @@ export function bindPrimitives(root: HTMLElement, context: PrimitiveContext): Bo
     bound.controls.push({ node: card, hook: 'flip', name, also: buttons });
   }
 
-  // ── Images enlarged in the lightbox ──
   const zooms = hooks('zoom');
   if (zooms.length) {
     let lightbox: HTMLDialogElement | null = null;
@@ -336,7 +335,6 @@ export function bindPrimitives(root: HTMLElement, context: PrimitiveContext): Bo
     disposers.push(() => lightbox?.close());
   }
 
-  // ── One part open at a time ──
   for (const box of hooks('exclusive')) {
     const toggles = hooks('toggle', box);
     const parts = toggles.map((button) => hooks('part').find((part) => part.getAttribute('data-t-part') === button.getAttribute('data-t-toggle'))).filter((part): part is HTMLElement => !!part);
@@ -364,7 +362,6 @@ export function bindPrimitives(root: HTMLElement, context: PrimitiveContext): Bo
     }
   }
 
-  // ── Native disclosures that are visited once opened ──
   for (const details of hooks('details')) {
     if (!(details instanceof HTMLDetailsElement)) continue;
     const name = details.getAttribute('data-t-details') ?? '';

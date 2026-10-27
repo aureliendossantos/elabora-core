@@ -432,8 +432,6 @@ export async function copySources(fromDir: string, toDir: string, copy: (from: s
   return files.length;
 }
 
-// ── Making a readable version ───────────────────────────────────────────
-
 // A partial readable version lacks a transcript: made again once the transcriber can be had.
 function completable(root: string, options: ReadableOptions): boolean {
   if (options.install) return true;

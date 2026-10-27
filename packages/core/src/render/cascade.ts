@@ -67,7 +67,6 @@ export function splitOverrides(css: string): SplitTheme {
   return { defaults, overrides, nested };
 }
 
-// ── Property families ────────────────────────────────────────────────
 // Properties that act on one another (a shorthand and its longhands, logical and physical sides,
 // aliases) share a family: a theme upgrade moves a family whole, so the theme's declarations of
 // one family keep their order among themselves. Families are coarse on purpose: two that act on
@@ -95,7 +94,6 @@ export function propertyFamily(property: string): string {
   return name;
 }
 
-// ── Upgrading a theme to components-over-theme ───────────────────────
 export interface ThemeUpgrade {
   css: string; // the theme stylesheet to write
   // The families of properties the components set, which the theme set too: its declarations of

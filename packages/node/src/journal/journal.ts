@@ -51,7 +51,6 @@ export interface AppendOptions {
   lock?: LockOptions;
 }
 
-// ── writing ──────────────────────────────────────────────────────────
 
 export function appendChange(dir: string, change: NewChange, options: AppendOptions = {}): ChangeEntry {
   assertBlobs(dir, change);
@@ -135,7 +134,6 @@ export function pruneJournal(dir: string, options: { now?: Date; days?: number; 
   }, options.lock);
 }
 
-// ── reading ──────────────────────────────────────────────────────────
 
 // Every entry of every month, in sequence order.
 export function readJournal(dir: string): JournalEntry[] {
@@ -228,7 +226,6 @@ function parseEntry(line: string): JournalEntry | undefined {
   return undefined;
 }
 
-// ── binary contents ──────────────────────────────────────────────────
 
 // Puts in the blob store the binary contents that a change's write operations and their inverses
 // name. Call it before writing the files: what an inverse restores is still in the project then.
@@ -325,7 +322,6 @@ export function journalBlobReferences(dir: string): BlobHash[] {
   return [...hashes].sort();
 }
 
-// ── file hashes ──────────────────────────────────────────────────────
 
 // sha256 of a file's bytes (text as UTF-8), as recorded in Change.files; null when absent (or a
 // binary file whose snapshot does not know its hash).

@@ -684,7 +684,6 @@ function objectPropDefaults(manifest: ObjectManifest, tokens: TokenValues): Reco
   return values;
 }
 
-// ── events ───────────────────────────────────────────────────────────
 // Events go to the player as authored. The format's types leave the fields of a trigger, a
 // condition or an action optional; the schema requires them per type, and the player relies on
 // it. An event that misses one is reported by the validator and left out here.
@@ -719,7 +718,6 @@ function isActionData(action: Action): action is Action & ActionData {
   }
 }
 
-// ── reading props ────────────────────────────────────────────────────
 const expectedNumberOf = (value: unknown): number => (typeof value === 'number' ? value : NaN);
 const questionRefOf = (props: Record<string, unknown>): { questionRef?: string } => (typeof props.questionRef === 'string' && props.questionRef ? { questionRef: props.questionRef } : {});
 

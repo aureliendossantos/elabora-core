@@ -666,7 +666,6 @@ function scrollDrivenIn(band: Band | null): boolean {
   });
 }
 
-// ── Measured contrast ────────────────────────────────────────────────
 // Static checks compare text tokens with the surface token; over a backdrop, an image or a gradient
 // the real background is only known in pixels. The text of the window is located, made transparent,
 // the window captured, and for every element its colour is compared with the pixels behind its
@@ -956,7 +955,6 @@ export async function previewComponent(dir: string, { id, width = 1280, height =
   }
 }
 
-// ── Replaying an object's test in the course ─────────────────────────
 // The behaviour tests of a free object (object.tests.json) run in an empty test page with virtual
 // time. Replayed here, the same steps drive the object where learners meet it: in the built
 // course, on the page that places it, scrolled into view, in real time, with the course around it.
@@ -1092,7 +1090,6 @@ export async function replayObject(dir: string, objectId: string, { block: block
   }
 }
 
-// ── Contact sheet of generated assets ─────────────────────────────────
 // Every figure a generator wrote, on the course's surface colour, with its file name and size:
 // the light review of generators/ (elabora assets --sheet), one image for all of them.
 export interface AssetGroup {

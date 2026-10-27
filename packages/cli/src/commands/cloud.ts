@@ -91,7 +91,6 @@ const REVIEW_HELP = `  review create [dir] [--name <publication>] [--version <v>
   The API is https://api.elabora.studio (ELABORA_CLOUD_URL elsewhere). A tester's key in a file also serves
   with ELABORA_CLOUD_KEY_FILE and ELABORA_CLOUD_SPACE.`;
 
-// ── Input, output, failures ────────────────────────────────────────────
 
 // Lines read from the input one at a time, a prompt on stderr before each (the code, a handle).
 function lineReader(): { ask(prompt: string): Promise<string | null>; close(): void } {
@@ -161,7 +160,6 @@ function writeLinkFile(file: string, link: string): string {
   return target;
 }
 
-// ── account ────────────────────────────────────────────────────────────
 
 const login = defineCommand({
   name: 'account login',
@@ -306,7 +304,6 @@ const aiKey = defineCommand({
   })
 });
 
-// ── publish ────────────────────────────────────────────────────────────
 
 function publishProgress(): { report(progress: PublishProgress): void; done(): void } {
   const terminal = !!process.stderr.isTTY;
@@ -385,7 +382,6 @@ const publish = defineCommand({
   })
 });
 
-// ── review ─────────────────────────────────────────────────────────────
 
 const reviewLine = (review: CloudReview) => `${review.id} « ${review.title} » · ${review.state} · ${review.publication} v${review.latest}${review.versions.length > 1 ? ` (${review.versions.length} versions)` : ''} · ${review.comments.open} open, ${review.comments.resolved} resolved · ${review.reviewers} reviewer${review.reviewers === 1 ? '' : 's'}`;
 
@@ -505,7 +501,6 @@ const remove = defineCommand({
   })
 });
 
-// ── versions of a publication ──────────────────────────────────────────
 
 const versionsOf = defineCommand({
   name: 'publication versions',
@@ -535,7 +530,6 @@ const withdraw = defineCommand({
   })
 });
 
-// ── comments, for people and their AI ──────────────────────────────────
 
 const indent = (text: string, by: string) => text.split('\n').join(`\n${by}`);
 const day = (iso: string) => `${iso.slice(0, 16).replace('T', ' ')} UTC`;

@@ -19,7 +19,6 @@
   position: relative; display: flex; flex-direction: column; gap: 0.875rem; color: var(--t-dl-text);
 }
 
-/* ── The thread ─────────────────────────────────────────────────────────── */
 .t-dialogue-log {
   position: relative; display: flex; flex-direction: column; gap: 0.375rem; min-height: 10rem; margin: 0;
   padding: 1.25rem 1.25rem 1rem; border: 1px solid var(--t-dl-line); border-radius: var(--t-dl-radius); background: var(--t-surface);
@@ -194,7 +193,6 @@
 .t-dialogue-start-btn .t-icon svg { width: 1.125rem; height: 1.125rem; }
 .t-dialogue-options .t-dialogue-start { position: static; height: auto; }
 
-/* ── The debrief ────────────────────────────────────────────────────────── */
 .t-dialogue-debrief { transition: opacity 240ms var(--t-ease-out); }
 @starting-style { .t-dialogue-debrief { opacity: 0; } }
 /* Slides (and scenes): over the thread, the box keeping its size. */

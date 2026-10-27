@@ -14,7 +14,6 @@
 // measurements is told the list price; an older period's figures are never used, so a new model or
 // a new price starts from the list price until it is measured.
 
-// A service, as the ledger counts it.
 export interface CostProvider {
   billed: string;                  // the unit it bills: 'credits', 'usd'
   priceSettings?: string[];        // the settings (or 'kind') that change what a request is charged
@@ -51,7 +50,6 @@ export interface PricePeriod {
   note?: string;
 }
 
-// One request, measured.
 export interface Measurement {
   provider: string;
   model: string;
@@ -72,7 +70,6 @@ export interface CostLedger {
   periods: PricePeriod[];
 }
 
-// What a key's measurements came to, generated.
 export interface CostAverage {
   key: string;
   provider: string;
@@ -134,7 +131,6 @@ export function listPriceOf(period: PricePeriod, settings: Readonly<Record<strin
   return matching.sort((a, b) => Object.keys(b.when ?? {}).length - Object.keys(a.when ?? {}).length)[0] ?? null;
 }
 
-// The list price per unit sent (rates over `per`).
 const perUnit = (price: ListPrice): Record<string, number> => Object.fromEntries(Object.entries(price.rates).map(([unit, rate]) => [unit, rate / (price.per ?? 1)]));
 
 const sameRates = (a: Record<string, number>, b: Record<string, number>): boolean => {

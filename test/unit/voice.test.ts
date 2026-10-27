@@ -146,7 +146,6 @@ test('models: a language\'s bundle, downloaded once, resumed, checked against it
     const before = requests;
     await installBundle(bundle, { env });
     assert.equal(requests, before, 'installed: nothing downloaded again');
-    // A damaged file is refused.
     const bad: Bundle = { ...bundle, id: 'bad', files: [{ ...bundle.files[1], sha256: '0'.repeat(64) }] };
     await assert.rejects(installBundle(bad, { env }), (error: Error & { code?: string }) => error.code === 'E_VOICE_DOWNLOAD' && /damaged/.test(error.message));
   } finally {

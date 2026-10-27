@@ -81,7 +81,6 @@ export interface ConvertBlockResult {
   refused?: { to: ConvertTarget; reason: string }[];
 }
 
-// ── words ────────────────────────────────────────────────────────────
 
 const w = (fr: string, en: string): Words => ({ fr, en });
 const joinFr = (parts: string[]): string => (parts.length < 2 ? parts.join('') : `${parts.slice(0, -1).join(', ')} et ${parts[parts.length - 1]}`);
@@ -129,7 +128,6 @@ const N = {
 const PROGRESS_LOST = w('Les apprenants déjà commencés perdent ce qu\'ils avaient fait dans ce bloc.', 'Learners who already started lose what they did in this block.');
 const NOT_SCORED = w('Il ne compte pas dans le score (scored: false).', 'It does not count in the score (scored: false).');
 
-// ── the table ────────────────────────────────────────────────────────
 
 interface Input {
   block: Block;
@@ -589,7 +587,6 @@ export function titled(item: string, max: number): { title: string; markdown: st
   return { title: clip(words.slice(0, 40).replace(/\s+\S*$/, ''), 41).replace(/…?$/, '…'), markdown: item };
 }
 
-// ── presentations of one block ──────────────────────────────────────
 
 // Switching presentation keeps every prop; what the new form needs and does not have yet starts empty.
 function samePresentation(type: string, props: Props, presentation: string): Outcome {
@@ -656,7 +653,6 @@ function samePresentation(type: string, props: Props, presentation: string): Out
   return { props: out, kept: [keeps(N.all)], lost, added };
 }
 
-// ── planning ─────────────────────────────────────────────────────────
 
 interface Planned {
   to: ConvertTarget;
@@ -790,7 +786,6 @@ export function conversionTargets(project: Project, blockId: string, language?: 
   };
 }
 
-// ── the command ──────────────────────────────────────────────────────
 
 // convert_block: the block in place, one change (its translations follow). dryRun, or no to: what it
 // would do, nothing written.

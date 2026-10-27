@@ -34,7 +34,6 @@ const step: FormatStep = {
     return { files: new Map([['course.json', textFile(document.toString())]]), notes: [{ kind: 'changed', file: 'course.json', path: '/format', message: `format elabora/0.0 → ${FORMAT}` }] };
   }
 };
-// The example as a course of the test's older format.
 function older(): { dir: string; current: Record<string, string> } {
   const dir = copy();
   const current = folder(dir);

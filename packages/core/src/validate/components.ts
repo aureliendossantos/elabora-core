@@ -84,7 +84,6 @@ function checkDefinition(ctx: CourseCheckContext, component: ComponentDescriptor
   if (!manifest) return;
   const file = component.file;
   const id = component.id;
-  // Props schema.
   if (component.schema?.type !== 'object') reporter.emit('E_COMPONENT_SCHEMA', { file, path: '/props', target: id, message: 'props must be a JSON Schema of type object.' });
   const validator = propsValidator(component);
   if (validator.error) reporter.emit('E_COMPONENT_SCHEMA', { file, path: manifest.propsExtend ? '/propsExtend' : '/props', target: id, message: `The props schema does not compile: ${validator.error}` });
@@ -99,11 +98,9 @@ function checkDefinition(ctx: CourseCheckContext, component: ComponentDescriptor
   if (manifest.propsExtend && !manifest.extends) reporter.emit('E_COMPONENT_SCHEMA', { file, path: '/propsExtend', target: id, message: 'propsExtend is for forks: without extends, declare props.' });
   if (component.level === 'screen' && component.behavior) reporter.emit('E_COMPONENT_LEVEL', { file, path: '/level', target: id, message: 'A screen layout cannot fork an activity.' });
 
-  // Template.
   if (!component.tpl) reporter.emit('E_FILE_MISSING', { file: `components/${id}/template.html`, target: id, message: `components/${id}/template.html not found${component.parent ? ` (and ${component.parent} has none)` : ''}.` });
   else checkTemplate(ctx, component, { own: source.template != null });
 
-  // Stylesheet.
   if (source.css != null) checkCss(ctx, source.css, `components/${id}/component.css`);
 
   // Fallback templates: native types, known slots.
@@ -194,7 +191,6 @@ export function checkTemplate(ctx: Pick<CheckContext, 'project' | 'reporter'>, c
   }
   for (const literal of analysis.texts) report('W_COMPONENT_TEXT', literal.line, `${component.level === 'screen' ? 'Layout' : 'Component'} "${id}" contains text: "${literal.text.slice(0, 60)}".`);
 
-  // Behaviour contract.
   if (behavior) {
     const present = new Map<string, typeof analysis.hooks>();
     for (const hook of analysis.hooks) { if (!present.has(hook.hook)) present.set(hook.hook, []); present.get(hook.hook)?.push(hook); }
@@ -223,7 +219,6 @@ export function checkTemplate(ctx: Pick<CheckContext, 'project' | 'reporter'>, c
       if (component.behavior === 'quiz' && !found.within.includes('option') && !beside) report('E_COMPONENT_HOOK', found.line, `data-t-${found.hook} goes inside the data-t-option element, or next to it as data-t-${found.hook}="{{id}}" in the same data-each="options".`);
     }
   }
-  // Primitives.
   // data-t-bleed asks for the whole width from the block's root: on an element at the top of the template.
   const roots = new Set((component.tpl?.root.childNodes || []).map((node) => node.sourceCodeLocation?.startLine));
   for (const hook of analysis.hooks.filter((x) => x.hook === 'bleed')) if (hook.within.length || !roots.has(hook.line)) report('E_COMPONENT_HOOK', hook.line, 'data-t-bleed goes on a root element of the template (the block goes edge to edge).');
@@ -240,7 +235,6 @@ export function checkTemplate(ctx: Pick<CheckContext, 'project' | 'reporter'>, c
     if (!LABEL_KEYS.has(hook.value)) report('E_COMPONENT_HOOK', hook.line, `data-t-label="${hook.value}" is not a player label (${[...LABEL_KEYS].slice(0, 12).join(', ')}…).`);
   }
 
-  // Slots and title.
   const declared = component.slots.map((slot) => slot?.id);
   const inTemplate = analysis.slots.map((slot) => slot.id);
   for (const slotId of declared) if (!inTemplate.some((placed) => placed === slotId)) report('E_COMPONENT_SLOT', null, `Slot "${slotId}" is declared but has no data-slot="${slotId}" element.`);

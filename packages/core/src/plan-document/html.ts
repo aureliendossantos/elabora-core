@@ -139,7 +139,6 @@ function questionEntry(doc: PlanDocument, question: QuestionEntry): string {
   return entry(question.id, question.number, parts, 'question', question.mark);
 }
 
-// ── rich text ──
 
 function rich(text: RichText): string {
   return blocks(text.blocks);
@@ -181,7 +180,6 @@ function inline(content: readonly RichInline[]): string {
   }).join('');
 }
 
-// ── style ──
 
 // A CSS string inside <style>: quotes and backslashes escaped, and « < » too, so that a title
 // holding « </style> » cannot end the style sheet.

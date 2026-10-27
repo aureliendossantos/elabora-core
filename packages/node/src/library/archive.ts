@@ -222,7 +222,6 @@ async function writeArchive(root: string, out: string, options: ExportOptions): 
   };
 }
 
-// ── reading an archive ───────────────────────────────────────────────
 
 export interface ArchiveSummary {
   file: string;
@@ -417,7 +416,6 @@ function migrateCourseFormat(projectDir: string): string | null {
   return migrateIfOutdated(projectDir)?.from ?? null;
 }
 
-// ── importing ────────────────────────────────────────────────────────
 
 export interface ImportOptions {
   // When the library already holds the archive's course (same course id): `ask` (default) imports

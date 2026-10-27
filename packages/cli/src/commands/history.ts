@@ -18,7 +18,6 @@ const HELP = `  history [dir] [--limit 20] [--json]                 Changes grou
                                                       Claude Code: a UserPromptSubmit hook running elabora mark --stdin
                                                       labels each batch with the prompt (read from the hook's JSON)`;
 
-// ── history ──
 
 // Authors as people read them: agents by name, the rest by what they are.
 const KNOWN_AGENTS: Record<string, string> = { 'claude-code': 'Claude Code', codex: 'Codex' };
@@ -139,7 +138,6 @@ const history = defineCommand({
   })
 });
 
-// ── undo ──
 
 // What undo kept, because it changed since: where, and why.
 export function keptEdits(skipped: readonly SkippedOp[]): { file: string; path: string | null; reason: SkippedOp['reason']; message: string }[] {
@@ -179,7 +177,6 @@ function printKept(skipped: readonly SkippedOp[]): void {
   for (const kept of keptEdits(skipped)) console.log(`  kept: ${kept.message}`);
 }
 
-// ── mark ──
 
 // The request of a Claude Code UserPromptSubmit hook (JSON with prompt), or plain text.
 function requestFromInput(input: string): string {

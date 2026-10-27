@@ -107,8 +107,6 @@ export function recordCharge(charge: { model: string; plan: string | null; list:
   } catch { /* the next estimate uses what it knew */ }
 }
 
-// ── The quota ─────────────────────────────────────────────────────────
-
 export interface Subscription { tier: string; character_count: number; character_limit: number; next_character_count_reset_unix?: number | null }
 
 // The plan and its count. From /v1/user, which carries the same subscription in about a quarter of a

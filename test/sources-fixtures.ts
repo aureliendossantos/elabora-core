@@ -36,7 +36,6 @@ const rels = (entries: [id: string, type: string, target: string, external?: boo
   `${XML}<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${entries.map(([id, type, target, external]) => `<Relationship Id="${id}" Type="${REL}/${type}" Target="${target}"${external ? ' TargetMode="External"' : ''}/>`).join('')}</Relationships>`;
 const core = (title: string) => `${XML}<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:title>${title}</dc:title><dc:creator>Agence Exemple</dc:creator></cp:coreProperties>`;
 
-// ── Word ────────────────────────────────────────────────────────────────
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
 const WORD_NS = `${W} xmlns:r="${REL}" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:w14="http://schemas.microsoft.com/office/word/2010/wordml" xmlns:w15="http://schemas.microsoft.com/office/word/2012/wordml" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:wps="http://schemas.microsoft.com/office/word/2010/wordprocessingShape"`;
@@ -112,7 +111,6 @@ export function briefDocx(): Buffer {
   ])).zip;
 }
 
-// ── PowerPoint ──────────────────────────────────────────────────────────
 
 const P_NS = `xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="${REL}" xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"`;
 const EMU = 914400 / 2.54; // per centimetre
@@ -202,7 +200,6 @@ export function workshopPptx(): Buffer {
   ])).zip;
 }
 
-// ── PDF ─────────────────────────────────────────────────────────────────
 
 // A PDF of one line of ASCII text a page, in Helvetica, with its cross-reference table.
 export function textPdf(pages: readonly string[]): Buffer {

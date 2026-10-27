@@ -348,7 +348,6 @@ test('an object unchanged since its last run is not run again; a change to it or
   writeJSON(dir, 'course.json', course);
   assert.equal((await testObject(dir, 'draw-probe')).reused, undefined);
   assert.ok((await testObject(dir, 'draw-probe')).reused);
-  // Its own folder.
   fs.appendFileSync(path.join(dir, 'objects/draw-probe/object.js'), '\n// revu\n');
   assert.equal((await testObject(dir, 'draw-probe')).reused, undefined);
   assert.equal((await testObject(dir, 'draw-probe', { force: true })).reused, undefined);

@@ -27,3 +27,7 @@ For observable changes, add an English Sampo changeset under `.sampo/changesets/
 5. TypeScript, strict, run directly by Node 24 (no build step while developing); erasable syntax only; `.ts` extensions in relative imports; packages import each other by name. format, player and core never import Node modules. No new runtime dependency without a decision (`docs/decisions/Dnn.md`).
 6. Built-in templates follow the rules agents follow (test `built-in templates follow the rules agents follow`); new behaviours need hooks documented in docs/components.md and checked in `BEHAVIORS`.
 7. Docs are read by people (GitHub, the site) and by agents (`elabora docs`, MCP `elabora_docs`): relative links, a new page gets its line in `docs/index.md`, and nothing a public reader cannot open (private notes, people's names, tracker numbers). The test `docs links resolve` checks links, anchors and the `docs/….md` paths and `Dn` the code names.
+
+## Comments
+
+Comments explain intent, invariants and trade-offs; never decorate or separate. Remove repetition of adjacent code, but keep caller-needed API contracts, meaningful boundaries, units, ownership, ordering, security, lifecycle and compatibility constraints, useful decision references and actionable TODOs. Shorten without losing distinct facts; leave uncertain rationale unchanged. Preserve licences, attribution and tool-consumed comments.

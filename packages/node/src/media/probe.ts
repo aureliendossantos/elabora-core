@@ -173,7 +173,6 @@ function ratio(value: string | undefined): number {
   return Math.round((Number(m[1]) / Number(m[2])) * 1000) / 1000;
 }
 
-// --- MP4 top-level boxes
 
 export interface Mp4Layout {
   brand: string | null;      // major brand of ftyp
@@ -216,7 +215,7 @@ export function readMp4LayoutSync(file: string): Mp4Layout {
 
 export const readMp4Layout = async (file: string): Promise<Mp4Layout> => readMp4LayoutSync(file);
 
-// --- project cache: <data dir>/media/probe-cache.json, keyed by path, size and mtime. Files that
+// Project cache: <data dir>/media/probe-cache.json, keyed by path, size and mtime. Files that
 // cannot be probed are cached with their error, so they are not probed again at every snapshot.
 
 const CACHE_VERSION = 2;
@@ -345,7 +344,6 @@ export function rememberProbe(projectDir: string, relPath: string, info: MediaIn
   writeCache(projectDir, { [relPath]: { size: stat.size, mtimeMs: stat.mtimeMs, info: { ...info, size: stat.size } } });
 }
 
-// --- ffprobe JSON (the parts read)
 
 interface FfprobeStream {
   codec_type?: string;

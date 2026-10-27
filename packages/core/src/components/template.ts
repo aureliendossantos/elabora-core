@@ -57,7 +57,6 @@ export function parseTemplate(html: string | null | undefined): ParsedTemplate {
   return tpl;
 }
 
-// ── schema navigation ────────────────────────────────────────────────
 const KIND_OF_TYPE: Record<string, string> = { string: 'text', number: 'number', integer: 'number', boolean: 'boolean', array: 'list', object: 'object' };
 
 export function kindOf(schema: SchemaNode): string {
@@ -74,7 +73,6 @@ export const childSchema = (schema: SchemaNode, key: string): SchemaNode => {
 };
 export const itemSchema = (schema: SchemaNode): SchemaNode => (schema && typeof schema === 'object' ? schema.items : undefined);
 
-// ── expressions ──────────────────────────────────────────────────────
 export type Expression = { error: string } | { error?: undefined; not: boolean; path: string; op: '==' | '!=' | null; literal: unknown };
 
 // path: name, name.sub, ., @index… · condition: path, !path, path == literal, path != literal
@@ -147,7 +145,6 @@ function evalCond(expr: string, scope: Scope): boolean {
   return e.not ? !ok : ok;
 }
 
-// ── rendering ────────────────────────────────────────────────────────
 const esc = (s: unknown): string => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const escAttr = (s: unknown): string => esc(s).replace(/"/g, '&quot;');
 export const tokenVar = (name: unknown): string => `var(--t-${String(name).replace(/\./g, '-').replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)})`;

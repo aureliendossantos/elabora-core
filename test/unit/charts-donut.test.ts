@@ -91,7 +91,6 @@ test('donut: edge cases draw what they can, deterministically', () => {
   // Six parts: the steps stop at the lightest.
   const six = renderChart('donut', { takeaway: 'T', parts: [1, 2, 3, 4, 5, 6].map((v) => ({ id: `p${v}`, label: `P${v}`, value: v })) }, context).html;
   assert.match(six, /data-t-item="p6"[^>]*--c:var\(--t-donut-a5\)/);
-  // Identical inputs, identical markup.
   assert.equal(renderChart('donut', share, context).html, renderChart('donut', share, context).html);
   const { arcs, total } = donutGeometry(share);
   assert.equal(total, 100);

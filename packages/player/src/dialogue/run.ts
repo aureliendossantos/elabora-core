@@ -157,7 +157,6 @@ export function jump(run: DialogueRun, node: string): DialogueRun {
   return withPath(run, [...path, `>${node}`], run.progress.scored);
 }
 
-// ── the scored run ──
 
 export type InteractionResult = 'correct' | 'neutral' | 'wrong';
 const RESULT: Readonly<Record<DialogueQuality, InteractionResult>> = { good: 'correct', ok: 'neutral', bad: 'wrong' };

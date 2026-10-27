@@ -199,7 +199,6 @@ class Walker {
     return this.status === 'choosing' && last && !last.closed ? last : null;
   }
 
-  // ── conditions ──
   holds(conditions: readonly DialogueCondition[] | undefined): boolean {
     return (conditions ?? []).every((condition) => this.holdsOne(condition));
   }
@@ -223,7 +222,6 @@ class Walker {
     return true;
   }
 
-  // ── nodes ──
   private roleOf(line: DialogueLineData): LineRole {
     if (!line.speaker || this.data.speakers[line.speaker]?.narrator) return 'narration';
     return line.speaker === this.data.learner ? 'learner' : 'character';
@@ -355,7 +353,6 @@ class Walker {
     this.beats.push({ type: 'end', ending: ending?.id ?? null, ...(this.capped ? { capped: true as const } : {}) });
   }
 
-  // ── entries ──
   applyEntry(entry: Entry): string | null {
     if (entry.startsWith('>')) {
       const target = entry.slice(1);

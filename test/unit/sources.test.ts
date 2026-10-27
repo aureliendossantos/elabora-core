@@ -270,7 +270,6 @@ test('a readable version is written again when its source changes, not when the 
   const touched = await listSources(dir);
   assert.equal(touched[0].readable.status, 'ready');
   assert.equal((await makeSourcesReadable(dir))[0].readable.madeAt, madeAt, 'not written again');
-  // Changed.
   fs.writeFileSync(file, workshopPptx().subarray(0, 10));
   assert.equal((await listSources(dir))[0].readable.status, 'stale');
   const read = await readSource(dir, 'BRIEF.docx');
@@ -439,7 +438,6 @@ test('library: a module\'s copy and its import from a folder carry its sources; 
   assert.ok(libraryRoot());
 });
 
-// ── the command line ──
 
 function elabora(args: string[], env: Record<string, string> = {}): Promise<{ status: number | null; stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {

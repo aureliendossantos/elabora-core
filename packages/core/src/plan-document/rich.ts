@@ -165,7 +165,6 @@ export function plainOf(blocks: readonly RichBlock[]): string {
   }).filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
 }
 
-// ── a change, word by word ──────────────────────────────────────────
 
 // Two plain strings (a title, a name) as one run of words marked deleted and inserted.
 export function diffPlain(before: string, after: string): RichInline[] {
@@ -266,7 +265,6 @@ function absorbIslands(parts: RichInline[]): RichInline[] {
     const after = parts[index + 1];
     const island = !part.change && part.type === 'text' && part.text.trim().length > 0 && part.text.trim().length <= 3 && !/\s\S/.test(part.text.trim());
     if (island && before?.change && after?.change) {
-      // The kept word goes into the deletion before it and the insertion after it.
       const deletion = out.findLastIndex((entry) => entry.change === 'del');
       const insertion = parts.slice(index + 1).findIndex((entry) => entry.change === 'ins');
       if (deletion >= 0 && insertion >= 0) {

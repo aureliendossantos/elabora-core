@@ -70,7 +70,6 @@ export function gatesStatus(dir: string): GatesStatus {
   return { ...base, status: record.ok ? 'passed' : 'failed' };
 }
 
-// ── A run kept on this computer, to skip an unchanged object ──
 // What a run's verdicts depend on beyond the object folder (its fingerprint): what the course gives
 // it (theme tokens, fonts and their files, language), the code that runs the gates (codeVersion),
 // the browser and the system. Machine-local, so it is kept in the project's data, not in the record

@@ -80,7 +80,6 @@ function readList(css: string, from: number, to: number, context: 'sheet' | 'bod
   const nodes: CssNode[] = [];
   let i = from;
   while (i < to) {
-    // Whitespace, comments and stray semicolons between items.
     if (/\s|;/.test(css[i])) { i++; continue; }
     if (css[i] === '/' && css[i + 1] === '*') { i = skip(css, i); continue; }
     const start = i;
