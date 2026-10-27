@@ -580,16 +580,27 @@ async function runAxe(frame: Frame, screen: string, state: string, report: Acces
   if (!axe) return;
   // Contrast is measured on what is at rest: a fade still running (a chart's rows coming back after the
   // voice, a tooltip leaving) would be read at its passing opacity. Loops (endless) are not waited for.
-  await frame.evaluate(async () => {
-    const frameDone = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    await frameDone();
-    for (const end = Date.now() + 2000; Date.now() < end;) {
-      const running = document.getAnimations().filter((animation) => animation.playState === 'running' && Number.isFinite(Number(animation.effect?.getComputedTiming().endTime)));
-      if (!running.length) return;
-      await Promise.race([Promise.all(running.map((animation) => animation.finished.catch(() => null))), new Promise((resolve) => setTimeout(resolve, 250))]);
-    }
-  });
-  const result = await frame.evaluate(`(function(){ if (!window.axe) { ${axe} } return axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa'] } }).then(r => r.violations.map(v => ({ id: v.id, impact: v.impact, help: v.help, nodes: v.nodes.length, targets: v.nodes.slice(0, 3).map(n => String(n.target)) }))); })()`);
+  // A tooltip that comes or goes while axe reads (a refusal's flash ending, under load) would be read at its
+  // passing opacity: a motion that began during the run voids the measure, and it is taken again.
+  let result: unknown;
+  for (let attempt = 0; attempt < 4; attempt++) {
+    await frame.evaluate(async () => {
+      const frameDone = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      await frameDone();
+      for (const end = Date.now() + 2000; Date.now() < end;) {
+        const running = document.getAnimations().filter((animation) => animation.playState === 'running' && Number.isFinite(Number(animation.effect?.getComputedTiming().endTime)));
+        if (!running.length) return;
+        await Promise.race([Promise.all(running.map((animation) => animation.finished.catch(() => null))), new Promise((resolve) => setTimeout(resolve, 250))]);
+      }
+    });
+    await frame.evaluate(() => {
+      const w = window as unknown as { __axeMotion?: number };
+      if (w.__axeMotion === undefined) for (const type of ['transitionrun', 'animationstart']) document.addEventListener(type, () => { w.__axeMotion = (w.__axeMotion ?? 0) + 1; }, true);
+      w.__axeMotion = 0;
+    });
+    result = await frame.evaluate(`(function(){ if (!window.axe) { ${axe} } return axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa'] } }).then(r => r.violations.map(v => ({ id: v.id, impact: v.impact, help: v.help, nodes: v.nodes.length, targets: v.nodes.slice(0, 3).map(n => String(n.target)) }))); })()`);
+    if (!(await frame.evaluate(() => (window as unknown as { __axeMotion?: number }).__axeMotion ?? 0))) break;
+  }
   report.screens++;
   for (const violation of axeViolations(result)) { report.violations++; report.details.push({ screen, state, ...violation }); }
 }
