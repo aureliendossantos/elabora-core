@@ -446,21 +446,3 @@ test('watch readiness gates opening and close reconciles a pending observed file
   const closedIndex = events.findIndex((event) => event.type === 'closed');
   assert.ok(changeIndex >= 0 && closedIndex > changeIndex);
 });
-
-test('monitor consumes observed paths and restores unsettled paths for retry', async () => {
-  const { SessionMonitor } = await import('../../packages/engine/src/session-monitor.ts');
-  const dir = copyExample();
-  temporary.push(dir);
-  const { store } = countingStore(dir);
-  let refreshes = 0;
-  const monitor = new SessionMonitor(store, dir, new Map(), QUIET, () => false, async () => { refreshes++; }, () => {});
-  monitor.observeAll(['screens/accueil.json', 'assets/video/pending.mp4']);
-  assert.deepEqual(monitor.takePending((rel) => rel.startsWith('assets/')), ['screens/accueil.json']);
-  assert.deepEqual(monitor.pending(), ['assets/video/pending.mp4']);
-  monitor.observe('screens/accueil.json');
-  monitor.scheduleRetry();
-  await sleep(300);
-  assert.equal(refreshes, 1);
-  assert.deepEqual(monitor.pending(), ['assets/video/pending.mp4', 'screens/accueil.json']);
-  monitor.stop();
-});

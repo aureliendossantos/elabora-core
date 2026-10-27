@@ -194,6 +194,7 @@ export class Session {
   #entries: JournalEntry[];
   readonly #queue = new WriteQueue();
   readonly #listeners = new Set<(message: EventMessage) => void>();
+  readonly #stats: Map<string, FileInfo>; // size and time of each file when last read, for rescans
   readonly #monitor: SessionMonitor;
   readonly #sources = new Map<number, ChangeSource>(); // journal entries the session appended, by sequence number
   readonly #media: MediaSupervisor | null;
@@ -219,15 +220,18 @@ export class Session {
 
   constructor(init: SessionInit) {
     this.root = init.root;
-    this.#canvas = new SessionCanvas(this.root, () => this.#state.project, (error, context) => this.#emitError(error, context));
     this.store = init.store;
     this.#state = init.state;
     this.#tail = init.tail;
     this.#entries = init.entries;
+    this.#stats = init.stats;
     this.#options = init.options;
-    this.#monitor = new SessionMonitor(this.store, this.#tail.dir, init.stats, this.#options, () => this.#closing !== null, () => this.#queue.run(() => this.#refresh()), (error, context) => this.#emitError(error, context));
     this.author = init.options.author ?? { kind: 'human' };
-    this.#voice = new SessionVoice(this.root, this.author, () => this.#state.project, this.run.bind(this), () => this.#assertOpen(), (event) => this.#emit(event));
+    const project = () => this.#state.project;
+    const reportError = (error: unknown, context: string) => this.#emitError(error, context);
+    this.#canvas = new SessionCanvas({ root: this.root, project, reportError });
+    this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
+    this.#monitor = new SessionMonitor({ store: this.store, journalDir: this.#tail.dir, options: this.#options, closing: () => this.#closing !== null, refresh: () => this.#queue.run(() => this.#refresh()), reportError });
     for (const [rel, file] of init.state.files) if (file.kind === 'binary' && file.media) this.#mediaChecked.set(rel, file.hash ?? '');
     for (const { path: rel, message } of init.state.media?.unreadable ?? []) {
       this.#unreadable.set(rel, message);
@@ -293,7 +297,7 @@ export class Session {
       });
       if (this.#options.backups?.prune !== false && !this.#pruned) await this.#prune().catch((error) => this.#emitError(error, 'pruning the project data'));
       if (mode === 'leave') await this.#media?.close('leave');
-      await this.#canvas.closeForSession();
+      await this.#canvas.close();
       if (this.store instanceof FsStore) this.store.flush();
       this.#closed = true;
       this.#emit({ type: 'closed' });
@@ -542,11 +546,6 @@ export class Session {
     return narrationPeaks(this.root, this.#state.project, screen, { ...(language ? { language } : {}), ...(typeof perSecond === 'number' ? { perSecond } : {}) });
   }
 
-  transcribers(language?: string): TranscriberView { return this.#voice.transcribers(language); }
-  async transcribeRecording({ file, language, install, service, approvedPercent }: { file: string; language?: string; install?: boolean; service?: TranscriptionService; approvedPercent?: number }): Promise<Transcript> { return this.#voice.transcribeRecording({ file, language, install, service, approvedPercent }); }
-  async transcriptionEstimate({ file, screen, line, language }: { file?: string; screen?: string; line?: string; language?: string }): Promise<TranscriptionEstimate> { return this.#voice.transcriptionEstimate({ file, screen, line, language }); }
-  async transcribeLine({ screen, line, language, install, service, approvedPercent }: { screen: string; line: string; language?: string; install?: boolean; service?: TranscriptionService; approvedPercent?: number }): Promise<{ before: string; transcript: Transcript; audioHash: `sha256:${string}` | null }> { return this.#voice.transcribeLine({ screen, line, language, install, service, approvedPercent }); }
-
   effects(): EffectInfo[] {
     this.#assertOpen();
     return effectsOf(this.#state.project);
@@ -749,6 +748,9 @@ export class Session {
     return { ...base, state: 'unknown' };
   }
 
+  // ── canvas (session-canvas.ts) ─────────────────────────────────────
+
+  // Starts the canvas host of the project (once): the app shows its page in a frame.
   async openCanvas(options: { port?: number; debug?: boolean } = {}): Promise<CanvasInfo> {
     this.#assertOpen();
     return this.#canvas.open(options);
@@ -929,6 +931,8 @@ export class Session {
     });
   }
 
+  // ── voices, alignment and transcription (session-voice.ts) ─────────
+
   voices(language?: string): VoiceView[] { return this.#voice.voices(language); }
   async installVoices(language: string): Promise<{ language: string; installed: boolean }> { return this.#voice.installVoices(language); }
   cancelVoice(screen?: string): { cancelled: number } { return this.#voice.cancelVoice(screen); }
@@ -942,6 +946,10 @@ export class Session {
   async setSpeakerVoice({ speaker, voice, language, provider, name, settings }: { speaker: string; voice: string; language?: string; provider?: string; name?: string; settings?: Record<string, unknown> }, author: Author = this.author): Promise<{ change: number | null }> { return this.#voice.setSpeakerVoice({ speaker, voice, language, provider, name, settings }, author); }
   async generateVoice(params: GenerateVoiceParams, author: Author = this.author): Promise<GenerateResult> { return this.#voice.generateVoice(params, author); }
   voiceTakes({ screen, line, language }: { screen: string; line: string; language?: string }): { language: string; takes: TakeInfo[] } { return this.#voice.voiceTakes({ screen, line, language }); }
+  transcribers(language?: string): TranscriberView { return this.#voice.transcribers(language); }
+  async transcribeRecording({ file, language, install, service, approvedPercent }: { file: string; language?: string; install?: boolean; service?: TranscriptionService; approvedPercent?: number }): Promise<Transcript> { return this.#voice.transcribeRecording({ file, language, install, service, approvedPercent }); }
+  async transcriptionEstimate({ file, screen, line, language }: { file?: string; screen?: string; line?: string; language?: string }): Promise<TranscriptionEstimate> { return this.#voice.transcriptionEstimate({ file, screen, line, language }); }
+  async transcribeLine({ screen, line, language, install, service, approvedPercent }: { screen: string; line: string; language?: string; install?: boolean; service?: TranscriptionService; approvedPercent?: number }): Promise<{ before: string; transcript: Transcript; audioHash: `sha256:${string}` | null }> { return this.#voice.transcribeLine({ screen, line, language, install, service, approvedPercent }); }
 
   async importMedia(input: string, options: { to?: string; name?: string } = {}, author: Author = this.author): Promise<MediaImportResult> {
     this.#assertOpen();
@@ -1220,7 +1228,7 @@ export class Session {
       // Mid-write: the edit tries again, and fails with E_CONFLICT if the file stays broken.
       if (file?.kind === 'text' && isJsonPath(rel) && parseJSON(file.text).error !== undefined) continue;
       updates.set(rel, file);
-      if (disk.kind === 'file') this.#monitor.recordStat(rel, disk.info);
+      if (disk.kind === 'file') this.#stats.set(rel, disk.info);
     }
     if (!updates.size) return;
     const { before, after, ops, inverse, unavailable } = this.#prepareChange(updates);
@@ -1391,7 +1399,7 @@ export class Session {
     const seen = new Set<string>();
     for (const info of listed) {
       seen.add(info.path);
-      const known = this.#monitor.stat(info.path);
+      const known = this.#stats.get(info.path);
       if (!known || known.size !== info.size || known.mtimeMs !== info.mtimeMs) this.#monitor.observe(info.path);
     }
     for (const rel of this.#state.files.keys()) if (!seen.has(rel)) this.#monitor.observe(rel);
@@ -1400,17 +1408,17 @@ export class Session {
 
   async #readDisk(rel: string, settle = false): Promise<DiskRead> {
     const disk = await readDisk(this.store, rel, { settleMs: settle ? SETTLE_MS : 0 });
-    if (disk.kind === 'file') this.#monitor.recordStat(rel, disk.info);
-    else if (disk.kind === 'missing') this.#monitor.forgetStat(rel);
+    if (disk.kind === 'file') this.#stats.set(rel, disk.info);
+    else if (disk.kind === 'missing') this.#stats.delete(rel);
     return disk;
   }
 
   #recordStatSync(rel: string): void {
     try {
       const stat = fs.statSync(path.join(this.root, ...rel.split('/')));
-      this.#monitor.recordStat(rel, { path: rel, size: stat.size, mtimeMs: stat.mtimeMs });
+      this.#stats.set(rel, { path: rel, size: stat.size, mtimeMs: stat.mtimeMs });
     } catch {
-      this.#monitor.forgetStat(rel);
+      this.#stats.delete(rel);
     }
   }
 
@@ -1630,12 +1638,10 @@ const REQUEST_TYPES: Record<RequestType, true> = {
   alignNarration: true, timeline: true, timelineAt: true, timelineMarks: true, narrationPeaks: true, importNarrationFiles: true, planVoiceover: true, planVersions: true, planDiff: true, planDocument: true, planDocumentPage: true, exportPlanDocument: true, dialogue: true, dialoguePlay: true, dialoguePage: true, exportDialogue: true, effects: true, transcribeRecording: true, transcribers: true, transcriptionEstimate: true, transcribeLine: true
 };
 
-
-
 const isRequestType = (type: string): type is RequestType => Object.hasOwn(REQUEST_TYPES, type);
 
 const fileOf = (disk: DiskRead): SourceFile | null => (disk.kind === 'file' ? disk.file : null);
-// What the bars show that depends on every screen, as compared between renders.
+
 // What the build request asks of @elabora/node build; the session's validation options by default,
 // so the package is checked as the app's findings are.
 function buildOptions(params: BuildParams, validation: ValidationOptions = {}): BuildOptions {

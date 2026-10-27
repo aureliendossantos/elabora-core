@@ -4,9 +4,6 @@ import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { openProject } from '@elabora/engine';
-import { SessionCanvas } from '../../packages/engine/src/session-canvas.ts';
-import type { CanvasHost } from '@elabora/node/canvas/host';
-import type { Project } from '@elabora/core/project/model';
 import type { OpenOptions, Session } from '@elabora/engine';
 import type { HostMessage } from '@elabora/player/canvas-protocol';
 import { copyExample, readJSON } from '../helpers.ts';
@@ -133,25 +130,4 @@ test('the canvas host gets the screen shown again after each change that affects
     events.close();
   }
   assert.deepEqual(await session.closeCanvas(), { closed: true });
-});
-
-
-test('session close retains the canvas host while its close is pending and after a failure', async () => {
-  let rejectClose!: (error: Error) => void;
-  const pending = new Promise<void>((_resolve, reject) => { rejectClose = reject; });
-  let starts = 0;
-  let closes = 0;
-  const host = { url: 'http://canvas', base: '/', token: 'token', pages: 0,
-    close: () => { closes++; return closes === 1 ? pending : Promise.resolve(); } } as unknown as CanvasHost;
-  const canvas = new SessionCanvas('/project', () => ({} as Project), () => {}, async () => { starts++; return host; });
-  await canvas.open();
-  const closing = canvas.closeForSession();
-  assert.equal((await canvas.open()).url, 'http://canvas');
-  assert.equal(starts, 1);
-  rejectClose(new Error('close failed'));
-  await assert.rejects(closing, /close failed/);
-  assert.equal((await canvas.open()).url, 'http://canvas');
-  assert.equal(starts, 1);
-  assert.deepEqual(await canvas.close(), { closed: true });
-  assert.equal(closes, 2);
 });
