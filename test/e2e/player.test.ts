@@ -78,7 +78,9 @@ test('the controls in the top bar: their popups open downward and the captions s
 
 test('the tooltip: a refusal goes, a hint shown after it goes with the pointer, and nothing stays on the screen', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
   await player(copyExample(), async (page) => {
-    await page.clock.pauseAt(new Date('2026-10-20T12:00:10Z'));
+    // A day after the clock's start: the page may take long to load on a loaded computer, and a
+    // pause in its past would throw.
+    await page.clock.pauseAt(new Date('2026-10-21T12:00:00Z'));
     await page.evaluate(() => { const t = (window as PlayerWindow).__elabora; t.timeline.play(); t.timeline.advance(1); });
     // A greyed Next: its reason, at once.
     await page.click('.t-nav-btn--next', { force: true });

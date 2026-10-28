@@ -48,20 +48,29 @@ export function copyExample(source: string = EXAMPLE): string {
   return dir;
 }
 
+// The seed is made on a copy of its own, so that the copy a test gets has had no snapshot read and
+// none of the core's memos (its data folder, for one) set before the test sets its environment.
 function seedProbes(source: string, dir: string): void {
   const seeds = process.env.ELABORA_TEST_PROBES;
   if (!seeds || process.env.ELABORA_DATA_DIR) return;
   const seed = path.join(seeds, `${path.relative(ROOT, source).replace(/[\\/]/g, '~')}.json`);
-  const cache = probeCachePath(dir);
   if (!fs.existsSync(seed)) {
-    readProjectFiles(dir);
-    if (!fs.existsSync(cache)) return;
-    fs.mkdirSync(seeds, { recursive: true });
-    const temporary = `${seed}.${process.pid}.tmp`;
-    fs.copyFileSync(cache, temporary);
-    fs.renameSync(temporary, seed);
-    return;
+    const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-test-probes-'));
+    try {
+      fs.cpSync(source, scratch, { recursive: true, preserveTimestamps: true, filter: (src) => !/[\\/](dist|\.elabora)([\\/]|$)/.test(src.slice(source.length)) });
+      readProjectFiles(scratch);
+      const cache = probeCachePath(scratch);
+      if (!fs.existsSync(cache)) return;
+      fs.mkdirSync(seeds, { recursive: true });
+      const temporary = `${seed}.${process.pid}.tmp`;
+      fs.copyFileSync(cache, temporary);
+      fs.renameSync(temporary, seed);
+    } finally {
+      fs.rmSync(scratch, { recursive: true, force: true });
+    }
   }
+  // Where probeCachePath puts it when ELABORA_DATA_DIR is not set: the project's .elabora/.
+  const cache = path.join(dir, '.elabora', 'media', 'probe-cache.json');
   fs.mkdirSync(path.dirname(cache), { recursive: true });
   fs.copyFileSync(seed, cache);
 }
