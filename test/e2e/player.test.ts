@@ -129,6 +129,38 @@ test('a theme\'s ring on :focus-visible stays on controls: the screen\'s title t
   });
 });
 
+test('a term opens the glossary at its entry, marked until the learner closes the panel, searches it or opens another term', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
+  const dir = copyExample();
+  const screen = readJSON(dir, 'screens/premier-reflexe.json');
+  screen.blocks.unshift({ id: 'termes', type: 'text', props: { markdown: 'Le [routeur](glossary:routeur) fait suivre chaque [paquet](glossary:paquet).' } });
+  writeJSON(dir, 'screens/premier-reflexe.json', screen);
+  await player(dir, async (page) => {
+    await page.evaluate(() => (window as PlayerWindow).__elabora.go('premier-reflexe'));
+    // Marked, and current for screen readers.
+    const marked = () => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('.t-glossary-entry[data-t-found][aria-current="true"]')].map((node) => node.dataset.term));
+    await page.click('#t-main a.t-term[data-term="routeur"]');
+    assert.deepEqual(await marked(), ['routeur']);
+    // Time goes by while the learner reads: the entry stays marked.
+    await page.clock.runFor(10000);
+    assert.deepEqual(await marked(), ['routeur']);
+    // Another term of the screen: the mark goes to its entry.
+    await page.click('#t-main a.t-term[data-term="paquet"]');
+    assert.deepEqual(await marked(), ['paquet']);
+    // A search: the panel no longer shows that entry for itself.
+    await page.fill('.t-glossary-input', 'rou');
+    assert.deepEqual(await marked(), []);
+    // Closed: nothing marked, nor when the panel opens from its button.
+    await page.click('#t-main a.t-term[data-term="routeur"]');
+    assert.deepEqual(await marked(), ['routeur']);
+    await page.click('[data-sheet="glossary"] .t-sheet-close');
+    assert.ok(await isClosed(page.locator('[data-sheet="glossary"]')));
+    assert.deepEqual(await marked(), []);
+    await page.click('.t-glossary-btn');
+    assert.deepEqual(await marked(), []);
+    assert.equal(await page.locator('.t-glossary-entry[data-t-found], .t-glossary-entry[aria-current]').count(), 0);
+  }, { clock: true });
+});
+
 test('modal dialogs: a term in a layer shows its definition over it, and the PDF preview\'s buttons their names', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
   const dir = copyExample();
   const screen = readJSON(dir, 'screens/premier-reflexe.json');
