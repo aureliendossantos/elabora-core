@@ -49,6 +49,17 @@
                         "layer": "the-email"
                       }
                     ]
+                  },
+                  {
+                    "at": {
+                      "word": "rings"
+                    },
+                    "do": [
+                      {
+                        "type": "play-sound",
+                        "sound": "sonnerie"
+                      }
+                    ]
                   }
                 ]
               },

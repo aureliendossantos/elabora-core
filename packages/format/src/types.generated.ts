@@ -1773,6 +1773,14 @@ export type DialogueAction = {
   variable?: string;
   value?: string | number | boolean;
   by?: number;
+  /** play-sound, stop-sound: a sound of the course (its id in assets/sounds/, D67). */
+  sound?: Slug;
+  volume?: number;
+  /** play-sound: an ambience of the screen, until stop-sound or the end of the screen. */
+  loop?: boolean;
+  fade?: number;
+  /** play-sound: what the sound says, for learners who do not hear it; advised when no text says it, never required. */
+  caption?: string;
 };
 
 /** All must hold (AND). For OR, write two options, or next cases where the first that holds wins. */

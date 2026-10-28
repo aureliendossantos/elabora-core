@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // Elabora's library of sounds, « Sons courants » (docs/decisions.md D67): CC0 or public-domain sounds
-// in packages/node/sounds/files/, their catalogue written by `npm run sounds`. Offline.
+// in packages/node/sounds/files/, their catalogue written by `pnpm run sounds`. Offline.
 
 export interface LibrarySound {
   id: string;

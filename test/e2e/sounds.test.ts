@@ -137,9 +137,9 @@ test('sounds of the story, ambiences and music: played after the first gesture, 
     // Out of its range: it stops; the screen's ambience and its sound of the story play, the caption is said.
     await page.evaluate(() => (window as PlayerWindow).__elabora.go('green-coffee'));
     state = await fullState(page);
-    assert.deepEqual(state.playing.map((entry) => `${entry.kind}:${entry.sound}`).sort(), ['ambience:cafe'], JSON.stringify(state.playing));
+    assert.deepEqual(state.playing.filter((entry) => entry.kind !== 'story').map((entry) => `${entry.kind}:${entry.sound}`), ['ambience:cafe'], JSON.stringify(state.playing));
     await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().played.some((entry) => entry.sound === 'ring' && entry.heard), null, { timeout: 30000 });
-    assert.equal(await page.locator('.t-sr-only[aria-live]').textContent(), 'The phone rings.');
+    await page.waitForFunction(() => document.querySelector('.t-sr-only[aria-live]')?.textContent === 'The phone rings.', null, { timeout: 30000 });
     assert.equal(await page.locator('.t-sound-caption').textContent(), 'The phone rings.', 'no way to choose captions in this course: shown');
     // « Musique et ambiances » off.
     await page.click('.t-display-btn');
@@ -151,5 +151,21 @@ test('sounds of the story, ambiences and music: played after the first gesture, 
     // The ambience of the screen stops with it.
     await page.evaluate(() => (window as PlayerWindow).__elabora.go('roasting'));
     assert.deepEqual((await fullState(page)).playing, []);
+  });
+});
+
+test('phishing-by-numbers: the phone rings on « rings », from a cue of the dialogue\'s first line', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
+  const dir = copyExample('phishing-by-numbers');
+  await player(dir, async (page) => {
+    await page.evaluate(async () => { const t = (window as PlayerWindow).__elabora; for (const s of t.engine.screens) { t.engine.st.visited.add(s.key); t.engine.st.completed.add(s.key); } t.go('practice'); await t.ready(); });
+    await page.mouse.click(5, 450);
+    await page.evaluate(() => { const d = (window as unknown as { __elabora: { dialogues: { start(id: string): void } } }).__elabora.dialogues; d.start('bank-call'); });
+    for (let i = 0; i < 40; i++) {
+      const played = await fullState(page).then((state) => state.played.filter((entry) => entry.sound === 'sonnerie'));
+      if (played.length) break;
+      await page.evaluate(() => (window as unknown as { __elabora: { dialogues: { advance(seconds: number): void } } }).__elabora.dialogues.advance(0.5));
+    }
+    const state = await fullState(page);
+    assert.deepEqual(state.played.filter((entry) => entry.kind === 'story').map((entry) => [entry.sound, entry.src]), [['sonnerie', 'assets/sounds/sonnerie.m4a']]);
   });
 });

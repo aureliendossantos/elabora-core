@@ -1,8 +1,8 @@
 // Refreshes the sound files the core ships (docs/decisions.md D67) from their sources:
-//   npm run sounds                  download the packs and files that packages/player/src/interface-sounds/sources.json
+//   pnpm run sounds                  download the packs and files that packages/player/src/interface-sounds/sources.json
 //                                   names, check each original against its SHA-256 and write the
 //                                   player's interface sounds, <role>.m4a (AAC, mono, 96 kb/s)
-//   npm run sounds -- --from <dir>  take the packs from <dir>/<pack id>/ (unzipped) instead
+//   pnpm run sounds -- --from <dir>  take the packs from <dir>/<pack id>/ (unzipped) instead
 // and writes the library's catalogue.json and README.md (packages/node/sounds/) from its sources.json and
 // files, which were taken once by hand (CC0 and public domain only).
 // Needs network access (or --from) and ffmpeg; nothing else does: courses, the CLI and the app read
@@ -105,5 +105,5 @@ fs.writeFileSync(path.join(LIBRARY, 'catalogue.json'), `${JSON.stringify({ sound
 const mb = (bytes: number) => `${(bytes / 1048576).toFixed(2)} MB`;
 const total = entries.reduce((sum, entry) => sum + entry.bytes, 0);
 const rows = entries.map((entry) => `| \`${entry.id}\` | ${entry.title.fr} | ${entry.category} | ${entry.duration.toFixed(1)} s | ${entry.format} | ${entry.license} | [${entry.author}](${entry.url}) |`);
-fs.writeFileSync(path.join(LIBRARY, 'README.md'), `# « Sons courants »: the library of sounds\n\nWritten by \`npm run sounds\` from sources.json and files/: do not edit. ${entries.length} sounds, ${mb(total)} (effects as FLAC, ambiences as AAC 256 kb/s: docs/decisions/D67.md). CC0 or public domain only: no credit is owed, the sources are kept here.\n\n| Id | Titre | Category | Length | Format | Licence | Source |\n|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`);
+fs.writeFileSync(path.join(LIBRARY, 'README.md'), `# « Sons courants »: the library of sounds\n\nWritten by \`pnpm run sounds\` from sources.json and files/: do not edit. ${entries.length} sounds, ${mb(total)} (effects as FLAC, ambiences as AAC 256 kb/s: docs/decisions/D67.md). CC0 or public domain only: no credit is owed, the sources are kept here.\n\n| Id | Titre | Category | Length | Format | Licence | Source |\n|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`);
 console.log(`library: ${entries.length} sounds, ${mb(total)}`);

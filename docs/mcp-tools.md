@@ -1,6 +1,6 @@
 # Agent tools
 
-Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 101 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
+Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 105 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
 
 ## Reading
 
@@ -335,6 +335,22 @@ The author's ElevenLabs plan and quota: the share used this month (usedPercent; 
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `check` | boolean |  |  |
+
+### `elabora_sound_search`
+
+Sounds to add to the course. source library (default): Elabora's library « Sons courants », CC0 or public domain, offline: phones, doors and footsteps, office, notifications, impacts, transitions, nature, crowds and places, stingers, and ambiences that loop (rain, birds, a café). source openverse: Freesound and Wikimedia Commons through Openverse, without an account (CC0, public domain and CC BY only: a CC BY sound is credited in « IA et crédits » by itself); each computer may search 20 times a minute and 200 a day. Search the library first; then Openverse; then make one (elabora_sound_generate). Choose sounds that say something of the scene (the phone that rings, the alarm of a drill), one or two a screen at most, never under an explanation.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `words` | string |  | What to look for, in English or French (« téléphone », « door knock »). Empty: the whole library. |
+| `source` | "library" \| "openverse" |  |  |
+| `category` | "telephone" \| "doors-footsteps" \| "office" \| "notifications" \| "impacts" \| "transitions" \| "nature" \| "crowds-places" \| "stingers" |  |  |
+| `kind` | "effect" \| "ambience" |  |  |
+| `maxDuration` | number |  | Seconds. |
+
+### `elabora_sound_list`
+
+The course's sounds (assets/sounds/): each with its title, length, licence (and whether it may ship), the credit it asks for, whether it was generated or loops, and where the course uses it (interface role, play-sound action, sound line, background track).
 
 ### `elabora_review_list`
 
@@ -807,6 +823,38 @@ Downloads the model of a language's local voices once for this computer (fr 354 
 |---|---|---|---|
 | `language` | string | yes |  |
 | `force` | boolean |  |  |
+
+### `elabora_sound_add`
+
+Adds a sound to the course: from, a library id (elabora_sound_search), openverse:&lt;id&gt;, or a file on this computer (then license is required: CC0-1.0, CC-BY-4.0…, own for a sound the author made or bought). Copied into assets/sounds/&lt;id&gt; with its sidecar (source, author, licence, changes); trim keeps a part, fade fades its end; a lossy file kept whole is not encoded again. Then use it: a sound line { "id", "sound", "caption"? } in a narration's lines (elabora_update_screen) or a dialogue's node lines, an action { "type": "play-sound", "sound", "volume"?, "loop"?, "caption"? } in an event or a dialogue option, or a background track in course.json sounds.background [{ "sound", "from", "to"?, "volume"? }] (elabora_update_course; enable « Affichage » so learners can switch music off). Undo with elabora_undo.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `from` | string | yes |  |
+| `id` | string |  |  |
+| `trim` | object |  | The part kept, in seconds. |
+| `fade` | number |  | Seconds of fade out at its end. |
+| `loop` | boolean |  | Made to loop (an ambience). |
+| `caption` | string |  | Its caption in the course's language (« Le téléphone sonne. »), kept as a suggestion in its sidecar: write it where the sound is used when it carries meaning no text gives; leave it out for a decorative sound or when the text around says it. |
+| `license` | string |  |  |
+| `author` | string |  |  |
+| `title` | string |  |  |
+| `url` | string |  |  |
+
+### `elabora_sound_generate`
+
+Makes a sound effect with ElevenLabs (the author's key) from a description in English (« a desk phone rings twice, close, office room tone »), 0.5 to 30 s (duration; without it the service chooses), loop for an ambience, and adds it to the course like elabora_sound_add (its sidecar says it was generated: « IA et crédits » says so). Its cost is a share of the author's monthly quota, never said in credits: a sound of 3 s is about 0.4 % of a Starter plan, 10 s about 1.3 %. Under 1 % it runs; from 1 % the call spends nothing and returns needsApproval with the estimate: tell the author « ~N % of your monthly ElevenLabs quota », ASK them, and only with their agreement call again with approvedPercent: N. estimate: only say the share. The same request is never paid twice. Search the library and Openverse first: a generated sound costs, and every try costs as much as the one kept.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `prompt` | string | yes |  |
+| `duration` | number |  |  |
+| `loop` | boolean |  |  |
+| `influence` | number |  | How closely it follows the description (default 0.3). |
+| `id` | string |  |  |
+| `caption` | string |  | Its caption in the course's language (« Le téléphone sonne. »), kept as a suggestion in its sidecar: write it where the sound is used when it carries meaning no text gives; leave it out for a decorative sound or when the text around says it. |
+| `estimate` | boolean |  |  |
+| `approvedPercent` | number |  | The share of their monthly quota, in percent, the author agreed to spend. Only needed from 1 %; never set it without asking. |
 
 ### `elabora_download_install`
 

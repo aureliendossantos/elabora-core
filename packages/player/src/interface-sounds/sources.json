@@ -1,5 +1,5 @@
 {
-  "about": "The player's interface sounds (docs/decisions.md D67), one file per role, chosen by the founder on 28 October 2026 (end: Kenney's STEEL10 until the founder gets Freesound 521640, « WinBanjo », which needs an account). Kept by hand; `npm run sounds` downloads the packs, checks each original's SHA-256 and writes <role>.m4a (AAC, mono, 96 kb/s). Kenney's packs are CC0: no credit is owed (CREDITS.txt of a package still names them).",
+  "about": "The player's interface sounds (docs/decisions.md D67), one file per role, chosen by the founder on 28 October 2026 (end: Kenney's STEEL10 until the founder gets Freesound 521640, « WinBanjo », which needs an account). Kept by hand; `pnpm run sounds` downloads the packs, checks each original's SHA-256 and writes <role>.m4a (AAC, mono, 96 kb/s). Kenney's packs are CC0: no credit is owed (CREDITS.txt of a package still names them).",
   "packs": {
     "kenney-interface-sounds": {
       "title": "Interface Sounds 1.0",

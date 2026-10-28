@@ -1,0 +1,24 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/sound.schema.json",
+  "title": "Office phone ringing (one double ring)",
+  "source": "library",
+  "sourceId": "telephone-fixe",
+  "url": "https://github.com/aureliendossantos/elabora-core",
+  "author": "Elabora",
+  "license": "CC0-1.0",
+  "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "checked": "2026-10-28",
+  "caption": {
+    "fr": "Le téléphone sonne.",
+    "en": "The phone rings."
+  },
+  "modified": [
+    "trimmed",
+    "faded"
+  ],
+  "trim": {
+    "start": 0,
+    "end": 1.15
+  },
+  "duration": 1.15
+}

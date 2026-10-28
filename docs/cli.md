@@ -236,6 +236,24 @@ exchange, cut back into lines (their pauses from it). Stage directions in bracke
 played by Eleven v4 voices and never shown.
 ```
 
+## Sounds
+
+```text
+sound search [dir] <words…> [--source library|openverse] [--category <c>] [--kind effect|ambience] [--max-duration <s>] [--json]
+                                                    Sounds to add: Elabora's library « Sons courants » (CC0, offline,
+                                                    the default), or Freesound and Wikimedia Commons through Openverse
+                                                    (no account; CC0, public domain and CC BY only)
+sound add [dir] <library id | openverse:<id> | file> [--id <id>] [--trim <start>:<end>] [--fade <s>] [--loop]
+          [--caption "<text>"] [--license <id> --author <name> --title <t> --url <https://…>]
+                                                    Copy a sound into assets/sounds/<id> with its sidecar (source,
+                                                    author, licence); a file needs --license (own: the author's)
+sound list [dir] [--json]                           The course's sounds: licence, credit, where each is used
+sound generate [dir] "<description>" [--duration <s>] [--loop] [--influence 0-1] [--id <id>] [--caption "<text>"]
+               [--estimate] [--spend <percent>] [--json]
+                                                    Make a sound effect with ElevenLabs (the author's key): from 1 %
+                                                    of the monthly quota, ask the author, then --spend
+```
+
 ## Dialogues (branching conversations held in a block)
 
 ```text

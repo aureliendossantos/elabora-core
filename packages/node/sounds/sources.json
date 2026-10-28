@@ -1,5 +1,5 @@
 {
-  "about": "Elabora's library of sounds, « Sons courants » (docs/decisions.md D67): CC0 or public domain only, taken once by hand from Kenney, OpenGameArt and Wikimedia Commons (28 Oct 2026), each analysed (duration, silence, level, clipping), trimmed, levelled (effects to a peak of -3 dBFS, ambiences to an RMS of -26 dBFS) and, for ambiences, given a crossfaded seam. Kept by hand; files/ holds the masters (FLAC for effects, AAC 256 kb/s for ambiences); `npm run sounds` writes catalogue.json and README.md from them.",
+  "about": "Elabora's library of sounds, « Sons courants » (docs/decisions.md D67): CC0 or public domain only, taken once by hand from Kenney, OpenGameArt and Wikimedia Commons (28 Oct 2026), each analysed (duration, silence, level, clipping), trimmed, levelled (effects to a peak of -3 dBFS, ambiences to an RMS of -26 dBFS) and, for ambiences, given a crossfaded seam. Kept by hand; files/ holds the masters (FLAC for effects, AAC 256 kb/s for ambiences); `pnpm run sounds` writes catalogue.json and README.md from them.",
   "sounds": [
     {
       "id": "telephone-fixe",

@@ -192,7 +192,12 @@
         "screen": { "type": "string" },
         "variable": { "type": "string" },
         "value": { "type": ["string", "number", "boolean"] },
-        "by": { "type": "number" }
+        "by": { "type": "number" },
+        "sound": { "$ref": "../defs.schema.json#/$defs/slug", "description": "play-sound, stop-sound: a sound of the course (its id in assets/sounds/, D67)." },
+        "volume": { "type": "number", "minimum": 0, "maximum": 1 },
+        "loop": { "type": "boolean", "description": "play-sound: an ambience of the screen, until stop-sound or the end of the screen." },
+        "fade": { "type": "number", "minimum": 0, "maximum": 10 },
+        "caption": { "type": "string", "minLength": 1, "maxLength": 200, "x-translatable": true, "description": "play-sound: what the sound says, for learners who do not hear it; advised when no text says it, never required." }
       }
     },
     "dialogueConditions": {
