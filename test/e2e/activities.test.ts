@@ -8,7 +8,7 @@ import { startServer } from '@elabora/node/emulator/server';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import { testPackage } from '@elabora/node/emulator/run';
 import { build } from '@elabora/node/build';
-import { measureFit } from '@elabora/node/preview';
+import { measureFit } from '@elabora/node/fit';
 import { copyExample } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { addActivities, ACTIVITY_SCREENS } from '../activities-fixture.ts';

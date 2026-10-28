@@ -127,7 +127,7 @@ Move to the new settings over `transition.duration` with `host.onFrame`: take wh
 | 2 | Smoke: mount, 300 frames, `getState()` matches the state schema, dispose, no console error; every call answered within 60 s (an object stuck in a loop fails here, the other gates are not run) | `elabora object test` | yes |
 | 3 | Behaviour: `object.tests.json` replayed (clicks on declared objects, keys, props, state, expected events) | `elabora object test` | yes |
 | 4 | Budgets: draw calls, triangles, WebGL contexts, boot time (median of the mounts of the run, the smoke test's and one per test; over the budget a warning, `W_GATE_BOOT_SLOW`, as learners without a GPU see the loading indicator; over 10 s an error) | `elabora object test` | yes |
-| 5 | Visual: snapshots against the baselines of the system running the gates (0.1 % pixel tolerance; fonts and WebGL differ between systems); a system's first run records its baselines | `elabora object test` | yes |
+| 5 | Visual: snapshots against the baselines of the system running the gates (0.1 % pixel tolerance; fonts and WebGL differ between systems); a system's first run records its baselines. A test whose WebGL context was lost before a snapshot (the browser's GPU process giving way, most often on a loaded machine) is run again rather than compared, twice at most, then reported as `E_GATE_CONTEXT_LOST` | `elabora object test` | yes |
 | 6 | Accessibility: axe-core (WCAG 2.2 A/AA) on the object DOM, keyboard reachability | `elabora object test` | yes |
 | 7 | Signal: multimodal judge with a checklist | not in 0.1 | never alone |
 | 8 | Human: pedagogical review and code review | proof dossier checklist | yes |

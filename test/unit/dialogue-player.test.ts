@@ -7,7 +7,8 @@ import { playerContent, screenSpeaks } from '@elabora/core/player/config';
 import { createCourseState } from '@elabora/player/course-state';
 import { emptyState, encodeState, decodeState, worstCaseLength, worstCaseState } from '@elabora/player/state-codec';
 import { choose, revisit, restart, canRevisit, scoredDone, scoredResult } from '@elabora/player/dialogue/run';
-import { labelKeys, labelLanguages, labelsFor } from '@elabora/player/labels';
+import { labelKeys, labelLanguages, labelsFor, formatLabel } from '@elabora/player/labels';
+import { speakerName } from '@elabora/player/dialogue/thread';
 import { tokenCssVars } from '@elabora/player/tokens';
 import { dialogToken } from '@elabora/core/validate/theme';
 import type { CourseData, DialogueBlock } from '@elabora/player/course-data';
@@ -200,4 +201,13 @@ test('the dialogue\'s colours: tokens become --t-dialog-* variables, checked for
   assert.deepEqual(errors(), ['dialog.learner 1.53', 'dialog.learner 1.53'], 'the token the course set is the one reported');
   assert.equal(tokenCssVars({ 'dialog.wordSpoken': '#111111' })['--t-dialog-word-spoken'], '#111111');
   assert.equal(dialogToken({ 'color.text': '#000000', 'color.surface': '#FFFFFF' }, 'dialog.bubble'), '#f2f2f2');
+});
+
+test('a learner whose name already says « you » is named once, not « You (you) »', () => {
+  const context = (name: string, language: string) => ({ data: { learner: 'me', speakers: { me: { name } } } as never, labels: labelsFor(language), language, format: (label: string, values: Readonly<Record<string, unknown>>) => formatLabel(label, values, language) });
+  assert.equal(speakerName(context('You', 'en'), undefined, true), 'You');
+  assert.equal(speakerName(context(' vous ', 'fr'), undefined, true), 'vous');
+  assert.equal(speakerName(context('You', 'fr'), undefined, true), 'You', 'in any of the player\'s languages');
+  assert.equal(speakerName(context('Leïla', 'fr'), undefined, true), 'Leïla (vous)');
+  assert.equal(speakerName({ ...context('x', 'en'), data: { speakers: {} } as never }, undefined, true), 'You');
 });

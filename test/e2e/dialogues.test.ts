@@ -356,6 +356,29 @@ test('reduced motion: whole lines at once, nothing slides; the transcript of a s
   });
 });
 
+// « Reprendre d'ici » shows beside the learner's past answers at the end: no bubble narrows or moves,
+// and the button stays inside the thread, on a phone (the learner's portrait beside each answer) as on
+// a wide screen.
+test('« Reprendre d\'ici » moves nothing, on a phone as on a wide screen', { timeout: 240000 }, async () => {
+  for (const width of [390, 1600]) {
+    await player({ open: true, width, height: width < 500 ? 844 : 900 }, async (page) => {
+      await page.evaluate(() => (window as DialogueWindow).__elabora.go('appel'));
+      const answers = () => page.evaluate(() => [...document.querySelectorAll('[data-block="appel-marc"] .t-dialogue-row[data-role="learner"] .t-dialogue-bubble')].map((bubble) => { const r = bubble.getBoundingClientRect(); return [Math.round(r.right), Math.round(r.width), Math.round(r.height)].join(','); }));
+      for (const option of ['a', 'a']) { await until(page, 'appel-marc', 'choosing'); await choose(page, 'appel-marc', option); }
+      await until(page, 'appel-marc', 'choosing');
+      const before = await answers();
+      await choose(page, 'appel-marc', 'a');
+      await until(page, 'appel-marc', 'ended');
+      const tools = await page.evaluate(() => {
+        const log = document.querySelector('[data-block="appel-marc"] [data-t-log]')!.getBoundingClientRect();
+        return [...document.querySelectorAll<HTMLElement>('[data-block="appel-marc"] .t-dialogue-resume:not([hidden])')].map((button) => { const r = button.getBoundingClientRect(); return r.left >= log.left && r.right <= log.right; });
+      });
+      assert.ok(tools.length >= 2 && tools.every(Boolean), `${width}: « Reprendre d'ici » shown, inside the thread (${JSON.stringify(tools)})`);
+      assert.deepEqual((await answers()).slice(0, before.length), before, `${width}: the answers keep their width and place`);
+    });
+  }
+});
+
 async function axe(page: Page, where: string) {
   const script = loadAxe();
   if (!script) return;

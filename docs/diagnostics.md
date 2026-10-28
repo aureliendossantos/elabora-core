@@ -150,6 +150,7 @@ Generated from `packages/core/src/diagnostics/codes.ts` by `pnpm run docs`. Code
 | `E_BACKDROP_OBJECT` | Backdrop object not usable | theme.backdrop.object.id names a free object of objects/&lt;id&gt;/ whose manifest has pedagogicalRole "decoration"; its props must match the manifest. |  |
 | `E_BACKDROP_VARIANT` | Unknown backdrop variant | A screen backdrop is "none" or a variant declared in theme.backdrop.variants (with a one-line description). |  |
 | `E_GATE_VISUAL` | Gate 5 failed: snapshot differs from baseline | If the change is intended, accept the new baseline with --update-snapshots. |  |
+| `E_GATE_CONTEXT_LOST` | Gate 5 not run: the WebGL context was lost before a snapshot | The browser's GPU process gave way, most often on a loaded machine; the test was run again and lost it again. Run the gates again when the machine is quieter; if it happens on a quiet machine, the object asks too much of the GPU (textures, draw calls, contexts). |  |
 | `E_GATE_A11Y` | Gate 6 failed: accessibility | See the axe rule in the message. |  |
 | `E_LMS_API_NOT_FOUND` | SCORM API not found in this launch topology | The runtime searches parents and the opener chain; report the topology if this happens with an Elabora package. | LMS-6 |
 | `E_LMS_DATA_LOST_ON_CLOSE` | Data lost when the window closed | Commit earlier; nothing that is not committed before close survives. | LMS-1 |

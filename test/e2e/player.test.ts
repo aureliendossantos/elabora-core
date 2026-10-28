@@ -106,6 +106,29 @@ test('the tooltip: a refusal goes, a hint shown after it goes with the pointer, 
   }, { clock: true });
 });
 
+test('a theme\'s ring on :focus-visible stays on controls: the screen\'s title the keyboard lands on draws none', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
+  // A theme as agents write them: a ring on everything :focus-visible, in a layer after the player's.
+  const dir = copyExample();
+  const course = readJSON(dir, 'course.json');
+  course.navigation = { mode: 'free', lockUntilComplete: false };
+  course.theme.stylesheet = 'theme/theme.css';
+  writeJSON(dir, 'course.json', course);
+  fs.mkdirSync(path.join(dir, 'theme'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'theme/theme.css'), ':focus-visible { outline: 3px solid var(--t-focus); outline-offset: 3px; }\n');
+  await player(dir, async (page) => {
+    const first = await page.evaluate(() => (window as PlayerWindow).__elabora.screen);
+    // Next from the keyboard: the next screen's title takes the focus, as :focus-visible.
+    await page.focus('.t-nav-btn--next');
+    await page.keyboard.press('Enter');
+    await page.waitForFunction((id) => (window as PlayerWindow).__elabora.screen !== id, first);
+    const focused = () => page.evaluate(() => { const active = document.activeElement as HTMLElement; return { tag: active.tagName, visible: active.matches(':focus-visible'), outline: getComputedStyle(active).outlineStyle }; });
+    assert.deepEqual(await focused(), { tag: 'H1', visible: true, outline: 'none' });
+    // A control the keyboard reaches keeps the theme's ring.
+    await page.focus('.t-nav-btn--next');
+    assert.deepEqual(await focused(), { tag: 'BUTTON', visible: true, outline: 'solid' });
+  });
+});
+
 test('modal dialogs: a term in a layer shows its definition over it, and the PDF preview\'s buttons their names', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
   const dir = copyExample();
   const screen = readJSON(dir, 'screens/premier-reflexe.json');

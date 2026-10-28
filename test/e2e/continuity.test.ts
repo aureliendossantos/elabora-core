@@ -169,8 +169,12 @@ test('with less motion asked: a clean cut, the object still carries on, and noth
 test('a block that is not an object glides from where its counterpart was; nothing else moves', { timeout: 180000 }, async () => {
   await course(async (page) => {
     const before = await page.evaluate(() => document.querySelector('[data-block="one-title"]')!.getBoundingClientRect().top);
-    await go(page, 'two');
-    const glide = await page.evaluate(() => {
+    // Looked at in the task that changes the screen: go() shows it synchronously and queues the glides
+    // in a microtask, which runs before this await. No clock is involved, however loaded the machine
+    // (after ready(), a glide of 500 ms may already be over).
+    const glide = await page.evaluate(async () => {
+      (window as PlayerWindow).__elabora.go('two');
+      await Promise.resolve();
       const node = document.querySelector<HTMLElement>('[data-block="two-title"]')!;
       const animations = node.getAnimations();
       const others = document.getAnimations().filter((animation) => animation.playState === 'running' && !((animation.effect as KeyframeEffect)?.target as Element | null)?.closest('.t-keep, [data-block="two-title"]')).length;

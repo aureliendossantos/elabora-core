@@ -36,7 +36,7 @@ export const replayObject = defineTool({
   description: 'Replay one behaviour test of a free object (object.tests.json) inside the built course: on the page that places it, scrolled into view, in real time, with the course around it. Returns a contact sheet of its snapshot steps and the end, and the expectations that failed. To see how the object looks and behaves where learners meet it; the gates stay elabora_test_object.',
   inputSchema: objectSchema({ id: SLUG, test: { type: 'string', description: 'A test whose name contains this text (default: the first one).' }, block: { ...SLUG, description: 'The free-object block to use when several place the object.' }, width: { type: 'integer', minimum: 320, maximum: 2560, default: 1600 }, height: { type: 'integer', minimum: 400, maximum: 2000, default: 900 } }, ['id']),
   async handler(args, { root }) {
-    const { replayObject: replay } = await import('@elabora/node/preview');
+    const { replayObject: replay } = await import('@elabora/node/replay');
     const result = await replay(root, args.id, { test: args.test, block: args.block, width: args.width || 1600, height: args.height || 900 });
     if (result.error !== undefined) return errorResult({ error: result.error, diagnostics: result.diagnostics?.filter((d) => d.severity === 'error') });
     const note = `"${result.test}" replayed on ${result.screen} (${result.block}), ${result.frames.length} frame(s): ${result.failures.length ? `failed expectations: ${result.failures.join(' | ')}` : 'every expectation held'}.${result.skipped.length ? ` Skipped: ${result.skipped.join(' | ')}.` : ''}${result.consoleErrors.length ? ` Console errors: ${result.consoleErrors.join(' | ')}` : ''}`;

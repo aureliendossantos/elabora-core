@@ -7,7 +7,7 @@ import type { Page } from 'playwright-core';
 import { startServer } from '@elabora/node/emulator/server';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import { build } from '@elabora/node/build';
-import { capture } from '@elabora/node/preview';
+import { capture } from '@elabora/node/capture';
 import { copyExample, readJSON, writeJSON } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { narrate, voice, hasFfmpeg } from '../narration.ts';

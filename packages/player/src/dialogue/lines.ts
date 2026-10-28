@@ -52,7 +52,7 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
   function lineRow(index: number, role: 'character' | 'learner' | 'narration', speaker: string | undefined, text: string, voice: LineVoiceData, options: { decision?: number; line?: string }): BubbleRow {
     const first = role !== 'narration' && !continues(role, speaker);
     const built = bubbleRow(thread, {
-      role, side: cast.sideOf(role, speaker), speaker, text, first, voiced: !!voice.src && !still, resumable: options.decision !== undefined, letters: data.reveal === 'appear', line: options.line
+      role, side: cast.sideOf(role, speaker), speaker, text, first, voiced: !!voice.src && !still, resumable: options.decision !== undefined && data.revisit !== 'none', letters: data.reveal === 'appear', line: options.line
     });
     if (options.decision !== undefined) built.row.dataset.decision = String(options.decision);
     built.row.dataset.beat = String(index);
@@ -62,7 +62,10 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
     // While the dialogue waits for the learner, a click on the last bubble goes on (as « Suite »); a
     // voice being said is never cut by a stray click, nor is reading by a click up the thread or a
     // selection of words.
-    built.bubble.addEventListener('click', () => { if (state.step?.kind === 'click' && lastRow() === built.row && (getSelection()?.isCollapsed ?? true)) next(); });
+    built.bubble.addEventListener('click', (event) => {
+      if ((event.target as Element).closest('.t-dialogue-tools')) return;
+      if (state.step?.kind === 'click' && lastRow() === built.row && (getSelection()?.isCollapsed ?? true)) next();
+    });
     return built;
   }
   const voiceOf = (line: { text: string; voice?: LineVoiceData }): LineVoiceData => line.voice ?? textVoice(line.text, undefined, language);

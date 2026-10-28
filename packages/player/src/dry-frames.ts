@@ -71,6 +71,8 @@ export interface DryFrames {
   // Wraps getContext: WebGL contexts the object creates from now on are counted and tracked.
   install(): void;
   contexts(): number;
+  // Whether a WebGL context the object made was lost (the browser's GPU process gave way): it draws nothing more.
+  lost(): boolean;
   // Frames from now on: drawn (false), dry ('all'), or dry on the canvas only ('canvas').
   setDry(dry: false | 'all' | 'canvas'): void;
   report(): DryReport;
@@ -331,6 +333,7 @@ export function createDryFrames(): DryFrames {
       }
     },
     contexts: () => tracked.length,
+    lost: () => tracked.some(({ gl }) => gl.isContextLost()),
     setDry(next) { dry = next; },
     report() {
       // A canvas on the page that shows a drawing older than its last frame.

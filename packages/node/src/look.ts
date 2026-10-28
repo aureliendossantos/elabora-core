@@ -13,7 +13,7 @@ import { browserIdentity, launchMotionBrowsers } from './emulator/browser.ts';
 import type { MotionBrowsers } from './emulator/browser.ts';
 import type { ReadyReport } from './emulator/page-globals.ts';
 import { loadProjectFromDir } from './project-reader.ts';
-import { contactSheet, fullPageWithObjects } from './preview.ts';
+import { contactSheet, fullPageWithObjects } from './capture.ts';
 import { scrollFilmstrip, scrollStops, scrollWindow } from './scroll-strip.ts';
 import { measureMotion } from './motion-report.ts';
 import type { MotionReport } from './motion-report.ts';
@@ -36,7 +36,7 @@ import { errorMessage } from './util/values.ts';
 export * from './look-client.ts';
 
 // ── Looking while designing ───────────────────────────────────────────
-// A capture (preview.ts) builds the package, starts a browser, boots the course and its free objects,
+// A capture (capture.ts) builds the package, starts a browser, boots the course and its free objects,
 // and closes everything: seconds every time. A looker keeps one canvas server (canvas/host.ts) and one
 // browser drawing with the GPU, and shows a screen as the editor canvas does: rendered from the files
 // as they are now (renderScreen, no build), updated in place in the page, so a free object whose code

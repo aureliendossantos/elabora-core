@@ -45,7 +45,7 @@ const assets = defineCommand({
     const { results } = await runGenerators(dir, { course: project.course, plan: project.plan, only: flags.only });
     for (const generator of results) console.log(generator.error !== undefined ? `✘ ${generator.generator}: ${generator.error}` : `✔ ${generator.generator} → ${generator.outputs.length} asset(s): ${generator.outputs.join(', ')}`);
     if (flags.sheet) {
-      const { assetsSheet } = await import('@elabora/node/preview');
+      const { assetsSheet } = await import('@elabora/node/assets-sheet');
       const groups = results.flatMap((generator) => (generator.error === undefined ? [{ generator: generator.generator, description: generator.description ?? undefined, outputs: generator.outputs }] : []));
       const surface = project.course?.theme?.tokens?.['color.surface'];
       const file = path.resolve(flags.sheet);

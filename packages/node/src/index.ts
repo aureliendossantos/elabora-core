@@ -39,8 +39,13 @@ export { gatesStatus, writeGatesRecord, objectFingerprint, GATES_FILE } from './
 export type { GatesRecord, GatesStatus } from './objects/gates-record.ts';
 
 // Preview and captures.
-export { preview, capture, screenshot, measureFit, fitDiagnostics, previewComponent, FIT_DEFAULTS } from './preview.ts';
-export type { Preview, PreviewOptions, Shot, ShotFrame, ShotResult, ShotSuccess, CaptureResult, ComponentPreview, FitSize, FitResult, ScreenFit, MeasuredContrast, ComponentPreviewOptions } from './preview.ts';
+export { preview } from './preview.ts';
+export type { Preview, PreviewOptions } from './preview.ts';
+export { capture, screenshot, previewComponent } from './capture.ts';
+export type { Shot, ShotFrame, ShotResult, ShotSuccess, CaptureResult, ComponentPreview, ComponentPreviewOptions } from './capture.ts';
+export { measureFit, fitDiagnostics, FIT_DEFAULTS } from './fit.ts';
+export type { FitSize, FitResult, ScreenFit } from './fit.ts';
+export type { MeasuredContrast } from './contrast.ts';
 
 // The editor canvas: one screen served with the player, updated in place by pushed render data.
 export { startCanvasHost, createCanvasHandler } from './canvas/host.ts';
