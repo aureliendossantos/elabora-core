@@ -49,6 +49,7 @@ export function createThreadBox(parts: ViewParts, { modal, reserveRoom, disposed
     root.toggleAttribute('data-t-history', open);
     historyButton?.setAttribute('aria-expanded', String(open));
     if (historyClose) historyClose.hidden = !open;
+    parts.signal(open ? 'history-open' : 'history-close');
     refit();
     if (open) {
       scrollLog(false);

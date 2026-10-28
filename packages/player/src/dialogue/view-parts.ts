@@ -32,6 +32,19 @@ export interface DialogueHost {
 
 export type Phase = 'idle' | 'playing' | 'choosing' | 'ended';
 
+// What the learner perceives of a dialogue, for what reacts to it (the interface's sounds): an
+// \`elabora:dialogue\` CustomEvent on the dialogue (data-t-group), bubbling, its detail
+// { block, moment, … }. Only when the dialogue plays (never back on a screen, nor in the canvas).
+//   choose          the learner chose an option ({ node, option, quality })
+//   feedback        a trainer's note shows while it plays ({ quality }: good, ok, bad, or null)
+//   back            the learner went back ({ kind }: retry « Choisir autrement », revisit
+//                   « Changer ce choix » or « Reprendre d'ici », restart « Recommencer »)
+//   end             the dialogue reached an end ({ ending })
+//   history-open, history-close, debrief-open, debrief-close
+//                   a panel over the dialogue opened, or the learner closed it (a move back closes
+//                   the debrief without its own moment: back says it)
+export type DialogueMoment = 'choose' | 'feedback' | 'back' | 'end' | 'history-open' | 'history-close' | 'debrief-open' | 'debrief-close';
+
 // The line being said: its row, its voice, the cues still to come.
 export interface LineState {
   index: number;
@@ -88,6 +101,7 @@ export interface ViewParts {
   instant(): boolean;
   revealMode(): 'ink' | 'appear' | 'instant';
   rate(): number;
+  signal(moment: DialogueMoment, detail?: Record<string, unknown>): void;
 }
 
 // Where the dialogue is: the run shown, its beats, how many are in the thread, what it waits for.
@@ -100,6 +114,8 @@ export interface ViewState {
   // The learner paused the dialogue.
   paused: boolean;
   disposed: boolean;
+  // The choice the learner took back, marked among the options while its decision waits again.
+  previous: { node: string; option: string } | null;
 }
 
 export const clamp = (low: number, value: number, high: number) => Math.min(high, Math.max(low, value));

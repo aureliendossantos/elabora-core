@@ -64,6 +64,8 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
     // selection of words.
     built.bubble.addEventListener('click', (event) => {
       if ((event.target as Element).closest('.t-dialogue-tools')) return;
+      // PROTOTYPE B: choosing the answer to change, the answer itself is the button.
+      if (parts.root.hasAttribute('data-t-picking') && built.resume && !built.resume.hidden) { revisit(Number(built.row.dataset.decision)); return; }
       if (state.step?.kind === 'click' && lastRow() === built.row && (getSelection()?.isCollapsed ?? true)) next();
     });
     return built;
@@ -141,9 +143,13 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
         if (!option) return null;
         const node = noteRow(thread, option, data.feedback !== 'debrief');
         node.dataset.beat = String(index);
-        if (box.paging() && live && !box.fits(node)) return box.turnPage(() => { box.insert(node); record(index, node); return noteWait(index, option); });
-        box.insert(node);
-        record(index, node);
+        const show = () => {
+          box.insert(node);
+          record(index, node);
+          if (live) parts.signal('feedback', { quality: data.feedback !== 'debrief' ? option.quality ?? null : null });
+        };
+        if (box.paging() && live && !box.fits(node)) return box.turnPage(() => { show(); return noteWait(index, option); });
+        show();
         if (!live) return null;
         return noteWait(index, option);
       }
@@ -160,7 +166,10 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
         node.dataset.beat = String(index);
         box.insert(node);
         record(index, node);
-        if (live) trigger('dialogue.ended', { target: block.id, ending: ending?.id ?? null });
+        if (live) {
+          trigger('dialogue.ended', { target: block.id, ending: ending?.id ?? null });
+          parts.signal('end', { ending: ending?.id ?? null });
+        }
         return null;
       }
     }

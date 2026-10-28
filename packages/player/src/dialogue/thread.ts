@@ -108,7 +108,7 @@ export function bubbleRow(context: ThreadContext, options: BubbleOptions): Bubbl
     : element('div', { class: 't-dialogue-bubble', style: color ? `--t-dl-speaker: ${color}` : undefined },
       name ? element('span', { class: 't-dialogue-name', 'aria-hidden': 'true', text: name }) : null, text);
   const listen = options.voiced ? element('button', { type: 'button', class: 't-dialogue-tool t-dialogue-listen', hidden: true, 'aria-label': labels.dialogueListen, title: labels.dialogueListen }, icon('play')) : null;
-  const resume = options.resumable ? element('button', { type: 'button', class: 't-dialogue-tool t-dialogue-resume', hidden: true, 'aria-label': labels.dialogueResumeHere, title: labels.dialogueResumeHere }, icon('history')) : null;
+  const resume = options.resumable ? element('button', { type: 'button', class: 't-dialogue-tool t-dialogue-resume', hidden: true, 'aria-label': labels.dialogueResumeHere, title: labels.dialogueResumeHere }, icon('undo')) : null;
   // Tools are not part of what the thread says: they never speak when they appear. They sit beside
   // the bubble, out of the flow (dialogue.css): showing them moves nothing.
   const tools = element('span', { class: 't-dialogue-tools', 'aria-live': 'off' }, listen, resume);
@@ -212,7 +212,15 @@ export function firstChoiceRow(context: ThreadContext, options: readonly Dialogu
 
 export function retryRow(context: ThreadContext, onClick: () => void): HTMLElement {
   return element('div', { class: 't-dialogue-row', 'data-role': 'retry' },
-    element('button', { type: 'button', class: 't-dialogue-link', onclick: onClick }, icon('replay'), element('span', { text: context.labels.dialogueChooseAgain })));
+    element('button', { type: 'button', class: 't-dialogue-link', onclick: onClick }, icon('undo'), element('span', { text: context.labels.dialogueChooseAgain })));
+}
+
+// Where the thread goes on after the learner went back: « Vous reprenez ici », or « Nouvel essai » at
+// the top of a dialogue started over.
+export function markerRow(context: ThreadContext, restarted: boolean): HTMLElement {
+  const { labels } = context;
+  return element('div', { class: 't-dialogue-row', 'data-role': 'marker' },
+    element('p', { class: 't-dialogue-marker' }, icon(restarted ? 'replay' : 'undo'), element('span', { text: restarted ? labels.dialogueNewAttempt : labels.dialogueResumedHere })));
 }
 
 export function endRow(context: ThreadContext, title: string | null, html: string | null): HTMLElement {
@@ -224,7 +232,7 @@ export function endRow(context: ThreadContext, title: string | null, html: strin
 // The options of the decision waiting: the prompt, « Choix définitif » before a final one, then a
 // button per option shown (greyed ones aria-disabled, in their place); an option explored before
 // says so.
-export function optionsContent(context: ThreadContext, prompt: string | undefined, offer: readonly OfferedOption[], { final, explored, onChoose }: { final: boolean; explored(option: string): boolean; onChoose(option: string): void }): { nodes: HTMLElement[]; promptId: string | null } {
+export function optionsContent(context: ThreadContext, prompt: string | undefined, offer: readonly OfferedOption[], { final, explored, previous = () => false, onChoose }: { final: boolean; explored(option: string): boolean; previous?(option: string): boolean; onChoose(option: string): void }): { nodes: HTMLElement[]; promptId: string | null } {
   const { labels } = context;
   const promptId = prompt ? uniqueId('t-dialogue-prompt') : null;
   const buttons = offer.map((offered) => {
@@ -235,7 +243,8 @@ export function optionsContent(context: ThreadContext, prompt: string | undefine
       type: 'button', class: 't-dialogue-choice', 'data-option': option.id, 'aria-disabled': greyed ? 'true' : undefined, 'data-reason': offered.reason,
       onclick: () => { if (!greyed) onChoose(option.id); }
     }, element('span', { class: 't-dialogue-choice-text', text: option.label ?? option.text ?? option.id }),
-    explored(option.id) ? element('span', { class: 't-dialogue-explored' }, icon('check'), element('span', { text: labels.dialogueExplored })) : null,
+    previous(option.id) ? element('span', { class: 't-dialogue-explored t-dialogue-previous' }, icon('undo'), element('span', { text: labels.dialoguePreviousChoice }))
+      : explored(option.id) ? element('span', { class: 't-dialogue-explored' }, icon('check'), element('span', { text: labels.dialogueExplored })) : null,
     note ? element('span', { class: 't-dialogue-unavailable', text: note }) : null);
   });
   return {
@@ -300,11 +309,14 @@ export interface DebriefDecision {
   option: DialogueOptionData;
   kept: DialogueOptionData | null;
   quality?: DialogueQuality;
+  // « Changer ce choix »: back to this decision, when the dialogue allows it.
+  change?: () => void;
 }
 
 // The debrief: the ending reached (its title, its text), the decisions with their quality (icon and
-// word) and their note, the score when the dialogue is scored, then the other outcomes.
-export function debriefCard(context: ThreadContext, { ending, decisions, score, others }: { ending: { title?: string; textHtml?: string; text?: string } | null; decisions: readonly DebriefDecision[]; score: number | null; others: readonly { title: string; found: boolean }[] }): HTMLElement {
+// word), their note and « Changer ce choix », the score when the dialogue is scored, the other
+// outcomes, then « Recommencer ».
+export function debriefCard(context: ThreadContext, { ending, decisions, score, others, restart = null }: { ending: { title?: string; textHtml?: string; text?: string } | null; decisions: readonly DebriefDecision[]; score: number | null; others: readonly { title: string; found: boolean }[]; restart?: (() => void) | null }): HTMLElement {
   const { labels } = context;
   const titleId = uniqueId('t-dialogue-debrief');
   return element('section', { class: 't-dialogue-debrief-card', 'aria-labelledby': titleId },
@@ -316,10 +328,12 @@ export function debriefCard(context: ThreadContext, { ending, decisions, score, 
       decision.prompt ? element('p', { class: 't-dialogue-decision-prompt', text: decision.prompt }) : null,
       element('p', { class: 't-dialogue-decision-choice' }, decision.quality ? qualityMark(labels, decision.quality) : null, element('span', { class: 't-dialogue-decision-text', text: decision.option.text ?? decision.option.label ?? decision.option.id })),
       decision.kept ? element('p', { class: 't-dialogue-decision-kept' }, `${labels.dialogueThen}${labels.colon}`, element('span', { text: decision.kept.text ?? decision.kept.label ?? decision.kept.id })) : null,
-      decision.option.feedbackHtml ? element('div', { class: 't-text t-dialogue-decision-note', html: decision.option.feedbackHtml }) : null))) : null,
+      decision.option.feedbackHtml ? element('div', { class: 't-text t-dialogue-decision-note', html: decision.option.feedbackHtml }) : null,
+      decision.change ? element('button', { type: 'button', class: 't-dialogue-link t-dialogue-change', onclick: decision.change }, icon('undo'), element('span', { text: labels.dialogueChangeChoice })) : null))) : null,
     others.length ? element('p', { class: 't-dialogue-debrief-head', text: labels.dialogueOtherEndings }) : null,
     others.length ? element('ul', { class: 't-dialogue-others' }, others.map((other) => element('li', { 'data-found': other.found ? '' : undefined },
-      element('span', { class: 't-dialogue-other-title', text: other.title }), element('span', { class: 't-dialogue-other-state', text: other.found ? labels.dialogueFound : labels.dialogueNotFound })))) : null);
+      element('span', { class: 't-dialogue-other-title', text: other.title }), element('span', { class: 't-dialogue-other-state', text: other.found ? labels.dialogueFound : labels.dialogueNotFound })))) : null,
+    restart ? element('div', { class: 't-dialogue-debrief-foot' }, element('button', { type: 'button', class: 't-dialogue-action t-dialogue-restart', onclick: restart }, icon('replay'), element('span', { text: labels.dialogueRestart }))) : null);
 }
 
 // Closes a panel over the dialogue (the History, the debrief).

@@ -147,7 +147,7 @@ export function createDialogues(context: DialoguesContext) {
     const measureRoom = element('div', { class: `${room.className} t-dialogue-measure`, 'aria-hidden': 'true' });
     root.append(measureLog, measureRoom);
 
-    const state: ViewState = { run: courseState.dialogueRun(block), beats: [], presented: 0, phase: 'idle', step: null, paused: false, disposed: false };
+    const state: ViewState = { run: courseState.dialogueRun(block), beats: [], presented: 0, phase: 'idle', step: null, paused: false, disposed: false, previous: null };
     state.beats = state.run.walk.beats;
     let holding = false;
     const reduced = () => prefersLessMotion();
@@ -155,7 +155,8 @@ export function createDialogues(context: DialoguesContext) {
     const parts: ViewParts = {
       block, data, wrap, root, log, room, stage, debriefHost: find('debrief'), measureLog, measureRoom, thread, labels, language,
       learnerSpeaker: data.learner ?? undefined, voiced, still, clock, host,
-      reduced, instant, revealMode: () => (instant() ? 'instant' : data.reveal), rate: () => host().prefs().rate || 1
+      reduced, instant, revealMode: () => (instant() ? 'instant' : data.reveal), rate: () => host().prefs().rate || 1,
+      signal: (moment, detail = {}) => { if (!still) root.dispatchEvent(new CustomEvent('elabora:dialogue', { bubbles: true, detail: { block: block.id, moment, ...detail } })); }
     };
 
     const modal = createModal(root);
@@ -333,9 +334,9 @@ export function createDialogues(context: DialoguesContext) {
       goto(node: string) { try { moves.move(jump(state.run, node)); } catch { /* not a node of this dialogue (the validator says so) */ } },
       restartRun() {
         const run = state.run;
-        if (canRestart(run)) { moves.move(restart(run), { started: true }); return; }
+        if (canRestart(run)) { moves.move(restart(run), { started: true, back: 'restart' }); return; }
         // Outside its policy, the screen may start it over once its first run is done: the scored run stays.
-        if (scoredDone(run)) moves.move(openDialogue(data, { ...run.progress, path: [], scored: run.progress.scored ?? run.progress.path.slice() }, run.env), { started: true });
+        if (scoredDone(run)) moves.move(openDialogue(data, { ...run.progress, path: [], scored: run.progress.scored ?? run.progress.path.slice() }, run.env), { started: true, back: 'restart' });
       },
       pause,
       showPath: moves.showPath,
