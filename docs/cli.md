@@ -1,6 +1,6 @@
 # Command line
 
-Generated from the help of `elabora` by `npm run docs`: `elabora help` prints the same, and `elabora <command> --help` one group. `[dir]` is a course folder (the current one by default). Run it from a checkout with `node bin/elabora.js`, or through the desktop app's bundled command.
+Generated from the help of `elabora` by `pnpm run docs`: `elabora help` prints the same, and `elabora <command> --help` one group. `[dir]` is a course folder (the current one by default). Run it from a checkout with `node bin/elabora.js`, or through the desktop app's bundled command.
 
 ## Project
 

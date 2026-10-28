@@ -1,6 +1,6 @@
 # Decisions
 
-Generated from `docs/decisions/` by `npm run docs`. One file per decision: what was decided, why, and what would make us revisit it (*Revisit if*). Code, docs and changelog cite them by number (D24); a decision replaced or revised says by which one.
+Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what was decided, why, and what would make us revisit it (*Revisit if*). Code, docs and changelog cite them by number (D24); a decision replaced or revised says by which one.
 
 | | Decision | Date |
 |---|---|---|
@@ -69,4 +69,5 @@ Generated from `docs/decisions/` by `npm run docs`. One file per decision: what 
 | [D63](decisions/D63.md) | Starter blocks for scroll courses: few blocks with presentations, three primitives, three activities | 24 Oct 2026 |
 | [D64](decisions/D64.md) | Schemas have a patch version: additive changes are published as 0.1.1 | 26 Oct 2026 |
 | [D65](decisions/D65.md) | Continuity between screens: a block that carries on from one screen to the next | 28 Oct 2026 |
+| [D66](decisions/D66.md) | pnpm installs the checkouts, in npm's flat layout | 28 Oct 2026 |
 | [D67](decisions/D67.md) | Sounds: interface sounds, sounds of the story, music and ambiences on one engine, CC0 in the core | 28 Oct 2026 |

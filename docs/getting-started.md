@@ -4,11 +4,11 @@ Run the core from a checkout: validate, build, test and preview the sample cours
 
 ## Requirements
 
-- **Node 24 or later.** The core is TypeScript run directly by Node (type stripping): there is no build step.
+- **Node 24 or later**, and **pnpm 11** for a checkout (`npm install -g pnpm`; `package.json` names the version). The core is TypeScript run directly by Node (type stripping): there is no build step.
 - **ffmpeg and ffprobe** for media (imports, narration, quality presets), found through `ELABORA_FFMPEG` and `ELABORA_FFPROBE` or on the `PATH`. Validation and builds of courses without new media do not need them.
 - **A browser** for looks, captures, layout checks, LMS tests and free-object gates only. Validation and builds need none.
   - With the Elabora desktop app installed and opened once, these workflows use isolated workers of its own Electron: nothing else to install. The app's bundled command needs no separate Node, Chrome or Edge.
-  - Without the app, the default tries Chrome, Edge, then Playwright's downloaded Chromium (`npx --no-install playwright-core install chromium`).
+  - Without the app, the default tries Chrome, Edge, then Playwright's downloaded Chromium (`pnpm exec playwright-core install chromium`).
   - `--browser chrome`, `msedge`, `playwright`, `firefox` or `webkit` selects an external engine for package and object tests; `electron` requires the app; `chromium` is the default provider. `ELABORA_BROWSER=external` turns off the discovery of the app for every workflow, and developers can point `ELABORA_ELECTRON_EXECUTABLE` and `ELABORA_ELECTRON_ENTRY` at an Electron executable and the app's browser worker. Results name the engine and version that ran; object baselines are kept per engine and OS. See [Rendering, browsers and captures](architecture/rendering.md).
 
 ## Install
@@ -16,7 +16,7 @@ Run the core from a checkout: validate, build, test and preview the sample cours
 ```bash
 git clone https://github.com/aureliendossantos/elabora-core.git
 cd elabora-core
-npm install
+pnpm install
 ```
 
 `node bin/elabora.js` is the `elabora` command in a checkout; `node bin/elabora.js help` lists every command ([Command line](cli.md)).
@@ -78,6 +78,6 @@ node bin/elabora.js tools call elabora_overview examples/diagnostic-reseau
 
 - SCORM 1.2 for LMSs ([D2](decisions/D02.md)) and a web target for static hosting ([D41](decisions/D41.md)); no cmi5, xAPI, LTI or dispatch yet.
 - The emulator reproduces documented behaviour on scorm-again; it does not replace a smoke test in SCORM Cloud and a test learner in the client's LMS. Profiles list what remains to be measured.
-- Firefox and WebKit runs need their binaries (`npx --no-install playwright-core install firefox webkit`). WebKit passed the LMS and object probes on macOS but differs from Chromium's snapshots; Firefox may be blocked at startup on recent macOS by the protection of its app-data folder.
+- Firefox and WebKit runs need their binaries (`pnpm exec playwright-core install firefox webkit`). WebKit passed the LMS and object probes on macOS but differs from Chromium's snapshots; Firefox may be blocked at startup on recent macOS by the protection of its app-data folder.
 - Storyline and Rise imports are in beta ([D47](decisions/D47.md)).
 - Media encoding was exercised with Homebrew's ffmpeg on macOS (without libwebp, images fall back to JPEG or PNG; without zimg, HDR is converted without tone mapping); Windows encoders are untested.

@@ -21,13 +21,13 @@ Elabora core takes a module from the plan a client validated to a compliant SCOR
 
 ```bash
 git clone https://github.com/aureliendossantos/elabora-core.git && cd elabora-core
-npm install
+pnpm install
 node bin/elabora.js validate examples/diagnostic-reseau --profile moodle
 node bin/elabora.js build examples/diagnostic-reseau --profile moodle
 node bin/elabora.js preview examples/diagnostic-reseau
 ```
 
-Node 24 or later runs the TypeScript sources directly. Media need ffmpeg, previews and LMS tests a browser: [Getting started](docs/getting-started.md) says which, and walks through the samples.
+Node 24 or later runs the TypeScript sources directly; a checkout installs with pnpm 11 (`npm install -g pnpm`). Media need ffmpeg, previews and LMS tests a browser: [Getting started](docs/getting-started.md) says which, and walks through the samples.
 
 ## Use it with an agent
 
@@ -65,7 +65,7 @@ The whole map is [`docs/index.md`](docs/index.md), also published at [elabora.st
 
 ## Packages
 
-npm workspaces, TypeScript in strict mode:
+pnpm workspaces, TypeScript in strict mode:
 
 | Package | Role |
 |---|---|

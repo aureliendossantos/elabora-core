@@ -14,7 +14,7 @@ Vetted free fonts for Elabora courses, shipped with Elabora so that they are the
 ## Maintaining
 
 - `sources.json`, by hand: the subsets and the languages each one writes, the families, their package and version, styles (variable) or weights (static), the tokens `elabora font add` sets, their stack with fallbacks, one line of use, pairings, specimens.
-- `npm run fonts` downloads each package at its version from the npm registry, checks it against the registry's integrity, copies its files and its licence into `files/` and writes `catalogue.json` and this README. `npm run fonts -- --check` lists newer versions; `npm run fonts -- --update` moves `sources.json` to them and refreshes. Then run `npm test` (the catalogue test checks files, hashes, ranges, licences, names, weights and the total size) and look at the fonts (`elabora font list`, a course with `elabora font add`).
+- `pnpm run fonts` downloads each package at its version from the npm registry, checks it against the registry's integrity, copies its files and its licence into `files/` and writes `catalogue.json` and this README. `pnpm run fonts -- --check` lists newer versions; `pnpm run fonts -- --update` moves `sources.json` to them and refreshes. Then run `pnpm test` (the catalogue test checks files, hashes, ranges, licences, names, weights and the total size) and look at the fonts (`elabora font list`, a course with `elabora font add`).
 
 ## The list: 25 families, 3.42 MB
 

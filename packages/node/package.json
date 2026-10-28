@@ -16,10 +16,10 @@
     "./*": "./src/*.ts"
   },
   "dependencies": {
-    "@elabora/core": "0.1.0",
-    "@elabora/fonts": "0.1.0",
-    "@elabora/format": "0.1.0",
-    "@elabora/player": "0.1.0",
+    "@elabora/core": "workspace:*",
+    "@elabora/fonts": "workspace:*",
+    "@elabora/format": "workspace:*",
+    "@elabora/player": "workspace:*",
     "d3": "7.9.0",
     "esbuild": "0.28.2",
     "three": "0.186.0"

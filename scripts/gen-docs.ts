@@ -17,7 +17,7 @@ import { listAgentTools } from '@elabora/cli/agent-tools';
 const prose = (value: unknown) => String(value ?? '').split(/(`[^`]*`)/).map((part, i) => (i % 2 ? part : part.replace(/</g, '&lt;').replace(/>/g, '&gt;'))).join('');
 const cell = (value: unknown) => prose(value).replace(/\|/g, '\\|').replace(/\n/g, ' ');
 const groups = [['E_', 'Errors (block the build)'], ['W_', 'Warnings'], ['I_', 'Information']];
-let d = '# Diagnostic codes\n\nGenerated from `packages/core/src/diagnostics/codes.ts` by `npm run docs`. Codes are stable: agents can branch on them. `rule` names a pedagogical guardrail (A1…I1) or a line of the LMS delivery checklist (LMS-n): see [Rules](#rules). An error under a rule stops a build but not a preview (`elabora preview`, the app\'s Aperçu): the course runs without what the rule asks, and the preview shows it as it is.\n';
+let d = '# Diagnostic codes\n\nGenerated from `packages/core/src/diagnostics/codes.ts` by `pnpm run docs`. Codes are stable: agents can branch on them. `rule` names a pedagogical guardrail (A1…I1) or a line of the LMS delivery checklist (LMS-n): see [Rules](#rules). An error under a rule stops a build but not a preview (`elabora preview`, the app\'s Aperçu): the course runs without what the rule asks, and the preview shows it as it is.\n';
 for (const [prefix, title] of groups) {
   d += `\n## ${title}\n\n| Code | Title | Fix | Rule |\n|---|---|---|---|\n`;
   for (const [code, c] of Object.entries<CodeInfo>(CODES).filter(([k]) => k.startsWith(prefix))) d += `| \`${code}\` | ${cell(c.title)} | ${cell(c.fix)} | ${c.rule || ''} |\n`;
@@ -63,14 +63,14 @@ for (const t of LAYOUT_TYPES) {
 }
 fs.writeFileSync('docs/blocks.md', b);
 // The command line, as its help prints it, one section per group of commands.
-let c = '# Command line\n\nGenerated from the help of `elabora` by `npm run docs`: `elabora help` prints the same, and `elabora <command> --help` one group. `[dir]` is a course folder (the current one by default). Run it from a checkout with `node bin/elabora.js`, or through the desktop app\'s bundled command.\n';
+let c = '# Command line\n\nGenerated from the help of `elabora` by `pnpm run docs`: `elabora help` prints the same, and `elabora <command> --help` one group. `[dir]` is a course folder (the current one by default). Run it from a checkout with `node bin/elabora.js`, or through the desktop app\'s bundled command.\n';
 for (const group of GROUPS) c += `\n## ${prose(group.title)}\n\n\`\`\`text\n${group.help.replace(/^  /gm, '')}\n\`\`\`\n`;
 fs.writeFileSync('docs/cli.md', c);
 
 // The agent operations (MCP tools, and elabora tools call): description and arguments.
 const typeOf = (v: JsonSchema): string => v.enum ? v.enum.map((e) => JSON.stringify(e)).join(' \\| ') : v.type === 'array' ? `${v.items && typeof v.items === 'object' && !Array.isArray(v.items) ? typeOf(v.items as JsonSchema) : 'any'}[]` : Array.isArray(v.type) ? v.type.join(' \\| ') : v.type || (v.oneOf || v.anyOf ? 'one of several' : 'object');
 const tools = listAgentTools();
-let m = `# Agent tools\n\nGenerated from the agent operation catalogue (\`packages/cli/src/agent-tools.ts\`) by \`npm run docs\`. The same ${tools.length} operations are MCP tools (\`elabora mcp <course>\`) and shell calls (\`elabora tools call <tool> <course> --args '<json>'\`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.\n`;
+let m = `# Agent tools\n\nGenerated from the agent operation catalogue (\`packages/cli/src/agent-tools.ts\`) by \`pnpm run docs\`. The same ${tools.length} operations are MCP tools (\`elabora mcp <course>\`) and shell calls (\`elabora tools call <tool> <course> --args '<json>'\`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.\n`;
 for (const [title, read] of [['Reading', true], ['Writing', false]] as const) {
   m += `\n## ${title}\n`;
   for (const tool of tools.filter((t) => t.annotations.readOnlyHint === read)) {
@@ -89,7 +89,7 @@ for (const [title, read] of [['Reading', true], ['Writing', false]] as const) {
 fs.writeFileSync('docs/mcp-tools.md', m);
 
 // The decision log's index, from the decisions themselves (docs/decisions/Dnn.md, « # Dn. Title (date) »).
-let x = '# Decisions\n\nGenerated from `docs/decisions/` by `npm run docs`. One file per decision: what was decided, why, and what would make us revisit it (*Revisit if*). Code, docs and changelog cite them by number (D24); a decision replaced or revised says by which one.\n\n| | Decision | Date |\n|---|---|---|\n';
+let x = '# Decisions\n\nGenerated from `docs/decisions/` by `pnpm run docs`. One file per decision: what was decided, why, and what would make us revisit it (*Revisit if*). Code, docs and changelog cite them by number (D24); a decision replaced or revised says by which one.\n\n| | Decision | Date |\n|---|---|---|\n';
 for (const file of fs.readdirSync('docs/decisions').filter((f) => /^D\d+\.md$/.test(f)).sort()) {
   const head = /^# (D\d+)\. (.*?)(?: \(([^()]*\d{4}[^()]*)\))?$/m.exec(fs.readFileSync(path.join('docs/decisions', file), 'utf8'));
   if (!head) throw new Error(`docs/decisions/${file} does not start with « # Dn. Title (date) »`);

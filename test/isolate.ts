@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-// The tests' global setup (npm test, test:e2e, test:matrix): the local data of the computer and
+// The tests' global setup (pnpm test, test:e2e, test:matrix): the local data of the computer and
 // every model folder in it are replaced by folders of this run, so that no test reads, writes,
 // downloads into or removes the author's own (the settings and library, the local voices', the word
 // aligners', the transcriber's; D38, D46), unless the one who runs them names them (to try the real

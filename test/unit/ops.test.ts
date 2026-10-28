@@ -246,7 +246,7 @@ function mutate(rng: Rng, gen: Generator, docs: Map<string, Json>, steps: number
 
 // ── properties on random documents ───────────────────────────────────
 
-// ELABORA_SEEDS=50 npm test runs the properties on 50 times more seeds.
+// ELABORA_SEEDS=50 pnpm test runs the properties on 50 times more seeds.
 const SEEDS = Math.max(1, Number(process.env.ELABORA_SEEDS) || 1);
 
 // Which shapes of operations a property produced, so that it can show it covered them all.
