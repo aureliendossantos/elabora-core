@@ -38,7 +38,7 @@ const LONG = 20;
 export async function addSound(dir: string, request: AddSoundRequest, options?: EditOptions): Promise<EditResult & AddSoundResult & { source: string; license: string; duration: number }> {
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-sound-'));
   try {
-    const { file, sidecar, id } = await source(request, work);
+    const { file, sidecar, id } = await source(request, work, courseLanguage(dir));
     const licence = classifyLicence(sidecar.license);
     if (!licence.ok) throw new CommandError(`${request.from} is under ${licence.name || 'a licence not given'}: a course may ship CC0, public-domain, CC BY or CC BY-SA sounds, the author's own (--license own) or generated ones.`);
     const tools = await findMediaTools();
@@ -53,9 +53,18 @@ export async function addSound(dir: string, request: AddSoundRequest, options?: 
     if (!keep) {
       const length = request.trim ? request.trim.end - request.trim.start : info.duration ?? 0;
       if (loops || length > LONG) extension = '.m4a';
-      output = path.join(work, `out${extension}`);
       const filters = [request.trim ? `atrim=start=${request.trim.start}:end=${request.trim.end},asetpts=PTS-STARTPTS` : null, request.fade ? `afade=t=out:st=${Math.max(0, length - request.fade)}:d=${request.fade}` : null].filter(Boolean);
-      await run(tools.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-i', file, '-vn', '-map_metadata', '-1', ...(filters.length ? ['-af', filters.join(',')] : []), ...(extension === '.flac' ? ['-c:a', 'flac'] : ['-c:a', 'aac', '-b:a', '256k', '-movflags', '+faststart']), '-fflags', '+bitexact', '-flags:a', '+bitexact', output]);
+      const encode = (to: string) => run(tools.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-i', file, '-vn', '-map_metadata', '-1', ...(filters.length ? ['-af', filters.join(',')] : []), ...(to === '.flac' ? ['-c:a', 'flac'] : ['-c:a', 'aac', '-b:a', '256k', '-movflags', '+faststart']), '-fflags', '+bitexact', '-flags:a', '+bitexact', path.join(work, `out${to}`)]);
+      try {
+        await encode(extension);
+      } catch (error) {
+        // An ffmpeg built without the FLAC encoder (a reduced build: the app's before its profile
+        // elabora-2): the master is AAC at 256 kb/s, as an ambience's, rather than no sound at all.
+        if (extension !== '.flac' || !/Unknown encoder 'flac'|Encoder not found/i.test(String((error as { stderr?: unknown }).stderr ?? (error as Error).message))) throw error;
+        extension = '.m4a';
+        await encode(extension);
+      }
+      output = path.join(work, `out${extension}`);
       if (request.trim) modified.push('trimmed');
       if (request.fade) modified.push('faded');
       if (!request.trim && !request.fade) modified.push('converted');
@@ -82,13 +91,14 @@ export function courseLanguage(dir: string): string {
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-async function source(request: AddSoundRequest, work: string): Promise<{ file: string; sidecar: Sound; id: string }> {
+// language: the course's; a library sound is titled in it (credits and the app name it so).
+async function source(request: AddSoundRequest, work: string, language: string): Promise<{ file: string; sidecar: Sound; id: string }> {
   const given = (sidecar: Sound): Sound => ({ ...sidecar, ...(request.title ? { title: request.title } : {}), ...(request.caption ? { caption: { ...sidecar.caption, ...request.caption } } : {}) });
   const library = librarySounds().find((sound) => sound.id === request.from);
   if (library) {
     return {
       file: libraryFile(library), id: library.id,
-      sidecar: given({ title: library.title.en, source: 'library', sourceId: library.id, url: library.url, author: library.author, license: library.license, licenseUrl: library.licenseUrl, ...(library.credit ? { credit: library.credit } : {}), checked: library.checked, ...(library.kind === 'ambience' ? { loop: true } : {}), ...(library.caption ? { caption: library.caption } : {}) })
+      sidecar: given({ title: (language.split('-')[0] === 'fr' ? library.title.fr : null) || library.title.en, source: 'library', sourceId: library.id, url: library.url, author: library.author, license: library.license, licenseUrl: library.licenseUrl, ...(library.credit ? { credit: library.credit } : {}), checked: library.checked, ...(library.kind === 'ambience' ? { loop: true } : {}), ...(library.caption ? { caption: library.caption } : {}) })
     };
   }
   if (request.from.startsWith('openverse:')) {

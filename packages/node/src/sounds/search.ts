@@ -4,7 +4,7 @@ import { libraryFile, librarySounds, searchLibrary } from './library.ts';
 import type { LibrarySound } from './library.ts';
 import { openverseSound, searchOpenverse } from './openverse.ts';
 import type { OpenverseSound } from './openverse.ts';
-import { ELABORA_VERSION } from '../bundles.ts';
+import { ELABORA_VERSION, playerSoundFile } from '../bundles.ts';
 import type { SoundFound, SoundSearchParams } from './types.ts';
 
 // The sounds one may add, as a sound browser lists them (docs/decisions.md D67): the library's
@@ -40,9 +40,13 @@ export function fromOpenverse(sound: OpenverseSound): SoundFound {
 
 const TYPES: Record<string, string> = { '.flac': 'audio/flac', '.m4a': 'audio/mp4', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.opus': 'audio/ogg', '.oga': 'audio/ogg', '.wav': 'audio/wav', '.webm': 'audio/webm' };
 
-// A sound's bytes to hear it before adding it: the library's file, or Openverse's (an MP3 or Ogg
-// preview for Freesound, the original for Commons). Nothing is kept.
+// A sound's bytes to hear it before adding it: the library's file, Openverse's (an MP3 or Ogg preview
+// for Freesound, the original for Commons), or the player's own interface sound (elabora:<role>).
+// Nothing is kept.
+const PREVIEW_MAX = 40 * 1024 * 1024;
 export async function soundPreview(from: string, { signal }: { signal?: AbortSignal } = {}): Promise<{ audio: Uint8Array; type: string }> {
+  const role = /^elabora:([a-z]+)$/.exec(from)?.[1];
+  if (role) return { audio: new Uint8Array(playerSoundFile(`elabora/sounds/${role}.m4a`)), type: 'audio/mp4' };
   const library = librarySounds().find((sound) => sound.id === from);
   if (library) {
     const file = libraryFile(library);
@@ -52,6 +56,7 @@ export async function soundPreview(from: string, { signal }: { signal?: AbortSig
   const found = await openverseSound(from, { signal });
   const response = await fetch(found.file, { headers: { 'user-agent': `Elabora/${ELABORA_VERSION} (+https://elabora.studio)` }, signal: signal ?? AbortSignal.timeout(60000) });
   if (!response.ok) throw new Error(`The sound could not be downloaded from ${new URL(found.file).host} (${response.status}).`);
+  if (Number(response.headers.get('content-length') ?? 0) > PREVIEW_MAX) throw new Error(`The sound on ${new URL(found.file).host} is too large to hear here: open its page.`);
   const type = response.headers.get('content-type')?.split(';')[0]?.trim() || TYPES[path.extname(new URL(found.file).pathname).toLowerCase()] || 'audio/mpeg';
   return { audio: new Uint8Array(await response.arrayBuffer()), type };
 }
