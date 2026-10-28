@@ -1,5 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { emptyState, encodeState, decodeState, worstCaseLength } from '@elabora/player/state-codec';
 import { readLock, assignKeys, buildStateModel } from '@elabora/core/compile/state-model';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
@@ -50,4 +52,15 @@ test('the worst case grows with persisted string variables', () => {
   p.course.variables.push({ id: 'texte', type: 'string', default: '', maxLength: 100 });
   const k2 = assignKeys(p, readLock(p), { dryRun: true }).keys;
   assert.ok(worstCaseLength(buildStateModel(p, k2)) >= base + 200);
+});
+
+test('the examples\' locks are up to date: a build in an example writes nothing (its keys and component versions are committed)', async () => {
+  const { syncComponentVersions } = await import('@elabora/core/compile/state-model');
+  const examples = path.join(import.meta.dirname, '../../examples');
+  for (const name of fs.readdirSync(examples).filter((entry) => fs.existsSync(path.join(examples, entry, 'elabora.lock.json')))) {
+    const project = loadProjectFromDir(path.join(examples, name));
+    const lock = readLock(project);
+    const { added } = assignKeys(project, lock);
+    assert.ok(!added && !syncComponentVersions(project, lock), `${name}: elabora build would change its elabora.lock.json; build it once and commit the lock`);
+  }
 });

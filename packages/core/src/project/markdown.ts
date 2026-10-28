@@ -34,6 +34,8 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
       L.push(`- plan ${plan?.id} · ${describePlanVersions(planVersionsView(project))}`);
       const variables = objectsIn(course.variables);
       if (variables.length) L.push(`- variables: ${variables.map((v) => `\`${v.id}\` ${v.type}=${JSON.stringify(v.default)}`).join(', ')}`);
+      // The free objects, with the map to read before changing one; the docs' search for a question.
+      if (project.objects.size) L.push(`- free objects: ${[...project.objects.keys()].map((id) => `\`${id}\``).join(', ')} — before changing one, \`elabora object map . <id>\` (its sections, functions and lines); a question about Elabora: \`elabora docs --search <words>\``);
       L.push('');
     }
     L.push(agent ? '## Plan objectives' : '## Objectifs / Objectives', '');
@@ -192,7 +194,8 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
             }
             case 'free-object': {
               const m = project.objects.get(textOf(p.object))?.manifest;
-              L.push(`${indent}- ${tag}free object ${agent ? `\`${p.object}\`` : `« ${p.title} »`}${m ? ` — ${m.pedagogicalRole}, serves ${listOf(m.planRefs?.objectives).join(', ')}` : ''}`);
+              // For agents, where to read it without reading it all (its sections, functions and lines).
+              L.push(`${indent}- ${tag}free object ${agent ? `\`${p.object}\`` : `« ${p.title} »`}${m ? ` — ${m.pedagogicalRole}, serves ${listOf(m.planRefs?.objectives).join(', ')}` : ''}${agent && m ? ` — elabora object map . ${String(p.object)}` : ''}`);
               if (agent && p.props && Object.keys(p.props).length) L.push(`${indent}  - props: ${JSON.stringify(p.props)}`);
               if (!agent) L.push(`${indent}  - Version texte : ${short(p.textAlternative, 600)}`);
               break;

@@ -363,7 +363,11 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-main { overflow-x: clip; }
 /* The page's side margin, as #t-main pads the default column. */
 :root { --t-gutter: 1.25rem; }
-@media (max-width: 760px) { :root { --t-gutter: 0.875rem; } }
+/* The veil under text over a picture when the theme sets none (--t-scrim): lighter at the top. On a
+   phone the text is smaller (it needs 4.5:1, not the 3:1 of large text) and its lines climb into the
+   light part: an evener, darker veil. */
+:root { --t-scrim-default: linear-gradient(to top, rgb(10 13 18 / .78), rgb(10 13 18 / .52) 55%, rgb(10 13 18 / .46)); }
+@media (max-width: 760px) { :root { --t-gutter: 0.875rem; --t-scrim-default: linear-gradient(to top, rgb(10 13 18 / .8), rgb(10 13 18 / .64)); } }
 .t-w-bleed { --t-bleed-gutter: max(var(--t-gutter), calc((100% - var(--t-content-width, 47.5rem)) / 2)); }
 :is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block.t-w-bleed { max-width: none; width: auto; justify-self: stretch; margin-inline: calc((100% - var(--t-page-width, 100vw)) / 2); }
 .t-slot > .t-block.t-w-bleed { margin-inline: 0; }
@@ -410,7 +414,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-statement-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 0; }
 .t-statement-scrim { display: grid; align-content: center; min-height: var(--t-band-medium); padding: clamp(2.5rem, 6vw, 4.5rem) var(--t-bleed-gutter, 1.25rem); }
 .t-statement--image:has(> .t-statement-media) { color: var(--t-on-scrim, #fff); }
-.t-statement--image:has(> .t-statement-media) .t-statement-scrim { background: var(--t-scrim, linear-gradient(to top, rgb(10 13 18 / .78), rgb(10 13 18 / .52) 55%, rgb(10 13 18 / .46))); }
+.t-statement--image:has(> .t-statement-media) .t-statement-scrim { background: var(--t-scrim, var(--t-scrim-default)); }
 /* Text over a picture keeps the scrim's colour whatever the theme says of its headings and text
    (important in elabora.base outweighs the later layers): a theme changes it with --t-on-scrim. */
 .t-statement--image :is(.t-statement-text, .t-statement-text *, .t-statement-author, .t-statement-role, .t-genmark) { color: inherit !important; }
@@ -456,7 +460,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-image--over > :is(.t-image-frame, .t-image-overlay) { grid-area: 1 / 1; }
 .t-image--over .t-image-frame { position: relative; z-index: -1; }
 .t-image--over .t-image-frame img { position: absolute; inset: 0; }
-.t-image-overlay { display: grid; align-content: end; min-height: var(--t-band); padding: clamp(2rem, 5vw, 3.5rem) var(--t-bleed-gutter, 1.25rem); background: var(--t-scrim, linear-gradient(to top, rgb(10 13 18 / .78), rgb(10 13 18 / .52) 55%, rgb(10 13 18 / .46))); }
+.t-image-overlay { display: grid; align-content: end; min-height: var(--t-band); padding: clamp(2rem, 5vw, 3.5rem) var(--t-bleed-gutter, 1.25rem); background: var(--t-scrim, var(--t-scrim-default)); }
 .t-image--over .t-image-text { max-width: 36rem; }
 .t-image--over .t-image-overlay :is(.t-image-title, .t-text, .t-text *) { color: inherit !important; }
 .t-image--over .t-image-title { font-size: clamp(1.5rem, 1.15rem + 1.2vw, 2.25rem); line-height: 1.15; }
@@ -689,7 +693,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-head:has(> .t-opening-media) { color: var(--t-on-scrim, #fff); }
 .t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-head:has(> .t-opening-media) .t-opening-copy { --t-opening-fade: clamp(5rem, 12vw, 9rem); padding-top: var(--t-opening-fade); }
 /* The scrim under the text fades in above it: no edge across the picture. */
-.t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-head:has(> .t-opening-media) .t-opening-copy::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--t-scrim, linear-gradient(to top, rgb(10 13 18 / .78), rgb(10 13 18 / .52) 55%, rgb(10 13 18 / .46))); -webkit-mask: linear-gradient(transparent, #000 var(--t-opening-fade)); mask: linear-gradient(transparent, #000 var(--t-opening-fade)); }
+.t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-head:has(> .t-opening-media) .t-opening-copy::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--t-scrim, var(--t-scrim-default)); -webkit-mask: linear-gradient(transparent, #000 var(--t-opening-fade)); mask: linear-gradient(transparent, #000 var(--t-opening-fade)); }
 .t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-copy :is(.t-opening-eyebrow, .t-opening-eyebrow *, .t-screen-title, .t-opening-lead, .t-opening-lead *, .t-opening-meta) { color: inherit !important; }
 .t-opening--cover .t-opening-copy { padding-bottom: clamp(2.5rem, 7vh, 4.5rem); }
 /* split: the head beside the picture; the picture above it in narrow windows. */

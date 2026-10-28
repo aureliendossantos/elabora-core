@@ -1,6 +1,6 @@
 {
   "format": "elabora-lock/1",
-  "next": 24,
+  "next": 30,
   "keys": {
     "screen:world": "0",
     "screen:workshop": "1",
@@ -25,13 +25,17 @@
     "quiz:workshop-plot-check": "k",
     "visit:gallery-callback#north": "l",
     "visit:gallery-callback#names": "m",
-    "visit:gallery-callback#italy": "n"
+    "visit:gallery-callback#italy": "n",
+    "visit:workshop-stages#circle": "o",
+    "visit:workshop-stages#rhumbs": "p",
+    "visit:workshop-stages#harbours": "q",
+    "visit:workshop-stages#coasts": "r",
+    "visit:workshop-stages#names": "s",
+    "visit:workshop-stages#finish": "t"
   },
   "components": {
     "chart-notes": "2.0.0",
-    "diptych": "1.1.0",
     "folio": "1.2.0",
-    "gloss": "1.0.0",
     "layered-figure": "2.0.0",
     "wind-rose": "1.0.0",
     "workshop": "2.0.0"

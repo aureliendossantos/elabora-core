@@ -1,6 +1,6 @@
 {
   "format": "elabora-lock/1",
-  "next": 26,
+  "next": 31,
   "keys": {
     "screen:accueil": "0",
     "screen:chemin": "1",
@@ -27,7 +27,12 @@
     "choice:appel-marc#commutateur.c": "m",
     "ending:appel-marc#maitrise": "n",
     "ending:appel-marc#en-route": "o",
-    "ending:appel-marc#a-revoir": "p"
+    "ending:appel-marc#a-revoir": "p",
+    "visit:chemin-roles#poste": "q",
+    "visit:chemin-roles#commutateur": "r",
+    "visit:chemin-roles#routeur": "s",
+    "visit:chemin-roles#pare-feu": "t",
+    "visit:chemin-roles#serveur": "u"
   },
   "components": {
     "network-path": "1.0.0",
