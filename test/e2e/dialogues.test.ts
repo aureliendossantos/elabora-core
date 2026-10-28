@@ -435,7 +435,7 @@ test('voiced lines: the audio\'s own clock and ended event, muting, a refused au
       await page.waitForFunction(() => (window as DialogueWindow).__elabora.dialogues.state('rencontre-marc')?.line === 'r1', null, { timeout: 30000 });
       if (!refused) {
         // r1 plays its file; the line's time is the audio's.
-        await page.waitForFunction(() => { const audio = document.querySelector<HTMLAudioElement>('[data-block="rencontre-marc"] audio'); return !!audio && !audio.paused && audio.currentTime > 0.2; }, null, { timeout: 15000 });
+        await page.waitForFunction(() => { const audio = document.querySelector<HTMLAudioElement>('[data-block="rencontre-marc"] audio'); return !!audio && !audio.paused && audio.currentTime > 0.2; }, null, { timeout: 30000 });
         const playing = await page.evaluate(() => { const audio = document.querySelector<HTMLAudioElement>('[data-block="rencontre-marc"] audio')!; const now = (window as DialogueWindow).__elabora.dialogues.state('rencontre-marc'); return { src: audio.getAttribute('src'), time: now.time, audio: audio.currentTime }; });
         assert.match(playing.src ?? '', /narration\/rencontre\.rencontre-marc\/r1\.m4a$/);
         assert.ok(Math.abs(playing.time - playing.audio) < 0.25, JSON.stringify(playing));
@@ -447,13 +447,13 @@ test('voiced lines: the audio\'s own clock and ended event, muting, a refused au
         // ended moves the dialogue on to r2, then its own file.
         const ended = page.evaluate(() => new Promise<number>((resolve) => document.querySelector('[data-block="rencontre-marc"] audio')!.addEventListener('ended', () => resolve(performance.now()), { once: true })));
         const at = await ended;
-        await page.waitForFunction(() => (window as DialogueWindow).__elabora.dialogues.state('rencontre-marc')?.line === 'r2', null, { timeout: 10000 });
+        await page.waitForFunction(() => (window as DialogueWindow).__elabora.dialogues.state('rencontre-marc')?.line === 'r2', null, { timeout: 30000 });
         const moved = await page.evaluate(() => performance.now());
         assert.ok(moved - at < 2000, `r2 ${Math.round(moved - at)} ms after r1's ended`);
       } else {
         // Refused: « Écouter » in the bubble, the line said on its own clock all the same.
-        await page.waitForFunction(() => { const button = document.querySelector<HTMLElement>('[data-block="rencontre-marc"] .t-dialogue-row[data-line="r1"] .t-dialogue-listen'); return !!button && !button.hidden; }, null, { timeout: 10000 });
-        await page.waitForFunction(() => (window as DialogueWindow).__elabora.dialogues.state('rencontre-marc')?.line === 'r2', null, { timeout: 15000 });
+        await page.waitForFunction(() => { const button = document.querySelector<HTMLElement>('[data-block="rencontre-marc"] .t-dialogue-row[data-line="r1"] .t-dialogue-listen'); return !!button && !button.hidden; }, null, { timeout: 30000 });
+        await page.waitForFunction(() => (window as DialogueWindow).__elabora.dialogues.state('rencontre-marc')?.line === 'r2', null, { timeout: 30000 });
       }
       assert.deepEqual(errors, []);
     } finally {

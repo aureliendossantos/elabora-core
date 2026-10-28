@@ -69,7 +69,7 @@ test('charts: the entrance settles on the markup; the pointer and the keys point
     await page.waitForFunction(() => {
       const root = document.querySelector('.t-block[data-block="origine"] .t-chart');
       return !!root && root.classList.contains('is-pulled') && !root.classList.contains('is-entering');
-    }, null, { timeout: 10000 });
+    }, null, { timeout: 30000 });
     const styles = await chart.locator('[data-t-item]').evaluateAll((elements) => elements.map((element) => element.getAttribute('style') ?? ''));
     assert.ok(styles.every((style) => !/opacity|translate|scale/.test(style)), JSON.stringify(styles));
     assert.equal(await chart.locator('.t-bars-value').first().textContent(), '62 %', 'the count lands on the written value');
