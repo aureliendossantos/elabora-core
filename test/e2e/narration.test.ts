@@ -336,28 +336,34 @@ test('the real clock: the timeline follows the audio and stops at the end of the
   }, { virtual: false, refuse: true });
 });
 
-test('the real clock: a track that runs out a little before the timeline\'s end ends the screen there', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
+test('an AAC track ending before the timeline completes the screen', { skip: NO_FFMPEG, timeout: 120000 }, async (t) => {
   // Free navigation: straight to the screen.
   const dir = course();
   const data = readJSON(dir, 'course.json');
   data.navigation = { mode: 'free', lockUntilComplete: false };
+  data.narration = { ...data.narration, seek: 'free' };
   writeJSON(dir, 'course.json', data);
   await player(dir, async ({ page }) => {
     if (!(await playsMedia(page, 'audio/mp4; codecs="mp4a.40.2"'))) return t.skip(NO_MEDIA_CODECS);
-    await page.evaluate(() => (window as PlayerWindow).__elabora.go('chemin'));
-    await page.waitForFunction(() => (window as PlayerWindow).__elabora.screen === 'chemin');
-    const start = page.locator('.t-timeline-start');
-    if (await start.count()) await start.click();
-    await page.evaluate(() => (window as PlayerWindow).__elabora.timeline.play());
-    // In the last step, the audio stops 0.3 s short of the timeline's end and says it has ended, as some
-    // browsers decode an AAC track: the screen still ends, and moves on (advance next-screen).
-    await page.waitForFunction(() => { const s = (window as PlayerWindow).__elabora.timeline.state(); return !!s && s.step === 2 && s.time > s.duration - 0.8; }, null, { timeout: 8000 });
-    await page.evaluate(() => {
+    await page.evaluate(() => { const api = (window as PlayerWindow).__elabora; api.go('chemin'); api.timeline.pause(); });
+    await page.waitForFunction(() => (document.querySelector<HTMLAudioElement>('audio.t-timeline-audio')?.readyState ?? 0) >= 1);
+    // Seek the real AAC into its last segment, then deliver the decoder's early ended event in
+    // the same browser task. No short playback window can pass while Node is inspecting it.
+    const before = await page.evaluate(async () => {
+      const api = (window as PlayerWindow).__elabora;
       const audio = document.querySelector<HTMLAudioElement>('audio.t-timeline-audio')!;
+      const sought = new Promise<void>(resolve => audio.addEventListener('seeked', () => resolve(), { once: true }));
+      api.timeline.seek(api.timeline.state()!.duration - 0.3);
       audio.pause();
-      audio.currentTime = ((window as PlayerWindow).__elabora.timeline.state()?.duration ?? 0) - 0.3;
+      await sought;
+      const state = api.timeline.state()!;
+      api.timeline.play();
+      audio.pause();
       audio.dispatchEvent(new Event('ended'));
+      return { step: state.step, time: state.time, duration: state.duration };
     });
+    assert.equal(before.step, 2);
+    assert.ok(Math.abs(before.time - (before.duration - 0.3)) < 0.001, JSON.stringify(before));
     await page.waitForFunction(() => (window as PlayerWindow).__elabora.screen === 'premier-reflexe', null, { timeout: 5000 });
   }, { virtual: false });
 });
