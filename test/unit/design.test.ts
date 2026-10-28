@@ -167,6 +167,19 @@ test('theme: stylesheet rules, fonts and custom tokens', async () => {
 });
 
 // ── Cascade layers ──
+test('player.css: no pseudo-element inside :is(), :where(), :not() or :has(), which cannot hold one (the rule would miss it: a backdrop layer\'s ::after kept its fade under reduced motion)', () => {
+  const css = fs.readFileSync(path.join(ROOT, 'packages/player/src/player.css'), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const found: string[] = [];
+  for (const match of css.matchAll(/:(?:is|where|not|has)\(/g)) {
+    let depth = 1;
+    let end = match.index + match[0].length;
+    while (depth && end < css.length) { if (css[end] === '(') depth++; else if (css[end] === ')') depth--; end++; }
+    const inside = css.slice(match.index + match[0].length, end - 1);
+    if (/::[a-z-]+/.test(inside)) found.push(css.slice(match.index, end));
+  }
+  assert.deepEqual(found, []);
+});
+
 test('cascade layers: the course\'s order first in every stylesheet that names its layers, the player\'s layer alone first in elabora/player.css', async () => {
   const LEGACY = '@layer elabora.base, elabora.components, elabora.theme, elabora.overrides;';
   const CURRENT = '@layer elabora.base, elabora.theme, elabora.components, elabora.overrides;';

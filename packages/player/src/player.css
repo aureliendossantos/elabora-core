@@ -1179,13 +1179,14 @@ button.t-timeline-line:disabled { color: var(--t-muted); }
 /* Less motion asked: what the course's authors wrote (themes, components, a block's own CSS) is stilled
    entirely, since the player cannot tell what in it moves; the player's own pieces keep their fades
    (--t-move). A step's revealed blocks keep theirs too: with --t-move at 0 it moves nothing; so do the
-   faces of a flip card, whose turn becomes a cross-fade (D63). */
+   faces of a flip card, whose turn becomes a cross-fade (D63). Pseudo-elements are named outside
+   :is(), which cannot hold them (a layer's ::after would keep its fade). */
 @media (prefers-reduced-motion: reduce) {
-  :is(#t-main, dialog.t-layer, .t-backdrop) :is(*, *::before, *::after) { animation: none !important; }
-  :is(#t-main, dialog.t-layer, .t-backdrop) :is(*:not(.t-block[data-t-revealed], [data-t-card] [data-t-face]), *::before, *::after) { transition: none !important; }
+  :is(#t-main, dialog.t-layer, .t-backdrop) *, :is(#t-main, dialog.t-layer, .t-backdrop) ::before, :is(#t-main, dialog.t-layer, .t-backdrop) ::after { animation: none !important; }
+  :is(#t-main, dialog.t-layer, .t-backdrop) *:not(.t-block[data-t-revealed], [data-t-card] [data-t-face]), :is(#t-main, dialog.t-layer, .t-backdrop) ::before, :is(#t-main, dialog.t-layer, .t-backdrop) ::after { transition: none !important; }
   /* The backdrop itself and the bars change with a variant at once too (a capture never takes them
      halfway). */
-  :is(.t-backdrop, .t-bar), .t-bar :is(*, *::before, *::after) { transition: none !important; }
+  :is(.t-backdrop, .t-bar), :is(.t-backdrop, .t-bar)::before, :is(.t-backdrop, .t-bar)::after, .t-bar *, .t-bar ::before, .t-bar ::after { transition: none !important; }
 }
 
 /* ── Primitives of any template (D63; docs/components.md §3) ──────────────────────────────────
