@@ -91,7 +91,8 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
   }
 
   // ── The end ──
-  function showEnd() {
+  // live: the dialogue reached its end as it played (not shown at once, back on its screen).
+  function showEnd(live = true) {
     if (!host().slides()) room.style.minHeight = '';
     const run = state.run;
     const result = scoredResult(run);
@@ -105,7 +106,7 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
       restart: canRestart(run) && !(data.debrief && !overlaidDebrief()) ? startOver : null,
       debrief: data.debrief && overlaidDebrief() ? () => setDebrief(true) : null
     })]);
-    renderDebrief();
+    renderDebrief(false, live);
   }
   function startOver() {
     if (!canRestart(state.run)) return;
@@ -136,7 +137,7 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     renderDebrief(open);
     if (was && !open) parts.signal('debrief-close');
   }
-  function renderDebrief(asked = false) {
+  function renderDebrief(asked = false, live = true) {
     const target = debriefHost;
     if (!data.debrief) return;
     if (state.phase !== 'ended') { closeDebrief(); if (target) { target.replaceChildren(); target.hidden = true; } return; }
@@ -159,7 +160,7 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     if (root.hasAttribute('data-t-debrief-open')) return;
     root.setAttribute('data-t-debrief-open', '');
     modal.show({ keep: [target], close: () => setDebrief(false), focus: target, asked });
-    parts.signal('debrief-open');
+    if (live) parts.signal('debrief-open');
   }
   function closeDebrief() {
     if (!root.hasAttribute('data-t-debrief-open')) return;
@@ -210,8 +211,9 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     for (const node of data.nodes) {
       const offer = node.options.filter((option) => !option.fallback).map((option) => ({ option, enabled: true }));
       if (!offer.length) continue;
-      // Each option with the longest of its marks (« déjà exploré », « votre choix précédent »).
-      for (const previous of data.revisit !== 'none' ? [false, true] : [false]) sets.push(optionsContent(thread, node.prompt, offer, { final: !!node.final, explored: () => data.revisit !== 'none', previous: () => previous, onChoose: () => {} }).nodes);
+      // Each option with the longer of its marks (« déjà exploré », « votre choix précédent »).
+      const previous = data.revisit !== 'none' && labels.dialoguePreviousChoice.length >= labels.dialogueExplored.length;
+      sets.push(optionsContent(thread, node.prompt, offer, { final: !!node.final, explored: () => data.revisit !== 'none', previous: () => previous, onChoose: () => {} }).nodes);
     }
     sets.push([endControls(thread, { found: 1, total: Math.max(1, data.endings.length), back: data.revisit !== 'none' ? () => {} : null, restart: data.revisit !== 'none' ? () => {} : null, debrief: data.debrief ? () => {} : null })]);
     if (!still) sets.push([turnControls(thread, voiced, { pause: () => {}, mute: () => {}, next: () => {} }).root]);

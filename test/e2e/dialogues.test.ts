@@ -448,6 +448,13 @@ test('going back from the debrief: where the thread goes on, the choice taken ba
     assert.equal(restarted.filter((row) => row === 'm1').length, 1);
     assert.equal(await wrap.locator('.t-dialogue-marker').innerText(), 'Nouvel essai');
     assert.equal(await wrap.locator('.t-dialogue-debrief-card').count(), 0);
+    // Then back to a later choice: one marker, where the learner went back last.
+    for (const option of ['a', 'a', 'a']) { await until(page, 'appel-marc', 'choosing'); await choose(page, 'appel-marc', option); }
+    await until(page, 'appel-marc', 'ended');
+    await wrap.locator('.t-dialogue-change').nth(1).click();
+    await until(page, 'appel-marc', 'choosing');
+    await page.waitForTimeout(300);
+    assert.deepEqual(await wrap.locator('.t-dialogue-marker').allInnerTexts(), ['Vous reprenez ici']);
   });
   // The History of a scene: opened and closed.
   await player({}, async (page) => {

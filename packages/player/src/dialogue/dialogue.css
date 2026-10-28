@@ -328,7 +328,7 @@
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="note"] { padding: 0; justify-content: center; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-note { max-width: 74%; padding: 0.7em 1.15em 0.8em; font-size: 0.8em; border-radius: 1em; background: color-mix(in srgb, var(--t-surface) 94%, transparent); box-shadow: 0 1px 2px color-mix(in srgb, var(--t-text) 6%, transparent), 0 10px 22px color-mix(in srgb, var(--t-text) 9%, transparent); }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="retry"], .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="first-choice"] { padding-inline-start: 0; justify-content: center; align-items: center; }
-  .t-dialogue-root[data-t-look="scene"] .t-dialogue-link, .t-dialogue-root[data-t-look="scene"] .t-dialogue-first { background: color-mix(in srgb, var(--t-surface) 92%, transparent); }
+  .t-dialogue-root[data-t-look="scene"] .t-dialogue-log .t-dialogue-link, .t-dialogue-root[data-t-look="scene"] .t-dialogue-first { background: color-mix(in srgb, var(--t-surface) 92%, transparent); }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-first { padding: 0.25rem 0.75rem; border-radius: 999px; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="end"] { padding: 0.25rem 15%; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-end { padding: 0.35em 1em; border-radius: 999px; background: color-mix(in srgb, var(--t-surface) 92%, transparent); }

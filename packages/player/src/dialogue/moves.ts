@@ -50,7 +50,8 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
   const shown: { key: string; nodes: HTMLElement[] }[] = [];
   let retry: HTMLElement | null = null;
   let leavingCount = 0;
-  // « Vous reprenez ici »: where the path shown begins again, before the beat at.
+  // « Vous reprenez ici »: where the path shown begins again, before the beat at (one at a time: the
+  // last place the learner went back to).
   let marker: { node: HTMLElement; at: number } | null = null;
 
   const keyOf = (walk: DialogueWalk, index: number): string => {
@@ -80,7 +81,8 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
     // « Recommencer » says the whole dialogue again, from its first line.
     if (back !== 'restart') while (common < shown.length && common < state.beats.length && shown[common]?.key === keyOf(next.walk, common)) common++;
     // What extends the run shown (a choice) keeps every beat; anything else cuts back.
-    if (state.presented > common || shown.length > common) cut(common, live && back ? markerRow(thread, back === 'restart') : null);
+    const cutting = state.presented > common || shown.length > common;
+    if (cutting) cut(common, live && back ? markerRow(thread, back === 'restart') : null);
     state.previous = back === 'retry' || back === 'revisit' ? previousOf(before, next) : null;
     if (chosen) trigger('dialogue.chosen', { target: block.id, node: chosen.node, option: chosen.option });
     if (started) trigger('dialogue.started', { target: block.id });
@@ -88,7 +90,7 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
     syncTools();
     syncRetry();
     if (!live) { renderAll(); return; }
-    if (back) parts.signal('back', { kind: back });
+    if (back && cutting) parts.signal('back', { kind: back });
     state.phase = 'playing';
     room.play(keepRoom);
     // Gone bubbles take their fade before the new ones come.
@@ -100,7 +102,7 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
     lines.drop();
     cast.rest();
     const leaving = shown.slice(common).flatMap((entry) => entry?.nodes ?? []);
-    if (marker && marker.at >= common) { leaving.push(marker.node); marker = null; }
+    if (marker && (marker.at >= common || mark)) { leaving.push(marker.node); marker = null; }
     if (mark) {
       const first = leaving.find((node) => node.isConnected && node.parentElement === log);
       if (first) first.before(mark); else box.insert(mark);
@@ -128,6 +130,7 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
     for (const node of going) node.classList.add('is-leaving');
     setTimeout(() => {
       leavingCount--;
+      if (state.disposed) { for (const node of going) node.remove(); return; }
       // Tests' pages run no animation: what would glide stays where it is.
       const glide = !parts.host().virtual && !reduced();
       const kept = glide ? [...log.children].filter((row): row is HTMLElement => row instanceof HTMLElement && !going.includes(row) && !row.classList.contains('is-leaving')) : [];
@@ -146,7 +149,8 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
     if (getComputedStyle(log).overflowY === 'auto') {
       const bottom = mark.getBoundingClientRect().bottom - log.getBoundingClientRect().top + log.scrollTop;
       log.scrollTo?.({ top: Math.max(0, bottom - log.clientHeight), behavior: smooth ? 'smooth' : 'auto' });
-    } else mark.scrollIntoView?.({ block: 'center', behavior: smooth ? 'smooth' : 'auto' });
+    // A scroll page brings it into the window; a scene's page shows it once what leaves is gone.
+    } else if (!parts.host().slides() && !box.paging()) mark.scrollIntoView?.({ block: 'center', behavior: smooth ? 'smooth' : 'auto' });
   }
   // The choice taken back, when its decision waits again.
   function previousOf(before: DialogueRun, next: DialogueRun): ViewState['previous'] {
@@ -202,7 +206,7 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
     cast.speak(undefined, false, 'closed', null);
     box.repage();
     box.scrollLog(false);
-    if (state.run.walk.status === 'choosing') { state.phase = 'choosing'; room.showOptions(); } else { state.phase = 'ended'; room.showEnd(); }
+    if (state.run.walk.status === 'choosing') { state.phase = 'choosing'; room.showOptions(); } else { state.phase = 'ended'; room.showEnd(false); }
     syncTools();
     syncRetry();
   }
