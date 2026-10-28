@@ -4,14 +4,18 @@ import * as edit from '@elabora/node/edit';
 import { defineCommand, printDiagnostics, printJson } from './command.ts';
 import type { CommandGroup } from './command.ts';
 
-const HELP = `  object new [dir] <id> [--title <t>] [--objectives OBJ-1,OBJ-2]
+const HELP = `  object new [dir] <id> [--title <t>] [--objectives OBJ-1,OBJ-2 | --decoration]
+                                                      Scaffold a free object for plan objectives, or with --decoration a decoration
+                                                      of the course backdrop (theme.backdrop.object): a 2D canvas that follows the
+                                                      course (screen and section rank, direction), out of the player's bars
   object test [dir] <id> [--update-snapshots] [--browser chromium|electron|chrome|msedge|playwright|firefox|webkit] [--only <test name>] [--force]
                                                       Gates 2–6 of the free-object contract (result kept in object.gates.json);
                                                       an object unchanged since its last run here is not run again (--force runs it)
-  object replay [dir] <id> [--test <name>] [--block <id>] [--size 1600x900] [--out sheet.png] [--json]
+  object replay [dir] <id> [--test <name>] [--block <id> | --screen <id>] [--size 1600x900] [--out sheet.png] [--json]
                                                       Replay a test of object.tests.json in the built course, on the page that
                                                       places the object, in real time: a contact sheet of its snapshot steps,
-                                                      and its expectations checked`;
+                                                      and its expectations checked. The backdrop's decoration replays behind the
+                                                      course with its bars, from --screen (default: the first one)`;
 
 const USAGE = 'Usage: elabora object new|test|replay [dir] <id>';
 
@@ -20,12 +24,14 @@ const folderAndId = (positionals: readonly string[]) => (positionals.length >= 2
 
 const create = defineCommand({
   name: 'object new',
-  flags: { title: 'string', objectives: 'list' },
+  flags: { title: 'string', objectives: 'list', decoration: 'boolean' },
   run({ positionals, flags }) {
     const { dir, id } = folderAndId(positionals);
     if (!id) { console.error(USAGE); return 2; }
-    const result = edit.createObject(dir, { id, title: flags.title || id, objectives: flags.objectives || [] });
-    console.log(`Created ${result.files.join(', ')}.\nNext: write the manifest (props, state, events), then tests, then code. Place it with a free-object block.`);
+    const result = edit.createObject(dir, { id, title: flags.title || id, ...(flags.decoration ? { decoration: true } : { objectives: flags.objectives || [] }) });
+    console.log(flags.decoration
+      ? `Created ${result.files.join(', ')}.\nNext: set course.json theme.backdrop.object { "id": "${id}" }, shape the drawing in object.js, then elabora object test and elabora object replay . ${id} (behind the course).`
+      : `Created ${result.files.join(', ')}.\nNext: write the manifest (props, state, events), then tests, then code. Place it with a free-object block.`);
     return 0;
   }
 });
@@ -55,13 +61,13 @@ const test = defineCommand({
 
 const replay = defineCommand({
   name: 'object replay',
-  flags: { test: 'string', block: 'string', size: 'string', out: 'string', json: 'boolean' },
+  flags: { test: 'string', block: 'string', screen: 'string', size: 'string', out: 'string', json: 'boolean' },
   async run({ positionals, flags }) {
     const { dir, id } = folderAndId(positionals);
     if (!id) { console.error(USAGE); return 2; }
     const [width, height] = (flags.size || '1600x900').split('x').map(Number);
     const { replayObject } = await import('@elabora/node/replay');
-    const result = await replayObject(dir, id, { test: flags.test, block: flags.block, width: width || 1600, height: height || 900 });
+    const result = await replayObject(dir, id, { test: flags.test, block: flags.block, screen: flags.screen, width: width || 1600, height: height || 900 });
     if (result.error !== undefined) {
       if (result.diagnostics) printDiagnostics(result.diagnostics, { json: flags.json });
       console.error(`✘ ${result.error}`);

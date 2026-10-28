@@ -160,6 +160,8 @@ export interface FontData {
 export interface Backdrop {
   layers: string[];
   variants: string[];
+  // The variant of screens that pick none (theme.backdrop.default).
+  default?: string;
   object?: { object: string; props: JsonObject };
 }
 

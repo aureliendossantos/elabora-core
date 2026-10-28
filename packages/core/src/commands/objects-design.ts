@@ -15,14 +15,18 @@ export interface CreateObjectArgs {
   title?: string;
   objectives?: string[];
   items?: string[];
+  // A decoration of the course backdrop (theme.backdrop.object): no plan references, no events.
+  decoration?: boolean;
 }
 
-export function createObject(context: CommandContext, { id, title, objectives, items }: CreateObjectArgs, templates: ObjectTemplates): CommandOutput<{ object: string; files: string[] }> {
+export function createObject(context: CommandContext, { id, title, objectives, items, decoration = false }: CreateObjectArgs, templates: ObjectTemplates): CommandOutput<{ object: string; files: string[] }> {
   const draft = new Draft(context.files);
   if (draft.exists(`objects/${id}/object.manifest.json`)) throw new CommandError(`objects/${id} already exists`);
+  if (decoration && (objectives?.length || items?.length)) throw new CommandError('A decoration serves no plan objective: give --decoration or --objectives, not both.');
+  if (!decoration && !objectives?.length) throw new CommandError('A free object serves plan objectives: give them (--objectives OBJ-1,OBJ-2, the ids in plan.json), or --decoration for a decoration of the course backdrop (theme.backdrop.object).');
   for (const file of OBJECT_FILES) {
     let content = templates[file].replaceAll('__ID__', id).replaceAll('__TITLE__', title || id);
-    if (file === 'object.manifest.json') {
+    if (file === 'object.manifest.json' && !decoration) {
       const manifest = JSON.parse(content) as ObjectManifest;
       manifest.planRefs = { objectives: objectives || [], ...(items?.length ? { items } : {}) };
       content = stringifyJSON(manifest);

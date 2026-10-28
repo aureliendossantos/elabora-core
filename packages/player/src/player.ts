@@ -638,6 +638,7 @@ const debugHooks = {
   get step() { return { revealed: view.revealed, steps: [...view.steps] }; },
   state: () => ({ screen: currentScreen()?.id, status: courseState.lmsStatus, score: courseState.score(), suspendData: courseState.encode() }),
   objectHost: (blockId: string) => view.objectHost(blockId),
+  backdropHost: () => view.backdropHost,
   // The player's sounds (D67): the context's state and what was played.
   sounds: { state: () => sounds.state() },
   // The dialogues of the current screen (D61): their state, « Suite », a choice, the virtual clock of tests.

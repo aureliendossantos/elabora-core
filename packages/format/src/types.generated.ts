@@ -578,7 +578,7 @@ export type Theme = {
   styles?: { [key: string]: { [key: string]: string } };
   /** Effects of the theme for timed blocks (block timing.in and timing.out effect), each with a one-line description for editors: {"pop": "Grows a little past its size, then settles"}. The stylesheet defines @keyframes t-fx-<name> (how the block comes) and may define @keyframes t-fx-<name>-out (how it goes; default: the first one played backwards). The player plays them at the timeline's time, as the built-in effects (none, fade, rise, slide, zoom, wipe, draw, whose names are taken). Keep them relative to the block (transform, opacity, clip-path, filter): never move the layout, never flash (WCAG 2.3.1). */
   effects?: { [key: string]: string };
-  /** Decorative background behind every screen. Decoration only: it carries no information, takes no focus and is hidden from screen readers (a scene that teaches is a free-object block). layers: empty elements behind the course that the stylesheet paints and animates (.t-backdrop-layer[data-layer="far"]); the backdrop element carries data-screen, data-section, data-step and data-variant, so the stylesheet can react to where the learner is. object: a decorative free object (pedagogicalRole "decoration") mounted once behind the course for the whole session, given the same context. Under reduced motion CSS animations stop and the object shows still frames; on a slow machine the object freezes. Text over a backdrop must stay readable: elabora fit measures its contrast against the pixels behind it (W_TEXT_CONTRAST_MEASURED). */
+  /** Decorative background behind every screen. Decoration only: it carries no information, takes no focus and is hidden from screen readers (a scene that teaches is a free-object block). layers: empty elements behind the course that the stylesheet paints and animates (.t-backdrop-layer[data-layer="far"]); the backdrop element carries data-screen, data-section, data-step, data-variant, data-screen-index, data-section-index, data-section-count and data-direction, and #elabora-app carries data-backdrop (the variant shown), so the stylesheet can react to where the learner is. object: a decorative free object (pedagogicalRole "decoration") mounted once behind the course for the whole session, given the same context. Under reduced motion CSS animations stop and the object shows still frames; on a slow machine the object freezes. Text over a backdrop must stay readable: elabora fit measures its contrast against the pixels behind it (W_TEXT_CONTRAST_MEASURED). */
   backdrop?: {
     /** Layer names, back to front: <div class="t-backdrop-layer" data-layer="<name>"> each. */
     layers?: string[];
@@ -590,6 +590,8 @@ export type Theme = {
     };
     /** Named variants a screen can pick with backdrop, each with a one-line description for editors: {"dim": "Darker sky behind dense screens"}. The stylesheet styles .t-backdrop[data-variant=…]; the object receives the variant. */
     variants?: { [key: string]: string };
+    /** The variant of the screens that pick none (a name of variants): a module dark throughout says it once. A screen still picks another variant, or none, with backdrop. */
+    default?: string;
   };
 };
 
@@ -3629,7 +3631,7 @@ export type ObjectTest = {
   reducedMotion?: boolean;
   /** Safe area in px from each edge of the frame: the part covered by the course layout (ctx.safeArea, host.onSafeArea). */
   safeArea?: ObjectTestSafeArea;
-  /** Where the learner is, for decorations of the course backdrop (ctx.context, host.onContext): screen, section, step, variant. */
+  /** Where the learner is, for decorations of the course backdrop (ctx.context, host.onContext): screen, section, step (from 1), variant, and where the screen and its section stand (screenIndex, screenCount, sectionIndex, sectionCount, direction). */
   context?: ObjectTestContext;
   /** Where the frame is in the course window (ctx.view, host.onView), for objects that follow the scroll: visible, ratio (share of the frame in the window), progress (0 when its top reaches the bottom of the window, 1 when its bottom leaves the top), entry (0 to 1 while it comes in from below) and exit (0 to 1 while it leaves at the top). Values left out keep theirs; by default the frame is wholly in view. */
   view?: ObjectTestView;
@@ -3644,12 +3646,20 @@ export type ObjectTestSafeArea = {
   left?: number;
 };
 
-/** Where the learner is, for decorations of the course backdrop (ctx.context, host.onContext): screen, section, step, variant. */
+/** Where the learner is, for decorations of the course backdrop (ctx.context, host.onContext): screen, section, step (from 1), variant, and where the screen and its section stand (screenIndex, screenCount, sectionIndex, sectionCount, direction). */
 export type ObjectTestContext = {
   screen?: string | null;
   section?: string | null;
   step?: number;
   variant?: string | null;
+  /** The rank of the screen in the course, from 0. */
+  screenIndex?: number;
+  screenCount?: number;
+  /** The rank of the screen's section, from 0 (null: no section). */
+  sectionIndex?: number | null;
+  sectionCount?: number;
+  /** The way the learner came, forward or back in the course order (null: the first screen shown). */
+  direction?: 'forward' | 'back' | null;
 };
 
 /** Where the frame is in the course window (ctx.view, host.onView), for objects that follow the scroll: visible, ratio (share of the frame in the window), progress (0 when its top reaches the bottom of the window, 1 when its bottom leaves the top), entry (0 to 1 while it comes in from below) and exit (0 to 1 while it leaves at the top). Values left out keep theirs; by default the frame is wholly in view. */
@@ -3687,7 +3697,7 @@ export type ObjectTestStep = {
   payload?: { [key: string]: unknown };
   /** Safe area in px from each edge of the frame: the part covered by the course layout (ctx.safeArea, host.onSafeArea). */
   safeArea?: ObjectTestSafeArea;
-  /** Where the learner is, for decorations of the course backdrop (ctx.context, host.onContext): screen, section, step, variant. */
+  /** Where the learner is, for decorations of the course backdrop (ctx.context, host.onContext): screen, section, step (from 1), variant, and where the screen and its section stand (screenIndex, screenCount, sectionIndex, sectionCount, direction). */
   context?: ObjectTestContext;
   /** Where the frame is in the course window (ctx.view, host.onView), for objects that follow the scroll: visible, ratio (share of the frame in the window), progress (0 when its top reaches the bottom of the window, 1 when its bottom leaves the top), entry (0 to 1 while it comes in from below) and exit (0 to 1 while it leaves at the top). Values left out keep theirs; by default the frame is wholly in view. */
   view?: ObjectTestView;

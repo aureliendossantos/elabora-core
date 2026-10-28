@@ -466,14 +466,18 @@ Components
                                                       items and translations kept; without --to, the possible targets
 
 Free objects
-  object new [dir] <id> [--title <t>] [--objectives OBJ-1,OBJ-2]
+  object new [dir] <id> [--title <t>] [--objectives OBJ-1,OBJ-2 | --decoration]
+                                                      Scaffold a free object for plan objectives, or with --decoration a decoration
+                                                      of the course backdrop (theme.backdrop.object): a 2D canvas that follows the
+                                                      course (screen and section rank, direction), out of the player's bars
   object test [dir] <id> [--update-snapshots] [--browser chromium|electron|chrome|msedge|playwright|firefox|webkit] [--only <test name>] [--force]
                                                       Gates 2–6 of the free-object contract (result kept in object.gates.json);
                                                       an object unchanged since its last run here is not run again (--force runs it)
-  object replay [dir] <id> [--test <name>] [--block <id>] [--size 1600x900] [--out sheet.png] [--json]
+  object replay [dir] <id> [--test <name>] [--block <id> | --screen <id>] [--size 1600x900] [--out sheet.png] [--json]
                                                       Replay a test of object.tests.json in the built course, on the page that
                                                       places the object, in real time: a contact sheet of its snapshot steps,
-                                                      and its expectations checked
+                                                      and its expectations checked. The backdrop's decoration replays behind the
+                                                      course with its bars, from --screen (default: the first one)
 
 Contract (the plan and its versions)
   plan status [dir] [--json]                          The plan's versions (made, sent, validated) and what changed since

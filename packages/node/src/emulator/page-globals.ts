@@ -63,6 +63,8 @@ export interface PlayerHooks {
   timeline: PlayerTimeline;
   // The host of a free object of the screen (replays drive it as object tests do).
   objectHost(blockId: string): PlayerObjectHost | undefined;
+  // The host of the backdrop's decorative object (theme.backdrop.object), if any.
+  backdropHost(): PlayerObjectHost | undefined;
   // The dialogues of the screen (D61): « Suite », a choice, their virtual clock.
   dialogues: PlayerDialogues;
 }
@@ -128,6 +130,8 @@ export interface PlayerObjectHost {
   setState(state: unknown): Promise<unknown>;
   testClick(target: { object?: string; at?: [number, number] }): Promise<unknown>;
   testKey(key: string): Promise<unknown>;
+  // A decoration of the backdrop: where the learner is (replays of its tests).
+  setContext(context: Record<string, unknown>): void;
 }
 
 declare global {

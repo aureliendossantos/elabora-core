@@ -200,13 +200,14 @@ Render one screen (or one of its layers) in a real browser once images and free 
 
 ### `elabora_replay_object`
 
-Replay one behaviour test of a free object (object.tests.json) inside the built course: on the page that places it, scrolled into view, in real time, with the course around it. Returns a contact sheet of its snapshot steps and the end, and the expectations that failed. To see how the object looks and behaves where learners meet it; the gates stay elabora_test_object.
+Replay one behaviour test of a free object (object.tests.json) inside the built course: on the page that places it, scrolled into view, in real time, with the course around it. Returns a contact sheet of its snapshot steps and the end, and the expectations that failed. To see how the object looks and behaves where learners meet it; the gates stay elabora_test_object. The backdrop's decoration replays behind the course with its bars, from screen (default: the first one); a set-context step goes to the screen it names.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `id` | string | yes |  |
 | `test` | string |  | A test whose name contains this text (default: the first one). |
 | `block` | string |  | The free-object block to use when several place the object. |
+| `screen` | string |  | For the backdrop's decoration: the screen it starts behind. |
 | `width` | integer |  |  Default 1600. |
 | `height` | integer |  |  Default 900. |
 
@@ -828,14 +829,15 @@ Removes one from this computer to free its space: only when the author asks. Ref
 
 ### `elabora_create_object`
 
-Scaffold a free object (objects/&lt;id&gt;/: manifest, code, tests, notes) serving given plan objectives. Only when no native block can do the job.
+Scaffold a free object (objects/&lt;id&gt;/: manifest, code, tests, notes) serving given plan objectives. Only when no native block can do the job. decoration: a decoration of the course backdrop instead (theme.backdrop.object; no objectives): a 2D canvas that follows the course (ctx.context with the screen's rank, its section's, the direction), keeps out of the player's bars and lands at once when frames are still.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `id` | string | yes |  |
 | `title` | string | yes |  |
-| `objectives` | string[] | yes |  |
+| `objectives` | string[] |  |  |
 | `items` | string[] |  |  |
+| `decoration` | boolean |  |  |
 
 ### `elabora_write_object_file`
 

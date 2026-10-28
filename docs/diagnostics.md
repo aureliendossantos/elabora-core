@@ -286,6 +286,7 @@ Generated from `packages/core/src/diagnostics/codes.ts` by `pnpm run docs`. Code
 | `W_OBJECT_STRINGS_LANGUAGE` | Object words in another language than the course | The manifest strings are written in its language; give this block the wording in the course language with props.strings (every key), or translate the course with elabora translate. |  |
 | `W_OBJECT_STRING_UNDECLARED` | Object code uses an undeclared string | Declare every key read with ctx.t(key) in the manifest strings, with its text and a description for translators. |  |
 | `W_GATE_BOOT_SLOW` | Free object slow to start | Return from mount() sooner: build the scene, render a first frame, then spread heavy work (procedural textures, large geometries) over the next frames with host.onFrame. Budget: budgets.bootMsMax (3 s by default, measured with software WebGL). |  |
+| `W_GATE_VISUAL_BLANK` | Gate 5: a baseline just recorded is a single colour | The object drew nothing in that snapshot: a canvas sized from a container of no size, a WebGL context lost on a loaded machine, a drawing outside the frame. Look at the PNG; run elabora object test again on a quieter machine, or fix the drawing, then record it again with --update-snapshots. |  |
 
 ## Information
 

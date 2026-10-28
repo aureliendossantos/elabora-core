@@ -48,9 +48,14 @@ a { color: var(--t-primary); }
 
 /* Backdrop (theme.backdrop): fixed behind the course, first in the app, under every positioned part
    of the shell. The theme stylesheet paints its layers: .t-backdrop-layer[data-layer="…"]; it can
-   react to .t-backdrop[data-screen|data-section|data-step|data-variant]. */
+   react to .t-backdrop[data-screen|data-section|data-step|data-variant|data-screen-index|
+   data-section-index|data-section-count|data-direction], and #elabora-app[data-backdrop] has the
+   variant shown. Painted back to front: the layers (z-index 0), then the object (z-index 1); a layer
+   that goes over the object (a grain) takes z-index: 2. */
 .t-backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
 .t-backdrop-layer, .t-backdrop-object { position: absolute; inset: 0; }
+.t-backdrop-layer { z-index: 0; }
+.t-backdrop-object { z-index: 1; }
 .t-backdrop-object iframe { display: block; width: 100%; height: 100%; border: 0; background: transparent; }
 
 
@@ -1174,6 +1179,9 @@ button.t-timeline-line:disabled { color: var(--t-muted); }
 @media (prefers-reduced-motion: reduce) {
   :is(#t-main, dialog.t-layer, .t-backdrop) :is(*, *::before, *::after) { animation: none !important; }
   :is(#t-main, dialog.t-layer, .t-backdrop) :is(*:not(.t-block[data-t-revealed], [data-t-card] [data-t-face]), *::before, *::after) { transition: none !important; }
+  /* The backdrop itself and the bars change with a variant at once too (a capture never takes them
+     halfway). */
+  :is(.t-backdrop, .t-bar), .t-bar :is(*, *::before, *::after) { transition: none !important; }
 }
 
 /* ── Primitives of any template (D63; docs/components.md §3) ──────────────────────────────────

@@ -11,6 +11,7 @@ import { copyExample, readJSON, writeJSON, addExplorer, addLayerProbe, addViewPr
 import type { PlayerWindow } from '../helpers.ts';
 import { startCanvasHost } from '@elabora/node/canvas/host';
 import { renderScreen } from '@elabora/core/render/screen';
+import { screenOrder } from '@elabora/core/project/load';
 import type { CanvasApi } from '@elabora/player/canvas';
 import { build } from '@elabora/node/build';
 import { assetsSheet } from '@elabora/node/assets-sheet';
@@ -21,6 +22,7 @@ import { startLooker } from '@elabora/node/look';
 import { createRequire } from 'node:module';
 import { pageStyleConflicts } from '@elabora/node/style-cascade';
 import * as edit from '@elabora/node/edit';
+import { replayObject } from '@elabora/node/replay';
 
 const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 type CanvasWindow = Window & typeof globalThis & { __elaboraCanvas: CanvasApi };
@@ -340,6 +342,57 @@ test('backdrop: layers and a decorative object follow the learner, hidden from a
   } finally {
     await looker.close();
   }
+});
+
+test('backdrop decoration: object new --decoration, its gates, where the screen stands in the course, the default variant on #elabora-app, and its replay behind the course', { timeout: 420000 }, async () => {
+  const { dir, course } = slidesCopy();
+  assert.throws(() => edit.createObject(dir, { id: 'drift', title: 'Drift' }), /--decoration/);
+  edit.createObject(dir, { id: 'drift', title: 'Drift', decoration: true });
+  const manifest = readJSON(dir, 'objects/drift/object.manifest.json');
+  assert.equal(manifest.pedagogicalRole, 'decoration');
+  assert.equal(manifest.planRefs, undefined);
+  course.theme.backdrop = { layers: ['sky'], object: { id: 'drift' }, variants: { dusk: 'Darker', dawn: 'Lighter' }, default: 'dusk' };
+  writeJSON(dir, 'course.json', course);
+  const later = readJSON(dir, 'screens/chemin.json');
+  later.backdrop = 'dawn';
+  writeJSON(dir, 'screens/chemin.json', later);
+  const v = validateDir(dir);
+  assert.equal(v.summary.errors, 0, JSON.stringify(v.diagnostics.filter((d) => d.severity === 'error')));
+  const broken = JSON.parse(JSON.stringify(course));
+  broken.theme.backdrop.default = 'night';
+  writeJSON(dir, 'course.json', broken);
+  assert.ok(validateDir(dir).diagnostics.some((d) => d.code === 'E_BACKDROP_VARIANT' && d.path === '/theme/backdrop/default'));
+  writeJSON(dir, 'course.json', course);
+
+  const gates = await testObject(dir, 'drift');
+  assert.ok(gates.ok, JSON.stringify(gates.diagnostics.filter((d) => d.severity === 'error')));
+  assert.ok(!gates.diagnostics.some((d) => d.code === 'W_GATE_VISUAL_BLANK'), 'the template draws');
+
+  const ids = screenOrder(loadProjectFromDir(dir)).map((entry) => entry.id);
+  await openPlayer(dir, async (page, errors) => {
+    const seen = () => page.evaluate(async () => {
+      const b = document.querySelector<HTMLElement>('.t-backdrop')!;
+      const host = (window as PlayerWindow).__elabora.backdropHost();
+      return { data: { ...b.dataset }, app: document.getElementById('elabora-app')!.dataset.backdrop ?? null, state: await host?.getState(), ready: b.querySelector<HTMLElement>('.t-backdrop-object')?.dataset.state };
+    });
+    await page.evaluate(() => (window as PlayerWindow).__elabora.go('accueil'));
+    await page.waitForFunction(() => document.querySelector<HTMLElement>('.t-backdrop-object')?.dataset.state === 'ready');
+    const first = await seen();
+    assert.equal(first.app, 'dusk', 'the default variant');
+    assert.equal(first.data.variant, 'dusk');
+    assert.equal(first.data.screenIndex, String(ids.indexOf('accueil')));
+    await page.evaluate(() => (window as PlayerWindow).__elabora.go('chemin'));
+    await page.waitForTimeout(300);
+    const next = await seen();
+    assert.equal(next.app, 'dawn', 'its own variant');
+    assert.equal(next.data.direction, ids.indexOf('chemin') > ids.indexOf('accueil') ? 'forward' : 'back');
+    assert.deepEqual((next.state as { screenIndex: number }).screenIndex, ids.indexOf('chemin'), 'the object heard the rank of the screen');
+    assert.deepEqual(errors, []);
+  });
+
+  const replay = await replayObject(dir, 'drift', { width: 1280, height: 720 });
+  assert.ok(replay.ok && replay.block === 'backdrop', JSON.stringify(replay.error ?? replay.failures));
+  assert.equal(replay.frames.length, 4, 'three snapshots and the end');
 });
 
 test('a click in the slide reveals the next step; back on the screen, the step reached', { timeout: 180000 }, async () => {

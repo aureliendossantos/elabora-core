@@ -162,13 +162,14 @@ export function updatePlayer(dir: string, args: commands.UpdatePlayerArgs, optio
 
 // ── objects and design files ─────────────────────────────────────────
 
-function objectTemplates(): ObjectTemplates {
-  const read = (file: string) => fs.readFileSync(path.join(TEMPLATES_DIR, 'object', file), 'utf8');
+// An activity's template (templates/object/) or a decoration's (templates/object-decoration/).
+function objectTemplates(decoration = false): ObjectTemplates {
+  const read = (file: string) => fs.readFileSync(path.join(TEMPLATES_DIR, decoration ? 'object-decoration' : 'object', file), 'utf8');
   return Object.fromEntries(commands.OBJECT_FILES.map((file) => [file, read(file)])) as ObjectTemplates;
 }
 
 export function createObject(dir: string, args: CreateObjectArgs, options?: EditOptions) {
-  const templates = objectTemplates();
+  const templates = objectTemplates(!!args.decoration);
   return runCommand(dir, { name: 'create_object', args, run: (context) => commands.createObject(context, args, templates) }, options);
 }
 
