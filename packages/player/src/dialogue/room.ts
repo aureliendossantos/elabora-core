@@ -25,10 +25,6 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
   resume(): void;
 }) {
   const { data, root, log, room, debriefHost, measureRoom, thread, labels, voiced, still, clock } = parts;
-  // PROTOTYPE: the three directions of « Recommencer » and « Reprendre d'ici » (data-t-back on the
-  // dialogue): a, the debrief holds the moves; b, the learner picks the answer in the thread; c, the
-  // moves where they were, the room usable beside the debrief.
-  const variant = () => root.getAttribute('data-t-back') ?? 'a';
   const reduced = parts.reduced;
   const host = () => parts.host();
 
@@ -100,13 +96,13 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     const run = state.run;
     const result = scoredResult(run);
     const back = lastRevisitable();
-    // A debrief holds « Changer ce choix » for each decision and « Recommencer » (a): « Revenir à un
-    // choix » is not needed, nor « Recommencer » when the debrief comes right under the thread.
-    const debriefActs = variant() === 'a' && !!data.debrief;
+    // The debrief holds « Changer ce choix » for each decision and « Recommencer »: « Revenir à un
+    // choix » is for a dialogue without one, and « Recommencer » stays here unless the debrief comes
+    // right under the thread.
     setRoom('ended', [endControls(thread, {
       found: result.endingsFound, total: result.endingsTotal,
-      back: back !== null && !debriefActs ? () => (variant() === 'b' ? pick(true) : focusResume(back)) : null,
-      restart: canRestart(run) && !(debriefActs && !overlaidDebrief()) ? startOver : null,
+      back: back !== null && !data.debrief ? () => focusResume(back) : null,
+      restart: canRestart(run) && !(data.debrief && !overlaidDebrief()) ? startOver : null,
       debrief: data.debrief && overlaidDebrief() ? () => setDebrief(true) : null
     })]);
     renderDebrief();
@@ -115,19 +111,6 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     if (!canRestart(state.run)) return;
     move(restart(state.run), { started: true, back: 'restart' });
     room.focus({ preventScroll: true });
-  }
-  // PROTOTYPE B: « Revenir à un choix » asks which answer: the thread dims all but the answers the
-  // learner may take back, which are the buttons; « Annuler » comes back to the end.
-  function pick(on: boolean) {
-    root.toggleAttribute('data-t-picking', on);
-    if (!on) return;
-    setDebrief(false);
-    setRoom('picking', [element('div', { class: 't-dialogue-endbar' },
-      element('p', { class: 't-dialogue-count', text: parts.language === 'fr' ? 'Touchez la réponse à changer' : 'Tap the answer to change' }),
-      element('div', { class: 't-dialogue-endbar-actions' }, element('button', { type: 'button', class: 't-dialogue-action', onclick: () => { pick(false); showEnd(); } }, element('span', { text: parts.language === 'fr' ? 'Annuler' : 'Cancel' }))))]);
-    const answers = [...log.querySelectorAll<HTMLElement>('.t-dialogue-resume:not([hidden])')];
-    answers.at(-1)?.closest('.t-dialogue-row')?.scrollIntoView?.({ block: 'nearest', behavior: reduced() ? 'auto' : 'smooth' });
-    answers.at(-1)?.focus({ preventScroll: true });
   }
   // The decision the learner may go back to last (« Revenir à un choix »).
   function lastRevisitable(): number | null {
@@ -157,7 +140,7 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     const target = debriefHost;
     if (!data.debrief) return;
     if (state.phase !== 'ended') { closeDebrief(); if (target) { target.replaceChildren(); target.hidden = true; } return; }
-    const card = debriefCard(thread, { ...debriefOf(), restart: variant() === 'a' && canRestart(state.run) ? startOver : null });
+    const card = debriefCard(thread, { ...debriefOf(), restart: canRestart(state.run) ? startOver : null });
     if (!target) {
       if (!log.querySelector('.t-dialogue-debrief-card')) box.insert(element('div', { class: 't-dialogue-row', 'data-role': 'debrief' }, card));
       return;
@@ -175,8 +158,7 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     target.hidden = false;
     if (root.hasAttribute('data-t-debrief-open')) return;
     root.setAttribute('data-t-debrief-open', '');
-    // b and c: the end's controls stay usable beside the debrief.
-    modal.show({ keep: variant() !== 'a' ? [target, room] : [target], close: () => setDebrief(false), focus: target, asked });
+    modal.show({ keep: [target], close: () => setDebrief(false), focus: target, asked });
     parts.signal('debrief-open');
   }
   function closeDebrief() {
@@ -192,7 +174,7 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     const scoredRun = run.scoredWalk === run.walk;
     // The learner's decisions on the path shown, in order: what « Changer ce choix » goes back to.
     const own = walk.decisions.filter((decision) => decision.closed && !decision.auto);
-    const change = (index: number | undefined) => (variant() === 'a' && index !== undefined && canRevisit(run, index) ? () => changeChoice(index) : undefined);
+    const change = (index: number | undefined) => (index !== undefined && canRevisit(run, index) ? () => changeChoice(index) : undefined);
     // The scored decisions in the same order (each the next of the learner's at its node).
     let cursor = 0;
     const indexAt = (node: string) => { while (cursor < own.length && own[cursor].node !== node) cursor++; return own[cursor++]?.index; };
@@ -213,7 +195,6 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
   }
   // A cut back: the debrief goes, and opens again at the next end.
   function clearDebrief() {
-    root.removeAttribute('data-t-picking');
     closeDebrief();
     if (debriefHost) { debriefHost.replaceChildren(); debriefHost.hidden = true; }
     for (const row of log.querySelectorAll('.t-dialogue-row[data-role="debrief"]')) row.remove();

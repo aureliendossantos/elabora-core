@@ -64,8 +64,6 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
     // selection of words.
     built.bubble.addEventListener('click', (event) => {
       if ((event.target as Element).closest('.t-dialogue-tools')) return;
-      // PROTOTYPE B: choosing the answer to change, the answer itself is the button.
-      if (parts.root.hasAttribute('data-t-picking') && built.resume && !built.resume.hidden) { revisit(Number(built.row.dataset.decision)); return; }
       if (state.step?.kind === 'click' && lastRow() === built.row && (getSelection()?.isCollapsed ?? true)) next();
     });
     return built;

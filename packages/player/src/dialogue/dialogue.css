@@ -173,6 +173,9 @@
 .t-dialogue-root[data-t-quiet] .t-dialogue-choice { animation: none !important; }
 @keyframes t-dialogue-in { from { opacity: 0; translate: 0 calc(0.25rem * var(--t-move)); } }
 .t-dialogue-choice-text { min-width: 0; }
+/* An option's mark goes under its text when both do not fit side by side (a phone). */
+.t-dialogue-choice:has(.t-dialogue-explored) { flex-wrap: wrap; row-gap: 0.25rem; }
+.t-dialogue-choice:has(.t-dialogue-explored) .t-dialogue-choice-text { flex: 1 1 14rem; }
 .t-dialogue-explored, .t-dialogue-unavailable { display: inline-flex; align-items: center; gap: 0.25rem; flex: none; font-size: 0.75rem; font-weight: 600; color: var(--t-muted); }
 .t-dialogue-explored .t-icon svg { width: 0.875rem; height: 0.875rem; }
 
@@ -270,14 +273,6 @@
 .t-dialogue-marker .t-icon svg { width: 0.9375rem; height: 0.9375rem; }
 /* The choice taken back, among the options of its decision. */
 .t-dialogue-previous { color: var(--t-primary); }
-
-/* PROTOTYPE b, c: the end's controls above the debrief's veil. */
-.t-dialogue-root:is([data-t-back="b"], [data-t-back="c"])[data-t-debrief-open] > .t-dialogue-options { position: relative; z-index: 5; }
-/* PROTOTYPE b: choosing the answer to change, in the thread. */
-.t-dialogue-root[data-t-picking] .t-dialogue-log > .t-dialogue-row { opacity: 0.3; transition: opacity 220ms ease; }
-.t-dialogue-root[data-t-picking] .t-dialogue-log > .t-dialogue-row:has(.t-dialogue-resume:not([hidden])) { opacity: 1; }
-.t-dialogue-root[data-t-picking] .t-dialogue-row:has(.t-dialogue-resume:not([hidden])) .t-dialogue-bubble { cursor: pointer; box-shadow: 0 0 0 2px var(--t-primary); }
-.t-dialogue-root[data-t-picking] .t-dialogue-resume { opacity: 1; color: var(--t-on-primary); background: var(--t-primary); box-shadow: none; }
 
 /* ── Scene: the backdrop, the cast large, a few bubbles near them ─────────── */
 .t-block.t-dialogue-look--scene.t-w-full { max-width: var(--t-dialog-scene-width, 75rem); }
