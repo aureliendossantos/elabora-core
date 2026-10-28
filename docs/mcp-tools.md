@@ -1,6 +1,6 @@
 # Agent tools
 
-Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 101 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
+Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 102 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
 
 ## Reading
 
@@ -19,13 +19,14 @@ How to work on a course in this host: MCP/CLI/file choices, complete authoring, 
 
 ### `elabora_docs`
 
-Elabora's documentation as Markdown. No page: the map (each page's id and what it covers). page: a page by its id (design, components, free-object-contract, spec, delivery-scorm12, architecture/media…) or a decision by its number (D29); the bundled skills too, for a host that does not show MCP resources (page skills lists them); a long page comes as its opening and its sections, then ask for one with section (its words or its #anchor), or for all of it with full. Read the page a tool, a diagnostic's fix or the course rules name before designing, extending or explaining a behaviour. The CLI equivalent is elabora docs [page] [--section &lt;s&gt;] (no course needed).
+Elabora's documentation as Markdown. No page: the map (each page's id and what it covers). page: a page by its id (design, components, free-object-contract, spec, delivery-scorm12, architecture/media…) or a decision by its number (D29); the bundled skills too, for a host that does not show MCP resources (page skills lists them); a long page comes as its opening and its sections, then ask for one with section (its words or its #anchor), or for all of it with full. Read the page a tool, a diagnostic's fix or the course rules name before designing, extending or explaining a behaviour. search: words to find (« what persists from one screen to the next », « backdrop safe area »): the sections that hold them, to read next. The CLI equivalent is elabora docs [page] [--section &lt;s&gt;] [--search &lt;words&gt;] (no course needed).
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `page` | string |  | A page id from the map (design, spec, architecture/media), a decision (D29) or a skill (skills/&lt;name&gt;, skills/&lt;name&gt;/&lt;reference&gt;). |
 | `section` | string |  | One section of the page: its heading's words (Steps) or its anchor (#steps). |
 | `full` | boolean |  | The whole page even when it is long. |
+| `search` | string |  | Words to find in every page, decision and skill: the sections that hold them all, with the page and anchor to read. |
 
 ### `elabora_sources`
 
@@ -131,6 +132,15 @@ A free object: manifest, tests, notes and code.
 |---|---|---|---|
 | `id` | string | yes |  |
 
+### `elabora_object_map`
+
+What to read before changing a free object, in a few thousand characters: each code file's sections (« // ── Name ── » comments) with their lines and the functions in them, the props (type, choices, default), the words, objects, state, events and the names of the tests. Then read only the lines a change needs.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | yes |  |
+| `tests` | boolean |  | Each test's steps in short, one line each. |
+
 ### `elabora_list_profiles`
 
 Executable LMS profiles (SuccessFactors, Workday, Cornerstone, Docebo, Moodle, Totara, 360Learning, Rise Up, SCORM Cloud, Teach Up, unknown) with their documented constraints.
@@ -160,6 +170,7 @@ See a screen while designing, in well under a second: a look server kept warm fo
 | `language` | string |  | A translation of the course (default: its language). |
 | `viewport` | boolean |  | Only the window (default: the whole page). |
 | `motion` | boolean |  | Animations on (default: reduced motion, transitions settled). |
+| `controls` | boolean |  | List every control of the screen's free objects with its box in the window (those covered by the page, a click on their middle not reaching them, are always said). |
 | `scroll` | string[] |  | The window scrolled to a position, animations on: px ("1800"), a percentage of the page ("100%"), or a block's id (the block in view). Several positions (or sheet on a screen without a timeline, default 0/25/50/75/100%): a contact sheet down the page, to see scroll-driven animations build up. |
 | `block` | string |  | A close-up of this block (cropped to its box with a small margin; PNG by default up to 2 megapixels, else JPEG), scrolled into view unless scroll says where. With scroll, block or motion the note says what moves: visible/clipped/outside, the animations and transitions of each block in the window (or of this block), their timeline (time, scroll, view) and progress, and the scroll-driven ones that CANNOT FINISH because the page ends before their range. |
 | `scale` | 1 \| 2 |  | The close-up drawn at twice its size (2) to read fine detail. |

@@ -113,7 +113,7 @@ export function docOutline(markdown: string): string {
 // about 6,000 tokens.
 export const WHOLE_PAGE_LIMIT = 24_000;
 
-export interface DocsRequest { page?: string; section?: string; full?: boolean }
+export interface DocsRequest { page?: string; section?: string; full?: boolean; search?: string }
 
 // A long page is given as its opening and its outline (a section asked for, or all of it with full).
 function servePage(id: string, markdown: string, { section, full }: Pick<DocsRequest, 'section' | 'full'>): { ok: true; text: string } | { ok: false; error: string } {
@@ -147,9 +147,49 @@ function readSkillPage(page: string, request: DocsRequest): { ok: true; text: st
   return servePage(`skills/${name}${reference ? `/${reference}` : ''}`, content, request);
 }
 
+// Searching the pages, the decisions and the skills: the sections that hold every word asked for
+// (the most matches first), each with its page, its anchor and the line where the words are, to
+// read with page and section.
+const STOP_WORDS = new Set(['the', 'an', 'of', 'to', 'from', 'one', 'in', 'on', 'at', 'and', 'or', 'is', 'are', 'it', 'its', 'what', 'how', 'when', 'which', 'with', 'for', 'by', 'do', 'does', 'can', 'next', 'other', 'another', 'le', 'la', 'les', 'de', 'des', 'du', 'un', 'une', 'et', 'ou', 'en', 'au', 'aux', 'est']);
+export interface DocHit { page: string; section: string; heading: string; line: string; score: number }
+export function searchDocs(query: string, root = DOCS_ROOT, limit = 8): DocHit[] {
+  // A plural finds its singular (persists, persist).
+  const words = query.toLowerCase().split(/[^\p{L}\p{N}_.-]+/u).filter((word) => word.length > 1 && !STOP_WORDS.has(word)).map((word) => (word.length > 4 ? word.replace(/(?<!s)s$/, '') : word));
+  if (!words.length) return [];
+  const sources: { page: string; markdown: string }[] = allPages(root).map((entry) => ({ page: entry.id, markdown: fs.readFileSync(path.join(root, entry.file), 'utf8') }));
+  for (const skill of listSkills()) for (const reference of [undefined, ...skill.references]) {
+    const markdown = readSkill(skill.name, reference);
+    if (markdown) sources.push({ page: `skills/${skill.name}${reference ? `/${reference}` : ''}`, markdown });
+  }
+  const hits: DocHit[] = [];
+  for (const { page, markdown } of sources) {
+    const lines = markdown.split('\n');
+    const all = headings(markdown);
+    const starts = [{ depth: 1, text: '(top)', slug: '', line: 0 }, ...all.filter((h) => h.line > 0)];
+    for (const [index, start] of starts.entries()) {
+      const end = starts.slice(index + 1).find((next) => next.depth <= Math.max(start.depth, 2))?.line ?? lines.length;
+      const body = lines.slice(start.line, Math.min(end, starts[index + 1]?.line ?? lines.length));
+      const text = body.join('\n').toLowerCase();
+      if (!words.every((word) => text.includes(word))) continue;
+      // A few occurrences of each word count (a long table holds them all), the words in the
+      // heading and the words side by side as asked count more.
+      const near = query.toLowerCase().replace(/\s+/g, ' ').trim();
+      const score = words.reduce((sum, word) => sum + Math.min(3, text.split(word).length - 1), 0) + 4 * words.filter((word) => start.text.toLowerCase().includes(word)).length + (text.includes(near) ? 12 : 0);
+      const where = body.find((line) => words.filter((word) => line.toLowerCase().includes(word)).length === Math.max(...body.map((candidate) => words.filter((word) => candidate.toLowerCase().includes(word)).length))) ?? '';
+      hits.push({ page, section: start.slug, heading: start.text, line: where.trim().replace(/\s+/g, ' ').slice(0, 220), score });
+    }
+  }
+  return hits.sort((a, b) => b.score - a.score).slice(0, limit);
+}
+
 // What `elabora docs` prints and elabora_docs returns: the map, a page, a long page's outline, a section.
 export function readDocs(request: DocsRequest, root = DOCS_ROOT): { ok: true; text: string } | { ok: false; error: string } {
   const { page } = request;
+  if (request.search !== undefined) {
+    const hits = searchDocs(request.search, root);
+    if (!hits.length) return { ok: false, error: `Nothing in the documentation holds every word of « ${request.search} ». Fewer words, or elabora docs (no page) for the map.` };
+    return { ok: true, text: [`${hits.length} section(s) for « ${request.search} »; read one with elabora docs <page> --section <anchor> (elabora_docs { page, section }):`, ...hits.map((hit) => `- ${hit.page}${hit.section ? `#${hit.section}` : ''} — ${hit.heading}: ${hit.line}`)].join('\n') };
+  }
   const skill = page ? readSkillPage(page, request) : null;
   if (skill) return skill;
   if (!fs.existsSync(path.join(root, 'docs/index.md'))) return { ok: false, error: `The documentation is not installed with this Elabora (no docs/index.md in ${root}).` };

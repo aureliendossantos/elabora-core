@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import type { Browser, Page, Route } from 'playwright-core';
-import { startLooker, findLookServer, lookFolder, lookServerFile } from '@elabora/node/look';
+import { startLooker, findLookServer, lookFolder, lookServerFile, controlsText } from '@elabora/node/look';
 import { codeVersion } from '@elabora/node/code-version';
 import { preview } from '@elabora/node/preview';
 import { startServer } from '@elabora/node/emulator/server';
@@ -354,4 +354,29 @@ test('look --act choose: a dialogue block at rest after its choices, the end of 
   assert.ok(!mixed.ok && /^key:Enter: a dialogue block takes choose:<option>/.test(mixed.error), JSON.stringify(mixed));
   const elsewhere = await looker.look({ screen: 'appel', block: 'plan-etage', act: ['choose:a'] });
   assert.ok(!elsewhere.ok && /choose: is for a dialogue block/.test(elsewhere.error), JSON.stringify(elsewhere));
+});
+
+test('look: the controls of a free object, where they are, and what the page puts over them', { timeout: 180000 }, async (t) => {
+  const dir = copyExample();
+  addInspectionProbes(dir);
+  const looker = await startLooker(dir, { live: false });
+  t.after(async () => { await looker.close(); fs.rmSync(dir, { recursive: true, force: true }); });
+  const clear = await looker.look({ screen: 'accueil', width: 1280, height: 1400, full: false });
+  assert.ok(clear.ok, JSON.stringify(clear));
+  const button = clear.controls?.find((control) => control.name === 'Allumer');
+  assert.ok(button && button.block === INSPECT.object && button.role === 'button' && button.coveredBy === null && button.box.width > 0, JSON.stringify(clear.controls));
+  // In a shorter window, the player's bottom bar lies over it.
+  const short = await looker.look({ screen: 'accueil', width: 1280, height: 720, full: false });
+  assert.ok(short.ok, JSON.stringify(short));
+  assert.match(short.controls?.find((control) => control.name === 'Allumer')?.coveredBy ?? '', /t-bar/, JSON.stringify(short.controls));
+  // The theme lays a pane over the object: its button no longer gets the clicks, and the look says so.
+  fs.appendFileSync(path.join(dir, 'theme/theme.css'), `[data-block="${INSPECT.object}"] { position: relative; } [data-block="${INSPECT.object}"]::after { content: ""; position: absolute; inset: 0; z-index: 9; pointer-events: auto; }\n`);
+  const course = readJSON(dir, 'course.json');
+  course.theme.stylesheet = 'theme/theme.css';
+  writeJSON(dir, 'course.json', course);
+  const covered = await looker.look({ screen: 'accueil', width: 1280, height: 1400, full: false });
+  assert.ok(covered.ok, JSON.stringify(covered));
+  const hidden = covered.controls?.find((control) => control.name === 'Allumer');
+  assert.ok(hidden?.coveredBy && new RegExp(`block ${INSPECT.object}`).test(hidden.coveredBy), JSON.stringify(covered.controls));
+  assert.match(controlsText(covered.controls ?? []).join('\n'), /✘ « Allumer » \(button, .*\) is covered by/);
 });

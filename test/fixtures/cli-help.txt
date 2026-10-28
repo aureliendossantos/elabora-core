@@ -283,7 +283,7 @@ Build and test
                                                       rebuild; free objects show in the in-app browsers of agent apps
   look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|answered] [--step <n>] [--layer <id>]
        [--at <moment> | --sheet] [--scroll <px|N%|block>,…] [--block <id> [--scale 2] [--act <action>]…] [--viewport] [--motion]
-       [--language <code>] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
+       [--language <code>] [--controls] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
                                                       See a screen while designing, in well under a second: a look server kept warm
                                                       for the course (one browser, no build) renders it from the files as they are,
                                                       with the player's header and footer; free objects an edit did not touch keep
@@ -310,7 +310,9 @@ Build and test
                                                       that state until the screen changes. On a dialogue block, choose:<option>
                                                       (one per decision met, retries included, as dialogue play) shows its thread
                                                       at rest after those choices, its end in the window: notes, the next options,
-                                                      or the debrief
+                                                      or the debrief. On a screen with free objects it says each control the
+                                                      page covers (a click on its middle would not reach it); --controls lists
+                                                      every control with its box in the window, instead of looking for them
   screenshot [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial,answered] [--step <n>] [--layer <id>]
              [--at 0,2000,4000|l1,l2:end | --scroll 0,25%,50%,1800] [--motion] [--viewport] [--out shot.png | --out-dir <dir>]
                                                       Render screens to PNG once images and free objects are ready. answered: every
@@ -470,6 +472,10 @@ Free objects
                                                       Scaffold a free object for plan objectives, or with --decoration a decoration
                                                       of the course backdrop (theme.backdrop.object): a 2D canvas that follows the
                                                       course (screen and section rank, direction), out of the player's bars
+  object map [dir] <id> [--tests] [--json]            What to read before changing an object: each code file's sections (« // ── Name ── »)
+                                                      with their lines and functions, the props (type, choices, default), words,
+                                                      objects, state, events and the names of the tests (--tests: each test's steps
+                                                      on one line). Then read the lines needed
   object test [dir] <id> [--update-snapshots] [--browser chromium|electron|chrome|msedge|playwright|firefox|webkit] [--only <test name>] [--force]
                                                       Gates 2–6 of the free-object contract (result kept in object.gates.json);
                                                       an object unchanged since its last run here is not run again (--force runs it)

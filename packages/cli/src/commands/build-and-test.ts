@@ -12,6 +12,7 @@ import type { BuildResult, WebBuildOptions } from '@elabora/node/build';
 import type { PackageRun, PackageTestResult } from '@elabora/node/emulator/run';
 import type { FitResult, FitSize } from '@elabora/node/fit';
 import type { Shot } from '@elabora/node/capture';
+import { OBJECTS_AT_NOTE } from '@elabora/node/look-client';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { writeFileAtomic } from '@elabora/node/util/fs';
 import { readZip } from '@elabora/node/zip';
@@ -53,7 +54,7 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       rebuild; free objects show in the in-app browsers of agent apps
   look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|answered] [--step <n>] [--layer <id>]
        [--at <moment> | --sheet] [--scroll <px|N%|block>,…] [--block <id> [--scale 2] [--act <action>]…] [--viewport] [--motion]
-       [--language <code>] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
+       [--language <code>] [--controls] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
                                                       See a screen while designing, in well under a second: a look server kept warm
                                                       for the course (one browser, no build) renders it from the files as they are,
                                                       with the player's header and footer; free objects an edit did not touch keep
@@ -80,7 +81,9 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       that state until the screen changes. On a dialogue block, choose:<option>
                                                       (one per decision met, retries included, as dialogue play) shows its thread
                                                       at rest after those choices, its end in the window: notes, the next options,
-                                                      or the debrief
+                                                      or the debrief. On a screen with free objects it says each control the
+                                                      page covers (a click on its middle would not reach it); --controls lists
+                                                      every control with its box in the window, instead of looking for them
   screenshot [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial,answered] [--step <n>] [--layer <id>]
              [--at 0,2000,4000|l1,l2:end | --scroll 0,25%,50%,1800] [--motion] [--viewport] [--out shot.png | --out-dir <dir>]
                                                       Render screens to PNG once images and free objects are ready. answered: every
@@ -261,6 +264,8 @@ const screenshot = defineCommand({
     if (flags.out && flags['out-dir']) { console.error('✘ Give --out (one image) or --out-dir (a folder), not both.'); return 2; }
     const result = await capture(dir, shots);
     if (!result.shots) { printDiagnostics(result.diagnostics); return 1; }
+    // A filmstrip shows the screen's own animations; free objects run on their own clock.
+    if (at && result.shots.some((taken) => taken.ok && taken.objects?.length)) console.log(`note: ${OBJECTS_AT_NOTE}`);
     const many = shots.length > 1 || !!flags['out-dir'];
     const outDir = path.resolve(flags['out-dir'] || 'screenshots');
     if (many) fs.mkdirSync(outDir, { recursive: true });

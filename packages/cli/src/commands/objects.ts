@@ -8,6 +8,10 @@ const HELP = `  object new [dir] <id> [--title <t>] [--objectives OBJ-1,OBJ-2 | 
                                                       Scaffold a free object for plan objectives, or with --decoration a decoration
                                                       of the course backdrop (theme.backdrop.object): a 2D canvas that follows the
                                                       course (screen and section rank, direction), out of the player's bars
+  object map [dir] <id> [--tests] [--json]            What to read before changing an object: each code file's sections (« // ── Name ── »)
+                                                      with their lines and functions, the props (type, choices, default), words,
+                                                      objects, state, events and the names of the tests (--tests: each test's steps
+                                                      on one line). Then read the lines needed
   object test [dir] <id> [--update-snapshots] [--browser chromium|electron|chrome|msedge|playwright|firefox|webkit] [--only <test name>] [--force]
                                                       Gates 2–6 of the free-object contract (result kept in object.gates.json);
                                                       an object unchanged since its last run here is not run again (--force runs it)
@@ -17,7 +21,7 @@ const HELP = `  object new [dir] <id> [--title <t>] [--objectives OBJ-1,OBJ-2 | 
                                                       and its expectations checked. The backdrop's decoration replays behind the
                                                       course with its bars, from --screen (default: the first one)`;
 
-const USAGE = 'Usage: elabora object new|test|replay [dir] <id>';
+const USAGE = 'Usage: elabora object new|map|test|replay [dir] <id>';
 
 // [dir] <id>: with two positionals, the first one is the course folder.
 const folderAndId = (positionals: readonly string[]) => (positionals.length >= 2 ? { dir: positionals[0], id: positionals[1] } : { dir: '.', id: positionals[0] });
@@ -32,6 +36,20 @@ const create = defineCommand({
     console.log(flags.decoration
       ? `Created ${result.files.join(', ')}.\nNext: set course.json theme.backdrop.object { "id": "${id}" }, shape the drawing in object.js, then elabora object test and elabora object replay . ${id} (behind the course).`
       : `Created ${result.files.join(', ')}.\nNext: write the manifest (props, state, events), then tests, then code. Place it with a free-object block.`);
+    return 0;
+  }
+});
+
+const map = defineCommand({
+  name: 'object map',
+  flags: { tests: 'boolean', json: 'boolean' },
+  async run({ positionals, flags }) {
+    const { dir, id } = folderAndId(positionals);
+    if (!id) { console.error(USAGE); return 2; }
+    const { objectMap, objectMapText } = await import('@elabora/node/objects/map');
+    const result = objectMap(dir, id);
+    if ('error' in result) { if (flags.json) printJson({ ok: false, error: result.error }); else console.error(`✘ ${result.error}`); return 1; }
+    if (flags.json) printJson(result); else console.log(objectMapText(result, { tests: flags.tests }));
     return 0;
   }
 });
@@ -89,6 +107,6 @@ const replay = defineCommand({
 export const objectCommands: CommandGroup = {
   title: 'Free objects',
   help: HELP,
-  commands: [create, test, replay],
+  commands: [create, map, test, replay],
   subcommandUsage: { object: USAGE }
 };

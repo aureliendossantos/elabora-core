@@ -17,7 +17,7 @@ import { contactSheet, fullPageWithObjects } from './capture.ts';
 import { scrollFilmstrip, scrollStops, scrollWindow } from './scroll-strip.ts';
 import { measureMotion } from './motion-report.ts';
 import type { MotionReport } from './motion-report.ts';
-import { captureClip, closeUpClip, objectFrameOf, playActions } from './look-inspect.ts';
+import { captureClip, closeUpClip, objectControls, objectFrameOf, playActions } from './look-inspect.ts';
 import type { ObjectHost } from '@elabora/player/object-host';
 import { timelineMarks } from '@elabora/core/narration/view';
 import { isTimedLayer } from '@elabora/core/narration/timeline';
@@ -342,11 +342,13 @@ export async function startLooker(dir: string, { port = 0, live = true }: Looker
       if (motion) report = await measureMotion(tab, { scope: 'window' });
     }
     const backdrop = await backdropReport(tab);
+    // Where the objects' controls are, and what covers them (the window as captured).
+    const controls = objects.length ? await objectControls(tab).catch(() => []) : [];
     return {
       ok: true, screen, width, height, state: view.state, step: view.step, layer: view.layer,
       presentation: project.course.presentation?.mode === 'slides' ? 'slides' : 'scroll',
       type: marks || downThePage ? 'png' : type, image, objects, started: startedFrames, page: metrics, blocks, styles, ...(marks ? { marks: marks.map((mark) => ({ time: mark.time, label: mark.label })) } : {}),
-      ...(scrolled ? { scrolled } : {}), ...(clip ? { clip } : {}), ...(report ? { motion: report } : {}), ...(acted ? { act: acted } : {}), ...(backdrop ? { backdrop } : {}), consoleErrors: [...target.errors],
+      ...(scrolled ? { scrolled } : {}), ...(clip ? { clip } : {}), ...(report ? { motion: report } : {}), ...(acted ? { act: acted } : {}), ...(backdrop ? { backdrop } : {}), ...(controls.length ? { controls } : {}), consoleErrors: [...target.errors],
       browser: browserIdentity(tab.context().browser()!),
       ms: Math.round(performance.now() - started)
     };

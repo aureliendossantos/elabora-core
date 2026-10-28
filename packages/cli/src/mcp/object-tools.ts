@@ -16,6 +16,18 @@ export const getObject = defineTool({
   }
 });
 
+export const objectMapTool = defineTool({
+  name: 'elabora_object_map',
+  readOnly: true,
+  description: 'What to read before changing a free object, in a few thousand characters: each code file\'s sections (« // ── Name ── » comments) with their lines and the functions in them, the props (type, choices, default), the words, objects, state, events and the names of the tests. Then read only the lines a change needs.',
+  inputSchema: objectSchema({ id: SLUG, tests: { type: 'boolean', description: 'Each test\'s steps in short, one line each.' } }, ['id']),
+  async handler(args, { root }) {
+    const { objectMap } = await import('@elabora/node/objects/map');
+    const map = objectMap(root, args.id);
+    return 'error' in map ? errorResult({ error: map.error }) : textResult(args.tests ? map : { ...map, tests: map.tests.map(({ outline: _outline, ...test }) => test) });
+  }
+});
+
 export const createObject = defineTool({
   name: 'elabora_create_object',
   description: 'Scaffold a free object (objects/<id>/: manifest, code, tests, notes) serving given plan objectives. Only when no native block can do the job. decoration: a decoration of the course backdrop instead (theme.backdrop.object; no objectives): a 2D canvas that follows the course (ctx.context with the screen\'s rank, its section\'s, the direction), keeps out of the player\'s bars and lands at once when frames are still.',

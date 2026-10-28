@@ -74,8 +74,12 @@ test('elabora --help, help and no command print the reference', async () => {
   }
 });
 
-test('an unknown command prints the reference on stderr and exits with 2', async () => {
-  assert.deepEqual(await elabora(['nope']), { status: 2, stdout: '', stderr: `Unknown command "nope".\n\n${HELP}` });
+test('an unknown command lists the commands on stderr, with the near ones, and exits with 2', async () => {
+  const [nope, near] = await Promise.all([elabora(['nope']), elabora(['objct'])]);
+  assert.equal(nope.status, 2);
+  assert.match(nope.stderr, /^Unknown command "nope"\.\nCommands: init, validate, .*object map.*\.\nelabora --help prints the reference/s);
+  assert.ok(nope.stderr.length < 4000, 'not the whole reference');
+  assert.match(near.stderr, /^Unknown command "objct"\. Maybe: object new, object map, object test, object replay\./);
 });
 
 test('validate --json gives the validation of each example', async () => {
@@ -113,11 +117,16 @@ test('flags: unknown ones and missing values are refused; --help shows the comma
     elabora(['validate', '--jsn']), elabora(['build', '--out']), elabora(['codes', '--json=yes']), elabora(['validate', '--help'])
   ]);
   const project = `Project\n${HELP.split('\nProject\n')[1].split('\n\n')[0]}\n`;
-  assert.deepEqual(unknown, { status: 2, stdout: '', stderr: `Unknown option --jsn for "elabora validate".\n\n${project}` });
+  // The command's own usage, not its whole group.
+  assert.equal(unknown.status, 2);
+  assert.match(unknown.stderr, /^Unknown option --jsn for "elabora validate"\.\n\nUsage:\n {2}validate \[dir\]/);
+  assert.match(unknown.stderr, /\(elabora validate --help: its whole group\)\n$/);
+  assert.ok(!/\n {2}project /.test(unknown.stderr), 'only validate');
   assert.equal(missing.status, 2);
-  assert.match(missing.stderr, /^--out needs a value for "elabora build"\.\n\nBuild and test\n/);
+  assert.match(missing.stderr, /^--out needs a value for "elabora build"\.\n\nUsage:\n {2}build \[dir\]/);
+  assert.ok(!/\n {2}test \[dir\]/.test(missing.stderr), 'only build');
   assert.equal(valued.status, 2);
-  assert.match(valued.stderr, /^--json takes no value for "elabora codes"\.\n\nAgents\n/);
+  assert.match(valued.stderr, /^--json takes no value for "elabora codes"\.\n\nUsage:\n {2}codes/);
   assert.deepEqual(help, { status: 0, stdout: project, stderr: '' });
 });
 

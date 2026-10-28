@@ -140,3 +140,64 @@ async function offered(frame: Frame): Promise<string> {
   if (parts.length) return `The frame offers ${parts.join('; ')}.`;
   return found.canvas ? 'The frame has no control to click: it draws on a canvas (drag:x,y->x,y and key:<key> reach it).' : 'The frame has no control to click.';
 }
+
+// ── The controls of the free objects on the screen ───────────────────
+// Each control of each object's frame (a button, a field, anything that takes the focus), where it
+// is in the window, and what the page puts over the middle of its part in the window: a bar, a title, a panel there takes the
+// clicks meant for it (document.elementFromPoint). Text instead of a capture.
+export interface ObjectControl {
+  block: string;
+  role: string;
+  name: string;
+  // In px of the window, rounded.
+  box: { x: number; y: number; width: number; height: number };
+  disabled: boolean;
+  // Out of the window (not checked), or what covers its middle (null: nothing, the click reaches it).
+  outside: boolean;
+  coveredBy: string | null;
+}
+
+export async function objectControls(page: Page): Promise<ObjectControl[]> {
+  // The look's bars are inert (out of reach), and inert elements let clicks through: in a package
+  // they take them. They count again while the controls are tested.
+  await page.evaluate(() => { for (const node of document.querySelectorAll<HTMLElement>('.t-bar[inert]')) { node.inert = false; node.dataset.lookInert = ''; } });
+  try {
+    return await controlsOf(page);
+  } finally {
+    await page.evaluate(() => { for (const node of document.querySelectorAll<HTMLElement>('.t-bar[data-look-inert]')) { node.inert = true; delete node.dataset.lookInert; } }).catch(() => {});
+  }
+}
+
+async function controlsOf(page: Page): Promise<ObjectControl[]> {
+  const out: ObjectControl[] = [];
+  for (const iframe of await page.$$('iframe')) {
+    const block = await iframe.evaluate((node) => (/\/frame\.html(\?|$)/.test(node.getAttribute('src') || '') ? node.closest<HTMLElement>('[data-block]')?.dataset.block ?? null : null)).catch(() => null);
+    const frame = block ? await iframe.contentFrame() : null;
+    const at = frame ? await iframe.boundingBox() : null;
+    if (!block || !frame || !at) continue;
+    const found = await frame.evaluate(() => [...document.querySelectorAll<HTMLElement>('button, [role="button"], [role="slider"], [role="switch"], [role="tab"], input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])')]
+      .filter((node) => { const box = node.getBoundingClientRect(); return box.width > 0 && box.height > 0 && getComputedStyle(node).visibility !== 'hidden'; })
+      .map((node) => {
+        const box = node.getBoundingClientRect();
+        const name = (node.getAttribute('aria-label') || node.textContent || node.getAttribute('title') || node.getAttribute('name') || '').replace(/\s+/g, ' ').trim().slice(0, 48);
+        return { role: node.getAttribute('role') || node.tagName.toLowerCase(), name, x: box.x, y: box.y, width: box.width, height: box.height, disabled: (node as HTMLButtonElement).disabled === true || node.getAttribute('aria-disabled') === 'true' };
+      })).catch(() => []);
+    for (const control of found) {
+      const box = { x: Math.round(at.x + control.x), y: Math.round(at.y + control.y), width: Math.round(control.width), height: Math.round(control.height) };
+      // The middle of the part of it in the window.
+      const box2 = { left: at.x + control.x, top: at.y + control.y, right: at.x + control.x + control.width, bottom: at.y + control.y + control.height };
+      const coveredBy = await page.evaluate(({ element, box: b }) => {
+        const left = Math.max(0, b.left), top = Math.max(0, b.top), right = Math.min(innerWidth, b.right), bottom = Math.min(innerHeight, b.bottom);
+        if (right - left < 1 || bottom - top < 1) return 'outside';
+        const hit = document.elementFromPoint((left + right) / 2, (top + bottom) / 2);
+        if (!hit) return 'outside';
+        if (hit === element) return null;
+        const owner = hit.closest<HTMLElement>('[data-block]')?.dataset.block;
+        const classes = [...hit.classList].slice(0, 3).map((name) => `.${name}`).join('');
+        return `${hit.tagName.toLowerCase()}${hit.id ? `#${hit.id}` : ''}${classes}${owner ? ` (block ${owner})` : ''}`;
+      }, { element: iframe, box: box2 });
+      out.push({ block, role: control.role, name: control.name, box, disabled: control.disabled, outside: coveredBy === 'outside', coveredBy: coveredBy === 'outside' ? null : coveredBy });
+    }
+  }
+  return out;
+}

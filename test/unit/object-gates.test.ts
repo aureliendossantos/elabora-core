@@ -33,3 +33,20 @@ test('--update-snapshots removes the baselines of states no test names, for ever
   assert.deepEqual(result.kept, ['flash--electron-darwin.png', 'legacy--start.png', 'scroll--drawn-darwin.png', 'scroll--drawn-electron-darwin.png', 'scroll--drawn-electron-win32.png', 'scroll--drawn-win32.png'].filter((name) => name !== own));
   assert.deepEqual(fs.readdirSync(dir).sort(), ['flash--electron-darwin.png', 'legacy--start.png', 'notes.txt', 'scroll--drawn-darwin.png', 'scroll--drawn-electron-darwin.png', 'scroll--drawn-electron-win32.png', 'scroll--drawn-win32.png']);
 });
+
+test('object map: the sections of the code with their lines and functions, the manifest and the tests in a few lines', async () => {
+  const { objectMap, objectMapText, mapCode } = await import('@elabora/node/objects/map');
+  const code = mapCode('object.js', '// A demo object.\n// Two lines.\nexport function mount(container, ctx) {\n  // ── State ──\n  const ease = (x) => x;\n  function step() {}\n  // ── Start ──\n  return {};\n}\n');
+  assert.equal(code.about, 'A demo object. Two lines.');
+  assert.deepEqual(code.sections.map((section) => [section.title, section.from, section.to, section.functions.map((fn) => `${fn.name} ${fn.line}`)]), [
+    ['(top)', 1, 3, ['mount 3']], ['State', 4, 6, ['ease 5', 'step 6']], ['Start', 7, 10, []]
+  ]);
+  const map = objectMap(path.join(import.meta.dirname, '../../examples/planetary-gearset'), 'planetary-lab');
+  assert.ok(!('error' in map), JSON.stringify(map));
+  assert.equal(map.files[0].file, 'object.js');
+  assert.ok(map.props.length > 2 && map.tests.length > 0 && map.events.length > 0, JSON.stringify(map));
+  const text = objectMapText(map);
+  assert.ok(text.length < 6000 && /^props: /m.test(text) && /^tests \(\d+\): /m.test(text), text);
+  const missing = objectMap(path.join(import.meta.dirname, '../../examples/planetary-gearset'), 'nowhere');
+  assert.ok('error' in missing && /Objects: planetary-lab/.test(missing.error));
+});
