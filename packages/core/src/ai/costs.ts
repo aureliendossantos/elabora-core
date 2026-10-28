@@ -7,7 +7,7 @@
 //                                 and billed, the settings, the period, the source)
 //   ai-costs/periods.json         the providers, and each model and plan's price periods: a new model
 //                                 id, a new list price, a discount starting or ending opens a period
-//   cost-ledger.generated.ts      the periods and the averages, generated (npm run gen), shipped
+//   cost-ledger.generated.ts      the periods and the averages, generated (pnpm run gen), shipped
 //
 // An average is only ever used in its own period, the current one, and never counts on a discount:
 // one running is taken off the figures (a discount ends without notice, D30). A period with too few

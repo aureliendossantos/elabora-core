@@ -2,7 +2,7 @@
 
 > The open core of Elabora: an e-learning source format that AI agents write and people review, a validator with stable codes, a SCORM 1.2 and web compiler tested against documented LMS behaviour, and a contract that keeps custom code testable.
 
-This page is the map of the documentation. Each page is a Markdown file of this folder, read on GitHub, on [elabora.studio/en/docs/developers](https://elabora.studio/en/docs/developers/), and by agents through `elabora docs` (the MCP tool `elabora_docs`). Pages marked *generated* are written from the code by `npm run docs`: change the code, not the page.
+This page is the map of the documentation. Each page is a Markdown file of this folder, read on GitHub, on [elabora.studio/en/docs/developers](https://elabora.studio/en/docs/developers/), and by agents through `elabora docs` (the MCP tool `elabora_docs`). Pages marked *generated* are written from the code by `pnpm run docs`: change the code, not the page.
 
 ## Start here
 

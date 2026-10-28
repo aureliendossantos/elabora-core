@@ -1,6 +1,6 @@
 # Agent tools
 
-Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `npm run docs`. The same 101 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
+Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 101 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
 
 ## Reading
 

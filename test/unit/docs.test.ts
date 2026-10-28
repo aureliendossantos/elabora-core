@@ -44,7 +44,7 @@ test('every docs page is on the map, and the map names only pages that exist', (
   assert.deepEqual([...mapped].filter((file) => !fs.existsSync(path.join(ROOT, file))), [], 'docs/index.md names pages that do not exist');
   for (const page of docsIndex()) assert.ok(page.description, `${page.file}: no description on the map`);
   const index = fs.readFileSync(path.join(ROOT, 'docs/decisions.md'), 'utf8');
-  for (const decision of decisionPages()) assert.ok(index.includes(`](${decision.file.slice('docs/'.length)})`), `${decision.file} is not in docs/decisions.md: npm run docs`);
+  for (const decision of decisionPages()) assert.ok(index.includes(`](${decision.file.slice('docs/'.length)})`), `${decision.file} is not in docs/decisions.md: pnpm run docs`);
 });
 
 test('docs links resolve', () => {

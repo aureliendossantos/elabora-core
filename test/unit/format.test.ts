@@ -13,10 +13,10 @@ const readJSON = (rel: string): any => JSON.parse(fs.readFileSync(path.join(EXAM
 // Entries of a sample folder, without OS files (.DS_Store) that a checkout may hold.
 const list = (rel: string) => (fs.existsSync(path.join(EXAMPLE, rel)) ? fs.readdirSync(path.join(EXAMPLE, rel)).filter((n) => !n.startsWith('.')).sort() : []);
 
-test('generated format modules are up to date (npm run gen)', () => {
+test('generated format modules are up to date (pnpm run gen)', () => {
   for (const { path: file, content } of generateFormatFiles()) {
     const current = fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/\r\n/g, '\n');
-    assert.ok(current === content, `${file} is stale: run npm run gen`);
+    assert.ok(current === content, `${file} is stale: run pnpm run gen`);
   }
 });
 

@@ -9,7 +9,7 @@ import { testPackage } from '@elabora/node/emulator/run';
 import { fitDiagnostics, measureFit } from '@elabora/node/preview';
 import { testObject } from '@elabora/node/objects/test';
 
-// The scroll sample (slow; npm run test:matrix): long pages with scroll-driven design, Continue
+// The scroll sample (slow; pnpm run test:matrix): long pages with scroll-driven design, Continue
 // buttons in the page, steps that open once answered, Previous and Next at the end of the page,
 // and a 3D chart table that appears as the page scrolls to it.
 const SOURCE = path.resolve(import.meta.dirname, '../../examples/medieval-charts');

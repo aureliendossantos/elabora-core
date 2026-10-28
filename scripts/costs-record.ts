@@ -1,6 +1,6 @@
-// npm run costs:record [-- --dry-run]: appends to the ledger of what paid AI services charge
+// pnpm run costs:record [-- --dry-run]: appends to the ledger of what paid AI services charge
 // (ai-costs/, docs/decisions.md D36) the requests the service's history has that the ledger lacks, then
-// generates the averages again (npm run gen's cost-ledger.generated.ts). A tool for Elabora's own
+// generates the averages again (pnpm run gen's cost-ledger.generated.ts). A tool for Elabora's own
 // experiments, run by us with our own key: authors never run it.
 //
 // ElevenLabs: GET /v1/history (reading it costs no credits; the text sent is in each item's dialogue,
@@ -114,7 +114,7 @@ export async function recordElevenLabs(options: { ledgerDir?: string; keyFile?: 
   const all = [...measurements, ...added];
   const averages = new Map<string, CostAverage>(costAverages(ledger, measurements).map((a) => [a.key, a]));
   for (const m of added) {
-    if (!m.period) { warnings.push(`${m.source.id} (${m.model}, ${m.plan}, ${m.date}): no price period holds it; add one to ai-costs/periods.json, then npm run gen`); continue; }
+    if (!m.period) { warnings.push(`${m.source.id} (${m.model}, ${m.plan}, ${m.date}): no price period holds it; add one to ai-costs/periods.json, then pnpm run gen`); continue; }
     const period = ledger.periods.find((p) => p.id === m.period)!;
     const average = averages.get(costKey(period.id, priceSettings(ledger.providers.elevenlabs, m.kind, m.settings)));
     const list = listCost(ledger, period, m);

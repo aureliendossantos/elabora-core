@@ -36,11 +36,12 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.action == 'closed' && github.event.pull_request.merge_commit_sha || github.sha }}
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: npm
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
 
       # ffmpeg: the GPL builds of BtbN/FFmpeg-Builds (libx264, libwebp, zimg) on Linux and
       # Windows, Homebrew on macOS. Google Chrome and Microsoft Edge are already installed on the
@@ -65,12 +66,12 @@ jobs:
         run: brew install ffmpeg
       - run: ffmpeg -hide_banner -version
 
-      - run: npm run typecheck
-      - run: npm run release:check
-      - run: npm test
+      - run: pnpm run typecheck
+      - run: pnpm run release:check
+      - run: pnpm test
       # Windows: the browser suites pass on a Windows 11 machine (24 of 24 on 7 Oct 2026) but three
       # canvas tests time out on GitHub's Windows runners: they run on Linux and macOS here.
-      - run: npm run test:e2e
+      - run: pnpm run test:e2e
         if: runner.os != 'Windows'
-      - run: npm run test:matrix
+      - run: pnpm run test:matrix
         if: runner.os != 'Windows'

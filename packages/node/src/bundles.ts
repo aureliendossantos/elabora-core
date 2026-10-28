@@ -64,7 +64,7 @@ export async function reviewFiles({ debug = false }: { debug?: boolean } = {}): 
 
 export function vendorThree(): Record<string, Buffer> {
   const file = path.join(PACKAGE_ROOT, 'vendor/three-r186.js');
-  if (!fs.existsSync(file)) throw new Error('vendor/three-r186.js missing: run `npm run vendor` in the Elabora package.');
+  if (!fs.existsSync(file)) throw new Error('vendor/three-r186.js missing: run `pnpm run vendor` in the Elabora package.');
   return { 'elabora/vendor/three-r186.js': fs.readFileSync(file), 'elabora/vendor/three-LICENSE.txt': fs.readFileSync(path.join(PACKAGE_ROOT, 'vendor/three-LICENSE.txt')) };
 }
 

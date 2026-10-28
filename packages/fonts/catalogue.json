@@ -1,6 +1,6 @@
 {
   "format": "elabora-fonts/2",
-  "generated": "by npm run fonts from sources.json: do not edit",
+  "generated": "by pnpm run fonts from sources.json: do not edit",
   "subsets": [
     {
       "name": "latin",
