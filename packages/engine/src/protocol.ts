@@ -17,6 +17,8 @@ import type { VoiceInfo, VoiceStatus, GenerateResult, TakeInfo, VoiceProgress, V
 import type { AlignerView, AlignProgress, AlignResult } from '@elabora/node/align/types';
 import type { TranscribeProgress, Transcript, TranscriberView, TranscriptionEstimate, TranscriptionService } from '@elabora/node/transcribe/types';
 import type { NarrationPeaks, ImportedFile, LineFromAudioFileArgs, TextFromAudioFileArgs } from '@elabora/node/narration/types';
+import type { AddSoundArgs, GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, SoundSearchParams } from '@elabora/node/sounds/types';
+import type { CourseSound } from '@elabora/core/sounds/sounds';
 import type {
   CreateScreenArgs, UpdateScreenArgs, MoveScreenArgs, AddBlockArgs, ConvertBlockArgs, ConvertTarget, UpdateBlockArgs, MoveBlockArgs, DuplicateBlockArgs, UpdateCourseArgs, UpdatePlayerArgs, IgnoreFindingsArgs,
   CreateObjectArgs, WriteObjectFileArgs, CreateComponentArgs, ForkComponentArgs,
@@ -143,6 +145,9 @@ export interface CommandArgs {
   add_font: FontRequest & AddFontArgs;
   // The import report (D47): decisions accepted as the import made them, or the report closed.
   settle_import_report: SettleImportReportArgs;
+  // « Ajouter un son » (D67): a sound of the library, Openverse's or a file into assets/sounds/ with
+  // its sidecar (where it comes from, its licence), cut and faded as asked, in one change.
+  add_sound: AddSoundArgs;
 }
 
 export type CommandName = keyof CommandArgs;
@@ -588,6 +593,14 @@ export interface Requests {
   voiceAccount: { params: { provider: 'elevenlabs'; check?: boolean }; result: VoiceAccount };
   voiceSearch: { params: VoiceQuery; result: VoiceSearchResult };
   voiceEstimate: { params: GenerateVoiceParams; result: VoiceEstimate };
+  // Sounds (D67): the sound browser's search (« Sons courants » offline, Openverse online), a sound's
+  // bytes to hear it before adding it, the module's sounds with their sidecars, and a sound made with
+  // ElevenLabs (estimated first; added by add_sound through the queue).
+  soundSearch: { params: SoundSearchParams; result: { sounds: SoundFound[] } };
+  soundPreview: { params: { from: string }; result: { audio: Uint8Array; type: string } };
+  courseSounds: { params: NoParams; result: CourseSound[] };
+  soundEstimate: { params: { duration?: number }; result: SoundEstimate };
+  generateSound: { params: GenerateSoundParams; result: GeneratedSound };
   generateVoice: { params: GenerateVoiceParams; result: GenerateResult };
   voiceTakes: { params: { screen: string; line: string; language?: string }; result: { language: string; takes: TakeInfo[] } };
   // Stops what the voices are making: a screen's generation (its lines said so far stay, the result

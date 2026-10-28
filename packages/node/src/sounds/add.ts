@@ -16,6 +16,7 @@ import { runCommand, type EditOptions, type EditResult } from '../edit/executor.
 import { libraryFile, librarySounds } from './library.ts';
 import { openverseSound } from './openverse.ts';
 import { ELABORA_VERSION } from '../bundles.ts';
+import type { AddSoundArgs } from './types.ts';
 
 const run = promisify(execFile);
 
@@ -24,24 +25,8 @@ const run = promisify(execFile);
 // needs no cut is kept as it came (no second lossy encoding before the build); a cut, a fade or a
 // lossless original are written as FLAC, or as AAC at 256 kb/s for an ambience or a long sound.
 
-export interface AddSoundRequest {
-  // A library id (telephone-fixe), openverse:<uuid>, or a file.
-  from: string;
-  id?: string;
-  // The part kept (seconds) and a fade out at its end (seconds).
-  trim?: { start: number; end: number };
-  fade?: number;
-  loop?: boolean;
-  // For a file: what its source says.
-  title?: string;
-  author?: string;
-  license?: string;
-  url?: string;
-  caption?: Record<string, string>;
-  // Made by an AI service (sound generate).
-  generated?: Sound['generated'];
-  signal?: AbortSignal;
-}
+// A library id (telephone-fixe), openverse:<uuid>, or a file (types.ts, for the engine's protocol).
+export type AddSoundRequest = AddSoundArgs & { signal?: AbortSignal };
 
 // Kept as they come when nothing is cut: FLAC, and the lossy formats (never encoded twice).
 const KEPT = new Map([['flac', '.flac'], ['vorbis', '.ogg'], ['opus', '.opus'], ['aac', '.m4a'], ['mp3', '.mp3']]);
@@ -80,8 +65,8 @@ export async function addSound(dir: string, request: AddSoundRequest, options?: 
     const bytes = fs.readFileSync(output);
     const hash = hashBytes(bytes);
     const result = runCommand(dir, {
-      name: 'add_sound', args: { id: request.id ?? id, from: request.from },
-      run: (context) => addSoundCommand(context, { id: request.id ?? id, extension, file: binaryFile(bytes.length, { hash }), sidecar: full }),
+      name: 'add_sound', args: { id: request.id ?? id, from: request.from, ...(request.line ? { line: request.line } : {}) },
+      run: (context) => addSoundCommand(context, { id: request.id ?? id, extension, file: binaryFile(bytes.length, { hash }), sidecar: full, ...(request.line ? { line: request.line } : {}) }),
       sources: new Map([[hash, output]])
     }, options);
     return { ...result, source: full.source ?? 'file', license: full.license, duration };
@@ -103,7 +88,7 @@ async function source(request: AddSoundRequest, work: string): Promise<{ file: s
   if (library) {
     return {
       file: libraryFile(library), id: library.id,
-      sidecar: given({ title: library.title.en, source: 'library', sourceId: library.id, url: library.url, author: library.author, license: library.license, licenseUrl: library.licenseUrl, checked: library.checked, ...(library.kind === 'ambience' ? { loop: true } : {}), ...(library.caption ? { caption: library.caption } : {}) })
+      sidecar: given({ title: library.title.en, source: 'library', sourceId: library.id, url: library.url, author: library.author, license: library.license, licenseUrl: library.licenseUrl, ...(library.credit ? { credit: library.credit } : {}), checked: library.checked, ...(library.kind === 'ambience' ? { loop: true } : {}), ...(library.caption ? { caption: library.caption } : {}) })
     };
   }
   if (request.from.startsWith('openverse:')) {

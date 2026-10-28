@@ -4,7 +4,7 @@ import { codeInfo } from '../diagnostics/codes.ts';
 import { keySubject } from '../diagnostics/index.ts';
 
 // Settings of course.json that update_course replaces (sections included: reorders become moves).
-export const COURSE_FIELDS = ['title', 'description', 'version', 'durationMinutes', 'theme', 'presentation', 'navigation', 'completion', 'tracking', 'delivery', 'ui', 'sections', 'speakers', 'pronunciations', 'narration'] as const;
+export const COURSE_FIELDS = ['title', 'description', 'version', 'durationMinutes', 'theme', 'presentation', 'navigation', 'completion', 'tracking', 'delivery', 'ui', 'sections', 'speakers', 'pronunciations', 'narration', 'sounds'] as const;
 export type UpdateCourseArgs = { [K in (typeof COURSE_FIELDS)[number]]?: Course[K] };
 
 export function updateCourseSettings(context: CommandContext, fields: UpdateCourseArgs): CommandOutput<Record<string, never>> {
