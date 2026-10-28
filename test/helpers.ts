@@ -4,6 +4,8 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Frame, Locator, Page } from 'playwright-core';
 import type { Diagnostic } from '@elabora/core/diagnostics/index';
+import { probeCachePath } from '@elabora/node/media/probe';
+import { readProjectFiles } from '@elabora/node/project-reader';
 
 // No word timing at once in tests: a computer with the word aligner installed would time the test
 // tones (docs/decisions.md D27). A test that wants it sets ELABORA_ALIGN=1 for its call.
@@ -36,10 +38,32 @@ export const EXAMPLE = path.join(ROOT, 'test/fixtures/format-0.1/diagnostic-rese
 export const moduleUrl = (rel: string) => pathToFileURL(path.join(ROOT, rel)).href;
 
 // Fresh copy of a course (by default the example) in a temp folder: tests never modify the examples.
+// The copy keeps the files' times, as a course on an author's disk has them: its media are probed
+// once per run, the first copy's probe cache seeding the next ones (ELABORA_TEST_PROBES, set by
+// test/isolate.ts), instead of ffprobe at every snapshot of every copy.
 export function copyExample(source: string = EXAMPLE): string {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-test-'));
-  fs.cpSync(source, dir, { recursive: true, filter: (src) => !/[\\/](dist|\.elabora)([\\/]|$)/.test(src.slice(source.length)) });
+  fs.cpSync(source, dir, { recursive: true, preserveTimestamps: true, filter: (src) => !/[\\/](dist|\.elabora)([\\/]|$)/.test(src.slice(source.length)) });
+  seedProbes(source, dir);
   return dir;
+}
+
+function seedProbes(source: string, dir: string): void {
+  const seeds = process.env.ELABORA_TEST_PROBES;
+  if (!seeds || process.env.ELABORA_DATA_DIR) return;
+  const seed = path.join(seeds, `${path.relative(ROOT, source).replace(/[\\/]/g, '~')}.json`);
+  const cache = probeCachePath(dir);
+  if (!fs.existsSync(seed)) {
+    readProjectFiles(dir);
+    if (!fs.existsSync(cache)) return;
+    fs.mkdirSync(seeds, { recursive: true });
+    const temporary = `${seed}.${process.pid}.tmp`;
+    fs.copyFileSync(cache, temporary);
+    fs.renameSync(temporary, seed);
+    return;
+  }
+  fs.mkdirSync(path.dirname(cache), { recursive: true });
+  fs.copyFileSync(seed, cache);
 }
 
 // A JSON file of a fixture. Tests reshape fixtures freely (invalid ones included), so the value
