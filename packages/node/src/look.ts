@@ -28,7 +28,7 @@ import { findDialogue } from '@elabora/core/dialogue/project';
 import { playDialogue } from '@elabora/core/dialogue/play';
 import { codeVersion } from './code-version.ts';
 import { findLookServer, lookServerFile, parseLookAction, TOKEN_HEADER } from './look-client.ts';
-import type { LookAction, LookRequest, LookResult, LookServerInfo } from './look-client.ts';
+import type { BackdropReport, LookAction, LookRequest, LookResult, LookServerInfo } from './look-client.ts';
 import { writeFileAtomic } from './util/fs.ts';
 import { pageStyleConflicts } from './style-cascade.ts';
 import { errorMessage } from './util/values.ts';
@@ -80,6 +80,20 @@ interface LookPage {
 const MAX_PAGES = 3;
 // Tool folders and files that are not the course's.
 const NOT_COURSE = /^(\.elabora|dist|node_modules|\.git)([\\/]|$)/;
+
+// The backdrop as the page shows it (null: the course has none).
+export function backdropReport(page: Page): Promise<BackdropReport | null> {
+  return page.evaluate(() => {
+    const node = document.querySelector<HTMLElement>('.t-backdrop');
+    if (!node) return null;
+    const holder = node.querySelector<HTMLElement>('.t-backdrop-object');
+    const state = holder?.dataset.state;
+    return {
+      screen: node.dataset.screen ?? null, section: node.dataset.section ?? null, step: node.dataset.step ? Number(node.dataset.step) : null, variant: node.dataset.variant ?? null, hidden: node.hidden === true,
+      object: holder ? { id: holder.dataset.object || '', state: state === 'ready' || state === 'failed' ? state : 'starting' } : null
+    };
+  });
+}
 
 export async function startLooker(dir: string, { port = 0, live = true }: LookerOptions = {}): Promise<Looker> {
   const root = path.resolve(dir);
@@ -327,11 +341,12 @@ export async function startLooker(dir: string, { port = 0, live = true }: Looker
       image = await tab.screenshot(type === 'jpeg' ? { type, quality: 90 } : { type });
       if (motion) report = await measureMotion(tab, { scope: 'window' });
     }
+    const backdrop = await backdropReport(tab);
     return {
       ok: true, screen, width, height, state: view.state, step: view.step, layer: view.layer,
       presentation: project.course.presentation?.mode === 'slides' ? 'slides' : 'scroll',
       type: marks || downThePage ? 'png' : type, image, objects, started: startedFrames, page: metrics, blocks, styles, ...(marks ? { marks: marks.map((mark) => ({ time: mark.time, label: mark.label })) } : {}),
-      ...(scrolled ? { scrolled } : {}), ...(clip ? { clip } : {}), ...(report ? { motion: report } : {}), ...(acted ? { act: acted } : {}), consoleErrors: [...target.errors],
+      ...(scrolled ? { scrolled } : {}), ...(clip ? { clip } : {}), ...(report ? { motion: report } : {}), ...(acted ? { act: acted } : {}), ...(backdrop ? { backdrop } : {}), consoleErrors: [...target.errors],
       browser: browserIdentity(tab.context().browser()!),
       ms: Math.round(performance.now() - started)
     };

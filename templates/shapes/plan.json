@@ -1,0 +1,67 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/plan.schema.json",
+  "id": "PLAN-SHAPES",
+  "title": "Your module title",
+  "businessGoal": "Replace with the change this module should bring to the team (template placeholder).",
+  "audience": {
+    "role": "Template: methods, frameworks, processes, young learners",
+    "priorKnowledge": "low"
+  },
+  "sources": [],
+  "objectives": [
+    {
+      "id": "OBJ-1",
+      "statement": "Pick the right step of the method for a realistic situation, and say why."
+    }
+  ],
+  "items": [
+    {
+      "id": "ITEM-1",
+      "kind": "intro",
+      "title": "Welcome and objectives",
+      "objectives": []
+    },
+    {
+      "id": "ITEM-2",
+      "kind": "intro",
+      "title": "Opening of the first part",
+      "objectives": []
+    },
+    {
+      "id": "ITEM-3",
+      "kind": "exposition",
+      "title": "The key idea, explained",
+      "objectives": [
+        "OBJ-1"
+      ]
+    },
+    {
+      "id": "ITEM-4",
+      "kind": "exposition",
+      "title": "Figures, steps, voices and comparisons",
+      "objectives": [
+        "OBJ-1"
+      ]
+    },
+    {
+      "id": "ITEM-5",
+      "kind": "practice",
+      "title": "Practice: a realistic situation",
+      "objectives": [
+        "OBJ-1"
+      ]
+    },
+    {
+      "id": "ITEM-6",
+      "kind": "summary",
+      "title": "Recap and next step",
+      "objectives": []
+    }
+  ],
+  "spacing": [],
+  "waivers": [],
+  "duration": {
+    "min": 10,
+    "max": 20
+  }
+}

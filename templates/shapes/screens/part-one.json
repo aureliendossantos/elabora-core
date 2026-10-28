@@ -1,0 +1,33 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "part-one",
+  "title": "Title of the first part",
+  "covers": [
+    "ITEM-2"
+  ],
+  "layout": "poster",
+  "layoutProps": {
+    "arrangement": "split"
+  },
+  "blocks": [
+    {
+      "id": "part-one-lead",
+      "type": "text",
+      "slot": "lead",
+      "props": {
+        "markdown": "One sentence that says what this part brings, and the question it answers."
+      }
+    },
+    {
+      "id": "part-one-mark",
+      "type": "part-mark",
+      "slot": "body",
+      "props": {
+        "label": "Part",
+        "number": "01",
+        "shape": "circle",
+        "colour": "color.shape-2"
+      }
+    }
+  ]
+}

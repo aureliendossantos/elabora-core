@@ -9,6 +9,10 @@ init <dir> --id <id> --title <title> [--lang fr]   Scaffold a course project (co
      [--audience <who>] [--business-goal <goal>]    What the author already said of it: the plan's audience, business goal and
      [--duration 10-20|5|30+] [--presentation        duration in minutes, the presentation, the LMS, and notes for agents in
      slides|scroll] [--lms a,b] [--notes <text>]    AGENTS.md (the tone, the brand wanted, what is left to the agent)
+     [--template <id>]                              Start from a module template (elabora templates): its charter and its
+                                                    screens with placeholder texts, in --lang when it is translated into it
+templates [--json]                                  The module templates: a charter (theme, fonts, components, an animated
+                                                    backdrop and its variants) and 14 screens of placeholder texts each
 validate [dir] [--profile a,b] [--release] [--json] Check format, plan conformity, pedagogy, accessibility, budgets
 project [dir] [--client] [--screen <id>]            Markdown view of the course (agent map, or client review)
 migrate [dir] [--dry-run] [--json]                  Write the course in the current format (older ones are read migrated): one
@@ -28,8 +32,9 @@ projects list [--json] [--validate]                 Projects of the library, new
 projects path [<id>] [--set <dir> [--move|--copy]]  Folder of the library, or of a project (id or its first characters).
                                                     --set: use another folder; --move takes the projects along; --copy
                                                     moves them by copying and checking every file (another disk)
-projects create <course-id> --title <t> [--language fr]
-                                                    Create a course in the library
+projects create <course-id> --title <t> [--language fr] [--template <id>]
+                                                    Create a course in the library, blank or from a module template
+                                                    (elabora templates)
 projects duplicate <id> [--title <t>]               Copy a project under a new id (same course id; the history stays)
 projects rename <id> --title <t>                    Change the title of a project (an undoable edit of course.json)
 projects trash <id>                                 Move a project, history included, to the library's trash
@@ -306,7 +311,8 @@ build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--m
                                                     (elabora-review/1, docs/review-bridge.md) and talks to that page
                                                     only; progress none, navigation free and noindex by default
 test [dir] [--package <zip>] [--profile a,b|all] [--mode iframe,popup…] [--browser chromium,electron,chrome,msedge,playwright,firefox,webkit] [--parallel 4] [--no-a11y] [--json]
-                                                    Run the package in the LMS emulator (profiles × launch modes × browsers)
+                                                    Run the package in the LMS emulator (profiles × launch modes × browsers);
+                                                    4 runs side by side by default, fewer on a loaded machine
 preview [dir] [--port 4807] [--profile <id>]        Live preview (standalone and in the LMS emulator): pages reload after each
                                                     rebuild; free objects show in the in-app browsers of agent apps
 look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|answered] [--step <n>] [--layer <id>]
@@ -349,10 +355,13 @@ screenshot [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state init
                                                     objects). One contact sheet. Several shots share one build and one browser;
                                                     --out names one image, so several shots are refused with it (exit code 2):
                                                     --out-dir gets one file each
-fit [dir] [--screen <id>,…] [--reference 1600x900] [--minimum 1280x720] [--fresh] [--json]
+fit [dir] [--screen <id>,…] [--reference 1600x900] [--minimum 1280x720] [--phone 375x812|none] [--language <code> [--allow-missing]] [--fresh] [--json]
                                                     Measure every slide (all steps shown) at the fit sizes: what scrolls, by how
                                                     much, and what moves once its activities are answered. In scroll presentation:
                                                     the length of each page and the contrast of its text, down the whole page.
+                                                    On a phone (375×812 unless sizes are given): the contrast of the text down
+                                                    the page and the player's bars that go onto two lines. --language: the
+                                                    translation (--allow-missing: a draft, missing texts in the source language).
                                                     A screen unchanged since its last measure (its files, the theme, components,
                                                     objects, Elabora, the browser) is not measured again: its fit is reused
                                                     (--fresh measures every screen again)

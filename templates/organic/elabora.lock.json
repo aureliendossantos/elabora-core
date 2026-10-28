@@ -1,0 +1,25 @@
+{
+  "format": "elabora-lock/1",
+  "next": 18,
+  "keys": {
+    "screen:cover": "0",
+    "screen:objectives": "1",
+    "screen:part-one": "2",
+    "screen:key-message": "3",
+    "screen:text-and-picture": "4",
+    "screen:cards": "5",
+    "screen:key-figures": "6",
+    "screen:practice": "7",
+    "screen:steps": "8",
+    "screen:quote": "9",
+    "screen:comparison": "a",
+    "screen:chart": "b",
+    "screen:recap": "c",
+    "screen:the-end": "d",
+    "quiz:practice-quiz": "e",
+    "visit:recap-cards#recap-1": "f",
+    "visit:recap-cards#recap-2": "g",
+    "visit:recap-cards#recap-3": "h"
+  },
+  "components": {}
+}

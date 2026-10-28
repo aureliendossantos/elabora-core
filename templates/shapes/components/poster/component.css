@@ -1,0 +1,37 @@
+/* Poster: an asymmetric page. Stacked, the text keeps the left of the slide (the backdrop composes
+   the right); split, the title on the left and the page on the right. Sizes in rem (1600×900). */
+.t-layout--poster .sh-poster {
+  display: grid;
+  gap: var(--poster-gap, 1.75rem);
+  align-content: center;
+  min-height: 100%;
+  max-width: var(--poster-stack-width, 46rem);
+}
+.t-layout--poster .sh-poster[data-arrangement="split"] {
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: var(--poster-gap, 4rem);
+  align-items: center;
+  max-width: none;
+}
+.t-layout--poster .sh-poster-head { display: grid; gap: 1.25rem; align-content: start; }
+.t-layout--poster .sh-poster-title .t-screen-title {
+  margin: 0;
+  max-width: none;
+  font-family: var(--t-font-heading);
+  font-weight: 800;
+  font-size: var(--poster-title-size, clamp(2.5rem, 4.6vw, 4.25rem));
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+.t-layout--poster .sh-poster-lead:empty,
+.t-layout--poster .sh-poster-body:empty { display: none; }
+.t-layout--poster .sh-poster-lead .t-text { font-size: 1.3125rem; line-height: 1.45; max-width: 36rem; }
+.t-layout--poster .sh-poster-body { min-width: 0; display: grid; gap: 1.25rem; align-content: start; }
+
+@container (max-width: 820px) {
+  .t-layout--poster .sh-poster,
+  .t-layout--poster .sh-poster[data-arrangement="split"] { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; max-width: none; align-content: start; }
+  .t-layout--poster .sh-poster-title .t-screen-title { font-size: clamp(2rem, 9vw, 2.75rem); }
+  .t-layout--poster .sh-poster-lead .t-text { font-size: 1.125rem; }
+}

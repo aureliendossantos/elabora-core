@@ -16,12 +16,12 @@ const elabora = (args: string[]) => spawnSync(process.execPath, [BIN, ...args], 
 const sha = (text: string) => crypto.createHash('sha256').update(text).digest('hex').slice(0, 16);
 const marked = (revision: number, rules: string, notes = '\n## Notes for this course\nAudience : étudiants de licence.\n') => `<!-- elabora:rules revision=${revision} sha256=${sha(rules)} · … -->\n${rules.slice(0, -1)}\n<!-- elabora:rules end -->\n${notes}`;
 
-test('the rules history ends with the template, and the examples carry it (pnpm run gen)', () => {
+test('the rules history ends with the template, and the examples and module templates carry it (pnpm run gen)', () => {
   const history = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages/node/templates/agents-revisions.json'), 'utf8')).revisions;
   const { text, revision } = currentRules();
   assert.equal(history.at(-1).sha, sha(text), 'the template changed: run pnpm run gen');
   assert.equal(history.at(-1).revision, revision);
-  const courses = [...fs.readdirSync(path.join(ROOT, 'examples')).map((name) => path.join('examples', name)), path.join('test/fixtures/format-0.1/diagnostic-reseau')];
+  const courses = [...['examples', 'templates'].flatMap((folder) => fs.readdirSync(path.join(ROOT, folder), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => path.join(folder, entry.name))), path.join('test/fixtures/format-0.1/diagnostic-reseau')];
   for (const course of courses) {
     const file = path.join(ROOT, course, 'AGENTS.md');
     if (fs.existsSync(file)) assert.equal(agentRulesState(fs.readFileSync(file, 'utf8')).status, 'current', course);

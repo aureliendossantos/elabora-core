@@ -162,7 +162,7 @@ export async function testPackage(options: TestPackageOptions): Promise<PackageT
   try {
     let next = 0;
     const worker = async () => { while (next < tasks.length) { const index = next++; await runTask(tasks[index], index); } };
-    await Promise.all(Array.from({ length: Math.max(1, Math.min(options.parallel || PARALLEL, tasks.length)) }, worker));
+    await Promise.all(Array.from({ length: Math.max(1, Math.min(options.parallel || defaultParallel(), tasks.length)) }, worker));
   } finally {
     for (const browser of browsersOpen.values()) await (await browser.catch(() => null))?.close();
     await server.close();
@@ -215,7 +215,12 @@ function runContext(fields: Omit<RunContext, 'step' | 'at' | 'contexts' | 'progr
 const STALL_MS = 90000;
 // Content that never opens fails after this long (generous: a loaded machine opens windows slowly).
 const LAUNCH_MS = 30000;
-const PARALLEL = 4;
+// Runs side by side by default: four, fewer on a loaded machine (its windows open and draw slowly,
+// and a run that waits on another stalls): two above half a load per core, one above a load per core.
+export function defaultParallel(load = os.loadavg()[0], cores = os.availableParallelism()): number {
+  const perCore = load / Math.max(1, cores);
+  return perCore >= 1 ? 1 : perCore >= 0.5 ? 2 : 4;
+}
 async function watched(run: RunContext, scenario: () => Promise<void>): Promise<void> {
   run.progress('launch');
   let timer: ReturnType<typeof setInterval> | undefined;

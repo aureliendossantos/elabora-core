@@ -1,0 +1,74 @@
+{
+  "object": "drift",
+  "version": "1.0.0",
+  "elabora": "0.1.0",
+  "at": "2026-10-28T18:43:58.431Z",
+  "ok": true,
+  "browser": {
+    "engine": "electron",
+    "version": "152.0.7977.167"
+  },
+  "gates": {
+    "smoke": "passed",
+    "behaviour": "passed",
+    "budget": "passed",
+    "visual": "passed",
+    "accessibility": "passed"
+  },
+  "perf": {
+    "drawCalls": null,
+    "triangles": null,
+    "textures": null,
+    "geometries": null,
+    "maxTextureSize": null,
+    "webglContexts": 0,
+    "contextLost": false,
+    "bootMs": 71,
+    "bootSamples": [
+      77,
+      78,
+      71,
+      60,
+      59,
+      67,
+      74,
+      58,
+      79
+    ]
+  },
+  "tests": [
+    {
+      "name": "Warm blobs on the cover",
+      "ok": true
+    },
+    {
+      "name": "A new part: the blobs migrate and glide to a cooler hue",
+      "ok": true
+    },
+    {
+      "name": "Just after mount, a new screen lands at once",
+      "ok": true
+    },
+    {
+      "name": "A section outside the journey keeps the hue it had",
+      "ok": true
+    },
+    {
+      "name": "Variants: night and monochrome",
+      "ok": true
+    },
+    {
+      "name": "Reduced motion: still images, the new composition at once",
+      "ok": true
+    },
+    {
+      "name": "Phone",
+      "ok": true
+    },
+    {
+      "name": "Settings apply without remounting",
+      "ok": true
+    }
+  ],
+  "fingerprint": "sha256:7f1d78850e6311cc42f9a2fe1314879b29348510615f5a6dd672abc18d24e454"
+}

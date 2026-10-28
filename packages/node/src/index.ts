@@ -55,6 +55,8 @@ export { serveFile, byteRange, mimeType, MIME_TYPES } from './canvas/files.ts';
 // Scaffolding, asset generators, component migrations.
 export { initProject, TEMPLATES_DIR } from './scaffold.ts';
 export type { InitOptions } from './scaffold.ts';
+export { listModuleTemplates, moduleTemplate, createFromTemplate, MODULE_TEMPLATES_DIR } from './module-templates.ts';
+export type { ModuleTemplate, FromTemplateOptions, FromTemplateResult } from './module-templates.ts';
 export { runGenerators, GENERATORS_DIR, PROVENANCE_FILE } from './generators.ts';
 export type { GeneratorApi, GeneratorOptions, GeneratorResult } from './generators.ts';
 export { loadMigrations } from './component-migrations.ts';

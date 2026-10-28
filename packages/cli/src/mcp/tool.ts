@@ -1,5 +1,6 @@
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import type { ValidateFunction } from 'ajv/dist/2020.js';
+import { MULTIPLE_OF_PRECISION } from '@elabora/format';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { Author } from '@elabora/core/ops/types';
 import type { EditResult } from '@elabora/node/edit';
@@ -93,7 +94,7 @@ export interface Tool {
   call(args: unknown, context: ToolContext): Promise<CallToolResult>;
 }
 
-const ajv = new Ajv2020({ allErrors: true, strict: false });
+const ajv = new Ajv2020({ allErrors: true, strict: false, multipleOfPrecision: MULTIPLE_OF_PRECISION });
 
 export function defineTool<Schema extends InputSchema>(definition: ToolDefinition<Schema>): Tool {
   let validate: ValidateFunction<ArgumentsOf<Schema>> | undefined;

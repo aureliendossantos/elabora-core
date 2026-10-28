@@ -168,7 +168,7 @@ See a screen while designing, in well under a second: a look server kept warm fo
 
 ### `elabora_check_fit`
 
-Measure every screen with all its steps in a real browser at the fit sizes of the course (presentation.fit: reference 1600×900, minimum 1280×720 by default) and say which slides scroll, by how many px, which blocks end below the fold, and what moves once the activities are answered (layout shift), plus text too faint against what is behind it. In scroll presentation (pages of any length) nothing has to fit: it gives the length of each page and the contrast of its text, down the whole page. A screen unchanged since its last measure (its files, the theme, components, objects, Elabora, the browser) is not measured again: its fit comes back with reused (its date); fresh measures every screen again. About a second per slide and a few seconds per scroll page measured; after a change, pass screens: the ones it touched.
+Measure every screen with all its steps in a real browser at the fit sizes of the course (presentation.fit: reference 1600×900, minimum 1280×720 by default) and say which slides scroll, by how many px, which blocks end below the fold, and what moves once the activities are answered (layout shift), plus text too faint against what is behind it; on a phone (375×812), the contrast down the page and the player's bars that go onto two lines (W_PLAYER_BAR_WRAPS). In scroll presentation (pages of any length) nothing has to fit: it gives the length of each page and the contrast of its text, down the whole page. A screen unchanged since its last measure (its files, the theme, components, objects, Elabora, the browser) is not measured again: its fit comes back with reused (its date); fresh measures every screen again. About a second per slide and a few seconds per scroll page measured; after a change, pass screens: the ones it touched.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -176,6 +176,7 @@ Measure every screen with all its steps in a real browser at the fit sizes of th
 | `fresh` | boolean |  | Measure again the screens unchanged since their last measure. |
 | `reference` | string |  |  |
 | `minimum` | string |  |  |
+| `phone` | string |  | The phone size (default 375x812 when reference and minimum are not given), or none. |
 | `language` | string |  | A BCP 47 tag: en, de, pt-BR. |
 | `allowMissing` | boolean |  | With language: check the draft, leaving missing/stale texts in the source language. |
 

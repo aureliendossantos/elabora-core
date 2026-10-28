@@ -1,0 +1,26 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "objectives",
+  "title": "What you will be able to do",
+  "covers": [
+    "ITEM-1"
+  ],
+  "blocks": [
+    {
+      "id": "agenda-list",
+      "type": "text",
+      "style": "agenda",
+      "props": {
+        "markdown": "1. **Recognise the situations**  \n   One line on where the rule applies, and why it matters in daily work.\n2. **Apply the procedure**  \n   One line on the steps to follow, in the right order.\n3. **Choose the first action**  \n   One line on deciding in a real case, and saying why."
+      }
+    },
+    {
+      "id": "agenda-goal",
+      "type": "text",
+      "style": "lead",
+      "props": {
+        "markdown": "Three parts, about fifteen minutes, with one question to check what you have learnt."
+      }
+    }
+  ]
+}
