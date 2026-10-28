@@ -248,6 +248,7 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
     for (const beat of state.beats.slice(0, state.presented)) {
       if (beat.type === 'line') said.push({ ...(beat.role === 'narration' ? {} : { speaker: speakerName(thread, beat.line.speaker, beat.role === 'learner') }), text: beat.line.text });
       else if (beat.type === 'choice') { const option = optionOf(data, beat.node, beat.option); if (option?.text) said.push({ speaker: speakerName(thread, learnerSpeaker, true), text: option.text }); }
+      else if (beat.type === 'sound' && beat.line.caption) said.push({ text: beat.line.caption });
     }
     return said.length ? { title: data.title, lines: said } : null;
   }

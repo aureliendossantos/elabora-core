@@ -203,6 +203,8 @@ test('a dialogue: a sound line rings with its caption in the thread before the n
     const caption = page.locator('.t-dialogue-row[data-sound="sonnerie"] .t-dialogue-narration');
     await caption.waitFor({ timeout: 30000 });
     assert.equal(await caption.textContent(), 'The phone rings.');
+    const transcript = await page.evaluate(() => (window as unknown as { __elabora: { dialogues: { transcripts(): { lines: { text: string }[] }[] } } }).__elabora.dialogues.transcripts());
+    assert.ok(transcript.some((section) => section.lines.some((line) => line.text === 'The phone rings.')), 'in the transcript');
     await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().played.some((entry) => entry.sound === 'sonnerie'), null, { timeout: 30000 });
     // The next line waits for the ring to end (1.15 s).
     const advance = (seconds: number) => page.evaluate((s) => (window as unknown as { __elabora: { dialogues: Dialogues } }).__elabora.dialogues.advance(s), seconds);

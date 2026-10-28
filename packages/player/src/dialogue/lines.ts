@@ -7,7 +7,7 @@
 import { textVoice, voiceAt } from '../character/index.ts';
 import type { TriggerInfo } from '../course-state.ts';
 import type { TriggerType } from '../course-data.ts';
-import { nodeOf, optionOf } from './walk.ts';
+import { nodeOf, optionOf, walkScore } from './walk.ts';
 import type { Beat } from './walk.ts';
 import type { DialogueLineData, DialogueOptionData, LineVoiceData } from './types.ts';
 import { createLinePlayback, cueTime } from './playback.ts';
@@ -37,6 +37,8 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
   const host = () => parts.host();
   // The bubble to come, waiting in the thread: handed to the line it announces.
   let pendingTyping: Typing = null;
+  // The sound line playing (D67), until its end on the dialogue's clock: a cut back stops it.
+  let sounding: { sound: string; until: number } | null = null;
 
   // The last bubble of the thread: a series goes on while the same speaker speaks.
   const lastRow = (): HTMLElement | null => {
@@ -156,16 +158,20 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
       // A sound among the lines (D67): its caption in the thread; the next beat waits for its end.
       case 'sound': {
         const line = beat.line;
-        if (line.caption) {
-          const node = soundRow(line.caption, line.sound);
-          node.dataset.beat = String(index);
-          box.insert(node);
-          record(index, node);
-        }
-        if (!live) return null;
-        host().act([{ type: 'play-sound', sound: line.sound, ...(line.volume !== undefined ? { volume: line.volume } : {}) }]);
-        if (still || !state.beats[index + 1]) return null;
-        return { kind: 'wait', until: clock.now() + (line.duration ?? 0), typing: typingFor(index + 1) };
+        const play = (): Step | null => {
+          if (!live) return null;
+          host().act([{ type: 'play-sound', sound: line.sound, ...(line.volume !== undefined ? { volume: line.volume } : {}) }]);
+          sounding = { sound: line.sound, until: clock.now() + (line.duration ?? 0) };
+          if (still || !state.beats[index + 1]) return null;
+          return { kind: 'wait', until: sounding.until, typing: typingFor(index + 1) };
+        };
+        if (!line.caption) return play();
+        const node = soundRow(line.caption, line.sound);
+        node.dataset.beat = String(index);
+        const show = () => { box.insert(node); record(index, node); };
+        if (box.paging() && live && !box.fits(node)) return box.turnPage(() => { show(); return play(); });
+        show();
+        return play();
       }
       case 'retry': return live ? { kind: 'wait', until: clock.now() + 0.3 / rate(), typing: null } : null;
       case 'decision': {
@@ -182,7 +188,9 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
         record(index, node);
         if (live) {
           trigger('dialogue.ended', { target: block.id, ending: ending?.id ?? null });
-          parts.signal('end', { ending: ending?.id ?? null });
+          // Ended well (the end's sound, D67): a score of half or more, or nothing to score.
+          const { score } = walkScore(data, state.run.walk);
+          parts.signal('end', { ending: ending?.id ?? null, well: score === null || score >= 0.5 });
         }
         return null;
       }
@@ -276,6 +284,8 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
     dropTyping() { pendingTyping?.node.remove(); pendingTyping = null; },
     // A cut back: the line said stops, the bubbles announced go.
     drop() {
+      if (sounding && clock.now() < sounding.until) host().act([{ type: 'stop-sound', sound: sounding.sound }]);
+      sounding = null;
       const step = state.step;
       if (step?.kind === 'line') step.state.playback.dispose();
       if (step && 'typing' in step) step.typing?.node.remove();

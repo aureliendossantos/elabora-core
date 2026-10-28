@@ -401,7 +401,7 @@ test('going back from the debrief: where the thread goes on, the choice taken ba
     await until(page, 'appel-marc', 'ended');
     assert.deepEqual(await moments(), [
       'appel-marc:choose:premiere-question:a:good', 'appel-marc:feedback:good', 'appel-marc:choose:ticket:a:good', 'appel-marc:feedback:good',
-      'appel-marc:choose:escalade:a:good', 'appel-marc:feedback:good', 'appel-marc:end:maitrise', 'appel-marc:debrief-open'
+      'appel-marc:choose:escalade:a:good', 'appel-marc:feedback:good', 'appel-marc:end:maitrise:true', 'appel-marc:debrief-open'
     ]);
     // The debrief holds the moves; the end's bar keeps « Voir le bilan » and « Recommencer ».
     assert.deepEqual(await wrap.locator('.t-dialogue-change').allInnerTexts(), ['Changer ce choix', 'Changer ce choix', 'Changer ce choix']);

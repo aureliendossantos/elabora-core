@@ -297,11 +297,11 @@ A character drawn in SVG is **one file** of the module (`assets/personnages/marc
 | `choose` | the learner chose an option | `node`, `option`, `quality` (or `null`) |
 | `feedback` | a trainer's note shows | `quality`: `good`, `ok`, `bad`, or `null` when the note shows none (`feedback: "debrief"`, an option without quality) |
 | `back` | the learner went back | `kind`: `retry` (« Choisir autrement »), `revisit` (« Changer ce choix », « Reprendre d'ici »), `restart` (« Recommencer », and `restart-dialogue`) |
-| `end` | the dialogue reached an end | `ending` |
+| `end` | the dialogue reached an end | `ending`, `well`: a score of half or more, or nothing to score |
 | `history-open`, `history-close` | the scene's History opened, closed | |
 | `debrief-open`, `debrief-close` | the debrief panel opened (at the end, or « Voir le bilan »), the learner closed it | a move back closes it without its own moment: `back` says it |
 
-The player answers them with the interface's sounds (D67): `choose` select, `feedback` good, ok or bad (none without quality), `back` back, `history-open` and `debrief-open` open, their `-close` close, `end` end.
+The player answers them with the interface's sounds (D67): `choose` select, `feedback` good, ok or bad (none without quality), `back` back, `history-open` and `debrief-open` open, their `-close` close, `end` end when `well` (a bad ending makes no sound).
 
 ## Tools
 

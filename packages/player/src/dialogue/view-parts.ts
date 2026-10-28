@@ -39,7 +39,8 @@ export type Phase = 'idle' | 'playing' | 'choosing' | 'ended';
 //   feedback        a trainer's note shows while it plays ({ quality }: good, ok, bad, or null)
 //   back            the learner went back ({ kind }: retry « Choisir autrement », revisit
 //                   « Changer ce choix » or « Reprendre d'ici », restart « Recommencer »)
-//   end             the dialogue reached an end ({ ending })
+//   end             the dialogue reached an end ({ ending, well }: well, a score of half or more,
+//                   or nothing to score)
 //   history-open, history-close, debrief-open, debrief-close
 //                   a panel over the dialogue opened, or the learner closed it (a move back closes
 //                   the debrief without its own moment: back says it)

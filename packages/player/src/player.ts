@@ -183,10 +183,11 @@ for (const type of ['playing', 'pause', 'ended', 'emptied', 'volumechange'] as c
   }, true);
 }
 // A dialogue's moments sound as a question's do (D67): a choice, its trainer's note, a move back, a
-// panel opened or closed, the end.
+// panel opened or closed, an end reached well.
 const DIALOGUE_SOUNDS: Record<string, InterfaceRole> = { choose: 'select', back: 'back', end: 'end', 'history-open': 'open', 'debrief-open': 'open', 'history-close': 'close', 'debrief-close': 'close' };
 document.addEventListener('elabora:dialogue', (event) => {
-  const detail = (event as CustomEvent<{ moment?: string; quality?: string | null }>).detail ?? {};
+  const detail = (event as CustomEvent<{ moment?: string; quality?: string | null; well?: boolean }>).detail ?? {};
+  if (detail.moment === 'end' && detail.well === false) return;
   const role = detail.moment === 'feedback' ? (detail.quality === 'good' || detail.quality === 'ok' || detail.quality === 'bad' ? detail.quality : undefined) : DIALOGUE_SOUNDS[detail.moment ?? ''];
   if (role) sounds.interface(role);
 });
@@ -687,7 +688,9 @@ const debugHooks = {
     choose: (blockId: string, option: string) => view.dialogues.choose(blockId, option),
     // The Review (review.ts): the line being said, a line shown by replaying its path.
     current: () => view.dialogues.current(),
-    show: (blockId: string, line: string) => view.dialogues.show(blockId, line)
+    show: (blockId: string, line: string) => view.dialogues.show(blockId, line),
+    // The paths shown, as the screen's transcript gives them.
+    transcripts: () => view.dialogues.transcripts()
   },
   // Resolves when the fonts are loaded, the images of the current screen decoded and its free
   // objects answered (or failed), and the layout has settled (reserved rooms measured again):

@@ -590,10 +590,11 @@ function decisionProps(props: Record<string, unknown>): DecisionProps {
 function dialogueProps(blockId: string, props: Record<string, unknown>, scope: ScreenScope): DialogueProps {
   const { context, project } = scope;
   const variables = new Map(objectsIn(context.course.variables).map((variable) => [variable.id, variable.default]));
+  let sounds: ReturnType<typeof soundAssets> | null = null;
   return dialogueData(props, {
     course: context.course, keys: dialogueKeys(blockId, context.keys, context.lock ?? null), assetPath: context.assetPath, directions: 'strip', markdown: (text) => renderMarkdown(text),
     voice: dialogueVoices(project, scope.screen, { ...(context.dialogueAudio ? { packaged: context.dialogueAudio } : {}) }),
-    soundLength: (sound) => { const asset = soundAssets(project).get(sound); return asset ? soundLength(project, asset) : null; },
+    soundLength: (sound) => { const asset = (sounds ??= soundAssets(project)).get(sound); return asset ? soundLength(project, asset) : null; },
     look: (speaker, svg) => {
       const source = readText(project.files, `assets/${svg}`);
       const drawn = source === null ? null : characterInline(source, speaker);
