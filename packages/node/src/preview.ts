@@ -17,6 +17,7 @@ export interface PreviewOptions {
 
 export interface Preview {
   result: BuildResult; // the first build
+  readonly built: BuildResult; // the last one
   urls: { standalone: string; lms: string };
   // The LMS the emulator page plays.
   profile: string;
@@ -73,6 +74,7 @@ export async function preview(dir: string, { port = 4807, profile, navigation: a
       lms: `${server.base}/lms/launch.html?pkg=preview&profile=${lms}&mode=${mode}&reg=preview`
     },
     profile: lms,
+    get built() { return last; },
     get locks() { return locks(readCourse(root)); },
     get navigation() { return navigation; },
     setNavigation: (next) => {
