@@ -102,7 +102,7 @@ const entries = library.sounds.map((sound) => {
 const extra = files.filter((name) => !entries.some((entry) => entry.file === `files/${name}`));
 if (extra.length) throw new Error(`library: files without a source: ${extra.join(', ')}`);
 fs.writeFileSync(path.join(LIBRARY, 'catalogue.json'), `${JSON.stringify({ sounds: entries }, null, 2)}\n`);
-const mb = (bytes: number) => `${(bytes / 1048576).toFixed(2)} MB`;
+const mb = (bytes: number) => `${(bytes / 1e6).toFixed(2)} MB`;
 const total = entries.reduce((sum, entry) => sum + entry.bytes, 0);
 const rows = entries.map((entry) => `| \`${entry.id}\` | ${entry.title.fr} | ${entry.category} | ${entry.duration.toFixed(1)} s | ${entry.format} | ${entry.license} | [${entry.author}](${entry.url}) |`);
 fs.writeFileSync(path.join(LIBRARY, 'README.md'), `# « Sons courants »: the library of sounds\n\nWritten by \`pnpm run sounds\` from sources.json and files/: do not edit. ${entries.length} sounds, ${mb(total)} (effects as FLAC, ambiences as AAC 256 kb/s: docs/decisions/D67.md). CC0 or public domain only: no credit is owed, the sources are kept here.\n\n| Id | Titre | Category | Length | Format | Licence | Source |\n|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`);

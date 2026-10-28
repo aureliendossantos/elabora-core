@@ -1,6 +1,6 @@
 # « Sons courants »: the library of sounds
 
-Written by `npm run sounds` from sources.json and files/: do not edit. 38 sounds, 8.79 MB (effects as FLAC, ambiences as AAC 256 kb/s: docs/decisions/D67.md). CC0 or public domain only: no credit is owed, the sources are kept here.
+Written by `pnpm run sounds` from sources.json and files/: do not edit. 38 sounds, 9.21 MB (effects as FLAC, ambiences as AAC 256 kb/s: docs/decisions/D67.md). CC0 or public domain only: no credit is owed, the sources are kept here.
 
 | Id | Titre | Category | Length | Format | Licence | Source |
 |---|---|---|---|---|---|---|
