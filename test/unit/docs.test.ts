@@ -125,3 +125,14 @@ test('elabora docs serves the bundled skills for hosts without MCP resources (D5
   assert.ok(!noReference.ok && noReference.error.includes('voice-and-timing'), 'an unknown reference lists the skill\'s');
   assert.ok(!readDocs({ page: 'skills/../AGENTS' }).ok, 'no way out of skills/');
 });
+
+test('docs search: the sections that hold every word, best first, with the page and anchor to read', async () => {
+  const { readDocs, searchDocs } = await import('../../packages/cli/src/docs.ts');
+  const hits = searchDocs('what persists from one screen to the next');
+  assert.equal(hits[0]?.page, 'free-object-contract', JSON.stringify(hits.slice(0, 3)));
+  assert.equal(hits[0]?.section, '4e-continuity-between-screens');
+  assert.ok(searchDocs('backdrop safe area').some((hit) => hit.page === 'design' && hit.section === 'backdrop'));
+  assert.ok(searchDocs('decoration').some((hit) => hit.page.startsWith('skills/')), 'skills are searched too');
+  const none = readDocs({ search: 'zzqx nowhere' });
+  assert.ok(!none.ok && /every word/.test(none.error));
+});

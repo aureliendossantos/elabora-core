@@ -38,11 +38,11 @@ const codes = defineCommand({
 
 const docs = defineCommand({
   name: 'docs',
-  flags: { section: 'string', full: 'boolean' },
+  flags: { section: 'string', full: 'boolean', search: 'string' },
   async run({ positionals, flags }) {
     const { readDocs } = await import('../docs.ts');
     if (positionals.length > 1) throw new ArgumentError('docs takes at most one page');
-    const result = readDocs({ page: positionals[0], section: flags.section, full: flags.full });
+    const result = readDocs({ page: positionals[0], section: flags.section, full: flags.full, search: flags.search });
     if (!result.ok) { console.error(result.error); return 1; }
     console.log(result.text);
     return 0;

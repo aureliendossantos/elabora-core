@@ -88,20 +88,6 @@
         "description": "How far the particles stretch into streaks and speed up at each new screen (0: they keep floating).",
         "x-group": "Motion",
         "x-control": "slider"
-      },
-      "order": {
-        "type": "array",
-        "title": "Screen order",
-        "description": "Optional: the screen ids in the order of the course, to tell a step back from a step forward on a resumed session. Empty: the order in which the learner meets the screens.",
-        "x-group": "Motion",
-        "x-control": "list",
-        "maxItems": 200,
-        "items": {
-          "type": "string",
-          "title": "Screen id",
-          "maxLength": 64
-        },
-        "default": []
       }
     }
   },

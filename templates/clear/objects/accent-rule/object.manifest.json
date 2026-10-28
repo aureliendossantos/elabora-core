@@ -64,26 +64,6 @@
           "ink"
         ]
       },
-      "sections": {
-        "type": "array",
-        "title": "Parts, in order",
-        "description": "Ids of the module's sections in their order: one segment of the rail each. Keep it in step with the sections of course.json; a section left out keeps the rule where it was.",
-        "x-group": "Rail",
-        "x-control": "list",
-        "minItems": 1,
-        "maxItems": 12,
-        "items": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]{0,63}$"
-        },
-        "default": [
-          "opening",
-          "part-1",
-          "part-2",
-          "part-3",
-          "closing"
-        ]
-      },
       "position": {
         "type": "string",
         "enum": [
@@ -103,7 +83,7 @@
       "offset": {
         "type": "number",
         "title": "Distance from the edge (rem)",
-        "description": "Distance of the rail from the top (or bottom) of the window, in rem: the height of the player's bar puts it right against it.",
+        "description": "Distance of the rail from the top (or bottom) of the window, in rem, when the player has no bar there: with a bar, the rail runs right against it (the safe area).",
         "x-group": "Rail",
         "x-control": "slider",
         "minimum": 0,
@@ -147,7 +127,6 @@
       "ink",
       "inkOnDark",
       "darkVariants",
-      "sections",
       "position",
       "offset",
       "width",

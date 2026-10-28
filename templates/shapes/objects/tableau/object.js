@@ -1,7 +1,8 @@
 // Bauhaus tableau: the backdrop of the Shapes template.
 // Seven flat shapes (a large circle, two quarter circles, a bar, a half disc, a small circle and a
 // thin bar) compose a tableau around the edges of the window, never in the middle where the text
-// is. Each part of the module has its own tableau; within a part, each screen changes one shape:
+// is. Each part of the module has its own tableau, by its rank in the course (context.sectionIndex
+// of sectionCount); within a part, each screen changes one shape:
 // it turns, glides along its axis or changes size. When the learner moves on, the shapes glide to
 // their new place one after the other; a shape whose new place is across the window fades out
 // where it was and fades in where it goes, rather than flying over the text. Under reduced motion,
@@ -68,7 +69,7 @@ const TABLEAUX = [
 const PHONE_ALPHA = 0.4;
 
 // The tableaux behind poster layouts (the opening and the closing): their text keeps the left half.
-const POSTERS = new Set([0, 4]);
+const POSTERS = new Set([0, TABLEAUX.length - 1]);
 
 // The box a shape covers, in px.
 function extent(a) {
@@ -152,17 +153,20 @@ export function mount(container, ctx) {
     return keys.map((k) => rgb(props[k]));
   }
 
-  function tableauOf(section) {
-    const parts = Array.isArray(props.parts) ? props.parts : [];
-    const at = parts.indexOf(section);
-    return at >= 0 ? at % TABLEAUX.length : hash(String(section || '')) % TABLEAUX.length;
+  // The first section opens on the opening tableau, the last closes on the closing one, the parts
+  // between take the others in turn; a screen outside any section, a tableau drawn from its id.
+  function tableauOf(at) {
+    const index = at?.sectionIndex, count = at?.sectionCount;
+    if (!Number.isInteger(index) || !Number.isInteger(count)) return hash(String(at?.section || at?.screen || '')) % TABLEAUX.length;
+    if (index === 0) return 0;
+    if (index === count - 1) return TABLEAUX.length - 1;
+    return 1 + ((index - 1) % (TABLEAUX.length - 2));
   }
 
   // The shapes as they should stand for the current context, in px.
   function target() {
-    const section = context?.section ?? null;
     const variant = context?.variant ?? null;
-    tableau = tableauOf(section);
+    tableau = tableauOf(context);
     const move = MOVES[(hash(String(context?.screen || '')) + (Number(props.shuffle) || 0)) % MOVES.length];
     moved = `${move.actor}:${move.op}:${move.by}`;
     const colours = palette(variant);

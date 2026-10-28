@@ -26,7 +26,7 @@ import type { TimedBlocks } from './timed-blocks.ts';
 import type {
   AudioBlock, BlockData, CourseData, LayerData, ObjectBlock, ScreenData, TriggerType, VideoBlock
 } from './course-data.ts';
-import type { ObjectContext } from './object-protocol.ts';
+import type { ObjectContext, SafeArea } from './object-protocol.ts';
 import { createTranscriptBar } from './transcript.ts';
 import type { TranscriptBar } from './transcript.ts';
 import type { Action } from './course-data.ts';
@@ -1021,13 +1021,35 @@ export function createScreenView(options: ScreenViewOptions) {
   // ── Backdrop ──────────────────────────────────────────────────────────
   // Decoration behind every screen (theme.backdrop): layers painted by the theme stylesheet and an
   // optional decorative object, mounted once for the whole session. It follows the learner
-  // (data-screen, data-section, data-step, data-variant; the object gets the same context) and is
-  // never content: hidden from screen readers, out of the tab order, under the course.
+  // (data-screen, data-section, data-step, data-variant, and where the screen and its section stand
+  // in the course: data-screen-index, data-section-index, data-section-count, data-direction; the
+  // object gets the same context) and is never content: hidden from screen readers, out of the tab
+  // order, under the course. A screen without a backdrop takes theme.backdrop.default; #elabora-app
+  // carries data-backdrop, the variant shown, so that the theme can give the text and the bars their
+  // colours for it. The object hears where the player's bars cover it (its safe area).
   const backdrop = course.backdrop || null;
   const backdropElement = backdrop ? element('div', { class: 't-backdrop', 'aria-hidden': 'true', inert: true }, backdrop.layers.map((id) => element('div', { class: 't-backdrop-layer', 'data-layer': id }))) : null;
   let backdropHost: ObjectHost | null = null;
-  // The context last applied, as JSON.
+  // The context last applied, as JSON; the screen shown before (for direction); the safe area sent.
   let backdropSent = '';
+  let backdropIndex: number | null = null;
+  let backdropDirection: 'forward' | 'back' | null = null;
+  let backdropArea = '';
+  const sectionOrder = [...new Set(course.screens.map((candidate) => candidate.section).filter((id): id is string => !!id))];
+  // The player's bars that stay in the window (their heights, which the player and the canvas write).
+  const barsArea = (): SafeArea => {
+    const px = (name: string) => Math.max(0, Math.round(parseFloat(app.style.getPropertyValue(name)) || 0));
+    return { top: px('--t-bar-top'), right: 0, bottom: px('--t-bar-bottom'), left: 0 };
+  };
+  const syncBackdropArea = () => {
+    const area = barsArea();
+    const key = JSON.stringify(area);
+    if (key === backdropArea) return;
+    backdropArea = key;
+    backdropHost?.setSafeArea(area);
+  };
+  const barsWatch = backdropElement && typeof MutationObserver === 'function' ? new MutationObserver(syncBackdropArea) : null;
+  barsWatch?.observe(app, { attributes: true, attributeFilter: ['style'] });
   if (backdrop && backdropElement) {
     app.prepend(backdropElement);
     const decoration = backdrop.object;
@@ -1040,6 +1062,7 @@ export function createScreenView(options: ScreenViewOptions) {
       backdropHost = createObjectHost({
         iframe, def: definition, props: decoration.props, tokens: course.tokens, locale: course.language, fonts: course.fonts || [], rootSize: rootSize(),
         reducedMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false, decorative: true, context: backdropContext, seed: 1,
+        safeArea: () => { const area = barsArea(); backdropArea = JSON.stringify(area); return area; },
         onReady: () => { holder.dataset.state = 'ready'; },
         onError: (message) => {
           if (!backdropHost?.ready) { holder.hidden = true; holder.dataset.state = 'failed'; }
@@ -1051,7 +1074,17 @@ export function createScreenView(options: ScreenViewOptions) {
     }
   }
   function backdropContext(): ObjectContext {
-    return { screen: screen?.id || null, section: screen?.section || null, step: revealed, variant: screen?.backdrop || null };
+    const index = screen ? screenIndex(screen.id) : -1;
+    if (index >= 0 && index !== backdropIndex) {
+      backdropDirection = backdropIndex === null ? null : index > backdropIndex ? 'forward' : 'back';
+      backdropIndex = index;
+    }
+    const section = screen?.section || null;
+    return {
+      screen: screen?.id || null, section, step: revealed, variant: screen?.backdrop || backdrop?.default || null,
+      screenIndex: Math.max(0, index), screenCount: course.screens.length,
+      sectionIndex: section ? sectionOrder.indexOf(section) : null, sectionCount: sectionOrder.length, direction: backdropDirection
+    };
   }
   function updateBackdrop() {
     if (!backdropElement) return;
@@ -1059,10 +1092,12 @@ export function createScreenView(options: ScreenViewOptions) {
     const key = JSON.stringify(context);
     if (key === backdropSent) return;
     backdropSent = key;
-    for (const name of ['screen', 'section', 'step', 'variant'] as const) {
+    for (const name of ['screen', 'section', 'step', 'variant', 'screenIndex', 'sectionIndex', 'sectionCount', 'direction'] as const) {
       const value = context[name];
       if (value == null) delete backdropElement.dataset[name]; else backdropElement.dataset[name] = String(value);
     }
+    if (context.variant == null || context.variant === 'none') delete app.dataset.backdrop; else app.dataset.backdrop = context.variant;
+    syncBackdropArea();
     const off = context.variant === 'none';
     backdropElement.hidden = off;
     if (!backdropHost) return;
@@ -1184,6 +1219,7 @@ export function createScreenView(options: ScreenViewOptions) {
     // Heights of an activity of the screen: as it is now, then once answered, outcome by outcome.
     rooms(blockId: string) { const node = main.querySelector<HTMLElement>(`[data-block="${blockId}"]`); const block = courseState.blockIndex.get(blockId)?.block; return node && block ? rooms.outcomeRooms(node, block) : null; },
     objectHost: (blockId: string) => hosts.get(blockId),
+    get backdropHost() { return backdropHost ?? undefined; },
     refreshResults: () => behaviors.refreshResults(),
     // The dialogues of the screen (D61): their state, the editor's paths, the tests' clock.
     get dialogues() { return behaviors.dialogues; },
@@ -1207,7 +1243,9 @@ export function createScreenView(options: ScreenViewOptions) {
       disposeHosts();
       objects.destroy();
       backdropHost?.dispose();
+      barsWatch?.disconnect();
       backdropElement?.remove();
+      delete app.dataset.backdrop;
       for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog.t-layer')) dialog.remove();
       window.removeEventListener('resize', onResize);
     },

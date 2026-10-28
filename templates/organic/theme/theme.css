@@ -10,8 +10,8 @@ html { background: var(--t-surface); }
 body { background: transparent; }
 
 /* ── The part's colour ───────────────────────────────────────────────────────────────────────
-   One hue per section, in the order of the journey. Rename the ids here and in the drift object's
-   journey prop when the sections change. */
+   One hue per section, by its rank in the course (data-section-index): nothing to change when the
+   sections are renamed or added. */
 #elabora-app {
   --org-part: var(--t-color-journey-warm);
   --org-card: var(--t-color-card);
@@ -19,19 +19,20 @@ body { background: transparent; }
   --org-ease: cubic-bezier(.45, 0, .25, 1);
   --org-slow: 2.4s;
 }
-#elabora-app:has(> .t-backdrop[data-section="part-1"]) { --org-part: color-mix(in oklch, var(--t-color-journey-warm) 50%, var(--t-color-journey-middle)); }
-#elabora-app:has(> .t-backdrop[data-section="part-2"]) { --org-part: var(--t-color-journey-middle); }
-#elabora-app:has(> .t-backdrop[data-section="part-3"]) { --org-part: color-mix(in oklch, var(--t-color-journey-middle) 50%, var(--t-color-journey-cool)); }
-#elabora-app:has(> .t-backdrop[data-section="closing"]) { --org-part: var(--t-color-journey-cool); }
+/* The first section warm, the fifth and after cool, as the object's blobs. */
+#elabora-app:has(> .t-backdrop[data-section-index="1"]) { --org-part: color-mix(in oklch, var(--t-color-journey-warm) 50%, var(--t-color-journey-middle)); }
+#elabora-app:has(> .t-backdrop[data-section-index="2"]) { --org-part: var(--t-color-journey-middle); }
+#elabora-app:has(> .t-backdrop[data-section-index="3"]) { --org-part: color-mix(in oklch, var(--t-color-journey-middle) 50%, var(--t-color-journey-cool)); }
+#elabora-app:has(> .t-backdrop[data-section-index]:not([data-section-index="0"], [data-section-index="1"], [data-section-index="2"], [data-section-index="3"])) { --org-part: var(--t-color-journey-cool); }
 /* A deep tone of the part's hue, for marks drawn on the ground (3:1 at least on it). */
 #elabora-app { --org-part-deep: color-mix(in oklch, var(--org-part) 22%, var(--t-text)); --org-part-soft: color-mix(in oklch, var(--org-part) 30%, var(--org-card)); }
 
 /* ── Backdrop layers ─────────────────────────────────────────────────────────────────────── */
 .t-backdrop { --org-glow: 1; --org-warm: 1; --org-cool: 0; }
-.t-backdrop[data-section="part-1"] { --org-warm: .75; --org-cool: .12; }
-.t-backdrop[data-section="part-2"] { --org-warm: .4; --org-cool: .4; }
-.t-backdrop[data-section="part-3"] { --org-warm: .12; --org-cool: .75; }
-.t-backdrop[data-section="closing"] { --org-warm: 0; --org-cool: 1; }
+.t-backdrop[data-section-index="1"] { --org-warm: .75; --org-cool: .12; }
+.t-backdrop[data-section-index="2"] { --org-warm: .4; --org-cool: .4; }
+.t-backdrop[data-section-index="3"] { --org-warm: .12; --org-cool: .75; }
+.t-backdrop[data-section-index]:not([data-section-index="0"], [data-section-index="1"], [data-section-index="2"], [data-section-index="3"]) { --org-warm: 0; --org-cool: 1; }
 .t-backdrop[data-variant="pastel"] { --org-glow: .55; }
 .t-backdrop[data-variant="night"] { --org-glow: .35; }
 .t-backdrop[data-variant="mono"] { --org-glow: 0; }
@@ -63,10 +64,10 @@ body { background: transparent; }
   opacity: calc(var(--org-cool) * var(--org-glow));
 }
 /* The glows drift a little with each part, as the blobs do. */
-.t-backdrop[data-section="part-1"] .t-backdrop-layer[data-layer^="glow"] { translate: 2% -1.5%; }
-.t-backdrop[data-section="part-2"] .t-backdrop-layer[data-layer^="glow"] { translate: -2% 2%; }
-.t-backdrop[data-section="part-3"] .t-backdrop-layer[data-layer^="glow"] { translate: 1.5% 2.5%; }
-.t-backdrop[data-section="closing"] .t-backdrop-layer[data-layer^="glow"] { translate: -1% -2%; }
+.t-backdrop[data-section-index="1"] .t-backdrop-layer[data-layer^="glow"] { translate: 2% -1.5%; }
+.t-backdrop[data-section-index="2"] .t-backdrop-layer[data-layer^="glow"] { translate: -2% 2%; }
+.t-backdrop[data-section-index="3"] .t-backdrop-layer[data-layer^="glow"] { translate: 1.5% 2.5%; }
+.t-backdrop[data-section-index]:not([data-section-index="0"], [data-section-index="1"], [data-section-index="2"], [data-section-index="3"]) .t-backdrop-layer[data-layer^="glow"] { translate: -1% -2%; }
 /* Grain over the blobs (above the object's frame), still. */
 .t-backdrop-layer[data-layer="grain"] {
   z-index: 1;

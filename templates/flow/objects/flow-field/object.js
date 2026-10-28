@@ -53,19 +53,15 @@ export function mount(container, ctx) {
   // Where the learner is, and what it does to the field.
   let context = ctx.context || null;
   const seenScreens = [];
-  const seenSections = [];
   if (context?.screen) seenScreens.push(context.screen);
-  if (context?.section) seenSections.push(context.section);
   const variantOf = (c) => (c && c.variant) || null;
   const isLight = (hex) => {
     const [r, gg, b] = rgb(hex);
     return 0.2126 * r + 0.7152 * gg + 0.0722 * b > 150;
   };
   const inkWanted = () => variantOf(context) === 'ink' || isLight(props.field);
-  const biasOf = (section) => {
-    const i = Math.max(0, seenSections.indexOf(section));
-    return Math.min(0.85, 0.18 + 0.22 * i);
-  };
+  // Each part moves the palette a little further, by its rank in the course.
+  const biasOf = (where) => Math.min(0.85, 0.18 + 0.22 * (Number.isInteger(where?.sectionIndex) ? where.sectionIndex : 0));
 
   let calm = variantOf(context) === 'calm' ? 1 : 0;
   let calmTarget = calm;
@@ -73,7 +69,7 @@ export function mount(container, ctx) {
   let heroTarget = hero;
   let ink = inkWanted();
   let vis = 1;              // fades out and in when the ink variant comes or goes
-  let bias = biasOf(context?.section);
+  let bias = biasOf(context);
   let biasTarget = bias;
   let boost = 0;            // signed: > 0 forward, < 0 back
   let boostTarget = 0;
@@ -84,13 +80,11 @@ export function mount(container, ctx) {
     boostTarget = direction * LEAP * props.jump * strength * (1 - 0.45 * calmTarget);
   }
 
-  function direction(from, to) {
-    const order = Array.isArray(props.order) ? props.order : [];
-    const a = order.indexOf(from);
-    const b = order.indexOf(to);
-    if (a >= 0 && b >= 0) return b > a ? 1 : -1;
-    const sa = seenScreens.indexOf(from);
-    const sb = seenScreens.indexOf(to);
+  // Forward or back in the course order (context.direction); without it, back to a screen met before.
+  function direction(previous, next) {
+    if (next.direction === 'back' || next.direction === 'forward') return next.direction === 'back' ? -1 : 1;
+    const sa = seenScreens.indexOf(previous.screen);
+    const sb = seenScreens.indexOf(next.screen);
     return sa >= 0 && sb >= 0 && sb < sa ? -1 : 1;
   }
 
@@ -98,11 +92,10 @@ export function mount(container, ctx) {
     const previous = context;
     context = next || null;
     if (!context) return;
-    if (context.section && !seenSections.includes(context.section)) seenSections.push(context.section);
     const newScreen = previous && context.screen !== previous.screen;
     const newSection = previous && context.section !== previous.section;
     if (newScreen) {
-      const dir = direction(previous.screen, context.screen);
+      const dir = direction(previous, context);
       leap(dir, newSection ? 1.3 : 1);
     } else if (previous && (context.step ?? 0) !== (previous.step ?? 0)) {
       leap((context.step ?? 0) > (previous.step ?? 0) ? 1 : -1, 0.28);
@@ -110,7 +103,7 @@ export function mount(container, ctx) {
     if (context.screen && !seenScreens.includes(context.screen)) seenScreens.push(context.screen);
     calmTarget = variantOf(context) === 'calm' ? 1 : 0;
     heroTarget = variantOf(context) === 'hero' ? 1 : 0;
-    biasTarget = biasOf(context.section);
+    biasTarget = biasOf(context);
     if (reduced) { calm = calmTarget; hero = heroTarget; bias = biasTarget; ink = inkWanted(); }
   }
   const offContext = host.onContext(onContext);

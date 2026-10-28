@@ -44,5 +44,5 @@ On phones the panel is hidden (the text takes the whole width).
 3. **The figure:** `elabora assets .` draws it again from the tokens.
 4. **The logo:** replace the placeholder (`elabora media import . <logo.svg> --to images --name logo`) and give its `alt` the organisation's name (`player.top.items[0].options`). A logo drawn for light grounds keeps a light plate on dark screens.
 5. **The font:** `elabora font add . "<family>" --for body,heading`.
-6. **The parts:** the rail has one segment per section of the object's `sections` prop (by default `opening`, `part-1`, `part-2`, `part-3`, `closing`). Adding, removing or renaming a section: update that list in the same order.
+6. **The parts:** the rail has one segment per section of the module, in their order, and runs right under the player's top bar. Adding, removing or renaming a section needs nothing more.
 7. **The rail itself** (same props): `position` (`top` or `bottom`), `offset` (rem from the edge: 3.5 is the top bar's height), `width` (rem: `wideWidth ÷ 16`), `thickness`, `duration`.

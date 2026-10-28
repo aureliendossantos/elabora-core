@@ -130,7 +130,11 @@ export function checkScreenBackdrop(ctx: CourseCheckContext, screen: ScreenFile)
 
 // The decorative object of the course backdrop (theme.backdrop.object).
 function checkBackdropObject(ctx: CourseCheckContext): void {
-  const reference = ctx.course.theme?.backdrop?.object;
+  const backdrop = ctx.course.theme?.backdrop;
+  if (backdrop?.default && !Object.hasOwn(backdrop.variants || {}, backdrop.default)) {
+    ctx.reporter.emit('E_BACKDROP_VARIANT', { file: 'course.json', path: '/theme/backdrop/default', target: backdrop.default, message: `The default backdrop variant "${backdrop.default}" is not declared. Declared: ${Object.keys(backdrop.variants || {}).join(', ') || 'none'}.` });
+  }
+  const reference = backdrop?.object;
   if (!reference) return;
   const at = '/theme/backdrop/object';
   const manifest = ctx.project.objects.get(reference.id)?.manifest;

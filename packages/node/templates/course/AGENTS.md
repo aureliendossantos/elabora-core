@@ -9,6 +9,7 @@ This folder is an Elabora course (`elabora/0.1`). **Read this file and “Notes 
 - **Editable before custom.** Prefer native blocks, then reusable components (including activity forks); use free-object code only when needed. Keep learner-facing words in editable blocks and props, not CSS, templates or generated figures. Preserve component fallbacks and migrations.
 - **Stable learner state.** Never reuse ids or edit `elabora.lock.json`. Rename via `elabora_rename` / `elabora rename`, so references and progress follow.
 - **Sources and media.** Treat `sources/` as private, read-only input that may hold personal data: quote only what the module needs. Use `elabora_source_read` / `elabora sources read`. Never reference sources directly from screens. Bring learner-facing assets in with `elabora_media_import` / `elabora media import` (not direct copies to `assets/`); include accessibility text/captions and mark AI-generated media `generated: true`.
+- **Adjustments: only the change asked.** Suggest extras, never build them; one question for an open visual choice. Read only what it touches (`elabora object map`, `elabora docs --search`).
 - **Check what the change can affect.** Read tool diagnostics and run `elabora validate .` after edits; fix errors first. Then check in proportion to what the change does, not to its size:
   - *Presentation only* (a duration, an easing, a colour, a decoration that moves nothing): the plan stays as it is. Read only the component or stylesheet concerned and the guidance for it, validate once, then `elabora look` the affected screen in the state that shows the issue (`--scroll`, `--step`, `--state answered`, `--block`). No fit, no object gates.
   - *Layout* (spacing, sizes, type that reflows, a shared stylesheet or component): add `elabora fit --screen <ids>` for the screens it reaches.
@@ -20,7 +21,7 @@ This folder is an Elabora course (`elabora/0.1`). **Read this file and “Notes 
 
 ## Load only the guidance your task needs
 
-Skills are **not automatically loaded** just because they are listed here. With MCP, read `elabora://skills/<name>` as a resource, or `elabora_docs { page: "skills/<name>" }` if your host does not show resources; without MCP, run `elabora tools skills` to list available skills, `elabora tools skills <name>` to read one and `elabora tools skills <name> <reference>` for its optional detailed reference. Do not read all skills for a small change.
+Skills are **not loaded** automatically. With MCP, read `elabora://skills/<name>` as a resource, or `elabora_docs { page: "skills/<name>" }` if your host does not show resources; without MCP, `elabora tools skills` lists them, `elabora tools skills <name>` reads one, `elabora tools skills <name> <reference>` its detailed reference.
 
 | Task | Guidance to load |
 | --- | --- |
@@ -36,7 +37,7 @@ Skills are **not automatically loaded** just because they are listed here. With 
 | Importing Storyline or Rise | `elabora-importing` |
 
 ## Tools and course layout
-Begin with `elabora project .` / `elabora_overview`; consult the plan, relevant sources and course notes. Use connected MCP tools when available. Without MCP, `elabora tools guide` gives the workflow and `elabora tools list <tool> --json` its schema; `elabora tools call <tool> . --args '<json>'` (or `--from <file>`) invokes the same operation and prints its JSON. Use ordinary file tools for CSS, templates, generators and screen JSON; use Elabora operations for plan edits, renames, media and translations. `elabora docs` / `elabora_docs` offers format reference. Do not modify the author's agent configuration or assume that running `elabora mcp .` connects a host.
+Begin with `elabora project .` / `elabora_overview`, the plan, relevant sources and course notes; use connected MCP tools. Without MCP, `elabora tools guide` gives the workflow and `elabora tools list <tool> --json` its schema; `elabora tools call <tool> . --args '<json>'` (or `--from <file>`) invokes the same operation and prints its JSON. Use ordinary file tools for CSS, templates, generators and screen JSON; use Elabora operations for plan edits, renames, media and translations. `elabora docs` / `elabora_docs` offers format reference. Do not modify the author's agent configuration or assume that running `elabora mcp .` connects a host.
 
 Core files: `course.json` (settings), `plan.json` (contract), `screens/` (content), `components/` (reusable blocks), `objects/` (code), `theme/`, `generators/`, `assets/`, `sources/`, `translations/`, `elabora.lock.json` (state, do not edit), `dist/` (outputs).
 

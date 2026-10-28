@@ -30,6 +30,18 @@ export const GROUPS: readonly CommandGroup[] = [projectCommands, projectLibraryC
 
 const section = (group: CommandGroup) => `${group.title}\n${group.help}`;
 
+// A command's own lines of its group's help: its usage line and the lines under it, down to the next
+// command (an agent that mistyped an option needs those, not the whole group).
+export function commandUsage(group: CommandGroup, name: string): string {
+  const lines = group.help.split('\n');
+  const start = lines.findIndex((line) => line.startsWith(`  ${name} `) || line === `  ${name}`);
+  if (start < 0) return section(group);
+  const end = lines.findIndex((line, index) => index > start && /^ {2}[a-z]/.test(line));
+  return lines.slice(start, end < 0 ? lines.length : end).join('\n');
+}
+// Every command, for a word that is none of them.
+const commandList = () => `Commands: ${[...new Set(GROUPS.flatMap((group) => group.commands.map((command) => command.name)))].join(', ')}.\nelabora --help prints the reference, elabora <command> --help its group.`;
+
 const HELP = `elabora ${ELABORA_VERSION} — open e-learning format, SCORM 1.2 compiler and checks for AI agents
 
 Usage: elabora <command> [options]
@@ -58,12 +70,13 @@ export async function main(argv: readonly string[]): Promise<ExitCode> {
     console.log(group ? section(group) : HELP);
     return 0;
   }
-  if (word.startsWith('--')) { console.error(`Unknown option ${word}: the command comes first.\n\n${HELP}`); return 2; }
+  if (word.startsWith('--')) { console.error(`Unknown option ${word}: the command comes first.\n${commandList()}`); return 2; }
   const found = COMMANDS.get(`${word} ${subcommand}`) ?? COMMANDS.get(word);
   if (!found) {
     const usage = SUBCOMMAND_USAGE.get(word);
     if (usage) { console.error(usage); return 2; }
-    console.error(`Unknown command "${word}".\n\n${HELP}`);
+    const near = [...COMMANDS.keys()].filter((name) => name.startsWith(word.slice(0, 3)) || name.includes(word)).slice(0, 6);
+    console.error(`Unknown command "${word}".${near.length ? ` Maybe: ${near.join(', ')}.` : ''}\n${commandList()}`);
     return 2;
   }
   const { command, group } = found;
@@ -82,7 +95,7 @@ export async function main(argv: readonly string[]): Promise<ExitCode> {
     return await command.run(args);
   } catch (error) {
     if (!(error instanceof ArgumentError)) throw error;
-    console.error(`${error.message} for "elabora ${command.name}".\n\n${section(group)}`);
+    console.error(`${error.message} for "elabora ${command.name}".\n\nUsage:\n${commandUsage(group, command.name)}\n(elabora ${command.name.split(' ')[0]} --help: its whole group)`);
     return 2;
   }
 }
