@@ -18,7 +18,7 @@
     {
       "id": "ITEM-1",
       "kind": "intro",
-      "title": "Cover and agenda",
+      "title": "Welcome and objectives",
       "objectives": []
     },
     {
@@ -30,7 +30,7 @@
     {
       "id": "ITEM-3",
       "kind": "exposition",
-      "title": "The key rule, explained",
+      "title": "The key idea, explained",
       "objectives": [
         "OBJ-1"
       ]
@@ -38,7 +38,7 @@
     {
       "id": "ITEM-4",
       "kind": "exposition",
-      "title": "Figures, steps, a voice and a comparison",
+      "title": "Figures, steps, voices and comparisons",
       "objectives": [
         "OBJ-1"
       ]
@@ -46,7 +46,7 @@
     {
       "id": "ITEM-5",
       "kind": "practice",
-      "title": "Practice: apply the rule to a case",
+      "title": "Practice: a realistic situation",
       "objectives": [
         "OBJ-1"
       ]

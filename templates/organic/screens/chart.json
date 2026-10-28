@@ -1,7 +1,7 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
   "id": "chart",
-  "title": "Where the effect comes from",
+  "title": "What the data shows",
   "covers": [
     "ITEM-4"
   ],

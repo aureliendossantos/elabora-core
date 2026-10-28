@@ -332,9 +332,9 @@ A second short paragraph adds an example, a nuance or the one detail people ofte
 Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oublie souvent. Gardez chaque paragraphe sous quarante mots.</target>
       </segment>
     </unit>
-    <unit id="screen.three-cards.title">
+    <unit id="screen.cards.title">
       <notes>
-        <note category="location">screens/three-cards.json /title</note>
+        <note category="location">screens/cards.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -345,7 +345,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.three-cards-one.text">
       <notes>
-        <note category="location">screens/three-cards.json /blocks/0/blocks/0/props/text</note>
+        <note category="location">screens/cards.json /blocks/0/blocks/0/props/text</note>
         <note category="format">text</note>
         <note category="context">Heading on screen "Three building blocks to keep in mind"</note>
         <note category="max-length">200</note>
@@ -357,7 +357,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.three-cards-one-text.markdown">
       <notes>
-        <note category="location">screens/three-cards.json /blocks/0/blocks/1/props/markdown</note>
+        <note category="location">screens/cards.json /blocks/0/blocks/1/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Three building blocks to keep in mind"</note>
         <note category="max-length">20000</note>
@@ -369,7 +369,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.three-cards-two.text">
       <notes>
-        <note category="location">screens/three-cards.json /blocks/0/blocks/2/props/text</note>
+        <note category="location">screens/cards.json /blocks/0/blocks/2/props/text</note>
         <note category="format">text</note>
         <note category="context">Heading on screen "Three building blocks to keep in mind"</note>
         <note category="max-length">200</note>
@@ -381,7 +381,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.three-cards-two-text.markdown">
       <notes>
-        <note category="location">screens/three-cards.json /blocks/0/blocks/3/props/markdown</note>
+        <note category="location">screens/cards.json /blocks/0/blocks/3/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Three building blocks to keep in mind"</note>
         <note category="max-length">20000</note>
@@ -393,7 +393,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.three-cards-three.text">
       <notes>
-        <note category="location">screens/three-cards.json /blocks/0/blocks/4/props/text</note>
+        <note category="location">screens/cards.json /blocks/0/blocks/4/props/text</note>
         <note category="format">text</note>
         <note category="context">Heading on screen "Three building blocks to keep in mind"</note>
         <note category="max-length">200</note>
@@ -405,7 +405,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.three-cards-three-text.markdown">
       <notes>
-        <note category="location">screens/three-cards.json /blocks/0/blocks/5/props/markdown</note>
+        <note category="location">screens/cards.json /blocks/0/blocks/5/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Three building blocks to keep in mind"</note>
         <note category="max-length">20000</note>
@@ -605,9 +605,9 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>Le partage vient en dernier, une fois qu'on sait ce qui a marché. Pour l'instant, rien à partager.</target>
       </segment>
     </unit>
-    <unit id="screen.four-steps.title">
+    <unit id="screen.steps.title">
       <notes>
-        <note category="location">screens/four-steps.json /title</note>
+        <note category="location">screens/steps.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -618,7 +618,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.four-steps-process.takeaway">
       <notes>
-        <note category="location">screens/four-steps.json /blocks/0/props/takeaway</note>
+        <note category="location">screens/steps.json /blocks/0/props/takeaway</note>
         <note category="format">text</note>
         <note category="context">Process on screen "Four steps, in this order"</note>
         <note category="max-length">160</note>
@@ -630,7 +630,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.four-steps-process.items.s1.title">
       <notes>
-        <note category="location">screens/four-steps.json /blocks/0/props/items/0/title</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/0/title</note>
         <note category="format">text</note>
         <note category="context">Process on screen "Four steps, in this order"</note>
         <note category="max-length">60</note>
@@ -642,7 +642,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.four-steps-process.items.s1.text">
       <notes>
-        <note category="location">screens/four-steps.json /blocks/0/props/items/0/text</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/0/text</note>
         <note category="format">text</note>
         <note category="context">Process on screen "Four steps, in this order"</note>
         <note category="max-length">200</note>
@@ -654,7 +654,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.four-steps-process.items.s2.title">
       <notes>
-        <note category="location">screens/four-steps.json /blocks/0/props/items/1/title</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/1/title</note>
         <note category="format">text</note>
         <note category="context">Process on screen "Four steps, in this order"</note>
         <note category="max-length">60</note>
@@ -666,7 +666,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.four-steps-process.items.s2.text">
       <notes>
-        <note category="location">screens/four-steps.json /blocks/0/props/items/1/text</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/1/text</note>
         <note category="format">text</note>
         <note category="context">Process on screen "Four steps, in this order"</note>
         <note category="max-length">200</note>
@@ -678,7 +678,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.four-steps-process.items.s3.title">
       <notes>
-        <note category="location">screens/four-steps.json /blocks/0/props/items/2/title</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/2/title</note>
         <note category="format">text</note>
         <note category="context">Process on screen "Four steps, in this order"</note>
         <note category="max-length">60</note>
@@ -690,7 +690,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.four-steps-process.items.s3.text">
       <notes>
-        <note category="location">screens/four-steps.json /blocks/0/props/items/2/text</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/2/text</note>
         <note category="format">text</note>
         <note category="context">Process on screen "Four steps, in this order"</note>
         <note category="max-length">200</note>
@@ -702,7 +702,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.four-steps-process.items.s4.title">
       <notes>
-        <note category="location">screens/four-steps.json /blocks/0/props/items/3/title</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/3/title</note>
         <note category="format">text</note>
         <note category="context">Process on screen "Four steps, in this order"</note>
         <note category="max-length">60</note>
@@ -714,7 +714,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
     </unit>
     <unit id="block.four-steps-process.items.s4.text">
       <notes>
-        <note category="location">screens/four-steps.json /blocks/0/props/items/3/text</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/3/text</note>
         <note category="format">text</note>
         <note category="context">Process on screen "Four steps, in this order"</note>
         <note category="max-length">200</note>

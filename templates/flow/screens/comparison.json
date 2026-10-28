@@ -1,9 +1,9 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
-  "id": "compare",
-  "title": "Two ways to handle it",
+  "id": "comparison",
+  "title": "Two ways of doing it",
   "covers": [
-    "ITEM-3"
+    "ITEM-4"
   ],
   "backdrop": "calm",
   "blocks": [

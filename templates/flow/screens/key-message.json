@@ -1,9 +1,9 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
-  "id": "message",
+  "id": "key-message",
   "title": "Key message",
   "covers": [
-    "ITEM-2"
+    "ITEM-3"
   ],
   "showTitle": false,
   "blocks": [

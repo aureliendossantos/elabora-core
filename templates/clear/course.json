@@ -9,47 +9,47 @@
   "durationMinutes": 15,
   "sections": [
     {
-      "id": "start",
-      "title": "Introduction",
+      "id": "opening",
+      "title": "Getting started",
       "screens": [
         "cover",
-        "agenda"
+        "objectives"
       ]
     },
     {
-      "id": "first",
+      "id": "part-1",
       "title": "First part title",
       "screens": [
-        "part-intro",
+        "part-one",
         "key-message",
-        "text-figure",
+        "text-and-picture",
         "cards"
       ]
     },
     {
-      "id": "second",
+      "id": "part-2",
       "title": "Second part title",
       "screens": [
         "key-figures",
-        "process",
-        "quote",
-        "compare"
+        "practice",
+        "steps",
+        "quote"
       ]
     },
     {
-      "id": "third",
+      "id": "part-3",
       "title": "Third part title",
       "screens": [
-        "check",
+        "comparison",
         "chart"
       ]
     },
     {
-      "id": "wrap",
-      "title": "Wrap-up",
+      "id": "closing",
+      "title": "Wrapping up",
       "screens": [
         "recap",
-        "end"
+        "the-end"
       ]
     }
   ],
@@ -135,15 +135,7 @@
       ],
       "object": {
         "id": "accent-rule",
-        "props": {
-          "sections": [
-            "start",
-            "first",
-            "second",
-            "third",
-            "wrap"
-          ]
-        }
+        "props": {}
       },
       "variants": {
         "feature": "Accent panel on the right columns: cover, part openers and the end",

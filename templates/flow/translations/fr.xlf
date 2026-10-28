@@ -339,9 +339,9 @@
         <target>Une phrase qui dit ce que cette partie apporte, et pourquoi elle vient à ce moment du module.</target>
       </segment>
     </unit>
-    <unit id="screen.message.title">
+    <unit id="screen.key-message.title">
       <notes>
-        <note category="location">screens/message.json /title</note>
+        <note category="location">screens/key-message.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -352,7 +352,7 @@
     </unit>
     <unit id="block.message-statement.markdown">
       <notes>
-        <note category="location">screens/message.json /blocks/0/props/markdown</note>
+        <note category="location">screens/key-message.json /blocks/0/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Statement on screen "Key message"</note>
         <note category="max-length">400</note>
@@ -362,9 +362,9 @@
         <target>Votre message clé, écrit en une phrase claire que l'on **retient** et que l'on répète.</target>
       </segment>
     </unit>
-    <unit id="screen.insight.title">
+    <unit id="screen.text-and-picture.title">
       <notes>
-        <note category="location">screens/insight.json /title</note>
+        <note category="location">screens/text-and-picture.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -375,7 +375,7 @@
     </unit>
     <unit id="block.insight-figure.title">
       <notes>
-        <note category="location">screens/insight.json /blocks/0/props/title</note>
+        <note category="location">screens/text-and-picture.json /blocks/0/props/title</note>
         <note category="format">text</note>
         <note category="context">Image on screen "Explain the idea in one short title"</note>
         <note category="max-length">120</note>
@@ -387,7 +387,7 @@
     </unit>
     <unit id="block.insight-figure.markdown">
       <notes>
-        <note category="location">screens/insight.json /blocks/0/props/markdown</note>
+        <note category="location">screens/text-and-picture.json /blocks/0/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Image on screen "Explain the idea in one short title"</note>
         <note category="max-length">1500</note>
@@ -401,9 +401,9 @@ A second paragraph says what changes when the idea is applied, and where the lea
 Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'apprenant la rencontrera dans son propre travail.</target>
       </segment>
     </unit>
-    <unit id="screen.pillars.title">
+    <unit id="screen.cards.title">
       <notes>
-        <note category="location">screens/pillars.json /title</note>
+        <note category="location">screens/cards.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -414,7 +414,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.pillars-h1.text">
       <notes>
-        <note category="location">screens/pillars.json /blocks/0/blocks/0/props/text</note>
+        <note category="location">screens/cards.json /blocks/0/blocks/0/props/text</note>
         <note category="format">text</note>
         <note category="context">Heading on screen "Three pillars that hold the idea together"</note>
         <note category="max-length">200</note>
@@ -426,7 +426,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.pillars-t1.markdown">
       <notes>
-        <note category="location">screens/pillars.json /blocks/0/blocks/1/props/markdown</note>
+        <note category="location">screens/cards.json /blocks/0/blocks/1/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Three pillars that hold the idea together"</note>
         <note category="max-length">20000</note>
@@ -438,7 +438,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.pillars-h2.text">
       <notes>
-        <note category="location">screens/pillars.json /blocks/0/blocks/2/props/text</note>
+        <note category="location">screens/cards.json /blocks/0/blocks/2/props/text</note>
         <note category="format">text</note>
         <note category="context">Heading on screen "Three pillars that hold the idea together"</note>
         <note category="max-length">200</note>
@@ -450,7 +450,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.pillars-t2.markdown">
       <notes>
-        <note category="location">screens/pillars.json /blocks/0/blocks/3/props/markdown</note>
+        <note category="location">screens/cards.json /blocks/0/blocks/3/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Three pillars that hold the idea together"</note>
         <note category="max-length">20000</note>
@@ -462,7 +462,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.pillars-h3.text">
       <notes>
-        <note category="location">screens/pillars.json /blocks/0/blocks/4/props/text</note>
+        <note category="location">screens/cards.json /blocks/0/blocks/4/props/text</note>
         <note category="format">text</note>
         <note category="context">Heading on screen "Three pillars that hold the idea together"</note>
         <note category="max-length">200</note>
@@ -474,7 +474,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.pillars-t3.markdown">
       <notes>
-        <note category="location">screens/pillars.json /blocks/0/blocks/5/props/markdown</note>
+        <note category="location">screens/cards.json /blocks/0/blocks/5/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Three pillars that hold the idea together"</note>
         <note category="max-length">20000</note>
@@ -484,9 +484,9 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
         <target>Une courte description du troisième pilier, et ce qui se passe quand il manque à l'ensemble.</target>
       </segment>
     </unit>
-    <unit id="screen.figures.title">
+    <unit id="screen.key-figures.title">
       <notes>
-        <note category="location">screens/figures.json /title</note>
+        <note category="location">screens/key-figures.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -497,7 +497,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.figures-chart.takeaway">
       <notes>
-        <note category="location">screens/figures.json /blocks/0/props/takeaway</note>
+        <note category="location">screens/key-figures.json /blocks/0/props/takeaway</note>
         <note category="format">text</note>
         <note category="context">Key figures on screen "The numbers behind the idea"</note>
         <note category="max-length">160</note>
@@ -509,7 +509,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.figures-chart.items.share.label">
       <notes>
-        <note category="location">screens/figures.json /blocks/0/props/items/0/label</note>
+        <note category="location">screens/key-figures.json /blocks/0/props/items/0/label</note>
         <note category="format">text</note>
         <note category="context">Key figures on screen "The numbers behind the idea"</note>
         <note category="max-length">140</note>
@@ -521,7 +521,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.figures-chart.items.time.label">
       <notes>
-        <note category="location">screens/figures.json /blocks/0/props/items/1/label</note>
+        <note category="location">screens/key-figures.json /blocks/0/props/items/1/label</note>
         <note category="format">text</note>
         <note category="context">Key figures on screen "The numbers behind the idea"</note>
         <note category="max-length">140</note>
@@ -533,7 +533,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.figures-chart.items.cases.figure">
       <notes>
-        <note category="location">screens/figures.json /blocks/0/props/items/2/figure</note>
+        <note category="location">screens/key-figures.json /blocks/0/props/items/2/figure</note>
         <note category="format">text</note>
         <note category="context">Key figures on screen "The numbers behind the idea"</note>
         <note category="max-length">24</note>
@@ -545,7 +545,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.figures-chart.items.cases.label">
       <notes>
-        <note category="location">screens/figures.json /blocks/0/props/items/2/label</note>
+        <note category="location">screens/key-figures.json /blocks/0/props/items/2/label</note>
         <note category="format">text</note>
         <note category="context">Key figures on screen "The numbers behind the idea"</note>
         <note category="max-length">140</note>
@@ -557,7 +557,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.figures-chart.source">
       <notes>
-        <note category="location">screens/figures.json /blocks/0/props/source</note>
+        <note category="location">screens/key-figures.json /blocks/0/props/source</note>
         <note category="format">text</note>
         <note category="context">Key figures on screen "The numbers behind the idea"</note>
         <note category="max-length">200</note>
@@ -756,9 +756,9 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
         <target>Fonction, organisation</target>
       </segment>
     </unit>
-    <unit id="screen.compare.title">
+    <unit id="screen.comparison.title">
       <notes>
-        <note category="location">screens/compare.json /title</note>
+        <note category="location">screens/comparison.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -769,7 +769,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.compare-before-h.text">
       <notes>
-        <note category="location">screens/compare.json /blocks/0/blocks/0/props/text</note>
+        <note category="location">screens/comparison.json /blocks/0/blocks/0/props/text</note>
         <note category="format">text</note>
         <note category="context">Heading on screen "Two ways to handle it"</note>
         <note category="max-length">200</note>
@@ -781,7 +781,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.compare-before-t.markdown">
       <notes>
-        <note category="location">screens/compare.json /blocks/0/blocks/1/props/markdown</note>
+        <note category="location">screens/comparison.json /blocks/0/blocks/1/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Two ways to handle it"</note>
         <note category="max-length">20000</note>
@@ -797,7 +797,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.compare-after-h.text">
       <notes>
-        <note category="location">screens/compare.json /blocks/0/blocks/2/props/text</note>
+        <note category="location">screens/comparison.json /blocks/0/blocks/2/props/text</note>
         <note category="format">text</note>
         <note category="context">Heading on screen "Two ways to handle it"</note>
         <note category="max-length">200</note>
@@ -809,7 +809,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.compare-after-t.markdown">
       <notes>
-        <note category="location">screens/compare.json /blocks/0/blocks/3/props/markdown</note>
+        <note category="location">screens/comparison.json /blocks/0/blocks/3/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Two ways to handle it"</note>
         <note category="max-length">20000</note>
@@ -823,9 +823,9 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
 - Le troisième trait, celui à retenir</target>
       </segment>
     </unit>
-    <unit id="screen.check.title">
+    <unit id="screen.practice.title">
       <notes>
-        <note category="location">screens/check.json /title</note>
+        <note category="location">screens/practice.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -836,7 +836,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.check-quiz.stem">
       <notes>
-        <note category="location">screens/check.json /blocks/0/props/stem</note>
+        <note category="location">screens/practice.json /blocks/0/props/stem</note>
         <note category="format">markdown</note>
         <note category="context">Choice question on screen "Check your understanding"</note>
         <note category="max-length">20000</note>
@@ -848,7 +848,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.check-quiz.options.a.text">
       <notes>
-        <note category="location">screens/check.json /blocks/0/props/options/0/text</note>
+        <note category="location">screens/practice.json /blocks/0/props/options/0/text</note>
         <note category="format">text</note>
         <note category="context">Choice question on screen "Check your understanding"</note>
         <note category="max-length">500</note>
@@ -860,7 +860,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.check-quiz.options.a.feedback">
       <notes>
-        <note category="location">screens/check.json /blocks/0/props/options/0/feedback</note>
+        <note category="location">screens/practice.json /blocks/0/props/options/0/feedback</note>
         <note category="format">markdown</note>
         <note category="context">Choice question on screen "Check your understanding"</note>
         <note category="max-length">20000</note>
@@ -872,7 +872,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.check-quiz.options.b.text">
       <notes>
-        <note category="location">screens/check.json /blocks/0/props/options/1/text</note>
+        <note category="location">screens/practice.json /blocks/0/props/options/1/text</note>
         <note category="format">text</note>
         <note category="context">Choice question on screen "Check your understanding"</note>
         <note category="max-length">500</note>
@@ -884,7 +884,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.check-quiz.options.b.feedback">
       <notes>
-        <note category="location">screens/check.json /blocks/0/props/options/1/feedback</note>
+        <note category="location">screens/practice.json /blocks/0/props/options/1/feedback</note>
         <note category="format">markdown</note>
         <note category="context">Choice question on screen "Check your understanding"</note>
         <note category="max-length">20000</note>
@@ -896,7 +896,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.check-quiz.options.c.text">
       <notes>
-        <note category="location">screens/check.json /blocks/0/props/options/2/text</note>
+        <note category="location">screens/practice.json /blocks/0/props/options/2/text</note>
         <note category="format">text</note>
         <note category="context">Choice question on screen "Check your understanding"</note>
         <note category="max-length">500</note>
@@ -908,7 +908,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.check-quiz.options.c.feedback">
       <notes>
-        <note category="location">screens/check.json /blocks/0/props/options/2/feedback</note>
+        <note category="location">screens/practice.json /blocks/0/props/options/2/feedback</note>
         <note category="format">markdown</note>
         <note category="context">Choice question on screen "Check your understanding"</note>
         <note category="max-length">20000</note>
@@ -918,9 +918,9 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
         <target>Pas tout à fait : dites ce qui manque à cette option, et ce qu'elle risque.</target>
       </segment>
     </unit>
-    <unit id="screen.trend.title">
+    <unit id="screen.chart.title">
       <notes>
-        <note category="location">screens/trend.json /title</note>
+        <note category="location">screens/chart.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -931,7 +931,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.trend-chart.takeaway">
       <notes>
-        <note category="location">screens/trend.json /blocks/0/props/takeaway</note>
+        <note category="location">screens/chart.json /blocks/0/props/takeaway</note>
         <note category="format">text</note>
         <note category="context">Trend on screen "The trend over time"</note>
         <note category="max-length">160</note>
@@ -943,7 +943,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.trend-chart.note.text">
       <notes>
-        <note category="location">screens/trend.json /blocks/0/props/note/text</note>
+        <note category="location">screens/chart.json /blocks/0/props/note/text</note>
         <note category="format">text</note>
         <note category="context">Trend on screen "The trend over time"</note>
         <note category="max-length">80</note>
@@ -955,7 +955,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.trend-chart.source">
       <notes>
-        <note category="location">screens/trend.json /blocks/0/props/source</note>
+        <note category="location">screens/chart.json /blocks/0/props/source</note>
         <note category="format">text</note>
         <note category="context">Trend on screen "The trend over time"</note>
         <note category="max-length">200</note>
@@ -994,9 +994,9 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
 - La meilleure façon, et le trait qui fait la différence.</target>
       </segment>
     </unit>
-    <unit id="screen.end.title">
+    <unit id="screen.the-end.title">
       <notes>
-        <note category="location">screens/end.json /title</note>
+        <note category="location">screens/the-end.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -1007,7 +1007,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.end-kicker.markdown">
       <notes>
-        <note category="location">screens/end.json /blocks/0/props/markdown</note>
+        <note category="location">screens/the-end.json /blocks/0/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Thank you, and well done"</note>
         <note category="max-length">20000</note>
@@ -1019,7 +1019,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.end-lead.markdown">
       <notes>
-        <note category="location">screens/end.json /blocks/1/props/markdown</note>
+        <note category="location">screens/the-end.json /blocks/1/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Thank you, and well done"</note>
         <note category="max-length">20000</note>
@@ -1031,7 +1031,7 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
     </unit>
     <unit id="block.end-meta.markdown">
       <notes>
-        <note category="location">screens/end.json /blocks/2/props/markdown</note>
+        <note category="location">screens/the-end.json /blocks/2/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Thank you, and well done"</note>
         <note category="max-length">20000</note>

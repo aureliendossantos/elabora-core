@@ -1,9 +1,9 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
-  "id": "insight",
-  "title": "Explain the idea in one short title",
+  "id": "text-and-picture",
+  "title": "A title that names the idea of this screen",
   "covers": [
-    "ITEM-2"
+    "ITEM-3"
   ],
   "blocks": [
     {

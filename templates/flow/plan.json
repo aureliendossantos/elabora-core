@@ -18,45 +18,44 @@
     {
       "id": "ITEM-1",
       "kind": "intro",
-      "title": "Cover and objectives",
-      "part": "Introduction",
+      "title": "Welcome and objectives",
       "objectives": []
     },
     {
       "id": "ITEM-2",
-      "kind": "exposition",
-      "title": "The key idea, its three pillars and its figures",
-      "part": "First part",
-      "objectives": [
-        "OBJ-1"
-      ]
+      "kind": "intro",
+      "title": "Opening of the first part",
+      "objectives": []
     },
     {
       "id": "ITEM-3",
-      "kind": "demonstration",
-      "title": "The steps, a quote and a comparison",
-      "part": "Second part",
+      "kind": "exposition",
+      "title": "The key idea, explained",
       "objectives": [
         "OBJ-1"
       ]
     },
     {
       "id": "ITEM-4",
-      "kind": "practice",
-      "title": "Check: choose the right option",
-      "part": "Second part",
+      "kind": "exposition",
+      "title": "Figures, steps, voices and comparisons",
       "objectives": [
         "OBJ-1"
       ]
     },
     {
       "id": "ITEM-5",
-      "kind": "summary",
-      "title": "The trend, the recap and the end",
-      "part": "Wrap-up",
+      "kind": "practice",
+      "title": "Practice: a realistic situation",
       "objectives": [
         "OBJ-1"
       ]
+    },
+    {
+      "id": "ITEM-6",
+      "kind": "summary",
+      "title": "Recap and next step",
+      "objectives": []
     }
   ],
   "spacing": [],

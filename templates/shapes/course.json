@@ -21,7 +21,7 @@
         "part-one",
         "key-message",
         "text-and-picture",
-        "three-cards"
+        "cards"
       ]
     },
     {
@@ -30,7 +30,7 @@
       "screens": [
         "key-figures",
         "practice",
-        "four-steps",
+        "steps",
         "quote"
       ]
     },

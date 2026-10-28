@@ -32,9 +32,9 @@
       "context": { "screen": "key-message", "section": "part-1", "step": 1, "variant": null },
       "steps": [
         { "action": "step", "frames": 90 },
-        { "action": "set-context", "context": { "screen": "three-cards", "section": "part-1", "step": 1, "variant": null } },
+        { "action": "set-context", "context": { "screen": "cards", "section": "part-1", "step": 1, "variant": null } },
         { "action": "step", "frames": 120 },
-        { "action": "expect-state", "state": { "screen": "three-cards", "tableau": 1, "settled": true } },
+        { "action": "expect-state", "state": { "screen": "cards", "tableau": 1, "settled": true } },
         { "action": "snapshot", "name": "three-cards" }
       ]
     },

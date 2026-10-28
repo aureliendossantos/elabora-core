@@ -1,7 +1,7 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
-  "id": "three-cards",
-  "title": "Three building blocks to keep in mind",
+  "id": "cards",
+  "title": "Three ideas, side by side",
   "covers": [
     "ITEM-3"
   ],

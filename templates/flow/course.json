@@ -8,41 +8,46 @@
   "sections": [
     {
       "id": "opening",
-      "title": "Introduction",
+      "title": "Getting started",
       "screens": [
         "cover",
         "objectives"
       ]
     },
     {
-      "id": "first-part",
-      "title": "First part",
+      "id": "part-1",
+      "title": "First part title",
       "screens": [
         "part-one",
-        "message",
-        "insight",
-        "pillars",
-        "figures"
+        "key-message",
+        "text-and-picture",
+        "cards"
       ]
     },
     {
-      "id": "second-part",
-      "title": "Second part",
+      "id": "part-2",
+      "title": "Second part title",
       "screens": [
-        "part-two",
+        "key-figures",
+        "practice",
         "steps",
-        "quote",
-        "compare",
-        "check"
+        "quote"
+      ]
+    },
+    {
+      "id": "part-3",
+      "title": "Third part title",
+      "screens": [
+        "comparison",
+        "chart"
       ]
     },
     {
       "id": "closing",
-      "title": "Wrap-up",
+      "title": "Wrapping up",
       "screens": [
-        "trend",
         "recap",
-        "end"
+        "the-end"
       ]
     }
   ],

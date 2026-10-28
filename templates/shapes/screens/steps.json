@@ -1,7 +1,7 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
-  "id": "four-steps",
-  "title": "Four steps, in this order",
+  "id": "steps",
+  "title": "Four steps, in order",
   "covers": [
     "ITEM-4"
   ],

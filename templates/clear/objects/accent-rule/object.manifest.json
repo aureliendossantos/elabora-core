@@ -77,11 +77,11 @@
           "pattern": "^[a-z][a-z0-9-]{0,63}$"
         },
         "default": [
-          "start",
-          "first",
-          "second",
-          "third",
-          "wrap"
+          "opening",
+          "part-1",
+          "part-2",
+          "part-3",
+          "closing"
         ]
       },
       "position": {

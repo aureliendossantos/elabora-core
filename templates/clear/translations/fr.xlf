@@ -266,9 +266,9 @@
 - Version 1.0</target>
       </segment>
     </unit>
-    <unit id="screen.agenda.title">
+    <unit id="screen.objectives.title">
       <notes>
-        <note category="location">screens/agenda.json /title</note>
+        <note category="location">screens/objectives.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -279,7 +279,7 @@
     </unit>
     <unit id="block.agenda-list.markdown">
       <notes>
-        <note category="location">screens/agenda.json /blocks/0/props/markdown</note>
+        <note category="location">screens/objectives.json /blocks/0/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "What this module covers"</note>
         <note category="max-length">20000</note>
@@ -301,7 +301,7 @@
     </unit>
     <unit id="block.agenda-goal.markdown">
       <notes>
-        <note category="location">screens/agenda.json /blocks/1/props/markdown</note>
+        <note category="location">screens/objectives.json /blocks/1/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "What this module covers"</note>
         <note category="max-length">20000</note>
@@ -311,9 +311,9 @@
         <target>À la fin, vous saurez appliquer la règle clé à un cas réel et choisir la bonne première action.</target>
       </segment>
     </unit>
-    <unit id="screen.part-intro.title">
+    <unit id="screen.part-one.title">
       <notes>
-        <note category="location">screens/part-intro.json /title</note>
+        <note category="location">screens/part-one.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -322,9 +322,9 @@
         <target>Titre de la première partie</target>
       </segment>
     </unit>
-    <unit id="screen.part-intro.layout.eyebrow">
+    <unit id="screen.part-one.layout.eyebrow">
       <notes>
-        <note category="location">screens/part-intro.json /layoutProps/eyebrow</note>
+        <note category="location">screens/part-one.json /layoutProps/eyebrow</note>
         <note category="format">text</note>
         <note category="context">Layout opening of screen "First part title"</note>
         <note category="max-length">80</note>
@@ -334,9 +334,9 @@
         <target>Partie 01</target>
       </segment>
     </unit>
-    <unit id="screen.part-intro.layout.lead">
+    <unit id="screen.part-one.layout.lead">
       <notes>
-        <note category="location">screens/part-intro.json /layoutProps/lead</note>
+        <note category="location">screens/part-one.json /layoutProps/lead</note>
         <note category="format">markdown</note>
         <note category="context">Layout opening of screen "First part title"</note>
         <note category="max-length">500</note>
@@ -348,7 +348,7 @@
     </unit>
     <unit id="block.part-intro-points.markdown">
       <notes>
-        <note category="location">screens/part-intro.json /blocks/0/props/markdown</note>
+        <note category="location">screens/part-one.json /blocks/0/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "First part title"</note>
         <note category="max-length">20000</note>
@@ -385,9 +385,9 @@
         <target>Votre message clé en une phrase : assez court pour s'en souvenir, assez clair pour agir.</target>
       </segment>
     </unit>
-    <unit id="screen.text-figure.title">
+    <unit id="screen.text-and-picture.title">
       <notes>
-        <note category="location">screens/text-figure.json /title</note>
+        <note category="location">screens/text-and-picture.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -398,7 +398,7 @@
     </unit>
     <unit id="block.text-figure-body.alt">
       <notes>
-        <note category="location">screens/text-figure.json /blocks/0/props/alt</note>
+        <note category="location">screens/text-and-picture.json /blocks/0/props/alt</note>
         <note category="format">text</note>
         <note category="context">Image on screen "A title for the explanation"</note>
         <note category="max-length">250</note>
@@ -410,7 +410,7 @@
     </unit>
     <unit id="block.text-figure-body.title">
       <notes>
-        <note category="location">screens/text-figure.json /blocks/0/props/title</note>
+        <note category="location">screens/text-and-picture.json /blocks/0/props/title</note>
         <note category="format">text</note>
         <note category="context">Image on screen "A title for the explanation"</note>
         <note category="max-length">120</note>
@@ -422,7 +422,7 @@
     </unit>
     <unit id="block.text-figure-body.markdown">
       <notes>
-        <note category="location">screens/text-figure.json /blocks/0/props/markdown</note>
+        <note category="location">screens/text-and-picture.json /blocks/0/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Image on screen "A title for the explanation"</note>
         <note category="max-length">1500</note>
@@ -614,9 +614,9 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
         <target>Source : nom de l'étude ou du rapport interne, année</target>
       </segment>
     </unit>
-    <unit id="screen.process.title">
+    <unit id="screen.steps.title">
       <notes>
-        <note category="location">screens/process.json /title</note>
+        <note category="location">screens/steps.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -627,7 +627,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.process-chart.takeaway">
       <notes>
-        <note category="location">screens/process.json /blocks/0/props/takeaway</note>
+        <note category="location">screens/steps.json /blocks/0/props/takeaway</note>
         <note category="format">text</note>
         <note category="context">Process on screen "The procedure, step by step"</note>
         <note category="max-length">160</note>
@@ -639,7 +639,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.process-chart.items.s1.title">
       <notes>
-        <note category="location">screens/process.json /blocks/0/props/items/0/title</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/0/title</note>
         <note category="format">text</note>
         <note category="context">Process on screen "The procedure, step by step"</note>
         <note category="max-length">60</note>
@@ -651,7 +651,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.process-chart.items.s1.text">
       <notes>
-        <note category="location">screens/process.json /blocks/0/props/items/0/text</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/0/text</note>
         <note category="format">text</note>
         <note category="context">Process on screen "The procedure, step by step"</note>
         <note category="max-length">200</note>
@@ -663,7 +663,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.process-chart.items.s2.title">
       <notes>
-        <note category="location">screens/process.json /blocks/0/props/items/1/title</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/1/title</note>
         <note category="format">text</note>
         <note category="context">Process on screen "The procedure, step by step"</note>
         <note category="max-length">60</note>
@@ -675,7 +675,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.process-chart.items.s2.text">
       <notes>
-        <note category="location">screens/process.json /blocks/0/props/items/1/text</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/1/text</note>
         <note category="format">text</note>
         <note category="context">Process on screen "The procedure, step by step"</note>
         <note category="max-length">200</note>
@@ -687,7 +687,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.process-chart.items.s3.title">
       <notes>
-        <note category="location">screens/process.json /blocks/0/props/items/2/title</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/2/title</note>
         <note category="format">text</note>
         <note category="context">Process on screen "The procedure, step by step"</note>
         <note category="max-length">60</note>
@@ -699,7 +699,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.process-chart.items.s3.text">
       <notes>
-        <note category="location">screens/process.json /blocks/0/props/items/2/text</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/2/text</note>
         <note category="format">text</note>
         <note category="context">Process on screen "The procedure, step by step"</note>
         <note category="max-length">200</note>
@@ -711,7 +711,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.process-chart.items.s4.title">
       <notes>
-        <note category="location">screens/process.json /blocks/0/props/items/3/title</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/3/title</note>
         <note category="format">text</note>
         <note category="context">Process on screen "The procedure, step by step"</note>
         <note category="max-length">60</note>
@@ -723,7 +723,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.process-chart.items.s4.text">
       <notes>
-        <note category="location">screens/process.json /blocks/0/props/items/3/text</note>
+        <note category="location">screens/steps.json /blocks/0/props/items/3/text</note>
         <note category="format">text</note>
         <note category="context">Process on screen "The procedure, step by step"</note>
         <note category="max-length">200</note>
@@ -780,9 +780,9 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
         <target>Fonction, organisation</target>
       </segment>
     </unit>
-    <unit id="screen.compare.title">
+    <unit id="screen.comparison.title">
       <notes>
-        <note category="location">screens/compare.json /title</note>
+        <note category="location">screens/comparison.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -793,7 +793,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.compare-a-title.text">
       <notes>
-        <note category="location">screens/compare.json /blocks/0/blocks/0/props/text</note>
+        <note category="location">screens/comparison.json /blocks/0/blocks/0/props/text</note>
         <note category="format">text</note>
         <note category="context">Heading on screen "Two ways to do it"</note>
         <note category="max-length">200</note>
@@ -805,7 +805,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.compare-a-list.markdown">
       <notes>
-        <note category="location">screens/compare.json /blocks/0/blocks/1/props/markdown</note>
+        <note category="location">screens/comparison.json /blocks/0/blocks/1/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Two ways to do it"</note>
         <note category="max-length">20000</note>
@@ -821,7 +821,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.compare-b-title.text">
       <notes>
-        <note category="location">screens/compare.json /blocks/0/blocks/2/props/text</note>
+        <note category="location">screens/comparison.json /blocks/0/blocks/2/props/text</note>
         <note category="format">text</note>
         <note category="context">Heading on screen "Two ways to do it"</note>
         <note category="max-length">200</note>
@@ -833,7 +833,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.compare-b-list.markdown">
       <notes>
-        <note category="location">screens/compare.json /blocks/0/blocks/3/props/markdown</note>
+        <note category="location">screens/comparison.json /blocks/0/blocks/3/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Two ways to do it"</note>
         <note category="max-length">20000</note>
@@ -847,9 +847,9 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
 - Le troisième changement, et pourquoi il est plus sûr</target>
       </segment>
     </unit>
-    <unit id="screen.check.title">
+    <unit id="screen.practice.title">
       <notes>
-        <note category="location">screens/check.json /title</note>
+        <note category="location">screens/practice.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -860,7 +860,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.check-colleague.lines.case.markdown">
       <notes>
-        <note category="location">screens/check.json /blocks/0/blocks/0/props/lines/0/markdown</note>
+        <note category="location">screens/practice.json /blocks/0/blocks/0/props/lines/0/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Character on screen "Your turn"</note>
         <note category="max-length">600</note>
@@ -872,7 +872,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.check-quiz.stem">
       <notes>
-        <note category="location">screens/check.json /blocks/0/blocks/1/props/stem</note>
+        <note category="location">screens/practice.json /blocks/0/blocks/1/props/stem</note>
         <note category="format">markdown</note>
         <note category="context">Choice question on screen "Your turn"</note>
         <note category="max-length">20000</note>
@@ -884,7 +884,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.check-quiz.options.a.text">
       <notes>
-        <note category="location">screens/check.json /blocks/0/blocks/1/props/options/0/text</note>
+        <note category="location">screens/practice.json /blocks/0/blocks/1/props/options/0/text</note>
         <note category="format">text</note>
         <note category="context">Choice question on screen "Your turn"</note>
         <note category="max-length">500</note>
@@ -896,7 +896,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.check-quiz.options.a.feedback">
       <notes>
-        <note category="location">screens/check.json /blocks/0/blocks/1/props/options/0/feedback</note>
+        <note category="location">screens/practice.json /blocks/0/blocks/1/props/options/0/feedback</note>
         <note category="format">markdown</note>
         <note category="context">Choice question on screen "Your turn"</note>
         <note category="max-length">20000</note>
@@ -908,7 +908,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.check-quiz.options.b.text">
       <notes>
-        <note category="location">screens/check.json /blocks/0/blocks/1/props/options/1/text</note>
+        <note category="location">screens/practice.json /blocks/0/blocks/1/props/options/1/text</note>
         <note category="format">text</note>
         <note category="context">Choice question on screen "Your turn"</note>
         <note category="max-length">500</note>
@@ -920,7 +920,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.check-quiz.options.b.feedback">
       <notes>
-        <note category="location">screens/check.json /blocks/0/blocks/1/props/options/1/feedback</note>
+        <note category="location">screens/practice.json /blocks/0/blocks/1/props/options/1/feedback</note>
         <note category="format">markdown</note>
         <note category="context">Choice question on screen "Your turn"</note>
         <note category="max-length">20000</note>
@@ -932,7 +932,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.check-quiz.options.c.text">
       <notes>
-        <note category="location">screens/check.json /blocks/0/blocks/1/props/options/2/text</note>
+        <note category="location">screens/practice.json /blocks/0/blocks/1/props/options/2/text</note>
         <note category="format">text</note>
         <note category="context">Choice question on screen "Your turn"</note>
         <note category="max-length">500</note>
@@ -944,7 +944,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.check-quiz.options.c.feedback">
       <notes>
-        <note category="location">screens/check.json /blocks/0/blocks/1/props/options/2/feedback</note>
+        <note category="location">screens/practice.json /blocks/0/blocks/1/props/options/2/feedback</note>
         <note category="format">markdown</note>
         <note category="context">Choice question on screen "Your turn"</note>
         <note category="max-length">20000</note>
@@ -1078,9 +1078,9 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
 - **Où trouver de l'aide.** L'équipe ou la page à contacter, en quelques mots.</target>
       </segment>
     </unit>
-    <unit id="screen.end.title">
+    <unit id="screen.the-end.title">
       <notes>
-        <note category="location">screens/end.json /title</note>
+        <note category="location">screens/the-end.json /title</note>
         <note category="format">text</note>
         <note category="context">Screen title</note>
       </notes>
@@ -1089,9 +1089,9 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
         <target>Merci</target>
       </segment>
     </unit>
-    <unit id="screen.end.layout.eyebrow">
+    <unit id="screen.the-end.layout.eyebrow">
       <notes>
-        <note category="location">screens/end.json /layoutProps/eyebrow</note>
+        <note category="location">screens/the-end.json /layoutProps/eyebrow</note>
         <note category="format">text</note>
         <note category="context">Layout opening of screen "Thank you"</note>
         <note category="max-length">80</note>
@@ -1101,9 +1101,9 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
         <target>Fin du module</target>
       </segment>
     </unit>
-    <unit id="screen.end.layout.lead">
+    <unit id="screen.the-end.layout.lead">
       <notes>
-        <note category="location">screens/end.json /layoutProps/lead</note>
+        <note category="location">screens/the-end.json /layoutProps/lead</note>
         <note category="format">markdown</note>
         <note category="context">Layout opening of screen "Thank you"</note>
         <note category="max-length">500</note>
@@ -1115,7 +1115,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
     </unit>
     <unit id="block.end-meta.markdown">
       <notes>
-        <note category="location">screens/end.json /blocks/0/props/markdown</note>
+        <note category="location">screens/the-end.json /blocks/0/props/markdown</note>
         <note category="format">markdown</note>
         <note category="context">Text on screen "Thank you"</note>
         <note category="max-length">20000</note>
