@@ -18,11 +18,15 @@ import { findMediaTools } from '@elabora/node/media/tools';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const INTERFACE = path.join(ROOT, 'packages/player/src/interface-sounds');
+const LIBRARY_FILES = path.join(ROOT, 'packages/node/sounds/files');
 const CACHE = path.join(os.tmpdir(), 'elabora-sounds-cache');
 const AGENT = 'Mozilla/5.0 (compatible; ElaboraSounds/1.0; +https://elabora.studio)';
 
 interface Pack { title: string; author: string; page: string; license: string; licenseUrl: string; checked: string }
-interface Source { pack: string; file: string; sha256: string }
+// A role is a file of a Kenney pack, checked by its SHA-256, or a master of the library below (a sound
+// the script cannot download, such as a Freesound original, which needs an account).
+interface PackSource { pack: string; file: string; sha256: string }
+type Source = PackSource | { library: string };
 interface Sources { packs: Record<string, Pack>; roles: Record<string, Source> }
 
 const fromIndex = process.argv.indexOf('--from');
@@ -43,7 +47,7 @@ async function kenneyZip(page: string): Promise<Buffer> {
 }
 
 const packs = new Map<string, Map<string, Buffer>>();
-async function original(sources: Sources, source: Source): Promise<Buffer> {
+async function original(sources: Sources, source: PackSource): Promise<Buffer> {
   if (from) return fs.readFileSync(path.join(from, source.pack, source.file));
   let files = packs.get(source.pack);
   if (!files) {
@@ -68,14 +72,21 @@ const sources = JSON.parse(fs.readFileSync(path.join(INTERFACE, 'sources.json'),
 const work = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-sounds-'));
 try {
   for (const [role, source] of Object.entries(sources.roles)) {
-    const bytes = await original(sources, source);
-    const actual = sha256(bytes);
-    if (actual !== source.sha256) throw new Error(`${role}: ${source.file} has SHA-256 ${actual}, not ${source.sha256}`);
-    const input = path.join(work, `${role}${path.extname(source.file)}`);
-    fs.writeFileSync(input, bytes);
+    let input: string;
+    if ('library' in source) {
+      const master = fs.readdirSync(path.join(LIBRARY_FILES)).find((name) => name.startsWith(`${source.library}.`));
+      if (!master) throw new Error(`${role}: the library has no file for ${source.library}`);
+      input = path.join(LIBRARY_FILES, master);
+    } else {
+      const bytes = await original(sources, source);
+      const actual = sha256(bytes);
+      if (actual !== source.sha256) throw new Error(`${role}: ${source.file} has SHA-256 ${actual}, not ${source.sha256}`);
+      input = path.join(work, `${role}${path.extname(source.file)}`);
+      fs.writeFileSync(input, bytes);
+    }
     const output = path.join(INTERFACE, `${role}.m4a`);
     execFileSync(tools.ffmpeg, ['-v', 'error', '-y', '-i', input, '-ac', '1', '-c:a', 'aac', '-b:a', '96k', '-map_metadata', '-1', '-fflags', '+bitexact', '-flags:a', '+bitexact', '-movflags', '+faststart', output]);
-    console.log(`${role}.m4a  ${fs.statSync(output).size} bytes  (${source.file})`);
+    console.log(`${role}.m4a  ${fs.statSync(output).size} bytes  (${'library' in source ? `library: ${source.library}` : source.file})`);
   }
 } finally {
   fs.rmSync(work, { recursive: true, force: true });

@@ -43,7 +43,8 @@ test('the player package has a file for each interface sound it names, as source
   for (const role of PLAYER_INTERFACE_SOUNDS) {
     assert.ok(INTERFACE_ROLES.includes(role), role);
     const bytes = fs.readFileSync(path.join(PLAYER_SOUNDS, `${role}.m4a`));
-    assert.ok(bytes.length > 1000 && bytes.length < 20000, `${role}.m4a: ${bytes.length} bytes`);
+    // Short and light: the end's jingle, the longest (2.8 s), weighs 35 KB.
+    assert.ok(bytes.length > 1000 && bytes.length < 40000, `${role}.m4a: ${bytes.length} bytes`);
     assert.equal(bytes.subarray(4, 8).toString('latin1'), 'ftyp', `${role}.m4a is an MP4 file`);
   }
 });

@@ -1,18 +1,10 @@
 {
-  "about": "The player's interface sounds (docs/decisions.md D67), one file per role, chosen by the founder on 28 October 2026 (end: Kenney's STEEL10 until the founder gets Freesound 521640, « WinBanjo », which needs an account). Kept by hand; `pnpm run sounds` downloads the packs, checks each original's SHA-256 and writes <role>.m4a (AAC, mono, 96 kb/s). Kenney's packs are CC0: no credit is owed (CREDITS.txt of a package still names them).",
+  "about": "The player's interface sounds (docs/decisions.md D67), one file per role, chosen by the founder on 28 October 2026 (end: « WinBanjo », Freesound 521640 by Fupicat, CC0, downloaded by the founder with his account on 28 October and taken from the library's master fin-reussie.flac, trimmed and levelled there). Kept by hand; `pnpm run sounds` downloads the packs, checks each original's SHA-256 and writes <role>.m4a (AAC, mono, 96 kb/s). Kenney's packs are CC0: no credit is owed (CREDITS.txt of a package still names them).",
   "packs": {
     "kenney-interface-sounds": {
       "title": "Interface Sounds 1.0",
       "author": "Kenney",
       "page": "https://kenney.nl/assets/interface-sounds",
-      "license": "CC0-1.0",
-      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "checked": "2026-10-28"
-    },
-    "kenney-music-jingles": {
-      "title": "Music Jingles 1.0",
-      "author": "Kenney",
-      "page": "https://kenney.nl/assets/music-jingles",
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
       "checked": "2026-10-28"
@@ -55,9 +47,7 @@
       "sha256": "39d7c47855b9642f43548b7b132c20e20a1490c7eb13d10008c32fcb24da19f8"
     },
     "end": {
-      "pack": "kenney-music-jingles",
-      "file": "Audio/Steel jingles/jingles_STEEL10.ogg",
-      "sha256": "88a6645658b15dc327a2377ca7354e364625f081cd6ff9fda0b46dc54f664b71"
+      "library": "fin-reussie"
     }
   }
 }

@@ -1,72 +1,41 @@
 {
-  "about": "Elabora's library of sounds, « Sons courants » (docs/decisions.md D67): CC0 or public domain only, taken once by hand from Kenney, OpenGameArt and Wikimedia Commons (28 Oct 2026), each analysed (duration, silence, level, clipping), trimmed, levelled (effects to a peak of -3 dBFS, ambiences to an RMS of -26 dBFS) and, for ambiences, given a crossfaded seam. Kept by hand; files/ holds the masters (FLAC for effects, AAC 256 kb/s for ambiences); `pnpm run sounds` writes catalogue.json and README.md from them.",
+  "about": "Elabora's library of sounds, « Sons courants » (docs/decisions.md D67): CC0 or public domain only, taken once by hand from Kenney, OpenGameArt and Wikimedia Commons (28 Oct 2026), and from Freesound originals the founder downloaded with his account (29 Oct), each analysed (duration, silence, level, clipping), trimmed, levelled (effects to a peak of -3 dBFS, ambiences to an RMS of -26 dBFS) and, for ambiences, given a crossfaded seam. Kept by hand; files/ holds the masters (FLAC for effects, AAC 256 kb/s for ambiences); `pnpm run sounds` writes catalogue.json and README.md from them.",
   "sounds": [
     {
       "id": "telephone-fixe",
       "title": {
-        "en": "Office phone ringing (two double rings)",
-        "fr": "Téléphone de bureau qui sonne (deux doubles sonneries)"
+        "en": "Wall phone ringing (one ring)",
+        "fr": "Téléphone fixe qui sonne (une sonnerie)"
       },
       "category": "telephone",
       "kind": "effect",
-      "source": "elabora",
-      "url": "https://github.com/aureliendossantos/elabora-core",
+      "source": "freesound",
+      "url": "https://freesound.org/people/knufds/sounds/345812/",
       "file": null,
-      "author": "Elabora",
+      "author": "knufds",
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "checked": "2026-10-28",
-      "originalSha256": null,
+      "checked": "2026-10-29",
+      "originalSha256": "c0e2ffbae1402d1102b53a3e2a4931c650283a7b66c965b1d5ce7d26c4c0dd1f",
       "processing": {
-        "synthesis": "ffmpeg aevalsrc: 800 and 1000 Hz alternating 20 times a second, bursts of 0.4 s at 0, 0.6, 3.0 and 3.6 s; lowpass 3200 Hz, highpass 300 Hz, a 12 ms echo, peak -3 dBFS"
+        "trim": {
+          "start": 0.0,
+          "end": 2.9
+        },
+        "fadeOut": 0.5,
+        "gainDb": 3.0
       },
       "caption": {
         "fr": "Le téléphone sonne.",
         "en": "The phone rings."
       },
       "tags": [
-        "telephone",
-        "ring",
-        "office",
-        "landline"
-      ],
-      "notes": "Synthesised by Elabora: no CC0 landline ring could be had without a Freesound account."
-    },
-    {
-      "id": "telephone-portable",
-      "title": {
-        "en": "Mobile phone ringtone (chirp)",
-        "fr": "Sonnerie de téléphone portable"
-      },
-      "category": "telephone",
-      "kind": "effect",
-      "source": "opengameart",
-      "url": "https://opengameart.org/content/modern-ringtone-chirptone",
-      "file": "https://opengameart.org/sites/default/files/chirptone.wav",
-      "author": "Zane Little Music",
-      "license": "CC0-1.0",
-      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "checked": "2026-10-28",
-      "originalSha256": "2d1ccdd8b9307eb20f1c531fff66bd267905529d8195aecbc861d72df54666d5",
-      "processing": {
-        "trim": {
-          "start": 0.0,
-          "end": 1.35
-        },
-        "fadeOut": 0.25,
-        "gainDb": 0.7
-      },
-      "caption": {
-        "fr": "Le téléphone portable sonne.",
-        "en": "The mobile phone rings."
-      },
-      "tags": [
         "téléphone",
-        "portable",
         "sonnerie",
-        "mobile",
-        "ringtone"
-      ]
+        "fixe",
+        "bureau"
+      ],
+      "notes": "A kitchen wall phone's bell, recorded: the first ring and its decay (the second ring, 7.6 s later, left out). Replaces the synthesised ring."
     },
     {
       "id": "nouveau-mail",
@@ -648,6 +617,43 @@
       ]
     },
     {
+      "id": "bureau-centre-appels",
+      "title": {
+        "en": "Office, call centre (loop)",
+        "fr": "Bureau, centre d'appels (boucle)"
+      },
+      "category": "office",
+      "kind": "ambience",
+      "source": "freesound",
+      "url": "https://freesound.org/people/leonelmail/sounds/579568/",
+      "file": null,
+      "author": "leonelmail",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-29",
+      "originalSha256": "14724957792e34167b9e7b0d7692430db2f8411f998d44ac4ffef45b4c17ee04",
+      "processing": {
+        "trim": {
+          "start": 112.0,
+          "end": 162.0
+        },
+        "gainDb": 14.3,
+        "loopCrossfade": 1.5
+      },
+      "caption": {
+        "fr": "Bruits de bureau.",
+        "en": "Office background noise."
+      },
+      "tags": [
+        "bureau",
+        "centre d'appels",
+        "open space",
+        "ambiance",
+        "voix"
+      ],
+      "notes": "The calmest 50 s of the 3 min recording (its loudest second 2.6 dB over the mean), with a 1.5 s crossfaded seam. An MP3 original stored as AAC 256 kb/s: the encoding `elabora sound add` gives any ambience, so a course gets no further encoding before its package's."
+    },
+    {
       "id": "objet-bois-tombe",
       "title": {
         "en": "Wooden object dropped",
@@ -865,38 +871,6 @@
       ]
     },
     {
-      "id": "whoosh",
-      "title": {
-        "en": "Whoosh (air)",
-        "fr": "Souffle de transition (whoosh)"
-      },
-      "category": "transitions",
-      "kind": "effect",
-      "source": "opengameart",
-      "url": "https://opengameart.org/content/air-whoosh",
-      "file": "https://opengameart.org/sites/default/files/whoosh2_0.wav",
-      "author": "pyranostudios",
-      "license": "CC0-1.0",
-      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "checked": "2026-10-28",
-      "originalSha256": "d3fbff5bb78b289af16b2dfa29083f07ef83b0cbaff4514c48dfda16d082b468",
-      "processing": {
-        "trim": {
-          "start": 0.78,
-          "end": 1.98
-        },
-        "fadeOut": 0.05,
-        "gainDb": 7.2
-      },
-      "caption": {},
-      "tags": [
-        "whoosh",
-        "transition",
-        "souffle",
-        "air"
-      ]
-    },
-    {
       "id": "applaudissements",
       "title": {
         "en": "Applause (hall)",
@@ -934,30 +908,34 @@
     {
       "id": "fin-reussie",
       "title": {
-        "en": "Success jingle (steel guitar, rising)",
-        "fr": "Fin réussie (guitare steel, montante)"
+        "en": "Success jingle (banjo)",
+        "fr": "Fin réussie (banjo)"
       },
       "category": "stingers",
       "kind": "effect",
-      "source": "kenney",
-      "url": "https://kenney.nl/assets/music-jingles",
-      "file": "Kenney Music Jingles: Audio/Steel jingles/jingles_STEEL10.ogg",
-      "author": "Kenney Vleugels (Kenney.nl)",
+      "source": "freesound",
+      "url": "https://freesound.org/people/Fupicat/sounds/521640/",
+      "file": null,
+      "author": "Fupicat",
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "checked": "2026-10-28",
-      "originalSha256": "88a6645658b15dc327a2377ca7354e364625f081cd6ff9fda0b46dc54f664b71",
+      "checked": "2026-10-29",
+      "originalSha256": "71e2e783a70ab9bcd63637474cf4aed15abfdc99d5918d9500a03b96da9628ff",
       "processing": {
-        "fadeOut": 0.01,
-        "gainDb": -1.7
+        "trim": {
+          "start": 0.0,
+          "end": 2.8
+        },
+        "fadeOut": 0.3,
+        "gainDb": 7.9
       },
-      "caption": {},
       "tags": [
         "jingle",
         "réussite",
         "fin",
-        "steel"
-      ]
+        "banjo"
+      ],
+      "notes": "« WinBanjo », the founder's choice for the end; replaces Kenney's STEEL10. Digital silence after 2.8 s cut."
     },
     {
       "id": "fin-reussie-b",
@@ -1251,6 +1229,39 @@
         "ambiance",
         "couverts"
       ]
+    },
+    {
+      "id": "voiture-passe",
+      "title": {
+        "en": "Car passing on a wet road",
+        "fr": "Voiture qui passe (route mouillée)"
+      },
+      "category": "crowds-places",
+      "kind": "effect",
+      "source": "freesound",
+      "url": "https://freesound.org/people/Breviceps/sounds/462862/",
+      "file": null,
+      "author": "Breviceps",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-29",
+      "originalSha256": "2a289a0b1a5b14eca85eebb7747ed54608f5398c5ab3c37535bff1eba379438e",
+      "processing": {
+        "fadeOut": 0.2,
+        "gainDb": -2.6
+      },
+      "caption": {
+        "fr": "Une voiture passe.",
+        "en": "A car passes by."
+      },
+      "tags": [
+        "voiture",
+        "circulation",
+        "rue",
+        "route",
+        "passage"
+      ],
+      "notes": "Whole recording: one pass-by, left to right."
     }
   ]
 }
