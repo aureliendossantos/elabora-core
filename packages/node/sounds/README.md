@@ -1,11 +1,10 @@
 # « Sons courants »: the library of sounds
 
-Written by `pnpm run sounds` from sources.json and files/: do not edit. 38 sounds, 9.21 MB (effects as FLAC, ambiences as AAC 256 kb/s: docs/decisions/D67.md). CC0 or public domain only: no credit is owed, the sources are kept here.
+Written by `pnpm run sounds` from sources.json and files/: do not edit. 38 sounds, 11.20 MB (effects as FLAC, ambiences as AAC 256 kb/s: docs/decisions/D67.md). CC0 or public domain only: no credit is owed, the sources are kept here.
 
 | Id | Titre | Category | Length | Format | Licence | Source |
 |---|---|---|---|---|---|---|
-| `telephone-fixe` | Téléphone de bureau qui sonne (deux doubles sonneries) | telephone | 4.1 s | flac | CC0-1.0 | [Elabora](https://github.com/aureliendossantos/elabora-core) |
-| `telephone-portable` | Sonnerie de téléphone portable | telephone | 1.4 s | flac | CC0-1.0 | [Zane Little Music](https://opengameart.org/content/modern-ringtone-chirptone) |
+| `telephone-fixe` | Téléphone fixe qui sonne (une sonnerie) | telephone | 2.9 s | flac | CC0-1.0 | [knufds](https://freesound.org/people/knufds/sounds/345812/) |
 | `nouveau-mail` | Nouveau courriel (ding) | notifications | 0.7 s | flac | CC0-1.0 | [Kenney Vleugels (Kenney.nl)](https://kenney.nl/assets/interface-sounds) |
 | `notification-generique` | Notification générique | notifications | 1.0 s | flac | CC0-1.0 | [frosty ham](https://opengameart.org/content/alertnotification-sound) |
 | `notification-message` | Message reçu | notifications | 1.1 s | flac | CC0-1.0 | [waveplaySFX](https://commons.wikimedia.org/wiki/File:Simple_Happy_Beep.ogg) |
@@ -23,6 +22,7 @@ Written by `pnpm run sounds` from sources.json and files/: do not edit. 38 sound
 | `appareil-photo-mecanique` | Appareil photo mécanique (clic-clac) | office | 0.9 s | flac | PDM-1.0 | [Doitashimashite at Dutch Wikipedia](https://commons.wikimedia.org/wiki/File:Holga_shuttersound.ogg) |
 | `souris-clic` | Clic de souris | office | 0.1 s | flac | CC0-1.0 | [Kenney Vleugels (Kenney.nl)](https://kenney.nl/assets/ui-audio) |
 | `page-tournee` | Page qui se tourne | office | 0.8 s | flac | CC0-1.0 | [Kenney Vleugels (Kenney.nl)](https://kenney.nl/assets/rpg-audio) |
+| `bureau-centre-appels` | Bureau, centre d'appels (boucle) | office | 48.5 s | aac | CC0-1.0 | [leonelmail](https://freesound.org/people/leonelmail/sounds/579568/) |
 | `objet-bois-tombe` | Objet en bois qui tombe | impacts | 0.3 s | flac | CC0-1.0 | [Kenney Vleugels (Kenney.nl)](https://kenney.nl/assets/impact-sounds) |
 | `objet-metal-choc` | Choc métallique | impacts | 0.4 s | flac | CC0-1.0 | [Kenney Vleugels (Kenney.nl)](https://kenney.nl/assets/impact-sounds) |
 | `objet-metal-rebonds` | Objet métallique qui rebondit | impacts | 0.8 s | flac | PDM-1.0 | [stephan](https://commons.wikimedia.org/wiki/File:Metal_drop_thump.ogg) |
@@ -30,9 +30,8 @@ Written by `pnpm run sounds` from sources.json and files/: do not edit. 38 sound
 | `verre-brise` | Verre qui se brise | impacts | 0.9 s | flac | CC0-1.0 | [rubberduck](https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx) |
 | `cloche` | Coup de cloche | impacts | 1.7 s | flac | CC0-1.0 | [Kenney Vleugels (Kenney.nl)](https://kenney.nl/assets/impact-sounds) |
 | `pieces-monnaie` | Pièces de monnaie | impacts | 0.8 s | flac | CC0-1.0 | [Kenney Vleugels (Kenney.nl)](https://kenney.nl/assets/rpg-audio) |
-| `whoosh` | Souffle de transition (whoosh) | transitions | 1.2 s | flac | CC0-1.0 | [pyranostudios](https://opengameart.org/content/air-whoosh) |
 | `applaudissements` | Applaudissements | crowds-places | 7.5 s | flac | CC0-1.0 | [eXpl0it3r](https://opengameart.org/content/applause-in-a-large-hall-or-church) |
-| `fin-reussie` | Fin réussie (guitare steel, montante) | stingers | 0.9 s | flac | CC0-1.0 | [Kenney Vleugels (Kenney.nl)](https://kenney.nl/assets/music-jingles) |
+| `fin-reussie` | Fin réussie (banjo) | stingers | 2.8 s | flac | CC0-1.0 | [Fupicat](https://freesound.org/people/Fupicat/sounds/521640/) |
 | `fin-reussie-b` | Fin réussie (steel, gamme montante) | stingers | 1.4 s | flac | CC0-1.0 | [Kenney Vleugels (Kenney.nl)](https://kenney.nl/assets/music-jingles) |
 | `fin-reussie-c` | Fin réussie (pizzicato) | stingers | 0.8 s | flac | CC0-1.0 | [Kenney Vleugels (Kenney.nl)](https://kenney.nl/assets/music-jingles) |
 | `echec-doux` | Échec en douceur (pizzicato descendant) | stingers | 1.0 s | flac | CC0-1.0 | [Kenney Vleugels (Kenney.nl)](https://kenney.nl/assets/music-jingles) |
@@ -42,3 +41,4 @@ Written by `pnpm run sounds` from sources.json and files/: do not edit. 38 sound
 | `brise-parc` | Brise légère et oiseaux (boucle) | nature | 31.5 s | aac | PDM-1.0 | [ezwa](https://commons.wikimedia.org/wiki/File:Gentle_breeze_and_birds_singing.ogg) |
 | `cafe-murmure` | Murmure de café (boucle) | crowds-places | 44.5 s | aac | CC0-1.0 | [Marble Toast](https://commons.wikimedia.org/wiki/File:Cafe_ambiance.ogg) |
 | `restaurant-murmure` | Murmure de restaurant (boucle) | crowds-places | 49.5 s | aac | PDM-1.0 | [stephan](https://commons.wikimedia.org/wiki/File:Restaurant_ambience.ogg) |
+| `voiture-passe` | Voiture qui passe (route mouillée) | crowds-places | 5.8 s | flac | CC0-1.0 | [Breviceps](https://freesound.org/people/Breviceps/sounds/462862/) |

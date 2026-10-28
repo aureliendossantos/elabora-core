@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.3/lms-profile.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.4/lms-profile.schema.json",
   "id": "workday",
   "name": "Workday Learning",
   "documentedAt": "2026-10",

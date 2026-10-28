@@ -1,0 +1,4 @@
+/* Clear part opener: a fork of the opening whose number of the part stands large in the accent above
+   the title, as the objectives number theirs. The rest is the opening's (the player's stylesheet) and
+   the theme's. */
+.clear-section-number { margin: 0 0 .5rem; color: var(--t-accent); font-size: clamp(3rem, 1rem + 6vh, 5.5rem); font-weight: 700; line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }

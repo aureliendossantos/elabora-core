@@ -772,17 +772,13 @@ export function createScreenView(options: ScreenViewOptions) {
     }
     return article;
   }
-  // What a layout says about its screen (D63), in the course's words: its section, its rank
-  // (« Leçon 2 sur 6 ») and its reading time (« 6 min », named for screen readers).
+  // What a layout says about its screen (D63): its reading time (« 6 min », named for screen
+  // readers). Never where the screen is (D63 amended: no line above a title).
   function layoutHooks(article: HTMLElement, layout: NonNullable<ScreenData['layout']>) {
-    const fill = (hook: string, write: (node: HTMLElement) => void) => { for (const node of article.querySelectorAll<HTMLElement>(`[data-t-${hook}]`)) if (!node.textContent?.trim()) write(node); };
-    const place = layout.place;
-    fill('section', (node) => { node.textContent = place?.section ?? ''; });
-    fill('lesson', (node) => { node.textContent = place ? options.formatLabel(labels.lessonOf, { n: place.n, total: place.total }) : ''; });
-    fill('duration', (node) => {
-      if (layout.minutes === undefined) return;
-      node.append(element('span', { class: 't-sr-only', text: `${labels.readingTime}${labels.colon}` }), options.formatLabel(labels.minutes, { n: layout.minutes }));
-    });
+    if (layout.minutes === undefined) return;
+    for (const node of article.querySelectorAll<HTMLElement>('[data-t-duration]')) {
+      if (!node.textContent?.trim()) node.append(element('span', { class: 't-sr-only', text: `${labels.readingTime}${labels.colon}` }), options.formatLabel(labels.minutes, { n: layout.minutes }));
+    }
   }
 
   // ── Room for answers (slides) ─────────────────────────────────────────

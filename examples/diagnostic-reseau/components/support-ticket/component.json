@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.3/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.4/component.schema.json",
   "id": "support-ticket",
   "title": "Ticket de support",
   "version": "1.0.0",

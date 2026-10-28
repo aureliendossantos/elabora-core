@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { covers, needsApproval, quotaPercent, shareOf } from '@elabora/core/ai/quota';
+import { expectedShare } from '@elabora/core/ai/costs';
+import { COST_BOOK } from '@elabora/core/ai/cost-ledger.generated';
 import { baseUrl, cacheDir, failure } from '../voice/elevenlabs/api.ts';
 import { requireKey, scrub } from '../voice/elevenlabs/key.ts';
 import { noteSpent, readQuota } from '../voice/elevenlabs/costs.ts';
@@ -19,20 +21,23 @@ import type { GenerateSoundParams, SoundEstimate } from './types.ts';
 // (the answer is kept in the voices' cache).
 
 export const SOUND_MODEL = 'eleven_text_to_sound_v2';
-// ElevenLabs' price of a sound effect with its length set: 40 credits a second (their documentation,
-// read on 28 Oct 2026); without one, the service chooses and charges about 200 (D67: until measured).
-export const CREDITS_PER_SECOND = 40;
-export const CREDITS_AUTO = 200;
+// The list price: credits a second of sound, whether its length is set or the service chooses it
+// (ai-costs/periods.json: measured on 28 October 2026, 10 credits a second, where the documentation said
+// 40). What a plan is charged of it comes from the ledger (D36). Without a length the service chooses
+// one, up to 30 s (it chose 5 s in the trial): the estimate counts the longest, so that the share told
+// is « at most » and the author's approval (D30) is never skipped by a longer sound than expected.
+export const LIST_CREDITS_PER_SECOND = 10;
+export const AUTO_SECONDS = 30;
 
 export type { SoundEstimate };
 
-export function soundCredits(duration?: number): number {
-  return duration === undefined ? CREDITS_AUTO : Math.ceil(CREDITS_PER_SECOND * duration);
-}
+// The credits a sound of so many seconds (or of the length the service chooses) is expected to cost on a plan.
+export const soundCredits = (duration: number | undefined, plan: string | null = null): number =>
+  Math.ceil((duration ?? AUTO_SECONDS) * LIST_CREDITS_PER_SECOND * expectedShare(COST_BOOK, { provider: 'elevenlabs', model: SOUND_MODEL, plan: plan?.toLowerCase() ?? null, kind: 'sound', rates: { seconds: LIST_CREDITS_PER_SECOND } }).share);
 
 export async function estimateSound({ duration, signal }: { duration?: number; signal?: AbortSignal } = {}): Promise<SoundEstimate> {
-  const credits = soundCredits(duration);
   const quota = await readQuota({ key: requireKey(), signal }).catch(() => null);
+  const credits = soundCredits(duration, quota?.plan ?? null);
   return { credits, quota, percent: quota && quota.limit > 0 ? quotaPercent(shareOf(credits, quota.limit)) : null, needsApproval: needsApproval(credits, quota) };
 }
 

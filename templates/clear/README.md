@@ -7,7 +7,7 @@ Corporate sobriety, made with care: one neutral sans (Inter, SIL OFL, `theme/fon
 - **The grid holds, unseen.** Twelve columns as wide as the wide column (`presentation.wideWidth`): titles, text and cards start on their lines; text keeps to eight columns. Titles keep their place from one slide to the next and the content follows them; a screen without a visible title (the key message, the quotation) holds its statement in the middle of the room.
 - **One accent.** `color.accent` is the only colour: the rule, the numbers, the highlighted figure of a chart, the Next button, the cover's panel. Everything else is ink, grey and white.
 - **One movement.** Under the top bar, a rail has one hairline segment per part; a short accent rule underlines the part in progress. To the next or the previous part it slides (0.7 s, ease in-out); for a longer jump (the outline, a relaunch) a slide across the window would be unrealistic, so it fades out and in at its place. Within a part nothing moves. Less motion asked: it is drawn at its place at once.
-- **No label above the titles.** A part opener (screen style `section`) sets its number large in the accent, as the objectives do.
+- **No label above the titles.** A part opener (layout `clear-section`) sets its number large in the accent, as the objectives do.
 - **No generic marks:** no coloured left border (notes and prompts sit on a flat card under a rule), no frosted glass, no violet, no shadow.
 
 The backdrop is three CSS layers (`ground` for the dark variant, `tint`, `panel`) and the decoration object `objects/accent-rule/` (the rail).
@@ -28,7 +28,7 @@ On phones the panel is hidden (the text takes the whole width).
 | Block | Style | Look |
 |---|---|---|
 | screen | `cover` | The copy on the left six columns, for the `feature` backdrop |
-| screen | `section` | Part opener: the number (`layoutProps.eyebrow`: 01, 02…) large in the accent, the title on the left columns |
+| screen | `section` | Part opener, with the layout `clear-section` (a fork of the opening): its `number` (01, 02…) large in the accent, the title on the left columns |
 | text | `lead` | Large introductory paragraph, in grey |
 | text | `agenda` | Numbered list with large accent numbers and hairlines (each item `**Title**`, a line break, one line) |
 | text | `checklist` | Ticked list on hairlines (takeaways, recap) |

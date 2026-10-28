@@ -10,6 +10,17 @@
   },
   "periods": [
     {
+      "id": "elevenlabs/eleven_text_to_sound_v2/starter/2026-10-28",
+      "provider": "elevenlabs",
+      "model": "eleven_text_to_sound_v2",
+      "plan": "starter",
+      "start": null,
+      "end": null,
+      "list": [{ "rates": { "seconds": 10 } }],
+      "discount": null,
+      "source": "Measured on 28 October 2026 (23:10 UTC): the character-cost header of POST /v1/sound-generation said 10 credits a second of sound, whether its length was set or chosen by the service. ElevenLabs' documentation, read the same day, said 40 credits a second with the length set: what the account is billed is the measure kept. Sound effects are not in GET /v1/history, so `pnpm run costs:record` does not see them: they are recorded by hand."
+    },
+    {
       "id": "elevenlabs/eleven_v4/starter/2026-09-28",
       "provider": "elevenlabs",
       "model": "eleven_v4",

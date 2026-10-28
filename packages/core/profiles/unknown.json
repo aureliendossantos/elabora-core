@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.3/lms-profile.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.4/lms-profile.schema.json",
   "id": "unknown",
   "name": "Unknown LMS (no LMS chosen: strictest documented behaviour)",
   "documentedAt": "2026-10",

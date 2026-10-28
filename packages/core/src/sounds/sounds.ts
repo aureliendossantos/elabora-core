@@ -219,8 +219,12 @@ export function compileSoundFiles(project: Project, assetPath: (name: string) =>
   return Object.keys(files).length ? Object.fromEntries(Object.entries(files).sort(([a], [b]) => a.localeCompare(b))) : undefined;
 }
 
-// The player's own interface sounds, as CREDITS.txt names them (src/interface-sounds/sources.json).
+// The player's own interface sounds, as CREDITS.txt names them (src/interface-sounds/sources.json):
+// Kenney's Interface Sounds, and the end's jingle from Freesound.
 const PLAYER_SOUNDS_CREDIT = 'Interface Sounds 1.0 by Kenney (www.kenney.nl) — CC0 1.0 — https://kenney.nl/assets/interface-sounds';
+// A role made from a library master (sources.json { "library": … }) has its own credit here: a unit test
+// checks that each such role has one.
+export const PLAYER_SOUND_CREDITS: Record<string, string> = { 'elabora/sounds/end.m4a': '« WinBanjo » by Fupicat — CC0 1.0 — https://freesound.org/people/Fupicat/sounds/521640/' };
 
 // CREDITS.txt of a package (D67): every sound it ships, where it comes from and under what licence,
 // for the LMS's administrators (learners read « IA et crédits »); null without sounds.
@@ -229,7 +233,9 @@ export function soundCreditsText(project: Project, data: SoundsData | undefined,
   const assets = soundAssets(project);
   const entries: string[] = [];
   const player = Object.values(data.interface?.files ?? {}).filter((src): src is string => !!src && src.startsWith('elabora/sounds/')).sort();
-  if (player.length) entries.push([...player, `  ${PLAYER_SOUNDS_CREDIT}`].join('\n'));
+  const credited = new Map<string, string[]>();
+  for (const src of player) { const credit = PLAYER_SOUND_CREDITS[src] ?? PLAYER_SOUNDS_CREDIT; credited.set(credit, [...(credited.get(credit) ?? []), src]); }
+  for (const [credit, files] of credited) entries.push([...files, `  ${credit}`].join('\n'));
   const uses = soundUses(project).filter((use) => use.kind !== 'interface' || data.interface);
   for (const id of [...new Set(uses.map((use) => use.id))].sort()) {
     const asset = assets.get(id);

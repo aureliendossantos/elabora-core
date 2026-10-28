@@ -13,7 +13,7 @@ import type { PlayerWindow } from '../helpers.ts';
 
 // The starter blocks of D63 in Chrome: edge to edge without a sideways scrollbar at every width (and
 // within a slot, its slot), the image's presentations on a desktop and a phone, the before and after
-// slider by keyboard, an opening's eyebrow and reading time, and the contrast of text over a picture.
+// slider by keyboard, an opening's head (nothing above its title) and reading time, and the contrast of text over a picture.
 
 const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 // A light picture (the worst case for white text) and a dark one.
@@ -161,16 +161,12 @@ test('compare: a range named by the two captions, moved by the keyboard, clips t
   });
 });
 
-test('opening: the section and the lesson in its eyebrow, the reading time named for screen readers', { timeout: 180000 }, async () => {
+test('opening: nothing above its title, the reading time named for screen readers', { timeout: 180000 }, async () => {
   const dir = starterCourse();
-  const course = readJSON(dir, 'course.json');
-  const order: string[] = course.sections.flatMap((section: { screens: string[] }) => section.screens);
-  const section = course.sections.find((candidate: { screens: string[] }) => candidate.screens.includes('chemin'));
   await player(dir, async (page) => {
-    const eyebrow = await page.$eval('.t-opening-eyebrow', (node) => [...node.children].map((child) => child.textContent));
-    // A course in several sections counts its lessons by section.
-    const lesson = course.sections.length > 1 ? `Leçon ${course.sections.indexOf(section) + 1} sur ${course.sections.length}` : `Leçon ${order.indexOf('chemin') + 1} sur ${order.length}`;
-    assert.deepEqual(eyebrow, [section.title, lesson]);
+    // D63 amended: the title opens the head; no section, no « Leçon 2 sur 6 » above it.
+    assert.equal(await page.$eval('.t-opening-copy', (node) => node.firstElementChild?.classList.contains('t-opening-title')), true);
+    assert.doesNotMatch(await page.$eval('.t-opening-copy', (node) => node.textContent ?? ''), /Leçon \d+ sur \d+/);
     const duration = await page.$eval('[data-t-duration]', (node) => ({ text: node.textContent, hidden: node.querySelector('.t-sr-only')?.textContent }));
     assert.match(duration.text ?? '', /^Temps de lecture : \d+ min$/);
     assert.equal(duration.hidden, 'Temps de lecture : ');

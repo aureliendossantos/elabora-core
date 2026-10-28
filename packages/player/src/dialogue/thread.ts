@@ -181,7 +181,8 @@ export function showAllWords(words: readonly HTMLElement[], state: { said: numbe
   state.said = words.length;
 }
 
-const QUALITY_ICON: Readonly<Record<DialogueQuality, IconName>> = { good: 'check', ok: 'half', bad: 'close' };
+// « Choix à éviter » is a barred circle: the × is the close buttons' (a mark never takes a button's icon).
+const QUALITY_ICON: Readonly<Record<DialogueQuality, IconName>> = { good: 'check', ok: 'half', bad: 'avoid' };
 export function qualityLabel(labels: Labels, quality: DialogueQuality): string {
   return quality === 'good' ? labels.dialogueGood : quality === 'ok' ? labels.dialogueOk : labels.dialogueBad;
 }
@@ -201,11 +202,12 @@ export function noteRow(context: ThreadContext, option: DialogueOptionData, show
       element('div', { class: 't-text t-dialogue-note-body', html: option.feedbackHtml ?? '' }, option.feedbackHtml ? null : option.feedback ?? '')));
 }
 
-// A first choice the learner went back on before the first end: kept in one grey line.
+// A first choice the learner went back on before the first end: kept in one grey line, its words
+// alone (« Recommencer »'s icon would make it one more button).
 export function firstChoiceRow(context: ThreadContext, options: readonly DialogueOptionData[]): HTMLElement {
   const { labels } = context;
   return element('div', { class: 't-dialogue-row', 'data-role': 'first-choice' },
-    options.map((option) => element('p', { class: 't-dialogue-first' }, icon('replay'),
+    options.map((option) => element('p', { class: 't-dialogue-first' },
       element('span', { class: 't-dialogue-first-label', text: `${labels.dialogueFirstChoice}${labels.colon}` }),
       element('span', { class: 't-dialogue-first-text', text: option.text ?? option.label ?? option.id }))));
 }
@@ -216,11 +218,12 @@ export function retryRow(context: ThreadContext, onClick: () => void): HTMLEleme
 }
 
 // Where the thread goes on after the learner went back: « Vous reprenez ici », or « Nouvel essai » at
-// the top of a dialogue started over.
+// the top of a dialogue started over. A break in the thread, not a gesture: its words between two
+// lines, without the icon of « Reprendre d'ici » or « Recommencer », which would make it one more button.
 export function markerRow(context: ThreadContext, restarted: boolean): HTMLElement {
   const { labels } = context;
   return element('div', { class: 't-dialogue-row', 'data-role': 'marker' },
-    element('p', { class: 't-dialogue-marker' }, icon(restarted ? 'replay' : 'undo'), element('span', { text: restarted ? labels.dialogueNewAttempt : labels.dialogueResumedHere })));
+    element('p', { class: 't-dialogue-marker' }, element('span', { text: restarted ? labels.dialogueNewAttempt : labels.dialogueResumedHere })));
 }
 
 // A sound's caption (D67), shown as a narration is: centred, in italics, without a bubble.
@@ -249,7 +252,7 @@ export function optionsContent(context: ThreadContext, prompt: string | undefine
       type: 'button', class: 't-dialogue-choice', 'data-option': option.id, 'aria-disabled': greyed ? 'true' : undefined, 'data-reason': offered.reason,
       onclick: () => { if (!greyed) onChoose(option.id); }
     }, element('span', { class: 't-dialogue-choice-text', text: option.label ?? option.text ?? option.id }),
-    previous(option.id) ? element('span', { class: 't-dialogue-explored t-dialogue-previous' }, icon('undo'), element('span', { text: labels.dialoguePreviousChoice }))
+    previous(option.id) ? element('span', { class: 't-dialogue-explored t-dialogue-previous' }, element('span', { text: labels.dialoguePreviousChoice }))
       : explored(option.id) ? element('span', { class: 't-dialogue-explored' }, icon('check'), element('span', { text: labels.dialogueExplored })) : null,
     note ? element('span', { class: 't-dialogue-unavailable', text: note }) : null);
   });

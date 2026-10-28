@@ -11,6 +11,7 @@ import type { OpenOptions, Session } from '@elabora/engine';
 import { librarySounds } from '@elabora/node/sounds/library';
 import { searchSounds, soundPreview } from '@elabora/node/sounds/search';
 import { forgetQuota } from '@elabora/node/voice/elevenlabs/costs';
+import { soundCredits } from '@elabora/node/sounds/generate';
 import { ROOT, copyExample, readJSON } from '../helpers.ts';
 import { FFMPEG, hasFfmpeg } from '../narration.ts';
 
@@ -157,8 +158,8 @@ test('a sound made with ElevenLabs through the engine: added by add_sound in the
   forgetQuota();
   const { dir, session } = await open();
   const estimate = await session.soundEstimate({ duration: 3 });
-  assert.equal(estimate.credits, 120);
-  assert.equal(estimate.needsApproval, false, '0.4 % of a Starter plan');
+  assert.equal(estimate.credits, soundCredits(3, 'starter'), 'the ledger\'s price of 3 s on a Starter plan');
+  assert.equal(estimate.needsApproval, false, 'well under 1 % of a Starter plan');
   const made = await session.generateSound({ prompt: 'A ship bell rings twice', duration: 3 });
   assert.equal(made.cached, false);
   assert.ok(made.change, 'one change');

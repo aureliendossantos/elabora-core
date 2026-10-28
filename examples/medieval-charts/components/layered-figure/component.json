@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.3/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.4/component.schema.json",
   "id": "layered-figure",
   "title": "Figure in layers",
   "description": "« Étapes » drawn as one figure that assembles itself as it scrolls into view: figureImage first, then each step's image, a layer drawn over it one after the other (fading, sweeping round, dropping in, wiped from the top), and labels set over the figure at given positions (words, or harbour names written from a point at any angle, as on a chart, or someone's words in a bubble). Square or wide, full size or compact beside the reading column. The steps' titles and texts name the layers for text views and exports; the figure's alt describes it whole. Without scroll-driven animations, with reduced motion, or set to show at once (still), it shows complete.",
