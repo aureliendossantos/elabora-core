@@ -6,7 +6,7 @@ Read `docs/architecture.md` first (the packages, what each may import, the proje
 
 ## Setup
 - pnpm 11 (`npm install -g pnpm`; `package.json` names the version). Every checkout and every worktree runs `pnpm install` in it once: seconds, and almost no disk (pnpm clones its store). Never link a worktree's `node_modules` to another checkout's: `@elabora/*` would be that checkout's packages.
-- A branch opened before pnpm (28 Oct 2026): merge `main` (a conflict on `package-lock.json`: `git rm package-lock.json`); if `node_modules` is a link, remove the link alone (`rm node_modules`, no trailing slash); then `pnpm install`. A dependency is added with `pnpm add`, never `npm install`, which would write a `package-lock.json` again.
+- A branch opened before pnpm (28 Oct 2026): merge `main` (a conflict on `package-lock.json`: `git rm package-lock.json`); if `node_modules` is a link, remove the link alone (`rm node_modules`, no trailing slash); then `pnpm install`. A dependency the branch added goes in again with `pnpm add`, an override or an install script in `pnpm-workspace.yaml`; commit the `pnpm-lock.yaml` that `pnpm install` changes. Never `npm install`, which would write a `package-lock.json` again.
 
 ## Map
 - `packages/format/` — `@elabora/format`: normative JSON Schemas (`schemas/<version>/`), generated types, schema registry. Changing a schema changes the format: update `SPEC.md`, the validator, the compiler, a format migration and a Sampo changeset together.
