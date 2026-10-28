@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { renditionPlan } from '@elabora/core/media/conformance';
+import { audioNeedsRendition, renditionPlan } from '@elabora/core/media/conformance';
 import { projectDataDir } from '../data-dir.ts';
 import { toPosix } from './files.ts';
 import { getMediaQueue, isFinished } from './jobs.ts';
@@ -17,6 +17,9 @@ import type { MediaTools } from './tools.ts';
 // <data dir>/cache/media/ (data-dir.ts) under the master's hash and the preset's parameters: a
 // rendition is made once, and remade only when the master or the preset changes.
 
+// Audio files that are neither AAC nor MP3 by their name: probed, at high too.
+const LOSSLESS_OR_OTHER_AUDIO = /\.(flac|ogg|oga|opus|wav|webm|aif|aiff|caf|wma)$/i;
+
 export const renditionsDir = (projectDir: string) => path.join(projectDataDir(projectDir), 'cache', 'media');
 
 export interface RenditionOptions {
@@ -32,10 +35,12 @@ export async function renditionPath(projectDir: string, relPath: string, preset:
   const root = path.resolve(projectDir);
   const rel = toPosix(relPath);
   const master = path.join(root, rel);
-  if (preset === 'high') return master;
+  // At high the master ships, unless it is audio a browser may not play (a sound kept as FLAC, D67).
+  if (preset === 'high' && !LOSSLESS_OR_OTHER_AUDIO.test(rel)) return master;
   // Without ffmpeg nothing can be encoded, but the path is still known (WebP is then assumed).
   const tools = options.tools !== undefined ? options.tools : await findMediaTools().catch(() => null);
   const info = await probeProjectFile(root, rel, tools ? { tools } : {});
+  if (preset === 'high' && !audioNeedsRendition(info)) return master;
   const plan = renditionPlan(info, preset, { webp: tools?.webp ?? true });
   if (plan.action === 'reuse' || !plan.extension) return master;
   const hash = (await projectFileHash(root, rel)).slice('sha256:'.length, 'sha256:'.length + 32);

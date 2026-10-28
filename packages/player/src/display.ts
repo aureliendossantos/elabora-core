@@ -13,15 +13,16 @@ export interface DisplayPrefs {
   captions: boolean;
   // « Texte : tout de suite »: a dialogue's lines show whole at once, not word by word (D61).
   instant?: boolean;
-  // « Sons de l'interface » (D67): on unless the learner switched them off.
+  // « Sons de l'interface » and « Musique et ambiances » (D67): on unless the learner switched them off.
   interfaceSounds: boolean;
+  music: boolean;
 }
 
 // The learner's display choices, for this course, where the page may keep them (a module on the web
 // that keeps nothing, D41: not kept).
 const KEY = 'elabora.display';
 export function loadDisplayPrefs(course: string, keep: boolean): DisplayPrefs {
-  const prefs: DisplayPrefs = { text: 'normal', captions: false, interfaceSounds: true };
+  const prefs: DisplayPrefs = { text: 'normal', captions: false, interfaceSounds: true, music: true };
   if (!keep) return prefs;
   try {
     const saved: unknown = JSON.parse(localStorage.getItem(`${KEY}:${course}`) || 'null');
@@ -31,6 +32,7 @@ export function loadDisplayPrefs(course: string, keep: boolean): DisplayPrefs {
       if (record.captions === true) prefs.captions = true;
       if (record.instant === true) prefs.instant = true;
       if (record.interfaceSounds === false) prefs.interfaceSounds = false;
+      if (record.music === false) prefs.music = false;
     }
   } catch { /* storage refused (an LMS frame): the session keeps them */ }
   return prefs;
@@ -95,9 +97,10 @@ export function createPopover(button: HTMLElement, { className, role, label }: {
 export type Popover = ReturnType<typeof createPopover>;
 
 // « Affichage »: the text size in three steps, larger captions, « Texte : tout de suite » (when the
-// course has dialogues), « Sons de l'interface » (when the course has them, D67) and the keyboard
+// course has dialogues), « Sons de l'interface » and « Musique et ambiances » (when the course has
+// them, D67) and the keyboard
 // shortcuts of the narrated screens (when the course has one).
-export function createDisplayMenu(button: HTMLElement, { labels, prefs, onChange, narrated, dialogues = false, interfaceSounds = false }: { labels: Labels; prefs: DisplayPrefs; onChange(prefs: DisplayPrefs): void; narrated: boolean; dialogues?: boolean; interfaceSounds?: boolean }) {
+export function createDisplayMenu(button: HTMLElement, { labels, prefs, onChange, narrated, dialogues = false, interfaceSounds = false, music = false }: { labels: Labels; prefs: DisplayPrefs; onChange(prefs: DisplayPrefs): void; narrated: boolean; dialogues?: boolean; interfaceSounds?: boolean; music?: boolean }) {
   const popover = createPopover(button, { className: 't-display-menu', role: 'dialog', label: labels.display });
   const sizes: [TextSize, string][] = [['normal', labels.textNormal], ['large', labels.textLarge], ['larger', labels.textLarger]];
   const sizeButtons = sizes.map(([size, name]) => element('button', {
@@ -117,6 +120,10 @@ export function createDisplayMenu(button: HTMLElement, { labels, prefs, onChange
     type: 'button', class: 't-switch', role: 'switch', 'aria-checked': String(prefs.interfaceSounds), 'aria-label': labels.interfaceSounds,
     onclick: () => { prefs.interfaceSounds = !prefs.interfaceSounds; render(); onChange(prefs); }
   }, element('span', { class: 't-switch-knob', 'aria-hidden': 'true' }));
+  const musicSwitch = element('button', {
+    type: 'button', class: 't-switch', role: 'switch', 'aria-checked': String(prefs.music), 'aria-label': labels.music,
+    onclick: () => { prefs.music = !prefs.music; render(); onChange(prefs); }
+  }, element('span', { class: 't-switch-knob', 'aria-hidden': 'true' }));
   const keys: [string, string][] = [['Ctrl+Alt+P', labels.shortcutPlay], ['Ctrl+Alt+R', labels.shortcutReplay], ['Ctrl+Alt+C', labels.shortcutCaptions], ['← →', labels.shortcutSeek], ['Page ↑ Page ↓', labels.shortcutStep], ['Home End', labels.shortcutEnds], ['Shift+?', labels.shortcutList]];
   const list = element('dl', { class: 't-display-keys', hidden: true }, keys.flatMap(([combo, what]) => [element('dt', {}, combo.split(' ').map((key) => element('kbd', { text: key }))), element('dd', { text: what })]));
   const keysButton = element('button', { type: 'button', class: 't-pop-item', 'aria-expanded': 'false', onclick: () => { list.hidden = !list.hidden; keysButton.setAttribute('aria-expanded', String(!list.hidden)); } }, icon('keyboard'), element('span', { text: labels.shortcuts }));
@@ -126,12 +133,14 @@ export function createDisplayMenu(button: HTMLElement, { labels, prefs, onChange
     element('label', { class: 't-pop-row' }, icon('captions'), element('span', { class: 't-pop-label', text: labels.largerCaptions }), captions),
     ...(dialogues ? [element('label', { class: 't-pop-row' }, icon('transcript'), element('span', { class: 't-pop-label', text: labels.textInstant }), instant)] : []),
     ...(interfaceSounds ? [element('label', { class: 't-pop-row' }, icon('volume'), element('span', { class: 't-pop-label', text: labels.interfaceSounds }), sounds)] : []),
+    ...(music ? [element('label', { class: 't-pop-row' }, icon('volume'), element('span', { class: 't-pop-label', text: labels.music }), musicSwitch)] : []),
     ...(narrated ? [element('hr', { class: 't-pop-sep' }), keysButton, list] : []));
   function render() {
     sizeButtons.forEach((node, index) => node.setAttribute('aria-checked', String(sizes[index][0] === prefs.text)));
     captions.setAttribute('aria-checked', String(prefs.captions));
     instant.setAttribute('aria-checked', String(!!prefs.instant));
     sounds.setAttribute('aria-checked', String(prefs.interfaceSounds));
+    musicSwitch.setAttribute('aria-checked', String(prefs.music));
   }
   return popover;
 }

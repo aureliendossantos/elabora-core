@@ -8,7 +8,7 @@
 // voice tools, alignment, recordings and transcription, translation units and anchors, the timeline
 // report and the engine's dock data. A new kind of line is one more source in VOICE_LINE_SOURCES.
 
-import type { Screen, VoiceLine } from '@elabora/format';
+import type { Screen, SoundLine, VoiceLine } from '@elabora/format';
 import type { Project } from '../project/model.ts';
 import { objectsIn, isRecord } from '../util/values.ts';
 import { screenBlocks } from '../project/load.ts';
@@ -41,7 +41,8 @@ export interface VoiceLineEntry {
 // A source of voice lines: the lines one kind of holder gives a screen, in reading order.
 export type VoiceLineSource = (screen: Screen, context: { project: Project | null; screenId: string }) => VoiceLineEntry[];
 
-const isLine = (value: unknown): value is WrittenVoiceLine => isRecord(value) && typeof value.id === 'string';
+// A sound line (D67) is no voice's: it has a sound, not a text.
+const isLine = (value: unknown): value is WrittenVoiceLine => isRecord(value) && typeof value.id === 'string' && value.sound === undefined;
 
 // The screen's narration (narration.lines).
 export const screenNarrationSource: VoiceLineSource = (screen, { screenId }) => {
@@ -164,6 +165,30 @@ export function trackLabel(track: VoiceTrack): string {
 // The lines laid on one timeline of a screen: its own (layer null) or a layer's, in order.
 export function timelineVoiceLines(project: Project, screenId: string, layer: string | null): VoiceLineEntry[] {
   return screenVoiceLines(project, screenId).filter((entry) => onTimeline(entry.track, layer));
+}
+
+// The sound lines of a screen's narrations (D67): the screen's and each layer's, each with its track,
+// the unit of its caption and where it is written. They are no voice's (VOICE_LINE_SOURCES leaves
+// them out): the timeline lays them among the voice lines, the track says their sound.
+export interface SoundLineEntry {
+  line: WrittenSoundLine;
+  track: { kind: 'screen' } | { kind: 'layer'; layer: string };
+  step: number;
+  unit: string;
+  path: string;
+}
+export type WrittenSoundLine = SoundLine & { step?: number; pauseBefore?: number };
+const isSound = (value: unknown): value is WrittenSoundLine => isRecord(value) && typeof value.id === 'string' && typeof value.sound === 'string';
+export function soundLinesOf(screen: Screen | null | undefined, screenId: string): SoundLineEntry[] {
+  if (!isRecord(screen)) return [];
+  const out: SoundLineEntry[] = [];
+  const lines = isRecord(screen.narration) && Array.isArray(screen.narration.lines) ? screen.narration.lines : [];
+  lines.forEach((line, index) => { if (isSound(line)) out.push({ line, track: { kind: 'screen' }, step: typeof line.step === 'number' ? line.step : 1, unit: `screen.${screenId}.narration.${line.id}.caption`, path: `/narration/lines/${index}` }); });
+  (Array.isArray(screen.layers) ? screen.layers : []).forEach((layer, layerIndex) => {
+    if (!isRecord(layer) || typeof layer.id !== 'string' || !isRecord(layer.narration) || !Array.isArray(layer.narration.lines)) return;
+    layer.narration.lines.forEach((line, index) => { if (isSound(line)) out.push({ line, track: { kind: 'layer', layer: layer.id as string }, step: 1, unit: `screen.${screenId}.layer.${layer.id}.narration.${line.id}.caption`, path: `/layers/${layerIndex}/narration/lines/${index}` }); });
+  });
+  return out;
 }
 
 // The layers of a screen whose narration has lines.

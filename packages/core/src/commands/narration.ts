@@ -2,15 +2,15 @@ import type { Course, Project, Screen } from '../project/model.ts';
 import { binaryFile, filesIn, pathsUnder } from '../project/files.ts';
 import { parseJSON } from '../util/json.ts';
 import type { FileHash, ProjectFiles } from '../project/files.ts';
-import { narrationLines, narrationAudioPath, narrationSidecarPath, readNarrationSidecar, NARRATION_DIR } from '../narration/narration.ts';
-import type { Narration, NarrationLine, NarrationAudio } from '../narration/narration.ts';
+import { narrationLines, narrationAudioPath, narrationSidecarPath, readNarrationSidecar, NARRATION_DIR, isSoundLine } from '../narration/narration.ts';
+import type { Narration, NarrationLine, NarrationAudio, WrittenNarrationLine } from '../narration/narration.ts';
 import { CommandError, Draft, assignFields, commandContext, insertAt, listIn, screenFile, type CommandContext, type CommandOutput } from './context.ts';
 import { reanchorLine, type Reanchored } from './timing.ts';
 import { lineWordTimes } from '../narration/words.ts';
 import { isMouth } from '../narration/mouth.ts';
 import { isRecord, objectsIn } from '../util/values.ts';
 import { screenAnchors } from '../i18n/anchors.ts';
-import { voiceLinesOf } from '../narration/voice-lines.ts';
+import { voiceLinesOf, soundLinesOf } from '../narration/voice-lines.ts';
 
 // A screen's narration (docs/decisions.md D24): its settings, its lines (the script), and the audio
 // of a line in a language with its sidecar; and a layer's narration (D62), its lines said on the
@@ -52,11 +52,12 @@ function editNarration<R>(context: CommandContext, screenId: string, change: (na
 }
 
 // Every line id of a screen, every track counted.
-const screenLineIds = (screen: Screen): Set<string> => new Set(voiceLinesOf(screen, typeof screen.id === 'string' ? screen.id : '').map((entry) => entry.line.id));
+const screenLineIds = (screen: Screen): Set<string> => new Set([...voiceLinesOf(screen, typeof screen.id === 'string' ? screen.id : '').map((entry) => entry.line.id), ...soundLinesOf(screen, typeof screen.id === 'string' ? screen.id : '').map((entry) => entry.line.id)]);
 
 const lineIn = (narration: Narration, screenId: string, id: string): NarrationLine => {
   const line = narration.lines.find((candidate) => isRecord(candidate) && candidate.id === id);
   if (!line) throw new CommandError(`No line "${id}" in the narration of "${screenId}" (lines: ${narration.lines.map((candidate) => candidate.id).join(', ') || 'none'}).`);
+  if (isSoundLine(line)) throw new CommandError(`Line "${id}" of "${screenId}" is a sound (D67): change it in the screen's file, or remove it.`);
   return line;
 };
 
@@ -439,10 +440,10 @@ export function addNarrationLineWithAudio(context: CommandContext, args: AddNarr
 // screen's narration or in the layer's (whose lines have no step).
 function placed(project: Project, screenId: string, after: string | null | undefined, layer?: string): { step?: number; speaker?: string } {
   const screen = project.screens.get(screenId)?.data;
-  const lines: NarrationLine[] = layer === undefined ? screen?.narration?.lines ?? [] : objectsIn(screen?.layers).find((candidate) => candidate.id === layer)?.narration?.lines ?? [];
+  const lines: WrittenNarrationLine[] = layer === undefined ? screen?.narration?.lines ?? [] : objectsIn(screen?.layers).find((candidate) => candidate.id === layer)?.narration?.lines ?? [];
   const before = after === null ? undefined : after === undefined ? lines.at(-1) : lines.find((line) => line.id === after);
   if (!before) return {};
-  return { ...(typeof before.step === 'number' && layer === undefined ? { step: before.step } : {}), ...(typeof before.speaker === 'string' ? { speaker: before.speaker } : {}) };
+  return { ...(typeof before.step === 'number' && layer === undefined ? { step: before.step } : {}), ...(!isSoundLine(before) && typeof before.speaker === 'string' ? { speaker: before.speaker } : {}) };
 }
 
 // « Régénérer le texte d'après l'audio »: the line's text becomes what its recording says, and the

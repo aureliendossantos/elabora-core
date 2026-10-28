@@ -116,6 +116,28 @@ export interface SoundsData {
   // Interface sounds, when the course has them on (sounds.interface.when, auto: when the module has
   // sound): their volume and the file of each role that sounds (a role muted by the author has none).
   interface?: { volume: number; files: Partial<Record<InterfaceRole, string>> };
+  // The sounds of the course its screens play (play-sound, a sound line, music and ambiences), by id:
+  // their file in the package, its length, and whether it was made to loop.
+  files?: Record<string, SoundFileData>;
+  // Music and ambiences (D67): each background track with the screens it plays on (in the course's
+  // order), its volume and its fades.
+  background?: BackgroundTrackData[];
+  // The course has music or ambiences (a background track, a play-sound with loop): « Musique et
+  // ambiances » shows in « Affichage ».
+  music?: true;
+}
+
+export interface BackgroundTrackData {
+  sound: string;
+  screens: string[];
+  volume: number;
+  fade: number;
+}
+
+export interface SoundFileData {
+  src: string;
+  duration: number | null;
+  loop?: true;
 }
 
 export interface AboutData {
@@ -248,6 +270,8 @@ export interface NarrationLineData {
   cues: CaptionData[];
   // When each word is said (aligned, or placed in proportion to the text): [word, start, end].
   words?: [string, number, number][];
+  // A sound line (D67): its text is the sound's caption (empty: none), said by no one.
+  sound?: true;
 }
 
 export interface CaptionData {
@@ -731,7 +755,11 @@ export type Action =
   | { type: 'play-media' | 'pause-media'; block: string }
   // A dialogue block of the screen: begin it, move it to a node, start it over (D61).
   | { type: 'start-dialogue' | 'restart-dialogue'; block: string }
-  | { type: 'goto-dialogue'; block: string; node: string };
+  | { type: 'goto-dialogue'; block: string; node: string }
+  // A sound of the course (D67), by its id in sounds.files; loop: an ambience of the screen.
+  | { type: 'play-sound'; sound: string; volume?: number; loop?: boolean; fade?: number; caption?: string }
+  // No sound: every sound of the story playing.
+  | { type: 'stop-sound'; sound?: string; fade?: number };
 
 // ── Variables ──
 

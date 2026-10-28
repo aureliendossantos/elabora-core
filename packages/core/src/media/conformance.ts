@@ -83,9 +83,26 @@ export interface Conformance {
 // What a files snapshot keeps of a media file: its probe and its verdict.
 export interface FileMedia extends MediaInfo, Conformance {}
 
-export function fileMedia(info: MediaInfo): FileMedia {
+// path: the file's project path; a sound of assets/sounds/ (D67) is kept as it came when it is FLAC
+// or a lossy original (Vorbis, Opus, AAC, MP3): the build makes the package's M4A from it.
+export function fileMedia(info: MediaInfo, path?: string): FileMedia {
+  if (path !== undefined && isSoundMaster(path, info)) return { ...info, ...soundConformance(info) };
   return { ...info, ...conformance(info) };
 }
+
+export const SOUND_MASTER_CODECS: ReadonlySet<string> = new Set(['flac', 'vorbis', 'opus', 'aac', 'mp3']);
+const isSoundMaster = (path: string, info: MediaInfo) => path.startsWith('assets/sounds/') && info.kind === 'audio';
+function soundConformance(info: MediaInfo): Conformance {
+  const reasons: ConformanceReason[] = [];
+  if (!info.audioCodec || !SOUND_MASTER_CODECS.has(info.audioCodec)) reasons.push({ code: 'audio-codec', message: `Audio codec ${info.audioCodec ?? 'unknown'}: a sound is kept as FLAC, or as the lossy file it came as (Vorbis, Opus, AAC, MP3).`, fix: 'encode', stream: 'audio' });
+  if (info.coverArt) reasons.push({ code: 'cover-art', message: 'Cover art inside the audio file: dead weight in a course.', fix: 'remux' });
+  if (info.location) reasons.push({ code: 'location', message: 'GPS position in the metadata: it would ship with the course.', fix: 'remux' });
+  return { conformant: reasons.length === 0, reasons };
+}
+
+// Whether a package at the high quality still needs a rendition of an audio master: browsers and LMS
+// players need AAC or MP3 (a sound kept as FLAC, Vorbis or Opus, D67).
+export const audioNeedsRendition = (info: MediaInfo): boolean => info.kind === 'audio' && info.audioCodec !== 'aac' && info.audioCodec !== 'mp3';
 
 const mbps = (bits: number) => `${(bits / 1_000_000).toFixed(1)} Mb/s`;
 const kbps = (bits: number) => `${Math.round(bits / 1000)} kb/s`;

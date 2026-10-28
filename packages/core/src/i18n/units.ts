@@ -9,7 +9,7 @@ import { listOf } from '../util/values.ts';
 import { pointer } from '../util/json.ts';
 import { enumPlaces } from '../validate/object-props.ts';
 import { lineWordAnchors, anchorMarks } from './anchors.ts';
-import { voiceLinesOf } from '../narration/voice-lines.ts';
+import { voiceLinesOf, soundLinesOf } from '../narration/voice-lines.ts';
 import { parseDiagram, diagramWords, isProblem, LABELLED_TYPES } from '../charts/diagram.ts';
 import type { XliffMark } from './xliff.ts';
 
@@ -168,6 +168,17 @@ export function extractUnits(project: Project): TranslationUnit[] {
       const where = track.kind === 'layer' ? `the narration of layer "${track.layer}" of screen "${screen.title}"` : `screen "${screen.title}"`;
       add(unit, file, `${path}/text`, line.text, { note: `Narration line ${line.id}${speaker} of ${where}: said by a voice in the translated course and shown as its captions${anchors}${directions}`, maxLength: 2000, marks, voice: true });
     }
+    // The captions of sounds (D67): a sound line's, a play-sound action's in the screen's events.
+    for (const { line, unit, path, track } of soundLinesOf(screen, id)) {
+      const where = track.kind === 'layer' ? `the narration of layer "${track.layer}" of screen "${screen.title}"` : `the narration of screen "${screen.title}"`;
+      add(unit, file, `${path}/caption`, line.caption, { note: `Caption of the sound "${line.sound}" in ${where}: what learners who do not hear it read, in the captions and the transcript`, maxLength: 200 });
+    }
+    listOf(screen.events).forEach((event, eventIndex) => {
+      if (!isRecord(event)) return;
+      for (const branch of ['do', 'else'] as const) listOf(event[branch]).forEach((action, actionIndex) => {
+        if (isRecord(action) && action.type === 'play-sound') add(`screen.${id}.event.${typeof event.id === 'string' ? event.id : eventIndex}.${branch}.${actionIndex}.caption`, file, `/events/${eventIndex}/${branch}/${actionIndex}/caption`, action.caption, { note: `Caption of the sound "${String(action.sound)}" an event of screen "${screen.title}" plays: what learners who do not hear it read`, maxLength: 200 });
+      });
+    });
     for (const { block, path } of screenBlocks(screen, file)) {
       const descriptor = registry.get(block.type);
       if (!descriptor) continue;

@@ -17,7 +17,7 @@ export function reportLoadErrors(ctx: CheckContext): void {
   for (const error of ctx.project.loadErrors) ctx.reporter.emit(error.code, { file: error.file, message: error.message });
 }
 
-function reportSchemaErrors(ctx: CheckContext, name: SchemaName, data: unknown, file: string, skip: (path: string) => boolean = () => false): void {
+export function reportSchemaErrors(ctx: CheckContext, name: SchemaName, data: unknown, file: string, skip: (path: string) => boolean = () => false): void {
   for (const error of validateSchema(name, data)) {
     if (skip(error.path)) continue;
     ctx.reporter.emit('E_SCHEMA', { file, path: error.path, message: `${error.path || '/'}: ${error.message} (schema ${name})` });

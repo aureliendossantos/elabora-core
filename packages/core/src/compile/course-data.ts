@@ -291,7 +291,8 @@ function narrationOf(screen: Screen, timeline: ScreenTimeline | null, track: Nar
       generated: voiced.some((info) => info?.generated === true),
       ...creditsOf(voiced.map((info) => info?.credit)),
       lines: timeline.lines.map((line, index) => ({
-        id: line.id, step: line.step, speaker: infos[index]?.speakerName ?? null, text: withoutDirections(infos[index]?.text ?? textOf(source[index]?.text)), start: line.start, end: line.end, cues: line.cues,
+        id: line.id, step: line.step, speaker: infos[index]?.speakerName ?? null, text: withoutDirections(infos[index]?.text ?? textOf((source[index] as { text?: unknown } | undefined)?.text)), start: line.start, end: line.end, cues: line.cues,
+        ...(infos[index]?.sound ? { sound: true as const } : {}),
         ...(line.words.length ? { words: line.words.map((word): [string, number, number] => [word.text, word.start, word.end]) } : {})
       })),
       segments: timeline.segments,

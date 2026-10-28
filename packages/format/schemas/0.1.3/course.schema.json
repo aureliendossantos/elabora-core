@@ -205,6 +205,23 @@
               }
             }
           }
+        },
+        "background": {
+          "type": "array",
+          "maxItems": 50,
+          "description": "Music and ambiences: each a sound of the course played in a loop, with a crossfade, over a range of screens (from, to, in the course's order). The same sound over screens that follow one another plays on without starting over; a track of one screen stops at its end. Lowered by 20 dB at least while a voice speaks (WCAG 1.4.7); learners switch them off in « Affichage » (« Musique et ambiances »), which the player shows for them. Ranges do not overlap.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["sound", "from"],
+            "properties": {
+              "sound": { "$ref": "defs.schema.json#/$defs/slug", "description": "Its id in assets/sounds/." },
+              "from": { "$ref": "defs.schema.json#/$defs/slug", "description": "The first screen it plays on." },
+              "to": { "$ref": "defs.schema.json#/$defs/slug", "description": "The last screen (default: from)." },
+              "volume": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.25, "description": "Its volume when no voice speaks, under the player's." },
+              "fade": { "type": "number", "minimum": 0, "maximum": 10, "default": 2, "description": "Seconds of fade in when it starts, out when it stops, and of crossfade where it loops." }
+            }
+          }
         }
       }
     },

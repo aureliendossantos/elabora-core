@@ -33,7 +33,7 @@ import type { WebDelivery } from '@elabora/player/course-data';
 import { designStylesheets, rootStyle, usedTypes } from '@elabora/core/render/styles';
 import { readProvenance } from '@elabora/core/project/generators';
 import { isFontPath, fontLicenses } from '@elabora/core/project/fonts';
-import { interfaceSounds, shippedPlayerSounds, soundAssets } from '@elabora/core/sounds/sounds';
+import { interfaceSounds, shippedPlayerSounds, soundAssets, soundUses, soundCreditsText } from '@elabora/core/sounds/sounds';
 import type { SoundsData } from '@elabora/player/course-data';
 import { getRegistry, componentHash } from '@elabora/core/components/registry';
 import type { Registry } from '@elabora/core/components/registry';
@@ -190,12 +190,11 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   const logo = findItem(playerConfig(course), 'logo')?.item;
   if (logo?.id === 'logo' && logo.enabled && logo.options.asset) shipAsset(logo.options.asset);
   for (const resource of course.resources ?? []) shipAsset(resource.asset);
-  // Sounds of the course an interface role plays instead of the player's own (D67).
+  // The sounds of the course its screens play, and those an interface role plays instead of the
+  // player's own when interface sounds are on (D67).
   const interfaceSettings = interfaceSounds(project);
-  if (interfaceSettings.active) {
-    const sounds = soundAssets(project);
-    for (const source of Object.values(interfaceSettings.roles)) if (source?.kind === 'sound') shipAsset(sounds.get(source.id)?.asset);
-  }
+  const soundFiles = soundAssets(project);
+  for (const use of soundUses(project)) if (!use.inTrack && (use.kind !== 'interface' || interfaceSettings.active)) shipAsset(soundFiles.get(use.id)?.asset);
   // Media are files on disk (masters, or renditions below the high quality); other assets are read.
   const quality = mediaQualityOf(course, options.mediaQuality);
   const isMedia = (name: string) => {
@@ -337,8 +336,11 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     ...(delivery ? { delivery } : {}), ...several
   });
   files.set('elabora/course.js', Buffer.from(`window.ELABORA_COURSE = ${JSON.stringify(data)};\n`));
-  // The player's interface sounds the course data names (D67).
+  // The player's interface sounds the course data names, and what every sound is, for the LMS's
+  // administrators (D67).
   for (const name of shippedPlayerSounds(data.sounds)) files.set(name, playerSoundFile(name));
+  const credits = soundCreditsText(project, data.sounds, (name) => assetPaths.get(name) ?? `assets/${name}`);
+  if (credits) files.set('CREDITS.txt', Buffer.from(credits));
   // The other languages' course data, loaded when a learner chooses one (the same element keys).
   for (const other of others) {
     const own = otherTracks.get(other.language);

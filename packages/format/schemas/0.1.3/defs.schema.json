@@ -81,6 +81,17 @@
         }
       }
     },
+    "soundLine": {
+      "type": "object",
+      "required": ["id", "sound"],
+      "description": "A sound in a narration or a dialogue (docs/decisions.md D67): a line that a sound of the course says instead of a voice (the phone that rings before the call). It takes its time in the timeline or the walk, as a line does; its caption, advised and never required, goes with the captions and the transcript. The schemas that use it add their own fields and close it.",
+      "properties": {
+        "id": {"$ref": "#/$defs/slug", "description": "Unique in the screen, every track counted (l1, l2\u2026): cues, translations and the line's audio files are named by it."},
+        "sound": { "$ref": "#/$defs/slug", "description": "A sound of the course: its id in assets/sounds/." },
+        "caption": { "type": "string", "minLength": 1, "maxLength": 200, "x-translatable": true, "description": "What the sound says, for learners who do not hear it (« Le téléphone sonne. »): in the captions and the transcript. Advised when the sound carries meaning no text gives; leave it out for a decorative sound or when the text around says it already." },
+        "volume": { "type": "number", "minimum": 0, "maximum": 1, "description": "Its volume in the mix (default 1)." }
+      }
+    },
     "voiceLine": {
       "type": "object",
       "required": ["id", "text"],

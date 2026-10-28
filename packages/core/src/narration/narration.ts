@@ -18,14 +18,19 @@ import { sha256 } from '../util/sha256.ts';
 import { objectsIn } from '../util/values.ts';
 import { screenTimeline } from './timeline.ts';
 import { isMouth } from './mouth.ts';
-import { screenVoiceLines } from './voice-lines.ts';
+import { screenVoiceLines, soundLinesOf, timelineOf } from './voice-lines.ts';
+import { soundAssets } from '../sounds/sounds.ts';
 import type { VoiceTrack } from './voice-lines.ts';
 import { hasDirections, outsideDirections } from './directions.ts';
 import type { TimelineLayout, TimelineLine } from './timeline.ts';
 
 export type { NarrationAudio };
 export type Narration = NonNullable<Screen['narration']>;
-export type NarrationLine = Narration['lines'][number];
+// A line of a narration as written: a voice's (NarrationLine), or a sound's (D67).
+export type WrittenNarrationLine = Narration['lines'][number];
+export type NarrationLine = Extract<WrittenNarrationLine, { text: string }>;
+export type NarrationSoundLine = Extract<WrittenNarrationLine, { sound: string }>;
+export const isSoundLine = (line: unknown): line is NarrationSoundLine => !!line && typeof line === 'object' && typeof (line as { sound?: unknown }).sound === 'string';
 
 export const NARRATION_DIR = 'assets/narration';
 
@@ -145,6 +150,9 @@ export interface NarrationLineInfo {
   take: number | null;
   credit: string | null;
   model: string | null;
+  // A sound line (D67): the sound it says, at what volume; its audio is the sound's file, its text
+  // its caption (null: none), it has no speaker and no voice.
+  sound?: { id: string; volume: number };
   // The mouth's envelope of its audio (the sidecar's: narration/mouth.ts); null: none measured yet.
   mouth: string | null;
 }
@@ -236,6 +244,35 @@ export function narrationLines(project: Project, screenId: string, language = pr
 
 const speakerVoiceOf = (voice: { provider?: unknown; voice?: unknown } | null | undefined): NarrationLineInfo['speakerVoice'] =>
   voice && typeof voice.provider === 'string' && typeof voice.voice === 'string' ? { provider: voice.provider, voice: voice.voice } : null;
+
+// The lines laid on one timeline of a screen (layer null: the screen's), in the order they are
+// written: its voice lines (narrationLines) and its sound lines (D67), whose audio is their sound's
+// file and text their caption in that language.
+export function timelineLines(project: Project, screenId: string, language = project.course?.language ?? '', layer: string | null = null): NarrationLineInfo[] {
+  const screen = project.screens.get(screenId)?.data;
+  if (!screen) return [];
+  const voices = new Map((narrationLines(project, screenId, language) ?? []).filter((info) => timelineOf(info.track)?.layer === layer).map((info) => [info.id, info]));
+  const sounds = soundLinesOf(screen, screenId).filter((entry) => (entry.track.kind === 'layer' ? entry.track.layer : null) === layer);
+  if (!sounds.length) return [...voices.values()];
+  const assets = soundAssets(project);
+  const units = !project.course || language === project.course.language ? null : translatedTexts(project, language);
+  const soundInfos = new Map(sounds.map(({ line, track, step, unit, path }): [string, NarrationLineInfo] => {
+    const asset = assets.get(line.sound);
+    const file = asset ? getFile(project.files, asset.path) : undefined;
+    const caption = typeof line.caption === 'string' ? (units?.get(unit)?.source === line.caption ? units.get(unit)?.target ?? line.caption : line.caption) : null;
+    const missing = !file || file.kind !== 'binary';
+    return [line.id, {
+      id: line.id, track, unit, path, step, ...(typeof line.pauseBefore === 'number' ? { pauseBefore: line.pauseBefore } : {}),
+      speaker: null, speakerName: null, text: caption, textHash: null, spoken: null, spokenHash: null, settings: {}, settingsHash: 'sha256:' as FileHash,
+      audio: asset?.path ?? `assets/sounds/${line.sound}`, sidecar: asset?.sidecar ?? `assets/sounds/${line.sound}.json`,
+      status: missing ? 'missing' : 'ok', reasons: missing ? [`no sound "${line.sound}" in assets/sounds/`] : [], causes: missing ? ['no-audio'] : [],
+      duration: file?.kind === 'binary' ? file.media?.duration ?? null : null, speakerVoice: null, provider: null, voice: null, generated: false, words: null, aligner: null, take: null, credit: null, model: null, mouth: null,
+      sound: { id: line.sound, volume: typeof line.volume === 'number' ? line.volume : 1 }
+    }];
+  }));
+  const holder = layer === null ? screen.narration : objectsIn(screen.layers).find((candidate) => candidate.id === layer)?.narration;
+  return objectsIn(holder?.lines).map((line) => voices.get(line.id) ?? soundInfos.get(line.id)).filter((info): info is NarrationLineInfo => !!info);
+}
 
 // What a generated voice is told to say for a line in a language (default: the course's), and its
 // hash: what the voice tools give the voice. null for a line without text in that language.

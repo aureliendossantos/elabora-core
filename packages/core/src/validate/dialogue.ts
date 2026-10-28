@@ -23,7 +23,7 @@ import type { CourseCheckContext, ScreenFile } from './context.ts';
 import { fieldsOf, list, hasId, isRecord } from './guards.ts';
 
 // Actions a dialogue may run on its screen: they change what it shows, never the course's state.
-export const PRESENTATION_ACTIONS: ReadonlySet<string> = new Set(['show-block', 'hide-block', 'show-layer', 'hide-layer', 'play-media', 'pause-media', 'set-object-props', 'reveal-step']);
+export const PRESENTATION_ACTIONS: ReadonlySet<string> = new Set(['show-block', 'hide-block', 'show-layer', 'hide-layer', 'play-media', 'pause-media', 'set-object-props', 'reveal-step', 'play-sound', 'stop-sound']);
 // A bubble reads at a glance.
 export const LINE_MAX = 280;
 // The longest option at most this many times the shortest.

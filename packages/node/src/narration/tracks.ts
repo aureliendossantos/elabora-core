@@ -3,8 +3,8 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import type { Project } from '@elabora/core/project/model';
 import { screenOrder } from '@elabora/core/project/load';
-import { narrationLines, screenTiming } from '@elabora/core/narration/narration';
-import { narratedLayers, onTimeline } from '@elabora/core/narration/voice-lines';
+import { screenTiming, timelineLines } from '@elabora/core/narration/narration';
+import { narratedLayers } from '@elabora/core/narration/voice-lines';
 import { narrationVtt } from '@elabora/core/narration/timing';
 import type { NarrationTrack } from '@elabora/core/compile/course-data';
 import { canonicalJSON } from '@elabora/core/util/json';
@@ -84,7 +84,8 @@ export async function narrationTracks(project: Project, options: TrackOptions = 
   let done = 0;
   for (const { screen, layer } of timelines) {
     const name = trackName(screen, layer);
-    const lines = narrationLines(project, screen, language)?.filter((line) => onTimeline(line.track, layer));
+    // Its voice lines and its sound lines (D67), in order: a sound line's audio is its sound's file.
+    const lines = timelineLines(project, screen, language, layer);
     if (!lines?.length || lines.some((line) => line.status === 'missing' || line.status === 'untranslated')) { out.silent.push(name); continue; }
     try {
       // The silences come from the timeline: each line's pause, made longer where an effect anchored
@@ -94,7 +95,7 @@ export async function narrationTracks(project: Project, options: TrackOptions = 
       if (!laid) continue;
       const gaps = laid.gaps;
       const hashes = await Promise.all(lines.map((line) => projectFileHash(project.root, line.audio)));
-      const key = sha256(canonicalJSON({ v: PIPELINE_VERSION, rate: SAMPLE_RATE, bitrate: TRACK_BITRATE, lines: lines.map((line, index) => [hashes[index], gaps[index]]), ...(gaps[lines.length] ? { tail: gaps[lines.length] } : {}) })).slice(0, 32);
+      const key = sha256(canonicalJSON({ v: PIPELINE_VERSION, rate: SAMPLE_RATE, bitrate: TRACK_BITRATE, lines: lines.map((line, index) => [hashes[index], gaps[index], ...(line.sound && line.sound.volume !== 1 ? [line.sound.volume] : [])]), ...(gaps[lines.length] ? { tail: gaps[lines.length] } : {}) })).slice(0, 32);
       const dir = narrationCacheDir(project.root);
       const file = path.join(dir, `${key}.m4a`);
       const facts = path.join(dir, `${key}.json`);
@@ -103,7 +104,7 @@ export async function narrationTracks(project: Project, options: TrackOptions = 
         if (tools === undefined) tools = await findMediaTools().catch(() => null);
         if (!tools) throw new Error('ffmpeg is needed to make the narration track: install it (or set ELABORA_FFMPEG).');
         const decoded: Buffer[] = [];
-        for (const line of lines) decoded.push(await decodePcm(tools, path.join(project.root, line.audio)));
+        for (const line of lines) decoded.push(await decodePcm(tools, path.join(project.root, line.audio), line.sound?.volume ?? 1));
         durations = decoded.map((pcm) => Math.round((pcm.length / 2 / SAMPLE_RATE) * 1000) / 1000);
         const parts: Buffer[] = [];
         decoded.forEach((pcm, index) => { parts.push(Buffer.alloc(Math.round(gaps[index] * SAMPLE_RATE) * 2), pcm); });
@@ -142,8 +143,9 @@ function readDurations(file: string, count: number): number[] | null {
 }
 
 // The audio of a file as raw samples: mono, 48 kHz, signed 16-bit little-endian.
-export function decodePcm(tools: MediaTools, file: string): Promise<Buffer> {
-  return run(tools, ['-nostdin', '-v', 'error', '-i', file, '-map', '0:a:0', '-vn', '-ac', '1', '-ar', String(SAMPLE_RATE), '-f', 's16le', '-acodec', 'pcm_s16le', 'pipe:1'], null);
+// volume: a sound line's, below 1 (D67).
+export function decodePcm(tools: MediaTools, file: string, volume = 1): Promise<Buffer> {
+  return run(tools, ['-nostdin', '-v', 'error', '-i', file, '-map', '0:a:0', '-vn', ...(volume !== 1 ? ['-af', `volume=${volume}`] : []), '-ac', '1', '-ar', String(SAMPLE_RATE), '-f', 's16le', '-acodec', 'pcm_s16le', 'pipe:1'], null);
 }
 
 // The audio of a file as float samples, mono, at rate samples a second (a line's waveform, its

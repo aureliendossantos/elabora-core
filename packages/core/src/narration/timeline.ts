@@ -20,7 +20,7 @@ import type { Project } from '../project/model.ts';
 import { objectsIn, isRecord } from '../util/values.ts';
 import { lineWordTimes, findPhrase, narrationWords } from './words.ts';
 import type { TimedWord } from './words.ts';
-import { narrationLines, screenSteps } from './narration.ts';
+import { narrationLines, screenSteps, timelineLines } from './narration.ts';
 import { voiceLinesOf, timelineOf, trackLabel } from './voice-lines.ts';
 import type { NarrationLineInfo } from './narration.ts';
 import { captionChunks, estimatedDuration, pauseOf, STEP_GAP } from './timing.ts';
@@ -573,7 +573,8 @@ export function screenTimeline(project: Project, screenId: string, { language, d
   const holder = layer === null ? screen : layers[layerIndex];
   const where = layer === null ? {} : { path: `/layers/${layerIndex}/blocks`, step: 1 };
   const all = narrationLines(project, screenId, lang) ?? [];
-  const infos = all.filter((info) => timelineOf(info.track)?.layer === layer);
+  // Its voice lines and its sound lines (D67), in the order they are written.
+  const infos = timelineLines(project, screenId, lang, layer);
   const elsewhere = new Map(all.filter((info) => !infos.includes(info)).map((info) => [info.id, trackLabel(info.track)]));
   // In a translation, word anchors name the words their markers are placed on (D28).
   const placed = translatedLineAnchors(project, screenId, lang);

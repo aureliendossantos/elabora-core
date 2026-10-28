@@ -85,7 +85,7 @@ export function screenParts(project: Project, screenId: string): ScreenParts | n
       return {
         id: String(layer.id), title: typeof layer.title === 'string' ? layer.title : String(layer.id),
         ...(isTimedLayer(project, screen, String(layer.id)) ? { timed: true as const } : {}),
-        ...(lines.length ? { narration: { seek: (isRecord(layer.narration) && layer.narration.seek) || project.course?.narration?.seek || 'seen', lines: lines.map((line) => ({ id: String(line.id), speaker: typeof line.speaker === 'string' ? line.speaker : null, text: typeof line.text === 'string' ? line.text : '' })) } } : {})
+        ...(lines.length ? { narration: { seek: (isRecord(layer.narration) && layer.narration.seek) || project.course?.narration?.seek || 'seen', lines: lines.map((line) => lineSummary(line)) } } : {})
       };
     }),
     steps: [...steps].sort((a, b) => a - b),
@@ -93,7 +93,7 @@ export function screenParts(project: Project, screenId: string): ScreenParts | n
     variables: (Array.isArray(project.course?.variables) ? project.course.variables : []).filter(isRecord),
     narration: screen.narration ? {
       advance: screen.narration.advance || project.course?.narration?.advance || 'learner', seek: screen.narration.seek || project.course?.narration?.seek || 'seen',
-      lines: lines.map((line) => ({ id: String(line.id), speaker: typeof line.speaker === 'string' ? line.speaker : null, step: typeof line.step === 'number' ? line.step : 1, text: typeof line.text === 'string' ? line.text : '' }))
+      lines: lines.map((line) => ({ ...lineSummary(line), step: typeof line.step === 'number' ? line.step : 1 }))
     } : null
   };
 }
@@ -143,4 +143,10 @@ function objectPart(project: Project, block: Block): ObjectPart | null {
     });
   }
   return { id, title: typeof manifest.title === 'string' ? manifest.title : id, events, props };
+}
+
+// A narration line as the parts list it: a voice's speaker and text, or a sound's caption (D67).
+function lineSummary(line: object): { id: string; speaker: string | null; text: string } {
+  const record = line as Record<string, unknown>;
+  return { id: String(record.id), speaker: typeof record.speaker === 'string' ? record.speaker : null, text: typeof record.text === 'string' ? record.text : typeof record.caption === 'string' ? record.caption : '' };
 }

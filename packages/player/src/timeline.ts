@@ -616,10 +616,13 @@ export function createTimeline(options: TimelineOptions) {
   // spoken is marked, and a line already heard takes the playhead there.
   const transcriptLines = narration.lines.map((line) => {
     // The speaker above the words; screen readers and a copy read « Marc : … ».
-    const content = [line.speaker ? element('strong', { class: 't-timeline-speaker', text: line.speaker }) : null, line.speaker ? element('span', { class: 't-sr-only', text: labels.colon }) : null, element('span', { class: 't-timeline-line-text', text: line.text })];
-    return seekable
+    // A sound line (D67) is its caption, in italics, or nothing when it has none.
+    const content = [line.speaker ? element('strong', { class: 't-timeline-speaker', text: line.speaker }) : null, line.speaker ? element('span', { class: 't-sr-only', text: labels.colon }) : null, element('span', { class: line.sound ? 't-timeline-line-text t-timeline-sound' : 't-timeline-line-text', text: line.text })];
+    const node = seekable
       ? element('button', { type: 'button', class: 't-timeline-line', 'data-line': line.id, onclick: () => { seekTo(line.start + EPSILON); render({ spoken: true }); } }, content)
       : element('p', { class: 't-timeline-line', 'data-line': line.id }, content);
+    if (line.sound && !line.text) node.hidden = true;
+    return node;
   });
   const transcriptSteps = segments.filter((segment) => narration.lines.some((line) => line.step === segment.step)).map((segment, _index, all) => element('section', { class: 't-timeline-transcript-step' },
     all.length > 1 ? element('h3', { text: options.format(labels.stepHeading, { n: segments.indexOf(segment) + 1 }) }) : null,
@@ -758,6 +761,7 @@ export function createTimeline(options: TimelineOptions) {
     const line = narration.lines[index];
     const cue = line?.cues.find((candidate) => candidate.start <= t + EPSILON && t < candidate.end - EPSILON / 10);
     band.hidden = !prefs.captions || !cue;
+    captionText.classList.toggle('t-timeline-sound', !!line?.sound);
     const named = speakers.size > 1 && !!line?.speaker && (index === 0 || narration.lines[index - 1].speaker !== line.speaker || line.cues[0] !== cue);
     if (cue && line) captionText.replaceChildren(...(named && line.cues[0] === cue ? [element('span', { class: 't-timeline-speaker', text: `${line.speaker}${labels.colon}` })] : []), cue.text);
     if (currentLine !== (line?.id ?? null)) {

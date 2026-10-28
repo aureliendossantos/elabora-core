@@ -157,6 +157,9 @@ function typesModule(files: SchemaFile[]): string {
     else if ('const' in schema) type = literal(schema.const, place);
     else if (schema.enum) type = union(schema.enum.map((value) => literal(value, place)));
     else if (schema.anyOf || schema.oneOf) type = union([...schema.anyOf ?? [], ...schema.oneOf ?? []].map((s) => convert(s, place)));
+    // A schema that is only a choice between two shapes (if it has this, then that, else the other):
+    // either shape (a narration's voice line or sound line, D67).
+    else if (isConditional(schema) && schema.then !== undefined && schema.else !== undefined) type = union([convert(schema.then, place), convert(schema.else, place)]);
     else type = structure(schema, place);
     const parts = [type];
     // Properties or items next to a $ref or a combination narrow it.

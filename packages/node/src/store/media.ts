@@ -26,7 +26,7 @@ export async function probeAssets(root: string, paths: readonly string[], option
   for (const [rel, result] of await probeProjectMedia(root, wanted, { tools: options.tools })) {
     if (result instanceof MediaToolsError) out.toolsMissing = true;
     else if (result instanceof Error) out.unreadable.push({ path: rel, message: result.message });
-    else out.media.set(rel, fileMedia(result));
+    else out.media.set(rel, fileMedia(result, rel));
   }
   return out;
 }

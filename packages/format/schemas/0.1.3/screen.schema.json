@@ -135,25 +135,54 @@
           "minItems": 1,
           "maxItems": 200,
           "items": {
-            "type": "object",
-            "$ref": "defs.schema.json#/$defs/voiceLine",
-            "description": "A line of the screen's narration: a voice line (id, speaker, text, delivery, pronunciations) in a step of the screen.",
-            "properties": {
-              "step": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 999,
-                "default": 1,
-                "description": "The step of the screen this line belongs to: its segment of the timeline. Lines are in step order."
-              },
-              "pauseBefore": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 10,
-                "description": "Seconds of silence before the line. Default: 0.4, and 0 for the first line of the screen."
-              }
+            "if": {
+              "type": "object",
+              "required": [
+                "sound"
+              ]
             },
-            "unevaluatedProperties": false
+            "then": {
+              "type": "object",
+              "$ref": "defs.schema.json#/$defs/soundLine",
+              "description": "A sound of the narration (D67): a sound of the course said at its place among the lines, in a step of the screen, with its caption; it lasts as long as the sound.",
+              "properties": {
+                "step": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 999,
+                  "default": 1,
+                  "description": "The step of the screen this line belongs to: its segment of the timeline. Lines are in step order."
+                },
+                "pauseBefore": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10,
+                  "description": "Seconds of silence before the line. Default: 0.4, and 0 for the first line of the screen."
+                }
+              },
+              "unevaluatedProperties": false
+            },
+            "else": {
+              "type": "object",
+              "$ref": "defs.schema.json#/$defs/voiceLine",
+              "description": "A line of the screen's narration: a voice line (id, speaker, text, delivery, pronunciations) in a step of the screen.",
+              "properties": {
+                "step": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 999,
+                  "default": 1,
+                  "description": "The step of the screen this line belongs to: its segment of the timeline. Lines are in step order."
+                },
+                "pauseBefore": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10,
+                  "description": "Seconds of silence before the line. Default: 0.4, and 0 for the first line of the screen."
+                }
+              },
+              "unevaluatedProperties": false
+            }
           }
         }
       }
@@ -215,18 +244,40 @@
                 "minItems": 1,
                 "maxItems": 100,
                 "items": {
-                  "type": "object",
-                  "$ref": "defs.schema.json#/$defs/voiceLine",
-                  "description": "A line of the layer's narration: a voice line (id, speaker, text, delivery, pronunciations). A layer has no steps: its lines follow each other with 0.4 s between them.",
-                  "properties": {
-                    "pauseBefore": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 10,
-                      "description": "Seconds of silence before the line. Default: 0.4, and 0 for the first line of the layer."
-                    }
+                  "if": {
+                    "type": "object",
+                    "required": [
+                      "sound"
+                    ]
                   },
-                  "unevaluatedProperties": false
+                  "then": {
+                    "type": "object",
+                    "$ref": "defs.schema.json#/$defs/soundLine",
+                    "description": "A sound of the layer's narration (D67), at its place among the lines, with its caption; it lasts as long as the sound.",
+                    "properties": {
+                      "pauseBefore": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10,
+                        "description": "Seconds of silence before the line. Default: 0.4, and 0 for the first line of the layer."
+                      }
+                    },
+                    "unevaluatedProperties": false
+                  },
+                  "else": {
+                    "type": "object",
+                    "$ref": "defs.schema.json#/$defs/voiceLine",
+                    "description": "A line of the layer's narration: a voice line (id, speaker, text, delivery, pronunciations). A layer has no steps: its lines follow each other with 0.4 s between them.",
+                    "properties": {
+                      "pauseBefore": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10,
+                        "description": "Seconds of silence before the line. Default: 0.4, and 0 for the first line of the layer."
+                      }
+                    },
+                    "unevaluatedProperties": false
+                  }
                 }
               }
             }

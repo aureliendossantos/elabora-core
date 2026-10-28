@@ -678,11 +678,14 @@ export function createScreenView(options: ScreenViewOptions) {
       case 'start-dialogue': behaviors.dialogues.start(action.block); break;
       case 'goto-dialogue': behaviors.dialogues.goto(action.block, action.node); break;
       case 'restart-dialogue': behaviors.dialogues.restart(action.block); break;
+      // A sound of the course (D67); a dialogue's replayed path plays none (dialoguePresentation).
+      case 'play-sound': options.sounds?.play(action); break;
+      case 'stop-sound': options.sounds?.stop(action.sound, action.fade); break;
     }
     return { navigation, variable: changedVariables[0] };
   }
   // A dialogue's options and cues run presentation actions only (the validator refuses the others).
-  const PRESENTATION = new Set<Action['type']>(['show-block', 'hide-block', 'show-layer', 'hide-layer', 'play-media', 'pause-media', 'set-object-props', 'reveal-step']);
+  const PRESENTATION = new Set<Action['type']>(['show-block', 'hide-block', 'show-layer', 'hide-layer', 'play-media', 'pause-media', 'set-object-props', 'reveal-step', 'play-sound', 'stop-sound']);
   function dialogueActions(actions: readonly { type: string }[]) {
     const shown = screen;
     if (!shown) return;

@@ -4,6 +4,8 @@ import type { AboutData, PlayerBarData, PlayerData, PlayerItemData, PlayerItemId
 import { screenOrder, screenBlocks } from '../project/load.ts';
 import { getRegistry, behaviorOf } from '../components/registry.ts';
 import { narrationLines } from '../narration/narration.ts';
+import { soundAssets, soundSidecar, soundUses } from '../sounds/sounds.ts';
+import { soundCredit } from '../sounds/licences.ts';
 import { momentsOf, cuesOf } from '../narration/timeline.ts';
 import { objectsIn } from '../util/values.ts';
 import { isRecord } from '../compile/values.ts';
@@ -256,7 +258,17 @@ export function aboutCourse(project: Project, { language, credits: authorCredits
     // A layout's picture (an opening's, D63).
     if (isRecord(screen.layoutProps) && screen.layoutProps.generated === true) media.add('image');
   }
-  const credits = [...new Set([...(authorCredits ?? (Array.isArray(course?.credits) ? course.credits : []).filter((line): line is string => typeof line === 'string')), ...voiceCredits].filter((line) => line.trim()))];
+  // The sounds it plays (D67): the credits their licences ask for, and those an AI made.
+  const soundCredits: string[] = [];
+  const assets = soundAssets(project);
+  for (const id of new Set(soundUses(project).map((use) => use.id))) {
+    const asset = assets.get(id);
+    const sidecar = asset ? soundSidecar(project, asset) : null;
+    if (sidecar?.generated) media.add('audio');
+    const credit = soundCredit(sidecar, language ?? course?.language ?? 'en');
+    if (credit) soundCredits.push(credit);
+  }
+  const credits = [...new Set([...(authorCredits ?? (Array.isArray(course?.credits) ? course.credits : []).filter((line): line is string => typeof line === 'string')), ...voiceCredits, ...soundCredits].filter((line) => line.trim()))];
   const ai = voiced || media.size ? { ...(voiced ? { voices: [...voices] } : {}), ...(media.size ? { media: (['image', 'video', 'audio'] as const).filter((kind) => media.has(kind)) } : {}) } : null;
   return { ...(ai ? { ai } : {}), ...(credits.length ? { credits } : {}) };
 }

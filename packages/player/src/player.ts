@@ -168,7 +168,31 @@ const displayPrefs = loadDisplayPrefs(packageId, keep);
 // The player's sounds (D67): one context for the page, kept across languages; the player's volume is
 // the narration's controls' (their choices, loaded with the bars).
 let timelinePrefs: TimelinePrefs | null = null;
-const sounds = createSounds({ data: course.sounds, prefs: displayPrefs, volume: () => timelinePrefs ?? { volume: 1, muted: false } });
+const sounds = createSounds({ data: course.sounds, prefs: displayPrefs, volume: () => timelinePrefs ?? { volume: 1, muted: false }, caption: (text, seconds) => soundCaption(text, seconds) });
+// Music and ambiences go down while a voice speaks (D67, WCAG 1.4.7): any media element of the page
+// that plays (the narration's, a layer's, an audio or video block; a dialogue's lines tell it).
+const mediaKeys = new WeakMap<HTMLMediaElement, string>();
+let mediaCount = 0;
+const mediaKey = (media: HTMLMediaElement) => { let key = mediaKeys.get(media); if (!key) { key = `media:${++mediaCount}`; mediaKeys.set(media, key); } return key; };
+for (const type of ['playing', 'pause', 'ended', 'emptied'] as const) {
+  document.addEventListener(type, (event) => {
+    if (event.target instanceof HTMLMediaElement) sounds.voice(mediaKey(event.target), type === 'playing');
+  }, true);
+}
+// A sound's caption (D67): said to screen readers, and shown over the bottom of the screen while it
+// lasts when the learner reads captions, or when the course gives no way to choose them.
+let captionTimer = 0;
+function soundCaption(text: string, seconds: number) {
+  announce(text);
+  const choose = [...(course.player.top?.items ?? []), ...(course.player.bottom?.items ?? [])].some((item) => item.id === 'controls');
+  if (choose && !timelinePrefs?.captions) return;
+  let band = app.querySelector<HTMLElement>('.t-sound-caption');
+  if (!band) { band = element('p', { class: 't-sound-caption', 'aria-hidden': 'true' }); app.append(band); }
+  band.textContent = text;
+  band.hidden = false;
+  clearTimeout(captionTimer);
+  captionTimer = setTimeout(() => { if (band) band.hidden = true; }, Math.max(2, Math.min(seconds, 8)) * 1000);
+}
 let chrome!: Chrome;
 let menu: HTMLElement | null = null;
 let main!: HTMLElement;
@@ -221,7 +245,7 @@ function mountBars() {
   // « Affichage » and « Langue »: their menus.
   const narrated = [...(course.player.top?.items ?? []), ...(course.player.bottom?.items ?? [])].some((item) => item.id === 'controls');
   const dialogues = course.screens.some((screen) => [...flatBlocks(screen.blocks), ...(screen.layers ?? []).flatMap((layer) => flatBlocks(layer.blocks))].some((block) => hasBehavior(block, 'dialogue')));
-  displayMenu = chrome.displayButton ? createDisplayMenu(chrome.displayButton, { labels, prefs: displayPrefs, narrated, dialogues, interfaceSounds: sounds.hasInterface, onChange: (prefs) => { applyDisplay(app, prefs); saveDisplayPrefs(packageId, keep, prefs); sounds.update(); } }) : null;
+  displayMenu = chrome.displayButton ? createDisplayMenu(chrome.displayButton, { labels, prefs: displayPrefs, narrated, dialogues, interfaceSounds: sounds.hasInterface, music: sounds.hasMusic, onChange: (prefs) => { applyDisplay(app, prefs); saveDisplayPrefs(packageId, keep, prefs); sounds.update(); } }) : null;
   languageMenu = chrome.languageButton && course.languages ? createLanguageMenu(chrome.languageButton, { labels, languages: course.languages, current: course.language, name: languageName, choose: (code) => { void switchLanguage(code); } }) : null;
   popovers = [displayMenu, languageMenu].filter((popover): popover is Popover => popover !== null);
   applyDisplay(app, displayPrefs);
@@ -435,6 +459,7 @@ function go(index: number | undefined, { focus = true }: { focus?: boolean } = {
   view.leave();
   current = index;
   view.show(courseState.screens[index]);
+  sounds.enterScreen(courseState.screens[index].id);
   preloadNarration(courseState.screens[index + 1]);
   syncNow();
   updateNav();

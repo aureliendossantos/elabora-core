@@ -49,6 +49,18 @@ export type Pronunciation = {
   say: string;
 };
 
+/** A sound in a narration or a dialogue (docs/decisions.md D67): a line that a sound of the course says instead of a voice (the phone that rings before the call). It takes its time in the timeline or the walk, as a line does; its caption, advised and never required, goes with the captions and the transcript. The schemas that use it add their own fields and close it. */
+export type SoundLine = {
+  /** Unique in the screen, every track counted (l1, l2…): cues, translations and the line's audio files are named by it. */
+  id: Slug;
+  /** A sound of the course: its id in assets/sounds/. */
+  sound: Slug;
+  /** What the sound says, for learners who do not hear it (« Le téléphone sonne. »): in the captions and the transcript. Advised when the sound carries meaning no text gives; leave it out for a decorative sound or when the text around says it already. */
+  caption?: string;
+  /** Its volume in the mix (default 1). */
+  volume?: number;
+};
+
 /** A line a voice says: the common shape of the lines of a screen's narration, of a layer's narration and of a dialogue. Its id is unique in the screen, every track counted (the screen's narration, each layer's, each dialogue's): cues, translations and the line's audio files (assets/narration/<language>/<screen>/<line>.m4a) are named by it. The schemas that use it add their own fields and close it (unevaluatedProperties). */
 export type VoiceLine = {
   /** Unique in the screen, every track counted (l1, l2…): cues, translations and the line's audio files are named by it. */
@@ -241,6 +253,8 @@ export type Course = {
         end?: InterfaceSound;
       };
     };
+    /** Music and ambiences: each a sound of the course played in a loop, with a crossfade, over a range of screens (from, to, in the course's order). The same sound over screens that follow one another plays on without starting over; a track of one screen stops at its end. Lowered by 20 dB at least while a voice speaks (WCAG 1.4.7); learners switch them off in « Affichage » (« Musique et ambiances »), which the player shows for them. Ranges do not overlap. */
+    background?: CourseSoundsBackground[];
   };
   /** How generated voices say words of the whole course (an acronym, a reference, a name), by language: each language has its own list, never translated. */
   pronunciations?: Pronunciations;
@@ -358,6 +372,25 @@ export type CourseGlossary = {
     /** Where in it, as the author would find it: « p. 4 », « diapositive 12 », « 02:15 ». */
     at?: string;
   };
+};
+
+export type CourseSoundsBackground = {
+  /** Its id in assets/sounds/. */
+  sound: Slug;
+  /** The first screen it plays on. */
+  from: Slug;
+  /** The last screen (default: from). */
+  to?: Slug;
+  /**
+   * Its volume when no voice speaks, under the player's.
+   * @default 0.25
+   */
+  volume?: number;
+  /**
+   * Seconds of fade in when it starts, out when it stops, and of crossfade where it loops.
+   * @default 2
+   */
+  fade?: number;
 };
 
 export type CourseIgnored = {
@@ -863,7 +896,23 @@ export type Screen = {
     advance?: 'learner' | 'auto' | 'next-screen';
     /** How far the learner may move in the timeline (default: the course's narration.seek, else seen). seen: back anywhere, forward up to the furthest point reached. free: anywhere. none: no seek bar, play, pause and replay the step only. */
     seek?: 'seen' | 'free' | 'none';
-    lines: ScreenNarrationLine[];
+    lines: ((SoundLine & {
+      /**
+       * The step of the screen this line belongs to: its segment of the timeline. Lines are in step order.
+       * @default 1
+       */
+      step?: number;
+      /** Seconds of silence before the line. Default: 0.4, and 0 for the first line of the screen. */
+      pauseBefore?: number;
+    }) | (VoiceLine & {
+      /**
+       * The step of the screen this line belongs to: its segment of the timeline. Lines are in step order.
+       * @default 1
+       */
+      step?: number;
+      /** Seconds of silence before the line. Default: 0.4, and 0 for the first line of the screen. */
+      pauseBefore?: number;
+    }))[];
   };
   blocks: Block[];
   layers?: ScreenLayer[];
@@ -887,17 +936,6 @@ export type ScreenStep = {
   duration?: number;
 };
 
-/** A line of the screen's narration: a voice line (id, speaker, text, delivery, pronunciations) in a step of the screen. */
-export type ScreenNarrationLine = VoiceLine & {
-  /**
-   * The step of the screen this line belongs to: its segment of the timeline. Lines are in step order.
-   * @default 1
-   */
-  step?: number;
-  /** Seconds of silence before the line. Default: 0.4, and 0 for the first line of the screen. */
-  pauseBefore?: number;
-};
-
 export type ScreenLayer = {
   id: Slug;
   /** Accessible title of the layer dialog. */
@@ -911,16 +949,16 @@ export type ScreenLayer = {
   narration?: {
     /** How far the learner may move in the layer's timeline (default: the course's narration.seek, else seen). seen: back anywhere, forward up to the furthest point reached. free: anywhere. none: no seek bar. */
     seek?: 'seen' | 'free' | 'none';
-    lines: ScreenLayerNarrationLine[];
+    lines: ((SoundLine & {
+      /** Seconds of silence before the line. Default: 0.4, and 0 for the first line of the layer. */
+      pauseBefore?: number;
+    }) | (VoiceLine & {
+      /** Seconds of silence before the line. Default: 0.4, and 0 for the first line of the layer. */
+      pauseBefore?: number;
+    }))[];
   };
   /** The blocks of the layer. They may be timed (timing) on the layer's timeline: anchored to the layer's lines, or { "seconds": n } from its opening when it has no narration. */
   blocks: Block[];
-};
-
-/** A line of the layer's narration: a voice line (id, speaker, text, delivery, pronunciations). A layer has no steps: its lines follow each other with 0.4 s between them. */
-export type ScreenLayerNarrationLine = VoiceLine & {
-  /** Seconds of silence before the line. Default: 0.4, and 0 for the first line of the layer. */
-  pauseBefore?: number;
 };
 
 // block.schema.json
@@ -1723,7 +1761,7 @@ export type DialogueCue = {
   do?: DialogueAction[];
 };
 
-/** What a dialogue may do to its screen: show-block, hide-block, show-layer, hide-layer, play-media, pause-media, set-object-props, reveal-step (presentation only: replaying a path sets the last visibility and props of the blocks it touched, and opens no layer). A dialogue never writes the course's variables nor navigates: do that on dialogue.ended, in an event of the screen. */
+/** What a dialogue may do to its screen: show-block, hide-block, show-layer, hide-layer, play-media, pause-media, set-object-props, reveal-step, play-sound, stop-sound (presentation only: replaying a path sets the last visibility and props of the blocks it touched, and opens no layer). A dialogue never writes the course's variables nor navigates: do that on dialogue.ended, in an event of the screen. */
 export type DialogueAction = {
   type: string;
   block?: Slug;
@@ -3241,8 +3279,8 @@ export type Condition = {
 };
 
 export type Action = {
-  /** go-to: navigate (screen id, or next / previous). show-layer / hide-layer: open or close a layer of the current screen; hide-layer without layer closes the layer open on top (a Close button inside a layer). show-block / hide-block: change visibility of a block. reveal-step: reveal the steps of the screen up to step (a click in the slide instead of Continue); a step already shown takes the focus again. set-variable: assign a value. increment-variable: add a number (by, may be negative). complete-screen: mark the current screen complete. set-object-props: change declared props of a free object block without regenerating code. exit-course: save and leave (same as the Quit button). pause-timeline / play-timeline: pause the narration of the screen, or play it from where it is (a modal layer pauses and resumes it by itself); with layer, the timeline of that layer while it is open. seek-timeline: move the timeline to a moment (to), as a seek: what is seen follows, nothing crossed fires, playback goes on if it was playing; a moment in a later step reaches that step; with layer (or to a line of a layer's narration), the timeline of that layer while it is open. play-media / pause-media: play or pause an audio or video block (block) of the screen; playing one pauses the narration. start-dialogue: begin a dialogue block (block) of the screen (one whose begins is event, or not begun yet). goto-dialogue: move a dialogue (block) to one of its nodes (node), as if the conversation went there (a free object or a click drives it). restart-dialogue: start a dialogue (block) over; its scored run stays. */
-  type: 'go-to' | 'show-layer' | 'hide-layer' | 'show-block' | 'hide-block' | 'reveal-step' | 'set-variable' | 'increment-variable' | 'complete-screen' | 'set-object-props' | 'exit-course' | 'pause-timeline' | 'play-timeline' | 'seek-timeline' | 'play-media' | 'pause-media' | 'start-dialogue' | 'goto-dialogue' | 'restart-dialogue';
+  /** go-to: navigate (screen id, or next / previous). show-layer / hide-layer: open or close a layer of the current screen; hide-layer without layer closes the layer open on top (a Close button inside a layer). show-block / hide-block: change visibility of a block. reveal-step: reveal the steps of the screen up to step (a click in the slide instead of Continue); a step already shown takes the focus again. set-variable: assign a value. increment-variable: add a number (by, may be negative). complete-screen: mark the current screen complete. set-object-props: change declared props of a free object block without regenerating code. exit-course: save and leave (same as the Quit button). pause-timeline / play-timeline: pause the narration of the screen, or play it from where it is (a modal layer pauses and resumes it by itself); with layer, the timeline of that layer while it is open. seek-timeline: move the timeline to a moment (to), as a seek: what is seen follows, nothing crossed fires, playback goes on if it was playing; a moment in a later step reaches that step; with layer (or to a line of a layer's narration), the timeline of that layer while it is open. play-media / pause-media: play or pause an audio or video block (block) of the screen; playing one pauses the narration. start-dialogue: begin a dialogue block (block) of the screen (one whose begins is event, or not begun yet). goto-dialogue: move a dialogue (block) to one of its nodes (node), as if the conversation went there (a free object or a click drives it). restart-dialogue: start a dialogue (block) over; its scored run stays. play-sound: play a sound of the course (sound: its id in assets/sounds/, D67), at volume, with an optional caption; with loop, an ambience of the screen: it loops until stop-sound or the end of the screen, lowered under the voice, and learners may switch it off with music and ambiences. stop-sound: stop a sound (sound), or every sound of the story playing (no sound), with a fade. A sound of the story stops at the end of its screen; a dialogue may play one (a presentation action). */
+  type: 'go-to' | 'show-layer' | 'hide-layer' | 'show-block' | 'hide-block' | 'reveal-step' | 'set-variable' | 'increment-variable' | 'complete-screen' | 'set-object-props' | 'exit-course' | 'pause-timeline' | 'play-timeline' | 'seek-timeline' | 'play-media' | 'pause-media' | 'start-dialogue' | 'goto-dialogue' | 'restart-dialogue' | 'play-sound' | 'stop-sound';
   screen?: string;
   /** show-layer, hide-layer: a layer of the current screen. Required by show-layer; hide-layer without it closes the open layer (the one on top). pause-timeline, play-timeline, seek-timeline: the timeline of that layer (docs/decisions.md D62) instead of the screen's. */
   layer?: Slug;
@@ -3258,6 +3296,16 @@ export type Action = {
   props?: { [key: string]: unknown };
   /** seek-timeline: the moment to go to. */
   to?: Cue;
+  /** play-sound, stop-sound: a sound of the course, its id in assets/sounds/ (D67). */
+  sound?: Slug;
+  /** play-sound: its volume (default 1; an ambience: 0.3), under the player's. */
+  volume?: number;
+  /** play-sound: an ambience of the screen, looped with a crossfade until stop-sound or the end of the screen; lowered by 20 dB while a voice speaks; learners may switch it off (« Musique et ambiances »). */
+  loop?: boolean;
+  /** play-sound: seconds of fade in; stop-sound: of fade out (default 0.3). */
+  fade?: number;
+  /** play-sound: what the sound says, for learners who do not hear it (« Le téléphone sonne. »): shown with the captions and said to screen readers. Advised when the sound carries meaning that no text gives; never required (a decorative sound, a scene whose text says it already). */
+  caption?: string;
 };
 
 // component.schema.json
@@ -3876,4 +3924,52 @@ export type NarrationAudioWord = {
   end: number;
   /** How sure the alignment is that the voice says this word (0 to 1): a word the voice swallowed scores low. */
   score?: number;
+};
+
+// sound.schema.json
+
+/**
+ * A sound of the course (assets/sounds/<id>.json)
+ *
+ * Where a sound of the course comes from and under what licence (docs/decisions.md D67), next to its file assets/sounds/<id>.<ext> (FLAC for what was lossless, the original's own bytes for what came lossy). Written by elabora sound add and sound generate, read by the validator (licences), « IA et crédits » and the package's CREDITS.txt. Never shipped in packages.
+ */
+export type Sound = {
+  $schema?: string;
+  /** The sound's title, as its source names it (« Old phone ringing »): credits name it. */
+  title?: string;
+  /** Where it was taken: library (Elabora's « Sons courants », CC0), a site (kenney, opengameart, wikimedia, freesound), openverse (found through Openverse: url is the page of its own source), elevenlabs (generated), recording (made by the author), file (a file the author gave). */
+  source?: 'library' | 'kenney' | 'opengameart' | 'wikimedia' | 'freesound' | 'openverse' | 'elevenlabs' | 'recording' | 'file';
+  /** The page of the sound at its source. */
+  url?: string;
+  /** Its id there (a Freesound number, a Commons file name, an Elabora library id). */
+  sourceId?: string;
+  /** Who made it, as the licence asks to name them. */
+  author?: string;
+  /** Its licence, as an SPDX-like id: CC0-1.0, PDM-1.0 (public domain mark), CC-BY-4.0, CC-BY-3.0, CC-BY-SA-4.0…, own (made or bought by the author with every right to ship it), generated (made by an AI service under a plan that gives commercial rights). Unknown, non-commercial (NC) or no-derivatives (ND) licences are E_SOUND_LICENSE: a course is sold and a sound is cut. */
+  license: string;
+  licenseUrl?: string;
+  /** The credit line the licence asks for, as it should read (« “Old phone” by Jane Doe, CC BY 4.0, shortened »); without it, one is made from the title, the author, the licence and what was changed. */
+  credit?: string;
+  /** What was done to the original (CC BY asks to say it). */
+  modified?: ('trimmed' | 'faded' | 'looped' | 'converted' | 'normalized')[];
+  /** The part of the original kept, in seconds (already applied to the file). */
+  trim?: {
+    start: number;
+    end: number;
+  };
+  /** Seconds of audio in the file. */
+  duration?: number;
+  /** Made to loop (an ambience, a music bed): the player crossfades its end into its start. */
+  loop?: boolean;
+  /** A caption it suggests, by language (« Le téléphone sonne. »): written where the sound is used, never imposed. */
+  caption?: { [key: string]: string };
+  /** Made by an AI service: « IA et crédits » says the course has generated sounds. */
+  generated?: {
+    provider: string;
+    model?: string;
+    prompt?: string;
+    createdAt?: CalendarDate;
+  };
+  /** When the licence was read on the source's page. */
+  checked?: CalendarDate;
 };

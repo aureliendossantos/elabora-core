@@ -41,7 +41,7 @@ export function readProjectFiles(dir: string): FolderSnapshot {
   const mediaFiles = binaries.filter((f) => f.path.startsWith('assets/') && MEDIA_EXTENSIONS.has(extensionOf(f.path)));
   const probed = mediaFiles.length ? probeProjectMediaSync(root, mediaFiles) : null;
   const verdicts = new Map<string, FileMedia>();
-  for (const [rel, info] of probed?.media ?? []) verdicts.set(rel, fileMedia(info));
+  for (const [rel, info] of probed?.media ?? []) verdicts.set(rel, fileMedia(info, rel));
   const files = new Map<string, SourceFile>();
   for (const f of listed) {
     if (isTextPath(f.path)) {

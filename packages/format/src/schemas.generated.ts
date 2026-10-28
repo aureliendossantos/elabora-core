@@ -54,6 +54,7 @@ import planNotesSchema from '../schemas/0.1.3/plan-notes.schema.json' with { typ
 import planVersionSchema from '../schemas/0.1.3/plan-version.schema.json' with { type: 'json' };
 import planSchema from '../schemas/0.1.3/plan.schema.json' with { type: 'json' };
 import screenSchema from '../schemas/0.1.3/screen.schema.json' with { type: 'json' };
+import soundSchema from '../schemas/0.1.3/sound.schema.json' with { type: 'json' };
 
 export const SCHEMA_VERSION = '0.1.3';
 export const FORMAT_VERSION = '0.1';
@@ -112,7 +113,8 @@ export type SchemaName =
   | 'plan-notes'
   | 'plan-version'
   | 'plan'
-  | 'screen';
+  | 'screen'
+  | 'sound';
 
 export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
   block: blockSchema,
@@ -167,7 +169,8 @@ export const SCHEMAS: { readonly [name in SchemaName]: JsonSchema } = {
   'plan-notes': planNotesSchema,
   'plan-version': planVersionSchema,
   plan: planSchema,
-  screen: screenSchema
+  screen: screenSchema,
+  sound: soundSchema
 };
 
 /** Built-in block types (the native catalogue), in the order of block.schema.json. */

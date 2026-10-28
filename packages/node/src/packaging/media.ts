@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Course } from '@elabora/format';
 import type { Project } from '@elabora/core/project/model';
-import { estimateBytes, extensionOf, replaceExtension } from '@elabora/core/media/conformance';
+import { audioNeedsRendition, estimateBytes, extensionOf, replaceExtension } from '@elabora/core/media/conformance';
 import type { MediaInfo } from '@elabora/core/media/conformance';
 import { PRESET_NAMES } from '@elabora/core/media/presets';
 import type { PresetName } from '@elabora/core/media/presets';
@@ -56,7 +56,7 @@ export async function packageMedia(project: Project, names: Iterable<string>, qu
     if (file.kind !== 'binary' || !file.media) continue; // not media: shipped as it is
     const master = path.join(project.root, rel);
     let source = master;
-    if (quality !== 'high') {
+    if (quality !== 'high' || audioNeedsRendition(file.media)) {
       try {
         tools ??= await findMediaTools().catch(() => null);
         const result = await ensureRendition(project.root, rel, quality, { tools, onProgress: (job) => options.onProgress?.({ asset: rel, preset: quality, job }) });

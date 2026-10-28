@@ -182,7 +182,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["type"],
-      "description": "What a dialogue may do to its screen: show-block, hide-block, show-layer, hide-layer, play-media, pause-media, set-object-props, reveal-step (presentation only: replaying a path sets the last visibility and props of the blocks it touched, and opens no layer). A dialogue never writes the course's variables nor navigates: do that on dialogue.ended, in an event of the screen.",
+      "description": "What a dialogue may do to its screen: show-block, hide-block, show-layer, hide-layer, play-media, pause-media, set-object-props, reveal-step, play-sound, stop-sound (presentation only: replaying a path sets the last visibility and props of the blocks it touched, and opens no layer). A dialogue never writes the course's variables nor navigates: do that on dialogue.ended, in an event of the screen.",
       "properties": {
         "type": { "type": "string", "pattern": "^[a-z][a-z-]{1,31}$" },
         "block": { "$ref": "../defs.schema.json#/$defs/slug" },

@@ -4,7 +4,7 @@ import { valuesOfKind } from '../components/props.ts';
 import type { Block } from '../project/model.ts';
 import { narrationLines, screenTiming, lineSpeaker } from '../narration/narration.ts';
 import type { NarrationLineInfo } from '../narration/narration.ts';
-import { voiceLinesOf, trackKey, trackGroup, trackLabel, timelineOf } from '../narration/voice-lines.ts';
+import { voiceLinesOf, soundLinesOf, trackKey, trackGroup, trackLabel, timelineOf } from '../narration/voice-lines.ts';
 import { lineDirections, playsDirections, withoutDirections } from '../narration/directions.ts';
 import { doubtfulWords, swallowedKey, SWALLOWED_SCORE } from '../narration/words.ts';
 import { fileHash } from '../project/files.ts';
@@ -44,6 +44,12 @@ export function checkScreenNarration(ctx: CourseCheckContext, screen: ScreenFile
     const step = typeof line.step === 'number' ? line.step : 1;
     if (step < previousStep) reporter.emit('E_NARRATION_STEP_ORDER', { file, path: `${at}/step`, target: id, message: `Line "${line.id}" of screen "${id}" is in step ${step}, after a line of step ${previousStep}.` });
     previousStep = Math.max(previousStep, step);
+  }
+  // Sound lines (D67) take ids from the same space.
+  for (const { line, track, path: at } of soundLinesOf(data, id)) {
+    const first = seen.get(line.id);
+    if (first !== undefined) reporter.emit('E_NARRATION_LINE_DUPLICATE', { file, path: `${at}/id`, target: id, details: { screen: id, line: line.id, tracks: [first, trackKey(track)] }, message: `Screen "${id}" has two lines "${line.id}" (a sound line and ${trackLabel(trackOf(first))}; ids are unique in the screen, every track counted).` });
+    else seen.set(line.id, trackKey(track));
   }
   if (narration && (narration.advance ?? ctx.course.narration?.advance) === 'next-screen') reporter.emit('W_AUTO_ADVANCE', { file, path: narration.advance ? '/narration/advance' : '/narration', target: id, message: `Screen "${id}" plays its steps one after the other and goes on to the next screen by itself${narration.advance ? '' : ' (the course\'s narration.advance)'}.` });
   checkDuplicated(ctx, screen);
