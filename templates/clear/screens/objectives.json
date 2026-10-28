@@ -11,7 +11,7 @@
       "type": "text",
       "style": "agenda",
       "props": {
-        "markdown": "1. **First part title**  \n   One line that says what this part covers and why it matters.\n2. **Second part title**  \n   One line that says what this part covers and why it matters.\n3. **Third part title**  \n   One line that says what this part covers and why it matters."
+        "markdown": "1. **Recognise the situations**  \n   One line on where the rule applies, and why it matters in daily work.\n2. **Apply the procedure**  \n   One line on the steps to follow, in the right order.\n3. **Choose the first action**  \n   One line on deciding in a real case, and saying why."
       }
     },
     {
@@ -19,7 +19,7 @@
       "type": "text",
       "style": "lead",
       "props": {
-        "markdown": "By the end, you will be able to apply the key rule to a real case and choose the right first action."
+        "markdown": "Three parts, about fifteen minutes, with one question to check what you have learnt."
       }
     }
   ]

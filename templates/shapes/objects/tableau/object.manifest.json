@@ -149,6 +149,16 @@
           "closing"
         ]
       },
+      "column": {
+        "type": "number",
+        "minimum": 30,
+        "maximum": 120,
+        "default": 72.5,
+        "title": "Content column (rem)",
+        "description": "Width of the module's content column, in rem: keep it equal to presentation.wideWidth ÷ 16. On the parts' screens the shapes keep clear of it.",
+        "x-group": "Composition",
+        "x-control": "number"
+      },
       "transition": {
         "type": "number",
         "title": "Rearrangement (s)",

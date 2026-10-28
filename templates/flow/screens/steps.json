@@ -9,6 +9,7 @@
     {
       "id": "steps-process",
       "type": "process",
+      "width": "wide",
       "props": {
         "takeaway": "Each step prepares the next one",
         "items": [

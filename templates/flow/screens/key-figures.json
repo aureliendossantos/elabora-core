@@ -9,6 +9,7 @@
     {
       "id": "figures-chart",
       "type": "key-figures",
+      "width": "wide",
       "props": {
         "takeaway": "One sentence that says what these figures prove",
         "items": [

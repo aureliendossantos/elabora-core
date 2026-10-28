@@ -6,16 +6,8 @@
     "ITEM-6"
   ],
   "layout": "flow-cover",
+  "backdrop": "hero",
   "blocks": [
-    {
-      "id": "end-kicker",
-      "type": "text",
-      "props": {
-        "markdown": "Module complete"
-      },
-      "style": "kicker",
-      "slot": "kicker"
-    },
     {
       "id": "end-lead",
       "type": "text",

@@ -6,7 +6,6 @@
     "ITEM-5"
   ],
   "completeWhen": "interactions-done",
-  "backdrop": "calm",
   "blocks": [
     {
       "id": "check-row",

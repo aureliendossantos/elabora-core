@@ -10,6 +10,7 @@
     {
       "id": "compare-columns",
       "type": "columns",
+      "width": "wide",
       "style": "versus",
       "props": {
         "count": 2

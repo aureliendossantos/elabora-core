@@ -2,7 +2,7 @@
   "$schema": "https://elabora.studio/schemas/0.1.2/course.schema.json",
   "format": "elabora/0.1",
   "id": "flow",
-  "title": "Flow — module template",
+  "title": "Your module title",
   "language": "en",
   "version": "0.1.0",
   "sections": [
@@ -112,7 +112,6 @@
     "styles": {
       "text": {
         "lead": "Large introductory paragraph",
-        "kicker": "Short label above a title, in monospaced capitals",
         "meta": "Small monospaced line: a date, a duration, a version",
         "list": "Numbered list with large monospaced numbers (objectives, agenda)",
         "recap": "Checklist on a card (recap, what to remember)"
@@ -133,6 +132,7 @@
         "props": {}
       },
       "variants": {
+        "hero": "The ribbons rise across the right of the window: the cover and the end",
         "calm": "Quieter ribbons and fewer particles, behind dense screens",
         "ink": "Light paper with ink-coloured ribbons"
       }

@@ -113,16 +113,19 @@ body { font-weight: 450; }
 .t-text strong { font-weight: 800; }
 .t-s-lead .t-text, .t-text.t-s-lead { font-size: 1.375rem; line-height: 1.5; }
 
-/* Opening (cover, part, end): a large rounded title, and a blob instead of the rule. */
+/* Opening (cover, part, end): a large rounded title. No label above it: the player's section
+   and lesson line is hidden; a part opener (screen style part) shows its number in a soft blob. */
 .t-opening .t-screen-title { font-weight: 850; font-size: clamp(2.5rem, 1.4rem + 3.4vw, 4.5rem); line-height: 1.02; letter-spacing: -0.025em; max-width: 14em; }
-.t-opening-eyebrow { color: var(--org-part-deep); font-weight: 800; letter-spacing: .12em; }
+.t-opening-eyebrow:has(> .t-opening-section), .t-opening--title .t-opening-copy::after { display: none; }
+.t-s-part .t-opening-eyebrow {
+  display: grid; place-items: center; width: 4.5rem; height: 4rem; margin: 0 0 1.75rem;
+  border-radius: 58% 42% 55% 45% / 52% 60% 40% 48%;
+  background: var(--org-part); color: var(--t-text);
+  font-family: var(--t-font-heading); font-weight: 850; font-size: 1.75rem; letter-spacing: 0; text-transform: none;
+  transition: background-color var(--org-slow) var(--org-ease);
+}
 .t-opening-lead { font-size: clamp(1.1875rem, 1.05rem + .45vw, 1.4375rem); color: var(--t-text); }
 .t-opening-meta { color: var(--t-muted); }
-.t-opening--title .t-opening-copy::after {
-  width: 3.5rem; height: 2.25rem; margin-top: 2rem;
-  border-radius: 58% 42% 55% 45% / 52% 60% 40% 48%;
-  background: var(--org-part);
-}
 
 /* In slides the opening sits in the middle of the window, its page right under it. */
 [data-presentation="slides"] .t-layout--opening .t-opening { justify-content: center; }
@@ -177,7 +180,7 @@ body { font-weight: 450; }
 .t-column[data-empty] { display: none; }
 
 /* Screens whose blocks take the wide column: the title lines up with them. */
-.t-screen:not(.t-layout):has(> .t-blocks > .t-w-wide, > .t-blocks > .t-block:is(:has(> .t-image--beside), :has(> .t-panels--cards))) > .t-screen-title { max-width: var(--t-wide-width); }
+.t-screen:not(.t-layout):is(:has(> .t-blocks > .t-w-wide), :has(> .t-blocks > .t-block > .t-image--beside)) > .t-screen-title { max-width: min(var(--t-wide-width), 100%); }
 
 /* ── Notes, prompts, asides: a soft tinted card or a small blob, never a coloured rule on the side ── */
 .t-callout, .t-callout:is(.t-callout--important, .t-callout--warning, .t-callout--tip), .t-reflection-model {

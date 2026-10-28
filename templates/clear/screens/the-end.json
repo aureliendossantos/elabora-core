@@ -8,7 +8,6 @@
   "layout": "opening",
   "layoutProps": {
     "presentation": "title",
-    "eyebrow": "End of the module",
     "lead": "One sentence on what to do next, and where to find help or the full procedure.",
     "duration": false
   },

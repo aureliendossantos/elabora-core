@@ -8,7 +8,7 @@
   "layout": "opening",
   "layoutProps": {
     "presentation": "title",
-    "eyebrow": "Part 01",
+    "eyebrow": "01",
     "lead": "One sentence that sets up what this part covers and why it comes first.",
     "duration": false
   },

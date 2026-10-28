@@ -8,7 +8,6 @@
   "layout": "opening",
   "layoutProps": {
     "presentation": "title",
-    "eyebrow": "Programme or department name",
     "lead": "One or two sentences that say what learners will be able to do by the end, and why it matters in their daily work.",
     "duration": false
   },

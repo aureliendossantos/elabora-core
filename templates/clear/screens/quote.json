@@ -5,6 +5,7 @@
   "covers": [
     "ITEM-4"
   ],
+  "showTitle": false,
   "backdrop": "ink",
   "blocks": [
     {

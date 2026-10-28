@@ -6,6 +6,9 @@
     "ITEM-2"
   ],
   "layout": "flow-section",
+  "layoutProps": {
+    "number": "01"
+  },
   "blocks": [
     {
       "id": "part-one-lead",

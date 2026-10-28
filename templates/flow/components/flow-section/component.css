@@ -1,4 +1,5 @@
-/* Flow part opener — where the learner stands, then the part's title, large. */
+/* Flow part opener — the part's number, large, in the monospaced font and lit by the two neons; then
+   the part's title, large, and its lead. */
 .flow-section {
   display: grid;
   gap: 1.5rem;
@@ -6,16 +7,20 @@
   max-width: var(--t-wide-width);
   margin-inline: auto;
 }
-.flow-section-rail {
-  width: min(22rem, 60%); height: 2px;
-  background: linear-gradient(90deg, var(--t-color-neon-a), var(--t-color-neon-b) 60%, transparent);
-}
-.flow-section-count {
-  margin: 0;
+.flow-section-number {
+  margin: 0 0 -.25rem;
+  width: fit-content;
   font-family: var(--t-font-mono);
-  font-size: .875rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
-  color: var(--t-primary);
+  font-size: clamp(4rem, 2.5rem + 4vw, 7rem);
+  font-weight: 700;
+  line-height: .9;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
+  color: var(--t-primary);
+  background: linear-gradient(100deg, var(--t-color-neon-a), var(--t-color-neon-b));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .flow-section-title .t-screen-title {
   margin: 0;

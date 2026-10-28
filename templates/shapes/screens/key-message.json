@@ -5,6 +5,7 @@
   "covers": [
     "ITEM-3"
   ],
+  "showTitle": false,
   "blocks": [
     {
       "id": "key-message-statement",

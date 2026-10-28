@@ -4,14 +4,27 @@
   "title": "Flow part opener",
   "version": "1.0.0",
   "level": "screen",
-  "description": "Opens a part of the module: where it stands (« Part 2 of 4 », written by the player), a large title and a lead.",
-  "instructions": "The first screen of a section. The title names the part; the body holds one text block with the style lead (one or two sentences on what this part brings).",
+  "description": "Opens a part of the module: the part's number set large in the monospaced font, a large title and a lead.",
+  "instructions": "The first screen of a section. number: the part's number on two digits (01, 02…). The title names the part; the body holds one text block with the style lead (one or two sentences on what this part brings).",
   "props": {
     "type": "object",
     "additionalProperties": false,
-    "properties": {}
+    "properties": {
+      "number": {
+        "type": "string",
+        "title": "Part number",
+        "description": "The part's number, set large above the title (01, 02…).",
+        "maxLength": 3,
+        "default": "01"
+      }
+    }
   },
   "slots": [
-    { "id": "body", "label": "Lead", "default": true, "maxBlocks": 3 }
+    {
+      "id": "body",
+      "label": "Lead",
+      "default": true,
+      "maxBlocks": 3
+    }
   ]
 }

@@ -111,7 +111,7 @@
     "styles": {
       "screen": {
         "cover": "Cover: the title on the left seven columns, the accent panel on the right (with the feature backdrop)",
-        "section": "Part opener: a large part number and title on the left columns (with the feature backdrop)"
+        "section": "Part opener: the part's number set large in the accent, the title on the left columns (with the feature backdrop)"
       },
       "text": {
         "lead": "Large introductory paragraph",
@@ -130,7 +130,7 @@
     "backdrop": {
       "layers": [
         "ground",
-        "grid",
+        "tint",
         "panel"
       ],
       "object": {
@@ -139,7 +139,7 @@
       },
       "variants": {
         "feature": "Accent panel on the right columns: cover, part openers and the end",
-        "calm": "No grid lines: dense screens, charts and questions",
+        "tint": "A pale wash of the accent: a key message, a moment that stands out",
         "ink": "Dark screen: dark ground, light text, a lighter accent"
       }
     }

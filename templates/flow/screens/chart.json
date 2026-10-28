@@ -10,6 +10,7 @@
     {
       "id": "trend-chart",
       "type": "trend",
+      "width": "wide",
       "props": {
         "takeaway": "One sentence that says what changed, and when",
         "unit": "%",

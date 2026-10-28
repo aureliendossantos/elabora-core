@@ -101,6 +101,9 @@
     },
     "stylesheet": "theme/theme.css",
     "styles": {
+      "screen": {
+        "part": "Part opener: the part's number in a soft blob above the title"
+      },
       "text": {
         "lead": "Large opening paragraph",
         "objectives": "Numbered list in soft round counters (objectives, takeaways)",

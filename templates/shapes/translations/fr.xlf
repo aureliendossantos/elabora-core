@@ -64,7 +64,7 @@
       </notes>
       <segment state="translated">
         <source>Wrapping up</source>
-        <target>Pour conclure</target>
+        <target>Pour finir</target>
       </segment>
     </unit>
     <unit id="plan.title">
@@ -145,8 +145,8 @@
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>Figures, steps, a voice and a comparison</source>
-        <target>Chiffres, étapes, une voix et une comparaison</target>
+        <source>Figures, steps, voices and comparisons</source>
+        <target>Chiffres, étapes, témoignages et comparaisons</target>
       </segment>
     </unit>
     <unit id="plan.item.ITEM-5.title">
@@ -177,7 +177,7 @@
       </notes>
       <segment state="translated">
         <source>Your module title, on two lines at most</source>
-        <target>Le titre de votre module, sur deux lignes au plus</target>
+        <target>Le titre de votre module, en deux lignes au plus</target>
       </segment>
     </unit>
     <unit id="block.cover-lead.markdown">
@@ -201,10 +201,10 @@
       </notes>
       <segment state="translated">
         <source>- 15 minutes
-- 4 parts
+- 3 parts
 - For every team</source>
         <target>- 15 minutes
-- 4 parties
+- 3 parties
 - Pour toutes les équipes</target>
       </segment>
     </unit>
@@ -215,15 +215,15 @@
         <note category="context">Screen title</note>
       </notes>
       <segment state="translated">
-        <source>By the end of this module, you will be able to</source>
-        <target>À la fin de ce module, vous saurez</target>
+        <source>What you will be able to do</source>
+        <target>Ce que vous saurez faire</target>
       </segment>
     </unit>
     <unit id="block.objectives-list.markdown">
       <notes>
         <note category="location">screens/objectives.json /blocks/0/props/markdown</note>
         <note category="format">markdown</note>
-        <note category="context">Text on screen "By the end of this module, you will be able to"</note>
+        <note category="context">Text on screen "What you will be able to do"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
@@ -242,15 +242,15 @@
         <note category="context">Screen title</note>
       </notes>
       <segment state="translated">
-        <source>First part title, in a few strong words</source>
-        <target>Le titre de la première partie, en quelques mots forts</target>
+        <source>Title of the first part</source>
+        <target>Titre de la première partie</target>
       </segment>
     </unit>
     <unit id="block.part-one-lead.markdown">
       <notes>
         <note category="location">screens/part-one.json /blocks/0/props/markdown</note>
         <note category="format">markdown</note>
-        <note category="context">Text on screen "First part title, in a few strong words"</note>
+        <note category="context">Text on screen "Title of the first part"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
@@ -262,7 +262,7 @@
       <notes>
         <note category="location">screens/part-one.json /blocks/1/props/label</note>
         <note category="format">text</note>
-        <note category="context">Part mark on screen "First part title, in a few strong words"</note>
+        <note category="context">Part mark on screen "Title of the first part"</note>
         <note category="max-length">24</note>
       </notes>
       <segment state="translated">
@@ -277,15 +277,15 @@
         <note category="context">Screen title</note>
       </notes>
       <segment state="translated">
-        <source>The key idea</source>
-        <target>L'idée clé</target>
+        <source>Key message</source>
+        <target>Message clé</target>
       </segment>
     </unit>
     <unit id="block.key-message-statement.markdown">
       <notes>
         <note category="location">screens/key-message.json /blocks/0/props/markdown</note>
         <note category="format">markdown</note>
-        <note category="context">Statement on screen "The key idea"</note>
+        <note category="context">Statement on screen "Key message"</note>
         <note category="max-length">400</note>
       </notes>
       <segment state="translated">
@@ -339,15 +339,15 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <note category="context">Screen title</note>
       </notes>
       <segment state="translated">
-        <source>Three building blocks to keep in mind</source>
-        <target>Trois briques à garder en tête</target>
+        <source>Three ideas, side by side</source>
+        <target>Trois idées côte à côte</target>
       </segment>
     </unit>
     <unit id="block.three-cards-one.text">
       <notes>
         <note category="location">screens/cards.json /blocks/0/blocks/0/props/text</note>
         <note category="format">text</note>
-        <note category="context">Heading on screen "Three building blocks to keep in mind"</note>
+        <note category="context">Heading on screen "Three ideas, side by side"</note>
         <note category="max-length">200</note>
       </notes>
       <segment state="translated">
@@ -359,7 +359,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/cards.json /blocks/0/blocks/1/props/markdown</note>
         <note category="format">markdown</note>
-        <note category="context">Text on screen "Three building blocks to keep in mind"</note>
+        <note category="context">Text on screen "Three ideas, side by side"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
@@ -371,7 +371,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/cards.json /blocks/0/blocks/2/props/text</note>
         <note category="format">text</note>
-        <note category="context">Heading on screen "Three building blocks to keep in mind"</note>
+        <note category="context">Heading on screen "Three ideas, side by side"</note>
         <note category="max-length">200</note>
       </notes>
       <segment state="translated">
@@ -383,7 +383,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/cards.json /blocks/0/blocks/3/props/markdown</note>
         <note category="format">markdown</note>
-        <note category="context">Text on screen "Three building blocks to keep in mind"</note>
+        <note category="context">Text on screen "Three ideas, side by side"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
@@ -395,7 +395,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/cards.json /blocks/0/blocks/4/props/text</note>
         <note category="format">text</note>
-        <note category="context">Heading on screen "Three building blocks to keep in mind"</note>
+        <note category="context">Heading on screen "Three ideas, side by side"</note>
         <note category="max-length">200</note>
       </notes>
       <segment state="translated">
@@ -407,7 +407,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/cards.json /blocks/0/blocks/5/props/markdown</note>
         <note category="format">markdown</note>
-        <note category="context">Text on screen "Three building blocks to keep in mind"</note>
+        <note category="context">Text on screen "Three ideas, side by side"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
@@ -422,15 +422,15 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <note category="context">Screen title</note>
       </notes>
       <segment state="translated">
-        <source>Three figures that tell the story</source>
-        <target>Trois chiffres qui racontent l'histoire</target>
+        <source>Key figures</source>
+        <target>Chiffres clés</target>
       </segment>
     </unit>
     <unit id="block.key-figures-chart.takeaway">
       <notes>
         <note category="location">screens/key-figures.json /blocks/0/props/takeaway</note>
         <note category="format">text</note>
-        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="context">Key figures on screen "Key figures"</note>
         <note category="max-length">160</note>
       </notes>
       <segment state="translated">
@@ -442,7 +442,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/key-figures.json /blocks/0/props/source</note>
         <note category="format">text</note>
-        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="context">Key figures on screen "Key figures"</note>
         <note category="max-length">200</note>
       </notes>
       <segment state="translated">
@@ -454,7 +454,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/key-figures.json /blocks/0/props/items/0/label</note>
         <note category="format">text</note>
-        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="context">Key figures on screen "Key figures"</note>
         <note category="max-length">140</note>
       </notes>
       <segment state="translated">
@@ -466,7 +466,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/key-figures.json /blocks/0/props/items/0/figure</note>
         <note category="format">text</note>
-        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="context">Key figures on screen "Key figures"</note>
         <note category="max-length">24</note>
       </notes>
       <segment state="translated">
@@ -478,7 +478,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/key-figures.json /blocks/0/props/items/1/label</note>
         <note category="format">text</note>
-        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="context">Key figures on screen "Key figures"</note>
         <note category="max-length">140</note>
       </notes>
       <segment state="translated">
@@ -490,7 +490,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/key-figures.json /blocks/0/props/items/2/label</note>
         <note category="format">text</note>
-        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="context">Key figures on screen "Key figures"</note>
         <note category="max-length">140</note>
       </notes>
       <segment state="translated">
@@ -502,7 +502,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/key-figures.json /blocks/0/props/items/2/figure</note>
         <note category="format">text</note>
-        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="context">Key figures on screen "Key figures"</note>
         <note category="max-length">24</note>
       </notes>
       <segment state="translated">
@@ -612,15 +612,15 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <note category="context">Screen title</note>
       </notes>
       <segment state="translated">
-        <source>Four steps, in this order</source>
-        <target>Quatre étapes, dans cet ordre</target>
+        <source>Four steps, in order</source>
+        <target>Quatre étapes, dans l'ordre</target>
       </segment>
     </unit>
     <unit id="block.four-steps-process.takeaway">
       <notes>
         <note category="location">screens/steps.json /blocks/0/props/takeaway</note>
         <note category="format">text</note>
-        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="context">Process on screen "Four steps, in order"</note>
         <note category="max-length">160</note>
       </notes>
       <segment state="translated">
@@ -632,7 +632,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/steps.json /blocks/0/props/items/0/title</note>
         <note category="format">text</note>
-        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="context">Process on screen "Four steps, in order"</note>
         <note category="max-length">60</note>
       </notes>
       <segment state="translated">
@@ -644,7 +644,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/steps.json /blocks/0/props/items/0/text</note>
         <note category="format">text</note>
-        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="context">Process on screen "Four steps, in order"</note>
         <note category="max-length">200</note>
       </notes>
       <segment state="translated">
@@ -656,7 +656,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/steps.json /blocks/0/props/items/1/title</note>
         <note category="format">text</note>
-        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="context">Process on screen "Four steps, in order"</note>
         <note category="max-length">60</note>
       </notes>
       <segment state="translated">
@@ -668,7 +668,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/steps.json /blocks/0/props/items/1/text</note>
         <note category="format">text</note>
-        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="context">Process on screen "Four steps, in order"</note>
         <note category="max-length">200</note>
       </notes>
       <segment state="translated">
@@ -680,7 +680,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/steps.json /blocks/0/props/items/2/title</note>
         <note category="format">text</note>
-        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="context">Process on screen "Four steps, in order"</note>
         <note category="max-length">60</note>
       </notes>
       <segment state="translated">
@@ -692,7 +692,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/steps.json /blocks/0/props/items/2/text</note>
         <note category="format">text</note>
-        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="context">Process on screen "Four steps, in order"</note>
         <note category="max-length">200</note>
       </notes>
       <segment state="translated">
@@ -704,7 +704,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/steps.json /blocks/0/props/items/3/title</note>
         <note category="format">text</note>
-        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="context">Process on screen "Four steps, in order"</note>
         <note category="max-length">60</note>
       </notes>
       <segment state="translated">
@@ -716,7 +716,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/steps.json /blocks/0/props/items/3/text</note>
         <note category="format">text</note>
-        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="context">Process on screen "Four steps, in order"</note>
         <note category="max-length">200</note>
       </notes>
       <segment state="translated">
@@ -778,15 +778,15 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <note category="context">Screen title</note>
       </notes>
       <segment state="translated">
-        <source>Before and after: what changes</source>
-        <target>Avant, après : ce qui change</target>
+        <source>Two ways of doing it</source>
+        <target>Deux façons de faire</target>
       </segment>
     </unit>
     <unit id="block.comparison-before.text">
       <notes>
         <note category="location">screens/comparison.json /blocks/0/blocks/0/props/text</note>
         <note category="format">text</note>
-        <note category="context">Heading on screen "Before and after: what changes"</note>
+        <note category="context">Heading on screen "Two ways of doing it"</note>
         <note category="max-length">200</note>
       </notes>
       <segment state="translated">
@@ -798,7 +798,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/comparison.json /blocks/0/blocks/1/props/markdown</note>
         <note category="format">markdown</note>
-        <note category="context">Text on screen "Before and after: what changes"</note>
+        <note category="context">Text on screen "Two ways of doing it"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
@@ -814,7 +814,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/comparison.json /blocks/0/blocks/2/props/text</note>
         <note category="format">text</note>
-        <note category="context">Heading on screen "Before and after: what changes"</note>
+        <note category="context">Heading on screen "Two ways of doing it"</note>
         <note category="max-length">200</note>
       </notes>
       <segment state="translated">
@@ -826,7 +826,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/comparison.json /blocks/0/blocks/3/props/markdown</note>
         <note category="format">markdown</note>
-        <note category="context">Text on screen "Before and after: what changes"</note>
+        <note category="context">Text on screen "Two ways of doing it"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
@@ -845,15 +845,15 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <note category="context">Screen title</note>
       </notes>
       <segment state="translated">
-        <source>Where the time goes</source>
-        <target>Où passe le temps</target>
+        <source>What the data shows</source>
+        <target>Ce que montrent les données</target>
       </segment>
     </unit>
     <unit id="block.chart-bars.takeaway">
       <notes>
         <note category="location">screens/chart.json /blocks/0/props/takeaway</note>
         <note category="format">text</note>
-        <note category="context">Bars on screen "Where the time goes"</note>
+        <note category="context">Bars on screen "What the data shows"</note>
         <note category="max-length">160</note>
       </notes>
       <segment state="translated">
@@ -865,7 +865,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/chart.json /blocks/0/props/source</note>
         <note category="format">text</note>
-        <note category="context">Bars on screen "Where the time goes"</note>
+        <note category="context">Bars on screen "What the data shows"</note>
         <note category="max-length">200</note>
       </notes>
       <segment state="translated">
@@ -877,7 +877,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/chart.json /blocks/0/props/rows/0/label</note>
         <note category="format">text</note>
-        <note category="context">Bars on screen "Where the time goes"</note>
+        <note category="context">Bars on screen "What the data shows"</note>
         <note category="max-length">80</note>
       </notes>
       <segment state="translated">
@@ -889,7 +889,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/chart.json /blocks/0/props/rows/1/label</note>
         <note category="format">text</note>
-        <note category="context">Bars on screen "Where the time goes"</note>
+        <note category="context">Bars on screen "What the data shows"</note>
         <note category="max-length">80</note>
       </notes>
       <segment state="translated">
@@ -901,7 +901,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/chart.json /blocks/0/props/rows/2/label</note>
         <note category="format">text</note>
-        <note category="context">Bars on screen "Where the time goes"</note>
+        <note category="context">Bars on screen "What the data shows"</note>
         <note category="max-length">80</note>
       </notes>
       <segment state="translated">
@@ -913,7 +913,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/chart.json /blocks/0/props/rows/3/label</note>
         <note category="format">text</note>
-        <note category="context">Bars on screen "Where the time goes"</note>
+        <note category="context">Bars on screen "What the data shows"</note>
         <note category="max-length">80</note>
       </notes>
       <segment state="translated">
@@ -979,15 +979,15 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <note category="context">Screen title</note>
       </notes>
       <segment state="translated">
-        <source>Well done: you have finished</source>
-        <target>Bravo : vous avez terminé</target>
+        <source>Thank you, and well done</source>
+        <target>Merci, et bravo</target>
       </segment>
     </unit>
     <unit id="block.the-end-lead.markdown">
       <notes>
         <note category="location">screens/the-end.json /blocks/0/props/markdown</note>
         <note category="format">markdown</note>
-        <note category="context">Text on screen "Well done: you have finished"</note>
+        <note category="context">Text on screen "Thank you, and well done"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
@@ -999,7 +999,7 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <notes>
         <note category="location">screens/the-end.json /blocks/1/props/markdown</note>
         <note category="format">markdown</note>
-        <note category="context">Text on screen "Well done: you have finished"</note>
+        <note category="context">Text on screen "Thank you, and well done"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">

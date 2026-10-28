@@ -128,7 +128,7 @@ body { background: transparent; }
 }
 .t-screen:not(.t-layout) > .t-screen-title { margin-bottom: 1.75rem; }
 /* A screen whose blocks run wide keeps its title over them. */
-.t-screen:not(.t-layout):has(.t-w-wide, .t-block--columns.t-s-cards) > .t-screen-title { max-width: var(--t-wide-width); }
+.t-screen:not(.t-layout):is(:has(> .t-blocks > .t-w-wide), :has(> .t-blocks > .t-block > .t-image--beside)) > .t-screen-title { max-width: min(var(--t-wide-width), 100%); }
 .t-block--heading :is(h2, h3, h4) { font-family: var(--t-font-heading); font-weight: 700; letter-spacing: -0.015em; line-height: 1.15; }
 .t-text { font-size: 1.0625rem; line-height: 1.55; }
 .t-text strong { font-weight: 700; color: var(--t-text); }
@@ -138,7 +138,6 @@ body { background: transparent; }
 /* Lead */
 .t-s-lead .t-text { font-size: clamp(1.125rem, 1rem + .45vw, 1.375rem); line-height: 1.45; color: var(--t-muted); max-width: 36em; text-wrap: pretty; }
 /* Kicker: monospaced capitals in the first neon */
-.t-s-kicker .t-text { font-family: var(--t-font-mono); font-size: .8125rem; font-weight: 600; line-height: 1.4; letter-spacing: .16em; text-transform: uppercase; color: var(--t-primary); }
 /* Meta: a small monospaced line */
 .t-s-meta .t-text { font-family: var(--t-font-mono); font-size: .875rem; letter-spacing: .04em; color: var(--t-muted); font-variant-numeric: tabular-nums; }
 .t-s-meta .t-text p { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; }

@@ -8,7 +8,6 @@
   "layout": "opening",
   "layoutProps": {
     "presentation": "title",
-    "eyebrow": "Well done",
     "lead": "One sentence to close: the first thing to try tomorrow, and where to find help if you need it.",
     "duration": false
   },

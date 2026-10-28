@@ -1,18 +1,16 @@
-/* Flow cover — the title view. A very large title on the left, three chevrons on the right that point
-   forward (the direction the backdrop leaps when the learner goes on). Nothing moves here: the motion
-   is the backdrop's. */
+/* Flow cover — the title view. A very large title, its lead and details on the left half; the right
+   half is left to the backdrop, whose ribbons rise across it on this screen (variant hero). Nothing
+   moves here: the motion is the backdrop's. */
 .t-layout--flow-cover { --flow-cover-title: clamp(2.75rem, 1.2rem + 4.6vw, 5.75rem); }
 .flow-cover {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: clamp(2rem, 5vw, 5rem);
   width: 100%;
   max-width: var(--t-wide-width);
   margin-inline: auto;
   min-height: min(34rem, 60vh);
 }
-.flow-cover-copy { display: grid; gap: 1.25rem; min-width: 0; }
+.flow-cover-copy { display: grid; gap: 1.25rem; min-width: 0; max-width: min(40rem, 56%); }
 .flow-cover-title .t-screen-title {
   margin: 0;
   max-width: 11.5em;
@@ -31,24 +29,11 @@
   background: linear-gradient(90deg, var(--t-color-neon-a), var(--t-color-neon-b));
 }
 .flow-cover-body { display: grid; gap: 1.25rem; }
-.flow-cover-kicker:empty, .flow-cover-body:empty { display: none; }
-
-.flow-cover-mark { display: flex; align-items: center; gap: 0; height: clamp(9rem, 16vw, 15rem); }
-.flow-chevron {
-  display: block;
-  height: 100%;
-  aspect-ratio: 0.62;
-  margin-left: -1.4%;
-  background: linear-gradient(160deg, var(--t-color-neon-a), var(--t-color-neon-b));
-  clip-path: polygon(0 0, 34% 0, 100% 50%, 34% 100%, 0 100%, 66% 50%);
-}
-.flow-chevron:nth-child(1) { opacity: .22; }
-.flow-chevron:nth-child(2) { opacity: .5; }
-.flow-chevron:nth-child(3) { opacity: 1; }
+.flow-cover-body:empty { display: none; }
 
 @container (max-width: 820px) {
-  .flow-cover { grid-template-columns: 1fr; min-height: 0; gap: 1.5rem; }
-  .flow-cover-mark { order: -1; height: 3.5rem; }
+  .flow-cover { min-height: 0; }
+  .flow-cover-copy { max-width: none; }
 }
 
 /* Over the haze the lead and the details read in the text colour (the theme's lead is muted). */

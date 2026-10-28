@@ -4,7 +4,9 @@
 // they leap the other way. A new part leaps a little further and moves the palette from the first colour
 // towards the second; a step revealed is a small nudge. Variants: "calm" (fewer, dimmer particles, a
 // softer leap) and "ink" (dark ink on light paper). Under reduced motion the frame shows still frames:
-// particles are dots, nothing leaps.
+// particles are dots, nothing leaps. "hero" (the cover and the end) lifts the ribbons across the right
+// half of the window, wider and brighter, and fades them out under the text on the left; leaving the
+// cover, they settle back low in the window as the module starts.
 
 const BASE_DRIFT = 0.011;   // screen widths per second, for the nearest particle
 const LEAP = 30;            // speed multiplier at the top of a full leap
@@ -67,6 +69,8 @@ export function mount(container, ctx) {
 
   let calm = variantOf(context) === 'calm' ? 1 : 0;
   let calmTarget = calm;
+  let hero = variantOf(context) === 'hero' ? 1 : 0;
+  let heroTarget = hero;
   let ink = inkWanted();
   let vis = 1;              // fades out and in when the ink variant comes or goes
   let bias = biasOf(context?.section);
@@ -105,8 +109,9 @@ export function mount(container, ctx) {
     }
     if (context.screen && !seenScreens.includes(context.screen)) seenScreens.push(context.screen);
     calmTarget = variantOf(context) === 'calm' ? 1 : 0;
+    heroTarget = variantOf(context) === 'hero' ? 1 : 0;
     biasTarget = biasOf(context.section);
-    if (reduced) { calm = calmTarget; bias = biasTarget; ink = inkWanted(); }
+    if (reduced) { calm = calmTarget; hero = heroTarget; bias = biasTarget; ink = inkWanted(); }
   }
   const offContext = host.onContext(onContext);
 
@@ -120,20 +125,27 @@ export function mount(container, ctx) {
     g.lineCap = 'round';
     const intensity = vis * (1 - 0.5 * calm) * (ink ? 0.75 : 1);
 
-    // Luminous lines: two bundles of slow waves, low in the window, out of the way of the text.
-    const lineAlpha = props.lines * intensity;
+    // Luminous lines: two bundles of slow waves, low in the window, out of the way of the text. On the
+    // cover (hero) they rise and tilt across the right half, and fade out towards the text on the left.
+    // A phone window keeps them low: the text takes the whole width there.
+    const h = W < 760 ? 0 : hero;
+    const lineAlpha = props.lines * intensity * (1 + 0.9 * h);
     if (lineAlpha > 0.001) {
       const grad = g.createLinearGradient(0, 0, W, 0);
-      grad.addColorStop(0, css(A, 1));
-      grad.addColorStop(Math.min(0.95, Math.max(0.05, 1 - bias)), css(mix(A, B, 0.5), 1));
+      grad.addColorStop(0, css(A, 1 - 0.92 * h));
+      grad.addColorStop(0.42, css(mix(A, B, 0.25), 1 - 0.75 * h));
+      grad.addColorStop(Math.min(0.95, Math.max(0.6, 1 - bias)), css(mix(A, B, 0.5), 1));
       grad.addColorStop(1, css(B, 1));
       g.strokeStyle = grad;
       const bundles = [
-        { y: 0.74, a: 0.055, k: 1.15, w: 0.16, spread: 0.0065, n: 11, alpha: 0.42 },
-        { y: 0.83, a: 0.04, k: 1.7, w: -0.11, spread: 0.009, n: 8, alpha: 0.22 }
+        { y: 0.74, hy: 0.5, a: 0.055, k: 1.15, w: 0.16, spread: 0.0065, n: 11, alpha: 0.42 },
+        { y: 0.83, hy: 0.6, a: 0.04, k: 1.7, w: -0.11, spread: 0.009, n: 8, alpha: 0.22 }
       ];
       const step = Math.max(8, Math.round(W / 140));
       for (const b of bundles) {
+        const by = b.y + (b.hy - b.y) * h;
+        const ba = b.a * (1 + 1.3 * h);
+        const bs = b.spread * (1 + 1.2 * h);
         for (let i = 0; i < b.n; i++) {
           const f = i / (b.n - 1);
           g.globalAlpha = lineAlpha * b.alpha * (0.35 + 0.65 * Math.sin(Math.PI * f));
@@ -141,9 +153,9 @@ export function mount(container, ctx) {
           g.beginPath();
           for (let x = -step; x <= W + step; x += step) {
             const u = x / W;
-            const y = H * (b.y + b.spread * (i - b.n / 2)
-              + b.a * Math.sin(2 * Math.PI * b.k * u + clock * b.w * 6 + f * 0.9)
-              + b.a * 0.45 * Math.sin(2 * Math.PI * (b.k * 2.3) * u - clock * b.w * 4 + f * 2.1));
+            const y = H * (by + bs * (i - b.n / 2) - 0.26 * h * (u - 0.5)
+              + ba * Math.sin(2 * Math.PI * b.k * u + clock * b.w * 6 + f * 0.9)
+              + ba * 0.45 * Math.sin(2 * Math.PI * (b.k * 2.3) * u - clock * b.w * 4 + f * 2.1));
             if (x === -step) g.moveTo(x, y); else g.lineTo(x, y);
           }
           g.stroke();
@@ -182,6 +194,7 @@ export function mount(container, ctx) {
       boostTarget *= Math.exp(-d / 0.42);
       boost += (boostTarget - boost) * (1 - Math.exp(-d / 0.13));
       calm += (calmTarget - calm) * (1 - Math.exp(-d / 0.6));
+      hero += (heroTarget - hero) * (1 - Math.exp(-d / 0.55));
       bias += (biasTarget - bias) * (1 - Math.exp(-d / 1.4));
       const wantInk = inkWanted();
       if (wantInk !== ink) { vis -= d / 0.3; if (vis <= 0) { vis = 0; ink = wantInk; } }

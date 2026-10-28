@@ -6,16 +6,8 @@
     "ITEM-1"
   ],
   "layout": "flow-cover",
+  "backdrop": "hero",
   "blocks": [
-    {
-      "id": "cover-kicker",
-      "type": "text",
-      "props": {
-        "markdown": "Module template · Flow"
-      },
-      "style": "kicker",
-      "slot": "kicker"
-    },
     {
       "id": "cover-lead",
       "type": "text",
@@ -28,7 +20,7 @@
       "id": "cover-meta",
       "type": "text",
       "props": {
-        "markdown": "10 min · 15 screens · Version 1.0"
+        "markdown": "15 min · For every team · Version 1.0"
       },
       "style": "meta"
     }

@@ -10,7 +10,7 @@
     "presentation": "title",
     "lead": "One sentence that sets up this part: the question it answers, or the change it brings to the learner's work.",
     "duration": false,
-    "eyebrow": "Part 1 of 3"
+    "eyebrow": "1"
   },
   "blocks": [
     {
@@ -21,5 +21,6 @@
         "markdown": "- The key message\n- An explanation with an example\n- Three ideas side by side"
       }
     }
-  ]
+  ],
+  "style": "part"
 }

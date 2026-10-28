@@ -6,6 +6,9 @@
 // their new place one after the other; a shape whose new place is across the window fades out
 // where it was and fades in where it goes, rather than flying over the text. Under reduced motion,
 // and while the first screen settles, each screen shows its tableau at once, as a still image.
+// The shapes never touch the text: on the parts' screens, a shape that would reach the content column
+// (prop column, plus a margin) is pushed out towards its edge of the window; the opening and closing
+// tableaux, behind poster layouts whose text keeps the left, hold the right of the window.
 
 const DEG = Math.PI / 180;
 const KINDS = ['circle', 'quarter', 'quarter', 'bar', 'half', 'circle', 'bar'];
@@ -61,6 +64,26 @@ const TABLEAUX = [
     { x: 0.07, y: 0.89, l: 0.22, t: 0.012, rot: 0, c: 3 }
   ]
 ];
+
+// The tableaux behind poster layouts (the opening and the closing): their text keeps the left half.
+const POSTERS = new Set([0, 4]);
+
+// The box a shape covers, in px.
+function extent(a) {
+  if (a.kind === 'bar') {
+    const c = Math.cos(a.rot * DEG), s = Math.sin(a.rot * DEG);
+    const hx = a.l / 2, hy = a.t / 2;
+    const xs = [], ys = [];
+    for (const [px, py] of [[-hx, -hy], [hx, -hy], [hx, hy], [-hx, hy]]) { xs.push(a.x + px * c - py * s); ys.push(a.y + px * s + py * c); }
+    return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
+  }
+  const sweep = a.kind === 'quarter' ? 90 : a.kind === 'half' ? 180 : 360;
+  const xs = [a.x], ys = [a.y];
+  const angles = [a.rot, a.rot + sweep];
+  for (let k = Math.ceil(a.rot / 90) * 90; k < a.rot + sweep; k += 90) angles.push(k);
+  for (const t of angles) { xs.push(a.x + a.s * Math.cos(t * DEG)); ys.push(a.y + a.s * Math.sin(t * DEG)); }
+  return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
+}
 
 // What a screen changes in the tableau of its part: one shape turns, glides or changes size.
 const MOVES = [
@@ -150,7 +173,7 @@ export function mount(container, ctx) {
       if (Math.round(m.rot / 90) % 2 === 0) m.x += (move.by * H) / Math.max(1, W); else m.y += move.by;
     }
     if (narrow()) return phone(base, colours);
-    return base.map((a, i) => {
+    const shapes = base.map((a, i) => {
       const out = calm ? (a.x < 0.5 ? -0.035 : 0.035) : 0;
       const k = calm ? 0.86 : 1;
       return {
@@ -159,6 +182,21 @@ export function mount(container, ctx) {
         rot: a.rot, colour: colours[a.c], alpha: 1
       };
     });
+    return POSTERS.has(tableau) ? shapes : shapes.map(keepClear);
+  }
+
+  // The content column, with a margin, between the bars: a shape that reaches it moves out towards
+  // its own edge of the window, as far as needed.
+  function keepClear(shape) {
+    const rem = 16;
+    const column = Math.min(W - 3 * rem, (Number(props.column) || 72.5) * rem);
+    const margin = Math.max(40, 0.03 * W);
+    const left = (W - column) / 2 - margin;
+    const right = (W + column) / 2 + margin;
+    const box = extent(shape);
+    if (box.y1 < 0.1 * H || box.y0 > 0.9 * H || box.x1 <= left || box.x0 >= right) return shape;
+    const dx = shape.x < W / 2 ? left - box.x1 : right - box.x0;
+    return { ...shape, x: shape.x + dx };
   }
 
   // On phones the text takes the whole width: two shapes only, in opposite corners, never blue.

@@ -10,6 +10,7 @@
     {
       "id": "pillars-columns",
       "type": "columns",
+      "width": "wide",
       "style": "cards",
       "props": {
         "count": 3

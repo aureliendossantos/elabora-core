@@ -46,7 +46,7 @@
       "context": { "screen": "key-figures", "section": "part-2", "step": 1, "variant": null },
       "steps": [
         { "action": "step", "frames": 5 },
-        { "action": "set-context", "context": { "screen": "steps", "section": "part-2", "step": 1, "variant": "calm" } },
+        { "action": "set-context", "context": { "screen": "steps", "section": "part-2", "step": 1, "variant": "tint" } },
         { "action": "step", "frames": 1 },
         { "action": "expect-state", "state": { "index": 2, "moving": "none" } }
       ]
