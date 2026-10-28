@@ -22,10 +22,11 @@ import { addSound } from './add.ts';
 export const SOUND_MODEL = 'eleven_text_to_sound_v2';
 // The list price: credits a second of sound, whether its length is set or the service chooses it
 // (ai-costs/periods.json: measured on 28 October 2026, 10 credits a second, where the documentation said
-// 40). What a plan is charged of it comes from the ledger (D36). Without a length the service chose 5 s
-// in the trial: the estimate counts that much.
+// 40). What a plan is charged of it comes from the ledger (D36). Without a length the service chooses
+// one, up to 30 s (it chose 5 s in the trial): the estimate counts the longest, so that the share told
+// is « at most » and the author's approval (D30) is never skipped by a longer sound than expected.
 export const LIST_CREDITS_PER_SECOND = 10;
-export const AUTO_SECONDS = 5;
+export const AUTO_SECONDS = 30;
 
 export interface SoundEstimate {
   credits: number;

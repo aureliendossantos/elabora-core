@@ -74,7 +74,7 @@ try {
   for (const [role, source] of Object.entries(sources.roles)) {
     let input: string;
     if ('library' in source) {
-      const master = fs.readdirSync(path.join(LIBRARY_FILES)).find((name) => name.startsWith(`${source.library}.`));
+      const master = fs.readdirSync(LIBRARY_FILES).find((name) => name.startsWith(`${source.library}.`));
       if (!master) throw new Error(`${role}: the library has no file for ${source.library}`);
       input = path.join(LIBRARY_FILES, master);
     } else {

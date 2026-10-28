@@ -222,7 +222,9 @@ export function compileSoundFiles(project: Project, assetPath: (name: string) =>
 // The player's own interface sounds, as CREDITS.txt names them (src/interface-sounds/sources.json):
 // Kenney's Interface Sounds, and the end's jingle from Freesound.
 const PLAYER_SOUNDS_CREDIT = 'Interface Sounds 1.0 by Kenney (www.kenney.nl) — CC0 1.0 — https://kenney.nl/assets/interface-sounds';
-const PLAYER_SOUND_CREDITS: Record<string, string> = { 'elabora/sounds/end.m4a': '« WinBanjo » by Fupicat — CC0 1.0 — https://freesound.org/people/Fupicat/sounds/521640/' };
+// A role made from a library master (sources.json { "library": … }) has its own credit here: a unit test
+// checks that each such role has one.
+export const PLAYER_SOUND_CREDITS: Record<string, string> = { 'elabora/sounds/end.m4a': '« WinBanjo » by Fupicat — CC0 1.0 — https://freesound.org/people/Fupicat/sounds/521640/' };
 
 // CREDITS.txt of a package (D67): every sound it ships, where it comes from and under what licence,
 // for the LMS's administrators (learners read « IA et crédits »); null without sounds.
