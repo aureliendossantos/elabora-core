@@ -4,6 +4,10 @@ This repository is the open core of Elabora. For rules about editing a *course*,
 
 Read `docs/architecture.md` first (the packages, what each may import, the project model), then the page of `docs/architecture/` for the subsystem you change (operations and journal, media, delivery, plan, storage, import, rendering, engine). It is the contract; code that does not match it is wrong. `docs/index.md` maps the rest of the documentation; decisions are one file each, `docs/decisions/Dnn.md` (D24 is `D24.md`): read the ones the code you touch cites, not the whole log.
 
+## Setup
+- pnpm 11 (`npm install -g pnpm`; `package.json` names the version). Every checkout and every worktree runs `pnpm install` in it once: seconds, and almost no disk (pnpm clones its store). Never link a worktree's `node_modules` to another checkout's: `@elabora/*` would be that checkout's packages.
+- A branch opened before pnpm (28 Oct 2026): merge `main` (a conflict on `package-lock.json`: `git rm package-lock.json`); if `node_modules` is a link, remove the link alone (`rm node_modules`, no trailing slash); then `pnpm install`. A dependency is added with `pnpm add`, never `npm install`, which would write a `package-lock.json` again.
+
 ## Map
 - `packages/format/` — `@elabora/format`: normative JSON Schemas (`schemas/<version>/`), generated types, schema registry. Changing a schema changes the format: update `SPEC.md`, the validator, the compiler, a format migration and a Sampo changeset together.
 - `packages/player/` — `@elabora/player`: the browser runtime bundled into every package by esbuild; keep it dependency-free. `timeline.ts` is a narrated screen's clock, segments and bar (D24); tests drive it on a virtual clock (`window.ELABORA_TEST.virtualTime`, `__elabora.timeline`). `dialogue/` is a dialogue's walk, progress, saved state and paths (D61), pure: the core imports it too; its view in the page is not (`view.ts` plays it, with its parts `box.ts`, `cast.ts`, `lines.ts`, `room.ts`, `moves.ts`; `thread.ts` is the markup).
