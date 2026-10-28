@@ -1,0 +1,22 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "continuity-fixture",
+  "title": "Continuity between screens",
+  "language": "en",
+  "version": "0.1.0",
+  "sections": [
+    { "id": "first", "title": "First", "screens": ["one", "two"] },
+    { "id": "second", "title": "Second", "screens": ["three", "four"] }
+  ],
+  "variables": [{ "id": "probed", "type": "number", "default": 0 }],
+  "theme": { "cascade": "components-over-theme" },
+  "navigation": { "mode": "free", "lockUntilComplete": false },
+  "player": {
+    "top": { "items": [{ "id": "title" }, { "id": "progress" }, { "id": "spacer" }, { "id": "exit" }] },
+    "bottom": { "items": [{ "id": "outline" }, { "id": "spacer" }, { "id": "previous" }, { "id": "next" }] }
+  },
+  "presentation": { "mode": "slides" },
+  "completion": { "reportAs": "completed-incomplete" },
+  "tracking": { "exitAfterCompletion": "suspend", "recordInteractions": true, "heartbeatSeconds": 60 }
+}

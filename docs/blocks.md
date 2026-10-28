@@ -1,6 +1,6 @@
-# Built-in block catalogue (format elabora/0.1, schemas 0.1.1)
+# Built-in block catalogue (format elabora/0.1, schemas 0.1.2)
 
-Generated from `packages/format/schemas/0.1.1/blocks/` and the built-in components (`packages/core/src/components/builtin/`). Agents: call `elabora_get_schema <type>` for the full schema; course components are listed by `elabora_list_components` (docs/components.md).
+Generated from `packages/format/schemas/0.1.2/blocks/` and the built-in components (`packages/core/src/components/builtin/`). Agents: call `elabora_get_schema <type>` for the full schema; course components are listed by `elabora_list_components` (docs/components.md).
 
 ## `heading` (content)
 
@@ -235,8 +235,8 @@ Template `packages/core/src/components/builtin/dialogue.html`: fork it to change
 | `objective` | planId |  | The plan objective the dialogue practises: the objective of its SCORM interactions. A node or an option may name its own. |
 | `feedback` | "now" \| "debrief" \| "both" |  | When the options' feedback is shown (default: the mode's): now, as a trainer's note in the thread after the consequence; debrief, in the debrief card at the end; both. |
 | `debrief` | boolean |  | A debrief card at the end: the ending reached, each decision with its quality and feedback, then the other endings. Default true. |
-| `pace` | "auto" \| "click" |  | auto: the lines of a turn follow one another. click: one line per click. Default "auto". |
-| `reveal` | "ink" \| "appear" \| "instant" |  | How a line's words come in step with its voice: ink (words not said yet in a lighter ink), appear (they appear), instant (the whole text at once). Reduced motion and the learner's « Texte : tout de suite » show the whole text. Default "ink". |
+| `pace` | "auto" \| "click" |  | auto: the voiced lines of a turn follow one another; a text without a voice (a line without audio, a note) waits for the learner's « Suite ». click: one line per click. Default "auto". |
+| `reveal` | "ink" \| "appear" \| "instant" |  | How a line's words come in step with its voice: ink (words not said yet in a faint ink), appear (they appear), instant (the whole text at once). A line without a voice, reduced motion and the learner's « Texte : tout de suite » show the whole text. Default "ink". |
 | `begins` | "auto" \| "click" \| "event" |  | auto: when the block comes into view (or its step is revealed). click: a start card with a button. event: when an event runs start-dialogue. Default "auto". |
 | `start` | dialogueNodeId |  | The first node (default: the first of nodes). |
 | `vars` | array |  | Variables of the dialogue only (a character's trust…), changed by options (set, add) and read by conditions ({ "var": "trust", "op": "gte", "value": 2 }). Recomputed from the path, so they go back when the learner goes back. Never the course's variables: those change on dialogue.ended, in an event of the screen. |
@@ -735,7 +735,7 @@ Template `packages/core/src/components/builtin/hotspots.html`: fork it to change
 
 # Built-in screen layouts
 
-Generated from `packages/format/schemas/0.1.1/layouts/`. A screen uses one with `"layout": "<id>"` and its `layoutProps`; blocks choose a slot with `slot` (docs/components.md).
+Generated from `packages/format/schemas/0.1.2/layouts/`. A screen uses one with `"layout": "<id>"` and its `layoutProps`; blocks choose a slot with `slot` (docs/components.md).
 
 ## `opening` (layout)
 

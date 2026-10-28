@@ -34,6 +34,7 @@ import type { DisplayPrefs } from './display.ts';
 import { pageFramesPort } from './frames.ts';
 import { isRecord } from './json.ts';
 import { blockLayouts, rectOf, round, scrollFrom } from './layout-report.ts';
+import { GLIDE } from './screen-objects.ts';
 import type { CourseData, ObjectDefinition, ScreenData } from './course-data.ts';
 import { PLAYER_PREVIEW_PROTOCOL } from './canvas-protocol.ts';
 import type { BlockLayout, CanvasMessage, HostMessage, LayoutMessage, PreviewHostMessage, PreviewPanel, RenderFile, RenderOutline, RenderSheet, RenderView, ScreenRender } from './canvas-protocol.ts';
@@ -535,12 +536,22 @@ function scheduleLayout() {
     // Blocks an event of the screen rendered (a layer opened by a click) too.
     versionUrls();
     observeBlocks();
+    landing();
     const message = layout();
     const key = JSON.stringify({ ...message, applyMs: 0 });
     if (key === lastLayout) return;
     lastLayout = key;
     post(message);
   });
+}
+// A block gliding from where its counterpart was (D65) is measured on its way: once more where it lands.
+const gliding = new Set<Animation>();
+function landing() {
+  for (const animation of document.getAnimations?.() ?? []) {
+    if (animation.id !== GLIDE || gliding.has(animation)) continue;
+    gliding.add(animation);
+    animation.finished.catch(() => {}).finally(() => { gliding.delete(animation); scheduleLayout(); });
+  }
 }
 // Blocks are watched as they come and go: a block that grows moves the others.
 const resizes = typeof ResizeObserver === 'function' ? new ResizeObserver(() => scheduleLayout()) : null;

@@ -1,28 +1,32 @@
 // The screen on the page: what learners see of one screen, shared by the player (player.ts, with
 // its LMS and navigation) and the editor canvas (canvas.ts, one screen updated in place), so the
 // canvas shows exactly what a package shows. It renders the screen and its blocks, reserves the
-// room of activities, hosts free objects, opens layers, reveals steps, runs the events of the
-// screen and paints the backdrop. Navigation, the LMS and saving belong to the page around it.
+// room of activities (screen-rooms.ts), hosts free objects (screen-objects.ts), opens layers,
+// reveals steps, runs the events of the screen, paints the backdrop and updates the screen in place
+// (screen-update.ts). Navigation, the LMS and saving belong to the page around it.
 
 import { behaviorOf, flatBlocks, isActivity } from './course-state.ts';
 import type { CourseState, TriggerInfo } from './course-state.ts';
 import { createBehaviors } from './behaviors.ts';
 import { createObjectHost } from './object-host.ts';
+import { createObjects, glideFrom, rootSize } from './screen-objects.ts';
+import type { Departure } from './screen-objects.ts';
+import { createRooms } from './screen-rooms.ts';
+import { placeInPlace } from './screen-update.ts';
 import type { ObjectHost } from './object-host.ts';
 import type { Labels } from './labels.ts';
 import type { Interaction } from './scorm12.ts';
 import { element, uniqueId } from './dom.ts';
 import { objectFrame } from './frames.ts';
-import { fieldOf } from './json.ts';
 import { createTimeline } from './timeline.ts';
 import type { Timeline, TimelineControls, TimelinePrefs } from './timeline.ts';
 import type { Tooltip } from './tooltip.ts';
 import { createTimedBlocks, forgetThemeKeyframes } from './timed-blocks.ts';
 import type { TimedBlocks } from './timed-blocks.ts';
 import type {
-  AudioBlock, Behavior, BlockData, CourseData, LayerData, ObjectBlock, ObjectDefinition, ObjectEventDeclaration, QuizBlock, ScreenData, TriggerType, VideoBlock
+  AudioBlock, BlockData, CourseData, LayerData, ObjectBlock, ScreenData, TriggerType, VideoBlock
 } from './course-data.ts';
-import type { ObjectContext, ObjectView, SafeArea } from './object-protocol.ts';
+import type { ObjectContext } from './object-protocol.ts';
 import { createTranscriptBar } from './transcript.ts';
 import type { TranscriptBar } from './transcript.ts';
 import type { Action } from './course-data.ts';
@@ -89,9 +93,6 @@ export interface ScreenViewOptions {
   // The editor's canvas: what plays by itself (a chart's entrance) is shown at rest.
   still?: boolean;
 }
-
-// A block of the screen being updated in place: kept as it is, kept with its slots refilled, or new.
-type Plan = 'reuse' | 'keep' | 'new';
 
 export type ScreenView = ReturnType<typeof createScreenView>;
 
@@ -211,6 +212,8 @@ export function createScreenView(options: ScreenViewOptions) {
     // drawn, so that it knows what is left.
     behaviors.noteShown(main);
     syncContinue();
+    // Kept frames follow their blocks (D65).
+    objects.place();
   }
   // Scroll presentation: the next step opens with a Continue button in the page, where the shown
   // content ends (the continue dividers of Rise); in slides the page's Next button does it. With
@@ -325,7 +328,11 @@ export function createScreenView(options: ScreenViewOptions) {
 
   // ── Showing a screen ──────────────────────────────────────────────────
   // Leaving the screen shown: its objects stop and its layers close (their events still belong to it).
+  // Its blocks with a continuity key say where they were, and its free objects with one wait for the
+  // next screen (D65).
   function leave() {
+    depart();
+    objects.park();
     behaviors.dialogues.dispose();
     transcriptBar?.dispose();
     transcriptBar = null;
@@ -334,7 +341,8 @@ export function createScreenView(options: ScreenViewOptions) {
     timeline?.dispose();
     timeline = null;
     app.removeAttribute('data-timeline');
-    disposeHosts();
+    // (park() stopped the objects that do not carry on.)
+    undoCleanups();
     for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog.t-layer')) dialog.close();
   }
   function show(next: ScreenData) {
@@ -348,9 +356,48 @@ export function createScreenView(options: ScreenViewOptions) {
     renderScreen(next);
     applySteps();
     courseState.visit(next, { allSteps: revealed === lastStep() && !(next.narration && options.timeline) });
+    arrive(next);
     startTimeline(next);
     behaviors.dialogues.afterShow();
     trigger('screen.enter', {});
+  }
+
+  // ── Continuity between screens (D65) ──────────────────────────────────
+  // Blocks of different screens that share a key are one thing to the learner: going from one of
+  // those screens to another, a free object keeps running (screen-objects.ts) and another block glides
+  // from where its counterpart was. Nothing else moves; with less motion asked it is a cut.
+  let departure: Departure | null = null;
+  const screenIndex = (id: string) => course.screens.findIndex((candidate) => candidate.id === id);
+  const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function depart() {
+    departure = null;
+    if (!screen) return;
+    const blocks = objects.keptBoxes();
+    for (const block of flatBlocks(screen.blocks)) {
+      const key = block.continuity?.key;
+      const node = key && !blocks.has(key) ? main.querySelector<HTMLElement>(`[data-block="${CSS.escape(block.id)}"]`) : null;
+      if (key && node && node.getClientRects().length && !node.closest('[inert]')) blocks.set(key, { block: block.id, box: node.getBoundingClientRect() });
+    }
+    departure = { screen: screen.id, index: screenIndex(screen.id), blocks };
+  }
+  function arrive(next: ScreenData) {
+    const from = departure;
+    departure = null;
+    const reduced = reducedMotion();
+    objects.settle({ screen: next.id, index: screenIndex(next.id) }, from, reduced);
+    if (!from?.blocks.size || reduced) return;
+    // Once the page is where it will be shown (the player scrolls a new screen to its top).
+    queueMicrotask(() => {
+      if (screen !== next) return;
+      objects.glide();
+      for (const block of flatBlocks(next.blocks)) {
+        const key = block.continuity?.key;
+        const was = key ? from.blocks.get(key) : undefined;
+        if (!was || was.block === block.id || block.type === 'free-object' || !block.continuity?.duration) continue;
+        const node = main.querySelector<HTMLElement>(`[data-block="${CSS.escape(block.id)}"]`);
+        if (node && !node.closest('[inert]')) glideFrom(node, was.box, block.continuity.duration);
+      }
+    });
   }
 
   // ── The timeline of a narrated screen ─────────────────────────────────
@@ -599,7 +646,7 @@ export function createScreenView(options: ScreenViewOptions) {
       case 'show-block': case 'hide-block': {
         courseState.setBlockVisible(action.block, action.type === 'show-block');
         const node = document.querySelector<HTMLElement>(`[data-block="${action.block}"]`);
-        if (node) { node.toggleAttribute('data-t-concealed', action.type === 'hide-block'); syncInert(node); behaviors.noteShown(main); }
+        if (node) { node.toggleAttribute('data-t-concealed', action.type === 'hide-block'); syncInert(node); behaviors.noteShown(main); objects.place(); }
         break;
       }
       case 'reveal-step': if (action.step > revealed) revealStep(reachedStep(action.step)); else focusStep(action.step); break;
@@ -688,8 +735,11 @@ export function createScreenView(options: ScreenViewOptions) {
     const article = screenArticle(shown);
     if (!shown.layout) article.append(element('div', { class: 't-blocks' }, shown.blocks.map((block) => renderBlock(block))));
     else placeInSlots(article, shown.blocks, shown.layout.defaultSlot);
-    main.replaceChildren(article);
-    flushRooms();
+    // The keep layer stays (its frames would load again, D65).
+    const keep = main.querySelector<HTMLElement>(':scope > .t-keep');
+    for (const child of [...main.children]) if (child !== keep) child.remove();
+    main.insertBefore(article, keep);
+    rooms.flush();
   }
   // The article of a screen and its title, without its blocks.
   function screenArticle(shown: ScreenData): HTMLElement {
@@ -724,147 +774,15 @@ export function createScreenView(options: ScreenViewOptions) {
   }
 
   // ── Room for answers (slides) ─────────────────────────────────────────
-  // In slides, answering must not move the slide: every activity reserves from the start the height
-  // of its tallest outcome (feedback, flags, messages), measured on hidden copies at the same width,
-  // and grows inside that room. A template whose feedback floats over its content opts out with
-  // data-t-reserve="off". Blocks concealed by events keep their place the same way (CSS).
-  const ROOM_BEHAVIORS = new Set<Behavior | null>(['quiz', 'numeric', 'fill-in', 'sort', 'reflection', 'decision', 'results', 'predict']);
-  const roomQueue: [HTMLElement, BlockData][] = [];
-  // The reserved rooms of the screen, measured again by ready() (fit checks and captures measure the
-  // final room, whatever was still loading when the screen was shown).
-  const roomFits = new Set<() => void>();
-  const blockOf = (node: HTMLElement) => courseState.blockIndex.get(node.dataset.block ?? '')?.block;
-  // Rooms are measured once the blocks are in the page.
-  function flushRooms() {
-    for (const [wrap, block] of roomQueue.splice(0)) reserveRoom(wrap, block);
-    for (const [wrap, block] of itemRoomQueue.splice(0)) reserveItemRooms(wrap, block);
-  }
-  // What shows one thing at a time (a sequence, D63) reserves the room of its tallest item, in every
-  // presentation and in layers too: moving through it never moves what is around it. (A flip card
-  // needs no measure: its faces share one cell, player.css.)
-  const itemRoomQueue: [HTMLElement, BlockData][] = [];
-  function reserveItemRooms(wrap: HTMLElement, block: BlockData) {
-    for (const { host, measure } of behaviors.rooms(wrap)) {
-      // Measured again when the width changes, and when the content may have (images and fonts
-      // loading): at a given width the room only grows.
-      let width = 0;
-      let room = 0;
-      const fit = (force = false) => {
-        if (!host.isConnected) return;
-        const measuredWidth = Math.round(cssPx(host, host.getBoundingClientRect().width));
-        if (!measuredWidth || (!force && measuredWidth === width)) return;
-        if (measuredWidth !== width) room = 0;
-        width = measuredWidth;
-        room = Math.max(room, cssPx(host, measure()));
-        host.style.minHeight = `${Math.ceil(room)}px`;
-      };
-      fit();
-      const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(() => fit()) : null;
-      observer?.observe(host);
-      const refit = () => fit(true);
-      host.addEventListener('load', refit, true); // images of the items (load does not bubble)
-      document.fonts?.ready.then(refit);
-      document.fonts?.addEventListener?.('loadingdone', refit);
-      const later = setTimeout(refit, 700);
-      roomFits.add(refit);
-      cleanup(block.id, () => { observer?.disconnect(); document.fonts?.removeEventListener?.('loadingdone', refit); clearTimeout(later); roomFits.delete(refit); });
-    }
-  }
-  // Boxes in the CSS px of the block: under the learner's text size (a CSS zoom on #t-main,
-  // « Affichage »), getBoundingClientRect gives zoomed px, which written back as CSS px would be
-  // zoomed again.
-  const cssPx = (node: HTMLElement, px: number) => px / ((node as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom || 1);
-  // compact: measured as if the quiz's feedback were compact (feedbackRooms).
-  function outcomeRooms(wrap: HTMLElement, block: BlockData, compact = false) {
-    const width = cssPx(wrap, wrap.getBoundingClientRect().width);
-    const ghost = () => {
-      const copy = wrap.cloneNode(true) as HTMLElement;
-      for (const node of [copy, ...copy.querySelectorAll('[id]')]) node.removeAttribute('id');
-      // A copy in the same radio group would uncheck the learner's choice when it enters the page.
-      for (const node of copy.querySelectorAll('input[name]')) node.removeAttribute('name');
-      copy.setAttribute('aria-hidden', 'true');
-      copy.inert = true;
-      Object.assign(copy.style, { position: 'absolute', visibility: 'hidden', pointerEvents: 'none', left: '0', top: '0', width: `${width}px`, minHeight: '0' });
-      wrap.parentElement!.append(copy); // same containers: container queries resolve as for the block
-      return copy;
-    };
-    const measure = (index: number | null) => {
-      const copy = ghost();
-      const outcomes = behaviors.outcomes(copy, block);
-      if (compact) for (const node of [copy, ...copy.querySelectorAll('[data-t-group]')]) node.setAttribute('data-t-feedback-style', 'compact');
-      if (index !== null) outcomes[index]?.();
-      const height = cssPx(copy, copy.getBoundingClientRect().height);
-      copy.remove();
-      return { height, count: outcomes.length };
-    };
-    const first = measure(null);
-    const rooms = [first.height];
-    for (let index = 0; index < first.count; index++) rooms.push(measure(index).height);
-    return rooms; // [as it is now, outcome 0, outcome 1, …]
-  }
-  function reserveRoom(wrap: HTMLElement, block: BlockData) {
-    if (!slides() || wrap.querySelector('[data-t-reserve="off"]')) return;
-    // Measured again when the width changes and when the content does (images and fonts loading,
-    // an answer): the room only grows at a given width, so answering never makes it shrink either.
-    let width = 0;
-    let content = -1;
-    let room = 0;
-    const fit = (force = false) => {
-      if (!wrap.isConnected) return;
-      const measuredWidth = Math.round(cssPx(wrap, wrap.getBoundingClientRect().width));
-      const measuredContent = Math.round(cssPx(wrap, [...wrap.children].reduce((height, node) => height + node.getBoundingClientRect().height, 0)));
-      if (!measuredWidth || (!force && measuredWidth === width && measuredContent === content)) return;
-      if (measuredWidth !== width) room = 0;
-      width = measuredWidth;
-      content = measuredContent;
-      room = Math.max(room, ...outcomeRooms(wrap, block));
-      wrap.style.minHeight = `${Math.ceil(room)}px`;
-    };
-    fit();
-    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(() => fit()) : null;
-    if (observer) for (const node of [wrap, ...wrap.children]) observer.observe(node);
-    wrap.addEventListener('load', () => fit(), true); // images inside the activity (load does not bubble)
-    // Text only the outcomes show (feedback) may wait for a font or a fallback glyph that the activity
-    // as shown does not need: measured again once fonts are loaded, and once more shortly after.
-    const refit = () => fit(true);
-    document.fonts?.ready.then(refit);
-    document.fonts?.addEventListener?.('loadingdone', refit);
-    const later = setTimeout(refit, 700);
-    roomFits.add(refit);
-    cleanup(block.id, () => { observer?.disconnect(); document.fonts?.removeEventListener?.('loadingdone', refit); clearTimeout(later); roomFits.delete(refit); });
-  }
+  // Activities and what shows one thing at a time reserve their tallest room (screen-rooms.ts).
+  const rooms = createRooms({ main, courseState, behaviors, slides, cleanup });
   // Renders the tallest outcome of every activity among nodes (default: the screen and its open
   // layers) and shows the concealed blocks: the slide as it looks once everything is answered (fit,
   // screenshots, the canvas).
   function showAnswered(nodes: Iterable<HTMLElement> = main.querySelectorAll<HTMLElement>('.t-block[data-block]')) {
-    const changed: (string | undefined)[] = [];
-    for (const node of nodes) {
-      const block = blockOf(node);
-      // A sequence shows its tallest item (D63): the room it reserves, filled.
-      if (block && behaviors.rooms(node).length) { behaviors.showTallest(node); changed.push(block.id); }
-      if (!block || !ROOM_BEHAVIORS.has(behaviorOf(block))) continue;
-      const rooms = outcomeRooms(node, block).slice(1);
-      if (!rooms.length) continue;
-      const index = rooms.indexOf(Math.max(...rooms));
-      behaviors.outcomes(node, block)[index]();
-      changed.push(block.id);
-    }
+    const changed: (string | undefined)[] = rooms.showTallest(nodes);
     for (const node of main.querySelectorAll<HTMLElement>('.t-block[data-t-concealed]')) { node.removeAttribute('data-t-concealed'); syncInert(node); changed.push(node.dataset.block); }
     return { screen: screen?.id, changed };
-  }
-
-  // The room the quizzes of the screen with full feedback reserve for their tallest outcome, and the
-  // room they would reserve with compact feedback (fit says what feedbackStyle "compact" saves).
-  function feedbackRooms(nodes: Iterable<HTMLElement> = main.querySelectorAll<HTMLElement>('.t-block[data-block]')) {
-    const rooms: { block: string; full: number; compact: number }[] = [];
-    for (const node of nodes) {
-      const block = blockOf(node);
-      if (!block || behaviorOf(block) !== 'quiz' || (block as QuizBlock).props.feedbackStyle === 'compact') continue;
-      const full = Math.max(0, ...outcomeRooms(node, block).slice(1));
-      const compact = Math.max(0, ...outcomeRooms(node, block, true).slice(1));
-      rooms.push({ block: block.id, full: Math.ceil(full), compact: Math.ceil(compact) });
-    }
-    return rooms;
   }
 
   // Slots of a template (screen layout or component instance) receive their blocks in order.
@@ -912,13 +830,12 @@ export function createScreenView(options: ScreenViewOptions) {
       behaviors.primitives(wrap, block);
       behaviors.bind(wrap, block);
       cleanup(block.id, () => behaviors.release(wrap));
-      if (ROOM_BEHAVIORS.has(behaviorOf(block))) roomQueue.push([wrap, block]);
-      if (behaviors.rooms(wrap).length) itemRoomQueue.push([wrap, block]);
+      rooms.queue(wrap, block);
       return wrap;
     }
     if (isVideo(block)) wrap.append(block.props.loop || block.props.decorative ? loopFigure(block) : videoFigure(block));
     else if (isAudio(block)) wrap.append(audioFigure(block));
-    else if (isFreeObject(block)) wrap.append(renderObject(block));
+    else if (isFreeObject(block)) wrap.append(objects.render(block));
     return wrap;
   }
 
@@ -997,11 +914,10 @@ export function createScreenView(options: ScreenViewOptions) {
   }
 
   // ── Free objects ──────────────────────────────────────────────────────
-  // The host of a block's object, and whether it failed to load (shown with its text version).
-  type BlockObjectHost = ObjectHost & { failed?: () => boolean };
-  const hosts = new Map<string, BlockObjectHost>();
+  // Their frames, hosts and events (screen-objects.ts).
+  const objects = createObjects({ main, course, courseState, labels, framesPort, recordInteraction, syncSoon: options.syncSoon, trigger, cleanup });
+  const hosts = objects.hosts;
   // Frames follow the size class of the page (1rem): sent at initialize and when the window crosses one.
-  const rootSize = () => parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
   let lastRootSize = rootSize();
   const onResize = () => {
     const px = rootSize();
@@ -1018,150 +934,19 @@ export function createScreenView(options: ScreenViewOptions) {
     if (list) list.push(undo); else cleanups.set(blockId, [undo]);
   }
   function disposeHosts() {
-    for (const host of hosts.values()) host.dispose();
-    hosts.clear();
+    objects.disposeAll();
+    undoCleanups();
+  }
+  function undoCleanups() {
     for (const list of cleanups.values()) for (const undo of list) undo();
     cleanups.clear();
   }
   // A block that leaves the page: its object stops, its observers and timers end.
   function disposeBlock(blockId: string) {
     behaviors.dialogues.forget(blockId);
-    hosts.get(blockId)?.dispose();
-    hosts.delete(blockId);
+    objects.dispose(blockId);
     for (const undo of cleanups.get(blockId) || []) undo();
     cleanups.delete(blockId);
-  }
-  const SIDES = ['top', 'right', 'bottom', 'left'] as const;
-  // Frames also move without a scroll, when content above them changes size (an image decoded, a
-  // disclosure opened, a step revealed): the screen's size changes, and every frame measures again.
-  const viewSyncs = new Set<() => void>();
-  if (typeof ResizeObserver === 'function') new ResizeObserver(() => { for (const sync of viewSyncs) sync(); }).observe(main);
-  // Where a frame is in the window, for objects that follow the scroll: the CSS view() timeline of
-  // its box (object-protocol.ts, ObjectView). Rounded so that a still page sends nothing.
-  function viewOf(node: HTMLElement): ObjectView {
-    const box = node.getBoundingClientRect();
-    const windowHeight = window.innerHeight || document.documentElement.clientHeight || 1;
-    const height = Math.max(1, box.height);
-    const contained = Math.min(height, windowHeight);
-    const share = (value: number) => Math.round(Math.min(1, Math.max(0, value)) * 1000) / 1000;
-    return {
-      visible: box.height > 0 && box.bottom > 0 && box.top < windowHeight,
-      ratio: share((Math.min(box.bottom, windowHeight) - Math.max(box.top, 0)) / height),
-      progress: share((windowHeight - box.top) / (windowHeight + height)),
-      entry: share((windowHeight - box.top) / contained),
-      exit: share((contained - box.bottom) / contained)
-    };
-  }
-
-  function renderObject(block: ObjectBlock) {
-    const props = block.props;
-    const definition = course.objects[props.object];
-    const descriptionId = uniqueId('desc');
-    const iframe = element('iframe', {
-      title: props.title, ...objectFrame(definition.dir, definition.permissions || [], framesPort, document.baseURI),
-      allow: '', referrerpolicy: 'no-referrer', 'aria-describedby': descriptionId, loading: 'eager'
-    });
-    const error = element('p', { class: 't-object-error', role: 'alert', hidden: true, text: labels.objectError });
-    const loading = element('div', { class: 't-object-loading', role: 'status', hidden: true }, element('span', { class: 't-object-spinner', 'aria-hidden': 'true' }), element('span', { text: labels.objectLoading }));
-    // Safe area: the layout declares, with --t-safe-top/right/bottom/left, the part of the frame its
-    // own content covers (a title floating over a stage); a hidden probe resolves it to px for the object.
-    const safeProbe = element('div', { class: 't-object-safe', 'aria-hidden': 'true' });
-    const frame = element('div', { class: 't-object-frame' }, iframe, loading, safeProbe);
-    const textAlternative = element('details', { class: 't-text-alt' }, element('summary', { text: labels.textVersion }), element('div', { class: 't-text', html: props.textAlternativeHtml }));
-    const figure = element('figure', { class: 't-object' }, frame, element('p', { id: descriptionId, class: 't-sr-only', text: props.a11y?.description || definition.a11y?.description || '' }), error, textAlternative);
-    // Size: aspect ratio on wide containers, narrowAspectRatio under 640 px; auto = height requested
-    // by the object (host.requestHeight), fill = height of the layout slot; min/max clamp.
-    let requested: number | null = null;
-    const clampHeight = (height: number) => Math.max(props.minHeight || 120, Math.min(props.maxHeight || 4000, Math.round(height)));
-    const applySize = () => {
-      const width = frame.clientWidth || figure.clientWidth;
-      const ratio = (width > 0 && width < 640 && props.narrowAspectRatio) || props.aspectRatio || '16:9';
-      frame.dataset.ratio = ratio;
-      frame.style.aspectRatio = /^\d+:\d+$/.test(ratio) ? ratio.replace(':', ' / ') : 'auto';
-      frame.style.height = ratio === 'auto' ? `${clampHeight(requested ?? props.minHeight ?? 420)}px` : ratio === 'fill' ? '100%' : '';
-      frame.style.minHeight = props.minHeight ? `${props.minHeight}px` : ratio === 'fill' ? '320px' : '';
-      frame.style.maxHeight = props.maxHeight ? `${props.maxHeight}px` : '';
-    };
-    let safe: SafeArea | null = null;
-    const readSafe = (): SafeArea => {
-      const style = getComputedStyle(safeProbe);
-      return { top: Math.round(parseFloat(style.paddingTop) || 0), right: Math.round(parseFloat(style.paddingRight) || 0), bottom: Math.round(parseFloat(style.paddingBottom) || 0), left: Math.round(parseFloat(style.paddingLeft) || 0) };
-    };
-    const syncSafe = () => {
-      if (!safeProbe.isConnected) return;
-      const next = readSafe();
-      const previous = safe;
-      if (previous && SIDES.every((side) => next[side] === previous[side])) return;
-      safe = next;
-      host?.setSafeArea(safe);
-    };
-    applySize();
-    // Where the frame is in the window: sent when it changes (scroll, resize, a step revealed), at
-    // most once a frame. Scroll events of inner scrollers reach the window in the capture phase.
-    let lastView = '';
-    let viewFrame = 0;
-    const syncView = () => {
-      viewFrame = 0;
-      if (!frame.isConnected || !host.ready) return;
-      const next = viewOf(frame);
-      const key = JSON.stringify(next);
-      if (key === lastView) return;
-      lastView = key;
-      host.setView(next);
-    };
-    const queueView = () => { if (!viewFrame) viewFrame = requestAnimationFrame(syncView); };
-    window.addEventListener('scroll', queueView, { passive: true, capture: true });
-    window.addEventListener('resize', queueView);
-    viewSyncs.add(queueView);
-    const observer = typeof ResizeObserver === 'function' ? new ResizeObserver(() => { applySize(); syncSafe(); queueView(); }) : null;
-    observer?.observe(figure);
-    let failed = false;
-    let timedOut = false;
-    // Without a GPU, an object may take seconds to start: after a moment, say it is loading.
-    const loadingTimer = setTimeout(() => { if (!host.ready && !failed) { loading.hidden = false; figure.setAttribute('aria-busy', 'true'); } }, 400);
-    const stopLoading = () => { clearTimeout(loadingTimer); loading.hidden = true; figure.removeAttribute('aria-busy'); };
-    const fail = (message: string) => { failed = true; stopLoading(); error.hidden = false; textAlternative.open = true; if (message) console.warn(`[elabora] free object ${definition.id}: ${message}`); };
-    const loadTimer = setTimeout(() => { if (!host.ready) { timedOut = true; fail('no answer from the object frame after 15 s'); } }, 15000);
-    cleanup(block.id, () => {
-      observer?.disconnect(); clearTimeout(loadTimer); clearTimeout(loadingTimer);
-      window.removeEventListener('scroll', queueView, { capture: true }); window.removeEventListener('resize', queueView); viewSyncs.delete(queueView); cancelAnimationFrame(viewFrame);
-    });
-    const host: BlockObjectHost = createObjectHost({
-      iframe, def: definition, props: props.props, strings: props.strings || {}, tokens: course.tokens, locale: course.language, fonts: course.fonts || [], rootSize: rootSize(),
-      safeArea: () => { safe = safeProbe.isConnected ? readSafe() : { top: 0, right: 0, bottom: 0, left: 0 }; return safe; },
-      view: () => { if (!frame.isConnected) return null; const now = viewOf(frame); lastView = JSON.stringify(now); return now; },
-      reducedMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false,
-      savedState: courseState.objectSavedState(block.id), seed: 1,
-      onEvent: (name, payload, declaration) => onObjectEvent(block, definition, host, name, payload, declaration),
-      // Before the object answers, an error means it could not load: the text version opens. Once it
-      // runs, errors are logged; the text version stays one click away.
-      onError: (message) => (host.ready ? console.warn(`[elabora] free object ${definition.id}: ${message}`) : fail(message)),
-      // An object slower than the timeout (a GPU-less machine) recovers when it finally answers.
-      onReady: () => { clearTimeout(loadTimer); stopLoading(); queueView(); if (timedOut) { timedOut = false; failed = false; error.hidden = true; textAlternative.open = false; } },
-      onResize: (height) => { requested = height; applySize(); },
-      onLog: (entry) => console.info(`[elabora] free object ${definition.id}:`, entry.message)
-    });
-    host.failed = () => failed;
-    hosts.set(block.id, host);
-    return figure;
-  }
-
-  function onObjectEvent(block: ObjectBlock, definition: ObjectDefinition, host: ObjectHost, name: string, payload: unknown, declaration: ObjectEventDeclaration) {
-    const tracking = declaration.tracking || {};
-    const interaction = tracking.interaction;
-    if (interaction) {
-      const response = interaction.responseField ? fieldOf(payload, interaction.responseField) : name;
-      const correct = interaction.correctField ? fieldOf(payload, interaction.correctField) : undefined;
-      const single = typeof response === 'string' && /^[0-9a-z]$/.test(response);
-      const type = interaction.type === 'choice' && !single ? 'performance' : interaction.type;
-      recordInteraction({
-        id: `${block.id}-${name}`.replace(/[^A-Za-z0-9_.-]/g, '-'), type, objective: interaction.objective, weight: block.props.weight || 1,
-        response: typeof response === 'string' ? response : JSON.stringify(response), result: correct === undefined ? 'neutral' : correct ? 'correct' : 'wrong'
-      });
-    }
-    if (tracking.completion) courseState.completeObject(block.id, tracking.score ? fieldOf(payload, tracking.score.field) : undefined);
-    if (definition.persistMax) host.getState().then((state) => { courseState.saveObjectState(block.id, state, definition.persistMax); options.syncSoon(); }, () => {});
-    trigger('object.event', { target: block.id, name, payload });
   }
 
   // ── Layers ────────────────────────────────────────────────────────────
@@ -1191,7 +976,7 @@ export function createScreenView(options: ScreenViewOptions) {
       heading,
       element('div', { class: 't-blocks' }, layer.blocks.map((block) => renderBlock(block))),
       element('div', { class: 't-dialog-actions' }, bar, element('button', { type: 'button', class: 't-btn t-btn--primary', onclick: () => dialog.close() }, labels.close)));
-    roomQueue.length = 0; // a layer scrolls inside: its activities need no reserved room
+    rooms.skipActivities(); // a layer scrolls inside: its activities need no reserved room
     // A modal layer pauses the narration and its closing resumes it; a panel does not.
     const held = timeline;
     dialog.addEventListener('close', () => {
@@ -1208,7 +993,7 @@ export function createScreenView(options: ScreenViewOptions) {
       if (bar) startLayerTimeline(layer, dialog, false, bar);
       else behaviors.charts.at(null, dialog);
       dialog.showModal();
-      flushRooms();
+      rooms.flush();
       behaviors.noteShown(dialog);
       return;
     }
@@ -1219,7 +1004,7 @@ export function createScreenView(options: ScreenViewOptions) {
     if (bar) startLayerTimeline(layer, dialog, true, bar);
     else behaviors.charts.at(null, dialog);
     dialog.show();
-    flushRooms();
+    rooms.flush();
     behaviors.noteShown(dialog);
     heading.focus({ preventScroll: true });
   }
@@ -1271,105 +1056,31 @@ export function createScreenView(options: ScreenViewOptions) {
   }
 
   // ── Updating in place (the editor canvas) ─────────────────────────────
-  // New data for the screen shown: blocks whose data did not change keep their node (a free object
-  // keeps running, a video keeps its frame), a component instance whose own data did not change
-  // keeps its node and gets its slots refilled, other blocks are rendered again. Nodes move with
-  // moveBefore where the browser has it, so frames are not reloaded. The step reached and the open
-  // layers are kept. Blocks in dirty are rendered again whatever their data (a file they use
-  // changed). Returns the nodes rendered anew.
+  // New data for the screen shown: its blocks are placed into the page as it is (screen-update.ts),
+  // so a free object keeps running and a video keeps its frame. The step reached and the open layers
+  // are kept. Blocks in dirty are rendered again whatever their data (a file they use changed).
+  // Returns the nodes rendered anew.
   function update(next: ScreenData, dirty: ReadonlySet<string> = new Set()): HTMLElement[] {
     const previous = screen;
     const article = main.querySelector<HTMLElement>(':scope > article.t-screen');
     if (!previous || !article || previous.id !== next.id) { leave(); show(next); return [...main.querySelectorAll<HTMLElement>('.t-block[data-block]')]; }
-    // The blocks shown now (screen and open layers), with the data they were rendered from.
-    const nodes = new Map<string, HTMLElement>();
-    for (const node of document.querySelectorAll<HTMLElement>('#t-main .t-block[data-block], dialog.t-layer .t-block[data-block]')) nodes.set(node.dataset.block ?? '', node);
-    const before = new Map<string, BlockData>();
-    for (const block of [...flatBlocks(previous.blocks), ...previous.layers.flatMap((layer) => flatBlocks(layer.blocks))]) before.set(block.id, block);
-    const plans = new Map<string, Plan>();
-    const kept = new Set<string>();
-    // Where a block goes (its slot) and when (its step) do not change its node: placing and
-    // applySteps take care of them, so a block moved to another slot keeps running.
-    const rendering = (block: BlockData, children = true) => ({ ...block, slot: undefined, step: undefined, timing: undefined, ...(children ? {} : { blocks: undefined }) });
-    const planOf = (block: BlockData) => {
-      const old = before.get(block.id);
-      const reusable = !!old && nodes.has(block.id) && !dirty.has(block.id);
-      const clean = !flatBlocks(block.blocks).some((child) => dirty.has(child.id));
-      if (reusable && clean && same(rendering(old), rendering(block))) { plans.set(block.id, 'reuse'); for (const id of [block.id, ...flatBlocks(block.blocks).map((child) => child.id)]) kept.add(id); return; }
-      const keep = reusable && block.html != null && same(rendering(old, false), rendering(block, false));
-      plans.set(block.id, keep ? 'keep' : 'new');
-      if (keep) kept.add(block.id);
-      for (const child of block.blocks || []) planOf(child);
-    };
-    for (const block of [...next.blocks, ...next.layers.flatMap((layer) => layer.blocks)]) planOf(block);
-    // Blocks rendered again or gone stop before anything is rendered (hosts are kept by block id).
-    for (const id of before.keys()) if (!kept.has(id)) disposeBlock(id);
-    screen = next;
-
-    const fresh: HTMLElement[] = [];
-    const placed = new Map<string, HTMLElement>();
-    const wanted = new Map<HTMLElement, HTMLElement[]>();
-    const slotted: HTMLElement[] = [];
-    const nodeFor = (block: BlockData): HTMLElement => {
-      const plan = plans.get(block.id);
-      let node = plan === 'reuse' || plan === 'keep' ? nodes.get(block.id) : undefined;
-      if (!node) { node = blockShell(block); fresh.push(node); }
-      placed.set(block.id, node);
-      return node;
-    };
-    // Places the blocks of a host (in its slots, or in a column), then the blocks of their slots.
-    // Nodes are only moved here: what a container no longer holds leaves once everything is placed,
-    // so a node going to another container moves there without leaving the page.
-    const fill = (host: HTMLElement, blocks: readonly BlockData[], defaultSlot: string | null | undefined, column: HTMLElement | null) => {
-      const slots = column ? new Map<string, HTMLElement>() : slotsOf(host);
-      slotted.push(...slots.values());
-      const lists = new Map<HTMLElement, HTMLElement[]>(column ? [[column, []]] : [...[...slots.values(), host].map((container) => [container, []] as [HTMLElement, HTMLElement[]])]);
-      for (const block of blocks) lists.get(column || slotFor(slots, host, block, defaultSlot))?.push(nodeFor(block));
-      for (const [container, list] of lists) { arrange(container, list); wanted.set(container, list); }
-      for (const block of blocks) {
-        const node = placed.get(block.id);
-        if (node && plans.get(block.id) !== 'reuse' && block.html != null && (block.blocks?.length || block.defaultSlot)) fill(node, block.blocks || [], block.defaultSlot, null);
-      }
-    };
-    // The article: kept when the screen's own data is the same, otherwise a new one next to it.
-    const own = (shown: ScreenData) => ({ ...shown, blocks: undefined, layers: undefined, events: undefined, key: undefined, covers: undefined, completeWhen: undefined, required: undefined, continueRevealsSteps: undefined, backdrop: undefined });
-    let target = article;
-    if (!same(own(previous), own(next))) {
-      target = screenArticle(next);
-      article.after(target);
-    }
-    if (next.layout) fill(target, next.blocks, next.layout.defaultSlot, null);
-    else {
-      let column = target.querySelector<HTMLElement>(':scope > .t-blocks');
-      if (!column) { column = element('div', { class: 't-blocks' }); target.append(column); }
-      fill(target, next.blocks, null, column);
-    }
-    // Open layers: refilled, or closed when the layer is gone or changed (the canvas opens it again).
-    for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog.t-layer')) {
-      const id = dialog.dataset.layer ?? '';
-      const layer = next.layers.find((candidate) => candidate.id === id);
-      const old = previous.layers.find((candidate) => candidate.id === id);
-      const column = dialog.querySelector<HTMLElement>(':scope > .t-blocks');
-      if (layer && old && column && layer.title === old.title && layer.presentation === old.presentation && same(layer.narration ?? null, old.narration ?? null)) {
-        fill(dialog, layer.blocks, null, column);
+    const fresh = placeInPlace({
+      main, blockShell, slotsOf, slotFor, screenArticle, disposeBlock,
+      planned: () => { screen = next; },
+      layerRefilled: (dialog, layer) => {
         // Its timed blocks follow the playhead again (blocks rendered anew get their effects).
-        const entry = layerTimelines.get(id);
-        if (entry) {
-          entry.timed?.dispose();
-          const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-          entry.timed = createTimedBlocks(dialog, layer.blocks, { reducedMotion, onChange: (node) => { syncInert(node); behaviors.noteShown(dialog); } });
-          entry.timed.apply(entry.timeline.time);
-        }
-      } else { stopLayerTimeline(id); dialog.remove(); }
-    }
-    for (const [container, list] of wanted) for (const child of [...container.children]) if (child instanceof HTMLElement && isBlockNode(child) && !list.includes(child)) child.remove();
-    if (target !== article) article.remove();
-    for (const node of slotted) node.toggleAttribute('data-empty', !node.children.length);
-    // Kept blocks that left the page with a closed layer stop too.
-    for (const id of kept) if (!placed.get(id)?.isConnected && !nodes.get(id)?.isConnected) disposeBlock(id);
+        const entry = layerTimelines.get(layer.id);
+        if (!entry) return;
+        entry.timed?.dispose();
+        const reducedMotion = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+        entry.timed = createTimedBlocks(dialog, layer.blocks, { reducedMotion, onChange: (node) => { syncInert(node); behaviors.noteShown(dialog); } });
+        entry.timed.apply(entry.timeline.time);
+      },
+      layerGone: (id, dialog) => { stopLayerTimeline(id); dialog.remove(); }
+    }, previous, next, article, dirty);
     // A layer scrolls inside: its activities need no reserved room.
-    roomQueue.splice(0, roomQueue.length, ...roomQueue.filter(([wrap]) => !wrap.closest('dialog')));
-    flushRooms();
+    rooms.skipInLayers();
+    rooms.flush();
     steps = stepsOf(next);
     revealed = reachedStep(revealed);
     if (JSON.stringify(previous.narration) !== JSON.stringify(next.narration)) {
@@ -1381,6 +1092,7 @@ export function createScreenView(options: ScreenViewOptions) {
       startTimedBlocks(next);
     }
     applySteps();
+    objects.settle({ screen: next.id, index: screenIndex(next.id) }, null, reducedMotion());
     updateBackdrop();
     behaviors.dialogues.afterShow();
     return fresh;
@@ -1452,9 +1164,9 @@ export function createScreenView(options: ScreenViewOptions) {
     listening,
     // Next (in slides) waits until the blocks above a step that opens once explored are (D63), and says what is left.
     exploreLocked, exploreReason,
-    openLayer, showAnswered, feedbackRooms,
+    openLayer, showAnswered, feedbackRooms: rooms.feedbackRooms,
     // Heights of an activity of the screen: as it is now, then once answered, outcome by outcome.
-    rooms(blockId: string) { const node = main.querySelector<HTMLElement>(`[data-block="${blockId}"]`); const block = courseState.blockIndex.get(blockId)?.block; return node && block ? outcomeRooms(node, block) : null; },
+    rooms(blockId: string) { const node = main.querySelector<HTMLElement>(`[data-block="${blockId}"]`); const block = courseState.blockIndex.get(blockId)?.block; return node && block ? rooms.outcomeRooms(node, block) : null; },
     objectHost: (blockId: string) => hosts.get(blockId),
     refreshResults: () => behaviors.refreshResults(),
     // The dialogues of the screen (D61): their state, the editor's paths, the tests' clock.
@@ -1477,6 +1189,7 @@ export function createScreenView(options: ScreenViewOptions) {
       behaviors.dialogues.dispose();
       transcriptBar?.dispose();
       disposeHosts();
+      objects.destroy();
       backdropHost?.dispose();
       backdropElement?.remove();
       for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog.t-layer')) dialog.remove();
@@ -1495,31 +1208,12 @@ export function createScreenView(options: ScreenViewOptions) {
       await Promise.all(images.map((image) => (image.complete && image.naturalWidth ? image.decode().catch(() => {}) : null)));
       await Promise.race([document.fonts?.ready, new Promise((resolve) => setTimeout(resolve, timeout))]);
       await new Promise((resolve) => requestAnimationFrame(resolve));
-      for (const fit of roomFits) fit();
+      rooms.refit();
       await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       while ([...hosts.values()].some((host) => !host.ready && !host.failed?.()) && Date.now() - begin < timeout) await new Promise((resolve) => setTimeout(resolve, 100));
       return { images: images.length, objects: [...hosts.entries()].map(([id, host]) => ({ block: id, ready: host.ready, failed: !!host.failed?.() })) };
     }
   };
-}
-
-// Same data (the compiler writes block and screen data in a fixed key order).
-const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
-
-const isBlockNode = (node: Element): boolean => node.matches('.t-block[data-block]');
-
-// Puts nodes in a container in order, before the blocks it no longer holds and after its other
-// content: moved only when out of place, with moveBefore when the browser has it (an iframe moved
-// with it keeps running; insertBefore would load it again).
-type MovableParent = HTMLElement & { moveBefore?: (node: Node, child: Node | null) => void };
-function arrange(container: MovableParent, nodes: readonly HTMLElement[]) {
-  nodes.forEach((node, index) => {
-    const current = [...container.children].filter(isBlockNode);
-    if (current[index] === node) return;
-    const before = current[index] ?? null;
-    if (container.moveBefore && node.isConnected && container.isConnected) container.moveBefore(node, before);
-    else container.insertBefore(node, before);
-  });
 }
 
 // The learner's voice settings where no narration's bar keeps them (the canvas without bars).

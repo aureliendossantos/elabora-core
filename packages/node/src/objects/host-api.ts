@@ -48,6 +48,8 @@ export type HostCall =
   | { method: 'getState' }
   | { method: 'setState'; state: Record<string, unknown> }
   | { method: 'updateProps'; props: Record<string, unknown> }
+  // set-props with a transition: the block carries on from another screen (D65).
+  | { method: 'carryOn'; props: Record<string, unknown>; duration: number; direction: 'forward' | 'back'; safeArea?: Partial<SafeArea> }
   | { method: 'setContext'; context: ObjectTestContext }
   | { method: 'setSafeArea'; safeArea: SafeArea }
   | { method: 'setView'; view: ObjectTestView }

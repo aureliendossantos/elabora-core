@@ -40,6 +40,7 @@ description: Choose the starter block and presentation for what the learner does
 - `steps.<n>.opens: "explored"` on the step after a block makes Continue wait until it is explored; mark a block the learner may skip `optional: true`.
 - Give pictures `alt` (what matters here) and `focus` where the subject is, so crops keep it.
 - A published sort keeps its items' order: placements are saved by index (D63).
+- **Carry on, do not show again**: a picture, a figure or a free object that is the same thing on the next screen gets one `continuity` key on both blocks (`elabora block continue . <block> --from <block of the previous screen>`, MCP `elabora_set_continuity`, which also sets the passage's length): it glides from where it was, a free object keeps running (D65). Only for what the learner should see as one thing; the rest of the screen changes as screens always do.
 
 ## Convert, do not rewrite
 When the content is right but its form is not (panels that should be cards, a list that should be steps, cards that should be practised), convert: `elabora_convert_block { block, to: { type, presentation } }` (CLI `elabora convert <screen> <block> --to accordion:cards`). Without `to`, it lists the targets and what each keeps, loses and adds (or why it refuses). Ids, visited marks and translations follow; nothing is reordered. Switching `presentation` keeps everything. Rewrite only when the words themselves must change.

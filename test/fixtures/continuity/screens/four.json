@@ -1,0 +1,26 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "four",
+  "title": "Screen four",
+  "covers": [
+    "ITEM-1"
+  ],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "four-scene",
+      "type": "free-object",
+      "continuity": {
+        "key": "scene"
+      },
+      "props": {
+        "object": "probe",
+        "title": "The scene, fourth",
+        "props": {
+          "label": "four"
+        },
+        "textAlternative": "Text version four."
+      }
+    }
+  ]
+}

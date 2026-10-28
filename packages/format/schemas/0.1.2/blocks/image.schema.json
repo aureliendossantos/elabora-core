@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.2/blocks/image.schema.json",
+  "title": "image block props",
+  "description": "An image from the assets folder, in one of five presentations: centered (in the reading column, the default), wide (wider than the text), band (edge to edge, cropped to a height around its focal point), beside (a title and a text beside it, stacked on narrow screens) or over (a title and a text over it, edge to edge, on the theme's scrim).",
+  "x-category": "content",
+  "x-ai-instructions": "Only images with an instructional function (E1): a figure that explains, a situation the learner will recognise, the object studied. Write alt as the information the image carries, not its file name; decorative: true only when it carries none. Generated images must be marked generated: true (AI Act art. 50). Presentations: centered for most figures; wide for a figure whose detail needs room (a map, a diagram); band to open or separate the parts of a long page, not as decoration between paragraphs; beside to explain one picture in a few sentences; over for a short title and one or two sentences on a photograph that sets the scene (the text must stay readable: elabora fit measures it). Give focus where the subject is when the image is cropped (band, over, beside on phones).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["asset"],
+  "properties": {
+    "presentation": {
+      "enum": ["centered", "wide", "band", "beside", "over"],
+      "default": "centered",
+      "x-group": "design",
+      "description": "centered: in the reading column, as it is; wide: across the wide column; band: edge to edge of the window (of the slide in slides), cropped to height around focus; beside: title and markdown beside the image, which takes share of the width on side (stacked under it on narrow screens); over: title and markdown over the image, edge to edge, on the theme's scrim."
+    },
+    "asset": { "$ref": "../defs.schema.json#/$defs/assetPath" },
+    "alt": { "type": "string", "maxLength": 250, "description": "Text alternative. Required unless decorative is true.", "x-translatable": true },
+    "decorative": { "type": "boolean", "default": false, "description": "True only if the image carries no information." },
+    "caption": { "type": "string", "maxLength": 300, "x-translatable": true },
+    "generated": { "type": "boolean", "default": false, "description": "True if produced by an AI model; the player shows a mark and the build report lists it." },
+    "focus": { "$ref": "../defs.schema.json#/$defs/focus", "description": "Where the subject is (0 to 1 across and down): crops keep it in view (band, over, beside on phones)." },
+    "zoom": { "type": "boolean", "default": false, "description": "centered, wide and beside: the image opens at full size in the player's lightbox, with its caption (a detailed figure, a screenshot)." },
+    "title": { "type": "string", "maxLength": 120, "x-translatable": true, "description": "beside and over: a heading for the text (it follows the page's headings)." },
+    "markdown": { "type": "string", "$ref": "../defs.schema.json#/$defs/markdown", "maxLength": 1500, "x-translatable": true, "description": "beside and over: the text that goes with the image. Over an image, keep it to one or two sentences." },
+    "side": { "enum": ["start", "end"], "default": "start", "x-group": "design", "description": "beside: the side of the image (start: left in left-to-right languages)." },
+    "share": { "enum": ["half", "third", "two-thirds"], "default": "half", "x-group": "design", "description": "beside: the share of the width the image takes." },
+    "height": { "enum": ["medium", "short", "tall"], "default": "medium", "x-group": "design", "description": "band and over: how tall the image is (the crop keeps focus in view). Over grows with its text." },
+    "inline": { "type": "boolean", "default": false, "description": "SVG only: the drawing goes into the page instead of an <img>, so that the draw effect of a timing traces its strokes and the theme's CSS and currentColor reach its shapes. Sanitized when it is built: no script, no event handler, no link or reference out of the drawing; its ids prefixed with the block's, its own <style> scoped to it. Named by alt (role img), or hidden when decorative. Keep it for figures that need it: an inline drawing is part of the page's weight." }
+  }
+}

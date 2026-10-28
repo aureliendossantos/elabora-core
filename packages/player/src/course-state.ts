@@ -342,19 +342,21 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
     learner.objectsDone[block.key] = value;
     changed('object');
   }
-  // state: what the object's getState() returned; saved when its JSON fits in maxLength.
+  // state: what the object's getState() returned; saved when its JSON fits in maxLength. A block that
+  // carries on from screen to screen saves the chain's state (D65): one for every block of its key.
+  const stateKey = (block: ObjectBlock): string => block.continuity?.state ?? block.key;
   function saveObjectState(blockId: string, state: unknown, maxLength: number): boolean {
     const block = blockIndex.get(blockId)?.block;
     if (!block || !hasBehavior(block, 'object') || !maxLength) return false;
     const json = JSON.stringify(state);
     if (json.length > maxLength) return false;
-    learner.objects[block.key] = state;
+    learner.objects[stateKey(block)] = state;
     changed('object-state');
     return true;
   }
   const objectSavedState = (blockId: string): unknown => {
     const block = blockIndex.get(blockId)?.block;
-    return block && hasBehavior(block, 'object') ? learner.objects[block.key] ?? null : null;
+    return block && hasBehavior(block, 'object') ? learner.objects[stateKey(block)] ?? null : null;
   };
 
   // ── visibility (show-block / hide-block, persisted for keyed blocks) ──
@@ -503,7 +505,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
       if (hasBehavior(block, 'fill-in')) delete learner.fillIns[block.key];
       if (hasBehavior(block, 'sort')) delete learner.sorts[block.key];
       if (hasBehavior(block, 'decision')) delete learner.decisions[block.key];
-      if (hasBehavior(block, 'object')) { delete learner.objectsDone[block.key]; delete learner.objects[block.key]; }
+      if (hasBehavior(block, 'object')) { delete learner.objectsDone[block.key]; delete learner.objects[stateKey(block)]; }
       // A scored dialogue starts afresh: its first run to an end is scored again.
       if (hasBehavior(block, 'dialogue')) { delete learner.dialogues[block.key]; dialogueRuns.delete(block.id); }
     }

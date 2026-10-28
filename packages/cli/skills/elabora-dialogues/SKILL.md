@@ -24,6 +24,7 @@ Read `elabora docs dialogues` (MCP `elabora_docs { page: "dialogues" }`) for the
 ## Voices
 - A line with a `speaker` is a voice line like the narration's: `elabora voice generate <screen>` says the dialogue's lines too (ask the author before a paid voice: `elabora voice estimate`), `elabora narration import` takes recordings named after the lines. With `learnerVoice: true` the learner's answers are said by the `learner` speaker's voice, as the lines `<node>.<option>`.
 - A line without speaker has no voice (a narration shown, not said), unless a `narrator: true` speaker says it.
+- A line without audio (a narration not said, or a dialogue without voices) is shown whole, without ink, and waits for the learner's « Suite »; voiced lines follow one another by themselves. Nothing to set: a dialogue without voices reads at the learner's pace.
 - Stage directions in brackets stay in the text for an expressive voice; the bubble and the captions never show them.
 
 ## A new character (SVG)

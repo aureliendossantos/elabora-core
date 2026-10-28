@@ -1,0 +1,6 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/object-tests.schema.json",
+  "tests": [
+    { "name": "the probe counts a click", "steps": [{ "action": "step", "frames": 2 }, { "action": "click", "at": [0.1, 0.2] }, { "action": "step", "frames": 2 }] }
+  ]
+}

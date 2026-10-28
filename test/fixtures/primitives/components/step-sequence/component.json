@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.1/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.2/component.schema.json",
   "id": "step-sequence",
   "title": "Steps one at a time",
   "description": "A short process shown one step at a time, with Previous and Next, a button per step and where the learner is. Built on the player's sequence (data-t-sequence): arrow keys and a swipe move through it, and it keeps the room of its tallest step.",

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.1/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.2/component.schema.json",
   "id": "mission",
   "title": "Mission stage",
   "description": "A full-window stage for a 3D scene drawn on the course sky, without a frame. On wide screens the title and the brief float over the top left of the stage, where the scene leaves the sky free; on narrow screens they sit above it.",

@@ -68,3 +68,4 @@ Generated from `docs/decisions/` by `npm run docs`. One file per decision: what 
 | [D62](decisions/D62.md) | Layer timelines and voice lines on every track of a screen | 23 Oct 2026 |
 | [D63](decisions/D63.md) | Starter blocks for scroll courses: few blocks with presentations, three primitives, three activities | 24 Oct 2026 |
 | [D64](decisions/D64.md) | Schemas have a patch version: additive changes are published as 0.1.1 | 26 Oct 2026 |
+| [D65](decisions/D65.md) | Continuity between screens: a block that carries on from one screen to the next | 28 Oct 2026 |

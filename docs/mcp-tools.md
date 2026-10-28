@@ -1,6 +1,6 @@
 # Agent tools
 
-Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `npm run docs`. The same 100 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
+Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `npm run docs`. The same 101 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
 
 ## Reading
 
@@ -443,7 +443,7 @@ Add a block {id, type, props} (built-in type or course component) to a screen, o
 
 ### `elabora_update_block`
 
-Edit a block by id (anywhere, slots included): props are merged (a prop set to null is removed); also hidden, width, note, optional (true: extra the learner may skip, not waited for by steps that open once explored nor by interactions-done), slot and style (null removes), and step (a block of the screen itself: the step that reveals it; null or 1: from the start). For free-object blocks, props.props holds the declared prop values.
+Edit a block by id (anywhere, slots included): props are merged (a prop set to null is removed); also hidden, width, note, optional (true: extra the learner may skip, not waited for by steps that open once explored nor by interactions-done), slot and style (null removes), step (a block of the screen itself: the step that reveals it; null or 1: from the start), and continuity ({ key, duration? }: blocks of other screens with the same key carry on from one screen to the next, D65; null removes it; elabora_set_continuity links two blocks for you). For free-object blocks, props.props holds the declared prop values.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -456,6 +456,7 @@ Edit a block by id (anywhere, slots included): props are merged (a prop set to n
 | `slot` | string \| null |  |  |
 | `style` | string \| null |  |  |
 | `step` | integer \| null |  |  |
+| `continuity` | object \| null |  |  |
 
 ### `elabora_remove_block`
 
@@ -511,6 +512,16 @@ Change the form of content without rewriting it (« Transformer en… », D63): 
 | `to` | object |  | The type to convert into, and its presentation. |
 | `dryRun` | boolean |  |  |
 | `language` | "en" \| "fr" |  |  |
+
+### `elabora_set_continuity`
+
+Continuity between screens (D65): a block carries on from a block of another screen instead of appearing again (a free object keeps running and moves to its new settings, update(props, transition); another block glides from where its counterpart was). with: the block it carries on from (they share a key: that block's, else this one's, else a new one; same type, free objects the same object; blocks of screens, not layers); with null: it no longer carries on from the screens before it (it still does to the screens after it). duration: the passage to it in ms (0 to 3000; null: 700). One undoable change.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `block` | string | yes |  |
+| `with` | string \| null |  | The block of another screen it carries on from; null cuts it from the screens before it. |
+| `duration` | integer \| null |  |  |
 
 ### `elabora_upsert_layer`
 

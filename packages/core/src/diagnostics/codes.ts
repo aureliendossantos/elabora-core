@@ -204,6 +204,12 @@ export const CODES = {
   W_OBJECT_PROP_UNUSED: { severity: 'warning', title: 'Declared prop never read by the code', fix: 'Read it from ctx.props/update(nextProps) or remove it from the manifest.' },
   W_OBJECT_UNUSED: { severity: 'warning', title: 'Free object placed on no screen', fix: 'Place it with a free-object block on a screen covering the items it serves, or use a decoration as the course backdrop (theme.backdrop.object); otherwise delete its folder in objects/.' },
 
+  // ── Continuity between screens (D65) ──────────────────────────────
+  E_CONTINUITY_DUPLICATE: { severity: 'error', title: 'A continuity key used twice on one screen', fix: 'A key names one block per screen: the block that carries on to the next screen with the same key. Give the other block a key of its own, or remove its continuity.' },
+  E_CONTINUITY_MISMATCH: { severity: 'error', title: 'Blocks sharing a continuity key are not the same kind', fix: 'Blocks with the same continuity key are one thing to the learner: give them the same type, and free objects the same object (props.object). Use another key for a block of another kind.' },
+  E_CONTINUITY_PLACE: { severity: 'error', title: 'Continuity on a block that cannot carry on', fix: 'A continuity key goes on a block of a screen (with the blocks of its components\' slots), never on a block of a layer; a free object that carries on has no timing (its frame stays on the screen from one screen to the next). Remove the key, or the timing.' },
+  W_CONTINUITY_ALONE: { severity: 'warning', title: 'A continuity key on one block only', fix: 'Continuity carries a block on to another screen whose block has the same key: give that key to the matching block of the screen it should continue on (the previous or the next one), or remove it.' },
+
   // ── Design layer (theme, figures, generators) ─────────────────────
   E_STYLE_RULE: { severity: 'error', title: 'Stylesheet rule not allowed', fix: 'No @import and no external url(): reference files inside the course folder, such as theme/, assets/ or the component folder (packages work offline).' },
   W_STYLE_LITERAL_COLOR: { severity: 'warning', title: 'Hard-coded colour in a stylesheet', fix: 'Use var(--t-…) tokens, or declare the colour in course.json theme.custom so a charter change (or an editor) can update it.' },

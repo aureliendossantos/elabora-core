@@ -51,6 +51,7 @@ export function describeChange(change: ChangeLike): string {
     case 'duplicate_screen': return `duplicated screen ${of('id')}`;
     case 'add_block': return `added ${field(args, 'block', 'id') ? `block ${of('block', 'id')}` : `a ${of('block', 'type')} block`} to ${field(args, 'parent') ?? field(args, 'layer') ?? of('screen')}`;
     case 'update_block': return `changed block ${of('block')}`;
+    case 'set_continuity': return field(args, 'with') ? `made block ${of('block')} carry on from ${of('with')}` : (typeof args === 'object' && args !== null && Reflect.get(args, 'with') === null) ? `cut block ${of('block')} from the screens before it` : `set the passage to block ${of('block')}`;
     case 'set_captions': return `set the captions of video ${of('block')}`;
     case 'update_narration': return `changed the narration of ${of('screen')}`;
     case 'add_narration_line': return `added a narration line to ${of('screen')}`;

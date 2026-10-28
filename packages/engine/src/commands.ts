@@ -64,6 +64,7 @@ export const COMMANDS: { readonly [Name in CommandName]: Runner<Name> } = {
   set_plan_voiceover: edit.setPlanVoiceover,
   narration_from_plan: edit.narrationFromPlan,
   set_block_timing: edit.setBlockTiming,
+  set_continuity: edit.setContinuity,
   set_dialogue_node: edit.setDialogueNode,
   remove_dialogue_node: edit.removeDialogueNode,
   create_component: edit.createComponent,

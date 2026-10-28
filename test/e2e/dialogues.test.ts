@@ -22,9 +22,10 @@ import { voice, hasFfmpeg } from '../narration.ts';
 // bubbles inserted whole, the focus in « Votre réponse » once the learner answers, never before), a
 // choice, the common way, a retry, « Reprendre d'ici », « Recommencer », the debrief, a session
 // resumed in the LMS, the scored run's interactions (one per decision, once), no shift in a slide,
-// the ink on the virtual clock, the characters' state during a line, reduced motion, axe, the
-// transcript of a screen without narration, the canvas's view of a path, a deterministic package.
-// The lines have no audio (their estimated voice); the clock is virtual.
+// the ink on the virtual clock, the characters' state during a line, a line without a voice whole at
+// once and « Suite », the debrief and the History as panels, reduced motion, axe, the transcript of a
+// screen without narration, the canvas's view of a path, a deterministic package. A few lines have a
+// voice (the virtual clock never plays it), the others none; the clock is virtual.
 
 const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 type Any = any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -36,6 +37,7 @@ function packageOf(presentation: 'slides' | 'scroll' = 'slides', { open = false 
   const key = `${presentation}${open ? '-open' : ''}`;
   if (!packages.has(key)) packages.set(key, (async () => {
     const dir = dialogueCourse({ presentation });
+    giveVoices(dir);
     if (open) {
       const file = path.join(dir, 'screens/appel.json');
       const screen = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -49,6 +51,20 @@ function packageOf(presentation: 'slides' | 'scroll' = 'slides', { open = false 
   return packages.get(key)!;
 }
 
+// The lines whose ink and characters the tests watch have a voice (a tone; without ffmpeg, a stand-in
+// file nothing probes); the others have none.
+const VOICED: Readonly<Record<string, Readonly<Record<string, number>>>> = { appel: { m1: 6, l1: 3.5 }, rencontre: { r1: 4, r2: 2.5 } };
+function giveVoices(dir: string) {
+  for (const [screenId, lines] of Object.entries(VOICED)) {
+    const file = path.join(dir, 'screens', `${screenId}.json`);
+    if (!fs.existsSync(file)) continue;
+    const nodes: { lines?: { id: string; text: string }[]; options?: { reply?: { id: string; text: string }[] }[] }[] = JSON.parse(fs.readFileSync(file, 'utf8')).blocks[0].props.nodes;
+    const texts = new Map(nodes.flatMap((node) => [...(node.lines ?? []), ...(node.options ?? []).flatMap((option) => option.reply ?? [])]).map((line) => [line.id, line.text]));
+    for (const [id, seconds] of Object.entries(lines)) voice(dir, screenId, { id, text: texts.get(id)!, seconds }, { language: 'fr', standIn: !FFMPEG });
+  }
+}
+
+const FFMPEG = hasFfmpeg();
 let shared: { server: EmulatorServer; browser: Browser } | null = null;
 async function context() {
   if (!shared) shared = { server: await startServer(), browser: await launchBrowser('chromium') };
@@ -76,12 +92,14 @@ async function player(options: PlayerOptions, run: (page: Page) => Promise<void>
 }
 
 const state = (page: Page | Frame, block: string) => page.evaluate((id) => (window as DialogueWindow).__elabora.dialogues.state(id), block);
-// The virtual clock moves until the dialogue reaches that phase (the learner reading, never hurried).
+// The virtual clock moves until the dialogue reaches that phase; a text without a voice is read, then
+// « Suite » (the learner, never hurried).
 async function until(page: Page | Frame, block: string, phase: 'choosing' | 'ended' | 'playing', each?: () => Promise<void>) {
   for (let i = 0; i < 400; i++) {
     const now = await state(page, block);
     if (now?.phase === phase) return now;
-    await page.evaluate(() => (window as DialogueWindow).__elabora.dialogues.advance(0.25));
+    if (now?.waiting) await page.evaluate((id) => (window as DialogueWindow).__elabora.dialogues.next(id), block);
+    else await page.evaluate(() => (window as DialogueWindow).__elabora.dialogues.advance(0.25));
     await each?.();
   }
   throw new Error(`${block} never reached ${phase}: ${JSON.stringify(await state(page, block))}`);
@@ -118,18 +136,34 @@ test('messaging in a slide: the thread, whole bubbles, the ink on the clock, cue
     assert.equal(said?.block, 'appel-marc', 'the Review reads the line being said');
     assert.ok(said.line === 'm1' && said.time > 0, JSON.stringify(said));
 
-    // The ink: a line's words lit one after the other on the clock, all readable from the start.
-    let partly = false;
+    // The ink: a voiced line's words lit one after the other on the clock, those to come faint (a share
+    // of the ink, whatever the bubble); « Suite » quiet while the voice speaks. The colours are read at
+    // rest (the words' fade does not run on the virtual clock).
+    await page.addStyleTag({ content: '.t-dialogue-ink .t-w { transition: none !important; }' });
+    const ink = await page.evaluate(() => {
+      const wrap = document.querySelector('[data-block="appel-marc"]')!;
+      const words = [...wrap.querySelectorAll('.t-dialogue-row[data-line="m1"] .t-w')];
+      const alpha = (word: Element | undefined) => { const color = word ? getComputedStyle(word).color : ''; const found = /\/\s*([\d.]+)\)$|rgba\([^)]*,\s*([\d.]+)\)$/.exec(color); return found ? Number(found[1] ?? found[2]) : 1; };
+      return { said: words.filter((word) => word.classList.contains('is-said')).length, all: words.length, inkAlpha: alpha(words.find((word) => word.classList.contains('is-said'))), comingAlpha: alpha(words.find((word) => !word.classList.contains('is-said'))), quiet: !wrap.querySelector('.t-dialogue-next')?.classList.contains('is-waiting') };
+    });
+    assert.ok(ink.said > 0 && ink.said < ink.all, `m1 half said (${ink.said}/${ink.all})`);
+    assert.ok(ink.inkAlpha === 1 && ink.comingAlpha < 0.5, JSON.stringify(ink));
+    assert.equal(ink.quiet, true, '« Suite » quiet while the voice speaks');
+    // « Suite » during a voice: the line ends there, in ink, its cues come (« étage »: the floor plan), the next begins.
+    await page.click('[data-block="appel-marc"] .t-dialogue-next');
+    assert.equal((await state(page, 'appel-marc')).line, 'l1', 'the next line at once');
+    assert.equal(await page.locator('[data-block="appel-marc"] .t-dialogue-row[data-line="m1"] .t-w:not(.is-said)').count(), 0);
+    assert.equal(await page.locator('[data-block="plan-etage"]').isVisible(), true, 'the cue of a line cut short comes at its end');
+    // (The focus left where the click put it: what follows checks the dialogue never takes it itself.)
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+
     const first = await boxes(page, 'appel-marc');
     const shifts: string[] = [];
     const at = await until(page, 'appel-marc', 'choosing', async () => {
-      const ink = await page.evaluate(() => { const row = [...document.querySelectorAll('[data-block="appel-marc"] .t-dialogue-row[data-role="character"]')].at(-1); const words = row ? [...row.querySelectorAll('.t-w')] : []; return { said: words.filter((word) => word.classList.contains('is-said')).length, all: words.length }; });
-      if (ink.said > 0 && ink.said < ink.all) partly = true;
       const now = await boxes(page, 'appel-marc');
       if (JSON.stringify(now) !== JSON.stringify(first)) shifts.push(JSON.stringify(now));
     });
     assert.equal(at.node, 'premiere-question');
-    assert.ok(partly, 'a line seen half said');
     assert.deepEqual(shifts, [], `nothing moves in the slide (${JSON.stringify(first)})`);
     assert.equal(first.overflow, 0, 'the slide fits its window');
     // The cue at « étage » showed the floor plan.
@@ -141,11 +175,22 @@ test('messaging in a slide: the thread, whole bubbles, the ink on the clock, cue
     await choose(page, 'appel-marc', 'c');
     assert.equal(await page.evaluate(() => document.activeElement?.matches('[data-block="appel-marc"] [data-t-options]')), true, 'the focus waits in « Votre réponse »');
     assert.equal(await page.evaluate(() => (window as DialogueWindow).__elabora.engine.getVar('indiceVu')), true, 'dialogue.chosen with its node and option');
+    // m3 has no voice: whole at once, no ink; the dialogue waits for « Suite », plain, then the note.
+    for (let i = 0; i < 40 && !(await state(page, 'appel-marc')).waiting; i++) await page.evaluate(() => (window as DialogueWindow).__elabora.dialogues.advance(0.25));
+    const reading = await page.evaluate(() => {
+      const wrap = document.querySelector('[data-block="appel-marc"]')!;
+      const words = [...wrap.querySelectorAll('.t-dialogue-row[data-line="m3"] .t-w')];
+      return { said: words.filter((word) => word.classList.contains('is-said')).length, all: words.length, plain: wrap.querySelector('.t-dialogue-next')?.classList.contains('is-waiting'), note: !!wrap.querySelector('.t-dialogue-row[data-role="note"]') };
+    });
+    assert.deepEqual(reading, { said: reading.all, all: reading.all, plain: true, note: false });
+    await page.click('[data-block="appel-marc"] .t-dialogue-next');
+    assert.equal(await wrap.locator('.t-dialogue-row[data-role="note"]').count(), 1, 'the trainer\'s note, after « Suite »');
     const again = await until(page, 'appel-marc', 'choosing');
     assert.equal(again.node, 'premiere-question');
     assert.equal(await wrap.locator('[data-option="c"]').getAttribute('aria-disabled'), 'true');
-    assert.ok(await wrap.locator('.t-dialogue-row[data-role="note"]').count() >= 1, 'the trainer\'s note');
-    assert.equal(await wrap.locator('.t-dialogue-row[data-role="note"] .t-dialogue-quality').first().innerText(), 'Choix à éviter', 'its quality said in words, not only in colour');
+    // The note shows its quality, in words, not only in colour; screen readers hear whose note it is.
+    assert.equal(await wrap.locator('.t-dialogue-row[data-role="note"] .t-dialogue-note-head').first().innerText(), 'Choix à éviter');
+    assert.equal(await wrap.locator('.t-dialogue-row[data-role="note"] .t-sr-only').first().textContent(), 'Note du formateur : ');
 
     // b, then the common way (ticket).
     await choose(page, 'appel-marc', 'b');
@@ -174,14 +219,23 @@ test('messaging in a slide: the thread, whole bubbles, the ink on the clock, cue
     assert.equal(await wrap.locator('.t-dialogue-endbar .t-dialogue-action').filter({ hasText: /Revenir/ }).count(), 0);
     assert.equal(await wrap.locator('.t-dialogue-endbar .t-dialogue-action').filter({ hasText: 'Recommencer' }).count(), 1);
     assert.equal(await wrap.locator('.t-dialogue-resume:not([hidden])').count(), 0);
-    // The debrief comes over the thread at the end; its toggle shows the thread again, and back.
-    assert.equal(await wrap.locator('.t-dialogue-debrief-card').isVisible(), true);
+    // The debrief is a panel over the thread at the end, the rest of the dialogue dimmed and inert; a
+    // click on the veil closes it, « Voir le bilan » opens it again, Échap closes it, and the focus
+    // comes back where it was.
+    const panel = () => page.evaluate(() => {
+      const wrap = document.querySelector('[data-block="appel-marc"]')!;
+      const visible = (selector: string) => { const node = wrap.querySelector<HTMLElement>(selector); return !!node && !node.hidden && node.offsetParent !== null; };
+      return { debrief: visible('.t-dialogue-debrief-card'), veil: visible('.t-dialogue-veil'), inert: ['[data-t-log]', '[data-t-options]'].filter((selector) => (wrap.querySelector(selector) as HTMLElement).inert), focus: document.activeElement?.className ?? '' };
+    });
+    assert.deepEqual(await panel(), { debrief: true, veil: true, inert: ['[data-t-log]', '[data-t-options]'], focus: 't-dialogue-debrief' }, 'the focus was in the dialogue: it goes to the panel');
     assert.equal(await wrap.locator('.t-dialogue-decision').count(), 3, 'one entry per decision of the path');
+    const veil = (await wrap.locator('.t-dialogue-veil').boundingBox())!;
+    await page.mouse.click(veil.x + veil.width / 2, veil.y + veil.height - 6);
+    assert.deepEqual(await panel(), { debrief: false, veil: false, inert: [], focus: (await panel()).focus });
     await wrap.locator('.t-dialogue-debrief-toggle').click();
-    assert.equal(await wrap.locator('.t-dialogue-debrief-card').isVisible(), false);
-    assert.equal(await wrap.locator('[data-t-log]').isVisible(), true);
-    await wrap.locator('.t-dialogue-debrief-toggle').click();
-    assert.equal(await wrap.locator('.t-dialogue-debrief-card').isVisible(), true);
+    assert.deepEqual(await panel(), { debrief: true, veil: true, inert: ['[data-t-log]', '[data-t-options]'], focus: 't-dialogue-debrief' });
+    await page.keyboard.press('Escape');
+    assert.deepEqual(await panel(), { debrief: false, veil: false, inert: [], focus: 't-dialogue-action t-dialogue-debrief-toggle' }, 'Échap: the focus back on « Voir le bilan »');
     assert.deepEqual(await boxes(page, 'appel-marc'), first, 'nothing moved either');
   });
 });
@@ -210,7 +264,9 @@ test('the scene in a slide: the décor, the cast, the characters\' state during 
         seen.expression = marc?.['data-expression'];
       }
       if (now.line === 'r2') break;
-      await page.evaluate(() => (window as DialogueWindow).__elabora.dialogues.advance(0.1));
+      // r0, a narration without a voice, waits for « Suite ».
+      if (now.waiting) await page.click('[data-block="rencontre-marc"] .t-dialogue-next');
+      else await page.evaluate(() => (window as DialogueWindow).__elabora.dialogues.advance(0.1));
     }
     assert.deepEqual([seen.speaking, seen.listening, seen.gesture, seen.expression], [true, true, 'saluer', 'inquiet'], JSON.stringify({ ...seen, mouths: [...seen.mouths] }));
     assert.ok(seen.mouths.size >= 2, `the mouth moves (${[...seen.mouths].join(', ')})`);
@@ -221,10 +277,20 @@ test('the scene in a slide: the décor, the cast, the characters\' state during 
     assert.deepEqual(await boxes(page, 'rencontre-marc'), first, 'nothing moves in the slide');
     assert.deepEqual(await actors(), placed, 'the cast stays where it stands');
     assert.equal(first.overflow, 0);
-    // History: every line so far, then closed with Escape.
+    // History: every line so far, in a panel (the options behind it dimmed and inert), then closed
+    // with Escape, the focus back on its button; its close button and the veil close it too.
     await wrap.locator('.t-dialogue-history-btn, [data-t-history-button]').first().click();
     assert.equal(await wrap.locator('.t-dialogue-root').getAttribute('data-t-history'), '');
+    assert.deepEqual(await wrap.evaluate((node) => [node.querySelector<HTMLElement>('[data-t-options]')!.inert, node.querySelector<HTMLElement>('[data-t-log]')!.inert, document.activeElement === node.querySelector('[data-t-log]')]), [true, false, true]);
     await page.keyboard.press('Escape');
+    assert.equal(await wrap.locator('.t-dialogue-root').getAttribute('data-t-history'), null);
+    assert.equal(await page.evaluate(() => document.activeElement?.classList.contains('t-dialogue-history-btn')), true);
+    assert.equal(await wrap.locator('[data-t-options]').evaluate((node) => (node as HTMLElement).inert), false);
+    await wrap.locator('.t-dialogue-history-btn').click();
+    await wrap.locator('.t-dialogue-history-close').click();
+    assert.equal(await wrap.locator('.t-dialogue-root').getAttribute('data-t-history'), null);
+    await wrap.locator('.t-dialogue-history-btn').click();
+    await wrap.locator('.t-dialogue-veil').click({ position: { x: 8, y: 8 } });
     assert.equal(await wrap.locator('.t-dialogue-root').getAttribute('data-t-history'), null);
     await choose(page, 'rencontre-marc', 'b');
     await until(page, 'rencontre-marc', 'choosing');
@@ -268,7 +334,7 @@ test('reduced motion: whole lines at once, nothing slides; the transcript of a s
     await choose(page, 'appel-marc', 'a');
     await until(page, 'appel-marc', 'ended');
     await axe(page, 'appel, debrief');
-    await page.locator('[data-block="appel-marc"] .t-dialogue-debrief-toggle').click();
+    await page.keyboard.press('Escape');
     await axe(page, 'appel, ended');
     // « Reprendre d'ici » after the end (practice, no final decision): back to the first decision.
     const wrap = page.locator('[data-block="appel-marc"]');
@@ -350,6 +416,8 @@ test('in the LMS: a session resumed on a decision, the scored run\'s interaction
   await until(session.frame, 'appel-marc', 'choosing');
   await choose(session.frame, 'appel-marc', 'a');
   await until(session.frame, 'appel-marc', 'ended');
+  // The debrief's panel first, closed by its button.
+  await session.frame.locator('[data-block="appel-marc"] .t-dialogue-debrief .t-dialogue-close').click();
   await session.frame.locator('[data-block="appel-marc"] .t-dialogue-endbar .t-dialogue-action').filter({ hasText: 'Recommencer' }).click();
   await until(session.frame, 'appel-marc', 'choosing');
   await choose(session.frame, 'appel-marc', 'c');
@@ -432,6 +500,9 @@ test('voiced lines: the audio\'s own clock and ended event, muting, a refused au
       await page.waitForFunction(() => (window as DialogueWindow).__elabora);
       if (!(await playsMedia(page, 'audio/mp4; codecs="mp4a.40.2"'))) return t.skip(NO_MEDIA_CODECS);
       await page.evaluate(() => (window as DialogueWindow).__elabora.go('rencontre'));
+      // r0, a narration without a voice: whole at once, the dialogue waits for « Suite ».
+      await page.waitForFunction(() => (window as DialogueWindow).__elabora.dialogues.state('rencontre-marc')?.waiting === true, null, { timeout: 30000 });
+      await page.click('[data-block="rencontre-marc"] .t-dialogue-next');
       await page.waitForFunction(() => (window as DialogueWindow).__elabora.dialogues.state('rencontre-marc')?.line === 'r1', null, { timeout: 30000 });
       if (!refused) {
         // r1 plays its file; the line's time is the audio's.

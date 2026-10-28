@@ -166,26 +166,6 @@ export function createLinePlayback(options: LinePlaybackOptions) {
   };
 }
 
-// A line's voice from the start once more (« Réécouter »): its audio alone, beside the dialogue's
-// flow, at the learner's speed and volume. Returns a function that stops it.
-export function replayVoice(voice: LineVoiceData, host: HTMLElement, { rate, volume, muted }: { rate: number; volume: number; muted: boolean }, onEnd: () => void): () => void {
-  if (!voice.src) { onEnd(); return () => {}; }
-  const audio = document.createElement('audio');
-  audio.className = 't-dialogue-audio';
-  audio.hidden = true;
-  audio.setAttribute('aria-hidden', 'true');
-  audio.src = voice.src;
-  audio.playbackRate = rate;
-  audio.volume = Math.max(0, Math.min(1, volume));
-  audio.muted = muted;
-  host.append(audio);
-  const stop = () => { audio.pause(); audio.removeAttribute('src'); audio.load(); audio.remove(); onEnd(); };
-  audio.addEventListener('ended', stop, { once: true });
-  audio.addEventListener('error', stop, { once: true });
-  void audio.play().catch(stop);
-  return stop;
-}
-
 // The time of a cue in its line: the compiler's (cue.time), else from the words of the line's voice
 // (the anchor's word, its occurrence, its edge and offset), else its start.
 export function cueTime(cue: { time?: number; at: { word?: string; occurrence?: number; edge?: 'start' | 'end'; offset?: number } }, voice: LineVoiceData): number {

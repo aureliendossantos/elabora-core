@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.1/object-tests.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.2/object-tests.schema.json",
   "tests": [
     {
       "name": "Clicking the target completes the activity",

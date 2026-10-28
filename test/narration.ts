@@ -54,10 +54,12 @@ export function narrate(dir: string, screenId: string, lines: FixtureLine[], { a
   lines.forEach((line, index) => { if (line.seconds !== undefined) voice(dir, screenId, line, { language: lang, frequency: 330 + 110 * index, credit }); });
 }
 
-// The audio and sidecar of one line, as the voice tools write them.
-export function voice(dir: string, screenId: string, line: FixtureLine, { language, frequency = 440, provider = 'test-tone', name = `sine-${frequency}`, generated = true, credit }: { language: string; frequency?: number; provider?: string; name?: string; generated?: boolean; credit?: string }): void {
+// The audio and sidecar of one line, as the voice tools write them. standIn: a few bytes in place of
+// the audio, where there is no ffmpeg (nothing probes the media then), for a player on the virtual
+// clock (it never plays them).
+export function voice(dir: string, screenId: string, line: FixtureLine, { language, frequency = 440, provider = 'test-tone', name = `sine-${frequency}`, generated = true, credit, standIn = false }: { language: string; frequency?: number; provider?: string; name?: string; generated?: boolean; credit?: string; standIn?: boolean }): void {
   const audio = path.join(dir, narrationAudioPath(language, screenId, line.id));
-  toneM4a(audio, line.seconds ?? 1, frequency);
+  if (standIn) { fs.mkdirSync(path.dirname(audio), { recursive: true }); fs.writeFileSync(audio, `stand-in for ${line.id}, ${line.seconds ?? 1} s`); } else toneM4a(audio, line.seconds ?? 1, frequency);
   const bytes = fs.readFileSync(audio);
   writeJSON(dir, narrationSidecarPath(language, screenId, line.id), {
     screen: screenId, line: line.id, language, textHash: narrationTextHash(line.text), duration: line.seconds ?? 1,

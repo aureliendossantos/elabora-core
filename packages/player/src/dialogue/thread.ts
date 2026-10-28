@@ -3,9 +3,9 @@
 //
 // Three kinds of text never look alike: a character's bubble (on the left in messaging, beside its
 // round portrait; the learner's on the right), a narration (centred, without a bubble), and the
-// trainer's note (a card with a rule, an icon and its name: never colour alone). A bubble is inserted
-// whole and never changed afterwards: its words are read once, from a copy for screen readers; what
-// the voice brings (the ink of each word) is a layer hidden from them.
+// trainer's note (outside the conversation: its quality in an icon and a word, never colour alone). A
+// bubble is inserted whole and never changed afterwards: its words are read once, from a copy for
+// screen readers; what the voice brings (the ink of each word) is a layer hidden from them.
 
 import { element, uniqueId } from '../dom.ts';
 import { icon } from '../icons.ts';
@@ -64,10 +64,10 @@ export function inkOf(text: string, language: string, letters: boolean): { ink: 
 export interface BubbleRow {
   row: HTMLElement;
   bubble: HTMLElement;
+  text: HTMLElement;
   words: HTMLElement[];
   avatar: HTMLElement | null;
   tools: HTMLElement;
-  replay: HTMLButtonElement | null;
   listen: HTMLButtonElement | null;
   resume: HTMLButtonElement | null;
 }
@@ -79,7 +79,7 @@ export interface BubbleOptions {
   text: string;
   // The first bubble of a series: its name above it, its portrait beside it.
   first: boolean;
-  // A line said by a voice (its audio): « Réécouter », and a play button for a refused autoplay.
+  // A line said by a voice (its audio): a play button for when the browser refuses to play it.
   voiced: boolean;
   // A learner's choice the learner may go back to (« Reprendre d'ici »).
   resumable: boolean;
@@ -100,17 +100,34 @@ export function bubbleRow(context: ThreadContext, options: BubbleOptions): Bubbl
     ? element('div', { class: 't-dialogue-said' }, text)
     : element('div', { class: 't-dialogue-bubble', style: color ? `--t-dl-speaker: ${color}` : undefined },
       name ? element('span', { class: 't-dialogue-name', 'aria-hidden': 'true', text: name }) : null, text);
-  const replay = options.voiced ? element('button', { type: 'button', class: 't-dialogue-tool t-dialogue-replay', 'aria-label': name ? `${labels.dialogueReplay} · ${name}` : labels.dialogueReplay, title: labels.dialogueReplay }, icon('replay')) : null;
   const listen = options.voiced ? element('button', { type: 'button', class: 't-dialogue-tool t-dialogue-listen', hidden: true, 'aria-label': labels.dialogueListen, title: labels.dialogueListen }, icon('play')) : null;
   const resume = options.resumable ? element('button', { type: 'button', class: 't-dialogue-resume', hidden: true }, icon('replay'), element('span', { text: labels.dialogueResumeHere })) : null;
   // Tools are not part of what the thread says: they never speak when they appear.
-  const tools = element('span', { class: 't-dialogue-tools', 'aria-live': 'off' }, listen, replay, resume);
+  const tools = element('span', { class: 't-dialogue-tools', 'aria-live': 'off' }, listen, resume);
   const avatar = options.role === 'narration' ? null : element('span', { class: 't-dialogue-avatar', 'aria-hidden': 'true', 'data-speaker': options.speaker });
   const row = element('div', {
     class: 't-dialogue-row', 'data-role': options.role, 'data-side': options.side, 'data-speaker': options.speaker, 'data-line': options.line,
     'data-first': options.first || undefined, style: color ? `--t-dl-speaker: ${color}` : undefined
   }, avatar, bubble, tools);
-  return { row, bubble, words, avatar, tools, replay, listen, resume };
+  return { row, bubble, text, words, avatar, tools, listen, resume };
+}
+
+// Bubbles as wide as their lines: text-wrap: balance evens them out but leaves the box at the width
+// they had before (room on the right of every line). Each text takes the width of its widest line,
+// measured once inserted (and again when the thread's width or its text size changes); a text not
+// shown (a scene's page turned) keeps the width it had. All widths are cleared, then all lines read,
+// then all widths set: one layout for the lot.
+export function fitLines(...texts: HTMLElement[]): void {
+  const shown = texts.filter((text) => text.isConnected && text.classList.contains('t-dialogue-text') && text.getClientRects().length > 0);
+  for (const text of shown) text.style.removeProperty('width');
+  const widths = shown.map((text) => {
+    const rects = [...(text.querySelector('.t-dialogue-ink') ?? text).getClientRects()];
+    // One line is already as wide as it is.
+    if (rects.length < 2) return null;
+    const zoom = (text as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom || 1;
+    return Math.ceil((Math.max(...rects.map((rect) => rect.right)) - Math.min(...rects.map((rect) => rect.left))) / zoom) + 1;
+  });
+  shown.forEach((text, index) => { const width = widths[index]; if (width !== null) text.style.width = `${width}px`; });
 }
 
 // The bubble to come, its final size kept, with « … » in it (messaging, a line without a voice): it
@@ -163,13 +180,15 @@ export function qualityLabel(labels: Labels, quality: DialogueQuality): string {
 export const qualityMark = (labels: Labels, quality: DialogueQuality): HTMLElement =>
   element('span', { class: 't-dialogue-quality', 'data-quality': quality }, icon(QUALITY_ICON[quality]), element('span', { text: qualityLabel(labels, quality) }));
 
-// The trainer's note: the option's feedback, after its consequence.
+// The trainer's note: the option's feedback, after its consequence. Its quality is all it shows of
+// where it comes from; screen readers hear its name first.
 export function noteRow(context: ThreadContext, option: DialogueOptionData, showQuality: boolean): HTMLElement {
   const { labels } = context;
-  return element('div', { class: 't-dialogue-row', 'data-role': 'note', 'data-quality': option.quality },
+  const quality = showQuality && option.quality ? option.quality : null;
+  return element('div', { class: 't-dialogue-row', 'data-role': 'note', 'data-quality': quality ?? undefined },
     element('div', { class: 't-dialogue-note', role: 'note' },
-      element('p', { class: 't-dialogue-note-head' }, icon('note'), element('span', { class: 't-dialogue-note-name', text: labels.dialogueNote }),
-        showQuality && option.quality ? qualityMark(labels, option.quality) : null),
+      element('span', { class: 't-sr-only', text: `${labels.dialogueNote}${labels.colon}` }),
+      quality ? element('p', { class: 't-dialogue-note-head' }, qualityMark(labels, quality)) : null,
       element('div', { class: 't-text t-dialogue-note-body', html: option.feedbackHtml ?? '' }, option.feedbackHtml ? null : option.feedback ?? '')));
 }
 
@@ -220,8 +239,8 @@ export function optionsContent(context: ThreadContext, prompt: string | undefine
   };
 }
 
-// While a turn plays: pause, « couper les voix » when the dialogue has voices, and « Suite » (the
-// whole line, then the next one).
+// While a turn plays: pause, « couper les voix » when the dialogue has voices, and « Suite » (the next
+// line, the one being said ending there).
 export interface TurnControls {
   root: HTMLElement;
   pause: HTMLButtonElement;
@@ -235,7 +254,7 @@ export function turnControls(context: ThreadContext, voiced: boolean, handlers: 
   const next = element('button', { type: 'button', class: 't-dialogue-next', onclick: handlers.next }, element('span', { text: labels.dialogueNext }), icon('chevronRight'));
   return { root: element('div', { class: 't-dialogue-turn' }, pause, mute, element('span', { class: 't-dialogue-turn-space' }), next), pause, mute, next };
 }
-export function syncTurnControls(context: ThreadContext, controls: TurnControls, { paused, muted, whole, click }: { paused: boolean; muted: boolean; whole: boolean; click: boolean }): void {
+export function syncTurnControls(context: ThreadContext, controls: TurnControls, { paused, muted, waiting }: { paused: boolean; muted: boolean; waiting: boolean }): void {
   const { labels } = context;
   const pauseLabel = paused ? labels.dialoguePlay : labels.dialoguePause;
   if (controls.pause.getAttribute('aria-label') !== pauseLabel) {
@@ -252,20 +271,17 @@ export function syncTurnControls(context: ThreadContext, controls: TurnControls,
       controls.mute.replaceChildren(icon(muted ? 'muted' : 'volume'));
     }
   }
-  // « Tout afficher » while the line is still being said, « Suite » once it is whole.
-  const text = whole ? labels.dialogueNext : labels.dialogueShowAll;
-  const span = controls.next.querySelector('span:not(.t-icon)');
-  if (span && span.textContent !== text) span.textContent = text;
-  controls.next.classList.toggle('is-waiting', click);
+  // « Suite » is quiet while the dialogue goes on by itself, and plain when it waits for the learner.
+  controls.next.classList.toggle('is-waiting', waiting);
 }
 
 // The end: the endings found (when there are several), back to a choice, start over, the debrief.
-export function endControls(context: ThreadContext, { found, total, back, restart, debrief }: { found: number; total: number; back: (() => void) | null; restart: (() => void) | null; debrief: { open: boolean; toggle(): void } | null }): HTMLElement {
+export function endControls(context: ThreadContext, { found, total, back, restart, debrief }: { found: number; total: number; back: (() => void) | null; restart: (() => void) | null; debrief: (() => void) | null }): HTMLElement {
   const { labels, format } = context;
   return element('div', { class: 't-dialogue-endbar' },
     total > 1 ? element('p', { class: 't-dialogue-count', text: format(labels.dialogueEndings, { found, total }) }) : null,
     element('div', { class: 't-dialogue-endbar-actions' },
-      debrief ? element('button', { type: 'button', class: 't-dialogue-action t-dialogue-debrief-toggle', 'aria-expanded': String(debrief.open), onclick: debrief.toggle }, element('span', { text: debrief.open ? labels.dialogueShowThread : labels.dialogueShowDebrief })) : null,
+      debrief ? element('button', { type: 'button', class: 't-dialogue-action t-dialogue-debrief-toggle', 'aria-haspopup': 'dialog', onclick: debrief }, element('span', { text: labels.dialogueShowDebrief })) : null,
       back ? element('button', { type: 'button', class: 't-dialogue-action', onclick: back }, icon('history'), element('span', { text: labels.dialogueBackToChoice })) : null,
       restart ? element('button', { type: 'button', class: 't-dialogue-action', onclick: restart }, icon('replay'), element('span', { text: labels.dialogueRestart })) : null));
 }
@@ -296,5 +312,9 @@ export function debriefCard(context: ThreadContext, { ending, decisions, score, 
     others.length ? element('ul', { class: 't-dialogue-others' }, others.map((other) => element('li', { 'data-found': other.found ? '' : undefined },
       element('span', { class: 't-dialogue-other-title', text: other.title }), element('span', { class: 't-dialogue-other-state', text: other.found ? labels.dialogueFound : labels.dialogueNotFound })))) : null);
 }
+
+// Closes a panel over the dialogue (the History, the debrief).
+export const closeButton = (context: ThreadContext, onClick: () => void): HTMLButtonElement =>
+  element('button', { type: 'button', class: 't-dialogue-close', 'aria-label': context.labels.close, title: context.labels.close, onclick: onClick }, icon('close'));
 
 export type { ScoredDecision };

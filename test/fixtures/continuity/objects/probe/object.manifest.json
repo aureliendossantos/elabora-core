@@ -1,0 +1,40 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "probe",
+  "version": "0.1.0",
+  "title": "Continuity probe",
+  "planRefs": { "objectives": ["OBJ-1"], "items": ["ITEM-1"] },
+  "pedagogicalRole": "practice",
+  "props": {
+    "type": "object",
+    "properties": {
+      "label": { "type": "string", "maxLength": 20, "default": "probe", "title": "Label", "description": "What the probe shows", "x-control": "text" }
+    },
+    "required": ["label"]
+  },
+  "language": "en",
+  "strings": { "hello": { "text": "Hello", "description": "Greeting shown under the label" } },
+  "objects": [{ "id": "target", "label": "Target", "selectable": true }],
+  "state": {
+    "type": "object",
+    "properties": {
+      "mounts": { "type": "integer", "minimum": 0 },
+      "updates": { "type": "integer", "minimum": 0 },
+      "clicks": { "type": "integer", "minimum": 0 },
+      "label": { "type": "string" }
+    },
+    "required": ["mounts", "updates", "clicks", "label"]
+  },
+  "persistState": { "enabled": true, "maxLength": 120 },
+  "events": [
+    { "name": "probed", "description": "The learner clicked the probe.", "payload": { "type": "object", "properties": { "label": { "type": "string" } }, "required": ["label"] }, "tracking": { "completion": true } }
+  ],
+  "budgets": { "drawCallsMax": 10, "trianglesMax": 100, "texturePxMax": 256, "assetsMbMax": 1, "bootMsMax": 3000, "fpsMin": 30, "webglContexts": 0 },
+  "a11y": {
+    "description": "A label that says which screen the scene is on.",
+    "keyboard": "Tab to the button and press Enter.",
+    "motion": { "pausable": true, "respectsReducedMotion": true }
+  },
+  "sandbox": { "network": "none", "permissions": [] }
+}

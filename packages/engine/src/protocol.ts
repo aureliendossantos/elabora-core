@@ -22,7 +22,7 @@ import type {
   CreateObjectArgs, WriteObjectFileArgs, CreateComponentArgs, ForkComponentArgs,
   WriteComponentFileArgs, MigrateComponentsArgs, AddLibraryComponentArgs, CommandDiagnostic, AddFontArgs, FontRequest, SettleImportReportArgs, AddResourceRequest,
   SetCaptionsArgs, UpsertLayerArgs, UpsertEventArgs, RenameArgs, DuplicateScreenArgs,
-  UpdateNarrationArgs, AddNarrationLineArgs, UpdateNarrationLineArgs, MoveNarrationLineArgs, NarrationAudioFileArgs, RemoveSpeakerArgs, SetBlockTimingArgs, SetDialogueNodeArgs, RemoveDialogueNodeArgs, SetNarrationWordsArgs, SplitStepArgs, NarrationFromPlanArgs, KeepNarrationAudioArgs, SetPlanVoiceoverArgs,
+  UpdateNarrationArgs, AddNarrationLineArgs, UpdateNarrationLineArgs, MoveNarrationLineArgs, NarrationAudioFileArgs, RemoveSpeakerArgs, SetBlockTimingArgs, SetContinuityArgs, SetDialogueNodeArgs, RemoveDialogueNodeArgs, SetNarrationWordsArgs, SplitStepArgs, NarrationFromPlanArgs, KeepNarrationAudioArgs, SetPlanVoiceoverArgs,
   WritePlanArgs, SetPlanTextArgs, RevertPlanChangeArgs, CreatePlanVersionArgs, ApprovePlanArgs, RecordPlanSendArgs, SetPlanNoteArgs
 } from '@elabora/core/commands/index';
 import type { ScreenParts } from '@elabora/core/project/parts';
@@ -130,6 +130,7 @@ export interface CommandArgs {
   set_narration_words: SetNarrationWordsArgs;
   // When a block comes and goes on its screen's timeline (in, out: patches; null removes).
   set_block_timing: SetBlockTimingArgs;
+  set_continuity: SetContinuityArgs;
   // A node of a dialogue written whole (added after a node or first, or replaced in place), or removed (D61).
   set_dialogue_node: SetDialogueNodeArgs;
   remove_dialogue_node: RemoveDialogueNodeArgs;

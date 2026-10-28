@@ -15,7 +15,7 @@ A free object is custom code (a three.js simulation, a mini-game, an interaction
 The build bundles `object.js` and what it imports into one minified classic script. Code from elsewhere keeps its licence in a legal comment (`/*! … */`, or one with `@license` or `@preserve`): comments are dropped, legal comments are gathered at the end of the built `object.js`, so the notice ships with every package.
 
 ## 2. Manifest essentials
-See [`object-manifest.schema.json`](../packages/format/schemas/0.1.1/object-manifest.schema.json).
+See [`object-manifest.schema.json`](../packages/format/schemas/0.1.2/object-manifest.schema.json).
 
 - **props**: every setting an author may change; `default` and `description` required, `title` (a short label in the editor) recommended. `x-group` (panel group), `x-control` (`text`, `textarea`, `slider`, `range`, `number`, `toggle`, `select`, `color`, `vec2`, `vec3`, `vec3-gizmo`, `asset`, `list`), `x-token` (theme token used by default, e.g. `color.accent`), `x-text-on` (below), `x-object-id` (clicking that object in the preview opens this prop), `x-editable-by` (`author` or `developer`), `x-translatable`, `x-enum-labels` (below). The control fits the type (`W_OBJECT_PROP_CONTROL`): `select` needs an enum or an integer range, `slider` a minimum and a maximum, `color` a string of `format: "color"`.
 - **Controls of numbers**: `slider` for one number on a scale (`minimum`, `maximum`, a `multipleOf` for its step), `number` when there is no scale. `range` for a low and a high value on the same scale (a window of time, the band a value must fall in): `{ "type": "array", "items": { "type": "number", "minimum": 0, "maximum": 24, "multipleOf": 0.5 }, "minItems": 2, "maxItems": 2, "default": [8, 18], "x-control": "range" }`, low first; the editor shows one slider with two handles. `vec2` and `vec3` for a point or a size of two or three numbers (`[x, y]`, `[x, y, z]`, `minItems` and `maxItems` 2 or 3): X, Y and Z on one row. `vec3-gizmo` is a `vec3` the object can also move in its preview. Two or three number fields named `x`, `y` and `z` that follow each other (in a list's items) are shown on one row the same way, without a control.
@@ -52,7 +52,7 @@ export function mount(container, ctx) {
   // ctx.host.onContext((context) => …) → unsubscribe       (decorations: the learner moved)
   // ctx.host.onView((view) => …) → unsubscribe             (the learner scrolled: entrances, parallax)
   return {
-    update(nextProps) {},   // apply props without remounting
+    update(nextProps, transition) {},   // apply props without remounting; transition: the block carries on from another screen (§4e)
     getState() {},          // matches manifest.state
     setState(snapshot) {},  // resume
     pause() {}, resume() {},// optional
@@ -73,7 +73,8 @@ export function mount(container, ctx) {
 | host → object | `object/safe-area` | safeArea `{top, right, bottom, left}` in px, when the part of the frame covered by the layout changes |
 | host → object | `object/set-root-size` | rootSize, when the course window changes size class (1rem of 16, 15 or 14 px): text in rem follows |
 | host → object | `object/view` | view `{visible, ratio, progress, entry, exit}`: where the frame is in the window, when it changes (at most once a frame; also in initialize) |
-| host → object | `object/update-props`, `object/pause`, `object/resume`, `object/get-state`, `object/set-state`, `object/step`, `object/dispose` | Lifecycle and tests |
+| host → object | `object/update-props` | props; with `transition` (§4e), also the arriving block's `strings` and `safeArea`, applied before `update(props, transition)` is called |
+| host → object | `object/pause`, `object/resume`, `object/get-state`, `object/set-state`, `object/step`, `object/dispose` | Lifecycle and tests |
 | host → object | `object/perf`, `object/test-click`, `object/test-key`, `object/test-dry` | Budgets and test input; frames dry or drawn (test mode, see §6) |
 | object → host | `object/event` | `{name, payload}`, checked against the manifest (name and payload schema) |
 | object → host | `object/asset` (request) | Declared asset, answered with an ArrayBuffer |
@@ -95,6 +96,25 @@ A free object with `pedagogicalRole: "decoration"` is mounted once behind the co
 
 ## 4d. Replay in the course
 `elabora object replay . <id> [--test <name>] [--block <id>] [--size 1600x900]` (MCP `elabora_replay_object`) replays one test of `object.tests.json` where learners meet the object: the built course, on the page that places it, scrolled into view, in real time, with the course around it. `step` waits its frames in real time, `click`, `key`, `set-props` and `set-state` drive the object, `set-view` scrolls the page to that view, `snapshot` captures the window; expectations are checked as they come, waiting a moment for an object a little behind (software WebGL). The result is a contact sheet of the snapshots and the end, with the expectations that failed. It shows; the gates stay `elabora object test`.
+
+## 4e. Continuity between screens
+Blocks of different screens that share a `continuity` key ([D65](decisions/D65.md)) are one object to the learner: `{ "id": "lab-scene", "type": "free-object", "continuity": { "key": "lock", "duration": 900 }, "props": { "object": "canal-lock", … } }` on each screen, the same object everywhere. Going from one of those screens to another (Next, Previous, the outline, an event), the frame never leaves the page: the object keeps running, and receives the arriving block's props with a second argument:
+
+```js
+update(nextProps, transition) {
+  // transition: { from: { screen, block }, to: { screen, block }, direction: 'forward' | 'back',
+  //               duration (ms, 0 under less motion), reducedMotion }
+  // ctx.strings and ctx.safeArea are already the arriving block's (host.onSafeArea was called).
+}
+```
+
+Move to the new settings over `transition.duration` with `host.onFrame`: take what the last frame drew as the start (camera, positions, colours), ease toward what the new props ask, and let the live state run meanwhile (blend from the start to the live value, so that a simulation already moving ends where it should). Hide the controls of the departing mode at once and show the arriving ones once the scene is mostly there. With `duration` 0 apply everything at once. An object that ignores `transition` applies the props as for any `update`: the frame still carries on, the change is a cut. The frame glides from the departing block's box to the arriving one's on the same curve (`cubic-bezier(.77, 0, .175, 1)`).
+
+- **State**: the chain has one saved state (`ctx.savedState` when it mounts again), saved after a declared event of any of its blocks. The object decides what its modes share: keep what a learner did in one mode (a lab) in a field of the state when another mode replays something, and find it again when the learner comes back. Completion stays each block's: send the completion event again for the arriving block when its goal is reached.
+- **Events** are the arriving block's from the moment it arrives (the screen's `object.event` target, interactions, completion). So are the frame's title, its description and its text version.
+- **Mounted again**: a screen without the key stops the object; the next screen with it mounts it with the chain's state and no transition, as does a session resumed in the middle of the chain.
+- **The layout**: the frame lives in a keep layer of the screen, over the block's own frame. Text the layout lays over the object needs a `z-index` to stay above it (a positioned element), as a title over a stage usually has; the layout's backgrounds stay behind. The block's ancestors let clicks through to the object; their other children keep their own behaviour.
+- **Tests**: `set-props` with `transition` (`{ "action": "set-props", "props": { … }, "transition": { "duration": 1200, "safeArea": { "top": 128 } } }`) gives the props as a passage does; the steps that follow advance through it frame by frame, so a `snapshot` at frame 30 shows the passage on its way. `elabora object replay` plays it in the course page, in real time.
 
 ## 5. Sandbox
 `<iframe sandbox="allow-scripts" allow="" referrerpolicy="no-referrer">` (no `allow-same-origin`; `allow-pointer-lock` only if declared) and a frame CSP `default-src 'none'; script-src 'self'; connect-src 'none'; …`. The object cannot reach the course page, the LMS API, cookies, storage or the network. Only the host talks to the LMS. Objects are compiled into classic scripts because module scripts would need CORS headers from the LMS server.
