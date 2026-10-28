@@ -71,7 +71,7 @@ export function parseLookAction(source: string): LookAction | { error: string } 
 }
 
 // Said with a look at a moment (at, sheet) of a screen with free objects (CLI and MCP).
-export const OBJECTS_AT_NOTE = "free objects are not on the screen's timeline: this capture shows them as the look left them (their entrance cut under reduced motion); elabora object replay . <object> plays one in real time, in the course";
+export const OBJECTS_AT_NOTE = "free objects are not on the screen's timeline: this capture shows them as they run in the page (their entrance cut under reduced motion); elabora object replay . <object> plays one in real time, in the course";
 
 export interface BackdropReport {
   screen: string | null;

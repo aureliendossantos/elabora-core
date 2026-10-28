@@ -1,4 +1,4 @@
-<!-- elabora:rules revision=14 sha256=ba7dcb4b3ad529ae · Elabora keeps the rules down to « elabora:rules end » up to date while nobody edits them; write your own notes after it. -->
+<!-- elabora:rules revision=14 sha256=0259880d4456f4e3 · Elabora keeps the rules down to « elabora:rules end » up to date while nobody edits them; write your own notes after it. -->
 # AGENTS.md — Elabora course project
 
 This folder is an Elabora course (`elabora/0.1`). **Read this file and “Notes for this course” below before editing.** Load detailed guidance only for the task at hand.
@@ -10,7 +10,7 @@ This folder is an Elabora course (`elabora/0.1`). **Read this file and “Notes 
 - **Editable before custom.** Prefer native blocks, then reusable components (including activity forks); use free-object code only when needed. Keep learner-facing words in editable blocks and props, not CSS, templates or generated figures. Preserve component fallbacks and migrations.
 - **Stable learner state.** Never reuse ids or edit `elabora.lock.json`. Rename via `elabora_rename` / `elabora rename`, so references and progress follow.
 - **Sources and media.** Treat `sources/` as private, read-only input that may hold personal data: quote only what the module needs. Use `elabora_source_read` / `elabora sources read`. Never reference sources directly from screens. Bring learner-facing assets in with `elabora_media_import` / `elabora media import` (not direct copies to `assets/`); include accessibility text/captions and mark AI-generated media `generated: true`.
-- **Adjustments: only the change asked.** Propose extras without building them; ask one question for an open visual choice. Read only what it touches (`elabora object map`, `docs --search`).
+- **Adjustments: only the change asked.** Suggest extras, never build them; one question for an open visual choice. Read only what it touches (`elabora object map`, `elabora docs --search`).
 - **Check what the change can affect.** Read tool diagnostics and run `elabora validate .` after edits; fix errors first. Then check in proportion to what the change does, not to its size:
   - *Presentation only* (a duration, an easing, a colour, a decoration that moves nothing): the plan stays as it is. Read only the component or stylesheet concerned and the guidance for it, validate once, then `elabora look` the affected screen in the state that shows the issue (`--scroll`, `--step`, `--state answered`, `--block`). No fit, no object gates.
   - *Layout* (spacing, sizes, type that reflows, a shared stylesheet or component): add `elabora fit --screen <ids>` for the screens it reaches.

@@ -29,7 +29,7 @@ export interface ObjectMap {
 
 const SECTION = /^\s*\/\/\s*[─—-]{2,}\s*(.+?)\s*[─—-]{2,}/;
 // A function at the top of the file or in mount() (two levels of indentation at most).
-const FUNCTION = /^( {0,4}|\t{0,2})(?:export\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z_$][\w$]*)\s*\(|^( {0,4}|\t{0,2})(?:export\s+)?(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>/;
+const FUNCTION = /^( {0,4}|\t{0,2})(?:export\s+)?(?:async\s+)?function\s*\*?\s*([A-Za-z_$][\w$]*)\s*\(|^( {0,4}|\t{0,2})(?:export\s+)?(?:const|let)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:async\s*)?(?:(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*=>|function\b)/;
 
 export function mapCode(file: string, text: string): ObjectMapFile {
   const lines = text.split('\n');

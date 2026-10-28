@@ -167,8 +167,8 @@ export function searchDocs(query: string, root = DOCS_ROOT, limit = 8): DocHit[]
     const all = headings(markdown);
     const starts = [{ depth: 1, text: '(top)', slug: '', line: 0 }, ...all.filter((h) => h.line > 0)];
     for (const [index, start] of starts.entries()) {
-      const end = starts.slice(index + 1).find((next) => next.depth <= Math.max(start.depth, 2))?.line ?? lines.length;
-      const body = lines.slice(start.line, Math.min(end, starts[index + 1]?.line ?? lines.length));
+      // A section down to the next heading (its subsections are sections of their own).
+      const body = lines.slice(start.line, starts[index + 1]?.line ?? lines.length);
       const text = body.join('\n').toLowerCase();
       if (!words.every((word) => text.includes(word))) continue;
       // A few occurrences of each word count (a long table holds them all), the words in the

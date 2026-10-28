@@ -182,20 +182,21 @@ async function controlsOf(page: Page): Promise<ObjectControl[]> {
         const name = (node.getAttribute('aria-label') || node.textContent || node.getAttribute('title') || node.getAttribute('name') || '').replace(/\s+/g, ' ').trim().slice(0, 48);
         return { role: node.getAttribute('role') || node.tagName.toLowerCase(), name, x: box.x, y: box.y, width: box.width, height: box.height, disabled: (node as HTMLButtonElement).disabled === true || node.getAttribute('aria-disabled') === 'true' };
       })).catch(() => []);
-    for (const control of found) {
-      const box = { x: Math.round(at.x + control.x), y: Math.round(at.y + control.y), width: Math.round(control.width), height: Math.round(control.height) };
-      // The middle of the part of it in the window.
-      const box2 = { left: at.x + control.x, top: at.y + control.y, right: at.x + control.x + control.width, bottom: at.y + control.y + control.height };
-      const coveredBy = await page.evaluate(({ element, box: b }) => {
-        const left = Math.max(0, b.left), top = Math.max(0, b.top), right = Math.min(innerWidth, b.right), bottom = Math.min(innerHeight, b.bottom);
-        if (right - left < 1 || bottom - top < 1) return 'outside';
-        const hit = document.elementFromPoint((left + right) / 2, (top + bottom) / 2);
-        if (!hit) return 'outside';
-        if (hit === element) return null;
-        const owner = hit.closest<HTMLElement>('[data-block]')?.dataset.block;
-        const classes = [...hit.classList].slice(0, 3).map((name) => `.${name}`).join('');
-        return `${hit.tagName.toLowerCase()}${hit.id ? `#${hit.id}` : ''}${classes}${owner ? ` (block ${owner})` : ''}`;
-      }, { element: iframe, box: box2 });
+    // Every control of the frame in one call: what is over the middle of its part in the window.
+    const boxes = found.map((control) => ({ left: at.x + control.x, top: at.y + control.y, right: at.x + control.x + control.width, bottom: at.y + control.y + control.height }));
+    const covers = await page.evaluate(({ element, boxes: list }) => list.map((b) => {
+      const left = Math.max(0, b.left), top = Math.max(0, b.top), right = Math.min(innerWidth, b.right), bottom = Math.min(innerHeight, b.bottom);
+      if (right - left < 1 || bottom - top < 1) return 'outside';
+      const hit = document.elementFromPoint((left + right) / 2, (top + bottom) / 2);
+      if (!hit) return 'outside';
+      if (hit === element) return null;
+      const owner = hit.closest<HTMLElement>('[data-block]')?.dataset.block;
+      const classes = [...hit.classList].slice(0, 3).map((name) => `.${name}`).join('');
+      return `${hit.tagName.toLowerCase()}${hit.id ? `#${hit.id}` : ''}${classes}${owner ? ` (block ${owner})` : ''}`;
+    }), { element: iframe, boxes });
+    for (const [index, control] of found.entries()) {
+      const box = { x: Math.round(boxes[index].left), y: Math.round(boxes[index].top), width: Math.round(control.width), height: Math.round(control.height) };
+      const coveredBy = covers[index];
       out.push({ block, role: control.role, name: control.name, box, disabled: control.disabled, outside: coveredBy === 'outside', coveredBy: coveredBy === 'outside' ? null : coveredBy });
     }
   }
