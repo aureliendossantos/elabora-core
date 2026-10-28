@@ -36,6 +36,8 @@ import { readText } from '../project/files.ts';
 import { pageMinutes } from '../project/duration.ts';
 import type { ScreenTimeline, TimelineMoment } from '../narration/timeline.ts';
 import { playerConfig, playerContent, shownPlayer, aboutCourse, withItemEnabled } from '../player/config.ts';
+import { compileSounds } from '../sounds/sounds.ts';
+import type { InterfaceSounds } from '../sounds/sounds.ts';
 
 // Turns the source project into the data the player reads (window.ELABORA_COURSE, typed CourseData
 // by the player): plan references resolved, every block rendered from its component template (HTML
@@ -100,6 +102,8 @@ export interface CompileOptions {
   // The languages of a package of several languages (D59): the language item shows with them.
   languages?: string[];
   dialogueAudio?: PackagedLines;
+  // The course's interface sounds (sounds/sounds.ts interfaceSounds), when the caller has them.
+  interfaceSounds?: InterfaceSounds;
 }
 
 export function createCompileContext(project: Project, keys: StateKeys, { assetPath = defaultAssetPath, fields = false, narration, delivery, languages, dialogueAudio }: CompileOptions = {}): CompileContext {
@@ -147,7 +151,7 @@ export interface CompiledScreen {
   objects: Map<string, ObjectDefinition>; // by object id
 }
 
-export function compileCourseData(project: Project, keys: StateKeys, { buildId, assetPath, narration, delivery, languages, dialogueAudio }: { buildId: string } & CompileOptions): CourseData {
+export function compileCourseData(project: Project, keys: StateKeys, { buildId, assetPath, narration, delivery, languages, dialogueAudio, interfaceSounds }: { buildId: string } & CompileOptions): CourseData {
   const context = createCompileContext(project, keys, { assetPath, narration, delivery, languages, dialogueAudio });
   const usedObjects = new Map<string, ObjectDefinition>();
   // A listed screen without its file is reported by the validator (E_SCREEN_NOT_FOUND).
@@ -159,6 +163,7 @@ export function compileCourseData(project: Project, keys: StateKeys, { buildId, 
   const backdrop = compileBackdrop(project, context, usedObjects);
   const resources = resourcesOf(project, context);
   const about: AboutData = aboutCourse(project);
+  const sounds = compileSounds(project, { assetPath: context.assetPath, ...(interfaceSounds ? { settings: interfaceSounds } : {}) });
   return {
     ...courseHead(context),
     ...(backdrop ? { backdrop } : {}),
@@ -168,6 +173,7 @@ export function compileCourseData(project: Project, keys: StateKeys, { buildId, 
     objects: sortedObjects(usedObjects),
     ...(resources.length ? { resources } : {}),
     ...(about.ai || about.credits ? { about } : {}),
+    ...(sounds ? { sounds } : {}),
     ...(delivery ? { delivery } : {}),
     build: { id: buildId }
   };

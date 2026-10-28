@@ -645,7 +645,7 @@ function realisticEdit(rng: Rng, project: Project, edit: Edit, fresh: () => stri
     }
     case 'add-screen': {
       const id = fresh();
-      project.docs.set(`screens/${id}.json`, { $schema: 'https://elabora.studio/schemas/0.1.2/screen.schema.json', id, title: `Screen ${id}`, covers: [], blocks: [{ id: `${id}-text`, type: 'text', props: { markdown: 'New' } }] });
+      project.docs.set(`screens/${id}.json`, { $schema: 'https://elabora.studio/schemas/0.1.3/screen.schema.json', id, title: `Screen ${id}`, covers: [], blocks: [{ id: `${id}-text`, type: 'text', props: { markdown: 'New' } }] });
       const section = rng.pick(course(project).sections);
       section.screens.splice(rng.int(section.screens.length + 1), 0, id);
       return;

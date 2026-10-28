@@ -32,6 +32,7 @@
     "gen": "node scripts/gen-format.ts && node scripts/gen-builtin-templates.ts && node scripts/gen-agent-rules.ts && node scripts/gen-ai-costs.ts",
     "costs:record": "node scripts/costs-record.ts",
     "fonts": "node scripts/fonts.ts",
+    "sounds": "node scripts/sounds.ts",
     "fixtures:sources": "node scripts/source-fixtures.ts",
     "release:prepare": "node scripts/release.ts prepare",
     "release:check": "node scripts/release.ts check"

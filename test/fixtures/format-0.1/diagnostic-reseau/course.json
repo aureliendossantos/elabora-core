@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.2/course.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.3/course.schema.json",
   "format": "elabora/0.1",
   "id": "diagnostic-reseau",
   "title": "Diagnostiquer une panne d'impression réseau",

@@ -20,6 +20,7 @@ import { checkThemeFiles, checkFontLicenses, checkFigures, checkGenerators } fro
 import { checkComponents, checkComponentUsage, checkScreenComponents, checkThemeStyles } from './components.ts';
 import { checkMedia } from './media.ts';
 import { checkContinuity } from './continuity.ts';
+import { checkSounds } from './sounds.ts';
 import { list } from './guards.ts';
 
 export { createValidationContext };
@@ -57,6 +58,7 @@ export const COURSE_CHECKS: readonly Check<CourseCheckContext>[] = [
   { name: 'continuity', scope: 'project', readsScreens: true, run: checkContinuity },
   { name: 'theme', scope: 'project', run: checkTheme },
   { name: 'player', scope: 'project', readsScreens: true, run: checkPlayer },
+  { name: 'sounds', scope: 'project', readsScreens: true, run: checkSounds },
   { name: 'components', scope: 'project', run: checkComponents },
   { name: 'component-usage', scope: 'project', readsScreens: true, run: checkComponentUsage },
   { name: 'screen-components', scope: 'screen', run: checkScreenComponents },
