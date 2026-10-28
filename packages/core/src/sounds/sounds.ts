@@ -199,6 +199,13 @@ export function soundSidecar(project: Project, asset: SoundAsset): Sound | null 
   }
 }
 
+// A sound's length in seconds: its media's, else its sidecar's; null when unknown.
+export function soundLength(project: Project, asset: SoundAsset): number | null {
+  const file = project.files.get(asset.path);
+  const sidecar = soundSidecar(project, asset);
+  return (file?.kind === 'binary' ? file.media?.duration : null) ?? (typeof sidecar?.duration === 'number' ? sidecar.duration : null);
+}
+
 // The course data's sounds the screens play, by id: their package path, length and loop.
 export function compileSoundFiles(project: Project, assetPath: (name: string) => string): Record<string, SoundFileData> | undefined {
   const assets = soundAssets(project);
@@ -207,10 +214,7 @@ export function compileSoundFiles(project: Project, assetPath: (name: string) =>
     if (use.kind === 'interface' || use.inTrack || files[use.id]) continue;
     const asset = assets.get(use.id);
     if (!asset) continue;
-    const file = project.files.get(asset.path);
-    const sidecar = soundSidecar(project, asset);
-    const duration = (file?.kind === 'binary' ? file.media?.duration : null) ?? (typeof sidecar?.duration === 'number' ? sidecar.duration : null);
-    files[use.id] = { src: assetPath(asset.asset), duration: duration ?? null, ...(sidecar?.loop === true ? { loop: true as const } : {}) };
+    files[use.id] = { src: assetPath(asset.asset), duration: soundLength(project, asset), ...(soundSidecar(project, asset)?.loop === true ? { loop: true as const } : {}) };
   }
   return Object.keys(files).length ? Object.fromEntries(Object.entries(files).sort(([a], [b]) => a.localeCompare(b))) : undefined;
 }

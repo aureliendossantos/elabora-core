@@ -23,7 +23,8 @@
 //   5. end: the first ending whose if holds (or the one named), else an ending without title;
 //   6. a condition that cannot be evaluated (a node deleted since) holds.
 
-import type { CompareOp, DialogueAction, DialogueCondition, DialogueData, DialogueEndingData, DialogueLineData, DialogueNodeData, DialogueOptionData, DialogueValue } from './types.ts';
+import type { CompareOp, DialogueAction, DialogueCondition, DialogueData, DialogueEndingData, DialogueLineData, DialogueLineItem, DialogueNodeData, DialogueOptionData, DialogueSoundLineData, DialogueValue } from './types.ts';
+import { isSoundLineData } from './types.ts';
 
 // A path holds at most this many decisions (a loop of next without end would make it endless; the
 // suspend data needs a worst case). The validator says when a dialogue can reach it.
@@ -43,6 +44,7 @@ export type LineRole = 'character' | 'learner' | 'narration';
 export type Beat =
   | { type: 'node'; node: string }
   | { type: 'line'; node: string; line: DialogueLineData; role: LineRole; option?: string }
+  | { type: 'sound'; node: string; line: DialogueSoundLineData; option?: string }
   | { type: 'decision'; node: string; decision: number }
   | { type: 'choice'; node: string; option: string; decision: number; auto?: true }
   | { type: 'actions'; node: string; option: string; actions: DialogueAction[] }
@@ -229,8 +231,12 @@ class Walker {
     return line.speaker === this.data.learner ? 'learner' : 'character';
   }
 
-  private playLines(node: string, lines: readonly DialogueLineData[], option?: string): void {
-    for (const line of lines) if (this.holds(line.if)) this.beats.push({ type: 'line', node, line, role: this.roleOf(line), ...(option ? { option } : {}) });
+  private playLines(node: string, lines: readonly DialogueLineItem[], option?: string): void {
+    for (const line of lines) {
+      if (!this.holds(line.if)) continue;
+      if (isSoundLineData(line)) this.beats.push({ type: 'sound', node, line, ...(option ? { option } : {}) });
+      else this.beats.push({ type: 'line', node, line, role: this.roleOf(line), ...(option ? { option } : {}) });
+    }
   }
 
   // The node's way out once its options are done with (or when it has none).

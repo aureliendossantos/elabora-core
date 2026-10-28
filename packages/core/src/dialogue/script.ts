@@ -2,7 +2,8 @@
 // where it goes in a few words, its quality and its note. One model for `elabora dialogue show` (a
 // stable text that also serves diffs), the client's export (dialogue/document.ts) and LESSON.md.
 
-import type { DialogueData, DialogueLineData, DialogueNodeData, DialogueOptionData, DialogueCondition, DialogueAction, DialogueCueData } from '@elabora/player/dialogue/types';
+import type { DialogueData, DialogueLineItem, DialogueNodeData, DialogueOptionData, DialogueCondition, DialogueAction, DialogueCueData } from '@elabora/player/dialogue/types';
+import { isSoundLineData } from '@elabora/player/dialogue/types';
 import { lineDirections, withoutDirections } from '../narration/directions.ts';
 
 export interface ScriptLine {
@@ -88,6 +89,8 @@ export interface ScriptWords {
   greyed: string;
   objective: (id: string) => string;
   narration: string;
+  // A sound line (D67): « sound sonnerie ».
+  sound: (id: string) => string;
 }
 
 export const SCRIPT_WORDS: Readonly<Record<'en' | 'fr', ScriptWords>> = {
@@ -95,13 +98,13 @@ export const SCRIPT_WORDS: Readonly<Record<'en' | 'fr', ScriptWords>> = {
     you: 'You', end: 'the end', endChosen: 'the end (its conditions choose)', endNamed: (title) => `the end « ${title} »`, sameOptions: 'the same options again',
     otherwise: 'otherwise', when: (conditions) => `if ${conditions}`, and: ' and ', unknown: (id) => `${id} (unknown)`, chose: (ref) => `chose ${ref}`, after: (node) => `after ${node}`,
     courseVariable: (name) => `course variable ${name}`, score: 'score', retry: 'retry', once: 'once', fallback: 'fallback (taken by itself when nothing else can be chosen)', greyed: 'greyed when unavailable',
-    objective: (id) => `objective ${id}`, narration: 'narration'
+    objective: (id) => `objective ${id}`, narration: 'narration', sound: (id) => `sound ${id}`
   },
   fr: {
     you: 'Vous', end: 'la fin', endChosen: 'la fin (selon ses conditions)', endNamed: (title) => `la fin « ${title} »`, sameOptions: 'les mêmes options à nouveau',
     otherwise: 'sinon', when: (conditions) => `si ${conditions}`, and: ' et ', unknown: (id) => `${id} (inconnu)`, chose: (ref) => `a choisi ${ref}`, after: (node) => `après ${node}`,
     courseVariable: (name) => `variable du module ${name}`, score: 'score', retry: 'réessayer', once: 'une seule fois', fallback: 'repli (pris d\'office quand rien d\'autre n\'est possible)', greyed: 'grisée si indisponible',
-    objective: (id) => `objectif ${id}`, narration: 'narration'
+    objective: (id) => `objectif ${id}`, narration: 'narration', sound: (id) => `son ${id}`
   }
 };
 export const scriptWords = (language: string | undefined): ScriptWords => (/^fr\b/i.test(language ?? '') ? SCRIPT_WORDS.fr : SCRIPT_WORDS.en);
@@ -148,7 +151,9 @@ export function dialogueScript(data: DialogueData, { id, screen, words = SCRIPT_
   };
   const conditionsText = (conditions: readonly DialogueCondition[] | undefined) => describeConditions(conditions, words);
   const learnerName = data.learner ? data.speakers[data.learner]?.name ?? data.learner : words.you;
-  const line = (value: DialogueLineData): ScriptLine => {
+  const line = (value: DialogueLineItem): ScriptLine => {
+    // A sound: a narration that names it, its caption as its text.
+    if (isSoundLineData(value)) return { id: value.id, who: null, role: 'narration', direction: words.sound(value.sound), text: value.caption ?? '', cues: [], condition: conditionsText(value.if) };
     const speaker = value.speaker ? data.speakers[value.speaker] : undefined;
     const narration = !value.speaker || speaker?.narrator === true;
     // The stage directions as written (« inquiet, au téléphone »), else the expression.

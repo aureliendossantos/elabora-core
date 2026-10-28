@@ -18,7 +18,7 @@ import { translationExport } from '@elabora/core/i18n/translate';
 import { readLock, assignKeys } from '@elabora/core/compile/state-model';
 import { compileCourseData } from '@elabora/core/compile/course-data';
 import { textVoice, voiceAt, textWords } from '@elabora/player/character/voice';
-import type { DialogueData } from '@elabora/player/dialogue/types';
+import type { DialogueData, DialogueLineData } from '@elabora/player/dialogue/types';
 import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
 import { registerVoiceProvider, generateNarration, setSpeakerVoice } from '@elabora/node/voice/index';
 import { toneProvider } from '@elabora/node/voice/tone';
@@ -275,15 +275,15 @@ test('the course data: each line\'s voice estimated without audio (src null, a m
   const project = loadProjectFromDir(dir);
   const data = compileCourseData(project, assignKeys(project, readLock(project)).keys, { buildId: 'test' });
   const props = data.screens.find((screen) => screen.id === 'appel')!.blocks[0]!.props as unknown as DialogueData;
-  const m1 = props.nodes[0]!.lines[0]!;
+  const m1 = props.nodes[0]!.lines[0]! as DialogueLineData;
   assert.equal(m1.voice!.src, null);
   assert.equal(m1.voice!.estimated, true);
   assert.equal(m1.voice!.words[0]![0], 'Bonjour', 'the words of what is said, stage directions left out');
   assert.match(m1.voice!.mouth!, /^[csow]+$/);
   const etage = m1.voice!.words.find(([word]) => word === 'étage')!;
   assert.equal(m1.cues![0]!.time, etage[2], 'at the end of « étage » (edge end)');
-  assert.equal(props.nodes[0]!.lines[1]!.cues![0]!.time, 0, '« Bonjour » starts the line');
-  assert.ok(props.nodes.find((node) => node.id === 'ticket')!.lines[0]!.voice, 'a narration without voice has its reading time all the same');
+  assert.equal((props.nodes[0]!.lines[1]! as DialogueLineData).cues![0]!.time, 0, '« Bonjour » starts the line');
+  assert.ok((props.nodes.find((node) => node.id === 'ticket')!.lines[0]! as DialogueLineData).voice, 'a narration without voice has its reading time all the same');
   assert.equal(props.nodes[1]!.options[0]!.voice, undefined, 'no learner voice without learnerVoice');
 });
 
@@ -323,12 +323,12 @@ test('generated voices say a dialogue\'s lines (ELABORA_VOICE_TONES=1), with the
   const course = files.get('elabora/course.js')!.toString();
   const data = JSON.parse(course.slice(course.indexOf('{'), course.lastIndexOf('}') + 1));
   const props = data.screens.find((screen: { id: string }) => screen.id === 'appel').blocks[0].props as DialogueData;
-  const m1 = props.nodes[0]!.lines[0]!.voice!;
+  const m1 = (props.nodes[0]!.lines[0]! as DialogueLineData).voice!;
   assert.equal(m1.src, 'narration/appel.appel-marc/m1.m4a');
   assert.equal(m1.mouth, sidecar.mouth);
   assert.ok(Math.abs(m1.duration - sidecar.duration) < 0.05);
   assert.equal(props.nodes[1]!.options[0]!.voice!.src, 'narration/appel.appel-marc/premiere-question.a.m4a');
-  assert.equal(props.nodes.find((node) => node.id === 'ticket')!.lines[0]!.voice!.src, null, 'a narration without voice has no audio');
+  assert.equal((props.nodes.find((node) => node.id === 'ticket')!.lines[0]! as DialogueLineData).voice!.src, null, 'a narration without voice has no audio');
   assert.ok(a.report.narration?.lines?.some((line) => line.line === 'm1' && line.block === 'appel-marc' && line.bytes > 0));
   assert.ok(a.report.generatedMedia.some((entry) => entry.block === 'appel-marc' && entry.type === 'voice'), 'a generated voice is disclosed (AI Act)');
 

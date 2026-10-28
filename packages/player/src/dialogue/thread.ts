@@ -223,6 +223,12 @@ export function markerRow(context: ThreadContext, restarted: boolean): HTMLEleme
     element('p', { class: 't-dialogue-marker' }, icon(restarted ? 'replay' : 'undo'), element('span', { text: restarted ? labels.dialogueNewAttempt : labels.dialogueResumedHere })));
 }
 
+// A sound's caption (D67), shown as a narration is: centred, in italics, without a bubble.
+export function soundRow(caption: string, sound: string): HTMLElement {
+  return element('div', { class: 't-dialogue-row', 'data-role': 'narration', 'data-sound': sound },
+    element('div', { class: 't-dialogue-said' }, element('p', { class: 't-dialogue-narration', text: caption })));
+}
+
 export function endRow(context: ThreadContext, title: string | null, html: string | null): HTMLElement {
   return element('div', { class: 't-dialogue-row', 'data-role': 'end' },
     element('p', { class: 't-dialogue-end' }, element('span', { text: title ?? context.labels.dialogueEnd })),

@@ -1718,6 +1718,14 @@ export type DialogueSceneCast = {
   position?: 'left' | 'right' | 'center';
 };
 
+export type DialogueLineItem = DialogueSoundLine | DialogueLine;
+
+/** A sound of the dialogue (D67): a sound of the course said at its place among the lines (the phone that rings before Neil speaks), its caption in the thread; the next line waits for it to end. */
+export type DialogueSoundLine = SoundLine & {
+  /** The sound is skipped unless every condition holds. */
+  if?: DialogueConditions;
+};
+
 /** A line, as a narration line is (id, speaker, text, delivery, pronunciations), with what the drawing does (expression, cues) and a condition (if). Without speaker, a narration: a setting of the scene shown without a character's bubble (« Plus tard, au bureau de Marc »); a speaker declared narrator in course.json says it with its voice, still without a bubble. */
 export type DialogueLine = {
   /** Unique in the screen, across the screen's narration, its layers and its dialogues: the line's audio, translation and anchors are named by it. */
@@ -1864,7 +1872,7 @@ export type DialogueNode = {
   /** Style scene: the backdrop (and cast) from this node on. */
   scene?: DialogueScene;
   /** Said in order when the node is entered; a line whose if fails is skipped. */
-  lines?: DialogueLine[];
+  lines?: DialogueLineItem[];
   /** The instruction over the options (« Quelle question posez-vous en premier ? »). */
   prompt?: string;
   /** A decision: what the learner may say. One option shown is not taken by itself: the learner clicks it. */
@@ -1892,7 +1900,7 @@ export type DialogueOption = {
   /** The plan objective this choice puts into play. */
   objective?: PlanId;
   /** The immediate reaction: lines said after the learner's bubble. */
-  reply?: DialogueLine[];
+  reply?: DialogueLineItem[];
   /** The trainer's note on this choice, shown as a note (never a character's bubble) after the reaction, when the dialogue's feedback says now or both, and in the debrief. */
   feedback?: Markdown;
   /**

@@ -3,7 +3,7 @@
 // elabora.lock.json and the highest sum of points its paths can reach. The compiler adds the HTML of
 // its Markdown; the core's tools keep the stage directions to print the script.
 
-import type { DialogueData, DialogueKeys, DialogueLineData, DialogueNodeData, DialogueOptionData, DialogueEndingData, DialogueCondition, DialogueCueData, DialogueAction, DialogueSceneData, DialogueSpeakerData, DialogueValue, DialogueRevisit, DialogueScoring, DialogueFeedback, DialogueMode, LineVoiceData, CharacterManifest } from '@elabora/player/dialogue/types';
+import type { DialogueData, DialogueKeys, DialogueLineData, DialogueLineItem, DialogueNodeData, DialogueOptionData, DialogueEndingData, DialogueCondition, DialogueCueData, DialogueAction, DialogueSceneData, DialogueSpeakerData, DialogueValue, DialogueRevisit, DialogueScoring, DialogueFeedback, DialogueMode, LineVoiceData, CharacterManifest } from '@elabora/player/dialogue/types';
 import { explorePaths, maxPointsOf } from '@elabora/player/dialogue/paths';
 import type { DialogueEnv } from '@elabora/player/dialogue/walk';
 import { withoutDirections } from '../narration/directions.ts';
@@ -36,13 +36,15 @@ export interface DialogueDataOptions {
   // option the learner's voice says (learnerVoice; id "<node>.<option>"). text: as written, stage
   // directions kept. The core's tools leave it out.
   voice?: (line: { id: string; text: string; speaker?: string }) => LineVoiceData | undefined;
+  // The length in seconds of a sound of the course (the compiler's), for a sound line (D67).
+  soundLength?: (sound: string) => number | null;
   // The SVG of a speaker's look, sanitized for the page (the compiler's), with what its root declares.
   look?: (speaker: string, svg: string) => { inline: string; manifest: CharacterManifest } | null;
 }
 
 export const emptyKeys = (): DialogueKeys => ({ choices: {}, bits: {}, endings: {} });
 
-export function dialogueData(props: Record<string, unknown>, { course, keys = emptyKeys(), assetPath = (name) => `assets/${name}`, directions = 'keep', markdown, env, voice, look }: DialogueDataOptions = {}): DialogueData {
+export function dialogueData(props: Record<string, unknown>, { course, keys = emptyKeys(), assetPath = (name) => `assets/${name}`, directions = 'keep', markdown, env, voice, soundLength, look }: DialogueDataOptions = {}): DialogueData {
   const mode = oneOf(props.mode, ['practice', 'assessment', 'exploration'] as const, 'practice');
   const defaults = MODE_DEFAULTS[mode];
   const text = (value: unknown) => (directions === 'strip' ? withoutDirections(textOf(value)) : textOf(value));
@@ -54,7 +56,15 @@ export function dialogueData(props: Record<string, unknown>, { course, keys = em
     const cast = recordsOf(value.cast).filter((member) => typeof member.speaker === 'string').map((member) => ({ speaker: textOf(member.speaker), position: oneOf(member.position, ['left', 'right', 'center'] as const, 'left') }));
     return { ...(background ? { background: assetPath(background) } : {}), ...(cast.length ? { cast } : {}) };
   };
-  const line = (value: Record<string, unknown>): DialogueLineData => {
+  const line = (value: Record<string, unknown>): DialogueLineItem => {
+    if (typeof value.sound === 'string') {
+      const length = soundLength?.(value.sound);
+      return {
+        id: textOf(value.id), sound: value.sound, ...(typeof value.caption === 'string' ? { caption: value.caption } : {}),
+        ...(typeof value.volume === 'number' ? { volume: value.volume } : {}), ...(conditions(value.if) ? { if: conditions(value.if) } : {}),
+        ...(typeof length === 'number' ? { duration: length } : {})
+      };
+    }
     const cues = recordsOf(value.cues).filter((cue) => isRecord(cue.at)).map((cue): DialogueCueData => ({
       at: cue.at as DialogueCueData['at'],
       ...(typeof cue.gesture === 'string' ? { gesture: cue.gesture } : {}),
@@ -146,7 +156,7 @@ export function dialogueData(props: Record<string, unknown>, { course, keys = em
 function speakersOf(data: DialogueData, course: Course | null | undefined, assetPath: (name: string) => string, look?: DialogueDataOptions['look']): Record<string, DialogueSpeakerData> {
   const named = new Set<string>();
   if (data.learner) named.add(data.learner);
-  const lines = (list: readonly DialogueLineData[]) => { for (const line of list) if (line.speaker) named.add(line.speaker); };
+  const lines = (list: readonly DialogueLineItem[]) => { for (const line of list) if (line.speaker) named.add(line.speaker); };
   for (const node of data.nodes) {
     lines(node.lines);
     for (const option of node.options) lines(option.reply);

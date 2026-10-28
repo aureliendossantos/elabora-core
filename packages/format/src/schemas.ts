@@ -119,20 +119,23 @@ export function derefSchema(schema: JsonSchema): JsonSchema {
   // contains itself keeps its $ref there.
   const local = (schema.$defs ?? {}) as Record<string, unknown>;
   const expanding = new Set<string>();
+  // A $ref with fields beside it: the fields win, the properties of both are kept (a dialogue's sound
+  // line: the shared sound line's, and its own if).
+  const join = (base: unknown, own: unknown): object => {
+    const a = base as JsonSchema;
+    const b = own as JsonSchema;
+    return { ...a, ...b, ...(a.properties && b.properties ? { properties: { ...a.properties, ...b.properties } } : {}) };
+  };
   const walk = (s: unknown): unknown => {
     if (Array.isArray(s)) return s.map(walk);
     if (!s || typeof s !== 'object') return s;
     const { $ref, ...rest } = s as JsonSchema;
-    if (typeof $ref === 'string' && /defs\.schema\.json#\/\$defs\//.test($ref)) {
-      return { ...(walk(shared($ref)) as object), ...(walk(rest) as object) };
-    }
-    if (typeof $ref === 'string' && $ref.startsWith('#/$defs/') && shared($ref)) {
-      return { ...(walk(shared($ref)) as object), ...(walk(rest) as object) };
-    }
+    if (typeof $ref === 'string' && /defs\.schema\.json#\/\$defs\//.test($ref)) return join(walk(shared($ref)), walk(rest));
+    if (typeof $ref === 'string' && $ref.startsWith('#/$defs/') && shared($ref)) return join(walk(shared($ref)), walk(rest));
     const name = typeof $ref === 'string' && $ref.startsWith('#/$defs/') ? $ref.slice(8) : null;
     if (name !== null && Object.hasOwn(local, name) && !expanding.has(name)) {
       expanding.add(name);
-      const inlined = { ...(walk(local[name]) as object), ...(walk(rest) as object) };
+      const inlined = join(walk(local[name]), walk(rest));
       expanding.delete(name);
       return inlined;
     }

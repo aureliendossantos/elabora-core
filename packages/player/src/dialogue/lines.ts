@@ -11,7 +11,7 @@ import { nodeOf, optionOf } from './walk.ts';
 import type { Beat } from './walk.ts';
 import type { DialogueLineData, DialogueOptionData, LineVoiceData } from './types.ts';
 import { createLinePlayback, cueTime } from './playback.ts';
-import { bubbleRow, typingRow, paintWords, showAllWords, noteRow, firstChoiceRow, endRow, fitLines } from './thread.ts';
+import { bubbleRow, typingRow, paintWords, showAllWords, noteRow, firstChoiceRow, endRow, fitLines, soundRow } from './thread.ts';
 import type { BubbleRow } from './thread.ts';
 import { clamp, phone } from './view-parts.ts';
 import type { LineState, Step, Typing, ViewParts, ViewState } from './view-parts.ts';
@@ -70,11 +70,13 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
   }
   const voiceOf = (line: { text: string; voice?: LineVoiceData }): LineVoiceData => line.voice ?? textVoice(line.text, undefined, language);
 
+  // Beats that show nothing: a node entered, a jump, actions, a sound without caption.
+  const quiet = (beat: Beat) => beat.type === 'node' || beat.type === 'jump' || beat.type === 'actions' || (beat.type === 'sound' && !beat.line.caption);
   // The beat the learner sees next, past those that show nothing.
   function nextShown(from: number): Beat | undefined {
     const beats = state.beats;
     let index = from;
-    while (beats[index] && (beats[index].type === 'node' || beats[index].type === 'jump' || beats[index].type === 'actions')) index++;
+    while (beats[index] && quiet(beats[index])) index++;
     return beats[index];
   }
   // Something to read comes next (a line, an answer, a note), not the options or the end.
@@ -96,7 +98,7 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
   function typingFor(from: number): Typing {
     const beats = state.beats;
     let index = from;
-    while (beats[index] && (beats[index].type === 'node' || beats[index].type === 'jump' || beats[index].type === 'actions')) index++;
+    while (beats[index] && quiet(beats[index])) index++;
     const beat = beats[index];
     if (!beat || beat.type !== 'line' || beat.role !== 'character' || still || instant()) return null;
     if (data.style === 'scene' && !phone()) return null;
@@ -150,6 +152,20 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
         show();
         if (!live) return null;
         return noteWait(index, option);
+      }
+      // A sound among the lines (D67): its caption in the thread; the next beat waits for its end.
+      case 'sound': {
+        const line = beat.line;
+        if (line.caption) {
+          const node = soundRow(line.caption, line.sound);
+          node.dataset.beat = String(index);
+          box.insert(node);
+          record(index, node);
+        }
+        if (!live) return null;
+        host().act([{ type: 'play-sound', sound: line.sound, ...(line.volume !== undefined ? { volume: line.volume } : {}) }]);
+        if (still || !state.beats[index + 1]) return null;
+        return { kind: 'wait', until: clock.now() + (line.duration ?? 0), typing: typingFor(index + 1) };
       }
       case 'retry': return live ? { kind: 'wait', until: clock.now() + 0.3 / rate(), typing: null } : null;
       case 'decision': {

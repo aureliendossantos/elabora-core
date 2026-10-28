@@ -17,14 +17,15 @@ import { blockLayouts, round, scrollFrom } from './layout-report.ts';
 import { REVIEW_PROTOCOL, SIZE_RULES, acceptsFrom, otherVersion, reviewPeer, readPageMessage, textScale, widestColumn, wordAt, wordTime } from './review-protocol.ts';
 import type { AnchorPart, BlocksMessage, GoTarget, LayoutMessage, LocationMessage, ModuleMessage, PageMessage, ReadyMessage, ReviewBlock } from './review-protocol.ts';
 import type { BlockData, NarrationData, ScreenData } from './course-data.ts';
-import type { DialogueData } from './dialogue/types.ts';
+import type { DialogueData, DialogueLineData } from './dialogue/types.ts';
+import { isSoundLineData } from './dialogue/types.ts';
 
 // The lines of a dialogue a reviewer may comment: its nodes' lines and replies, and the options its
 // learner says with their voice ("<node>.<option>").
-function dialogueLines(data: DialogueData): { id: string; text?: string; speaker?: string; voice?: DialogueData['nodes'][number]['lines'][number]['voice'] }[] {
+function dialogueLines(data: DialogueData): { id: string; text?: string; speaker?: string; voice?: DialogueLineData['voice'] }[] {
   return data.nodes.flatMap((node) => [
-    ...node.lines,
-    ...node.options.flatMap((option) => [...(option.voice ? [{ id: `${node.id}.${option.id}`, text: option.text, ...(data.learner ? { speaker: data.learner } : {}), voice: option.voice }] : []), ...option.reply])
+    ...node.lines.filter((line) => !isSoundLineData(line)),
+    ...node.options.flatMap((option) => [...(option.voice ? [{ id: `${node.id}.${option.id}`, text: option.text, ...(data.learner ? { speaker: data.learner } : {}), voice: option.voice }] : []), ...option.reply.filter((line) => !isSoundLineData(line))])
   ]);
 }
 

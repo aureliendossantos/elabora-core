@@ -16,6 +16,10 @@ import { classifyLicence, soundCredit } from '@elabora/core/sounds/licences';
 import { screenVoiceLines } from '@elabora/core/narration/voice-lines';
 import { screenTimeline } from '@elabora/core/narration/timeline';
 import { extractUnits as translationUnits } from '@elabora/core/i18n/units';
+import { findDialogue as findDialogueBlock, projectDialogue } from '@elabora/core/dialogue/project';
+import { playDialogue } from '@elabora/core/dialogue/play';
+import { dialogueScript, formatScript } from '@elabora/core/dialogue/script';
+import type { DialogueData } from '@elabora/player/dialogue/types';
 import { ROOT, copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
 import { FFMPEG, hasFfmpeg, narrate } from '../narration.ts';
 
@@ -196,3 +200,35 @@ test('a sound line in a narration: its place and length on the timeline, its cap
   assert.match(files.get('narration/the-cherry.vtt')!.toString(), /The phone rings\./);
   assert.ok(!files.has('assets/sounds/ring.m4a'), 'its sound is in the track: no file of its own');
 });
+
+test('a sound line in a dialogue: compiled with its length, played as a beat of its own, in the script, the path and the translation', { skip: !hasFfmpeg() && 'ffmpeg not found' }, () => {
+  const dir = copyExample(VOICED);
+  const screen = readJSON(dir, 'screens/practice.json');
+  const dialogue = JSON.stringify(screen).includes('"bank-call"') ? findDialogue(screen) : null;
+  assert.ok(dialogue);
+  dialogue.props.nodes[0].lines.unshift({ id: 'ring-first', sound: 'sonnerie', caption: 'The phone rings.' });
+  writeJSON(dir, 'screens/practice.json', screen);
+  assert.deepEqual(codes(validateDir(dir).diagnostics).filter((code) => code.startsWith('E_')), []);
+  const data = compiled(dir);
+  const props = data.screens.find((entry) => entry.id === 'practice')!.blocks.find((block) => block.id === 'bank-call')!.props as unknown as DialogueData;
+  const ring = props.nodes[0]!.lines[0]!;
+  assert.deepEqual({ ...ring, duration: Math.round((ring as { duration?: number }).duration! * 100) / 100 }, { id: 'ring-first', sound: 'sonnerie', caption: 'The phone rings.', duration: 1.15 });
+  assert.ok(data.sounds?.files?.sonnerie, 'shipped');
+  const project = loadProjectFromDir(dir);
+  const ref = findDialogueBlock(project, 'bank-call')!;
+  const raw = projectDialogue(project, ref);
+  const played = playDialogue(project, ref, []);
+  assert.deepEqual(played.steps[0], { kind: 'sound', node: 'call', text: '(sound sonnerie: The phone rings.)', line: 'ring-first', sound: 'sonnerie' });
+  assert.match(formatScript(dialogueScript(raw, { id: 'bank-call', screen: 'practice' })), /sound sonnerie[^\n]*The phone rings\./);
+  assert.ok(translationUnits(project).some((unit) => unit.id === 'block.bank-call.nodes.call.lines.ring-first.caption' && unit.text === 'The phone rings.'));
+  assert.ok(translationUnits(project).some((unit) => unit.id === 'block.bank-call.nodes.call.lines.dana-call.text'), 'the voice lines still translate');
+  assert.ok(!screenVoiceLines(project, 'practice').some((line) => line.line.id === 'ring-first'), 'no voice for a sound');
+});
+
+function findDialogue(value: unknown): { props: { nodes: { lines: unknown[] }[] } } | null {
+  if (Array.isArray(value)) { for (const item of value) { const found = findDialogue(item); if (found) return found; } return null; }
+  if (!value || typeof value !== 'object') return null;
+  if ((value as { type?: unknown }).type === 'dialogue') return value as { props: { nodes: { lines: unknown[] }[] } };
+  for (const item of Object.values(value)) { const found = findDialogue(item); if (found) return found; }
+  return null;
+}

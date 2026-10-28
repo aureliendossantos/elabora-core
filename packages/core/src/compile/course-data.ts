@@ -36,7 +36,7 @@ import { readText } from '../project/files.ts';
 import { pageMinutes } from '../project/duration.ts';
 import type { ScreenTimeline, TimelineMoment } from '../narration/timeline.ts';
 import { playerConfig, playerContent, shownPlayer, aboutCourse, withItemEnabled } from '../player/config.ts';
-import { compileSounds } from '../sounds/sounds.ts';
+import { compileSounds, soundAssets, soundLength } from '../sounds/sounds.ts';
 import type { InterfaceSounds } from '../sounds/sounds.ts';
 
 // Turns the source project into the data the player reads (window.ELABORA_COURSE, typed CourseData
@@ -593,6 +593,7 @@ function dialogueProps(blockId: string, props: Record<string, unknown>, scope: S
   return dialogueData(props, {
     course: context.course, keys: dialogueKeys(blockId, context.keys, context.lock ?? null), assetPath: context.assetPath, directions: 'strip', markdown: (text) => renderMarkdown(text),
     voice: dialogueVoices(project, scope.screen, { ...(context.dialogueAudio ? { packaged: context.dialogueAudio } : {}) }),
+    soundLength: (sound) => { const asset = soundAssets(project).get(sound); return asset ? soundLength(project, asset) : null; },
     look: (speaker, svg) => {
       const source = readText(project.files, `assets/${svg}`);
       const drawn = source === null ? null : characterInline(source, speaker);

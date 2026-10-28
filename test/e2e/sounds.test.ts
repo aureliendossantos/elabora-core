@@ -187,3 +187,51 @@ test('phishing-by-numbers: the phone rings on « rings », from a cue of the dia
     assert.deepEqual(state.played.filter((entry) => entry.kind === 'story').map((entry) => [entry.sound, entry.src]), [['sonnerie', 'assets/sounds/sonnerie.m4a']]);
   });
 });
+
+test('a dialogue: a sound line rings with its caption in the thread before the next line; choosing and its note sound as a question does', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
+  const dir = copyExample('phishing-by-numbers');
+  const screen = JSON.parse(fs.readFileSync(path.join(dir, 'screens/practice.json'), 'utf8'));
+  const dialogue = JSON.stringify(screen).includes('"bank-call"') ? findBlock(screen, 'bank-call') : null;
+  assert.ok(dialogue);
+  dialogue.props.nodes[0].lines.unshift({ id: 'ring-first', sound: 'sonnerie', caption: 'The phone rings.' });
+  fs.writeFileSync(path.join(dir, 'screens/practice.json'), `${JSON.stringify(screen, null, 2)}\n`);
+  type Dialogues = { start(id: string): void; advance(seconds: number): void; choose(id: string, option: string): void; state(id: string): { phase: string; line: string | null; waiting: boolean } };
+  await player(dir, async (page) => {
+    await page.evaluate(async () => { const t = (window as PlayerWindow).__elabora; for (const s of t.engine.screens) { t.engine.st.visited.add(s.key); t.engine.st.completed.add(s.key); } t.go('practice'); await t.ready(); });
+    await page.mouse.click(5, 450);
+    await page.evaluate(() => (window as unknown as { __elabora: { dialogues: Dialogues } }).__elabora.dialogues.start('bank-call'));
+    const caption = page.locator('.t-dialogue-row[data-sound="sonnerie"] .t-dialogue-narration');
+    await caption.waitFor({ timeout: 30000 });
+    assert.equal(await caption.textContent(), 'The phone rings.');
+    await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().played.some((entry) => entry.sound === 'sonnerie'), null, { timeout: 30000 });
+    // The next line waits for the ring to end (1.15 s).
+    const advance = (seconds: number) => page.evaluate((s) => (window as unknown as { __elabora: { dialogues: Dialogues } }).__elabora.dialogues.advance(s), seconds);
+    const said = () => page.evaluate(() => (window as unknown as { __elabora: { dialogues: Dialogues } }).__elabora.dialogues.state('bank-call').line);
+    await advance(0.5);
+    assert.equal(await said(), null, 'still ringing');
+    for (let i = 0; i < 10 && (await said()) !== 'dana-call'; i++) await advance(0.5);
+    assert.equal(await said(), 'dana-call');
+    for (let i = 0; i < 200; i++) {
+      const phase = await page.evaluate(() => (window as unknown as { __elabora: { dialogues: Dialogues } }).__elabora.dialogues.state('bank-call').phase);
+      if (phase === 'choosing') break;
+      await advance(0.5);
+      if (await page.evaluate(() => (window as unknown as { __elabora: { dialogues: Dialogues } }).__elabora.dialogues.state('bank-call').waiting)) await page.evaluate(() => (window as unknown as { __elabora: { dialogues: Dialogues & { next(id: string): void } } }).__elabora.dialogues.next('bank-call'));
+    }
+    await page.evaluate(() => (window as unknown as { __elabora: { dialogues: Dialogues } }).__elabora.dialogues.choose('bank-call', 'a'));
+    for (let i = 0; i < 40; i++) {
+      const roles = (await fullState(page)).played.filter((entry) => entry.kind === 'interface').map((entry) => entry.role);
+      if (roles.includes('good')) break;
+      await advance(0.5);
+    }
+    const roles = (await fullState(page)).played.filter((entry) => entry.kind === 'interface').map((entry) => entry.role);
+    assert.ok(roles.includes('select') && roles.includes('good'), JSON.stringify(roles));
+  });
+});
+
+function findBlock(value: unknown, id: string): { props: { nodes: { lines: unknown[] }[] } } | null {
+  if (Array.isArray(value)) { for (const item of value) { const found = findBlock(item, id); if (found) return found; } return null; }
+  if (!value || typeof value !== 'object') return null;
+  if ((value as { id?: unknown }).id === id && 'props' in value) return value as { props: { nodes: { lines: unknown[] }[] } };
+  for (const item of Object.values(value)) { const found = findBlock(item, id); if (found) return found; }
+  return null;
+}

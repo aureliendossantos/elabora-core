@@ -15,13 +15,14 @@ import { letterOf, choosesVerb } from './script.ts';
 import type { Project } from '../project/model.ts';
 
 export interface PlayedStep {
-  kind: 'line' | 'choice' | 'feedback' | 'retry' | 'jump' | 'end' | 'decision';
+  kind: 'line' | 'sound' | 'choice' | 'feedback' | 'retry' | 'jump' | 'end' | 'decision';
   node: string;
   text: string;
   // What the step is, for a reader that words it itself (the app's « Jouer un chemin »): the line
   // said (line, with role, and option for a reaction), the option chosen (choice, feedback, retry;
-  // auto: taken by itself, a fallback), the ending reached (end).
+  // auto: taken by itself, a fallback), the ending reached (end), the sound played (sound, D67).
   line?: string;
+  sound?: string;
   role?: 'character' | 'learner' | 'narration';
   option?: string;
   auto?: true;
@@ -71,6 +72,8 @@ function describeSteps(data: DialogueData, walk: DialogueWalk): PlayedStep[] {
     if (beat.type === 'line') {
       const who = beat.line.speaker ? data.speakers[beat.line.speaker]?.name ?? beat.line.speaker : null;
       steps.push({ kind: 'line', node: beat.node, text: beat.role === 'narration' ? `(${withoutDirections(beat.line.text)})` : `${who}: ${withoutDirections(beat.line.text)}`, line: beat.line.id, role: beat.role, ...(beat.option ? { option: beat.option } : {}) });
+    } else if (beat.type === 'sound') {
+      steps.push({ kind: 'sound', node: beat.node, text: `(sound ${beat.line.sound}${beat.line.caption ? `: ${beat.line.caption}` : ''})`, line: beat.line.id, sound: beat.line.sound, ...(beat.option ? { option: beat.option } : {}) });
     } else if (beat.type === 'choice') {
       const node = data.nodes.find((candidate) => candidate.id === beat.node);
       const index = node?.options.findIndex((candidate) => candidate.id === beat.option) ?? -1;

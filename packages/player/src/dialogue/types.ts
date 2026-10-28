@@ -101,7 +101,23 @@ export interface DialogueLineData {
   if?: DialogueCondition[];
   // Its voice (the course data; the core's own tools leave it out).
   voice?: LineVoiceData;
+  sound?: undefined;
 }
+
+// A sound said among the lines (D67): its caption in the thread; the next line waits for its end.
+export interface DialogueSoundLineData {
+  id: string;
+  sound: string;
+  caption?: string;
+  volume?: number;
+  if?: DialogueCondition[];
+  // Its length in seconds (the course data, from the sound's sidecar).
+  duration?: number;
+  speaker?: undefined;
+  text?: undefined;
+}
+export type DialogueLineItem = DialogueLineData | DialogueSoundLineData;
+export const isSoundLineData = (line: DialogueLineItem): line is DialogueSoundLineData => typeof line.sound === 'string';
 
 export interface DialogueCueData {
   at: { line?: string; word?: string; occurrence?: number; edge?: 'start' | 'end'; offset?: number };
@@ -121,6 +137,12 @@ export interface DialogueAction {
   layer?: string;
   step?: number;
   props?: Record<string, unknown>;
+  // play-sound, stop-sound (D67).
+  sound?: string;
+  volume?: number;
+  loop?: boolean;
+  fade?: number;
+  caption?: string;
 }
 
 export interface DialogueNodeData {
@@ -129,7 +151,7 @@ export interface DialogueNodeData {
   objective?: string;
   final?: boolean;
   scene?: DialogueSceneData;
-  lines: DialogueLineData[];
+  lines: DialogueLineItem[];
   prompt?: string;
   options: DialogueOptionData[];
   next?: string | DialogueCase[];
@@ -147,7 +169,7 @@ export interface DialogueOptionData {
   label?: string;
   quality?: DialogueQuality;
   objective?: string;
-  reply: DialogueLineData[];
+  reply: DialogueLineItem[];
   // Markdown as written; the course data adds its HTML.
   feedback?: string;
   feedbackHtml?: string;

@@ -102,6 +102,8 @@ Marc and Leïla are speakers of `course.json`: `{ "id": "marc", "name": "Marc", 
 
 Line ids are unique in the screen, across its narration, its layers and its dialogues: a line's audio, translation and anchors are named by it.
 
+**A sound line** (D67) takes a line's place: `{ "id", "sound", "caption"?, "volume"?, "if"? }`, a sound of the course (`assets/sounds/`) played at its place in the walk; its caption shows in the thread as a narration does, and the next line waits for the sound to end. Leave the caption out when the lines around already say it. A sound that should not hold the conversation (under a line, on a word) is an action instead: `play-sound` in a cue's or an option's `do`.
+
 **Three kinds of text never look alike:** a character's line (with its `speaker`), a narration (no `speaker`: a setting of the scene, centred, without bubble; a speaker declared `narrator: true` says it with its voice, still without a bubble), and the trainer's note (an option's `feedback`, never in a character's mouth).
 
 **A node** is a moment of the conversation: its `lines`, then its way out, in this order:
@@ -286,7 +288,7 @@ A character drawn in SVG is **one file** of the module (`assets/personnages/marc
 
 **Actions on a dialogue** of the same screen: `start-dialogue`, `goto-dialogue` (`block`, `node`: a free object or a click moves the conversation), `restart-dialogue` (from its first line, as « Recommencer »).
 
-**Actions from a dialogue** (options' and cues' `do`) are presentation only: `show-block`, `hide-block`, `show-layer`, `hide-layer`, `play-media`, `pause-media`, `set-object-props`, `reveal-step`. Replaying a path opens no layer: it sets the last visibility and props of the blocks it touched. **A dialogue never writes the course's variables nor navigates** (`E_DIALOGUE_ACTION`): do it on `dialogue.ended`, in an event of the screen.
+**Actions from a dialogue** (options' and cues' `do`) are presentation only: `show-block`, `hide-block`, `show-layer`, `hide-layer`, `play-media`, `pause-media`, `set-object-props`, `reveal-step`, `play-sound`, `stop-sound`. Replaying a path opens no layer: it sets the last visibility and props of the blocks it touched. **A dialogue never writes the course's variables nor navigates** (`E_DIALOGUE_ACTION`): do it on `dialogue.ended`, in an event of the screen.
 
 **Moments in the page**, for what reacts inside the player (the interface's sounds), not for the module's events: while a dialogue plays, its group (`data-t-group`) dispatches a bubbling `elabora:dialogue` event whose `detail` is `{ block, moment, … }`. Never when a path is shown at once (back on a screen, the editor's canvas).
 
@@ -298,6 +300,8 @@ A character drawn in SVG is **one file** of the module (`assets/personnages/marc
 | `end` | the dialogue reached an end | `ending` |
 | `history-open`, `history-close` | the scene's History opened, closed | |
 | `debrief-open`, `debrief-close` | the debrief panel opened (at the end, or « Voir le bilan »), the learner closed it | a move back closes it without its own moment: `back` says it |
+
+The player answers them with the interface's sounds (D67): `choose` select, `feedback` good, ok or bad (none without quality), `back` back, `history-open` and `debrief-open` open, their `-close` close, `end` end.
 
 ## Tools
 

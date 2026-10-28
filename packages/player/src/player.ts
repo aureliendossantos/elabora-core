@@ -24,6 +24,7 @@ import { pageFramesPort } from './frames.ts';
 import { loadTimelinePrefs } from './timeline.ts';
 import type { TimelinePrefs } from './timeline.ts';
 import { createSounds } from './sounds.ts';
+import type { InterfaceRole } from './sound-roles.ts';
 import { alignToButton, applyDisplay, createDisplayMenu, createLanguageMenu, loadDisplayPrefs, saveDisplayPrefs } from './display.ts';
 import type { Popover } from './display.ts';
 import type { CourseData, ScreenData } from './course-data.ts';
@@ -181,6 +182,14 @@ for (const type of ['playing', 'pause', 'ended', 'emptied', 'volumechange'] as c
     if (media instanceof HTMLMediaElement) sounds.voice(mediaKey(media), type !== 'emptied' && !media.paused && !media.ended && !media.muted && media.volume > 0);
   }, true);
 }
+// A dialogue's moments sound as a question's do (D67): a choice, its trainer's note, a move back, a
+// panel opened or closed, the end.
+const DIALOGUE_SOUNDS: Record<string, InterfaceRole> = { choose: 'select', back: 'back', end: 'end', 'history-open': 'open', 'debrief-open': 'open', 'history-close': 'close', 'debrief-close': 'close' };
+document.addEventListener('elabora:dialogue', (event) => {
+  const detail = (event as CustomEvent<{ moment?: string; quality?: string | null }>).detail ?? {};
+  const role = detail.moment === 'feedback' ? (detail.quality === 'good' || detail.quality === 'ok' || detail.quality === 'bad' ? detail.quality : undefined) : DIALOGUE_SOUNDS[detail.moment ?? ''];
+  if (role) sounds.interface(role);
+});
 // A sound's caption (D67): said to screen readers, and shown over the bottom of the screen while it
 // lasts when the learner reads captions, or when the course gives no way to choose them.
 let captionTimer = 0;

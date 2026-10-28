@@ -3,6 +3,7 @@ import { hasDirections } from '../narration/directions.ts';
 import { getRegistry } from '../components/registry.ts';
 import { kindOf } from '../components/template.ts';
 import type { SchemaNode } from '../components/template.ts';
+import type { JsonSchema } from '@elabora/format';
 import type { Project, Block } from '../project/model.ts';
 import { isRecord, recordOf, textOf } from '../compile/values.ts';
 import { listOf } from '../util/values.ts';
@@ -199,7 +200,7 @@ export function extractUnits(project: Project): TranslationUnit[] {
 function walkProps(schema: SchemaNode, value: unknown, pointer: string, idBase: string, builtin: boolean, addUnit: AddUnit): void {
   const walk = (node: SchemaNode, current: unknown, path: string, id: string, key: string | null): void => {
     if (current === undefined || current === null) return;
-    const keywords = node && typeof node === 'object' ? node : null;
+    const keywords = branch(node && typeof node === 'object' ? node : null, current);
     if (typeof current === 'string') {
       if (key === 'id' || key === 'textRef' || key === 'questionRef' || keywords?.enum) return;
       const kind = kindOf(node);
@@ -215,6 +216,17 @@ function walkProps(schema: SchemaNode, value: unknown, pointer: string, idBase: 
     }
   };
   walk(schema, value, pointer, idBase, null);
+}
+// A node with the branch of its if/then/else a value takes (a dialogue's line: a sound when it has
+// one, D67), chosen by the properties the if requires.
+function branch(node: JsonSchema | null, value: unknown): JsonSchema | null {
+  if (!node?.if || typeof node.if !== 'object') return node;
+  const required = Array.isArray(node.if.required) ? node.if.required : [];
+  const holds = isRecord(value) && required.every((name) => typeof name === 'string' && name in value);
+  const chosen = holds ? node.then : node.else;
+  if (!chosen || typeof chosen !== 'object') return node;
+  // A branch that only adds a constraint keeps the node's properties.
+  return { ...node, ...chosen, properties: { ...node.properties, ...chosen.properties } };
 }
 const segment = (key: unknown): string => String(key).replace(/[^A-Za-z0-9_-]/g, '_');
 

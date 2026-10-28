@@ -59,6 +59,7 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
     switch (beat.type) {
       case 'node': case 'jump': return `${beat.type}:${beat.node}`;
       case 'line': return `l:${beat.node}:${beat.option ?? ''}:${beat.line.id}:${beat.line.text}`;
+      case 'sound': return `s:${beat.node}:${beat.option ?? ''}:${beat.line.id}`;
       case 'decision': return `d:${beat.decision}:${beat.node}:${walk.decisions[beat.decision]?.tries.filter((attempt) => attempt.by === 'return').map((attempt) => attempt.option).join(',') ?? ''}`;
       case 'choice': return `c:${beat.decision}:${beat.node}.${beat.option}`;
       case 'actions': case 'feedback': return `${beat.type}:${beat.node}.${beat.option}`;

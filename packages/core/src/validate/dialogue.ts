@@ -4,6 +4,7 @@
 // graph (what no path reaches, loops without a way out, trees that never join, the decisions cap).
 
 import type { DialogueData, DialogueLineData, DialogueCondition, DialogueAction } from '@elabora/player/dialogue/types';
+import { isSoundLineData } from '@elabora/player/dialogue/types';
 import { explorePaths } from '@elabora/player/dialogue/paths';
 import { MAX_DECISIONS } from '@elabora/player/dialogue/walk';
 import { dialogueData } from '../dialogue/data.ts';
@@ -163,7 +164,7 @@ function checkDialogue(ctx: CourseCheckContext, screen: ScreenFile, block: Block
     const at = `/nodes/${index}`;
     objective(node.objective, `${at}/objective`);
     list(fieldsOf(fieldsOf(list(props.nodes)[index]).scene).cast).forEach((member, castIndex) => speakerKnown(fieldsOf(member).speaker as string | undefined, `${at}/scene/cast/${castIndex}/speaker`, `the cast of node "${node.id}"`));
-    node.lines.forEach((value, lineIndex) => line(value, `${at}/lines/${lineIndex}`));
+    node.lines.forEach((value, lineIndex) => (isSoundLineData(value) ? conditions(value.if, `${at}/lines/${lineIndex}/if`) : line(value, `${at}/lines/${lineIndex}`)));
     if (typeof node.next === 'string') target(node.next, `${at}/next`, `node "${node.id}"`);
     else if (Array.isArray(node.next)) {
       node.next.forEach((entry, caseIndex) => { target(entry.go, `${at}/next/${caseIndex}/go`, `node "${node.id}"`); conditions(entry.if, `${at}/next/${caseIndex}/if`); });
@@ -198,7 +199,7 @@ function checkDialogue(ctx: CourseCheckContext, screen: ScreenFile, block: Block
         else if (type !== 'number') emit('E_DIALOGUE_VAR', `${where}/add/${name}`, `add needs a number variable; "${name}" is a ${type}.`);
       }
       actions(option.do, `${where}/do`);
-      option.reply.forEach((value, lineIndex) => line(value, `${where}/reply/${lineIndex}`));
+      option.reply.forEach((value, lineIndex) => (isSoundLineData(value) ? conditions(value.if, `${where}/reply/${lineIndex}/if`) : line(value, `${where}/reply/${lineIndex}`)));
       conditions(option.if, `${where}/if`);
       if (option.points) anyPoints = true;
       if (data.scoring === 'quality' && !option.fallback && !option.quality) emit('W_DIALOGUE_SCORE_MISSING', `${where}`, `option ${option.id} of "${node.id}" has no quality (good, ok or bad), which scoring quality counts.`);

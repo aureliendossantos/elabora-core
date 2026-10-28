@@ -25,6 +25,7 @@ import { presentationOf } from './walk.ts';
 import type { DialogueWalk } from './walk.ts';
 import { canRestart, restart, jump, scoredDone, openDialogue } from './run.ts';
 import type { DialogueData } from './types.ts';
+import { isSoundLineData } from './types.ts';
 import { createClock } from './playback.ts';
 import type { DialogueClock } from './playback.ts';
 import type { ThreadContext } from './thread.ts';
@@ -121,7 +122,7 @@ export function createDialogues(context: DialoguesContext) {
     const log = find('log')!;
     const room = find('options')!;
     const thread: ThreadContext = { data, labels, language, format: formatLabel };
-    const voiced = [...data.nodes].some((node) => node.lines.some((line) => !!line.voice?.src) || node.options.some((option) => option.reply.some((line) => !!line.voice?.src) || !!option.voice?.src));
+    const voiced = [...data.nodes].some((node) => node.lines.some((line) => !isSoundLineData(line) && !!line.voice?.src) || node.options.some((option) => option.reply.some((line) => !isSoundLineData(line) && !!line.voice?.src) || !!option.voice?.src));
     const clock = createClock(host().virtual);
     root.setAttribute('data-t-look', data.style);
     root.setAttribute('data-t-reveal', data.reveal);

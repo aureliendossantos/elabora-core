@@ -122,6 +122,20 @@
         }
       }
     },
+    "dialogueLineItem": {
+      "if": { "type": "object", "required": ["sound"] },
+      "then": { "$ref": "#/$defs/dialogueSoundLine" },
+      "else": { "$ref": "#/$defs/dialogueLine" }
+    },
+    "dialogueSoundLine": {
+      "type": "object",
+      "$ref": "../defs.schema.json#/$defs/soundLine",
+      "description": "A sound of the dialogue (D67): a sound of the course said at its place among the lines (the phone that rings before Neil speaks), its caption in the thread; the next line waits for it to end.",
+      "properties": {
+        "if": { "$ref": "#/$defs/dialogueConditions", "description": "The sound is skipped unless every condition holds." }
+      },
+      "unevaluatedProperties": false
+    },
     "dialogueLine": {
       "type": "object",
       "additionalProperties": false,
@@ -250,7 +264,7 @@
         "objective": { "$ref": "../defs.schema.json#/$defs/planId", "description": "The plan objective this decision practises (default: the dialogue's)." },
         "final": { "type": "boolean", "default": false, "description": "A final decision (« Choix définitif », announced before the choice): no going back to it, nor before it." },
         "scene": { "$ref": "#/$defs/dialogueScene", "description": "Style scene: the backdrop (and cast) from this node on." },
-        "lines": { "type": "array", "maxItems": 50, "items": { "$ref": "#/$defs/dialogueLine" }, "description": "Said in order when the node is entered; a line whose if fails is skipped." },
+        "lines": { "type": "array", "maxItems": 50, "items": { "$ref": "#/$defs/dialogueLineItem" }, "description": "Said in order when the node is entered; a line whose if fails is skipped." },
         "prompt": { "type": "string", "minLength": 1, "maxLength": 300, "x-translatable": true, "description": "The instruction over the options (« Quelle question posez-vous en premier ? »)." },
         "options": { "type": "array", "maxItems": 12, "items": { "$ref": "#/$defs/dialogueOption" }, "description": "A decision: what the learner may say. One option shown is not taken by itself: the learner clicks it." },
         "next": {
@@ -284,7 +298,7 @@
         "label": { "type": "string", "minLength": 1, "maxLength": 200, "x-translatable": true, "description": "The button's words, when shorter than text." },
         "quality": { "enum": ["good", "ok", "bad"], "description": "Good, ok or bad: never shown before the choice; the score (quality), the debrief and SCORM (correct, neutral, wrong) read it." },
         "objective": { "$ref": "../defs.schema.json#/$defs/planId", "description": "The plan objective this choice puts into play." },
-        "reply": { "type": "array", "maxItems": 20, "items": { "$ref": "#/$defs/dialogueLine" }, "description": "The immediate reaction: lines said after the learner's bubble." },
+        "reply": { "type": "array", "maxItems": 20, "items": { "$ref": "#/$defs/dialogueLineItem" }, "description": "The immediate reaction: lines said after the learner's bubble." },
         "feedback": { "$ref": "../defs.schema.json#/$defs/markdown", "x-translatable": true, "description": "The trainer's note on this choice, shown as a note (never a character's bubble) after the reaction, when the dialogue's feedback says now or both, and in the debrief." },
         "points": { "type": "number", "minimum": -1000, "maximum": 1000, "default": 0, "description": "What the choice is worth (scoring points)." },
         "set": { "type": "object", "description": "Assigns variables of the dialogue: { \"trust\": 1 }.", "propertyNames": { "pattern": "^[a-z][a-zA-Z0-9_]{0,31}$" }, "additionalProperties": { "type": ["number", "boolean", "string"] } },
