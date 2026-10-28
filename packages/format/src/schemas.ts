@@ -54,11 +54,15 @@ export interface SchemaError {
   schemaPath: string;
 }
 
+// multipleOf with decimals (a slider's step of 0.05): 0.6 / 0.05 is 11.999… in floating point, so ajv
+// compares the quotient with an integer to this many decimals.
+export const MULTIPLE_OF_PRECISION = 9;
+
 let ajv: Ajv2020 | undefined;
 
 export function getAjv(): Ajv2020 {
   if (ajv) return ajv;
-  ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false, allowUnionTypes: true, verbose: false });
+  ajv = new Ajv2020({ allErrors: true, strict: true, strictRequired: false, allowUnionTypes: true, verbose: false, multipleOfPrecision: MULTIPLE_OF_PRECISION });
   addFormats(ajv);
   ajv.addFormat('color', /^#[0-9A-Fa-f]{6}$/);
   ajv.addVocabulary(X_KEYWORDS);
@@ -102,7 +106,7 @@ export function compileInline(schema: JsonSchema | boolean): ValidateFunction {
   if (cached) return cached;
   if (!inlineAjv || inlineCache.size >= 500) {
     inlineCache.clear();
-    inlineAjv = new Ajv2020({ allErrors: true, strict: false, allowUnionTypes: true });
+    inlineAjv = new Ajv2020({ allErrors: true, strict: false, allowUnionTypes: true, multipleOfPrecision: MULTIPLE_OF_PRECISION });
     inlineAjv.addFormat('color', /^#[0-9A-Fa-f]{6}$/);
   }
   const v = inlineAjv.compile(schema);

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import * as looks from '@elabora/node/look-client';
+import type { BackdropReport } from '@elabora/node/look-client';
 import { defineCommand, errorMessage, printJson } from './command.ts';
 import { startLookServer } from '../look-server.ts';
 import { styleConflictDiagnostics } from '@elabora/node/style-cascade';
@@ -70,7 +71,7 @@ export const look = defineCommand({
       const objects = result.objects.length ? `; ${result.objects.length} free object(s)${result.objects.some((object) => object.failed) ? `, failed: ${result.objects.filter((object) => object.failed).map((object) => object.block).join(', ')}` : ''}${result.started ? `, ${result.started} (re)started` : ', kept running'}` : '';
       if (result.scrolled && result.scrolled.length > 1) console.log(`✔ ${file}  ${(result.ms / 1000).toFixed(2)} s — down the page:\n    ${result.scrolled.map((stop) => stop.label).join('\n    ')}`);
       else if (result.marks) console.log(`✔ ${file}  ${(result.ms / 1000).toFixed(2)} s — ${result.marks.length} marks:\n    ${result.marks.map((mark) => mark.label).join('\n    ')}`);
-      else console.log(`✔ ${file}  ${(result.ms / 1000).toFixed(2)} s — ${room}${objects}${result.consoleErrors.length ? `\n  console errors:\n    ${result.consoleErrors.join('\n    ')}` : ''}`);
+      else console.log(`✔ ${file}  ${(result.ms / 1000).toFixed(2)} s — ${room}${objects}${backdropText(result.backdrop)}${result.consoleErrors.length ? `\n  console errors:\n    ${result.consoleErrors.join('\n    ')}` : ''}`);
       if (result.clip) console.log(`  close-up of ${flags.block}: ${result.clip.width}×${result.clip.height} px of the page at ${result.clip.x},${result.clip.y}, ×${result.clip.scale}`);
       if (result.act) console.log(`  after ${result.act.actions.join(', ')}: state ${JSON.stringify(result.act.state)}${result.act.events.length ? `; events ${result.act.events.map((event) => `${event.name} ${JSON.stringify(event.payload)}`).join(', ')}` : '; no event'}`);
       if (result.motion) for (const line of motionText(result.motion)) console.log(`  ${line}`);
@@ -101,4 +102,11 @@ async function serveLooks(root: string, idleMs: number | undefined): Promise<num
   // Nothing should be left running; a socket kept alive would keep the process.
   setTimeout(() => process.exit(0), 2000).unref();
   return 0;
+}
+
+// The backdrop in a look's line: its variant (or none shown) and its object's state.
+export function backdropText(backdrop: BackdropReport | undefined): string {
+  if (!backdrop) return '';
+  const variant = backdrop.hidden ? 'hidden (variant none)' : backdrop.variant ? `variant ${backdrop.variant}` : 'no variant';
+  return `; backdrop ${variant}${backdrop.section ? `, section ${backdrop.section}` : ''}${backdrop.object ? `, object ${backdrop.object.id} ${backdrop.object.state}` : ''}`;
 }

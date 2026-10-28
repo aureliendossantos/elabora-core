@@ -7,7 +7,7 @@ export const OBJECT_UI_CSS = `
 .t-ui-title{margin:0;font:700 1.0625rem/1.3 var(--t-font-heading,inherit)}
 .t-ui-eyebrow{margin:0;font-size:0.75rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t-muted)}
 .t-ui-muted{color:var(--t-muted)}
-.t-ui-card{padding:0.625rem 0.75rem;border-radius:var(--t-radius,8px);background:color-mix(in srgb,var(--t-primary) 7%,var(--t-surface));border-left:4px solid var(--t-accent)}
+.t-ui-card{padding:0.625rem 0.75rem;border-radius:var(--t-radius,8px);background:color-mix(in srgb,var(--t-primary) 7%,var(--t-surface));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--t-primary) 12%,transparent)}
 .t-ui-card p{margin:0}
 .t-ui-btn{display:inline-flex;align-items:center;justify-content:center;gap:0.375rem;min-height:44px;min-width:44px;padding:0 1rem;border-radius:var(--t-radius,8px);border:2px solid var(--t-primary);background:var(--t-surface);color:var(--t-primary);font:600 0.9375rem var(--t-font-body,inherit);cursor:pointer}
 .t-ui-btn--primary{background:var(--t-primary);color:var(--t-on-primary)}

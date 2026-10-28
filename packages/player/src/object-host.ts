@@ -111,6 +111,11 @@ export function createObjectHost({ iframe, def, props, strings = {}, tokens, loc
     const send = () => post({ method, params });
     if (ready) send(); else queue.push(send);
   };
+  const latest = new Map<FrameMethod, () => void>();
+  const later = <M extends FrameMethod>(method: M, params: FrameMethods[M]) => {
+    if (ready) { notify(method, params); return; }
+    latest.set(method, () => post({ method, params }));
+  };
 
   const onMessage = async (event: MessageEvent) => {
     if (event.source !== iframe.contentWindow || disposed) return;
@@ -135,6 +140,8 @@ export function createObjectHost({ iframe, def, props, strings = {}, tokens, loc
         })).then((result) => {
           ready = true;
           for (const send of queue.splice(0)) send();
+          for (const send of latest.values()) send();
+          latest.clear();
           onReady?.(result);
         }, (error: Error) => onError?.(error.message));
         break;
@@ -184,9 +191,11 @@ export function createObjectHost({ iframe, def, props, strings = {}, tokens, loc
     updateProps: (next) => notify('object/update-props', { props: next }),
     carryOn: (next, transition, extra = {}) => notify('object/update-props', { props: next, transition, ...(extra.strings ? { strings: extra.strings } : {}), ...(extra.safeArea ? { safeArea: extra.safeArea } : {}) }),
     setRootSize: (px) => notify('object/set-root-size', { rootSize: px }),
-    setSafeArea: (area) => { if (ready) notify('object/safe-area', { safeArea: area }); },
-    setContext: (where) => { if (ready) notify('object/context', { context: where }); },
-    setView: (where) => { if (ready) notify('object/view', { view: where }); },
+    // Before the frame is ready, only the latest of each is kept, and sent once it is (initialize
+    // read them earlier: a change in between would otherwise be lost).
+    setSafeArea: (area) => later('object/safe-area', { safeArea: area }),
+    setContext: (where) => later('object/context', { context: where }),
+    setView: (where) => later('object/view', { view: where }),
     pause: () => notify('object/pause', {}),
     resume: () => notify('object/resume', {}),
     getState: () => request('object/get-state', {}),
