@@ -45,10 +45,14 @@ function toSound(result: Result): OpenverseSound | null {
   };
 }
 
+// Openverse answers a request it has not cached slowly: 12 s for a sound and 52 s for a search on
+// 28 October, then a tenth of a second for the same ones.
+const TIMEOUT = 60_000;
+
 async function get(pathAndQuery: string, signal?: AbortSignal): Promise<unknown> {
   let response: Response;
   try {
-    response = await fetch(`${base()}${pathAndQuery}`, { headers: { 'user-agent': AGENT, accept: 'application/json' }, signal: signal ?? AbortSignal.timeout(20000) });
+    response = await fetch(`${base()}${pathAndQuery}`, { headers: { 'user-agent': AGENT, accept: 'application/json' }, signal: signal ?? AbortSignal.timeout(TIMEOUT) });
   } catch (error) {
     throw new OpenverseError(`Openverse did not answer (${error instanceof Error ? error.message : String(error)}): search the library (--source library), or try again later.`);
   }

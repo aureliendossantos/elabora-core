@@ -38,7 +38,7 @@ before(async () => {
       asked.push({ route: request.url ?? '', body });
       const json = (value: unknown) => { response.writeHead(200, { 'content-type': 'application/json' }); response.end(JSON.stringify(value)); };
       if (request.url === '/v1/user') return json({ subscription: { tier: 'starter', character_count: 1000, character_limit: limit } });
-      if (request.url?.startsWith('/v1/sound-generation')) { response.writeHead(200, { 'content-type': 'audio/mpeg', 'character-cost': String(Math.ceil(40 * (JSON.parse(body).duration_seconds ?? 5))) }); return response.end(mp3); }
+      if (request.url?.startsWith('/v1/sound-generation')) { response.writeHead(200, { 'content-type': 'audio/mpeg', 'character-cost': String(Math.ceil(10 * (JSON.parse(body).duration_seconds ?? 5))) }); return response.end(mp3); }
       if (request.url?.startsWith('/v1/audio/?')) return json({ results: [
         { id: '11111111-1111-1111-1111-111111111111', title: 'Door knock', creator: 'Ann', license: 'cc0', url: `http://127.0.0.1:${(server.address() as AddressInfo).port}/file.mp3`, foreign_landing_url: 'https://freesound.org/s/1/', duration: 2100, source: 'freesound' },
         { id: '22222222-2222-2222-2222-222222222222', title: 'Knock (BY)', creator: 'Bo', license: 'by', license_version: '4.0', url: 'https://example.org/b.mp3', foreign_landing_url: 'https://freesound.org/s/2/', duration: 1500, source: 'freesound' },
@@ -125,12 +125,13 @@ test('Openverse: CC0, public domain and CC BY only (its commercial filter lets N
 test('sound generate: under 1 % of the quota it runs, from 1 % it asks; the same request is never paid twice; its sidecar says it was generated', { skip: NO_FFMPEG }, async () => {
   const dir = copyExample(QUIET);
   forgetQuota();
-  limit = 30000;
-  assert.deepEqual(await estimateSound({ duration: 3 }).then((estimate) => [estimate.credits, estimate.percent, estimate.needsApproval]), [120, 0.4, false]);
+  limit = 10000;
+  // 10 credits a second (ai-costs/periods.json): 3 s is 0.3 % of this quota, 10 s is 1 %.
+  assert.deepEqual(await estimateSound({ duration: 3 }).then((estimate) => [estimate.credits, estimate.percent, estimate.needsApproval]), [30, 0.3, false]);
   await assert.rejects(generateSound(dir, { prompt: 'A desk phone rings twice', duration: 10 }), (error: Error & { code?: string }) => error.code === 'E_VOICE_SPEND' && /~1 %/.test(error.message));
   const made = await generateSound(dir, { prompt: 'A desk phone rings twice', duration: 3, id: 'desk-phone' });
   assert.equal(made.path, 'assets/sounds/desk-phone.mp3');
-  assert.equal(made.credits, 120);
+  assert.equal(made.credits, 30);
   const body = JSON.parse(asked.filter((entry) => entry.route.startsWith('/v1/sound-generation')).at(-1)!.body);
   assert.deepEqual(body, { text: 'A desk phone rings twice', model_id: 'eleven_text_to_sound_v2', duration_seconds: 3, prompt_influence: 0.3 });
   const sidecar = JSON.parse(fs.readFileSync(path.join(dir, 'assets/sounds/desk-phone.json'), 'utf8'));

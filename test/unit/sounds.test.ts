@@ -8,7 +8,7 @@ import { build } from '@elabora/node/build';
 import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
 import { readLock, assignKeys } from '@elabora/core/compile/state-model';
 import { compileCourseData } from '@elabora/core/compile/course-data';
-import { interfaceSounds, courseHasSound } from '@elabora/core/sounds/sounds';
+import { interfaceSounds, courseHasSound, soundCreditsText, PLAYER_SOUND_CREDITS } from '@elabora/core/sounds/sounds';
 import { INTERFACE_ROLES, PLAYER_INTERFACE_SOUNDS } from '@elabora/player/sound-roles';
 import { execFileSync } from 'node:child_process';
 import * as edit from '@elabora/node/edit';
@@ -43,9 +43,19 @@ test('the player package has a file for each interface sound it names, as source
   for (const role of PLAYER_INTERFACE_SOUNDS) {
     assert.ok(INTERFACE_ROLES.includes(role), role);
     const bytes = fs.readFileSync(path.join(PLAYER_SOUNDS, `${role}.m4a`));
-    assert.ok(bytes.length > 1000 && bytes.length < 20000, `${role}.m4a: ${bytes.length} bytes`);
+    // Short and light: the end's jingle, the longest (2.8 s), weighs 35 KB; the others a few.
+    assert.ok(bytes.length > 1000 && bytes.length < (role === 'end' ? 40000 : 20000), `${role}.m4a: ${bytes.length} bytes`);
+    // A role made from a library master is credited to its author, not to Kenney's pack.
+    if ('library' in sources.roles[role]) assert.ok(PLAYER_SOUND_CREDITS[`elabora/sounds/${role}.m4a`], `${role}: a credit in PLAYER_SOUND_CREDITS`);
     assert.equal(bytes.subarray(4, 8).toString('latin1'), 'ftyp', `${role}.m4a is an MP4 file`);
   }
+});
+
+test('CREDITS.txt credits each interface sound to its own author: the end jingle to Fupicat, the others to Kenney', () => {
+  const project = loadProjectFromDir(QUIET);
+  const text = soundCreditsText(project, { interface: { files: { good: 'elabora/sounds/good.m4a', end: 'elabora/sounds/end.m4a' } } } as never, (name) => name) ?? '';
+  assert.match(text, /elabora\/sounds\/end\.m4a\n {2}« WinBanjo » by Fupicat/);
+  assert.match(text, /elabora\/sounds\/good\.m4a\n {2}Interface Sounds 1\.0 by Kenney/);
 });
 
 test('interface sounds: on by themselves when the module has sound, never in a silent one', () => {
