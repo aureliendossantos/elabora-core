@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.4/blocks/callout.schema.json",
+  "title": "callout block props",
+  "description": "A highlighted note: key rule, tip, warning.",
+  "x-category": "content",
+  "x-ai-instructions": "Use for the one rule learners must remember (signalling, E5). Not for decoration.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "variant": { "enum": ["info", "tip", "warning", "important"], "default": "info" },
+    "title": { "type": "string", "maxLength": 120, "x-translatable": true },
+    "markdown": { "$ref": "../defs.schema.json#/$defs/markdown", "description": "Use markdown or textRef, not both.", "x-translatable": true },
+    "textRef": { "$ref": "../defs.schema.json#/$defs/planId" }
+  }
+}

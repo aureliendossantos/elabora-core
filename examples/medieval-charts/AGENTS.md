@@ -1,11 +1,11 @@
-<!-- elabora:rules revision=15 sha256=9865b6470fccf843 · Elabora keeps the rules down to « elabora:rules end » up to date while nobody edits them; write your own notes after it. -->
+<!-- elabora:rules revision=16 sha256=1d043f31e9869a97 · Elabora keeps the rules down to « elabora:rules end » up to date while nobody edits them; write your own notes after it. -->
 # AGENTS.md — Elabora course project
 
 This folder is an Elabora course (`elabora/0.1`). **Read this file and “Notes for this course” below before editing.** Load detailed guidance only for the task at hand.
 
 ## Always applicable
 - **Plan is the contract.** Read `plan.json` and relevant author sources before changing course content. Draft or update the working plan through `elabora_write_plan` / `elabora plan write`; record assumptions in `decided` and at most one consequential `question`. After a validation keep writing the plan, then tell the author what changed (`elabora plan diff` / `elabora_plan_diff`). A change of substance (what is taught, a rule, an answer) is the author's call: ask before writing it. Never modify a `verbatim` text, create/validate plan versions or edit `plan-versions/`: those decisions belong to the author.
-- **No words that repeat.** Avoid eyebrow texts and descriptions unless their information cannot be conveyed from the title and main content: learners read all of it, and on a narrated screen they hear the voice too.
+- **No eyebrows, no repeats.** No line over a title: the module's UI or its style's numbering says where learners are. Skip descriptions the title and content already give: learners read everything, and may hear it too.
 - **Traceability.** Every screen has `covers` and every plan item is covered. Reference validated material with `textRef` / `questionRef` instead of duplicating it; change the plan to change approved wording.
 - **Editable before custom.** Prefer native blocks, then reusable components (including activity forks); use free-object code only when needed. Keep learner-facing words in editable blocks and props, not CSS, templates or generated figures. Preserve component fallbacks and migrations.
 - **Stable learner state.** Never reuse ids or edit `elabora.lock.json`. Rename via `elabora_rename` / `elabora rename`, so references and progress follow.
@@ -51,5 +51,5 @@ If `elabora` is not on PATH (on macOS, Elabora installs it from Réglages › Ou
 - Audience and voice: volunteer guides of a fictional maritime museum; plain, warm English, the visitor's puzzles as the thread (no north, names in every direction, Italy lying down), answered on the last page.
 - Scroll figures are « Étapes » forks (steps, scroll, figure build), not code: `workshop` (a sticky figure whose layers and labels follow the stage the player marks current, `--t-current`; stages numbered in Roman numerals) and `layered-figure` (a figure assembling itself as it scrolls into view, with sweep, wipe and drop reveals, ratio, size and `still`). Their items are the layers: decorative, the figure's `figureAlt` describing it whole; a layered figure's step titles and texts name the layers for text views and exports. The chart on the first page is a layered figure of one layer, shown `still`.
 - `chart-notes` is a fork of « Image interactive » (hotspots, below) whose markers carry words (`marker`); on phones the built-in's numbered list.
-- Glosses are text blocks with an `aside`, styled by `theme/theme.css` as a scribe's note in the margin; the comparison of the two kinds of map is a `columns` block in the theme style `diptych` (leaves that open flat), its eyebrows the text style `eyebrow`.
+- Glosses are text blocks with an `aside`, styled by `theme/theme.css` as a scribe's note in the margin; the comparison of the two kinds of map is a `columns` block in the theme style `diptych` (leaves that open flat).
 - Kept as components, because a built-in would lose them: `folio` (the page's band with the turning rose or a figure slot beside the title, which `opening` does not have) and `wind-rose` (the winds as tabs round the dial, which turns to the wind chosen; panels as tabs would lose the dial).

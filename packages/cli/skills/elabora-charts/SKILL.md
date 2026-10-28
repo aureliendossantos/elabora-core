@@ -13,7 +13,7 @@ Read `elabora docs charts` (MCP `elabora_docs { page: "charts" }`) for the full 
 - `elabora_get_schema("<type>")` (shell: `elabora tools call elabora_get_schema --args '{"name":"bars"}'`) gives the props.
 
 ## Write
-- `takeaway` is the sentence the chart proves ("Most incidents start with an email"), never a label ("Incidents by origin"). When the chart carries the slide, it is the slide's title: set the screen's `showTitle: false` (kept for the menu and screen readers) and put no eyebrow over it.
+- `takeaway` is the sentence the chart proves ("Most incidents start with an email"), never a label ("Incidents by origin"). When the chart carries the slide, it is the slide's title: set the screen's `showTitle: false` (kept for the menu and screen readers).
 - `context` only for what neither the title nor the chart says (a unit, population or period the axes do not give): most charts need none, and never a rephrasing of the takeaway. `source` says where the data comes from.
 - Give every item a short stable `id`; `highlight` the one that carries the idea (one only).
 - Words are in the course language; numbers are numbers (`62`, with `unit: "%"`), formatted by the build.

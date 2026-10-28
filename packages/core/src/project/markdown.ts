@@ -53,10 +53,9 @@ export function projectMarkdown(project: Project, { audience = 'agent', screen: 
       const covers = listOf(s.covers).map((c) => (agent ? c : `${c} ${pidx.items.get(c)?.title || ''}`.trim())).join(', ');
       L.push(`### ${agent ? `\`${s.id}\` — ` : ''}${s.title}`, '');
       L.push(`_${agent ? `covers ${covers} · completeWhen ${s.completeWhen || 'viewed'}${s.required === false ? ' · optional' : ''}${s.layout ? ` · layout ${s.layout}${s.layoutProps ? ` ${JSON.stringify(s.layoutProps)}` : ''}` : ''}${s.style ? ` · style ${s.style}` : ''}` : `Plan : ${covers}`}_`, '');
-      // An opening's head (D63): what the learner reads above the page.
+      // An opening's head (D63): what the learner reads under the title, above the page.
       if (reg.get(s.layout ?? '')?.root === 'opening') {
         const head = recordOf(resolveTextRefs(s.layoutProps ?? {}, pidx));
-        if (head.eyebrow && !agent) L.push(`_${head.eyebrow}_`, '');
         if (head.lead) L.push(agent ? `- opening lead: ${short(head.lead, 160)}` : short(head.lead, 2000), '');
       }
       const blockLines = (blocks: Block[] | undefined, indent = ''): void => {

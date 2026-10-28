@@ -167,8 +167,11 @@ function textRuns(band: Band = { top: 0, bottom: 1 }): TextRun[] {
   const stuck = (selector: string) => { const bar = document.querySelector<HTMLElement>(selector); return bar && !bar.hidden && getComputedStyle(bar).position === 'sticky' ? bar : null; };
   const footer = stuck('.t-bar--bottom') ?? stuck('.t-bar--controls');
   const header = stuck('.t-bar--top');
-  const fold = footer ? footer.getBoundingClientRect().top : innerHeight;
-  const ceiling = header ? header.getBoundingClientRect().bottom : 0;
+  // A few pixels off their edges: the capture at half scale blends the line of pixels along a bar
+  // with the bar, which is not behind the text cut there (it is read whole in another window).
+  const EDGE = 4;
+  const fold = footer ? footer.getBoundingClientRect().top - EDGE : innerHeight;
+  const ceiling = header ? header.getBoundingClientRect().bottom + EDGE : 0;
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     const data = node.textContent ?? '';
     if (!data.trim()) continue;

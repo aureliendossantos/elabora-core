@@ -8,8 +8,6 @@
   padding: 7rem max(1.5rem, calc((100% - var(--t-wide-width)) / 2)) 4.75rem;
 }
 .mc-folio-copy { position: relative; max-width: 46rem; }
-.mc-folio-eyebrow { display: flex; align-items: center; gap: .9rem; margin: 0 0 1.1rem; color: var(--t-primary); font-variant-caps: all-small-caps; letter-spacing: .16em; font-size: 1.3rem; font-weight: 600; }
-.mc-folio-eyebrow::before { content: ""; width: 2.75rem; height: 1px; background: currentColor; }
 .mc-folio-rose {
   position: absolute; z-index: -1; right: -14rem; top: 50%; width: min(76rem, 115vw); aspect-ratio: 1; translate: 0 -50%;
   background: url(../../assets/images/hero-rose.svg) center / contain no-repeat;

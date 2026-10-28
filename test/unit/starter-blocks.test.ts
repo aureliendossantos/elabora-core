@@ -108,33 +108,27 @@ test('opening: a built-in screen layout in the registry and the format, refused 
   assert.deepEqual(codes(findings(dir)).filter((code) => /^E_/.test(code)), []);
 });
 
-test('opening: the build gives the player its place in the course and the page\'s reading time', () => {
+test('opening: the build gives the player the page\'s reading time, and nothing about where the screen is', () => {
   const words = 'Le paquet traverse le réseau jusqu’à l’imprimante. '.repeat(60);
   const dir = course([{ id: 'chemin-long', type: 'text', props: { markdown: words } }], { layout: 'opening', layoutProps: { lead: 'Ce que vous saurez faire.' } });
   const project = loadProjectFromDir(dir);
   const { keys } = assignKeys(project, readLock(project), { dryRun: true });
   const data = compileCourseData(project, keys, { buildId: 'test' });
   const chemin = data.screens.find((screen) => screen.id === 'chemin')!;
-  const order = data.screens.map((screen) => screen.id);
-  const section = project.course!.sections.find((candidate) => candidate.screens.includes('chemin'))!;
-  // A course in sections counts lessons by section; one in a single section, by screen.
-  const sections = project.course!.sections;
-  assert.deepEqual(chemin.layout?.place, sections.length > 1
-    ? { section: section.title, n: sections.indexOf(section) + 1, total: sections.length }
-    : { section: section.title, n: order.indexOf('chemin') + 1, total: order.length });
   assert.ok((chemin.layout?.minutes ?? 0) >= 3, JSON.stringify(chemin.layout?.minutes));
-  assert.match(chemin.layout!.html, /data-t-section/);
+  // No line above the title (D63 amended): no section, no « Leçon 2 sur 6 ».
+  assert.doesNotMatch(chemin.layout!.html, /data-t-(section|lesson)|t-opening-eyebrow/);
+  assert.equal('place' in chemin.layout!, false);
   assert.match(chemin.layout!.html, /data-t-duration/);
-  // Without duration, nothing to measure; with its own eyebrow, nothing to place.
-  writeJSON(dir, 'screens/chemin.json', { ...readJSON(dir, 'screens/chemin.json'), layoutProps: { eyebrow: 'Étude de cas', duration: false } });
+  // Without duration, nothing to measure.
+  writeJSON(dir, 'screens/chemin.json', { ...readJSON(dir, 'screens/chemin.json'), layoutProps: { duration: false } });
   const again = loadProjectFromDir(dir);
   const plain = compileCourseData(again, assignKeys(again, readLock(again), { dryRun: true }).keys, { buildId: 'test' }).screens.find((screen) => screen.id === 'chemin')!;
-  assert.equal(plain.layout?.place, undefined);
   assert.equal(plain.layout?.minutes, undefined);
   // Every language of the player words them.
   for (const language of ['fr', 'en', 'de', 'es', 'it', 'nl', 'pt']) {
     const labels = labelsFor(language);
-    for (const key of ['lessonOf', 'readingTime', 'minutes', 'before', 'after', 'compare', 'compareValue'] as const) assert.ok(labels[key], `${language} ${key}`);
+    for (const key of ['readingTime', 'minutes', 'before', 'after', 'compare', 'compareValue'] as const) assert.ok(labels[key], `${language} ${key}`);
   }
 });
 
