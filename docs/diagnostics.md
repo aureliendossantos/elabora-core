@@ -1,6 +1,6 @@
 # Diagnostic codes
 
-Generated from `packages/core/src/diagnostics/codes.ts` by `npm run docs`. Codes are stable: agents can branch on them. `rule` names a pedagogical guardrail (A1…I1) or a line of the LMS delivery checklist (LMS-n): see [Rules](#rules). An error under a rule stops a build but not a preview (`elabora preview`, the app's Aperçu): the course runs without what the rule asks, and the preview shows it as it is.
+Generated from `packages/core/src/diagnostics/codes.ts` by `pnpm run docs`. Codes are stable: agents can branch on them. `rule` names a pedagogical guardrail (A1…I1) or a line of the LMS delivery checklist (LMS-n): see [Rules](#rules). An error under a rule stops a build but not a preview (`elabora preview`, the app's Aperçu): the course runs without what the rule asks, and the preview shows it as it is.
 
 ## Errors (block the build)
 
@@ -49,6 +49,7 @@ Generated from `packages/core/src/diagnostics/codes.ts` by `npm run docs`. Codes
 | `E_OBJECT_A11Y_ALTERNATIVE` | Free object without text alternative | Fill textAlternative with an equivalent activity or a full description. | F3 |
 | `E_PLAYER_SETTING_MOVED` | Player setting moved into course.json player | Write it in course.json player as the message says (elabora player . --enable/--disable/--set, MCP elabora_player), and remove it from navigation or narration: the outline, the progress and the bottom bar's position are player items and options since 19 October 2026 (D58). |  |
 | `E_PLAYER_ITEM_DUPLICATE` | Player item listed twice | Each item (logo, title, progress, outline, controls, resources, glossary, credits, display, language, previous, next, exit) goes in one bar, once, and each bar has one spacer: remove the second entry (elabora player . --move &lt;item&gt;:&lt;bar&gt;[:&lt;index&gt;] moves it, MCP elabora_player move). |  |
+| `E_SOUND_MISSING` | A sound the course names is not in assets/sounds/ | Add the sound (elabora sound add . &lt;file or library id&gt; --id &lt;id&gt;), or name one the course has (elabora sound list .). |  |
 | `E_DUPLICATE_ENTRY` | Two glossary entries or resources with the same id | Give each glossary entry and each resource its own id: texts link to entries by id (`glossary:<id>`). |  |
 | `E_RESOURCE_URL` | Resource link that is not an https:// address | Give the resource an https:// address (https://intranet.example.com/charte), or a file of assets/ instead (asset). |  |
 | `E_GLOSSARY_TERM_UNKNOWN` | Link to a glossary entry that does not exist | Link to an entry of course.json glossary (`[mot](glossary:<id>)`), or add the entry with MCP elabora_player (glossary: the whole list, the new entry with them): the ids are in the message. |  |

@@ -98,7 +98,7 @@ const chromeOption = new URLSearchParams(location.search).get('chrome');
 const chromeMode: 'none' | 'player' | 'live' = chromeOption === 'live' ? 'live' : chromeOption === 'player' ? 'player' : 'none';
 // The live bars' one tooltip, and the learner's display choices while the page lives.
 const tooltip: Tooltip | null = chromeMode === 'live' ? createTooltip(document.body) : null;
-const displayPrefs: DisplayPrefs = { text: 'normal', captions: false };
+const displayPrefs: DisplayPrefs = { text: 'normal', captions: false, interfaceSounds: true };
 const framesPort = pageFramesPort('url');
 const listeners = new Set<(message: CanvasMessage) => void>();
 let mounted: Mounted | null = null;

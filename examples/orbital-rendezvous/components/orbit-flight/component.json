@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.2/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.3/component.schema.json",
   "id": "orbit-flight",
   "title": "Orbit flight",
   "description": "One orbit of a stacked figure: its ring and craft, and the trail of one hour of flight. When its step is revealed, the craft flies that hour around the Earth and the trail draws behind it (still, fully drawn, under reduced motion or when the screen is visited again).",

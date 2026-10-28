@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.2/lms-profile.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.3/lms-profile.schema.json",
   "id": "totara",
   "name": "Totara 20",
   "documentedAt": "2026-09",

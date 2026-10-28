@@ -103,13 +103,13 @@ test('the vetted fonts: free licences, files as the catalogue says, a reasonable
   assert.equal(languageSubsets('vi'), null);
 });
 
-test('the catalogue is what npm run fonts wrote from sources.json', () => {
+test('the catalogue is what pnpm run fonts wrote from sources.json', () => {
   const sources = JSON.parse(fs.readFileSync(path.join(ROOT, 'packages/fonts/sources.json'), 'utf8')) as { subsets: { name: string; languages: string[] }[]; pangrams: Record<string, string>; families: { id: string; family: string; package: string; version: string; for: string[]; stack: string }[] };
   assert.deepEqual(FONT_CATALOGUE.subsets, sources.subsets);
   assert.deepEqual(FONT_CATALOGUE.pangrams, sources.pangrams);
   const languages = sources.subsets.flatMap((subset) => subset.languages);
   assert.equal(new Set(languages).size, languages.length, 'a language is listed by one subset');
-  assert.deepEqual(FONTS.map((font) => [font.id, font.family, font.source.package, font.source.version, font.for, font.stack]), sources.families.map((font) => [font.id, font.family, font.package, font.version, font.for, font.stack]), 'run npm run fonts after editing sources.json');
+  assert.deepEqual(FONTS.map((font) => [font.id, font.family, font.source.package, font.source.version, font.for, font.stack]), sources.families.map((font) => [font.id, font.family, font.package, font.version, font.for, font.stack]), 'run pnpm run fonts after editing sources.json');
   for (const font of FONTS) {
     assert.match(font.source.tarball, /^https:\/\/registry\.npmjs\.org\/@fontsource/);
     assert.match(font.source.integrity, /^sha512-/);

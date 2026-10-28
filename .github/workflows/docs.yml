@@ -19,13 +19,14 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: npm
-      - run: npm ci
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
       - name: Generated pages are up to date
         run: |
-          npm run docs
-          if [ -n "$(git status --porcelain -- docs)" ]; then git status --short -- docs; echo "::error::Run npm run docs and commit the pages it writes."; exit 1; fi
+          pnpm run docs
+          if [ -n "$(git status --porcelain -- docs)" ]; then git status --short -- docs; echo "::error::Run pnpm run docs and commit the pages it writes."; exit 1; fi
       - run: node --test --test-global-setup=test/isolate.ts test/unit/docs.test.ts

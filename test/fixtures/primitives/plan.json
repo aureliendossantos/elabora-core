@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.2/plan.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.3/plan.schema.json",
   "id": "PLAN-PRIMITIVES",
   "title": "Reading a weather chart",
   "businessGoal": "Field technicians read the morning weather chart before they climb.",

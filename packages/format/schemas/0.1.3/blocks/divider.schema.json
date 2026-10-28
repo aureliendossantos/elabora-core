@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.3/blocks/divider.schema.json",
+  "title": "divider block props",
+  "description": "A divider (« Séparateur ») between the parts of a long page: line (a thin rule, a separator for screen readers), ornament (the theme's drawing, a small mark by default), number (the number of the part, counted on the page: 01, 02…) or space (room only). Decoration: screen readers skip it, except a line, which is an <hr>.",
+  "x-category": "structure",
+  "x-ai-instructions": "Use dividers to mark a pause between the parts of a long scroll page, where a heading would be too much; never one after every paragraph. A number divider opens each part of a page that has three or more (restart: true starts the count again). A part that has a name needs a heading, not a divider.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "presentation": {
+      "enum": ["line", "ornament", "number", "space"],
+      "default": "line",
+      "x-group": "design",
+      "description": "line: a thin rule; ornament: the theme's drawing (a small mark by default); number: the part's number, counted from the first number divider of the screen (01, 02…); space: room only."
+    },
+    "size": { "enum": ["medium", "small", "large"], "default": "medium", "x-group": "design", "description": "How much room it takes above and below." },
+    "restart": { "type": "boolean", "default": false, "description": "number: count from 01 again here." }
+  }
+}

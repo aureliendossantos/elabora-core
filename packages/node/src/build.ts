@@ -33,10 +33,12 @@ import type { WebDelivery } from '@elabora/player/course-data';
 import { designStylesheets, rootStyle, usedTypes } from '@elabora/core/render/styles';
 import { readProvenance } from '@elabora/core/project/generators';
 import { isFontPath, fontLicenses } from '@elabora/core/project/fonts';
+import { interfaceSounds, shippedPlayerSounds, soundAssets } from '@elabora/core/sounds/sounds';
+import type { SoundsData } from '@elabora/player/course-data';
 import { getRegistry, componentHash } from '@elabora/core/components/registry';
 import type { Registry } from '@elabora/core/components/registry';
 import { valuesOfKind } from '@elabora/core/components/props';
-import { runtimeFiles, reviewFiles, vendorThree, compileObjectCode, objectFrameHtml, bundleErrorMessage, ELABORA_VERSION } from './bundles.ts';
+import { runtimeFiles, reviewFiles, playerSoundFile, vendorThree, compileObjectCode, objectFrameHtml, bundleErrorMessage, ELABORA_VERSION } from './bundles.ts';
 import { planZip, writeZip, hashZip, ZipLimitError } from './packaging/zip-writer.ts';
 import type { ZipInput, ZipPlan } from './packaging/zip-writer.ts';
 import { packageMedia, packageSizes, mediaQualityOf } from './packaging/media.ts';
@@ -188,6 +190,12 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   const logo = findItem(playerConfig(course), 'logo')?.item;
   if (logo?.id === 'logo' && logo.enabled && logo.options.asset) shipAsset(logo.options.asset);
   for (const resource of course.resources ?? []) shipAsset(resource.asset);
+  // Sounds of the course an interface role plays instead of the player's own (D67).
+  const interfaceSettings = interfaceSounds(project);
+  if (interfaceSettings.active) {
+    const sounds = soundAssets(project);
+    for (const source of Object.values(interfaceSettings.roles)) if (source?.kind === 'sound') shipAsset(sounds.get(source.id)?.asset);
+  }
   // Media are files on disk (masters, or renditions below the high quality); other assets are read.
   const quality = mediaQualityOf(course, options.mediaQuality);
   const isMedia = (name: string) => {
@@ -324,16 +332,18 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     return { dialogueAudio: (screen: string, line: string) => shipped.get(`${screen}/${line}`) };
   };
   const data: CompiledCourse = compileCourseData(project, keys, {
-    buildId, ...assetPathOf, ...linesOf(dialogueLines),
+    buildId, ...assetPathOf, interfaceSounds: interfaceSettings, ...linesOf(dialogueLines),
     ...(tracks.size ? { narration: (screen: string, layer?: string) => tracks.get(trackName(screen, layer ?? null))?.track } : {}),
     ...(delivery ? { delivery } : {}), ...several
   });
   files.set('elabora/course.js', Buffer.from(`window.ELABORA_COURSE = ${JSON.stringify(data)};\n`));
+  // The player's interface sounds the course data names (D67).
+  for (const name of shippedPlayerSounds(data.sounds)) files.set(name, playerSoundFile(name));
   // The other languages' course data, loaded when a learner chooses one (the same element keys).
   for (const other of others) {
     const own = otherTracks.get(other.language);
     const translated = compileCourseData(other.project, keys, {
-      buildId, ...assetPathOf, ...linesOf(otherLines.get(other.language)),
+      buildId, ...assetPathOf, interfaceSounds: interfaceSettings, ...linesOf(otherLines.get(other.language)),
       ...(own?.size ? { narration: (screen: string, layer?: string) => own.get(trackName(screen, layer ?? null))?.track } : {}),
       ...(delivery ? { delivery } : {}), ...several
     });
@@ -520,6 +530,7 @@ interface CompiledCourse {
   presentation?: { contentWidth?: number; wideWidth?: number };
   screens: CompiledScreen[];
   objects: Record<string, { id: string; version: string }>;
+  sounds?: SoundsData;
   build: { id: string };
 }
 

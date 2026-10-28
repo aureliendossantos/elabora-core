@@ -17,7 +17,7 @@ test('costs: the averages shipped are generated from the ledger as it is, and ev
   const ledger = readLedger();
   const measurements = readMeasurements();
   assert.deepEqual(ledgerProblems(ledger, measurements), []);
-  assert.equal(fs.readFileSync(OUTPUT, 'utf8'), aiCostsModule(ledger, measurements), 'cost-ledger.generated.ts is stale: npm run gen');
+  assert.equal(fs.readFileSync(OUTPUT, 'utf8'), aiCostsModule(ledger, measurements), 'cost-ledger.generated.ts is stale: pnpm run gen');
   // What the estimates start from: a Starter plan is charged 0.4 of the list price, the launch discount's 0.11 left in its period.
   const share = (model: string) => expectedShare(COST_BOOK, { provider: 'elevenlabs', model, plan: 'starter', now: Date.parse('2026-10-14T00:00:00Z') });
   assert.deepEqual({ ...share('eleven_v4'), share: undefined }, { share: undefined, from: 'ledger', period: 'elevenlabs/eleven_v4/starter/2026-10-13' });
@@ -150,7 +150,7 @@ test('costs: the same ledger holds a language model\'s tokens, priced per millio
   assert.equal(expectedShare(book, { provider: 'llm', model: 'model-a', plan: 'standard', settings: { batch: true }, now: at(5) }).from, 'ledger');
 });
 
-test('costs: npm run costs:record appends the history\'s new requests once, with what GET /v1/models says, and says a discount the period lacks', async () => {
+test('costs: pnpm run costs:record appends the history\'s new requests once, with what GET /v1/models says, and says a discount the period lacks', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-costs-'));
   fs.writeFileSync(path.join(dir, 'key'), 'sk_test_ledger_key\n');
   const ledger: CostLedger = {

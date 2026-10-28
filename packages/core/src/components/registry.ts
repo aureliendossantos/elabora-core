@@ -180,9 +180,9 @@ function builtinDescriptor(id: BuiltinBlockType | BuiltinLayoutType): ComponentD
   const b = layout ? { title: layout.title, render: 'template' as const, behavior: undefined } : BUILTINS[id];
   const folder = layout ? 'layouts' : 'blocks';
   const raw = getSchema(`${folder}/${id}`);
-  if (!raw) throw new Error(`Built-in schema ${folder}/${id}.schema.json missing: run npm run gen.`);
+  if (!raw) throw new Error(`Built-in schema ${folder}/${id}.schema.json missing: run pnpm run gen.`);
   const template = b.render === 'template' ? BUILTIN_TEMPLATES[id] : null;
-  if (b.render === 'template' && template === undefined) throw new Error(`Built-in template ${id}.html missing: run npm run gen.`);
+  if (b.render === 'template' && template === undefined) throw new Error(`Built-in template ${id}.html missing: run pnpm run gen.`);
   // A built-in with slots declares them in its props schema (x-slots), as a component.json does.
   const slots = objectsIn(raw['x-slots'] as ComponentSlot[] | undefined);
   const d: ComponentDescriptor = {

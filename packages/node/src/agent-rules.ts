@@ -53,7 +53,7 @@ export function currentRules(): { text: string; revision: number; sha: string } 
     const revisions = (JSON.parse(fs.readFileSync(HISTORY, 'utf8')) as { revisions: AgentRulesRevision[] }).revisions;
     const sha = fingerprint(text);
     const known = revisions.find((entry) => entry.sha === sha);
-    // A template edited without npm run gen counts as a revision after the last one.
+    // A template edited without pnpm run gen counts as a revision after the last one.
     cached = { text, revisions, revision: known?.revision ?? (revisions.at(-1)?.revision ?? 0) + 1 };
   }
   return { text: cached.text, revision: cached.revision, sha: fingerprint(cached.text) };

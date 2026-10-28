@@ -2,7 +2,7 @@
 
 > The open core of Elabora: an e-learning source format that AI agents write and people review, a validator with stable codes, a SCORM 1.2 and web compiler tested against documented LMS behaviour, and a contract that keeps custom code testable.
 
-This page is the map of the documentation. Each page is a Markdown file of this folder, read on GitHub, on [elabora.studio/en/docs/developers](https://elabora.studio/en/docs/developers/), and by agents through `elabora docs` (the MCP tool `elabora_docs`). Pages marked *generated* are written from the code by `npm run docs`: change the code, not the page.
+This page is the map of the documentation. Each page is a Markdown file of this folder, read on GitHub, on [elabora.studio/en/docs/developers](https://elabora.studio/en/docs/developers/), and by agents through `elabora docs` (the MCP tool `elabora_docs`). Pages marked *generated* are written from the code by `pnpm run docs`: change the code, not the page.
 
 ## Start here
 
@@ -18,7 +18,7 @@ This page is the map of the documentation. Each page is a Markdown file of this 
 - [Charts and diagrams](charts.md): the chart blocks, each saying one thing; how they move, follow the voice and let learners predict; Mermaid diagrams; charts agents make with D3 and the kit.
 - [Design layer](design.md): free stylesheets, layouts and generated figures around structured content; window sizes, slides and steps; checks on the rendered course.
 - [Free-object contract](free-object-contract.md): custom code such as three.js scenes and mini-games, kept sandboxed, testable and editable without code: manifest, protocol, gates.
-- [JSON Schemas](../packages/format/schemas/0.1.2/): the normative schemas of format 0.1, also served at `https://elabora.studio/schemas/0.1.2/`.
+- [JSON Schemas](../packages/format/schemas/0.1.3/): the normative schemas of format 0.1, also served at `https://elabora.studio/schemas/0.1.3/`.
 
 ## Delivery
 

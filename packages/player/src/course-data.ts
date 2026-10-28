@@ -6,6 +6,7 @@
 // finds every rule (navigation, completion, tracking, presentation) filled in.
 
 import type { JsonObject } from './json.ts';
+import type { InterfaceRole } from './sound-roles.ts';
 import type { DataSchema } from './data-schema.ts';
 import type { DialogueData, DialogueEventCondition, DialogueSpeakerData } from './dialogue/types.ts';
 
@@ -42,6 +43,9 @@ export interface CourseData {
   resources?: ResourceData[];
   glossary?: GlossaryData[];
   about?: AboutData;
+  // The course's sounds (docs/decisions.md D67); absent when it has none: courses without sound
+  // keep their bytes.
+  sounds?: SoundsData;
   // Built for the web target (docs/decisions.md D41): no LMS, progress kept or not; absent in SCORM
   // packages, previews and the canvas.
   delivery?: WebDelivery;
@@ -102,6 +106,16 @@ export interface GlossaryData {
   term: string;
   definition: string;
   variants?: string[];
+}
+
+// The moments an interface sound marks (D67): a choice, a feedback good, fair or bad, going back
+// or replaying, opening or closing the history or the debrief, a dialogue's successful end.
+export type { InterfaceRole } from './sound-roles.ts';
+
+export interface SoundsData {
+  // Interface sounds, when the course has them on (sounds.interface.when, auto: when the module has
+  // sound): their volume and the file of each role that sounds (a role muted by the author has none).
+  interface?: { volume: number; files: Partial<Record<InterfaceRole, string>> };
 }
 
 export interface AboutData {

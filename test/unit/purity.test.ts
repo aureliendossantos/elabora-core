@@ -42,7 +42,7 @@ test('format, player, fonts and core use no Node API and no Node package', () =>
 });
 
 test('the built-in templates module is generated from the current templates', () => {
-  assert.equal(fs.readFileSync(OUTPUT, 'utf8'), builtinTemplatesModule(), 'run npm run generate');
+  assert.equal(fs.readFileSync(OUTPUT, 'utf8'), builtinTemplatesModule(), 'run pnpm run gen');
 });
 
 test('every LMS profile file is imported, in file name order', () => {

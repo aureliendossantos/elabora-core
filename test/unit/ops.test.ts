@@ -246,7 +246,7 @@ function mutate(rng: Rng, gen: Generator, docs: Map<string, Json>, steps: number
 
 // ── properties on random documents ───────────────────────────────────
 
-// ELABORA_SEEDS=50 npm test runs the properties on 50 times more seeds.
+// ELABORA_SEEDS=50 pnpm test runs the properties on 50 times more seeds.
 const SEEDS = Math.max(1, Number(process.env.ELABORA_SEEDS) || 1);
 
 // Which shapes of operations a property produced, so that it can show it covered them all.
@@ -645,7 +645,7 @@ function realisticEdit(rng: Rng, project: Project, edit: Edit, fresh: () => stri
     }
     case 'add-screen': {
       const id = fresh();
-      project.docs.set(`screens/${id}.json`, { $schema: 'https://elabora.studio/schemas/0.1.2/screen.schema.json', id, title: `Screen ${id}`, covers: [], blocks: [{ id: `${id}-text`, type: 'text', props: { markdown: 'New' } }] });
+      project.docs.set(`screens/${id}.json`, { $schema: 'https://elabora.studio/schemas/0.1.3/screen.schema.json', id, title: `Screen ${id}`, covers: [], blocks: [{ id: `${id}-text`, type: 'text', props: { markdown: 'New' } }] });
       const section = rng.pick(course(project).sections);
       section.screens.splice(rng.int(section.screens.length + 1), 0, id);
       return;

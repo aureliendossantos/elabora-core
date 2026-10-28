@@ -151,6 +151,8 @@ export interface TimelineOptions {
   transcriptLayers?: readonly { title: string; lines: readonly NarrationLineData[] }[];
   // And the path each dialogue of the screen has gone so far (D61), read when the transcript opens.
   transcriptDialogues?: () => TranscriptSection[];
+  // The learner changed the volume or muted it: the player's other sounds follow (D67).
+  onVolume?(): void;
 }
 
 // ── Clocks ──────────────────────────────────────────────────────────
@@ -544,13 +546,14 @@ export function createTimeline(options: TimelineOptions) {
   }
   // The volume: Mute, and its slider above it while the pointer or the focus is on it (nothing moves).
   // No tooltip: the slider comes above it on hover, and the button says what it does to screen readers.
-  const muteButton = element('button', { type: 'button', class: 't-timeline-btn t-timeline-mute', 'aria-label': labels.mute, onclick: () => { prefs.muted = !prefs.muted; clock.setMuted(prefs.muted); render(); } }, icon('volume'));
+  const muteButton = element('button', { type: 'button', class: 't-timeline-btn t-timeline-mute', 'aria-label': labels.mute, onclick: () => { prefs.muted = !prefs.muted; clock.setMuted(prefs.muted); options.onVolume?.(); render(); } }, icon('volume'));
   const volumeInput = element('input', { type: 'range', class: 't-timeline-volume-range', min: '0', max: '100', step: '5', value: String(Math.round(prefs.volume * 100)), 'aria-label': labels.volume });
   volumeInput.addEventListener('input', () => {
     prefs.volume = Number(volumeInput.value) / 100;
     if (prefs.muted && prefs.volume > 0) { prefs.muted = false; clock.setMuted(false); }
     clock.setVolume(prefs.volume);
     choose(prefs, 'volume');
+    options.onVolume?.();
     render();
   });
   const volume = element('span', { class: 't-timeline-volume' }, muteButton, element('span', { class: 't-timeline-volume-pop' }, volumeInput));

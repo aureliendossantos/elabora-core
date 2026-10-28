@@ -1,7 +1,7 @@
 // Appends a revision to packages/node/templates/agents-revisions.json when the course AGENTS.md
 // template changed (docs/decisions.md D34): the history lets Elabora tell a course's AGENTS.md it wrote
 // and nobody edited, which it updates, from one an author or agent edited, which it leaves. Run by
-// npm run gen; a unit test checks that the last revision is the template.
+// pnpm run gen; a unit test checks that the last revision is the template.
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';

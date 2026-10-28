@@ -31,6 +31,7 @@ import { createTranscriptBar } from './transcript.ts';
 import type { TranscriptBar } from './transcript.ts';
 import type { Action } from './course-data.ts';
 import type { DialoguePresentation } from './dialogue/walk.ts';
+import type { Sounds } from './sounds.ts';
 
 
 // What a control left to explore is, for the words that say what is left (D63): a card to turn
@@ -88,10 +89,13 @@ export interface ScreenViewOptions {
   // started or stopped (the player updates its navigation). Without it, no timeline runs.
   // controls: what the player's controls item shows (D58); tooltip and sheetHost: the player's
   // tooltip and where its side panels go (the transcript).
-  timeline?: { host: HTMLElement | null; autoplay: boolean; virtual: boolean; prefs: TimelinePrefs; controls?: TimelineControls; tooltip?: Tooltip | null; sheetHost?: HTMLElement | null };
+  timeline?: { host: HTMLElement | null; autoplay: boolean; virtual: boolean; prefs: TimelinePrefs; controls?: TimelineControls; tooltip?: Tooltip | null; sheetHost?: HTMLElement | null; onVolume?(): void };
   afterTimeline?(): void;
   // The editor's canvas: what plays by itself (a chart's entrance) is shown at rest.
   still?: boolean;
+  // The player's sounds (D67): a question's feedback makes the interface sound of a dialogue's
+  // (none in the editor's canvas).
+  sounds?: Sounds | null;
 }
 
 export type ScreenView = ReturnType<typeof createScreenView>;
@@ -423,7 +427,7 @@ export function createScreenView(options: ScreenViewOptions) {
     const stilled = new Set<Animation>();
     timeline = createTimeline({
       narration, labels, format: options.formatLabel, host: settings.host, overlay: main, prefs: settings.prefs, virtual: settings.virtual,
-      controls: settings.controls, tooltip: settings.tooltip, sheetHost: settings.sheetHost,
+      controls: settings.controls, tooltip: settings.tooltip, sheetHost: settings.sheetHost, onVolume: settings.onVolume,
       start, reached: start, autoplay: autoplay && !done, phone,
       offerStopAtSteps: course.screens.some((candidate) => !!candidate.narration && candidate.narration.advance !== 'learner'),
       // A layer that speaks has the shortcuts (D62); the transcript adds each layer's lines.
@@ -617,6 +621,8 @@ export function createScreenView(options: ScreenViewOptions) {
   function trigger(type: TriggerType, info: TriggerInfo) {
     const shown = screen;
     if (!shown || depth > 8) return;
+    // A question answered sounds as a dialogue's choice does: good or bad (a reflection has no result).
+    if (type === 'quiz.submitted' && typeof info.correct === 'boolean') options.sounds?.interface(info.correct ? 'good' : 'bad');
     depth++;
     let navigation: string | null = null;
     const changedVariables: string[] = [];

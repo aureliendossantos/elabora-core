@@ -5,7 +5,8 @@ import { execFileSync, spawnSync } from 'node:child_process';
 const root = path.resolve(import.meta.dirname, '..');
 const read = (file: string) => JSON.parse(fs.readFileSync(path.join(root, file), 'utf8'));
 const pkg = read('package.json');
-const manifests = ['package.json', ...pkg.workspaces.map((workspace: string) => `${workspace}/package.json`)];
+// The workspace's packages: packages/* (pnpm-workspace.yaml).
+const manifests = ['package.json', ...fs.readdirSync(path.join(root, 'packages')).map((name) => `packages/${name}/package.json`).filter((file) => fs.existsSync(path.join(root, file)))];
 const command = process.argv[2] ?? 'check';
 const run = (name: string, args: string[]) => execFileSync(name, args, { cwd: root, stdio: 'inherit' });
 const escaped = pkg.version.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -17,11 +18,11 @@ try {
   // A release has one tag, v<version> (D56): a package published on its own would need tags of its own.
   for (const file of manifests) if (read(file).private !== true) throw new Error(`${file}: the core packages are private; publishing one needs its own tags and a decision (D56)`);
   if (command === 'check' || command === 'publish') {
-    const lock = read('package-lock.json');
-    for (const file of manifests) {
-      const key = file === 'package.json' ? '' : path.posix.dirname(file);
-      if (lock.packages[key]?.version !== pkg.version) throw new Error(`${file}: refresh package-lock.json`);
-    }
+    // The packages depend on each other as workspace:*, so the lockfile records no version of theirs:
+    // it only has to agree with the manifests, as pnpm checks it (no install).
+    const frozen = spawnSync('pnpm', ['install', '--frozen-lockfile', '--lockfile-only', '--ignore-scripts'], { cwd: root, stdio: 'inherit', shell: process.platform === 'win32' });
+    if (frozen.error) throw frozen.error;
+    if (frozen.status !== 0) throw new Error('pnpm-lock.yaml does not agree with the manifests: run pnpm install');
     // A changeset that names only a package puts its text in that package's changelog, and the
     // root changelog (the GitHub Release) says « Bumped due to fixed dependency group policy ».
     for (const file of pending()) {

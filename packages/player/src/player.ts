@@ -22,6 +22,8 @@ import { createGlossary } from './glossary.ts';
 import { createAbout } from './about.ts';
 import { pageFramesPort } from './frames.ts';
 import { loadTimelinePrefs } from './timeline.ts';
+import type { TimelinePrefs } from './timeline.ts';
+import { createSounds } from './sounds.ts';
 import { alignToButton, applyDisplay, createDisplayMenu, createLanguageMenu, loadDisplayPrefs, saveDisplayPrefs } from './display.ts';
 import type { Popover } from './display.ts';
 import type { CourseData, ScreenData } from './course-data.ts';
@@ -163,6 +165,10 @@ const tooltip = createTooltip(document.body);
 const liveRegion = element('div', { class: 't-sr-only', 'aria-live': 'polite', role: 'status' });
 const keep = delivery?.progress !== 'none';
 const displayPrefs = loadDisplayPrefs(packageId, keep);
+// The player's sounds (D67): one context for the page, kept across languages; the player's volume is
+// the narration's controls' (their choices, loaded with the bars).
+let timelinePrefs: TimelinePrefs | null = null;
+const sounds = createSounds({ data: course.sounds, prefs: displayPrefs, volume: () => timelinePrefs ?? { volume: 1, muted: false } });
 let chrome!: Chrome;
 let menu: HTMLElement | null = null;
 let main!: HTMLElement;
@@ -215,7 +221,7 @@ function mountBars() {
   // « Affichage » and « Langue »: their menus.
   const narrated = [...(course.player.top?.items ?? []), ...(course.player.bottom?.items ?? [])].some((item) => item.id === 'controls');
   const dialogues = course.screens.some((screen) => [...flatBlocks(screen.blocks), ...(screen.layers ?? []).flatMap((layer) => flatBlocks(layer.blocks))].some((block) => hasBehavior(block, 'dialogue')));
-  displayMenu = chrome.displayButton ? createDisplayMenu(chrome.displayButton, { labels, prefs: displayPrefs, narrated, dialogues, onChange: (prefs) => { applyDisplay(app, prefs); saveDisplayPrefs(packageId, keep, prefs); } }) : null;
+  displayMenu = chrome.displayButton ? createDisplayMenu(chrome.displayButton, { labels, prefs: displayPrefs, narrated, dialogues, interfaceSounds: sounds.hasInterface, onChange: (prefs) => { applyDisplay(app, prefs); saveDisplayPrefs(packageId, keep, prefs); sounds.update(); } }) : null;
   languageMenu = chrome.languageButton && course.languages ? createLanguageMenu(chrome.languageButton, { labels, languages: course.languages, current: course.language, name: languageName, choose: (code) => { void switchLanguage(code); } }) : null;
   popovers = [displayMenu, languageMenu].filter((popover): popover is Popover => popover !== null);
   applyDisplay(app, displayPrefs);
@@ -452,11 +458,13 @@ let view!: ReturnType<typeof createScreenView>;
 function mountView() {
   const controlsItem = [...(course.player.top?.items ?? []), ...(course.player.bottom?.items ?? [])].find((item) => item.id === 'controls');
   const controls = controlsItem?.id === 'controls' ? controlsItem : null;
+  timelinePrefs = loadTimelinePrefs({ keep, captions: controls?.captionsByDefault ?? false, speeds: controls?.speeds, course: packageId });
+  sounds.setData(course.sounds);
   view = createScreenView({
     app, main, course, courseState, labels, formatLabel: format, announce, recordInteraction, syncSoon, framesPort: pageFramesPort('meta'), tooltip,
     timeline: {
       host: chrome.controls, autoplay: true, virtual: window.ELABORA_TEST?.virtualTime === true, tooltip, sheetHost: app,
-      prefs: loadTimelinePrefs({ keep, captions: controls?.captionsByDefault ?? false, speeds: controls?.speeds, course: packageId }),
+      prefs: timelinePrefs, onVolume: () => sounds.update(),
       ...(controls ? { controls: { seekBar: controls.seekBar, volume: controls.volume, transcript: controls.transcript, speeds: controls.speeds } } : {})
     },
     afterTimeline: () => { updateNav(); mentionGeneratedVoice(); },
@@ -468,6 +476,7 @@ function mountView() {
       setTimeout(() => go(destination), 0);
     },
     exit: quit,
+    sounds,
     retake: () => { const id = courseState.retake(); syncNow(); go(screenNumber(id)); }
   });
 }
@@ -629,6 +638,8 @@ const debugHooks = {
   get step() { return { revealed: view.revealed, steps: [...view.steps] }; },
   state: () => ({ screen: currentScreen()?.id, status: courseState.lmsStatus, score: courseState.score(), suspendData: courseState.encode() }),
   objectHost: (blockId: string) => view.objectHost(blockId),
+  // The player's sounds (D67): the context's state and what was played.
+  sounds: { state: () => sounds.state() },
   // The dialogues of the current screen (D61): their state, « Suite », a choice, the virtual clock of tests.
   dialogues: {
     blocks: () => view.dialogues.blocks,

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.2/plan.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.3/plan.schema.json",
   "id": "PLAN-ALDERMOOR-CHARTS-V1",
   "title": "Drawing the sea: how medieval chart-makers worked",
   "businessGoal": "Prepare the volunteer guides of the Aldermoor Maritime Museum (fictional client) to explain its new gallery of medieval charts before it opens: how a sea chart differs from a world map, how chart-makers built it, and how sailors used it.",

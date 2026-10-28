@@ -57,6 +57,14 @@ export async function runtimeFiles({ debug = false }: { debug?: boolean } = {}):
   };
 }
 
+// The player's interface sounds (packages/player/src/interface-sounds/, D67), by their path in the package
+// (elabora/sounds/<role>.m4a): a package ships those its course data names.
+export function playerSoundFile(name: string): Buffer {
+  const file = /^elabora\/sounds\/([a-z]+\.m4a)$/.exec(name)?.[1];
+  if (!file) throw new Error(`Not a player sound: ${name}`);
+  return fs.readFileSync(path.join(RUNTIME, 'interface-sounds', file));
+}
+
 // The review bridge (review.ts, docs/review-bridge.md): in review builds only, after player.js.
 export async function reviewFiles({ debug = false }: { debug?: boolean } = {}): Promise<Record<string, string>> {
   return { 'elabora/review.js': `/* Elabora review bridge ${ELABORA_VERSION} — Apache-2.0 */\n` + await bundle(path.join(RUNTIME, 'review.ts'), { minify: !debug }) };
@@ -64,7 +72,7 @@ export async function reviewFiles({ debug = false }: { debug?: boolean } = {}): 
 
 export function vendorThree(): Record<string, Buffer> {
   const file = path.join(PACKAGE_ROOT, 'vendor/three-r186.js');
-  if (!fs.existsSync(file)) throw new Error('vendor/three-r186.js missing: run `npm run vendor` in the Elabora package.');
+  if (!fs.existsSync(file)) throw new Error('vendor/three-r186.js missing: run `pnpm run vendor` in the Elabora package.');
   return { 'elabora/vendor/three-r186.js': fs.readFileSync(file), 'elabora/vendor/three-LICENSE.txt': fs.readFileSync(path.join(PACKAGE_ROOT, 'vendor/three-LICENSE.txt')) };
 }
 

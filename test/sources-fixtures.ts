@@ -8,7 +8,7 @@ import { createZip, crc32 } from '@elabora/node/zip';
 // a group, a table, notes, a comment, a hidden slide, a thumbnail, and the pictures slides place: one
 // kept, a shape filled with a picture, a background, a linked picture, and a bullet, a rule and a logo
 // placed as a dot, which are left out). The ZIP writer is
-// deterministic: the same bytes every time. `npm run fixtures:sources` writes them to
+// deterministic: the same bytes every time. `pnpm run fixtures:sources` writes them to
 // test/fixtures/sources/ to open them by hand.
 
 // A PNG of one colour, width × height.

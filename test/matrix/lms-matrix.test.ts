@@ -7,7 +7,7 @@ import { ROOT, copyExample } from '../helpers.ts';
 import { build } from '@elabora/node/build';
 import { testPackage } from '@elabora/node/emulator/run';
 
-// The LMS matrix (slow; npm run test:matrix): every launch mode of the profiles with unusual
+// The LMS matrix (slow; pnpm run test:matrix): every launch mode of the profiles with unusual
 // topologies, and Chrome with unload deprecated and allowed (a browser setting, the same for every
 // LMS, checked on one). The everyday suite runs Moodle once (test/e2e/lms.test.js).
 test('the example passes the LMS emulator: SuccessFactors popup chain, Docebo nested iframe, Chrome with unload deprecated and allowed', { timeout: 300000 }, async () => {
