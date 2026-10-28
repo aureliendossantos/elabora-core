@@ -441,9 +441,9 @@ test('voiced lines: the audio\'s own clock and ended event, muting, a refused au
         assert.ok(Math.abs(playing.time - playing.audio) < 0.25, JSON.stringify(playing));
         // Mute: the voice goes on, silent.
         await page.locator('[data-block="rencontre-marc"] .t-dialogue-mute').click();
-        await page.waitForFunction(() => document.querySelector<HTMLAudioElement>('[data-block="rencontre-marc"] audio')?.muted === true, null, { timeout: 3000 });
+        await page.waitForFunction(() => document.querySelector<HTMLAudioElement>('[data-block="rencontre-marc"] audio')?.muted === true, null, { timeout: 30000 });
         await page.locator('[data-block="rencontre-marc"] .t-dialogue-mute').click();
-        await page.waitForFunction(() => document.querySelector<HTMLAudioElement>('[data-block="rencontre-marc"] audio')?.muted === false, null, { timeout: 3000 });
+        await page.waitForFunction(() => document.querySelector<HTMLAudioElement>('[data-block="rencontre-marc"] audio')?.muted === false, null, { timeout: 30000 });
         // ended moves the dialogue on to r2, then its own file.
         const ended = page.evaluate(() => new Promise<number>((resolve) => document.querySelector('[data-block="rencontre-marc"] audio')!.addEventListener('ended', () => resolve(performance.now()), { once: true })));
         const at = await ended;

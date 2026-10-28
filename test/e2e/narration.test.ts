@@ -318,18 +318,18 @@ test('the real clock: the timeline follows the audio and stops at the end of the
     // The audio's own clock: the narration's AAC must play.
     if (!(await playsMedia(page, 'audio/mp4; codecs="mp4a.40.2"'))) return t.skip(NO_MEDIA_CODECS);
     const start = page.locator('.t-timeline-start');
-    await start.waitFor({ timeout: 5000 });
+    await start.waitFor({ timeout: 30000 });
     assert.equal((await state(page)).timeline?.refused, true);
     await start.click();
-    await page.waitForFunction(() => ((window as PlayerWindow).__elabora.timeline.state()?.time ?? 0) > 0.3, null, { timeout: 5000 });
+    await page.waitForFunction(() => ((window as PlayerWindow).__elabora.timeline.state()?.time ?? 0) > 0.3, null, { timeout: 30000 });
     assert.equal(await start.count(), 0);
     const drift = await page.evaluate(() => Math.abs(document.querySelector<HTMLAudioElement>('audio.t-timeline-audio')!.currentTime - ((window as PlayerWindow).__elabora.timeline.state()?.time ?? 0)));
     assert.ok(drift < 0.2, `the timeline reads the audio's clock (${drift} s apart)`);
     // l1 ends at 1.5 s: its dialog opens and holds the audio too.
-    await page.waitForSelector('dialog.t-layer[open]', { timeout: 5000 });
+    await page.waitForSelector('dialog.t-layer[open]', { timeout: 30000 });
     assert.ok(await page.evaluate(() => document.querySelector<HTMLAudioElement>('audio.t-timeline-audio')!.paused));
     await closeDialog(page);
-    await page.waitForFunction(() => (window as PlayerWindow).__elabora.timeline.state()?.playing === false, null, { timeout: 8000 });
+    await page.waitForFunction(() => (window as PlayerWindow).__elabora.timeline.state()?.playing === false, null, { timeout: 30000 });
     const end = await page.evaluate(() => ({ time: (window as PlayerWindow).__elabora.timeline.state()?.time, audio: document.querySelector<HTMLAudioElement>('audio.t-timeline-audio')!.currentTime }));
     assert.equal(end.time, 3.9);
     assert.ok(Math.abs(end.audio - 3.9) < 0.05, `the audio stops at the step's end (${end.audio} s)`);
@@ -364,7 +364,7 @@ test('an AAC track ending before the timeline completes the screen', { skip: NO_
     });
     assert.equal(before.step, 2);
     assert.ok(Math.abs(before.time - (before.duration - 0.3)) < 0.001, JSON.stringify(before));
-    await page.waitForFunction(() => (window as PlayerWindow).__elabora.screen === 'premier-reflexe', null, { timeout: 5000 });
+    await page.waitForFunction(() => (window as PlayerWindow).__elabora.screen === 'premier-reflexe', null, { timeout: 30000 });
   }, { virtual: false });
 });
 

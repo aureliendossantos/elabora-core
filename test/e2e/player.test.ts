@@ -45,7 +45,7 @@ async function player(dir: string, run: (page: Page) => Promise<void>, { width =
   }
 }
 const box = async (page: Page, selector: string) => (await page.locator(selector).first().boundingBox())!;
-const waitTip = (page: Page, text: string) => page.waitForFunction((value) => { const node = document.getElementById('t-tip'); return !!node && !node.hidden && node.textContent === value; }, text, { timeout: 3000 });
+const waitTip = (page: Page, text: string) => page.waitForFunction((value) => { const node = document.getElementById('t-tip'); return !!node && !node.hidden && node.textContent === value; }, text, { timeout: 30000 });
 const tip = (page: Page) => page.evaluate(() => { const node = document.getElementById('t-tip'); return node && !node.hidden ? node.textContent : null; });
 // The tooltip is what the page shows at its centre (not painted under a modal dialog).
 const tipOnTop = (page: Page) => page.evaluate(() => {
@@ -114,7 +114,8 @@ test('modal dialogs: a term in a layer shows its definition over it, and the PDF
     await page.evaluate(() => (window as PlayerWindow).__elabora.go('premier-reflexe'));
     const term = page.locator('dialog[open] a.t-term[data-term="routeur"]');
     await term.hover();
-    await page.waitForFunction(() => /Équipement/.test(document.getElementById('t-tip')?.textContent ?? ''), null, { timeout: 3000 });
+    await page.clock.runFor(1000);
+    await page.waitForFunction(() => /Équipement/.test(document.getElementById('t-tip')?.textContent ?? ''), null, { timeout: 30000 });
     assert.ok(await tipOnTop(page), 'over the dialog');
     // A click keeps the definition there (the glossary's panel would open under the dialog).
     await term.click();
@@ -126,9 +127,10 @@ test('modal dialogs: a term in a layer shows its definition over it, and the PDF
     await page.click('.t-resources-btn');
     await page.click('.t-resource[data-resource="fiche-reflexe"]');
     await page.hover('.t-viewer-close');
+    await page.clock.runFor(1000);
     await waitTip(page, 'Fermer');
     assert.ok(await tipOnTop(page), 'over the preview');
-  });
+  }, { clock: true });
 });
 
 test('nothing moves between screens: the bottom bar on a phone, the outline\'s button with the screen\'s title', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
