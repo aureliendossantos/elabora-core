@@ -68,9 +68,9 @@ body { background: transparent; }
 .t-backdrop[data-section-index="2"] .t-backdrop-layer[data-layer^="glow"] { translate: -2% 2%; }
 .t-backdrop[data-section-index="3"] .t-backdrop-layer[data-layer^="glow"] { translate: 1.5% 2.5%; }
 .t-backdrop[data-section-index]:not([data-section-index="0"], [data-section-index="1"], [data-section-index="2"], [data-section-index="3"]) .t-backdrop-layer[data-layer^="glow"] { translate: -1% -2%; }
-/* Grain over the blobs (above the object's frame), still. */
+/* Grain over the blobs (above the object's frame, z-index 1), still. */
 .t-backdrop-layer[data-layer="grain"] {
-  z-index: 1;
+  z-index: 2;
   background: url(../assets/images/grain.svg) 0 0 / 256px 256px repeat;
   opacity: .2;
   mix-blend-mode: multiply;
@@ -78,7 +78,7 @@ body { background: transparent; }
 .t-backdrop[data-variant="night"] .t-backdrop-layer[data-layer="grain"] { filter: invert(1); mix-blend-mode: screen; opacity: .16; }
 
 /* ── Night variant: the screen reads light on dark ──────────────────────────────────────────── */
-#elabora-app:has(> .t-backdrop[data-variant="night"]) {
+#elabora-app[data-backdrop="night"] {
   --t-text: var(--t-color-night-text);
   --t-muted: var(--t-color-night-muted);
   --t-primary: var(--t-color-night-text);

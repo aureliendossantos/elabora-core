@@ -26,7 +26,6 @@ body { background: transparent; }
 .t-backdrop { background: var(--t-color-field); }
 .t-backdrop-layer { will-change: transform, opacity; }
 /* The decoration (lines and particles) draws over the CSS layers. */
-.t-backdrop-object { z-index: 1; }
 
 /* The field: two glows, cyan low on the left, magenta high on the right, on a deep gradient. The paper
    of the ink variant is its ::after, faded in over it. */
@@ -87,7 +86,7 @@ body { background: transparent; }
 .t-backdrop[data-variant="ink"] .t-backdrop-layer[data-layer="grain"] { background: var(--t-color-ink); opacity: .06; }
 
 /* ── Ink: the screen follows the paper ───────────────────────────────── */
-#elabora-app:has(.t-backdrop[data-variant="ink"]) #t-main {
+#elabora-app[data-backdrop="ink"] #t-main {
   --t-text: var(--t-color-ink);
   --t-muted: var(--t-color-ink-muted);
   --t-surface: var(--t-color-paper);
@@ -105,7 +104,7 @@ body { background: transparent; }
 
 /* ── The player's bars: the field shows through, without blur ───────── */
 .t-bar { background: color-mix(in srgb, var(--t-color-field) 78%, transparent); }
-#elabora-app:has(.t-backdrop[data-variant="ink"]) .t-bar { background: var(--t-color-field); }
+#elabora-app[data-backdrop="ink"] .t-bar { background: var(--t-color-field); }
 .t-bar--top { border-bottom: 1px solid color-mix(in srgb, var(--t-color-hairline) 70%, transparent); }
 .t-bar--bottom { border-top: 1px solid color-mix(in srgb, var(--t-color-hairline) 70%, transparent); }
 .t-course-title { font-family: var(--t-font-heading); font-weight: 650; letter-spacing: .005em; }
@@ -114,7 +113,7 @@ body { background: transparent; }
 /* Native controls in the dark scheme, scoped to the panels (a dark scheme on the root would paint an
    opaque box behind the backdrop's frame). */
 .t-quiz, .t-decision, .t-menu, .t-dialog, .t-panel, .t-sheet { color-scheme: dark; }
-#elabora-app:has(.t-backdrop[data-variant="ink"]) #t-main :is(.t-quiz, .t-decision) { color-scheme: light; }
+#elabora-app[data-backdrop="ink"] #t-main :is(.t-quiz, .t-decision) { color-scheme: light; }
 
 /* ── Type ─────────────────────────────────────────────────────────────── */
 .t-screen { color: var(--t-text); font-family: var(--t-font-body); }
@@ -235,7 +234,7 @@ body { background: transparent; }
 .t-figure-svg :is(.fl-stop-b) { stop-color: var(--fl-neon-b); }
 .t-figure-svg .fl-a { fill: var(--fl-neon-a); }
 .t-figure-svg .fl-b { fill: var(--fl-neon-b); }
-#elabora-app:has(.t-backdrop[data-variant="ink"]) .t-figure-svg .fl-line { stroke: var(--t-color-ink-edge); }
+#elabora-app[data-backdrop="ink"] .t-figure-svg .fl-line { stroke: var(--t-color-ink-edge); }
 .t-image--beside :is(h2, h3) { font-size: clamp(1.5rem, 1.1rem + 1vw, 2rem); letter-spacing: -0.02em; margin-bottom: .75rem; }
 .t-image--beside .t-text { color: var(--t-muted); }
 
