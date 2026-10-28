@@ -1,4 +1,5 @@
 ---
+npm/elabora: patch (Changed)
 npm/@elabora/player: patch (Changed)
 ---
 
