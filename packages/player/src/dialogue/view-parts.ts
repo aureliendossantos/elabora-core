@@ -33,7 +33,7 @@ export interface DialogueHost {
 export type Phase = 'idle' | 'playing' | 'choosing' | 'ended';
 
 // What the learner perceives of a dialogue, for what reacts to it (the interface's sounds): an
-// \`elabora:dialogue\` CustomEvent on the dialogue (data-t-group), bubbling, its detail
+// `elabora:dialogue` CustomEvent on the dialogue (data-t-group), bubbling, its detail
 // { block, moment, … }. Only when the dialogue plays (never back on a screen, nor in the canvas).
 //   choose          the learner chose an option ({ node, option, quality })
 //   feedback        a trainer's note shows while it plays ({ quality }: good, ok, bad, or null)

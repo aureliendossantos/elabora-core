@@ -383,7 +383,7 @@ test('« Reprendre d\'ici » moves nothing, on a phone as on a wide screen', { t
 // holds « Changer ce choix » for each decision and « Recommencer », without being closed first; the
 // thread says where it goes on, the choice taken back is marked among the options, the focus is on the
 // options; « Recommencer » says the dialogue again from its first line. Each moment the learner
-// perceives is an \`elabora:dialogue\` event (the interface's sounds).
+// perceives is an `elabora:dialogue` event (the interface's sounds).
 test('going back from the debrief: where the thread goes on, the choice taken back, the dialogue again from its first line, the moments', { timeout: 240000 }, async () => {
   await player({ open: true }, async (page) => {
     await page.evaluate(() => {
