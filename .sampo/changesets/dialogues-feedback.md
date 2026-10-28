@@ -1,6 +1,5 @@
 ---
 npm/elabora: minor (Changed)
-npm/@elabora/format: patch (Changed)
 npm/@elabora/player: minor (Changed)
 npm/@elabora/core: minor (Changed)
 npm/@elabora/cli: patch (Changed)

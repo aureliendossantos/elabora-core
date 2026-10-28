@@ -526,9 +526,9 @@ export type Theme = {
     'dialog.text'?: Color;
     /** The words a voiced line has said, as its ink reveals them (contrast ≥ 4.5:1 with both bubbles). Default: dialog.text. */
     'dialog.wordSpoken'?: Color;
-    /** The words of a voiced line still to be said: a preview, faint (contrast ≥ 1.5:1 with both bubbles, and ≥ 3:1 with dialog.wordSpoken, for the ink to show). Default: dialog.wordSpoken at 38 % over the bubble. */
+    /** The words of a voiced line still to be said (contrast ≥ 4.5:1 with both bubbles: they stay readable). Default: color.muted. */
     'dialog.wordUnspoken'?: Color;
-    /** The trainer's notes in a dialogue without a quality: their colour (contrast ≥ 3:1 with color.surface); a quality has its own (color.success, color.accent, color.error). Default: color.primary. */
+    /** The trainer's notes in a dialogue: their rule and icon (contrast ≥ 3:1 with color.surface). Default: color.primary. */
     'dialog.note'?: Color;
   };
   /** Extra design tokens, for example {"color.blueprint": "#0F2A47", "space.section": "72px"}. Each becomes the CSS variable --t-<name with dots as hyphens> (--t-color-blueprint) in the player and in free objects, and can be bound to free-object props with x-token. Editors show them next to the charter tokens. */
@@ -1587,12 +1587,12 @@ export type DialogueProps = {
    */
   debrief?: boolean;
   /**
-   * auto: the voiced lines of a turn follow one another; a text without a voice (a line without audio, a note) waits for the learner's « Suite ». click: one line per click.
+   * auto: the lines of a turn follow one another. click: one line per click.
    * @default 'auto'
    */
   pace?: 'auto' | 'click';
   /**
-   * How a line's words come in step with its voice: ink (words not said yet in a faint ink), appear (they appear), instant (the whole text at once). A line without a voice, reduced motion and the learner's « Texte : tout de suite » show the whole text.
+   * How a line's words come in step with its voice: ink (words not said yet in a lighter ink), appear (they appear), instant (the whole text at once). Reduced motion and the learner's « Texte : tout de suite » show the whole text.
    * @default 'ink'
    */
   reveal?: 'ink' | 'appear' | 'instant';

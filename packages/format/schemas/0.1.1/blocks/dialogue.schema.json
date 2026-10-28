@@ -54,12 +54,12 @@
     "pace": {
       "enum": ["auto", "click"],
       "default": "auto",
-      "description": "auto: the voiced lines of a turn follow one another; a text without a voice (a line without audio, a note) waits for the learner's « Suite ». click: one line per click."
+      "description": "auto: the lines of a turn follow one another. click: one line per click."
     },
     "reveal": {
       "enum": ["ink", "appear", "instant"],
       "default": "ink",
-      "description": "How a line's words come in step with its voice: ink (words not said yet in a faint ink), appear (they appear), instant (the whole text at once). A line without a voice, reduced motion and the learner's « Texte : tout de suite » show the whole text."
+      "description": "How a line's words come in step with its voice: ink (words not said yet in a lighter ink), appear (they appear), instant (the whole text at once). Reduced motion and the learner's « Texte : tout de suite » show the whole text."
     },
     "begins": {
       "enum": ["auto", "click", "event"],
