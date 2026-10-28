@@ -11,7 +11,7 @@ import { nodeOf, optionOf } from './walk.ts';
 import type { Beat } from './walk.ts';
 import type { DialogueLineData, DialogueOptionData, LineVoiceData } from './types.ts';
 import { createLinePlayback, cueTime } from './playback.ts';
-import { bubbleRow, typingRow, paintWords, showAllWords, noteRow, firstChoiceRow, endRow } from './thread.ts';
+import { bubbleRow, typingRow, paintWords, showAllWords, noteRow, firstChoiceRow, endRow, fitLines } from './thread.ts';
 import type { BubbleRow } from './thread.ts';
 import { clamp, phone } from './view-parts.ts';
 import type { LineState, Step, Typing, ViewParts, ViewState } from './view-parts.ts';
@@ -99,6 +99,8 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
     if (beat.line.voice?.src) return null;
     const node = typingRow(thread, { role: 'character', side: cast.sideOf('character', beat.line.speaker), speaker: beat.line.speaker, text: beat.line.text, first: !continues('character', beat.line.speaker), voiced: false, resumable: false, letters: false });
     box.insert(node);
+    const text = node.querySelector<HTMLElement>('.t-dialogue-text');
+    if (text) fitLines(text);
     return { index, node };
   }
 
@@ -176,6 +178,7 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
     const begin = (): Step | null => {
       if (typing && !typing.isConnected) typing = null;
       box.insert(built.row, typing);
+      fitLines(built.text);
       record(index, built.row);
       if (line?.speaker && line.expression) cast.express(line.speaker, line.expression);
       const avatar = cast.mountAvatar(built, role === 'learner' ? learnerSpeaker : speaker);

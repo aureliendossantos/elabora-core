@@ -64,6 +64,7 @@ export function inkOf(text: string, language: string, letters: boolean): { ink: 
 export interface BubbleRow {
   row: HTMLElement;
   bubble: HTMLElement;
+  text: HTMLElement;
   words: HTMLElement[];
   avatar: HTMLElement | null;
   tools: HTMLElement;
@@ -108,7 +109,21 @@ export function bubbleRow(context: ThreadContext, options: BubbleOptions): Bubbl
     class: 't-dialogue-row', 'data-role': options.role, 'data-side': options.side, 'data-speaker': options.speaker, 'data-line': options.line,
     'data-first': options.first || undefined, style: color ? `--t-dl-speaker: ${color}` : undefined
   }, avatar, bubble, tools);
-  return { row, bubble, words, avatar, tools, listen, resume };
+  return { row, bubble, text, words, avatar, tools, listen, resume };
+}
+
+// A bubble as wide as its lines: text-wrap: balance evens them out but leaves the box at the width
+// they had before (room on the right of every line). Its text takes the width of its widest line,
+// measured once inserted (and again when the thread's width or its text size changes).
+export function fitLines(text: HTMLElement): void {
+  text.style.removeProperty('width');
+  if (!text.isConnected || !text.classList.contains('t-dialogue-text')) return;
+  const rects = [...(text.querySelector('.t-dialogue-ink') ?? text).getClientRects()];
+  // One line is already as wide as it is.
+  if (rects.length < 2) return;
+  const width = Math.max(...rects.map((rect) => rect.right)) - Math.min(...rects.map((rect) => rect.left));
+  const zoom = (text as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom || 1;
+  text.style.width = `${Math.ceil(width / zoom) + 1}px`;
 }
 
 // The bubble to come, its final size kept, with « … » in it (messaging, a line without a voice): it

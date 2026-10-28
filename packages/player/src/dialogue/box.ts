@@ -9,7 +9,7 @@
 
 import { element } from '../dom.ts';
 import { icon } from '../icons.ts';
-import { closeButton } from './thread.ts';
+import { closeButton, fitLines } from './thread.ts';
 import { clamp, cssPx, phone, PHONE } from './view-parts.ts';
 import type { Step, ViewParts } from './view-parts.ts';
 import type { DialogueModal } from './modal.ts';
@@ -49,6 +49,7 @@ export function createThreadBox(parts: ViewParts, { modal, reserveRoom, disposed
     root.toggleAttribute('data-t-history', open);
     historyButton?.setAttribute('aria-expanded', String(open));
     if (historyClose) historyClose.hidden = !open;
+    refit();
     if (open) {
       scrollLog(false);
       log.tabIndex = 0;
@@ -85,6 +86,11 @@ export function createThreadBox(parts: ViewParts, { modal, reserveRoom, disposed
   function syncLogFocusable() {
     // A box that scrolls is reached with the keyboard (its arrows scroll it).
     if (parts.host().slides() || root.hasAttribute('data-t-history')) log.tabIndex = 0; else log.removeAttribute('tabindex');
+  }
+
+  // Every bubble as wide as its lines again (the thread's width or its text size changed).
+  function refit() {
+    for (const text of log.querySelectorAll<HTMLElement>('.t-dialogue-text')) fitLines(text);
   }
 
   // ── Scene pages: two or three bubbles near the characters, then the page turns ──
@@ -127,6 +133,7 @@ export function createThreadBox(parts: ViewParts, { modal, reserveRoom, disposed
   function layout() {
     if (disposed() || !wrap.isConnected) return;
     syncLogFocusable();
+    refit();
     const slides = parts.host().slides();
     const scene = data.style === 'scene' && !phone();
     const placeOverlays = () => {
