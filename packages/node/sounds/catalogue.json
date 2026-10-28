@@ -3,66 +3,33 @@
     {
       "id": "telephone-fixe",
       "title": {
-        "en": "Office phone ringing (two double rings)",
-        "fr": "Téléphone de bureau qui sonne (deux doubles sonneries)"
+        "en": "Wall phone ringing (one ring)",
+        "fr": "Téléphone fixe qui sonne (une sonnerie)"
       },
       "category": "telephone",
       "kind": "effect",
       "file": "files/telephone-fixe.flac",
       "format": "flac",
       "channels": 1,
-      "sampleRate": 44100,
-      "duration": 4.112,
-      "bytes": 128762,
-      "hash": "sha256:61e9d88f510c8e6b36c6f934c3592eee451702a701686f076ff3fc8782e9ccad",
-      "source": "elabora",
-      "url": "https://github.com/aureliendossantos/elabora-core",
-      "author": "Elabora",
+      "sampleRate": 48000,
+      "duration": 2.9,
+      "bytes": 172633,
+      "hash": "sha256:e7661f3f0f391af9c6bba499a3179b99da750a04b881db106b4e6932cfb81579",
+      "source": "freesound",
+      "url": "https://freesound.org/people/knufds/sounds/345812/",
+      "author": "knufds",
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "checked": "2026-10-28",
+      "checked": "2026-10-29",
       "caption": {
         "fr": "Le téléphone sonne.",
         "en": "The phone rings."
       },
       "tags": [
-        "telephone",
-        "ring",
-        "office",
-        "landline"
-      ]
-    },
-    {
-      "id": "telephone-portable",
-      "title": {
-        "en": "Mobile phone ringtone (chirp)",
-        "fr": "Sonnerie de téléphone portable"
-      },
-      "category": "telephone",
-      "kind": "effect",
-      "file": "files/telephone-portable.flac",
-      "format": "flac",
-      "channels": 2,
-      "sampleRate": 44100,
-      "duration": 1.35,
-      "bytes": 147429,
-      "hash": "sha256:2205820fb6c752b2dba7418d3c72f52a7c5745eaa1515cb85392d091a33651b3",
-      "source": "opengameart",
-      "url": "https://opengameart.org/content/modern-ringtone-chirptone",
-      "author": "Zane Little Music",
-      "license": "CC0-1.0",
-      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "checked": "2026-10-28",
-      "caption": {
-        "fr": "Le téléphone portable sonne.",
-        "en": "The mobile phone rings."
-      },
-      "tags": [
         "téléphone",
-        "portable",
         "sonnerie",
-        "mobile",
-        "ringtone"
+        "fixe",
+        "bureau"
       ]
     },
     {
@@ -606,6 +573,39 @@
       ]
     },
     {
+      "id": "bureau-centre-appels",
+      "title": {
+        "en": "Office, call centre (loop)",
+        "fr": "Bureau, centre d'appels (boucle)"
+      },
+      "category": "office",
+      "kind": "ambience",
+      "file": "files/bureau-centre-appels.m4a",
+      "format": "aac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 48.5,
+      "bytes": 1562249,
+      "hash": "sha256:290b1ee96c9eb25eb4ca870838fc99de217bc199e985ca3fb872f8948a019210",
+      "source": "freesound",
+      "url": "https://freesound.org/people/leonelmail/sounds/579568/",
+      "author": "leonelmail",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-29",
+      "caption": {
+        "fr": "Bruits de bureau.",
+        "en": "Office background noise."
+      },
+      "tags": [
+        "bureau",
+        "centre d'appels",
+        "open space",
+        "ambiance",
+        "voix"
+      ]
+    },
+    {
       "id": "objet-bois-tombe",
       "title": {
         "en": "Wooden object dropped",
@@ -826,34 +826,6 @@
       ]
     },
     {
-      "id": "whoosh",
-      "title": {
-        "en": "Whoosh (air)",
-        "fr": "Souffle de transition (whoosh)"
-      },
-      "category": "transitions",
-      "kind": "effect",
-      "file": "files/whoosh.flac",
-      "format": "flac",
-      "channels": 2,
-      "sampleRate": 44100,
-      "duration": 1.2,
-      "bytes": 165375,
-      "hash": "sha256:cb575daf944f62df4773f8bd5f1fdf93f90b02abbbe08a021cf4fd2a130ced84",
-      "source": "opengameart",
-      "url": "https://opengameart.org/content/air-whoosh",
-      "author": "pyranostudios",
-      "license": "CC0-1.0",
-      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "checked": "2026-10-28",
-      "tags": [
-        "whoosh",
-        "transition",
-        "souffle",
-        "air"
-      ]
-    },
-    {
       "id": "applaudissements",
       "title": {
         "en": "Applause (hall)",
@@ -888,29 +860,29 @@
     {
       "id": "fin-reussie",
       "title": {
-        "en": "Success jingle (steel guitar, rising)",
-        "fr": "Fin réussie (guitare steel, montante)"
+        "en": "Success jingle (banjo)",
+        "fr": "Fin réussie (banjo)"
       },
       "category": "stingers",
       "kind": "effect",
       "file": "files/fin-reussie.flac",
       "format": "flac",
-      "channels": 1,
+      "channels": 2,
       "sampleRate": 44100,
-      "duration": 0.909,
-      "bytes": 33777,
-      "hash": "sha256:5a9d48213db1aa6e3d1d0f2acfefd7a7f0b47cef56621ff3c8ba16c3ca630755",
-      "source": "kenney",
-      "url": "https://kenney.nl/assets/music-jingles",
-      "author": "Kenney Vleugels (Kenney.nl)",
+      "duration": 2.8,
+      "bytes": 140997,
+      "hash": "sha256:21c25ae81551bac3fe57e3726cac5157ef11a1e602ef6d2253e37de1d93aa3cd",
+      "source": "freesound",
+      "url": "https://freesound.org/people/Fupicat/sounds/521640/",
+      "author": "Fupicat",
       "license": "CC0-1.0",
       "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
-      "checked": "2026-10-28",
+      "checked": "2026-10-29",
       "tags": [
         "jingle",
         "réussite",
         "fin",
-        "steel"
+        "banjo"
       ]
     },
     {
@@ -1190,6 +1162,39 @@
         "foule",
         "ambiance",
         "couverts"
+      ]
+    },
+    {
+      "id": "voiture-passe",
+      "title": {
+        "en": "Car passing on a wet road",
+        "fr": "Voiture qui passe (route mouillée)"
+      },
+      "category": "crowds-places",
+      "kind": "effect",
+      "file": "files/voiture-passe.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 48000,
+      "duration": 5.76,
+      "bytes": 582347,
+      "hash": "sha256:5cbaf8fc58c4b54a0c5f65a24bf2029f9426cfe51740dee23fce8e4bea266895",
+      "source": "freesound",
+      "url": "https://freesound.org/people/Breviceps/sounds/462862/",
+      "author": "Breviceps",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-29",
+      "caption": {
+        "fr": "Une voiture passe.",
+        "en": "A car passes by."
+      },
+      "tags": [
+        "voiture",
+        "circulation",
+        "rue",
+        "route",
+        "passage"
       ]
     }
   ]
