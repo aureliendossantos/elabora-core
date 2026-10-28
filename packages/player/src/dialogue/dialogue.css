@@ -101,7 +101,6 @@
 /* A first choice gone back on: one grey line on the learner's side. « Choisir autrement » under a consequence. */
 .t-dialogue-row[data-role="first-choice"] { justify-content: flex-end; flex-direction: column; align-items: flex-end; gap: 0.125rem; }
 .t-dialogue-first { display: flex; align-items: center; gap: 0.375rem; max-width: min(34rem, 80%); margin: 0.25rem 0 0; font-size: 0.8125rem; color: var(--t-muted); }
-.t-dialogue-first .t-icon svg { width: 0.9375rem; height: 0.9375rem; }
 .t-dialogue-first-label { flex: none; font-weight: 600; }
 .t-dialogue-first-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--t-muted) 55%, transparent); }
 .t-dialogue-row[data-role="retry"] { padding-inline-start: var(--t-dl-indent); }
@@ -266,13 +265,13 @@
 /* Where the thread goes on: « Vous reprenez ici », « Nouvel essai », in the theme's colour between
    two hairlines; it stays until the path is cut before it. */
 .t-dialogue-row[data-role="marker"] { padding: 0.375rem 0; }
-.t-dialogue-marker { display: flex; align-items: center; gap: 0.375rem; width: 100%; margin: 0; font-size: 0.8125rem; font-weight: 650; color: var(--t-primary); }
-.t-dialogue-marker::before, .t-dialogue-marker::after { content: ""; flex: 1; min-width: 1.5rem; height: 1px; background: color-mix(in srgb, var(--t-primary) 35%, transparent); }
-.t-dialogue-marker::before { margin-inline-end: 0.25rem; }
-.t-dialogue-marker::after { margin-inline-start: 0.25rem; }
-.t-dialogue-marker .t-icon svg { width: 0.9375rem; height: 0.9375rem; }
+/* A break in the thread, as a date between messages: its words between two lines, in the muted colour,
+   without an icon or a link's colour (it would read as one more button). */
+.t-dialogue-marker { display: flex; align-items: center; gap: 0.75rem; width: 100%; margin: 0; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.01em; color: var(--t-muted); }
+.t-dialogue-marker::before, .t-dialogue-marker::after { content: ""; flex: 1; min-width: 1.5rem; height: 1px; background: color-mix(in srgb, var(--t-muted) 45%, transparent); }
 /* The choice taken back, among the options of its decision. */
-.t-dialogue-previous { color: var(--t-primary); }
+/* The option taken back: a dot in the primary colour where « déjà exploré » has its tick, as wide. */
+.t-dialogue-previous::before { content: ""; flex: none; width: 0.875rem; height: 0.875rem; background: radial-gradient(circle, var(--t-primary) 0 0.1875rem, transparent 0.21875rem); }
 
 /* ── Scene: the backdrop, the cast large, a few bubbles near them ─────────── */
 .t-block.t-dialogue-look--scene.t-w-full { max-width: var(--t-dialog-scene-width, 75rem); }
@@ -333,8 +332,10 @@
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="end"] { padding: 0.25rem 15%; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-end { padding: 0.35em 1em; border-radius: 999px; background: color-mix(in srgb, var(--t-surface) 92%, transparent); }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="marker"] { justify-content: center; }
-  .t-dialogue-root[data-t-look="scene"] .t-dialogue-marker { width: auto; padding: 0.35em 1em; border-radius: 999px; background: color-mix(in srgb, var(--t-surface) 92%, transparent); }
-  .t-dialogue-root[data-t-look="scene"] .t-dialogue-marker::before, .t-dialogue-root[data-t-look="scene"] .t-dialogue-marker::after { display: none; }
+  /* Over the backdrop, the break keeps its lines on a strip as wide as a note (no pill: a pill is a button here). */
+  .t-dialogue-root[data-t-look="scene"] .t-dialogue-marker { width: min(26rem, 74%); padding: 0.45em 1.25em; border-radius: 0.5em; background: color-mix(in srgb, var(--t-surface) 90%, transparent); }
+  .t-dialogue-root[data-t-look="scene"] .t-dialogue-marker::before { background: linear-gradient(to right, transparent, color-mix(in srgb, var(--t-muted) 55%, transparent)); }
+  .t-dialogue-root[data-t-look="scene"] .t-dialogue-marker::after { background: linear-gradient(to left, transparent, color-mix(in srgb, var(--t-muted) 55%, transparent)); }
   /* Its options in the room under the bubbles, between the characters, anchored at the bottom. */
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-options {
     position: absolute; z-index: 1; inset-inline: 25%; top: 57%; bottom: 4.5%; justify-content: flex-end; min-height: 0 !important; font-size: clamp(0.9375rem, 1.25cqi, 1.1875rem);
