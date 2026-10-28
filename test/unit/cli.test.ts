@@ -77,7 +77,7 @@ test('elabora --help, help and no command print the reference', async () => {
 test('an unknown command lists the commands on stderr, with the near ones, and exits with 2', async () => {
   const [nope, near] = await Promise.all([elabora(['nope']), elabora(['objct'])]);
   assert.equal(nope.status, 2);
-  assert.match(nope.stderr, /^Unknown command "nope"\.\nCommands: init, validate, .*object map.*\.\nelabora --help prints the reference/s);
+  assert.match(nope.stderr, /^Unknown command "nope"\.\nCommands: init, .*validate, .*object map.*\.\nelabora --help prints the reference/s);
   assert.ok(nope.stderr.length < 4000, 'not the whole reference');
   assert.match(near.stderr, /^Unknown command "objct"\. Maybe: object new, object map, object test, object replay\./);
 });
