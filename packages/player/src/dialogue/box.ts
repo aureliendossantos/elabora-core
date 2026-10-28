@@ -90,7 +90,7 @@ export function createThreadBox(parts: ViewParts, { modal, reserveRoom, disposed
 
   // Every bubble as wide as its lines again (the thread's width or its text size changed).
   function refit() {
-    for (const text of log.querySelectorAll<HTMLElement>('.t-dialogue-text')) fitLines(text);
+    fitLines(...log.querySelectorAll<HTMLElement>('.t-dialogue-text'));
   }
 
   // ── Scene pages: two or three bubbles near the characters, then the page turns ──

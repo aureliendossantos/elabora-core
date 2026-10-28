@@ -112,18 +112,22 @@ export function bubbleRow(context: ThreadContext, options: BubbleOptions): Bubbl
   return { row, bubble, text, words, avatar, tools, listen, resume };
 }
 
-// A bubble as wide as its lines: text-wrap: balance evens them out but leaves the box at the width
-// they had before (room on the right of every line). Its text takes the width of its widest line,
-// measured once inserted (and again when the thread's width or its text size changes).
-export function fitLines(text: HTMLElement): void {
-  text.style.removeProperty('width');
-  if (!text.isConnected || !text.classList.contains('t-dialogue-text')) return;
-  const rects = [...(text.querySelector('.t-dialogue-ink') ?? text).getClientRects()];
-  // One line is already as wide as it is.
-  if (rects.length < 2) return;
-  const width = Math.max(...rects.map((rect) => rect.right)) - Math.min(...rects.map((rect) => rect.left));
-  const zoom = (text as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom || 1;
-  text.style.width = `${Math.ceil(width / zoom) + 1}px`;
+// Bubbles as wide as their lines: text-wrap: balance evens them out but leaves the box at the width
+// they had before (room on the right of every line). Each text takes the width of its widest line,
+// measured once inserted (and again when the thread's width or its text size changes); a text not
+// shown (a scene's page turned) keeps the width it had. All widths are cleared, then all lines read,
+// then all widths set: one layout for the lot.
+export function fitLines(...texts: HTMLElement[]): void {
+  const shown = texts.filter((text) => text.isConnected && text.classList.contains('t-dialogue-text') && text.getClientRects().length > 0);
+  for (const text of shown) text.style.removeProperty('width');
+  const widths = shown.map((text) => {
+    const rects = [...(text.querySelector('.t-dialogue-ink') ?? text).getClientRects()];
+    // One line is already as wide as it is.
+    if (rects.length < 2) return null;
+    const zoom = (text as HTMLElement & { currentCSSZoom?: number }).currentCSSZoom || 1;
+    return Math.ceil((Math.max(...rects.map((rect) => rect.right)) - Math.min(...rects.map((rect) => rect.left))) / zoom) + 1;
+  });
+  shown.forEach((text, index) => { const width = widths[index]; if (width !== null) text.style.width = `${width}px`; });
 }
 
 // The bubble to come, its final size kept, with « … » in it (messaging, a line without a voice): it

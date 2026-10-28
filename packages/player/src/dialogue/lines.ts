@@ -59,9 +59,10 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
     // The browser refused to play the line: its voice from where the line is.
     if (built.listen) built.listen.addEventListener('click', () => { const step = state.step; if (step?.kind === 'line' && step.state.row === built) step.state.playback.playAudio(); built.listen!.hidden = true; });
     if (built.resume) built.resume.addEventListener('click', () => revisit(Number(built.row.dataset.decision)));
-    // While the dialogue waits for the learner, a click on a bubble goes on (as « Suite »); a voice
-    // being said is never cut by a stray click.
-    built.bubble.addEventListener('click', () => { if (state.step?.kind === 'click') next(); });
+    // While the dialogue waits for the learner, a click on the last bubble goes on (as « Suite »); a
+    // voice being said is never cut by a stray click, nor is reading by a click up the thread or a
+    // selection of words.
+    built.bubble.addEventListener('click', () => { if (state.step?.kind === 'click' && lastRow() === built.row && (getSelection()?.isCollapsed ?? true)) next(); });
     return built;
   }
   const voiceOf = (line: { text: string; voice?: LineVoiceData }): LineVoiceData => line.voice ?? textVoice(line.text, undefined, language);

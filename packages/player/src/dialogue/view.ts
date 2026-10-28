@@ -187,7 +187,7 @@ export function createDialogues(context: DialoguesContext) {
           }
           if (step.kind === 'wait') { if (clock.now() < step.until) return; lines.consumeTyping(step); state.step = null; continue; }
           if (step.kind === 'turn') { if (clock.now() < step.until) return; const then = step.then; state.step = null; state.step = then(); continue; }
-          if (step.kind === 'click') return;
+          if (step.kind === 'click') { roomView.syncTurn(); return; }
         }
         if (state.presented >= state.beats.length) { settle(); return; }
         const index = state.presented++;
@@ -327,7 +327,8 @@ export function createDialogues(context: DialoguesContext) {
 
     const controller: Controller = {
       block, wrap, clock,
-      active: () => !state.disposed && state.phase === 'playing' && !state.paused,
+      // Waiting for « Suite », nothing moves: no frame until the learner goes on.
+      active: () => !state.disposed && state.phase === 'playing' && !state.paused && state.step?.kind !== 'click',
       tick, begin, checkBegin, afterShow,
       goto(node: string) { try { moves.move(jump(state.run, node)); } catch { /* not a node of this dialogue (the validator says so) */ } },
       restartRun() {
