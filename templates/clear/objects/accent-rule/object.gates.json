@@ -2,7 +2,7 @@
   "object": "accent-rule",
   "version": "1.0.0",
   "elabora": "0.1.0",
-  "at": "2026-10-28T16:28:48.363Z",
+  "at": "2026-10-28T18:42:48.188Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -23,18 +23,18 @@
     "maxTextureSize": null,
     "webglContexts": 0,
     "contextLost": false,
-    "bootMs": 29,
+    "bootMs": 42,
     "bootSamples": [
-      31,
-      30,
-      29,
-      32,
       42,
-      99,
-      28,
-      28,
-      29,
-      26
+      52,
+      50,
+      57,
+      63,
+      48,
+      42,
+      38,
+      39,
+      41
     ]
   },
   "tests": [
@@ -75,5 +75,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:a23f8b1114758aab54f13cae2ff133657fd5ce9a3ad6fdcf7bf2079e85ef3c15"
+  "fingerprint": "sha256:37d37d96b7031086a50bbf87b60e107d6f3275bd771419119133d4cc4a44e2f0"
 }

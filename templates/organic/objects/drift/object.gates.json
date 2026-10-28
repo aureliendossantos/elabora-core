@@ -2,7 +2,7 @@
   "object": "drift",
   "version": "1.0.0",
   "elabora": "0.1.0",
-  "at": "2026-10-28T15:58:46.638Z",
+  "at": "2026-10-28T18:43:58.431Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -23,17 +23,17 @@
     "maxTextureSize": null,
     "webglContexts": 0,
     "contextLost": false,
-    "bootMs": 56,
+    "bootMs": 71,
     "bootSamples": [
-      61,
-      69,
-      52,
-      62,
-      62,
-      48,
-      41,
-      44,
-      56
+      77,
+      78,
+      71,
+      60,
+      59,
+      67,
+      74,
+      58,
+      79
     ]
   },
   "tests": [
@@ -70,5 +70,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:c1836f8165026428e460a8d436fe992f146ace635b468215a02b352d85ad65c0"
+  "fingerprint": "sha256:7f1d78850e6311cc42f9a2fe1314879b29348510615f5a6dd672abc18d24e454"
 }

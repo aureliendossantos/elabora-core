@@ -2,7 +2,7 @@
   "object": "tableau",
   "version": "1.0.0",
   "elabora": "0.1.0",
-  "at": "2026-10-28T16:32:06.621Z",
+  "at": "2026-10-28T18:43:36.135Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -23,18 +23,18 @@
     "maxTextureSize": null,
     "webglContexts": 0,
     "contextLost": false,
-    "bootMs": 39,
+    "bootMs": 63,
     "bootSamples": [
-      31,
-      143,
-      59,
-      30,
-      25,
-      45,
-      39,
-      48,
-      48,
-      34
+      63,
+      60,
+      87,
+      138,
+      55,
+      130,
+      94,
+      51,
+      76,
+      55
     ]
   },
   "tests": [
@@ -75,5 +75,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:b4a48292aea30f4b90b39697e69a89aaa07dbd969c5674d7b60a8ebc3abbf2ab"
+  "fingerprint": "sha256:1bb14f6b4331e2c60fe412805b1c5da06f136560726a91303085ad1e3c1257e6"
 }
