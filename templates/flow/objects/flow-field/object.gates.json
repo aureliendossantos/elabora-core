@@ -2,7 +2,7 @@
   "object": "flow-field",
   "version": "1.0.0",
   "elabora": "0.1.0",
-  "at": "2026-10-28T18:42:26.796Z",
+  "at": "2026-10-28T19:12:53.117Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -23,16 +23,16 @@
     "maxTextureSize": null,
     "webglContexts": 0,
     "contextLost": false,
-    "bootMs": 83,
+    "bootMs": 56,
     "bootSamples": [
-      65,
-      83,
-      79,
-      64,
-      91,
       84,
-      92,
-      106
+      88,
+      55,
+      84,
+      126,
+      55,
+      56,
+      54
     ]
   },
   "tests": [
@@ -65,5 +65,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:67aa8118c0f6da365f8b7fd5c7c0714905d201088d5803a4e371b696ed64ff21"
+  "fingerprint": "sha256:44235869f392808fccae8d369a2e2fec237f623147cff39b43dbf3918f36111e"
 }

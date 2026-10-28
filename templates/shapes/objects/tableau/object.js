@@ -65,6 +65,8 @@ const TABLEAUX = [
   ]
 ];
 
+const PHONE_ALPHA = 0.4;
+
 // The tableaux behind poster layouts (the opening and the closing): their text keeps the left half.
 const POSTERS = new Set([0, 4]);
 
@@ -199,7 +201,8 @@ export function mount(container, ctx) {
     return { ...shape, x: shape.x + dx };
   }
 
-  // On phones the text takes the whole width: two shapes only, in opposite corners, never blue.
+  // On phones the text takes the whole width and scrolls over the corners: two shapes only, in
+  // opposite corners, never blue, as tints (PHONE_ALPHA) that ink text stays readable on.
   function phone(base, colours) {
     const flip = tableau % 2 === 1;
     const top = { x: flip ? 0 : W, y: 56 };
@@ -207,9 +210,9 @@ export function mount(container, ctx) {
     const pick = (c) => (c === 2 ? 1 : c);
     return base.map((a, i) => {
       const shape = { kind: KINDS[i], x: W / 2, y: H / 2, s: 0, l: 0, t: 0, rot: a.rot, colour: colours[pick(a.c)], alpha: 0 };
-      if (i === 0) Object.assign(shape, { x: top.x, y: top.y, s: (a.s / 0.32) * 0.3 * W * 0.9, alpha: 1 });
-      if (i === 1) Object.assign(shape, { x: foot.x, y: foot.y, s: 0.36 * W, rot: flip ? 180 : 270, alpha: 1 });
-      if (i === 4) Object.assign(shape, { x: foot.x === 0 ? W : 0, y: foot.y, s: 0.12 * W, rot: a.rot, alpha: 1 });
+      if (i === 0) Object.assign(shape, { x: top.x, y: top.y, s: (a.s / 0.32) * 0.3 * W * 0.9, alpha: PHONE_ALPHA });
+      if (i === 1) Object.assign(shape, { x: foot.x, y: foot.y, s: 0.36 * W, rot: flip ? 180 : 270, alpha: PHONE_ALPHA });
+      if (i === 4) Object.assign(shape, { x: foot.x === 0 ? W : 0, y: foot.y, s: 0.12 * W, rot: a.rot, alpha: PHONE_ALPHA });
       return shape;
     });
   }

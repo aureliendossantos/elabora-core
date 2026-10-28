@@ -129,7 +129,7 @@ export function mount(container, ctx) {
     // cover (hero) they rise and tilt across the right half, and fade out towards the text on the left.
     // A phone window keeps them low: the text takes the whole width there.
     const h = W < 760 ? 0 : hero;
-    const lineAlpha = props.lines * intensity * (1 + 0.9 * h);
+    const lineAlpha = props.lines * intensity * (1 + 0.9 * h) * (W < 760 ? 0.45 : 1);
     if (lineAlpha > 0.001) {
       const grad = g.createLinearGradient(0, 0, W, 0);
       grad.addColorStop(0, css(A, 1 - 0.92 * h));

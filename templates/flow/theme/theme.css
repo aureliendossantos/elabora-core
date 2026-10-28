@@ -264,6 +264,11 @@ body { background: transparent; }
 .t-callout { border-radius: var(--fl-radius); }
 
 /* ── Phones ──────────────────────────────────────────────────────────── */
+/* The text runs down the page over the ribbons: the haze steps back (the object dims its lines too). */
+@media (max-width: 760px) {
+  .t-backdrop-layer[data-layer="haze"] { opacity: .22; }
+  #elabora-app { --t-muted: color-mix(in srgb, var(--t-text) 85%, var(--t-color-field)); }
+}
 @container (max-width: 640px) {
   .t-s-list .t-text ol > li { grid-template-columns: 3rem 1fr; }
   .t-s-list .t-text ol > li::before { font-size: 1.25rem; }

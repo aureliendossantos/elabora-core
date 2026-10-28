@@ -195,7 +195,7 @@ body { font-weight: 450; }
   content: ""; position: absolute; inset-inline-start: 0; top: .3em; width: 1rem; height: .875rem;
   border-radius: 58% 42% 55% 45% / 52% 60% 40% 48%; background: var(--org-part);
 }
-.t-panels-prompt { font-style: normal; color: var(--t-muted); }
+.t-panels-prompt { font-style: normal; color: var(--t-text); }
 /* Flip cards in the part's colour, the back on a card. */
 .t-panels-front { background: var(--org-part-soft); box-shadow: none; }
 .t-panels-back { background: var(--org-card); box-shadow: inset 0 0 0 1px var(--org-line); }
