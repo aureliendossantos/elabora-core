@@ -136,7 +136,6 @@ body { background: transparent; }
 
 /* Lead */
 .t-s-lead .t-text { font-size: clamp(1.125rem, 1rem + .45vw, 1.375rem); line-height: 1.45; color: var(--t-muted); max-width: 36em; text-wrap: pretty; }
-/* Kicker: monospaced capitals in the first neon */
 /* Meta: a small monospaced line */
 .t-s-meta .t-text { font-family: var(--t-font-mono); font-size: .875rem; letter-spacing: .04em; color: var(--t-muted); font-variant-numeric: tabular-nums; }
 .t-s-meta .t-text p { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; }

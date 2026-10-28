@@ -1,0 +1,364 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.4/object-tests.schema.json",
+  "title": "Free object tests (objects/<id>/object.tests.json)",
+  "description": "Behaviour tests replayed in a real browser at every change (gate 3), with visual snapshots of key states (gate 5). Time is deterministic: the host injects the seed and the clock and advances frames only on step.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tests"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "tests": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "steps"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "props": {
+            "type": "object",
+            "description": "Prop values for this test (defaults otherwise)."
+          },
+          "strings": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Wording of some strings for this test, as a block or a translation would give it."
+          },
+          "locale": {
+            "type": "string",
+            "description": "Language of the test (default: the manifest language, then the course language): plurals and numbers follow it."
+          },
+          "size": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 200,
+              "maximum": 2400
+            },
+            "minItems": 2,
+            "maxItems": 2,
+            "description": "Frame size [width, height] in px for this test (default [960, 600]). Use [375, 640] to test the narrow layout of a responsive object."
+          },
+          "seed": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 1
+          },
+          "reducedMotion": {
+            "type": "boolean",
+            "default": false
+          },
+          "safeArea": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Safe area in px from each edge of the frame: the part covered by the course layout (ctx.safeArea, host.onSafeArea).",
+            "properties": {
+              "top": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2400
+              },
+              "right": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2400
+              },
+              "bottom": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2400
+              },
+              "left": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2400
+              }
+            }
+          },
+          "context": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Where the learner is, for decorations of the course backdrop (ctx.context, host.onContext): screen, section, step (from 1), variant, and where the screen and its section stand (screenIndex, screenCount, sectionIndex, sectionCount, direction).",
+            "properties": {
+              "screen": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "section": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "step": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "variant": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "screenIndex": { "type": "integer", "minimum": 0, "description": "The rank of the screen in the course, from 0." },
+              "screenCount": { "type": "integer", "minimum": 1 },
+              "sectionIndex": { "type": ["integer", "null"], "minimum": 0, "description": "The rank of the screen's section, from 0 (null: no section)." },
+              "sectionCount": { "type": "integer", "minimum": 0 },
+              "direction": { "enum": ["forward", "back", null], "description": "The way the learner came, forward or back in the course order (null: the first screen shown)." }
+            }
+          },
+          "view": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Where the frame is in the course window (ctx.view, host.onView), for objects that follow the scroll: visible, ratio (share of the frame in the window), progress (0 when its top reaches the bottom of the window, 1 when its bottom leaves the top), entry (0 to 1 while it comes in from below) and exit (0 to 1 while it leaves at the top). Values left out keep theirs; by default the frame is wholly in view.",
+            "properties": {
+              "visible": {
+                "type": "boolean"
+              },
+              "ratio": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "progress": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "entry": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "exit": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          },
+          "steps": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "action"
+              ],
+              "properties": {
+                "action": {
+                  "enum": [
+                    "step",
+                    "click",
+                    "key",
+                    "set-props",
+                    "set-state",
+                    "set-safe-area",
+                    "set-context",
+                    "set-view",
+                    "expect-state",
+                    "expect-event",
+                    "expect-no-event",
+                    "snapshot"
+                  ],
+                  "description": "step: advance N frames. click: click a declared object (object) or a point in relative coordinates (at). key: press a key in the object. set-props / set-state: call update / setState. set-safe-area: the layout now covers this part of the frame (safeArea). set-context: the learner moved (context, decorations). set-view: the frame moved in the window (view: the learner scrolled). expect-state: getState() must contain these values. expect-event: an event with this name (and payload subset) was emitted by the actions since the previous expectations; consecutive expectations look at the same events (one action may emit several) and each event satisfies one expect-event only. expect-no-event: no such event (any event if name is omitted) among them, apart from those already matched. snapshot: compare a screenshot with the stored baseline."
+                },
+                "frames": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10000
+                },
+                "object": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9-]{0,31}$"
+                },
+                "at": {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
+                },
+                "key": {
+                  "type": "string",
+                  "maxLength": 32
+                },
+                "props": {
+                  "type": "object"
+                },
+                "transition": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "description": "With set-props: the props come with a block that carries on from another screen (continuity, D65), as update(props, transition) receives them in a course: duration in ms (default 700; 0 under the test's reducedMotion), direction forward or back, and the arriving block's safe area (applied first, as host.onSafeArea). Steps that follow advance through the passage frame by frame.",
+                  "properties": {
+                    "duration": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 3000,
+                      "default": 700
+                    },
+                    "direction": {
+                      "enum": [
+                        "forward",
+                        "back"
+                      ],
+                      "default": "forward"
+                    },
+                    "safeArea": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "top": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 2400
+                        },
+                        "right": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 2400
+                        },
+                        "bottom": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 2400
+                        },
+                        "left": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 2400
+                        }
+                      }
+                    }
+                  }
+                },
+                "state": {
+                  "type": "object"
+                },
+                "name": {
+                  "type": "string",
+                  "maxLength": 64
+                },
+                "payload": {
+                  "type": "object"
+                },
+                "safeArea": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "description": "Safe area in px from each edge of the frame: the part covered by the course layout (ctx.safeArea, host.onSafeArea).",
+                  "properties": {
+                    "top": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 2400
+                    },
+                    "right": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 2400
+                    },
+                    "bottom": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 2400
+                    },
+                    "left": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 2400
+                    }
+                  }
+                },
+                "context": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "description": "Where the learner is, for decorations of the course backdrop (ctx.context, host.onContext): screen, section, step (from 1), variant, and where the screen and its section stand (screenIndex, screenCount, sectionIndex, sectionCount, direction).",
+                  "properties": {
+                    "screen": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "section": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "step": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "variant": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "screenIndex": { "type": "integer", "minimum": 0, "description": "The rank of the screen in the course, from 0." },
+                    "screenCount": { "type": "integer", "minimum": 1 },
+                    "sectionIndex": { "type": ["integer", "null"], "minimum": 0, "description": "The rank of the screen's section, from 0 (null: no section)." },
+                    "sectionCount": { "type": "integer", "minimum": 0 },
+                    "direction": { "enum": ["forward", "back", null], "description": "The way the learner came, forward or back in the course order (null: the first screen shown)." }
+                  }
+                },
+                "view": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "description": "Where the frame is in the course window (ctx.view, host.onView), for objects that follow the scroll: visible, ratio (share of the frame in the window), progress (0 when its top reaches the bottom of the window, 1 when its bottom leaves the top), entry (0 to 1 while it comes in from below) and exit (0 to 1 while it leaves at the top). Values left out keep theirs; by default the frame is wholly in view.",
+                  "properties": {
+                    "visible": {
+                      "type": "boolean"
+                    },
+                    "ratio": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "progress": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "entry": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "exit": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

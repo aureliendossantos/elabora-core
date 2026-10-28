@@ -78,17 +78,6 @@
         <target>Pour finir</target>
       </segment>
     </unit>
-    <unit id="course.ui.lessonOf">
-      <notes>
-        <note category="location">course.json /ui/lessonOf</note>
-        <note category="format">text</note>
-        <note category="context">Player label "lessonOf" (placeholders in braces stay)</note>
-      </notes>
-      <segment state="translated">
-        <source>Part {n} of {total}</source>
-        <target>Partie {n} sur {total}</target>
-      </segment>
-    </unit>
     <unit id="plan.title">
       <notes>
         <note category="location">plan.json /title</note>

@@ -295,9 +295,8 @@ export interface ScreenLayout {
   fullBleed: boolean;
   defaultSlot: string | null;
   html: string;
-  // What its layout hooks show (D63), when its template has them: the screen's section and rank
-  // among the screens (data-t-section, data-t-lesson), its reading time in minutes (data-t-duration).
-  place?: { section: string; n: number; total: number };
+  // What its layout hook shows (D63), when its template has it: the page's reading time in minutes
+  // (data-t-duration).
   minutes?: number;
 }
 

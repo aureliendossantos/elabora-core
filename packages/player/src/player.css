@@ -665,13 +665,11 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
   :is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block--text.t-w-full > .t-aside { margin: .25rem 0 0; }
 }
 
-/* Opening (« Ouverture »), a built-in screen layout: the head of a lesson, then its page as the default
-   column. The layout owns the page (full bleed): its head may go edge to edge. */
+/* Opening (« Ouverture »), a built-in screen layout: the head of a lesson (no line above its title),
+   then its page as the default column. The layout owns the page (full bleed): its head may go edge to edge. */
 .t-opening { --t-opening-gutter: max(var(--t-gutter), calc((100% - var(--t-content-width, 47.5rem)) / 2)); }
 .t-opening-head { position: relative; display: grid; isolation: isolate; }
 .t-opening-copy { position: relative; padding: clamp(2.5rem, 6vw, 4.5rem) var(--t-opening-gutter) clamp(1.25rem, 2.5vw, 2rem); }
-.t-opening-eyebrow { margin: 0 0 1rem; color: var(--t-primary); font-size: .8125rem; font-weight: 700; letter-spacing: .08em; line-height: 1.4; text-transform: uppercase; }
-.t-opening-section:not(:empty) + .t-opening-lesson::before { content: "·"; margin-inline: .55em; }
 .t-opening .t-screen-title { max-width: 18em; margin: 0; font-size: clamp(2.125rem, 1.35rem + 2.6vw, 3.5rem); line-height: 1.08; letter-spacing: -0.02em; text-wrap: balance; }
 .t-opening-lead { max-width: 36em; margin-top: 1.25rem; font-size: clamp(1.125rem, 1.02rem + .35vw, 1.3125rem); line-height: 1.5; }
 .t-opening-meta { display: flex; align-items: center; gap: .4rem; margin: 1.5rem 0 0; color: var(--t-muted); font-size: .875rem; font-weight: 600; }
@@ -694,7 +692,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-head:has(> .t-opening-media) .t-opening-copy { --t-opening-fade: clamp(5rem, 12vw, 9rem); padding-top: var(--t-opening-fade); }
 /* The scrim under the text fades in above it: no edge across the picture. */
 .t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-head:has(> .t-opening-media) .t-opening-copy::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--t-scrim, var(--t-scrim-default)); -webkit-mask: linear-gradient(transparent, #000 var(--t-opening-fade)); mask: linear-gradient(transparent, #000 var(--t-opening-fade)); }
-.t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-copy :is(.t-opening-eyebrow, .t-opening-eyebrow *, .t-screen-title, .t-opening-lead, .t-opening-lead *, .t-opening-meta) { color: inherit !important; }
+.t-opening:is(.t-opening--band, .t-opening--cover) .t-opening-copy :is(.t-screen-title, .t-opening-lead, .t-opening-lead *, .t-opening-meta) { color: inherit !important; }
 .t-opening--cover .t-opening-copy { padding-bottom: clamp(2.5rem, 7vh, 4.5rem); }
 /* split: the head beside the picture; the picture above it in narrow windows. */
 .t-opening--split .t-opening-head:has(> .t-opening-media) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: clamp(24rem, 40vw, 36rem); }

@@ -1,14 +1,11 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.4/screen.schema.json",
   "id": "workshop",
   "title": "Building the sea, harbour by harbour",
   "covers": [
     "ITEM-4"
   ],
   "layout": "folio",
-  "layoutProps": {
-    "eyebrow": "Lesson 2 · In the chart-maker's workshop"
-  },
   "completeWhen": "interactions-done",
   "steps": {
     "2": {

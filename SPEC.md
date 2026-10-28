@@ -1,6 +1,6 @@
 # Elabora course format — specification 0.2
 
-**Status:** draft for implementation, 6 October 2026. **Format id:** `elabora/0.1`. **Licence of this text:** Apache-2.0. The JSON Schemas in [`packages/format/schemas/0.1.3/`](packages/format/schemas/0.1.3/) are normative; this document explains them. Where they disagree, the schemas win.
+**Status:** draft for implementation, 6 October 2026. **Format id:** `elabora/0.1`. **Licence of this text:** Apache-2.0. The JSON Schemas in [`packages/format/schemas/0.1.4/`](packages/format/schemas/0.1.4/) are normative; this document explains them. Where they disagree, the schemas win.
 
 The format describes an e-learning module as plain files that people, agents and other tools can read and write. It separates three layers with different rules:
 
@@ -32,7 +32,7 @@ sources/                    the author's files the course is made from, and thei
 
 `sources/` is reserved: what it holds is never validated, built or published, and a course file that points into it is an error (`E_SOURCE_REFERENCED`). Tools may keep a readable version of each source beside it (`<file>.md`, whose first line is an `<!-- elabora:readable {…} -->` marker, and `<file>.files/`).
 
-All JSON files are UTF-8, and may carry `"$schema"` pointing to `https://elabora.studio/schemas/0.1.3/<name>.schema.json`. Tools write them with two-space indentation and a final newline.
+All JSON files are UTF-8, and may carry `"$schema"` pointing to `https://elabora.studio/schemas/0.1.4/<name>.schema.json`. Tools write them with two-space indentation and a final newline.
 
 ## 2. Identifiers
 
@@ -115,7 +115,7 @@ A screen has `id` (equal to its file name), `title`, `covers`, `blocks[]` in rea
 
 **Converting a block (« Transformer en… », D63).** A block becomes another presentation of its type, or another type that holds the same content, in place: panels, steps, an interactive picture and a gallery (when its items have pictures) into one another, panels into a sort in pairs, steps into a sort in order or the charts `process` and `milestones`, `statement`, `callout` and `text` into one another, an image and a gallery of one image, the bulleted or numbered list of a text into panels or steps. The block's id and its items' ids are kept, and items are never reordered (a sort's placements are saved by index), so visited controls keep their names and translation units whose text moves to another prop follow it; what a conversion keeps, loses (learner progress included: a panel's visited mark has no place in a sort) and leaves to write is said before anything is converted, and what does not fit the target (too many items, a text too long, a picture missing) is refused with its reason (`E_CONVERT_REFUSED`). The command is `convert_block` (CLI `elabora convert`, MCP `elabora_convert_block`, the engine's `conversions` request); for the lock it is a content update like any other.
 
-**Screen layouts.** A screen's `layout` names a built-in layout (`layouts/<id>.schema.json` holds its props) or a screen-level course component. Built-in 0.2: `opening` (« Ouverture »), the head of a lesson then its page, `presentation` `title`, `band`, `split` or `cover`, props `eyebrow` (empty: the player writes the section and « Leçon 2 sur 6 »), `lead`, `image`, `alt`, `decorative`, `focus`, `duration` (the page's reading time, computed by the build), slots `question` (a question before the lesson) and `body` (default). Course components may not take a built-in layout's name; they may fork one.
+**Screen layouts.** A screen's `layout` names a built-in layout (`layouts/<id>.schema.json` holds its props) or a screen-level course component. Built-in 0.2: `opening` (« Ouverture »), the head of a lesson then its page, `presentation` `title`, `band`, `split` or `cover`, props `lead`, `image`, `alt`, `decorative`, `focus`, `duration` (the page's reading time, computed by the build), slots `question` (a question before the lesson) and `body` (default). Course components may not take a built-in layout's name; they may fork one.
 
 **Markdown subset.** CommonMark without raw HTML and without images (use image blocks), plus tables and maths: `$…$` inline and `$$…$$` display, in LaTeX, rendered as MathML at build time (no script at runtime; read by screen readers). Write a literal dollar as `\$`. Links to external sites open in a new tab. Text marked `x-translatable` in the schemas is what translation tools extract.
 

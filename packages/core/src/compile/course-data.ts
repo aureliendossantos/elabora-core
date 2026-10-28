@@ -369,29 +369,13 @@ function compileSteps(steps: NonNullable<Screen['steps']>): NonNullable<ScreenDa
 function compileLayout(project: Project, screenId: string, screen: Screen, layout: ComponentDescriptor, template: ParsedTemplate, context: CompileContext): ScreenLayout {
   const props = applyDefaults(layout.schema, resolveTextRefs(screen.layoutProps || {}, context.planIndex));
   const html = renderTemplate(template, { props, schema: layout.schema, id: screen.id, language: context.course.language, assetPath: context.assetPath, fields: context.fields }).html;
-  return { id: layout.id, lineage: layout.lineage, fullBleed: layout.fullBleed, defaultSlot: layout.defaultSlot, html, ...layoutFacts(project, screenId, html, context) };
+  return { id: layout.id, lineage: layout.lineage, fullBleed: layout.fullBleed, defaultSlot: layout.defaultSlot, html, ...layoutFacts(project, screenId, html) };
 }
 
-// What the layout hooks of a screen show (D63), when its template has them: its place in the course
-// (data-t-section, data-t-lesson: the title of its section, its rank among the sections, or among the
-// screens of a course without sections) and its
-// reading time (data-t-duration). The player words them from its labels.
-function layoutFacts(project: Project, screenId: string, html: string, context: CompileContext): Pick<ScreenLayout, 'place' | 'minutes'> {
-  const has = (hook: string) => html.includes(`data-t-${hook}`);
-  const facts: Pick<ScreenLayout, 'place' | 'minutes'> = {};
-  if (has('section') || has('lesson')) {
-    const sections = objectsIn(context.course.sections);
-    const section = sections.find((candidate) => candidate.id === context.sectionOf.get(screenId));
-    // A course in sections counts its lessons by section (« Leçon 2 sur 4 », Rise's lessons); one
-    // without, by screen.
-    if (section && sections.length > 1) facts.place = { section: textOf(section.title), n: sections.indexOf(section) + 1, total: sections.length };
-    else {
-      const order = screenOrder(project);
-      facts.place = { section: textOf(section?.title), n: order.findIndex((entry) => entry.id === screenId) + 1, total: order.length };
-    }
-  }
-  if (has('duration')) facts.minutes = pageMinutes(project, screenId);
-  return facts;
+// What the layout hook of a screen shows (D63), when its template has it: the page's reading time
+// (data-t-duration), which the player words from its labels.
+function layoutFacts(project: Project, screenId: string, html: string): Pick<ScreenLayout, 'minutes'> {
+  return html.includes('data-t-duration') ? { minutes: pageMinutes(project, screenId) } : {};
 }
 
 // A block shown empty: the player renders its html (none), whatever its type.

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.3/course.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.4/course.schema.json",
   "format": "elabora/0.1",
   "id": "medieval-charts",
   "title": "Drawing the sea: how medieval chart-makers worked",
@@ -98,8 +98,7 @@
       "text": {
         "initial": "Opening paragraph with an illuminated initial",
         "lead": "Large introductory paragraph",
-        "quote": "A visitor's words, set like a quotation in the margin of a manuscript",
-        "eyebrow": "A short line in red small capitals above a heading"
+        "quote": "A visitor's words, set like a quotation in the margin of a manuscript"
       },
       "callout": {
         "rubric": "The idea to remember, ruled in red like a rubric"

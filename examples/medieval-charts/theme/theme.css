@@ -136,8 +136,8 @@ h1, h2, h3, h4 { font-weight: 500; letter-spacing: -.005em; text-wrap: balance; 
   .t-block--text > .t-aside { position: absolute; top: .3rem; left: calc(100% + 3rem); width: 15.5rem; margin: 0; padding: 0; border: 0; }
 }
 
-/* Columns in the diptych style: two leaves of vellum hinged in the middle, a round miniature, an eyebrow,
-   a title and the points of comparison; they open flat as the block scrolls into view, and stack on
+/* Columns in the diptych style: two leaves of vellum hinged in the middle, a round miniature, a title and
+   the points of comparison; they open flat as the block scrolls into view, and stack on
    narrow windows. */
 .t-block--columns[data-style="diptych"] .t-columns { gap: 0; align-items: stretch; perspective: 1800px; }
 .t-block--columns[data-style="diptych"] .t-column[data-slot="third"] { display: none; }
@@ -148,7 +148,6 @@ h1, h2, h3, h4 { font-weight: 500; letter-spacing: -.005em; text-wrap: balance; 
 .t-block--columns[data-style="diptych"] .t-column > .t-block { width: 100%; margin: 0; }
 .t-block--columns[data-style="diptych"] .t-block--image .t-figure { margin: 0 0 .8rem; }
 .t-block--columns[data-style="diptych"] .t-block--image img { width: 8.5rem; height: 8.5rem; border-radius: 50%; box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-color-sepia) 35%, transparent), 0 10px 22px -14px var(--t-color-vellum-shadow); object-fit: cover; }
-.t-block--text[data-style="eyebrow"] .t-text p { margin: 0; color: var(--t-primary); font-variant-caps: all-small-caps; letter-spacing: .14em; font-size: 1.1rem; font-weight: 600; }
 .t-block--columns[data-style="diptych"] .t-block--heading :is(h2, h3, h4) { margin: 0 0 .5rem; font-size: 2rem; line-height: 1.1; }
 .t-block--columns[data-style="diptych"] .t-block--text:not([data-style]) p { margin: 0 0 .55rem; }
 .t-block--columns[data-style="diptych"] .t-block--text:not([data-style]) strong { font-variant-caps: all-small-caps; letter-spacing: .06em; font-weight: 650; color: var(--t-color-ink); }

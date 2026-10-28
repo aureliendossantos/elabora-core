@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.3/course.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.4/course.schema.json",
   "format": "elabora/0.1",
   "id": "flow",
   "title": "Your module title",
@@ -210,8 +210,5 @@
     }
   },
   "description": "A template module of the Flow charter: a dark field with luminous ribbons and particles that leap forward at each new screen. Abstract content to replace with your own.",
-  "durationMinutes": 10,
-  "ui": {
-    "lessonOf": "Part {n} of {total}"
-  }
+  "durationMinutes": 10
 }
