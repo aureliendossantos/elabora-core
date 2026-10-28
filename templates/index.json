@@ -1,0 +1,41 @@
+{
+  "format": "elabora-templates/1",
+  "templates": [
+    {
+      "id": "organic",
+      "name": { "en": "Organic", "fr": "Organique" },
+      "summary": {
+        "en": "Soft gradient blobs drift behind the screens and glide from warm to cool tones, one hue per part.",
+        "fr": "Des formes douces en dégradé dérivent derrière les écrans et passent des tons chauds aux tons froids, une teinte par partie."
+      },
+      "audiences": { "en": "Soft skills, wellbeing, onboarding, HR", "fr": "Savoir-être, bien-être, accueil, RH" }
+    },
+    {
+      "id": "flow",
+      "name": { "en": "Flow", "fr": "Flux" },
+      "summary": {
+        "en": "Luminous ribbons and particles on a dark field: at each new screen the particles leap forward, then settle.",
+        "fr": "Des rubans lumineux et des particules sur un fond sombre : à chaque écran, les particules bondissent puis se calment."
+      },
+      "audiences": { "en": "Tech, cybersecurity, launches, sales", "fr": "Tech, cybersécurité, lancements, commerce" }
+    },
+    {
+      "id": "clear",
+      "name": { "en": "Clear", "fr": "Clair" },
+      "summary": {
+        "en": "Corporate sobriety, made with care: one accent, a strict grid, and a rule that moves to the part the learner is in.",
+        "fr": "La sobriété d'entreprise, faite avec soin : un seul accent, une grille stricte et un trait qui rejoint la partie en cours."
+      },
+      "audiences": { "en": "Compliance, procedures, HR, internal communication", "fr": "Conformité, procédures, RH, communication interne" }
+    },
+    {
+      "id": "shapes",
+      "name": { "en": "Shapes", "fr": "Formes" },
+      "summary": {
+        "en": "Bauhaus circles, quarters and bars in flat colours: a new tableau for each part, one shape moving at each screen.",
+        "fr": "Cercles, quarts de cercle et barres Bauhaus en aplats : un tableau par partie, une forme qui bouge à chaque écran."
+      },
+      "audiences": { "en": "Methods, frameworks, processes, young learners", "fr": "Méthodes, cadres, processus, jeunes publics" }
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.2/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.3/component.schema.json",
   "id": "flow-cover",
   "title": "Flow cover",
   "version": "1.0.0",

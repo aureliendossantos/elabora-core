@@ -71,3 +71,4 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D65](decisions/D65.md) | Continuity between screens: a block that carries on from one screen to the next | 28 Oct 2026 |
 | [D66](decisions/D66.md) | pnpm installs the checkouts, in npm's flat layout | 28 Oct 2026 |
 | [D67](decisions/D67.md) | Sounds: interface sounds, sounds of the story, music and ambiences on one engine, CC0 in the core | 28 Oct 2026 |
+| [D68](decisions/D68.md) | Module templates: a charter with placeholder screens, in templates/, copied by `init --template` | 28 Oct 2026 |

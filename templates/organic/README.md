@@ -1,103 +1,48 @@
-# Organique (`organic`)
+# Organic
 
-Un modèle de module Elabora pour les soft skills, le bien-être, l'accueil et les RH. Licence CC0 (voir `LICENSE.md`) ; police Nunito sous SIL OFL, embarquée avec sa licence (`theme/fonts/nunito/OFL.txt`) ; aucune ressource sur le réseau.
+Soft gradient blobs drift behind the screens, under a light grain. For soft skills, wellbeing, onboarding and HR. Font: Nunito, a rounded sans (SIL OFL, `theme/fonts/nunito/`).
 
-![Couverture](captures/cover-1600x900.png)
+## The charter
 
-## Le concept
+- **Each screen has its composition.** At a new screen the blobs migrate to new places in 2.4 s, without haste. A blob whose way would cross the window does not fly over the text: it fades out where it was and fades in where it goes.
+- **Each part has its hue,** from warm to cool: peach for the opening, then gold, sage and lagoon, sky for the closing. The learner feels the module move on without reading anything. The part's hue also tints a few marks of the page (`--org-part`): the objectives' counters, the shapes above the cards, the part opener's number, the quotation mark.
+- **A step revealed** moves the composition a little.
+- **Less motion** asked: nothing drifts, each screen shows its composition at once, and the CSS layers stand still. A session resumed on a later screen shows its composition at once too.
+- **No label above the titles.** A part opener (screen style `part`) shows its number in a soft blob of the part's hue.
 
-Des formes douces en dégradé dérivent lentement derrière chaque écran, sous un grain léger. Le décor porte un sens : il suit le module.
+The backdrop (`course.json` › `theme.backdrop`) is CSS layers (`ground`, `night`, two glows that hand over from warm to cool, `grain` over everything, in `theme/theme.css`) and the decoration object `objects/drift/`, a field of rounded lobes drawn on a small canvas the browser enlarges (the enlargement makes the blur). It follows `host.onContext` (screen, section, step, variant) and uses neither WebGL nor the network.
 
-- **Chaque écran a sa composition.** Quand l'apprenant change d'écran, les formes migrent vers une nouvelle place, en 2,4 s, sans hâte. Une forme qui devrait traverser la fenêtre ne vole pas : elle s'efface là où elle était et apparaît là où elle va.
-- **Chaque partie a sa teinte.** Les teintes vont du chaud au froid : pêche pour l'ouverture, or pour la première partie, sauge pour la deuxième, lagon pour la troisième, ciel pour la conclusion. L'apprenant sent le module avancer sans rien lire.
-- **Chaque étape d'un écran déplace un peu la composition** : le module avance.
-- **Moins d'animations** : quand l'apprenant le demande, rien ne dérive, et chaque écran montre sa composition d'emblée, comme une image fixe. Les calques CSS sont immobiles, eux aussi.
-- **À l'ouverture** (une session reprise sur un écran avancé), le décor arrive tout de suite à sa place, sans voyage depuis un écran que l'apprenant n'a pas vu.
+## Variants of the backdrop
 
-Le décor est fait de deux choses (`course.json` › `theme.backdrop`) :
+A screen picks one with `"backdrop": "<variant>"` (« Décor » in the editor).
 
-| Pièce | Fichier | Rôle |
+| Variant | When | What changes |
 |---|---|---|
-| Calques CSS | `theme/theme.css` (« Backdrop layers ») | `ground` : le fond crème ; `night` : le fond nuit ; `glow-warm` et `glow-cool` : deux grands halos qui se passent le relais d'une partie à l'autre ; `grain` : le grain, au-dessus des formes. |
-| Objet de décoration | `objects/drift/` | Les formes. C'est un champ de lobes arrondis calculé sur une petite toile que le navigateur agrandit : l'agrandissement fait le flou. Il suit `host.onContext` (écran, partie, étape, variante). Il ne sert ni WebGL ni le réseau. |
+| *(none)* | Most screens | Bright, soft blobs on a cream ground, in the part's hue |
+| `pastel` | Dense screens: cards, practice, steps, comparison | Paler, more transparent blobs; glows halved |
+| `night` | A strong moment: the key message | A deep night ground (blue, not violet), glowing blobs, light text and bars |
+| `mono` | A sober screen: a quotation, a sensitive subject | Tints of the ink (`color.primary`) only, no glow |
+| `none` | A screen without a backdrop | The object stops |
 
-La teinte de la partie colore aussi quelques marques de l'interface : les pastilles des objectifs, les formes au-dessus des cartes, le guillemet, le sur-titre et la forme sous le titre des ouvertures. On la lit dans la variable CSS `--org-part`.
+## Named styles
 
-### Les écrans
-
-| # | Écran | Blocs du cœur | Variante |
-|---|---|---|---|
-| 1 | `cover`, couverture (vignette) | mise en page `opening` + `text` (style `meta`) | — |
-| 2 | `objectives`, objectifs | `text` (style `objectives`) + `speech` (Personnage) | — |
-| 3 | `part-one`, intercalaire | `opening` + `text` (`meta`) | — |
-| 4 | `key-message`, message clé | `statement` | `night` |
-| 5 | `text-and-picture`, texte et illustration | `image` `beside` (SVG généré) | — |
-| 6 | `three-cards`, trois cartes | `columns` (style `cards`) | `pastel` |
-| 7 | `key-figures`, chiffres clés | `key-figures` | — |
-| 8 | `practice`, interaction | `quiz` (retour compact) | `pastel` |
-| 9 | `four-steps`, étapes | `process` | `pastel` |
-| 10 | `quote`, citation | `statement` `quote` | `mono` |
-| 11 | `comparison`, comparaison | `columns` (style `compare`) | `pastel` |
-| 12 | `chart`, graphique | `donut` | — |
-| 13 | `recap`, récapitulatif | `accordion` `cards` (cartes à retourner) | — |
-| 14 | `the-end`, fin | `opening` + `text` (`meta`) | — |
-
-Tous les textes sont des blocs : l'auteur les retouche dans l'inspecteur. Le français est dans `translations/fr.xlf`, écrit par la traduction d'Elabora (`elabora translate status . --to fr`).
-
-## Les variantes
-
-Elles se choisissent par écran, avec `"backdrop": "<variante>"` dans le fichier de l'écran (« Décor » dans l'inspecteur).
-
-| Variante | Quand | Ce qui change |
+| Block | Style | Look |
 |---|---|---|
-| *(aucune)* | La plupart des écrans | Formes vives et douces sur fond crème, teinte de la partie. |
-| `pastel` | Les écrans denses : activité, cartes, étapes, comparaison | Formes plus pâles et plus transparentes ; halos à moitié. |
-| `night` | Un moment fort : message clé, ouverture d'une partie | Fond nuit profonde (bleu nuit, pas violet), formes lumineuses, texte clair. Les barres du lecteur passent en clair. |
-| `mono` | Un écran sobre : citation, sujet sensible | Teintes de l'encre (`color.primary`) seulement, pas de halo. |
-| `none` | Un écran sans décor | L'objet s'arrête. |
+| screen | `part` | Part opener: the part's number in a soft blob above the title (`layoutProps.eyebrow`: the number) |
+| text | `lead` | Large opening paragraph |
+| text | `objectives` | Numbered list in soft round counters (objectives, takeaways) |
+| text | `meta` | Short facts in soft pills (audience, format, what the part holds) |
+| columns | `cards` | Each column on a soft rounded card topped by a blob |
+| columns | `compare` | Two columns: the first muted, the second in the part's hue |
 
-## Adapter la charte à une marque
+## Making it a brand's
 
-Tout passe par les jetons de `course.json` › `theme` : la feuille de style ne contient aucune couleur en dur.
+Everything goes through the tokens of `course.json` › `theme`; the stylesheet holds no colour of its own.
 
-1. **Les couleurs de la marque** (`theme.tokens`) :
-   - `color.primary` et `color.text` : l'encre. C'est aussi la teinte de la variante `mono` et le bouton Suivant (`player.accent`).
-   - `color.accent` : la couleur forte des graphiques et du Personnage.
-   - `color.surface` : le fond.
-2. **Le voyage des teintes** (`theme.custom`) :
-   - `color.journey-warm` : la première partie ;
-   - `color.journey-middle` : le milieu ;
-   - `color.journey-cool` : la dernière partie.
-
-   Les parties intermédiaires prennent les teintes entre ces trois couleurs (mélange OKLCH). Pour une marque monochrome, donnez trois tons proches de sa couleur. Pour un voyage inverse (du froid au chaud), échangez `warm` et `cool`. Gardez des tons clairs : le texte foncé doit rester lisible dessus. `elabora fit` le mesure.
-3. **La nuit** : `color.night`, `color.night-card`, `color.night-text`, `color.night-muted`.
-4. **Les illustrations et le grain** suivent les jetons. Après un changement de couleur, lancez `elabora assets .` pour redessiner `images/organic-shapes.svg` et `images/grain.svg`.
-5. **La police** : `elabora font add . "<famille>" --for body,heading`. Gardez une sans-serif ronde ou humaniste (Nunito, Lato, Figtree, Source Sans 3).
-6. **Les sections.** La teinte suit les ids de section `opening`, `part-1`, `part-2`, `part-3` et `closing`, dans cet ordre. Si vous ajoutez, retirez ou renommez des sections, mettez à jour deux endroits :
-   - la prop `journey` de l'objet, dans `course.json` › `theme.backdrop.object.props.journey`, qui liste les ids dans l'ordre ;
-   - les quelques sélecteurs `[data-section="…"]` en tête de `theme/theme.css`.
-
-   Une section absente de `journey` garde la teinte de la précédente.
-7. **Le mouvement** se règle dans `theme.backdrop.object.props`, sans code :
-   - `count` : de 3 à 7 formes ;
-   - `drift` : l'amplitude de la dérive, de 0 (immobile) à 1 ;
-   - `transition` : la durée de la migration, en secondes ;
-   - `seed` : tire d'autres compositions pour chaque écran.
-
-   Exemple : `"props": { "journey": ["accueil", "partie-1", "partie-2", "bilan"], "seed": 7, "count": 4 }`.
-
-### Pour un module entièrement en nuit
-
-Mettez `"backdrop": "night"` sur chaque écran. Pour en faire le thème de base, il faut aussi inverser les jetons : `color.surface` ← la nuit, `color.text` ← le clair. Gardez alors les règles « Night variant » de `theme.css` pour la variante.
-
-## Vérifié avec
-
-| Vérification | Résultat |
-|---|---|
-| `elabora validate .` | 0 erreur. 2 avertissements propres à un modèle : `W_PLAN_DRAFT` (aucune version du plan) et `W_SPACING_MISSING` (pas de rappels espacés). |
-| `elabora fit .` | 14/14 écrans tiennent à 1600×900 et à 1280×720, sans contraste insuffisant mesuré sur le décor. En français (`elabora tools call elabora_check_fit . --args '{"language":"fr"}'`), 14/14 aussi, sans diagnostic. |
-| `elabora test .` | 8/8 passages dans l'émulateur LMS, 0 violation axe sur 28 états d'écran, aucun débordement à 375 px. |
-| `elabora object test . drift` | Les cinq portes passent : smoke, comportement (8 tests), budgets, visuel, accessibilité. Démarrage en 56 ms environ. |
-| `elabora translate status . --to fr` | 94/94 unités traduites. Le plan traduit attend l'approbation d'une personne. |
-
-Les captures de `captures/` (chaque écran à 1600×900 et à 375×812) sont faites avec `elabora screenshot` et non avec `elabora look`. `look` ne transmet pas à l'objet de décor le contexte de l'écran demandé (voir `frictions.md`, n° 12). Les captures de téléphone sont des pages entières : sous le premier écran, le décor fixe ne s'y prolonge pas, alors qu'il reste derrière le texte quand on fait défiler sur un vrai téléphone.
+1. **The brand's colours** (`theme.tokens`): `color.primary` and `color.text` are the ink (also the `mono` variant and the Next button, `player.accent`); `color.accent` is the strong colour of the charts and the character; `color.surface` the ground.
+2. **The hues' journey** (`theme.custom`): `color.journey-warm` (the first part), `color.journey-middle`, `color.journey-cool` (the last). The parts between take the hues between them (OKLCH mix). For a monochrome brand, give three close tones; for a journey from cool to warm, swap them. Keep them light: `elabora fit` measures the text on them.
+3. **The night:** `color.night`, `color.night-card`, `color.night-text`, `color.night-muted`.
+4. **The illustration and the grain** follow the tokens: after a change, `elabora assets .` draws `images/organic-shapes.svg` and `images/grain.svg` again.
+5. **The font:** `elabora font add . "<family>" --for body,heading`, a rounded or humanist sans (Nunito, Figtree, Source Sans 3).
+6. **The sections.** The hues follow the section ids `opening`, `part-1`, `part-2`, `part-3`, `closing`, in this order. Adding, removing or renaming a section: update the object's `journey` prop (`theme.backdrop.object.props.journey`, the ids in order) and the few `[data-section="…"]` selectors at the top of `theme/theme.css`. A section missing from `journey` keeps the hue of the one before.
+7. **The movement,** in `theme.backdrop.object.props`: `count` (3 to 7 blobs), `drift` (0 still, 1 the most), `transition` (seconds), `seed` (other compositions).

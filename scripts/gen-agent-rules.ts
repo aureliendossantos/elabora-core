@@ -21,14 +21,14 @@ if (import.meta.main) {
     fs.writeFileSync(HISTORY, `${JSON.stringify(history, null, 2)}\n`);
   }
   console.log(path.relative(ROOT, HISTORY));
-  // The examples and the test courses in the current format carry the current rules (tests run
+  // The examples, the module templates and the test courses in the current format carry the current rules (tests run
   // commands in copies of them: rules that Elabora would bring up to date there would be written by
   // every test).
   // Courses in an older format (the fixtures of older formats) keep theirs: a migration updates them.
   const { agentRulesState, agentsFile } = await import('../packages/node/src/agent-rules.ts');
   const { FORMAT } = await import('../packages/format/src/schemas.ts');
   const fixtures = `test/fixtures/format-${FORMAT.split('/')[1]}`;
-  const courses = [...fs.readdirSync(path.join(ROOT, 'examples')).map((name) => path.join('examples', name)), ...fs.readdirSync(path.join(ROOT, fixtures)).map((name) => path.join(fixtures, name))];
+  const courses = [...['examples', 'templates'].flatMap((folder) => fs.readdirSync(path.join(ROOT, folder)).map((name) => path.join(folder, name))), ...fs.readdirSync(path.join(ROOT, fixtures)).map((name) => path.join(fixtures, name))];
   for (const course of courses.sort()) {
     const file = path.join(ROOT, course, 'AGENTS.md');
     if (!fs.existsSync(file)) continue;

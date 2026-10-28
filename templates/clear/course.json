@@ -1,11 +1,11 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.2/course.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.3/course.schema.json",
   "format": "elabora/0.1",
   "id": "clear",
   "title": "Your module title",
   "description": "Clear: a sober, brand-ready template for compliance, procedures, HR and internal communication, and for classic presentations. A strict grid, one accent, and a single movement: an accent rule that travels under the top bar to mark the current part.",
   "language": "en",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "durationMinutes": 15,
   "sections": [
     {

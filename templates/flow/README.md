@@ -1,81 +1,46 @@
-# Flux (`flow`) — modèle de module Elabora
+# Flow
 
-Licence : CC0 pour le module (contenu, thème, composants, objet de décor, générateur). Les polices sont sous SIL OFL 1.1 et embarquées avec leur licence (`theme/fonts/*/OFL.txt`). Le module n'utilise aucune ressource réseau.
+A dark field lit by two neons, luminous ribbons that undulate low in the window and particles that float across it. For tech, cybersecurity, product launches and sales; it serves classic presentations too. Fonts: Figtree, a geometric grotesque, and JetBrains Mono for everything that counts (SIL OFL, `theme/fonts/`).
 
-## Le concept
+## The charter
 
-Le fond « PlayStation ». Un champ sombre, presque noir, éclairé par deux lueurs (cyan en bas à gauche, magenta en haut à droite). Une bande de brume lumineuse traverse la fenêtre et glisse lentement de côté. Bas dans la fenêtre, deux faisceaux de fines lignes ondulent, et des particules flottent devant.
+- **The movement says where the learner goes.** At each new screen the particles stretch into streaks and leap forward, then settle in a little over a second; going back, they leap the other way. A part's first screen leaps a little further and moves the palette from the first neon towards the second (cyan at the start, magenta at the end). A step revealed is a small nudge.
+- **The cover is the backdrop's moment.** On the cover and the end (variant `hero`) the ribbons rise and sweep across the right half of the window, brighter, and fade out under the text on the left; leaving the cover, they settle back low as the module starts.
+- **No label above the titles.** A part opener (component `flow-section`) sets its number large, in the monospaced font, lit by the two neons.
+- Only `transform` and `opacity` move in CSS; the object draws in its own canvas. Less motion asked: still frames, dots, no leap.
 
-**Le mouvement porte le sens de la navigation.** À chaque nouvel écran, les particules s'étirent en traits et accélèrent vers la gauche, comme un saut en avant, puis retombent au calme en un peu plus d'une seconde. Quand l'apprenant revient en arrière, le saut part dans l'autre sens. Le premier écran d'une partie fait un saut un peu plus long, et la palette glisse du premier néon vers le second : cyan au début du module, magenta vers la fin. Une étape révélée par Continuer ne donne qu'une petite impulsion. Rien ne grandit jusqu'à la fenêtre et rien ne décale la mise en page : seuls `transform` et `opacity` sont animés côté CSS, et l'objet dessine dans son propre canevas. Avec moins d'animations, le CSS s'arrête et l'objet passe en images fixes : des points, aucun saut.
+The backdrop is three CSS layers (`field`: the neons' glows; `haze`: a luminous band flowing sideways, a mask painted with the neon tokens; `grain`) and the decoration object `objects/flow-field/`, which follows `host.onContext`.
 
-**La typographie.** Une grotesque géométrique, Figtree (titres en 760 à 820, approche serrée), et une police à chasse fixe, JetBrains Mono, pour tout ce qui compte ou repère : les surtitres, les numéros d'objectifs, de colonnes et d'étapes, les chiffres clés, les axes des graphiques, la ligne « Partie 2 sur 4 ».
+## Variants of the backdrop
 
-**Publics.** Tech, cybersécurité, lancements de produit, commerce. Le modèle sert aussi pour une présentation classique.
-
-## Ce qui fait la charte
-
-| Pièce | Fichier | Rôle |
+| Variant | When | What changes |
 |---|---|---|
-| Jetons | `course.json` › `theme.tokens`, `theme.custom` | les couleurs de la charte (néons, champ, panneaux, encres de la variante claire), le rayon, les barres du lecteur |
-| Polices | `theme/fonts/figtree`, `theme/fonts/jetbrains-mono` | ajoutées avec `elabora font add`, licence OFL à côté |
-| Feuille de style | `theme/theme.css` | les calques du décor, la variante claire, les styles nommés, les graphiques en chasse fixe |
-| Styles nommés | `theme.styles` | texte : `lead`, `kicker`, `meta`, `list`, `recap` ; colonnes : `cards`, `versus` |
-| Mises en page | `components/flow-cover`, `components/flow-section` | la couverture (et la fin) avec ses trois chevrons, l'intercalaire de partie (« Partie 2 sur 4 » écrit par le lecteur) |
-| Décor CSS | `theme.backdrop.layers` : `field`, `haze`, `grain` | les lueurs du champ, la brume lumineuse (un masque peint avec les jetons néon, en boucle sans couture), un grain fixe |
-| Objet de décor | `objects/flow-field/` | les lignes qui ondulent et les particules qui bondissent ; il suit `host.onContext` |
-| Générateur | `generators/flow.mjs` | les masques de la brume et du grain, l'illustration abstraite `signal.svg` (sans texte) |
+| *(none)* | Part openers, key message, most screens | The haze at half, every particle, the full leap |
+| `hero` | The cover and the end | The ribbons rise across the right half, brighter |
+| `calm` | Dense screens: objectives, cards, comparison, question, chart | The haze and glows step back, fewer and dimmer particles, half the leap |
+| `ink` | A pause: the quotation, the recap | Light paper with ribbons and particles in ink; the screen's text follows (`theme.css`, « Ink ») while the bars stay dark |
 
-Les écrans n'utilisent que des blocs du cœur : `text` (styles nommés), `statement`, `image` (présentation `beside`, SVG en ligne), `columns`, `heading`, `key-figures`, `process`, `quiz`, `trend`. Tout le texte se retouche depuis l'inspecteur.
+Changing variant is a fade: the object fades out in 0.3 s, changes, and comes back.
 
-## Les écrans
+## Components and named styles
 
-| # | Écran | Type du cahier | Blocs | Décor |
-|---|---|---|---|---|
-| 1 | `cover` | couverture, vignette de la bibliothèque | mise en page `flow-cover` ; `text` kicker, lead, meta | plein |
-| 2 | `objectives` | objectifs | `text` lead, `text` list | calm |
-| 3 | `part-one` | intercalaire de partie | mise en page `flow-section` ; `text` lead | plein |
-| 4 | `message` | message clé | `statement` (titre d'écran masqué) | plein |
-| 5 | `insight` | texte et illustration | `image` beside, `signal.svg` en ligne | plein |
-| 6 | `pillars` | trois colonnes en cartes | `columns` style `cards` | calm |
-| 7 | `figures` | chiffres clés | `key-figures` | plein |
-| 8 | `part-two` | intercalaire de partie | `flow-section` | plein |
-| 9 | `steps` | étapes | `process` | plein |
-| 10 | `quote` | citation | `statement` quote | ink |
-| 11 | `compare` | comparaison | `columns` style `versus` | calm |
-| 12 | `check` | interaction | `quiz` à choix unique, retour compact | calm |
-| 13 | `trend` | graphique | `trend` | calm |
-| 14 | `recap` | récapitulatif | `text` style `recap` | ink |
-| 15 | `end` | fin | `flow-cover` | plein |
+| | Name | Look |
+|---|---|---|
+| layout | `flow-cover` | The cover and the end: a very large title, a lead and details on the left half; give the screen the variant `hero` |
+| layout | `flow-section` | A part opener: `number` (01, 02…) set large, the title and a lead |
+| text | `lead` | Large introductory paragraph |
+| text | `meta` | A small monospaced line: a duration, an audience, a version |
+| text | `list` | Numbered list with large monospaced numbers (objectives) |
+| text | `recap` | A checklist on a card |
+| columns | `cards` | Each column on its own card, numbered |
+| columns | `versus` | Two columns face to face, the second lit in the accent |
 
-Le texte est en anglais, abstrait et à la bonne longueur ; la traduction française est dans `translations/fr.xlf`, écrite par la traduction d'Elabora (`elabora_translate_text`). Pour voir l'écran en français : `elabora look . --screen cover --language fr`.
+## Making it a brand's
 
-## Les variantes de décor
-
-Elles sont déclarées dans `theme.backdrop.variants` ; un écran en choisit une avec `"backdrop": "<variante>"` (ou `"none"` pour éteindre le décor).
-
-- **Plein** (sans variante) : la brume à moitié, toutes les particules, le saut complet. Pour la couverture, les intercalaires, le message clé.
-- **`calm`** : la brume et les lueurs reculent, l'objet ne garde qu'un peu moins de la moitié de ses particules, les rend plus discrètes et réduit le saut de près de moitié. Pour les écrans denses : objectifs, cartes, comparaison, question, graphique.
-- **`ink`** : la variante claire « à l'encre ». Papier clair, brume et lueurs aux deux encres (`color.ink-a`, `color.ink-b`), particules et lignes dessinées à l'encre, sans fusion lumineuse. Le texte de l'écran suit : `theme.css` redéfinit `--t-text`, `--t-muted`, `--t-primary`, `--t-accent` et les panneaux sous `#elabora-app:has(.t-backdrop[data-variant="ink"]) #t-main`. Les barres du lecteur restent sombres et encadrent le papier.
-
-Le passage d'une variante à l'autre est un fondu : l'objet s'efface en 0,3 s, change de mode, puis revient.
-
-## Adapter la charte à une marque
-
-1. **Les deux néons.** Changez `color.neon-a` et `color.neon-b` dans `theme.custom`. La brume (un masque peint avec ces jetons), les lueurs, les chevrons de la couverture, les filets, les puces du récapitulatif et l'objet de décor (ses props `colorA` et `colorB` sont liées à ces jetons par `x-token`) suivent sans autre fichier à refaire. Gardez deux couleurs vives et assez lumineuses : elles brillent par addition sur le champ sombre.
-2. **Les couleurs d'interface.** `color.primary` (boutons, Suivant, surtitres, numéros ; texte `color.onPrimary` dessus) et `color.accent` (le point fort des graphiques, la colonne « mieux », la citation). En général, primary = néon A et accent = néon B. Le validateur vérifie leurs contrastes (`E_THEME_CONTRAST`), et `elabora fit` mesure le texte sur les pixels réels du décor.
-3. **Le champ.** `color.field` et `color.field-deep` (le dégradé du fond), `color.panel` et `color.panel-edge` (les cartes, opaques : pas de verre dépoli). Les barres du lecteur : `player.top.background` et `player.bottom.background`, à garder égales à `color.field`.
-4. **La variante claire.** `color.paper`, `color.ink`, `color.ink-muted`, `color.ink-a`, `color.ink-b`, `color.ink-panel`, `color.ink-edge`. Pour un module **entièrement clair**, le plus simple est de mettre les jetons de la charte aux valeurs claires (`color.surface` et `color.field` au papier, `color.text` à l'encre, `color.primary` et `color.accent` aux encres) : l'objet passe de lui-même en mode encre quand `color.field` est clair. Sinon, donnez `"backdrop": "ink"` à chaque écran.
-5. **Les polices.** `elabora font add . "<famille>" --for body,heading` remplace Figtree ; gardez une police à chasse fixe pour `font.mono` (`elabora font add . "JetBrains Mono" --for mono`) : c'est elle qui fait les chiffres.
-6. **Le mouvement.** Dans `course.json`, `theme.backdrop.object.props` : `density` (particules, 0 à 1), `lines` (lignes, 0 à 1), `jump` (force du saut, 0 pour aucun). `order` (facultatif) liste les écrans dans l'ordre du module, pour que l'objet sache reconnaître un retour en arrière après une reprise de session ; vide, il se fie à l'ordre dans lequel l'apprenant découvre les écrans.
-7. **Les nouveaux écrans** héritent de tout : choisissez une mise en page (`flow-cover`, `flow-section` ou aucune), un style nommé sur les blocs de texte et de colonnes, une variante de décor pour les écrans denses.
-
-Après un changement de jetons, relancez `elabora assets .` si vous voulez que les couleurs par défaut de `signal.svg` suivent aussi : dans le module, l'illustration est en ligne et ses classes sont colorées par le thème.
-
-## Vérifications
-
-- `elabora validate .` : 0 erreur, 3 avertissements attendus pour un modèle (`W_PLAN_DRAFT`, `W_SPACING_MISSING`, `W_EXPOSITION_STREAK`).
-- `elabora fit .` : 15/15 écrans tiennent à 1600×900 et à 1280×720, sans contraste insuffisant ; même chose en français (`elabora_check_fit` avec `language: "fr"`).
-- `elabora test . --parallel 1` : 8/8 passages dans l'émulateur LMS, axe sans violation sur 30 états d'écran. Avec le parallélisme par défaut, sur une machine chargée, des passages échouent sur des délais (voir `frictions.md`).
-- `elabora object test . flow-field` : les portes 2 à 6 passent (smoke, behaviour, budget, visual, accessibility), démarrage en 46 ms environ.
-- `elabora translate status . --to fr` : 88/88 unités traduites.
-- Captures : `captures/<écran>-1600x900.png` et `captures/<écran>-375x812.png` (faites avec `elabora screenshot --at 2500`, car `elabora look` n'applique pas les variantes de décor), et `captures/fr/` pour deux écrans en français.
+1. **The two neons:** `color.neon-a` and `color.neon-b` in `theme.custom`. The haze, the glows, the part number, the rules and the object (`colorA`, `colorB` are bound to them by `x-token`) follow. Keep two bright colours: they add up on the dark field.
+2. **The interface's colours:** `color.primary` (buttons, numbers; `color.onPrimary` on it) and `color.accent` (the charts' highlight, « the better way », the quotation). Usually primary is neon A and accent neon B. The validator checks their contrast (`E_THEME_CONTRAST`); `elabora fit` measures the text on the backdrop's pixels.
+3. **The field:** `color.field`, `color.field-deep`, the cards' `color.panel` and `color.panel-edge` (opaque: no frosted glass), and the bars' `player.top.background` and `player.bottom.background`, equal to `color.field`.
+4. **The light variant:** `color.paper`, `color.ink`, `color.ink-muted`, `color.ink-a`, `color.ink-b`, `color.ink-panel`, `color.ink-edge`. For a module light from end to end, set the charter's tokens to the light values: the object draws in ink by itself when `color.field` is light.
+5. **The fonts:** `elabora font add . "<family>" --for body,heading`; keep a monospaced font for `font.mono` (`--for mono`): it sets the figures.
+6. **The movement,** in `theme.backdrop.object.props`: `density` (particles), `lines` (ribbons' brightness), `jump` (the leap; 0 for none), `order` (optional: the screens in order, to tell a step back after a resumed session).
+7. After a change of tokens, `elabora assets .` draws the haze's mask and `signal.svg` again.

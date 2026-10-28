@@ -90,7 +90,7 @@ export async function main(argv: readonly string[]): Promise<ExitCode> {
 // Commands that do not run in a course, or see to its rules themselves (migrate writes the format
 // first; mcp when its server starts), and the history's (undo, redo, history): a bare elabora undo
 // undoes the author's last change, not a rules update written just before it.
-const OWN_RULES = new Set(['account', 'docs', 'init', 'projects', 'import', 'export', 'migrate', 'mcp', 'tools', 'rules', 'profiles', 'codes', 'inspect', 'diff', 'undo', 'redo', 'history']);
+const OWN_RULES = new Set(['account', 'docs', 'init', 'templates', 'projects', 'import', 'export', 'migrate', 'mcp', 'tools', 'rules', 'profiles', 'codes', 'inspect', 'diff', 'undo', 'redo', 'history']);
 
 // The course a command runs in: an argument that is a course folder (a flag's value may come first:
 // « elabora look --screen intro ../B »), else the current folder when no argument names a folder.
