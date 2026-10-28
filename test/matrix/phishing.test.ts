@@ -6,7 +6,7 @@ import path from 'node:path';
 import { build } from '@elabora/node/build';
 import { validateDir } from '@elabora/node/project-reader';
 import { testPackage } from '@elabora/node/emulator/run';
-import { fitDiagnostics, measureFit } from '@elabora/node/preview';
+import { fitDiagnostics, measureFit } from '@elabora/node/fit';
 
 // The charts sample (slow; npm run test:matrix): twelve chart blocks on narrated slides, their items
 // brought by the voice's words, a trend the learner predicts, a step that opens once answered, a

@@ -116,8 +116,8 @@ export const previewComponent = defineTool({
   description: 'Render the examples of a component (or given props) on a specimen screen and return a PNG: the light review of a component at 1280 and 375 px.',
   inputSchema: objectSchema({ id: SLUG, width: { type: 'integer', minimum: 320, maximum: 1920, default: 1280 }, props: { type: 'object', description: 'Props to preview instead of the examples.' } }, ['id']),
   async handler(args, { root }) {
-    const preview = await import('@elabora/node/preview');
-    const result = await preview.previewComponent(root, { id: args.id, width: args.width || 1280, props: args.props });
+    const { previewComponent } = await import('@elabora/node/capture');
+    const result = await previewComponent(root, { id: args.id, width: args.width || 1280, props: args.props });
     if (!result.ok) return errorResult({ error: result.error, diagnostics: result.diagnostics?.filter((d) => d.severity === 'error') });
     return imageResult(result.png, `${args.id}: ${result.count} instance(s).${result.consoleErrors.length ? ` Console errors: ${result.consoleErrors.join(' | ')}` : ' No console errors.'}`);
   }

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { build } from '@elabora/node/build';
 import { validateDir } from '@elabora/node/project-reader';
 import { testPackage } from '@elabora/node/emulator/run';
-import { fitDiagnostics, measureFit } from '@elabora/node/preview';
+import { fitDiagnostics, measureFit } from '@elabora/node/fit';
 import { testObject } from '@elabora/node/objects/test';
 
 // The scroll sample (slow; npm run test:matrix): long pages with scroll-driven design, Continue

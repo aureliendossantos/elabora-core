@@ -8,7 +8,7 @@ import { startServer } from '@elabora/node/emulator/server';
 import { chromiumArgs } from '@elabora/node/emulator/browser';
 import { findElectronRuntime, launchElectron } from '@elabora/node/emulator/electron';
 import { build } from '@elabora/node/build';
-import { capture, fullPageWithObjects } from '@elabora/node/preview';
+import { capture, fullPageWithObjects } from '@elabora/node/capture';
 import { startLooker } from '@elabora/node/look';
 import { copyExample, readJSON, writeFixture, writeJSON } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';

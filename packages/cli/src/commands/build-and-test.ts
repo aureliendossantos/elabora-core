@@ -9,7 +9,8 @@ import { stringifyJSON } from '@elabora/core/util/json';
 import { build, WEB_DEFAULTS, WEB_NAVIGATION, WEB_PROGRESS } from '@elabora/node/build';
 import type { BuildResult, WebBuildOptions } from '@elabora/node/build';
 import type { PackageRun, PackageTestResult } from '@elabora/node/emulator/run';
-import type { FitResult, FitSize, Shot } from '@elabora/node/preview';
+import type { FitResult, FitSize } from '@elabora/node/fit';
+import type { Shot } from '@elabora/node/capture';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { writeFileAtomic } from '@elabora/node/util/fs';
 import { readZip } from '@elabora/node/zip';
@@ -197,7 +198,7 @@ const test = defineCommand({
     const result: PackageTestWithFit = { ...tested, diagnostics: [...tested.diagnostics] };
     // Slides: measured at the fit sizes of the course (reference and minimum). Pages of a scroll
     // presentation: the contrast of their text, down each page.
-    const { measureFit, fitDiagnostics } = await import('@elabora/node/preview');
+    const { measureFit, fitDiagnostics } = await import('@elabora/node/fit');
     const fit = await measureFit(null, { pkgDir: dirPath });
     if (fit.ok) { result.fit = fit; result.diagnostics.push(...fitDiagnostics(fit)); }
     const buildReport: BuildReport = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
@@ -235,7 +236,7 @@ const screenshot = defineCommand({
   flags: { screen: 'list', size: 'list', width: 'string', height: 'string', state: 'list', step: 'string', layer: 'string', at: 'list', scroll: 'list', motion: 'boolean', viewport: 'boolean', out: 'string', 'out-dir': 'string' },
   async run({ positionals: [dir = '.'], flags }) {
     // Every combination of screens × sizes × states, in one build and one browser.
-    const { capture } = await import('@elabora/node/preview');
+    const { capture } = await import('@elabora/node/capture');
     const sizes = flags.size?.map((size) => size.split('x').map(Number)) || [[Number(flags.width) || 1600, Number(flags.height) || 900]];
     let screens: (string | undefined)[] = flags.screen || [undefined];
     if (screens[0] === 'all') screens = screenOrder(loadProjectFromDir(dir)).map((entry) => entry.id);
@@ -271,7 +272,7 @@ const fit = defineCommand({
   name: 'fit',
   flags: { screen: 'list', reference: 'string', minimum: 'string', fresh: 'boolean', json: 'boolean' },
   async run({ positionals: [dir = '.'], flags }) {
-    const { measureFit, fitDiagnostics } = await import('@elabora/node/preview');
+    const { measureFit, fitDiagnostics } = await import('@elabora/node/fit');
     const result = await measureFit(dir, { sizes: fitSizes(flags.reference, flags.minimum), screens: flags.screen, fresh: flags.fresh });
     if (!result.ok) {
       if (result.error) { if (flags.json) printJson({ ok: false, error: result.error }); else console.error(`✘ ${result.error}`); return 2; }

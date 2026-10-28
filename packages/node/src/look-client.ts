@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { BlockLayout } from '@elabora/player/canvas-protocol';
 import type { ReadyReport } from './emulator/page-globals.ts';
-import type { ImageType } from './preview.ts';
+import type { ImageType } from './capture.ts';
 import type { BrowserIdentity } from './emulator/electron.ts';
 import type { StyleConflict } from './style-cascade.ts';
 import type { MotionReport } from './motion-report.ts';

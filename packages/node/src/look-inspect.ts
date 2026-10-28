@@ -1,6 +1,6 @@
 import type { CDPSession, Frame, Locator, Page } from 'playwright-core';
 import type { LayoutRect } from '@elabora/player/canvas-protocol';
-import type { ImageType } from './preview.ts';
+import type { ImageType } from './capture.ts';
 import type { LookAction } from './look-client.ts';
 
 // Closing in on a block while looking (elabora look --block): a capture cropped to its box, and its free

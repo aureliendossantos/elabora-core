@@ -60,7 +60,7 @@ const replay = defineCommand({
     const { dir, id } = folderAndId(positionals);
     if (!id) { console.error(USAGE); return 2; }
     const [width, height] = (flags.size || '1600x900').split('x').map(Number);
-    const { replayObject } = await import('@elabora/node/preview');
+    const { replayObject } = await import('@elabora/node/replay');
     const result = await replayObject(dir, id, { test: flags.test, block: flags.block, width: width || 1600, height: height || 900 });
     if (result.error !== undefined) {
       if (result.diagnostics) printDiagnostics(result.diagnostics, { json: flags.json });

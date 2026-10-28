@@ -7,7 +7,7 @@ import type { Page } from 'playwright-core';
 import { startServer } from '@elabora/node/emulator/server';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import { build } from '@elabora/node/build';
-import { fitDiagnostics, measureFit } from '@elabora/node/preview';
+import { fitDiagnostics, measureFit } from '@elabora/node/fit';
 import { copyExample, readJSON, writeJSON, writeFixture } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 

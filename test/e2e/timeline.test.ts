@@ -7,7 +7,7 @@ import type { Browser, Page } from 'playwright-core';
 import { startServer } from '@elabora/node/emulator/server';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import { build } from '@elabora/node/build';
-import { capture } from '@elabora/node/preview';
+import { capture } from '@elabora/node/capture';
 import { narrationWords } from '@elabora/core/narration/words';
 import { narrationSidecarPath } from '@elabora/core/narration/narration';
 import { ROOT, copyExample, isClosed, readJSON, writeJSON } from '../helpers.ts';

@@ -79,7 +79,7 @@ const preview = defineCommand({
   name: 'component preview',
   flags: { width: 'string', out: 'string' },
   run: ({ positionals, flags }) => reportingFailures(async () => {
-    const { previewComponent } = await import('@elabora/node/preview');
+    const { previewComponent } = await import('@elabora/node/capture');
     const { dir, rest: [id] } = folderAndArguments(positionals, 1);
     const width = Number(flags.width) || 1280;
     const result = await previewComponent(dir, { id, width });
