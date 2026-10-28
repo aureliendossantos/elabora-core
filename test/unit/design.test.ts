@@ -386,7 +386,7 @@ test('colours of masks are not charter colours: only their alpha counts', () => 
 });
 
 test('fit: an overflowing slide names the quizzes whose compact feedback would reserve less room', async () => {
-  const { fitDiagnostics } = await import('@elabora/node/preview');
+  const { fitDiagnostics } = await import('@elabora/node/fit');
   const screen = { screen: 'evaluation', overflow: 120, spare: 0, windows: 1.2, below: ['q2'], feedback: [{ block: 'q1', px: 57 }, { block: 'q2', px: 40 }] };
   const [overflow] = fitDiagnostics({ ok: true, mode: 'slides', sizes: [{ role: 'reference', size: '1600x900', screens: [screen] }] });
   assert.equal(overflow.code, 'W_SLIDE_OVERFLOW');

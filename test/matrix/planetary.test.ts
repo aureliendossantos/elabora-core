@@ -6,7 +6,7 @@ import path from 'node:path';
 import type { Browser } from 'playwright-core';
 import { build } from '@elabora/node/build';
 import { testPackage } from '@elabora/node/emulator/run';
-import { fitDiagnostics, measureFit } from '@elabora/node/preview';
+import { fitDiagnostics, measureFit } from '@elabora/node/fit';
 import type { PlayerWindow } from '../helpers.ts';
 
 // The sample courses (slow; npm run test:matrix). The design sample: layouts, theme stylesheet and fonts, slides, maths, numeric answers, a

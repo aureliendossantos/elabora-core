@@ -1,5 +1,5 @@
 import type { Page } from 'playwright-core';
-import type { ShotFrame } from './preview.ts';
+import type { ShotFrame } from './capture.ts';
 
 // Down a page: where the window goes for a scroll position, and a filmstrip of the window at several
 // (elabora screenshot --scroll, elabora look --scroll and --sheet). In the player and in the canvas
