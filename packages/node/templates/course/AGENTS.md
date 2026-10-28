@@ -31,8 +31,7 @@ Skills are **not automatically loaded** just because they are listed here. With 
 | Custom simulations/interactions | `elabora-free-objects` (and `threejs-r186` for three.js) |
 | Objectives, questions, feedback, cognitive load | `elabora-pedagogy` |
 | Branching dialogues (a conversation, its choices and characters) | `elabora-dialogues` |
-| Voice, recorded audio, timing and cues | `elabora-narration` |
-| Sound effects, ambiences and music (find, add, place, caption) | `elabora-sounds` |
+| Voice, recorded audio, timing and cues; sounds and music | `elabora-narration`; `elabora-sounds` |
 | Translating/localising a course | `elabora-translation` |
 | Importing Storyline or Rise | `elabora-importing` |
 
