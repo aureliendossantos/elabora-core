@@ -191,7 +191,7 @@ export function mount(container, ctx) {
   // its own edge of the window, as far as needed.
   function keepClear(shape) {
     const rem = 16;
-    const column = Math.min(W - 3 * rem, (Number(props.column) || 72.5) * rem);
+    const column = Math.min(W - 3 * rem, (Number(props.column) || 65) * rem);
     const margin = Math.max(40, 0.03 * W);
     const left = (W - column) / 2 - margin;
     const right = (W + column) / 2 + margin;

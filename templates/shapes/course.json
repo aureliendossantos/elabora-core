@@ -200,7 +200,7 @@
   "presentation": {
     "mode": "slides",
     "contentWidth": 720,
-    "wideWidth": 1160,
+    "wideWidth": 1040,
     "fit": {
       "reference": "1600x900",
       "minimum": "1280x720"
