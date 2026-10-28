@@ -189,6 +189,8 @@ export class FsStore implements Store {
       clearTimeout(this.#saveTimer);
       this.#saveTimer = null;
     }
+    // A folder moved or deleted while open is not recreated for the cache.
+    if (!fs.existsSync(this.id)) return;
     try {
       this.#cache?.save();
     } catch {
