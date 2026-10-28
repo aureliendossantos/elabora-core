@@ -88,11 +88,11 @@ h1, h2, h3, h4 { letter-spacing: -0.012em; }
 /* The opening owns the page (full bleed): its copy starts on the first line of the grid. */
 .t-opening { --t-opening-gutter: 0px; }
 .t-main[data-full-bleed] .t-opening { --t-opening-gutter: max(1.25rem, calc((100vw - var(--cl-grid)) / 2)); }
-.t-opening-copy { padding-block: clamp(3rem, 7vh, 5rem) 1.5rem; }
+.t-opening-copy { padding-block: clamp(2rem, 5vh, 5rem) 1.5rem; }
 /* No label above a title: the player's section and lesson line is hidden. A part opener (screen style
    section) sets its number large in the accent, as the objectives do. */
 .t-opening-eyebrow:has(> .t-opening-section) { display: none; }
-.t-screen.t-s-section .t-opening-eyebrow { margin-bottom: .75rem; color: var(--t-accent); font-size: clamp(3.5rem, 2rem + 3.6vw, 5.5rem); font-weight: 700; line-height: 1; letter-spacing: -0.04em; text-transform: none; font-variant-numeric: tabular-nums; }
+.t-screen.t-s-section .t-opening-eyebrow { margin-bottom: .5rem; color: var(--t-accent); font-size: clamp(3rem, 1rem + 6vh, 5.5rem); font-weight: 700; line-height: 1; letter-spacing: -0.04em; text-transform: none; font-variant-numeric: tabular-nums; }
 .t-opening .t-screen-title { max-width: none; font-size: clamp(2.25rem, 1.3rem + 2.6vw, 3.5rem); font-weight: 750; line-height: 1.06; letter-spacing: -0.03em; }
 .t-opening-lead { max-width: 32em; color: var(--t-muted); }
 .t-opening--title .t-opening-copy::after { width: var(--cl-col); height: 3px; border-radius: 0; margin-top: 2rem; }
@@ -117,6 +117,8 @@ h1, h2, h3, h4 { letter-spacing: -0.012em; }
 .t-s-agenda li > p { margin: 0; }
 .t-s-agenda li strong { display: inline-block; margin-bottom: .25rem; color: var(--t-text); font-size: 1.25rem; font-weight: 650; line-height: 1.3; }
 @media (max-width: 760px) { .t-s-agenda li { padding-left: 3.25rem; } }
+/* A short window (1280×720): the lists of an opening hold closer. */
+@media (max-height: 760px) { .t-opening-body .t-s-checklist li { padding-block: .625rem; } .t-opening-body .t-s-checklist li::before { top: 1rem; } }
 
 .t-s-checklist ul { margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--cl-hair); }
 .t-s-checklist li { position: relative; padding: .875rem 0 .875rem 2.25rem; border-top: 1px solid var(--cl-hair); }
