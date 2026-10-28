@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { EventEmitter } from 'node:events';
-import type { Browser, BrowserContext, BrowserContextOptions, ElectronApplication } from 'playwright-core';
+import type { Browser, BrowserContext, BrowserContextOptions, ElectronApplication, Page } from 'playwright-core';
 import { localDataRoot } from '../data-dir.ts';
 
 export interface ElectronRuntime {
@@ -99,6 +99,10 @@ export async function launchElectron(playwright: typeof import('playwright-core'
   const identity: BrowserIdentity = { engine: 'electron', version: '' };
   const makeContext = async (options: BrowserContextOptions = {}): Promise<BrowserContext> => {
     if (closed) throw new Error('The Elabora browser has been closed');
+    // A worker's window is a desktop window: Playwright cannot turn its pages into a phone's (tap()
+    // refuses a context launched without hasTouch), so a page asked for as one is refused, not given
+    // a mouse and a fine pointer. Phones are emulated by an external Chromium (launchBrowser's channels).
+    if (options.hasTouch || options.isMobile) throw new Error('Elabora’s browser cannot emulate a phone (hasTouch, isMobile): use an external Chromium');
     const folder = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-browser-'));
     const env = workerEnv(folder, headed);
     let application: ElectronApplication;
@@ -106,7 +110,9 @@ export async function launchElectron(playwright: typeof import('playwright-core'
       application = await playwright._electron.launch({ executablePath: runtime.executable,
         args: [...workerArgs(runtime), ...args, ...(options.reducedMotion === 'reduce' ? ['--force-prefers-reduced-motion'] : [])], env, timeout: 30000,
         colorScheme: options.colorScheme, locale: options.locale,
-        acceptDownloads: options.acceptDownloads });
+        // Accepted unless refused, as in a context of Playwright's Chromium: Electron's own default is a
+        // save dialog, which a hidden window never shows, and the page's download never comes.
+        acceptDownloads: options.acceptDownloads ?? true });
     } catch (error) { fs.rmSync(folder, { recursive: true, force: true }); throw error; }
     const cleanup = () => fs.promises.rm(folder, { recursive: true, force: true, maxRetries: 10, retryDelay: 100 });
     try {
@@ -117,12 +123,26 @@ export async function launchElectron(playwright: typeof import('playwright-core'
       throw error;
     }
     const context = application.context();
+    // A hidden window never has the focus: Tab moves nothing, focus events and :focus-visible never
+    // come. Playwright emulates a focused page in every Chromium it launches, but not in Electron's
+    // context; each page here gets the same, through a session kept for the page's life, as
+    // Playwright keeps its own. newPage fails if it cannot; a popup is left as it comes.
+    const focused = new WeakMap<Page, Promise<unknown>>();
+    const emulateFocus = (page: Page): Promise<unknown> => {
+      let pending = focused.get(page);
+      if (!pending) {
+        pending = context.newCDPSession(page).then(session => session.send('Emulation.setFocusEmulationEnabled', { enabled: true }));
+        focused.set(page, pending);
+      }
+      return pending;
+    };
     // Offscreen popups start with a zero viewport on Windows until metrics are supplied.
     // Give every page the context's viewport, as well as its motion preference (Electron's
     // launch API exposes neither). newPage also awaits these before returning its page.
     context.on('page', page => {
       void page.setViewportSize(options.viewport ?? { width: 1280, height: 720 }).catch(() => {});
       if (options.reducedMotion) void page.emulateMedia({ reducedMotion: options.reducedMotion }).catch(() => {});
+      void emulateFocus(page).catch(() => {});
     });
     const closeContext = context.close.bind(context);
     const child = application.process();
@@ -158,10 +178,11 @@ export async function launchElectron(playwright: typeof import('playwright-core'
       const page = await waiting;
       await page.setViewportSize(options.viewport ?? { width: 1280, height: 720 });
       if (options.reducedMotion) await page.emulateMedia({ reducedMotion: options.reducedMotion });
+      await emulateFocus(page);
       if (options.deviceScaleFactor !== undefined && options.deviceScaleFactor !== 1) {
         const session = await context.newCDPSession(page);
         const viewport = page.viewportSize()!;
-        await session.send('Emulation.setDeviceMetricsOverride', { ...viewport, deviceScaleFactor: options.deviceScaleFactor, mobile: !!options.isMobile });
+        await session.send('Emulation.setDeviceMetricsOverride', { ...viewport, deviceScaleFactor: options.deviceScaleFactor, mobile: false });
         await session.detach();
       }
       return page;
