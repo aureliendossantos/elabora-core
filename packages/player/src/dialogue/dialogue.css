@@ -173,6 +173,9 @@
 .t-dialogue-root[data-t-quiet] .t-dialogue-choice { animation: none !important; }
 @keyframes t-dialogue-in { from { opacity: 0; translate: 0 calc(0.25rem * var(--t-move)); } }
 .t-dialogue-choice-text { min-width: 0; }
+/* An option's mark goes under its text when both do not fit side by side (a phone). */
+.t-dialogue-choice:has(.t-dialogue-explored) { flex-wrap: wrap; row-gap: 0.25rem; }
+.t-dialogue-choice:has(.t-dialogue-explored) .t-dialogue-choice-text { flex: 1 1 14rem; }
 .t-dialogue-explored, .t-dialogue-unavailable { display: inline-flex; align-items: center; gap: 0.25rem; flex: none; font-size: 0.75rem; font-weight: 600; color: var(--t-muted); }
 .t-dialogue-explored .t-icon svg { width: 0.875rem; height: 0.875rem; }
 
@@ -254,6 +257,22 @@
 .t-dialogue-others li[data-found] { border-style: solid; }
 .t-dialogue-other-title { font-weight: 600; }
 .t-dialogue-other-state { font-size: 0.8125rem; color: var(--t-muted); }
+/* « Changer ce choix » under each decision, « Recommencer » at the foot: the debrief is where the
+   learner acts, without closing it first. */
+.t-dialogue-change { margin: 0.375rem 0 -0.25rem -0.625rem; }
+.t-dialogue-debrief-foot { display: flex; margin-top: 1.25rem; }
+
+/* ── Going back (moves.ts) ──────────────────────────────────────────────── */
+/* Where the thread goes on: « Vous reprenez ici », « Nouvel essai », in the theme's colour between
+   two hairlines; it stays until the path is cut before it. */
+.t-dialogue-row[data-role="marker"] { padding: 0.375rem 0; }
+.t-dialogue-marker { display: flex; align-items: center; gap: 0.375rem; width: 100%; margin: 0; font-size: 0.8125rem; font-weight: 650; color: var(--t-primary); }
+.t-dialogue-marker::before, .t-dialogue-marker::after { content: ""; flex: 1; min-width: 1.5rem; height: 1px; background: color-mix(in srgb, var(--t-primary) 35%, transparent); }
+.t-dialogue-marker::before { margin-inline-end: 0.25rem; }
+.t-dialogue-marker::after { margin-inline-start: 0.25rem; }
+.t-dialogue-marker .t-icon svg { width: 0.9375rem; height: 0.9375rem; }
+/* The choice taken back, among the options of its decision. */
+.t-dialogue-previous { color: var(--t-primary); }
 
 /* ── Scene: the backdrop, the cast large, a few bubbles near them ─────────── */
 .t-block.t-dialogue-look--scene.t-w-full { max-width: var(--t-dialog-scene-width, 75rem); }
@@ -309,10 +328,13 @@
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="note"] { padding: 0; justify-content: center; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-note { max-width: 74%; padding: 0.7em 1.15em 0.8em; font-size: 0.8em; border-radius: 1em; background: color-mix(in srgb, var(--t-surface) 94%, transparent); box-shadow: 0 1px 2px color-mix(in srgb, var(--t-text) 6%, transparent), 0 10px 22px color-mix(in srgb, var(--t-text) 9%, transparent); }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="retry"], .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="first-choice"] { padding-inline-start: 0; justify-content: center; align-items: center; }
-  .t-dialogue-root[data-t-look="scene"] .t-dialogue-link, .t-dialogue-root[data-t-look="scene"] .t-dialogue-first { background: color-mix(in srgb, var(--t-surface) 92%, transparent); }
+  .t-dialogue-root[data-t-look="scene"] .t-dialogue-log .t-dialogue-link, .t-dialogue-root[data-t-look="scene"] .t-dialogue-first { background: color-mix(in srgb, var(--t-surface) 92%, transparent); }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-first { padding: 0.25rem 0.75rem; border-radius: 999px; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="end"] { padding: 0.25rem 15%; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-end { padding: 0.35em 1em; border-radius: 999px; background: color-mix(in srgb, var(--t-surface) 92%, transparent); }
+  .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="marker"] { justify-content: center; }
+  .t-dialogue-root[data-t-look="scene"] .t-dialogue-marker { width: auto; padding: 0.35em 1em; border-radius: 999px; background: color-mix(in srgb, var(--t-surface) 92%, transparent); }
+  .t-dialogue-root[data-t-look="scene"] .t-dialogue-marker::before, .t-dialogue-root[data-t-look="scene"] .t-dialogue-marker::after { display: none; }
   /* Its options in the room under the bubbles, between the characters, anchored at the bottom. */
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-options {
     position: absolute; z-index: 1; inset-inline: 25%; top: 57%; bottom: 4.5%; justify-content: flex-end; min-height: 0 !important; font-size: clamp(0.9375rem, 1.25cqi, 1.1875rem);

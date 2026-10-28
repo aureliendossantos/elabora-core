@@ -10,6 +10,7 @@ Read `elabora docs dialogues` (MCP `elabora_docs { page: "dialogues" }`) for the
 ## Before writing
 - One dialogue block per conversation. Its characters are `course.json` `speakers` (`id`, `name`, `color` a theme token, `look`); the learner plays `learner` (a speaker) or « Vous ».
 - Choose the mode: `practice` (default: retry, then back to any choice after the end, not scored), `assessment` (no going back, scored by quality, feedback in the debrief), `exploration`.
+- Keep the debrief (`debrief: true`, the default) in practice: at the end it is where the learner acts, « Changer ce choix » under each decision, « Recommencer » at its foot. « Recommencer » says the whole dialogue again from its first line: keep the opening short.
 
 ## Write
 - **The best path first**, then the other options. Short lines: one or two sentences. A line without speaker is a narration (« Plus tard, au bureau de Marc »).

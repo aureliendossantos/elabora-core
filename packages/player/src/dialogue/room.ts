@@ -5,7 +5,7 @@
 
 import { element } from '../dom.ts';
 import { nodeOf, optionOf } from './walk.ts';
-import { choose, canRevisit, canRestart, restart, scoredDone, scoredResult } from './run.ts';
+import { choose, canRevisit, revisit, canRestart, restart, scoredDone, scoredResult } from './run.ts';
 import type { DialogueRun } from './run.ts';
 import { optionsContent, turnControls, syncTurnControls, endControls, debriefCard, closeButton } from './thread.ts';
 import type { TurnControls, DebriefDecision } from './thread.ts';
@@ -19,7 +19,7 @@ export type Room = ReturnType<typeof createRoom>;
 export function createRoom(parts: ViewParts, state: ViewState, { box, modal, move, next, pause, resume }: {
   box: ThreadBox;
   modal: DialogueModal;
-  move(next: DialogueRun, options?: { chosen?: { node: string; option: string }; started?: boolean; keepRoom?: boolean }): void;
+  move(next: DialogueRun, options?: { chosen?: { node: string; option: string }; started?: boolean; keepRoom?: boolean; back?: 'retry' | 'revisit' | 'restart' }): void;
   next(): void;
   pause(): void;
   resume(): void;
@@ -65,9 +65,11 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     const run = state.run;
     const node = nodeOf(data, run.walk.node);
     const exploring = scoredDone(run) || data.revisit === 'anytime';
+    const previous = state.previous?.node === run.walk.node ? state.previous.option : null;
     const { nodes, promptId } = optionsContent(thread, node?.prompt, run.walk.offer, {
       final: !!node?.final,
       explored: (option) => exploring && run.progress.explored.includes(`${run.walk.node}.${option}`),
+      previous: (option) => option === previous,
       onChoose: chooseOption
     });
     if (!host().slides()) room.style.minHeight = '';
@@ -84,22 +86,32 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     room.dataset.tState = 'chosen';
     room.focus({ preventScroll: true });
     roomHeldUntil = still || reduced() ? 0 : clock.now() + 0.2;
+    parts.signal('choose', { node, option, quality: optionOf(data, node, option)?.quality ?? null });
     move(moved, { chosen: { node, option }, keepRoom: true });
   }
 
   // ── The end ──
-  function showEnd() {
+  // live: the dialogue reached its end as it played (not shown at once, back on its screen).
+  function showEnd(live = true) {
     if (!host().slides()) room.style.minHeight = '';
     const run = state.run;
     const result = scoredResult(run);
     const back = lastRevisitable();
+    // The debrief holds « Changer ce choix » for each decision and « Recommencer »: « Revenir à un
+    // choix » is for a dialogue without one, and « Recommencer » stays here unless the debrief comes
+    // right under the thread.
     setRoom('ended', [endControls(thread, {
       found: result.endingsFound, total: result.endingsTotal,
-      back: back === null ? null : () => focusResume(back),
-      restart: canRestart(run) ? () => move(restart(run), { started: true }) : null,
+      back: back !== null && !data.debrief ? () => focusResume(back) : null,
+      restart: canRestart(run) && !(data.debrief && !overlaidDebrief()) ? startOver : null,
       debrief: data.debrief && overlaidDebrief() ? () => setDebrief(true) : null
     })]);
-    renderDebrief();
+    renderDebrief(false, live);
+  }
+  function startOver() {
+    if (!canRestart(state.run)) return;
+    move(restart(state.run), { started: true, back: 'restart' });
+    room.focus({ preventScroll: true });
   }
   // The decision the learner may go back to last (« Revenir à un choix »).
   function lastRevisitable(): number | null {
@@ -120,14 +132,16 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
   const overlaidDebrief = () => host().slides() || data.style === 'scene';
   const debriefToggle = () => room.querySelector<HTMLElement>('.t-dialogue-debrief-toggle');
   function setDebrief(open: boolean) {
+    const was = root.hasAttribute('data-t-debrief-open');
     debriefOpen = open;
     renderDebrief(open);
+    if (was && !open) parts.signal('debrief-close');
   }
-  function renderDebrief(asked = false) {
+  function renderDebrief(asked = false, live = true) {
     const target = debriefHost;
     if (!data.debrief) return;
     if (state.phase !== 'ended') { closeDebrief(); if (target) { target.replaceChildren(); target.hidden = true; } return; }
-    const card = debriefCard(thread, debriefOf());
+    const card = debriefCard(thread, { ...debriefOf(), restart: canRestart(state.run) ? startOver : null });
     if (!target) {
       if (!log.querySelector('.t-dialogue-debrief-card')) box.insert(element('div', { class: 't-dialogue-row', 'data-role': 'debrief' }, card));
       return;
@@ -146,6 +160,7 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     if (root.hasAttribute('data-t-debrief-open')) return;
     root.setAttribute('data-t-debrief-open', '');
     modal.show({ keep: [target], close: () => setDebrief(false), focus: target, asked });
+    if (live) parts.signal('debrief-open');
   }
   function closeDebrief() {
     if (!root.hasAttribute('data-t-debrief-open')) return;
@@ -158,15 +173,26 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     const walk = run.walk;
     const result = scoredResult(run);
     const scoredRun = run.scoredWalk === run.walk;
+    // The learner's decisions on the path shown, in order: what « Changer ce choix » goes back to.
+    const own = walk.decisions.filter((decision) => decision.closed && !decision.auto);
+    const change = (index: number | undefined) => (index !== undefined && canRevisit(run, index) ? () => changeChoice(index) : undefined);
+    // The scored decisions in the same order (each the next of the learner's at its node).
+    let cursor = 0;
+    const indexAt = (node: string) => { while (cursor < own.length && own[cursor].node !== node) cursor++; return own[cursor++]?.index; };
     const decisions: DebriefDecision[] = scoredRun
-      ? result.decisions.map((decision) => ({ prompt: decision.prompt, option: optionOf(data, decision.node, decision.option)!, kept: decision.kept ? optionOf(data, decision.node, decision.kept) ?? null : null, quality: decision.quality })).filter((decision) => !!decision.option)
-      : walk.decisions.filter((decision) => decision.closed && !decision.auto && decision.choice).map((decision) => {
+      ? result.decisions.map((decision) => ({ prompt: decision.prompt, option: optionOf(data, decision.node, decision.option)!, kept: decision.kept ? optionOf(data, decision.node, decision.kept) ?? null : null, quality: decision.quality, change: change(indexAt(decision.node)) })).filter((decision) => !!decision.option)
+      : own.filter((decision) => decision.choice).map((decision) => {
         const option = optionOf(data, decision.node, decision.choice)!;
-        return { prompt: nodeOf(data, decision.node)?.prompt, option, kept: null, quality: option?.quality };
+        return { prompt: nodeOf(data, decision.node)?.prompt, option, kept: null, quality: option?.quality, change: change(decision.index) };
       }).filter((decision) => !!decision.option);
     const reached = walk.ending?.id ?? null;
     const others = data.endings.filter((ending) => ending.id !== reached).map((ending) => ({ title: ending.title ?? ending.id, found: run.progress.endings.includes(ending.id) }));
     return { ending: walk.ending, decisions, score: scoredRun ? result.score : null, others };
+  }
+  function changeChoice(index: number) {
+    if (!canRevisit(state.run, index)) return;
+    move(revisit(state.run, index), { back: 'revisit' });
+    room.focus({ preventScroll: true });
   }
   // A cut back: the debrief goes, and opens again at the next end.
   function clearDebrief() {
@@ -185,7 +211,9 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     for (const node of data.nodes) {
       const offer = node.options.filter((option) => !option.fallback).map((option) => ({ option, enabled: true }));
       if (!offer.length) continue;
-      sets.push(optionsContent(thread, node.prompt, offer, { final: !!node.final, explored: () => data.revisit !== 'none', onChoose: () => {} }).nodes);
+      // Each option with the longer of its marks (« déjà exploré », « votre choix précédent »).
+      const previous = data.revisit !== 'none' && labels.dialoguePreviousChoice.length >= labels.dialogueExplored.length;
+      sets.push(optionsContent(thread, node.prompt, offer, { final: !!node.final, explored: () => data.revisit !== 'none', previous: () => previous, onChoose: () => {} }).nodes);
     }
     sets.push([endControls(thread, { found: 1, total: Math.max(1, data.endings.length), back: data.revisit !== 'none' ? () => {} : null, restart: data.revisit !== 'none' ? () => {} : null, debrief: data.debrief ? () => {} : null })]);
     if (!still) sets.push([turnControls(thread, voiced, { pause: () => {}, mute: () => {}, next: () => {} }).root]);

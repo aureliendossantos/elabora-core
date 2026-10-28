@@ -29,7 +29,7 @@ import { voice, hasFfmpeg } from '../narration.ts';
 
 const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 type Any = any; // eslint-disable-line @typescript-eslint/no-explicit-any
-type DialogueWindow = Window & typeof globalThis & { __elabora: Any; inserted?: { text: string; ink: string; role: string }[] };
+type DialogueWindow = Window & typeof globalThis & { __elabora: Any; inserted?: { text: string; ink: string; role: string }[]; moments?: string[] };
 
 // open: the last decision of « appel » is not final (a final decision closes going back; once the dialogue ends, starting over stays).
 const packages = new Map<string, Promise<string>>();
@@ -377,6 +377,98 @@ test('« Reprendre d\'ici » moves nothing, on a phone as on a wide screen', { t
       assert.deepEqual((await answers()).slice(0, before.length), before, `${width}: the answers keep their width and place`);
     });
   }
+});
+
+// Going back says what it does and what happened (docs/dialogues.md, « Going back »): the debrief
+// holds « Changer ce choix » for each decision and « Recommencer », without being closed first; the
+// thread says where it goes on, the choice taken back is marked among the options, the focus is on the
+// options; « Recommencer » says the dialogue again from its first line. Each moment the learner
+// perceives is an `elabora:dialogue` event (the interface's sounds).
+test('going back from the debrief: where the thread goes on, the choice taken back, the dialogue again from its first line, the moments', { timeout: 240000 }, async () => {
+  await player({ open: true }, async (page) => {
+    await page.evaluate(() => {
+      const w = window as DialogueWindow;
+      w.moments = [];
+      document.addEventListener('elabora:dialogue', (event) => {
+        const { block, moment, ...detail } = (event as CustomEvent).detail;
+        w.moments!.push([block, moment, ...Object.values(detail)].join(':'));
+      });
+    });
+    const moments = () => page.evaluate(() => (window as DialogueWindow).moments!.splice(0));
+    await page.evaluate(() => (window as DialogueWindow).__elabora.go('appel'));
+    const wrap = page.locator('[data-block="appel-marc"]');
+    for (const option of ['a', 'a', 'a']) { await until(page, 'appel-marc', 'choosing'); await choose(page, 'appel-marc', option); }
+    await until(page, 'appel-marc', 'ended');
+    assert.deepEqual(await moments(), [
+      'appel-marc:choose:premiere-question:a:good', 'appel-marc:feedback:good', 'appel-marc:choose:ticket:a:good', 'appel-marc:feedback:good',
+      'appel-marc:choose:escalade:a:good', 'appel-marc:feedback:good', 'appel-marc:end:maitrise', 'appel-marc:debrief-open'
+    ]);
+    // The debrief holds the moves; the end's bar keeps « Voir le bilan » and « Recommencer ».
+    assert.deepEqual(await wrap.locator('.t-dialogue-change').allInnerTexts(), ['Changer ce choix', 'Changer ce choix', 'Changer ce choix']);
+    assert.equal(await wrap.locator('.t-dialogue-debrief .t-dialogue-restart').innerText(), 'Recommencer');
+    assert.deepEqual(await wrap.locator('.t-dialogue-endbar .t-dialogue-action').allInnerTexts(), ['Voir le bilan', 'Recommencer']);
+    await page.keyboard.press('Escape');
+    await wrap.locator('.t-dialogue-debrief-toggle').click();
+    assert.deepEqual(await moments(), ['appel-marc:debrief-close', 'appel-marc:debrief-open']);
+    const room = await boxes(page, 'appel-marc');
+
+    // « Changer ce choix » on the ticket: the debrief closes, the path after it leaves the thread, which
+    // says where it goes on; the option taken back is marked; the focus is on the options.
+    await wrap.locator('.t-dialogue-change').nth(1).click();
+    assert.deepEqual(await moments(), ['appel-marc:back:revisit']);
+    const again = await until(page, 'appel-marc', 'choosing');
+    assert.equal(again.node, 'ticket');
+    await page.waitForTimeout(300);
+    const thread = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('[data-block="appel-marc"] [data-t-log] > .t-dialogue-row')].map((row) => row.dataset.line ?? row.dataset.role));
+    assert.deepEqual(thread.slice(-2), ['n1', 'marker'], 'the marker right after what is kept');
+    assert.equal(await wrap.locator('.t-dialogue-marker').innerText(), 'Vous reprenez ici');
+    assert.equal(await wrap.locator('.t-dialogue-row[data-line="m5"]').count(), 0, 'what came after is gone');
+    assert.equal(await wrap.locator('[data-option="a"] .t-dialogue-previous').innerText(), 'votre choix précédent');
+    assert.equal(await wrap.locator('.t-dialogue-previous').count(), 1);
+    assert.equal(await page.evaluate(() => document.activeElement?.hasAttribute('data-t-options')), true, 'the focus on « Votre réponse »');
+    assert.deepEqual((await boxes(page, 'appel-marc')).room, room.room, 'the room did not move');
+
+    // Another choice: the marker stays where the path began again; the mark of the option goes.
+    await choose(page, 'appel-marc', 'b');
+    assert.equal((await until(page, 'appel-marc', 'choosing')).node, 'escalade');
+    assert.equal(await wrap.locator('.t-dialogue-marker').count(), 1);
+    assert.equal(await wrap.locator('.t-dialogue-previous').count(), 0);
+    await choose(page, 'appel-marc', 'a');
+    await until(page, 'appel-marc', 'ended');
+    await moments();
+
+    // « Recommencer » in the debrief: the whole dialogue again, from its first line, under « Nouvel essai ».
+    await wrap.locator('.t-dialogue-debrief .t-dialogue-restart').click();
+    assert.deepEqual(await moments(), ['appel-marc:back:restart']);
+    await until(page, 'appel-marc', 'playing');
+    await page.waitForTimeout(300);
+    for (let i = 0; i < 40 && !(await wrap.locator('.t-dialogue-row[data-line="m1"]').count()); i++) await page.evaluate(() => (window as DialogueWindow).__elabora.dialogues.advance(0.1));
+    const restarted = await page.evaluate(() => [...document.querySelectorAll<HTMLElement>('[data-block="appel-marc"] [data-t-log] > .t-dialogue-row')].map((row) => row.dataset.line ?? row.dataset.role));
+    assert.deepEqual(restarted.slice(0, 2), ['marker', 'm1'], 'the first line said again');
+    assert.equal(restarted.filter((row) => row === 'm1').length, 1);
+    assert.equal(await wrap.locator('.t-dialogue-marker').innerText(), 'Nouvel essai');
+    assert.equal(await wrap.locator('.t-dialogue-debrief-card').count(), 0);
+    // Then back to a later choice: one marker, where the learner went back last.
+    for (const option of ['a', 'a', 'a']) { await until(page, 'appel-marc', 'choosing'); await choose(page, 'appel-marc', option); }
+    await until(page, 'appel-marc', 'ended');
+    await wrap.locator('.t-dialogue-change').nth(1).click();
+    await until(page, 'appel-marc', 'choosing');
+    await page.waitForTimeout(300);
+    assert.deepEqual(await wrap.locator('.t-dialogue-marker').allInnerTexts(), ['Vous reprenez ici']);
+  });
+  // The History of a scene: opened and closed.
+  await player({}, async (page) => {
+    await page.evaluate(() => {
+      const w = window as DialogueWindow;
+      w.moments = [];
+      document.addEventListener('elabora:dialogue', (event) => w.moments!.push((event as CustomEvent).detail.moment));
+    });
+    await page.evaluate(() => (window as DialogueWindow).__elabora.go('rencontre'));
+    await until(page, 'rencontre-marc', 'choosing');
+    await page.click('[data-block="rencontre-marc"] .t-dialogue-history-btn');
+    await page.keyboard.press('Escape');
+    assert.deepEqual(await page.evaluate(() => (window as DialogueWindow).moments), ['history-open', 'history-close']);
+  });
 });
 
 async function axe(page: Page, where: string) {
