@@ -4,4 +4,4 @@
 export const INTERFACE_ROLES = ['select', 'good', 'ok', 'bad', 'back', 'open', 'close', 'end'] as const;
 export type InterfaceRole = (typeof INTERFACE_ROLES)[number];
 // The roles the player package has a file for (packages/player/src/interface-sounds/<role>.m4a, sources.json).
-export const PLAYER_INTERFACE_SOUNDS: readonly InterfaceRole[] = ['select', 'good', 'ok', 'bad', 'back', 'open', 'close'];
+export const PLAYER_INTERFACE_SOUNDS: readonly InterfaceRole[] = ['select', 'good', 'ok', 'bad', 'back', 'open', 'close', 'end'];

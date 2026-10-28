@@ -84,7 +84,6 @@ export interface SoundsOptions {
 interface Loop {
   sound: string;
   kind: 'ambience' | 'background';
-  gain: GainNode;
   volume: number;
   stop(fade: number): void;
 }
@@ -239,7 +238,6 @@ export function createSounds(options: SoundsOptions) {
   function playOnce(request: SoundRequest, file: SoundFileData) {
     const entry = log({ kind: 'story', sound: request.sound, src: file.src, at: performance.now(), heard: false });
     if (request.caption) options.caption?.(request.caption, file.duration ?? 2);
-    ensureContext();
     const asked = generation;
     whenRunning(() => {
       const ctx = context;
@@ -263,37 +261,37 @@ export function createSounds(options: SoundsOptions) {
   // starting as the one before begins its crossfade out, scheduled a little ahead on the clock.
   function playLoop(sound: string, kind: Loop['kind'], file: SoundFileData, volume: number, fade: number) {
     if (loops.has(sound)) return;
-    const ctx = ensureContext();
     const entry = log({ kind, sound, src: file.src, at: performance.now(), heard: false });
     let stopped = false;
     let timer = 0;
     const live = new Set<AudioBufferSourceNode>();
+    let gain: GainNode | null = null;
     const loop: Loop = {
       sound, kind, volume,
-      gain: null as unknown as GainNode,
       stop(out: number) {
         stopped = true;
         clearTimeout(timer);
         loops.delete(sound);
-        if (!context || !loop.gain) return;
-        const end = fadeOut(context, loop.gain, out);
+        if (!context || !gain) return;
+        const end = fadeOut(context, gain, out);
         for (const source of live) { try { source.stop(end + 0.05); } catch { /* not started */ } }
       }
     };
     loops.set(sound, loop);
-    if (!ctx) return;
-    loop.gain = ctx.createGain();
-    loop.gain.gain.value = 0;
-    loop.gain.connect(musicBus!);
+    // Nothing is made before the first gesture: the loop starts with it.
     whenRunning(() => {
-      if (stopped || !context) return;
+      if (stopped || !context || !musicBus) return;
       const running = context;
+      const own = running.createGain();
+      own.gain.value = 0;
+      own.connect(musicBus);
+      gain = own;
       void load(file.src).then((buffer) => {
         if (!buffer || stopped || running.state === 'closed') return;
         const now = running.currentTime;
-        loop.gain.gain.cancelScheduledValues(now);
-        loop.gain.gain.setValueAtTime(0, now);
-        loop.gain.gain.linearRampToValueAtTime(volume, now + Math.max(0.01, fade));
+        own.gain.cancelScheduledValues(now);
+        own.gain.setValueAtTime(0, now);
+        own.gain.linearRampToValueAtTime(volume, now + Math.max(0.01, fade));
         entry.heard = running.state === 'running';
         const cross = Math.min(Math.max(fade, 0.05), buffer.duration / 3);
         let next = now + 0.02;
@@ -303,16 +301,16 @@ export function createSounds(options: SoundsOptions) {
             const start = next;
             const source = running.createBufferSource();
             source.buffer = buffer;
-            const own = running.createGain();
+            const copy = running.createGain();
             // Each copy fades in over the crossfade (but the first, which the loop's gain fades in)
             // and out over the crossfade before its end, as the next one fades in.
-            own.gain.setValueAtTime(start === now + 0.02 ? 1 : 0, start);
-            if (start !== now + 0.02) own.gain.linearRampToValueAtTime(1, start + cross);
-            own.gain.setValueAtTime(1, start + buffer.duration - cross);
-            own.gain.linearRampToValueAtTime(0, start + buffer.duration);
-            source.connect(own);
-            own.connect(loop.gain);
-            source.addEventListener('ended', () => { live.delete(source); own.disconnect(); });
+            copy.gain.setValueAtTime(start === now + 0.02 ? 1 : 0, start);
+            if (start !== now + 0.02) copy.gain.linearRampToValueAtTime(1, start + cross);
+            copy.gain.setValueAtTime(1, start + buffer.duration - cross);
+            copy.gain.linearRampToValueAtTime(0, start + buffer.duration);
+            source.connect(copy);
+            copy.connect(own);
+            source.addEventListener('ended', () => { live.delete(source); copy.disconnect(); });
             live.add(source);
             source.start(start);
             source.stop(start + buffer.duration);

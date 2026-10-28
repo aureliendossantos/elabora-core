@@ -1,4 +1,4 @@
-<!-- elabora:rules revision=13 sha256=00f0c0c48b13d680 · Elabora keeps the rules down to « elabora:rules end » up to date while nobody edits them; write your own notes after it. -->
+<!-- elabora:rules revision=14 sha256=f13f2e43a0e27aa0 · Elabora keeps the rules down to « elabora:rules end » up to date while nobody edits them; write your own notes after it. -->
 # AGENTS.md — Elabora course project
 
 This folder is an Elabora course (`elabora/0.1`). **Read this file and “Notes for this course” below before editing.** Load detailed guidance only for the task at hand.
@@ -33,6 +33,7 @@ Skills are **not automatically loaded** just because they are listed here. With 
 | Objectives, questions, feedback, cognitive load | `elabora-pedagogy` |
 | Branching dialogues (a conversation, its choices and characters) | `elabora-dialogues` |
 | Voice, recorded audio, timing and cues | `elabora-narration` |
+| Sound effects, ambiences and music (find, add, place, caption) | `elabora-sounds` |
 | Translating/localising a course | `elabora-translation` |
 | Importing Storyline or Rise | `elabora-importing` |
 

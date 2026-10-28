@@ -4,6 +4,8 @@
 import type { Project } from '../project/model.ts';
 import type { BackgroundTrackData, InterfaceRole, SoundsData, SoundFileData } from '@elabora/player/course-data';
 import type { Sound } from '@elabora/format';
+import { classifyLicence, soundCredit } from './licences.ts';
+import type { Licence } from './licences.ts';
 import { INTERFACE_ROLES, PLAYER_INTERFACE_SOUNDS } from '@elabora/player/sound-roles';
 import { screenOrder, iterateBlocks } from '../project/load.ts';
 import { narrationLines } from '../narration/narration.ts';
@@ -26,7 +28,7 @@ export interface SoundAsset {
   asset: string; // relative to assets/ (sounds/<id>.<ext>)
   sidecar: string; // project path of <id>.json
 }
-export function soundAssets(project: Project): Map<string, SoundAsset> {
+export function soundAssets(project: Pick<Project, 'files'>): Map<string, SoundAsset> {
   const found = new Map<string, SoundAsset>();
   for (const path of [...project.files.keys()].sort()) {
     const match = SOUND_FILE.exec(path);
@@ -232,4 +234,36 @@ export function soundCreditsText(project: Project, data: SoundsData | undefined,
   }
   if (!entries.length) return null;
   return `Sounds and music of “${project.course?.title ?? ''}”\n\n${entries.join('\n\n')}\n`;
+}
+
+// The course's sounds as `elabora sound list` gives them (D67): each file of assets/sounds/ with its
+// sidecar, licence, the credit it asks for, and where the course uses it; the ids it names without a file.
+export interface CourseSound {
+  id: string;
+  path: string | null;
+  title: string | null;
+  duration: number | null;
+  license: string | null;
+  licence: Licence;
+  credit: string | null;
+  generated: boolean;
+  loop: boolean;
+  uses: Omit<SoundUse, 'id'>[];
+}
+export function courseSounds(project: Project): CourseSound[] {
+  const assets = soundAssets(project);
+  const uses = soundUses(project);
+  const ids = [...new Set([...assets.keys(), ...uses.map((use) => use.id)])].sort();
+  return ids.map((id) => {
+    const asset = assets.get(id);
+    const sidecar = asset ? soundSidecar(project, asset) : null;
+    const file = asset ? project.files.get(asset.path) : undefined;
+    return {
+      id, path: asset?.path ?? null, title: sidecar?.title ?? null,
+      duration: (file?.kind === 'binary' ? file.media?.duration : null) ?? sidecar?.duration ?? null,
+      license: sidecar?.license ?? null, licence: classifyLicence(sidecar?.license), credit: soundCredit(sidecar, project.course?.language ?? 'en'),
+      generated: !!sidecar?.generated, loop: sidecar?.loop === true,
+      uses: uses.filter((use) => use.id === id).map(({ id: _id, ...use }) => use)
+    };
+  });
 }

@@ -55,7 +55,7 @@ export interface SpeechAnswer {
 
 // Why a request failed, as codes the app words: the key refused or missing a permission, credits
 // spent, too many requests, the voice unknown or not for this plan, the text refused.
-function failure(status: number, body: string, what: string): VoiceError {
+export function failure(status: number, body: string, what: string): VoiceError {
   let detail: { status?: string; message?: string } = {};
   try {
     const parsed = JSON.parse(body) as { detail?: unknown };

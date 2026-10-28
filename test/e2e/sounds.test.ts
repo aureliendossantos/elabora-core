@@ -11,7 +11,8 @@ import type { BuildOptions } from '@elabora/node/build';
 import * as edit from '@elabora/node/edit';
 import { ROOT, copyExample as copyCourse } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
-import { hasFfmpeg } from '../narration.ts';
+import { execFileSync } from 'node:child_process';
+import { FFMPEG, hasFfmpeg } from '../narration.ts';
 
 // The player's sounds (D67) in Chrome: one context made at the learner's first gesture, the interface
 // sounds of a question's feedback, « Sons de l'interface » in « Affichage ».
@@ -19,7 +20,7 @@ import { hasFfmpeg } from '../narration.ts';
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
 const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 const copyExample = (name: string) => copyCourse(path.join(ROOT, 'examples', name));
-type Played = { kind: string; role: string; src: string; heard: boolean };
+type Played = { kind: string; role?: string; sound?: string; src: string; heard: boolean };
 const soundsState = (page: Page) => page.evaluate(() => (window as PlayerWindow & { __elabora: { sounds: { state(): { context: string; interface: boolean; played: Played[] } } } }).__elabora.sounds.state());
 
 async function player(dir: string, run: (page: Page, reload: () => Promise<void>) => Promise<void>, options: BuildOptions = {}) {
@@ -95,5 +96,60 @@ test('a module without sound makes none, and « Affichage » has no switch for t
     assert.equal((await soundsState(page)).interface, false);
     await page.click('.t-display-btn');
     assert.equal(await page.locator('.t-display-menu .t-switch[aria-label="Sons de l’interface"]').count(), 0);
+  });
+});
+
+// ── Sounds of the story, music and ambiences ──
+
+const flac = (file: string, seconds: number, frequency = 660) => {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  execFileSync(FFMPEG, ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i', `sine=frequency=${frequency}:duration=${seconds}:sample_rate=44100`, '-ac', '1', '-c:a', 'flac', file]);
+};
+const sound = (dir: string, id: string, seconds: number, extra: Record<string, unknown> = {}) => {
+  flac(path.join(dir, `assets/sounds/${id}.flac`), seconds);
+  fs.writeFileSync(path.join(dir, `assets/sounds/${id}.json`), `${JSON.stringify({ license: 'CC0-1.0', duration: seconds, ...extra }, null, 2)}\n`);
+};
+type FullState = { context: string; music: boolean; ducked: boolean; playing: { sound: string; kind: string }[]; played: Played[] };
+const fullState = (page: Page) => page.evaluate(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state());
+
+test('sounds of the story, ambiences and music: played after the first gesture, stopped at the end of their screen or range, « Musique et ambiances » off', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
+  const dir = copyExample('coffee-in-brief');
+  sound(dir, 'ring', 1.5);
+  sound(dir, 'cafe', 6, { loop: true });
+  sound(dir, 'theme', 6, { loop: true });
+  const course = JSON.parse(fs.readFileSync(path.join(dir, 'course.json'), 'utf8'));
+  course.sounds = { background: [{ sound: 'theme', from: 'the-cherry', to: 'picking-and-processing', volume: 0.3, fade: 0.5 }] };
+  fs.writeFileSync(path.join(dir, 'course.json'), `${JSON.stringify(course, null, 2)}\n`);
+  const screen = JSON.parse(fs.readFileSync(path.join(dir, 'screens/green-coffee.json'), 'utf8'));
+  screen.events = [...(screen.events ?? []), { id: 'ambience', on: { type: 'screen.enter' }, do: [{ type: 'play-sound', sound: 'cafe', loop: true, fade: 0.3 }, { type: 'play-sound', sound: 'ring', caption: 'The phone rings.' }] }];
+  fs.writeFileSync(path.join(dir, 'screens/green-coffee.json'), `${JSON.stringify(screen, null, 2)}\n`);
+  edit.updatePlayer(dir, { enable: ['display'] });
+  await player(dir, async (page) => {
+    let state = await fullState(page);
+    assert.equal(state.context, 'none');
+    assert.deepEqual(state.playing, [{ sound: 'theme', kind: 'background' }], 'the music of the first screen waits for a gesture');
+    await page.mouse.click(5, 450);
+    await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().played.some((entry) => entry.sound === 'theme' && entry.heard), null, { timeout: 30000 });
+    // The next screen of its range: it plays on, not again.
+    await page.evaluate(() => (window as PlayerWindow).__elabora.go('picking-and-processing'));
+    state = await fullState(page);
+    assert.equal(state.played.filter((entry) => entry.sound === 'theme').length, 1);
+    // Out of its range: it stops; the screen's ambience and its sound of the story play, the caption is said.
+    await page.evaluate(() => (window as PlayerWindow).__elabora.go('green-coffee'));
+    state = await fullState(page);
+    assert.deepEqual(state.playing.map((entry) => `${entry.kind}:${entry.sound}`).sort(), ['ambience:cafe'], JSON.stringify(state.playing));
+    await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().played.some((entry) => entry.sound === 'ring' && entry.heard), null, { timeout: 30000 });
+    assert.equal(await page.locator('.t-sr-only[aria-live]').textContent(), 'The phone rings.');
+    assert.equal(await page.locator('.t-sound-caption').textContent(), 'The phone rings.', 'no way to choose captions in this course: shown');
+    // « Musique et ambiances » off.
+    await page.click('.t-display-btn');
+    const music = page.locator('.t-display-menu .t-switch[aria-label="Music and ambience"]');
+    assert.equal(await music.getAttribute('aria-checked'), 'true');
+    await music.click();
+    assert.equal((await fullState(page)).music, false);
+    await page.keyboard.press('Escape');
+    // The ambience of the screen stops with it.
+    await page.evaluate(() => (window as PlayerWindow).__elabora.go('roasting'));
+    assert.deepEqual((await fullState(page)).playing, []);
   });
 });

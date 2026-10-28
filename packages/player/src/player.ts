@@ -458,8 +458,9 @@ function go(index: number | undefined, { focus = true }: { focus?: boolean } = {
   if (!reachable(index)) { announce(labels.locked); return; }
   view.leave();
   current = index;
-  view.show(courseState.screens[index]);
+  // The sounds of the screen left stop before the new one's events play its own (D67).
   sounds.enterScreen(courseState.screens[index].id);
+  view.show(courseState.screens[index]);
   preloadNarration(courseState.screens[index + 1]);
   syncNow();
   updateNav();

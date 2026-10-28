@@ -738,6 +738,8 @@ function isActionData(action: Action): action is Action & ActionData {
     case 'play-media': case 'pause-media': return typeof action.block === 'string';
     case 'start-dialogue': case 'restart-dialogue': return typeof action.block === 'string';
     case 'goto-dialogue': return typeof action.block === 'string' && typeof action.node === 'string';
+    case 'play-sound': return typeof action.sound === 'string';
+    case 'stop-sound': return action.sound === undefined || typeof action.sound === 'string';
     default: return false;
   }
 }

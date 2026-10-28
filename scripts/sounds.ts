@@ -3,6 +3,8 @@
 //                                   names, check each original against its SHA-256 and write the
 //                                   player's interface sounds, <role>.m4a (AAC, mono, 96 kb/s)
 //   npm run sounds -- --from <dir>  take the packs from <dir>/<pack id>/ (unzipped) instead
+// and writes the library's catalogue.json and README.md (packages/node/sounds/) from its sources.json and
+// files, which were taken once by hand (CC0 and public domain only).
 // Needs network access (or --from) and ffmpeg; nothing else does: courses, the CLI and the app read
 // the files offline. The sounds were chosen by ear, once: this script only makes them again.
 import fs from 'node:fs';
@@ -78,3 +80,30 @@ try {
 } finally {
   fs.rmSync(work, { recursive: true, force: true });
 }
+
+// ── The library, « Sons courants » ──
+const LIBRARY = path.join(ROOT, 'packages/node/sounds');
+interface LibrarySource { id: string; title: { en: string; fr: string }; category: string; kind: 'effect' | 'ambience'; source: string; url: string; author: string; license: string; licenseUrl: string; checked: string; caption?: Record<string, string>; tags?: string[]; processing?: Record<string, unknown> }
+const library = JSON.parse(fs.readFileSync(path.join(LIBRARY, 'sources.json'), 'utf8')) as { sounds: LibrarySource[] };
+const files = fs.readdirSync(path.join(LIBRARY, 'files'));
+const entries = library.sounds.map((sound) => {
+  const file = files.find((name) => name.startsWith(`${sound.id}.`));
+  if (!file) throw new Error(`library: no file for ${sound.id}`);
+  const bytes = fs.readFileSync(path.join(LIBRARY, 'files', file));
+  const probe = JSON.parse(execFileSync(tools.ffprobe, ['-v', 'error', '-show_entries', 'stream=codec_name,sample_rate,channels:format=duration', '-of', 'json', path.join(LIBRARY, 'files', file)], { encoding: 'utf8' })) as { streams: { codec_name: string; sample_rate: string; channels: number }[]; format: { duration: string } };
+  const stream = probe.streams[0];
+  return {
+    id: sound.id, title: sound.title, category: sound.category, kind: sound.kind, file: `files/${file}`, format: stream.codec_name, channels: stream.channels, sampleRate: Number(stream.sample_rate),
+    duration: Math.round(Number(probe.format.duration) * 1000) / 1000, bytes: bytes.length, hash: `sha256:${sha256(bytes)}`,
+    source: sound.source, url: sound.url, author: sound.author, license: sound.license, licenseUrl: sound.licenseUrl, checked: sound.checked,
+    ...(sound.caption && Object.keys(sound.caption).length ? { caption: sound.caption } : {}), tags: sound.tags ?? []
+  };
+});
+const extra = files.filter((name) => !entries.some((entry) => entry.file === `files/${name}`));
+if (extra.length) throw new Error(`library: files without a source: ${extra.join(', ')}`);
+fs.writeFileSync(path.join(LIBRARY, 'catalogue.json'), `${JSON.stringify({ sounds: entries }, null, 2)}\n`);
+const mb = (bytes: number) => `${(bytes / 1048576).toFixed(2)} MB`;
+const total = entries.reduce((sum, entry) => sum + entry.bytes, 0);
+const rows = entries.map((entry) => `| \`${entry.id}\` | ${entry.title.fr} | ${entry.category} | ${entry.duration.toFixed(1)} s | ${entry.format} | ${entry.license} | [${entry.author}](${entry.url}) |`);
+fs.writeFileSync(path.join(LIBRARY, 'README.md'), `# « Sons courants »: the library of sounds\n\nWritten by \`npm run sounds\` from sources.json and files/: do not edit. ${entries.length} sounds, ${mb(total)} (effects as FLAC, ambiences as AAC 256 kb/s: docs/decisions/D67.md). CC0 or public domain only: no credit is owed, the sources are kept here.\n\n| Id | Titre | Category | Length | Format | Licence | Source |\n|---|---|---|---|---|---|---|\n${rows.join('\n')}\n`);
+console.log(`library: ${entries.length} sounds, ${mb(total)}`);

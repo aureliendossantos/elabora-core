@@ -1,0 +1,1196 @@
+{
+  "sounds": [
+    {
+      "id": "telephone-fixe",
+      "title": {
+        "en": "Office phone ringing (two double rings)",
+        "fr": "Téléphone de bureau qui sonne (deux doubles sonneries)"
+      },
+      "category": "telephone",
+      "kind": "effect",
+      "file": "files/telephone-fixe.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 4.112,
+      "bytes": 128762,
+      "hash": "sha256:61e9d88f510c8e6b36c6f934c3592eee451702a701686f076ff3fc8782e9ccad",
+      "source": "elabora",
+      "url": "https://github.com/aureliendossantos/elabora-core",
+      "author": "Elabora",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Le téléphone sonne.",
+        "en": "The phone rings."
+      },
+      "tags": [
+        "telephone",
+        "ring",
+        "office",
+        "landline"
+      ]
+    },
+    {
+      "id": "telephone-portable",
+      "title": {
+        "en": "Mobile phone ringtone (chirp)",
+        "fr": "Sonnerie de téléphone portable"
+      },
+      "category": "telephone",
+      "kind": "effect",
+      "file": "files/telephone-portable.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 1.35,
+      "bytes": 147429,
+      "hash": "sha256:2205820fb6c752b2dba7418d3c72f52a7c5745eaa1515cb85392d091a33651b3",
+      "source": "opengameart",
+      "url": "https://opengameart.org/content/modern-ringtone-chirptone",
+      "author": "Zane Little Music",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Le téléphone portable sonne.",
+        "en": "The mobile phone rings."
+      },
+      "tags": [
+        "téléphone",
+        "portable",
+        "sonnerie",
+        "mobile",
+        "ringtone"
+      ]
+    },
+    {
+      "id": "nouveau-mail",
+      "title": {
+        "en": "New e-mail ding",
+        "fr": "Nouveau courriel (ding)"
+      },
+      "category": "notifications",
+      "kind": "effect",
+      "file": "files/nouveau-mail.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 0.692,
+      "bytes": 20271,
+      "hash": "sha256:a26e68de0ca3432dc3379b4d68121bee55d13798d70c7e986dd03822605b65e1",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/interface-sounds",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Un nouveau courriel arrive.",
+        "en": "A new e-mail arrives."
+      },
+      "tags": [
+        "notification",
+        "mail",
+        "courriel",
+        "ding",
+        "verre"
+      ]
+    },
+    {
+      "id": "notification-generique",
+      "title": {
+        "en": "Generic notification",
+        "fr": "Notification générique"
+      },
+      "category": "notifications",
+      "kind": "effect",
+      "file": "files/notification-generique.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 48000,
+      "duration": 1.027,
+      "bytes": 60880,
+      "hash": "sha256:b9ea35c745c1653259e42d456d53247c3449e13b2213e56c0bdec25fd3c76f41",
+      "source": "opengameart",
+      "url": "https://opengameart.org/content/alertnotification-sound",
+      "author": "frosty ham",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Une notification s'affiche.",
+        "en": "A notification pops up."
+      },
+      "tags": [
+        "notification",
+        "alerte douce",
+        "bip"
+      ]
+    },
+    {
+      "id": "notification-message",
+      "title": {
+        "en": "Message received",
+        "fr": "Message reçu"
+      },
+      "category": "notifications",
+      "kind": "effect",
+      "file": "files/notification-message.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 1.148,
+      "bytes": 56905,
+      "hash": "sha256:0943901c11ef228c74634f009aedace1e61488220f333613f40c5628578a8685",
+      "source": "wikimedia",
+      "url": "https://commons.wikimedia.org/wiki/File:Simple_Happy_Beep.ogg",
+      "author": "waveplaySFX",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Un message arrive.",
+        "en": "A message arrives."
+      },
+      "tags": [
+        "notification",
+        "message",
+        "sms",
+        "bip"
+      ]
+    },
+    {
+      "id": "porte-ouvre",
+      "title": {
+        "en": "Door opens",
+        "fr": "Porte qui s'ouvre"
+      },
+      "category": "doors-footsteps",
+      "kind": "effect",
+      "file": "files/porte-ouvre.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 48000,
+      "duration": 0.919,
+      "bytes": 78859,
+      "hash": "sha256:09ebd78ade13c4dbae5438916e4570db69f2b6986478430904b44784232ca378",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/rpg-audio",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Une porte s'ouvre.",
+        "en": "A door opens."
+      },
+      "tags": [
+        "porte",
+        "ouvrir",
+        "bois",
+        "poignée"
+      ]
+    },
+    {
+      "id": "porte-ferme",
+      "title": {
+        "en": "Door closes",
+        "fr": "Porte qui se ferme"
+      },
+      "category": "doors-footsteps",
+      "kind": "effect",
+      "file": "files/porte-ferme.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 48000,
+      "duration": 0.675,
+      "bytes": 61496,
+      "hash": "sha256:b3a70f28aff8a355aef3cba6757fe73e37773863d87fcb8d24ac065642a667f2",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/rpg-audio",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Une porte se ferme.",
+        "en": "A door closes."
+      },
+      "tags": [
+        "porte",
+        "fermer",
+        "claquement"
+      ]
+    },
+    {
+      "id": "porte-grince",
+      "title": {
+        "en": "Creaking door",
+        "fr": "Porte qui grince"
+      },
+      "category": "doors-footsteps",
+      "kind": "effect",
+      "file": "files/porte-grince.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 48000,
+      "duration": 0.83,
+      "bytes": 60868,
+      "hash": "sha256:dfa155979d41450840de181207b30cd744c6dc6c2056e96cfc0ebfb82b40f530",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/rpg-audio",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Une porte grince.",
+        "en": "A door creaks."
+      },
+      "tags": [
+        "porte",
+        "grincement",
+        "creak"
+      ]
+    },
+    {
+      "id": "frappe-porte",
+      "title": {
+        "en": "Knock on wooden door",
+        "fr": "Coups à la porte"
+      },
+      "category": "doors-footsteps",
+      "kind": "effect",
+      "file": "files/frappe-porte.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 1.17,
+      "bytes": 44627,
+      "hash": "sha256:17e3b1c2aa62f0c4a1e1deae530c853596209c0b62b30b6773b6a71ec2fd5f69",
+      "source": "wikimedia",
+      "url": "https://commons.wikimedia.org/wiki/File:Knocking_on_wood_or_door.ogg",
+      "author": "stephan",
+      "license": "PDM-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "On frappe à la porte.",
+        "en": "Someone knocks at the door."
+      },
+      "tags": [
+        "porte",
+        "frapper",
+        "toc toc",
+        "bois"
+      ]
+    },
+    {
+      "id": "heurtoir-porte",
+      "title": {
+        "en": "Door knocker",
+        "fr": "Heurtoir de porte"
+      },
+      "category": "doors-footsteps",
+      "kind": "effect",
+      "file": "files/heurtoir-porte.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 1.22,
+      "bytes": 62734,
+      "hash": "sha256:8eac41b8e54b931b59cd47e05e6d769c6fb75cbf38b3c99c4aa72333ba793f90",
+      "source": "wikimedia",
+      "url": "https://commons.wikimedia.org/wiki/File:Door_knocker_audio.ogg",
+      "author": "Mx. Granger",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "On frappe avec le heurtoir.",
+        "en": "Someone raps the door knocker."
+      },
+      "tags": [
+        "porte",
+        "heurtoir",
+        "frapper",
+        "métal"
+      ]
+    },
+    {
+      "id": "sonnette",
+      "title": {
+        "en": "Doorbell (ding-dong)",
+        "fr": "Sonnette (ding-dong)"
+      },
+      "category": "doors-footsteps",
+      "kind": "effect",
+      "file": "files/sonnette.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 3.35,
+      "bytes": 219821,
+      "hash": "sha256:8253517a5722a9c44804408e1b97225b4b0faab526cb530c8eeef9f33dcf9493",
+      "source": "wikimedia",
+      "url": "https://commons.wikimedia.org/wiki/File:Doorbell-classic-dingdong.ogg",
+      "author": "Dub (Commons uploader; own recording per file page, template PD-self)",
+      "license": "PDM-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "La sonnette retentit.",
+        "en": "The doorbell rings."
+      },
+      "tags": [
+        "porte",
+        "sonnette",
+        "ding-dong"
+      ]
+    },
+    {
+      "id": "pas-bois",
+      "title": {
+        "en": "Footsteps on wood",
+        "fr": "Pas sur du bois"
+      },
+      "category": "doors-footsteps",
+      "kind": "effect",
+      "file": "files/pas-bois.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 1.795,
+      "bytes": 30812,
+      "hash": "sha256:ae76f3c5ccaabf0c46b00baf8d46e532b004323f29c0b2ae99254bac2bbefc68",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Des pas résonnent sur le parquet.",
+        "en": "Footsteps sound on the wooden floor."
+      },
+      "tags": [
+        "pas",
+        "bois",
+        "parquet",
+        "marche"
+      ]
+    },
+    {
+      "id": "pas-beton",
+      "title": {
+        "en": "Footsteps on concrete",
+        "fr": "Pas sur du béton"
+      },
+      "category": "doors-footsteps",
+      "kind": "effect",
+      "file": "files/pas-beton.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 1.511,
+      "bytes": 32242,
+      "hash": "sha256:80f50d5350fca43eefdb6cf4735a8eeed79de7ea3cff70707c9bea0b41882445",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Des pas claquent sur le béton.",
+        "en": "Footsteps echo on concrete."
+      },
+      "tags": [
+        "pas",
+        "béton",
+        "dalle",
+        "marche"
+      ]
+    },
+    {
+      "id": "clavier",
+      "title": {
+        "en": "Keyboard typing",
+        "fr": "Frappe au clavier"
+      },
+      "category": "office",
+      "kind": "effect",
+      "file": "files/clavier.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 4.25,
+      "bytes": 228969,
+      "hash": "sha256:79a5bd224be69adb126e9e4b6558ff39b0015c9542fbf917b8c845b01c769f33",
+      "source": "opengameart",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "author": "unicaegames",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Quelqu'un tape au clavier.",
+        "en": "Someone types on a keyboard."
+      },
+      "tags": [
+        "clavier",
+        "frappe",
+        "bureau",
+        "taper"
+      ]
+    },
+    {
+      "id": "imprimante",
+      "title": {
+        "en": "Inkjet printer",
+        "fr": "Imprimante"
+      },
+      "category": "office",
+      "kind": "effect",
+      "file": "files/imprimante.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 2.7,
+      "bytes": 160645,
+      "hash": "sha256:65398e2fae2b6bffe8c8f89c77d46641d7f5687ee90fb34cb853750db1b22a2b",
+      "source": "wikimedia",
+      "url": "https://commons.wikimedia.org/wiki/File:Inkjet_printer_on_and_off.ogg",
+      "author": "stephan",
+      "license": "PDM-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "L'imprimante imprime une page.",
+        "en": "The printer prints a page."
+      },
+      "tags": [
+        "imprimante",
+        "bureau",
+        "impression",
+        "jet d'encre"
+      ]
+    },
+    {
+      "id": "appareil-photo",
+      "title": {
+        "en": "Camera shutter (DSLR)",
+        "fr": "Appareil photo (déclencheur)"
+      },
+      "category": "office",
+      "kind": "effect",
+      "file": "files/appareil-photo.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 0.88,
+      "bytes": 80387,
+      "hash": "sha256:df07427b4de2c3124920573f682b55f3015f6f3194bd77657cb5e8de290f308e",
+      "source": "opengameart",
+      "url": "https://opengameart.org/content/camera",
+      "author": "themightyglider",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Clic ! Une photo est prise.",
+        "en": "Click! A photo is taken."
+      },
+      "tags": [
+        "photo",
+        "appareil",
+        "déclencheur",
+        "obturateur"
+      ]
+    },
+    {
+      "id": "appareil-photo-mecanique",
+      "title": {
+        "en": "Camera shutter (Holga, mechanical)",
+        "fr": "Appareil photo mécanique (clic-clac)"
+      },
+      "category": "office",
+      "kind": "effect",
+      "file": "files/appareil-photo-mecanique.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 0.95,
+      "bytes": 44073,
+      "hash": "sha256:3c9a3e2731b0b607426c74096799bf46831cb7eb1f0555b71c2c6b4b541a4f14",
+      "source": "wikimedia",
+      "url": "https://commons.wikimedia.org/wiki/File:Holga_shuttersound.ogg",
+      "author": "Doitashimashite at Dutch Wikipedia",
+      "license": "PDM-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Le déclencheur claque.",
+        "en": "The shutter clacks."
+      },
+      "tags": [
+        "photo",
+        "appareil",
+        "argentique",
+        "obturateur"
+      ]
+    },
+    {
+      "id": "souris-clic",
+      "title": {
+        "en": "Mouse click",
+        "fr": "Clic de souris"
+      },
+      "category": "office",
+      "kind": "effect",
+      "file": "files/souris-clic.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 0.056,
+      "bytes": 13064,
+      "hash": "sha256:4bb386213c84a13914abb2fb0f22149ad931a868f5c3b02e695f0378afe16228",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/ui-audio",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Clic de souris.",
+        "en": "A mouse click."
+      },
+      "tags": [
+        "souris",
+        "clic",
+        "ordinateur"
+      ]
+    },
+    {
+      "id": "page-tournee",
+      "title": {
+        "en": "Page turn",
+        "fr": "Page qui se tourne"
+      },
+      "category": "office",
+      "kind": "effect",
+      "file": "files/page-tournee.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 48000,
+      "duration": 0.769,
+      "bytes": 71069,
+      "hash": "sha256:80085a88513f010f1cb7e32027b8f99aa65db0d4011d18f9a388407c48e0afd9",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/rpg-audio",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Une page se tourne.",
+        "en": "A page is turned."
+      },
+      "tags": [
+        "page",
+        "livre",
+        "papier",
+        "tourner"
+      ]
+    },
+    {
+      "id": "objet-bois-tombe",
+      "title": {
+        "en": "Wooden object dropped",
+        "fr": "Objet en bois qui tombe"
+      },
+      "category": "impacts",
+      "kind": "effect",
+      "file": "files/objet-bois-tombe.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 0.31,
+      "bytes": 12386,
+      "hash": "sha256:bafee67aa8cbb6d170064c7d845192416bd1240c99462b2291b841ee1c5f09e8",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Un objet en bois tombe.",
+        "en": "A wooden object falls."
+      },
+      "tags": [
+        "chute",
+        "bois",
+        "choc",
+        "objet"
+      ]
+    },
+    {
+      "id": "objet-metal-choc",
+      "title": {
+        "en": "Metal clang",
+        "fr": "Choc métallique"
+      },
+      "category": "impacts",
+      "kind": "effect",
+      "file": "files/objet-metal-choc.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 0.356,
+      "bytes": 14897,
+      "hash": "sha256:1a1c4652da130d9cd9cd1ec0f7e17ffb53f7274cfb4e9312b7649415859187aa",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Un objet métallique heurte le sol.",
+        "en": "A metal object hits the floor."
+      },
+      "tags": [
+        "métal",
+        "choc",
+        "clang",
+        "objet"
+      ]
+    },
+    {
+      "id": "objet-metal-rebonds",
+      "title": {
+        "en": "Metal object bouncing",
+        "fr": "Objet métallique qui rebondit"
+      },
+      "category": "impacts",
+      "kind": "effect",
+      "file": "files/objet-metal-rebonds.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 0.85,
+      "bytes": 37204,
+      "hash": "sha256:94c67e960c78903bf7d3c720007b3350b6149e5d54b9b5ac0b853a0229873c1f",
+      "source": "wikimedia",
+      "url": "https://commons.wikimedia.org/wiki/File:Metal_drop_thump.ogg",
+      "author": "stephan",
+      "license": "PDM-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Un objet métallique tombe et rebondit.",
+        "en": "A metal object falls and bounces."
+      },
+      "tags": [
+        "métal",
+        "chute",
+        "rebond"
+      ]
+    },
+    {
+      "id": "verre-tintement",
+      "title": {
+        "en": "Glass clink",
+        "fr": "Tintement de verre"
+      },
+      "category": "impacts",
+      "kind": "effect",
+      "file": "files/verre-tintement.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 0.54,
+      "bytes": 16572,
+      "hash": "sha256:de92217e28aeeed705e835224ab63142e415de61e6c7c79a62fbc4a46d98ed81",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Un verre tinte.",
+        "en": "A glass clinks."
+      },
+      "tags": [
+        "verre",
+        "tintement",
+        "choc"
+      ]
+    },
+    {
+      "id": "verre-brise",
+      "title": {
+        "en": "Glass breaking",
+        "fr": "Verre qui se brise"
+      },
+      "category": "impacts",
+      "kind": "effect",
+      "file": "files/verre-brise.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 48000,
+      "duration": 0.916,
+      "bytes": 46240,
+      "hash": "sha256:3d1d9c23c76a413634a95c8daaf7307596ae3c4709eeb60d6ed1bf56c58b384c",
+      "source": "opengameart",
+      "url": "https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx",
+      "author": "rubberduck",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Un verre se brise.",
+        "en": "A glass shatters."
+      },
+      "tags": [
+        "verre",
+        "briser",
+        "casse"
+      ]
+    },
+    {
+      "id": "cloche",
+      "title": {
+        "en": "Bell strike",
+        "fr": "Coup de cloche"
+      },
+      "category": "impacts",
+      "kind": "effect",
+      "file": "files/cloche.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 1.741,
+      "bytes": 35891,
+      "hash": "sha256:7bc7764bb4d9bef1a1181d4731ce4d70a9c7ee9b4cdc0d18bf52e794a7a91c21",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/impact-sounds",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Une cloche sonne.",
+        "en": "A bell rings."
+      },
+      "tags": [
+        "cloche",
+        "gong",
+        "métal"
+      ]
+    },
+    {
+      "id": "pieces-monnaie",
+      "title": {
+        "en": "Coins handled",
+        "fr": "Pièces de monnaie"
+      },
+      "category": "impacts",
+      "kind": "effect",
+      "file": "files/pieces-monnaie.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 48000,
+      "duration": 0.846,
+      "bytes": 73774,
+      "hash": "sha256:9e7d247ac120401e48fd8301a3decbc11e5c82976aaf88172d01c9e3c66dda3f",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/rpg-audio",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Des pièces tintent.",
+        "en": "Coins jingle."
+      },
+      "tags": [
+        "pièces",
+        "monnaie",
+        "argent",
+        "paiement"
+      ]
+    },
+    {
+      "id": "whoosh",
+      "title": {
+        "en": "Whoosh (air)",
+        "fr": "Souffle de transition (whoosh)"
+      },
+      "category": "transitions",
+      "kind": "effect",
+      "file": "files/whoosh.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 1.2,
+      "bytes": 165375,
+      "hash": "sha256:cb575daf944f62df4773f8bd5f1fdf93f90b02abbbe08a021cf4fd2a130ced84",
+      "source": "opengameart",
+      "url": "https://opengameart.org/content/air-whoosh",
+      "author": "pyranostudios",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "tags": [
+        "whoosh",
+        "transition",
+        "souffle",
+        "air"
+      ]
+    },
+    {
+      "id": "applaudissements",
+      "title": {
+        "en": "Applause (hall)",
+        "fr": "Applaudissements"
+      },
+      "category": "crowds-places",
+      "kind": "effect",
+      "file": "files/applaudissements.flac",
+      "format": "flac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 7.5,
+      "bytes": 776380,
+      "hash": "sha256:fcbfc4abe310bfb65ee5a200d238dfe4534cb6f4ba6649c9e3583053c88ce6f5",
+      "source": "opengameart",
+      "url": "https://opengameart.org/content/applause-in-a-large-hall-or-church",
+      "author": "eXpl0it3r",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "La salle applaudit.",
+        "en": "The audience applauds."
+      },
+      "tags": [
+        "applaudissements",
+        "public",
+        "salle",
+        "foule"
+      ]
+    },
+    {
+      "id": "fin-reussie",
+      "title": {
+        "en": "Success jingle (steel guitar, rising)",
+        "fr": "Fin réussie (guitare steel, montante)"
+      },
+      "category": "stingers",
+      "kind": "effect",
+      "file": "files/fin-reussie.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 0.909,
+      "bytes": 33777,
+      "hash": "sha256:5a9d48213db1aa6e3d1d0f2acfefd7a7f0b47cef56621ff3c8ba16c3ca630755",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/music-jingles",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "tags": [
+        "jingle",
+        "réussite",
+        "fin",
+        "steel"
+      ]
+    },
+    {
+      "id": "fin-reussie-b",
+      "title": {
+        "en": "Success jingle (steel guitar, long run)",
+        "fr": "Fin réussie (steel, gamme montante)"
+      },
+      "category": "stingers",
+      "kind": "effect",
+      "file": "files/fin-reussie-b.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 1.387,
+      "bytes": 46171,
+      "hash": "sha256:ac5425e566475ca857c037e07dfc0f44b24b0d09e7aec6e6fd46ad3e7a054d65",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/music-jingles",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "tags": [
+        "jingle",
+        "réussite",
+        "fin",
+        "steel"
+      ]
+    },
+    {
+      "id": "fin-reussie-c",
+      "title": {
+        "en": "Success jingle (pizzicato)",
+        "fr": "Fin réussie (pizzicato)"
+      },
+      "category": "stingers",
+      "kind": "effect",
+      "file": "files/fin-reussie-c.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 0.797,
+      "bytes": 33172,
+      "hash": "sha256:53ffd8ee1640bb9e520f3a685c52cba7a5adee56ec8cbb9403fc9d1941623d2d",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/music-jingles",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "tags": [
+        "jingle",
+        "réussite",
+        "fin",
+        "pizzicato"
+      ]
+    },
+    {
+      "id": "echec-doux",
+      "title": {
+        "en": "Gentle failure (descending pizzicato)",
+        "fr": "Échec en douceur (pizzicato descendant)"
+      },
+      "category": "stingers",
+      "kind": "effect",
+      "file": "files/echec-doux.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 1.002,
+      "bytes": 41075,
+      "hash": "sha256:ec6642ea9965b6f0fb669af68ca542977d2a5ae5908549a033fdc4b191806d03",
+      "source": "kenney",
+      "url": "https://kenney.nl/assets/music-jingles",
+      "author": "Kenney Vleugels (Kenney.nl)",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "tags": [
+        "jingle",
+        "échec",
+        "descendant",
+        "pizzicato"
+      ]
+    },
+    {
+      "id": "bravo-applaudissements",
+      "title": {
+        "en": "Well done (applause + chime)",
+        "fr": "Bravo (applaudissements)"
+      },
+      "category": "stingers",
+      "kind": "effect",
+      "file": "files/bravo-applaudissements.flac",
+      "format": "flac",
+      "channels": 1,
+      "sampleRate": 96000,
+      "duration": 4.009,
+      "bytes": 288053,
+      "hash": "sha256:708df584cddf06d662570e7f6a7ff145f60f8d2417ea6492c6ccbf724ac6acd6",
+      "source": "opengameart",
+      "url": "https://opengameart.org/content/well-done",
+      "author": "qubodup",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "On vous applaudit.",
+        "en": "You get a round of applause."
+      },
+      "tags": [
+        "bravo",
+        "succès",
+        "applaudissements",
+        "félicitations"
+      ]
+    },
+    {
+      "id": "pluie",
+      "title": {
+        "en": "Rain on a window (loop)",
+        "fr": "Pluie (boucle)"
+      },
+      "category": "nature",
+      "kind": "ambience",
+      "file": "files/pluie.m4a",
+      "format": "aac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 44,
+      "bytes": 1419485,
+      "hash": "sha256:95c25d3cacccd5df0f0e3c06b1017ddad7087b92981cef21d6cf3a5b63bdf3ff",
+      "source": "opengameart",
+      "url": "https://opengameart.org/content/rain-loopable",
+      "author": "Ylmir",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Il pleut.",
+        "en": "It is raining."
+      },
+      "tags": [
+        "pluie",
+        "fenêtre",
+        "ambiance",
+        "météo"
+      ]
+    },
+    {
+      "id": "oiseaux",
+      "title": {
+        "en": "Birdsong (loop)",
+        "fr": "Chants d'oiseaux (boucle)"
+      },
+      "category": "nature",
+      "kind": "ambience",
+      "file": "files/oiseaux.m4a",
+      "format": "aac",
+      "channels": 2,
+      "sampleRate": 48000,
+      "duration": 29.89,
+      "bytes": 954132,
+      "hash": "sha256:fe9dd5130a762757af2ecdaf5f0f3f321ef77456f3794992e359fa05a2a4a07e",
+      "source": "opengameart",
+      "url": "https://opengameart.org/content/ambient-bird-sounds",
+      "author": "isaiah658",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Des oiseaux chantent.",
+        "en": "Birds are singing."
+      },
+      "tags": [
+        "oiseaux",
+        "nature",
+        "parc",
+        "ambiance"
+      ]
+    },
+    {
+      "id": "brise-parc",
+      "title": {
+        "en": "Light breeze and birds (loop)",
+        "fr": "Brise légère et oiseaux (boucle)"
+      },
+      "category": "nature",
+      "kind": "ambience",
+      "file": "files/brise-parc.m4a",
+      "format": "aac",
+      "channels": 1,
+      "sampleRate": 44100,
+      "duration": 31.5,
+      "bytes": 589232,
+      "hash": "sha256:3ab8c0777d8d2aeb9fb673c924e191f58bdaebf189a6055afe2dd1594c2bb0db",
+      "source": "wikimedia",
+      "url": "https://commons.wikimedia.org/wiki/File:Gentle_breeze_and_birds_singing.ogg",
+      "author": "ezwa",
+      "license": "PDM-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Une brise légère souffle dans le parc.",
+        "en": "A light breeze blows through the park."
+      },
+      "tags": [
+        "vent",
+        "brise",
+        "oiseaux",
+        "parc",
+        "ambiance"
+      ]
+    },
+    {
+      "id": "cafe-murmure",
+      "title": {
+        "en": "Cafe chatter (loop)",
+        "fr": "Murmure de café (boucle)"
+      },
+      "category": "crowds-places",
+      "kind": "ambience",
+      "file": "files/cafe-murmure.m4a",
+      "format": "aac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 44.5,
+      "bytes": 1438442,
+      "hash": "sha256:0e6cdb722c1776328b15a430c3038fec722b795383269a87e1a534d0250199ed",
+      "source": "wikimedia",
+      "url": "https://commons.wikimedia.org/wiki/File:Cafe_ambiance.ogg",
+      "author": "Marble Toast",
+      "license": "CC0-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "On entend le brouhaha d'un café.",
+        "en": "The murmur of a café is audible."
+      },
+      "tags": [
+        "café",
+        "murmure",
+        "foule",
+        "ambiance",
+        "conversation"
+      ]
+    },
+    {
+      "id": "restaurant-murmure",
+      "title": {
+        "en": "Restaurant chatter (loop)",
+        "fr": "Murmure de restaurant (boucle)"
+      },
+      "category": "crowds-places",
+      "kind": "ambience",
+      "file": "files/restaurant-murmure.m4a",
+      "format": "aac",
+      "channels": 2,
+      "sampleRate": 44100,
+      "duration": 49.5,
+      "bytes": 1586705,
+      "hash": "sha256:2754fd985b7202bac1118310c017f582ba62ea8b972deab4919041ef32dd8fd9",
+      "source": "wikimedia",
+      "url": "https://commons.wikimedia.org/wiki/File:Restaurant_ambience.ogg",
+      "author": "stephan",
+      "license": "PDM-1.0",
+      "licenseUrl": "https://creativecommons.org/publicdomain/mark/1.0/",
+      "checked": "2026-10-28",
+      "caption": {
+        "fr": "Le brouhaha d'un restaurant remplit la salle.",
+        "en": "The hubbub of a restaurant fills the room."
+      },
+      "tags": [
+        "restaurant",
+        "murmure",
+        "foule",
+        "ambiance",
+        "couverts"
+      ]
+    }
+  ]
+}

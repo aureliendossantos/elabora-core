@@ -13,6 +13,7 @@ import * as components from './mcp/component-tools.ts';
 import * as objects from './mcp/object-tools.ts';
 import * as design from './mcp/design-tools.ts';
 import * as fonts from './mcp/font-tools.ts';
+import * as sounds from './mcp/sound-tools.ts';
 import * as packages from './mcp/build-tools.ts';
 import * as library from './mcp/projects-tools.ts';
 import * as media from './mcp/media-tools.ts';
@@ -29,11 +30,11 @@ import { docsTool } from './mcp/docs-tool.ts';
 // The tools in the order agents see them: reading first, then writing.
 export const TOOLS: readonly Tool[] = [
   course.overview, agentGuideTool, docsTool, sources.listSourcesTool, sources.readSourceTool, course.getPlan, course.planDiffTool, course.getScreen, content.findTextTool, content.translationTableTool, content.translationStatusTool, components.listComponents, course.getSchema, components.getComponent, course.validate,
-  objects.getObject, packages.listProfiles, fonts.listFonts, design.look, design.checkFit, design.previewScreenshot, objects.replayObject, course.history, library.listLibraryProjects, library.projectPath, media.mediaStatus, narration.timeline, dialogues.showDialogueTool, dialogues.playDialogueTool, dialogues.dialoguePathsTool, voice.listVoicesTool, downloads.listDownloadsTool, voice.voiceTakesTool, voice.searchVoicesTool, voice.estimateVoiceTool, voice.voiceAccountTool, cloud.listReviewsTool, cloud.reviewCommentsTool,
+  objects.getObject, packages.listProfiles, fonts.listFonts, design.look, design.checkFit, design.previewScreenshot, objects.replayObject, course.history, library.listLibraryProjects, library.projectPath, media.mediaStatus, narration.timeline, dialogues.showDialogueTool, dialogues.playDialogueTool, dialogues.dialoguePathsTool, voice.listVoicesTool, downloads.listDownloadsTool, voice.voiceTakesTool, voice.searchVoicesTool, voice.estimateVoiceTool, voice.voiceAccountTool, sounds.searchSoundsTool, sounds.listSoundsTool, cloud.listReviewsTool, cloud.reviewCommentsTool,
   content.createScreen, content.updateScreen, content.deleteScreen, content.moveScreen, content.duplicateScreen,
   content.addBlock, content.updateBlock, content.removeBlock, content.moveBlock, content.duplicateBlock, content.detachBlock, content.convertBlock, content.setContinuity,
   content.upsertLayer, content.removeLayer, content.upsertEvent, content.removeEvent, content.upsertVariable, content.renameVariable, content.removeVariable,
-  content.replaceTextTool, content.translateTextTool, content.updateCourse, course.ignoreFinding, content.rename, sources.addSourcesTool, media.importMediaTool, media.setCaptions, narration.importNarrationTool, narration.lineFromAudioTool, narration.textFromAudioTool, narration.transcribeTool, narration.alignNarrationTool, narration.setTiming, dialogues.setDialogueNodeTool, dialogues.removeDialogueNodeTool, voice.setVoiceTool, voice.generateVoiceTool, voice.installVoiceTool, downloads.installDownloadTool, downloads.uninstallDownloadTool,
+  content.replaceTextTool, content.translateTextTool, content.updateCourse, course.ignoreFinding, content.rename, sources.addSourcesTool, media.importMediaTool, media.setCaptions, narration.importNarrationTool, narration.lineFromAudioTool, narration.textFromAudioTool, narration.transcribeTool, narration.alignNarrationTool, narration.setTiming, dialogues.setDialogueNodeTool, dialogues.removeDialogueNodeTool, voice.setVoiceTool, voice.generateVoiceTool, voice.installVoiceTool, sounds.addSoundTool, sounds.generateSoundTool, downloads.installDownloadTool, downloads.uninstallDownloadTool,
   objects.createObject, objects.writeObjectFile, objects.testObject, course.writePlan, course.setPlanVoiceover, course.exportPlanDocumentTool, dialogues.exportDialogueTool,
   packages.build, packages.testPackage, design.writeDesignFile, design.upgradeTheme, player.playerTool, fonts.addFont,
   components.createComponent, components.forkComponent, components.writeComponentFile, components.migrateComponents,
