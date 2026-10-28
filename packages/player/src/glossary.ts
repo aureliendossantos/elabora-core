@@ -30,7 +30,7 @@ export function sortedEntries(entries: readonly GlossaryData[], language: string
 
 export function createGlossary(options: GlossaryOptions) {
   const { labels } = options;
-  const sheet = createSheet({ name: 'glossary', title: labels.glossary, closeLabel: labels.close, tooltip: options.tooltip, host: options.host, onToggle: options.onToggle, focus: () => input });
+  const sheet = createSheet({ name: 'glossary', title: labels.glossary, closeLabel: labels.close, tooltip: options.tooltip, host: options.host, onToggle: (open) => { if (!open) mark(null); options.onToggle?.(open); }, focus: () => input });
   const entries = sortedEntries(options.entries, options.language);
   const searchId = uniqueId('t-glossary-search');
   const input = element('input', { id: searchId, class: 't-glossary-input', type: 'search', autocomplete: 'off', spellcheck: 'false', placeholder: labels.searchGlossary });
@@ -62,18 +62,25 @@ export function createGlossary(options: GlossaryOptions) {
     if (query) list.append(...byTerm, ...byDefinition); else list.append(...rows.map((row) => row.node));
     count.textContent = query ? options.format(labels.glossaryCount, { n: shown }) : '';
   }
-  input.addEventListener('input', filter);
+  input.addEventListener('input', () => { mark(null); filter(); });
 
-  // Opens the panel at an entry, which is marked for a moment.
+  // Opens the panel at an entry, marked as long as the panel is open at it: until the learner closes
+  // the panel, searches it or opens another term (aria-current says which for screen readers).
+  let found: HTMLElement | null = null;
+  function mark(node: HTMLElement | null) {
+    found?.removeAttribute('data-t-found');
+    found?.removeAttribute('aria-current');
+    found = node;
+    found?.setAttribute('data-t-found', '');
+    found?.setAttribute('aria-current', 'true');
+  }
   function openAt(id: string, from?: HTMLElement | null) {
     input.value = '';
     filter();
     if (!sheet.isOpen) sheet.open(from);
-    const node = rows.find((row) => row.entry.id === id)?.node;
-    if (!node) return;
-    node.scrollIntoView?.({ block: 'center' });
-    node.setAttribute('data-t-found', '');
-    setTimeout(() => node.removeAttribute('data-t-found'), 1800);
+    const node = rows.find((row) => row.entry.id === id)?.node ?? null;
+    mark(node);
+    node?.scrollIntoView?.({ block: 'center' });
   }
 
   // Terms in the screens: the definition in the tooltip, the panel on a click.
