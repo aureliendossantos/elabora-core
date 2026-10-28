@@ -66,3 +66,10 @@ test('every Chromium is started without scrollbars: a classic one takes 15 px of
   assert.ok(chromiumArgs({ unload: 'deprecated' }).includes('--enable-features=DeprecateUnload'));
   assert.ok(chromiumArgs({ unload: 'allowed' }).includes('--disable-features=IsolateSandboxedIframes,DeprecateUnload,DeprecateUnloadByAllowList'));
 });
+
+test('elabora test runs fewer packages side by side on a loaded machine', async () => {
+  const { defaultParallel } = await import('@elabora/node/emulator/run');
+  assert.equal(defaultParallel(2, 10), 4);
+  assert.equal(defaultParallel(6, 10), 2);
+  assert.equal(defaultParallel(13, 10), 1);
+});

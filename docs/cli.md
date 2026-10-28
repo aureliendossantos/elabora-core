@@ -306,7 +306,8 @@ build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--m
                                                     (elabora-review/1, docs/review-bridge.md) and talks to that page
                                                     only; progress none, navigation free and noindex by default
 test [dir] [--package <zip>] [--profile a,b|all] [--mode iframe,popup…] [--browser chromium,electron,chrome,msedge,playwright,firefox,webkit] [--parallel 4] [--no-a11y] [--json]
-                                                    Run the package in the LMS emulator (profiles × launch modes × browsers)
+                                                    Run the package in the LMS emulator (profiles × launch modes × browsers);
+                                                    4 runs side by side by default, fewer on a loaded machine
 preview [dir] [--port 4807] [--profile <id>]        Live preview (standalone and in the LMS emulator): pages reload after each
                                                     rebuild; free objects show in the in-app browsers of agent apps
 look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|answered] [--step <n>] [--layer <id>]
@@ -349,10 +350,13 @@ screenshot [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state init
                                                     objects). One contact sheet. Several shots share one build and one browser;
                                                     --out names one image, so several shots are refused with it (exit code 2):
                                                     --out-dir gets one file each
-fit [dir] [--screen <id>,…] [--reference 1600x900] [--minimum 1280x720] [--fresh] [--json]
+fit [dir] [--screen <id>,…] [--reference 1600x900] [--minimum 1280x720] [--phone 375x812|none] [--language <code> [--allow-missing]] [--fresh] [--json]
                                                     Measure every slide (all steps shown) at the fit sizes: what scrolls, by how
                                                     much, and what moves once its activities are answered. In scroll presentation:
                                                     the length of each page and the contrast of its text, down the whole page.
+                                                    On a phone (375×812 unless sizes are given): the contrast of the text down
+                                                    the page and the player's bars that go onto two lines. --language: the
+                                                    translation (--allow-missing: a draft, missing texts in the source language).
                                                     A screen unchanged since its last measure (its files, the theme, components,
                                                     objects, Elabora, the browser) is not measured again: its fit is reused
                                                     (--fresh measures every screen again)

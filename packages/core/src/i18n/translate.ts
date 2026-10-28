@@ -461,7 +461,7 @@ function translatedFiles(project: Project, xliff: XliffDocument, language: strin
   const status = compare(units, xliff);
   const missing = [...status.fresh, ...status.stale];
   if (missing.length && !allowMissing) {
-    throw Object.assign(new Error(`${missing.length} unit(s) not translated or stale (${missing.slice(0, 5).join(', ')}${missing.length > 5 ? '…' : ''}): run elabora translate export, translate, then build again (or --allow-missing for a draft).`), { missing });
+    throw Object.assign(new Error(`${missing.length} unit(s) not translated or stale (${missing.slice(0, 5).join(', ')}${missing.length > 5 ? '…' : ''}): ${missing.length <= 20 ? `translate them with elabora_translate_text (elabora tools call elabora_translate_text . --args '{"language":"${language}","texts":[{"unit":"…","target":"…"}]}')` : 'run elabora translate export, translate, then import'}, then build again (or --allow-missing for a draft).`), { missing });
   }
   const bad = [...problems(units, xliff), ...schemaProblems(project, xliff, units)];
   if (bad.length && !skipBroken) {

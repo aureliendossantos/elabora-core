@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { generateFormatFiles } from '../../scripts/gen-format.ts';
-import { BLOCK_TYPES, FORMAT, derefSchema, getAjv, getSchema, isBuiltinBlockType, schemaId, validateSchema } from '@elabora/format';
+import { BLOCK_TYPES, FORMAT, compileInline, derefSchema, getAjv, getSchema, isBuiltinBlockType, schemaId, validateSchema } from '@elabora/format';
 import type { JsonSchema, SchemaName } from '@elabora/format';
 import { SCHEMAS } from '@elabora/format/schemas.generated';
 
@@ -74,4 +74,11 @@ test('derefSchema inlines the shared definitions', () => {
   assert.equal(quiz.$id, undefined);
   assert.ok(!JSON.stringify(quiz).includes('defs.schema.json'));
   assert.equal((quiz.properties?.questionRef as JsonSchema).pattern, (getSchema('defs').$defs?.planId as JsonSchema).pattern);
+});
+
+test('multipleOf with decimals takes the values a slider gives (0.6 is a multiple of 0.05)', () => {
+  const step = compileInline({ type: 'number', multipleOf: 0.05 });
+  for (const value of [0.6, 0.7, 0.3, 2.4, 11.95]) assert.equal(step(value), true, String(value));
+  assert.equal(step(0.61), false);
+  assert.equal(compileInline({ type: 'number', multipleOf: 0.1 })(2.4), true);
 });

@@ -24,9 +24,12 @@ import type { Band, MeasuredContrast } from './contrast.ts';
 // page and the contrast of its text, read over the whole page. dir is a course folder (built here)
 // or, with pkgDir, an already built package.
 export const FIT_DEFAULTS = { reference: '1600x900', minimum: '1280x720' };
+// A phone, where a slide becomes a page: measured for the contrast of its text down the page and for
+// the player's bars, which must hold on one line (nothing has to fit).
+export const FIT_PHONE = '375x812';
 
 export interface FitSize {
-  role: 'reference' | 'minimum';
+  role: 'reference' | 'minimum' | 'phone';
   size: string; // <width>x<height>
 }
 
@@ -48,6 +51,9 @@ export interface ScreenFit {
   // Scroll pages, at the reference size: animations driven by the scroll that have not reached their
   // end when the page is scrolled to the bottom (motion-report.ts), atEnd their progress there.
   unfinished?: { block: string | null; name: string; target: string; atEnd: number | null }[];
+  // On a phone: the player's bars whose items go onto a second line (the Next button under the
+  // others), by their class (t-bar--top, t-bar--bottom, t-bar--controls).
+  wrapped?: string[];
   // Unchanged since it was measured at this date (ISO): the fit kept then (fit-cache.ts).
   reused?: string;
 }
@@ -64,6 +70,8 @@ export interface FitOptions {
   // Measure again the screens unchanged since their last measure (course folders: a screen whose
   // key is unchanged, fit-cache.ts, is given as kept, with reused).
   fresh?: boolean;
+  // The phone size (default FIT_PHONE, measured when sizes are not given), or false: none.
+  phone?: string | false;
 }
 
 // Screens measured side by side: each page renders in a process of its own (Elabora's Electron: a
@@ -83,7 +91,7 @@ export async function measureFit(dir: string | null, options: FitOptions = {}): 
   }
 }
 
-async function fitScreens(dir: string | null, { pkgDir, sizes, screens, fresh = false }: FitOptions, built: () => ReturnType<typeof packageFolder>): Promise<FitResult> {
+async function fitScreens(dir: string | null, { pkgDir, sizes, screens, fresh = false, phone }: FitOptions, built: () => ReturnType<typeof packageFolder>): Promise<FitResult> {
   const only = screens?.length ? screens : undefined;
   // A course folder: each screen rendered (renderScreen) for its key. A package, or a course that
   // does not render: measured, never kept.
@@ -98,7 +106,9 @@ async function fitScreens(dir: string | null, { pkgDir, sizes, screens, fresh = 
   }
   const mode = course.presentation.mode || 'scroll';
   const fitSizes = { ...FIT_DEFAULTS, ...(course.presentation.fit || {}) };
-  const fit: FitSize[] = sizes || (mode === 'slides' ? [{ role: 'reference', size: fitSizes.reference }, { role: 'minimum', size: fitSizes.minimum }] : [{ role: 'reference', size: fitSizes.reference }]);
+  const fit: FitSize[] = sizes ? [...sizes] : mode === 'slides' ? [{ role: 'reference', size: fitSizes.reference }, { role: 'minimum', size: fitSizes.minimum }] : [{ role: 'reference', size: fitSizes.reference }];
+  const phoneSize = phone === undefined ? (sizes ? null : FIT_PHONE) : phone || null;
+  if (phoneSize && !fit.some((size) => size.role === 'phone')) fit.push({ role: 'phone', size: phoneSize });
   const unknown = (only ?? []).filter((id) => !course.ids.includes(id));
   if (unknown.length) return { ok: false, diagnostics: [], error: `Unknown screen${unknown.length > 1 ? 's' : ''} ${unknown.map((id) => `"${id}"`).join(', ')}. Screens: ${course.ids.join(', ')}` };
   const ids = only ? course.ids.filter((id) => only.includes(id)) : course.ids;
@@ -199,7 +209,8 @@ async function fitPage(browser: Browser, base: string, size: string, motion: boo
   return page;
 }
 
-// One screen at one size, animations off: room, layout shift, styles, contrast.
+// One screen at one size, animations off: room, layout shift, styles, contrast. On a phone: the
+// contrast down the page and the bars that wrap.
 async function measureScreen(page: Page, id: string, size: FitSize, mode: string): Promise<ScreenFit> {
   await page.evaluate((screen) => {
     window.__elabora.go(screen);
@@ -225,6 +236,11 @@ async function measureScreen(page: Page, id: string, size: FitSize, mode: string
       .map((node) => node.dataset.block) : [];
     return { screen: window.__elabora.screen, overflow, spare: overflow ? 0 : Math.max(0, Math.round(room - (main.querySelector<HTMLElement>('.t-screen')?.offsetHeight ?? 0))), below, windows: Math.round((root.scrollHeight / innerHeight) * 10) / 10 };
   });
+  if (size.role === 'phone') {
+    const contrast = await measureContrast(page, true);
+    const wrapped = await page.evaluate(wrappedBars);
+    return { ...initial, overflow: 0, below: [], ...(contrast.length ? { contrast } : {}), ...(wrapped.length ? { wrapped } : {}) };
+  }
   // Once everything is answered (tallest feedback of every activity, concealed blocks shown),
   // nothing may move: blocks that grow or move are a layout shift.
   const styles = size.role === 'reference' ? await page.evaluate(pageStyleConflicts) : [];
@@ -277,6 +293,22 @@ async function scrolledContrast(moving: Page, screen: ScreenFit): Promise<void> 
   if (scrolled.length) screen.contrast = [...(screen.contrast || []), ...scrolled];
 }
 
+// In the page: the player's bars whose items do not stand on one line (an item starts below the top
+// of the first one by more than half its height).
+function wrappedBars(): string[] {
+  const out: string[] = [];
+  for (const bar of document.querySelectorAll<HTMLElement>('.t-bar')) {
+    if (bar.hidden || !bar.getClientRects().length) continue;
+    const items = [...bar.querySelectorAll<HTMLElement>(':scope > *')].filter((node) => node.getClientRects().length && getComputedStyle(node).position !== 'absolute' && node.offsetHeight > 8);
+    const boxes = items.map((node) => node.getBoundingClientRect());
+    if (boxes.length < 2) continue;
+    const top = Math.min(...boxes.map((box) => box.top));
+    const line = Math.min(...boxes.map((box) => box.height));
+    if (boxes.some((box) => box.top - top > line / 2 + 2)) out.push([...bar.classList].find((name) => name.startsWith('t-bar--')) ?? 't-bar');
+  }
+  return out;
+}
+
 // In the page: positions of the blocks of the screen (fit: what moves once activities are answered).
 function blockBoxes(): Record<string, { y: number; h: number }> {
   const out: Record<string, { y: number; h: number }> = {};
@@ -296,10 +328,14 @@ export function fitDiagnostics(fit: FitResult | null | undefined): Diagnostic[] 
     for (const stuck of size.role === 'reference' ? screen.unfinished || [] : []) {
       out.push({ code: 'W_SCROLL_ANIMATION_UNFINISHED', severity: 'warning', target: screen.screen, message: `Screen "${screen.screen}"${stuck.block ? `, ${stuck.block}` : ''}: the animation "${stuck.name}" of ${stuck.target} ${stuck.atEnd === null ? 'has not started' : `stops at ${Math.round(stuck.atEnd * 100)} %`} when the page is scrolled to the bottom.`, rule: 'F1' });
     }
-    for (const contrast of size.role === 'reference' ? screen.contrast || [] : []) {
-      out.push({ code: 'W_TEXT_CONTRAST_MEASURED', severity: 'warning', target: screen.screen, message: `Screen "${screen.screen}"${contrast.block ? `, ${contrast.block}` : ''}: "${contrast.text}" reaches ${contrast.ratio}:1 against what is behind it (needs ${contrast.need}:1)${contrast.scrolled ? ', as the page scrolls, with its animations' : ''}.`, rule: 'F1' });
+    const phone = size.role === 'phone' ? ` on a phone (${size.size.replace('x', '×')})` : '';
+    for (const contrast of size.role !== 'minimum' ? screen.contrast || [] : []) {
+      out.push({ code: 'W_TEXT_CONTRAST_MEASURED', severity: 'warning', target: screen.screen, message: `Screen "${screen.screen}"${contrast.block ? `, ${contrast.block}` : ''}: "${contrast.text}" reaches ${contrast.ratio}:1 against what is behind it (needs ${contrast.need}:1)${phone}${contrast.scrolled ? ', as the page scrolls, with its animations' : ''}.`, rule: 'F1' });
     }
-    if (fit.mode !== 'slides') continue;
+    for (const bar of screen.wrapped || []) {
+      out.push({ code: 'W_PLAYER_BAR_WRAPS', severity: 'warning', target: screen.screen, message: `Screen "${screen.screen}": the player's bar ${bar} goes onto two lines${phone}; give it fewer items (elabora player) or shorter labels.`, rule: 'F1' });
+    }
+    if (fit.mode !== 'slides' || size.role === 'phone') continue;
     if (screen.shift) {
       const what = [...screen.shift.grew.map((grown) => `${grown.block} ${grown.px > 0 ? 'grows' : 'shrinks'} by ${Math.abs(grown.px)} px`), ...(screen.shift.moved.length ? [`${screen.shift.moved.length} block(s) move (${screen.shift.moved.slice(0, 4).join(', ')})`] : [])].join(', ');
       const message = `Answering moves screen "${screen.screen}" at ${size.size.replace('x', '×')}: ${what || 'the page grows'}${screen.shift.overflow > screen.overflow ? `; it then scrolls by ${screen.shift.overflow} px` : ''}.`;

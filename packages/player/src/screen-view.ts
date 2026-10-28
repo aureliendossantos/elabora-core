@@ -314,6 +314,7 @@ export function createScreenView(options: ScreenViewOptions) {
     if (animate) for (const block of screen.blocks) if ((block.step || 1) > before && (block.step || 1) <= step) main.querySelector(`[data-block="${block.id}"]`)?.setAttribute('data-t-revealed', '');
     if (timeline && play) timeline.onReveal(step);
     applySteps();
+    updateBackdrop();
     // A narrated screen is viewed once its timeline ends, not once its last step shows.
     if (revealed === lastStep() && !timeline) courseState.visit(screen);
     if (focus) focusStep(step);
@@ -362,6 +363,8 @@ export function createScreenView(options: ScreenViewOptions) {
     courseState.visit(next, { allSteps: revealed === lastStep() && !(next.narration && options.timeline) });
     arrive(next);
     startTimeline(next);
+    // The backdrop follows the screen wherever it is shown (the player, the editor canvas, look).
+    updateBackdrop();
     behaviors.dialogues.afterShow();
     trigger('screen.enter', {});
   }
@@ -1031,13 +1034,19 @@ export function createScreenView(options: ScreenViewOptions) {
     if (decoration && course.objects[decoration.object]) {
       const definition = course.objects[decoration.object];
       const iframe = element('iframe', { title: definition.id, ...objectFrame(definition.dir, [], framesPort, document.baseURI), allow: '', referrerpolicy: 'no-referrer', tabindex: '-1', loading: 'eager' });
-      const holder = element('div', { class: 't-backdrop-object' }, iframe);
+      // data-state (starting, ready, failed) tells the tools how the object is (look reports it).
+      const holder = element('div', { class: 't-backdrop-object', 'data-object': definition.id, 'data-state': 'starting' }, iframe);
       backdropElement.append(holder);
       backdropHost = createObjectHost({
         iframe, def: definition, props: decoration.props, tokens: course.tokens, locale: course.language, fonts: course.fonts || [], rootSize: rootSize(),
         reducedMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false, decorative: true, context: backdropContext, seed: 1,
-        onError: (message) => { if (!backdropHost?.ready) holder.hidden = true; console.warn(`[elabora] backdrop ${definition.id}: ${message}`); },
-        onLog: (entry) => console.info(`[elabora] backdrop ${definition.id}:`, entry.message)
+        onReady: () => { holder.dataset.state = 'ready'; },
+        onError: (message) => {
+          if (!backdropHost?.ready) { holder.hidden = true; holder.dataset.state = 'failed'; }
+          console.error(`[elabora] backdrop ${definition.id}: ${message}`);
+        },
+        // Its errors reach the console as errors (look and screenshot list them), the rest as information.
+        onLog: (entry) => (entry.level === 'error' ? console.error : console.info)(`[elabora] backdrop ${definition.id}: ${entry.message}`)
       });
     }
   }
@@ -1118,6 +1127,7 @@ export function createScreenView(options: ScreenViewOptions) {
       const segment = screen?.narration?.segments.find((candidate) => candidate.step === revealed);
       if (timeline && segment) timeline.showAt(segment.start);
       applySteps();
+      updateBackdrop();
     },
     get timeline() { return timeline; },
     // A narrated screen as it is when a line starts (or ends): its step reached, its caption shown

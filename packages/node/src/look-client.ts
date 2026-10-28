@@ -69,6 +69,15 @@ export function parseLookAction(source: string): LookAction | { error: string } 
   return { error: `Action "${source}": click:<text>, click:role=<role>[name=<name>], key:<key> or drag:x,y->x,y (0 to 1 across the object) for a free object; choose:<option> for a dialogue.` };
 }
 
+export interface BackdropReport {
+  screen: string | null;
+  section: string | null;
+  step: number | null;
+  variant: string | null;
+  hidden: boolean;
+  object: { id: string; state: 'starting' | 'ready' | 'failed' } | null;
+}
+
 export type LookResult =
   | {
     ok: true;
@@ -102,6 +111,9 @@ export type LookResult =
     // Component rules the theme overrides, theme rules a component overrides (style-cascade.ts,
     // D32), as the page shows the screen: W_STYLE_COMPONENT_OVERRIDDEN, W_STYLE_THEME_UNDER_COMPONENT.
     styles: StyleConflict[];
+    // The course's backdrop (theme.backdrop) as the screen shows it: what it was told (data-screen,
+    // data-section, data-step, data-variant), hidden (variant "none"), and its decorative object.
+    backdrop?: BackdropReport;
     consoleErrors: string[];
     browser?: BrowserIdentity;
     ms: number;
