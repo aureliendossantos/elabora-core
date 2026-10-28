@@ -52,7 +52,7 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
   function lineRow(index: number, role: 'character' | 'learner' | 'narration', speaker: string | undefined, text: string, voice: LineVoiceData, options: { decision?: number; line?: string }): BubbleRow {
     const first = role !== 'narration' && !continues(role, speaker);
     const built = bubbleRow(thread, {
-      role, side: cast.sideOf(role, speaker), speaker, text, first, voiced: !!voice.src && !still, resumable: options.decision !== undefined, letters: data.reveal === 'appear', line: options.line
+      role, side: cast.sideOf(role, speaker), speaker, text, first, voiced: !!voice.src && !still, resumable: options.decision !== undefined && data.revisit !== 'none', letters: data.reveal === 'appear', line: options.line
     });
     if (options.decision !== undefined) built.row.dataset.decision = String(options.decision);
     built.row.dataset.beat = String(index);

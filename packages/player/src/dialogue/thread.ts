@@ -116,7 +116,7 @@ export function bubbleRow(context: ThreadContext, options: BubbleOptions): Bubbl
   const avatar = options.role === 'narration' ? null : element('span', { class: 't-dialogue-avatar', 'aria-hidden': 'true', 'data-speaker': options.speaker });
   const row = element('div', {
     class: 't-dialogue-row', 'data-role': options.role, 'data-side': options.side, 'data-speaker': options.speaker, 'data-line': options.line,
-    'data-first': options.first || undefined, 'data-resumable': options.resumable || undefined, style: color ? `--t-dl-speaker: ${color}` : undefined
+    'data-first': options.first || undefined, 'data-tools': options.voiced || options.resumable || undefined, style: color ? `--t-dl-speaker: ${color}` : undefined
   }, avatar, bubble);
   return { row, bubble, text, words, avatar, tools, listen, resume };
 }
