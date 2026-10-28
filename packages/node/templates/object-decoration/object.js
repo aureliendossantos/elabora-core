@@ -24,11 +24,20 @@ export function mount(container, ctx) {
   let from = at;
   let elapsed = 0;
 
-  function draw() {
+  // The frame's size, measured when it changes (not at every frame).
+  let width = container.clientWidth, height = container.clientHeight;
+  const resize = () => {
     const ratio = Math.min(2, window.devicePixelRatio || 1);
-    const width = container.clientWidth, height = container.clientHeight;
-    if (canvas.width !== Math.round(width * ratio) || canvas.height !== Math.round(height * ratio)) { canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio); }
+    width = container.clientWidth; height = container.clientHeight;
+    canvas.width = Math.round(width * ratio); canvas.height = Math.round(height * ratio);
     paint.setTransform(ratio, 0, 0, ratio, 0, 0);
+    draw();
+  };
+  const observer = new ResizeObserver(resize);
+  observer.observe(container);
+
+  function draw() {
+    if (!canvas.width) return;
     paint.clearRect(0, 0, width, height);
     const top = area.top, room = Math.max(1, height - area.top - area.bottom);
     const x = at.x * width, y = top + at.y * room, radius = Math.max(width, height) * 0.45;
@@ -54,12 +63,12 @@ export function mount(container, ctx) {
   const offContext = host.onContext((next) => { where = next; from = next?.direction == null ? target() : at; elapsed = 0; });
   const offArea = host.onSafeArea((next) => { area = { ...next }; draw(); });
   const offStill = host.onStill(() => { from = target(); });
-  draw();
+  resize();
 
   return {
     update(next) { props = { ...props, ...next }; draw(); },
     getState: () => ({ screenIndex: where?.screenIndex ?? 0, sectionIndex: where?.sectionIndex ?? null }),
     setState() {},
-    dispose() { offFrame(); offContext(); offArea(); offStill(); canvas.remove(); }
+    dispose() { offFrame(); offContext(); offArea(); offStill(); observer.disconnect(); canvas.remove(); }
   };
 }

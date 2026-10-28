@@ -115,6 +115,13 @@ export async function replayObject(dir: string, objectId: string, { block: block
     }, { id: block, method, argument, backdrop });
     await scrollToView(test.view || null);
     if (test.props) await host('updateProps', test.props);
+    // A backdrop's test starts where its context says: that screen when the course has it, else the
+    // context alone.
+    if (backdrop && test.context) {
+      const screen = test.context.screen;
+      if (screen && project.screens.has(screen)) await page.evaluate((id) => { window.__elabora.go(id); window.__elabora.revealAll(); }, screen);
+      else await host('setContext', test.context);
+    }
     await page.waitForTimeout(300);
     let cursor = 0;
     for (const [index, step] of test.steps.entries()) {

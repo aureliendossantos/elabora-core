@@ -1096,7 +1096,7 @@ export function createScreenView(options: ScreenViewOptions) {
       const value = context[name];
       if (value == null) delete backdropElement.dataset[name]; else backdropElement.dataset[name] = String(value);
     }
-    if (context.variant == null) delete app.dataset.backdrop; else app.dataset.backdrop = context.variant;
+    if (context.variant == null || context.variant === 'none') delete app.dataset.backdrop; else app.dataset.backdrop = context.variant;
     syncBackdropArea();
     const off = context.variant === 'none';
     backdropElement.hidden = off;
