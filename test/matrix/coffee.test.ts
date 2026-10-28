@@ -8,7 +8,7 @@ import { validateDir } from '@elabora/node/project-reader';
 import { testPackage } from '@elabora/node/emulator/run';
 import { fitDiagnostics, measureFit } from '@elabora/node/fit';
 
-// The starter blocks sample (slow; npm run test:matrix): a Rise-style scroll course that uses every
+// The starter blocks sample (slow; pnpm run test:matrix): a Rise-style scroll course that uses every
 // starter block of D63 and each of its presentations, the opening layout in its four, steps that open
 // once explored or answered, an optional block, a character, a pre-question and a scored check.
 const SOURCE = path.resolve(import.meta.dirname, '../../examples/coffee-in-brief');

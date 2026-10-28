@@ -10,7 +10,7 @@ const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..')
 let threeDir = path.dirname(fileURLToPath(import.meta.resolve('three')));
 while (!fs.existsSync(path.join(threeDir, 'package.json')) || JSON.parse(fs.readFileSync(path.join(threeDir, 'package.json'), 'utf8')).name !== 'three') {
   const parent = path.dirname(threeDir);
-  if (parent === threeDir) throw new Error('three is not installed: npm ci');
+  if (parent === threeDir) throw new Error('three is not installed: pnpm install');
   threeDir = parent;
 }
 const threePkg = JSON.parse(fs.readFileSync(path.join(threeDir, 'package.json'), 'utf8'));

@@ -1,6 +1,6 @@
 # Diagnostic codes
 
-Generated from `packages/core/src/diagnostics/codes.ts` by `npm run docs`. Codes are stable: agents can branch on them. `rule` names a pedagogical guardrail (A1…I1) or a line of the LMS delivery checklist (LMS-n): see [Rules](#rules). An error under a rule stops a build but not a preview (`elabora preview`, the app's Aperçu): the course runs without what the rule asks, and the preview shows it as it is.
+Generated from `packages/core/src/diagnostics/codes.ts` by `pnpm run docs`. Codes are stable: agents can branch on them. `rule` names a pedagogical guardrail (A1…I1) or a line of the LMS delivery checklist (LMS-n): see [Rules](#rules). An error under a rule stops a build but not a preview (`elabora preview`, the app's Aperçu): the course runs without what the rule asks, and the preview shows it as it is.
 
 ## Errors (block the build)
 

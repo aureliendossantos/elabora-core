@@ -4,7 +4,7 @@ import catalogue from '../catalogue.json' with { type: 'json' };
 // files of the latin and latin-ext subsets next to their licence, in files/<id>/ of this package,
 // so they are there without network access. The catalogue is data for the CLI, the MCP server and the desktop
 // app: family, category, weights, styles, licence, where each file came from, preview texts.
-// `npm run fonts` writes it from sources.json (README.md). No Node API here: the app's renderer
+// `pnpm run fonts` writes it from sources.json (README.md). No Node API here: the app's renderer
 // imports this module; Node code finds the files from the package folder (@elabora/node fonts/).
 
 export type FontCategory = 'serif' | 'sans-serif' | 'monospace' | 'display' | 'handwriting';

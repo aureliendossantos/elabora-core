@@ -8,7 +8,7 @@ import { validateDir } from '@elabora/node/project-reader';
 import { testPackage } from '@elabora/node/emulator/run';
 import { fitDiagnostics, measureFit } from '@elabora/node/fit';
 
-// The charts sample (slow; npm run test:matrix): twelve chart blocks on narrated slides, their items
+// The charts sample (slow; pnpm run test:matrix): twelve chart blocks on narrated slides, their items
 // brought by the voice's words, a trend the learner predicts, a step that opens once answered, a
 // check question and a decision, in a theme of its own.
 const SOURCE = path.resolve(import.meta.dirname, '../../examples/phishing-by-numbers');

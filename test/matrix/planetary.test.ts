@@ -9,7 +9,7 @@ import { testPackage } from '@elabora/node/emulator/run';
 import { fitDiagnostics, measureFit } from '@elabora/node/fit';
 import type { PlayerWindow } from '../helpers.ts';
 
-// The sample courses (slow; npm run test:matrix). The design sample: layouts, theme stylesheet and fonts, slides, maths, numeric answers, a
+// The sample courses (slow; pnpm run test:matrix). The design sample: layouts, theme stylesheet and fonts, slides, maths, numeric answers, a
 // responsive free object. The emulator answers the numeric blocks and checks phone-width overflow.
 test('the planetary sample passes the emulator with its design layer, without overflow at phone width', { timeout: 300000 }, async () => {
   const src = path.resolve(import.meta.dirname, '../../examples/planetary-gearset');

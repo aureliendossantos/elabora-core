@@ -61,7 +61,7 @@ function transcriberEnv(texts: Record<string, string>): Record<string, string> {
   return { ELABORA_TRANSCRIBER_MODELS_DIR: fakeModels, ELABORA_TRANSCRIBER_MODELS_MANIFEST: path.join(temp, 'transcribers.json'), ELABORA_TRANSCRIBER_FAKE: path.join(temp, 'heard.json') };
 }
 
-test('the fixtures of test/fixtures/sources are the ones the builders make (npm run fixtures:sources)', () => {
+test('the fixtures of test/fixtures/sources are the ones the builders make (pnpm run fixtures:sources)', () => {
   assert.deepEqual(fs.readFileSync(path.join(ROOT, 'test/fixtures/sources/brief-client.docx')), briefDocx());
   assert.deepEqual(fs.readFileSync(path.join(ROOT, 'test/fixtures/sources/atelier.pptx')), workshopPptx());
 });

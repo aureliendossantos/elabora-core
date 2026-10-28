@@ -1,5 +1,5 @@
 {
-  "$comment": "Every version of templates/course/AGENTS.md (the rules for agents a course is given), oldest first: its revision, the first 16 hex digits of the SHA-256 of its text, its date. The last is the current template. npm run gen appends a revision when the template changes (scripts/gen-agent-rules.ts); never edit or remove one: a course whose AGENTS.md is one of them was not edited, and Elabora updates it (docs/decisions.md D34).",
+  "$comment": "Every version of templates/course/AGENTS.md (the rules for agents a course is given), oldest first: its revision, the first 16 hex digits of the SHA-256 of its text, its date. The last is the current template. pnpm run gen appends a revision when the template changes (scripts/gen-agent-rules.ts); never edit or remove one: a course whose AGENTS.md is one of them was not edited, and Elabora updates it (docs/decisions.md D34).",
   "revisions": [
     {
       "revision": 1,
