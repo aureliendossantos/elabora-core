@@ -22,6 +22,7 @@
   },
   "scripts": {
     "test": "node --test --test-global-setup=test/isolate.ts \"test/unit/*.test.ts\"",
+    "test:file": "node --test --test-global-setup=test/isolate.ts",
     "test:e2e": "node --test --test-global-setup=test/isolate.ts --test-concurrency=2 \"test/e2e/*.test.ts\"",
     "test:matrix": "node --test --test-global-setup=test/isolate.ts --test-concurrency=2 \"test/matrix/*.test.ts\"",
     "test:all": "npm test && npm run test:e2e && npm run test:matrix",

@@ -1,4 +1,4 @@
-import { test, after } from 'node:test';
+import { test, after, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -8,7 +8,7 @@ import crypto from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { ROOT } from '../helpers.ts';
-import { downloadKinds, installDownload, optionalDownloads, registerDownloadKind, uninstallDownload } from '@elabora/node/downloads/index';
+import { downloadKinds, installDownload, optionalDownloads, uninstallDownload } from '@elabora/node/downloads/index';
 import { alignerFor, alignerInstalled, holdAligner } from '@elabora/node/align/models';
 import { modelsRoot } from '@elabora/node/voice/pocket/models';
 import { holdTranscriber, transcriberFor, transcriberInstalled } from '@elabora/node/transcribe/models';
@@ -42,6 +42,12 @@ Object.assign(process.env, {
   ELABORA_VOICE_MODELS_DIR: path.join(temp, 'voices'), ELABORA_VOICE_MODELS_URL: url, ELABORA_VOICE_MODELS_MANIFEST: path.join(temp, 'voices.json'),
   ELABORA_ALIGNER_MODELS_DIR: path.join(temp, 'aligners'), ELABORA_ALIGNER_MODELS_URL: url, ELABORA_ALIGNER_MODELS_MANIFEST: path.join(temp, 'aligners.json'),
   ELABORA_TRANSCRIBER_MODELS_DIR: path.join(temp, 'transcribers'), ELABORA_TRANSCRIBER_MODELS_URL: url, ELABORA_TRANSCRIBER_MODELS_MANIFEST: path.join(temp, 'transcribers.json')
+});
+
+// Each case on a computer with nothing downloaded yet, whatever ran before (--test-randomize).
+beforeEach(() => {
+  requests = 0;
+  for (const folder of ['voices', 'aligners', 'transcribers']) fs.rmSync(path.join(temp, folder), { recursive: true, force: true });
 });
 
 test('downloads: the local voices and the word aligners by language, what each is for, sized, installed, refused while in use, removed', async () => {
@@ -104,16 +110,23 @@ test('downloads: the transcriber is one download for every language it hears, re
 });
 
 test('downloads: a new kind only registers (its list, install, removal)', async () => {
-  let there = false;
-  registerDownloadKind({
-    kind: 'test-kind', title: 'Test kind', serves: 'tests', without: 'nothing',
-    list: () => [{ language: null, model: 'test@1', installed: there, size: there ? 5 : 7, download: 7, installing: null, inUse: false }],
-    install: async () => { there = true; },
-    uninstall: async () => { const freed = there ? 5 : 0; there = false; return freed; }
-  });
-  assert.deepEqual(optionalDownloads({ kind: 'test-kind' }).map(({ id, language, installed, size }) => ({ id, language, installed, size })), [{ id: 'test-kind', language: null, installed: false, size: 7 }]);
-  assert.equal((await installDownload('test-kind')).installed, true);
-  assert.deepEqual(await uninstallDownload('test-kind'), { id: 'test-kind', freed: 5 });
+  // In a process of its own: the registry lasts as long as the process and has no way to forget a
+  // kind, so the cases of the built-in kinds would see this one in whatever order they ran.
+  const script = `
+    import assert from 'node:assert/strict';
+    import { installDownload, optionalDownloads, registerDownloadKind, uninstallDownload } from '@elabora/node/downloads/index';
+    let there = false;
+    registerDownloadKind({
+      kind: 'test-kind', title: 'Test kind', serves: 'tests', without: 'nothing',
+      list: () => [{ language: null, model: 'test@1', installed: there, size: there ? 5 : 7, download: 7, installing: null, inUse: false }],
+      install: async () => { there = true; },
+      uninstall: async () => { const freed = there ? 5 : 0; there = false; return freed; }
+    });
+    assert.deepEqual(optionalDownloads({ kind: 'test-kind' }).map(({ id, language, installed, size }) => ({ id, language, installed, size })), [{ id: 'test-kind', language: null, installed: false, size: 7 }]);
+    assert.equal((await installDownload('test-kind')).installed, true);
+    assert.deepEqual(await uninstallDownload('test-kind'), { id: 'test-kind', freed: 5 });
+  `;
+  await execFileAsync(process.execPath, ['--input-type=module', '-e', script], { cwd: ROOT, env: process.env });
 });
 
 test('cli: elabora downloads list, install and uninstall; voice uninstall is the voices\' part', async () => {

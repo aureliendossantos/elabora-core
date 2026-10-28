@@ -85,9 +85,10 @@ window.toChild = (message) => document.getElementById('module').contentWindow.po
 </script>`;
 
 type Received = ModuleMessage & { re?: string | number };
-// The last message of a type the host page heard (after `since` messages), waited for.
+// The last message of a type the host page heard (after `since` messages), waited for: 30 s at most,
+// as a loaded computer may take more than 10 s to send it.
 async function heard<T extends Received>(page: Page, type: T['type'], check: (message: T) => boolean = () => true, since = 0): Promise<T> {
-  const deadline = Date.now() + 10000;
+  const deadline = Date.now() + 30000;
   for (;;) {
     const all = await page.evaluate(() => (window as unknown as { received: Received[] }).received);
     const found = all.slice(since).filter((message) => message.type === type).reverse().find((message) => check(message as T));

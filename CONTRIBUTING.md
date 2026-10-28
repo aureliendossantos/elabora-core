@@ -18,9 +18,10 @@ Node 24 or later runs the TypeScript sources directly: there is no build step. f
 ## Tests
 
 ```bash
-npm test             # unit suite, seconds
+npm run test:file -- test/unit/edit.test.ts   # one file while working, seconds
+npm test             # unit suite, two to five minutes
 npm run typecheck    # strict TypeScript, every package
-npm run test:e2e     # Chrome, about a minute
+npm run test:e2e     # Chrome, tens of minutes
 npm run test:matrix  # the LMS matrix and the sample courses, a few minutes
 npm run test:all     # the three suites
 ```

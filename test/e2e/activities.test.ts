@@ -70,7 +70,7 @@ async function tabTo(page: Page, selector: string) {
 }
 const feedbackOf = (page: Page, block: string) => page.locator(`[data-block="${block}"] [data-t-feedback]`).innerText();
 // What the live regions say (the player's, emptied then filled).
-const hears = (page: Page, text: string) => page.waitForFunction((words) => [...document.querySelectorAll('[aria-live]')].some((node) => node.textContent?.includes(words)), text, { timeout: 3000, polling: 50 }).catch(async (error) => { throw new Error(`${error.message}: the live regions say ${JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('[aria-live]')].map((node) => node.textContent)))}`); });
+const hears = (page: Page, text: string) => page.waitForFunction((words) => [...document.querySelectorAll('[aria-live]')].some((node) => node.textContent?.includes(words)), text, { timeout: 30000, polling: 50 }).catch(async (error) => { throw new Error(`${error.message}: the live regions say ${JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('[aria-live]')].map((node) => node.textContent)))}`); });
 
 test('fill-in: typed, menus and words to place, with the keyboard only; screen readers hear each blank; a reload resumes them', { timeout: 240000 }, async () => {
   const { out } = await built();

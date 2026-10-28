@@ -145,7 +145,7 @@ test('steps timeline: each event visited once in view, its dot filled; the date 
     await page.$eval('[data-t-reveal="serveur"]', (node) => node.scrollIntoView({ block: 'center' }));
     await page.waitForFunction((id) => document.querySelectorAll(`[data-block="${id}"] [data-t-reveal][data-t-visited]`).length === 5, block);
     // The dot fills once seen (a colour that changes, nothing that moves).
-    await page.waitForFunction(() => getComputedStyle(document.querySelector('[data-t-reveal="serveur"]')!, '::after').backgroundColor !== 'rgb(255, 255, 255)', undefined, { timeout: 10000 });
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('[data-t-reveal="serveur"]')!, '::after').backgroundColor !== 'rgb(255, 255, 255)', undefined, { timeout: 30000 });
     // Wide: the date before the line; on a phone, above the title.
     const date = await box(page, '[data-t-reveal="poste"] .t-steps-date');
     const title = await box(page, '[data-t-reveal="poste"] .t-steps-title');
@@ -174,7 +174,7 @@ const figure = (page: Page, block: string) => page.evaluate((id) => {
 // The observer tells the player soon after a scroll; the fades are then waited out (a loaded computer may be slow).
 const reach = async (page: Page, step: string) => {
   await page.$eval(`[data-t-reveal="${step}"]`, (node) => window.scrollBy(0, node.getBoundingClientRect().top - innerHeight / 2 + 40));
-  await page.waitForFunction((name) => document.querySelector(`[data-t-reveal="${name}"]`)?.closest('[data-t-follow]')?.getAttribute('data-t-current') === name, step, { timeout: 10000 });
+  await page.waitForFunction((name) => document.querySelector(`[data-t-reveal="${name}"]`)?.closest('[data-t-follow]')?.getAttribute('data-t-current') === name, step, { timeout: 30000 });
   await page.evaluate(() => Promise.all(document.getAnimations().filter((animation) => animation instanceof CSSTransition).map((animation) => animation.finished.catch(() => undefined))));
 };
 

@@ -1,4 +1,4 @@
-import { test, before, after } from 'node:test';
+import { test, before, after, beforeEach, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -19,7 +19,7 @@ import { generateNarration, estimateNarration, setSpeakerVoice, voiceTakes, voic
 import type { VoiceInfo } from '@elabora/node/voice/index';
 import { splitDialogue, synthesize, wordsFromAlignment, speechBounds, SAMPLE_RATE } from '@elabora/node/voice/elevenlabs/index';
 import { COST_BOOK } from '@elabora/core/ai/cost-ledger.generated';
-import { chargedShare, expectedCharge, recordCharge, forgetQuota, noteSpent, remember, keyId } from '@elabora/node/voice/elevenlabs/costs';
+import { chargedShare, expectedCharge, recordCharge, forgetQuota, forgetVoiceRates, noteSpent, remember, keyId } from '@elabora/node/voice/elevenlabs/costs';
 import { APPROVAL_SHARE, covers, needsApproval, quotaPercent } from '@elabora/core/ai/quota';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { validateDir } from '@elabora/node/project-reader';
@@ -134,8 +134,23 @@ before(async () => {
     process.env.ELABORA_ELEVENLABS_URL = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
     process.env.ELEVENLABS_API_KEY = KEY;
   }
-  process.env.ELABORA_ELEVENLABS_CACHE = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-elevenlabs-cache-'));
-  process.env.ELABORA_ELEVENLABS_KEY_FILE = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-elevenlabs-key-')), 'key');
+});
+
+// Each case starts as a fresh account on a fresh computer: in another order (--test-randomize), the
+// quota counted what other cases had spent and a voice's rate came from another case's search.
+const accounts: string[] = [];
+beforeEach(() => {
+  seen.length = 0; limit = 40000; charge = 0.11; forbid = null;
+  forgetQuota(); forgetVoiceRates(); setSessionKey(null);
+  const cache = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-elevenlabs-cache-'));
+  const key = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-elevenlabs-key-'));
+  accounts.push(cache, key);
+  process.env.ELABORA_ELEVENLABS_CACHE = cache;
+  process.env.ELABORA_ELEVENLABS_KEY_FILE = path.join(key, 'key');
+});
+afterEach(() => {
+  setSessionKey(null); forgetQuota(); forgetVoiceRates();
+  for (const dir of accounts.splice(0)) fs.rmSync(dir, { recursive: true, force: true });
 });
 
 after(() => {
@@ -265,6 +280,8 @@ test('elevenlabs: voices searched and looked up, the account read with its key m
 });
 
 test('elevenlabs: under 1 % of the quota a line is said at once; from 1 % it waits for the share approved', { skip: NO_FFMPEG }, async () => {
+  // A library voice is priced from the search that found it, as in the app.
+  await voiceProvider('elevenlabs').search!({ provider: 'elevenlabs', language: 'fr' });
   const dir = narrated();
   await setSpeakerVoice(dir, { speaker: 'leila', voice: 'acc0unt0voice0000001', provider: 'elevenlabs' });
   await setSpeakerVoice(dir, { speaker: 'marc', voice: 'library0voice0000002', provider: 'elevenlabs', name: 'Marc - Support agent', settings: { model: 'eleven_v4', stability: 0.3 } });
