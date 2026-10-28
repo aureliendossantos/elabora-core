@@ -2,7 +2,7 @@
   "object": "tableau",
   "version": "1.0.0",
   "elabora": "0.1.0",
-  "at": "2026-10-28T19:15:04.789Z",
+  "at": "2026-10-28T20:16:00.602Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -23,18 +23,18 @@
     "maxTextureSize": null,
     "webglContexts": 0,
     "contextLost": false,
-    "bootMs": 66,
+    "bootMs": 40,
     "bootSamples": [
-      66,
-      73,
-      66,
-      73,
-      64,
-      90,
-      73,
-      105,
-      61,
-      53
+      42,
+      74,
+      37,
+      35,
+      59,
+      35,
+      68,
+      40,
+      54,
+      32
     ]
   },
   "tests": [
@@ -55,7 +55,7 @@
       "ok": true
     },
     {
-      "name": "A section outside the parts takes a tableau of its own",
+      "name": "A screen outside any section takes a tableau of its own",
       "ok": true
     },
     {
@@ -75,5 +75,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:18f7dac0af42ab1ba292423e2f1b152774ee50f2cac3486d94b713f50105a04f"
+  "fingerprint": "sha256:0fd4bad4a325463f2f684d3dac8e8bda37e3edd487ace44e7de749f49c612ab6"
 }

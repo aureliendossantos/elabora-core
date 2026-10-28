@@ -10,6 +10,8 @@
       "context": {
         "screen": "cover",
         "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
         "step": 1,
         "variant": null
       },
@@ -37,6 +39,8 @@
       "context": {
         "screen": "cover",
         "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
         "step": 1,
         "variant": "hero"
       },
@@ -54,8 +58,11 @@
           "context": {
             "screen": "objectives",
             "section": "opening",
+            "sectionIndex": 0,
+            "sectionCount": 5,
             "step": 1,
-            "variant": "calm"
+            "variant": "calm",
+            "direction": "forward"
           }
         },
         {
@@ -77,6 +84,8 @@
       "context": {
         "screen": "cover",
         "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
         "step": 1,
         "variant": null
       },
@@ -90,8 +99,11 @@
           "context": {
             "screen": "objectives",
             "section": "opening",
+            "sectionIndex": 0,
+            "sectionCount": 5,
             "step": 1,
-            "variant": "calm"
+            "variant": "calm",
+            "direction": "forward"
           }
         },
         {
@@ -124,6 +136,8 @@
       "context": {
         "screen": "cover",
         "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
         "step": 1,
         "variant": null
       },
@@ -137,8 +151,11 @@
           "context": {
             "screen": "part-one",
             "section": "part-1",
+            "sectionIndex": 1,
+            "sectionCount": 5,
             "step": 1,
-            "variant": null
+            "variant": null,
+            "direction": "forward"
           }
         },
         {
@@ -150,8 +167,11 @@
           "context": {
             "screen": "cover",
             "section": "opening",
+            "sectionIndex": 0,
+            "sectionCount": 5,
             "step": 1,
-            "variant": null
+            "variant": null,
+            "direction": "back"
           }
         },
         {
@@ -173,6 +193,8 @@
       "context": {
         "screen": "quote",
         "section": "part-2",
+        "sectionIndex": 2,
+        "sectionCount": 5,
         "step": 1,
         "variant": "ink"
       },
@@ -196,6 +218,8 @@
       "context": {
         "screen": "cover",
         "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
         "step": 1,
         "variant": null
       },
@@ -211,11 +235,7 @@
             "colorB": "#2EE6A6",
             "density": 0.3,
             "lines": 1,
-            "jump": 0.4,
-            "order": [
-              "cover",
-              "objectives"
-            ]
+            "jump": 0.4
           }
         },
         {
@@ -237,6 +257,8 @@
       "context": {
         "screen": "cover",
         "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
         "step": 1,
         "variant": null
       },

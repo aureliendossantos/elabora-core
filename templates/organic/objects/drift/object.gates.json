@@ -2,7 +2,7 @@
   "object": "drift",
   "version": "1.0.0",
   "elabora": "0.1.0",
-  "at": "2026-10-28T18:43:58.431Z",
+  "at": "2026-10-28T20:13:45.363Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -23,17 +23,17 @@
     "maxTextureSize": null,
     "webglContexts": 0,
     "contextLost": false,
-    "bootMs": 71,
+    "bootMs": 55,
     "bootSamples": [
-      77,
-      78,
-      71,
-      60,
-      59,
-      67,
-      74,
-      58,
-      79
+      44,
+      57,
+      66,
+      70,
+      49,
+      48,
+      47,
+      55,
+      59
     ]
   },
   "tests": [
@@ -50,7 +50,7 @@
       "ok": true
     },
     {
-      "name": "A section outside the journey keeps the hue it had",
+      "name": "A screen outside any section keeps the hue it had",
       "ok": true
     },
     {
@@ -70,5 +70,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:7f1d78850e6311cc42f9a2fe1314879b29348510615f5a6dd672abc18d24e454"
+  "fingerprint": "sha256:77d761fefe5e63a2983e02073d4228e090b69272c612fd3e7463d4612b1ef228"
 }

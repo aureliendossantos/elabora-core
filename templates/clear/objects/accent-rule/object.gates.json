@@ -2,7 +2,7 @@
   "object": "accent-rule",
   "version": "1.0.0",
   "elabora": "0.1.0",
-  "at": "2026-10-28T18:42:48.188Z",
+  "at": "2026-10-28T20:14:19.677Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -23,23 +23,28 @@
     "maxTextureSize": null,
     "webglContexts": 0,
     "contextLost": false,
-    "bootMs": 42,
+    "bootMs": 41,
     "bootSamples": [
-      42,
-      52,
-      50,
-      57,
-      63,
-      48,
-      42,
+      49,
+      44,
+      40,
       38,
+      63,
+      41,
+      41,
       39,
+      38,
+      38,
       41
     ]
   },
   "tests": [
     {
       "name": "The cover: the rule under the first part",
+      "ok": true
+    },
+    {
+      "name": "The rail runs along the player's top bar",
       "ok": true
     },
     {
@@ -55,7 +60,7 @@
       "ok": true
     },
     {
-      "name": "A section outside the list keeps the rule where it was",
+      "name": "A screen outside any section keeps the rule where it was",
       "ok": true
     },
     {
@@ -75,5 +80,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:37d37d96b7031086a50bbf87b60e107d6f3275bd771419119133d4cc4a44e2f0"
+  "fingerprint": "sha256:01c37de603926f036b502b90c2f5a15973664b72b9573d53dfc0088d12fc79c7"
 }

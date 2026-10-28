@@ -42,5 +42,5 @@ Changing variant is a fade: the object fades out in 0.3 s, changes, and comes ba
 3. **The field:** `color.field`, `color.field-deep`, the cards' `color.panel` and `color.panel-edge` (opaque: no frosted glass), and the bars' `player.top.background` and `player.bottom.background`, equal to `color.field`.
 4. **The light variant:** `color.paper`, `color.ink`, `color.ink-muted`, `color.ink-a`, `color.ink-b`, `color.ink-panel`, `color.ink-edge`. For a module light from end to end, set the charter's tokens to the light values: the object draws in ink by itself when `color.field` is light.
 5. **The fonts:** `elabora font add . "<family>" --for body,heading`; keep a monospaced font for `font.mono` (`--for mono`): it sets the figures.
-6. **The movement,** in `theme.backdrop.object.props`: `density` (particles), `lines` (ribbons' brightness), `jump` (the leap; 0 for none), `order` (optional: the screens in order, to tell a step back after a resumed session).
+6. **The movement,** in `theme.backdrop.object.props`: `density` (particles), `lines` (ribbons' brightness), `jump` (the leap; 0 for none). The leap goes forward or back with the course, and each part moves the palette a little further, by its rank: adding or renaming a section needs nothing more.
 7. After a change of tokens, `elabora assets .` draws the haze's mask and `signal.svg` again.

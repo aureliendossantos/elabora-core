@@ -129,26 +129,6 @@
         "x-control": "color",
         "x-token": "color.mono-4"
       },
-      "parts": {
-        "type": "array",
-        "title": "Parts, in order",
-        "description": "Ids of the module's sections in their order: each takes the next tableau. A section left out takes a tableau drawn from its id. Keep it in step with course.json sections.",
-        "x-group": "Composition",
-        "x-control": "list",
-        "minItems": 1,
-        "maxItems": 12,
-        "items": {
-          "type": "string",
-          "pattern": "^[a-z][a-z0-9-]{0,63}$"
-        },
-        "default": [
-          "opening",
-          "part-1",
-          "part-2",
-          "part-3",
-          "closing"
-        ]
-      },
       "column": {
         "type": "number",
         "minimum": 30,
@@ -193,7 +173,6 @@
       "mono2",
       "mono3",
       "mono4",
-      "parts",
       "transition",
       "shuffle"
     ]

@@ -38,7 +38,7 @@ To use a palette for the whole module, copy its four colours into `color.shape-1
 
 1. **Colours** (`theme.custom`): `color.shape-1` (the large circles), `color.shape-2` (quarters, half discs, the callout), `color.shape-3` (the comparison's second column, text in `color.onPrimary` on it), `color.shape-4` (bars, small marks). Keep `shape-1` and `shape-2` light enough for ink text (4.5:1), `shape-3` dark enough for `color.onPrimary`. The object binds its colours to these tokens (`x-token`); `earth*` and `mono*` set the variants.
 2. **Type:** `elabora font add . "<family>" --for body,heading`, a bold grotesque.
-3. **Parts:** the object gives each section the next tableau in the order of its `parts` prop (by default `opening`, `part-1`, `part-2`, `part-3`, `closing`); after adding, removing or renaming a section, update it.
+3. **Parts:** the object follows the sections by their rank in the course: the first takes the opening tableau, the last the closing one, the parts between the three others in turn. Adding, removing or renaming a section needs nothing more.
 4. **The content column:** keep the object's `column` equal to `presentation.wideWidth ÷ 16` (65 rem: the wide column is narrower than in the other templates, to leave the shapes their margins): the shapes keep clear of it.
 5. **Composition:** `shuffle` gives each screen another shape to move, `transition` sets the pace. To draw other tableaux, edit `TABLEAUX` in `objects/tableau/object.js` (positions as fractions of the window, sizes as fractions of its height, the middle kept free), then `elabora object test . tableau --update-snapshots`.
 6. **Corners:** square (`radius` 0) with round buttons (`player.radius` 999); raise `radius` for rounded cards.

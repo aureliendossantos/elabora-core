@@ -1,7 +1,7 @@
 // Drifting blobs: the backdrop of the Organic template.
 // Soft gradient blobs drawn as a field of rounded lobes on a small canvas that CSS scales up (the
 // upscaling is the blur). Each screen has its own composition, drawn from its id; each part of the
-// module its own hue, from warm (first part) to cool (last). When the learner moves, the blobs
+// module its own hue, from warm (first section) to cool (last), by its rank in the course. When the learner moves, the blobs
 // migrate to the new composition and glide to the new hue; a blob that would cross the window
 // fades out where it was and fades in where it goes instead. Under reduced motion nothing drifts
 // and each screen shows its composition at once, as a still image.
@@ -115,12 +115,12 @@ export function mount(container, ctx) {
     dirty = true;
   }
 
-  // Where the learner is → the part's place on the journey (0 first, 1 last) and its hue.
-  function partOf(section) {
-    const journey = Array.isArray(props.journey) && props.journey.length ? props.journey : [section];
-    const index = journey.indexOf(section);
-    if (index < 0) return part;
-    return journey.length > 1 ? index / (journey.length - 1) : 0;
+  // Where the learner is → the part's place on the journey (0 the first section, 1 the last: its
+  // rank in the course) and its hue. A screen outside any section keeps the hue it had.
+  function partOf(where) {
+    const index = where?.sectionIndex, count = where?.sectionCount;
+    if (!Number.isInteger(index) || !Number.isInteger(count)) return part;
+    return count > 1 ? Math.min(1, index / (count - 1)) : 0;
   }
   function journeyColour(t) {
     const [w, m, c] = [props.warm, props.middle, props.cool].map((x) => rgbToOklch(hexToRgb(x)));
@@ -133,7 +133,7 @@ export function mount(container, ctx) {
     const screen = where?.screen || '';
     const variant = where?.variant || 'day';
     const mood = MOODS[variant] || MOODS.day;
-    const t = partOf(where?.section || '');
+    const t = partOf(where);
     const tone = journeyColour(t);
     const ink = rgbToOklch(hexToRgb(props.ink));
     const cool = rgbToOklch(hexToRgb(props.cool));

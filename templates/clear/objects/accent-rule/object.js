@@ -1,5 +1,6 @@
 // Accent rule: the one movement of the Clear template.
-// A rail of hairline segments, one per part of the module, runs under the top bar across the
+// A rail of hairline segments, one per section of the module (its rank and count in the course:
+// context.sectionIndex, sectionCount), runs under the top bar (the safe area's top) across the
 // width of the grid. A short rule in the accent colour underlines the part the learner is in.
 // When the learner reaches the next or the previous part, the rule slides to its segment; when
 // they jump further (the outline, a relaunch), a slide across the window would be unrealistic, so
@@ -47,15 +48,19 @@ export function mount(container, ctx) {
   let width = 0, height = 0, ratio = 1, dirty = true;
 
   function isDark(where) { return Boolean(where && props.darkVariants.includes(where.variant)); }
-  function sections() { return Array.isArray(props.sections) ? props.sections : []; }
+  // The rank of the screen's section, or -1 outside any section; how many sections the course has.
+  const rankOf = (where) => (Number.isInteger(where?.sectionIndex) ? where.sectionIndex : -1);
+  const count = () => Math.max(1, Number.isInteger(context?.sectionCount) ? context.sectionCount : 1);
+  // The room the player's bars cover: the rail runs along them.
+  let safe = { top: 0, bottom: 0, ...(ctx.safeArea || {}) };
   function rem() { return parseFloat(getComputedStyle(document.documentElement).fontSize) || 16; }
 
   function place(where, animate) {
     context = where || null;
-    const next = context && context.section ? sections().indexOf(context.section) : -1;
+    const next = rankOf(context);
     const nowDark = isDark(context);
     if (nowDark !== dark) { dark = nowDark; if (!animate) darkness = dark ? 1 : 0; }
-    // A section outside the list keeps the rule where it was.
+    // A screen outside any section keeps the rule where it was.
     if (next < 0 || next === index) { dirty = true; return; }
     const from = shownAt;
     index = next;
@@ -85,12 +90,13 @@ export function mount(container, ctx) {
     const gutter = (narrow ? 1 : 2) * unit;
     const railWidth = Math.min(Number(props.width) * unit, width - 2 * gutter);
     const left = Math.round((width - railWidth) / 2);
-    const count = Math.max(1, sections().length);
+    const parts = count();
     const gap = Math.round(0.5 * unit);
-    const segment = (railWidth - gap * (count - 1)) / count;
-    const offset = Number(props.offset) * unit;
-    const y = Math.round(props.position === 'bottom' ? height - offset : offset);
-    return { left, count, gap, segment, y, thickness: Math.max(1, Number(props.thickness) || 3) };
+    const segment = (railWidth - gap * (parts - 1)) / parts;
+    const bottom = props.position === 'bottom';
+    const offset = (bottom ? safe.bottom : safe.top) || Number(props.offset) * unit;
+    const y = Math.round(bottom ? height - offset : offset);
+    return { left, count: parts, gap, segment, y, thickness: Math.max(1, Number(props.thickness) || 3) };
   }
 
   function draw() {
@@ -142,7 +148,7 @@ export function mount(container, ctx) {
   const off = [
     host.onFrame((dt) => frame(dt)),
     host.onContext((next) => place(next, !reduced)),
-    host.onSafeArea(() => { dirty = true; })
+    host.onSafeArea((area) => { safe = { top: 0, bottom: 0, ...(area || {}) }; dirty = true; })
   ];
   const watcher = typeof ResizeObserver === 'function' ? new ResizeObserver(() => { dirty = true; }) : null;
   watcher?.observe(container);
@@ -152,8 +158,7 @@ export function mount(container, ctx) {
       props = { ...props, ...next };
       dark = isDark(context);
       darkness = dark ? 1 : 0;
-      const section = context && context.section;
-      const at = section ? sections().indexOf(section) : -1;
+      const at = rankOf(context);
       index = at < 0 ? null : at;
       shownAt = index;
       motion = null;
@@ -163,7 +168,8 @@ export function mount(container, ctx) {
       return {
         section: context && context.section ? context.section : null,
         index: index === null ? -1 : index,
-        count: sections().length,
+        count: count(),
+        rail: geometry().y,
         moving: motion ? motion.kind : 'none',
         dark
       };

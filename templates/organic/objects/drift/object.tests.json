@@ -6,6 +6,8 @@
       "context": {
         "screen": "cover",
         "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
         "step": 1,
         "variant": null
       },
@@ -34,6 +36,8 @@
       "context": {
         "screen": "cover",
         "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
         "step": 1,
         "variant": null
       },
@@ -47,6 +51,8 @@
           "context": {
             "screen": "key-figures",
             "section": "part-2",
+            "sectionIndex": 2,
+            "sectionCount": 5,
             "step": 1,
             "variant": null
           }
@@ -88,6 +94,8 @@
       "context": {
         "screen": "cover",
         "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
         "step": 1,
         "variant": null
       },
@@ -101,6 +109,8 @@
           "context": {
             "screen": "chart",
             "section": "part-3",
+            "sectionIndex": 3,
+            "sectionCount": 5,
             "step": 1,
             "variant": null
           }
@@ -119,10 +129,12 @@
       ]
     },
     {
-      "name": "A section outside the journey keeps the hue it had",
+      "name": "A screen outside any section keeps the hue it had",
       "context": {
         "screen": "cover",
         "section": "part-3",
+        "sectionIndex": 3,
+        "sectionCount": 5,
         "step": 1,
         "variant": null
       },
@@ -135,7 +147,9 @@
           "action": "set-context",
           "context": {
             "screen": "extra",
-            "section": "bonus",
+            "section": null,
+            "sectionIndex": null,
+            "sectionCount": 5,
             "step": 1,
             "variant": null
           }
@@ -147,7 +161,7 @@
         {
           "action": "expect-state",
           "state": {
-            "section": "bonus",
+            "section": null,
             "part": 0.75,
             "settled": true
           }
@@ -159,6 +173,8 @@
       "context": {
         "screen": "quote",
         "section": "part-2",
+        "sectionIndex": 2,
+        "sectionCount": 5,
         "step": 1,
         "variant": "night"
       },
@@ -176,6 +192,8 @@
           "context": {
             "screen": "quote",
             "section": "part-2",
+            "sectionIndex": 2,
+            "sectionCount": 5,
             "step": 1,
             "variant": "mono"
           }
@@ -203,6 +221,8 @@
       "context": {
         "screen": "cover",
         "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
         "step": 1,
         "variant": null
       },
@@ -216,6 +236,8 @@
           "context": {
             "screen": "the-end",
             "section": "closing",
+            "sectionIndex": 4,
+            "sectionCount": 5,
             "step": 1,
             "variant": null
           }
@@ -247,6 +269,8 @@
       "context": {
         "screen": "practice",
         "section": "part-3",
+        "sectionIndex": 3,
+        "sectionCount": 5,
         "step": 1,
         "variant": "pastel"
       },
@@ -266,6 +290,8 @@
       "context": {
         "screen": "cover",
         "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
         "step": 1,
         "variant": null
       },
@@ -279,11 +305,7 @@
           "props": {
             "count": 7,
             "seed": 12,
-            "drift": 0,
-            "journey": [
-              "opening",
-              "closing"
-            ]
+            "drift": 0
           }
         },
         {
