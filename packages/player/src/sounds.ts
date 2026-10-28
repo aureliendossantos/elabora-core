@@ -106,7 +106,7 @@ export function createSounds(options: SoundsOptions) {
   let duckBus: GainNode | null = null;
   const buffers = new Map<string, Promise<AudioBuffer | null>>();
   const played: PlayedSound[] = [];
-  const loops = new Map<string, Loop>(); // by sound id
+  const loops = new Map<string, Loop>(); // by kind and sound id (ambience:rain, background:theme)
   const shots = new Set<OneShot>();
   const voices = new Set<string>();
   // What waits for the context to run: started with the first gesture.
@@ -260,7 +260,8 @@ export function createSounds(options: SoundsOptions) {
   // A looped sound (an ambience of the screen, a background track): copies of the buffer, each
   // starting as the one before begins its crossfade out, scheduled a little ahead on the clock.
   function playLoop(sound: string, kind: Loop['kind'], file: SoundFileData, volume: number, fade: number) {
-    if (loops.has(sound)) return;
+    const key = `${kind}:${sound}`;
+    if (loops.has(key)) return;
     const entry = log({ kind, sound, src: file.src, at: performance.now(), heard: false });
     let stopped = false;
     let timer = 0;
@@ -271,13 +272,13 @@ export function createSounds(options: SoundsOptions) {
       stop(out: number) {
         stopped = true;
         clearTimeout(timer);
-        loops.delete(sound);
+        loops.delete(key);
         if (!context || !gain) return;
         const end = fadeOut(context, gain, out);
         for (const source of live) { try { source.stop(end + 0.05); } catch { /* not started */ } }
       }
     };
-    loops.set(sound, loop);
+    loops.set(key, loop);
     // Nothing is made before the first gesture: the loop starts with it.
     whenRunning(() => {
       if (stopped || !context || !musicBus) return;
@@ -295,6 +296,7 @@ export function createSounds(options: SoundsOptions) {
         entry.heard = running.state === 'running';
         const cross = Math.min(Math.max(fade, 0.05), buffer.duration / 3);
         let next = now + 0.02;
+        let first = true;
         const schedule = () => {
           if (stopped) return;
           while (next < running.currentTime + 2) {
@@ -304,8 +306,9 @@ export function createSounds(options: SoundsOptions) {
             const copy = running.createGain();
             // Each copy fades in over the crossfade (but the first, which the loop's gain fades in)
             // and out over the crossfade before its end, as the next one fades in.
-            copy.gain.setValueAtTime(start === now + 0.02 ? 1 : 0, start);
-            if (start !== now + 0.02) copy.gain.linearRampToValueAtTime(1, start + cross);
+            copy.gain.setValueAtTime(first ? 1 : 0, start);
+            if (!first) copy.gain.linearRampToValueAtTime(1, start + cross);
+            first = false;
             copy.gain.setValueAtTime(1, start + buffer.duration - cross);
             copy.gain.linearRampToValueAtTime(0, start + buffer.duration);
             source.connect(copy);
@@ -333,7 +336,7 @@ export function createSounds(options: SoundsOptions) {
   }
   function stop(sound?: string, fade = STOP_FADE) {
     const ctx = context;
-    for (const [id, loop] of loops) if (loop.kind === 'ambience' && (sound === undefined || id === sound)) loop.stop(fade);
+    for (const loop of [...loops.values()]) if (loop.kind === 'ambience' && (sound === undefined || loop.sound === sound)) loop.stop(fade);
     for (const shot of shots) {
       if (sound !== undefined && shot.sound !== sound) continue;
       shots.delete(shot);
@@ -349,10 +352,10 @@ export function createSounds(options: SoundsOptions) {
     screen = id;
     stop(undefined, STOP_FADE);
     const wanted = new Map((data?.background ?? []).filter((track) => id !== null && track.screens.includes(id)).map((track) => [track.sound, track]));
-    for (const [sound, loop] of loops) if (loop.kind === 'background' && !wanted.has(sound)) loop.stop(data?.background?.find((track) => track.sound === sound)?.fade ?? DEFAULT_FADE);
+    for (const loop of [...loops.values()]) if (loop.kind === 'background' && !wanted.has(loop.sound)) loop.stop(data?.background?.find((track) => track.sound === loop.sound)?.fade ?? DEFAULT_FADE);
     for (const [sound, track] of wanted) {
       const file = fileOf(sound);
-      if (file && !loops.has(sound)) playLoop(sound, 'background', file, track.volume, track.fade);
+      if (file) playLoop(sound, 'background', file, track.volume, track.fade);
     }
   }
 

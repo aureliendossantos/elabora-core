@@ -153,7 +153,14 @@ export interface SoundUse {
   // A narration's sound line: the build lays it into the narration's track, it ships no file.
   inTrack?: true;
 }
-export function soundUses(project: Project): SoundUse[] {
+// Kept per project: validation and a build ask for them many times of one project.
+const usesOf = new WeakMap<Project, readonly SoundUse[]>();
+export function soundUses(project: Project): readonly SoundUse[] {
+  let known = usesOf.get(project);
+  if (!known) { known = findSoundUses(project); usesOf.set(project, known); }
+  return known;
+}
+function findSoundUses(project: Project): SoundUse[] {
   const uses: SoundUse[] = [];
   const course = project.course;
   const replace = isRecord(course?.sounds) && isRecord(course.sounds.interface) && isRecord(course.sounds.interface.replace) ? course.sounds.interface.replace : {};

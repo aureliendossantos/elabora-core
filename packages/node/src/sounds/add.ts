@@ -59,13 +59,15 @@ export async function addSound(dir: string, request: AddSoundRequest, options?: 
     const tools = await findMediaTools();
     const info = await probeMedia(file, { tools });
     if (info.kind !== 'audio' || !info.audioCodec) throw new CommandError(`${request.from} is not a sound ffmpeg can read.`);
-    const keep = !request.trim && !request.fade && KEPT.has(info.audioCodec) && (info.audioCodec !== 'aac' || info.container === 'mp4') && (info.audioCodec !== 'opus' || info.container === 'ogg') && (info.audioCodec !== 'vorbis' || info.container === 'ogg');
+    const loops = request.loop ?? sidecar.loop ?? false;
+    // A FLAC that loops or lasts is written as AAC 256 like any lossless original (D67).
+    const keep = !request.trim && !request.fade && KEPT.has(info.audioCodec) && (info.audioCodec !== 'flac' || (!loops && (info.duration ?? 0) <= LONG)) && (info.audioCodec !== 'aac' || info.container === 'mp4') && (info.audioCodec !== 'opus' || info.container === 'ogg') && (info.audioCodec !== 'vorbis' || info.container === 'ogg');
     let output = file;
     let extension = keep ? KEPT.get(info.audioCodec)! : '.flac';
     const modified: Sound['modified'] = [];
     if (!keep) {
       const length = request.trim ? request.trim.end - request.trim.start : info.duration ?? 0;
-      if (request.loop || length > LONG) extension = '.m4a';
+      if (loops || length > LONG) extension = '.m4a';
       output = path.join(work, `out${extension}`);
       const filters = [request.trim ? `atrim=start=${request.trim.start}:end=${request.trim.end},asetpts=PTS-STARTPTS` : null, request.fade ? `afade=t=out:st=${Math.max(0, length - request.fade)}:d=${request.fade}` : null].filter(Boolean);
       await run(tools.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-i', file, '-vn', '-map_metadata', '-1', ...(filters.length ? ['-af', filters.join(',')] : []), ...(extension === '.flac' ? ['-c:a', 'flac'] : ['-c:a', 'aac', '-b:a', '256k', '-movflags', '+faststart']), '-fflags', '+bitexact', '-flags:a', '+bitexact', output]);
@@ -74,7 +76,7 @@ export async function addSound(dir: string, request: AddSoundRequest, options?: 
       if (!request.trim && !request.fade) modified.push('converted');
     }
     const duration = Math.round(((await probeMedia(output, { tools })).duration ?? 0) * 1000) / 1000;
-    const full: Sound = { ...sidecar, ...(modified.length ? { modified: [...new Set([...(sidecar.modified ?? []), ...modified])] } : {}), ...(request.trim ? { trim: request.trim } : {}), duration, ...(request.loop ?? sidecar.loop ? { loop: true } : {}) };
+    const full: Sound = { ...sidecar, ...(modified.length ? { modified: [...new Set([...(sidecar.modified ?? []), ...modified])] } : {}), ...(request.trim ? { trim: request.trim } : {}), duration, ...(loops ? { loop: true } : {}) };
     const bytes = fs.readFileSync(output);
     const hash = hashBytes(bytes);
     const result = runCommand(dir, {
@@ -86,6 +88,11 @@ export async function addSound(dir: string, request: AddSoundRequest, options?: 
   } finally {
     fs.rmSync(work, { recursive: true, force: true });
   }
+}
+
+// The course's language (a caption given on the command line is in it), read from course.json alone.
+export function courseLanguage(dir: string): string {
+  try { return String(JSON.parse(fs.readFileSync(path.join(dir, 'course.json'), 'utf8')).language || 'fr'); } catch { return 'fr'; }
 }
 
 const today = () => new Date().toISOString().slice(0, 10);

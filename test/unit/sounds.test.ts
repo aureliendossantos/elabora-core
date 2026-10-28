@@ -59,7 +59,9 @@ test('interface sounds: on by themselves when the module has sound, never in a s
 
   const off = copyExample(VOICED);
   setInterface(off, { when: 'off' });
-  assert.equal('sounds' in compiled(off), false);
+  const silent = compiled(off);
+  assert.equal(silent.sounds?.interface, undefined);
+  assert.deepEqual(Object.keys(silent.sounds?.files ?? {}), ['sonnerie'], 'its phone still rings');
 });
 
 test('interface sounds: on for a silent module that asks, a role muted or replaced by a sound of the course', () => {

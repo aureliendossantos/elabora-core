@@ -6,7 +6,7 @@ import { searchLibrary, SOUND_CATEGORIES } from '@elabora/node/sounds/library';
 import type { LibrarySound } from '@elabora/node/sounds/library';
 import { searchOpenverse } from '@elabora/node/sounds/openverse';
 import type { OpenverseSound } from '@elabora/node/sounds/openverse';
-import { addSound } from '@elabora/node/sounds/add';
+import { addSound, courseLanguage } from '@elabora/node/sounds/add';
 import { estimateSound, generateSound } from '@elabora/node/sounds/generate';
 import { ArgumentError } from '../arguments.ts';
 import { defineCommand, printDiagnostics, printFormatMigration, printJson, reportingFailures } from './command.ts';
@@ -33,7 +33,6 @@ const seconds = (value: string | undefined, flag: string): number | undefined =>
   return number;
 };
 const isCourse = (dir: string | undefined) => dir !== undefined && fs.existsSync(path.join(dir, 'course.json'));
-const courseLanguage = (dir: string): string => { try { return String(JSON.parse(fs.readFileSync(path.join(dir, 'course.json'), 'utf8')).language || 'fr'); } catch { return 'fr'; } };
 const length = (value: number | null) => (value === null ? '?' : `${value.toFixed(1)} s`);
 
 const search = defineCommand({

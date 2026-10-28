@@ -101,12 +101,15 @@ test('sound add: a library sound, then a file cut and faded into FLAC, a lossy f
   const chime = await addSound(dir, { from: path.join(work, 'chime.mp3'), license: 'CC0-1.0' });
   assert.equal(chime.path, 'assets/sounds/chime.mp3');
   assert.deepEqual(fs.readFileSync(path.join(dir, chime.path)), mp3, 'not encoded again');
+  // A FLAC that loops is an ambience: AAC 256, like any long sound (D67).
+  tone(path.join(work, 'rain.flac'), 4, ['-c:a', 'flac']);
+  assert.equal((await addSound(dir, { from: path.join(work, 'rain.flac'), license: 'CC0-1.0', loop: true })).path, 'assets/sounds/rain.m4a');
 
   const listed = courseSounds(loadProjectFromDir(dir));
-  assert.deepEqual(listed.map((sound) => [sound.id, sound.licence.ok, sound.uses.length]), [['chime', true, 0], ['door-bell', true, 0], ['telephone-fixe', true, 0]]);
+  assert.deepEqual(listed.map((sound) => [sound.id, sound.licence.ok, sound.uses.length]), [['chime', true, 0], ['door-bell', true, 0], ['rain', true, 0], ['telephone-fixe', true, 0]]);
   assert.ok(!codes(validateDir(dir).diagnostics).some((code) => code.startsWith('E_SOUND') || code === 'W_MEDIA_NOT_OPTIMIZED'));
   edit.undo(dir);
-  assert.ok(!fs.existsSync(path.join(dir, 'assets/sounds/chime.mp3')), 'undone');
+  assert.ok(!fs.existsSync(path.join(dir, 'assets/sounds/rain.m4a')), 'undone');
 });
 
 test('Openverse: CC0, public domain and CC BY only (its commercial filter lets ND and SA through); a sound added from it keeps its page and author', { skip: NO_FFMPEG }, async () => {

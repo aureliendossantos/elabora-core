@@ -130,6 +130,24 @@ test('sounds of the story, ambiences and music: played after the first gesture, 
     assert.deepEqual(state.playing, [{ sound: 'theme', kind: 'background' }], 'the music of the first screen waits for a gesture');
     await page.mouse.click(5, 450);
     await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().played.some((entry) => entry.sound === 'theme' && entry.heard), null, { timeout: 30000 });
+    // A muted media that loops leaves the music as it is; heard, it ducks it until it pauses.
+    const ducked = await page.evaluate(async () => {
+      const sounds = (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds;
+      const media = Object.assign(document.createElement('audio'), { muted: true, loop: true, src: sounds.state().played.find((entry) => entry.sound === 'theme')!.src });
+      document.body.append(media);
+      await media.play();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const muted = sounds.state().ducked;
+      media.muted = false;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const heard = sounds.state().ducked;
+      media.pause();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const paused = sounds.state().ducked;
+      media.remove();
+      return [muted, heard, paused];
+    });
+    assert.deepEqual(ducked, [false, true, false]);
     // The next screen of its range: it plays on, not again.
     await page.evaluate(() => (window as PlayerWindow).__elabora.go('picking-and-processing'));
     state = await fullState(page);

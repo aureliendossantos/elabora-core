@@ -170,13 +170,15 @@ const displayPrefs = loadDisplayPrefs(packageId, keep);
 let timelinePrefs: TimelinePrefs | null = null;
 const sounds = createSounds({ data: course.sounds, prefs: displayPrefs, volume: () => timelinePrefs ?? { volume: 1, muted: false }, caption: (text, seconds) => soundCaption(text, seconds) });
 // Music and ambiences go down while a voice speaks (D67, WCAG 1.4.7): any media element of the page
-// that plays (the narration's, a layer's, an audio or video block; a dialogue's lines tell it).
+// that plays and is heard (the narration's, a layer's, an audio or video block; a dialogue's lines
+// tell it), not a muted video that loops.
 const mediaKeys = new WeakMap<HTMLMediaElement, string>();
 let mediaCount = 0;
 const mediaKey = (media: HTMLMediaElement) => { let key = mediaKeys.get(media); if (!key) { key = `media:${++mediaCount}`; mediaKeys.set(media, key); } return key; };
-for (const type of ['playing', 'pause', 'ended', 'emptied'] as const) {
+for (const type of ['playing', 'pause', 'ended', 'emptied', 'volumechange'] as const) {
   document.addEventListener(type, (event) => {
-    if (event.target instanceof HTMLMediaElement) sounds.voice(mediaKey(event.target), type === 'playing');
+    const media = event.target;
+    if (media instanceof HTMLMediaElement) sounds.voice(mediaKey(media), type !== 'emptied' && !media.paused && !media.ended && !media.muted && media.volume > 0);
   }, true);
 }
 // A sound's caption (D67): said to screen readers, and shown over the bottom of the screen while it

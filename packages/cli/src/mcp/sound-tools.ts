@@ -2,7 +2,7 @@ import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { courseSounds } from '@elabora/core/sounds/sounds';
 import { searchLibrary, SOUND_CATEGORIES } from '@elabora/node/sounds/library';
 import { searchOpenverse } from '@elabora/node/sounds/openverse';
-import { addSound } from '@elabora/node/sounds/add';
+import { addSound, courseLanguage } from '@elabora/node/sounds/add';
 import { estimateSound, generateSound } from '@elabora/node/sounds/generate';
 import type { SoundEstimate } from '@elabora/node/sounds/generate';
 import { defineTool, editPayload, errorResult, objectSchema, textResult, SLUG } from './tool.ts';
@@ -57,7 +57,7 @@ export const addSoundTool = defineTool({
   }, ['from']),
   async handler(args, { root, author }) {
     try {
-      const language = loadProjectFromDir(root).course?.language ?? 'fr';
+      const language = courseLanguage(root);
       const result = await addSound(root, { from: args.from, ...(args.id ? { id: args.id } : {}), ...(args.trim ? { trim: args.trim } : {}), ...(args.fade !== undefined ? { fade: args.fade } : {}), ...(args.loop ? { loop: true } : {}), ...(args.caption ? { caption: { [language]: args.caption } } : {}), ...(args.license ? { license: args.license } : {}), ...(args.author ? { author: args.author } : {}), ...(args.title ? { title: args.title } : {}), ...(args.url ? { url: args.url } : {}) }, { author });
       return textResult({ ...editPayload(result), id: result.id, path: result.path, reused: result.reused, license: result.license, duration: result.duration });
     } catch (error) { return failure(error); }
@@ -80,7 +80,7 @@ export const generateSoundTool = defineTool({
   async handler(args, { root, author }) {
     try {
       if (args.estimate) return textResult(await estimateSound({ ...(args.duration !== undefined ? { duration: args.duration } : {}) }));
-      const language = loadProjectFromDir(root).course?.language ?? 'fr';
+      const language = courseLanguage(root);
       const result = await generateSound(root, { prompt: args.prompt, ...(args.duration !== undefined ? { duration: args.duration } : {}), ...(args.loop ? { loop: true } : {}), ...(args.influence !== undefined ? { influence: args.influence } : {}), ...(args.id ? { id: args.id } : {}), ...(args.caption ? { caption: { [language]: args.caption } } : {}), ...(args.approvedPercent !== undefined ? { approvedPercent: args.approvedPercent } : {}) }, { author });
       return textResult({ ok: true, ...editPayload(result), id: result.id, path: result.path, duration: result.duration, percent: result.percent, cached: result.cached });
     } catch (error) {
