@@ -1,0 +1,41 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "key-figures",
+  "title": "Key figures",
+  "covers": [
+    "ITEM-4"
+  ],
+  "blocks": [
+    {
+      "id": "key-figures-chart",
+      "type": "key-figures",
+      "width": "wide",
+      "props": {
+        "takeaway": "Three figures that make the case at a glance",
+        "items": [
+          {
+            "id": "share",
+            "figure": "72 %",
+            "label": "Share of the audience concerned by the rule",
+            "count": {
+              "to": 72,
+              "format": "percent"
+            }
+          },
+          {
+            "id": "ratio",
+            "figure": "3 in 4",
+            "label": "Cases solved at the first step when the rule is applied"
+          },
+          {
+            "id": "time",
+            "figure": "15 min",
+            "label": "Time it takes to learn the procedure"
+          }
+        ],
+        "highlight": "share",
+        "source": "Source: name of the study or the internal report, year"
+      }
+    }
+  ]
+}

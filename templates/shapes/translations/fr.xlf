@@ -1,0 +1,1013 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="fr">
+  <file id="f1" original="shapes@1.0.0" xml:space="preserve">
+    <unit id="course.title">
+      <notes>
+        <note category="location">course.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Course title</note>
+      </notes>
+      <segment state="translated">
+        <source>Your module title</source>
+        <target>Le titre de votre module</target>
+      </segment>
+    </unit>
+    <unit id="course.section.opening.title">
+      <notes>
+        <note category="location">course.json /sections/0/title</note>
+        <note category="format">text</note>
+        <note category="context">Section of the course outline</note>
+      </notes>
+      <segment state="translated">
+        <source>Getting started</source>
+        <target>Pour commencer</target>
+      </segment>
+    </unit>
+    <unit id="course.section.part-1.title">
+      <notes>
+        <note category="location">course.json /sections/1/title</note>
+        <note category="format">text</note>
+        <note category="context">Section of the course outline</note>
+      </notes>
+      <segment state="translated">
+        <source>First part title</source>
+        <target>Titre de la première partie</target>
+      </segment>
+    </unit>
+    <unit id="course.section.part-2.title">
+      <notes>
+        <note category="location">course.json /sections/2/title</note>
+        <note category="format">text</note>
+        <note category="context">Section of the course outline</note>
+      </notes>
+      <segment state="translated">
+        <source>Second part title</source>
+        <target>Titre de la deuxième partie</target>
+      </segment>
+    </unit>
+    <unit id="course.section.part-3.title">
+      <notes>
+        <note category="location">course.json /sections/3/title</note>
+        <note category="format">text</note>
+        <note category="context">Section of the course outline</note>
+      </notes>
+      <segment state="translated">
+        <source>Third part title</source>
+        <target>Titre de la troisième partie</target>
+      </segment>
+    </unit>
+    <unit id="course.section.closing.title">
+      <notes>
+        <note category="location">course.json /sections/4/title</note>
+        <note category="format">text</note>
+        <note category="context">Section of the course outline</note>
+      </notes>
+      <segment state="translated">
+        <source>Wrapping up</source>
+        <target>Pour conclure</target>
+      </segment>
+    </unit>
+    <unit id="plan.title">
+      <notes>
+        <note category="location">plan.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Title of the validated plan</note>
+      </notes>
+      <segment state="translated">
+        <source>Your module title</source>
+        <target>Le titre de votre module</target>
+      </segment>
+    </unit>
+    <unit id="plan.businessGoal">
+      <notes>
+        <note category="location">plan.json /businessGoal</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Replace with the change this module should bring to the team (template placeholder).</source>
+        <target>Remplacez par le changement que ce module doit apporter à l'équipe (texte du modèle).</target>
+      </segment>
+    </unit>
+    <unit id="plan.audience.role">
+      <notes>
+        <note category="location">plan.json /audience/role</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Template: methods, frameworks, processes, young learners</source>
+        <target>Modèle : méthodes, cadres, processus, jeunes publics</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-1.statement">
+      <notes>
+        <note category="location">plan.json /objectives/0/statement</note>
+        <note category="format">text</note>
+        <note category="context">Learning objective</note>
+      </notes>
+      <segment state="translated">
+        <source>Pick the right step of the method for a realistic situation, and say why.</source>
+        <target>Choisir la bonne étape de la méthode pour une situation réaliste, et dire pourquoi.</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-1.title">
+      <notes>
+        <note category="location">plan.json /items/0/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Welcome and objectives</source>
+        <target>Accueil et objectifs</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-2.title">
+      <notes>
+        <note category="location">plan.json /items/1/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Opening of the first part</source>
+        <target>Ouverture de la première partie</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-3.title">
+      <notes>
+        <note category="location">plan.json /items/2/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>The key idea, explained</source>
+        <target>L'idée clé, expliquée</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-4.title">
+      <notes>
+        <note category="location">plan.json /items/3/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Figures, steps, a voice and a comparison</source>
+        <target>Chiffres, étapes, une voix et une comparaison</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-5.title">
+      <notes>
+        <note category="location">plan.json /items/4/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Practice: a realistic situation</source>
+        <target>Mise en pratique : une situation réaliste</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-6.title">
+      <notes>
+        <note category="location">plan.json /items/5/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Recap and next step</source>
+        <target>Récapitulatif et prochaine étape</target>
+      </segment>
+    </unit>
+    <unit id="screen.cover.title">
+      <notes>
+        <note category="location">screens/cover.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Your module title, on two lines at most</source>
+        <target>Le titre de votre module, sur deux lignes au plus</target>
+      </segment>
+    </unit>
+    <unit id="block.cover-lead.markdown">
+      <notes>
+        <note category="location">screens/cover.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Your module title, on two lines at most"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>One or two sentences that tell learners what they will be able to do by the end, and why it matters to their work.</source>
+        <target>Une ou deux phrases qui disent ce que les apprenants sauront faire à la fin, et pourquoi c'est utile dans leur travail.</target>
+      </segment>
+    </unit>
+    <unit id="block.cover-meta.markdown">
+      <notes>
+        <note category="location">screens/cover.json /blocks/1/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Your module title, on two lines at most"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>- 15 minutes
+- 4 parts
+- For every team</source>
+        <target>- 15 minutes
+- 4 parties
+- Pour toutes les équipes</target>
+      </segment>
+    </unit>
+    <unit id="screen.objectives.title">
+      <notes>
+        <note category="location">screens/objectives.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>By the end of this module, you will be able to</source>
+        <target>À la fin de ce module, vous saurez</target>
+      </segment>
+    </unit>
+    <unit id="block.objectives-list.markdown">
+      <notes>
+        <note category="location">screens/objectives.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "By the end of this module, you will be able to"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>1. Name the three building blocks of the method and what each one is for
+2. Choose the right step for a situation you meet in your daily work
+3. Explain your choice to a colleague in two or three sentences</source>
+        <target>1. Nommer les trois briques de la méthode et ce à quoi sert chacune
+2. Choisir la bonne étape pour une situation de votre quotidien
+3. Expliquer votre choix à un collègue en deux ou trois phrases</target>
+      </segment>
+    </unit>
+    <unit id="screen.part-one.title">
+      <notes>
+        <note category="location">screens/part-one.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>First part title, in a few strong words</source>
+        <target>Le titre de la première partie, en quelques mots forts</target>
+      </segment>
+    </unit>
+    <unit id="block.part-one-lead.markdown">
+      <notes>
+        <note category="location">screens/part-one.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "First part title, in a few strong words"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>One sentence that says what this part brings, and the question it answers.</source>
+        <target>Une phrase qui dit ce qu'apporte cette partie, et la question à laquelle elle répond.</target>
+      </segment>
+    </unit>
+    <unit id="block.part-one-mark.label">
+      <notes>
+        <note category="location">screens/part-one.json /blocks/1/props/label</note>
+        <note category="format">text</note>
+        <note category="context">Part mark on screen "First part title, in a few strong words"</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>Part</source>
+        <target>Partie</target>
+      </segment>
+    </unit>
+    <unit id="screen.key-message.title">
+      <notes>
+        <note category="location">screens/key-message.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>The key idea</source>
+        <target>L'idée clé</target>
+      </segment>
+    </unit>
+    <unit id="block.key-message-statement.markdown">
+      <notes>
+        <note category="location">screens/key-message.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Statement on screen "The key idea"</note>
+        <note category="max-length">400</note>
+      </notes>
+      <segment state="translated">
+        <source>Your key message in one sentence, short enough to remember and strong enough to repeat.</source>
+        <target>Votre message clé en une phrase, assez courte pour s'en souvenir et assez forte pour la répéter.</target>
+      </segment>
+    </unit>
+    <unit id="screen.text-and-picture.title">
+      <notes>
+        <note category="location">screens/text-and-picture.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>A title that names the idea of this screen</source>
+        <target>Un titre qui nomme l'idée de cet écran</target>
+      </segment>
+    </unit>
+    <unit id="block.text-and-picture-figure.title">
+      <notes>
+        <note category="location">screens/text-and-picture.json /blocks/0/props/title</note>
+        <note category="format">text</note>
+        <note category="context">Image on screen "A title that names the idea of this screen"</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>A short heading for the explanation</source>
+        <target>Un court intertitre pour l'explication</target>
+      </segment>
+    </unit>
+    <unit id="block.text-and-picture-figure.markdown">
+      <notes>
+        <note category="location">screens/text-and-picture.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Image on screen "A title that names the idea of this screen"</note>
+        <note category="max-length">1500</note>
+      </notes>
+      <segment state="translated">
+        <source>Two or three sentences that explain the idea in plain words. Say what it is, then what it changes for the learner in their daily work.
+
+A second short paragraph adds an example, a nuance or the one detail people often miss. Keep each paragraph under forty words.</source>
+        <target>Deux ou trois phrases qui expliquent l'idée simplement. Dites ce qu'elle est, puis ce qu'elle change pour l'apprenant au quotidien.
+
+Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oublie souvent. Gardez chaque paragraphe sous quarante mots.</target>
+      </segment>
+    </unit>
+    <unit id="screen.three-cards.title">
+      <notes>
+        <note category="location">screens/three-cards.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Three building blocks to keep in mind</source>
+        <target>Trois briques à garder en tête</target>
+      </segment>
+    </unit>
+    <unit id="block.three-cards-one.text">
+      <notes>
+        <note category="location">screens/three-cards.json /blocks/0/blocks/0/props/text</note>
+        <note category="format">text</note>
+        <note category="context">Heading on screen "Three building blocks to keep in mind"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>First block</source>
+        <target>Première brique</target>
+      </segment>
+    </unit>
+    <unit id="block.three-cards-one-text.markdown">
+      <notes>
+        <note category="location">screens/three-cards.json /blocks/0/blocks/1/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Three building blocks to keep in mind"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>One or two sentences that say what this block is and when it helps. About twenty-five words.</source>
+        <target>Une ou deux phrases qui disent ce qu'est cette brique et quand elle aide. Environ vingt-cinq mots.</target>
+      </segment>
+    </unit>
+    <unit id="block.three-cards-two.text">
+      <notes>
+        <note category="location">screens/three-cards.json /blocks/0/blocks/2/props/text</note>
+        <note category="format">text</note>
+        <note category="context">Heading on screen "Three building blocks to keep in mind"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Second block</source>
+        <target>Deuxième brique</target>
+      </segment>
+    </unit>
+    <unit id="block.three-cards-two-text.markdown">
+      <notes>
+        <note category="location">screens/three-cards.json /blocks/0/blocks/3/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Three building blocks to keep in mind"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>One or two sentences that say what this block is and when it helps. About twenty-five words.</source>
+        <target>Une ou deux phrases qui disent ce qu'est cette brique et quand elle aide. Environ vingt-cinq mots.</target>
+      </segment>
+    </unit>
+    <unit id="block.three-cards-three.text">
+      <notes>
+        <note category="location">screens/three-cards.json /blocks/0/blocks/4/props/text</note>
+        <note category="format">text</note>
+        <note category="context">Heading on screen "Three building blocks to keep in mind"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Third block</source>
+        <target>Troisième brique</target>
+      </segment>
+    </unit>
+    <unit id="block.three-cards-three-text.markdown">
+      <notes>
+        <note category="location">screens/three-cards.json /blocks/0/blocks/5/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Three building blocks to keep in mind"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>One or two sentences that say what this block is and when it helps. About twenty-five words.</source>
+        <target>Une ou deux phrases qui disent ce qu'est cette brique et quand elle aide. Environ vingt-cinq mots.</target>
+      </segment>
+    </unit>
+    <unit id="screen.key-figures.title">
+      <notes>
+        <note category="location">screens/key-figures.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Three figures that tell the story</source>
+        <target>Trois chiffres qui racontent l'histoire</target>
+      </segment>
+    </unit>
+    <unit id="block.key-figures-chart.takeaway">
+      <notes>
+        <note category="location">screens/key-figures.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>The sentence these figures prove, written as a finding</source>
+        <target>La phrase que ces chiffres prouvent, écrite comme un constat</target>
+      </segment>
+    </unit>
+    <unit id="block.key-figures-chart.source">
+      <notes>
+        <note category="location">screens/key-figures.json /blocks/0/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Source of the figures, year</source>
+        <target>Source des chiffres, année</target>
+      </segment>
+    </unit>
+    <unit id="block.key-figures-chart.items.a.label">
+      <notes>
+        <note category="location">screens/key-figures.json /blocks/0/props/items/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="max-length">140</note>
+      </notes>
+      <segment state="translated">
+        <source>teams that already use part of the method</source>
+        <target>des équipes utilisent déjà une partie de la méthode</target>
+      </segment>
+    </unit>
+    <unit id="block.key-figures-chart.items.a.figure">
+      <notes>
+        <note category="location">screens/key-figures.json /blocks/0/props/items/0/figure</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>3 in 4</source>
+        <target>3 sur 4</target>
+      </segment>
+    </unit>
+    <unit id="block.key-figures-chart.items.b.label">
+      <notes>
+        <note category="location">screens/key-figures.json /blocks/0/props/items/1/label</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="max-length">140</note>
+      </notes>
+      <segment state="translated">
+        <source>of the time saved comes from the first step</source>
+        <target>du temps gagné vient de la première étape</target>
+      </segment>
+    </unit>
+    <unit id="block.key-figures-chart.items.c.label">
+      <notes>
+        <note category="location">screens/key-figures.json /blocks/0/props/items/2/label</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="max-length">140</note>
+      </notes>
+      <segment state="translated">
+        <source>to set it up the first time</source>
+        <target>pour la mettre en place la première fois</target>
+      </segment>
+    </unit>
+    <unit id="block.key-figures-chart.items.c.figure">
+      <notes>
+        <note category="location">screens/key-figures.json /blocks/0/props/items/2/figure</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Three figures that tell the story"</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>15 min</source>
+        <target>15 min</target>
+      </segment>
+    </unit>
+    <unit id="screen.practice.title">
+      <notes>
+        <note category="location">screens/practice.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Your turn</source>
+        <target>À vous de jouer</target>
+      </segment>
+    </unit>
+    <unit id="block.practice-quiz.stem">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/stem</note>
+        <note category="format">markdown</note>
+        <note category="context">Choice question on screen "Your turn"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>A short, realistic situation told in two sentences. A colleague asks you for help with a task you know well. **Which step of the method comes first?**</source>
+        <target>Une situation courte et réaliste, racontée en deux phrases. Un collègue vous demande de l'aide sur une tâche que vous connaissez bien. **Quelle étape de la méthode vient en premier ?**</target>
+      </segment>
+    </unit>
+    <unit id="block.practice-quiz.options.a.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/options/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Choice question on screen "Your turn"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>Choose the tool you used last time</source>
+        <target>Choisir l'outil utilisé la dernière fois</target>
+      </segment>
+    </unit>
+    <unit id="block.practice-quiz.options.a.feedback">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/options/0/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Choice question on screen "Your turn"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Tempting and quick, yet it skips what makes this case different: look first.</source>
+        <target>Tentant et rapide, mais cela passe à côté de ce qui rend ce cas différent : regardez d'abord.</target>
+      </segment>
+    </unit>
+    <unit id="block.practice-quiz.options.b.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/options/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Choice question on screen "Your turn"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>Look at the situation with your colleague</source>
+        <target>Regarder la situation avec votre collègue</target>
+      </segment>
+    </unit>
+    <unit id="block.practice-quiz.options.b.feedback">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/options/1/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Choice question on screen "Your turn"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Yes. Looking first tells you which building block fits, and often shows the answer.</source>
+        <target>Oui. Regarder d'abord vous dit quelle brique convient, et montre souvent la réponse.</target>
+      </segment>
+    </unit>
+    <unit id="block.practice-quiz.options.c.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/options/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Choice question on screen "Your turn"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>Share the result with the whole team</source>
+        <target>Partager le résultat avec toute l'équipe</target>
+      </segment>
+    </unit>
+    <unit id="block.practice-quiz.options.c.feedback">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/options/2/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Choice question on screen "Your turn"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Sharing comes last, once you know what worked. For now there is nothing to share.</source>
+        <target>Le partage vient en dernier, une fois qu'on sait ce qui a marché. Pour l'instant, rien à partager.</target>
+      </segment>
+    </unit>
+    <unit id="screen.four-steps.title">
+      <notes>
+        <note category="location">screens/four-steps.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Four steps, in this order</source>
+        <target>Quatre étapes, dans cet ordre</target>
+      </segment>
+    </unit>
+    <unit id="block.four-steps-process.takeaway">
+      <notes>
+        <note category="location">screens/four-steps.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>Each step prepares the next one: skip none</source>
+        <target>Chaque étape prépare la suivante : n'en sautez aucune</target>
+      </segment>
+    </unit>
+    <unit id="block.four-steps-process.items.s1.title">
+      <notes>
+        <note category="location">screens/four-steps.json /blocks/0/props/items/0/title</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Look at the situation</source>
+        <target>Regarder la situation</target>
+      </segment>
+    </unit>
+    <unit id="block.four-steps-process.items.s1.text">
+      <notes>
+        <note category="location">screens/four-steps.json /blocks/0/props/items/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>What happens, who is involved, what is at stake.</source>
+        <target>Ce qui se passe, qui est concerné, ce qui est en jeu.</target>
+      </segment>
+    </unit>
+    <unit id="block.four-steps-process.items.s2.title">
+      <notes>
+        <note category="location">screens/four-steps.json /blocks/0/props/items/1/title</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Choose the tool</source>
+        <target>Choisir l'outil</target>
+      </segment>
+    </unit>
+    <unit id="block.four-steps-process.items.s2.text">
+      <notes>
+        <note category="location">screens/four-steps.json /blocks/0/props/items/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Pick the building block that fits the situation.</source>
+        <target>Prendre la brique qui convient à la situation.</target>
+      </segment>
+    </unit>
+    <unit id="block.four-steps-process.items.s3.title">
+      <notes>
+        <note category="location">screens/four-steps.json /blocks/0/props/items/2/title</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Act in small steps</source>
+        <target>Agir par petits pas</target>
+      </segment>
+    </unit>
+    <unit id="block.four-steps-process.items.s3.text">
+      <notes>
+        <note category="location">screens/four-steps.json /blocks/0/props/items/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Try, check the result, adjust the next move.</source>
+        <target>Essayer, vérifier le résultat, ajuster la suite.</target>
+      </segment>
+    </unit>
+    <unit id="block.four-steps-process.items.s4.title">
+      <notes>
+        <note category="location">screens/four-steps.json /blocks/0/props/items/3/title</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Share what you learnt</source>
+        <target>Partager ce qu'on a appris</target>
+      </segment>
+    </unit>
+    <unit id="block.four-steps-process.items.s4.text">
+      <notes>
+        <note category="location">screens/four-steps.json /blocks/0/props/items/3/text</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Four steps, in this order"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Tell the team what worked and what to change.</source>
+        <target>Dire à l'équipe ce qui a marché et ce qui doit changer.</target>
+      </segment>
+    </unit>
+    <unit id="screen.quote.title">
+      <notes>
+        <note category="location">screens/quote.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>In their words</source>
+        <target>Avec leurs mots</target>
+      </segment>
+    </unit>
+    <unit id="block.quote-statement.markdown">
+      <notes>
+        <note category="location">screens/quote.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Statement on screen "In their words"</note>
+        <note category="max-length">400</note>
+      </notes>
+      <segment state="translated">
+        <source>A short quotation from someone your learners trust, in their exact words, that makes the idea concrete.</source>
+        <target>Une courte citation d'une personne en qui vos apprenants ont confiance, avec ses mots exacts, qui rend l'idée concrète.</target>
+      </segment>
+    </unit>
+    <unit id="block.quote-statement.author">
+      <notes>
+        <note category="location">screens/quote.json /blocks/0/props/author</note>
+        <note category="format">text</note>
+        <note category="context">Statement on screen "In their words"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>First name Last name</source>
+        <target>Prénom Nom</target>
+      </segment>
+    </unit>
+    <unit id="block.quote-statement.role">
+      <notes>
+        <note category="location">screens/quote.json /blocks/0/props/role</note>
+        <note category="format">text</note>
+        <note category="context">Statement on screen "In their words"</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Role, organisation</source>
+        <target>Fonction, organisation</target>
+      </segment>
+    </unit>
+    <unit id="screen.comparison.title">
+      <notes>
+        <note category="location">screens/comparison.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Before and after: what changes</source>
+        <target>Avant, après : ce qui change</target>
+      </segment>
+    </unit>
+    <unit id="block.comparison-before.text">
+      <notes>
+        <note category="location">screens/comparison.json /blocks/0/blocks/0/props/text</note>
+        <note category="format">text</note>
+        <note category="context">Heading on screen "Before and after: what changes"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Without the method</source>
+        <target>Sans la méthode</target>
+      </segment>
+    </unit>
+    <unit id="block.comparison-before-list.markdown">
+      <notes>
+        <note category="location">screens/comparison.json /blocks/0/blocks/1/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Before and after: what changes"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>- A habit people often have, in a few words
+- What it costs the team, said plainly
+- A typical result that nobody wants</source>
+        <target>- Une habitude fréquente, en quelques mots
+- Ce qu'elle coûte à l'équipe, dit simplement
+- Un résultat typique dont personne ne veut</target>
+      </segment>
+    </unit>
+    <unit id="block.comparison-after.text">
+      <notes>
+        <note category="location">screens/comparison.json /blocks/0/blocks/2/props/text</note>
+        <note category="format">text</note>
+        <note category="context">Heading on screen "Before and after: what changes"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>With the method</source>
+        <target>Avec la méthode</target>
+      </segment>
+    </unit>
+    <unit id="block.comparison-after-list.markdown">
+      <notes>
+        <note category="location">screens/comparison.json /blocks/0/blocks/3/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Before and after: what changes"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>- The new habit, in as many words
+- What the team gains, said as plainly
+- The result you can expect instead</source>
+        <target>- La nouvelle habitude, en autant de mots
+- Ce que l'équipe y gagne, dit aussi simplement
+- Le résultat que vous pouvez attendre à la place</target>
+      </segment>
+    </unit>
+    <unit id="screen.chart.title">
+      <notes>
+        <note category="location">screens/chart.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Where the time goes</source>
+        <target>Où passe le temps</target>
+      </segment>
+    </unit>
+    <unit id="block.chart-bars.takeaway">
+      <notes>
+        <note category="location">screens/chart.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where the time goes"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>The first step takes the most time, and saves the most</source>
+        <target>La première étape prend le plus de temps, et en fait gagner le plus</target>
+      </segment>
+    </unit>
+    <unit id="block.chart-bars.source">
+      <notes>
+        <note category="location">screens/chart.json /blocks/0/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where the time goes"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Source of the data, year</source>
+        <target>Source des données, année</target>
+      </segment>
+    </unit>
+    <unit id="block.chart-bars.rows.r1.label">
+      <notes>
+        <note category="location">screens/chart.json /blocks/0/props/rows/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where the time goes"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Look at the situation</source>
+        <target>Regarder la situation</target>
+      </segment>
+    </unit>
+    <unit id="block.chart-bars.rows.r2.label">
+      <notes>
+        <note category="location">screens/chart.json /blocks/0/props/rows/1/label</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where the time goes"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Choose the tool</source>
+        <target>Choisir l'outil</target>
+      </segment>
+    </unit>
+    <unit id="block.chart-bars.rows.r3.label">
+      <notes>
+        <note category="location">screens/chart.json /blocks/0/props/rows/2/label</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where the time goes"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Act in small steps</source>
+        <target>Agir par petits pas</target>
+      </segment>
+    </unit>
+    <unit id="block.chart-bars.rows.r4.label">
+      <notes>
+        <note category="location">screens/chart.json /blocks/0/props/rows/3/label</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where the time goes"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Share what you learnt</source>
+        <target>Partager ce qu'on a appris</target>
+      </segment>
+    </unit>
+    <unit id="screen.recap.title">
+      <notes>
+        <note category="location">screens/recap.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>What to remember</source>
+        <target>À retenir</target>
+      </segment>
+    </unit>
+    <unit id="block.recap-list.markdown">
+      <notes>
+        <note category="location">screens/recap.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "What to remember"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>1. The first takeaway, as one clear sentence
+2. The second takeaway, about as long as the first
+3. The third takeaway, the one to act on tomorrow</source>
+        <target>1. Le premier point à retenir, en une phrase claire
+2. Le deuxième point, à peu près aussi long que le premier
+3. Le troisième point, celui à mettre en œuvre dès demain</target>
+      </segment>
+    </unit>
+    <unit id="block.recap-callout.title">
+      <notes>
+        <note category="location">screens/recap.json /blocks/1/props/title</note>
+        <note category="format">text</note>
+        <note category="context">Callout on screen "What to remember"</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Next step</source>
+        <target>Prochaine étape</target>
+      </segment>
+    </unit>
+    <unit id="block.recap-callout.markdown">
+      <notes>
+        <note category="location">screens/recap.json /blocks/1/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Callout on screen "What to remember"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>One concrete action to try this week, in a single sentence.</source>
+        <target>Une action concrète à essayer cette semaine, en une seule phrase.</target>
+      </segment>
+    </unit>
+    <unit id="screen.the-end.title">
+      <notes>
+        <note category="location">screens/the-end.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Well done: you have finished</source>
+        <target>Bravo : vous avez terminé</target>
+      </segment>
+    </unit>
+    <unit id="block.the-end-lead.markdown">
+      <notes>
+        <note category="location">screens/the-end.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Well done: you have finished"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>One sentence that thanks learners and tells them where to find help or what comes next.</source>
+        <target>Une phrase qui remercie les apprenants et leur dit où trouver de l'aide ou ce qui vient ensuite.</target>
+      </segment>
+    </unit>
+    <unit id="block.the-end-meta.markdown">
+      <notes>
+        <note category="location">screens/the-end.json /blocks/1/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Well done: you have finished"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>- Questions: your contact
+- Next module: its title</source>
+        <target>- Questions : votre contact
+- Module suivant : son titre</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "figures",
+  "title": "The numbers behind the idea",
+  "covers": [
+    "ITEM-2"
+  ],
+  "blocks": [
+    {
+      "id": "figures-chart",
+      "type": "key-figures",
+      "props": {
+        "takeaway": "One sentence that says what these figures prove",
+        "items": [
+          {
+            "id": "share",
+            "figure": "72 %",
+            "label": "of the people concerned, described in a short label",
+            "count": {
+              "to": 72,
+              "format": "percent"
+            }
+          },
+          {
+            "id": "time",
+            "figure": "3×",
+            "label": "faster with the idea applied than without it"
+          },
+          {
+            "id": "cases",
+            "figure": "1 in 4",
+            "label": "cases where the usual approach falls short"
+          }
+        ],
+        "highlight": "share",
+        "source": "Source of the figures, year"
+      }
+    }
+  ]
+}

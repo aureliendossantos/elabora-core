@@ -1,0 +1,70 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "check",
+  "title": "Your turn",
+  "covers": [
+    "ITEM-5"
+  ],
+  "completeWhen": "interactions-done",
+  "backdrop": "calm",
+  "blocks": [
+    {
+      "id": "check-row",
+      "type": "columns",
+      "width": "wide",
+      "props": {
+        "count": 2,
+        "widths": "wide-end",
+        "align": "start"
+      },
+      "blocks": [
+        {
+          "id": "check-colleague",
+          "type": "speech",
+          "slot": "first",
+          "props": {
+            "speaker": "colleague",
+            "lines": [
+              {
+                "id": "case",
+                "markdown": "A short, realistic situation in two sentences. Something has just happened and I need your advice."
+              }
+            ]
+          }
+        },
+        {
+          "id": "check-quiz",
+          "type": "quiz",
+          "slot": "second",
+          "props": {
+            "stem": "What is the right first action in this situation?",
+            "mode": "single",
+            "objective": "OBJ-1",
+            "scored": false,
+            "feedbackStyle": "compact",
+            "options": [
+              {
+                "id": "a",
+                "text": "A plausible action that skips a step of the procedure",
+                "correct": false,
+                "feedback": "Not quite. This skips the check; the procedure asks for it first."
+              },
+              {
+                "id": "b",
+                "text": "The action the key rule asks for, done first",
+                "correct": true,
+                "feedback": "Right. The rule comes first, so this is the action to take now."
+              },
+              {
+                "id": "c",
+                "text": "A reasonable action that comes later in the procedure",
+                "correct": false,
+                "feedback": "Not yet. This comes later, once the first step is done."
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

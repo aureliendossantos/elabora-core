@@ -1,0 +1,20 @@
+{
+  "format": "elabora-generated/1",
+  "assets": {
+    "images/flow-grain.svg": {
+      "generator": "generators/flow.mjs",
+      "inputsHash": "sha256:5c07f5b4089ea7e2e0335ca05704e2c75eb4feae332cd0d60be71001642c11c9",
+      "outputHash": "sha256:67a1581d707f4dc6cd82668cf49a65e9705e1e45e1421c9ffa03b72e56cfc3bf"
+    },
+    "images/flow-haze.svg": {
+      "generator": "generators/flow.mjs",
+      "inputsHash": "sha256:5c07f5b4089ea7e2e0335ca05704e2c75eb4feae332cd0d60be71001642c11c9",
+      "outputHash": "sha256:007109a5133a29ef2c6b7dfbbbb96242894d129656b83b7cfe318d9c0f80eab9"
+    },
+    "images/signal.svg": {
+      "generator": "generators/flow.mjs",
+      "inputsHash": "sha256:5c07f5b4089ea7e2e0335ca05704e2c75eb4feae332cd0d60be71001642c11c9",
+      "outputHash": "sha256:71eda96a5082591b3d91b7505ce7bc5e8824ef32a0424e450c6896b2a64b8e98"
+    }
+  }
+}

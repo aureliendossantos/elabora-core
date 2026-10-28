@@ -1,0 +1,25 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "the-end",
+  "title": "Thank you, and see you soon",
+  "covers": [
+    "ITEM-6"
+  ],
+  "layout": "opening",
+  "layoutProps": {
+    "presentation": "title",
+    "eyebrow": "Well done",
+    "lead": "One sentence to close: the first thing to try tomorrow, and where to find help if you need it.",
+    "duration": false
+  },
+  "blocks": [
+    {
+      "id": "end-meta",
+      "type": "text",
+      "style": "meta",
+      "props": {
+        "markdown": "- Questions? Write to *name of a contact*\n- Resources are in the top bar"
+      }
+    }
+  ]
+}

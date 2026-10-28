@@ -1,0 +1,55 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "compare",
+  "title": "Two ways to handle it",
+  "covers": [
+    "ITEM-3"
+  ],
+  "backdrop": "calm",
+  "blocks": [
+    {
+      "id": "compare-columns",
+      "type": "columns",
+      "style": "versus",
+      "props": {
+        "count": 2
+      },
+      "blocks": [
+        {
+          "id": "compare-before-h",
+          "type": "heading",
+          "slot": "first",
+          "props": {
+            "text": "The usual way",
+            "level": 2
+          }
+        },
+        {
+          "id": "compare-before-t",
+          "type": "text",
+          "props": {
+            "markdown": "- A first trait of the usual way, in a few words\n- A second trait, and what it costs\n- A third trait that learners will recognise"
+          },
+          "slot": "first"
+        },
+        {
+          "id": "compare-after-h",
+          "type": "heading",
+          "slot": "second",
+          "props": {
+            "text": "The better way",
+            "level": 2
+          }
+        },
+        {
+          "id": "compare-after-t",
+          "type": "text",
+          "props": {
+            "markdown": "- The first trait that changes, in a few words\n- The second trait, and what it brings\n- The third trait, the one to remember"
+          },
+          "slot": "second"
+        }
+      ]
+    }
+  ]
+}

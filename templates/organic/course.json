@@ -1,0 +1,213 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "organic",
+  "title": "Your module title",
+  "language": "en",
+  "version": "1.0.0",
+  "sections": [
+    {
+      "id": "opening",
+      "title": "Getting started",
+      "screens": [
+        "cover",
+        "objectives"
+      ]
+    },
+    {
+      "id": "part-1",
+      "title": "First part title",
+      "screens": [
+        "part-one",
+        "key-message",
+        "text-and-picture",
+        "three-cards"
+      ]
+    },
+    {
+      "id": "part-2",
+      "title": "Second part title",
+      "screens": [
+        "key-figures",
+        "practice",
+        "four-steps",
+        "quote"
+      ]
+    },
+    {
+      "id": "part-3",
+      "title": "Third part title",
+      "screens": [
+        "comparison",
+        "chart"
+      ]
+    },
+    {
+      "id": "closing",
+      "title": "Wrapping up",
+      "screens": [
+        "recap",
+        "the-end"
+      ]
+    }
+  ],
+  "variables": [],
+  "theme": {
+    "cascade": "components-over-theme",
+    "fonts": [
+      {
+        "family": "Nunito",
+        "src": "theme/fonts/nunito/nunito-latin-wght-normal.woff2",
+        "weight": "200 900"
+      },
+      {
+        "family": "Nunito",
+        "src": "theme/fonts/nunito/nunito-latin-wght-italic.woff2",
+        "weight": "200 900",
+        "style": "italic"
+      }
+    ],
+    "tokens": {
+      "font.body": "\"Nunito\", \"Avenir Next Rounded\", \"Arial Rounded MT Bold\", system-ui, sans-serif",
+      "font.heading": "\"Nunito\", \"Avenir Next Rounded\", \"Arial Rounded MT Bold\", system-ui, sans-serif",
+      "color.primary": "#2E2925",
+      "color.onPrimary": "#FFF9F2",
+      "color.accent": "#B64A2A",
+      "color.surface": "#FBF6EF",
+      "color.text": "#2E2925",
+      "color.muted": "#4E4640",
+      "color.success": "#2E7A57",
+      "color.error": "#A3301F",
+      "color.focus": "#2563C9",
+      "radius": 22,
+      "player.top.background": "#FBF6EF",
+      "player.top.text": "#2E2925",
+      "player.bottom.background": "#FBF6EF",
+      "player.bottom.text": "#2E2925",
+      "player.accent": "#2E2925",
+      "player.onAccent": "#FFF9F2"
+    },
+    "custom": {
+      "color.journey-warm": "#F4A27E",
+      "color.journey-middle": "#A9D08E",
+      "color.journey-cool": "#86B6EC",
+      "color.card": "#FFFDFA",
+      "color.line": "#E7DCCF",
+      "color.night": "#121A2A",
+      "color.night-card": "#1C2638",
+      "color.night-text": "#F4EFE8",
+      "color.night-muted": "#B9B2AA",
+      "color.grain": "#3B2F27"
+    },
+    "stylesheet": "theme/theme.css",
+    "styles": {
+      "text": {
+        "lead": "Large opening paragraph",
+        "objectives": "Numbered list in soft round counters (objectives, takeaways)",
+        "meta": "Short facts in soft pills (audience, format, what the part holds)"
+      },
+      "columns": {
+        "cards": "Each column on a soft rounded card",
+        "compare": "Two columns face to face: the first muted, the second in the colour of the part"
+      }
+    },
+    "backdrop": {
+      "layers": [
+        "ground",
+        "night",
+        "glow-warm",
+        "glow-cool",
+        "grain"
+      ],
+      "object": {
+        "id": "drift",
+        "props": {}
+      },
+      "variants": {
+        "pastel": "Paler, calmer blobs behind dense screens",
+        "night": "Deep night: glowing blobs on a dark ground, light text",
+        "mono": "Monochrome: tints of the ink colour, for sober screens"
+      }
+    }
+  },
+  "navigation": {
+    "mode": "linear",
+    "lockUntilComplete": true
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "logo",
+          "enabled": false
+        },
+        {
+          "id": "title"
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "outline"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "completion": {
+    "reportAs": "completed-incomplete"
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  },
+  "presentation": {
+    "mode": "slides",
+    "contentWidth": 760,
+    "wideWidth": 1240,
+    "fit": {
+      "reference": "1600x900",
+      "minimum": "1280x720"
+    }
+  },
+  "description": "Organic: a template for soft skills, wellbeing, onboarding and HR modules. Soft gradient blobs drift behind every screen and glide from warm to cool tones as the module moves on.",
+  "durationMinutes": 15,
+  "speakers": [
+    {
+      "id": "guide",
+      "name": "Sam, your guide",
+      "color": "color.accent"
+    }
+  ]
+}

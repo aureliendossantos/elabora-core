@@ -1,0 +1,31 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "objectives",
+  "title": "What you will take away",
+  "covers": [
+    "ITEM-1"
+  ],
+  "blocks": [
+    {
+      "id": "objectives-list",
+      "type": "text",
+      "style": "objectives",
+      "props": {
+        "markdown": "1. **Name** the first key idea and say why it matters in your daily work.\n2. **Practise** the second idea in a short, realistic situation.\n3. **Choose** one small action to try with your team this week."
+      }
+    },
+    {
+      "id": "objectives-guide",
+      "type": "speech",
+      "props": {
+        "speaker": "guide",
+        "lines": [
+          {
+            "id": "hello",
+            "markdown": "Hello! I will walk with you through this module. It takes about fifteen minutes, and you can pause whenever you like."
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "three-cards",
+  "title": "Three ideas, side by side",
+  "covers": [
+    "ITEM-3"
+  ],
+  "backdrop": "pastel",
+  "blocks": [
+    {
+      "id": "cards",
+      "type": "columns",
+      "width": "wide",
+      "style": "cards",
+      "props": {
+        "count": 3
+      },
+      "blocks": [
+        {
+          "id": "card-1-title",
+          "type": "heading",
+          "slot": "first",
+          "props": {
+            "text": "First idea",
+            "level": 2
+          }
+        },
+        {
+          "id": "card-1-text",
+          "type": "text",
+          "slot": "first",
+          "props": {
+            "markdown": "Two short sentences describe this idea. The second one says what it changes for the learner."
+          }
+        },
+        {
+          "id": "card-2-title",
+          "type": "heading",
+          "slot": "second",
+          "props": {
+            "text": "Second idea",
+            "level": 2
+          }
+        },
+        {
+          "id": "card-2-text",
+          "type": "text",
+          "slot": "second",
+          "props": {
+            "markdown": "Two short sentences describe this idea. The second one gives a concrete example of it."
+          }
+        },
+        {
+          "id": "card-3-title",
+          "type": "heading",
+          "slot": "third",
+          "props": {
+            "text": "Third idea",
+            "level": 2
+          }
+        },
+        {
+          "id": "card-3-text",
+          "type": "text",
+          "slot": "third",
+          "props": {
+            "markdown": "Two short sentences describe this idea. The second one links it back to the key message."
+          }
+        }
+      ]
+    }
+  ]
+}

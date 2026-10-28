@@ -1,0 +1,39 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "steps",
+  "title": "Four steps, in order",
+  "covers": [
+    "ITEM-3"
+  ],
+  "blocks": [
+    {
+      "id": "steps-process",
+      "type": "process",
+      "props": {
+        "takeaway": "Each step prepares the next one",
+        "items": [
+          {
+            "id": "s1",
+            "title": "Step 1: Notice",
+            "text": "What the learner sees or hears that starts the process."
+          },
+          {
+            "id": "s2",
+            "title": "Step 2: Check",
+            "text": "The one thing to verify before going any further."
+          },
+          {
+            "id": "s3",
+            "title": "Step 3: Act",
+            "text": "The action itself, described as a short verb phrase."
+          },
+          {
+            "id": "s4",
+            "title": "Step 4: Report",
+            "text": "Who to tell, and what to tell them, so the loop closes."
+          }
+        ]
+      }
+    }
+  ]
+}

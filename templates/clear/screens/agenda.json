@@ -1,0 +1,26 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "agenda",
+  "title": "What this module covers",
+  "covers": [
+    "ITEM-1"
+  ],
+  "blocks": [
+    {
+      "id": "agenda-list",
+      "type": "text",
+      "style": "agenda",
+      "props": {
+        "markdown": "1. **First part title**  \n   One line that says what this part covers and why it matters.\n2. **Second part title**  \n   One line that says what this part covers and why it matters.\n3. **Third part title**  \n   One line that says what this part covers and why it matters."
+      }
+    },
+    {
+      "id": "agenda-goal",
+      "type": "text",
+      "style": "lead",
+      "props": {
+        "markdown": "By the end, you will be able to apply the key rule to a real case and choose the right first action."
+      }
+    }
+  ]
+}

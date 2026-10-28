@@ -1,0 +1,19 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "part-two",
+  "title": "Title of the second part, in a few words",
+  "covers": [
+    "ITEM-3"
+  ],
+  "layout": "flow-section",
+  "blocks": [
+    {
+      "id": "part-two-lead",
+      "type": "text",
+      "props": {
+        "markdown": "One sentence that says what this part adds to the first, and what the learner will practise."
+      },
+      "style": "lead"
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/plan.schema.json",
+  "id": "PLAN-FLOW",
+  "title": "Flow — module template",
+  "businessGoal": "Give authors a ready charter (neon field, ribbons and particles that leap forward at each screen) and one screen of each common kind, to replace with their own content.",
+  "audience": {
+    "role": "Learners of a tech, cybersecurity, product launch or sales module",
+    "priorKnowledge": "low"
+  },
+  "sources": [],
+  "objectives": [
+    {
+      "id": "OBJ-1",
+      "statement": "Apply the key idea of the module to choose the right option in a typical situation, and say why the others fall short."
+    }
+  ],
+  "items": [
+    {
+      "id": "ITEM-1",
+      "kind": "intro",
+      "title": "Cover and objectives",
+      "part": "Introduction",
+      "objectives": []
+    },
+    {
+      "id": "ITEM-2",
+      "kind": "exposition",
+      "title": "The key idea, its three pillars and its figures",
+      "part": "First part",
+      "objectives": [
+        "OBJ-1"
+      ]
+    },
+    {
+      "id": "ITEM-3",
+      "kind": "demonstration",
+      "title": "The steps, a quote and a comparison",
+      "part": "Second part",
+      "objectives": [
+        "OBJ-1"
+      ]
+    },
+    {
+      "id": "ITEM-4",
+      "kind": "practice",
+      "title": "Check: choose the right option",
+      "part": "Second part",
+      "objectives": [
+        "OBJ-1"
+      ]
+    },
+    {
+      "id": "ITEM-5",
+      "kind": "summary",
+      "title": "The trend, the recap and the end",
+      "part": "Wrap-up",
+      "objectives": [
+        "OBJ-1"
+      ]
+    }
+  ],
+  "spacing": [],
+  "waivers": []
+}

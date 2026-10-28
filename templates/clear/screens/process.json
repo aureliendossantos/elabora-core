@@ -1,0 +1,42 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "process",
+  "title": "The procedure, step by step",
+  "covers": [
+    "ITEM-4"
+  ],
+  "backdrop": "calm",
+  "blocks": [
+    {
+      "id": "process-chart",
+      "type": "process",
+      "width": "wide",
+      "props": {
+        "takeaway": "Four steps, always in the same order",
+        "items": [
+          {
+            "id": "s1",
+            "title": "Step 1: Notice",
+            "text": "One sentence on what to look for and when."
+          },
+          {
+            "id": "s2",
+            "title": "Step 2: Check",
+            "text": "One sentence on what to verify before acting."
+          },
+          {
+            "id": "s3",
+            "title": "Step 3: Act",
+            "text": "One sentence on the action itself and who does it."
+          },
+          {
+            "id": "s4",
+            "title": "Step 4: Report",
+            "text": "One sentence on where to record it and whom to tell."
+          }
+        ],
+        "highlight": "s3"
+      }
+    }
+  ]
+}

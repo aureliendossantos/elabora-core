@@ -1,0 +1,43 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "practice",
+  "title": "Your turn",
+  "covers": [
+    "ITEM-5"
+  ],
+  "backdrop": "mono",
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "practice-quiz",
+      "type": "quiz",
+      "props": {
+        "stem": "A short, realistic situation told in two sentences. A colleague asks you for help with a task you know well. **Which step of the method comes first?**",
+        "mode": "single",
+        "scored": false,
+        "objective": "OBJ-1",
+        "feedbackStyle": "compact",
+        "options": [
+          {
+            "id": "a",
+            "text": "Choose the tool you used last time",
+            "correct": false,
+            "feedback": "Tempting and quick, yet it skips what makes this case different: look first."
+          },
+          {
+            "id": "b",
+            "text": "Look at the situation with your colleague",
+            "correct": true,
+            "feedback": "Yes. Looking first tells you which building block fits, and often shows the answer."
+          },
+          {
+            "id": "c",
+            "text": "Share the result with the whole team",
+            "correct": false,
+            "feedback": "Sharing comes last, once you know what worked. For now there is nothing to share."
+          }
+        ]
+      }
+    }
+  ]
+}

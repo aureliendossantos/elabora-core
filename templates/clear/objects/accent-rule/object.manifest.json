@@ -1,0 +1,212 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "accent-rule",
+  "version": "1.0.0",
+  "title": "Accent rule",
+  "pedagogicalRole": "decoration",
+  "language": "en",
+  "props": {
+    "type": "object",
+    "properties": {
+      "accent": {
+        "type": "string",
+        "format": "color",
+        "default": "#1B56D1",
+        "title": "Accent",
+        "description": "Colour of the rule that underlines the current part: the brand's accent.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-token": "color.accent"
+      },
+      "accentOnDark": {
+        "type": "string",
+        "format": "color",
+        "default": "#8FB0FF",
+        "title": "Accent on dark screens",
+        "description": "Colour of the rule on screens of a dark variant: a lighter tint of the accent.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-token": "color.accent-on-dark"
+      },
+      "ink": {
+        "type": "string",
+        "format": "color",
+        "default": "#15191F",
+        "title": "Rail",
+        "description": "Colour of the hairline rail (drawn faint).",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-token": "color.text"
+      },
+      "inkOnDark": {
+        "type": "string",
+        "format": "color",
+        "default": "#EEF1F5",
+        "title": "Rail on dark screens",
+        "description": "Colour of the hairline rail on screens of a dark variant.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-token": "color.text-on-dark"
+      },
+      "darkVariants": {
+        "type": "array",
+        "title": "Dark variants",
+        "description": "Backdrop variants whose ground is dark: the rail and the rule take their colours for dark screens there.",
+        "x-group": "Colours",
+        "x-control": "list",
+        "maxItems": 6,
+        "items": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "default": [
+          "ink"
+        ]
+      },
+      "sections": {
+        "type": "array",
+        "title": "Parts, in order",
+        "description": "Ids of the module's sections in their order: one segment of the rail each. Keep it in step with the sections of course.json; a section left out keeps the rule where it was.",
+        "x-group": "Rail",
+        "x-control": "list",
+        "minItems": 1,
+        "maxItems": 12,
+        "items": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{0,63}$"
+        },
+        "default": [
+          "start",
+          "first",
+          "second",
+          "third",
+          "wrap"
+        ]
+      },
+      "position": {
+        "type": "string",
+        "enum": [
+          "top",
+          "bottom"
+        ],
+        "x-enum-labels": {
+          "top": "Under the top bar",
+          "bottom": "Above the bottom bar"
+        },
+        "title": "Place",
+        "description": "Where the rail runs.",
+        "x-group": "Rail",
+        "x-control": "select",
+        "default": "top"
+      },
+      "offset": {
+        "type": "number",
+        "title": "Distance from the edge (rem)",
+        "description": "Distance of the rail from the top (or bottom) of the window, in rem: the height of the player's bar puts it right against it.",
+        "x-group": "Rail",
+        "x-control": "slider",
+        "minimum": 0,
+        "maximum": 12,
+        "default": 3.5
+      },
+      "width": {
+        "type": "number",
+        "title": "Width (rem)",
+        "description": "Width of the rail in rem, as wide as the grid (presentation.wideWidth ÷ 16). Narrower windows keep a margin.",
+        "x-group": "Rail",
+        "x-control": "slider",
+        "minimum": 30,
+        "maximum": 110,
+        "default": 77.5
+      },
+      "thickness": {
+        "type": "integer",
+        "title": "Thickness (px)",
+        "description": "Thickness of the accent rule, in px.",
+        "x-group": "Rail",
+        "x-control": "slider",
+        "minimum": 1,
+        "maximum": 8,
+        "default": 3
+      },
+      "duration": {
+        "type": "number",
+        "title": "Travel (s)",
+        "description": "Seconds the rule takes to slide to the next part, or to fade across when the learner jumps further.",
+        "x-group": "Motion",
+        "x-control": "slider",
+        "minimum": 0.3,
+        "maximum": 0.9,
+        "default": 0.7
+      }
+    },
+    "required": [
+      "accent",
+      "accentOnDark",
+      "ink",
+      "inkOnDark",
+      "darkVariants",
+      "sections",
+      "position",
+      "offset",
+      "width",
+      "thickness",
+      "duration"
+    ]
+  },
+  "objects": [],
+  "state": {
+    "type": "object",
+    "properties": {
+      "section": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "index": {
+        "type": "integer"
+      },
+      "count": {
+        "type": "integer"
+      },
+      "moving": {
+        "type": "string",
+        "enum": [
+          "none",
+          "slide",
+          "fade"
+        ]
+      },
+      "dark": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "section",
+      "index",
+      "count",
+      "moving",
+      "dark"
+    ]
+  },
+  "events": [],
+  "budgets": {
+    "drawCallsMax": 30,
+    "trianglesMax": 60000,
+    "bootMsMax": 1000,
+    "webglContexts": 0
+  },
+  "a11y": {
+    "description": "Decoration: a thin accent rule under the top bar that marks the current part of the module.",
+    "motion": {
+      "pausable": true,
+      "respectsReducedMotion": true
+    }
+  },
+  "sandbox": {
+    "network": "none",
+    "permissions": []
+  }
+}

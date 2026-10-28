@@ -1,0 +1,24 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "insight",
+  "title": "Explain the idea in one short title",
+  "covers": [
+    "ITEM-2"
+  ],
+  "blocks": [
+    {
+      "id": "insight-figure",
+      "type": "image",
+      "props": {
+        "presentation": "beside",
+        "asset": "images/signal.svg",
+        "inline": true,
+        "decorative": true,
+        "title": "A subtitle that frames the idea",
+        "markdown": "A first short paragraph introduces the idea in plain words, with the one detail that makes it concrete for the learner.\n\nA second paragraph says what changes when the idea is applied, and where the learner will meet it in their own work.",
+        "side": "end",
+        "share": "half"
+      }
+    }
+  ]
+}

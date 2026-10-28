@@ -1,0 +1,23 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "text-figure",
+  "title": "A title for the explanation",
+  "covers": [
+    "ITEM-3"
+  ],
+  "blocks": [
+    {
+      "id": "text-figure-body",
+      "type": "image",
+      "props": {
+        "presentation": "beside",
+        "side": "end",
+        "share": "half",
+        "asset": "images/figure-grid.svg",
+        "alt": "Abstract figure: a grid of squares, three of them filled in the accent colour along one diagonal.",
+        "title": "A heading for this idea",
+        "markdown": "Two or three sentences that explain the idea in plain words. Say what it is, when it applies and what changes for the learner.\n\nA second, shorter paragraph adds an example or a nuance. Keep the whole text under eighty words so that it reads at a glance."
+      }
+    }
+  ]
+}

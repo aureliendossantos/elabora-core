@@ -1,0 +1,42 @@
+{
+  "id": "part-mark",
+  "title": "Part mark",
+  "version": "1.0.0",
+  "level": "block",
+  "category": "content",
+  "description": "The number of a part set large inside a flat Bauhaus shape: a circle, a quarter circle, a half disc or a square.",
+  "instructions": "One per part opener. number is short (« 01 », « 2 », « A »); label says what it numbers (« Part »). Pick another shape and colour for each part.",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["number"],
+    "properties": {
+      "label": { "type": "string", "maxLength": 24, "title": "Label", "description": "What the number counts, above it (« Part »).", "x-translatable": true },
+      "number": { "type": "string", "maxLength": 4, "title": "Number", "description": "The part's number, short: « 01 ».", "x-translatable": true },
+      "shape": {
+        "type": "string",
+        "enum": ["circle", "quarter", "half", "square"],
+        "default": "circle",
+        "title": "Shape",
+        "description": "The flat shape behind the number.",
+        "x-group": "design"
+      },
+      "colour": {
+        "type": "string",
+        "x-kind": "token",
+        "x-token-prefix": "color.",
+        "default": "color.shape-1",
+        "title": "Colour",
+        "description": "The colour of the shape (a theme token). The number stays in the ink colour: keep to the light shape colours.",
+        "x-group": "design"
+      }
+    }
+  },
+  "fallback": [
+    { "type": "heading", "props": { "text": "{{label}} {{number}}", "level": 2 } }
+  ],
+  "examples": [
+    { "title": "First part", "props": { "label": "Part", "number": "01", "shape": "circle", "colour": "color.shape-1" } },
+    { "title": "Second part", "props": { "label": "Part", "number": "02", "shape": "quarter", "colour": "color.shape-2" } }
+  ]
+}

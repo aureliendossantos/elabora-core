@@ -1,0 +1,10 @@
+{
+  "format": "elabora-generated/1",
+  "assets": {
+    "images/figure-grid.svg": {
+      "generator": "generators/figures.mjs",
+      "inputsHash": "sha256:ca00a3962862002e49de6a64d3bb6db8717edca7ca81573fea81ab5d22c103b8",
+      "outputHash": "sha256:467742e7162630a12d80919d49c1d8e3dea97554f46dcbcf082acd1a5ff10740"
+    }
+  }
+}

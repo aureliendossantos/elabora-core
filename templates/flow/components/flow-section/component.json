@@ -1,0 +1,17 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/component.schema.json",
+  "id": "flow-section",
+  "title": "Flow part opener",
+  "version": "1.0.0",
+  "level": "screen",
+  "description": "Opens a part of the module: where it stands (« Part 2 of 4 », written by the player), a large title and a lead.",
+  "instructions": "The first screen of a section. The title names the part; the body holds one text block with the style lead (one or two sentences on what this part brings).",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  },
+  "slots": [
+    { "id": "body", "label": "Lead", "default": true, "maxBlocks": 3 }
+  ]
+}

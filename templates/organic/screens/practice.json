@@ -1,0 +1,43 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "practice",
+  "title": "Your turn",
+  "covers": [
+    "ITEM-5"
+  ],
+  "backdrop": "pastel",
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "practice-quiz",
+      "type": "quiz",
+      "props": {
+        "stem": "A short, realistic situation told in two sentences. A colleague comes to you with a problem you have seen before. **What do you do first?**",
+        "mode": "single",
+        "scored": false,
+        "objective": "OBJ-1",
+        "feedbackStyle": "compact",
+        "options": [
+          {
+            "id": "a",
+            "text": "Offer the solution that worked for you last time",
+            "correct": false,
+            "feedback": "Tempting, and quick. Yet it skips what makes this case different: ask first."
+          },
+          {
+            "id": "b",
+            "text": "Ask an open question to understand their situation",
+            "correct": true,
+            "feedback": "Yes. An open question shows you listen, and often brings the answer forward."
+          },
+          {
+            "id": "c",
+            "text": "Suggest they write to the team that handles it",
+            "correct": false,
+            "feedback": "It may come later, once you know what they need. For now it closes the door."
+          }
+        ]
+      }
+    }
+  ]
+}

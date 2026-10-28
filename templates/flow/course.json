@@ -1,0 +1,212 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "flow",
+  "title": "Flow — module template",
+  "language": "en",
+  "version": "0.1.0",
+  "sections": [
+    {
+      "id": "opening",
+      "title": "Introduction",
+      "screens": [
+        "cover",
+        "objectives"
+      ]
+    },
+    {
+      "id": "first-part",
+      "title": "First part",
+      "screens": [
+        "part-one",
+        "message",
+        "insight",
+        "pillars",
+        "figures"
+      ]
+    },
+    {
+      "id": "second-part",
+      "title": "Second part",
+      "screens": [
+        "part-two",
+        "steps",
+        "quote",
+        "compare",
+        "check"
+      ]
+    },
+    {
+      "id": "closing",
+      "title": "Wrap-up",
+      "screens": [
+        "trend",
+        "recap",
+        "end"
+      ]
+    }
+  ],
+  "variables": [],
+  "theme": {
+    "cascade": "components-over-theme",
+    "fonts": [
+      {
+        "family": "Figtree",
+        "src": "theme/fonts/figtree/figtree-latin-wght-normal.woff2",
+        "weight": "300 900"
+      },
+      {
+        "family": "Figtree",
+        "src": "theme/fonts/figtree/figtree-latin-wght-italic.woff2",
+        "weight": "300 900",
+        "style": "italic"
+      },
+      {
+        "family": "JetBrains Mono",
+        "src": "theme/fonts/jetbrains-mono/jetbrains-mono-latin-wght-normal.woff2",
+        "weight": "100 800"
+      }
+    ],
+    "tokens": {
+      "font.body": "\"Figtree\", \"Avenir Next\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "font.heading": "\"Figtree\", \"Avenir Next\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "color.primary": "#3DE8FF",
+      "color.onPrimary": "#031318",
+      "color.accent": "#FF4FCB",
+      "color.surface": "#070812",
+      "color.text": "#EEF1FA",
+      "color.muted": "#A3AAC4",
+      "color.success": "#46EBA0",
+      "color.error": "#FF6B7E",
+      "color.focus": "#FFE066",
+      "radius": 6,
+      "player.top.background": "#070812",
+      "player.top.text": "#EEF1FA",
+      "player.bottom.background": "#070812",
+      "player.bottom.text": "#EEF1FA",
+      "player.radius": 6
+    },
+    "custom": {
+      "font.mono": "\"JetBrains Mono\", ui-monospace, SFMono-Regular, Menlo, Consolas, \"Liberation Mono\", monospace",
+      "color.field": "#070812",
+      "color.field-deep": "#030409",
+      "color.neon-a": "#3DE8FF",
+      "color.neon-b": "#FF4FCB",
+      "color.panel": "#0D1024",
+      "color.panel-edge": "#262C52",
+      "color.hairline": "#2A3050",
+      "color.paper": "#F1F0EB",
+      "color.ink": "#11152A",
+      "color.ink-muted": "#4B5170",
+      "color.ink-a": "#00759E",
+      "color.ink-b": "#B8137A",
+      "color.ink-panel": "#FFFFFF",
+      "color.ink-edge": "#D6D4CC"
+    },
+    "stylesheet": "theme/theme.css",
+    "styles": {
+      "text": {
+        "lead": "Large introductory paragraph",
+        "kicker": "Short label above a title, in monospaced capitals",
+        "meta": "Small monospaced line: a date, a duration, a version",
+        "list": "Numbered list with large monospaced numbers (objectives, agenda)",
+        "recap": "Checklist on a card (recap, what to remember)"
+      },
+      "columns": {
+        "cards": "Each column on its own card",
+        "versus": "Two columns face to face, the second in the accent colour"
+      }
+    },
+    "backdrop": {
+      "layers": [
+        "field",
+        "haze",
+        "grain"
+      ],
+      "object": {
+        "id": "flow-field",
+        "props": {}
+      },
+      "variants": {
+        "calm": "Quieter ribbons and fewer particles, behind dense screens",
+        "ink": "Light paper with ink-coloured ribbons"
+      }
+    }
+  },
+  "navigation": {
+    "mode": "linear",
+    "lockUntilComplete": true
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "logo",
+          "enabled": false
+        },
+        {
+          "id": "title"
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "outline"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "completion": {
+    "reportAs": "completed-incomplete"
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  },
+  "presentation": {
+    "mode": "slides",
+    "contentWidth": 760,
+    "wideWidth": 1240,
+    "fit": {
+      "reference": "1600x900",
+      "minimum": "1280x720"
+    }
+  },
+  "description": "A template module of the Flow charter: a dark field with luminous ribbons and particles that leap forward at each new screen. Abstract content to replace with your own.",
+  "durationMinutes": 10,
+  "ui": {
+    "lessonOf": "Part {n} of {total}"
+  }
+}

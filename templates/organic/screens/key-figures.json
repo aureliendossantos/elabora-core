@@ -1,0 +1,46 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "key-figures",
+  "title": "Key figures",
+  "covers": [
+    "ITEM-4"
+  ],
+  "showTitle": false,
+  "blocks": [
+    {
+      "id": "figures",
+      "type": "key-figures",
+      "width": "wide",
+      "props": {
+        "takeaway": "One sentence that says what these numbers prove",
+        "source": "Name of the source, year",
+        "highlight": "share",
+        "items": [
+          {
+            "id": "share",
+            "figure": "72 %",
+            "label": "of people say what this figure measures, in a few words",
+            "count": {
+              "to": 72,
+              "format": "percent"
+            }
+          },
+          {
+            "id": "ratio",
+            "figure": "3 in 4",
+            "label": "teams who tried the approach kept it after a month"
+          },
+          {
+            "id": "time",
+            "figure": "15 min",
+            "label": "a day is all the practice it takes",
+            "count": {
+              "to": 15,
+              "format": "minutes"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "quote",
+  "title": "In their words",
+  "covers": [
+    "ITEM-4"
+  ],
+  "backdrop": "earth",
+  "blocks": [
+    {
+      "id": "quote-statement",
+      "type": "statement",
+      "props": {
+        "presentation": "quote",
+        "align": "start",
+        "markdown": "A short quotation from someone your learners trust, in their exact words, that makes the idea concrete.",
+        "author": "First name Last name",
+        "role": "Role, organisation"
+      }
+    }
+  ]
+}

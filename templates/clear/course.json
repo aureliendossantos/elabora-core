@@ -1,0 +1,229 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "clear",
+  "title": "Your module title",
+  "description": "Clear: a sober, brand-ready template for compliance, procedures, HR and internal communication, and for classic presentations. A strict grid, one accent, and a single movement: an accent rule that travels under the top bar to mark the current part.",
+  "language": "en",
+  "version": "0.1.0",
+  "durationMinutes": 15,
+  "sections": [
+    {
+      "id": "start",
+      "title": "Introduction",
+      "screens": [
+        "cover",
+        "agenda"
+      ]
+    },
+    {
+      "id": "first",
+      "title": "First part title",
+      "screens": [
+        "part-intro",
+        "key-message",
+        "text-figure",
+        "cards"
+      ]
+    },
+    {
+      "id": "second",
+      "title": "Second part title",
+      "screens": [
+        "key-figures",
+        "process",
+        "quote",
+        "compare"
+      ]
+    },
+    {
+      "id": "third",
+      "title": "Third part title",
+      "screens": [
+        "check",
+        "chart"
+      ]
+    },
+    {
+      "id": "wrap",
+      "title": "Wrap-up",
+      "screens": [
+        "recap",
+        "end"
+      ]
+    }
+  ],
+  "variables": [],
+  "speakers": [
+    {
+      "id": "colleague",
+      "name": "Alex, a colleague",
+      "color": "color.accent"
+    }
+  ],
+  "theme": {
+    "cascade": "components-over-theme",
+    "fonts": [
+      {
+        "family": "Inter",
+        "src": "theme/fonts/inter/inter-latin-wght-normal.woff2",
+        "weight": "100 900"
+      },
+      {
+        "family": "Inter",
+        "src": "theme/fonts/inter/inter-latin-wght-italic.woff2",
+        "weight": "100 900",
+        "style": "italic"
+      }
+    ],
+    "tokens": {
+      "font.body": "\"Inter\", system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "font.heading": "\"Inter\", system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "color.primary": "#15191F",
+      "color.onPrimary": "#FFFFFF",
+      "color.accent": "#1B56D1",
+      "color.surface": "#FFFFFF",
+      "color.text": "#15191F",
+      "color.muted": "#4F5763",
+      "color.success": "#1E7A4C",
+      "color.error": "#B42318",
+      "color.focus": "#1B56D1",
+      "radius": 2,
+      "player.top.background": "#FFFFFF",
+      "player.top.text": "#15191F",
+      "player.bottom.background": "#FFFFFF",
+      "player.bottom.text": "#15191F",
+      "player.accent": "#1B56D1",
+      "player.onAccent": "#FFFFFF",
+      "player.radius": 2
+    },
+    "custom": {
+      "color.paper": "#F4F5F7",
+      "color.line": "#DADDE2",
+      "color.on-accent": "#FFFFFF",
+      "color.ground-dark": "#11151B",
+      "color.paper-dark": "#1B2029",
+      "color.text-on-dark": "#EEF1F5",
+      "color.muted-on-dark": "#A9B1BD",
+      "color.accent-on-dark": "#8FB0FF"
+    },
+    "stylesheet": "theme/theme.css",
+    "styles": {
+      "screen": {
+        "cover": "Cover: the title on the left seven columns, the accent panel on the right (with the feature backdrop)",
+        "section": "Part opener: a large part number and title on the left columns (with the feature backdrop)"
+      },
+      "text": {
+        "lead": "Large introductory paragraph",
+        "agenda": "Numbered agenda: one row per part, large numbers, hairlines between rows",
+        "checklist": "Ticked list on hairlines: takeaways, recap",
+        "meta": "Short facts in a row, separated by hairlines (audience, duration, owner)"
+      },
+      "columns": {
+        "cards": "Each column on a flat card, numbered in the accent colour",
+        "compare": "Two columns face to face: the first in grey, the second outlined in the accent"
+      },
+      "statement": {
+        "accent": "The statement set large with a short accent rule above it"
+      }
+    },
+    "backdrop": {
+      "layers": [
+        "ground",
+        "grid",
+        "panel"
+      ],
+      "object": {
+        "id": "accent-rule",
+        "props": {
+          "sections": [
+            "start",
+            "first",
+            "second",
+            "third",
+            "wrap"
+          ]
+        }
+      },
+      "variants": {
+        "feature": "Accent panel on the right columns: cover, part openers and the end",
+        "calm": "No grid lines: dense screens, charts and questions",
+        "ink": "Dark screen: dark ground, light text, a lighter accent"
+      }
+    }
+  },
+  "navigation": {
+    "mode": "linear",
+    "lockUntilComplete": true
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "logo",
+          "options": {
+            "asset": "images/logo.svg",
+            "alt": "Your organisation"
+          }
+        },
+        {
+          "id": "title"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "outline"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "ui": {
+    "lessonOf": "Part {n} of {total}"
+  },
+  "completion": {
+    "reportAs": "completed-incomplete"
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  },
+  "presentation": {
+    "mode": "slides",
+    "contentWidth": 760,
+    "wideWidth": 1240,
+    "fit": {
+      "reference": "1600x900",
+      "minimum": "1280x720"
+    }
+  }
+}

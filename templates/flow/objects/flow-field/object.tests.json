@@ -1,0 +1,71 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "At rest the particles float as dots over the lines",
+      "size": [1600, 900],
+      "context": { "screen": "cover", "section": "opening", "step": 1, "variant": null },
+      "steps": [
+        { "action": "step", "frames": 30 },
+        { "action": "snapshot", "name": "rest" },
+        { "action": "expect-state", "state": {} }
+      ]
+    },
+    {
+      "name": "A new screen stretches the particles into streaks, then they settle",
+      "size": [1600, 900],
+      "context": { "screen": "cover", "section": "opening", "step": 1, "variant": null },
+      "steps": [
+        { "action": "step", "frames": 20 },
+        { "action": "set-context", "context": { "screen": "objectives", "section": "opening", "step": 1, "variant": "calm" } },
+        { "action": "step", "frames": 14 },
+        { "action": "snapshot", "name": "leap-forward" },
+        { "action": "step", "frames": 200 },
+        { "action": "snapshot", "name": "settled-calm" },
+        { "action": "expect-no-event" }
+      ]
+    },
+    {
+      "name": "Going back leaps the other way, and a new part moves the palette",
+      "size": [1600, 900],
+      "context": { "screen": "cover", "section": "opening", "step": 1, "variant": null },
+      "steps": [
+        { "action": "step", "frames": 10 },
+        { "action": "set-context", "context": { "screen": "part-one", "section": "first-part", "step": 1, "variant": null } },
+        { "action": "step", "frames": 200 },
+        { "action": "set-context", "context": { "screen": "cover", "section": "opening", "step": 1, "variant": null } },
+        { "action": "step", "frames": 14 },
+        { "action": "snapshot", "name": "leap-back" }
+      ]
+    },
+    {
+      "name": "The ink variant draws in ink on light paper",
+      "size": [1600, 900],
+      "context": { "screen": "quote", "section": "second-part", "step": 1, "variant": "ink" },
+      "steps": [
+        { "action": "step", "frames": 40 },
+        { "action": "snapshot", "name": "ink" }
+      ]
+    },
+    {
+      "name": "Brand colours and settings apply without remounting",
+      "size": [1600, 900],
+      "context": { "screen": "cover", "section": "opening", "step": 1, "variant": null },
+      "steps": [
+        { "action": "step", "frames": 10 },
+        { "action": "set-props", "props": { "colorA": "#FFB020", "colorB": "#2EE6A6", "density": 0.3, "lines": 1, "jump": 0.4, "order": ["cover", "objectives"] } },
+        { "action": "step", "frames": 20 },
+        { "action": "snapshot", "name": "brand" }
+      ]
+    },
+    {
+      "name": "Phone window",
+      "size": [375, 812],
+      "context": { "screen": "cover", "section": "opening", "step": 1, "variant": null },
+      "steps": [
+        { "action": "step", "frames": 30 },
+        { "action": "snapshot", "name": "narrow" }
+      ]
+    }
+  ]
+}

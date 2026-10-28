@@ -1,0 +1,20 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "key-message",
+  "title": "Key message",
+  "covers": [
+    "ITEM-3"
+  ],
+  "showTitle": false,
+  "backdrop": "night",
+  "blocks": [
+    {
+      "id": "message-statement",
+      "type": "statement",
+      "props": {
+        "presentation": "statement",
+        "markdown": "Your key message in one sentence, short enough to remember and strong enough to repeat."
+      }
+    }
+  ]
+}

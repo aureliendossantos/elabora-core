@@ -1,0 +1,42 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "check",
+  "title": "Check your understanding",
+  "covers": [
+    "ITEM-4"
+  ],
+  "backdrop": "calm",
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "check-quiz",
+      "type": "quiz",
+      "props": {
+        "stem": "A short situation in one or two sentences sets the scene. What is the best thing to do?",
+        "mode": "single",
+        "objective": "OBJ-1",
+        "feedbackStyle": "compact",
+        "options": [
+          {
+            "id": "a",
+            "text": "The first option, a plausible action of similar length",
+            "correct": false,
+            "feedback": "Not quite: say in one sentence why this option falls short."
+          },
+          {
+            "id": "b",
+            "text": "The second option, the right action in this situation",
+            "correct": true,
+            "feedback": "Right: say in one sentence why this is the best choice here."
+          },
+          {
+            "id": "c",
+            "text": "The third option, another plausible but weaker action",
+            "correct": false,
+            "feedback": "Not quite: say what this option misses, and what it risks."
+          }
+        ]
+      }
+    }
+  ]
+}

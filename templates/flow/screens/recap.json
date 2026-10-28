@@ -1,0 +1,19 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "recap",
+  "title": "What to remember",
+  "covers": [
+    "ITEM-5"
+  ],
+  "backdrop": "ink",
+  "blocks": [
+    {
+      "id": "recap-list",
+      "type": "text",
+      "props": {
+        "markdown": "- The key idea, restated in one short sentence.\n- The three pillars that hold it together, named in a few words.\n- The four steps to follow, from noticing to reporting.\n- The better way, and the one trait that makes the difference."
+      },
+      "style": "recap"
+    }
+  ]
+}

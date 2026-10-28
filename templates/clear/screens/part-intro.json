@@ -1,0 +1,27 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "part-intro",
+  "title": "First part title",
+  "covers": [
+    "ITEM-2"
+  ],
+  "layout": "opening",
+  "layoutProps": {
+    "presentation": "title",
+    "eyebrow": "Part 01",
+    "lead": "One sentence that sets up what this part covers and why it comes first.",
+    "duration": false
+  },
+  "style": "section",
+  "backdrop": "feature",
+  "blocks": [
+    {
+      "id": "part-intro-points",
+      "type": "text",
+      "style": "checklist",
+      "props": {
+        "markdown": "- The key rule, in one sentence\n- How it applies in practice\n- Three points to keep in mind"
+      }
+    }
+  ]
+}

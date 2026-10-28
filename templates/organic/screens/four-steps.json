@@ -1,0 +1,42 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "four-steps",
+  "title": "Four steps, from noticing to acting",
+  "covers": [
+    "ITEM-4"
+  ],
+  "showTitle": false,
+  "backdrop": "pastel",
+  "blocks": [
+    {
+      "id": "steps",
+      "type": "process",
+      "width": "wide",
+      "props": {
+        "takeaway": "Four steps, from noticing to acting",
+        "items": [
+          {
+            "id": "notice",
+            "title": "Notice the moment",
+            "text": "One sentence that says what to look for."
+          },
+          {
+            "id": "pause",
+            "title": "Pause and listen",
+            "text": "One sentence that says how to make room."
+          },
+          {
+            "id": "ask",
+            "title": "Ask an open question",
+            "text": "One sentence with an example of the question."
+          },
+          {
+            "id": "agree",
+            "title": "Agree on a next step",
+            "text": "One sentence on how to close the exchange."
+          }
+        ]
+      }
+    }
+  ]
+}

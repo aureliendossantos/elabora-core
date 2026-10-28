@@ -1,0 +1,38 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "chart",
+  "title": "Where the effect comes from",
+  "covers": [
+    "ITEM-4"
+  ],
+  "showTitle": false,
+  "blocks": [
+    {
+      "id": "chart-donut",
+      "type": "donut",
+      "props": {
+        "takeaway": "Most of the effect comes from the first step",
+        "source": "Name of the source, year",
+        "unit": "%",
+        "highlight": "first",
+        "parts": [
+          {
+            "id": "first",
+            "label": "First step",
+            "value": 58
+          },
+          {
+            "id": "second",
+            "label": "Second step",
+            "value": 27
+          },
+          {
+            "id": "others",
+            "label": "All the others",
+            "value": 15
+          }
+        ]
+      }
+    }
+  ]
+}

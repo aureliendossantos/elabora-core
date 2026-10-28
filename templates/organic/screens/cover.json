@@ -1,0 +1,25 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "cover",
+  "title": "Your module title, on two lines at most",
+  "covers": [
+    "ITEM-1"
+  ],
+  "layout": "opening",
+  "layoutProps": {
+    "presentation": "title",
+    "eyebrow": "Onboarding programme",
+    "lead": "One or two sentences that tell learners what they will be able to do by the end, and why it matters to them today.",
+    "duration": false
+  },
+  "blocks": [
+    {
+      "id": "cover-meta",
+      "type": "text",
+      "style": "meta",
+      "props": {
+        "markdown": "- For everyone joining the team\n- Self-paced, at your own rhythm"
+      }
+    }
+  ]
+}

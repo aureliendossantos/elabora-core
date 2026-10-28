@@ -1,0 +1,31 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "the-end",
+  "title": "Well done: you have finished",
+  "covers": [
+    "ITEM-6"
+  ],
+  "layout": "poster",
+  "layoutProps": {
+    "arrangement": "stack"
+  },
+  "blocks": [
+    {
+      "id": "the-end-lead",
+      "type": "text",
+      "slot": "lead",
+      "props": {
+        "markdown": "One sentence that thanks learners and tells them where to find help or what comes next."
+      }
+    },
+    {
+      "id": "the-end-meta",
+      "type": "text",
+      "slot": "body",
+      "style": "meta",
+      "props": {
+        "markdown": "- Questions: your contact\n- Next module: its title"
+      }
+    }
+  ]
+}

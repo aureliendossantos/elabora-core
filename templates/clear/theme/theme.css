@@ -1,0 +1,173 @@
+/* Clear — the theme.
+   Corporate sobriety, made with care: a strict twelve-column grid as wide as the wide column, one
+   accent, one neutral sans (Inter). Everything sits flush left on the grid; titles keep the same
+   place from one slide to the next. The only movement is the backdrop's accent rule (objects/
+   accent-rule), which travels under the top bar to the part the learner is in. Variants of the
+   backdrop only fade: feature (accent panel on the right columns), calm (no grid lines), ink (dark).
+   Every colour is a token of course.json: change color.accent (and color.accent-on-dark) for a brand. */
+
+html { background: var(--t-surface); }
+body { background: transparent; }
+
+:root {
+  /* The grid: twelve columns across the wide column, with a margin on narrow windows. */
+  --cl-grid: min(var(--t-wide-width, 77.5rem), 100vw - 4rem);
+  --cl-col: calc(var(--cl-grid) / 12);
+  --cl-measure: calc(var(--cl-grid) * 8 / 12);
+  --cl-gridline: color-mix(in srgb, var(--t-text) 6%, transparent);
+  --cl-hair: color-mix(in srgb, var(--t-text) 16%, transparent);
+  --cl-card: var(--t-color-paper);
+  --cl-fade: 400ms;
+  font-feature-settings: "cv11", "ss01";
+}
+@media (max-width: 760px) { :root { --cl-grid: calc(100vw - 2.5rem); --cl-measure: var(--cl-grid); } }
+
+/* ── Backdrop: ground, grid, panel (CSS) and the accent rule (object) ───────── */
+.t-backdrop-layer { transition: opacity var(--cl-fade) ease; }
+.t-backdrop-object { z-index: 1; }
+.t-backdrop-layer[data-layer="ground"] { background: var(--t-color-ground-dark); opacity: 0; }
+.t-backdrop-layer[data-layer="grid"] {
+  inset: 0 auto; left: calc((100% - var(--cl-grid)) / 2); width: var(--cl-grid);
+  background:
+    linear-gradient(to left, var(--cl-gridline) 0 1px, transparent 1px),
+    repeating-linear-gradient(to right, var(--cl-gridline) 0 1px, transparent 1px var(--cl-col));
+}
+.t-backdrop-layer[data-layer="panel"] {
+  /* From the eighth column to the edge of the window, under the rail (the rule stays on paper). */
+  top: calc(var(--t-pl-top-h) + 1.5rem); left: calc(50% + var(--cl-col)); opacity: 0;
+  background:
+    radial-gradient(circle at 0 100%, transparent calc(var(--cl-col) * 4 - 1px), color-mix(in srgb, var(--t-color-on-accent) 34%, transparent) calc(var(--cl-col) * 4 - 1px) calc(var(--cl-col) * 4), transparent calc(var(--cl-col) * 4)),
+    repeating-linear-gradient(to right, color-mix(in srgb, var(--t-color-on-accent) 14%, transparent) 0 1px, transparent 1px var(--cl-col)),
+    var(--t-accent);
+}
+.t-backdrop[data-variant="feature"] .t-backdrop-layer[data-layer="panel"] { opacity: 1; }
+.t-backdrop[data-variant="calm"] .t-backdrop-layer[data-layer="grid"] { opacity: 0; }
+.t-backdrop[data-variant="ink"] .t-backdrop-layer[data-layer="ground"] { opacity: 1; }
+.t-backdrop[data-variant="ink"] .t-backdrop-layer[data-layer="grid"] { --cl-gridline: color-mix(in srgb, var(--t-color-text-on-dark) 6%, transparent); }
+@media (max-width: 760px) {
+  .t-backdrop-layer[data-layer="panel"], .t-backdrop-layer[data-layer="grid"] { display: none; }
+}
+
+/* ── The dark variant: the whole window turns dark, the accent lightens ─────── */
+#elabora-app:has(> .t-backdrop[data-variant="ink"]) {
+  --t-text: var(--t-color-text-on-dark);
+  --t-muted: var(--t-color-muted-on-dark);
+  --t-primary: var(--t-color-text-on-dark);
+  --t-on-primary: var(--t-color-ground-dark);
+  --t-surface: var(--t-color-ground-dark);
+  --t-accent: var(--t-color-accent-on-dark);
+  --t-focus: var(--t-color-accent-on-dark);
+  --cl-card: var(--t-color-paper-dark);
+  --cl-hair: color-mix(in srgb, var(--t-color-text-on-dark) 18%, transparent);
+  --t-pl-top-bg: var(--t-color-ground-dark);
+  --t-pl-top-fg: var(--t-color-text-on-dark);
+  --t-pl-bottom-bg: var(--t-color-ground-dark);
+  --t-pl-bottom-fg: var(--t-color-text-on-dark);
+  --t-pl-accent: var(--t-color-accent-on-dark);
+  --t-pl-on-accent: var(--t-color-ground-dark);
+  --t-pl-tip-bg: var(--t-color-text-on-dark);
+  --t-pl-tip-fg: var(--t-color-ground-dark);
+  color: var(--t-text);
+}
+.t-bar { transition: background-color var(--cl-fade) ease, color var(--cl-fade) ease; }
+
+/* ── Type ──────────────────────────────────────────────────────────────── */
+h1, h2, h3, h4 { letter-spacing: -0.012em; }
+.t-screen-title { max-width: var(--cl-measure); margin: 0 0 2rem; font-size: clamp(1.875rem, 1.2rem + 1.6vw, 2.625rem); font-weight: 700; line-height: 1.12; letter-spacing: -0.022em; text-wrap: balance; }
+.t-text { font-size: 1.0625rem; line-height: 1.6; }
+.t-text strong { font-weight: 650; }
+.t-block--heading h2, .t-columns h2 { font-size: 1.25rem; font-weight: 650; line-height: 1.3; letter-spacing: -0.01em; margin-bottom: .5rem; }
+
+/* ── The grid in the page: everything flush left, text held to eight columns ── */
+[data-presentation="slides"] .t-main { padding-block: 3rem 2rem; }
+/* Slides: the title keeps its place at the top; the content sits in the middle of the room left. */
+[data-presentation="slides"] .t-main:not([data-full-bleed]) > .t-screen:not(.t-layout) { flex: 1; display: flex; flex-direction: column; margin-block: 0; }
+[data-presentation="slides"] .t-main:not([data-full-bleed]) > .t-screen:not(.t-layout) > .t-blocks { width: 100%; margin-block: auto; padding-bottom: 2rem; }
+.t-screen { width: 100%; max-width: var(--cl-grid); }
+.t-main[data-full-bleed] > .t-screen { max-width: none; }
+.t-blocks { gap: 1.5rem 0; }
+.t-block { max-width: var(--cl-measure); justify-self: start; }
+.t-block.t-w-wide, :is(.t-screen > .t-blocks) > .t-block:is(:has(> .t-image--beside, > .t-columns, > .t-chart)) { max-width: var(--cl-grid); }
+
+/* ── Openings (cover, part opener, end): copy on the left columns of the grid ─ */
+/* The opening owns the page (full bleed): its copy starts on the first line of the grid. */
+.t-opening { --t-opening-gutter: 0px; }
+.t-main[data-full-bleed] .t-opening { --t-opening-gutter: max(1.25rem, calc((100vw - var(--cl-grid)) / 2)); }
+.t-opening-copy { padding-block: clamp(3rem, 7vh, 5rem) 1.5rem; }
+.t-opening-eyebrow { color: var(--t-accent); font-size: .8125rem; letter-spacing: .1em; }
+.t-opening .t-screen-title { max-width: none; font-size: clamp(2.25rem, 1.3rem + 2.6vw, 3.5rem); font-weight: 750; line-height: 1.06; letter-spacing: -0.03em; }
+.t-opening-lead { max-width: 32em; color: var(--t-muted); }
+.t-opening--title .t-opening-copy::after { width: var(--cl-col); height: 3px; border-radius: 0; margin-top: 2rem; }
+.t-opening-body.t-slot { max-width: none; padding-inline: var(--t-opening-gutter); }
+.t-opening-body.t-slot > .t-block { max-width: var(--cl-measure); justify-self: start; margin-inline: 0; }
+/* With the panel of the feature backdrop, the copy keeps to the first six columns. */
+.t-screen:is(.t-s-cover, .t-s-section) .t-opening-copy,
+.t-screen:is(.t-s-cover, .t-s-section) .t-opening-body.t-slot { padding-inline-end: calc(var(--t-opening-gutter) + var(--cl-col) * 6); }
+.t-screen:is(.t-s-cover, .t-s-section) .t-opening-body.t-slot > .t-block { max-width: none; }
+.t-screen.t-s-cover .t-screen-title { font-size: clamp(2.5rem, 1.2rem + 3.4vw, 4.25rem); }
+.t-screen.t-s-section .t-opening-eyebrow { font-size: 1rem; letter-spacing: .14em; }
+@media (max-width: 760px) {
+  .t-screen:is(.t-s-cover, .t-s-section) .t-opening-copy,
+  .t-screen:is(.t-s-cover, .t-s-section) .t-opening-body.t-slot { padding-inline-end: var(--t-opening-gutter); }
+}
+
+/* ── Text styles ───────────────────────────────────────────────────────── */
+.t-s-lead .t-text, .t-text.t-s-lead { font-size: 1.3125rem; line-height: 1.5; color: var(--t-muted); }
+
+.t-s-agenda ol { counter-reset: cl-agenda; margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--cl-hair); }
+.t-s-agenda li { counter-increment: cl-agenda; position: relative; padding: 1.125rem 0 1.125rem var(--cl-col); border-top: 1px solid var(--cl-hair); color: var(--t-muted); }
+.t-s-agenda li::before { content: counter(cl-agenda, decimal-leading-zero); position: absolute; left: 0; top: 1.125rem; color: var(--t-accent); font-size: 1.75rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; line-height: 1; }
+.t-s-agenda li > p { margin: 0; }
+.t-s-agenda li strong { display: inline-block; margin-bottom: .25rem; color: var(--t-text); font-size: 1.25rem; font-weight: 650; line-height: 1.3; }
+
+.t-s-checklist ul { margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--cl-hair); }
+.t-s-checklist li { position: relative; padding: .875rem 0 .875rem 2.25rem; border-top: 1px solid var(--cl-hair); }
+.t-s-checklist li::before { content: ""; position: absolute; left: .25rem; top: 1.25rem; width: .75rem; height: .375rem; border: solid var(--t-accent); border-width: 0 0 2px 2px; rotate: -45deg; }
+
+.t-s-meta ul { display: flex; flex-wrap: wrap; gap: .5rem 2.5rem; margin: 0; padding: 1rem 0 0; list-style: none; border-top: 1px solid var(--cl-hair); color: var(--t-muted); font-size: .875rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+
+/* ── Columns: cards and comparison ─────────────────────────────────────── */
+/* Columns start on the lines of the grid: no gap between the tracks, the room is after each card. */
+.t-columns { column-gap: 0; }
+.t-columns > .t-slot { gap: .625rem; margin-inline-end: 1.5rem; }
+@container (max-width: 560px) { .t-columns > .t-slot { margin-inline-end: 0; } }
+
+.t-s-cards .t-columns { counter-reset: cl-card; }
+.t-s-cards .t-column, .t-s-cards .t-columns > .t-slot { counter-increment: cl-card; padding: 1.5rem 1.5rem 1.75rem; border-top: 2px solid var(--t-text); background: var(--cl-card); }
+.t-s-cards .t-columns > .t-slot::before { content: counter(cl-card, decimal-leading-zero); display: block; margin-bottom: 1.75rem; color: var(--t-accent); font-size: .9375rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.t-s-compare .t-columns > .t-slot { padding: 1.5rem 1.75rem 1.75rem; }
+.t-s-compare .t-columns > .t-slot:first-child { background: var(--cl-card); color: var(--t-muted); }
+.t-s-compare .t-columns > .t-slot:nth-child(2) { box-shadow: inset 0 0 0 2px var(--t-accent); }
+.t-s-compare .t-columns > .t-slot:nth-child(2) h2 { color: var(--t-accent); }
+.t-s-compare ul { margin: 0; padding: 0; list-style: none; }
+.t-s-compare li { padding: .625rem 0; border-top: 1px solid var(--cl-hair); }
+
+/* ── Statements ────────────────────────────────────────────────────────── */
+.t-statement { padding-block: 1rem; }
+.t-statement.t-s-accent, .t-s-accent .t-statement { --t-statement-size: clamp(2rem, 1.1rem + 2.4vw, 3.25rem); }
+.t-s-accent .t-statement-text { max-width: 20em; font-weight: 650; line-height: 1.14; letter-spacing: -0.025em; }
+.t-statement--statement::before { width: var(--cl-col); border-radius: 0; margin-bottom: 2rem; }
+.t-statement--quote .t-statement-text { font-weight: 500; font-style: italic; letter-spacing: -0.015em; }
+
+/* ── No coloured left borders: notes and prompts sit on a flat card with a top rule ── */
+.t-callout { border-left: 0; border-top: 2px solid var(--t-text); border-radius: 0; background: var(--cl-card); }
+.t-callout--important { border-top-color: var(--t-accent); background: var(--cl-card); }
+.t-callout--warning { border-top-color: var(--t-error); background: var(--cl-card); }
+.t-callout--tip { border-top-color: var(--t-success); background: var(--cl-card); }
+.t-reflection-model { border-left: 0; border-top: 2px solid var(--t-text); border-radius: 0; background: var(--cl-card); }
+.t-panels-prompt, .t-aside { padding-inline-start: 0; border-inline-start: 0; }
+
+/* ── Charts and activities ─────────────────────────────────────────────── */
+.t-chart { --t-chart-radius: 0px; }
+.t-option { border-radius: var(--t-radius); }
+
+/* The rail of the backdrop is the header rule: no second line under the top bar. */
+.t-bar--top { box-shadow: none; }
+
+/* Text beside a figure: the figure keeps to the height of the slide. */
+.t-image--beside { align-items: start; }
+.t-image--beside .t-figure img { max-height: min(28rem, 60vh); object-fit: contain; }
+@media (prefers-reduced-motion: reduce) { .t-bar { transition: none; } }
+
+/* A logo drawn for light grounds keeps a light plate on dark screens. */
+#elabora-app:has(> .t-backdrop[data-variant="ink"]) .t-logo { padding: .25rem .375rem; border-radius: 2px; background: var(--t-color-text-on-dark); box-sizing: content-box; }

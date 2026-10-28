@@ -1,0 +1,30 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "recap",
+  "title": "What to remember",
+  "covers": [
+    "ITEM-6"
+  ],
+  "layout": "poster",
+  "layoutProps": {
+    "arrangement": "stack"
+  },
+  "blocks": [
+    {
+      "id": "recap-list",
+      "type": "text",
+      "style": "numbered",
+      "props": {
+        "markdown": "1. The first takeaway, as one clear sentence\n2. The second takeaway, about as long as the first\n3. The third takeaway, the one to act on tomorrow"
+      }
+    },
+    {
+      "id": "recap-callout",
+      "type": "callout",
+      "props": {
+        "title": "Next step",
+        "markdown": "One concrete action to try this week, in a single sentence."
+      }
+    }
+  ]
+}
