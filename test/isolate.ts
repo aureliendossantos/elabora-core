@@ -15,6 +15,11 @@ export async function globalSetup(): Promise<void> {
   process.env.ELABORA_VOICE_MODELS_DIR ??= path.join(made, 'voices');
   process.env.ELABORA_ALIGNER_MODELS_DIR ??= path.join(made, 'aligners');
   process.env.ELABORA_TRANSCRIBER_MODELS_DIR ??= path.join(made, 'transcribers');
+  // Node's compile cache, kept between runs: the test processes and the many commands they start
+  // read the stripped and compiled TypeScript instead of doing it again (half of a command's start).
+  process.env.NODE_COMPILE_CACHE ??= path.join(os.tmpdir(), 'elabora-test-compile-cache');
+  // Probe caches of the copied examples, shared by every test process of the run (test/helpers.ts).
+  process.env.ELABORA_TEST_PROBES ??= path.join(made, 'probes');
 }
 
 export async function globalTeardown(): Promise<void> {

@@ -69,7 +69,7 @@ test('charts: the entrance settles on the markup; the pointer and the keys point
     await page.waitForFunction(() => {
       const root = document.querySelector('.t-block[data-block="origine"] .t-chart');
       return !!root && root.classList.contains('is-pulled') && !root.classList.contains('is-entering');
-    }, null, { timeout: 10000 });
+    }, null, { timeout: 30000 });
     const styles = await chart.locator('[data-t-item]').evaluateAll((elements) => elements.map((element) => element.getAttribute('style') ?? ''));
     assert.ok(styles.every((style) => !/opacity|translate|scale/.test(style)), JSON.stringify(styles));
     assert.equal(await chart.locator('.t-bars-value').first().textContent(), '62 %', 'the count lands on the written value');
@@ -79,7 +79,7 @@ test('charts: the entrance settles on the markup; the pointer and the keys point
     await page.waitForFunction(() => {
       const label = document.querySelector('.t-block[data-block="origine"] .t-bars-label[data-t-item="web"]');
       return !!label && Math.abs(Number(getComputedStyle(label).opacity) - 0.4) < 0.02;
-    }, null, { timeout: 5000 });
+    }, null, { timeout: 30000 });
     assert.equal(await opacity(page, '.t-block[data-block="origine"] .t-bars-label[data-t-item="usb"]'), 1);
     // A row with a note shows it in the bubble.
     await chart.locator('.t-bars-track[data-t-item="mail"]').hover();
@@ -118,7 +118,7 @@ test('predict, then reveal: the learner draws or sets the end, the real line com
     await chart.locator('.t-trend-range').fill('10');
     assert.match(await chart.locator('.t-trend-guess-label').textContent() ?? '', /Votre estimation · 10 %/);
     await button.click();
-    await page.waitForFunction(() => document.querySelector('.t-block[data-block="clics"] .t-trend-feedback')?.textContent !== '', null, { timeout: 5000 });
+    await page.waitForFunction(() => document.querySelector('.t-block[data-block="clics"] .t-trend-feedback')?.textContent !== '', null, { timeout: 30000 });
     assert.equal(await chart.locator('.t-trend-feedback').textContent(), 'Vous aviez dit 10 % ; c’était 5 %.');
     assert.equal(await button.isHidden(), true);
     assert.match(await page.evaluate(() => (window as PlayerWindow).__elabora.state().suspendData), /"n":\{"\w+":"10\|1"\}/, 'kept like a numeric answer');

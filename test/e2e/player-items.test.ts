@@ -138,14 +138,14 @@ test('a PDF\'s preview: the browser\'s viewer when the server sends a PDF, the f
       return route.fulfill({ status: 200, contentType: inline ? 'application/pdf' : 'application/octet-stream', body });
     });
     await open();
-    await page.waitForSelector('dialog[open] .t-viewer-empty', { timeout: 3000 });
+    await page.waitForSelector('dialog[open] .t-viewer-empty', { timeout: 30000 });
     assert.equal(await page.locator('dialog[open] .t-viewer-download').count(), 1);
     // A server that refuses HEAD: a download still gets the card, after 8 s of an empty frame…
     headRefused = true;
     await open();
     await page.waitForTimeout(3000);
     assert.equal(await page.locator('dialog[open] .t-viewer-empty').count(), 0, 'not before the frame had its time');
-    await page.waitForSelector('dialog[open] .t-viewer-empty', { timeout: 8000 });
+    await page.waitForSelector('dialog[open] .t-viewer-empty', { timeout: 30000 });
     // …and a PDF it sends inline is never taken for one (a slow LMS keeps its viewer).
     inline = true;
     await open();

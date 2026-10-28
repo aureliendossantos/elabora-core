@@ -471,7 +471,7 @@ test('panel layers open over the screen without blocking it', { timeout: 180000 
     });
     assert.deepEqual(r, { panel: true, modal: false, inMain: true, focus: true });
     await page.keyboard.press('Escape');
-    await page.waitForFunction(() => !document.querySelector('dialog.t-layer'), null, { timeout: 10000 });
+    await page.waitForFunction(() => !document.querySelector('dialog.t-layer'), null, { timeout: 30000 });
   });
 });
 

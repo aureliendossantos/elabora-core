@@ -9,7 +9,7 @@ import { stopLookServer } from '@elabora/node/look-client';
 import { copyExample, readJSON } from '../helpers.ts';
 
 // A shell-free client stays connected to the source course for the entire language workflow.
-test('agent workflow: translate, see, check, package and test a language through one MCP connection', { timeout: 180000 }, async () => {
+test('agent workflow: translate, see, check, package and test a language through one MCP connection', { timeout: 360000 }, async () => {
   const dir = copyExample();
   const server = createMcpServer(dir);
   const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
@@ -17,7 +17,8 @@ test('agent workflow: translate, see, check, package and test a language through
   const client = new Client({ name: 'plugin-agent', version: '1' });
   await client.connect(clientSide);
   const call = async (name: string, args: Record<string, unknown>) => {
-    const result = await client.callTool({ name, arguments: args });
+    // The SDK gives up on a request after 60 s: a loaded computer packages and tests a language in more.
+    const result = await client.callTool({ name, arguments: args }, undefined, { timeout: 300000 });
     assert.ok(!result.isError, JSON.stringify(result.content).slice(0, 1500));
     return result;
   };

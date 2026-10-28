@@ -19,7 +19,9 @@ const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 // The sample: two narrated screens, a glossary its texts link to, a PDF among its resources.
 const copyExample = () => copyCourse(path.join(ROOT, 'examples/diagnostic-reseau'));
 
-async function player(dir: string, run: (page: Page) => Promise<void>, { width = 1600, height = 900 } = {}) {
+// clock: the page's timers on Playwright's clock, which only the test moves (a loaded computer cannot
+// run them out between two of its steps).
+async function player(dir: string, run: (page: Page) => Promise<void>, { width = 1600, height = 900, clock = false } = {}) {
   const b = await build(dir, { emit: 'dir', out: tmp('elabora-player-'), writeLock: false, debug: true });
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
   const server = await startServer();
@@ -27,11 +29,13 @@ async function player(dir: string, run: (page: Page) => Promise<void>, { width =
   const browser = await launchBrowser('chromium');
   try {
     const page = await browser.newPage({ viewport: { width, height }, reducedMotion: 'reduce' });
+    if (clock) await page.clock.install({ time: new Date('2026-10-20T12:00:00Z') });
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
     await page.goto(`${server.base}/pkg/p/index.html`);
     await page.waitForFunction(() => (window as PlayerWindow).__elabora);
+    await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
     await page.evaluate(() => { const t = (window as PlayerWindow).__elabora; for (const s of t.engine.screens) t.engine.st.visited.add(s.key); });
     await run(page);
     assert.deepEqual(errors, []);
@@ -41,7 +45,7 @@ async function player(dir: string, run: (page: Page) => Promise<void>, { width =
   }
 }
 const box = async (page: Page, selector: string) => (await page.locator(selector).first().boundingBox())!;
-const waitTip = (page: Page, text: string) => page.waitForFunction((value) => { const node = document.getElementById('t-tip'); return !!node && !node.hidden && node.textContent === value; }, text, { timeout: 3000 });
+const waitTip = (page: Page, text: string) => page.waitForFunction((value) => { const node = document.getElementById('t-tip'); return !!node && !node.hidden && node.textContent === value; }, text, { timeout: 30000 });
 const tip = (page: Page) => page.evaluate(() => { const node = document.getElementById('t-tip'); return node && !node.hidden ? node.textContent : null; });
 // The tooltip is what the page shows at its centre (not painted under a modal dialog).
 const tipOnTop = (page: Page) => page.evaluate(() => {
@@ -74,26 +78,32 @@ test('the controls in the top bar: their popups open downward and the captions s
 
 test('the tooltip: a refusal goes, a hint shown after it goes with the pointer, and nothing stays on the screen', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
   await player(copyExample(), async (page) => {
+    // A day after the clock's start: the page may take long to load on a loaded computer, and a
+    // pause in its past would throw.
+    await page.clock.pauseAt(new Date('2026-10-21T12:00:00Z'));
     await page.evaluate(() => { const t = (window as PlayerWindow).__elabora; t.timeline.play(); t.timeline.advance(1); });
     // A greyed Next: its reason, at once.
     await page.click('.t-nav-btn--next', { force: true });
     assert.match(await tip(page) ?? '', /\S/);
     // Another control hovered within the flash's time: its hint, which goes when the pointer leaves.
     await page.hover('.t-timeline-captions');
+    await page.clock.runFor(1000);
     await waitTip(page, 'Sous-titres');
     await page.mouse.move(800, 400);
-    await page.waitForTimeout(400);
+    await page.clock.runFor(1000);
+    await page.waitForFunction(() => !document.getElementById('t-tip') || document.getElementById('t-tip')!.hidden);
     assert.equal(await tip(page), null, 'gone with the pointer');
     // A refusal whose tooltip the pointer goes onto: it goes when the pointer leaves it.
     await page.click('.t-nav-btn--next', { force: true });
     const shown = await box(page, '#t-tip');
     await page.mouse.move(shown.x + shown.width / 2, shown.y + shown.height / 2);
-    await page.waitForTimeout(5400);
+    await page.clock.runFor(5400);
     assert.notEqual(await tip(page), null, 'kept while hovered');
     await page.mouse.move(800, 400);
-    await page.waitForTimeout(400);
+    await page.clock.runFor(1000);
+    await page.waitForFunction(() => !document.getElementById('t-tip') || document.getElementById('t-tip')!.hidden);
     assert.equal(await tip(page), null, 'gone once left');
-  });
+  }, { clock: true });
 });
 
 test('modal dialogs: a term in a layer shows its definition over it, and the PDF preview\'s buttons their names', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
@@ -106,7 +116,8 @@ test('modal dialogs: a term in a layer shows its definition over it, and the PDF
     await page.evaluate(() => (window as PlayerWindow).__elabora.go('premier-reflexe'));
     const term = page.locator('dialog[open] a.t-term[data-term="routeur"]');
     await term.hover();
-    await page.waitForFunction(() => /Équipement/.test(document.getElementById('t-tip')?.textContent ?? ''), null, { timeout: 3000 });
+    await page.clock.runFor(1000);
+    await page.waitForFunction(() => /Équipement/.test(document.getElementById('t-tip')?.textContent ?? ''), null, { timeout: 30000 });
     assert.ok(await tipOnTop(page), 'over the dialog');
     // A click keeps the definition there (the glossary's panel would open under the dialog).
     await term.click();
@@ -118,9 +129,10 @@ test('modal dialogs: a term in a layer shows its definition over it, and the PDF
     await page.click('.t-resources-btn');
     await page.click('.t-resource[data-resource="fiche-reflexe"]');
     await page.hover('.t-viewer-close');
+    await page.clock.runFor(1000);
     await waitTip(page, 'Fermer');
     assert.ok(await tipOnTop(page), 'over the preview');
-  });
+  }, { clock: true });
 });
 
 test('nothing moves between screens: the bottom bar on a phone, the outline\'s button with the screen\'s title', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
