@@ -10,6 +10,7 @@
 import { element, uniqueId } from '../dom.ts';
 import { icon } from '../icons.ts';
 import type { IconName } from '../icons.ts';
+import { labelLanguages, labelsFor } from '../labels.ts';
 import type { Labels } from '../labels.ts';
 import { textWords } from '../character/voice.ts';
 import type { DialogueData, DialogueOptionData, DialogueQuality, DialogueSpeakerData } from './types.ts';
@@ -29,12 +30,18 @@ export interface ThreadContext {
 // A theme colour token (color.accent) as the CSS variable the player sets (--t-color-accent).
 export const tokenVar = (token: string | undefined): string | null => (token && /^[a-zA-Z][\w.-]*$/.test(token) ? `var(--t-${token.replace(/\./g, '-').replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)})` : null);
 
-// The name shown above a bubble, and read before its words.
+// « You », « Vous », « Sie »…: the learner's mention in each of the player's languages.
+const SECOND_PERSON = new Set(labelLanguages().map((language) => labelsFor(language).dialogueYou.toLocaleLowerCase()));
+
+// The name shown above a bubble, and read before its words. A learner whose own name already says
+// « you » (a speaker named « You », « Vous ») is named once, not « You (you) ».
 export function speakerName(context: ThreadContext, speaker: string | undefined, learner: boolean): string {
   const { data, labels, format } = context;
   if (learner) {
-    const own = data.learner ? data.speakers[data.learner]?.name : undefined;
-    return own ? format(labels.dialogueLearnerName, { name: own }) : labels.dialogueYou;
+    const own = data.learner ? data.speakers[data.learner]?.name?.trim() : undefined;
+    if (!own) return labels.dialogueYou;
+    const plain = own.toLocaleLowerCase();
+    return SECOND_PERSON.has(plain) || plain === labels.dialogueYou.toLocaleLowerCase() ? own : format(labels.dialogueLearnerName, { name: own });
   }
   return (speaker && data.speakers[speaker]?.name) || speaker || '';
 }
@@ -101,14 +108,16 @@ export function bubbleRow(context: ThreadContext, options: BubbleOptions): Bubbl
     : element('div', { class: 't-dialogue-bubble', style: color ? `--t-dl-speaker: ${color}` : undefined },
       name ? element('span', { class: 't-dialogue-name', 'aria-hidden': 'true', text: name }) : null, text);
   const listen = options.voiced ? element('button', { type: 'button', class: 't-dialogue-tool t-dialogue-listen', hidden: true, 'aria-label': labels.dialogueListen, title: labels.dialogueListen }, icon('play')) : null;
-  const resume = options.resumable ? element('button', { type: 'button', class: 't-dialogue-resume', hidden: true }, icon('replay'), element('span', { text: labels.dialogueResumeHere })) : null;
-  // Tools are not part of what the thread says: they never speak when they appear.
+  const resume = options.resumable ? element('button', { type: 'button', class: 't-dialogue-tool t-dialogue-resume', hidden: true, 'aria-label': labels.dialogueResumeHere, title: labels.dialogueResumeHere }, icon('history')) : null;
+  // Tools are not part of what the thread says: they never speak when they appear. They sit beside
+  // the bubble, out of the flow (dialogue.css): showing them moves nothing.
   const tools = element('span', { class: 't-dialogue-tools', 'aria-live': 'off' }, listen, resume);
+  bubble.append(tools);
   const avatar = options.role === 'narration' ? null : element('span', { class: 't-dialogue-avatar', 'aria-hidden': 'true', 'data-speaker': options.speaker });
   const row = element('div', {
     class: 't-dialogue-row', 'data-role': options.role, 'data-side': options.side, 'data-speaker': options.speaker, 'data-line': options.line,
-    'data-first': options.first || undefined, style: color ? `--t-dl-speaker: ${color}` : undefined
-  }, avatar, bubble, tools);
+    'data-first': options.first || undefined, 'data-resumable': options.resumable || undefined, style: color ? `--t-dl-speaker: ${color}` : undefined
+  }, avatar, bubble);
   return { row, bubble, text, words, avatar, tools, listen, resume };
 }
 

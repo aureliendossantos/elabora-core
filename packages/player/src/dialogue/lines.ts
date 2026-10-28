@@ -62,7 +62,10 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
     // While the dialogue waits for the learner, a click on the last bubble goes on (as « Suite »); a
     // voice being said is never cut by a stray click, nor is reading by a click up the thread or a
     // selection of words.
-    built.bubble.addEventListener('click', () => { if (state.step?.kind === 'click' && lastRow() === built.row && (getSelection()?.isCollapsed ?? true)) next(); });
+    built.bubble.addEventListener('click', (event) => {
+      if ((event.target as Element).closest('.t-dialogue-tools')) return;
+      if (state.step?.kind === 'click' && lastRow() === built.row && (getSelection()?.isCollapsed ?? true)) next();
+    });
     return built;
   }
   const voiceOf = (line: { text: string; voice?: LineVoiceData }): LineVoiceData => line.voice ?? textVoice(line.text, undefined, language);
