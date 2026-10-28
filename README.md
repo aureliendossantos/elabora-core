@@ -83,4 +83,4 @@ Version 0.1, October 2026, format `elabora/0.1`. SCORM 1.2 and a web target; no 
 
 ## Licence
 
-Code, specification, schemas and documentation: Apache-2.0 ([`LICENSE`](LICENSE)). The original content of the sample courses in [`examples/`](examples/) is CC0 1.0; each example's `LICENSE.md` lists the third-party items that keep their own licence. three.js r186 is vendored under the MIT licence ([`packages/node/vendor/three-LICENSE.txt`](packages/node/vendor/three-LICENSE.txt)). See [D44](docs/decisions/D44.md).
+Code, specification, schemas and documentation: Apache-2.0 ([`LICENSE`](LICENSE)). The original content of the sample courses in [`examples/`](examples/) and of the module templates in [`templates/`](templates/) is CC0 1.0; each one's `LICENSE.md` lists the third-party items that keep their own licence (the templates' fonts, under the SIL OFL). three.js r186 is vendored under the MIT licence ([`packages/node/vendor/three-LICENSE.txt`](packages/node/vendor/three-LICENSE.txt)). See [D44](docs/decisions/D44.md).

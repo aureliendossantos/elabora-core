@@ -1,0 +1,1 @@
+Decoration of the Organic template: soft gradient blobs drift behind every screen. Each screen has its own composition and each part of the module its own hue, from warm at the start to cool at the end, so the backdrop quietly tells the learner that the module moves on. It carries no information, takes no focus and is hidden from screen readers.

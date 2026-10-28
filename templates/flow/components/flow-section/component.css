@@ -1,0 +1,37 @@
+/* Flow part opener — the part's number, large, in the monospaced font and lit by the two neons; then
+   the part's title, large, and its lead. */
+.flow-section {
+  display: grid;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: var(--t-wide-width);
+  margin-inline: auto;
+}
+.flow-section-number {
+  margin: 0 0 -.25rem;
+  width: fit-content;
+  font-family: var(--t-font-mono);
+  font-size: clamp(4rem, 2.5rem + 4vw, 7rem);
+  font-weight: 700;
+  line-height: .9;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--t-primary);
+  background: linear-gradient(100deg, var(--t-color-neon-a), var(--t-color-neon-b));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.flow-section-title .t-screen-title {
+  margin: 0;
+  max-width: 13em;
+  font-family: var(--t-font-heading);
+  font-size: clamp(2.5rem, 1.2rem + 3.8vw, 4.75rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.038em;
+  text-wrap: balance;
+  color: var(--t-text);
+}
+.flow-section-body { max-width: 40rem; }
+.flow-section-body:empty { display: none; }

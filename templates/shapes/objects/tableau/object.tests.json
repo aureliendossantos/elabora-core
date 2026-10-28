@@ -1,0 +1,107 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "The opening tableau on the cover",
+      "size": [1600, 900],
+      "context": { "screen": "cover", "section": "opening", "step": 1, "variant": null },
+      "steps": [
+        { "action": "step", "frames": 10 },
+        { "action": "expect-state", "state": { "screen": "cover", "section": "opening", "tableau": 0, "settled": true } },
+        { "action": "snapshot", "name": "cover" }
+      ]
+    },
+    {
+      "name": "A new part: the shapes rearrange into a new tableau",
+      "size": [1600, 900],
+      "context": { "screen": "objectives", "section": "opening", "step": 1, "variant": null },
+      "steps": [
+        { "action": "step", "frames": 90 },
+        { "action": "set-context", "context": { "screen": "part-one", "section": "part-1", "step": 1, "variant": null } },
+        { "action": "step", "frames": 40 },
+        { "action": "expect-state", "state": { "section": "part-1", "tableau": 1, "settled": false } },
+        { "action": "snapshot", "name": "midway" },
+        { "action": "step", "frames": 80 },
+        { "action": "expect-state", "state": { "settled": true } },
+        { "action": "snapshot", "name": "part-one" }
+      ]
+    },
+    {
+      "name": "Within a part, one shape turns, glides or changes size",
+      "size": [1600, 900],
+      "context": { "screen": "key-message", "section": "part-1", "step": 1, "variant": null },
+      "steps": [
+        { "action": "step", "frames": 90 },
+        { "action": "set-context", "context": { "screen": "cards", "section": "part-1", "step": 1, "variant": null } },
+        { "action": "step", "frames": 120 },
+        { "action": "expect-state", "state": { "screen": "cards", "tableau": 1, "settled": true } },
+        { "action": "snapshot", "name": "three-cards" }
+      ]
+    },
+    {
+      "name": "Just after mount, a new screen lands at once",
+      "context": { "screen": "cover", "section": "opening", "step": 1, "variant": null },
+      "steps": [
+        { "action": "step", "frames": 5 },
+        { "action": "set-context", "context": { "screen": "chart", "section": "part-3", "step": 1, "variant": null } },
+        { "action": "step", "frames": 2 },
+        { "action": "expect-state", "state": { "tableau": 3, "settled": true } }
+      ]
+    },
+    {
+      "name": "A section outside the parts takes a tableau of its own",
+      "context": { "screen": "cover", "section": "opening", "step": 1, "variant": null },
+      "steps": [
+        { "action": "step", "frames": 90 },
+        { "action": "set-context", "context": { "screen": "extra", "section": "bonus", "step": 1, "variant": null } },
+        { "action": "step", "frames": 150 },
+        { "action": "expect-state", "state": { "section": "bonus", "settled": true } }
+      ]
+    },
+    {
+      "name": "Variants: earth, then monochrome",
+      "size": [1600, 900],
+      "context": { "screen": "quote", "section": "part-2", "step": 1, "variant": "earth" },
+      "steps": [
+        { "action": "step", "frames": 10 },
+        { "action": "snapshot", "name": "earth" },
+        { "action": "set-context", "context": { "screen": "practice", "section": "part-2", "step": 1, "variant": "mono" } },
+        { "action": "step", "frames": 150 },
+        { "action": "expect-state", "state": { "variant": "mono", "tableau": 2, "settled": true } },
+        { "action": "snapshot", "name": "mono" }
+      ]
+    },
+    {
+      "name": "Reduced motion: still images, the new tableau at once",
+      "reducedMotion": true,
+      "context": { "screen": "cover", "section": "opening", "step": 1, "variant": null },
+      "steps": [
+        { "action": "step", "frames": 90 },
+        { "action": "set-context", "context": { "screen": "the-end", "section": "closing", "step": 1, "variant": null } },
+        { "action": "step", "frames": 1 },
+        { "action": "expect-state", "state": { "section": "closing", "tableau": 4, "settled": true } },
+        { "action": "snapshot", "name": "still" }
+      ]
+    },
+    {
+      "name": "Phone",
+      "size": [375, 812],
+      "context": { "screen": "practice", "section": "part-2", "step": 1, "variant": null },
+      "steps": [
+        { "action": "step", "frames": 10 },
+        { "action": "snapshot", "name": "phone" }
+      ]
+    },
+    {
+      "name": "Settings apply without remounting",
+      "context": { "screen": "cover", "section": "opening", "step": 1, "variant": null },
+      "steps": [
+        { "action": "step", "frames": 5 },
+        { "action": "set-props", "props": { "shuffle": 3, "colour1": "#2A9D8F", "parts": ["closing", "opening"] } },
+        { "action": "step", "frames": 150 },
+        { "action": "expect-state", "state": { "tableau": 1, "settled": true } },
+        { "action": "snapshot", "name": "settings" }
+      ]
+    }
+  ]
+}

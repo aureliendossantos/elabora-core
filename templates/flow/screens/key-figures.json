@@ -1,0 +1,41 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "key-figures",
+  "title": "Key figures",
+  "covers": [
+    "ITEM-4"
+  ],
+  "blocks": [
+    {
+      "id": "figures-chart",
+      "type": "key-figures",
+      "width": "wide",
+      "props": {
+        "takeaway": "One sentence that says what these figures prove",
+        "items": [
+          {
+            "id": "share",
+            "figure": "72 %",
+            "label": "of the people concerned, described in a short label",
+            "count": {
+              "to": 72,
+              "format": "percent"
+            }
+          },
+          {
+            "id": "time",
+            "figure": "3×",
+            "label": "faster with the idea applied than without it"
+          },
+          {
+            "id": "cases",
+            "figure": "1 in 4",
+            "label": "cases where the usual approach falls short"
+          }
+        ],
+        "highlight": "share",
+        "source": "Source of the figures, year"
+      }
+    }
+  ]
+}

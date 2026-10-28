@@ -1,0 +1,307 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "Warm blobs on the cover",
+      "context": {
+        "screen": "cover",
+        "section": "opening",
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 10
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screen": "cover",
+            "section": "opening",
+            "part": 0,
+            "settled": true
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "cover"
+        }
+      ]
+    },
+    {
+      "name": "A new part: the blobs migrate and glide to a cooler hue",
+      "context": {
+        "screen": "cover",
+        "section": "opening",
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 90
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "key-figures",
+            "section": "part-2",
+            "step": 1,
+            "variant": null
+          }
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "section": "part-2",
+            "part": 0.5,
+            "settled": false
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "midway"
+        },
+        {
+          "action": "step",
+          "frames": 120
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "settled": true
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "part-two"
+        }
+      ]
+    },
+    {
+      "name": "Just after mount, a new screen lands at once",
+      "context": {
+        "screen": "cover",
+        "section": "opening",
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "chart",
+            "section": "part-3",
+            "step": 1,
+            "variant": null
+          }
+        },
+        {
+          "action": "step",
+          "frames": 2
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "part": 0.75,
+            "settled": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "A section outside the journey keeps the hue it had",
+      "context": {
+        "screen": "cover",
+        "section": "part-3",
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 90
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "extra",
+            "section": "bonus",
+            "step": 1,
+            "variant": null
+          }
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "section": "bonus",
+            "part": 0.75,
+            "settled": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Variants: night and monochrome",
+      "context": {
+        "screen": "quote",
+        "section": "part-2",
+        "step": 1,
+        "variant": "night"
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 90
+        },
+        {
+          "action": "snapshot",
+          "name": "night"
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "quote",
+            "section": "part-2",
+            "step": 1,
+            "variant": "mono"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "variant": "mono",
+            "settled": true
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "mono"
+        }
+      ]
+    },
+    {
+      "name": "Reduced motion: still images, the new composition at once",
+      "reducedMotion": true,
+      "context": {
+        "screen": "cover",
+        "section": "opening",
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 90
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "the-end",
+            "section": "closing",
+            "step": 1,
+            "variant": null
+          }
+        },
+        {
+          "action": "step",
+          "frames": 1
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "section": "closing",
+            "part": 1,
+            "settled": true
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "still"
+        }
+      ]
+    },
+    {
+      "name": "Phone",
+      "size": [
+        375,
+        812
+      ],
+      "context": {
+        "screen": "practice",
+        "section": "part-3",
+        "step": 1,
+        "variant": "pastel"
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 10
+        },
+        {
+          "action": "snapshot",
+          "name": "phone"
+        }
+      ]
+    },
+    {
+      "name": "Settings apply without remounting",
+      "context": {
+        "screen": "cover",
+        "section": "opening",
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "count": 7,
+            "seed": 12,
+            "drift": 0,
+            "journey": [
+              "opening",
+              "closing"
+            ]
+          }
+        },
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "part": 0,
+            "settled": true
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "seven"
+        }
+      ]
+    }
+  ]
+}

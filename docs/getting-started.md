@@ -62,6 +62,15 @@ node bin/elabora.js init my-course --id my-course --title "My course" --lang en
 
 `init` writes `course.json`, a placeholder `plan.json` and the course's `AGENTS.md`, the rules every agent working on it follows. The [format specification](../SPEC.md) explains each file.
 
+Or start from a module template ([D68](decisions/D68.md)): a charter already made (theme, fonts, components, an animated backdrop and its variants) on 14 screens of placeholder texts, the same screens in every template.
+
+```bash
+node bin/elabora.js templates                                  # Organic, Flow, Clear, Shapes
+node bin/elabora.js init my-course --template flow --id my-course --title "My course" --lang en
+```
+
+The course is a copy of [`templates/flow`](../templates/flow/) under your id and title, in the language asked (each template is in English, translated into French). Its `README.md` says how the charter works and how to make it a brand's.
+
 ## Work with an agent
 
 Agents work through the same operations, as MCP tools or from the shell:

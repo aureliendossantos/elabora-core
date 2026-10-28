@@ -9,6 +9,10 @@ init <dir> --id <id> --title <title> [--lang fr]   Scaffold a course project (co
      [--audience <who>] [--business-goal <goal>]    What the author already said of it: the plan's audience, business goal and
      [--duration 10-20|5|30+] [--presentation        duration in minutes, the presentation, the LMS, and notes for agents in
      slides|scroll] [--lms a,b] [--notes <text>]    AGENTS.md (the tone, the brand wanted, what is left to the agent)
+     [--template <id>]                              Start from a module template (elabora templates): its charter and its
+                                                    screens with placeholder texts, in --lang when it is translated into it
+templates [--json]                                  The module templates: a charter (theme, fonts, components, an animated
+                                                    backdrop and its variants) and 14 screens of placeholder texts each
 validate [dir] [--profile a,b] [--release] [--json] Check format, plan conformity, pedagogy, accessibility, budgets
 project [dir] [--client] [--screen <id>]            Markdown view of the course (agent map, or client review)
 migrate [dir] [--dry-run] [--json]                  Write the course in the current format (older ones are read migrated): one
@@ -28,8 +32,9 @@ projects list [--json] [--validate]                 Projects of the library, new
 projects path [<id>] [--set <dir> [--move|--copy]]  Folder of the library, or of a project (id or its first characters).
                                                     --set: use another folder; --move takes the projects along; --copy
                                                     moves them by copying and checking every file (another disk)
-projects create <course-id> --title <t> [--language fr]
-                                                    Create a course in the library
+projects create <course-id> --title <t> [--language fr] [--template <id>]
+                                                    Create a course in the library, blank or from a module template
+                                                    (elabora templates)
 projects duplicate <id> [--title <t>]               Copy a project under a new id (same course id; the history stays)
 projects rename <id> --title <t>                    Change the title of a project (an undoable edit of course.json)
 projects trash <id>                                 Move a project, history included, to the library's trash

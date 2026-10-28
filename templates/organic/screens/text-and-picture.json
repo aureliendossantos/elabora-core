@@ -1,0 +1,23 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "text-and-picture",
+  "title": "A title that names the idea of this screen",
+  "covers": [
+    "ITEM-3"
+  ],
+  "blocks": [
+    {
+      "id": "picture-beside",
+      "type": "image",
+      "props": {
+        "presentation": "beside",
+        "asset": "images/organic-shapes.svg",
+        "decorative": true,
+        "side": "end",
+        "share": "half",
+        "title": "A subheading that frames the explanation",
+        "markdown": "A first paragraph of two or three sentences explains the idea in plain words. It speaks to the learner directly and stays close to situations they know from their own work.\n\nA second, shorter paragraph adds an example or a nuance. Keep the whole text under ninety words so that it reads at a glance."
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "cover",
+  "title": "Your module title, on two lines at most",
+  "covers": [
+    "ITEM-1"
+  ],
+  "layout": "opening",
+  "layoutProps": {
+    "presentation": "title",
+    "lead": "One or two sentences that say what learners will be able to do by the end, and why it matters in their daily work.",
+    "duration": false
+  },
+  "style": "cover",
+  "backdrop": "feature",
+  "blocks": [
+    {
+      "id": "cover-meta",
+      "type": "text",
+      "style": "meta",
+      "props": {
+        "markdown": "- 15 minutes\n- For all employees\n- Version 1.0"
+      }
+    }
+  ]
+}

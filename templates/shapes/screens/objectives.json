@@ -1,0 +1,22 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "objectives",
+  "title": "What you will be able to do",
+  "covers": [
+    "ITEM-1"
+  ],
+  "layout": "poster",
+  "layoutProps": {
+    "arrangement": "stack"
+  },
+  "blocks": [
+    {
+      "id": "objectives-list",
+      "type": "text",
+      "style": "numbered",
+      "props": {
+        "markdown": "1. Name the three building blocks of the method and what each one is for\n2. Choose the right step for a situation you meet in your daily work\n3. Explain your choice to a colleague in two or three sentences"
+      }
+    }
+  ]
+}

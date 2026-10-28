@@ -1,0 +1,209 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "shapes",
+  "title": "Your module title",
+  "language": "en",
+  "version": "1.0.0",
+  "sections": [
+    {
+      "id": "opening",
+      "title": "Getting started",
+      "screens": [
+        "cover",
+        "objectives"
+      ]
+    },
+    {
+      "id": "part-1",
+      "title": "First part title",
+      "screens": [
+        "part-one",
+        "key-message",
+        "text-and-picture",
+        "cards"
+      ]
+    },
+    {
+      "id": "part-2",
+      "title": "Second part title",
+      "screens": [
+        "key-figures",
+        "practice",
+        "steps",
+        "quote"
+      ]
+    },
+    {
+      "id": "part-3",
+      "title": "Third part title",
+      "screens": [
+        "comparison",
+        "chart"
+      ]
+    },
+    {
+      "id": "closing",
+      "title": "Wrapping up",
+      "screens": [
+        "recap",
+        "the-end"
+      ]
+    }
+  ],
+  "variables": [],
+  "theme": {
+    "cascade": "components-over-theme",
+    "fonts": [
+      {
+        "family": "Archivo",
+        "src": "theme/fonts/archivo/archivo-latin-wght-normal.woff2",
+        "weight": "100 900"
+      },
+      {
+        "family": "Archivo",
+        "src": "theme/fonts/archivo/archivo-latin-wght-italic.woff2",
+        "weight": "100 900",
+        "style": "italic"
+      }
+    ],
+    "tokens": {
+      "font.body": "\"Archivo\", system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "font.heading": "\"Archivo\", system-ui, -apple-system, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+      "color.primary": "#1D1D27",
+      "color.onPrimary": "#F5EFE4",
+      "color.accent": "#B8432B",
+      "color.surface": "#F5EFE4",
+      "color.text": "#1D1D27",
+      "color.muted": "#4A4852",
+      "color.success": "#2A7547",
+      "color.error": "#A3301F",
+      "color.focus": "#2456A6",
+      "radius": 0,
+      "player.top.background": "#F5EFE4",
+      "player.top.text": "#1D1D27",
+      "player.bottom.background": "#F5EFE4",
+      "player.bottom.text": "#1D1D27",
+      "player.accent": "#1D1D27",
+      "player.onAccent": "#F5EFE4",
+      "player.radius": 999
+    },
+    "custom": {
+      "color.shape-1": "#E35D3E",
+      "color.shape-2": "#F3B83A",
+      "color.shape-3": "#3A67B1",
+      "color.shape-4": "#1D1D27",
+      "color.earth-1": "#C0582F",
+      "color.earth-2": "#D59A2B",
+      "color.earth-3": "#6F7A3A",
+      "color.earth-4": "#5A3B2A",
+      "color.earth-ground": "#EFE3CF",
+      "color.mono-1": "#8D909C",
+      "color.mono-2": "#C9CACF",
+      "color.mono-3": "#B3B5BD",
+      "color.mono-4": "#1D1D27",
+      "color.mono-ground": "#F2F1EE",
+      "color.card": "#FFFBF4",
+      "color.grain": "#1D1D27"
+    },
+    "stylesheet": "theme/theme.css",
+    "styles": {
+      "text": {
+        "lead": "Large opening paragraph",
+        "numbered": "Numbered list, each number in a flat shape (objectives, takeaways)",
+        "meta": "Short facts set as bold tags (length, format, audience)"
+      },
+      "columns": {
+        "cards": "Each column on a flat card topped by a shape",
+        "compare": "Two columns face to face: the first on paper, the second on the blue shape colour"
+      }
+    },
+    "backdrop": {
+      "layers": [
+        "ground",
+        "ground-earth",
+        "ground-mono",
+        "grain"
+      ],
+      "object": {
+        "id": "tableau",
+        "props": {}
+      },
+      "variants": {
+        "earth": "Earth tones: terracotta, ochre and olive shapes on sand",
+        "mono": "Monochrome and calmer: ink tints kept to the edges, for dense screens"
+      }
+    }
+  },
+  "navigation": {
+    "mode": "linear",
+    "lockUntilComplete": true
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "logo",
+          "enabled": false
+        },
+        {
+          "id": "title"
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "outline"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "completion": {
+    "reportAs": "completed-incomplete"
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  },
+  "presentation": {
+    "mode": "slides",
+    "contentWidth": 720,
+    "wideWidth": 1040,
+    "fit": {
+      "reference": "1600x900",
+      "minimum": "1280x720"
+    }
+  }
+}

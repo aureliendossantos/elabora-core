@@ -1,0 +1,63 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/plan.schema.json",
+  "id": "PLAN-FLOW",
+  "title": "Flow — module template",
+  "businessGoal": "Give authors a ready charter (neon field, ribbons and particles that leap forward at each screen) and one screen of each common kind, to replace with their own content.",
+  "audience": {
+    "role": "Learners of a tech, cybersecurity, product launch or sales module",
+    "priorKnowledge": "low"
+  },
+  "sources": [],
+  "objectives": [
+    {
+      "id": "OBJ-1",
+      "statement": "Apply the key idea of the module to choose the right option in a typical situation, and say why the others fall short."
+    }
+  ],
+  "items": [
+    {
+      "id": "ITEM-1",
+      "kind": "intro",
+      "title": "Welcome and objectives",
+      "objectives": []
+    },
+    {
+      "id": "ITEM-2",
+      "kind": "intro",
+      "title": "Opening of the first part",
+      "objectives": []
+    },
+    {
+      "id": "ITEM-3",
+      "kind": "exposition",
+      "title": "The key idea, explained",
+      "objectives": [
+        "OBJ-1"
+      ]
+    },
+    {
+      "id": "ITEM-4",
+      "kind": "exposition",
+      "title": "Figures, steps, voices and comparisons",
+      "objectives": [
+        "OBJ-1"
+      ]
+    },
+    {
+      "id": "ITEM-5",
+      "kind": "practice",
+      "title": "Practice: a realistic situation",
+      "objectives": [
+        "OBJ-1"
+      ]
+    },
+    {
+      "id": "ITEM-6",
+      "kind": "summary",
+      "title": "Recap and next step",
+      "objectives": []
+    }
+  ],
+  "spacing": [],
+  "waivers": []
+}

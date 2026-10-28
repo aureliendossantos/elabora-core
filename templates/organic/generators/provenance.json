@@ -1,0 +1,15 @@
+{
+  "format": "elabora-generated/1",
+  "assets": {
+    "images/grain.svg": {
+      "generator": "generators/organic.mjs",
+      "inputsHash": "sha256:d9ae3e6cc61dd3f08a0e75a34b49e0395fb12093e39a40c906b8f5318d696ed0",
+      "outputHash": "sha256:fa3a88bc29f6f072b3bde864c6a07b6425d26875eff6b8ea1df7a6286340c0d5"
+    },
+    "images/organic-shapes.svg": {
+      "generator": "generators/organic.mjs",
+      "inputsHash": "sha256:d9ae3e6cc61dd3f08a0e75a34b49e0395fb12093e39a40c906b8f5318d696ed0",
+      "outputHash": "sha256:55742b37ca9c79be2fb8538ccdce72e1b77c29725d595ec252d419f3480ceaf1"
+    }
+  }
+}

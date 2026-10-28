@@ -1,0 +1,28 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "the-end",
+  "title": "Thank you, and well done",
+  "covers": [
+    "ITEM-6"
+  ],
+  "layout": "flow-cover",
+  "backdrop": "hero",
+  "blocks": [
+    {
+      "id": "end-lead",
+      "type": "text",
+      "props": {
+        "markdown": "One sentence that sends the learner back to their work with the idea in mind, and says where to find more."
+      },
+      "style": "lead"
+    },
+    {
+      "id": "end-meta",
+      "type": "text",
+      "props": {
+        "markdown": "Contact · Resources · Next module"
+      },
+      "style": "meta"
+    }
+  ]
+}

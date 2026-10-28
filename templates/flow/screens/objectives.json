@@ -1,0 +1,27 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "objectives",
+  "title": "What you will be able to do",
+  "covers": [
+    "ITEM-1"
+  ],
+  "backdrop": "calm",
+  "blocks": [
+    {
+      "id": "objectives-lead",
+      "type": "text",
+      "props": {
+        "markdown": "By the end of this module, in about ten minutes, you will be able to:"
+      },
+      "style": "lead"
+    },
+    {
+      "id": "objectives-list",
+      "type": "text",
+      "props": {
+        "markdown": "1. Recognise the key idea and the situations where it applies.\n2. Explain its three pillars in your own words, with an example.\n3. Choose the right option in a typical case, and say why the others fall short."
+      },
+      "style": "list"
+    }
+  ]
+}

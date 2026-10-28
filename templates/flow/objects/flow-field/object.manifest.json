@@ -1,0 +1,130 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "flow-field",
+  "version": "1.0.0",
+  "title": "Flow field",
+  "pedagogicalRole": "decoration",
+  "language": "en",
+  "props": {
+    "type": "object",
+    "properties": {
+      "colorA": {
+        "type": "string",
+        "format": "color",
+        "default": "#3DE8FF",
+        "title": "First neon",
+        "description": "First colour of the lines and particles (cyan by default): the brand's main colour.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-token": "color.neon-a"
+      },
+      "colorB": {
+        "type": "string",
+        "format": "color",
+        "default": "#FF4FCB",
+        "title": "Second neon",
+        "description": "Second colour of the lines and particles (magenta by default): the brand's accent. The module drifts from the first towards the second, part after part.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-token": "color.neon-b"
+      },
+      "inkA": {
+        "type": "string",
+        "format": "color",
+        "default": "#00759E",
+        "title": "First ink",
+        "description": "First colour on the light paper of the ink variant.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-token": "color.ink-a"
+      },
+      "inkB": {
+        "type": "string",
+        "format": "color",
+        "default": "#B8137A",
+        "title": "Second ink",
+        "description": "Second colour on the light paper of the ink variant.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-token": "color.ink-b"
+      },
+      "field": {
+        "type": "string",
+        "format": "color",
+        "default": "#070812",
+        "title": "Field",
+        "description": "Colour of the field behind the lines. A light field draws the lines in ink, as the ink variant does.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-token": "color.field"
+      },
+      "density": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1,
+        "default": 0.6,
+        "title": "Particles",
+        "description": "How many particles float in the field (0: none).",
+        "x-group": "Motion",
+        "x-control": "slider"
+      },
+      "lines": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1,
+        "default": 0.7,
+        "title": "Luminous lines",
+        "description": "Brightness of the two bundles of undulating lines (0: none).",
+        "x-group": "Motion",
+        "x-control": "slider"
+      },
+      "jump": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1,
+        "default": 0.7,
+        "title": "Leap between screens",
+        "description": "How far the particles stretch into streaks and speed up at each new screen (0: they keep floating).",
+        "x-group": "Motion",
+        "x-control": "slider"
+      },
+      "order": {
+        "type": "array",
+        "title": "Screen order",
+        "description": "Optional: the screen ids in the order of the course, to tell a step back from a step forward on a resumed session. Empty: the order in which the learner meets the screens.",
+        "x-group": "Motion",
+        "x-control": "list",
+        "maxItems": 200,
+        "items": {
+          "type": "string",
+          "title": "Screen id",
+          "maxLength": 64
+        },
+        "default": []
+      }
+    }
+  },
+  "state": {
+    "type": "object",
+    "properties": {}
+  },
+  "events": [],
+  "budgets": {
+    "drawCallsMax": 30,
+    "trianglesMax": 60000,
+    "bootMsMax": 3000,
+    "fpsMin": 24,
+    "webglContexts": 0
+  },
+  "a11y": {
+    "motion": {
+      "pausable": false,
+      "respectsReducedMotion": true
+    }
+  },
+  "sandbox": {
+    "network": "none",
+    "permissions": []
+  }
+}
