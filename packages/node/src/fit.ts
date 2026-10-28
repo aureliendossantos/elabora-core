@@ -293,8 +293,7 @@ async function scrolledContrast(moving: Page, screen: ScreenFit): Promise<void> 
   if (scrolled.length) screen.contrast = [...(screen.contrast || []), ...scrolled];
 }
 
-// In the page: the player's bars whose items do not stand on one line (an item starts below the top
-// of the first one by more than half its height).
+// In the page: the player's bars whose items do not stand on one line.
 function wrappedBars(): string[] {
   const out: string[] = [];
   for (const bar of document.querySelectorAll<HTMLElement>('.t-bar')) {
@@ -302,9 +301,10 @@ function wrappedBars(): string[] {
     const items = [...bar.querySelectorAll<HTMLElement>(':scope > *')].filter((node) => node.getClientRects().length && getComputedStyle(node).position !== 'absolute' && node.offsetHeight > 8);
     const boxes = items.map((node) => node.getBoundingClientRect());
     if (boxes.length < 2) continue;
-    const top = Math.min(...boxes.map((box) => box.top));
-    const line = Math.min(...boxes.map((box) => box.height));
-    if (boxes.some((box) => box.top - top > line / 2 + 2)) out.push([...bar.classList].find((name) => name.startsWith('t-bar--')) ?? 't-bar');
+    // The first line ends where its shortest item ends: an item that starts below it is on another
+    // line (a short item centred in the line starts above it).
+    const firstLine = Math.min(...boxes.map((box) => box.bottom));
+    if (boxes.some((box) => box.top >= firstLine - 1)) out.push([...bar.classList].find((name) => name.startsWith('t-bar--')) ?? 't-bar');
   }
   return out;
 }

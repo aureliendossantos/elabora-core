@@ -1046,7 +1046,7 @@ export function createScreenView(options: ScreenViewOptions) {
           console.error(`[elabora] backdrop ${definition.id}: ${message}`);
         },
         // Its errors reach the console as errors (look and screenshot list them), the rest as information.
-        onLog: (entry) => (entry.level === 'error' ? console.error : console.info)(`[elabora] backdrop ${definition.id}: ${entry.message}`)
+        onLog: (entry) => { const line = `[elabora] backdrop ${definition.id}: ${entry.message}`; if (entry.level === 'error') console.error(line); else console.info(line); }
       });
     }
   }
