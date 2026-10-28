@@ -24,7 +24,6 @@ body { background: transparent; }
 
 /* ── Backdrop: ground, tint, panel (CSS) and the accent rule (object) ──────── */
 .t-backdrop-layer { transition: opacity var(--cl-fade) ease; }
-.t-backdrop-object { z-index: 1; }
 .t-backdrop-layer[data-layer="ground"] { background: var(--t-color-ground-dark); opacity: 0; }
 .t-backdrop-layer[data-layer="tint"] { background: color-mix(in srgb, var(--t-accent) 6%, var(--t-surface)); opacity: 0; }
 .t-backdrop-layer[data-layer="panel"] {
@@ -42,7 +41,7 @@ body { background: transparent; }
 }
 
 /* ── The dark variant: the whole window turns dark, the accent lightens ─────── */
-#elabora-app:has(> .t-backdrop[data-variant="ink"]) {
+#elabora-app[data-backdrop="ink"] {
   --t-text: var(--t-color-text-on-dark);
   --t-muted: var(--t-color-muted-on-dark);
   --t-primary: var(--t-color-text-on-dark);
@@ -167,7 +166,6 @@ h1, h2, h3, h4 { letter-spacing: -0.012em; }
 /* Text beside a figure: the figure keeps to the height of the slide. */
 .t-image--beside { align-items: start; }
 .t-image--beside .t-figure img { max-height: min(28rem, 60vh); object-fit: contain; }
-@media (prefers-reduced-motion: reduce) { .t-bar { transition: none; } }
 
 /* A logo drawn for light grounds keeps a light plate on dark screens. */
-#elabora-app:has(> .t-backdrop[data-variant="ink"]) .t-logo { padding: .25rem .375rem; border-radius: 2px; background: var(--t-color-text-on-dark); box-sizing: content-box; }
+#elabora-app[data-backdrop="ink"] .t-logo { padding: .25rem .375rem; border-radius: 2px; background: var(--t-color-text-on-dark); box-sizing: content-box; }

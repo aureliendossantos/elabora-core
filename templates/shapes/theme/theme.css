@@ -17,9 +17,9 @@ body { background: transparent; }
 .t-backdrop-layer[data-layer="ground-mono"] { background: var(--t-color-mono-ground); }
 .t-backdrop[data-variant="earth"] .t-backdrop-layer[data-layer="ground-earth"],
 .t-backdrop[data-variant="mono"] .t-backdrop-layer[data-layer="ground-mono"] { opacity: 1; }
-/* A faint print grain over the shapes (above the decoration's frame), as on a screen print. */
+/* A faint print grain over the shapes (above the decoration's frame, z-index 1), as on a screen print. */
 .t-backdrop-layer[data-layer="grain"] {
-  z-index: 1;
+  z-index: 2;
   background-image: url(../assets/images/paper-grain.svg);
   background-size: 240px 240px;
   opacity: .32;
