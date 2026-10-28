@@ -27,7 +27,9 @@ async function withLive(dir: string, run: (live: { page: Frame; host: Page; show
   try {
     const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
     const errors: string[] = [];
-    page.on('pageerror', (error) => errors.push(error.message));
+    // The course's errors: not those of the browser's own PDF viewer (Electron's reads localStorage,
+    // refused in the canvas's frame, when the preview shows a PDF).
+    page.on('pageerror', (error) => { if (!/^\s+at .*chrome-extension:\/\//m.test(error.stack ?? '')) errors.push(error.message); });
     // In a frame, as the app shows it: the canvas posts to its parent, which listens as a host would.
     await page.evaluate(() => {
       (window as unknown as LiveWindow).sent = [];

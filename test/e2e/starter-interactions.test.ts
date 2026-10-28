@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import type { Page } from 'playwright-core';
 import { startServer } from '@elabora/node/emulator/server';
-import { launchBrowser } from '@elabora/node/emulator/browser';
+import { CHROMIUM_CHANNELS, launchBrowser } from '@elabora/node/emulator/browser';
 import { build } from '@elabora/node/build';
 import { copyExample, readJSON, writeJSON } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
@@ -43,7 +43,8 @@ async function player(dir: string, run: (page: Page, reload: Reload) => Promise<
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
   const server = await startServer();
   server.addPackage('p', b.dirPath);
-  const browser = await launchBrowser('chromium');
+  // A phone is an external Chromium's: Elabora's Electron (ELABORA_ELECTRON_EXECUTABLE) emulates none.
+  const browser = await launchBrowser('chromium', touch ? { channels: CHROMIUM_CHANNELS } : {});
   try {
     const context = await browser.newContext({ viewport: { width, height }, reducedMotion: motion ? 'no-preference' : 'reduce', hasTouch: touch, isMobile: touch });
     const page = await context.newPage();
