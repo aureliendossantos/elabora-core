@@ -34,6 +34,18 @@ export interface ObjectContext {
   variant: string | null;
 }
 
+// A block that carries on from one screen to another (docs/decisions.md D65): the object receives
+// the arriving block's props with this hint, to move its camera, its scene and its controls over the
+// same time as its frame glides. duration is in ms, 0 under less motion asked (a cut); direction
+// says whether the learner went forward in the course or back.
+export interface ObjectTransition {
+  from: { screen: string; block: string };
+  to: { screen: string; block: string };
+  direction: 'forward' | 'back';
+  duration: number;
+  reducedMotion: boolean;
+}
+
 // An embedded font, sent as bytes: the frame has no network.
 export interface FontPayload {
   family: string;
@@ -80,7 +92,9 @@ export interface FrameMethods {
   'object/initialize': InitializeParams;
   'object/set-root-size': { rootSize: number };
   'object/safe-area': { safeArea: Partial<SafeArea> };
-  'object/update-props': { props: JsonObject };
+  // With transition (D65): the arriving block's props, its words (strings) and its safe area, applied
+  // before update(props, transition) is called.
+  'object/update-props': { props: JsonObject; strings?: Record<string, string>; safeArea?: Partial<SafeArea>; transition?: ObjectTransition };
   'object/context': { context: ObjectContext };
   'object/view': { view: ObjectView };
   'object/pause': Record<string, never>;
@@ -119,7 +133,8 @@ export interface ObjectModule {
 
 // What mount() returns.
 export interface ObjectApi {
-  update?(props: JsonObject): void;
+  // transition: the block carries on from another screen (D65); absent for a change of props.
+  update?(props: JsonObject, transition?: ObjectTransition): void;
   getState(): JsonValue;
   setState?(state: JsonValue): void;
   pause?(): void;

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.1/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.2/component.schema.json",
   "id": "config-quiz",
   "title": "Configuration question",
   "description": "A choice question whose options are gearset configurations, shown as cards with their diagram. A fork of the quiz block: same scoring, feedback, saved state and SCORM records.",

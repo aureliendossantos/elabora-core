@@ -19,6 +19,7 @@ import { checkTracking } from './tracking.ts';
 import { checkThemeFiles, checkFontLicenses, checkFigures, checkGenerators } from './design.ts';
 import { checkComponents, checkComponentUsage, checkScreenComponents, checkThemeStyles } from './components.ts';
 import { checkMedia } from './media.ts';
+import { checkContinuity } from './continuity.ts';
 import { list } from './guards.ts';
 
 export { createValidationContext };
@@ -53,6 +54,7 @@ export const COURSE_CHECKS: readonly Check<CourseCheckContext>[] = [
   { name: 'screen-backdrop', scope: 'screen', screens: 'all', run: checkScreenBackdrop },
   { name: 'objects', scope: 'project', run: checkObjects },
   { name: 'object-usage', scope: 'project', readsScreens: true, run: checkObjectUsage },
+  { name: 'continuity', scope: 'project', readsScreens: true, run: checkContinuity },
   { name: 'theme', scope: 'project', run: checkTheme },
   { name: 'player', scope: 'project', readsScreens: true, run: checkPlayer },
   { name: 'components', scope: 'project', run: checkComponents },

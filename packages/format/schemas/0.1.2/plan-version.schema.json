@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.2/plan-version.schema.json",
+  "title": "A version of the plan (plan-versions/V<n>.json)",
+  "description": "A frozen copy of plan.json, made by hand (elabora plan version, the app's « Créer la V3 »), never by an agent nor by an export (D52). Its number, day, plan and content hash never change; its sends and its validation are added when they happen. The notes for the client explain its changes since the version before it. Kept with the course (its history, its .elabora archives), never in a SCORM or web package.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "date", "contentHash", "plan"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9999,
+      "description": "Its number: V1 is 1. The file is named after it (plan-versions/V1.json)."
+    },
+    "date": {
+      "$ref": "defs.schema.json#/$defs/date",
+      "description": "The day it was made, in the author's time zone."
+    },
+    "note": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "description": "What the author said of it when making it (« Après la réunion du 3 octobre »)."
+    },
+    "contentHash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "SHA-256 of the canonical plan below, without $schema and what the agent decided and asks while it was a draft (planContentHash)."
+    },
+    "plan": {
+      "$ref": "plan.schema.json",
+      "description": "plan.json as it was when the version was made."
+    },
+    "notes": {
+      "type": "array",
+      "maxItems": 500,
+      "description": "Notes for the client, one per change since the version before, frozen with the version: the document shows them in its margin and Word as comments.",
+      "items": { "$ref": "#/$defs/note" }
+    },
+    "sends": {
+      "type": "array",
+      "maxItems": 500,
+      "description": "Each time the version was exported for the client: the day and the format. Exporting adds one; it never makes a version.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["date", "format"],
+        "properties": {
+          "date": { "$ref": "defs.schema.json#/$defs/date" },
+          "format": { "enum": ["docx", "pdf", "html", "review"] }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["by", "date"],
+      "description": "The client validated this version (elabora plan approve, the app's « Valider… »), never an agent.",
+      "properties": {
+        "by": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Who validated (name and organisation)." },
+        "date": { "$ref": "defs.schema.json#/$defs/date" },
+        "reference": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Where the validation is written (an email, minutes, a purchase order)." }
+      }
+    }
+  },
+  "$defs": {
+    "note": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target", "text"],
+      "properties": {
+        "target": {
+          "type": "string",
+          "pattern": "^(plan|objective|item|text|question|source):[A-Za-z0-9_-]{1,64}$",
+          "description": "The change it explains, by its key in the plan's diff: item:ITEM-3, text:TXT-2, plan:businessGoal…"
+        },
+        "text": { "type": "string", "minLength": 1, "maxLength": 1000, "description": "The note, in the course language, as the client reads it." }
+      }
+    }
+  }
+}

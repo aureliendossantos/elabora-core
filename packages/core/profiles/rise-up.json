@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.1/lms-profile.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.2/lms-profile.schema.json",
   "id": "rise-up",
   "name": "Rise Up",
   "documentedAt": "2026-09",

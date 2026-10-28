@@ -330,6 +330,10 @@ export interface BlockBase {
   style?: string;
   // Extra the learner may skip: steps that open once explored and interactions-done do not wait for it (D63).
   optional?: true;
+  // Continuity between screens (D65): the blocks of other screens with the same key are this one to
+  // the learner; duration (ms) of the passage to it; state: for a free object, the key of the chain's
+  // saved state in the learner state (one for every block of the key).
+  continuity?: ContinuityData;
   // Key of its visibility in the learner state, when events show or hide it.
   vkey?: string;
   // Rendered template (blocks rendered by a template).
@@ -345,6 +349,12 @@ export interface BlockBase {
   defaultSlot?: string | null;
   // Blocks placed in the slots of this component instance.
   blocks?: BlockData[];
+}
+
+export interface ContinuityData {
+  key: string;
+  duration: number;
+  state?: string;
 }
 
 // A timed block's coming (in) or going (out): when, in seconds on the screen's timeline, and how.

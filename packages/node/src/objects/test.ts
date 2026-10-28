@@ -334,6 +334,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
           if (step.action === 'step') await callHost(page, { method: 'step', frames: drawn.has(i) ? 1 : frames });
           else if (step.action === 'click') await callHost(page, { method: 'testClick', target: step.object ? { object: step.object } : { at: step.at } });
           else if (step.action === 'key') await callHost(page, { method: 'testKey', key: step.key ?? '' }); // a key event without key has key ''
+          else if (step.action === 'set-props' && step.transition) await callHost(page, { method: 'carryOn', props: step.props || {}, duration: step.transition.duration ?? 700, direction: step.transition.direction ?? 'forward', ...(step.transition.safeArea ? { safeArea: step.transition.safeArea } : {}) });
           else if (step.action === 'set-props') await callHost(page, { method: 'updateProps', props: step.props || {} });
           else if (step.action === 'set-state') await callHost(page, { method: 'setState', state: step.state || {} });
           else if (step.action === 'set-context') await callHost(page, { method: 'setContext', context: step.context || {} });

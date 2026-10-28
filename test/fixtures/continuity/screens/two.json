@@ -1,0 +1,69 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "two",
+  "title": "Screen two",
+  "covers": [
+    "ITEM-1"
+  ],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "two-text",
+      "type": "text",
+      "props": {
+        "markdown": "Some words above, so that the title moves."
+      }
+    },
+    {
+      "id": "two-title",
+      "type": "heading",
+      "continuity": {
+        "key": "title",
+        "duration": 500
+      },
+      "props": {
+        "text": "The same title"
+      }
+    },
+    {
+      "id": "two-scene",
+      "type": "free-object",
+      "continuity": {
+        "key": "scene",
+        "duration": 900
+      },
+      "props": {
+        "object": "probe",
+        "title": "The scene, second",
+        "aspectRatio": "21:9",
+        "props": {
+          "label": "two"
+        },
+        "strings": {
+          "hello": "Hello from two"
+        },
+        "a11y": {
+          "description": "The scene described on screen two."
+        },
+        "textAlternative": "Text version two."
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "two-probed",
+      "on": {
+        "type": "object.event",
+        "target": "two-scene",
+        "name": "probed"
+      },
+      "do": [
+        {
+          "type": "increment-variable",
+          "variable": "probed",
+          "by": 1
+        }
+      ]
+    }
+  ]
+}

@@ -122,6 +122,8 @@ export interface PlayerTimeline {
 export interface PlayerObjectHost {
   emitted: { name: string; payload: unknown }[];
   updateProps(props: Record<string, unknown>): void;
+  // The block carries on from another screen (D65).
+  carryOn(props: Record<string, unknown>, transition: { from: { screen: string; block: string }; to: { screen: string; block: string }; direction: 'forward' | 'back'; duration: number; reducedMotion: boolean }, extra?: { safeArea?: Record<string, number> }): void;
   getState(): Promise<unknown>;
   setState(state: unknown): Promise<unknown>;
   testClick(target: { object?: string; at?: [number, number] }): Promise<unknown>;

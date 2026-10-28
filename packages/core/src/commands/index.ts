@@ -29,4 +29,5 @@ export { updatePlayer, type UpdatePlayerArgs } from './player.ts';
 export { addFont, type AddFontArgs, type AddFontResult, type FontFace, type FontRequest, type FontSource } from './fonts.ts';
 export { addResource, RESOURCES_FOLDER, type AddResourceArgs, type AddResourceRequest, type AddResourceResult } from './resources.ts';
 export { settleImportReport, IMPORT_REPORT, type SettleImportReportArgs } from './import-report.ts';
+export { setContinuity, type SetContinuityArgs } from './continuity.ts';
 export { convertBlock, conversionsFor, conversionTargets, type ConvertBlockArgs, type ConvertBlockResult, type ConvertTarget, type ConversionList, type ConversionTarget, type RefusedConversion } from './convert.ts';

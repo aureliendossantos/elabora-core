@@ -9,7 +9,7 @@ import { validateData } from './data-schema.ts';
 import { fieldOf, isRecord, rpcError } from './json.ts';
 import type { JsonObject, JsonValue } from './json.ts';
 import type { FontData, ObjectDefinition, ObjectEventDeclaration, TokenValues } from './course-data.ts';
-import type { FontPayload, FrameMethod, FrameMethods, LogEntry, ObjectContext, ObjectView, SafeArea, TestClickTarget } from './object-protocol.ts';
+import type { FontPayload, FrameMethod, FrameMethods, LogEntry, ObjectContext, ObjectTransition, ObjectView, SafeArea, TestClickTarget } from './object-protocol.ts';
 
 // What the host reads of the object definition (the compiled course data, or the object test page).
 export type ObjectHostDefinition = Pick<ObjectDefinition, 'dir'> & Partial<Pick<ObjectDefinition, 'objects' | 'events' | 'assets'>>;
@@ -53,6 +53,9 @@ export interface ObjectHost {
   emitted: { name: string; payload: unknown }[];
   readonly ready: boolean;
   updateProps(props: JsonObject): void;
+  // The block carries on from another screen (D65): the arriving block's props, words and safe area,
+  // with the hint of the passage.
+  carryOn(props: JsonObject, transition: ObjectTransition, extra?: { strings?: Record<string, string>; safeArea?: Partial<SafeArea> }): void;
   setRootSize(px: number): void;
   setSafeArea(area: Partial<SafeArea>): void;
   setContext(context: ObjectContext): void;
@@ -179,6 +182,7 @@ export function createObjectHost({ iframe, def, props, strings = {}, tokens, loc
     emitted,
     get ready() { return ready; },
     updateProps: (next) => notify('object/update-props', { props: next }),
+    carryOn: (next, transition, extra = {}) => notify('object/update-props', { props: next, transition, ...(extra.strings ? { strings: extra.strings } : {}), ...(extra.safeArea ? { safeArea: extra.safeArea } : {}) }),
     setRootSize: (px) => notify('object/set-root-size', { rootSize: px }),
     setSafeArea: (area) => { if (ready) notify('object/safe-area', { safeArea: area }); },
     setContext: (where) => { if (ready) notify('object/context', { context: where }); },

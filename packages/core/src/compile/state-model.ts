@@ -14,6 +14,7 @@ import { dialogueData } from '../dialogue/data.ts';
 import { worstCaseDialogue } from '@elabora/player/dialogue/state';
 import { listOf, objectsIn } from '../util/values.ts';
 import { parseBlanks, blankMaxLength } from '@elabora/player/fill-in';
+import { continuityEntity, continuityKey } from '../project/continuity.ts';
 
 // elabora.lock.json gives every stateful element a short, permanent key (base 36 counter), and
 // records the version of each course component its instances were written for (migrations).
@@ -57,7 +58,8 @@ export function statefulEntities(project: Project): string[] {
   const toggled = toggledBlocks(project);
   for (const { block } of iterateBlocks(project)) entities.push(...blockEntities(project, block, toggled));
   for (const variable of objectsIn(project.course?.variables)) if (variable.persist !== false) entities.push(`var:${variable.id}`);
-  return entities;
+  // A chain's state is listed once, where its first block is (D65).
+  return [...new Set(entities)];
 }
 
 // The stateful entities of one screen, as statefulEntities lists them for the course. project gives
@@ -73,6 +75,10 @@ function blockEntities(project: Pick<Project, 'components' | 'plan' | 'course'>,
   const entities: string[] = [];
   const behavior = instanceBehavior(getRegistry(project), block);
   if (isActivity(behavior)) entities.push(activityEntity(behavior, block.id));
+  // A free object that carries on from screen to screen saves the chain's state (D65): one key for
+  // every block of the chain (the first block met gives it its place in the lock).
+  const chain = behavior === 'object' ? continuityKey(block) : null;
+  if (chain) entities.push(continuityEntity(chain));
   // A dialogue's options and endings have keys of their own: its saved path names them (D61).
   if (behavior === 'dialogue') entities.push(...dialogueEntities(block.id, recordOf(block.props)).slice(1));
   if (toggled.has(block.id)) entities.push(`block:${block.id}`);
@@ -144,6 +150,7 @@ export function buildStateModel(project: Project, keys: StateKeys, lock: Pick<St
   const index = planIndex(project.plan);
   const registry = getRegistry(project);
   const model: StateModel = { screens: [], quizzes: [], numerics: [], decisions: [], variables: [], objects: [], toggleableBlocks: [], steppedScreens: [], controls: [], dialogues: [], fillIns: [], sorts: [], reflections: [] };
+  const chainStates = new Set<string>();
   for (const { id } of screenOrder(project)) {
     const key = keys[`screen:${id}`];
     if (!key) continue;
@@ -182,7 +189,11 @@ export function buildStateModel(project: Project, keys: StateKeys, lock: Pick<St
     } else if (behavior === 'object' && key) {
       const manifest = project.objects.get(textOf(props.object))?.manifest;
       const persistMax = manifest?.persistState?.enabled ? (measuredLength(manifest.persistState.maxLength) || 300) : 0;
-      model.objects.push({ key, persistMax });
+      // A block of a chain keeps its completion; its state is the chain's, counted once (D65).
+      const chain = continuityKey(block);
+      const chainKey = chain ? keys[continuityEntity(chain)] : undefined;
+      model.objects.push({ key, persistMax: chainKey ? 0 : persistMax });
+      if (chainKey && !chainStates.has(chainKey)) { chainStates.add(chainKey); model.objects.push({ key: chainKey, persistMax }); }
     } else if (behavior === 'dialogue' && key) {
       // Its longest progress, made of its longest keys (D61): measured with the same encoder.
       model.dialogues!.push({ key, worst: worstCaseDialogue(dialogueData(props, { keys: dialogueKeys(block.id, keys, lock) })) });

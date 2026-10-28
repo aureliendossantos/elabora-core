@@ -1,0 +1,12 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/plan.schema.json",
+  "id": "PLAN-CONTINUITY",
+  "title": "Continuity between screens",
+  "businessGoal": "",
+  "audience": { "role": "", "priorKnowledge": "low" },
+  "sources": [],
+  "objectives": [{ "id": "OBJ-1", "statement": "Follow one scene across screens." }],
+  "items": [{ "id": "ITEM-1", "kind": "practice", "title": "The scene", "objectives": ["OBJ-1"] }],
+  "spacing": [],
+  "waivers": []
+}

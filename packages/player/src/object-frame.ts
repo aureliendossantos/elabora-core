@@ -62,6 +62,8 @@ function isObjectApi(value: unknown): value is ObjectApi {
   let awakeUntil = 0;
   let rateProbe: { frames: number; milliseconds: number } | null = null;
   let safeArea: SafeArea = { top: 0, right: 0, bottom: 0, left: 0 };
+  // The object's words (ctx.strings), once initialised.
+  let words: Record<string, string> | null = null;
   const assetRequests = new Map<string, { resolve: (data: ArrayBuffer) => void; reject: (error: Error) => void }>();
   let assetRequestCount = 0;
 
@@ -213,8 +215,10 @@ function isObjectApi(value: unknown): value is ObjectApi {
       decorative = !!params.decorative;
       context = params.context || null;
       if (params.view) view = { ...view, ...params.view };
-      // Words of the object (manifest strings, as reworded or translated by the block).
+      // Words of the object (manifest strings, as reworded or translated by the block; replaced in
+      // place by the arriving block's when the object carries on to another screen, D65).
       const strings: Record<string, string> = { ...(params.strings || {}) };
+      words = strings;
       const missing = new Set<string>();
       const t = (key: string, values?: Record<string, unknown>) => {
         if (strings[key] === undefined) {
@@ -243,7 +247,17 @@ function isObjectApi(value: unknown): value is ObjectApi {
       for (const callback of [...safeCallbacks]) callback({ ...safeArea });
       if (testMode) runFrame(0); else if (still) wake();
     },
-    'object/update-props'(params) { api?.update?.(params.props); if (testMode) runFrame(0); else if (still) wake(); },
+    'object/update-props'(params) {
+      // The block carries on from another screen (D65): its words and its safe area first, so that
+      // the object moves to settings that are whole.
+      if (params.strings && words) { for (const key of Object.keys(words)) delete words[key]; Object.assign(words, params.strings); }
+      if (params.safeArea) {
+        safeArea = { top: 0, right: 0, bottom: 0, left: 0, ...params.safeArea };
+        for (const callback of [...safeCallbacks]) callback({ ...safeArea });
+      }
+      if (params.transition) api?.update?.(params.props, params.transition); else api?.update?.(params.props);
+      if (testMode) runFrame(0); else if (still) wake();
+    },
     'object/context'(params) {
       context = params.context || null;
       for (const callback of [...contextCallbacks]) callback(context);

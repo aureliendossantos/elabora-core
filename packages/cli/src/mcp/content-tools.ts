@@ -55,9 +55,16 @@ export const addBlock = defineTool({
 
 export const updateBlock = defineTool({
   name: 'elabora_update_block',
-  description: 'Edit a block by id (anywhere, slots included): props are merged (a prop set to null is removed); also hidden, width, note, optional (true: extra the learner may skip, not waited for by steps that open once explored nor by interactions-done), slot and style (null removes), and step (a block of the screen itself: the step that reveals it; null or 1: from the start). For free-object blocks, props.props holds the declared prop values.',
-  inputSchema: objectSchema({ block: SLUG, props: { type: 'object' }, hidden: { type: 'boolean' }, width: { enum: ['full', 'wide', 'half', 'bleed'] }, note: { type: 'string' }, optional: { type: 'boolean' }, slot: { type: ['string', 'null'] }, style: { type: ['string', 'null'] }, step: { type: ['integer', 'null'], minimum: 1, maximum: 12 } }, ['block']),
+  description: 'Edit a block by id (anywhere, slots included): props are merged (a prop set to null is removed); also hidden, width, note, optional (true: extra the learner may skip, not waited for by steps that open once explored nor by interactions-done), slot and style (null removes), step (a block of the screen itself: the step that reveals it; null or 1: from the start), and continuity ({ key, duration? }: blocks of other screens with the same key carry on from one screen to the next, D65; null removes it; elabora_set_continuity links two blocks for you). For free-object blocks, props.props holds the declared prop values.',
+  inputSchema: objectSchema({ block: SLUG, props: { type: 'object' }, hidden: { type: 'boolean' }, width: { enum: ['full', 'wide', 'half', 'bleed'] }, note: { type: 'string' }, optional: { type: 'boolean' }, slot: { type: ['string', 'null'] }, style: { type: ['string', 'null'] }, step: { type: ['integer', 'null'], minimum: 1, maximum: 12 }, continuity: { type: ['object', 'null'], properties: { key: SLUG, duration: { type: 'integer', minimum: 0, maximum: 3000 } }, required: ['key'], additionalProperties: false } }, ['block']),
   handler: (args, { root, author }) => editResult(edit.updateBlock(root, args, { author }))
+});
+
+export const setContinuity = defineTool({
+  name: 'elabora_set_continuity',
+  description: 'Continuity between screens (D65): a block carries on from a block of another screen instead of appearing again (a free object keeps running and moves to its new settings, update(props, transition); another block glides from where its counterpart was). with: the block it carries on from (they share a key: that block\'s, else this one\'s, else a new one; same type, free objects the same object; blocks of screens, not layers); with null: it no longer carries on from the screens before it (it still does to the screens after it). duration: the passage to it in ms (0 to 3000; null: 700). One undoable change.',
+  inputSchema: objectSchema({ block: SLUG, with: { type: ['string', 'null'], description: 'The block of another screen it carries on from; null cuts it from the screens before it.' }, duration: { type: ['integer', 'null'], minimum: 0, maximum: 3000 } }, ['block']),
+  handler: (args, { root, author }) => editResult(edit.setContinuity(root, args, { author }))
 });
 
 export const removeBlock = defineTool({

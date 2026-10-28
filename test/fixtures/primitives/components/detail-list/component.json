@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.1/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.2/component.schema.json",
   "id": "detail-list",
   "title": "Details to open",
   "description": "Questions learners may open, each a native disclosure (<details data-t-details>) visited once opened.",

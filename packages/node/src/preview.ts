@@ -1029,7 +1029,7 @@ export async function replayObject(dir: string, objectId: string, { block: block
       scrollTo(0, Math.max(0, at));
       requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
     }), { id: block, view });
-    type HostMethod = 'testClick' | 'testKey' | 'updateProps' | 'setState' | 'getState';
+    type HostMethod = 'testClick' | 'testKey' | 'updateProps' | 'carryOn' | 'setState' | 'getState';
     const host = (method: HostMethod, argument?: unknown) => page.evaluate(async ({ id, method, argument }) => {
       const found = window.__elabora.objectHost(id);
       if (!found) throw new Error(`no object host for "${id}"`);
@@ -1037,6 +1037,12 @@ export async function replayObject(dir: string, objectId: string, { block: block
         case 'testClick': return found.testClick(argument as { object?: string; at?: [number, number] });
         case 'testKey': return found.testKey(String(argument));
         case 'updateProps': return found.updateProps(argument as Record<string, unknown>);
+        // A block of another screen gives way to this one (D65), in real time.
+        case 'carryOn': {
+          const { props, duration, direction, safeArea } = argument as { props: Record<string, unknown>; duration: number; direction: 'forward' | 'back'; safeArea?: Record<string, number> };
+          const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+          return found.carryOn(props, { from: { screen: 'before', block: 'before' }, to: { screen: id, block: id }, direction, duration: reducedMotion ? 0 : duration, reducedMotion }, safeArea ? { safeArea } : {});
+        }
         case 'setState': return found.setState(argument);
         case 'getState': return found.getState();
       }
@@ -1051,6 +1057,7 @@ export async function replayObject(dir: string, objectId: string, { block: block
         if (step.action === 'step') await page.waitForTimeout(Math.round(((step.frames || 1) * 1000) / 60));
         else if (step.action === 'click') await host('testClick', step.object ? { object: step.object } : { at: step.at });
         else if (step.action === 'key') await host('testKey', step.key ?? '');
+        else if (step.action === 'set-props' && step.transition) await host('carryOn', { props: step.props || {}, duration: step.transition.duration ?? 700, direction: step.transition.direction ?? 'forward', safeArea: step.transition.safeArea });
         else if (step.action === 'set-props') await host('updateProps', step.props || {});
         else if (step.action === 'set-state') await host('setState', step.state || {});
         else if (step.action === 'set-view') { await scrollToView(step.view || null); await page.waitForTimeout(250); }

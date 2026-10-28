@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.1/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.2/component.schema.json",
   "id": "wind-rose",
   "title": "Wind rose",
   "description": "A wind rose with its winds as tabs around the dial: selecting a wind turns the rose to it and shows its panel (direction, name, where the name comes from). Winds already read are marked. Arrow keys move round the rose.",

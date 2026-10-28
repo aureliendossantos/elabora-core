@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.2/event.schema.json",
+  "title": "Event (trigger → conditions → actions)",
+  "description": "Native interactivity, like Storyline triggers or RPG Maker events: when something happens (on), if every condition holds (if), run the actions (do), otherwise run else. Prefer events over code in free objects.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "on", "do"],
+  "properties": {
+    "id": { "$ref": "defs.schema.json#/$defs/slug" },
+    "description": { "type": "string", "maxLength": 300, "description": "One sentence for reviewers: what this event does and why." },
+    "on": { "$ref": "#/$defs/trigger" },
+    "if": {
+      "type": "array",
+      "description": "All conditions must hold (logical AND).",
+      "items": { "$ref": "#/$defs/condition" }
+    },
+    "do": { "type": "array", "description": "Empty while the event is being written: it does nothing until it has an action (W_EVENT_NO_ACTION when else has none either).", "items": { "$ref": "#/$defs/action" } },
+    "else": { "type": "array", "items": { "$ref": "#/$defs/action" } }
+  },
+  "$defs": {
+    "trigger": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "enum": ["screen.enter", "click", "quiz.submitted", "decision.selected", "object.event", "variable.changed", "layer.closed", "timeline.reached", "timeline.ended", "media.ended", "dialogue.started", "dialogue.node", "dialogue.line", "dialogue.chosen", "dialogue.ended"],
+          "description": "screen.enter: the screen is shown. click: the learner uses a control of a block (target): a button block, or a button, tab or disclosure of a component, optionally filtered by its name. quiz.submitted: a quiz (target) is submitted, optionally filtered by result. decision.selected: an option of a decision block (target) is chosen, optionally filtered by option. object.event: a free object block (target) emits a declared event (name), optionally filtered by payload values (where). variable.changed: a variable changes. layer.closed: a layer (target) is closed. timeline.reached: playback of the screen's timeline, or of a layer's, crosses a moment (at): a line or a word starts or ends, seconds pass on a screen or a layer without narration; never on a seek, again when the learner replays the passage. timeline.ended: playback reaches the end of the screen's timeline, or of a layer's with layer (to close the layer once it has spoken: hide-layer). media.ended: an audio or video block (target) plays to its end. dialogue.started: a dialogue block (target) begins. dialogue.node: it enters a node (node filter). dialogue.line: one of its lines starts (line filter). dialogue.chosen: the learner chooses an option (node and option filters; on every path, retries and returns included). dialogue.ended: it reaches an ending (ending filter), on every run; a condition on the dialogue says whether its first, scored run is done."
+        },
+        "target": { "$ref": "defs.schema.json#/$defs/slug", "description": "Block or layer id the trigger listens to." },
+        "result": { "enum": ["correct", "incorrect", "any"], "default": "any" },
+        "option": { "type": "string", "pattern": "^[a-z0-9]{1,8}$", "description": "Decision option id (decision.selected), or a dialogue option id (dialogue.chosen, with node)." },
+        "node": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,47}$", "description": "dialogue.node, dialogue.chosen: a node of the dialogue." },
+        "line": { "$ref": "defs.schema.json#/$defs/slug", "description": "dialogue.line: a line of the dialogue (its id)." },
+        "ending": { "$ref": "defs.schema.json#/$defs/slug", "description": "dialogue.ended: an ending of the dialogue (its id)." },
+        "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]{0,47}$", "description": "click: name of the control in the component template (data-t-click=\"name\", data-t-tab=\"name\", data-t-toggle=\"name\", or a primitive's data-t-item, data-t-flip, data-t-details or data-t-reveal); without it, any control of the block. object.event: event name, as declared in the free object's manifest." },
+        "where": {
+          "type": "object",
+          "description": "Payload filter: every listed field must equal the given value.",
+          "additionalProperties": { "type": ["string", "number", "boolean", "null"] }
+        },
+        "variable": { "$ref": "defs.schema.json#/$defs/variableId" },
+        "at": { "$ref": "#/$defs/cue", "description": "timeline.reached: the moment playback crosses (a line, a word, seconds on a screen without narration). A line of a layer's narration names the layer's timeline by itself." },
+        "layer": { "$ref": "defs.schema.json#/$defs/slug", "description": "The timeline of a layer of the screen (docs/decisions.md D62) instead of the screen's: timeline.ended when the layer's timeline ends (absent: the screen's), timeline.reached at seconds from the layer's opening when it has no narration (a line of a layer's narration needs no layer)." }
+      },
+      "allOf": [
+        { "if": { "properties": { "type": { "enum": ["click", "quiz.submitted", "decision.selected", "object.event", "layer.closed", "media.ended", "dialogue.started", "dialogue.node", "dialogue.line", "dialogue.chosen", "dialogue.ended"] } } }, "then": { "required": ["target"] } },
+        { "if": { "properties": { "type": { "const": "timeline.reached" } } }, "then": { "required": ["at"] } },
+        { "if": { "properties": { "type": { "const": "object.event" } } }, "then": { "required": ["name"] } },
+        { "if": { "properties": { "type": { "const": "variable.changed" } } }, "then": { "required": ["variable"] } }
+      ]
+    },
+    "cue": {
+      "$ref": "defs.schema.json#/$defs/anchor",
+      "description": "A moment of the screen's timeline or of a layer's (an anchor): a line, a word of a line, the end of either with an offset; seconds from the start of a step on a screen without narration (from its opening on a layer without narration); the start or end of a step."
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A variable compared with a value ({ variable, op, value }), the visited state of a block's controls ({ visited, name }), or what the scored run of a dialogue block gave ({ dialogue, ending | chosen | score | done }).",
+      "properties": {
+        "variable": { "$ref": "defs.schema.json#/$defs/variableId" },
+        "op": { "enum": ["eq", "neq", "gt", "gte", "lt", "lte"] },
+        "value": { "type": ["string", "number", "boolean"] },
+        "visited": { "$ref": "defs.schema.json#/$defs/slug", "description": "Block id (any screen): holds once the learner has used every control of the block (its buttons, tabs and disclosures, the items of its sequences, its flip cards, details and elements brought into view; a tab or disclosure counts once its content is shown, an item once shown, a card once turned over, an element once in view), or only the control name. Saved with the learner's progress." },
+        "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]{0,47}$", "description": "With visited: one control of the block, by name." },
+        "dialogue": { "$ref": "defs.schema.json#/$defs/slug", "description": "A dialogue block (any screen), with one of ending, chosen, score or done: what its first run to an end (the scored run) gave, never a later replay." },
+        "ending": { "$ref": "defs.schema.json#/$defs/slug", "description": "With dialogue: the scored run reached this ending." },
+        "chosen": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,47}\\.[a-z0-9]{1,8}$", "description": "With dialogue: the scored run chose this option (node.option), first or after a retry." },
+        "score": { "type": "object", "additionalProperties": false, "required": ["op", "value"], "properties": { "op": { "enum": ["eq", "neq", "gt", "gte", "lt", "lte"] }, "value": { "type": "number", "minimum": 0, "maximum": 100 } }, "description": "With dialogue: the scored run's score out of 100." },
+        "done": { "type": "boolean", "description": "With dialogue: true once the scored run reached an ending, false before." }
+      },
+      "if": { "required": ["visited"] },
+      "then": { "properties": { "variable": false, "op": false, "value": false, "dialogue": false, "ending": false, "chosen": false, "score": false, "done": false } },
+      "else": {
+        "if": { "required": ["dialogue"] },
+        "then": { "minProperties": 2, "maxProperties": 2, "properties": { "variable": false, "op": false, "value": false, "name": false } },
+        "else": { "required": ["variable", "op", "value"], "properties": { "name": false, "ending": false, "chosen": false, "score": false, "done": false } }
+      }
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "enum": ["go-to", "show-layer", "hide-layer", "show-block", "hide-block", "reveal-step", "set-variable", "increment-variable", "complete-screen", "set-object-props", "exit-course", "pause-timeline", "play-timeline", "seek-timeline", "play-media", "pause-media", "start-dialogue", "goto-dialogue", "restart-dialogue"],
+          "description": "go-to: navigate (screen id, or next / previous). show-layer / hide-layer: open or close a layer of the current screen; hide-layer without layer closes the layer open on top (a Close button inside a layer). show-block / hide-block: change visibility of a block. reveal-step: reveal the steps of the screen up to step (a click in the slide instead of Continue); a step already shown takes the focus again. set-variable: assign a value. increment-variable: add a number (by, may be negative). complete-screen: mark the current screen complete. set-object-props: change declared props of a free object block without regenerating code. exit-course: save and leave (same as the Quit button). pause-timeline / play-timeline: pause the narration of the screen, or play it from where it is (a modal layer pauses and resumes it by itself); with layer, the timeline of that layer while it is open. seek-timeline: move the timeline to a moment (to), as a seek: what is seen follows, nothing crossed fires, playback goes on if it was playing; a moment in a later step reaches that step; with layer (or to a line of a layer's narration), the timeline of that layer while it is open. play-media / pause-media: play or pause an audio or video block (block) of the screen; playing one pauses the narration. start-dialogue: begin a dialogue block (block) of the screen (one whose begins is event, or not begun yet). goto-dialogue: move a dialogue (block) to one of its nodes (node), as if the conversation went there (a free object or a click drives it). restart-dialogue: start a dialogue (block) over; its scored run stays."
+        },
+        "screen": { "type": "string", "pattern": "^([a-z][a-z0-9-]{0,47}|next|previous)$" },
+        "layer": { "$ref": "defs.schema.json#/$defs/slug", "description": "show-layer, hide-layer: a layer of the current screen. Required by show-layer; hide-layer without it closes the open layer (the one on top). pause-timeline, play-timeline, seek-timeline: the timeline of that layer (docs/decisions.md D62) instead of the screen's." },
+        "block": { "$ref": "defs.schema.json#/$defs/slug" },
+        "node": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,47}$", "description": "goto-dialogue: a node of the dialogue." },
+        "variable": { "$ref": "defs.schema.json#/$defs/variableId" },
+        "value": { "type": ["string", "number", "boolean"] },
+        "by": { "type": "number" },
+        "step": { "type": "integer", "minimum": 1, "description": "reveal-step: a step of the blocks of this screen." },
+        "props": { "type": "object", "description": "Values for declared props only." },
+        "to": { "$ref": "#/$defs/cue", "description": "seek-timeline: the moment to go to." }
+      },
+      "allOf": [
+        { "if": { "properties": { "type": { "const": "go-to" } } }, "then": { "required": ["screen"] } },
+        { "if": { "properties": { "type": { "const": "show-layer" } } }, "then": { "required": ["layer"] } },
+        { "if": { "properties": { "type": { "enum": ["show-block", "hide-block", "play-media", "pause-media", "start-dialogue", "goto-dialogue", "restart-dialogue"] } } }, "then": { "required": ["block"] } },
+        { "if": { "properties": { "type": { "const": "goto-dialogue" } } }, "then": { "required": ["node"] } },
+        { "if": { "properties": { "type": { "const": "reveal-step" } } }, "then": { "required": ["step"] } },
+        { "if": { "properties": { "type": { "const": "set-variable" } } }, "then": { "required": ["variable", "value"] } },
+        { "if": { "properties": { "type": { "const": "increment-variable" } } }, "then": { "required": ["variable", "by"] } },
+        { "if": { "properties": { "type": { "const": "set-object-props" } } }, "then": { "required": ["block", "props"] } },
+        { "if": { "properties": { "type": { "const": "seek-timeline" } } }, "then": { "required": ["to"] } }
+      ]
+    }
+  }
+}

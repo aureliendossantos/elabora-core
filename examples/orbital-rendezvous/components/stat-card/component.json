@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.1/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.2/component.schema.json",
   "id": "stat-card",
   "title": "Stat card",
   "description": "One figure that matters, large, with its unit, a short label and an optional sentence. The marker number links the card to a numbered marker in a figure next to it.",

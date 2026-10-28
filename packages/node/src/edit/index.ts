@@ -252,6 +252,12 @@ export function moveNarrationLine(dir: string, args: commands.MoveNarrationLineA
   return runCommand(dir, { name: 'move_narration_line', args, run: (context) => commands.moveNarrationLine(context, args) }, options);
 }
 
+// A block carries on from a block of another screen, or no longer does, and the length of the
+// passage to it (continuity, D65).
+export function setContinuity(dir: string, args: commands.SetContinuityArgs, options?: EditOptions) {
+  return runCommand(dir, { name: 'set_continuity', args, run: (context) => commands.setContinuity(context, args) }, options);
+}
+
 // When a block comes and goes on its screen's timeline (docs/decisions.md D28).
 export function setBlockTiming(dir: string, args: commands.SetBlockTimingArgs, options?: EditOptions) {
   return runCommand(dir, { name: 'set_block_timing', args, run: (context) => commands.setBlockTiming(context, args) }, options);

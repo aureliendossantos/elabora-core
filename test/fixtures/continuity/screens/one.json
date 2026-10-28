@@ -1,0 +1,40 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.2/screen.schema.json",
+  "id": "one",
+  "title": "Screen one",
+  "covers": [
+    "ITEM-1"
+  ],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "one-title",
+      "type": "heading",
+      "continuity": {
+        "key": "title"
+      },
+      "props": {
+        "text": "The same title"
+      }
+    },
+    {
+      "id": "one-scene",
+      "type": "free-object",
+      "continuity": {
+        "key": "scene"
+      },
+      "props": {
+        "object": "probe",
+        "title": "The scene, first",
+        "aspectRatio": "16:9",
+        "props": {
+          "label": "one"
+        },
+        "a11y": {
+          "description": "The scene described on screen one."
+        },
+        "textAlternative": "Text version one."
+      }
+    }
+  ]
+}

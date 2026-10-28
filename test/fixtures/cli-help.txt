@@ -453,6 +453,10 @@ Components
   component publish [dir] <id> --library <dir>        Copy a course component into a library
   block duplicate [dir] <block> [--id <new id>]       Copy a block (and the blocks of its slots)
   block detach [dir] <block>                          Replace a component instance by its native fallback
+  block continue [dir] <block> --from <block> | --cut [--duration <ms>]
+                                                      Continuity between screens (D65): the block carries on from a block of
+                                                      another screen (a free object keeps running, another block glides), or
+                                                      no longer does; --duration: the passage to it (default 700)
   convert [dir] <screen> <block> --to <type>[:<presentation>] [--dry-run] [--lang fr] [--json]
                                                       « Transformer en… »: the block as another type or presentation, its id,
                                                       items and translations kept; without --to, the possible targets

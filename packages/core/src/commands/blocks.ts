@@ -48,6 +48,9 @@ export interface UpdateBlockArgs {
   // The step of the screen that reveals it (null or 1: shown from the start); only for a block of
   // the screen itself, not one in a layer or a component instance.
   step?: number | null;
+  // Continuity between screens (D65): the key it shares with blocks of other screens, and the length
+  // of the passage to it; null removes it.
+  continuity?: Block['continuity'] | null;
 }
 
 export function updateBlock(context: CommandContext, args: UpdateBlockArgs): CommandOutput<{ screen: string }> {
@@ -70,6 +73,8 @@ export function updateBlock(context: CommandContext, args: UpdateBlockArgs): Com
   }
   if (args.step === null || args.step === 1) delete block.step;
   else if (args.step !== undefined) block.step = args.step;
+  if (args.continuity === null) delete block.continuity;
+  else if (args.continuity !== undefined) block.continuity = args.continuity;
   draft.writeJson(place.file, screen);
   return { files: draft.files(), result: { screen: place.screenId } };
 }

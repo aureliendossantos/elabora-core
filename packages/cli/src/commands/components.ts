@@ -16,6 +16,10 @@ const HELP = `  component list [dir]                                Block types 
   component publish [dir] <id> --library <dir>        Copy a course component into a library
   block duplicate [dir] <block> [--id <new id>]       Copy a block (and the blocks of its slots)
   block detach [dir] <block>                          Replace a component instance by its native fallback
+  block continue [dir] <block> --from <block> | --cut [--duration <ms>]
+                                                      Continuity between screens (D65): the block carries on from a block of
+                                                      another screen (a free object keeps running, another block glides), or
+                                                      no longer does; --duration: the passage to it (default 700)
   convert [dir] <screen> <block> --to <type>[:<presentation>] [--dry-run] [--lang fr] [--json]
                                                       « Transformer en… »: the block as another type or presentation, its id,
                                                       items and translations kept; without --to, the possible targets`;
@@ -149,6 +153,23 @@ const detach = defineCommand({
   })
 });
 
+// Continuity between screens (D65): --from links the block to one of another screen, --cut takes it
+// out of the chain of the screens before it; --duration sets the passage to it.
+const carryOn = defineCommand({
+  name: 'block continue',
+  flags: { from: 'string', cut: 'boolean', duration: 'string' },
+  run: ({ positionals, flags }) => reportingFailures(() => {
+    const { dir, rest: [block] } = folderAndArguments(positionals, 1);
+    const duration = flags.duration === undefined ? undefined : flags.duration === 'default' ? null : /^\d+$/.test(flags.duration) ? Number(flags.duration) : NaN;
+    if (!block || (flags.from && flags.cut) || (!flags.from && !flags.cut && duration === undefined) || Number.isNaN(duration)) {
+      console.error('Usage: elabora block continue [dir] <block> --from <block> | --cut [--duration <ms>|default]');
+      return 2;
+    }
+    const result = edit.setContinuity(dir, { block, ...(flags.from ? { with: flags.from } : flags.cut ? { with: null } : {}), ...(duration !== undefined ? { duration } : {}) });
+    return reportEdit(result, result.key ? `${block} carries on as "${result.key}".` : `${block} carries on from no other screen.`);
+  })
+});
+
 // « Transformer en… » (D63): accordion:cards, steps, sort:pairs… Without --to, the targets and the refused ones.
 const convert = defineCommand({
   name: 'convert',
@@ -181,9 +202,9 @@ const convert = defineCommand({
 export const componentCommands: CommandGroup = {
   title: 'Components',
   help: HELP,
-  commands: [list, create, fork, preview, migrate, add, publish, duplicate, detach, convert],
+  commands: [list, create, fork, preview, migrate, add, publish, duplicate, detach, carryOn, convert],
   subcommandUsage: {
     component: 'Usage: elabora component list|new|fork|preview|migrate|add|publish …',
-    block: 'Usage: elabora block duplicate|detach [dir] <block>'
+    block: 'Usage: elabora block duplicate|detach|continue [dir] <block>'
   }
 };

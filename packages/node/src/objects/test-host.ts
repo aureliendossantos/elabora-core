@@ -32,6 +32,7 @@ interface TestHost {
   getState(): Promise<unknown>;
   setState(state: Record<string, unknown>): Promise<unknown>;
   updateProps(props: Record<string, unknown>): void;
+  carryOn(props: Record<string, unknown>, transition: { from: { screen: string; block: string }; to: { screen: string; block: string }; direction: 'forward' | 'back'; duration: number; reducedMotion: boolean }, extra: { safeArea?: Partial<SafeArea> }): void;
   setContext(context: ObjectTestContext): void;
   setSafeArea(area: SafeArea): void;
   setView(view: ObjectTestView): void;
@@ -47,8 +48,10 @@ interface TestHost {
 const createHost = createObjectHost as unknown as (options: TestHostOptions) => TestHost;
 
 let host: TestHost | null = null;
+let reduced = false;
 window.__events = [];
 window.__startHost = ({ def, props, strings, tokens, fonts, language, seed, reducedMotion, savedState, safeArea, decorative, context, view }) => new Promise<HostStarted>((resolve) => {
+  reduced = !!reducedMotion;
   const iframe = document.createElement('iframe');
   iframe.setAttribute('sandbox', 'allow-scripts');
   iframe.setAttribute('allow', '');
@@ -84,6 +87,8 @@ window.__call = (call: HostCall) => {
     case 'getState': return host.getState();
     case 'setState': return host.setState(call.state);
     case 'updateProps': return host.updateProps(call.props);
+    // A block of another screen gives way to this one (D65): a test names no screens.
+    case 'carryOn': return host.carryOn(call.props, { from: { screen: 'before', block: 'before' }, to: { screen: 'test', block: 'test' }, direction: call.direction, duration: reduced ? 0 : call.duration, reducedMotion: reduced }, call.safeArea ? { safeArea: call.safeArea } : {});
     case 'setContext': return host.setContext(call.context);
     case 'setSafeArea': return host.setSafeArea(call.safeArea);
     case 'setView': return host.setView(call.view);

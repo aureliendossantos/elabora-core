@@ -1,6 +1,6 @@
 import type {
   CourseData, WebDelivery, PlayerData, ResourceData, GlossaryData, AboutData, ScreenData, ScreenLayout, BlockData, EventData, Condition as ConditionData, Action as ActionData, Backdrop, ObjectDefinition, TokenValues,
-  QuizProps, NumericProps, NumericTolerance, FillInProps, SortProps, ReflectionProps, DecisionProps, DialogueProps, ObjectBlockProps, ResultsProps, SpeechProps, VideoProps, AudioProps, AspectRatio, NarrationData, MomentData, TimingData
+  QuizProps, NumericProps, NumericTolerance, FillInProps, SortProps, ReflectionProps, DecisionProps, DialogueProps, ObjectBlockProps, ResultsProps, SpeechProps, VideoProps, AudioProps, AspectRatio, NarrationData, MomentData, TimingData, ContinuityData
 } from '@elabora/player/course-data';
 import type { DataSchema, DataType } from '@elabora/player/data-schema';
 import { planIndex, resolveBlockProps, resolveTextRefs, screenOrder } from '../project/load.ts';
@@ -18,6 +18,7 @@ import type { ParsedTemplate } from '../components/template.ts';
 import { applyDefaults } from '../components/props.ts';
 import { controlsOf, controlEntity } from '../components/controls.ts';
 import { activityEntity, readLock } from './state-model.ts';
+import { continuityDuration, continuityEntity, continuityKey } from '../project/continuity.ts';
 import type { StateKeys, StateLock, ActivityBehavior } from './state-model.ts';
 import { dialogueData, speakerData } from '../dialogue/data.ts';
 import { dialogueVoices } from '../dialogue/voices.ts';
@@ -245,7 +246,9 @@ export function compileScreen(project: Project, screenId: string, context: Compi
     for (const [block, beat] of blockBeats(own)) beats.set(block, beat);
   }
   const scope: ScreenScope = { project, screen: screenId, context, objects: new Map(), headingBefore, timings, beats };
-  const compileBlocks = (blocks: Block[] | undefined): BlockData[] => objectsIn(blocks).map((block) => compileBlock(block, scope));
+  const compileBlocks = (blocks: Block[] | undefined, within = scope): BlockData[] => objectsIn(blocks).map((block) => compileBlock(block, within));
+  // A block of a layer never carries on to another screen (D65, E_CONTINUITY_PLACE).
+  const layerScope: ScreenScope = { ...scope, inLayer: true };
   const data: ScreenData = {
     id: screenId, key: context.keys[`screen:${screenId}`], section: context.sectionOf.get(screenId) ?? '', title: screen.title,
     showTitle: screen.showTitle !== false, required: screen.required !== false,
@@ -258,7 +261,7 @@ export function compileScreen(project: Project, screenId: string, context: Compi
     blocks: compileBlocks(screen.blocks),
     layers: objectsIn(screen.layers).map((layer) => {
       const own = layerTimelines.get(layer.id);
-      return { id: layer.id, title: layer.title, presentation: layer.presentation || 'dialog', ...(own ? layerNarrationOf(screen, layer, own.timeline, own.track, context) : {}), blocks: compileBlocks(layer.blocks) };
+      return { id: layer.id, title: layer.title, presentation: layer.presentation || 'dialog', ...(own ? layerNarrationOf(screen, layer, own.timeline, own.track, context) : {}), blocks: compileBlocks(layer.blocks, layerScope) };
     }),
     events: objectsIn(screen.events).filter(isEventData).map((event) => seekTimes(event, timeline, layerTimelines, lineTimelines(screen))),
     // Screen layout: a screen-level component rendered with the screen's layoutProps.
@@ -321,6 +324,15 @@ function seekTimes(event: Event & EventData, screenTimeline: ScreenTimeline | nu
   });
   if (!event.do.some((action) => action.type === 'seek-timeline') && !event.else?.some((action) => action.type === 'seek-timeline')) return event;
   return { ...event, do: timed(event.do)!, ...(event.else ? { else: timed(event.else) } : {}) } as Event & EventData;
+}
+
+// A block that carries on from one screen to another (D65): its key, the passage's length, and the
+// key of the chain's saved state when it has one (a free object's).
+function continuityOf(block: Block, keys: StateKeys): { continuity?: ContinuityData } {
+  const key = continuityKey(block);
+  if (!key) return {};
+  const state = keys[continuityEntity(key)];
+  return { continuity: { key, duration: continuityDuration(block), ...(state ? { state } : {}) } };
 }
 
 // A timed block's moments as the player plays them.
@@ -386,6 +398,8 @@ interface ScreenScope {
   timings: Map<string, { in?: TimelineMoment; out?: TimelineMoment }>;
   // When the voice brings the items of charts, and when it is done with them (D60).
   beats: Map<string, { items: Record<string, number>; end?: number }>;
+  // Compiling the blocks of a layer.
+  inLayer?: boolean;
 }
 
 function compileBlock(block: Block, scope: ScreenScope): BlockData {
@@ -398,7 +412,9 @@ function compileBlock(block: Block, scope: ScreenScope): BlockData {
     ...(block.slot ? { slot: block.slot } : {}),
     ...(block.style ? { style: block.style } : {}),
     // Extra the learner may skip: not waited for by steps that open once explored nor by interactions-done (D63).
-    ...(block.optional === true ? { optional: true as const } : {})
+    ...(block.optional === true ? { optional: true as const } : {}),
+    // Continuity between screens (D65); a free object's state is the chain's.
+    ...(scope.inLayer ? {} : continuityOf(block, context.keys))
   };
   // A block the player cannot show (unknown type: E_COMPONENT_UNKNOWN) compiles to an empty block, so
   // a screen being written still renders.

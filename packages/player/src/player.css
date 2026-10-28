@@ -326,6 +326,17 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-object-frame[data-ratio="fill"] iframe { position: absolute; inset: 0; }
 .t-object-frame iframe { display: block; width: 100%; height: 100%; border: 0; }
 .t-object-error { color: var(--t-error); font-weight: 600; }
+/* Continuity between screens (D65): the frame of a free object that carries on from screen to screen
+   lives in the keep layer of #t-main, over its block's frame (placed by screen-objects.ts). The layer is
+   not a stacking context: the frame is drawn above what the layout draws without a z-index, below what
+   it places over the block with one. The block's frame keeps the size and lends its look; its
+   ancestors up to the screen let clicks through, their other children keep their own behaviour. */
+.t-keep { position: absolute; inset: 0; pointer-events: none; }
+.t-keep-frame { position: absolute; overflow: hidden; pointer-events: auto; }
+.t-keep-frame > iframe { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border: 0; }
+.t-object-frame--kept { background: none !important; border-color: transparent !important; box-shadow: none !important; }
+.t-keep-path { pointer-events: none !important; }
+:where(.t-keep-path) > :where(:not(.t-keep-path)) { pointer-events: auto; }
 
 .t-results { padding: 1.125rem 1.25rem; border-radius: var(--t-radius); background: color-mix(in srgb, var(--t-primary) 6%, var(--t-surface)); }
 .t-score, .t-status { margin: 0 0 0.5rem; font-size: 1.1875rem; }
