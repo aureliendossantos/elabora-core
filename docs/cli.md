@@ -331,8 +331,11 @@ build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--m
 test [dir] [--package <zip>] [--profile a,b|all] [--mode iframe,popup…] [--browser chromium,electron,chrome,msedge,playwright,firefox,webkit] [--parallel 4] [--no-a11y] [--json]
                                                     Run the package in the LMS emulator (profiles × launch modes × browsers);
                                                     4 runs side by side by default, fewer on a loaded machine
-preview [dir] [--port 4807] [--profile <id>]        Live preview (standalone and in the LMS emulator): pages reload after each
-                                                    rebuild; free objects show in the in-app browsers of agent apps
+preview [dir] [--port 4807] [--profile <id>] [--navigation authored|free]
+                                                    Live preview (standalone and in the LMS emulator): pages reload after each
+                                                    rebuild; free objects show in the in-app browsers of agent apps. The
+                                                    emulator plays the course's LMS (--profile: another); --navigation free
+                                                    opens every screen, whatever the course's rules
 look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|answered] [--step <n>] [--layer <id>]
      [--at <moment> | --sheet] [--scroll <px|N%|block>,…] [--block <id> [--scale 2] [--act <action>]…] [--viewport] [--motion]
      [--language <code>] [--controls] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop

@@ -68,9 +68,12 @@ export interface CompileContext {
   // The narration track the build made for a screen, or for a layer of it (D62; none: the timeline
   // from the lines' sidecars, or estimated, without a track).
   narration?: (screenId: string, layer?: string) => NarrationTrack | undefined;
-  // The web target's settings (D41): said in the course data; navigation free opens the navigation
-  // rules (mode free, no lock until complete) and the narrations' seek "seen".
+  // The web target's settings (D41): said in the course data.
   delivery?: WebDelivery;
+  // Free navigation opens the navigation rules (mode free, no lock until complete), the narrations'
+  // seek "seen" and the outline: the web target's navigation free (D41), or a preview's « Déverrouiller
+  // la progression ».
+  navigation: 'authored' | 'free';
   // The player's bars as learners get them (D58), and the glossary its texts link to.
   player: PlayerData;
   glossary: GlossaryData[];
@@ -99,6 +102,8 @@ export interface CompileOptions {
   fields?: boolean;
   narration?: (screenId: string, layer?: string) => NarrationTrack | undefined;
   delivery?: WebDelivery;
+  // free: every screen open, nothing to do or hear first (the web target says it in delivery).
+  navigation?: 'authored' | 'free';
   // The languages of a package of several languages (D59): the language item shows with them.
   languages?: string[];
   dialogueAudio?: PackagedLines;
@@ -106,16 +111,17 @@ export interface CompileOptions {
   interfaceSounds?: InterfaceSounds;
 }
 
-export function createCompileContext(project: Project, keys: StateKeys, { assetPath = defaultAssetPath, fields = false, narration, delivery, languages, dialogueAudio }: CompileOptions = {}): CompileContext {
+export function createCompileContext(project: Project, keys: StateKeys, { assetPath = defaultAssetPath, fields = false, narration, delivery, navigation: asked, languages, dialogueAudio }: CompileOptions = {}): CompileContext {
   const course = project.course;
   if (!course) throw new Error('The project has no course.json to compile.');
   const sectionOf = new Map<string, string>();
   for (const { id, section } of screenOrder(project)) sectionOf.set(id, section);
-  // The web target's free navigation shows the outline (D41): every screen is open from it.
-  const config = delivery?.navigation === 'free' ? withItemEnabled(playerConfig(course), 'outline') : playerConfig(course);
+  // Free navigation shows the outline (D41): every screen is open from it.
+  const navigation = delivery?.navigation === 'free' || asked === 'free' ? 'free' : 'authored';
+  const config = navigation === 'free' ? withItemEnabled(playerConfig(course), 'outline') : playerConfig(course);
   const several = languages && languages.length > 1 ? languages : undefined;
   const player = shownPlayer(config, playerContent(project, { web: !!delivery, languages: several?.length ?? 1 }), { assetPath });
-  return { course, registry: getRegistry(project), planIndex: planIndex(project.plan), tokens: withPlayerTokens(resolveTokens(course)), keys, lock: readLock(project), sectionOf, assetPath, ...(fields ? { fields } : {}), ...(narration ? { narration } : {}), ...(delivery ? { delivery } : {}), player, glossary: glossaryOf(course), ...(several ? { languages: several } : {}), ...(dialogueAudio ? { dialogueAudio } : {}) };
+  return { course, registry: getRegistry(project), planIndex: planIndex(project.plan), tokens: withPlayerTokens(resolveTokens(course)), keys, lock: readLock(project), sectionOf, assetPath, ...(fields ? { fields } : {}), ...(narration ? { narration } : {}), ...(delivery ? { delivery } : {}), navigation, player, glossary: glossaryOf(course), ...(several ? { languages: several } : {}), ...(dialogueAudio ? { dialogueAudio } : {}) };
 }
 
 // The course's glossary as the player reads it.
@@ -151,8 +157,8 @@ export interface CompiledScreen {
   objects: Map<string, ObjectDefinition>; // by object id
 }
 
-export function compileCourseData(project: Project, keys: StateKeys, { buildId, assetPath, narration, delivery, languages, dialogueAudio, interfaceSounds }: { buildId: string } & CompileOptions): CourseData {
-  const context = createCompileContext(project, keys, { assetPath, narration, delivery, languages, dialogueAudio });
+export function compileCourseData(project: Project, keys: StateKeys, { buildId, assetPath, narration, delivery, navigation, languages, dialogueAudio, interfaceSounds }: { buildId: string } & CompileOptions): CourseData {
+  const context = createCompileContext(project, keys, { assetPath, narration, delivery, navigation, languages, dialogueAudio });
   const usedObjects = new Map<string, ObjectDefinition>();
   // A listed screen without its file is reported by the validator (E_SCREEN_NOT_FOUND).
   const screens = screenOrder(project).filter(({ id }) => project.screens.has(id)).map(({ id }) => {
@@ -211,9 +217,9 @@ export function courseHead(context: CompileContext): CourseHead {
   };
 }
 
-// The web target's free navigation (D41): every screen open from the outline and from Next, nothing
-// to do or to hear first.
-const freeNavigation = (context: CompileContext): boolean => context.delivery?.navigation === 'free';
+// Free navigation (D41): every screen open from the outline and from Next, nothing to do or to hear
+// first.
+const freeNavigation = (context: CompileContext): boolean => context.navigation === 'free';
 
 export function courseVariables(context: CompileContext): CourseData['variables'] {
   return objectsIn(context.course.variables).map((variable) => ({ ...variable, key: variable.persist === false ? null : context.keys[`var:${variable.id}`] }));

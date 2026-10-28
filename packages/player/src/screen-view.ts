@@ -6,7 +6,7 @@
 // (screen-update.ts). Navigation, the LMS and saving belong to the page around it.
 
 import { behaviorOf, flatBlocks, isActivity } from './course-state.ts';
-import type { CourseState, TriggerInfo } from './course-state.ts';
+import type { CourseState, EventRun, TriggerInfo } from './course-state.ts';
 import { createBehaviors } from './behaviors.ts';
 import { createObjectHost } from './object-host.ts';
 import { createObjects, glideFrom, rootSize } from './screen-objects.ts';
@@ -72,6 +72,9 @@ export interface ScreenViewOptions {
   syncSoon(): void;
   // Events of the screen ran (the player updates its navigation and syncs).
   afterEvents(): void;
+  // What a trigger ran: its type, what happened, and the events whose trigger matched (the player
+  // keeps them for previews, __elabora.trace). Called before the actions run.
+  traced?(type: TriggerType, info: TriggerInfo, runs: readonly EventRun[], screen: ScreenData): void;
   // A step was revealed (the player syncs, updates its navigation and its progress).
   afterReveal(): void;
   // An event of the screen goes to another screen: 'next', 'previous' or a screen id.
@@ -629,7 +632,9 @@ export function createScreenView(options: ScreenViewOptions) {
     depth++;
     let navigation: string | null = null;
     const changedVariables: string[] = [];
-    for (const run of courseState.eventsFor(shown, type, info)) {
+    const runs = courseState.eventsFor(shown, type, info);
+    if (runs.length) options.traced?.(type, info, runs, shown);
+    for (const run of runs) {
       for (const action of run.actions) {
         const done = runAction(action, shown);
         if (done.navigation) navigation = done.navigation;

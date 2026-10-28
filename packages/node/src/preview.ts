@@ -1,21 +1,32 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { build } from './build.ts';
-import type { BuildResult } from './build.ts';
+import type { BuildResult, WebNavigation } from './build.ts';
 import { startServer } from './emulator/server.ts';
 import { projectDataDir } from './data-dir.ts';
 import { escapeHtml } from '@elabora/core/util/html';
 import { codeInfo } from '@elabora/core/diagnostics/codes';
+import { getProfile, listProfiles, targetProfileIds } from '@elabora/core/lms/profiles';
 
 export interface PreviewOptions {
   port?: number;
-  profile?: string; // LMS profile of the emulator page
+  profile?: string; // LMS profile of the emulator page (default: the course's first LMS, else unknown)
+  navigation?: WebNavigation; // free: every screen open, whatever the course's rules (default authored)
   onRebuild?: (result: BuildResult) => void;
 }
 
 export interface Preview {
   result: BuildResult; // the first build
   urls: { standalone: string; lms: string };
+  // The LMS the emulator page plays.
+  profile: string;
+  // The course's own navigation keeps screens closed (linear, or locked until complete): what free
+  // navigation opens.
+  readonly locks: boolean;
+  readonly navigation: WebNavigation;
+  // Built again with this navigation; its pages reload, on the screen they showed, with the same
+  // learner (the Aperçu's « Déverrouiller la progression »: the course itself does not change).
+  setNavigation(navigation: WebNavigation): Promise<BuildResult>;
   close(): Promise<void>;
 }
 
@@ -27,10 +38,17 @@ export interface Preview {
 // and media a job is still writing show a placeholder until the job is done.
 // The course shows with the errors that only stop a delivery (BuildOptions.preview); when it
 // cannot be built at all, the pages say why, and show it once a change builds.
-export async function preview(dir: string, { port = 4807, profile = 'unknown', onRebuild }: PreviewOptions = {}): Promise<Preview> {
+// The emulator page plays the course's LMS (course.json delivery.lms, the first), launching the
+// course in a frame as that LMS does (a frame in a frame for some); an LMS that opens it in a window
+// of its own is played in a frame too.
+export async function preview(dir: string, { port = 4807, profile, navigation: asked = 'authored', onRebuild }: PreviewOptions = {}): Promise<Preview> {
   const root = path.resolve(dir);
   const out = path.join(projectDataDir(root), 'preview');
-  const rebuild = () => build(root, { profiles: [profile], emit: 'dir', out, debug: true, writeLock: false, media: 'link', preview: true });
+  const chosen = profile ?? targetProfileIds(readCourse(root))[0];
+  // An LMS Elabora has no profile for (the build says so): the unknown LMS.
+  const lms = listProfiles().some((known) => known.id === chosen) ? chosen : 'unknown';
+  let navigation = asked;
+  const rebuild = () => build(root, { profiles: [lms], emit: 'dir', out, debug: true, writeLock: false, media: 'link', preview: true, ...(navigation === 'free' ? { navigation } : {}) });
   let last = await rebuild();
   const server = await startServer({ port, frames: true });
   const show = (result: BuildResult) => {
@@ -38,20 +56,43 @@ export async function preview(dir: string, { port = 4807, profile = 'unknown', o
     else server.addPackage('preview', notBuiltPage(out, result), new Map(), { preview: true });
   };
   show(last);
+  // One build at a time: a change and a new navigation wait for the build before them.
+  let queue = Promise.resolve(last);
+  const again = () => (queue = queue.then(async () => { last = await rebuild(); show(last); onRebuild?.(last); return last; }));
   const watched = ['course.json', 'plan.json', 'screens', 'objects', 'components', 'theme', 'assets'].map((name) => path.join(root, name)).filter((file) => fs.existsSync(file));
   let timer: ReturnType<typeof setTimeout> | undefined;
   const watchers = watched.map((file) => fs.watch(file, { recursive: true }, () => {
     clearTimeout(timer);
-    timer = setTimeout(async () => { last = await rebuild(); show(last); onRebuild?.(last); }, 250);
+    timer = setTimeout(() => void again(), 250);
   }));
+  const mode = getProfile(lms).launch.default === 'nested-iframe' ? 'nested-iframe' : 'iframe';
   return {
     result: last,
     urls: {
       standalone: `${server.base}/pkg/preview/index.html`,
-      lms: `${server.base}/lms/launch.html?pkg=preview&profile=${profile}&mode=iframe&reg=preview`
+      lms: `${server.base}/lms/launch.html?pkg=preview&profile=${lms}&mode=${mode}&reg=preview`
     },
-    close: async () => { for (const watcher of watchers) watcher.close(); await server.close(); }
+    profile: lms,
+    get locks() { return locks(readCourse(root)); },
+    get navigation() { return navigation; },
+    setNavigation: (next) => {
+      if (next === navigation) return queue;
+      navigation = next;
+      return again();
+    },
+    close: async () => { clearTimeout(timer); for (const watcher of watchers) watcher.close(); await server.close(); }
   };
+}
+
+// course.json as it is (null when it cannot be read: the build says why).
+function readCourse(root: string): { delivery?: { lms?: string[] }; navigation?: { mode?: string; lockUntilComplete?: boolean } } | null {
+  try { return JSON.parse(fs.readFileSync(path.join(root, 'course.json'), 'utf8')); } catch { return null; }
+}
+
+// Linear (the default) opens a screen once the one before it was seen; locked until complete, once
+// it was completed.
+function locks(course: ReturnType<typeof readCourse>): boolean {
+  return (course?.navigation?.mode ?? 'linear') !== 'free' || course?.navigation?.lockUntilComplete === true;
 }
 
 // The page of a preview whose course cannot be built: the errors that stop it, in a folder next to

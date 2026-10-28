@@ -46,5 +46,20 @@ For each profile × launch mode × browser variant, a fake LMS page (scorm-again
 
 Chromium runs twice: with `unload` deprecated and with it allowed. Firefox and WebKit run with `--browser firefox,webkit` after `npx playwright install firefox webkit`. Any SCORM 1.2 ZIP (Storyline, Rise…) can be checked with `elabora test --package file.zip` (generic checks: initialise, unload listeners, rejected values, data committed before close).
 
+## Preview (`elabora preview`)
+The preview serves the course standalone and in the emulator's page, which plays the course's LMS (`delivery.lms`, the first; `--profile` for another) and launches it in a frame as that LMS does (an LMS that opens a window of its own is played in a frame too). Pages reload after each rebuild: in the emulator, its page reloads, as a learner relaunching. `--navigation free` builds it with every screen open, whatever the course's rules (the web target's free navigation, D41); a running preview switches with `setNavigation` (the desktop app's « Déverrouiller la progression »).
+
+Shown in a frame (the desktop app's Aperçu), the emulator's page tells its parent page what happens, with `postMessage` messages `{ type: 'elabora/lms', kind, … }`:
+
+| `kind` | When | What |
+|---|---|---|
+| `session` | the page starts | `session`: the registration, launch mode, profile (`id`, `name`, its own launch mode), `suspend_data` limit and enforcement, `entry` (`ab-initio` or `resume`) and what the LMS gave back (`location`, `status`, `suspendData`, or `null`) |
+| `call` | every API call | `call`: its time, method, arguments and result, as `window.__lmsLog` keeps them |
+| `course` | each course the page shows | `course`: the course data (`window.__elabora.course`) |
+| `state` | every commit, and when asked | `state`: `window.__elabora.state()` (screen, step, status, score, `suspendData`, the variables' values) |
+| `events` | events run | `entries`: new entries of `window.__elabora.trace` (the trigger's type and what happened, the screen, and each event whose trigger matched, with whether its conditions held) |
+
+The parent sets a variable with `{ type: 'elabora/lms-ask', ask: 'set-variable', id, value }`: its « when it changes » events run as if an event had set it (`__elabora.setVariable`).
+
 ## What the emulator cannot prove
 It reproduces documented behaviour on top of scorm-again; it is not the LMS. Keep the last two levels of the test pyramid: a smoke test in SCORM Cloud and a test learner in the client's LMS, then update the profile's `toMeasure` fields with what you measured.

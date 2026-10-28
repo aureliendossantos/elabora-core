@@ -120,8 +120,11 @@ export interface DialogueSaved {
   interactions: DialogueInteraction[];
 }
 
+// An event of the screen whose trigger matched: its id, whether its conditions held, and the
+// actions to run (its do, or else its else).
 export interface EventRun {
   event: string;
+  held: boolean;
   actions: Action[];
 }
 
@@ -566,7 +569,7 @@ export function createCourseState(course: CourseStateInput, { suspendData = '', 
       if (type === 'timeline.reached' && info.event !== undefined && event.id !== info.event) continue;
       if (!matches(event.on, type, info)) continue;
       const holds = (event.if || []).every(conditionHolds);
-      out.push({ event: event.id, actions: holds ? event.do : (event.else || []) });
+      out.push({ event: event.id, held: holds, actions: holds ? event.do : (event.else || []) });
     }
     return out;
   }

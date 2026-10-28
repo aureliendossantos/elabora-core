@@ -156,6 +156,20 @@ test('free navigation opens the course data: mode free, no lock, the outline sho
   assert.equal(free.screens[1].narration?.seek, 'none', 'a narration without a bar stays so');
   // A SCORM package's data says nothing of the web.
   assert.equal(compileCourseData(project, keys, { buildId: 'b' }).delivery, undefined);
+  // A SCORM package opened the same way (the Aperçu's « Déverrouiller la progression »): the same
+  // course data, nothing said of the web.
+  const unlocked = compileCourseData(project, keys, { buildId: 'b', navigation: 'free' });
+  assert.deepEqual([unlocked.navigation, unlocked.player.bottom?.items.map((item) => item.id), unlocked.screens[0].narration?.seek, unlocked.delivery], [free.navigation, ['outline', 'previous', 'next'], 'free', undefined]);
+});
+
+test('a SCORM build takes navigation free; a module for the web says it in web.navigation', async () => {
+  const dir = course();
+  const out = tmp('elabora-free-');
+  const unlocked = await build(dir, { emit: 'dir', out, writeLock: false, navigation: 'free' });
+  assert.ok(unlocked.ok && unlocked.dirPath, JSON.stringify(unlocked.diagnostics.filter((d) => d.severity === 'error')));
+  assert.match(fs.readFileSync(path.join(unlocked.dirPath, 'elabora/course.js'), 'utf8'), /"navigation":\{"mode":"free","lockUntilComplete":false\}/);
+  await assert.rejects(build(dir, { emit: 'dir', out, writeLock: false, target: 'web', navigation: 'free' }), /web\.navigation/);
+  await assert.rejects(build(dir, { emit: 'dir', out, writeLock: false, navigation: 'open' as 'free' }), /authored or free/);
 });
 
 test('a module for the web is checked against no LMS: no profile, suspend data budget or LMS of delivery.lms', () => {

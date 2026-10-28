@@ -27,7 +27,8 @@ import { createSounds } from './sounds.ts';
 import type { InterfaceRole } from './sound-roles.ts';
 import { alignToButton, applyDisplay, createDisplayMenu, createLanguageMenu, loadDisplayPrefs, saveDisplayPrefs } from './display.ts';
 import type { Popover } from './display.ts';
-import type { CourseData, ScreenData } from './course-data.ts';
+import type { CourseData, ScreenData, TriggerType, VariableValue } from './course-data.ts';
+import type { EventRun, TriggerInfo } from './course-state.ts';
 
 declare global {
   interface Window {
@@ -507,6 +508,7 @@ function mountView() {
     },
     afterTimeline: () => { updateNav(); mentionGeneratedVoice(); },
     afterEvents: () => { updateNav(); syncSoon(); },
+    traced,
     afterReveal: () => { syncSoon(); updateNav(); updateProgress(); },
     navigate: (target, from) => {
       const index = screenNumber(from.id) ?? current;
@@ -571,6 +573,25 @@ function mentionGeneratedVoice() {
   // Said in the live region too, for screen readers (AI Act, art. 50(5): at the first exposure).
   announce(labels.generatedVoice);
   tooltip.flash(button, labels.generatedVoice, { duration: 6000 });
+}
+
+// ── What ran, for previews ────────────────────────────────────────────
+// The events each trigger ran (the last 200, newest last), numbered; the page is told of each with
+// « elabora:trace ». The app's Aperçu reads them through the LMS emulator (its inspector).
+interface TraceEntry {
+  n: number;
+  at: number;
+  screen: string;
+  type: TriggerType;
+  info: TriggerInfo;
+  runs: { event: string; held: boolean }[];
+}
+const trace: TraceEntry[] = [];
+let traceCount = 0;
+function traced(type: TriggerType, info: TriggerInfo, runs: readonly EventRun[], screen: ScreenData) {
+  trace.push({ n: ++traceCount, at: Date.now(), screen: screen.id, type, info: { ...info }, runs: runs.map(({ event, held }) => ({ event, held })) });
+  if (trace.length > 200) trace.shift();
+  window.dispatchEvent(new CustomEvent('elabora:trace'));
 }
 
 // ── Start ─────────────────────────────────────────────────────────────
@@ -674,7 +695,19 @@ const debugHooks = {
     }
   },
   get step() { return { revealed: view.revealed, steps: [...view.steps] }; },
-  state: () => ({ screen: currentScreen()?.id, status: courseState.lmsStatus, score: courseState.score(), suspendData: courseState.encode() }),
+  state: () => ({
+    screen: currentScreen()?.id, step: view.revealed, status: courseState.lmsStatus, score: courseState.score(), suspendData: courseState.encode(),
+    variables: Object.fromEntries((course.variables || []).map((variable) => [variable.id, courseState.getVar(variable.id) ?? null]))
+  }),
+  // What the events ran (previews' inspectors): entries numbered from 1, the last 200.
+  get trace(): readonly TraceEntry[] { return trace; },
+  // A variable set from outside the course (a preview's inspector): its « when it changes » events
+  // run as if an event had set it. False: no such variable, or the value is refused or unchanged.
+  setVariable: (id: string, value: VariableValue) => {
+    if (!courseState.setVar(id, value)) return false;
+    view.trigger('variable.changed', { variable: id });
+    return true;
+  },
   objectHost: (blockId: string) => view.objectHost(blockId),
   backdropHost: () => view.backdropHost,
   // The player's sounds (D67): the context's state and what was played.
