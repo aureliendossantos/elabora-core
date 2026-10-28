@@ -125,13 +125,13 @@ export async function launchElectron(playwright: typeof import('playwright-core'
     const context = application.context();
     // A hidden window never has the focus: Tab moves nothing, focus events and :focus-visible never
     // come. Playwright emulates a focused page in every Chromium it launches, but not in Electron's
-    // context; each page here gets the same, through a session kept for the page's life (an
-    // emulation ends with its session).
+    // context; each page here gets the same, through a session kept for the page's life, as
+    // Playwright keeps its own. newPage fails if it cannot; a popup is left as it comes.
     const focused = new WeakMap<Page, Promise<unknown>>();
     const emulateFocus = (page: Page): Promise<unknown> => {
       let pending = focused.get(page);
       if (!pending) {
-        pending = context.newCDPSession(page).then(session => session.send('Emulation.setFocusEmulationEnabled', { enabled: true })).catch(() => {});
+        pending = context.newCDPSession(page).then(session => session.send('Emulation.setFocusEmulationEnabled', { enabled: true }));
         focused.set(page, pending);
       }
       return pending;
@@ -142,7 +142,7 @@ export async function launchElectron(playwright: typeof import('playwright-core'
     context.on('page', page => {
       void page.setViewportSize(options.viewport ?? { width: 1280, height: 720 }).catch(() => {});
       if (options.reducedMotion) void page.emulateMedia({ reducedMotion: options.reducedMotion }).catch(() => {});
-      void emulateFocus(page);
+      void emulateFocus(page).catch(() => {});
     });
     const closeContext = context.close.bind(context);
     const child = application.process();
@@ -182,7 +182,7 @@ export async function launchElectron(playwright: typeof import('playwright-core'
       if (options.deviceScaleFactor !== undefined && options.deviceScaleFactor !== 1) {
         const session = await context.newCDPSession(page);
         const viewport = page.viewportSize()!;
-        await session.send('Emulation.setDeviceMetricsOverride', { ...viewport, deviceScaleFactor: options.deviceScaleFactor, mobile: !!options.isMobile });
+        await session.send('Emulation.setDeviceMetricsOverride', { ...viewport, deviceScaleFactor: options.deviceScaleFactor, mobile: false });
         await session.detach();
       }
       return page;

@@ -32,7 +32,7 @@ async function inPlayer(out: string, screen: string, run: (page: Page) => Promis
   const server = await startServer();
   server.addPackage('p', out);
   // A phone is an external Chromium's: Elabora's Electron (ELABORA_ELECTRON_EXECUTABLE) emulates none.
-  const browser: Browser = await launchBrowser('chromium', context.hasTouch ? { channels: CHROMIUM_CHANNELS } : {});
+  const browser: Browser = await launchBrowser('chromium', context.hasTouch || context.isMobile ? { channels: CHROMIUM_CHANNELS } : {});
   try {
     const page = await (await browser.newContext({ viewport: { width: 1280, height: 860 }, reducedMotion: 'reduce', ...context })).newPage();
     const errors: string[] = [];
