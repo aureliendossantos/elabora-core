@@ -55,13 +55,15 @@ a { color: var(--t-primary); }
 
 
 .t-main { position: relative; flex: 1; padding: 1.75rem 1.25rem 2.5rem; isolation: isolate; }
-.t-main:focus { outline: none; }
 .t-main[data-full-bleed] { padding: 0; }
 .t-screen { max-width: var(--t-wide-width, 68.75rem); margin: 0 auto; container-type: inline-size; }
 .t-main[data-full-bleed] > .t-screen { max-width: none; }
 .t-screen-title { font-size: clamp(1.625rem, 3.2vw, 2.125rem); max-width: var(--t-content-width, 47.5rem); margin-left: auto; margin-right: auto; }
-/* The title receives focus on every screen change (screen readers); no ring on a non-interactive heading. */
-h1[tabindex="-1"]:focus { outline: none; }
+/* What the player focuses so that screen readers read it and the keyboard goes on from it (a screen's,
+   a panel's or a sheet's heading on every change, a revealed step's first block, the main area:
+   tabindex="-1", never a control) draws no ring, whatever a theme says of :focus-visible (important in
+   elabora.base outweighs the later layers). Controls keep theirs. */
+:is(h1, h2, h3, h4, h5, h6, .t-main, .t-block)[tabindex="-1"]:focus { outline: none !important; }
 /* Slides: each screen fills the window and short content is centred vertically. */
 [data-presentation="slides"] .t-main { display: flex; flex-direction: column; padding-block: 1.5rem; }
 /* Full bleed means edge to edge in both presentations: the layout owns all of its spacing. */
@@ -93,8 +95,6 @@ dialog .t-block[data-t-concealed] { display: none; } /* layers scroll inside: no
 .t-stack.t-slot { display: grid; gap: 0; }
 .t-stack.t-slot > .t-block { grid-area: 1 / 1; min-width: 0; }
 @starting-style { .t-block[data-t-revealed] { opacity: 0; translate: 0 calc(.5rem * var(--t-move)); } }
-/* A revealed step receives focus (screen readers read it); like the title, it is not a control. */
-.t-block[tabindex="-1"]:focus { outline: none; }
 .t-block { scroll-margin-block: calc(var(--t-bar-top, 0px) + 1.25rem) calc(var(--t-bar-bottom, 0px) + 1.25rem); }
 /* Continue in the page (scroll presentation): where the shown content ends, it opens the next step. */
 .t-continue { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100%; max-width: var(--t-content-width, 47.5rem); justify-self: center; margin: 0.5rem auto; }

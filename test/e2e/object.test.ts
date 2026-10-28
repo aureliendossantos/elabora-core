@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import * as esbuild from 'esbuild';
 import { ROOT, copyExample, readJSON, writeJSON, addViewProbe, addListProbe, addLateProbe, addDrawProbe } from '../helpers.ts';
 import { replayObject, screenshot } from '@elabora/node/preview';
@@ -133,6 +134,38 @@ test('a snapshot of a canvas that dry frames left stale is taken with every fram
   assert.equal(second.gates.visual, 'failed');
   assert.ok(second.diagnostics.some((d) => d.code === 'E_GATE_VISUAL'));
   assert.equal(second.gates.frames?.tests.colour, 'every frame (a snapshot of a canvas a dry frame left stale)');
+});
+
+test('a snapshot after the WebGL context was lost is not compared: the test runs again, then says the context was lost', { timeout: 180000 }, async () => {
+  const dir = copyExample();
+  // The probe loses its context on the key « l », as a GPU process that gives way under load would.
+  addDrawProbe(dir, [{ name: 'lost', steps: [{ action: 'step', frames: 20 }, { action: 'key', key: 'l' }, { action: 'step', frames: 1 }, { action: 'snapshot', name: 'after' }] }], { before: 'green', after: 'green' });
+  const file = path.join(dir, 'objects/draw-probe/object.js');
+  fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace("    if (event.key !== 'Enter') return;", "    if (event.key === 'l') gl.getExtension('WEBGL_lose_context').loseContext();\n    if (event.key !== 'Enter') return;"));
+  const r = await testObject(dir, 'draw-probe', { updateSnapshots: true });
+  assert.deepEqual(r.diagnostics.filter((d) => d.code.startsWith('E_GATE')).map((d) => d.code), ['E_GATE_CONTEXT_LOST'], JSON.stringify(r.diagnostics));
+  assert.equal(r.gates.visual, 'failed');
+  assert.match(r.gates.frames?.tests.lost ?? '', /the WebGL context was lost/);
+  assert.ok(!fs.existsSync(path.join(dir, 'objects/draw-probe/__snapshots__')) || !fs.readdirSync(path.join(dir, 'objects/draw-probe/__snapshots__')).some((name) => name.startsWith('lost--')), 'no blank baseline recorded');
+});
+
+test('with Elabora\'s Electron, a snapshot shows the object down to its last row: a bar at its bottom is in it', { timeout: 180000, skip: !process.env.ELABORA_ELECTRON_EXECUTABLE && 'no Electron (ELABORA_ELECTRON_EXECUTABLE)' }, async () => {
+  // The hidden window's content is the page: on macOS a window's size counts its title bar, which took
+  // the bottom 28 px off every snapshot (an object's controls cut).
+  const dir = copyExample();
+  addDrawProbe(dir, [{ name: 'bar', steps: [{ action: 'step', frames: 2 }, { action: 'snapshot', name: 'bottom' }] }], { before: 'green', after: 'green' });
+  const file = path.join(dir, 'objects/draw-probe/object.js');
+  fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace("  container.appendChild(button);", "  container.appendChild(button);\n  const bar = document.createElement('div');\n  bar.style.cssText = 'position: fixed; left: 0; right: 0; bottom: 0; height: 12px; background: #1d4ed8';\n  container.appendChild(bar);"));
+  const r = await testObject(dir, 'draw-probe', { browser: 'electron', updateSnapshots: true });
+  assert.equal(r.gates.visual, 'passed', JSON.stringify(r.diagnostics));
+  const folder = path.join(dir, 'objects/draw-probe/__snapshots__');
+  const shot = fs.readdirSync(folder).find((name) => name.startsWith('bar--bottom'));
+  assert.ok(shot, 'the snapshot');
+  const { PNG } = createRequire(import.meta.url)('pngjs');
+  const image = PNG.sync.read(fs.readFileSync(path.join(folder, shot)));
+  const last = ((image.height - 1) * image.width + Math.floor(image.width / 2)) * 4;
+  const [r0, g0, b0] = image.data.slice(last, last + 3);
+  assert.ok(b0 > 150 && r0 < 90 && g0 < 120, `the last row is the bar's blue (${[r0, g0, b0]})`);
 });
 
 test('dry frames skip draws, track what they leave stale until drawn again, and report any use of it', { timeout: 120000 }, async () => {

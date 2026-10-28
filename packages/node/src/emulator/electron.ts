@@ -147,7 +147,8 @@ export async function launchElectron(playwright: typeof import('playwright-core'
       waiting.catch(() => {});
       await application.evaluate(({ BrowserWindow }, size) => {
         const window = new BrowserWindow({ show: process.env.ELABORA_BROWSER_HEADED === '1',
-          width: size.width, height: size.height,
+          // The page's size is the window's content (macOS would take a title bar's height off it).
+          width: size.width, height: size.height, useContentSize: true,
           // Hidden native Windows windows can stop producing surfaces after a CDP capture.
           // Offscreen rendering keeps repeated captures and contrast measurements advancing.
           webPreferences: { offscreen: process.platform === 'win32' && process.env.ELABORA_BROWSER_HEADED !== '1',

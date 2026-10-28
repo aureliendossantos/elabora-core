@@ -304,7 +304,11 @@ export async function testObject(projectDir: string, objectId: string, { updateS
   // with nothing else running; the tests then run side by side.
   type Host = Awaited<ReturnType<typeof openHost>>;
   const mountTest = (test: ObjectTest): Promise<Host> => openHost({ ...defaults, ...(test.props || {}) }, { seed: test.seed ?? 1, reducedMotion: !!test.reducedMotion, size: test.size || [960, 600], safeArea: test.safeArea || null, context: test.context || null, view: test.view || null, strings: test.strings || null, locale: test.locale || null });
-  const runTest = async (test: ObjectTest, skip: Skip, { page, errors, ready, bootMs }: Host): Promise<TestRun> => {
+  // A WebGL context the object made was lost (the browser's GPU process gave way, most often on a
+  // loaded machine): it draws nothing more, and a snapshot would show the page without the scene.
+  const contextLost = async (page: Page): Promise<boolean> => { const perf = await callHost(page, { method: 'perf' }).catch(() => null); return isRecord(perf) && perf.contextLost === true; };
+  // mayRedoLost: a run whose context is lost is done again (twice at most), else reported as such.
+  const runTest = async (test: ObjectTest, skip: Skip, { page, errors, ready, bootMs }: Host, mayRedoLost = true): Promise<TestRun> => {
     const failures: string[] = [];
     const visual = createReporter();
     const run: TestRun = { failures, visual, snapshots: 0, recorded: false, bootMs: null, stuck: false, redo: null };
@@ -369,11 +373,16 @@ export async function testObject(projectDir: string, objectId: string, { updateS
               run.redo = again(skip, await setDry(page, false), false, true);
               if (run.redo !== null) return run;
             }
-            run.snapshots++;
             const { name, baseline } = snapshotFiles(snapshotDir, `${slug(test.name)}--${slug(step.name || `step-${i + 1}`)}`, snapshotEngine);
             // A baseline kept with the course is compressed as before; a PNG only compared is not.
             const png = await capture(page, updateSnapshots || !baseline);
             if (skip) await setDry(page, skip);
+            if (await contextLost(page)) {
+              if (mayRedoLost) { run.redo = { skip, why: 'the WebGL context was lost before a snapshot', lost: true }; return run; }
+              visual.emit('E_GATE_CONTEXT_LOST', { file: `${file}/object.tests.json`, target: objectId, message: `Snapshot "${step.name}" of test "${test.name}": the WebGL context was lost before it, in three runs.` });
+              continue;
+            }
+            run.snapshots++;
             const comparison = compareSnapshot(baseline, path.join(snapshotDir, name), png, { update: updateSnapshots });
             if (comparison.status === 'created') run.recorded = true;
             if (comparison.status === 'different') visual.emit('E_GATE_VISUAL', { file: `${file}/__snapshots__/${name}`, target: objectId, measured: `${comparison.ratio.toFixed(3)} %`, limit: '0.1 %', message: `Snapshot "${step.name}" of test "${test.name}" differs from its baseline.` });
@@ -385,8 +394,8 @@ export async function testObject(projectDir: string, objectId: string, { updateS
       }
       const report = skip && ready.ok && !run.stuck ? await setDry(page, skip) : null;
       if (errors.length) failures.push(`console errors: ${errors.slice(0, 3).join(' | ')}`);
-      // A dry run decides only when it passes.
-      if (ready.ok && !run.stuck) run.redo = again(skip, report, failures.length > 0 || visual.items.length > 0);
+      // A dry run decides only when it passes (a context lost again is not confirmed by one more run).
+      if (ready.ok && !run.stuck) run.redo = again(skip, report, failures.length > 0 || visual.items.some((item) => item.code !== 'E_GATE_CONTEXT_LOST'));
       return run;
     } finally {
       await page.close().catch(() => {});
@@ -426,6 +435,8 @@ export async function testObject(projectDir: string, objectId: string, { updateS
     // Tests run side by side, a few at a time (atOnce), in the order of object.tests.json; a run done
     // again (redo) goes to a later batch. The results keep that order.
     const kept: (TestRun | undefined)[] = [];
+    // Runs done again because their WebGL context was lost, by test.
+    const lostRuns = new Map<number, number>();
     let queue: { index: number; skip: Skip }[] = tests.map((test, index) => {
       // A run that records baselines draws every frame.
       const records = updateSnapshots || test.steps.some((step, i) => step.action === 'snapshot' && !snapshotFiles(snapshotDir, `${slug(test.name)}--${slug(step.name || `step-${i + 1}`)}`, snapshotEngine).baseline);
@@ -437,10 +448,11 @@ export async function testObject(projectDir: string, objectId: string, { updateS
       queue = queue.slice(atOnce);
       const hosts: Host[] = [];
       for (const job of batch) hosts.push(await mountTest(tests[job.index]));
-      const runs = await Promise.all(batch.map((job, i) => runTest(tests[job.index], job.skip, hosts[i])));
+      const runs = await Promise.all(batch.map((job, i) => runTest(tests[job.index], job.skip, hosts[i], (lostRuns.get(job.index) ?? 0) < 2)));
       for (const [i, run] of runs.entries()) {
         const { index } = batch[i];
         if (run.redo === null) { kept[index] = run; continue; }
+        if (run.redo.lost) lostRuns.set(index, (lostRuns.get(index) ?? 0) + 1);
         const { skip, why } = run.redo;
         if (skip) skipping = skip;
         frames.tests[tests[index].name] = `${FRAMES_DRAWN[String(skip)]} (${why})`;
@@ -460,7 +472,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
     }
     if (tests.length) {
       gates.behaviour = testResults.every((result) => result.ok) ? 'passed' : 'failed';
-      gates.visual = snapshots ? (snapshotFailures ? 'failed' : 'passed') : 'no snapshots';
+      gates.visual = snapshotFailures ? 'failed' : snapshots ? 'passed' : 'no snapshots';
       gates.tests = testResults;
     }
     // ── Gate 4, boot time: median of the mounts of the runs kept (the smoke run, a run per test) ──
@@ -543,7 +555,7 @@ const TEST_PAGES = Math.max(1, Math.min(4, Math.floor(os.availableParallelism() 
 
 // Draws skipped by a run: none (every frame drawn), all, or those on the canvas only.
 type Skip = false | 'all' | 'canvas';
-interface Redo { skip: Skip; why: string }
+interface Redo { skip: Skip; why: string; lost?: true }
 const FRAMES_DRAWN: Record<string, string> = { false: 'every frame', all: 'dry', canvas: 'dry on the canvas' };
 
 // Steps that can make the object emit events (expectations and snapshots do not).

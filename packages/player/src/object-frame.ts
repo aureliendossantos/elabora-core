@@ -288,7 +288,8 @@ function isObjectApi(value: unknown): value is ObjectApi {
         textures: info?.memory?.textures ?? null,
         geometries: info?.memory?.geometries ?? null,
         maxTextureSize: gl ? gl.getParameter(gl.MAX_TEXTURE_SIZE) : null,
-        webglContexts: dryFrames.contexts()
+        webglContexts: dryFrames.contexts(),
+        contextLost: dryFrames.lost()
       };
     },
     'object/test-click'(params) {
