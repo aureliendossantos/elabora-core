@@ -99,8 +99,8 @@ export function addExplorer(dir: string): void {
 // The cascade layers on one element (docs/design.md): a callout of a course component, styled by
 // the player (.t-callout, elabora.base), its component stylesheet (elabora.components) and the course
 // stylesheet (elabora.theme). Placed on the first screen of the example ("accueil"). Expected:
-// border-left-width from the component (it beats the player at the same specificity),
-// border-left-color from the theme (it beats the component at the same specificity), color from
+// padding-left from the component (it beats the player at the same specificity),
+// background-color from the theme (it beats the component at the same specificity), color from
 // the theme (it beats a more specific component rule).
 export const LAYER_PROBE = { screen: 'accueil', component: 'rgb(170, 0, 0)', theme: 'rgb(0, 0, 170)', width: '9px' };
 export function addLayerProbe(dir: string): void {
@@ -110,8 +110,8 @@ export function addLayerProbe(dir: string): void {
     fallback: [{ type: 'text', props: { markdown: '{{label}}' } }]
   });
   writeFixture(dir, 'components/layer-probe/template.html', '<div class="t-callout lp-probe">{{label}}</div>');
-  writeFixture(dir, 'components/layer-probe/component.css', `.lp-probe { border-left-width: ${LAYER_PROBE.width}; border-left-color: ${LAYER_PROBE.component}; }\n.t-block--layer-probe .t-callout.lp-probe { color: ${LAYER_PROBE.component}; }\n`);
-  writeFixture(dir, 'theme/theme.css', `.lp-probe { border-left-color: ${LAYER_PROBE.theme}; color: ${LAYER_PROBE.theme}; }\n`);
+  writeFixture(dir, 'components/layer-probe/component.css', `.lp-probe { padding-left: ${LAYER_PROBE.width}; background-color: ${LAYER_PROBE.component}; }\n.t-block--layer-probe .t-callout.lp-probe { color: ${LAYER_PROBE.component}; }\n`);
+  writeFixture(dir, 'theme/theme.css', `.lp-probe { background-color: ${LAYER_PROBE.theme}; color: ${LAYER_PROBE.theme}; }\n`);
   const course = readJSON(dir, 'course.json');
   course.theme.stylesheet = 'theme/theme.css';
   writeJSON(dir, 'course.json', course);

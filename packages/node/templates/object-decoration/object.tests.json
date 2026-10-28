@@ -1,0 +1,22 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "The glow follows the course",
+      "size": [1600, 900],
+      "safeArea": { "top": 56, "right": 0, "bottom": 64, "left": 0 },
+      "context": { "screen": "intro", "section": "part-one", "step": 1, "variant": null, "screenIndex": 0, "screenCount": 6, "sectionIndex": 0, "sectionCount": 2, "direction": null },
+      "steps": [
+        { "action": "step", "frames": 5 },
+        { "action": "expect-state", "state": { "screenIndex": 0, "sectionIndex": 0 } },
+        { "action": "snapshot", "name": "first screen" },
+        { "action": "set-context", "context": { "screen": "practice", "section": "part-two", "step": 1, "variant": null, "screenIndex": 4, "screenCount": 6, "sectionIndex": 1, "sectionCount": 2, "direction": "forward" } },
+        { "action": "step", "frames": 30 },
+        { "action": "snapshot", "name": "on its way" },
+        { "action": "step", "frames": 60 },
+        { "action": "expect-state", "state": { "screenIndex": 4, "sectionIndex": 1 } },
+        { "action": "snapshot", "name": "a later screen" }
+      ]
+    }
+  ]
+}

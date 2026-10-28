@@ -1,0 +1,157 @@
+/* Shapes — a Bauhaus charter for Elabora (cascade layer elabora.theme: the course's defaults).
+   Flat colours, a bold grotesque, square cards and round marks. Every colour is a token of
+   course.json (theme.tokens and theme.custom): change them there for a brand. No words here.
+
+   The backdrop (theme.backdrop): four layers painted below, and the decoration « tableau »
+   (objects/tableau) that draws the shapes and rearranges them at each screen. The grounds change
+   by fading, never by moving; the player stops transitions under reduced motion. */
+
+/* ── Ground and backdrop ─────────────────────────────────────────────── */
+html { background: var(--t-surface); min-height: 100%; }
+body { background: transparent; }
+
+.t-backdrop-layer[data-layer="ground"] { background: var(--t-surface); }
+.t-backdrop-layer[data-layer="ground-earth"],
+.t-backdrop-layer[data-layer="ground-mono"] { opacity: 0; transition: opacity 1.2s ease; }
+.t-backdrop-layer[data-layer="ground-earth"] { background: var(--t-color-earth-ground); }
+.t-backdrop-layer[data-layer="ground-mono"] { background: var(--t-color-mono-ground); }
+.t-backdrop[data-variant="earth"] .t-backdrop-layer[data-layer="ground-earth"],
+.t-backdrop[data-variant="mono"] .t-backdrop-layer[data-layer="ground-mono"] { opacity: 1; }
+/* A faint print grain over the shapes (above the decoration's frame), as on a screen print. */
+.t-backdrop-layer[data-layer="grain"] {
+  z-index: 1;
+  background-image: url(../assets/images/paper-grain.svg);
+  background-size: 240px 240px;
+  opacity: .32;
+}
+
+/* ── Type ────────────────────────────────────────────────────────────── */
+body { font-family: var(--t-font-body); font-size: 1.0625rem; line-height: 1.55; font-feature-settings: "ss01"; }
+.t-screen-title {
+  font-family: var(--t-font-heading);
+  font-weight: 800;
+  font-size: clamp(2.125rem, 3.4vw, 3rem);
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.t-screen h2, .t-screen h3 { font-family: var(--t-font-heading); font-weight: 800; letter-spacing: -0.012em; line-height: 1.12; }
+.t-text strong { font-weight: 750; }
+.t-course-title { font-family: var(--t-font-heading); font-weight: 800; letter-spacing: -0.01em; }
+
+/* Named text styles */
+.t-s-lead .t-text, .t-s-lead.t-text { font-size: 1.3125rem; line-height: 1.45; }
+
+/* numbered: each number in a flat shape, the shapes taking turns (circle, square, quarter). */
+.t-s-numbered .t-text ol { list-style: none; margin: 0; padding: 0; counter-reset: sh-step; display: grid; gap: 1.125rem; }
+.t-s-numbered .t-text ol > li {
+  counter-increment: sh-step;
+  display: grid;
+  grid-template-columns: 3.25rem minmax(0, 1fr);
+  gap: 1.125rem;
+  align-items: center;
+  margin: 0;
+  font-size: 1.1875rem;
+  line-height: 1.4;
+}
+.t-s-numbered .t-text ol > li::before {
+  content: counter(sh-step);
+  display: grid;
+  place-items: center;
+  width: 3.25rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--t-color-shape-1);
+  color: var(--t-text);
+  font-family: var(--t-font-heading);
+  font-weight: 900;
+  font-size: 1.375rem;
+}
+.t-s-numbered .t-text ol > li:nth-child(3n + 2)::before { border-radius: 0; background: var(--t-color-shape-2); }
+.t-s-numbered .t-text ol > li:nth-child(3n)::before { border-radius: 100% 0 0 0; background: var(--t-color-shape-3); color: var(--t-on-primary); }
+
+/* meta: short facts set as bold tags, square and inked. */
+.t-s-meta .t-text ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .625rem; }
+.t-s-meta .t-text ul > li {
+  margin: 0;
+  padding: .4375rem .875rem;
+  border: 2px solid var(--t-text);
+  font-weight: 750;
+  font-size: .9375rem;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  background: var(--t-color-card);
+}
+
+/* ── Columns: cards and comparison ───────────────────────────────────── */
+.t-s-cards .t-columns { gap: 1.5rem; }
+.t-s-cards .t-column {
+  position: relative;
+  padding: 5rem 1.75rem 1.75rem;
+  background: var(--t-color-card);
+  border: 2px solid var(--t-text);
+}
+.t-s-cards .t-column::before {
+  content: "";
+  position: absolute;
+  top: 1.5rem;
+  left: 1.75rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--t-color-shape-1);
+}
+.t-s-cards .t-column:nth-child(2)::before { border-radius: 100% 0 0 0; background: var(--t-color-shape-2); }
+.t-s-cards .t-column:nth-child(3)::before { border-radius: 0; background: var(--t-color-shape-3); }
+.t-s-cards .t-column h2, .t-s-cards .t-column h3 { margin: 0 0 .625rem; font-size: 1.5rem; }
+.t-s-cards .t-column .t-text p { margin: 0; }
+
+.t-s-compare .t-columns { gap: 0; }
+.t-s-compare .t-column { padding: 2rem 2.25rem; background: var(--t-color-card); border: 2px solid var(--t-text); }
+.t-s-compare .t-column:nth-child(2) { background: var(--t-color-shape-3); border-color: var(--t-color-shape-3); color: var(--t-on-primary); }
+.t-s-compare .t-column:nth-child(2) :is(h2, h3, p, li, strong) { color: var(--t-on-primary); }
+.t-s-compare .t-column h2, .t-s-compare .t-column h3 { margin: 0 0 .875rem; font-size: 1.625rem; }
+.t-s-compare .t-text ul { margin: 0; padding: 0; list-style: none; display: grid; gap: .75rem; }
+.t-s-compare .t-text li { display: grid; grid-template-columns: .875rem minmax(0, 1fr); gap: .875rem; align-items: baseline; margin: 0; }
+.t-s-compare .t-text li::before { content: ""; width: .75rem; height: .75rem; border-radius: 50%; background: currentColor; translate: 0 -.0625rem; }
+.t-s-compare .t-column:first-child .t-text li::before { border-radius: 0; }
+
+.t-columns--2 > .t-column:nth-child(3)[data-empty] { display: none; }
+
+/* ── Callouts, asides, prompts: flat blocks, never a coloured left border ── */
+.t-callout { border: 0; border-radius: 0; padding: 1.25rem 1.5rem; background: var(--t-color-shape-2); color: var(--t-text); }
+.t-callout--important, .t-callout--warning, .t-callout--tip { border: 0; background: var(--t-color-shape-2); }
+.t-callout-title { font-family: var(--t-font-heading); font-weight: 800; }
+.t-aside, .t-panels-prompt { border: 0; padding-inline-start: 0; }
+.t-reflection-model { border: 0; background: var(--t-color-card); }
+
+/* ── Statement and quotation ─────────────────────────────────────────── */
+.t-statement .t-statement-text {
+  font-family: var(--t-font-heading);
+  font-weight: 800;
+  font-size: clamp(2.25rem, 3.9vw, 3.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.024em;
+  text-wrap: balance;
+}
+.t-statement-mark { color: var(--t-color-shape-1); }
+.t-statement--quote .t-statement-text { font-size: clamp(1.875rem, 3vw, 2.625rem); line-height: 1.16; }
+.t-statement-author { font-weight: 800; }
+.t-statement-role { color: var(--t-muted); }
+
+/* ── Controls ─────────────────────────────────────────────────────────── */
+.t-btn { font-weight: 750; }
+.t-quiz .t-option { border-radius: 0; border-width: 2px; background: var(--t-color-card); }
+
+/* ── Screens without a layout: a title over wide content lines up with it ── */
+.t-screen:not(.t-layout):has(> .t-blocks > .t-w-wide) > .t-screen-title { max-width: var(--t-wide-width); }
+
+/* ── Charts: flat, square, the figures in the heavy weight ───────────── */
+.t-chart-title { font-weight: 800; font-size: 1.5rem; letter-spacing: -0.012em; }
+.t-figures-grid { gap: 1.5rem; }
+.t-figures-card { border-radius: 0; border: 2px solid var(--t-text); background: var(--t-color-card); padding: 1.75rem 1.75rem 1.5rem; }
+.t-figures-card::after { content: ""; position: absolute; top: 1.5rem; right: 1.5rem; width: 1.75rem; height: 1.75rem; border-radius: 50%; background: var(--t-color-shape-2); }
+.t-figures-figure { font-weight: 900; font-size: 4rem; letter-spacing: -0.04em; }
+.t-figures-label { font-size: 1.0625rem; }
+.t-bars-bar { height: 2rem; border-radius: 0; }
+.t-quiz { border-radius: 0; }

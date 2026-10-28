@@ -889,7 +889,7 @@
         "backdrop": {
           "type": "object",
           "additionalProperties": false,
-          "description": "Decorative background behind every screen. Decoration only: it carries no information, takes no focus and is hidden from screen readers (a scene that teaches is a free-object block). layers: empty elements behind the course that the stylesheet paints and animates (.t-backdrop-layer[data-layer=\"far\"]); the backdrop element carries data-screen, data-section, data-step and data-variant, so the stylesheet can react to where the learner is. object: a decorative free object (pedagogicalRole \"decoration\") mounted once behind the course for the whole session, given the same context. Under reduced motion CSS animations stop and the object shows still frames; on a slow machine the object freezes. Text over a backdrop must stay readable: elabora fit measures its contrast against the pixels behind it (W_TEXT_CONTRAST_MEASURED).",
+          "description": "Decorative background behind every screen. Decoration only: it carries no information, takes no focus and is hidden from screen readers (a scene that teaches is a free-object block). layers: empty elements behind the course that the stylesheet paints and animates (.t-backdrop-layer[data-layer=\"far\"]); the backdrop element carries data-screen, data-section, data-step, data-variant, data-screen-index, data-section-index, data-section-count and data-direction, and #elabora-app carries data-backdrop (the variant shown), so the stylesheet can react to where the learner is. object: a decorative free object (pedagogicalRole \"decoration\") mounted once behind the course for the whole session, given the same context. Under reduced motion CSS animations stop and the object shows still frames; on a slow machine the object freezes. Text over a backdrop must stay readable: elabora fit measures its contrast against the pixels behind it (W_TEXT_CONTRAST_MEASURED).",
           "properties": {
             "layers": {
               "type": "array",
@@ -934,6 +934,11 @@
                 "maxLength": 200
               },
               "description": "Named variants a screen can pick with backdrop, each with a one-line description for editors: {\"dim\": \"Darker sky behind dense screens\"}. The stylesheet styles .t-backdrop[data-variant=…]; the object receives the variant."
+            },
+            "default": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{0,31}$",
+              "description": "The variant of the screens that pick none (a name of variants): a module dark throughout says it once. A screen still picks another variant, or none, with backdrop."
             }
           }
         }

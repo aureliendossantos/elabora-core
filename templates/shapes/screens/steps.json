@@ -1,0 +1,41 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "steps",
+  "title": "Four steps, in order",
+  "covers": [
+    "ITEM-4"
+  ],
+  "blocks": [
+    {
+      "id": "four-steps-process",
+      "type": "process",
+      "width": "wide",
+      "props": {
+        "takeaway": "Each step prepares the next one: skip none",
+        "items": [
+          {
+            "id": "s1",
+            "title": "Look at the situation",
+            "text": "What happens, who is involved, what is at stake."
+          },
+          {
+            "id": "s2",
+            "title": "Choose the tool",
+            "text": "Pick the building block that fits the situation."
+          },
+          {
+            "id": "s3",
+            "title": "Act in small steps",
+            "text": "Try, check the result, adjust the next move."
+          },
+          {
+            "id": "s4",
+            "title": "Share what you learnt",
+            "text": "Tell the team what worked and what to change."
+          }
+        ],
+        "highlight": "s2"
+      }
+    }
+  ]
+}

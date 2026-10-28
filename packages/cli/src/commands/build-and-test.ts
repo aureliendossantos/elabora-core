@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { proofMarkdown } from '@elabora/core/compile/proof';
 import { listProfiles } from '@elabora/core/lms/profiles';
@@ -11,12 +12,13 @@ import type { BuildResult, WebBuildOptions } from '@elabora/node/build';
 import type { PackageRun, PackageTestResult } from '@elabora/node/emulator/run';
 import type { FitResult, FitSize } from '@elabora/node/fit';
 import type { Shot } from '@elabora/node/capture';
+import { OBJECTS_AT_NOTE } from '@elabora/node/look-client';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { writeFileAtomic } from '@elabora/node/util/fs';
 import { readZip } from '@elabora/node/zip';
 import { isPresetName } from '@elabora/core/media/presets';
 import { isFinished } from '@elabora/node/media/jobs';
-import { defineCommand, printDiagnostics, printJson } from './command.ts';
+import { defineCommand, errorMessage, printDiagnostics, printJson } from './command.ts';
 import { mediaProgress } from '../media-progress.ts';
 import { look } from './look.ts';
 import { pendingMediaJobs, waitForMediaJobs } from './media.ts';
@@ -46,12 +48,13 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       (elabora-review/1, docs/review-bridge.md) and talks to that page
                                                       only; progress none, navigation free and noindex by default
   test [dir] [--package <zip>] [--profile a,b|all] [--mode iframe,popup…] [--browser chromium,electron,chrome,msedge,playwright,firefox,webkit] [--parallel 4] [--no-a11y] [--json]
-                                                      Run the package in the LMS emulator (profiles × launch modes × browsers)
+                                                      Run the package in the LMS emulator (profiles × launch modes × browsers);
+                                                      4 runs side by side by default, fewer on a loaded machine
   preview [dir] [--port 4807] [--profile <id>]        Live preview (standalone and in the LMS emulator): pages reload after each
                                                       rebuild; free objects show in the in-app browsers of agent apps
   look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|answered] [--step <n>] [--layer <id>]
        [--at <moment> | --sheet] [--scroll <px|N%|block>,…] [--block <id> [--scale 2] [--act <action>]…] [--viewport] [--motion]
-       [--language <code>] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
+       [--language <code>] [--controls] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
                                                       See a screen while designing, in well under a second: a look server kept warm
                                                       for the course (one browser, no build) renders it from the files as they are,
                                                       with the player's header and footer; free objects an edit did not touch keep
@@ -78,7 +81,9 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       that state until the screen changes. On a dialogue block, choose:<option>
                                                       (one per decision met, retries included, as dialogue play) shows its thread
                                                       at rest after those choices, its end in the window: notes, the next options,
-                                                      or the debrief
+                                                      or the debrief. On a screen with free objects it says each control the
+                                                      page covers (a click on its middle would not reach it); --controls lists
+                                                      every control with its box in the window, instead of looking for them
   screenshot [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial,answered] [--step <n>] [--layer <id>]
              [--at 0,2000,4000|l1,l2:end | --scroll 0,25%,50%,1800] [--motion] [--viewport] [--out shot.png | --out-dir <dir>]
                                                       Render screens to PNG once images and free objects are ready. answered: every
@@ -89,10 +94,13 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       objects). One contact sheet. Several shots share one build and one browser;
                                                       --out names one image, so several shots are refused with it (exit code 2):
                                                       --out-dir gets one file each
-  fit [dir] [--screen <id>,…] [--reference 1600x900] [--minimum 1280x720] [--fresh] [--json]
+  fit [dir] [--screen <id>,…] [--reference 1600x900] [--minimum 1280x720] [--phone 375x812|none] [--language <code> [--allow-missing]] [--fresh] [--json]
                                                       Measure every slide (all steps shown) at the fit sizes: what scrolls, by how
                                                       much, and what moves once its activities are answered. In scroll presentation:
                                                       the length of each page and the contrast of its text, down the whole page.
+                                                      On a phone (375×812 unless sizes are given): the contrast of the text down
+                                                      the page and the player's bars that go onto two lines. --language: the
+                                                      translation (--allow-missing: a draft, missing texts in the source language).
                                                       A screen unchanged since its last measure (its files, the theme, components,
                                                       objects, Elabora, the browser) is not measured again: its fit is reused
                                                       (--fresh measures every screen again)
@@ -175,10 +183,13 @@ const test = defineCommand({
       else {
         if (result.accessibility) console.log(`axe-core: ${result.accessibility.violations} violation(s) on ${result.accessibility.screens} screen states.`);
         for (const d of result.diagnostics.filter((d) => d.code === 'E_GATE_A11Y' || d.code === 'W_RENDER_OVERFLOW')) console.log(`  ${d.code === 'W_RENDER_OVERFLOW' ? 'warning W_RENDER_OVERFLOW ' : ''}${d.message}`);
-        if (result.fit?.mode === 'slides') for (const size of result.fit.sizes) console.log(`Slides at ${size.size.replace('x', '×')} (${size.role}): ${size.screens.filter((s) => !s.overflow).length}/${size.screens.length} fit.`);
+        if (result.fit?.mode === 'slides') for (const size of result.fit.sizes.filter((size) => size.role !== 'phone')) console.log(`Slides at ${size.size.replace('x', '×')} (${size.role}): ${size.screens.filter((s) => !s.overflow).length}/${size.screens.length} fit.`);
         else if (result.fit?.mode === 'scroll') console.log(`Pages (scroll presentation): text contrast measured down ${result.fit.sizes[0]?.screens.length ?? 0} page(s).`);
-        for (const d of result.diagnostics.filter((d) => ['W_SLIDE_OVERFLOW', 'I_SLIDE_OVERFLOW_MINIMUM', 'W_SLIDE_SHIFT', 'W_TEXT_CONTRAST_MEASURED', 'W_SCROLL_ANIMATION_UNFINISHED'].includes(d.code))) console.log(`  ${d.severity} ${d.code} ${d.message}`);
+        for (const d of result.diagnostics.filter((d) => ['W_SLIDE_OVERFLOW', 'I_SLIDE_OVERFLOW_MINIMUM', 'W_SLIDE_SHIFT', 'W_TEXT_CONTRAST_MEASURED', 'W_PLAYER_BAR_WRAPS', 'W_SCROLL_ANIMATION_UNFINISHED'].includes(d.code))) console.log(`  ${d.severity} ${d.code} ${d.message}`);
         console.log(`\n${result.ok ? '✔' : '✘'} ${result.runs.filter((run) => run.ok).length}/${result.runs.length} runs passed.${reportPath ? ` Results added to ${path.basename(reportPath)}.` : ''}`);
+        // Runs that waited too long fail on a loaded machine more than in the course.
+        const late = result.runs.filter((run) => !run.ok && run.failures.some((failure) => /Timeout \d+ms exceeded|no progress for \d+ s|did not open/i.test(failure.message)));
+        if (late.length && parallel !== 1) console.log(`  ${late.length} run(s) failed on a timeout (load average ${os.loadavg()[0].toFixed(1)} on ${os.availableParallelism()} cores): run again with --parallel 1 before looking for a cause in the course.`);
       }
       return result.ok ? 0 : 1;
     };
@@ -206,7 +217,7 @@ const test = defineCommand({
       at: new Date().toISOString(),
       runs: result.runs.map((run) => ({ profile: run.profile, launch: run.launch, browser: run.browser, browserVersion: run.browserVersion, ok: run.ok, checks: run.checks, failures: run.failures })),
       accessibility: result.accessibility ?? null,
-      fit: result.fit?.mode !== 'slides' ? undefined : result.fit.sizes.map((size) => ({ role: size.role, size: size.size, screens: size.screens.length, fit: size.screens.filter((s) => !s.overflow).length, overflow: size.screens.filter((s) => s.overflow).map((s) => ({ screen: s.screen ?? '', px: s.overflow })) }))
+      fit: result.fit?.mode !== 'slides' ? undefined : result.fit.sizes.flatMap((size) => (size.role === 'phone' ? [] : [{ role: size.role, size: size.size, screens: size.screens.length, fit: size.screens.filter((s) => !s.overflow).length, overflow: size.screens.filter((s) => s.overflow).map((s) => ({ screen: s.screen ?? '', px: s.overflow })) }]))
     };
     writeFileAtomic(reportPath, stringifyJSON(buildReport));
     writeFileAtomic(reportPath.replace(/\.report\.json$/, '.proof.md'), proofMarkdown(buildReport));
@@ -253,6 +264,8 @@ const screenshot = defineCommand({
     if (flags.out && flags['out-dir']) { console.error('✘ Give --out (one image) or --out-dir (a folder), not both.'); return 2; }
     const result = await capture(dir, shots);
     if (!result.shots) { printDiagnostics(result.diagnostics); return 1; }
+    // A filmstrip shows the screen's own animations; free objects run on their own clock.
+    if (at && result.shots.some((taken) => taken.ok && taken.objects?.length)) console.log(`note: ${OBJECTS_AT_NOTE}`);
     const many = shots.length > 1 || !!flags['out-dir'];
     const outDir = path.resolve(flags['out-dir'] || 'screenshots');
     if (many) fs.mkdirSync(outDir, { recursive: true });
@@ -270,10 +283,20 @@ const screenshot = defineCommand({
 
 const fit = defineCommand({
   name: 'fit',
-  flags: { screen: 'list', reference: 'string', minimum: 'string', fresh: 'boolean', json: 'boolean' },
+  flags: { screen: 'list', reference: 'string', minimum: 'string', phone: 'string', language: 'string', 'allow-missing': 'boolean', fresh: 'boolean', json: 'boolean' },
   async run({ positionals: [dir = '.'], flags }) {
     const { measureFit, fitDiagnostics } = await import('@elabora/node/fit');
-    const result = await measureFit(dir, { sizes: fitSizes(flags.reference, flags.minimum), screens: flags.screen, fresh: flags.fresh });
+    const { withCourseLanguage } = await import('@elabora/node/translate');
+    if (flags['allow-missing'] && !flags.language) { console.error('✘ --allow-missing goes with --language <code>.'); return 2; }
+    if (flags.phone && flags.phone !== 'none' && !/^[1-9]\d{2,3}x[1-9]\d{2,3}$/.test(flags.phone)) { console.error(`✘ --phone is a size (375x812) or none, not "${flags.phone}".`); return 2; }
+    const phone = flags.phone === 'none' ? false : flags.phone;
+    let result: FitResult;
+    try {
+      result = await withCourseLanguage(dir, { language: flags.language, allowMissing: flags['allow-missing'] }, (root) => measureFit(root, { sizes: fitSizes(flags.reference, flags.minimum), screens: flags.screen, fresh: flags.fresh, phone }));
+    } catch (error) {
+      if (flags.json) printJson({ ok: false, error: errorMessage(error) }); else console.error(`✘ ${errorMessage(error)}`);
+      return 2;
+    }
     if (!result.ok) {
       if (result.error) { if (flags.json) printJson({ ok: false, error: result.error }); else console.error(`✘ ${result.error}`); return 2; }
       printDiagnostics(result.diagnostics, { json: flags.json });
@@ -286,6 +309,16 @@ const fit = defineCommand({
     const width = Math.max(...result.sizes.flatMap((size) => size.screens.map((s) => (s.screen ?? '').length)));
     for (const size of result.sizes) {
       const fitting = size.screens.filter((s) => !s.overflow).length;
+      if (size.role === 'phone') {
+        const faint = size.screens.filter((s) => s.contrast?.length || s.wrapped?.length).length;
+        console.log(`${size.size.replace('x', '×')} (phone): ${faint ? `${faint} screen(s) to look at` : `text readable and bars on one line on ${size.screens.length} screens`}`);
+        for (const s of size.screens) {
+          if (!s.contrast?.length && !s.wrapped?.length) continue;
+          console.log(`  ✘ ${(s.screen ?? '').padEnd(width)}${s.wrapped?.length ? `  bar on two lines: ${s.wrapped.join(', ')}` : ''}`);
+          for (const c of s.contrast || []) console.log(`    ✘ ${''.padEnd(width)}  contrast ${c.ratio}:1 < ${c.need}:1 — ${c.block ? `${c.block}: ` : ''}"${c.text}"`);
+        }
+        continue;
+      }
       console.log(slides ? `${size.size.replace('x', '×')} (${size.role}): ${fitting}/${size.screens.length} screens fit` : `${size.size.replace('x', '×')} (${size.role}): ${size.screens.length} pages`);
       for (const s of size.screens) {
         const reused = s.reused ? ` (unchanged since ${s.reused}: reused)` : '';

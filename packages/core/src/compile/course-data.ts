@@ -655,7 +655,7 @@ function audioProps(props: Record<string, unknown>, assetPath: (name: string) =>
 export function compileBackdrop(project: Project, context: CompileContext, usedObjects: Map<string, ObjectDefinition>): Backdrop | null {
   const source = context.course.theme?.backdrop;
   if (!source) return null;
-  const backdrop: Backdrop = { layers: source.layers || [], variants: Object.keys(source.variants || {}) };
+  const backdrop: Backdrop = { layers: source.layers || [], variants: Object.keys(source.variants || {}), ...(source.default ? { default: source.default } : {}) };
   const manifest = source.object && project.objects.get(source.object.id)?.manifest;
   if (source.object && manifest) {
     usedObjects.set(manifest.id, objectDefinition(manifest));

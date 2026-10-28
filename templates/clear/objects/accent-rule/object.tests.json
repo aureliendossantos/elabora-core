@@ -1,0 +1,449 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "The cover: the rule under the first part",
+      "size": [
+        1600,
+        900
+      ],
+      "context": {
+        "screen": "cover",
+        "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "step": 1,
+        "variant": "feature"
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "section": "opening",
+            "index": 0,
+            "count": 5,
+            "moving": "none",
+            "dark": false
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "cover"
+        }
+      ]
+    },
+    {
+      "name": "The rail runs along the player's top bar",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 72,
+        "right": 0,
+        "bottom": 0,
+        "left": 0
+      },
+      "context": {
+        "screen": "cover",
+        "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 2
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "rail": 72
+          }
+        },
+        {
+          "action": "set-safe-area",
+          "safeArea": {
+            "top": 96,
+            "right": 0,
+            "bottom": 0,
+            "left": 0
+          }
+        },
+        {
+          "action": "step",
+          "frames": 2
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "rail": 96
+          }
+        }
+      ]
+    },
+    {
+      "name": "The next part: the rule slides to it",
+      "size": [
+        1600,
+        900
+      ],
+      "context": {
+        "screen": "objectives",
+        "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "part-one",
+            "section": "part-1",
+            "sectionIndex": 1,
+            "sectionCount": 5,
+            "step": 1,
+            "variant": "feature"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 20
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "section": "part-1",
+            "index": 1,
+            "moving": "slide"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "sliding"
+        },
+        {
+          "action": "step",
+          "frames": 40
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "index": 1,
+            "moving": "none"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "first-part"
+        }
+      ]
+    },
+    {
+      "name": "A jump of several parts fades across instead of sliding",
+      "size": [
+        1600,
+        900
+      ],
+      "context": {
+        "screen": "objectives",
+        "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "recap",
+            "section": "closing",
+            "sectionIndex": 4,
+            "sectionCount": 5,
+            "step": 1,
+            "variant": null
+          }
+        },
+        {
+          "action": "step",
+          "frames": 19
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "index": 4,
+            "moving": "fade"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "fading"
+        },
+        {
+          "action": "step",
+          "frames": 40
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "index": 4,
+            "moving": "none"
+          }
+        }
+      ]
+    },
+    {
+      "name": "A screen of the same part: nothing moves",
+      "size": [
+        1600,
+        900
+      ],
+      "context": {
+        "screen": "key-figures",
+        "section": "part-2",
+        "sectionIndex": 2,
+        "sectionCount": 5,
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "steps",
+            "section": "part-2",
+            "sectionIndex": 2,
+            "sectionCount": 5,
+            "step": 1,
+            "variant": "tint"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 1
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "index": 2,
+            "moving": "none"
+          }
+        }
+      ]
+    },
+    {
+      "name": "A screen outside any section keeps the rule where it was",
+      "size": [
+        1600,
+        900
+      ],
+      "context": {
+        "screen": "chart",
+        "section": "part-3",
+        "sectionIndex": 3,
+        "sectionCount": 5,
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "extra",
+            "section": null,
+            "sectionIndex": null,
+            "sectionCount": 5,
+            "step": 1,
+            "variant": null
+          }
+        },
+        {
+          "action": "step",
+          "frames": 30
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "section": null,
+            "index": 3,
+            "moving": "none"
+          }
+        }
+      ]
+    },
+    {
+      "name": "The dark variant: light rail, lighter accent",
+      "size": [
+        1600,
+        900
+      ],
+      "context": {
+        "screen": "quote",
+        "section": "part-2",
+        "sectionIndex": 2,
+        "sectionCount": 5,
+        "step": 1,
+        "variant": "ink"
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 30
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "dark": true
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "ink"
+        }
+      ]
+    },
+    {
+      "name": "Reduced motion: the rule is at its place at once",
+      "size": [
+        1600,
+        900
+      ],
+      "reducedMotion": true,
+      "context": {
+        "screen": "objectives",
+        "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "part-one",
+            "section": "part-1",
+            "sectionIndex": 1,
+            "sectionCount": 5,
+            "step": 1,
+            "variant": "feature"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 1
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "index": 1,
+            "moving": "none"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "still"
+        }
+      ]
+    },
+    {
+      "name": "Phone: the rail keeps a margin",
+      "size": [
+        375,
+        812
+      ],
+      "context": {
+        "screen": "practice",
+        "section": "part-3",
+        "sectionIndex": 3,
+        "sectionCount": 5,
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "snapshot",
+          "name": "phone"
+        }
+      ]
+    },
+    {
+      "name": "Settings apply without remounting",
+      "size": [
+        1600,
+        900
+      ],
+      "context": {
+        "screen": "objectives",
+        "section": "opening",
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "step": 1,
+        "variant": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "position": "bottom",
+            "offset": 4.5,
+            "thickness": 5
+          }
+        },
+        {
+          "action": "step",
+          "frames": 2
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "index": 0,
+            "count": 5,
+            "moving": "none"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "three-parts-bottom"
+        }
+      ]
+    }
+  ]
+}

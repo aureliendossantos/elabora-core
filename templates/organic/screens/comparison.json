@@ -1,0 +1,56 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "comparison",
+  "title": "Two ways of doing it",
+  "covers": [
+    "ITEM-4"
+  ],
+  "backdrop": "pastel",
+  "blocks": [
+    {
+      "id": "compare",
+      "type": "columns",
+      "width": "wide",
+      "style": "compare",
+      "props": {
+        "count": 2
+      },
+      "blocks": [
+        {
+          "id": "compare-before-title",
+          "type": "heading",
+          "slot": "first",
+          "props": {
+            "text": "Instead of this",
+            "level": 2
+          }
+        },
+        {
+          "id": "compare-before-text",
+          "type": "text",
+          "slot": "first",
+          "props": {
+            "markdown": "- A habit that feels natural but gets in the way\n- A reaction that closes the conversation\n- A shortcut that costs time later"
+          }
+        },
+        {
+          "id": "compare-after-title",
+          "type": "heading",
+          "slot": "second",
+          "props": {
+            "text": "Try this",
+            "level": 2
+          }
+        },
+        {
+          "id": "compare-after-text",
+          "type": "text",
+          "slot": "second",
+          "props": {
+            "markdown": "- A small change that keeps people on board\n- A question that opens the conversation\n- A step that saves time for everyone"
+          }
+        }
+      ]
+    }
+  ]
+}

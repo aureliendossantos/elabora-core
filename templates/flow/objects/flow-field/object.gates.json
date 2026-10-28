@@ -1,0 +1,69 @@
+{
+  "object": "flow-field",
+  "version": "1.0.0",
+  "elabora": "0.1.0",
+  "at": "2026-10-28T20:15:43.347Z",
+  "ok": true,
+  "browser": {
+    "engine": "electron",
+    "version": "152.0.7977.167"
+  },
+  "gates": {
+    "smoke": "passed",
+    "behaviour": "passed",
+    "budget": "passed",
+    "visual": "passed",
+    "accessibility": "passed"
+  },
+  "perf": {
+    "drawCalls": null,
+    "triangles": null,
+    "textures": null,
+    "geometries": null,
+    "maxTextureSize": null,
+    "webglContexts": 0,
+    "contextLost": false,
+    "bootMs": 47,
+    "bootSamples": [
+      59,
+      52,
+      44,
+      67,
+      64,
+      43,
+      47,
+      38
+    ]
+  },
+  "tests": [
+    {
+      "name": "At rest the particles float as dots over the lines",
+      "ok": true
+    },
+    {
+      "name": "The cover lifts the ribbons across the right half, and they settle low as the module starts",
+      "ok": true
+    },
+    {
+      "name": "A new screen stretches the particles into streaks, then they settle",
+      "ok": true
+    },
+    {
+      "name": "Going back leaps the other way, and a new part moves the palette",
+      "ok": true
+    },
+    {
+      "name": "The ink variant draws in ink on light paper",
+      "ok": true
+    },
+    {
+      "name": "Brand colours and settings apply without remounting",
+      "ok": true
+    },
+    {
+      "name": "Phone window",
+      "ok": true
+    }
+  ],
+  "fingerprint": "sha256:1a0f340fc3474fdf6e769229676635da9d50670cb9c50160f402da0dab5ab67a"
+}

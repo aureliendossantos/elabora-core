@@ -11,6 +11,7 @@ import { copyExample, readJSON, writeJSON, addExplorer, addLayerProbe, addViewPr
 import type { PlayerWindow } from '../helpers.ts';
 import { startCanvasHost } from '@elabora/node/canvas/host';
 import { renderScreen } from '@elabora/core/render/screen';
+import { screenOrder } from '@elabora/core/project/load';
 import type { CanvasApi } from '@elabora/player/canvas';
 import { build } from '@elabora/node/build';
 import { assetsSheet } from '@elabora/node/assets-sheet';
@@ -21,6 +22,7 @@ import { startLooker } from '@elabora/node/look';
 import { createRequire } from 'node:module';
 import { pageStyleConflicts } from '@elabora/node/style-cascade';
 import * as edit from '@elabora/node/edit';
+import { replayObject } from '@elabora/node/replay';
 
 const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 type CanvasWindow = Window & typeof globalThis & { __elaboraCanvas: CanvasApi };
@@ -123,6 +125,22 @@ test('fit measures the contrast of text against the pixels behind it', { timeout
   assert.ok(!d.some((x) => x.target !== 'accueil'), JSON.stringify(d.filter((x) => x.target !== 'accueil')));
 });
 
+test('fit on a phone: the contrast of text down the page and a bar of the player that goes onto two lines', { timeout: 240000 }, async () => {
+  // Faint text and items too wide for one line, on a phone only.
+  const { dir } = slidesCopy({ css: '@media (max-width: 600px) { [data-screen="accueil"] .t-text { color: #e6e9ec; } .t-bar--bottom > * { min-width: 9rem; } }' });
+  const fit = await measureFit(dir, { screens: ['accueil'] });
+  assert.ok(fit.ok, JSON.stringify(fit.diagnostics));
+  assert.deepEqual(fit.sizes.map((size) => [size.role, size.size]), [['reference', '1600x900'], ['minimum', '1280x720'], ['phone', '375x812']]);
+  const diagnostics = fitDiagnostics(fit);
+  const faint = diagnostics.filter((d) => d.code === 'W_TEXT_CONTRAST_MEASURED');
+  assert.ok(faint.length && faint.every((d) => /on a phone \(375×812\)/.test(d.message)), JSON.stringify(faint));
+  assert.ok(diagnostics.some((d) => d.code === 'W_PLAYER_BAR_WRAPS' && /t-bar--bottom/.test(d.message)), JSON.stringify(diagnostics));
+  assert.ok(!diagnostics.some((d) => /^(W|I)_SLIDE_OVERFLOW/.test(d.code) && /375/.test(d.message)), 'a phone has no fold');
+  // Sizes given: no phone, unless asked.
+  const sized = await measureFit(dir, { screens: ['accueil'], sizes: [{ role: 'reference', size: '1600x900' }] });
+  assert.deepEqual(sized.ok && sized.sizes.map((size) => size.role), ['reference']);
+});
+
 test('scroll pages: fit gives their length and measures contrast down the whole page, never an overflow', { timeout: 240000 }, async () => {
   const dir = copyExample();
   addViewProbe(dir);
@@ -136,7 +154,7 @@ test('scroll pages: fit gives their length and measures contrast down the whole 
   const fit = await measureFit(dir);
   assert.ok(fit.ok, JSON.stringify(fit.diagnostics));
   assert.equal(fit.mode, 'scroll');
-  assert.deepEqual(fit.sizes.map((size) => size.role), ['reference'], 'scroll pages are measured at the reference size only');
+  assert.deepEqual(fit.sizes.map((size) => size.role), ['reference', 'phone'], 'scroll pages are measured at the reference size and on a phone');
   const page = fit.sizes[0].screens.find((screen) => screen.screen === 'chemin');
   assert.ok(page && page.windows > 1.5, JSON.stringify(page));
   const diagnostics = fitDiagnostics(fit);
@@ -309,6 +327,72 @@ test('backdrop: layers and a decorative object follow the learner, hidden from a
     assert.equal(b.hidden, true, 'backdrop "none" on this screen');
     assert.deepEqual(errors, []);
   });
+
+  // The look server shows the backdrop of each screen asked for, one after the other in one page.
+  const looker = await startLooker(dir, { live: false });
+  try {
+    const seen = [];
+    for (const screen of ['accueil', 'chemin', 'accueil']) {
+      const result = await looker.look({ screen, width: 1280, height: 720 });
+      assert.ok(result.ok, JSON.stringify(result));
+      seen.push(result.backdrop);
+    }
+    assert.deepEqual(seen.map((backdrop) => [backdrop?.screen, backdrop?.hidden]), [['accueil', false], ['chemin', true], ['accueil', false]]);
+    assert.equal(seen[2]?.object?.id, 'glow');
+  } finally {
+    await looker.close();
+  }
+});
+
+test('backdrop decoration: object new --decoration, its gates, where the screen stands in the course, the default variant on #elabora-app, and its replay behind the course', { timeout: 420000 }, async () => {
+  const { dir, course } = slidesCopy();
+  assert.throws(() => edit.createObject(dir, { id: 'drift', title: 'Drift' }), /--decoration/);
+  edit.createObject(dir, { id: 'drift', title: 'Drift', decoration: true });
+  const manifest = readJSON(dir, 'objects/drift/object.manifest.json');
+  assert.equal(manifest.pedagogicalRole, 'decoration');
+  assert.equal(manifest.planRefs, undefined);
+  course.theme.backdrop = { layers: ['sky'], object: { id: 'drift' }, variants: { dusk: 'Darker', dawn: 'Lighter' }, default: 'dusk' };
+  writeJSON(dir, 'course.json', course);
+  const later = readJSON(dir, 'screens/chemin.json');
+  later.backdrop = 'dawn';
+  writeJSON(dir, 'screens/chemin.json', later);
+  const v = validateDir(dir);
+  assert.equal(v.summary.errors, 0, JSON.stringify(v.diagnostics.filter((d) => d.severity === 'error')));
+  const broken = JSON.parse(JSON.stringify(course));
+  broken.theme.backdrop.default = 'night';
+  writeJSON(dir, 'course.json', broken);
+  assert.ok(validateDir(dir).diagnostics.some((d) => d.code === 'E_BACKDROP_VARIANT' && d.path === '/theme/backdrop/default'));
+  writeJSON(dir, 'course.json', course);
+
+  const gates = await testObject(dir, 'drift');
+  assert.ok(gates.ok, JSON.stringify(gates.diagnostics.filter((d) => d.severity === 'error')));
+  assert.ok(!gates.diagnostics.some((d) => d.code === 'W_GATE_VISUAL_BLANK'), 'the template draws');
+
+  const ids = screenOrder(loadProjectFromDir(dir)).map((entry) => entry.id);
+  await openPlayer(dir, async (page, errors) => {
+    const seen = () => page.evaluate(async () => {
+      const b = document.querySelector<HTMLElement>('.t-backdrop')!;
+      const host = (window as PlayerWindow).__elabora.backdropHost();
+      return { data: { ...b.dataset }, app: document.getElementById('elabora-app')!.dataset.backdrop ?? null, state: await host?.getState(), ready: b.querySelector<HTMLElement>('.t-backdrop-object')?.dataset.state };
+    });
+    await page.evaluate(() => (window as PlayerWindow).__elabora.go('accueil'));
+    await page.waitForFunction(() => document.querySelector<HTMLElement>('.t-backdrop-object')?.dataset.state === 'ready');
+    const first = await seen();
+    assert.equal(first.app, 'dusk', 'the default variant');
+    assert.equal(first.data.variant, 'dusk');
+    assert.equal(first.data.screenIndex, String(ids.indexOf('accueil')));
+    await page.evaluate(() => (window as PlayerWindow).__elabora.go('chemin'));
+    await page.waitForTimeout(300);
+    const next = await seen();
+    assert.equal(next.app, 'dawn', 'its own variant');
+    assert.equal(next.data.direction, ids.indexOf('chemin') > ids.indexOf('accueil') ? 'forward' : 'back');
+    assert.deepEqual((next.state as { screenIndex: number }).screenIndex, ids.indexOf('chemin'), 'the object heard the rank of the screen');
+    assert.deepEqual(errors, []);
+  });
+
+  const replay = await replayObject(dir, 'drift', { width: 1280, height: 720 });
+  assert.ok(replay.ok && replay.block === 'backdrop', JSON.stringify(replay.error ?? replay.failures));
+  assert.equal(replay.frames.length, 4, 'three snapshots and the end');
 });
 
 test('a click in the slide reveals the next step; back on the screen, the step reached', { timeout: 180000 }, async () => {
@@ -480,7 +564,7 @@ test('panel layers open over the screen without blocking it', { timeout: 180000 
 test('cascade layers: each order as the package and the canvas show it, a theme upgrade keeping the look, and who overrides whom found in the page (D32)', { timeout: 240000 }, async () => {
   const probe = () => {
     const style = getComputedStyle(document.querySelector('.lp-probe')!);
-    return { width: style.borderLeftWidth, border: style.borderLeftColor, color: style.color };
+    return { width: style.paddingLeft, border: style.backgroundColor, color: style.color };
   };
   const { width, component, theme } = LAYER_PROBE;
   const variant = (cascade?: string, css?: string) => {
@@ -493,7 +577,7 @@ test('cascade layers: each order as the package and the canvas show it, a theme 
     return dir;
   };
   // A general rule of the theme, on a player hook the component's template uses.
-  const general = `.t-callout { border-left-color: ${theme}; color: ${theme}; }\n`;
+  const general = `.t-callout { background-color: ${theme}; color: ${theme}; }\n`;
   const overridden = ['component-overridden .lp-probe .t-callout', 'component-overridden .t-block--layer-probe .t-callout.lp-probe .t-callout'];
   const upgraded = variant(undefined, general);
   const upgrade = edit.upgradeThemeCascade(upgraded);
@@ -509,7 +593,7 @@ test('cascade layers: each order as the package and the canvas show it, a theme 
     // A theme rule that names the component without @layer overrides gives way, and the page says so.
     { name: 'components over theme, named', dir: variant('components-over-theme'), expected: { width, border: component, color: component }, conflicts: ['theme-under-component .lp-probe .lp-probe', 'theme-under-component .t-block--layer-probe .t-callout.lp-probe .lp-probe'] },
     // Its @layer overrides block wins over the component on purpose: nothing to say.
-    { name: 'overrides', dir: variant('components-over-theme', `@layer overrides {\n  .t-block--layer-probe .lp-probe { border-left-color: ${theme}; color: ${theme}; }\n}\n`), expected: { width, border: theme, color: theme }, conflicts: [] },
+    { name: 'overrides', dir: variant('components-over-theme', `@layer overrides {\n  .t-block--layer-probe .lp-probe { background-color: ${theme}; color: ${theme}; }\n}\n`), expected: { width, border: theme, color: theme }, conflicts: [] },
     // The upgrade keeps the look of the course it upgrades; its general rule, now in @layer
     // overrides, still overrides the component, and the page still says so.
     { name: 'upgraded', dir: upgraded, expected: { width, border: theme, color: theme }, conflicts: overridden }

@@ -9,6 +9,10 @@ init <dir> --id <id> --title <title> [--lang fr]   Scaffold a course project (co
      [--audience <who>] [--business-goal <goal>]    What the author already said of it: the plan's audience, business goal and
      [--duration 10-20|5|30+] [--presentation        duration in minutes, the presentation, the LMS, and notes for agents in
      slides|scroll] [--lms a,b] [--notes <text>]    AGENTS.md (the tone, the brand wanted, what is left to the agent)
+     [--template <id>]                              Start from a module template (elabora templates): its charter and its
+                                                    screens with placeholder texts, in --lang when it is translated into it
+templates [--json]                                  The module templates: a charter (theme, fonts, components, an animated
+                                                    backdrop and its variants) and 14 screens of placeholder texts each
 validate [dir] [--profile a,b] [--release] [--json] Check format, plan conformity, pedagogy, accessibility, budgets
 project [dir] [--client] [--screen <id>]            Markdown view of the course (agent map, or client review)
 migrate [dir] [--dry-run] [--json]                  Write the course in the current format (older ones are read migrated): one
@@ -28,8 +32,9 @@ projects list [--json] [--validate]                 Projects of the library, new
 projects path [<id>] [--set <dir> [--move|--copy]]  Folder of the library, or of a project (id or its first characters).
                                                     --set: use another folder; --move takes the projects along; --copy
                                                     moves them by copying and checking every file (another disk)
-projects create <course-id> --title <t> [--language fr]
-                                                    Create a course in the library
+projects create <course-id> --title <t> [--language fr] [--template <id>]
+                                                    Create a course in the library, blank or from a module template
+                                                    (elabora templates)
 projects duplicate <id> [--title <t>]               Copy a project under a new id (same course id; the history stays)
 projects rename <id> --title <t>                    Change the title of a project (an undoable edit of course.json)
 projects trash <id>                                 Move a project, history included, to the library's trash
@@ -324,12 +329,13 @@ build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--m
                                                     (elabora-review/1, docs/review-bridge.md) and talks to that page
                                                     only; progress none, navigation free and noindex by default
 test [dir] [--package <zip>] [--profile a,b|all] [--mode iframe,popup…] [--browser chromium,electron,chrome,msedge,playwright,firefox,webkit] [--parallel 4] [--no-a11y] [--json]
-                                                    Run the package in the LMS emulator (profiles × launch modes × browsers)
+                                                    Run the package in the LMS emulator (profiles × launch modes × browsers);
+                                                    4 runs side by side by default, fewer on a loaded machine
 preview [dir] [--port 4807] [--profile <id>]        Live preview (standalone and in the LMS emulator): pages reload after each
                                                     rebuild; free objects show in the in-app browsers of agent apps
 look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|answered] [--step <n>] [--layer <id>]
      [--at <moment> | --sheet] [--scroll <px|N%|block>,…] [--block <id> [--scale 2] [--act <action>]…] [--viewport] [--motion]
-     [--language <code>] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
+     [--language <code>] [--controls] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
                                                     See a screen while designing, in well under a second: a look server kept warm
                                                     for the course (one browser, no build) renders it from the files as they are,
                                                     with the player's header and footer; free objects an edit did not touch keep
@@ -356,7 +362,9 @@ look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|an
                                                     that state until the screen changes. On a dialogue block, choose:<option>
                                                     (one per decision met, retries included, as dialogue play) shows its thread
                                                     at rest after those choices, its end in the window: notes, the next options,
-                                                    or the debrief
+                                                    or the debrief. On a screen with free objects it says each control the
+                                                    page covers (a click on its middle would not reach it); --controls lists
+                                                    every control with its box in the window, instead of looking for them
 screenshot [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial,answered] [--step <n>] [--layer <id>]
            [--at 0,2000,4000|l1,l2:end | --scroll 0,25%,50%,1800] [--motion] [--viewport] [--out shot.png | --out-dir <dir>]
                                                     Render screens to PNG once images and free objects are ready. answered: every
@@ -367,10 +375,13 @@ screenshot [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state init
                                                     objects). One contact sheet. Several shots share one build and one browser;
                                                     --out names one image, so several shots are refused with it (exit code 2):
                                                     --out-dir gets one file each
-fit [dir] [--screen <id>,…] [--reference 1600x900] [--minimum 1280x720] [--fresh] [--json]
+fit [dir] [--screen <id>,…] [--reference 1600x900] [--minimum 1280x720] [--phone 375x812|none] [--language <code> [--allow-missing]] [--fresh] [--json]
                                                     Measure every slide (all steps shown) at the fit sizes: what scrolls, by how
                                                     much, and what moves once its activities are answered. In scroll presentation:
                                                     the length of each page and the contrast of its text, down the whole page.
+                                                    On a phone (375×812 unless sizes are given): the contrast of the text down
+                                                    the page and the player's bars that go onto two lines. --language: the
+                                                    translation (--allow-missing: a draft, missing texts in the source language).
                                                     A screen unchanged since its last measure (its files, the theme, components,
                                                     objects, Elabora, the browser) is not measured again: its fit is reused
                                                     (--fresh measures every screen again)
@@ -527,14 +538,22 @@ convert [dir] <screen> <block> --to <type>[:<presentation>] [--dry-run] [--lang 
 ## Free objects
 
 ```text
-object new [dir] <id> [--title <t>] [--objectives OBJ-1,OBJ-2]
+object new [dir] <id> [--title <t>] [--objectives OBJ-1,OBJ-2 | --decoration]
+                                                    Scaffold a free object for plan objectives, or with --decoration a decoration
+                                                    of the course backdrop (theme.backdrop.object): a 2D canvas that follows the
+                                                    course (screen and section rank, direction), out of the player's bars
+object map [dir] <id> [--tests] [--json]            What to read before changing an object: each code file's sections (« // ── Name ── »)
+                                                    with their lines and functions, the props (type, choices, default), words,
+                                                    objects, state, events and the names of the tests (--tests: each test's steps
+                                                    on one line). Then read the lines needed
 object test [dir] <id> [--update-snapshots] [--browser chromium|electron|chrome|msedge|playwright|firefox|webkit] [--only <test name>] [--force]
                                                     Gates 2–6 of the free-object contract (result kept in object.gates.json);
                                                     an object unchanged since its last run here is not run again (--force runs it)
-object replay [dir] <id> [--test <name>] [--block <id>] [--size 1600x900] [--out sheet.png] [--json]
+object replay [dir] <id> [--test <name>] [--block <id> | --screen <id>] [--size 1600x900] [--out sheet.png] [--json]
                                                     Replay a test of object.tests.json in the built course, on the page that
                                                     places the object, in real time: a contact sheet of its snapshot steps,
-                                                    and its expectations checked
+                                                    and its expectations checked. The backdrop's decoration replays behind the
+                                                    course with its bars, from --screen (default: the first one)
 ```
 
 ## Contract (the plan and its versions)

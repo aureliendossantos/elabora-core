@@ -9,6 +9,7 @@ import { listProjectFiles, type FileInfo } from '../project-files.ts';
 import { copySources, sourcesSize } from '../sources/index.ts';
 import { HASH_CACHE_FILE, validateDir } from '../project-reader.ts';
 import { initProject } from '../scaffold.ts';
+import { createFromTemplate } from '../module-templates.ts';
 import type { CourseBrief } from '../scaffold.ts';
 import { withProjectLock } from '../journal/lock.ts';
 import { LibraryError } from './errors.ts';
@@ -38,9 +39,9 @@ export interface ValidationSummary {
 }
 
 export interface ProjectOrigin {
-  kind: 'example';
-  id: string; // the example's course id
-  version: string | null; // the example's version when the copy was made (course.json "version")
+  kind: 'example' | 'template';
+  id: string; // the example's course id, or the template's id (module-templates.ts)
+  version: string | null; // the example's or template's version when the copy was made (course.json "version")
   at: string; // when the copy was made
 }
 
@@ -226,8 +227,8 @@ function describeProject(dir: string, options: ListOptions): LibraryProject | nu
 function readOrigin(dataDir: string): ProjectOrigin | null {
   try {
     const value = JSON.parse(fs.readFileSync(path.join(dataDir, ORIGIN_FILE), 'utf8')) as Partial<ProjectOrigin>;
-    if (value.kind !== 'example' || typeof value.id !== 'string') return null;
-    return { kind: 'example', id: value.id, version: typeof value.version === 'string' ? value.version : null, at: typeof value.at === 'string' ? value.at : '' };
+    if ((value.kind !== 'example' && value.kind !== 'template') || typeof value.id !== 'string') return null;
+    return { kind: value.kind, id: value.id, version: typeof value.version === 'string' ? value.version : null, at: typeof value.at === 'string' ? value.at : '' };
   } catch {
     return null;
   }
@@ -294,15 +295,23 @@ export interface CreateProjectOptions {
   title: string;
   language?: string; // fr by default, as `elabora init`
   brief?: CourseBrief; // what the author said of it as they created it (D51)
+  // A module template's folder (module-templates.ts, D68): the course starts as a copy of it, in the
+  // language asked when the template has its translation.
+  template?: string;
 }
 
-// Scaffolds a course (initProject) in a staging folder and moves it into the library in one rename.
+// Scaffolds a course (initProject, or a copy of a template) in a staging folder and moves it into the
+// library in one rename.
 export async function createProject(options: CreateProjectOptions): Promise<LibraryProject> {
   const root = ensureLibrary();
   const staging = stagingFolder(root);
   try {
     const dir = path.join(staging, 'project');
-    initProject(dir, { id: options.id, title: options.title, language: options.language, brief: options.brief });
+    if (options.template) {
+      const template = readCourseInfo(options.template);
+      await createFromTemplate(options.template, dir, { id: options.id, title: options.title, language: options.language, brief: options.brief });
+      writeOrigin(dir, { kind: 'template', id: template.courseId ?? path.basename(options.template), version: templateVersion(options.template) });
+    } else initProject(dir, { id: options.id, title: options.title, language: options.language, brief: options.brief });
     const id = newProjectId();
     writeProjectId(dir, id);
     await renameWithRetries(dir, path.join(root, id));
@@ -316,6 +325,11 @@ export async function createProject(options: CreateProjectOptions): Promise<Libr
 export interface DuplicateOptions {
   title?: string; // the copy's title (a journaled change in the copy); the same title by default
   author?: Author;
+}
+
+function templateVersion(dir: string): string | null {
+  const version: unknown = (JSON.parse(fs.readFileSync(path.join(dir, 'course.json'), 'utf8')) as { version?: unknown }).version;
+  return typeof version === 'string' ? version : null;
 }
 
 // A copy of a project's files (clones where the file system allows it) under a new id. The history

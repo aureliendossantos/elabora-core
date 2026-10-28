@@ -1,0 +1,36 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "recap",
+  "title": "What to remember",
+  "covers": [
+    "ITEM-6"
+  ],
+  "blocks": [
+    {
+      "id": "recap-cards",
+      "type": "accordion",
+      "width": "wide",
+      "props": {
+        "presentation": "cards",
+        "prompt": "Before you turn each card, say in your own words what it means.",
+        "items": [
+          {
+            "id": "recap-1",
+            "title": "First key idea",
+            "markdown": "One or two sentences that sum up the first idea, as the learner should keep it."
+          },
+          {
+            "id": "recap-2",
+            "title": "Second key idea",
+            "markdown": "One or two sentences that sum up the second idea, with the **word that matters** in bold."
+          },
+          {
+            "id": "recap-3",
+            "title": "Third key idea",
+            "markdown": "One or two sentences that sum up the third idea, and when to use it."
+          }
+        ]
+      }
+    }
+  ]
+}

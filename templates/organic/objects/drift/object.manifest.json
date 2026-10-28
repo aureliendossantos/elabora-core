@@ -1,0 +1,164 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "drift",
+  "version": "1.0.0",
+  "title": "Drifting blobs",
+  "pedagogicalRole": "decoration",
+  "language": "en",
+  "props": {
+    "type": "object",
+    "properties": {
+      "warm": {
+        "type": "string",
+        "format": "color",
+        "default": "#F4A27E",
+        "title": "Warm tone (first part)",
+        "description": "Hue of the blobs in the first part of the module. The parts in between take the hues between warm, middle and cool.",
+        "x-group": "Palette",
+        "x-control": "color",
+        "x-token": "color.journey-warm"
+      },
+      "middle": {
+        "type": "string",
+        "format": "color",
+        "default": "#A9D08E",
+        "title": "Middle tone",
+        "description": "Hue of the blobs halfway through the module.",
+        "x-group": "Palette",
+        "x-control": "color",
+        "x-token": "color.journey-middle"
+      },
+      "cool": {
+        "type": "string",
+        "format": "color",
+        "default": "#86B6EC",
+        "title": "Cool tone (last part)",
+        "description": "Hue of the blobs in the last part of the module.",
+        "x-group": "Palette",
+        "x-control": "color",
+        "x-token": "color.journey-cool"
+      },
+      "ink": {
+        "type": "string",
+        "format": "color",
+        "default": "#2E2925",
+        "title": "Ink (monochrome variant)",
+        "description": "Colour whose tints draw the blobs on screens with the monochrome variant.",
+        "x-group": "Palette",
+        "x-control": "color",
+        "x-token": "color.primary"
+      },
+      "count": {
+        "type": "integer",
+        "title": "Blobs",
+        "description": "How many blobs make a composition.",
+        "x-group": "Motion",
+        "x-control": "slider",
+        "minimum": 3,
+        "maximum": 7,
+        "default": 5
+      },
+      "drift": {
+        "type": "number",
+        "title": "Drift",
+        "description": "How far the blobs wander while a screen is shown (0: still).",
+        "x-group": "Motion",
+        "x-control": "slider",
+        "minimum": 0,
+        "maximum": 1,
+        "multipleOf": 0.05,
+        "default": 0.5
+      },
+      "transition": {
+        "type": "number",
+        "title": "Migration (s)",
+        "description": "Seconds the blobs take to reach the composition of a new screen.",
+        "x-group": "Motion",
+        "x-control": "slider",
+        "minimum": 0.8,
+        "maximum": 5,
+        "default": 2.4
+      },
+      "seed": {
+        "type": "integer",
+        "title": "Shuffle",
+        "description": "Change it to draw other compositions for every screen.",
+        "x-group": "Motion",
+        "x-control": "slider",
+        "minimum": 0,
+        "maximum": 99,
+        "default": 0
+      }
+    },
+    "required": [
+      "warm",
+      "middle",
+      "cool",
+      "ink",
+      "count",
+      "drift",
+      "transition",
+      "seed"
+    ]
+  },
+  "objects": [],
+  "state": {
+    "type": "object",
+    "properties": {
+      "screen": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "section": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "variant": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "part": {
+        "type": "number"
+      },
+      "hue": {
+        "type": "integer"
+      },
+      "settled": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "screen",
+      "section",
+      "variant",
+      "part",
+      "hue",
+      "settled"
+    ]
+  },
+  "events": [],
+  "budgets": {
+    "drawCallsMax": 30,
+    "trianglesMax": 60000,
+    "bootMsMax": 1500,
+    "webglContexts": 0
+  },
+  "a11y": {
+    "description": "Decoration: soft coloured shapes drifting behind the course.",
+    "motion": {
+      "pausable": true,
+      "respectsReducedMotion": true
+    }
+  },
+  "sandbox": {
+    "network": "none",
+    "permissions": []
+  }
+}

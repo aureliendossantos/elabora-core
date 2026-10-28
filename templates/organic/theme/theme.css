@@ -1,0 +1,223 @@
+/* ── Organic ──────────────────────────────────────────────────────────────────────────────────
+   Soft gradient blobs drift behind every screen (objects/drift, theme.backdrop.object). Under them,
+   CSS layers paint a warm ground, a deep night ground for the night variant, two large glows that
+   hand over from warm to cool as the parts go by, and a light grain over everything. Each part of the
+   module has its own hue (--org-part), from the journey tokens: warm at the start, cool at the end.
+   Only opacity and translate move, slowly; the player stills it all under reduced motion.
+   Change the charter with the tokens (course.json theme.tokens and theme.custom), never here. */
+
+html { background: var(--t-surface); }
+body { background: transparent; }
+
+/* ── The part's colour ───────────────────────────────────────────────────────────────────────
+   One hue per section, by its rank in the course (data-section-index): nothing to change when the
+   sections are renamed or added. */
+#elabora-app {
+  --org-part: var(--t-color-journey-warm);
+  --org-card: var(--t-color-card);
+  --org-line: var(--t-color-line);
+  --org-ease: cubic-bezier(.45, 0, .25, 1);
+  --org-slow: 2.4s;
+}
+/* The first section warm, the fifth and after cool, as the object's blobs. */
+#elabora-app:has(> .t-backdrop[data-section-index="1"]) { --org-part: color-mix(in oklch, var(--t-color-journey-warm) 50%, var(--t-color-journey-middle)); }
+#elabora-app:has(> .t-backdrop[data-section-index="2"]) { --org-part: var(--t-color-journey-middle); }
+#elabora-app:has(> .t-backdrop[data-section-index="3"]) { --org-part: color-mix(in oklch, var(--t-color-journey-middle) 50%, var(--t-color-journey-cool)); }
+#elabora-app:has(> .t-backdrop[data-section-index]:not([data-section-index="0"], [data-section-index="1"], [data-section-index="2"], [data-section-index="3"])) { --org-part: var(--t-color-journey-cool); }
+/* A deep tone of the part's hue, for marks drawn on the ground (3:1 at least on it). */
+#elabora-app { --org-part-deep: color-mix(in oklch, var(--org-part) 22%, var(--t-text)); --org-part-soft: color-mix(in oklch, var(--org-part) 30%, var(--org-card)); }
+
+/* ── Backdrop layers ─────────────────────────────────────────────────────────────────────── */
+.t-backdrop { --org-glow: 1; --org-warm: 1; --org-cool: 0; }
+.t-backdrop[data-section-index="1"] { --org-warm: .75; --org-cool: .12; }
+.t-backdrop[data-section-index="2"] { --org-warm: .4; --org-cool: .4; }
+.t-backdrop[data-section-index="3"] { --org-warm: .12; --org-cool: .75; }
+.t-backdrop[data-section-index]:not([data-section-index="0"], [data-section-index="1"], [data-section-index="2"], [data-section-index="3"]) { --org-warm: 0; --org-cool: 1; }
+.t-backdrop[data-variant="pastel"] { --org-glow: .55; }
+.t-backdrop[data-variant="night"] { --org-glow: .35; }
+.t-backdrop[data-variant="mono"] { --org-glow: 0; }
+
+.t-backdrop-layer[data-layer="ground"] {
+  background:
+    radial-gradient(120% 90% at 50% 45%, var(--t-surface) 40%, color-mix(in oklch, var(--t-surface) 90%, var(--t-text)) 130%);
+}
+.t-backdrop-layer[data-layer="night"] {
+  background: radial-gradient(110% 90% at 50% 40%, color-mix(in oklch, var(--t-color-night) 88%, var(--t-color-journey-cool)), var(--t-color-night) 70%);
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.t-backdrop[data-variant="night"] .t-backdrop-layer[data-layer="night"] { opacity: 1; }
+.t-backdrop-layer:is([data-layer="glow-warm"], [data-layer="glow-cool"]) {
+  inset: -15%;
+  transition: opacity var(--org-slow) var(--org-ease), translate var(--org-slow) var(--org-ease);
+}
+.t-backdrop-layer[data-layer="glow-warm"] {
+  background:
+    radial-gradient(closest-side, color-mix(in srgb, var(--t-color-journey-warm) 70%, transparent), transparent) 8% 6% / 62% 70% no-repeat,
+    radial-gradient(closest-side, color-mix(in srgb, var(--t-color-journey-warm) 45%, transparent), transparent) 92% 96% / 50% 56% no-repeat;
+  opacity: calc(var(--org-warm) * var(--org-glow));
+}
+.t-backdrop-layer[data-layer="glow-cool"] {
+  background:
+    radial-gradient(closest-side, color-mix(in srgb, var(--t-color-journey-cool) 70%, transparent), transparent) 94% 8% / 60% 68% no-repeat,
+    radial-gradient(closest-side, color-mix(in srgb, var(--t-color-journey-cool) 45%, transparent), transparent) 6% 94% / 52% 58% no-repeat;
+  opacity: calc(var(--org-cool) * var(--org-glow));
+}
+/* The glows drift a little with each part, as the blobs do. */
+.t-backdrop[data-section-index="1"] .t-backdrop-layer[data-layer^="glow"] { translate: 2% -1.5%; }
+.t-backdrop[data-section-index="2"] .t-backdrop-layer[data-layer^="glow"] { translate: -2% 2%; }
+.t-backdrop[data-section-index="3"] .t-backdrop-layer[data-layer^="glow"] { translate: 1.5% 2.5%; }
+.t-backdrop[data-section-index]:not([data-section-index="0"], [data-section-index="1"], [data-section-index="2"], [data-section-index="3"]) .t-backdrop-layer[data-layer^="glow"] { translate: -1% -2%; }
+/* Grain over the blobs (above the object's frame), still. */
+.t-backdrop-layer[data-layer="grain"] {
+  z-index: 1;
+  background: url(../assets/images/grain.svg) 0 0 / 256px 256px repeat;
+  opacity: .2;
+  mix-blend-mode: multiply;
+}
+.t-backdrop[data-variant="night"] .t-backdrop-layer[data-layer="grain"] { filter: invert(1); mix-blend-mode: screen; opacity: .16; }
+
+/* ── Night variant: the screen reads light on dark ──────────────────────────────────────────── */
+#elabora-app:has(> .t-backdrop[data-variant="night"]) {
+  --t-text: var(--t-color-night-text);
+  --t-muted: var(--t-color-night-muted);
+  --t-primary: var(--t-color-night-text);
+  --t-on-primary: var(--t-color-night);
+  --t-surface: var(--t-color-night);
+  --org-card: var(--t-color-night-card);
+  --org-line: color-mix(in oklch, var(--t-color-night-text) 18%, transparent);
+  --org-part-deep: color-mix(in oklch, var(--org-part) 70%, var(--t-color-night-text));
+  --t-pl-top-fg: var(--t-color-night-text);
+  --t-pl-bottom-fg: var(--t-color-night-text);
+  --t-pl-accent: var(--t-color-night-text);
+  --t-pl-on-accent: var(--t-color-night);
+  color: var(--t-text);
+}
+
+/* ── The player: bars over the backdrop ──────────────────────────────────────────────────────── */
+.t-bar--top, .t-bar--bottom { background: transparent; box-shadow: none; }
+.t-course-title { font-weight: 750; letter-spacing: .005em; }
+
+/* ── Type ──────────────────────────────────────────────────────────────────────────────────── */
+body { font-weight: 450; }
+.t-screen-title, .t-text :is(h2, h3), .t-block--heading :is(h2, h3, h4) { font-family: var(--t-font-heading); }
+.t-screen-title {
+  font-weight: 800;
+  font-size: clamp(2rem, 1.25rem + 2.1vw, 2.875rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  margin-bottom: clamp(1.25rem, 2.2vw, 2rem);
+}
+.t-block--heading :is(h2, h3) { font-weight: 800; letter-spacing: -0.005em; line-height: 1.2; }
+.t-text { font-size: 1.125rem; line-height: 1.6; }
+.t-text strong { font-weight: 800; }
+.t-s-lead .t-text, .t-text.t-s-lead { font-size: 1.375rem; line-height: 1.5; }
+
+/* Opening (cover, part, end): a large rounded title. No label above it: the player's section
+   and lesson line is hidden; a part opener (screen style part) shows its number in a soft blob. */
+.t-opening .t-screen-title { font-weight: 850; font-size: clamp(2.5rem, 1.4rem + 3.4vw, 4.5rem); line-height: 1.02; letter-spacing: -0.025em; max-width: 14em; }
+.t-opening-eyebrow:has(> .t-opening-section), .t-opening--title .t-opening-copy::after { display: none; }
+.t-s-part .t-opening-eyebrow {
+  display: grid; place-items: center; width: 4.5rem; height: 4rem; margin: 0 0 1.75rem;
+  border-radius: 58% 42% 55% 45% / 52% 60% 40% 48%;
+  background: var(--org-part); color: var(--t-text);
+  font-family: var(--t-font-heading); font-weight: 850; font-size: 1.75rem; letter-spacing: 0; text-transform: none;
+  transition: background-color var(--org-slow) var(--org-ease);
+}
+.t-opening-lead { font-size: clamp(1.1875rem, 1.05rem + .45vw, 1.4375rem); color: var(--t-text); }
+.t-opening-meta { color: var(--t-muted); }
+
+/* In slides the opening sits in the middle of the window, its page right under it. */
+[data-presentation="slides"] .t-layout--opening .t-opening { justify-content: center; }
+[data-presentation="slides"] .t-layout--opening .t-opening-head { flex: 0 0 auto; }
+.t-layout--opening .t-opening-copy { padding-bottom: 1rem; }
+.t-layout--opening .t-opening-body.t-slot { padding-top: 1rem; }
+
+/* Short facts in pills. */
+.t-s-meta .t-text ul { display: flex; flex-wrap: wrap; gap: .625rem; margin: 0; padding: 0; list-style: none; }
+.t-s-meta .t-text li { margin: 0; padding: .5rem 1.125rem; border-radius: 999px; background: color-mix(in srgb, var(--org-card) 78%, transparent); border: 1px solid var(--org-line); font-size: 1rem; font-weight: 650; }
+
+/* Objectives: numbered soft blobs. */
+.t-s-objectives .t-text ol { list-style: none; counter-reset: org-item; display: grid; gap: 1.25rem; margin: 0; padding: 0; }
+.t-s-objectives .t-text li { counter-increment: org-item; position: relative; min-height: 3.25rem; margin: 0; padding: .4rem 0 .4rem 4.5rem; font-size: 1.25rem; line-height: 1.45; }
+.t-s-objectives .t-text li::before {
+  content: counter(org-item);
+  position: absolute; left: 0; top: 50%; translate: 0 -50%;
+  display: grid; place-items: center; width: 3.25rem; height: 3.25rem;
+  border-radius: 48% 52% 44% 56% / 55% 45% 55% 45%;
+  background: var(--org-part); color: var(--t-text);
+  font-family: var(--t-font-heading); font-weight: 850; font-size: 1.25rem;
+}
+.t-s-objectives .t-text li:nth-child(2)::before { border-radius: 56% 44% 52% 48% / 44% 56% 46% 54%; }
+.t-s-objectives .t-text li:nth-child(3)::before { border-radius: 44% 56% 58% 42% / 52% 46% 54% 48%; }
+.t-block--speech { margin-top: 1.5rem; }
+
+/* ── Cards ─────────────────────────────────────────────────────────────────────────────────── */
+.t-s-cards .t-column {
+  padding: 2rem 1.875rem 2.125rem;
+  border-radius: calc(var(--t-radius) + 8px);
+  background: color-mix(in srgb, var(--org-card) 86%, transparent);
+  border: 1px solid var(--org-line);
+}
+.t-s-cards .t-column::before {
+  content: ""; display: block; width: 3rem; height: 2.5rem; margin-bottom: 1.5rem;
+  border-radius: 58% 42% 55% 45% / 52% 60% 40% 48%;
+  background: var(--org-part);
+}
+.t-s-cards .t-column:nth-child(2)::before { border-radius: 42% 58% 46% 54% / 60% 44% 56% 40%; background: color-mix(in oklch, var(--org-part) 70%, var(--org-card)); }
+.t-s-cards .t-column:nth-child(3)::before { border-radius: 50% 50% 38% 62% / 46% 58% 42% 54%; background: color-mix(in oklch, var(--org-part) 45%, var(--org-card)); }
+.t-s-cards .t-block--heading h2 { font-size: 1.5rem; margin: 0 0 .75rem; }
+
+/* Comparison: the habit to leave on a plain card, the one to try on the part's colour. */
+.t-s-compare .t-column { padding: 2rem 2rem 2.25rem; border-radius: calc(var(--t-radius) + 8px); border: 1px solid var(--org-line); }
+.t-s-compare .t-column:first-child { background: color-mix(in srgb, var(--org-card) 70%, transparent); }
+.t-s-compare .t-column:first-child :is(h2, li) { color: var(--t-muted); }
+.t-s-compare .t-column:nth-child(2) { background: var(--org-part-soft); border-color: transparent; }
+.t-s-compare .t-block--heading h2 { font-size: 1.625rem; margin: 0 0 1rem; }
+.t-s-compare .t-text ul { margin: 0; padding-left: 1.25rem; display: grid; gap: .625rem; }
+.t-s-compare .t-text li::marker { color: var(--org-part-deep); }
+
+.t-column[data-empty] { display: none; }
+
+/* Screens whose blocks take the wide column: the title lines up with them. */
+.t-screen:not(.t-layout):is(:has(> .t-blocks > .t-w-wide), :has(> .t-blocks > .t-block > .t-image--beside)) > .t-screen-title { max-width: min(var(--t-wide-width), 100%); }
+
+/* ── Notes, prompts, asides: a soft tinted card or a small blob, never a coloured rule on the side ── */
+.t-callout, .t-callout:is(.t-callout--important, .t-callout--warning, .t-callout--tip), .t-reflection-model {
+  border-left: 0;
+  padding: 1.125rem 1.375rem;
+  border-radius: calc(var(--t-radius) + 2px);
+  background: var(--org-part-soft);
+}
+.t-callout--warning { background: color-mix(in oklch, var(--t-error) 12%, var(--org-card)); }
+.t-panels-prompt, .t-aside { border-inline-start: 0; padding-inline-start: 1.75rem; position: relative; }
+.t-panels-prompt::before, .t-aside::before {
+  content: ""; position: absolute; inset-inline-start: 0; top: .3em; width: 1rem; height: .875rem;
+  border-radius: 58% 42% 55% 45% / 52% 60% 40% 48%; background: var(--org-part);
+}
+.t-panels-prompt { font-style: normal; color: var(--t-text); }
+/* Flip cards in the part's colour, the back on a card. */
+.t-panels-front { background: var(--org-part-soft); box-shadow: none; }
+.t-panels-back { background: var(--org-card); box-shadow: inset 0 0 0 1px var(--org-line); }
+.t-panels-front .t-panels-title { font-family: var(--t-font-heading); font-weight: 800; }
+
+/* ── Statements and quotes ───────────────────────────────────────────────────────────────── */
+.t-statement-text { font-family: var(--t-font-heading); font-weight: 800; font-size: clamp(2rem, 1.2rem + 2.6vw, 3.5rem); line-height: 1.14; letter-spacing: -0.02em; text-wrap: balance; }
+.t-statement--quote .t-statement-text { font-weight: 700; font-size: clamp(1.75rem, 1.1rem + 2vw, 2.75rem); line-height: 1.22; }
+.t-statement-mark { color: var(--org-part-deep); }
+.t-statement-author { font-weight: 800; }
+.t-statement-role { color: var(--t-muted); }
+
+/* ── Activities ────────────────────────────────────────────────────────────────────────────── */
+.t-option { border-radius: calc(var(--t-radius) - 4px); background: color-mix(in srgb, var(--org-card) 88%, transparent); }
+
+/* ── Phones ────────────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 760px) {
+  .t-screen-title { margin-bottom: 1.25rem; }
+  .t-s-objectives .t-text li { font-size: 1.125rem; padding-left: 3.75rem; min-height: 2.75rem; }
+  .t-s-objectives .t-text li::before { width: 2.75rem; height: 2.75rem; }
+}
+
+/* An illustration beside its text stays within the slide on small desktop windows. */
+[data-presentation="slides"] .t-image--beside .t-figure img { max-height: min(28rem, 52vh); object-fit: contain; }

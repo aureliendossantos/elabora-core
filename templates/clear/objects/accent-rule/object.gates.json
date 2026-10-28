@@ -1,0 +1,84 @@
+{
+  "object": "accent-rule",
+  "version": "1.0.0",
+  "elabora": "0.1.0",
+  "at": "2026-10-28T20:14:19.677Z",
+  "ok": true,
+  "browser": {
+    "engine": "electron",
+    "version": "152.0.7977.167"
+  },
+  "gates": {
+    "smoke": "passed",
+    "behaviour": "passed",
+    "budget": "passed",
+    "visual": "passed",
+    "accessibility": "passed"
+  },
+  "perf": {
+    "drawCalls": null,
+    "triangles": null,
+    "textures": null,
+    "geometries": null,
+    "maxTextureSize": null,
+    "webglContexts": 0,
+    "contextLost": false,
+    "bootMs": 41,
+    "bootSamples": [
+      49,
+      44,
+      40,
+      38,
+      63,
+      41,
+      41,
+      39,
+      38,
+      38,
+      41
+    ]
+  },
+  "tests": [
+    {
+      "name": "The cover: the rule under the first part",
+      "ok": true
+    },
+    {
+      "name": "The rail runs along the player's top bar",
+      "ok": true
+    },
+    {
+      "name": "The next part: the rule slides to it",
+      "ok": true
+    },
+    {
+      "name": "A jump of several parts fades across instead of sliding",
+      "ok": true
+    },
+    {
+      "name": "A screen of the same part: nothing moves",
+      "ok": true
+    },
+    {
+      "name": "A screen outside any section keeps the rule where it was",
+      "ok": true
+    },
+    {
+      "name": "The dark variant: light rail, lighter accent",
+      "ok": true
+    },
+    {
+      "name": "Reduced motion: the rule is at its place at once",
+      "ok": true
+    },
+    {
+      "name": "Phone: the rail keeps a margin",
+      "ok": true
+    },
+    {
+      "name": "Settings apply without remounting",
+      "ok": true
+    }
+  ],
+  "fingerprint": "sha256:01c37de603926f036b502b90c2f5a15973664b72b9573d53dfc0088d12fc79c7"
+}

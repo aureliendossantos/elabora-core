@@ -16,10 +16,22 @@ export const getObject = defineTool({
   }
 });
 
+export const objectMapTool = defineTool({
+  name: 'elabora_object_map',
+  readOnly: true,
+  description: 'What to read before changing a free object, in a few thousand characters: each code file\'s sections (« // ── Name ── » comments) with their lines and the functions in them, the props (type, choices, default), the words, objects, state, events and the names of the tests. Then read only the lines a change needs.',
+  inputSchema: objectSchema({ id: SLUG, tests: { type: 'boolean', description: 'Each test\'s steps in short, one line each.' } }, ['id']),
+  async handler(args, { root }) {
+    const { objectMap } = await import('@elabora/node/objects/map');
+    const map = objectMap(root, args.id);
+    return 'error' in map ? errorResult({ error: map.error }) : textResult(args.tests ? map : { ...map, tests: map.tests.map(({ outline: _outline, ...test }) => test) });
+  }
+});
+
 export const createObject = defineTool({
   name: 'elabora_create_object',
-  description: 'Scaffold a free object (objects/<id>/: manifest, code, tests, notes) serving given plan objectives. Only when no native block can do the job.',
-  inputSchema: objectSchema({ id: SLUG, title: { type: 'string' }, objectives: { type: 'array', items: PLAN_ID, minItems: 1 }, items: { type: 'array', items: PLAN_ID } }, ['id', 'title', 'objectives']),
+  description: 'Scaffold a free object (objects/<id>/: manifest, code, tests, notes) serving given plan objectives. Only when no native block can do the job. decoration: a decoration of the course backdrop instead (theme.backdrop.object; no objectives): a 2D canvas that follows the course (ctx.context with the screen\'s rank, its section\'s, the direction), keeps out of the player\'s bars and lands at once when frames are still.',
+  inputSchema: objectSchema({ id: SLUG, title: { type: 'string' }, objectives: { type: 'array', items: PLAN_ID, minItems: 1 }, items: { type: 'array', items: PLAN_ID }, decoration: { type: 'boolean' } }, ['id', 'title']),
   handler: (args, { root, author }) => editResult(edit.createObject(root, args, { author }))
 });
 
@@ -33,11 +45,11 @@ export const writeObjectFile = defineTool({
 export const replayObject = defineTool({
   name: 'elabora_replay_object',
   readOnly: true,
-  description: 'Replay one behaviour test of a free object (object.tests.json) inside the built course: on the page that places it, scrolled into view, in real time, with the course around it. Returns a contact sheet of its snapshot steps and the end, and the expectations that failed. To see how the object looks and behaves where learners meet it; the gates stay elabora_test_object.',
-  inputSchema: objectSchema({ id: SLUG, test: { type: 'string', description: 'A test whose name contains this text (default: the first one).' }, block: { ...SLUG, description: 'The free-object block to use when several place the object.' }, width: { type: 'integer', minimum: 320, maximum: 2560, default: 1600 }, height: { type: 'integer', minimum: 400, maximum: 2000, default: 900 } }, ['id']),
+  description: 'Replay one behaviour test of a free object (object.tests.json) inside the built course: on the page that places it, scrolled into view, in real time, with the course around it. Returns a contact sheet of its snapshot steps and the end, and the expectations that failed. To see how the object looks and behaves where learners meet it; the gates stay elabora_test_object. The backdrop\'s decoration replays behind the course with its bars, from screen (default: the first one); a set-context step goes to the screen it names.',
+  inputSchema: objectSchema({ id: SLUG, test: { type: 'string', description: 'A test whose name contains this text (default: the first one).' }, block: { ...SLUG, description: 'The free-object block to use when several place the object.' }, screen: { ...SLUG, description: 'For the backdrop\'s decoration: the screen it starts behind.' }, width: { type: 'integer', minimum: 320, maximum: 2560, default: 1600 }, height: { type: 'integer', minimum: 400, maximum: 2000, default: 900 } }, ['id']),
   async handler(args, { root }) {
     const { replayObject: replay } = await import('@elabora/node/replay');
-    const result = await replay(root, args.id, { test: args.test, block: args.block, width: args.width || 1600, height: args.height || 900 });
+    const result = await replay(root, args.id, { test: args.test, block: args.block, screen: args.screen, width: args.width || 1600, height: args.height || 900 });
     if (result.error !== undefined) return errorResult({ error: result.error, diagnostics: result.diagnostics?.filter((d) => d.severity === 'error') });
     const note = `"${result.test}" replayed on ${result.screen} (${result.block}), ${result.frames.length} frame(s): ${result.failures.length ? `failed expectations: ${result.failures.join(' | ')}` : 'every expectation held'}.${result.skipped.length ? ` Skipped: ${result.skipped.join(' | ')}.` : ''}${result.consoleErrors.length ? ` Console errors: ${result.consoleErrors.join(' | ')}` : ''}`;
     return imageResult(result.png, note);

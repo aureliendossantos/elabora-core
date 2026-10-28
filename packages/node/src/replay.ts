@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Diagnostic, ObjectTests } from '@elabora/format';
-import { screenBlocks } from '@elabora/core/project/load';
+import { screenBlocks, screenOrder } from '@elabora/core/project/load';
 import { partialDiff } from './objects/test.ts';
 import { build } from './build.ts';
 import { startServer } from './emulator/server.ts';
@@ -17,9 +17,12 @@ import { contactSheet } from './capture.ts';
 // course, on the page that places it, scrolled into view, in real time, with the course around it.
 // A snapshot step captures the window; expectations are checked as they come (not a gate: the
 // object test is). set-view scrolls the page to the frame's view; set-safe-area and set-context
-// do not apply to a page.
+// do not apply to a page. The course's backdrop decoration (theme.backdrop.object) replays behind the
+// course, with its bars, from the first screen (or screen): set-context goes to the screen it names
+// (else the object hears the context), the safe area is the bars'.
 export interface ReplayOptions {
   block?: string; // the block placing the object (default: the first one, in course order)
+  screen?: string; // the backdrop's: the screen it starts behind (default: the first one)
   test?: string; // a test whose name contains this text (default: the first test)
   width?: number;
   height?: number;
@@ -34,18 +37,25 @@ export type ReplayResult =
   | { ok: boolean; object: string; block: string; screen: string; test: string; frames: ReplayFrame[]; failures: string[]; skipped: string[]; png: Buffer; consoleErrors: string[]; diagnostics?: undefined; error?: undefined }
   | { ok: false; error: string; diagnostics?: Diagnostic[] };
 
-export async function replayObject(dir: string, objectId: string, { block: blockId, test: testName, width = 1600, height = 900 }: ReplayOptions = {}): Promise<ReplayResult> {
+export async function replayObject(dir: string, objectId: string, { block: blockId, screen: startScreen, test: testName, width = 1600, height = 900 }: ReplayOptions = {}): Promise<ReplayResult> {
   const project = loadProjectFromDir(dir);
-  // The block that places the object, and its screen.
+  // The block that places the object, and its screen; or the backdrop, behind a screen.
   let placed: { block: string; screen: string } | null = null;
-  for (const [screenId, entry] of project.screens) {
+  const backdrop = project.course?.theme?.backdrop?.object?.id === objectId;
+  if (backdrop) {
+    const order = screenOrder(project).map((entry) => entry.id);
+    if (startScreen && !order.includes(startScreen)) return { ok: false, error: `Unknown screen "${startScreen}". Screens: ${order.join(', ')}` };
+    if (!order.length) return { ok: false, error: 'The course has no screen.' };
+    placed = { block: 'backdrop', screen: startScreen || order[0] };
+  }
+  for (const [screenId, entry] of backdrop ? [] : project.screens) {
     for (const { block } of screenBlocks(entry.data, entry.file)) {
       if (!block || block.type !== 'free-object' || fieldOf(block.props, 'object') !== objectId) continue;
       if (!blockId || block.id === blockId) { placed = { block: block.id, screen: screenId }; break; }
     }
     if (placed) break;
   }
-  if (!placed) return { ok: false, error: blockId ? `No free-object block "${blockId}" places "${objectId}".` : `No screen places the free object "${objectId}".` };
+  if (!placed) return { ok: false, error: blockId ? `No free-object block "${blockId}" places "${objectId}".` : `No screen places the free object "${objectId}", and it is not the backdrop's (theme.backdrop.object).` };
   const testsFile = path.join(project.root, 'objects', objectId, 'object.tests.json');
   if (!fs.existsSync(testsFile)) return { ok: false, error: `objects/${objectId}/object.tests.json not found.` };
   const tests: ObjectTests = JSON.parse(fs.readFileSync(testsFile, 'utf8'));
@@ -84,9 +94,9 @@ export async function replayObject(dir: string, objectId: string, { block: block
       scrollTo(0, Math.max(0, at));
       requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
     }), { id: block, view });
-    type HostMethod = 'testClick' | 'testKey' | 'updateProps' | 'carryOn' | 'setState' | 'getState';
-    const host = (method: HostMethod, argument?: unknown) => page.evaluate(async ({ id, method, argument }) => {
-      const found = window.__elabora.objectHost(id);
+    type HostMethod = 'testClick' | 'testKey' | 'updateProps' | 'carryOn' | 'setState' | 'getState' | 'setContext';
+    const host = (method: HostMethod, argument?: unknown) => page.evaluate(async ({ id, method, argument, backdrop }) => {
+      const found = backdrop ? window.__elabora.backdropHost() : window.__elabora.objectHost(id);
       if (!found) throw new Error(`no object host for "${id}"`);
       switch (method) {
         case 'testClick': return found.testClick(argument as { object?: string; at?: [number, number] });
@@ -100,10 +110,18 @@ export async function replayObject(dir: string, objectId: string, { block: block
         }
         case 'setState': return found.setState(argument);
         case 'getState': return found.getState();
+        case 'setContext': return found.setContext(argument as Record<string, unknown>);
       }
-    }, { id: block, method, argument });
+    }, { id: block, method, argument, backdrop });
     await scrollToView(test.view || null);
     if (test.props) await host('updateProps', test.props);
+    // A backdrop's test starts where its context says: that screen when the course has it, else the
+    // context alone.
+    if (backdrop && test.context) {
+      const screen = test.context.screen;
+      if (screen && project.screens.has(screen)) await page.evaluate((id) => { window.__elabora.go(id); window.__elabora.revealAll(); }, screen);
+      else await host('setContext', test.context);
+    }
     await page.waitForTimeout(300);
     let cursor = 0;
     for (const [index, step] of test.steps.entries()) {
@@ -116,7 +134,12 @@ export async function replayObject(dir: string, objectId: string, { block: block
         else if (step.action === 'set-props') await host('updateProps', step.props || {});
         else if (step.action === 'set-state') await host('setState', step.state || {});
         else if (step.action === 'set-view') { await scrollToView(step.view || null); await page.waitForTimeout(250); }
-        else if (step.action === 'set-safe-area' || step.action === 'set-context') skipped.push(`${where}: does not apply to a page`);
+        else if (backdrop && step.action === 'set-context') {
+          // The screen it names, shown (the course gives the context); else the context alone.
+          const screen = step.context?.screen;
+          if (screen && project.screens.has(screen)) { await page.evaluate((id) => { window.__elabora.go(id); window.__elabora.revealAll(); }, screen); await page.evaluate(() => window.__elabora.ready()); }
+          else await host('setContext', step.context);
+        } else if (step.action === 'set-safe-area' || step.action === 'set-context') skipped.push(`${where}: ${backdrop ? 'the safe area of a backdrop is the bars\'' : 'does not apply to a page'}`);
         else if (step.action === 'expect-state') {
           // Real time: the object may be a little behind the frames the test counted (software
           // WebGL draws slower). An expectation waits for it a moment before it fails.

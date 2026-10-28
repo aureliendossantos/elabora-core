@@ -1,0 +1,239 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "tableau",
+  "version": "1.0.0",
+  "title": "Bauhaus tableau",
+  "pedagogicalRole": "decoration",
+  "language": "en",
+  "props": {
+    "type": "object",
+    "properties": {
+      "colour1": {
+        "type": "string",
+        "format": "color",
+        "default": "#E35D3E",
+        "title": "Shape colour 1",
+        "description": "First colour of the shapes (the large circles).",
+        "x-group": "Soft primaries",
+        "x-control": "color",
+        "x-token": "color.shape-1"
+      },
+      "colour2": {
+        "type": "string",
+        "format": "color",
+        "default": "#F3B83A",
+        "title": "Shape colour 2",
+        "description": "Second colour of the shapes (quarters and half discs).",
+        "x-group": "Soft primaries",
+        "x-control": "color",
+        "x-token": "color.shape-2"
+      },
+      "colour3": {
+        "type": "string",
+        "format": "color",
+        "default": "#3A67B1",
+        "title": "Shape colour 3",
+        "description": "Third colour of the shapes, kept to the edges: text never sits on it.",
+        "x-group": "Soft primaries",
+        "x-control": "color",
+        "x-token": "color.shape-3"
+      },
+      "colour4": {
+        "type": "string",
+        "format": "color",
+        "default": "#1D1D27",
+        "title": "Shape colour 4",
+        "description": "Fourth colour, for the bars and the small marks.",
+        "x-group": "Soft primaries",
+        "x-control": "color",
+        "x-token": "color.shape-4"
+      },
+      "earth1": {
+        "type": "string",
+        "format": "color",
+        "default": "#C0582F",
+        "title": "Earth 1",
+        "description": "First colour on screens with the earth variant.",
+        "x-group": "Earth variant",
+        "x-control": "color",
+        "x-token": "color.earth-1"
+      },
+      "earth2": {
+        "type": "string",
+        "format": "color",
+        "default": "#D59A2B",
+        "title": "Earth 2",
+        "description": "Second colour on screens with the earth variant.",
+        "x-group": "Earth variant",
+        "x-control": "color",
+        "x-token": "color.earth-2"
+      },
+      "earth3": {
+        "type": "string",
+        "format": "color",
+        "default": "#6F7A3A",
+        "title": "Earth 3",
+        "description": "Third colour on screens with the earth variant.",
+        "x-group": "Earth variant",
+        "x-control": "color",
+        "x-token": "color.earth-3"
+      },
+      "earth4": {
+        "type": "string",
+        "format": "color",
+        "default": "#5A3B2A",
+        "title": "Earth 4",
+        "description": "Fourth colour on screens with the earth variant.",
+        "x-group": "Earth variant",
+        "x-control": "color",
+        "x-token": "color.earth-4"
+      },
+      "mono1": {
+        "type": "string",
+        "format": "color",
+        "default": "#8D909C",
+        "title": "Mono 1",
+        "description": "First tint on screens with the monochrome variant.",
+        "x-group": "Monochrome variant",
+        "x-control": "color",
+        "x-token": "color.mono-1"
+      },
+      "mono2": {
+        "type": "string",
+        "format": "color",
+        "default": "#C9CACF",
+        "title": "Mono 2",
+        "description": "Second tint on screens with the monochrome variant.",
+        "x-group": "Monochrome variant",
+        "x-control": "color",
+        "x-token": "color.mono-2"
+      },
+      "mono3": {
+        "type": "string",
+        "format": "color",
+        "default": "#B3B5BD",
+        "title": "Mono 3",
+        "description": "Third tint on screens with the monochrome variant.",
+        "x-group": "Monochrome variant",
+        "x-control": "color",
+        "x-token": "color.mono-3"
+      },
+      "mono4": {
+        "type": "string",
+        "format": "color",
+        "default": "#1D1D27",
+        "title": "Mono 4",
+        "description": "Fourth tint on screens with the monochrome variant.",
+        "x-group": "Monochrome variant",
+        "x-control": "color",
+        "x-token": "color.mono-4"
+      },
+      "column": {
+        "type": "number",
+        "minimum": 30,
+        "maximum": 120,
+        "default": 65,
+        "title": "Content column (rem)",
+        "description": "Width of the module's content column, in rem: keep it equal to presentation.wideWidth ÷ 16. On the parts' screens the shapes keep clear of it.",
+        "x-group": "Composition",
+        "x-control": "number"
+      },
+      "transition": {
+        "type": "number",
+        "title": "Rearrangement (s)",
+        "description": "Seconds the shapes take to compose the tableau of a new screen.",
+        "x-group": "Motion",
+        "x-control": "slider",
+        "minimum": 0.6,
+        "maximum": 3,
+        "default": 1.4
+      },
+      "shuffle": {
+        "type": "integer",
+        "title": "Shuffle",
+        "description": "Change it to give each screen another shape that turns, glides or changes size.",
+        "x-group": "Composition",
+        "x-control": "slider",
+        "minimum": 0,
+        "maximum": 99,
+        "default": 0
+      }
+    },
+    "required": [
+      "colour1",
+      "colour2",
+      "colour3",
+      "colour4",
+      "earth1",
+      "earth2",
+      "earth3",
+      "earth4",
+      "mono1",
+      "mono2",
+      "mono3",
+      "mono4",
+      "transition",
+      "shuffle"
+    ]
+  },
+  "objects": [],
+  "state": {
+    "type": "object",
+    "properties": {
+      "screen": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "section": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "variant": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "tableau": {
+        "type": "integer"
+      },
+      "moved": {
+        "type": "string"
+      },
+      "settled": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "screen",
+      "section",
+      "variant",
+      "tableau",
+      "moved",
+      "settled"
+    ]
+  },
+  "events": [],
+  "budgets": {
+    "drawCallsMax": 30,
+    "trianglesMax": 60000,
+    "bootMsMax": 1500,
+    "webglContexts": 0
+  },
+  "a11y": {
+    "description": "Decoration: flat circles, quarter circles and bars that rearrange behind the course.",
+    "motion": {
+      "pausable": true,
+      "respectsReducedMotion": true
+    }
+  },
+  "sandbox": {
+    "network": "none",
+    "permissions": []
+  }
+}

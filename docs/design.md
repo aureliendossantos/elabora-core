@@ -43,14 +43,18 @@ A decorative background behind every screen, declared in the theme:
 "backdrop": {
   "layers": ["nebula", "far", "near"],
   "object": { "id": "starfield", "props": { "density": 0.4 } },
-  "variants": { "dim": "Darker sky behind dense screens" }
+  "variants": { "dim": "Darker sky behind dense screens", "day": "Light paper" },
+  "default": "day"
 }
 ```
 
 - **Decoration only.** It carries no information, takes no focus and is hidden from screen readers. A scene the learner uses or learns from is a free-object block, with a role, objectives and a text version.
-- **Layers**: empty elements behind the course (`.t-backdrop-layer[data-layer="far"]`), painted and animated by the stylesheet (animate `transform` and `opacity`). The backdrop element carries where the learner is, `.t-backdrop[data-screen][data-section][data-step][data-variant]`, so the stylesheet can move it with the course (a nebula that drifts at each section).
-- **Object**: a free object with `pedagogicalRole: "decoration"`, mounted once for the whole session behind the course. It receives the same context (`ctx.context`, `host.onContext`); no events, no state, no controls; smaller budgets (30 draw calls, 60,000 triangles). Under reduced motion it renders still frames; on a machine below 24 frames per second it freezes.
-- **Screens**: `"backdrop": "dim"` picks a declared variant, `"backdrop": "none"` hides it (the object stops).
+- **Layers**: empty elements behind the course (`.t-backdrop-layer[data-layer="far"]`, at most six), painted and animated by the stylesheet (animate `transform` and `opacity`). The backdrop element carries where the learner is, `.t-backdrop[data-screen][data-section][data-step][data-variant]`, and where that stands in the course: `data-screen-index` (from 0), `data-section-index` (from 0), `data-section-count`, `data-direction` (`forward` or `back`, the way the learner came). A stylesheet can thus follow the course without naming the author's ids: `.t-backdrop[data-section-index="1"]` is the second part, whatever it is called.
+- **Object**: a free object with `pedagogicalRole: "decoration"`, mounted once for the whole session behind the course; `elabora object new . <id> --decoration` writes one to start from (a 2D canvas that follows the course). It receives the same context (`ctx.context`, `host.onContext`: screen, section, step, variant, `screenIndex`, `screenCount`, `sectionIndex`, `sectionCount`, `direction`), and the room the player's bars cover as its safe area (`ctx.safeArea`, `host.onSafeArea`: the top bar's height at the top, the bottom bar's at the bottom): draw what must be seen out of it. No events, no state, no controls; smaller budgets (30 draw calls, 60,000 triangles). Under reduced motion it renders still frames; on a machine below 24 frames per second it freezes (`host.still`, `host.onStill`; free-object contract, §4c).
+- **Order**: back to front, the layers (`z-index: 0`), then the object (`z-index: 1`), then the course. A layer that goes over the object (a paper grain) takes `z-index: 2`.
+- **Screens**: `"backdrop": "dim"` picks a declared variant, `"backdrop": "none"` hides it (the object stops). `default` is the variant of the screens that pick none: a module light throughout says it once.
+- **Text and bars over a variant**: `#elabora-app[data-backdrop]` has the variant shown, so the theme gives the text and the bars their colours for it: `#elabora-app[data-backdrop="night"] { --t-text: #f3efe6; --t-muted: #c9c2b4; }`. `E_THEME_CONTRAST` checks the tokens only: `elabora fit` measures what the variant shows.
+- **Seeing it**: `elabora look` shows each screen with its own backdrop and says it (`backdrop variant …, object … ready`; `--json`: `backdrop`). `elabora object replay . <id>` replays a test of the decoration behind the course, with its bars (`--screen` to start elsewhere; a `set-context` step goes to the screen it names). Under reduced motion (captures, `fit`, `test`) the backdrop and the bars change at once, never halfway.
 - **Readability**: text over a backdrop must keep its contrast. `elabora fit` measures it against the pixels behind each line (`W_TEXT_CONTRAST_MEASURED`); fix it with a panel behind the text, a dimmer variant on that screen, or a lighter text colour.
 - Keep the root background in the stylesheet (`html { background: … }`) and `body` transparent; a dark `color-scheme` on the root makes browsers paint an opaque box behind frames, so scope it to the panels that need it.
 

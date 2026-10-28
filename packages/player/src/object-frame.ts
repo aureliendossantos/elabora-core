@@ -59,6 +59,7 @@ function isObjectApi(value: unknown): value is ObjectApi {
   // Still under reduced motion, or when the machine is too slow (below 24 frames per second).
   let decorative = false;
   let still = false;
+  const stillCallbacks = new Set<() => void>();
   let awakeUntil = 0;
   let rateProbe: { frames: number; milliseconds: number } | null = null;
   let safeArea: SafeArea = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -121,7 +122,14 @@ function isObjectApi(value: unknown): value is ObjectApi {
     if (rateProbe.frames < 120) return;
     const framesPerSecond = 1000 / (rateProbe.milliseconds / 90);
     rateProbe = null;
-    if (framesPerSecond < 24) { still = true; awakeUntil = 0; send({ method: 'object/log', params: { level: 'info', message: `frozen: ${Math.round(framesPerSecond)} frames per second` } }); }
+    if (framesPerSecond < 24) {
+      still = true;
+      awakeUntil = 0;
+      send({ method: 'object/log', params: { level: 'info', message: `frozen: ${Math.round(framesPerSecond)} frames per second` } });
+      for (const callback of [...stillCallbacks]) { try { callback(); } catch (e) { reportError(`onStill: ${(e as Error).message}`); } }
+      // Its movement lands in the frames that follow.
+      wake();
+    }
   }
   function wake(milliseconds = 1000) {
     awakeUntil = performance.now() + milliseconds;
@@ -157,6 +165,9 @@ function isObjectApi(value: unknown): value is ObjectApi {
     onContext(callback) { contextCallbacks.add(callback); return () => contextCallbacks.delete(callback); },
     // Where the frame is in the window ({ visible, ratio, progress, entry, exit }), when it changes.
     onView(callback) { viewCallbacks.add(callback); return () => viewCallbacks.delete(callback); },
+    // Still frames (a decoration under reduced motion or frozen on a slow machine), and when it freezes.
+    get still() { return still; },
+    onStill(callback) { stillCallbacks.add(callback); return () => stillCallbacks.delete(callback); },
     // Height wanted by the object when its block uses aspectRatio "auto" (ignored otherwise).
     requestHeight(px) { if (Number.isFinite(px) && px > 0) send({ method: 'object/resize', params: { height: Math.round(px) } }); },
     log(...values) { send({ method: 'object/log', params: { level: 'info', message: values.map(String).join(' ') } }); }
@@ -213,6 +224,8 @@ function isObjectApi(value: unknown): value is ObjectApi {
       if (!root) throw new Error('frame.html has no #root element');
       safeArea = { ...safeArea, ...(params.safeArea || {}) };
       decorative = !!params.decorative;
+      // Still from the start under reduced motion (host.still is true in mount).
+      if (decorative && !testMode && params.reducedMotion) still = true;
       context = params.context || null;
       if (params.view) view = { ...view, ...params.view };
       // Words of the object (manifest strings, as reworded or translated by the block; replaced in
@@ -234,9 +247,7 @@ function isObjectApi(value: unknown): value is ObjectApi {
       });
       if (!isObjectApi(mounted)) throw new Error('mount() must return { update, getState, setState, dispose }');
       api = mounted;
-      if (decorative && !testMode) {
-        if (params.reducedMotion) still = true; else rateProbe = { frames: 0, milliseconds: 0 };
-      }
+      if (decorative && !testMode && !still) rateProbe = { frames: 0, milliseconds: 0 };
       if (still) wake(1500); else startLoop();
       if (testMode) runFrame(0);
       return { manifestVersion: '0.1' };

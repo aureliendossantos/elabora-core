@@ -1,6 +1,6 @@
 # Agent tools
 
-Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 105 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
+Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 106 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
 
 ## Reading
 
@@ -19,13 +19,14 @@ How to work on a course in this host: MCP/CLI/file choices, complete authoring, 
 
 ### `elabora_docs`
 
-Elabora's documentation as Markdown. No page: the map (each page's id and what it covers). page: a page by its id (design, components, free-object-contract, spec, delivery-scorm12, architecture/media…) or a decision by its number (D29); the bundled skills too, for a host that does not show MCP resources (page skills lists them); a long page comes as its opening and its sections, then ask for one with section (its words or its #anchor), or for all of it with full. Read the page a tool, a diagnostic's fix or the course rules name before designing, extending or explaining a behaviour. The CLI equivalent is elabora docs [page] [--section &lt;s&gt;] (no course needed).
+Elabora's documentation as Markdown. No page: the map (each page's id and what it covers). page: a page by its id (design, components, free-object-contract, spec, delivery-scorm12, architecture/media…) or a decision by its number (D29); the bundled skills too, for a host that does not show MCP resources (page skills lists them); a long page comes as its opening and its sections, then ask for one with section (its words or its #anchor), or for all of it with full. Read the page a tool, a diagnostic's fix or the course rules name before designing, extending or explaining a behaviour. search: words to find (« what persists from one screen to the next », « backdrop safe area »): the sections that hold them, to read next. The CLI equivalent is elabora docs [page] [--section &lt;s&gt;] [--search &lt;words&gt;] (no course needed).
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `page` | string |  | A page id from the map (design, spec, architecture/media), a decision (D29) or a skill (skills/&lt;name&gt;, skills/&lt;name&gt;/&lt;reference&gt;). |
 | `section` | string |  | One section of the page: its heading's words (Steps) or its anchor (#steps). |
 | `full` | boolean |  | The whole page even when it is long. |
+| `search` | string |  | Words to find in every page, decision and skill: the sections that hold them all, with the page and anchor to read. |
 
 ### `elabora_sources`
 
@@ -131,6 +132,15 @@ A free object: manifest, tests, notes and code.
 |---|---|---|---|
 | `id` | string | yes |  |
 
+### `elabora_object_map`
+
+What to read before changing a free object, in a few thousand characters: each code file's sections (« // ── Name ── » comments) with their lines and the functions in them, the props (type, choices, default), the words, objects, state, events and the names of the tests. Then read only the lines a change needs.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | yes |  |
+| `tests` | boolean |  | Each test's steps in short, one line each. |
+
 ### `elabora_list_profiles`
 
 Executable LMS profiles (SuccessFactors, Workday, Cornerstone, Docebo, Moodle, Totara, 360Learning, Rise Up, SCORM Cloud, Teach Up, unknown) with their documented constraints.
@@ -160,6 +170,7 @@ See a screen while designing, in well under a second: a look server kept warm fo
 | `language` | string |  | A translation of the course (default: its language). |
 | `viewport` | boolean |  | Only the window (default: the whole page). |
 | `motion` | boolean |  | Animations on (default: reduced motion, transitions settled). |
+| `controls` | boolean |  | List every control of the screen's free objects with its box in the window (those covered by the page, a click on their middle not reaching them, are always said). |
 | `scroll` | string[] |  | The window scrolled to a position, animations on: px ("1800"), a percentage of the page ("100%"), or a block's id (the block in view). Several positions (or sheet on a screen without a timeline, default 0/25/50/75/100%): a contact sheet down the page, to see scroll-driven animations build up. |
 | `block` | string |  | A close-up of this block (cropped to its box with a small margin; PNG by default up to 2 megapixels, else JPEG), scrolled into view unless scroll says where. With scroll, block or motion the note says what moves: visible/clipped/outside, the animations and transitions of each block in the window (or of this block), their timeline (time, scroll, view) and progress, and the scroll-driven ones that CANNOT FINISH because the page ends before their range. |
 | `scale` | 1 \| 2 |  | The close-up drawn at twice its size (2) to read fine detail. |
@@ -168,7 +179,7 @@ See a screen while designing, in well under a second: a look server kept warm fo
 
 ### `elabora_check_fit`
 
-Measure every screen with all its steps in a real browser at the fit sizes of the course (presentation.fit: reference 1600×900, minimum 1280×720 by default) and say which slides scroll, by how many px, which blocks end below the fold, and what moves once the activities are answered (layout shift), plus text too faint against what is behind it. In scroll presentation (pages of any length) nothing has to fit: it gives the length of each page and the contrast of its text, down the whole page. A screen unchanged since its last measure (its files, the theme, components, objects, Elabora, the browser) is not measured again: its fit comes back with reused (its date); fresh measures every screen again. About a second per slide and a few seconds per scroll page measured; after a change, pass screens: the ones it touched.
+Measure every screen with all its steps in a real browser at the fit sizes of the course (presentation.fit: reference 1600×900, minimum 1280×720 by default) and say which slides scroll, by how many px, which blocks end below the fold, and what moves once the activities are answered (layout shift), plus text too faint against what is behind it; on a phone (375×812), the contrast down the page and the player's bars that go onto two lines (W_PLAYER_BAR_WRAPS). In scroll presentation (pages of any length) nothing has to fit: it gives the length of each page and the contrast of its text, down the whole page. A screen unchanged since its last measure (its files, the theme, components, objects, Elabora, the browser) is not measured again: its fit comes back with reused (its date); fresh measures every screen again. About a second per slide and a few seconds per scroll page measured; after a change, pass screens: the ones it touched.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -176,6 +187,7 @@ Measure every screen with all its steps in a real browser at the fit sizes of th
 | `fresh` | boolean |  | Measure again the screens unchanged since their last measure. |
 | `reference` | string |  |  |
 | `minimum` | string |  |  |
+| `phone` | string |  | The phone size (default 375x812 when reference and minimum are not given), or none. |
 | `language` | string |  | A BCP 47 tag: en, de, pt-BR. |
 | `allowMissing` | boolean |  | With language: check the draft, leaving missing/stale texts in the source language. |
 
@@ -199,13 +211,14 @@ Render one screen (or one of its layers) in a real browser once images and free 
 
 ### `elabora_replay_object`
 
-Replay one behaviour test of a free object (object.tests.json) inside the built course: on the page that places it, scrolled into view, in real time, with the course around it. Returns a contact sheet of its snapshot steps and the end, and the expectations that failed. To see how the object looks and behaves where learners meet it; the gates stay elabora_test_object.
+Replay one behaviour test of a free object (object.tests.json) inside the built course: on the page that places it, scrolled into view, in real time, with the course around it. Returns a contact sheet of its snapshot steps and the end, and the expectations that failed. To see how the object looks and behaves where learners meet it; the gates stay elabora_test_object. The backdrop's decoration replays behind the course with its bars, from screen (default: the first one); a set-context step goes to the screen it names.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `id` | string | yes |  |
 | `test` | string |  | A test whose name contains this text (default: the first one). |
 | `block` | string |  | The free-object block to use when several place the object. |
+| `screen` | string |  | For the backdrop's decoration: the screen it starts behind. |
 | `width` | integer |  |  Default 1600. |
 | `height` | integer |  |  Default 900. |
 
@@ -875,14 +888,15 @@ Removes one from this computer to free its space: only when the author asks. Ref
 
 ### `elabora_create_object`
 
-Scaffold a free object (objects/&lt;id&gt;/: manifest, code, tests, notes) serving given plan objectives. Only when no native block can do the job.
+Scaffold a free object (objects/&lt;id&gt;/: manifest, code, tests, notes) serving given plan objectives. Only when no native block can do the job. decoration: a decoration of the course backdrop instead (theme.backdrop.object; no objectives): a 2D canvas that follows the course (ctx.context with the screen's rank, its section's, the direction), keeps out of the player's bars and lands at once when frames are still.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `id` | string | yes |  |
 | `title` | string | yes |  |
-| `objectives` | string[] | yes |  |
+| `objectives` | string[] |  |  |
 | `items` | string[] |  |  |
+| `decoration` | boolean |  |  |
 
 ### `elabora_write_object_file`
 

@@ -84,8 +84,10 @@ test('captures at 375 px: the full-bleed band reaches the last column, by screen
 // With Elabora's Electron (ELABORA_ELECTRON_EXECUTABLE: the installed app's, /Applications/Elabora.app/
 // Contents/MacOS/Elabora, or a development worker with ELABORA_ELECTRON_ENTRY), on macOS, where
 // -AppleShowScrollBars Always (an argument of this process only, no setting of the computer) draws the
-// classic scrollbars a mouse plugged in does: the page is 360 px wide without the switch, 375 with it.
-test('with Elabora\'s Electron and classic scrollbars, a capture at 375 px is as wide as the window, which it was not without --hide-scrollbars', { timeout: 240000, skip: (!process.env.ELABORA_ELECTRON_EXECUTABLE && 'no Electron (ELABORA_ELECTRON_EXECUTABLE)') || (process.platform !== 'darwin' && 'macOS draws classic scrollbars from -AppleShowScrollBars') }, async () => {
+// classic scrollbars a mouse plugged in does: the page is 375 px wide with the switch. Without it, a
+// worker that does not hide scrollbars itself leaves 360 px; the app's worker hides them itself (since
+// Elabora 0.2), and is 375 px wide either way.
+test('with Elabora\'s Electron and classic scrollbars, a capture at 375 px is as wide as the window', { timeout: 240000, skip: (!process.env.ELABORA_ELECTRON_EXECUTABLE && 'no Electron (ELABORA_ELECTRON_EXECUTABLE)') || (process.platform !== 'darwin' && 'macOS draws classic scrollbars from -AppleShowScrollBars') }, async (t) => {
   const dir = bleedCourse();
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-width-'));
   const server = await startServer();
@@ -111,8 +113,11 @@ test('with Elabora\'s Electron and classic scrollbars, a capture at 375 px is as
       } finally { await browser.close(); }
     };
     const without = await shot(chromiumArgs().filter((arg) => arg !== '--hide-scrollbars'));
-    assert.equal(edge(without.whole).width, WIDTH - 15, `without the switch, the scrollbar takes 15 px (${JSON.stringify(edge(without.whole))})`);
-    assert.ok(edge(without.window).short > 0, `and shows its own strip in the window (${JSON.stringify(edge(without.window))})`);
+    if (edge(without.whole).width === WIDTH) t.diagnostic('this worker hides scrollbars itself: no page without the switch to compare');
+    else {
+      assert.equal(edge(without.whole).width, WIDTH - 15, `without the switch, the scrollbar takes 15 px (${JSON.stringify(edge(without.whole))})`);
+      assert.ok(edge(without.window).short > 0, `and shows its own strip in the window (${JSON.stringify(edge(without.window))})`);
+    }
     const hidden = await shot(chromiumArgs());
     reaches(hidden.whole, 'with the switch, the page');
     reaches(hidden.window, 'with the switch, the window');

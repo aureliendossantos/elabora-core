@@ -1,0 +1,26 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "the-end",
+  "title": "Thank you, and well done",
+  "covers": [
+    "ITEM-6"
+  ],
+  "layout": "opening",
+  "layoutProps": {
+    "presentation": "title",
+    "lead": "One sentence on what to do next, and where to find help or the full procedure.",
+    "duration": false
+  },
+  "style": "cover",
+  "backdrop": "feature",
+  "blocks": [
+    {
+      "id": "end-meta",
+      "type": "text",
+      "style": "meta",
+      "props": {
+        "markdown": "- Contact: team name\n- Full procedure: see Resources\n- Version 1.0, month and year"
+      }
+    }
+  ]
+}

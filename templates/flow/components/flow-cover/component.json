@@ -1,0 +1,22 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/component.schema.json",
+  "id": "flow-cover",
+  "title": "Flow cover",
+  "version": "1.0.0",
+  "level": "screen",
+  "description": "The first and the last view of a Flow module: a very large title, a lead and a line of details, on the left; the backdrop's ribbons rise across the right (the backdrop variant hero).",
+  "instructions": "Give the screen the backdrop variant hero. Body: a text block with the style lead (one or two sentences), then a text block with the style meta (duration, audience, version). Keep the screen title under about 50 characters. No label above the title.",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+  },
+  "slots": [
+    {
+      "id": "body",
+      "label": "Lead and details",
+      "default": true,
+      "maxBlocks": 4
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "cover",
+  "title": "Your module title, on two lines at most",
+  "covers": [
+    "ITEM-1"
+  ],
+  "layout": "poster",
+  "layoutProps": {
+    "arrangement": "stack"
+  },
+  "blocks": [
+    {
+      "id": "cover-lead",
+      "type": "text",
+      "slot": "lead",
+      "props": {
+        "markdown": "One or two sentences that tell learners what they will be able to do by the end, and why it matters to their work."
+      }
+    },
+    {
+      "id": "cover-meta",
+      "type": "text",
+      "slot": "body",
+      "style": "meta",
+      "props": {
+        "markdown": "- 15 minutes\n- 3 parts\n- For every team"
+      }
+    }
+  ]
+}

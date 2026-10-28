@@ -48,9 +48,14 @@ a { color: var(--t-primary); }
 
 /* Backdrop (theme.backdrop): fixed behind the course, first in the app, under every positioned part
    of the shell. The theme stylesheet paints its layers: .t-backdrop-layer[data-layer="…"]; it can
-   react to .t-backdrop[data-screen|data-section|data-step|data-variant]. */
+   react to .t-backdrop[data-screen|data-section|data-step|data-variant|data-screen-index|
+   data-section-index|data-section-count|data-direction], and #elabora-app[data-backdrop] has the
+   variant shown. Painted back to front: the layers (z-index 0), then the object (z-index 1); a layer
+   that goes over the object (a grain) takes z-index: 2. */
 .t-backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
 .t-backdrop-layer, .t-backdrop-object { position: absolute; inset: 0; }
+.t-backdrop-layer { z-index: 0; }
+.t-backdrop-object { z-index: 1; }
 .t-backdrop-object iframe { display: block; width: 100%; height: 100%; border: 0; background: transparent; }
 
 
@@ -142,10 +147,12 @@ math { font-family: "STIX Two Math", "Cambria Math", "Latin Modern Math", math; 
 .t-transcript, .t-text-alt { margin-top: 0.5rem; }
 summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 600; }
 
-.t-callout { margin: 0; padding: 0.875rem 1.125rem; border-left: 5px solid var(--t-primary); border-radius: var(--t-radius); background: color-mix(in srgb, var(--t-primary) 7%, var(--t-surface)); }
-.t-callout--important { border-left-color: var(--t-accent); background: color-mix(in srgb, var(--t-accent) 9%, var(--t-surface)); }
-.t-callout--warning { border-left-color: var(--t-error); background: color-mix(in srgb, var(--t-error) 7%, var(--t-surface)); }
-.t-callout--tip { border-left-color: var(--t-success); background: color-mix(in srgb, var(--t-success) 8%, var(--t-surface)); }
+/* A callout is a tinted card: its tone says its kind (no coloured rule down its side, a mark of
+   generic interfaces). A hairline of the same tone holds it on a tinted page. */
+.t-callout { --t-callout-tone: var(--t-primary); margin: 0; padding: 0.875rem 1.125rem; border-radius: var(--t-radius); background: color-mix(in srgb, var(--t-callout-tone) 8%, var(--t-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-callout-tone) 14%, transparent); }
+.t-callout--important { --t-callout-tone: var(--t-accent); }
+.t-callout--warning { --t-callout-tone: var(--t-error); }
+.t-callout--tip { --t-callout-tone: var(--t-success); }
 .t-callout-title { margin: 0 0 0.25rem; font-weight: 700; }
 
 .t-accordion details { border: 1px solid color-mix(in srgb, var(--t-text) 16%, transparent); border-radius: var(--t-radius); padding: 0.375rem 0.875rem; margin-bottom: 0.5rem; }
@@ -297,7 +304,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-scale-point:has(input:focus-visible) { outline: 3px solid var(--t-focus); outline-offset: 2px; }
 .t-scale-ends { display: flex; justify-content: space-between; gap: 1rem; margin-top: 0.375rem; color: var(--t-muted); font-size: 0.875rem; }
 .t-scale-end--max { text-align: end; }
-.t-reflection-model { margin-top: 0.75rem; padding: 0.75rem 1rem; border-left: 4px solid var(--t-primary); border-radius: var(--t-radius); background: color-mix(in srgb, var(--t-primary) 6%, var(--t-surface)); }
+.t-reflection-model { margin-top: 0.75rem; padding: 0.75rem 1rem; border-radius: var(--t-radius); background: color-mix(in srgb, var(--t-primary) 6%, var(--t-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--t-primary) 12%, transparent); }
 .t-reflection-model-head { margin: 0 0 0.375rem; font-weight: 700; }
 .t-reflection-download { gap: 0.5rem; margin-top: 0.75rem; }
 .t-reflection-download .t-icon svg { width: 20px; height: 20px; }
@@ -531,7 +538,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
    room of its tallest (tabs: the panels share one cell; cards: the rows share the tallest card; the
    stack: the sequence's room). */
 .t-block--accordion { container-type: inline-size; }
-.t-panels-prompt { margin: 0 0 1rem; padding-inline-start: .875rem; border-inline-start: 3px solid var(--t-accent); color: var(--t-text); font-size: 1rem; font-style: italic; line-height: 1.5; }
+.t-panels-prompt { margin: 0 0 1rem; color: var(--t-text); font-size: 1.0625rem; font-style: italic; line-height: 1.5; text-wrap: pretty; }
 .t-panels-image { display: block; width: 100%; max-height: 18rem; aspect-ratio: 16 / 9; margin: .25rem 0 .875rem; object-fit: contain; border-radius: calc(var(--t-radius) * .75); background: color-mix(in srgb, var(--t-text) 4%, var(--t-surface)); }
 .t-panels-content > :last-child, .t-panels-content > .t-text > :last-child, .t-panels-tabpanel > .t-text > :last-child, .t-panels-back > .t-text > :last-child { margin-bottom: 0; }
 /* Tabs: two marks of the tab shown (its colour, a rule under it). */
@@ -646,9 +653,9 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
   .t-columns > .t-slot[data-empty] { display: none; }
 }
 
-/* A text's note in the margin (aside): after the text, indented, in narrow windows; beside it, level
-   with its first line, where the window leaves room beside the reading column. */
-.t-aside { margin: .875rem 0 0; padding-inline-start: 1rem; border-inline-start: 2px solid color-mix(in srgb, var(--t-accent) 60%, transparent); color: var(--t-muted); font-size: .9375rem; line-height: 1.5; }
+/* A text's note in the margin (aside): after the text, smaller and quieter, in narrow windows; beside
+   it, level with its first line, where the window leaves room beside the reading column. */
+.t-aside { margin: .875rem 0 0; color: var(--t-muted); font-size: .9375rem; line-height: 1.5; }
 @media (min-width: 1180px) and (not ((orientation: portrait) and (max-width: 1100px))) {
   :is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block--text.t-w-full:has(> .t-aside) { display: grid; grid-template-columns: 100% var(--t-aside-width, 13.5rem); column-gap: 2.5rem; align-items: start; }
   :is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block--text.t-w-full > .t-aside { margin: .25rem 0 0; }
@@ -1172,6 +1179,9 @@ button.t-timeline-line:disabled { color: var(--t-muted); }
 @media (prefers-reduced-motion: reduce) {
   :is(#t-main, dialog.t-layer, .t-backdrop) :is(*, *::before, *::after) { animation: none !important; }
   :is(#t-main, dialog.t-layer, .t-backdrop) :is(*:not(.t-block[data-t-revealed], [data-t-card] [data-t-face]), *::before, *::after) { transition: none !important; }
+  /* The backdrop itself and the bars change with a variant at once too (a capture never takes them
+     halfway). */
+  :is(.t-backdrop, .t-bar), .t-bar :is(*, *::before, *::after) { transition: none !important; }
 }
 
 /* ── Primitives of any template (D63; docs/components.md §3) ──────────────────────────────────

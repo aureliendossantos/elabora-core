@@ -7,6 +7,7 @@ import {
   type LibraryProject, type Progress, type ImportedProject
 } from '@elabora/node/library/index';
 import { ArgumentError } from '../arguments.ts';
+import { moduleTemplate } from '@elabora/node/module-templates';
 import { sourcesSize } from '@elabora/node/sources/index';
 import type { ImportChoices } from '@elabora/core/import/convert';
 import { defineCommand, printJson, reportingFailures } from './command.ts';
@@ -27,7 +28,7 @@ const entry = (usage: string, ...description: string[]): string => {
 const HELP = [
   entry('projects list [--json] [--validate]', 'Projects of the library, newest first: title, course, date, size,', 'validation, folder (--validate checks those not checked yet)'),
   entry('projects path [<id>] [--set <dir> [--move|--copy]]', 'Folder of the library, or of a project (id or its first characters).', '--set: use another folder; --move takes the projects along; --copy', 'moves them by copying and checking every file (another disk)'),
-  entry('projects create <course-id> --title <t> [--language fr]', 'Create a course in the library'),
+  entry('projects create <course-id> --title <t> [--language fr] [--template <id>]', 'Create a course in the library, blank or from a module template', '(elabora templates)'),
   entry('projects duplicate <id> [--title <t>]', 'Copy a project under a new id (same course id; the history stays)'),
   entry('projects rename <id> --title <t>', 'Change the title of a project (an undoable edit of course.json)'),
   entry('projects trash <id>', 'Move a project, history included, to the library\'s trash'),
@@ -165,12 +166,14 @@ const pathCommand = defineCommand({
 
 const create = defineCommand({
   name: 'projects create',
-  flags: { title: 'string', language: 'string' },
+  flags: { title: 'string', language: 'string', template: 'string' },
   run({ positionals: [courseId], flags }) {
-    if (!courseId || !flags.title) { console.error('Usage: elabora projects create <course-id> --title <title> [--language fr]'); return 2; }
+    if (!courseId || !flags.title) { console.error('Usage: elabora projects create <course-id> --title <title> [--language fr] [--template <id>]'); return 2; }
     return reportingFailures(async () => {
-      const project = await createProject({ id: courseId, title: flags.title!, language: flags.language });
-      console.log(`✔ Created "${project.title}" (${project.courseId}) as project ${shortId(project.id)}.\n  ${project.path}\nNext: put the client's validated plan in plan.json, then run elabora validate in that folder.`);
+      const template = flags.template ? moduleTemplate(flags.template) : null;
+      const project = await createProject({ id: courseId, title: flags.title!, language: flags.language ?? (template ? 'fr' : undefined), ...(template ? { template: template.dir } : {}) });
+      const next = template ? 'README.md says how its charter works; replace the placeholder texts with the storyboard\'s' : 'put the client\'s validated plan in plan.json';
+      console.log(`✔ Created "${project.title}" (${project.courseId}) as project ${shortId(project.id)}${template ? ` from the template ${template.id}` : ''}.\n  ${project.path}\nNext: ${next}, then run elabora validate in that folder.`);
       return 0;
     });
   }

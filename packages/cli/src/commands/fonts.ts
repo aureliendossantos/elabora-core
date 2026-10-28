@@ -36,8 +36,10 @@ const list = defineCommand({
   name: 'font list',
   flags: { category: 'string', json: 'boolean' },
   run({ positionals: [dir = '.'], flags }) {
-    if (flags.category && !CATEGORIES.has(flags.category)) { console.error(`✘ --category is one of ${[...CATEGORIES].join(', ')}`); return 2; }
-    const fonts = FONTS.filter((font) => !flags.category || font.category === flags.category);
+    // The short names agents reach for first.
+    const category = flags.category && ({ sans: 'sans-serif', mono: 'monospace', script: 'handwriting' } as Record<string, string>)[flags.category] || flags.category;
+    if (category && !CATEGORIES.has(category)) { console.error(`✘ --category is one of ${[...CATEGORIES].join(', ')}`); return 2; }
+    const fonts = FONTS.filter((font) => !category || font.category === category);
     if (flags.json) { printJson({ ...FONT_CATALOGUE, families: fonts }); return 0; }
     const used = courseFamilies(dir);
     const [latin, ...others] = FONT_CATALOGUE.subsets;

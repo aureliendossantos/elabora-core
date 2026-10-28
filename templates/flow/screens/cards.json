@@ -1,0 +1,73 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "id": "cards",
+  "title": "Three ideas, side by side",
+  "covers": [
+    "ITEM-3"
+  ],
+  "backdrop": "calm",
+  "blocks": [
+    {
+      "id": "pillars-columns",
+      "type": "columns",
+      "width": "wide",
+      "style": "cards",
+      "props": {
+        "count": 3
+      },
+      "blocks": [
+        {
+          "id": "pillars-h1",
+          "type": "heading",
+          "slot": "first",
+          "props": {
+            "text": "First pillar",
+            "level": 2
+          }
+        },
+        {
+          "id": "pillars-t1",
+          "type": "text",
+          "props": {
+            "markdown": "A short description of the first pillar in one or two sentences, about twenty-five words long."
+          },
+          "slot": "first"
+        },
+        {
+          "id": "pillars-h2",
+          "type": "heading",
+          "slot": "second",
+          "props": {
+            "text": "Second pillar",
+            "level": 2
+          }
+        },
+        {
+          "id": "pillars-t2",
+          "type": "text",
+          "props": {
+            "markdown": "A short description of the second pillar, with the concrete sign that tells the learner it is there."
+          },
+          "slot": "second"
+        },
+        {
+          "id": "pillars-h3",
+          "type": "heading",
+          "slot": "third",
+          "props": {
+            "text": "Third pillar",
+            "level": 2
+          }
+        },
+        {
+          "id": "pillars-t3",
+          "type": "text",
+          "props": {
+            "markdown": "A short description of the third pillar, and what goes wrong when it is missing from the whole."
+          },
+          "slot": "third"
+        }
+      ]
+    }
+  ]
+}

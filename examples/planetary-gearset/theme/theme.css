@@ -54,10 +54,8 @@ h1, h2, h3, h4 { letter-spacing: -.015em; }
   border-radius: calc(var(--t-radius) + 4px);
   box-shadow: var(--t-shadow-card);
 }
-.t-callout { border-left: 5px solid var(--t-primary); padding: 1rem 1.25rem; }
-.t-callout--important { border-left-color: var(--t-color-copper); }
-.t-callout--tip { border-left-color: var(--t-success); }
-.t-callout--warning { border-left-color: var(--t-error); }
+.t-callout { padding: 1rem 1.25rem; background: color-mix(in srgb, var(--t-callout-tone) 7%, var(--t-color-card)); }
+.t-callout--important { --t-callout-tone: var(--t-color-copper); }
 .t-callout-title { font-family: var(--t-font-heading); font-size: 1.0625rem; }
 .t-quiz { padding: 1.25rem 1.375rem; }
 .t-decision { padding: 1.25rem 1.375rem; }
@@ -67,7 +65,6 @@ h1, h2, h3, h4 { letter-spacing: -.015em; }
 
 /* Rule card: dark blueprint, for the one thing to remember. */
 .t-s-rule .t-callout {
-  border-left: 0;
   padding: 1.375rem 1.625rem;
   color: var(--t-on-primary);
   background:
@@ -82,7 +79,6 @@ h1, h2, h3, h4 { letter-spacing: -.015em; }
 
 /* Callout on a dark band (hero, stage): a translucent panel with light text. */
 .t-s-on-dark .t-callout {
-  border-left-color: var(--t-color-copper);
   box-shadow: none;
   color: color-mix(in srgb, var(--t-on-primary) 88%, var(--t-color-blueprint));
   background: color-mix(in srgb, var(--t-on-primary) 7%, transparent);

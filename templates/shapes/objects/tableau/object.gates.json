@@ -1,0 +1,79 @@
+{
+  "object": "tableau",
+  "version": "1.0.0",
+  "elabora": "0.1.0",
+  "at": "2026-10-28T20:16:00.602Z",
+  "ok": true,
+  "browser": {
+    "engine": "electron",
+    "version": "152.0.7977.167"
+  },
+  "gates": {
+    "smoke": "passed",
+    "behaviour": "passed",
+    "budget": "passed",
+    "visual": "passed",
+    "accessibility": "passed"
+  },
+  "perf": {
+    "drawCalls": null,
+    "triangles": null,
+    "textures": null,
+    "geometries": null,
+    "maxTextureSize": null,
+    "webglContexts": 0,
+    "contextLost": false,
+    "bootMs": 40,
+    "bootSamples": [
+      42,
+      74,
+      37,
+      35,
+      59,
+      35,
+      68,
+      40,
+      54,
+      32
+    ]
+  },
+  "tests": [
+    {
+      "name": "The opening tableau on the cover",
+      "ok": true
+    },
+    {
+      "name": "A new part: the shapes rearrange into a new tableau",
+      "ok": true
+    },
+    {
+      "name": "Within a part, one shape turns, glides or changes size",
+      "ok": true
+    },
+    {
+      "name": "Just after mount, a new screen lands at once",
+      "ok": true
+    },
+    {
+      "name": "A screen outside any section takes a tableau of its own",
+      "ok": true
+    },
+    {
+      "name": "Variants: earth, then monochrome",
+      "ok": true
+    },
+    {
+      "name": "Reduced motion: still images, the new tableau at once",
+      "ok": true
+    },
+    {
+      "name": "Phone",
+      "ok": true
+    },
+    {
+      "name": "Settings apply without remounting",
+      "ok": true
+    }
+  ],
+  "fingerprint": "sha256:0fd4bad4a325463f2f684d3dac8e8bda37e3edd487ace44e7de749f49c612ab6"
+}

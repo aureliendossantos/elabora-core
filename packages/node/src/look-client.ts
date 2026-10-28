@@ -6,6 +6,7 @@ import type { ImageType } from './capture.ts';
 import type { BrowserIdentity } from './emulator/electron.ts';
 import type { StyleConflict } from './style-cascade.ts';
 import type { MotionReport } from './motion-report.ts';
+import type { ObjectControl } from './look-inspect.ts';
 import { projectDataDir } from './data-dir.ts';
 import { codeVersion } from './code-version.ts';
 
@@ -69,6 +70,18 @@ export function parseLookAction(source: string): LookAction | { error: string } 
   return { error: `Action "${source}": click:<text>, click:role=<role>[name=<name>], key:<key> or drag:x,y->x,y (0 to 1 across the object) for a free object; choose:<option> for a dialogue.` };
 }
 
+// Said with a look at a moment (at, sheet) of a screen with free objects (CLI and MCP).
+export const OBJECTS_AT_NOTE = "free objects are not on the screen's timeline: this capture shows them as they run in the page (their entrance cut under reduced motion); elabora object replay . <object> plays one in real time, in the course";
+
+export interface BackdropReport {
+  screen: string | null;
+  section: string | null;
+  step: number | null;
+  variant: string | null;
+  hidden: boolean;
+  object: { id: string; state: 'starting' | 'ready' | 'failed' } | null;
+}
+
 export type LookResult =
   | {
     ok: true;
@@ -102,6 +115,11 @@ export type LookResult =
     // Component rules the theme overrides, theme rules a component overrides (style-cascade.ts,
     // D32), as the page shows the screen: W_STYLE_COMPONENT_OVERRIDDEN, W_STYLE_THEME_UNDER_COMPONENT.
     styles: StyleConflict[];
+    // The course's backdrop (theme.backdrop) as the screen shows it: what it was told (data-screen,
+    // data-section, data-step, data-variant), hidden (variant "none"), and its decorative object.
+    backdrop?: BackdropReport;
+    // The controls of the screen's free objects: where they are in the window, and what covers them.
+    controls?: ObjectControl[];
     consoleErrors: string[];
     browser?: BrowserIdentity;
     ms: number;
@@ -192,4 +210,15 @@ export async function stopLookServer(dir: string): Promise<boolean> {
   // Until it no longer answers.
   for (const begin = Date.now(); Date.now() - begin < 10_000 && await findLookServer(dir); ) await new Promise((resolve) => setTimeout(resolve, 100));
   return true;
+}
+
+// The controls as lines: the covered ones always, every one with all.
+export function controlsText(controls: readonly ObjectControl[], all = false): string[] {
+  const lines: string[] = [];
+  for (const control of controls) {
+    const label = `« ${control.name || '(no name)'} » (${control.role}${control.disabled ? ', disabled' : ''}, ${control.block})`;
+    if (control.coveredBy) lines.push(`✘ ${label} is covered by ${control.coveredBy}: a click on its middle does not reach it`);
+    else if (all) lines.push(`${control.outside ? '·' : '✔'} ${label} at ${control.box.x},${control.box.y} ${control.box.width}×${control.box.height}${control.outside ? ', out of the window' : ''}`);
+  }
+  return lines;
 }

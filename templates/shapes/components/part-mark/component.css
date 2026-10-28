@@ -1,0 +1,37 @@
+/* Part mark: a large number inside a flat shape. The shape is a box with its corners rounded to
+   draw a circle, a quarter circle or a half disc; it never moves on its own. */
+.t-block--part-mark .sh-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--sh-mark-size, 17rem);
+  aspect-ratio: 1;
+  color: var(--t-text);
+}
+.t-block--part-mark .sh-mark-shape {
+  position: absolute;
+  inset: 0;
+  background: var(--sh-mark-colour, var(--t-color-shape-1));
+  border-radius: 50%;
+}
+.t-block--part-mark .sh-mark[data-shape="quarter"] .sh-mark-shape { border-radius: 100% 0 0 0; }
+.t-block--part-mark .sh-mark[data-shape="half"] .sh-mark-shape { inset: 25% 0 0 0; border-radius: 50% 50% 0 0 / 100% 100% 0 0; }
+.t-block--part-mark .sh-mark[data-shape="square"] .sh-mark-shape { border-radius: 0; }
+.t-block--part-mark .sh-mark-text {
+  position: relative;
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: .25rem;
+  font-family: var(--t-font-heading);
+  line-height: 1;
+}
+.t-block--part-mark .sh-mark[data-shape="quarter"] .sh-mark-text { translate: 12% 12%; }
+.t-block--part-mark .sh-mark[data-shape="half"] .sh-mark-text { translate: 0 22%; }
+.t-block--part-mark .sh-mark-label { font-size: 1rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.t-block--part-mark .sh-mark-number { font-size: 7.5rem; font-weight: 900; letter-spacing: -0.04em; }
+
+@container (max-width: 820px) {
+  .t-block--part-mark .sh-mark { width: 11rem; }
+  .t-block--part-mark .sh-mark-number { font-size: 4.75rem; }
+}

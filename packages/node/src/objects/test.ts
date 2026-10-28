@@ -299,7 +299,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
   };
 
   // ── Gates 3 and 5: a behaviour test and its snapshots ──
-  interface TestRun { failures: string[]; visual: Reporter; snapshots: number; recorded: boolean; bootMs: number | null; stuck: boolean; redo: Redo | null }
+  interface TestRun { failures: string[]; visual: Reporter; snapshots: number; recorded: boolean; blank: string[]; bootMs: number | null; stuck: boolean; redo: Redo | null }
   // The object mounted for a test: mounts run one at a time, so that each boot time is measured
   // with nothing else running; the tests then run side by side.
   type Host = Awaited<ReturnType<typeof openHost>>;
@@ -311,7 +311,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
   const runTest = async (test: ObjectTest, skip: Skip, { page, errors, ready, bootMs }: Host, mayRedoLost = true): Promise<TestRun> => {
     const failures: string[] = [];
     const visual = createReporter();
-    const run: TestRun = { failures, visual, snapshots: 0, recorded: false, bootMs: null, stuck: false, redo: null };
+    const run: TestRun = { failures, visual, snapshots: 0, recorded: false, blank: [], bootMs: null, stuck: false, redo: null };
     if (!ready.ok) failures.push(`mount failed: ${ready.error}`);
     else run.bootMs = bootMs;
     // Dry, the frames are drawn from the last frame of the last step that runs frames before each
@@ -384,7 +384,10 @@ export async function testObject(projectDir: string, objectId: string, { updateS
             }
             run.snapshots++;
             const comparison = compareSnapshot(baseline, path.join(snapshotDir, name), png, { update: updateSnapshots });
-            if (comparison.status === 'created') run.recorded = true;
+            if (comparison.status === 'created') {
+              run.recorded = true;
+              if (comparison.uniform) run.blank.push(`${file}/__snapshots__/${name}`);
+            }
             if (comparison.status === 'different') visual.emit('E_GATE_VISUAL', { file: `${file}/__snapshots__/${name}`, target: objectId, measured: `${comparison.ratio.toFixed(3)} %`, limit: '0.1 %', message: `Snapshot "${step.name}" of test "${test.name}" differs from its baseline.` });
           }
         } catch (error) {
@@ -467,6 +470,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
       snapshots += run.snapshots;
       snapshotFailures += run.visual.items.length;
       reporter.merge(run.visual.items);
+      for (const blank of run.blank) reporter.emit('W_GATE_VISUAL_BLANK', { file: blank, target: objectId, message: `The baseline just recorded for "${test.name}" is a single colour: the object may draw nothing there (a canvas of no size, a context lost on a loaded machine). Look at it before keeping it.` });
       for (const failure of run.failures) reporter.emit('E_GATE_BEHAVIOUR', { file: `${file}/object.tests.json`, target: objectId, message: `"${test.name}": ${failure}` });
       testResults.push({ name: test.name, ok: !run.failures.length, failures: run.failures });
     }
@@ -637,7 +641,7 @@ interface PngModule {
 }
 type Pixelmatch = typeof import('pixelmatch').default;
 
-type SnapshotComparison = { status: 'created' | 'skipped' } | { status: 'same' | 'different'; ratio: number };
+type SnapshotComparison = { status: 'created'; uniform: boolean } | { status: 'skipped' } | { status: 'same' | 'different'; ratio: number };
 
 // Pixel comparison with pixelmatch: tolerance aligned on three.js e2e tests (0.1 % of pixels).
 // Baselines are per system: fonts and WebGL do not draw the same pixels on macOS, Windows and Linux
@@ -652,20 +656,27 @@ function snapshotFiles(snapshotDir: string, stem: string, engine = 'chromium'): 
   return { name, baseline: null };
 }
 
+// Every pixel the same colour (a frame that drew nothing).
+function uniform(data: Uint8Array): boolean {
+  for (let i = 4; i < data.length; i += 4) if (data[i] !== data[0] || data[i + 1] !== data[1] || data[i + 2] !== data[2] || data[i + 3] !== data[3]) return false;
+  return true;
+}
+
 function compareSnapshot(baseline: string | null, file: string, png: Buffer, { update }: { update: boolean }): SnapshotComparison {
-  if (update || !baseline) {
-    fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, png);
-    return { status: 'created' };
-  }
-  let PNG: PngModule['PNG'];
-  let pixelmatch: Pixelmatch;
+  let PNG: PngModule['PNG'] | null = null;
+  let pixelmatch: Pixelmatch | null = null;
   try {
     const pngjs: PngModule = require('pngjs');
     const pixelmatchModule: { default?: Pixelmatch } & Pixelmatch = require('pixelmatch');
     PNG = pngjs.PNG;
     pixelmatch = pixelmatchModule.default || pixelmatchModule;
-  } catch { return { status: 'skipped' }; }
+  } catch { /* compared nothing: skipped */ }
+  if (update || !baseline) {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, png);
+    return { status: 'created', uniform: PNG ? uniform(PNG.sync.read(png).data) : false };
+  }
+  if (!PNG || !pixelmatch) return { status: 'skipped' };
   const reference = PNG.sync.read(fs.readFileSync(baseline));
   const current = PNG.sync.read(png);
   if (reference.width !== current.width || reference.height !== current.height) return { status: 'different', ratio: 100 };

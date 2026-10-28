@@ -32,6 +32,15 @@ export interface ObjectContext {
   section: string | null;
   step: number;
   variant: string | null;
+  // Where the screen and its section stand in the course (the player always gives them; a test's
+  // context may leave them out): screenIndex from 0 of screenCount, sectionIndex from 0 of
+  // sectionCount (null: a screen outside any section), and the way the learner came, forward or back
+  // in the course order (null on the first screen shown).
+  screenIndex?: number;
+  screenCount?: number;
+  sectionIndex?: number | null;
+  sectionCount?: number;
+  direction?: 'forward' | 'back' | null;
 }
 
 // A block that carries on from one screen to another (docs/decisions.md D65): the object receives
@@ -175,6 +184,11 @@ export interface ObjectHostApi {
   onSafeArea(callback: (area: SafeArea) => void): () => boolean;
   onContext(callback: (context: ObjectContext | null) => void): () => boolean;
   onView(callback: (view: ObjectView) => void): () => boolean;
+  // A decoration of the backdrop that runs still frames (reduced motion, or frozen on a slow
+  // machine): frames run for 1.5 s after mount and 1 s after each change, then stop. onStill tells it
+  // once it is frozen, so that a movement can land where it goes at once.
+  readonly still: boolean;
+  onStill(callback: () => void): () => boolean;
   requestHeight(px: number): void;
   log(...values: unknown[]): void;
 }
