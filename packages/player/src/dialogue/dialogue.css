@@ -4,19 +4,21 @@
    (--t-dialog-*), each with its default from the charter. Motion follows the player's rules (« Motion »,
    player.css): rows come in a fade, what leaves goes in a fade, nothing grows to fill the window; in
    slides nothing moves the slide (the thread scrolls in its box, the room keeps the height of the
-   tallest set of options). On phones a scene is shown as messaging. */
+   tallest set of options). On phones a scene is shown as messaging. Nothing here assumes a light or
+   a dark theme: quiet states are the theme's own colours mixed with transparency. */
 .t-dialogue-root {
   --t-dl-bubble: var(--t-dialog-bubble, color-mix(in srgb, var(--t-text) 5%, var(--t-surface)));
   --t-dl-learner: var(--t-dialog-learner, color-mix(in srgb, var(--t-accent) 12%, var(--t-surface)));
   --t-dl-text: var(--t-dialog-text, var(--t-text));
   --t-dl-said: var(--t-dialog-word-spoken, var(--t-dl-text));
-  --t-dl-unsaid: var(--t-dialog-word-unspoken, var(--t-muted));
+  /* The words still to be said: the ink of the words said, faint on whatever bubble it is on. */
+  --t-dl-unsaid: var(--t-dialog-word-unspoken, color-mix(in srgb, var(--t-dl-said) 38%, transparent));
   --t-dl-note: var(--t-dialog-note, var(--t-primary));
   --t-dl-line: color-mix(in srgb, var(--t-text) 12%, transparent);
   --t-dl-radius: calc(var(--t-radius, 8px) + 8px);
   --t-dl-avatar: 2.5rem;
   --t-dl-indent: calc(var(--t-dl-avatar) + 0.625rem);
-  position: relative; display: flex; flex-direction: column; gap: 0.875rem; color: var(--t-dl-text);
+  position: relative; isolation: isolate; display: flex; flex-direction: column; gap: 0.875rem; color: var(--t-dl-text);
 }
 
 /* ── The thread ─────────────────────────────────────────────────────────── */
@@ -60,11 +62,12 @@
 .t-dialogue-row[data-side="right"] .t-dialogue-name { inset-inline: auto 0.375rem; }
 /* A series names its speaker once (a scene names every bubble: its page may begin with any). */
 .t-dialogue-row:not([data-first]) .t-dialogue-name { display: none; }
-.t-dialogue-text, .t-dialogue-narration { margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
-.t-dialogue-bubble[data-t-click], .t-dialogue-root[data-t-playing] .t-dialogue-row:last-of-type .t-dialogue-bubble { cursor: default; }
+/* Lines of even length, a narration's as a bubble's. */
+.t-dialogue-text, .t-dialogue-narration { margin: 0; line-height: 1.5; overflow-wrap: anywhere; text-wrap: balance; }
 
 /* What the voice brings: each word passes to the ink as it is said (ink), or appears with its
-   letters (appear). Only colour and opacity: the bubble has its final size from the start. */
+   letters (appear). Only colour and opacity: the bubble has its final size from the start. A line
+   without a voice is whole at once (its words are all .is-said). */
 .t-dialogue-ink .t-w { transition: color 120ms linear, opacity 120ms linear; }
 .t-dialogue-root[data-t-reveal="ink"] .t-dialogue-ink .t-w:not(.is-said) { color: var(--t-dl-unsaid); }
 .t-dialogue-ink .t-w.is-said { color: var(--t-dl-said); }
@@ -76,20 +79,37 @@
 .t-dialogue-said { max-width: 32rem; }
 .t-dialogue-narration { text-align: center; font-style: italic; font-size: 0.9375rem; }
 
-/* The trainer's note: a card with a rule, an icon and its name (never colour alone). */
-.t-dialogue-row[data-role="note"] { padding-inline-start: var(--t-dl-indent); }
-.t-dialogue-note { width: 100%; max-width: 34rem; margin: 0.25rem 0 0.125rem; padding: 0.625rem 0.875rem 0.75rem 1rem; border-radius: 0.75rem; background: color-mix(in srgb, var(--t-dl-note) 5%, var(--t-surface)); box-shadow: inset 3px 0 0 var(--t-dl-note); }
-.t-dialogue-note-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; margin: 0 0 0.25rem; font-size: 0.8125rem; font-weight: 650; line-height: 1.3; }
-.t-dialogue-note-head > .t-icon { color: var(--t-dl-note); }
-.t-dialogue-note-head .t-icon svg { width: 1.0625rem; height: 1.0625rem; }
-.t-dialogue-note-body { font-size: 0.9375rem; line-height: 1.5; }
+/* The trainer's note: outside the conversation, beside it; its quality in an icon and a word, in its
+   colour (--q: success, accent, error; else dialog.note), never colour alone. */
+.t-dialogue-note { --q: var(--t-dl-note); }
+.t-dialogue-row[data-quality="good"] .t-dialogue-note { --q: var(--t-success); }
+.t-dialogue-row[data-quality="ok"] .t-dialogue-note { --q: var(--t-accent); }
+.t-dialogue-row[data-quality="bad"] .t-dialogue-note { --q: var(--t-error); }
+.t-dialogue-note-head { margin: 0 0 0.375rem; font-size: 0.8125rem; font-weight: 650; line-height: 1.3; }
+.t-dialogue-note-body { font-size: 0.9375rem; line-height: 1.5; text-wrap: pretty; }
 .t-dialogue-note-body > :last-child { margin-bottom: 0; }
 .t-dialogue-quality { display: inline-flex; align-items: center; gap: 0.25rem; font-weight: 600; }
-.t-dialogue-note-head .t-dialogue-quality::before { content: ""; width: 1px; height: 0.875rem; margin-inline-end: 0.25rem; background: var(--t-dl-line); }
 .t-dialogue-quality .t-icon svg { width: 1rem; height: 1rem; stroke-width: 2.2; }
 .t-dialogue-quality[data-quality="good"] .t-icon { color: var(--t-success); }
 .t-dialogue-quality[data-quality="ok"] .t-icon { color: var(--t-accent); }
 .t-dialogue-quality[data-quality="bad"] .t-icon { color: var(--t-error); }
+/* A: « Aparté » — centred between the two sides, without a box; the quality in a pill of its colour. */
+.t-dialogue-row[data-role="note"] { justify-content: center; padding: 0.5rem 1.5rem 0.25rem; }
+.t-dialogue-note { max-width: 30rem; text-align: center; }
+.t-dialogue-note-head { display: flex; justify-content: center; }
+.t-dialogue-note .t-dialogue-quality { padding: 0.1875rem 0.6875rem 0.1875rem 0.5rem; border-radius: 999px; background: color-mix(in srgb, var(--q) 13%, transparent); }
+/* B: « Encadré » — a caption across the thread, square where bubbles are round. */
+.t-dialogue-root[data-t-note="b"] .t-dialogue-row[data-role="note"] { justify-content: stretch; padding: 0.5rem 0 0.25rem; }
+.t-dialogue-root[data-t-note="b"] .t-dialogue-note { width: 100%; max-width: none; padding: 0.6875rem 1rem 0.8125rem; text-align: start; border: 1px solid color-mix(in srgb, var(--t-dl-text) 20%, transparent); border-radius: 2px; background: color-mix(in srgb, var(--q) 5%, var(--t-surface)); }
+.t-dialogue-root[data-t-note="b"] .t-dialogue-note-head { justify-content: flex-start; margin-bottom: 0.25rem; font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.t-dialogue-root[data-t-note="b"] .t-dialogue-note .t-dialogue-quality { padding: 0; background: none; }
+/* C: « Marge » — the quality's mark in the portraits' column, the words beside it, without a bubble. */
+.t-dialogue-root[data-t-note="c"] .t-dialogue-row[data-role="note"] { justify-content: flex-start; padding: 0.5rem 0 0.25rem; }
+.t-dialogue-root[data-t-note="c"] .t-dialogue-note { display: grid; grid-template-columns: var(--t-dl-avatar) minmax(0, 1fr); column-gap: 0.625rem; max-width: calc(34rem + var(--t-dl-indent)); text-align: start; }
+.t-dialogue-root[data-t-note="c"] .t-dialogue-note-head, .t-dialogue-root[data-t-note="c"] .t-dialogue-note .t-dialogue-quality { display: contents; }
+.t-dialogue-root[data-t-note="c"] .t-dialogue-note .t-dialogue-quality > .t-icon { grid-column: 1; grid-row: 1 / span 2; justify-self: center; display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--q); }
+.t-dialogue-root[data-t-note="c"] .t-dialogue-note .t-dialogue-quality > span:not(.t-icon) { grid-column: 2; align-self: end; margin-bottom: 0.125rem; font-size: 0.8125rem; font-weight: 650; }
+.t-dialogue-root[data-t-note="c"] .t-dialogue-note-body { grid-column: 2; }
 
 /* A first choice gone back on: one grey line on the learner's side. « Choisir autrement » under a consequence. */
 .t-dialogue-row[data-role="first-choice"] { justify-content: flex-end; flex-direction: column; align-items: flex-end; gap: 0.125rem; }
@@ -108,17 +128,13 @@
 .t-dialogue-end::before, .t-dialogue-end::after { content: ""; flex: 1; height: 1px; background: var(--t-dl-line); }
 .t-dialogue-end-text { max-width: 32rem; margin: 0 auto; text-align: center; font-size: 0.9375rem; }
 
-/* A bubble's tools: hear the line again, play a voice the browser refused, go back to a choice. They
-   show when the row is pointed at or focused (always on touch screens). */
+/* A bubble's tools: play a voice the browser refused, go back to a choice (shown when the row is
+   pointed at or focused, always on touch screens). */
 .t-dialogue-tools { display: flex; align-items: center; gap: 0.125rem; align-self: center; flex: none; }
 .t-dialogue-tool { display: inline-grid; place-items: center; width: 2.25rem; height: 2.25rem; padding: 0; border: 0; border-radius: 50%; color: var(--t-muted); background: transparent; cursor: pointer; transition: opacity 180ms ease, background-color 180ms var(--t-ease-out), scale var(--t-dur-press) var(--t-ease-out); }
 .t-dialogue-tool:hover { background: color-mix(in srgb, var(--t-text) 7%, transparent); color: var(--t-text); }
 .t-dialogue-tool:active { scale: 0.94; }
 .t-dialogue-tool .t-icon svg { width: 1.125rem; height: 1.125rem; }
-.t-dialogue-tools .t-dialogue-replay { opacity: 0; }
-.t-dialogue-row:hover .t-dialogue-replay, .t-dialogue-row:focus-within .t-dialogue-replay, .t-dialogue-row.is-replaying .t-dialogue-replay { opacity: 1; }
-@media (hover: none) { .t-dialogue-tools .t-dialogue-replay { opacity: 0.8; } }
-.t-dialogue-row.is-replaying .t-dialogue-replay { color: var(--t-primary); }
 .t-dialogue-listen { color: var(--t-on-primary); background: var(--t-primary); }
 .t-dialogue-listen:hover { color: var(--t-on-primary); background: color-mix(in srgb, var(--t-primary) 88%, var(--t-text)); }
 .t-dialogue-resume { display: inline-flex; align-items: center; gap: 0.3125rem; height: 2rem; padding: 0 0.75rem 0 0.625rem; border: 1px solid var(--t-dl-line); border-radius: 999px; color: var(--t-text); background: var(--t-surface); font: inherit; font-size: 0.8125rem; font-weight: 600; white-space: nowrap; cursor: pointer; opacity: 0; transition: opacity 180ms ease, border-color 180ms var(--t-ease-out); }
@@ -181,7 +197,11 @@
 .t-dialogue-next .t-icon svg { width: 1.125rem; height: 1.125rem; }
 .t-dialogue-next:hover, .t-dialogue-action:hover { border-color: color-mix(in srgb, var(--t-primary) 45%, var(--t-surface)); }
 .t-dialogue-next:active, .t-dialogue-action:active { scale: 0.97; }
-.t-dialogue-next.is-waiting { color: var(--t-on-primary); background: var(--t-primary); border-color: var(--t-primary); }
+/* « Suite » while the dialogue goes on by itself (a voice speaks, a pause): quiet, without its
+   outline, its words in the theme's muted ink (still 4.5:1); a click ends the line there. Plain when
+   the dialogue waits for the learner. */
+.t-dialogue-next:not(.is-waiting) { color: var(--t-muted); border-color: transparent; background: transparent; transition-timing-function: ease; transition-duration: 240ms; }
+.t-dialogue-next:not(.is-waiting):hover { color: var(--t-text); border-color: var(--t-dl-line); }
 .t-dialogue-endbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; animation: t-dialogue-fade 240ms ease both; }
 .t-dialogue-count { margin: 0; font-size: 0.875rem; font-weight: 600; color: var(--t-muted); }
 .t-dialogue-endbar-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-inline-start: auto; }
@@ -194,17 +214,28 @@
 .t-dialogue-start-btn .t-icon svg { width: 1.125rem; height: 1.125rem; }
 .t-dialogue-options .t-dialogue-start { position: static; height: auto; }
 
+/* ── A panel over the dialogue (modal.ts): the History, the debrief ──────── */
+/* The rest of the dialogue under a veil, dark on any theme; a click on it closes the panel. */
+.t-dialogue-veil { position: absolute; z-index: 4; inset: 0; border-radius: var(--t-dl-radius); background: rgb(10 13 18 / 0.42); transition: opacity 220ms ease; }
+@starting-style { .t-dialogue-veil { opacity: 0; } }
+.t-dialogue-veil[hidden] { display: none; }
+.t-dialogue-close { display: inline-grid; place-items: center; width: 2.25rem; height: 2.25rem; padding: 0; border: 0; border-radius: 50%; color: var(--t-muted); background: var(--t-surface); cursor: pointer; transition: background-color 180ms var(--t-ease-out), color 180ms var(--t-ease-out); }
+.t-dialogue-close:hover { color: var(--t-text); background: color-mix(in srgb, var(--t-text) 7%, var(--t-surface)); }
+.t-dialogue-close .t-icon svg { width: 1.125rem; height: 1.125rem; }
+.t-dialogue-history-close { display: none; }
+
 /* ── The debrief ────────────────────────────────────────────────────────── */
 .t-dialogue-debrief { transition: opacity 240ms var(--t-ease-out); }
 @starting-style { .t-dialogue-debrief { opacity: 0; } }
-/* Slides (and scenes): over the thread, the box keeping its size. */
+/* Slides (and scenes): a panel over the thread, its box. */
 .t-dialogue-root[data-t-debrief-open] > .t-dialogue-debrief {
-  position: absolute; z-index: 1; inset-inline: 0; top: var(--t-dl-log-top, 0px); height: var(--t-dl-debrief-height, var(--t-dl-log-height, 24rem));
+  position: absolute; z-index: 5; inset-inline: 0; top: var(--t-dl-log-top, 0px); height: var(--t-dl-log-height, 24rem);
   overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--t-dl-line); border-radius: var(--t-dl-radius); background: var(--t-surface);
+  box-shadow: 0 18px 48px rgb(10 13 18 / 0.22);
 }
-.t-dialogue-root[data-t-debrief-open] > .t-dialogue-log { visibility: hidden; }
-/* With the debrief open, the end's controls go to the bottom of the room and the debrief takes the rest. */
-.t-dialogue-root[data-t-debrief-open] > .t-dialogue-options { justify-content: flex-end; }
+/* Its close button stays in its corner while it scrolls. */
+.t-dialogue-debrief > .t-dialogue-close { position: sticky; z-index: 1; top: 0.625rem; display: grid; margin: 0.625rem 0.625rem -2.875rem auto; }
+.t-dialogue-root[data-t-debrief-open] .t-dialogue-debrief-title { padding-inline-end: 2.5rem; }
 .t-dialogue-debrief-card { padding: 1.375rem 1.5rem 1.5rem; border: 1px solid var(--t-dl-line); border-radius: var(--t-dl-radius); background: var(--t-surface); }
 .t-dialogue-root[data-t-debrief-open] .t-dialogue-debrief-card { border: 0; border-radius: 0; background: none; }
 .t-dialogue-debrief-title { margin: 0 0 0.375rem; font-family: var(--t-font-heading); font-size: 1.375rem; font-weight: 650; line-height: 1.25; }
@@ -279,8 +310,11 @@
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="narration"] { padding: 0; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-said { padding: 0.45em 1.1em; border-radius: 999px; background: color-mix(in srgb, var(--t-surface) 90%, transparent); }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-narration { font-size: 0.85em; }
-  .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="note"] { padding-inline-start: 0; justify-content: center; }
-  .t-dialogue-root[data-t-look="scene"] .t-dialogue-note { max-width: 70%; font-size: 0.8em; background: var(--t-surface); box-shadow: inset 3px 0 0 var(--t-dl-note), 0 10px 22px color-mix(in srgb, var(--t-text) 10%, transparent); }
+  /* Over the backdrop, a note keeps a surface of its own. */
+  .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="note"] { padding: 0; justify-content: center; }
+  .t-dialogue-root[data-t-look="scene"] .t-dialogue-note { max-width: 74%; padding: 0.7em 1.15em 0.8em; font-size: 0.8em; border-radius: 1em; background: color-mix(in srgb, var(--t-surface) 94%, transparent); box-shadow: 0 1px 2px color-mix(in srgb, var(--t-text) 6%, transparent), 0 10px 22px color-mix(in srgb, var(--t-text) 9%, transparent); }
+  .t-dialogue-root[data-t-look="scene"][data-t-note="b"] .t-dialogue-note { width: auto; border-radius: 2px; background: color-mix(in srgb, var(--q) 5%, var(--t-surface)); }
+  .t-dialogue-root[data-t-look="scene"][data-t-note="c"] .t-dialogue-note { max-width: 74%; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="retry"], .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="first-choice"] { padding-inline-start: 0; justify-content: center; align-items: center; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-link, .t-dialogue-root[data-t-look="scene"] .t-dialogue-first { background: color-mix(in srgb, var(--t-surface) 92%, transparent); }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-first { padding: 0.25rem 0.75rem; border-radius: 999px; }
@@ -303,19 +337,18 @@
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-history-btn .t-icon svg { width: 1rem; height: 1rem; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-history-btn[aria-expanded="true"] { background: var(--t-surface); }
   .t-dialogue-root[data-t-look="scene"][data-t-history] .t-dialogue-log {
-    z-index: 2; inset-inline: 18%; top: 4%; height: 92%; padding: 3.25rem 1.25rem 1rem; gap: 0.375rem; overflow-y: auto; border-radius: var(--t-dl-radius);
-    background: color-mix(in srgb, var(--t-surface) 97%, transparent); box-shadow: 0 18px 48px color-mix(in srgb, var(--t-text) 16%, transparent); font-size: 1rem;
+    z-index: 5; inset-inline: 18%; top: 4%; height: 92%; padding: 3.25rem 1.25rem 1rem; gap: 0.375rem; overflow-y: auto; border-radius: var(--t-dl-radius);
+    background: var(--t-surface); box-shadow: 0 18px 48px rgb(10 13 18 / 0.22); font-size: 1rem;
     animation: t-dialogue-fade 220ms ease both;
   }
+  .t-dialogue-root[data-t-look="scene"][data-t-history] .t-dialogue-history-close:not([hidden]) { position: absolute; z-index: 6; top: calc(4% + 0.625rem); inset-inline-end: calc(18% + 0.625rem); display: inline-grid; }
   .t-dialogue-root[data-t-look="scene"][data-t-history] .t-dialogue-bubble { box-shadow: none; margin: 0; background: var(--t-dl-bubble); font-size: 1rem; }
   .t-dialogue-root[data-t-look="scene"][data-t-history] .t-dialogue-row[data-role="learner"] .t-dialogue-bubble { background: var(--t-dl-learner); }
   .t-dialogue-root[data-t-look="scene"][data-t-history] .t-dialogue-bubble::after { display: none; }
-  .t-dialogue-root[data-t-look="scene"][data-t-history] .t-dialogue-options { visibility: hidden; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-new { display: none; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-start { inset: 0; top: 0; height: auto; z-index: 2; background: color-mix(in srgb, var(--t-surface) 30%, transparent); }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-start-title { padding: 0.5rem 1.25rem; border-radius: 999px; background: color-mix(in srgb, var(--t-surface) 92%, transparent); }
-  .t-dialogue-root[data-t-look="scene"][data-t-debrief-open] > .t-dialogue-debrief { z-index: 4; inset: 4% 14% 16%; height: auto; box-shadow: 0 18px 48px color-mix(in srgb, var(--t-text) 16%, transparent); }
-  .t-dialogue-root[data-t-look="scene"][data-t-debrief-open] > .t-dialogue-log { visibility: visible; }
+  .t-dialogue-root[data-t-look="scene"][data-t-debrief-open] > .t-dialogue-debrief { inset: 4% 14% 16%; height: auto; }
 }
 
 /* The learner asks for less motion: the dots rest, rows and options come in a fade only (--t-move). */

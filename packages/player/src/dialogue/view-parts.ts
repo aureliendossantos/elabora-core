@@ -40,9 +40,10 @@ export interface LineState {
   speaker: string | undefined;
   row: BubbleRow;
   voice: LineVoiceData;
+  // Said by a voice (its audio): its words come in ink; else the line is whole at once.
+  voiced: boolean;
   playback: LinePlayback;
   paint: { said: number };
-  whole: boolean;
   cues: { time: number; gesture?: string; expression?: string; do?: DialogueAction[]; fired: boolean }[];
   avatar: CharacterView | null;
 }

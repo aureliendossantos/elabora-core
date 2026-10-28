@@ -10,7 +10,8 @@
 //   lines.ts  each beat in the thread: a line inserted whole and said by its voice, its ink and cues;
 //   room.ts   the room under the thread: a turn's controls, the options, the end and the debrief;
 //   moves.ts  every move of the learner or the screen: a new run, saved, the thread cut back to what
-//             it shares with the one shown, a path shown at once.
+//             it shares with the one shown, a path shown at once;
+//   modal.ts  a panel over the dialogue (the History, the debrief), the rest dimmed and inert.
 //
 // Not part of the pure walk: the core never imports this file.
 
@@ -26,7 +27,6 @@ import { canRestart, restart, jump, scoredDone, openDialogue } from './run.ts';
 import type { DialogueData } from './types.ts';
 import { createClock } from './playback.ts';
 import type { DialogueClock } from './playback.ts';
-import { showAllWords } from './thread.ts';
 import type { ThreadContext } from './thread.ts';
 import { prefersLessMotion } from './view-parts.ts';
 import type { DialogueHost, Phase, ViewParts, ViewState } from './view-parts.ts';
@@ -35,6 +35,7 @@ import { createCast } from './cast.ts';
 import { createLines } from './lines.ts';
 import { createRoom } from './room.ts';
 import { createMoves } from './moves.ts';
+import { createModal } from './modal.ts';
 
 export type { DialogueHost };
 
@@ -61,6 +62,8 @@ export interface DialogueViewState {
   line: string | null;
   time: number | null;
   paused: boolean;
+  // The dialogue waits for the learner (« Suite »).
+  waiting: boolean;
   path: string[];
   scored: string[] | null;
   explored: string[];
@@ -155,13 +158,14 @@ export function createDialogues(context: DialoguesContext) {
       reduced, instant, revealMode: () => (instant() ? 'instant' : data.reveal), rate: () => host().prefs().rate || 1
     };
 
-    const box = createThreadBox(parts, { reserveRoom: (scene) => roomView.reserveRoom(scene), disposed: () => state.disposed });
+    const modal = createModal(root);
+    const box = createThreadBox(parts, { modal, reserveRoom: (scene) => roomView.reserveRoom(scene), disposed: () => state.disposed });
     const cast = createCast(parts, state);
     cast.setScene(data.scene, false);
     box.syncLogFocusable();
-    const roomView = createRoom(parts, state, { box, move: (next, options) => moves.move(next, options), next, pause, resume });
+    const roomView = createRoom(parts, state, { box, modal, move: (next, options) => moves.move(next, options), next, pause, resume });
     const lines = createLines(parts, state, {
-      box, cast, trigger, next, pause, resume, setHolding,
+      box, cast, trigger, next, setHolding,
       shownBeat: (index) => moves.shownBeat(index), record: (index, ...nodes) => moves.record(index, ...nodes), revisit: (decision) => moves.revisit(decision)
     });
     const moves = createMoves(parts, state, { courseState, recordInteraction, trigger, box, cast, lines, room: roomView, play: () => { tick(); loop(); } });
@@ -203,13 +207,14 @@ export function createDialogues(context: DialoguesContext) {
       moves.syncRetry();
     }
 
-    // « Suite » (or a click on the bubble, or Entrée): the whole line first, the voice going on; then the next.
+    // « Suite » (or Entrée, or a click on a bubble while the dialogue waits): the line being said ends
+    // there (its voice stops, its words all in ink, its cues come), and the next beat comes. Quiet while
+    // the dialogue goes on by itself, it still answers: a learner who has read ahead never waits.
     function next() {
       if (state.phase !== 'playing') return;
       if (state.paused) resume();
       const step = state.step;
       if (step?.kind === 'line') {
-        if (!step.state.whole && parts.revealMode() !== 'instant') { step.state.whole = true; showAllWords(step.state.row.words, step.state.paint); roomView.syncTurn(); return; }
         step.state.playback.stop();
         lines.tickLine(step.state);
         state.step = null;
@@ -313,7 +318,6 @@ export function createDialogues(context: DialoguesContext) {
       if (state.disposed) return;
       state.disposed = true;
       if (state.step?.kind === 'line') state.step.state.playback.dispose();
-      lines.dispose();
       setHolding(false);
       observer?.disconnect();
       box.dispose();
@@ -339,7 +343,7 @@ export function createDialogues(context: DialoguesContext) {
         const { run, step } = state;
         return {
           phase: state.phase, node: run.walk.node, status: run.walk.status, presented: state.presented, beats: state.beats.length,
-          line: step?.kind === 'line' ? step.state.line?.id ?? null : null, time: step?.kind === 'line' ? step.state.playback.time() : null, paused: state.paused,
+          line: step?.kind === 'line' ? step.state.line?.id ?? null : null, time: step?.kind === 'line' ? step.state.playback.time() : null, paused: state.paused, waiting: step?.kind === 'click',
           path: run.progress.path.slice(), scored: run.progress.scored?.slice() ?? null, explored: run.progress.explored.slice(), endings: run.progress.endings.slice(), ending: run.walk.ending?.id ?? null
         };
       },

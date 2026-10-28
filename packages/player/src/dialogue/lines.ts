@@ -1,7 +1,8 @@
 // A dialogue's beats in the thread (D61): each line inserted whole and said by its voice (its audio,
 // its words lit as they are said, its character's mouth and gestures, its cues), the learner's
 // answer, the trainer's note, the end; then the pause, the click or the page turn before the next
-// beat. Not part of the pure walk.
+// beat. A text without a voice (a line without audio, the note) is whole at once, and waits for the
+// learner to say they have read it (« Suite »). Not part of the pure walk.
 
 import { textVoice, voiceAt } from '../character/index.ts';
 import type { TriggerInfo } from '../course-state.ts';
@@ -9,7 +10,7 @@ import type { TriggerType } from '../course-data.ts';
 import { nodeOf, optionOf } from './walk.ts';
 import type { Beat } from './walk.ts';
 import type { DialogueLineData, DialogueOptionData, LineVoiceData } from './types.ts';
-import { createLinePlayback, replayVoice, cueTime } from './playback.ts';
+import { createLinePlayback, cueTime } from './playback.ts';
 import { bubbleRow, typingRow, paintWords, showAllWords, noteRow, firstChoiceRow, endRow } from './thread.ts';
 import type { BubbleRow } from './thread.ts';
 import { clamp, phone } from './view-parts.ts';
@@ -19,7 +20,7 @@ import type { Cast } from './cast.ts';
 
 export type Lines = ReturnType<typeof createLines>;
 
-export function createLines(parts: ViewParts, state: ViewState, { box, cast, shownBeat, record, revisit, trigger, next, pause, resume, setHolding }: {
+export function createLines(parts: ViewParts, state: ViewState, { box, cast, shownBeat, record, revisit, trigger, next, setHolding }: {
   box: ThreadBox;
   cast: Cast;
   // What each beat shown put in the thread (moves.ts): a beat begins, its nodes.
@@ -29,14 +30,11 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
   revisit(decision: number): void;
   trigger(type: TriggerType, info: TriggerInfo): void;
   next(): void;
-  pause(): void;
-  resume(): void;
   setHolding(on: boolean): void;
 }) {
   const { block, data, log, root, thread, language, learnerSpeaker, still, clock } = parts;
   const { instant, rate } = parts;
   const host = () => parts.host();
-  let stopReplay: (() => void) | null = null;
   // The bubble to come, waiting in the thread: handed to the line it announces.
   let pendingTyping: Typing = null;
 
@@ -58,23 +56,34 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
     });
     if (options.decision !== undefined) built.row.dataset.decision = String(options.decision);
     built.row.dataset.beat = String(index);
-    if (built.replay) built.replay.addEventListener('click', () => replay(voice, built));
-    if (built.listen) built.listen.addEventListener('click', () => { const step = state.step; if (step?.kind === 'line' && step.state.row === built) { step.state.playback.playAudio(); built.listen!.hidden = true; } else replay(voice, built); });
+    // The browser refused to play the line: its voice from where the line is.
+    if (built.listen) built.listen.addEventListener('click', () => { const step = state.step; if (step?.kind === 'line' && step.state.row === built) step.state.playback.playAudio(); built.listen!.hidden = true; });
     if (built.resume) built.resume.addEventListener('click', () => revisit(Number(built.row.dataset.decision)));
-    // A click on a bubble: the whole line, then the next one (as « Suite »).
-    built.bubble.addEventListener('click', () => { const step = state.step; if (step?.kind === 'line' && step.state.row === built) next(); else if (step?.kind === 'click') next(); });
+    // While the dialogue waits for the learner, a click on a bubble goes on (as « Suite »); a voice
+    // being said is never cut by a stray click.
+    built.bubble.addEventListener('click', () => { if (state.step?.kind === 'click') next(); });
     return built;
   }
   const voiceOf = (line: { text: string; voice?: LineVoiceData }): LineVoiceData => line.voice ?? textVoice(line.text, undefined, language);
 
-  // The next beat waits: a pause after a line (the voice's breath, or the time to read it), a click
-  // in pace click; before a decision or the end, a short pause.
+  // The beat the learner sees next, past those that show nothing.
+  function nextShown(from: number): Beat | undefined {
+    const beats = state.beats;
+    let index = from;
+    while (beats[index] && (beats[index].type === 'node' || beats[index].type === 'jump' || beats[index].type === 'actions')) index++;
+    return beats[index];
+  }
+  // Something to read comes next (a line, an answer, a note), not the options or the end.
+  const readOn = (from: number) => { const beat = nextShown(from); return !!beat && (beat.type === 'line' || beat.type === 'choice' || beat.type === 'feedback'); };
+
+  // The next beat waits: after a voice, its breath (a click in pace click); after a text without a
+  // voice, the learner's « Suite »; before a decision or the end, a short pause.
   function after(index: number, chars: number, voicedLine: boolean): Step | null {
     if (still) return null;
     const following = state.beats[index + 1];
     if (!following) return null;
+    if ((data.pace === 'click' || !voicedLine) && readOn(index + 1)) return { kind: 'click', typing: null };
     const toOptions = following.type === 'decision' || following.type === 'end';
-    if (data.pace === 'click' && !toOptions && following.type === 'line') return { kind: 'click', typing: typingFor(index + 1) };
     const seconds = toOptions ? 0.45 : voicedLine ? clamp(0.4, 0.3 + chars * 0.004, 0.8) : clamp(0.6, 0.4 + 0.02 * chars, 2);
     return { kind: 'wait', until: clock.now() + seconds / rate(), typing: typingFor(index + 1) };
   }
@@ -151,11 +160,12 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
     }
   }
   const roleOf = (beat: Extract<Beat, { type: 'line' }>): 'character' | 'learner' | 'narration' => beat.role;
+  // A note is read: the learner goes on with « Suite » (the options come by themselves).
   function noteWait(index: number, option: DialogueOptionData): Step | null {
     const chars = (option.feedback ?? '').length;
     const following = state.beats[index + 1];
     if (!following || still) return null;
-    if (data.pace === 'click' && following.type === 'line') return { kind: 'click', typing: typingFor(index + 1) };
+    if (readOn(index + 1)) return { kind: 'click', typing: null };
     return { kind: 'wait', until: clock.now() + clamp(1, 0.5 + 0.025 * chars, 3.5) / rate(), typing: typingFor(index + 1) };
   }
 
@@ -176,14 +186,16 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
       }
       if (line) trigger('dialogue.line', { target: block.id, line: line.id });
       if (state.disposed) return null;
+      // A line without a voice takes no time: whole at once, its cues all at once.
+      const voiced = !!voice.src;
       const playback = createLinePlayback({
-        voice, clock, silent: host().virtual || still, instant: instant(), host: root,
+        voice, clock, silent: host().virtual || still, instant: instant() || !voiced, host: root,
         rate, volume: () => host().prefs().volume, muted: () => host().prefs().muted,
         onRefused: () => { if (built.listen) built.listen.hidden = false; },
         onPlaying: () => { if (built.listen) built.listen.hidden = true; }
       });
       const said: LineState = {
-        index, line, chars: text.length, speaker: role === 'learner' ? learnerSpeaker : speaker, row: built, voice, playback, paint: { said: 0 }, whole: false, avatar,
+        index, line, chars: text.length, speaker: role === 'learner' ? learnerSpeaker : speaker, row: built, voice, voiced, playback, paint: { said: 0 }, avatar,
         cues: (line?.cues ?? []).map((cue) => ({ time: cueTime(cue, voice), gesture: cue.gesture, expression: cue.expression, do: cue.do, fired: false }))
       };
       setHolding(true);
@@ -193,15 +205,17 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
     return begin();
   }
 
-  // A line, frame by frame: its words, its cues, its character; done once its voice has said it.
+  // A line, frame by frame: its words, its cues, its character; done once its voice has said it (the
+  // cues it has not reached then come at its end, in order).
   function tickLine(said: LineState): boolean {
     const { playback } = said;
     playback.sync();
     const t = playback.time();
-    if (said.whole || parts.revealMode() === 'instant') showAllWords(said.row.words, said.paint);
+    const ended = playback.ended;
+    if (!said.voiced || parts.revealMode() === 'instant') showAllWords(said.row.words, said.paint);
     else paintWords(said.row.words, said.voice.words, t, parts.revealMode(), said.paint);
     for (const cue of said.cues) {
-      if (cue.fired || cue.time > t + 1e-6) continue;
+      if (cue.fired || (!ended && cue.time > t + 1e-6)) continue;
       cue.fired = true;
       if (cue.expression && said.speaker) cast.express(said.speaker, cue.expression);
       if (cue.gesture && said.speaker) cast.gesture(said.speaker, cue.gesture, said.avatar);
@@ -213,25 +227,10 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
     cast.speak(said.speaker, talking, sounding.mouth, said.avatar);
     if (!playback.ended) return false;
     showAllWords(said.row.words, said.paint);
+    if (said.row.listen) said.row.listen.hidden = true;
     playback.dispose();
     cast.rest();
     return true;
-  }
-
-  // « Réécouter »: the line's voice again, beside the flow (the dialogue waits meanwhile).
-  function replay(voice: LineVoiceData, built: BubbleRow) {
-    stopReplay?.();
-    const wasPaused = state.paused;
-    if (state.phase === 'playing' && !wasPaused) pause();
-    built.row.classList.add('is-replaying');
-    const prefs = host().prefs();
-    setHolding(true);
-    stopReplay = replayVoice(voice, root, { rate: prefs.rate || 1, volume: prefs.volume, muted: prefs.muted }, () => {
-      built.row.classList.remove('is-replaying');
-      stopReplay = null;
-      if (state.phase !== 'playing') setHolding(false);
-      if (!wasPaused && state.phase === 'playing') resume();
-    });
   }
 
   return {
@@ -253,7 +252,6 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
       pendingTyping?.node.remove();
       pendingTyping = null;
       state.step = null;
-    },
-    dispose() { stopReplay?.(); }
+    }
   };
 }

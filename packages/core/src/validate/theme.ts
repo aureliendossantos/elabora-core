@@ -123,11 +123,15 @@ export function dialogToken(tokens: Readonly<Record<string, string | number>>, n
     case 'dialog.learner': return mix(color('color.accent'), color('color.surface'), 0.12);
     case 'dialog.text': return color('color.text');
     case 'dialog.wordSpoken': return dialogToken(tokens, 'dialog.text');
-    case 'dialog.wordUnspoken': return color('color.muted');
+    // On the character's bubble (on another bubble, the same ink at the same share).
+    case 'dialog.wordUnspoken': return mix(dialogToken(tokens, 'dialog.wordSpoken'), dialogToken(tokens, 'dialog.bubble'), UNSPOKEN_SHARE);
     case 'dialog.note': return color('color.primary');
     default: return color(name);
   }
 }
+// The words still to be said: the ink of the words said at this share, over the bubble
+// (dialogue.css: color-mix(in srgb, --t-dl-said 38%, transparent)).
+const UNSPOKEN_SHARE = 0.38;
 // color-mix(in srgb, a share, b): each channel mixed as written.
 function mix(a: string, b: string, share: number): string {
   if (!isHex(a) || !isHex(b)) return a;
@@ -136,16 +140,20 @@ function mix(a: string, b: string, share: number): string {
   return `#${x.map((value, index) => Math.round(value * share + y[index] * (1 - share)).toString(16).padStart(2, '0')).join('')}`;
 }
 
-// The dialogue's colours, read when the course sets one of them: text and both kinds of words on
-// both bubbles, the notes' marker on the page.
+// The dialogue's colours, read when the course sets one of them: text and the words said on both
+// bubbles, the notes' quality on the page. The words still to be said are a preview of a line whose
+// text is whole for screen readers, in ink as it is said, and whole at once with « Texte : tout de
+// suite »: faint, but seen on both bubbles (1.5:1), and far enough from the words said for the ink
+// to show (3:1). Their default, a share of the ink over each bubble, is checked only when set.
 const DIALOG_PAIRS: readonly (readonly [foreground: string, background: string, minimum: number, what: string])[] = [
   ['dialog.text', 'dialog.bubble', 4.5, 'text of a character\'s bubble'],
   ['dialog.text', 'dialog.learner', 4.5, 'text of the learner\'s bubble'],
   ['dialog.wordSpoken', 'dialog.bubble', 4.5, 'words said in a character\'s bubble'],
   ['dialog.wordSpoken', 'dialog.learner', 4.5, 'words said in the learner\'s bubble'],
-  ['dialog.wordUnspoken', 'dialog.bubble', 4.5, 'words still to be said in a character\'s bubble'],
-  ['dialog.wordUnspoken', 'dialog.learner', 4.5, 'words still to be said in the learner\'s bubble'],
-  ['dialog.note', 'color.surface', 3, 'the marker of the trainer\'s notes']
+  ['dialog.wordUnspoken', 'dialog.bubble', 1.5, 'words still to be said in a character\'s bubble, still to be seen'],
+  ['dialog.wordUnspoken', 'dialog.learner', 1.5, 'words still to be said in the learner\'s bubble, still to be seen'],
+  ['dialog.wordUnspoken', 'dialog.wordSpoken', 3, 'words still to be said against the words said, for the ink to show'],
+  ['dialog.note', 'color.surface', 3, 'the colour of the trainer\'s notes without a quality']
 ];
 
 export function checkTheme(ctx: CourseCheckContext): void {
@@ -153,6 +161,7 @@ export function checkTheme(ctx: CourseCheckContext): void {
   const own = ctx.course?.theme?.tokens ?? {};
   if (Object.keys(own).some((name) => name.startsWith('dialog.'))) {
     for (const [foreground, background, minimum, what] of DIALOG_PAIRS) {
+      if (foreground === 'dialog.wordUnspoken' && !(foreground in own)) continue;
       const a = dialogToken(tokens, foreground);
       const b = dialogToken(tokens, background);
       if (!isHex(a) || !isHex(b)) continue;

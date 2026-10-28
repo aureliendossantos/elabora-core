@@ -9,12 +9,15 @@
 
 import { element } from '../dom.ts';
 import { icon } from '../icons.ts';
+import { closeButton } from './thread.ts';
 import { clamp, cssPx, phone, PHONE } from './view-parts.ts';
 import type { Step, ViewParts } from './view-parts.ts';
+import type { DialogueModal } from './modal.ts';
 
 export type ThreadBox = ReturnType<typeof createThreadBox>;
 
-export function createThreadBox(parts: ViewParts, { reserveRoom, disposed }: {
+export function createThreadBox(parts: ViewParts, { modal, reserveRoom, disposed }: {
+  modal: DialogueModal;
   // The room under the thread takes the height of its tallest set of options (room.ts).
   reserveRoom(scene: boolean): void;
   disposed(): boolean;
@@ -32,15 +35,30 @@ export function createThreadBox(parts: ViewParts, { reserveRoom, disposed }: {
   log.addEventListener('keydown', (event) => { if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) requestAnimationFrame(scrolledByLearner); });
   log.addEventListener('scroll', () => { if (pinned()) { following = true; newMessage.hidden = true; } }, { passive: true });
 
-  // ── « Historique » (style scene): the whole thread over the scene, as messaging ──
-  const historyButton = data.style === 'scene' ? element('button', { type: 'button', class: 't-dialogue-history-btn', 'aria-expanded': 'false', 'aria-controls': log.id, onclick: () => setHistory(!root.hasAttribute('data-t-history')) }, icon('history'), element('span', { text: labels.dialogueHistory })) : null;
-  if (historyButton) { stage!.before(historyButton); }
+  // ── « Historique » (style scene, wide): the whole thread over the scene, as messaging, in a panel ──
+  const historyButton = data.style === 'scene' ? element('button', { type: 'button', class: 't-dialogue-history-btn', 'aria-expanded': 'false', 'aria-controls': log.id, onclick: () => setHistory(true) }, icon('history'), element('span', { text: labels.dialogueHistory })) : null;
+  const historyClose = historyButton ? closeButton(parts.thread, () => setHistory(false)) : null;
+  if (historyButton && historyClose) {
+    stage!.before(historyButton);
+    historyClose.classList.add('t-dialogue-history-close');
+    historyClose.hidden = true;
+    root.append(historyClose);
+  }
   function setHistory(open: boolean) {
+    if (open === root.hasAttribute('data-t-history')) return;
     root.toggleAttribute('data-t-history', open);
     historyButton?.setAttribute('aria-expanded', String(open));
-    if (open) { scrollLog(false); log.tabIndex = 0; } else { syncLogFocusable(); repage(); }
+    if (historyClose) historyClose.hidden = !open;
+    if (open) {
+      scrollLog(false);
+      log.tabIndex = 0;
+      modal.show({ keep: [log, historyClose], close: () => setHistory(false), focus: log, asked: true });
+    } else {
+      modal.hide(historyButton);
+      syncLogFocusable();
+      repage();
+    }
   }
-  root.addEventListener('keydown', (event) => { if (event.key === 'Escape' && root.hasAttribute('data-t-history')) { event.preventDefault(); setHistory(false); historyButton?.focus(); } });
 
   // ── The thread in its box (slides): anchored at the bottom, scrolled by the learner ──
   const pinned = () => log.scrollHeight - log.scrollTop - log.clientHeight < 24;
@@ -156,7 +174,8 @@ export function createThreadBox(parts: ViewParts, { reserveRoom, disposed }: {
     if (!observed && resizer) { const container = main(); if (container) { resizer.observe(container); resizer.observe(wrap.closest('.t-screen') ?? wrap); observed = true; } }
   }
   const phoneQuery = typeof matchMedia === 'function' ? matchMedia(PHONE) : null;
-  const onPhone = () => { layout(); repage(); };
+  // A phone shows a scene as messaging, without its History.
+  const onPhone = () => { if (phone()) setHistory(false); layout(); repage(); };
   phoneQuery?.addEventListener?.('change', onPhone);
 
   function dispose() {

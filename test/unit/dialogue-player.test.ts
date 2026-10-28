@@ -184,16 +184,20 @@ test('the dialogue\'s colours: tokens become --t-dialog-* variables, checked for
   const course = readJSON(dir, 'course.json');
   const errors = () => validateDir(dir).diagnostics.filter((d) => d.code === 'E_THEME_CONTRAST').map((d) => `${d.target} ${d.measured}`);
   assert.deepEqual(errors(), [], 'the defaults, untouched');
-  course.theme = { ...course.theme, tokens: { ...course.theme?.tokens, 'dialog.wordUnspoken': '#B8BFC6', 'dialog.bubble': '#F1F3F5' } };
+  // The words still to be said: faint (a preview), but seen, and far enough from the words said.
+  course.theme = { ...course.theme, tokens: { ...course.theme?.tokens, 'dialog.wordUnspoken': '#E4E7EA', 'dialog.bubble': '#F1F3F5' } };
   writeJSON(dir, 'course.json', course);
-  assert.deepEqual(errors(), ['dialog.wordUnspoken 1.67', 'dialog.wordUnspoken 1.56']);
+  assert.deepEqual(errors(), ['dialog.wordUnspoken 1.12', 'dialog.wordUnspoken 1.04']);
   course.theme.tokens['dialog.wordUnspoken'] = '#5B6670';
+  writeJSON(dir, 'course.json', course);
+  assert.deepEqual(errors(), ['dialog.wordUnspoken 2.51'], 'too close to the words said: the ink does not show');
+  course.theme.tokens['dialog.wordUnspoken'] = '#A3AAB1';
   writeJSON(dir, 'course.json', course);
   assert.deepEqual(errors(), []);
   // A learner's bubble too close to the text.
   course.theme.tokens['dialog.learner'] = '#3A4651';
   writeJSON(dir, 'course.json', course);
-  assert.deepEqual(errors(), ['dialog.learner 1.53', 'dialog.learner 1.53', 'dialog.wordUnspoken 1.65'], 'the token the course set is the one reported');
+  assert.deepEqual(errors(), ['dialog.learner 1.53', 'dialog.learner 1.53'], 'the token the course set is the one reported');
   assert.equal(tokenCssVars({ 'dialog.wordSpoken': '#111111' })['--t-dialog-word-spoken'], '#111111');
   assert.equal(dialogToken({ 'color.text': '#000000', 'color.surface': '#FFFFFF' }, 'dialog.bubble'), '#f2f2f2');
 });

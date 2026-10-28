@@ -1,22 +1,24 @@
 // The room under a dialogue's thread (D61): a turn's controls while it plays, the options of the
-// decision waiting and the learner's choice, the end's controls and the debrief. In slides the room
-// keeps the height of the tallest set of options, so that nothing moves the slide. Not part of the
-// pure walk.
+// decision waiting and the learner's choice, the end's controls and the debrief (a panel over the
+// thread in slides and scenes, under it in scroll pages). In slides the room keeps the height of the
+// tallest set of options, so that nothing moves the slide. Not part of the pure walk.
 
 import { element } from '../dom.ts';
 import { nodeOf, optionOf } from './walk.ts';
 import { choose, canRevisit, canRestart, restart, scoredDone, scoredResult } from './run.ts';
 import type { DialogueRun } from './run.ts';
-import { optionsContent, turnControls, syncTurnControls, endControls, debriefCard } from './thread.ts';
+import { optionsContent, turnControls, syncTurnControls, endControls, debriefCard, closeButton } from './thread.ts';
 import type { TurnControls, DebriefDecision } from './thread.ts';
-import { cssPx, phone } from './view-parts.ts';
+import { cssPx } from './view-parts.ts';
 import type { ViewParts, ViewState } from './view-parts.ts';
 import type { ThreadBox } from './box.ts';
+import type { DialogueModal } from './modal.ts';
 
 export type Room = ReturnType<typeof createRoom>;
 
-export function createRoom(parts: ViewParts, state: ViewState, { box, move, next, pause, resume }: {
+export function createRoom(parts: ViewParts, state: ViewState, { box, modal, move, next, pause, resume }: {
   box: ThreadBox;
+  modal: DialogueModal;
   move(next: DialogueRun, options?: { chosen?: { node: string; option: string }; started?: boolean; keepRoom?: boolean }): void;
   next(): void;
   pause(): void;
@@ -47,8 +49,7 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, move, next
         turn = turnControls(thread, voiced, { pause: () => (state.paused ? resume() : pause()), mute: () => { const prefs = host().prefs(); prefs.muted = !prefs.muted; syncTurn(); }, next });
         setRoom('playing', [turn.root]);
       }
-      const step = state.step;
-      syncTurnControls(thread, turn, { paused: state.paused, muted: host().prefs().muted, whole: step?.kind !== 'line' || step.state.whole, click: step?.kind === 'click' });
+      syncTurnControls(thread, turn, { paused: state.paused, muted: host().prefs().muted, waiting: state.step?.kind === 'click' });
     }
   }
   // A new run plays: the room empties (unless the options chosen from still fade there).
@@ -96,7 +97,7 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, move, next
       found: result.endingsFound, total: result.endingsTotal,
       back: back === null ? null : () => focusResume(back),
       restart: canRestart(run) ? () => move(restart(run), { started: true }) : null,
-      debrief: data.debrief && overlaidDebrief() ? { open: debriefOpen, toggle: () => { debriefOpen = !debriefOpen; renderDebrief(); showEnd(); room.querySelector<HTMLElement>('.t-dialogue-debrief-toggle')?.focus(); } } : null
+      debrief: data.debrief && overlaidDebrief() ? () => setDebrief(true) : null
     })]);
     renderDebrief();
   }
@@ -106,7 +107,7 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, move, next
     return null;
   }
   function focusResume(decision: number) {
-    if (debriefOpen && overlaidDebrief()) { debriefOpen = false; renderDebrief(); showEnd(); }
+    if (root.hasAttribute('data-t-debrief-open')) setDebrief(false);
     const button = log.querySelector<HTMLElement>(`.t-dialogue-row[data-decision="${decision}"] .t-dialogue-resume`);
     if (!button) return;
     button.closest('.t-dialogue-row')?.scrollIntoView?.({ block: 'nearest', behavior: reduced() ? 'auto' : 'smooth' });
@@ -114,30 +115,42 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, move, next
   }
 
   // ── The debrief ──
-  // In slides the debrief comes over the thread (its box keeps its size); in scroll pages, under it.
+  // In slides (and scenes) the debrief is a panel over the thread, open at the end, the rest of the
+  // dialogue dimmed (modal.ts); « Voir le bilan » opens it again. In scroll pages, it comes under it.
   const overlaidDebrief = () => host().slides() || data.style === 'scene';
-  function renderDebrief() {
+  const debriefToggle = () => room.querySelector<HTMLElement>('.t-dialogue-debrief-toggle');
+  function setDebrief(open: boolean) {
+    debriefOpen = open;
+    renderDebrief(open);
+  }
+  function renderDebrief(asked = false) {
     const target = debriefHost;
     if (!data.debrief) return;
-    if (state.phase !== 'ended') { if (target) { target.replaceChildren(); target.hidden = true; } root.removeAttribute('data-t-debrief-open'); return; }
+    if (state.phase !== 'ended') { closeDebrief(); if (target) { target.replaceChildren(); target.hidden = true; } return; }
     const card = debriefCard(thread, debriefOf());
-    if (target) {
-      target.replaceChildren(card);
-      target.hidden = overlaidDebrief() && !debriefOpen;
-      // Over the thread it scrolls in its box: a region the keyboard reaches.
-      if (overlaidDebrief()) { target.tabIndex = 0; target.setAttribute('role', 'region'); target.setAttribute('aria-label', labels.dialogueDebrief); }
+    if (!target) {
+      if (!log.querySelector('.t-dialogue-debrief-card')) box.insert(element('div', { class: 't-dialogue-row', 'data-role': 'debrief' }, card));
+      return;
     }
-    else if (!log.querySelector('.t-dialogue-debrief-card')) { const row = element('div', { class: 't-dialogue-row', 'data-role': 'debrief' }, card); box.insert(row); }
-    root.toggleAttribute('data-t-debrief-open', !!target && overlaidDebrief() && debriefOpen);
-    placeDebrief();
+    const over = overlaidDebrief();
+    const focused = target.contains(document.activeElement);
+    target.replaceChildren(...(over ? [closeButton(thread, () => setDebrief(false))] : []), card);
+    if (focused) target.focus({ preventScroll: true });
+    if (!over) { target.hidden = false; return; }
+    // A panel that scrolls in its box: the keyboard reaches it.
+    target.tabIndex = 0;
+    target.setAttribute('role', 'dialog');
+    target.setAttribute('aria-label', labels.dialogueDebrief);
+    if (!debriefOpen) { closeDebrief(); target.hidden = true; return; }
+    target.hidden = false;
+    if (root.hasAttribute('data-t-debrief-open')) return;
+    root.setAttribute('data-t-debrief-open', '');
+    modal.show({ keep: [target], close: () => setDebrief(false), focus: target, asked });
   }
-  // Over the thread and the room's free part, down to the end's controls (slides, messaging).
-  function placeDebrief() {
-    if (!root.hasAttribute('data-t-debrief-open') || data.style === 'scene' && !phone()) { root.style.removeProperty('--t-dl-debrief-height'); return; }
-    const bar = room.querySelector<HTMLElement>('.t-dialogue-endbar');
-    const gap = parseFloat(getComputedStyle(root).rowGap) || 0;
-    const bottom = room.offsetTop + room.offsetHeight - (bar?.offsetHeight ?? 0) - gap;
-    root.style.setProperty('--t-dl-debrief-height', `${Math.max(log.offsetHeight, bottom - log.offsetTop)}px`);
+  function closeDebrief() {
+    if (!root.hasAttribute('data-t-debrief-open')) return;
+    root.removeAttribute('data-t-debrief-open');
+    modal.hide(debriefToggle());
   }
   // The debrief of the run shown: the scored run's first choices (what counted), else the choices kept.
   function debriefOf() {
@@ -157,9 +170,9 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, move, next
   }
   // A cut back: the debrief goes, and opens again at the next end.
   function clearDebrief() {
+    closeDebrief();
     if (debriefHost) { debriefHost.replaceChildren(); debriefHost.hidden = true; }
     for (const row of log.querySelectorAll('.t-dialogue-row[data-role="debrief"]')) row.remove();
-    root.removeAttribute('data-t-debrief-open');
     debriefOpen = true;
   }
 
@@ -174,7 +187,7 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, move, next
       if (!offer.length) continue;
       sets.push(optionsContent(thread, node.prompt, offer, { final: !!node.final, explored: () => data.revisit !== 'none', onChoose: () => {} }).nodes);
     }
-    sets.push([endControls(thread, { found: 1, total: Math.max(1, data.endings.length), back: data.revisit !== 'none' ? () => {} : null, restart: data.revisit !== 'none' ? () => {} : null, debrief: data.debrief ? { open: true, toggle: () => {} } : null })]);
+    sets.push([endControls(thread, { found: 1, total: Math.max(1, data.endings.length), back: data.revisit !== 'none' ? () => {} : null, restart: data.revisit !== 'none' ? () => {} : null, debrief: data.debrief ? () => {} : null })]);
     if (!still) sets.push([turnControls(thread, voiced, { pause: () => {}, mute: () => {}, next: () => {} }).root]);
     for (const set of sets) {
       measureRoom.replaceChildren(...set);

@@ -732,11 +732,11 @@
             },
             "dialog.wordUnspoken": {
               "$ref": "defs.schema.json#/$defs/color",
-              "description": "The words of a voiced line still to be said (contrast ≥ 4.5:1 with both bubbles: they stay readable). Default: color.muted."
+              "description": "The words of a voiced line still to be said: a preview, faint (contrast ≥ 1.5:1 with both bubbles, and ≥ 3:1 with dialog.wordSpoken, for the ink to show). Default: dialog.wordSpoken at 38 % over the bubble."
             },
             "dialog.note": {
               "$ref": "defs.schema.json#/$defs/color",
-              "description": "The trainer's notes in a dialogue: their rule and icon (contrast ≥ 3:1 with color.surface). Default: color.primary."
+              "description": "The trainer's notes in a dialogue without a quality: their colour (contrast ≥ 3:1 with color.surface); a quality has its own (color.success, color.accent, color.error). Default: color.primary."
             }
           }
         },
