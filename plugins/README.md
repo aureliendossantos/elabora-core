@@ -13,11 +13,11 @@ What connects Elabora to the hosts authors work in. None of it carries a copy of
 # Claude Code (in a session: /plugin install elabora --marketplace aureliendossantos/elabora-core)
 claude plugin install elabora --marketplace aureliendossantos/elabora-core
 # Codex (or /plugins in a session)
-codex plugin marketplace add aureliendossantos/elabora-core
+codex plugin marketplace add aureliendossantos/elabora-core --sparse .agents --sparse plugins/elabora
 codex plugin add elabora@elabora
 ```
 
-The marketplaces are `../.claude-plugin/marketplace.json` (Claude Code) and `../.agents/plugins/marketplace.json` (Codex).
+The marketplaces are `../.claude-plugin/marketplace.json` (Claude Code) and `../.agents/plugins/marketplace.json` (Codex). Both hosts clone the repository: about 150 MB for Claude Code, which has no partial checkout; Codex's `--sparse` takes only the two folders it needs (2 MB).
 
 - **MCP**: `.mcp.json` starts `elabora mcp .`. Both hosts start it in the session's folder. A course folder is served as it is; a folder of courses is served whole, each operation then taking `course`; elsewhere, the server offers only the documentation, the skills and the app's library, and says how to reach a course (docs/agents.md, « Host integration »). So the plugin can stay enabled everywhere.
 - **Skill**: `skills/elabora/SKILL.md` only sends the agent to the course's `AGENTS.md` and to the server's skills (`elabora://skills/<name>`, `elabora_docs`), as `AGENTS.md` itself says, and covers the two failures: no course here, no `elabora` on the PATH. Keep it free of anything a version of Elabora can change.

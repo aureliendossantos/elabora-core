@@ -40,7 +40,7 @@ With the Elabora app installed, Claude Code and Codex connect it through the plu
 
 ```bash
 claude plugin install elabora --marketplace aureliendossantos/elabora-core   # in a session: /plugin install elabora --marketplace aureliendossantos/elabora-core
-codex plugin marketplace add aureliendossantos/elabora-core && codex plugin add elabora@elabora
+codex plugin marketplace add aureliendossantos/elabora-core --sparse .agents --sparse plugins/elabora && codex plugin add elabora@elabora
 ```
 
 Agents start with `elabora_overview`, follow the course's `AGENTS.md` and load the skills the server serves. Writes are journaled: `elabora undo --batch` takes back a whole batch of AI work and keeps what people edited since. Versions of the plan, the client's validation, publishing and paid services stay with people. [Agent tools](docs/mcp-tools.md)
