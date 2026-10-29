@@ -20,10 +20,10 @@ body { background: transparent; }
   --wc-ease: cubic-bezier(.33, 0, .2, 1);
   --wc-slow: 1.4s;
 }
-#elabora-app:has(> .t-backdrop[data-section-index="1"]) { --wc-part: var(--t-color-wash-cerulean); }
-#elabora-app:has(> .t-backdrop[data-section-index="2"]) { --wc-part: var(--t-color-wash-sea); }
-#elabora-app:has(> .t-backdrop[data-section-index="3"]) { --wc-part: var(--t-color-wash-deep); }
-#elabora-app:has(> .t-backdrop:is([data-section-index="4"], [data-section-index="5"], [data-section-index="6"], [data-section-index="7"], [data-section-index="8"])),
+#elabora-app[data-section-index="1"] { --wc-part: var(--t-color-wash-cerulean); }
+#elabora-app[data-section-index="2"] { --wc-part: var(--t-color-wash-sea); }
+#elabora-app[data-section-index="3"] { --wc-part: var(--t-color-wash-deep); }
+#elabora-app:is([data-section-index="4"], [data-section-index="5"], [data-section-index="6"], [data-section-index="7"], [data-section-index="8"]),
 #elabora-app[data-backdrop="dawn"] { --wc-part: var(--t-color-wash-blush); --wc-warm: 1; }
 /* The pigment: the part's tone deepened toward the ink, for numerals and marks (3:1 at least on the
    paper), mixed in oklab so blue water stays blue; a warm part takes the sienna pigment. The wash:
@@ -33,7 +33,7 @@ body { background: transparent; }
   --wc-wash: color-mix(in srgb, var(--wc-part) 46%, transparent);
   --wc-wash-thin: color-mix(in srgb, var(--wc-part) 22%, transparent);
 }
-#elabora-app:has(> .t-backdrop:is([data-section-index="4"], [data-section-index="5"], [data-section-index="6"], [data-section-index="7"], [data-section-index="8"])),
+#elabora-app:is([data-section-index="4"], [data-section-index="5"], [data-section-index="6"], [data-section-index="7"], [data-section-index="8"]),
 #elabora-app[data-backdrop="dawn"] { --wc-pigment: var(--t-color-pigment-warm); }
 
 /* ── Backdrop layers ─────────────────────────────────────────────────────────────────────────── */

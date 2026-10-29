@@ -8,7 +8,6 @@
   "layout": "clear-section",
   "layoutProps": {
     "number": "01",
-    "presentation": "title",
     "lead": "One sentence that sets up what this part covers and why it comes first.",
     "duration": false
   },

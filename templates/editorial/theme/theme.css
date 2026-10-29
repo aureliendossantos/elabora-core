@@ -29,11 +29,11 @@ body { background: transparent; }
 @media (max-width: 760px) { :root { --ed-page: calc(100vw - 2.5rem); } }
 
 /* ── The part's plate: one colour per section, in their order (five, then again) ── */
-#elabora-app:has(> .t-backdrop:is([data-section-index="0"], [data-section-index="5"], [data-section-index="10"])) { --ed-plate: var(--t-color-plate-1); }
-#elabora-app:has(> .t-backdrop:is([data-section-index="1"], [data-section-index="6"], [data-section-index="11"])) { --ed-plate: var(--t-color-plate-2); }
-#elabora-app:has(> .t-backdrop:is([data-section-index="2"], [data-section-index="7"], [data-section-index="12"])) { --ed-plate: var(--t-color-plate-3); }
-#elabora-app:has(> .t-backdrop:is([data-section-index="3"], [data-section-index="8"], [data-section-index="13"])) { --ed-plate: var(--t-color-plate-4); }
-#elabora-app:has(> .t-backdrop:is([data-section-index="4"], [data-section-index="9"], [data-section-index="14"])) { --ed-plate: var(--t-color-plate-5); }
+#elabora-app:is([data-section-index="0"], [data-section-index="5"], [data-section-index="10"]) { --ed-plate: var(--t-color-plate-1); }
+#elabora-app:is([data-section-index="1"], [data-section-index="6"], [data-section-index="11"]) { --ed-plate: var(--t-color-plate-2); }
+#elabora-app:is([data-section-index="2"], [data-section-index="7"], [data-section-index="12"]) { --ed-plate: var(--t-color-plate-3); }
+#elabora-app:is([data-section-index="3"], [data-section-index="8"], [data-section-index="13"]) { --ed-plate: var(--t-color-plate-4); }
+#elabora-app:is([data-section-index="4"], [data-section-index="9"], [data-section-index="14"]) { --ed-plate: var(--t-color-plate-5); }
 
 /* ── Backdrop: paper, ink (CSS), the folio and plates (object), the grain over them ── */
 .t-backdrop-layer[data-layer="paper"] {
@@ -51,6 +51,8 @@ body { background: transparent; }
 
 /* ── The black spread: ink ground, paper-coloured text, a lighter accent ── */
 #elabora-app[data-backdrop="ink"] {
+  /* The part's colour gives way to the light accent (after the section rules above). */
+  --ed-plate: var(--t-color-accent-on-ink);
   --t-text: var(--t-color-text-on-ink);
   --t-muted: var(--t-color-muted-on-ink);
   --t-primary: var(--t-color-text-on-ink);
@@ -69,8 +71,6 @@ body { background: transparent; }
   --t-pl-tip-fg: var(--t-color-ink-ground);
   color: var(--t-text);
 }
-/* On the black spread the part's colour gives way to the light accent (over the section rules above). */
-#elabora-app[data-backdrop="ink"]:has(> .t-backdrop) { --ed-plate: var(--t-color-accent-on-ink); }
 .t-bar { transition: background-color var(--ed-fade) ease, color var(--ed-fade) ease; }
 /* The rules of the backdrop are the page's header: no second line under the top bar. */
 .t-bar--top, .t-bar--bottom { box-shadow: none; border: 0; }

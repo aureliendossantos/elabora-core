@@ -8,7 +8,6 @@
   "layout": "editorial-opener",
   "layoutProps": {
     "number": "1",
-    "presentation": "title",
     "lead": "One sentence that sets up what this part covers and why it comes first.",
     "duration": false
   },

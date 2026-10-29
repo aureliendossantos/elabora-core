@@ -8,7 +8,6 @@
   "layout": "organic-part",
   "layoutProps": {
     "number": "1",
-    "presentation": "title",
     "lead": "One sentence that sets up this part: the question it answers, or the change it brings to the learner's work.",
     "duration": false
   },

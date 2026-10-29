@@ -1,18 +1,14 @@
-<!-- The opening's template with the part's number set large on the part plate (the backdrop's
-     variant « plate » draws the plate on the right of the page; the number stands over it). Reading
-     order: the title, the lead and the reading time, then a picture if one is given, the question before the lesson and the
-     page. The number (the title names the part) is decoration; nothing goes above the title. -->
-<div class="t-opening t-opening--{{presentation}} ed-opener">
-  <header class="t-opening-head" style="--focus-x: {{focus.x}}; --focus-y: {{focus.y}}">
+<!-- The opening's template in its title presentation, the part's number set large on the part plate
+     (the backdrop's variant « plate » draws the plate on the right of the page; the number stands over
+     it). No picture (propsOmit): the plate is the picture. Reading order: the title, the lead and the
+     reading time, then the question before the lesson and the page. The number (the title names the
+     part) is decoration; nothing goes above the title. -->
+<div class="t-opening t-opening--title ed-opener">
+  <header class="t-opening-head">
     <div class="t-opening-copy">
       <div class="t-opening-title" data-title></div>
       <div class="t-opening-lead t-text" data-if="lead">{{lead}}</div>
       <p class="t-opening-meta" data-if="duration"><svg class="t-opening-clock" aria-hidden="true" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.25"/><path d="M8 4.5V8l2.5 1.5"/></svg><span data-t-duration></span></p>
-    </div>
-    <div class="t-opening-media" data-if="image">
-      <img data-if="decorative" src="{{image}}" alt="" decoding="async" fetchpriority="high">
-      <img data-if="!decorative" src="{{image}}" alt="{{alt}}" decoding="async" fetchpriority="high">
-      <p class="t-genmark" data-if="generated" data-t-label="generated"></p>
     </div>
     <p class="ed-opener-number" data-if="number" aria-hidden="true"><span>{{number}}</span></p>
   </header>

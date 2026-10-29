@@ -8,7 +8,6 @@
   "layout": "watercolor-part",
   "layoutProps": {
     "number": "1",
-    "presentation": "title",
     "lead": "One sentence that sets up this part: the question it answers, or what it changes in the learner's daily practice.",
     "duration": false
   },

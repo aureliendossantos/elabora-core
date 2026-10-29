@@ -10,6 +10,7 @@
     "component": "opening",
     "version": "0.1.0"
   },
+  "propsOmit": ["presentation", "image", "alt", "decorative", "generated", "focus"],
   "propsExtend": {
     "properties": {
       "number": {
