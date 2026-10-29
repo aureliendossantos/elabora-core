@@ -136,6 +136,9 @@ test('fit on a phone: the contrast of text down the page and a bar of the player
   assert.ok(faint.length && faint.every((d) => /on a phone \(375×812\)/.test(d.message)), JSON.stringify(faint));
   assert.ok(diagnostics.some((d) => d.code === 'W_PLAYER_BAR_WRAPS' && /t-bar--bottom/.test(d.message)), JSON.stringify(diagnostics));
   assert.ok(!diagnostics.some((d) => /^(W|I)_SLIDE_OVERFLOW/.test(d.code) && /375/.test(d.message)), 'a phone has no fold');
+  // The narration's controls take a row of their own on a phone (D58): the bar under them is one line.
+  const plain = await measureFit(slidesCopy().dir, { screens: ['accueil'], sizes: [{ role: 'phone', size: '375x812' }] });
+  assert.ok(plain.ok && plain.sizes[0].screens[0].wrapped === undefined, JSON.stringify(fitDiagnostics(plain)));
   // Sizes given: no phone, unless asked.
   const sized = await measureFit(dir, { screens: ['accueil'], sizes: [{ role: 'reference', size: '1600x900' }] });
   assert.deepEqual(sized.ok && sized.sizes.map((size) => size.role), ['reference']);
