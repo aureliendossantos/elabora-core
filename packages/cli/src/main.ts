@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ELABORA_VERSION } from '@elabora/node/bundles';
 import { ArgumentError } from './arguments.ts';
+import { detectAuthor } from '@elabora/node/journal/author';
+import { COMMAND_ACTIVITY, commandPlace, withActivity } from './activity.ts';
 import type { Command, CommandGroup, ExitCode } from './commands/command.ts';
 import { projectCommands } from './commands/project.ts';
 import { historyCommands } from './commands/history.ts';
@@ -96,7 +98,11 @@ export async function main(argv: readonly string[]): Promise<ExitCode> {
     }
   }
   try {
-    return await command.run(args);
+    // An agent at work in a course: what it does, for the app to say it (activity.ts).
+    const family = COMMAND_ACTIVITY[command.name];
+    const dir = family ? courseDirOf(args) : null;
+    if (!family || !dir) return await command.run(args);
+    return await withActivity(dir, command.name, family, detectAuthor(), commandPlace(command.name, args), () => command.run(args), (code) => code === 0 || code === null);
   } catch (error) {
     if (!(error instanceof ArgumentError)) throw error;
     console.error(`${error.message} for "elabora ${command.name}".\n\nUsage:\n${commandUsage(group, command.name)}\n(elabora help: every command)`);

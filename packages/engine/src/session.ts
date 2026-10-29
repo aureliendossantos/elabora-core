@@ -79,6 +79,8 @@ import { SessionSounds } from './session-sounds.ts';
 import type { GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, SoundSearchParams } from '@elabora/node/sounds/types';
 import type { CourseSound } from '@elabora/core/sounds/sounds';
 import { SessionMonitor } from './session-monitor.ts';
+import { SessionActivity } from './session-activity.ts';
+import type { ActivityEntry } from '@elabora/node/activity';
 import { momentTime } from './render.ts';
 import type { RenderedScreen } from '@elabora/core/render/screen';
 import { FORMAT } from '@elabora/format';
@@ -199,6 +201,7 @@ export class Session {
   readonly #listeners = new Set<(message: EventMessage) => void>();
   readonly #stats: Map<string, FileInfo>; // size and time of each file when last read, for rescans
   readonly #monitor: SessionMonitor;
+  readonly #activity: SessionActivity;
   readonly #sources = new Map<number, ChangeSource>(); // journal entries the session appended, by sequence number
   readonly #media: MediaSupervisor | null;
   #openBatch: { id: string; at: number } | null = null;
@@ -237,6 +240,7 @@ export class Session {
     this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#sounds = new SessionSounds({ project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#monitor = new SessionMonitor({ store: this.store, journalDir: this.#tail.dir, options: this.#options, closing: () => this.#closing !== null, refresh: () => this.#queue.run(() => this.#refresh()), reportError });
+    this.#activity = new SessionActivity({ root: this.root, emit: (event) => this.#emit(event), reportError });
     for (const [rel, file] of init.state.files) if (file.kind === 'binary' && file.media) this.#mediaChecked.set(rel, file.hash ?? '');
     for (const { path: rel, message } of init.state.media?.unreadable ?? []) {
       this.#unreadable.set(rel, message);
@@ -264,6 +268,7 @@ export class Session {
   async start(): Promise<void> {
     this.#resumeBatch();
     await this.#monitor.start();
+    this.#activity.start(this.#options.watch !== false);
     if (this.#media) {
       this.#media.start();
       // Media that are not conformant masters yet (dropped while the app was closed).
@@ -289,6 +294,7 @@ export class Session {
   close(options: CloseOptions = {}): Promise<{ version: string | null }> {
     this.#closing ??= (async () => {
       this.#monitor.stop();
+      this.#activity.stop();
       for (const timer of [...this.#timers, this.#batchTimer, this.#versionTimer]) if (timer) clearTimeout(timer);
       // Results of the jobs that finish meanwhile are journaled by the queue, before what follows.
       const mode = options.media ?? 'cancel';
@@ -402,6 +408,7 @@ export class Session {
       case 'diagnostics': return this.diagnostics(request.params.screen);
       case 'importMedia': return this.importMedia(request.params.path, { to: request.params.to, name: request.params.name });
       case 'mediaJobs': return this.mediaJobs();
+      case 'activity': return this.activity(request.params.limit);
       case 'cancelMediaJob': return this.cancelMediaJob(request.params.id);
       case 'backups': return this.backups();
       case 'createBackup': return this.createBackup(request.params.name);
@@ -729,6 +736,12 @@ export class Session {
       ...(options.ops ? { ops: entry.ops as Op[] } : {})
     }));
     return { changes, batches: summarizeBatches(entries).slice(-limit), openBatch: this.openBatch };
+  }
+
+  // What agents did lately, through Elabora's tools (the 'activity' events say what comes next).
+  activity(limit?: number): ActivityEntry[] {
+    this.#assertOpen();
+    return this.#activity.recent(limit);
   }
 
   mediaJobs(): MediaJobInfo[] {
@@ -1651,7 +1664,7 @@ export class Session {
 const REQUEST_TYPES: Record<RequestType, true> = {
   summary: true, readFile: true, listFiles: true, readScreen: true, screenParts: true, findText: true, conversions: true, translationStatus: true,
   translationTable: true, screenTranslation: true, buildTranslation: true, run: true, undo: true, undoBatch: true, history: true, mark: true,
-  diagnostics: true, importMedia: true, mediaJobs: true, cancelMediaJob: true, backups: true, createBackup: true, restoreBackup: true,
+  diagnostics: true, importMedia: true, mediaJobs: true, activity: true, cancelMediaJob: true, backups: true, createBackup: true, restoreBackup: true,
   renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, migrate: true, build: true, close: true, narration: true, voices: true,
   installVoices: true, setSpeakerVoice: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,
   setVoiceKey: true, voiceAccount: true, voiceSearch: true, voiceEstimate: true, soundSearch: true, soundPreview: true, courseSounds: true, soundEstimate: true, generateSound: true,

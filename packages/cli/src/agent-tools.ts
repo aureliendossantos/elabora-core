@@ -6,6 +6,7 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { EditError } from '@elabora/node/edit';
 import { errorDiagnostics, errorMessage } from './commands/command.ts';
 import { errorResult } from './mcp/tool.ts';
+import { TOOL_ACTIVITY, resultScreen, toolPlace, withActivity } from './activity.ts';
 import type { Tool, ToolContext } from './mcp/tool.ts';
 import * as course from './mcp/course-tools.ts';
 import * as content from './mcp/content-tools.ts';
@@ -69,9 +70,12 @@ export async function callAgentTool(name: string, args: unknown, context: ToolCo
   const tool = agentTools(options).find((candidate) => candidate.name === name);
   if (!tool) return errorResult({ error: `Unknown tool ${name}` });
   const root = path.resolve(context.root);
-  if (!tool.anywhere && !fs.existsSync(path.join(root, 'course.json'))) return errorResult({ error: `${root} is not an Elabora course (no course.json)` });
+  const inCourse = fs.existsSync(path.join(root, 'course.json'));
+  if (!tool.anywhere && !inCourse) return errorResult({ error: `${root} is not an Elabora course (no course.json)` });
   try {
-    return await tool.call(args, { ...context, root });
+    // What the agent does, for the app to say it while it works (activity.ts); in a course only.
+    const call = () => tool.call(args, { ...context, root });
+    return inCourse ? await withActivity(root, name, TOOL_ACTIVITY[name], context.author, toolPlace(name, args), call, (result) => !result.isError, TOOL_ACTIVITY[name] === 'write-screen' ? resultScreen : undefined) : await call();
   } catch (error) {
     if (error instanceof EditError) return errorResult({ error: error.message, diagnostics: errorDiagnostics(error) });
     return errorResult({ error: errorMessage(error) });

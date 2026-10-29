@@ -13,6 +13,7 @@ import type { RenderedScreen } from '@elabora/core/render/screen';
 import type { MigrationNote } from '@elabora/core/format/migrations/types';
 import type { PresetName } from '@elabora/core/media/presets';
 import type { WebBuildOptions } from '@elabora/node/build-types';
+import type { ActivityEntry } from '@elabora/node/activity-types';
 import type { VoiceInfo, VoiceStatus, GenerateResult, TakeInfo, VoiceProgress, VoiceQuery, VoiceSearchResult, VoiceAccount, VoiceEstimate } from '@elabora/node/voice/types';
 import type { AlignerView, AlignProgress, AlignResult } from '@elabora/node/align/types';
 import type { TranscribeProgress, Transcript, TranscriberView, TranscriptionEstimate, TranscriptionService } from '@elabora/node/transcribe/types';
@@ -564,6 +565,8 @@ export interface Requests {
   diagnostics: { params: { screen?: string }; result: DiagnosticsView };
   importMedia: { params: { path: string; to?: string; name?: string }; result: MediaImportResult };
   mediaJobs: { params: NoParams; result: MediaJobInfo[] };
+  // What agents did lately through Elabora's tools, oldest first (limit: the last ones, 500 by default).
+  activity: { params: { limit?: number }; result: ActivityEntry[] };
   cancelMediaJob: { params: { id: string }; result: MediaJobInfo | null };
   backups: { params: NoParams; result: BackupSummary[] };
   createBackup: { params: { name?: string }; result: BackupSummary | null };
@@ -668,6 +671,9 @@ export type EngineEvent =
   // An Openverse sound downloading to be heard (soundPreview): bytes received, its size when known.
   | { type: 'soundProgress'; from: string; received: number; total: number | null }
   | { type: 'backupTaken'; version: BackupSummary }
+  // Lines an agent's operations appended to the activity next to the journal (@elabora/node/activity):
+  // what it reads, looks at, checks and writes, for the window to say while it works.
+  | { type: 'activity'; entries: ActivityEntry[] }
   // An AI batch is over: idle for 5 minutes, a human change, a mark, or the session closing.
   | { type: 'batchClosed'; batch: string; reason: 'idle' | 'human' | 'mark' | 'close'; version: string | null }
   // A background task failed (the watcher, a version, a media job's reconciliation…).

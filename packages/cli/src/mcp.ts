@@ -6,6 +6,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { ListToolsRequestSchema, CallToolRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import type { Author } from '@elabora/core/ops/types';
 import { ELABORA_VERSION } from '@elabora/node/bundles';
+import { detectAuthor } from '@elabora/node/journal/author';
 import { agentTools, listAgentTools, callAgentTool } from './agent-tools.ts';
 import { errorResult, objectSchema, textResult } from './mcp/tool.ts';
 import type { ToolOptions } from './agent-tools.ts';
@@ -111,8 +112,10 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args = {} } = request.params;
+    // Who writes: ELABORA_AUTHOR when the host names its agent (Elabora's own chat says « claude »,
+    // not the adapter's client name), else the name its MCP client gives.
     const client = server.getClientVersion()?.name;
-    const author: Author = client ? { kind: 'agent', name: client } : { kind: 'agent' };
+    const author: Author = process.env.ELABORA_AUTHOR?.trim() ? detectAuthor() : client ? { kind: 'agent', name: client } : { kind: 'agent' };
     if (mode === 'several' && name === 'elabora_courses') return textResult(served);
     const tool = byName.get(name);
     if (mode !== 'several' || !tool || tool.anywhere) {
