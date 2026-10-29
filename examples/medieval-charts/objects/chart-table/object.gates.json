@@ -2,7 +2,7 @@
   "object": "chart-table",
   "version": "2.2.0",
   "elabora": "0.1.0",
-  "at": "2026-10-29T01:57:25.655Z",
+  "at": "2026-10-29T02:21:50.051Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -23,19 +23,19 @@
     "maxTextureSize": 8192,
     "webglContexts": 1,
     "contextLost": false,
-    "bootMs": 5722,
+    "bootMs": 2463,
     "bootSamples": [
-      9877,
-      4251,
-      5575,
-      6200,
-      5599,
-      12754,
-      5722,
-      4297,
-      6056,
-      5812,
-      3917
+      1868,
+      2014,
+      2225,
+      2085,
+      2463,
+      2069,
+      2609,
+      2704,
+      2652,
+      2681,
+      3212
     ]
   },
   "tests": [
