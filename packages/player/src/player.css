@@ -9,14 +9,22 @@
    --t-ease-drawer for sheets; ease for a fade that must be seen; never ease-in. What leaves goes the way
    it came. Only opacity, translate and scale. Menus open at once and shrink back toward their button;
    popovers, layers and the viewer grow and go back. --t-move multiplies every distance and scale: 0 when
-   the learner asks for less motion, so that only the fades stay. */
+   the learner asks for less motion, so that only the fades stay.
+   What comes in with the scroll (animation-timeline: view()) arrives as a revealed step does, over a
+   stretch of scroll instead of a time: --t-scroll-in fades it with ease and lifts it by
+   --t-scroll-in-distance on --t-ease-out, which slows down to rest, so that the eye never sees it stop
+   (never linear, nor a curve that ends at speed). --t-scroll-in-opacity is where the fade starts. */
 :root {
   --t-ease-out: cubic-bezier(.23, 1, .32, 1);
   --t-ease-in-out: cubic-bezier(.77, 0, .175, 1);
   --t-ease-drawer: cubic-bezier(.32, .72, 0, 1);
   --t-dur-press: 160ms; --t-dur-tip: 200ms; --t-dur-pop: 200ms; --t-dur-modal: 250ms; --t-dur-drawer: 350ms; --t-dur-reveal: 400ms;
   --t-move: 1;
+  --t-scroll-in: t-scroll-in-fade ease both, t-scroll-in-rise var(--t-ease-out) both;
+  --t-scroll-in-distance: 1rem; --t-scroll-in-opacity: 0;
 }
+@keyframes t-scroll-in-fade { from { opacity: var(--t-scroll-in-opacity); } }
+@keyframes t-scroll-in-rise { from { translate: 0 calc(var(--t-scroll-in-distance) * var(--t-move)); } }
 @media (prefers-reduced-motion: reduce) { :root { --t-move: 0; } }
 /* Size classes. Sizes are in rem and 1rem follows the window, so a design keeps its proportions
    from the reference window down to laptops and stays readable on phones (docs/design.md):
@@ -1343,13 +1351,13 @@ details[data-t-details][open]::details-content { opacity: 1; }
     #elabora-app:not([data-presentation="slides"]) [data-t-following] .t-steps-frame .t-steps-region { opacity: clamp(0, calc(1 - max(var(--t-current, 1) - var(--layer), var(--layer) - var(--t-current, 1))), 1); transition: opacity var(--t-dur-reveal) ease; will-change: opacity; }
   }
 }
-/* The words arrive softly as they scroll in (scroll-driven where the browser can; nothing otherwise). */
+/* The words arrive softly as they scroll in (--t-scroll-in, from half seen; scroll-driven where the
+   browser can; nothing otherwise). */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    #elabora-app:not([data-presentation="slides"]) :is(.t-steps-event, .t-steps-step) > .t-steps-words { animation: t-steps-arrive linear both; animation-timeline: view(); animation-range: entry 0% entry 60%; }
+    #elabora-app:not([data-presentation="slides"]) :is(.t-steps-event, .t-steps-step) > .t-steps-words { --t-scroll-in-opacity: .45; animation: var(--t-scroll-in); animation-timeline: view(); animation-range: entry 0% entry 60%; }
   }
 }
-@keyframes t-steps-arrive { from { opacity: .45; translate: 0 calc(1rem * var(--t-move)); } }
 
 /* ── Interactive picture (« Image interactive », D63) ───────────────────────────────────────────
    Markers at x, y of the whole picture (0 to 1), 44 px, numbered, with a ring that reads on any picture;

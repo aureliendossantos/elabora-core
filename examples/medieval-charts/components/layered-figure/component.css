@@ -42,8 +42,8 @@
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     .mc-layers-stage { view-timeline: --mc-figure block; }
-    /* Keep each layer's start and first fifth; accelerate to complete at 60%. */
-    .mc-layers-base, .mc-layers-layer, .mc-layers-label { animation-timeline: --mc-figure; animation-fill-mode: both; animation-timing-function: linear(0, .2 20%, .325 30%, .5 40%, .725 50%, 1 60%, 1); animation-duration: auto; }
+    /* Each layer comes in and slows down to rest (the player's --t-ease-out), never stopping at speed. */
+    .mc-layers-base, .mc-layers-layer, .mc-layers-label { animation-timeline: --mc-figure; animation-fill-mode: both; animation-timing-function: var(--t-ease-out); animation-duration: auto; }
     .mc-reveal--fade { animation-name: mc-fade; }
     .mc-reveal--sweep { animation-name: mc-sweep; }
     .mc-reveal--drop { animation-name: mc-drop; }

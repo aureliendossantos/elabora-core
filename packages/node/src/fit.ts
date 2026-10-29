@@ -293,12 +293,17 @@ async function scrolledContrast(moving: Page, screen: ScreenFit): Promise<void> 
   if (scrolled.length) screen.contrast = [...(screen.contrast || []), ...scrolled];
 }
 
-// In the page: the player's bars whose items do not stand on one line.
+// In the page: the player's bars whose items do not stand on one line. An item as wide as the line
+// is a row of its own by design, not a line the others overflow onto: the narration's controls on a
+// phone (D58, player.css « Phones and narrow windows »).
 function wrappedBars(): string[] {
   const out: string[] = [];
   for (const bar of document.querySelectorAll<HTMLElement>('.t-bar')) {
     if (bar.hidden || !bar.getClientRects().length) continue;
-    const items = [...bar.querySelectorAll<HTMLElement>(':scope > *')].filter((node) => node.getClientRects().length && getComputedStyle(node).position !== 'absolute' && node.offsetHeight > 8);
+    const items = [...bar.querySelectorAll<HTMLElement>(':scope > *')].filter((node) => {
+      const style = getComputedStyle(node);
+      return node.getClientRects().length && style.position !== 'absolute' && style.flexBasis !== '100%' && node.offsetHeight > 8;
+    });
     const boxes = items.map((node) => node.getBoundingClientRect());
     if (boxes.length < 2) continue;
     // The first line ends where its shortest item ends: an item that starts below it is on another
