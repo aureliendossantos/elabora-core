@@ -1,5 +1,5 @@
 import { getSchema, derefSchema, BLOCK_TYPES, LAYOUT_TYPES, isBuiltinBlockType, isBuiltinLayoutType, isBuiltinType, SCHEMA_VERSION } from '@elabora/format';
-import type { BuiltinBlockType, BuiltinLayoutType } from '@elabora/format';
+import type { BuiltinBlockType, BuiltinLayoutType, DesignWords } from '@elabora/format';
 import { parseTemplate, analyzeTemplate } from './template.ts';
 import type { ParsedTemplate, TemplateAnalysis } from './template.ts';
 import { BUILTIN_TEMPLATES } from './builtin-templates.generated.ts';
@@ -156,7 +156,7 @@ export interface ComponentDescriptor {
   slots: ComponentSlot[];
   defaultSlot: string | null;
   fallback: FallbackEntry[] | 'self' | 'root' | null;
-  styles: Record<string, string>;
+  styles: Record<string, DesignWords>; // read with designWords (project/design-words.ts)
   examples: ComponentExample[];
   fullBleed: boolean;
   css: string | null;
@@ -289,10 +289,10 @@ export function getRegistry(project: Pick<Project, 'components'>): Registry {
 
 // Effective named styles of a type: the component's own (and its parents'), then the theme's for
 // the type and for its parents (styles of callout apply to a fork of callout).
-export function stylesOf(project: Pick<Project, 'components' | 'course'>, type: string): Record<string, string> {
+export function stylesOf(project: Pick<Project, 'components' | 'course'>, type: string): Record<string, DesignWords> {
   const d = getRegistry(project).get(type);
   const theme = project.course?.theme?.styles || {};
-  const out: Record<string, string> = { ...(d?.styles || {}) };
+  const out: Record<string, DesignWords> = { ...(d?.styles || {}) };
   for (const id of [...(d?.lineage || [type])].reverse()) Object.assign(out, theme[id] || {});
   return out;
 }

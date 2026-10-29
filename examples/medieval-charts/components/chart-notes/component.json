@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/component.schema.json",
   "id": "chart-notes",
   "title": "Chart with notes",
   "description": "« Image interactive » in the course's folio style: a large figure with markers set on it, each named by a few words (a question someone asked about that spot) and numbered; selecting a marker shows its note under the figure, on a leaf of vellum, in the room of the longest. Markers already read carry a gilt dot. In narrow places the notes are a numbered list under the figure.",

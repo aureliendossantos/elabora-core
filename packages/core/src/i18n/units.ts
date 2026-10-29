@@ -28,7 +28,8 @@ import type { XliffMark } from './xliff.ts';
 //   block.<id>.<prop path> (array items by id when they have one) · block.<id>.strings.<key>
 //   block.<id>.enumLabels.<prop or prop_field>.<value>
 //   theme.style.<kind>.<name> · theme.backdrop.variant.<name> (editor only, as the next ones)
-//   component.<id>.title / .description / .slot.<id>.label / .prop.<setting>.title / .description
+//   theme.style.<kind>.<name>.label · theme.backdrop.variant.<name>.label
+//   component.<id>.title / .description / .slot.<id>.label / .style.<name> (.label) / .prop.<setting>.title / .description / .value.<value>
 //   object.<id>.title / .prop.<setting>.title / .description / .group / .event.<name>.description
 // Ids only use letters, digits, '.', '-' and '_' (XLIFF unit ids are NMTOKENs). Words never live in
 // CSS, templates or figures (the validator sees to it), so these units are the whole text of a course.
@@ -214,10 +215,16 @@ export function extractUnits(project: Project): TranslationUnit[] {
 function designUnits(project: Project, placed: ReadonlySet<string>, add: (id: string, file: string, pointer: string, text: unknown, options: UnitOptions) => void): void {
   const editor = (note: string): UnitOptions => ({ editor: true, note: `${note}. Editor only: authors read it, learners never do` });
   const theme = recordOf(project.course?.theme);
+  // A style's or a variant's words (designWords): its name and what it is for, or what it is for
+  // alone, whose unit keeps its id.
+  const words = (id: string, file: string, at: string, value: unknown, name: string, use: string): void => {
+    if (isRecord(value)) add(`${id}.label`, file, `${at}/label`, value.label, { ...editor(`Name of ${name}, as authors pick it (${use})`), maxLength: 40 });
+    add(id, file, isRecord(value) ? `${at}/description` : at, isRecord(value) ? value.description : value, editor(`What ${name} is for (${use})`));
+  };
   for (const [kind, styles] of Object.entries(recordOf(theme.styles))) {
-    for (const [name, description] of Object.entries(recordOf(styles))) add(`theme.style.${segment(kind)}.${segment(name)}`, 'course.json', `/theme/styles${pointer(kind, name)}`, description, editor(`What the ${kind} style "${name}" of the course's charter is for (the Charte, the inspector)`));
+    for (const [name, value] of Object.entries(recordOf(styles))) words(`theme.style.${segment(kind)}.${segment(name)}`, 'course.json', `/theme/styles${pointer(kind, name)}`, value, `the ${kind} style "${name}" of the course's charter`, 'the Charte, the inspector');
   }
-  for (const [name, description] of Object.entries(recordOf(recordOf(theme.backdrop).variants))) add(`theme.backdrop.variant.${segment(name)}`, 'course.json', `/theme/backdrop/variants${pointer(name)}`, description, editor(`When the backdrop variant "${name}" is used (the Charte)`));
+  for (const [name, value] of Object.entries(recordOf(recordOf(theme.backdrop).variants))) words(`theme.backdrop.variant.${segment(name)}`, 'course.json', `/theme/backdrop/variants${pointer(name)}`, value, `the backdrop variant "${name}"`, 'the Charte, the inspector of a screen');
   for (const [id, source] of project.components) {
     const manifest = source.manifest;
     if (!manifest) continue;
@@ -227,7 +234,10 @@ function designUnits(project: Project, placed: ReadonlySet<string>, add: (id: st
     add(`${base}.title`, file, '/title', manifest.title, editor(`Name of ${what} (the block picker, the layouts, the inspector)`));
     add(`${base}.description`, file, '/description', manifest.description, editor(`What ${what} is (the block picker, the layouts)`));
     listOf(manifest.slots).forEach((slot, i) => { if (isRecord(slot)) add(`${base}.slot.${segment(slot.id)}.label`, file, `/slots/${i}/label`, slot.label, editor(`Name of the slot "${String(slot.id)}" of ${what}`)); });
-    settingWords(manifest.props, '/props', `${base}.prop`, what, false, (unitId, at, text, note) => add(unitId, file, at, text, editor(note)));
+    for (const [name, value] of Object.entries(recordOf(manifest.styles))) words(`${base}.style.${segment(name)}`, file, `/styles${pointer(name)}`, value, `the style "${name}" of ${what}`, 'the Charte, the inspector');
+    // A fork without props of its own words the props it adds.
+    const props = manifest.props ? { schema: manifest.props, at: '/props' } : { schema: manifest.propsExtend, at: '/propsExtend' };
+    settingWords(props.schema, props.at, `${base}.prop`, what, 'component', (unitId, at, text, note) => add(unitId, file, at, text, editor(note)));
   }
   for (const id of [...placed].sort()) {
     const object = project.objects.get(id);
@@ -237,20 +247,25 @@ function designUnits(project: Project, placed: ReadonlySet<string>, add: (id: st
     const base = `object.${segment(id)}`;
     const what = `the free object "${id}"`;
     add(`${base}.title`, file, '/title', manifest.title, editor(`Name of ${what} (the inspector)`));
-    settingWords(manifest.props, '/props', `${base}.prop`, what, true, (unitId, at, text, note) => add(unitId, file, at, text, editor(note)));
+    settingWords(manifest.props, '/props', `${base}.prop`, what, 'object', (unitId, at, text, note) => add(unitId, file, at, text, editor(note)));
     listOf(manifest.events).forEach((event, i) => { if (isRecord(event)) add(`${base}.event.${segment(event.name)}.description`, file, `/events/${i}/description`, event.description, editor(`When ${what} sends its event "${String(event.name)}" (the events of a screen)`)); });
   }
 }
 
 // The words of a props schema the inspector shows: each setting's title and description, and those
 // of the fields of its objects and lists; a free object's settings also by group (x-group: a
-// component's is not shown).
-function settingWords(schema: unknown, at: string, idBase: string, what: string, groups: boolean, addWord: (id: string, pointer: string, text: unknown, note: string) => void): void {
+// component's is not shown); a component's choices by value (x-enum-labels: a free object's are
+// translated by the blocks that place it, props.enumLabels).
+function settingWords(schema: unknown, at: string, idBase: string, what: string, owner: 'component' | 'object', addWord: (id: string, pointer: string, text: unknown, note: string) => void): void {
   const walk = (node: unknown, path: string, id: string, name: string): void => {
     if (!isRecord(node)) return;
     addWord(`${id}.title`, `${path}/title`, node.title, `Label of the setting "${name}" of ${what} (the inspector)`);
     addWord(`${id}.description`, `${path}/description`, node.description, `Help of the setting "${name}" of ${what} (the inspector)`);
-    if (groups) addWord(`${id}.group`, `${path}/x-group`, node['x-group'], `The group the setting "${name}" of ${what} is in (the inspector): the same words for every setting of the group`);
+    if (owner === 'object') addWord(`${id}.group`, `${path}/x-group`, node['x-group'], `The group the setting "${name}" of ${what} is in (the inspector): the same words for every setting of the group`);
+    if (owner === 'component' && Array.isArray(node.enum)) {
+      const labels = recordOf(node['x-enum-labels']);
+      for (const value of node.enum.map(String)) addWord(`${id}.value.${segment(value)}`, `${path}/x-enum-labels${pointer(value)}`, labels[value], `Value "${value}" of the setting "${name}" of ${what}, as authors choose it (the inspector)`);
+    }
     for (const [child, value] of Object.entries(recordOf(node.properties))) walk(value, `${path}/properties${pointer(child)}`, `${id}.${segment(child)}`, `${name}.${child}`);
     if (isRecord(node.items)) walk(node.items, `${path}/items`, `${id}.item`, `${name}[]`);
   };

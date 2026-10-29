@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/component.schema.json",
   "id": "layered-figure",
   "title": "Figure in layers",
   "description": "« Étapes » drawn as one figure that assembles itself as it scrolls into view: figureImage first, then each step's image, a layer drawn over it one after the other (fading, sweeping round, dropping in, wiped from the top), and labels set over the figure at given positions (words, or harbour names written from a point at any angle, as on a chart, or someone's words in a bubble). Square or wide, full size or compact beside the reading column. The steps' titles and texts name the layers for text views and exports; the figure's alt describes it whole. Without scroll-driven animations, with reduced motion, or set to show at once (still), it shows complete.",
@@ -37,7 +37,13 @@
               ],
               "default": "fade",
               "x-group": "design",
-              "description": "fade: appears; sweep: drawn round like a compass; drop: falls into place; wipe: drawn from top to bottom."
+              "description": "fade: appears; sweep: drawn round like a compass; drop: falls into place; wipe: drawn from top to bottom.",
+              "x-enum-labels": {
+                "fade": "Fade",
+                "sweep": "Compass sweep",
+                "drop": "Drop",
+                "wipe": "Wipe down"
+              }
             }
           }
         }
@@ -51,7 +57,13 @@
         ],
         "default": "fade",
         "x-group": "design",
-        "description": "How figureImage appears (see the steps' reveal)."
+        "description": "How figureImage appears (see the steps' reveal).",
+        "x-enum-labels": {
+          "fade": "Fade",
+          "sweep": "Compass sweep",
+          "drop": "Drop",
+          "wipe": "Wipe down"
+        }
       },
       "still": {
         "type": "boolean",
@@ -74,7 +86,11 @@
         ],
         "default": "full",
         "x-group": "design",
-        "description": "full: as large as the block allows; compact: small enough to see whole with the text around it."
+        "description": "full: as large as the block allows; compact: small enough to see whole with the text around it.",
+        "x-enum-labels": {
+          "full": "Full",
+          "compact": "Compact"
+        }
       },
       "labels": {
         "type": "array",
@@ -118,7 +134,16 @@
               ],
               "default": "ink",
               "x-group": "design",
-              "description": "ink: small capitals; rubric: small capitals in red; italic: an aside; name and name-rubric: a harbour name as written on a chart, in black or red, starting at its point (x, y) and running at its angle; bubble and bubble-below: someone's words in a speech bubble above or below its point, the tail pointing at it (angle ignored)."
+              "description": "ink: small capitals; rubric: small capitals in red; italic: an aside; name and name-rubric: a harbour name as written on a chart, in black or red, starting at its point (x, y) and running at its angle; bubble and bubble-below: someone's words in a speech bubble above or below its point, the tail pointing at it (angle ignored).",
+              "x-enum-labels": {
+                "ink": "Ink capitals",
+                "rubric": "Red capitals",
+                "italic": "Italic aside",
+                "name": "Place name",
+                "name-rubric": "Place name in red",
+                "bubble": "Bubble",
+                "bubble-below": "Bubble below"
+              }
             },
             "angle": {
               "type": "number",

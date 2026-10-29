@@ -944,9 +944,21 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
         <target>Contact · Ressources · Module suivant</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.lead.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/lead/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "lead" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Lead</source>
+        <target>Chapeau</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.lead">
       <notes>
-        <note category="location">course.json /theme/styles/text/lead</note>
+        <note category="location">course.json /theme/styles/text/lead/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "lead" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -955,9 +967,21 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
         <target>Grand paragraphe d'introduction</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.meta.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/meta/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "meta" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>At a glance</source>
+        <target>En bref</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.meta">
       <notes>
-        <note category="location">course.json /theme/styles/text/meta</note>
+        <note category="location">course.json /theme/styles/text/meta/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "meta" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -966,9 +990,21 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
         <target>Petite ligne en chasse fixe : une date, une durée, une version</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.list.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/list/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "list" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Numbered list</source>
+        <target>Liste numérotée</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.list">
       <notes>
-        <note category="location">course.json /theme/styles/text/list</note>
+        <note category="location">course.json /theme/styles/text/list/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "list" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -977,9 +1013,21 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
         <target>Liste numérotée aux grands chiffres en chasse fixe (objectifs, programme)</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.recap.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/recap/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "recap" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Recap</source>
+        <target>Récapitulatif</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.recap">
       <notes>
-        <note category="location">course.json /theme/styles/text/recap</note>
+        <note category="location">course.json /theme/styles/text/recap/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "recap" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -988,9 +1036,21 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
         <target>Liste cochée sur une carte (récapitulatif, ce qu'il faut retenir)</target>
       </segment>
     </unit>
+    <unit id="theme.style.columns.cards.label">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/cards/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the columns style "cards" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Cards</source>
+        <target>Cartes</target>
+      </segment>
+    </unit>
     <unit id="theme.style.columns.cards">
       <notes>
-        <note category="location">course.json /theme/styles/columns/cards</note>
+        <note category="location">course.json /theme/styles/columns/cards/description</note>
         <note category="format">text</note>
         <note category="context">What the columns style "cards" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -999,9 +1059,21 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
         <target>Chaque colonne sur sa propre carte</target>
       </segment>
     </unit>
+    <unit id="theme.style.columns.versus.label">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/versus/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the columns style "versus" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Face to face</source>
+        <target>Face à face</target>
+      </segment>
+    </unit>
     <unit id="theme.style.columns.versus">
       <notes>
-        <note category="location">course.json /theme/styles/columns/versus</note>
+        <note category="location">course.json /theme/styles/columns/versus/description</note>
         <note category="format">text</note>
         <note category="context">What the columns style "versus" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1010,33 +1082,69 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
         <target>Deux colonnes face à face, la seconde dans la couleur d'accent</target>
       </segment>
     </unit>
+    <unit id="theme.backdrop.variant.hero.label">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/hero/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the backdrop variant "hero", as authors pick it (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Full ribbons</source>
+        <target>Grands rubans</target>
+      </segment>
+    </unit>
     <unit id="theme.backdrop.variant.hero">
       <notes>
-        <note category="location">course.json /theme/backdrop/variants/hero</note>
+        <note category="location">course.json /theme/backdrop/variants/hero/description</note>
         <note category="format">text</note>
-        <note category="context">When the backdrop variant "hero" is used (the Charte). Editor only: authors read it, learners never do</note>
+        <note category="context">What the backdrop variant "hero" is for (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
         <source>The ribbons rise across the right of the window: the cover and the end</source>
         <target>Les rubans montent sur la droite de la fenêtre : la couverture et la fin</target>
       </segment>
     </unit>
+    <unit id="theme.backdrop.variant.calm.label">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/calm/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the backdrop variant "calm", as authors pick it (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Calm</source>
+        <target>Calme</target>
+      </segment>
+    </unit>
     <unit id="theme.backdrop.variant.calm">
       <notes>
-        <note category="location">course.json /theme/backdrop/variants/calm</note>
+        <note category="location">course.json /theme/backdrop/variants/calm/description</note>
         <note category="format">text</note>
-        <note category="context">When the backdrop variant "calm" is used (the Charte). Editor only: authors read it, learners never do</note>
+        <note category="context">What the backdrop variant "calm" is for (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
         <source>Quieter ribbons and fewer particles, behind dense screens</source>
         <target>Des rubans plus calmes et moins de particules, derrière les écrans chargés</target>
       </segment>
     </unit>
+    <unit id="theme.backdrop.variant.ink.label">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/ink/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the backdrop variant "ink", as authors pick it (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Ink</source>
+        <target>Encre</target>
+      </segment>
+    </unit>
     <unit id="theme.backdrop.variant.ink">
       <notes>
-        <note category="location">course.json /theme/backdrop/variants/ink</note>
+        <note category="location">course.json /theme/backdrop/variants/ink/description</note>
         <note category="format">text</note>
-        <note category="context">When the backdrop variant "ink" is used (the Charte). Editor only: authors read it, learners never do</note>
+        <note category="context">What the backdrop variant "ink" is for (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
         <source>Light paper with ink-coloured ribbons</source>

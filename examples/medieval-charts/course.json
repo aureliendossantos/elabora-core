@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/course.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/course.schema.json",
   "format": "elabora/0.1",
   "id": "medieval-charts",
   "title": "Drawing the sea: how medieval chart-makers worked",
@@ -96,18 +96,36 @@
     ],
     "styles": {
       "text": {
-        "initial": "Opening paragraph with an illuminated initial",
-        "lead": "Large introductory paragraph",
-        "quote": "A visitor's words, set like a quotation in the margin of a manuscript"
+        "initial": {
+          "label": "Illuminated initial",
+          "description": "Opening paragraph with an illuminated initial"
+        },
+        "lead": {
+          "label": "Lead",
+          "description": "Large introductory paragraph"
+        },
+        "quote": {
+          "label": "Margin quote",
+          "description": "A visitor's words, set like a quotation in the margin of a manuscript"
+        }
       },
       "callout": {
-        "rubric": "The idea to remember, ruled in red like a rubric"
+        "rubric": {
+          "label": "Rubric",
+          "description": "The idea to remember, ruled in red like a rubric"
+        }
       },
       "heading": {
-        "rubric": "Section heading with a red rubric number line"
+        "rubric": {
+          "label": "Rubric",
+          "description": "Section heading with a red rubric number line"
+        }
       },
       "columns": {
-        "diptych": "Two leaves hinged in the middle, opening flat as they scroll into view, to compare two things point by point"
+        "diptych": {
+          "label": "Diptych",
+          "description": "Two leaves hinged in the middle, opening flat as they scroll into view, to compare two things point by point"
+        }
       }
     },
     "backdrop": {

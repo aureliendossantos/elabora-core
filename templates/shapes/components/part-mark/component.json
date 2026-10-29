@@ -15,7 +15,7 @@
       "number": { "type": "string", "maxLength": 4, "title": "Number", "description": "The part's number, short: « 01 ».", "x-translatable": true },
       "shape": {
         "type": "string",
-        "enum": ["circle", "quarter", "half", "square"],
+        "enum": ["circle", "quarter", "half", "square"], "x-enum-labels": {"circle": "Circle", "quarter": "Quarter circle", "half": "Half circle", "square": "Square"},
         "default": "circle",
         "title": "Shape",
         "description": "The flat shape behind the number.",

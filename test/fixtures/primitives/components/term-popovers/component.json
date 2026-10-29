@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/component.schema.json",
   "id": "term-popovers",
   "title": "Terms in popovers",
   "description": "A row of terms, each opening a short definition in a popover; one at a time (data-t-exclusive=\"popover\"): opening one closes the other, Escape or a click outside closes it.",

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/plan-version.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/plan-version.schema.json",
   "version": 1,
   "date": "2026-10-05",
   "note": "With CR-001: the Willis equation typeset (TXT-2), Q-2 a numeric question.",

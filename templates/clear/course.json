@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/course.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/course.schema.json",
   "format": "elabora/0.1",
   "id": "clear",
   "title": "Your module title",
@@ -110,21 +110,48 @@
     "stylesheet": "theme/theme.css",
     "styles": {
       "screen": {
-        "cover": "Cover: the title on the left seven columns, the accent panel on the right (with the feature backdrop)",
-        "section": "Part opener: the part's number set large in the accent, the title on the left columns (with the feature backdrop)"
+        "cover": {
+          "label": "Cover",
+          "description": "The title on the left seven columns, the accent panel on the right (with the Accent panel backdrop)"
+        },
+        "section": {
+          "label": "Part opener",
+          "description": "The part's number set large in the accent, the title on the left columns (with the Accent panel backdrop)"
+        }
       },
       "text": {
-        "lead": "Large introductory paragraph",
-        "agenda": "Numbered agenda: one row per part, large numbers, hairlines between rows",
-        "checklist": "Ticked list on hairlines: takeaways, recap",
-        "meta": "Short facts in a row, separated by hairlines (audience, duration, owner)"
+        "lead": {
+          "label": "Lead",
+          "description": "Large introductory paragraph"
+        },
+        "agenda": {
+          "label": "Agenda",
+          "description": "One row per part, large numbers, hairlines between rows"
+        },
+        "checklist": {
+          "label": "Checklist",
+          "description": "Ticked list on hairlines: takeaways, recap"
+        },
+        "meta": {
+          "label": "At a glance",
+          "description": "Short facts in a row, separated by hairlines (audience, duration, owner)"
+        }
       },
       "columns": {
-        "cards": "Each column on a flat card, numbered in the accent colour",
-        "compare": "Two columns face to face: the first in grey, the second outlined in the accent"
+        "cards": {
+          "label": "Cards",
+          "description": "Each column on a flat card, numbered in the accent colour"
+        },
+        "compare": {
+          "label": "Face to face",
+          "description": "Two columns face to face: the first in grey, the second outlined in the accent"
+        }
       },
       "statement": {
-        "accent": "The statement set large with a short accent rule above it"
+        "accent": {
+          "label": "Accent rule",
+          "description": "The statement set large with a short accent rule above it"
+        }
       }
     },
     "backdrop": {
@@ -138,9 +165,18 @@
         "props": {}
       },
       "variants": {
-        "feature": "Accent panel on the right columns: cover, part openers and the end",
-        "tint": "A pale wash of the accent: a key message, a moment that stands out",
-        "ink": "Dark screen: dark ground, light text, a lighter accent"
+        "feature": {
+          "label": "Accent panel",
+          "description": "On the right columns: cover, part openers and the end"
+        },
+        "tint": {
+          "label": "Pale accent",
+          "description": "A pale wash of the accent: a key message, a moment that stands out"
+        },
+        "ink": {
+          "label": "Dark",
+          "description": "Dark ground, light text, a lighter accent"
+        }
       }
     }
   },

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/course.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/course.schema.json",
   "format": "elabora/0.1",
   "id": "planetary-gearset",
   "title": "Planetary gearsets: one gearset, many ratios",
@@ -80,15 +80,30 @@
     ],
     "styles": {
       "text": {
-        "lead": "Large introductory paragraph",
-        "legend": "Numbered legend of a figure (numbers match the markers)"
+        "lead": {
+          "label": "Lead",
+          "description": "Large introductory paragraph"
+        },
+        "legend": {
+          "label": "Legend",
+          "description": "Numbered legend of a figure (numbers match the markers)"
+        }
       },
       "callout": {
-        "rule": "Key rule on a dark blueprint card",
-        "on-dark": "Callout on a dark band (hero, stage): light text on a translucent panel"
+        "rule": {
+          "label": "Key rule",
+          "description": "Key rule on a dark blueprint card"
+        },
+        "on-dark": {
+          "label": "On dark",
+          "description": "Callout on a dark band (hero, stage): light text on a translucent panel"
+        }
       },
       "image": {
-        "bare": "No frame: for figures that bring their own background"
+        "bare": {
+          "label": "No frame",
+          "description": "No frame: for figures that bring their own background"
+        }
       }
     }
   },

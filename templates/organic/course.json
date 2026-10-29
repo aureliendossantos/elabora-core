@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/course.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/course.schema.json",
   "format": "elabora/0.1",
   "id": "organic",
   "title": "Your module title",
@@ -102,16 +102,34 @@
     "stylesheet": "theme/theme.css",
     "styles": {
       "screen": {
-        "part": "Part opener: the part's number in a soft blob above the title"
+        "part": {
+          "label": "Part opener",
+          "description": "The part's number in a soft blob above the title"
+        }
       },
       "text": {
-        "lead": "Large opening paragraph",
-        "objectives": "Numbered list in soft round counters (objectives, takeaways)",
-        "meta": "Short facts in soft pills (audience, format, what the part holds)"
+        "lead": {
+          "label": "Lead",
+          "description": "Large opening paragraph"
+        },
+        "objectives": {
+          "label": "Objectives",
+          "description": "Numbered list in soft round counters (objectives, takeaways)"
+        },
+        "meta": {
+          "label": "At a glance",
+          "description": "Short facts in soft pills (audience, format, what the part holds)"
+        }
       },
       "columns": {
-        "cards": "Each column on a soft rounded card",
-        "compare": "Two columns face to face: the first muted, the second in the colour of the part"
+        "cards": {
+          "label": "Cards",
+          "description": "Each column on a soft rounded card"
+        },
+        "compare": {
+          "label": "Face to face",
+          "description": "Two columns face to face: the first muted, the second in the colour of the part"
+        }
       }
     },
     "backdrop": {
@@ -127,9 +145,18 @@
         "props": {}
       },
       "variants": {
-        "pastel": "Paler, calmer blobs behind dense screens",
-        "night": "Deep night: glowing blobs on a dark ground, light text",
-        "mono": "Monochrome: tints of the ink colour, for sober screens"
+        "pastel": {
+          "label": "Pastel",
+          "description": "Paler, calmer blobs behind dense screens"
+        },
+        "night": {
+          "label": "Night",
+          "description": "Glowing blobs on a dark ground, light text"
+        },
+        "mono": {
+          "label": "Monochrome",
+          "description": "Tints of the ink colour, for sober screens"
+        }
       }
     }
   },

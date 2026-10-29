@@ -329,6 +329,26 @@ test('range, vec2 and vec3 edit two or three numbers, a range on a scale, low fi
   assert.match(message('instruction'), /"range" edits array values, not a string/);
 });
 
+test('a style or a variant has a description and may have a name (schemas 0.1.6); a component\'s choices only word values of their enum (E_COMPONENT_SCHEMA)', () => {
+  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const course = readJSON(dir, 'course.json');
+  course.theme.styles = { text: { encadre: { label: 'Encadré', description: 'Un paragraphe sur un fond pâle' }, note: 'Une note en marge' } };
+  course.theme.backdrop = { layers: ['fond'], variants: { calme: { label: 'Calme', description: 'Un fond plus calme' } } };
+  writeJSON(dir, 'course.json', course);
+  const file = 'components/network-path/component.json';
+  const component = readJSON(dir, file);
+  component.props.properties.sens = { type: 'string', enum: ['ligne', 'colonne'], default: 'ligne', 'x-enum-labels': { ligne: 'En ligne', diagonale: 'En diagonale' } };
+  writeJSON(dir, file, component);
+  const d = validateDir(dir).diagnostics;
+  assert.deepEqual(d.filter((x) => x.code === 'E_COMPONENT_SCHEMA').map((x) => `${x.file} ${x.path}`), [`${file} /props/properties/sens/x-enum-labels/diagonale`]);
+  assert.match(d.find((x) => x.code === 'E_COMPONENT_SCHEMA')?.message ?? '', /"diagonale" is not a value of prop "sens" \(values: "ligne", "colonne"\)/);
+  assert.ok(!d.some((x) => x.file === 'course.json' && x.severity === 'error'), 'a name and a description, or a description alone');
+  // A name without what it is for is refused.
+  course.theme.styles.text.encadre = { label: 'Encadré' };
+  writeJSON(dir, 'course.json', course);
+  assert.ok(validateDir(dir).diagnostics.some((x) => x.file === 'course.json' && x.severity === 'error' && /styles\/text\/encadre/.test(x.path ?? '')));
+});
+
 test('words of the choices (x-enum-labels, a block\'s props.enumLabels) only word values of their enum (E_OBJECT_ENUM_LABELS)', () => {
   const dir = copyExample();
   const stops = structuredClone(STOPS);
@@ -585,7 +605,7 @@ test('text density: a component\'s alternative text is not reading, its caption 
   const dir = copyExample();
   const words = (count: number) => Array.from({ length: count }, (_, index) => `mot${index}`).join(' ');
   fs.mkdirSync(path.join(dir, 'components/figure-caption'), { recursive: true });
-  writeJSON(dir, 'components/figure-caption/component.json', { $schema: 'https://elabora.studio/schemas/0.1.5/component.schema.json', id: 'figure-caption', title: 'Figure', version: '1.0.0', level: 'block', category: 'media', description: 'Une image et sa légende.',
+  writeJSON(dir, 'components/figure-caption/component.json', { $schema: 'https://elabora.studio/schemas/0.1.6/component.schema.json', id: 'figure-caption', title: 'Figure', version: '1.0.0', level: 'block', category: 'media', description: 'Une image et sa légende.',
     props: { type: 'object', additionalProperties: false, required: ['image', 'alt', 'caption'], properties: {
       image: { type: 'string', 'x-kind': 'asset' }, alt: { type: 'string', 'x-translatable': true }, caption: { type: 'string', 'x-translatable': true } } } });
   fs.writeFileSync(path.join(dir, 'components/figure-caption/template.html'), '<figure class="figure-caption"><img src="{{image}}" alt="{{alt}}"><figcaption>{{caption}}</figcaption></figure>\n');
