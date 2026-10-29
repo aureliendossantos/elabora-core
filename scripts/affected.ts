@@ -55,7 +55,8 @@ export function changedFiles(repo: string, base = 'origin/main'): string[] {
   return [...files].sort();
 }
 
-export function select(changed: string[], map: TestMap): Selection {
+/** all: the checks that exist (a deleted test file is changed, not run). */
+export function select(changed: string[], map: TestMap, all?: string[]): Selection {
   const why: Record<string, string[]> = {};
   const add = (check: string, reason: string) => { (why[check] ??= []).push(reason); };
   const unknown: string[] = [];
@@ -70,6 +71,8 @@ export function select(changed: string[], map: TestMap): Selection {
     if (!groups.length) { unknown.push(file); widened = true; for (const check of map.wideChecks) add(check, `no group names ${file}`); }
   }
   if (Object.keys(why).length) for (const check of map.smoke) add(check, 'smoke');
+  // A test file deleted by the change is no check to run.
+  for (const check of Object.keys(why)) if (all && !all.includes(check)) delete why[check];
   return { changed, checks: Object.keys(why).sort(), why, unknown, widened };
 }
 

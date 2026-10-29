@@ -16,7 +16,7 @@ const all = ['e2e', 'matrix'].flatMap((kind) => fs.readdirSync(path.join(root, '
 
 const problems = mapProblems(groups, all);
 if (problems.length) console.log(`test/groups.ts: ${problems.join('; ')}.`);
-const selection = select(changedFiles(root, base), groups);
+const selection = select(changedFiles(root, base), groups, all);
 console.log(describe(selection, all));
 if (args.includes('--dry-run')) process.exit(0);
 

@@ -103,8 +103,9 @@ export async function acquire(label: string, options: { onWait?: (holders: Owner
       // The tickets ahead of this one whose process still lives.
       const ahead = fs.readdirSync(queue).sort().filter((name) => {
         if (path.join(queue, name) >= ticket) return false;
-        const pid = Number(name.split('-')[1]);
-        if (alive(pid)) return true;
+        const [asked, pid] = name.split('-').map(Number);
+        // A ticket hours old is a dead waiter's whose pid now names another process.
+        if (alive(pid!) && Date.now() - asked! < 6 * 3600_000) return true;
         fs.rmSync(path.join(queue, name), { force: true });
         return false;
       }).length;

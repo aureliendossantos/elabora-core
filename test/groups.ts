@@ -23,7 +23,7 @@ export const groups: TestMap = {
     'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'tsconfig*.json', '.gitattributes', '.gitignore', 'test/helpers.ts', 'test/isolate.ts'
   ],
   wideChecks: [e2e('player'), e2e('lms'), e2e('starter-blocks'), e2e('activities'), e2e('narration'), e2e('canvas'), e2e('design'), e2e('primitives'), matrix('lms-matrix'), matrix('templates')],
-  none: ['docs/**', '*.md', '.sampo/**', '.agents/**', '.github/**', 'ai-costs/**', 'LICENSE', 'NOTICE', 'test/unit/**', 'test/bench/**', 'test/groups.ts', 'scripts/affected.ts', 'scripts/test-affected.ts', 'scripts/release.ts', 'scripts/costs-record.ts', 'scripts/gen-ai-costs.ts', 'scripts/gen-docs.ts', 'scripts/gen-agent-rules.ts', 'bin/**'],
+  none: ['docs/**', '*.md', '**/*.md', '.sampo/**', '.agents/**', '.github/**', 'ai-costs/**', 'LICENSE', 'NOTICE', 'test/unit/**', 'test/bench/**', 'test/groups.ts', 'scripts/affected.ts', 'scripts/test-affected.ts', 'scripts/release.ts', 'scripts/costs-record.ts', 'scripts/gen-ai-costs.ts', 'scripts/gen-docs.ts', 'scripts/gen-agent-rules.ts', 'bin/**'],
   testOf: (file) => /^test\/(e2e|matrix)\/([\w-]+)\.test\.ts$/.exec(file)?.slice(1, 3).join('/') ?? null,
   groups: [
     { name: 'activities', files: ['packages/player/src/activit*.ts', 'packages/player/src/fill-in.ts', 'packages/player/src/sort.ts', 'packages/player/src/numeric.ts', 'packages/core/src/components/**', 'test/activities-fixture.ts'], checks: [e2e('activities'), e2e('starter-interactions'), e2e('lms')] },
