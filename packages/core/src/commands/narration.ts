@@ -3,7 +3,7 @@ import { binaryFile, filesIn, pathsUnder } from '../project/files.ts';
 import { parseJSON } from '../util/json.ts';
 import type { FileHash, ProjectFiles } from '../project/files.ts';
 import { narrationLines, narrationAudioPath, narrationSidecarPath, readNarrationSidecar, NARRATION_DIR, isSoundLine } from '../narration/narration.ts';
-import type { Narration, NarrationLine, NarrationAudio, WrittenNarrationLine } from '../narration/narration.ts';
+import type { Narration, NarrationLine, NarrationAudio, NarrationSoundLine, WrittenNarrationLine } from '../narration/narration.ts';
 import { CommandError, Draft, assignFields, commandContext, insertAt, listIn, screenFile, type CommandContext, type CommandOutput } from './context.ts';
 import { reanchorLine, type Reanchored } from './timing.ts';
 import { lineWordTimes } from '../narration/words.ts';
@@ -54,10 +54,16 @@ function editNarration<R>(context: CommandContext, screenId: string, change: (na
 // Every line id of a screen, every track counted.
 const screenLineIds = (screen: Screen): Set<string> => new Set([...voiceLinesOf(screen, typeof screen.id === 'string' ? screen.id : '').map((entry) => entry.line.id), ...soundLinesOf(screen, typeof screen.id === 'string' ? screen.id : '').map((entry) => entry.line.id)]);
 
-const lineIn = (narration: Narration, screenId: string, id: string): NarrationLine => {
+// A line of the narration, a voice's or a sound's (D67).
+const anyLineIn = (narration: Narration, screenId: string, id: string): WrittenNarrationLine => {
   const line = narration.lines.find((candidate) => isRecord(candidate) && candidate.id === id);
   if (!line) throw new CommandError(`No line "${id}" in the narration of "${screenId}" (lines: ${narration.lines.map((candidate) => candidate.id).join(', ') || 'none'}).`);
-  if (isSoundLine(line)) throw new CommandError(`Line "${id}" of "${screenId}" is a sound (D67): change it in the screen's file, or remove it.`);
+  return line;
+};
+// A voice's line: a sound line has no text, speaker nor audio of its own.
+const lineIn = (narration: Narration, screenId: string, id: string): NarrationLine => {
+  const line = anyLineIn(narration, screenId, id);
+  if (isSoundLine(line)) throw new CommandError(`Line "${id}" of "${screenId}" is a sound (D67): it has no text nor voice (its caption, sound and volume change with update_narration_line).`);
   return line;
 };
 
@@ -79,7 +85,8 @@ export interface AddNarrationLineArgs {
   screen: string;
   // A line of that layer's narration (D62); default: the screen's.
   layer?: string;
-  line: Omit<NarrationLine, 'id'> & { id?: string };
+  // A voice's line, or a sound's (D67: { sound, caption?, volume? }, at its place among the lines).
+  line: (Omit<NarrationLine, 'id'> | Omit<NarrationSoundLine, 'id'>) & { id?: string };
   // After this line (null: first); default: last.
   after?: string | null;
 }
@@ -91,7 +98,8 @@ export function addNarrationLine(context: CommandContext, { screen, layer, line,
     if (line.id && ids.has(line.id)) throw new CommandError(`Screen "${screen}" already has a line "${line.id}" (ids are unique in the screen, every track counted).`);
     let id = line.id;
     for (let n = ids.size + 1; !id; n++) if (!ids.has(`l${n}`)) id = `l${n}`;
-    const added = { ...line, id } as NarrationLine;
+    if (isSoundLine(line) && ('text' in line || 'speaker' in line)) throw new CommandError('A sound line has a sound, not a text nor a speaker: its caption says what it is for learners.');
+    const added = { ...line, id } as WrittenNarrationLine;
     if (after === null) narration.lines.unshift(added);
     else insertAt(narration.lines, added, { after });
     return { line: id };
@@ -99,14 +107,28 @@ export function addNarrationLine(context: CommandContext, { screen, layer, line,
 }
 
 export const LINE_FIELDS = ['text', 'speaker', 'step', 'pauseBefore', 'delivery', 'pronunciations'] as const;
-export type UpdateNarrationLineArgs = { screen: string; line: string } & { [K in (typeof LINE_FIELDS)[number]]?: NarrationLine[K] | null };
+// A sound line's (D67): its sound, its caption (advised, never required) and its volume.
+export const SOUND_LINE_FIELDS = ['sound', 'caption', 'volume', 'step', 'pauseBefore'] as const;
+export type UpdateNarrationLineArgs = { screen: string; line: string } & { [K in (typeof LINE_FIELDS)[number]]?: NarrationLine[K] | null }
+  & { sound?: string; caption?: string | null; volume?: number | null };
 
 // A line's text, speaker, step or pause (null: the default). A new text takes the line's word
 // anchors with their words (reanchorLine): anchors whose words are gone are listed as lost.
 export function updateNarrationLine(context: CommandContext, args: UpdateNarrationLineArgs): CommandOutput<{ anchors?: { moved: Reanchored[]; lost: Reanchored[] } }> {
   if (args.text === null) throw new CommandError('A line has a text: remove the line instead.');
   return editNarration(context, args.screen, (narration, screen, _draft, layer) => {
-    const line = lineIn(narration, args.screen, args.line);
+    const written = anyLineIn(narration, args.screen, args.line);
+    if (isSoundLine(written)) {
+      const wrong = (Object.keys(args) as string[]).filter((key) => key !== 'screen' && key !== 'line' && args[key as keyof UpdateNarrationLineArgs] !== undefined && !(SOUND_LINE_FIELDS as readonly string[]).includes(key));
+      if (wrong.length) throw new CommandError(`Line "${args.line}" is a sound (D67): it has no ${wrong.join(', ')} (its sound, caption, volume, step and pause change).`);
+      if (args.sound === null || (args.sound !== undefined && typeof args.sound !== 'string')) throw new CommandError('A sound line keeps a sound: remove the line instead.');
+      if (layer !== null && typeof args.step === 'number') throw new CommandError(`Line "${args.line}" is said on layer "${layer}", whose timeline has no steps.`);
+      if (typeof args.caption === 'string' && !args.caption.trim()) args = { ...args, caption: null };
+      assignFields(written, args, SOUND_LINE_FIELDS);
+      return {};
+    }
+    if (args.sound !== undefined || args.caption !== undefined || args.volume !== undefined) throw new CommandError(`Line "${args.line}" is a voice's: it has no sound, caption nor volume.`);
+    const line = written;
     if (layer !== null && typeof args.step === 'number') throw new CommandError(`Line "${args.line}" is said on layer "${layer}", whose timeline has no steps.`);
     const before = line.text;
     assignFields(line, args, LINE_FIELDS);
@@ -126,7 +148,7 @@ export interface MoveNarrationLineArgs {
 // Within the narration that holds it (a line moves to another narration by being removed and added).
 export function moveNarrationLine(context: CommandContext, { screen, line, after }: MoveNarrationLineArgs): NoResult {
   return editNarration(context, screen, (narration) => {
-    const moved = lineIn(narration, screen, line);
+    const moved = anyLineIn(narration, screen, line);
     narration.lines = narration.lines.filter((candidate) => candidate !== moved);
     if (after === null) narration.lines.unshift(moved);
     else insertAt(narration.lines, moved, { after });
@@ -214,7 +236,7 @@ export function splitStep(context: CommandContext, { screen: screenId, line }: S
 // A line goes with its audio, in every language (the last line takes the narration with it).
 export function removeNarrationLine(context: CommandContext, { screen, line }: { screen: string; line: string }): NoResult {
   return editNarration(context, screen, (narration, _screen, draft) => {
-    const removed = lineIn(narration, screen, line);
+    const removed = anyLineIn(narration, screen, line);
     narration.lines = narration.lines.filter((candidate) => candidate !== removed);
     for (const path of pathsUnder(context.files, NARRATION_DIR)) {
       const match = /^assets\/narration\/[^/]+\/([^/]+)\/([^/]+)\.(m4a|json)$/.exec(path);

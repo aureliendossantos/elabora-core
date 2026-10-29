@@ -1,0 +1,219 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.5/blocks/matrix.schema.json",
+  "title": "matrix block props",
+  "description": "Items placed on two axes, in four quadrants; one quadrant can carry the message.",
+  "x-category": "chart",
+  "x-ai-instructions": "One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). x and y of items go from 0 to 1 (left to right, bottom to top).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "takeaway",
+    "x",
+    "y",
+    "quadrants",
+    "items"
+  ],
+  "properties": {
+    "takeaway": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "x-translatable": true,
+      "description": "The sentence the chart proves, shown as its title: \"Most incidents start with an email\", not \"Incidents by origin\"."
+    },
+    "context": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240,
+      "x-translatable": true,
+      "description": "Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway."
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "x-translatable": true,
+      "description": "Where the data comes from, shown under the chart."
+    },
+    "x": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label"
+      ],
+      "description": "The horizontal axis.",
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "x-translatable": true,
+          "description": "Its name."
+        },
+        "low": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "x-translatable": true,
+          "description": "Its left end."
+        },
+        "high": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "x-translatable": true,
+          "description": "Its right end."
+        }
+      }
+    },
+    "y": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label"
+      ],
+      "description": "The vertical axis.",
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "x-translatable": true,
+          "description": "Its name."
+        },
+        "low": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "x-translatable": true,
+          "description": "Its bottom end."
+        },
+        "high": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 24,
+          "x-translatable": true,
+          "description": "Its top end."
+        }
+      }
+    },
+    "quadrants": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "topLeft",
+        "topRight",
+        "bottomLeft",
+        "bottomRight"
+      ],
+      "description": "The quadrants' names.",
+      "properties": {
+        "topLeft": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "x-translatable": true,
+          "description": "Top left."
+        },
+        "topRight": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "x-translatable": true,
+          "description": "Top right."
+        },
+        "bottomLeft": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "x-translatable": true,
+          "description": "Bottom left."
+        },
+        "bottomRight": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32,
+          "x-translatable": true,
+          "description": "Bottom right."
+        }
+      }
+    },
+    "highlightQuadrant": {
+      "enum": [
+        "topLeft",
+        "topRight",
+        "bottomLeft",
+        "bottomRight"
+      ],
+      "description": "The quadrant that carries the message."
+    },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "description": "The items.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "x",
+          "y"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,24}$",
+            "description": "Stable id of the item: highlights, voice beats and translations name it."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "x-translatable": true,
+            "description": "The item."
+          },
+          "x": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "From left (0) to right (1)."
+          },
+          "y": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "From bottom (0) to top (1)."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "x-translatable": true,
+            "description": "Why it sits there, said on hover."
+          },
+          "at": {
+            "$ref": "../defs.schema.json#/$defs/anchor",
+            "description": "Narrated screens: the moment the voice brings this item ({ \"line\": \"l2\", \"word\": \"phishing\" }). It appears then, and the other items step back while the voice talks about it, until the next item's moment."
+          }
+        }
+      }
+    },
+    "highlight": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]{1,24}$",
+      "description": "Id of the item that carries the idea: it takes the accent colour, the others step back."
+    },
+    "spotlightEnd": {
+      "$ref": "../defs.schema.json#/$defs/anchor",
+      "description": "Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came."
+    },
+    "revealOnBeats": {
+      "type": "boolean",
+      "default": true,
+      "description": "Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false)."
+    }
+  }
+}

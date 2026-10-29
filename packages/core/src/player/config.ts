@@ -30,6 +30,10 @@ export interface ControlsOptions {
   speeds: 'none' | '0.75-1.5' | '0.75-2';
 }
 
+// What the outline's button reads: « Sommaire », the title of the part shown, or of the screen shown.
+export const OUTLINE_LABELS = ['outline', 'section', 'screen'] as const;
+export type OutlineLabel = typeof OUTLINE_LABELS[number];
+
 export const CONTROLS_DEFAULTS: Readonly<ControlsOptions> = { seekBar: true, captionsByDefault: false, volume: true, transcript: true, speeds: '0.75-2' };
 
 // The speeds learners may choose, by option.
@@ -42,7 +46,7 @@ export const SPEEDS: Readonly<Record<ControlsOptions['speeds'], readonly number[
 // An item as configured, every option filled in.
 export type ConfiguredItem =
   | { id: 'logo'; enabled: boolean; options: { asset: string | null; alt: string; plate: boolean } }
-  | { id: 'outline'; enabled: boolean; options: { screenTitle: boolean } }
+  | { id: 'outline'; enabled: boolean; options: { label: OutlineLabel } }
   | { id: 'controls'; enabled: boolean; options: ControlsOptions }
   | { id: 'glossary'; enabled: boolean; options: { linkTerms: boolean } }
   | { id: Exclude<PlayerItemId, 'logo' | 'outline' | 'controls' | 'glossary'>; enabled: boolean; options: Record<string, never> };
@@ -88,13 +92,13 @@ export function configuredItem(item: PlayerItem): ConfiguredItem | null {
   if (!isItemId(item.id)) return null;
   const enabled = item.enabled !== false;
   const options = isRecord(item.options) ? item.options : {};
-  const flag = (name: keyof ControlsOptions | 'screenTitle' | 'plate' | 'linkTerms', fallback: boolean) => (typeof options[name] === 'boolean' ? options[name] as boolean : fallback);
+  const flag = (name: keyof ControlsOptions | 'plate' | 'linkTerms', fallback: boolean) => (typeof options[name] === 'boolean' ? options[name] as boolean : fallback);
   switch (item.id) {
     case 'logo': return { id: 'logo', enabled, options: { asset: typeof options.asset === 'string' && options.asset ? options.asset : null, alt: typeof options.alt === 'string' ? options.alt : '', plate: flag('plate', false) } };
     case 'glossary': return { id: 'glossary', enabled, options: { linkTerms: flag('linkTerms', true) } };
     // « Espace flexible »: always on.
     case 'spacer': return { id: 'spacer', enabled: true, options: {} };
-    case 'outline': return { id: 'outline', enabled, options: { screenTitle: flag('screenTitle', false) } };
+    case 'outline': return { id: 'outline', enabled, options: { label: (OUTLINE_LABELS as readonly unknown[]).includes(options.label) ? options.label as OutlineLabel : 'outline' } };
     case 'controls': return {
       id: 'controls', enabled,
       options: {
@@ -202,7 +206,7 @@ export function shownPlayer(config: PlayerConfig, content: PlayerContent, { asse
       if (hiddenBecause(item, content)) return [];
       switch (item.id) {
         case 'logo': return [{ id: 'logo', src: assetPath(item.options.asset ?? ''), alt: item.options.alt, plate: item.options.plate }];
-        case 'outline': return [{ id: 'outline', screenTitle: item.options.screenTitle }];
+        case 'outline': return [{ id: 'outline', label: item.options.label }];
         case 'controls': return [{ id: 'controls', seekBar: item.options.seekBar, captionsByDefault: item.options.captionsByDefault, volume: item.options.volume, transcript: item.options.transcript, speeds: [...SPEEDS[item.options.speeds]] }];
         default: return [{ id: item.id }];
       }

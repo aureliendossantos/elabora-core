@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.5/blocks/sort.schema.json",
+  "title": "sort block props",
+  "description": "« Classer »: items the learner places, by choosing an item then where it goes (a mouse may also drag): each with its match (pairs), into two to four categories (categories), or in order (order). Scored by the share of its items placed right; correct when all are. After the last try each item shows whether it was right, and where it belonged.",
+  "x-category": "assessment",
+  "x-ai-instructions": "Use it to tell cases apart (categories: sort examples, and near misses, under the concepts they illustrate), to link two sets (pairs: a term and its definition, a symptom and its cause) or to order a procedure or a timeline (order). Four to eight items: fewer is a guess, more is a chore on a phone. pairs: as many targets as items, each target holding one; the last pair is then given by elimination, so prefer categories when there are more than five pairs. categories: two to four targets, each with at least one item, items written as cases from the learner's work rather than definitions. order: write the items in the right order, the player shows them shuffled; no targets. Keep items short (a few words, or an image with its alt). Always write feedback.incorrect that explains the rule that sorts them, and feedback.correct that says why.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "presentation": {
+      "enum": ["pairs", "categories", "order"],
+      "default": "pairs",
+      "x-group": "design",
+      "description": "pairs: each item goes to its own target, each target takes one item. categories: two to four targets, each taking several items. order: no targets, the items are put in order (written in the right order, shown shuffled)."
+    },
+    "stem": {
+      "$ref": "../defs.schema.json#/$defs/markdown",
+      "x-translatable": true,
+      "description": "The instruction (Associez chaque symptôme à sa cause.)."
+    },
+    "items": {
+      "type": "array",
+      "maxItems": 12,
+      "description": "What the learner places, in the right order for order (they are shown in a fixed shuffled order).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id"],
+        "anyOf": [{ "required": ["text"] }, { "required": ["image"] }],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]{1,24}$" },
+          "text": { "type": "string", "minLength": 1, "maxLength": 200, "x-translatable": true },
+          "image": { "$ref": "../defs.schema.json#/$defs/assetPath" },
+          "alt": { "type": "string", "maxLength": 250, "x-translatable": true, "description": "What the image shows. Required with image." },
+          "target": { "type": "string", "pattern": "^[a-z0-9-]{1,24}$", "description": "pairs and categories: the id of the target the item belongs to." }
+        }
+      }
+    },
+    "targets": {
+      "type": "array",
+      "maxItems": 12,
+      "description": "pairs and categories: where items go (two to four categories; as many targets as items for pairs).",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id"],
+        "anyOf": [{ "required": ["text"] }, { "required": ["image"] }],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]{1,24}$" },
+          "text": { "type": "string", "minLength": 1, "maxLength": 200, "x-translatable": true },
+          "image": { "$ref": "../defs.schema.json#/$defs/assetPath" },
+          "alt": { "type": "string", "maxLength": 250, "x-translatable": true, "description": "What the image shows. Required with image." }
+        }
+      }
+    },
+    "feedback": { "$ref": "../defs.schema.json#/$defs/activityFeedback" },
+    "objective": { "$ref": "../defs.schema.json#/$defs/planId", "description": "Plan objective measured." },
+    "scored": { "type": "boolean", "default": true, "description": "Counts in the course score (the share of its items placed right)." },
+    "weight": { "type": "number", "minimum": 0.1, "maximum": 10, "default": 1 },
+    "attempts": { "type": "integer", "minimum": 1, "maximum": 5, "default": 1, "description": "Tries before the placements are final." },
+    "showCorrectAnswer": { "type": "boolean", "default": true, "description": "After the last try, each item placed wrong says where it belonged." }
+  }
+}
