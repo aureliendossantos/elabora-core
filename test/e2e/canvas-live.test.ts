@@ -85,11 +85,16 @@ test('the live bars: panels, the outline, Previous and Next said to the host, th
     await page.click('.t-outline-btn');
     assert.match(await page.locator('.t-menu-where').textContent() ?? '', /2 sur 6/);
     await page.click('.t-menu-item >> text=Simulation');
+    // The progress in parts: the learner at the second screen of the first part, every part open; a
+    // part goes to its first screen.
+    assert.deepEqual(await page.$$eval('.t-part', (nodes) => nodes.map((node) => [node.hasAttribute('data-current'), (node as HTMLElement).style.getPropertyValue('--t-part'), node.getAttribute('aria-disabled')])), [[true, '50', null], [false, '0', null], [false, '0', null]]);
+    await page.click('.t-part:nth-child(3)');
     messages = await sent();
     assert.deepEqual(messages.filter((message) => message.type === 'elabora/navigate'), [
       { type: 'elabora/navigate', screen: 'premier-reflexe', by: 'next' },
       { type: 'elabora/navigate', screen: 'accueil', by: 'previous' },
-      { type: 'elabora/navigate', screen: 'simulation', by: 'outline' }
+      { type: 'elabora/navigate', screen: 'simulation', by: 'outline' },
+      { type: 'elabora/navigate', screen: 'evaluation', by: 'progress' }
     ]);
     assert.equal(await page.evaluate(() => (window as unknown as LiveWindow).__elaboraCanvas.screen), 'chemin', 'the canvas waits for the host');
     // The host renders the screen the author went to: the bars follow.
