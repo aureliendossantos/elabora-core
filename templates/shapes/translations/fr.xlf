@@ -1009,9 +1009,21 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
 - Module suivant : son titre</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.lead.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/lead/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "lead" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Lead</source>
+        <target>Chapeau</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.lead">
       <notes>
-        <note category="location">course.json /theme/styles/text/lead</note>
+        <note category="location">course.json /theme/styles/text/lead/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "lead" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1020,9 +1032,21 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>Grand paragraphe d'ouverture</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.numbered.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/numbered/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "numbered" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Numbered list</source>
+        <target>Liste numérotée</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.numbered">
       <notes>
-        <note category="location">course.json /theme/styles/text/numbered</note>
+        <note category="location">course.json /theme/styles/text/numbered/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "numbered" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1031,9 +1055,21 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>Liste numérotée, chaque chiffre dans une forme plate (objectifs, points à retenir)</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.meta.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/meta/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "meta" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>At a glance</source>
+        <target>En bref</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.meta">
       <notes>
-        <note category="location">course.json /theme/styles/text/meta</note>
+        <note category="location">course.json /theme/styles/text/meta/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "meta" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1042,9 +1078,21 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>Informations courtes en étiquettes grasses (durée, format, public)</target>
       </segment>
     </unit>
+    <unit id="theme.style.columns.cards.label">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/cards/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the columns style "cards" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Cards</source>
+        <target>Cartes</target>
+      </segment>
+    </unit>
     <unit id="theme.style.columns.cards">
       <notes>
-        <note category="location">course.json /theme/styles/columns/cards</note>
+        <note category="location">course.json /theme/styles/columns/cards/description</note>
         <note category="format">text</note>
         <note category="context">What the columns style "cards" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1053,9 +1101,21 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>Chaque colonne sur une carte plate surmontée d'une forme</target>
       </segment>
     </unit>
+    <unit id="theme.style.columns.compare.label">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/compare/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the columns style "compare" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Face to face</source>
+        <target>Face à face</target>
+      </segment>
+    </unit>
     <unit id="theme.style.columns.compare">
       <notes>
-        <note category="location">course.json /theme/styles/columns/compare</note>
+        <note category="location">course.json /theme/styles/columns/compare/description</note>
         <note category="format">text</note>
         <note category="context">What the columns style "compare" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1064,26 +1124,50 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>Deux colonnes face à face : la première sur le papier, la seconde sur le bleu des formes</target>
       </segment>
     </unit>
-    <unit id="theme.backdrop.variant.earth">
+    <unit id="theme.backdrop.variant.earth.label">
       <notes>
-        <note category="location">course.json /theme/backdrop/variants/earth</note>
+        <note category="location">course.json /theme/backdrop/variants/earth/label</note>
         <note category="format">text</note>
-        <note category="context">When the backdrop variant "earth" is used (the Charte). Editor only: authors read it, learners never do</note>
+        <note category="context">Name of the backdrop variant "earth", as authors pick it (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
       </notes>
       <segment state="translated">
-        <source>Earth tones: terracotta, ochre and olive shapes on sand</source>
-        <target>Tons de terre : des formes terre cuite, ocre et olive sur un fond sable</target>
+        <source>Earth</source>
+        <target>Terre</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.earth">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/earth/description</note>
+        <note category="format">text</note>
+        <note category="context">What the backdrop variant "earth" is for (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Terracotta, ochre and olive shapes on sand</source>
+        <target>Des formes terre cuite, ocre et olive sur un fond sable</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.mono.label">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/mono/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the backdrop variant "mono", as authors pick it (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Monochrome</source>
+        <target>Monochrome</target>
       </segment>
     </unit>
     <unit id="theme.backdrop.variant.mono">
       <notes>
-        <note category="location">course.json /theme/backdrop/variants/mono</note>
+        <note category="location">course.json /theme/backdrop/variants/mono/description</note>
         <note category="format">text</note>
-        <note category="context">When the backdrop variant "mono" is used (the Charte). Editor only: authors read it, learners never do</note>
+        <note category="context">What the backdrop variant "mono" is for (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Monochrome and calmer: ink tints kept to the edges, for dense screens</source>
-        <target>Monochrome et plus calme : des teintes d'encre tenues aux bords, pour les écrans chargés</target>
+        <source>Calmer: ink tints kept to the edges, for dense screens</source>
+        <target>Plus calme : des teintes d'encre tenues aux bords, pour les écrans chargés</target>
       </segment>
     </unit>
     <unit id="component.part-mark.title">
@@ -1174,6 +1258,50 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>La forme plate derrière le numéro.</target>
       </segment>
     </unit>
+    <unit id="component.part-mark.prop.shape.value.circle">
+      <notes>
+        <note category="location">components/part-mark/component.json /props/properties/shape/x-enum-labels/circle</note>
+        <note category="format">text</note>
+        <note category="context">Value "circle" of the setting "shape" of the course's block type "part-mark", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Circle</source>
+        <target>Cercle</target>
+      </segment>
+    </unit>
+    <unit id="component.part-mark.prop.shape.value.quarter">
+      <notes>
+        <note category="location">components/part-mark/component.json /props/properties/shape/x-enum-labels/quarter</note>
+        <note category="format">text</note>
+        <note category="context">Value "quarter" of the setting "shape" of the course's block type "part-mark", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Quarter circle</source>
+        <target>Quart de cercle</target>
+      </segment>
+    </unit>
+    <unit id="component.part-mark.prop.shape.value.half">
+      <notes>
+        <note category="location">components/part-mark/component.json /props/properties/shape/x-enum-labels/half</note>
+        <note category="format">text</note>
+        <note category="context">Value "half" of the setting "shape" of the course's block type "part-mark", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Half circle</source>
+        <target>Demi-cercle</target>
+      </segment>
+    </unit>
+    <unit id="component.part-mark.prop.shape.value.square">
+      <notes>
+        <note category="location">components/part-mark/component.json /props/properties/shape/x-enum-labels/square</note>
+        <note category="format">text</note>
+        <note category="context">Value "square" of the setting "shape" of the course's block type "part-mark", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Square</source>
+        <target>Carré</target>
+      </segment>
+    </unit>
     <unit id="component.part-mark.prop.colour.title">
       <notes>
         <note category="location">components/part-mark/component.json /props/properties/colour/title</note>
@@ -1260,6 +1388,28 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <segment state="translated">
         <source>stack: title, lead and page one under the other, on the left of the slide; split: title and lead on the left, the page on the right.</source>
         <target>stack : le titre, le chapeau et la page l'un sous l'autre, à gauche de la diapositive ; split : le titre et le chapeau à gauche, la page à droite.</target>
+      </segment>
+    </unit>
+    <unit id="component.poster.prop.arrangement.value.stack">
+      <notes>
+        <note category="location">components/poster/component.json /props/properties/arrangement/x-enum-labels/stack</note>
+        <note category="format">text</note>
+        <note category="context">Value "stack" of the setting "arrangement" of the course's screen layout "poster", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Stacked</source>
+        <target>Empilé</target>
+      </segment>
+    </unit>
+    <unit id="component.poster.prop.arrangement.value.split">
+      <notes>
+        <note category="location">components/poster/component.json /props/properties/arrangement/x-enum-labels/split</note>
+        <note category="format">text</note>
+        <note category="context">Value "split" of the setting "arrangement" of the course's screen layout "poster", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Page on the right</source>
+        <target>Page à droite</target>
       </segment>
     </unit>
   </file>

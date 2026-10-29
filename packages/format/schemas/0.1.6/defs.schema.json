@@ -9,6 +9,21 @@
       "type": "string",
       "pattern": "^[a-z][a-z0-9-]{0,47}$"
     },
+    "designWords": {
+      "description": "How a named style or backdrop variant reads in the editor (the Charte, the inspector): its name and what it is for, in the course's language. The description alone is enough: the name is then the identifier, capitalised. The identifier stays what screens, blocks and stylesheets use; these words are translated with the course.",
+      "oneOf": [
+        { "type": "string", "minLength": 1, "maxLength": 300, "description": "What it is for, in one line." },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["label", "description"],
+          "properties": {
+            "label": { "type": "string", "minLength": 1, "maxLength": 40, "description": "Its name, as authors pick it: « Chapeau », « Sur fond sombre »." },
+            "description": { "type": "string", "minLength": 1, "maxLength": 300, "description": "What it is for, in one line." }
+          }
+        }
+      ]
+    },
     "planId": {
       "description": "Identifier of a plan element (objective, item, locked text, question, source). Uppercase letters, digits, hyphens or underscores, for example OBJ-2, ITEM-5, TXT-3, Q-12, SRC-1.",
       "type": "string",

@@ -19,7 +19,11 @@
         ],
         "default": "rose",
         "x-group": "design",
-        "description": "rose: a wind rose and its rhumb lines behind the title; none: the band alone."
+        "description": "rose: a wind rose and its rhumb lines behind the title; none: the band alone.",
+        "x-enum-labels": {
+          "rose": "Wind rose",
+          "none": "Band alone"
+        }
       }
     }
   },

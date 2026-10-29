@@ -14,6 +14,7 @@ import type { Block, ComponentSlot, ComponentSource, JsonSchema } from '../proje
 import { tokenNames } from './theme.ts';
 import { checkMarkdown, checkAsset } from './blocks.ts';
 import { checkCss } from './design.ts';
+import { enumLabelProblems } from './object-props.ts';
 import { mathErrors } from '../compile/markdown.ts';
 import { readLock } from '../compile/state-model.ts';
 import { pendingMigrations } from '../components/migrate.ts';
@@ -95,6 +96,11 @@ function checkDefinition(ctx: CourseCheckContext, component: ComponentDescriptor
     if (schema.items) walkKinds(schema.items, `${path}/items`);
   };
   walkKinds(component.schema, '/props');
+  // How its choices read in the inspector (x-enum-labels): only values of their enum.
+  const own = manifest.props ? { schema: manifest.props, at: '/props' } : { schema: manifest.propsExtend, at: '/propsExtend' };
+  for (const [name, prop] of entriesOf(isRecord(own.schema) && isRecord(own.schema.properties) ? own.schema.properties : {})) {
+    for (const problem of enumLabelProblems(name, prop)) reporter.emit('E_COMPONENT_SCHEMA', { file, path: `${own.at}/properties/${name}${problem.path}`, target: id, message: `${id}: ${problem.message}.` });
+  }
   if (manifest.extends && manifest.props && component.behavior) reporter.emit('E_COMPONENT_SCHEMA', { file, path: '/props', target: id, message: `A fork of ${component.root} keeps the props of ${component.root}: use propsExtend to add props instead of replacing them.` });
   const omitted = Array.isArray(manifest.propsOmit) ? manifest.propsOmit.map(String) : [];
   if (omitted.length && !manifest.extends) reporter.emit('E_COMPONENT_SCHEMA', { file, path: '/propsOmit', target: id, message: 'propsOmit is for forks: it drops props of the parent.' });

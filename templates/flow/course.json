@@ -111,14 +111,32 @@
     "stylesheet": "theme/theme.css",
     "styles": {
       "text": {
-        "lead": "Large introductory paragraph",
-        "meta": "Small monospaced line: a date, a duration, a version",
-        "list": "Numbered list with large monospaced numbers (objectives, agenda)",
-        "recap": "Checklist on a card (recap, what to remember)"
+        "lead": {
+          "label": "Lead",
+          "description": "Large introductory paragraph"
+        },
+        "meta": {
+          "label": "At a glance",
+          "description": "Small monospaced line: a date, a duration, a version"
+        },
+        "list": {
+          "label": "Numbered list",
+          "description": "Numbered list with large monospaced numbers (objectives, agenda)"
+        },
+        "recap": {
+          "label": "Recap",
+          "description": "Checklist on a card (recap, what to remember)"
+        }
       },
       "columns": {
-        "cards": "Each column on its own card",
-        "versus": "Two columns face to face, the second in the accent colour"
+        "cards": {
+          "label": "Cards",
+          "description": "Each column on its own card"
+        },
+        "versus": {
+          "label": "Face to face",
+          "description": "Two columns face to face, the second in the accent colour"
+        }
       }
     },
     "backdrop": {
@@ -132,9 +150,18 @@
         "props": {}
       },
       "variants": {
-        "hero": "The ribbons rise across the right of the window: the cover and the end",
-        "calm": "Quieter ribbons and fewer particles, behind dense screens",
-        "ink": "Light paper with ink-coloured ribbons"
+        "hero": {
+          "label": "Full ribbons",
+          "description": "The ribbons rise across the right of the window: the cover and the end"
+        },
+        "calm": {
+          "label": "Calm",
+          "description": "Quieter ribbons and fewer particles, behind dense screens"
+        },
+        "ink": {
+          "label": "Ink",
+          "description": "Light paper with ink-coloured ribbons"
+        }
       }
     }
   },

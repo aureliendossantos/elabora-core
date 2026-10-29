@@ -9,7 +9,7 @@ import type { JsonSchema } from '@elabora/format/json-schema';
 
 // The format version the packages implement: its schemas are in packages/format/schemas/<version>/.
 // The version of the schemas (their folder and $id): additive changes to a published version are
-// published as its next patch (D64: 0.1.1, then 0.1.2 for continuity, D65, then 0.1.3 for sounds, D67, then 0.1.4 without the opening's eyebrow, D63 amended, then 0.1.5 with the outline's label, D58, then 0.1.6 with a fork's propsOmit and the design's labels). The format a course declares stays elabora/<FORMAT_VERSION>.
+// published as its next patch (D64: 0.1.1, then 0.1.2 for continuity, D65, then 0.1.3 for sounds, D67, then 0.1.4 without the opening's eyebrow, D63 amended, then 0.1.5 with the outline's label, D58, then 0.1.6 with the words of a charter's styles and variants and of a component's choices, D68, and a fork's propsOmit). The format a course declares stays elabora/<FORMAT_VERSION>.
 const SCHEMA_VERSION = '0.1.6';
 const FORMAT_VERSION = '0.1';
 

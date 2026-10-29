@@ -116,16 +116,16 @@
     "stylesheet": "theme/theme.css",
     "styles": {
       "text": {
-        "lead": "Large opening paragraph",
-        "numbered": "Numbered list, each number handwritten on a paper disc (objectives, takeaways)",
-        "tags": "Short facts as handwritten paper tags (length, format, audience)"
+        "lead": { "label": "Lead", "description": "Large opening paragraph" },
+        "numbered": { "label": "Numbered list", "description": "Numbered list, each number handwritten on a paper disc (objectives, takeaways)" },
+        "tags": { "label": "Tags", "description": "Short facts as handwritten paper tags (length, format, audience)" }
       },
       "columns": {
-        "cards": "Each column on its own coloured paper card, taped down",
-        "compare": "Two sheets face to face: a plain kraft one, then a bright one"
+        "cards": { "label": "Cards", "description": "Each column on its own coloured paper card, taped down" },
+        "compare": { "label": "Face to face", "description": "Two sheets face to face: a plain kraft one, then a bright one" }
       },
       "statement": {
-        "banner": "The sentence on a strip of coloured paper, taped down"
+        "banner": { "label": "Banner", "description": "The sentence on a strip of coloured paper, taped down" }
       }
     },
     "backdrop": {
@@ -140,8 +140,8 @@
         "props": {}
       },
       "variants": {
-        "calm": "Calm: a pale sheet, the paper hills lowered and the sky cleared, for dense screens",
-        "night": "Night: deep blue paper, a pale moon and stars, for quotes and pauses"
+        "calm": { "label": "Calm", "description": "A pale sheet, the paper hills lowered and the sky cleared, for dense screens" },
+        "night": { "label": "Night", "description": "Deep blue paper, a pale moon and stars, for quotes and pauses" }
       }
     }
   },

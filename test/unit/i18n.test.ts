@@ -173,6 +173,37 @@ test('translation: the words the editor shows of the course\'s design (styles, b
   assert.ok(!extractUnits(loadProjectFromDir(dir)).some((u) => u.id.startsWith('object.')));
 });
 
+test('translation: the names of the charter\'s styles and variants and of a component\'s choices (schemas 0.1.6), translated where they are written', () => {
+  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const course = readJSON(dir, 'course.json');
+  course.theme.styles = { text: { encadre: { label: 'Encadré', description: 'Un paragraphe sur un fond pâle' }, note: 'Une note en marge' } };
+  course.theme.backdrop = { layers: ['fond'], variants: { calme: { label: 'Calme', description: 'Un fond plus calme, derrière les écrans chargés' } } };
+  writeJSON(dir, 'course.json', course);
+  const file = 'components/network-path/component.json';
+  const component = readJSON(dir, file);
+  component.styles = { large: { label: 'Large', description: 'Les équipements en grand' } };
+  component.props.properties.sens = { type: 'string', title: 'Sens', enum: ['ligne', 'colonne', 'auto'], default: 'auto', 'x-group': 'design', 'x-enum-labels': { ligne: 'En ligne', colonne: 'En colonne' } };
+  writeJSON(dir, file, component);
+  const project = loadProjectFromDir(dir);
+  const units = extractUnits(project).filter((u) => /^(theme|component)\./.test(u.id));
+  const at = (id: string) => units.find((u) => u.id === id);
+  assert.deepEqual(
+    ['theme.style.text.encadre.label', 'theme.style.text.encadre', 'theme.style.text.note', 'theme.backdrop.variant.calme.label', 'component.network-path.style.large.label', 'component.network-path.prop.sens.value.colonne'].map((id) => at(id)?.pointer),
+    ['/theme/styles/text/encadre/label', '/theme/styles/text/encadre/description', '/theme/styles/text/note', '/theme/backdrop/variants/calme/label', '/styles/large/label', '/props/properties/sens/x-enum-labels/colonne']
+  );
+  assert.equal(at('theme.style.text.encadre.label')?.maxLength, 40);
+  assert.equal(at('component.network-path.prop.sens.value.auto'), undefined, 'a value without words shows capitalised: nothing to translate');
+  assert.ok(units.every((u) => u.editor), 'authors read them, not learners');
+  exportTranslation(dir, { to: 'en' });
+  const x = readXliff(fs.readFileSync(translationFile(dir, 'en'), 'utf8'));
+  const english: Record<string, string> = { 'theme.style.text.encadre.label': 'Boxed', 'theme.backdrop.variant.calme.label': 'Calm', 'component.network-path.prop.sens.value.colonne': 'In a column' };
+  fs.writeFileSync(translationFile(dir, 'en'), toXliff({ srcLang: 'fr', trgLang: 'en', original: 'x', units: [...x.units.values()].map((u) => ({ id: u.id, source: u.source, ...(english[u.id] ? { target: english[u.id], state: 'translated' as const } : {}) })) }));
+  const { files } = translatedCourse(loadProjectFromDir(dir), { to: 'en', allowMissing: true });
+  const theme = (files.get('course.json') as unknown as { theme: { styles: { text: { encadre: { label: string } } }; backdrop: { variants: { calme: { label: string } } } } }).theme;
+  assert.deepEqual([theme.styles.text.encadre.label, theme.backdrop.variants.calme.label], ['Boxed', 'Calm']);
+  assert.equal((files.get(file) as unknown as { props: { properties: { sens: { 'x-enum-labels': Record<string, string> } } } }).props.properties.sens['x-enum-labels'].colonne, 'In a column');
+});
+
 test('translation: the words only authors read hold no language back; missing, the translated course keeps the source\'s', () => {
   const dir = copyExample(path.join(ROOT, 'examples/orbital-rendezvous'));
   const file = translationFile(dir, 'fr');

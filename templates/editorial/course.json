@@ -126,25 +126,58 @@
     "stylesheet": "theme/theme.css",
     "styles": {
       "screen": {
-        "cover": "Cover: a large serif title on the left of the page, for the plate backdrop (the plates of every part side by side on the right)",
-        "opener": "Part opener: with the layout editorial-opener and the plate backdrop, the part number set large on the part plate"
+        "cover": {
+          "label": "Cover",
+          "description": "A large serif title on the left of the page, with the Colour plate backdrop (the plates of every part side by side on the right)"
+        },
+        "opener": {
+          "label": "Part opener",
+          "description": "With the Editorial part opener layout and the Colour plate backdrop, the part number set large on the part plate"
+        }
       },
       "text": {
-        "dek": "Standfirst: a large italic serif paragraph under a title",
-        "dropcap": "Opening paragraph with a drop cap in the colour of the part",
-        "contents": "Contents: a numbered list with large serif numerals in the part colour and rules between rows",
-        "ledger": "Ruled list: one point per row between hairlines (takeaways, recap)",
-        "colophon": "Colophon: short facts in a row of small capitals between two rules (duration, audience, edition)"
+        "dek": {
+          "label": "Standfirst",
+          "description": "A large italic serif paragraph under a title"
+        },
+        "dropcap": {
+          "label": "Drop cap",
+          "description": "Opening paragraph with a drop cap in the colour of the part"
+        },
+        "contents": {
+          "label": "Contents",
+          "description": "A numbered list with large serif numerals in the part colour and rules between rows"
+        },
+        "ledger": {
+          "label": "Ruled list",
+          "description": "One point per row between hairlines (takeaways, recap)"
+        },
+        "colophon": {
+          "label": "Colophon",
+          "description": "Short facts in a row of small capitals between two rules (duration, audience, edition)"
+        }
       },
       "columns": {
-        "spread": "Magazine columns: a heavy rule on top and fine column rules between them",
-        "versus": "Face to face: the first column on deeper paper, the second under a rule in the part colour"
+        "spread": {
+          "label": "Magazine columns",
+          "description": "A heavy rule on top and fine column rules between them"
+        },
+        "versus": {
+          "label": "Face to face",
+          "description": "The first column on deeper paper, the second under a rule in the part colour"
+        }
       },
       "statement": {
-        "pull": "Pull quote: the sentence set very large in serif, between a heavy and a fine rule"
+        "pull": {
+          "label": "Pull quote",
+          "description": "The sentence set very large in serif, between a heavy and a fine rule"
+        }
       },
       "image": {
-        "plate": "Figure on the page with a hairline caption; the text beside it opens with a drop cap"
+        "plate": {
+          "label": "Figure in the page",
+          "description": "Figure on the page with a hairline caption; the text beside it opens with a drop cap"
+        }
       }
     },
     "backdrop": {
@@ -158,9 +191,18 @@
         "props": {}
       },
       "variants": {
-        "paper": "Paper page: rules under the top bar, the folio at the foot, the part thumb tab at the page edge",
-        "plate": "Colour plate on the right of the page: the part plate on part openers, every plate side by side on the first and last screens",
-        "ink": "Black spread: ink ground, paper-coloured text and rules, for a quotation or a pause"
+        "paper": {
+          "label": "Paper",
+          "description": "Rules under the top bar, the folio at the foot, the part thumb tab at the page edge"
+        },
+        "plate": {
+          "label": "Colour plate",
+          "description": "On the right of the page: the part plate on part openers, every plate side by side on the first and last screens"
+        },
+        "ink": {
+          "label": "Black spread",
+          "description": "Ink ground, paper-coloured text and rules, for a quotation or a pause"
+        }
       },
       "default": "paper"
     }

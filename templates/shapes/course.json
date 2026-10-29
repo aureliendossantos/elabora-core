@@ -109,13 +109,28 @@
     "stylesheet": "theme/theme.css",
     "styles": {
       "text": {
-        "lead": "Large opening paragraph",
-        "numbered": "Numbered list, each number in a flat shape (objectives, takeaways)",
-        "meta": "Short facts set as bold tags (length, format, audience)"
+        "lead": {
+          "label": "Lead",
+          "description": "Large opening paragraph"
+        },
+        "numbered": {
+          "label": "Numbered list",
+          "description": "Numbered list, each number in a flat shape (objectives, takeaways)"
+        },
+        "meta": {
+          "label": "At a glance",
+          "description": "Short facts set as bold tags (length, format, audience)"
+        }
       },
       "columns": {
-        "cards": "Each column on a flat card topped by a shape",
-        "compare": "Two columns face to face: the first on paper, the second on the blue shape colour"
+        "cards": {
+          "label": "Cards",
+          "description": "Each column on a flat card topped by a shape"
+        },
+        "compare": {
+          "label": "Face to face",
+          "description": "Two columns face to face: the first on paper, the second on the blue shape colour"
+        }
       }
     },
     "backdrop": {
@@ -130,8 +145,14 @@
         "props": {}
       },
       "variants": {
-        "earth": "Earth tones: terracotta, ochre and olive shapes on sand",
-        "mono": "Monochrome and calmer: ink tints kept to the edges, for dense screens"
+        "earth": {
+          "label": "Earth",
+          "description": "Terracotta, ochre and olive shapes on sand"
+        },
+        "mono": {
+          "label": "Monochrome",
+          "description": "Calmer: ink tints kept to the edges, for dense screens"
+        }
       }
     }
   },

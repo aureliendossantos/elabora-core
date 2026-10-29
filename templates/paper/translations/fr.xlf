@@ -997,9 +997,21 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
 - Module suivant : son titre</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.lead.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/lead/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "lead" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Lead</source>
+        <target>Chapeau</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.lead">
       <notes>
-        <note category="location">course.json /theme/styles/text/lead</note>
+        <note category="location">course.json /theme/styles/text/lead/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "lead" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1008,9 +1020,21 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>Grand paragraphe d'ouverture</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.numbered.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/numbered/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "numbered" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Numbered list</source>
+        <target>Liste numérotée</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.numbered">
       <notes>
-        <note category="location">course.json /theme/styles/text/numbered</note>
+        <note category="location">course.json /theme/styles/text/numbered/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "numbered" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1019,9 +1043,21 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>Liste numérotée, chaque chiffre écrit à la main sur un disque de papier (objectifs, points à retenir)</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.tags.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/tags/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "tags" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Tags</source>
+        <target>Étiquettes</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.tags">
       <notes>
-        <note category="location">course.json /theme/styles/text/tags</note>
+        <note category="location">course.json /theme/styles/text/tags/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "tags" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1030,9 +1066,21 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>Informations courtes sur des étiquettes de papier écrites à la main (durée, format, public)</target>
       </segment>
     </unit>
+    <unit id="theme.style.columns.cards.label">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/cards/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the columns style "cards" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Cards</source>
+        <target>Cartes</target>
+      </segment>
+    </unit>
     <unit id="theme.style.columns.cards">
       <notes>
-        <note category="location">course.json /theme/styles/columns/cards</note>
+        <note category="location">course.json /theme/styles/columns/cards/description</note>
         <note category="format">text</note>
         <note category="context">What the columns style "cards" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1041,9 +1089,21 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>Chaque colonne sur sa propre carte de papier de couleur, scotchée</target>
       </segment>
     </unit>
+    <unit id="theme.style.columns.compare.label">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/compare/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the columns style "compare" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Face to face</source>
+        <target>Face à face</target>
+      </segment>
+    </unit>
     <unit id="theme.style.columns.compare">
       <notes>
-        <note category="location">course.json /theme/styles/columns/compare</note>
+        <note category="location">course.json /theme/styles/columns/compare/description</note>
         <note category="format">text</note>
         <note category="context">What the columns style "compare" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1052,9 +1112,21 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>Deux feuilles face à face : une de kraft nu, puis une de couleur vive</target>
       </segment>
     </unit>
+    <unit id="theme.style.statement.banner.label">
+      <notes>
+        <note category="location">course.json /theme/styles/statement/banner/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the statement style "banner" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Banner</source>
+        <target>Bandeau</target>
+      </segment>
+    </unit>
     <unit id="theme.style.statement.banner">
       <notes>
-        <note category="location">course.json /theme/styles/statement/banner</note>
+        <note category="location">course.json /theme/styles/statement/banner/description</note>
         <note category="format">text</note>
         <note category="context">What the statement style "banner" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1063,26 +1135,50 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>La phrase sur une bande de papier de couleur, scotchée</target>
       </segment>
     </unit>
-    <unit id="theme.backdrop.variant.calm">
+    <unit id="theme.backdrop.variant.calm.label">
       <notes>
-        <note category="location">course.json /theme/backdrop/variants/calm</note>
+        <note category="location">course.json /theme/backdrop/variants/calm/label</note>
         <note category="format">text</note>
-        <note category="context">When the backdrop variant "calm" is used (the Charte). Editor only: authors read it, learners never do</note>
+        <note category="context">Name of the backdrop variant "calm", as authors pick it (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
       </notes>
       <segment state="translated">
-        <source>Calm: a pale sheet, the paper hills lowered and the sky cleared, for dense screens</source>
-        <target>Calme : une feuille pâle, les collines de papier abaissées et le ciel dégagé, pour les écrans chargés</target>
+        <source>Calm</source>
+        <target>Calme</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.calm">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/calm/description</note>
+        <note category="format">text</note>
+        <note category="context">What the backdrop variant "calm" is for (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>A pale sheet, the paper hills lowered and the sky cleared, for dense screens</source>
+        <target>Une feuille pâle, les collines de papier abaissées et le ciel dégagé, pour les écrans chargés</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.night.label">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/night/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the backdrop variant "night", as authors pick it (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Night</source>
+        <target>Nuit</target>
       </segment>
     </unit>
     <unit id="theme.backdrop.variant.night">
       <notes>
-        <note category="location">course.json /theme/backdrop/variants/night</note>
+        <note category="location">course.json /theme/backdrop/variants/night/description</note>
         <note category="format">text</note>
-        <note category="context">When the backdrop variant "night" is used (the Charte). Editor only: authors read it, learners never do</note>
+        <note category="context">What the backdrop variant "night" is for (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Night: deep blue paper, a pale moon and stars, for quotes and pauses</source>
-        <target>Nuit : un papier bleu profond, une lune pâle et des étoiles, pour les citations et les pauses</target>
+        <source>Deep blue paper, a pale moon and stars, for quotes and pauses</source>
+        <target>Un papier bleu profond, une lune pâle et des étoiles, pour les citations et les pauses</target>
       </segment>
     </unit>
     <unit id="component.part-number.title">
@@ -1149,6 +1245,39 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <segment state="translated">
         <source>The paper shape under the number.</source>
         <target>La forme de papier sous le numéro.</target>
+      </segment>
+    </unit>
+    <unit id="component.part-number.prop.shape.value.disc">
+      <notes>
+        <note category="location">components/part-number/component.json /props/properties/shape/x-enum-labels/disc</note>
+        <note category="format">text</note>
+        <note category="context">Value "disc" of the setting "shape" of the course's block type "part-number", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Disc</source>
+        <target>Disque</target>
+      </segment>
+    </unit>
+    <unit id="component.part-number.prop.shape.value.scallop">
+      <notes>
+        <note category="location">components/part-number/component.json /props/properties/shape/x-enum-labels/scallop</note>
+        <note category="format">text</note>
+        <note category="context">Value "scallop" of the setting "shape" of the course's block type "part-number", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Scalloped disc</source>
+        <target>Disque festonné</target>
+      </segment>
+    </unit>
+    <unit id="component.part-number.prop.shape.value.star">
+      <notes>
+        <note category="location">components/part-number/component.json /props/properties/shape/x-enum-labels/star</note>
+        <note category="format">text</note>
+        <note category="context">Value "star" of the setting "shape" of the course's block type "part-number", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Star</source>
+        <target>Étoile</target>
       </segment>
     </unit>
     <unit id="component.part-number.prop.paper.title">
@@ -1250,6 +1379,39 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
         <target>cover : une grande feuille, le titre en grand ; stack : une feuille avec le titre, le chapeau et la page ; split : la feuille à gauche, l'emplacement d'à côté à droite.</target>
       </segment>
     </unit>
+    <unit id="component.sheet.prop.arrangement.value.cover">
+      <notes>
+        <note category="location">components/sheet/component.json /props/properties/arrangement/x-enum-labels/cover</note>
+        <note category="format">text</note>
+        <note category="context">Value "cover" of the setting "arrangement" of the course's screen layout "sheet", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Cover</source>
+        <target>Couverture</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.prop.arrangement.value.stack">
+      <notes>
+        <note category="location">components/sheet/component.json /props/properties/arrangement/x-enum-labels/stack</note>
+        <note category="format">text</note>
+        <note category="context">Value "stack" of the setting "arrangement" of the course's screen layout "sheet", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Sheet</source>
+        <target>Feuille</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.prop.arrangement.value.split">
+      <notes>
+        <note category="location">components/sheet/component.json /props/properties/arrangement/x-enum-labels/split</note>
+        <note category="format">text</note>
+        <note category="context">Value "split" of the setting "arrangement" of the course's screen layout "sheet", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Sheet and side</source>
+        <target>Feuille et côté</target>
+      </segment>
+    </unit>
     <unit id="component.sheet.prop.paper.title">
       <notes>
         <note category="location">components/sheet/component.json /props/properties/paper/title</note>
@@ -1292,6 +1454,39 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
       <segment state="translated">
         <source>How the sheet was laid down: straight, or turned a little to the left or the right.</source>
         <target>Comment la feuille a été posée : droite, ou un peu tournée vers la gauche ou vers la droite.</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.prop.tilt.value.none">
+      <notes>
+        <note category="location">components/sheet/component.json /props/properties/tilt/x-enum-labels/none</note>
+        <note category="format">text</note>
+        <note category="context">Value "none" of the setting "tilt" of the course's screen layout "sheet", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Straight</source>
+        <target>Droite</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.prop.tilt.value.left">
+      <notes>
+        <note category="location">components/sheet/component.json /props/properties/tilt/x-enum-labels/left</note>
+        <note category="format">text</note>
+        <note category="context">Value "left" of the setting "tilt" of the course's screen layout "sheet", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Turned left</source>
+        <target>Tournée à gauche</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.prop.tilt.value.right">
+      <notes>
+        <note category="location">components/sheet/component.json /props/properties/tilt/x-enum-labels/right</note>
+        <note category="format">text</note>
+        <note category="context">Value "right" of the setting "tilt" of the course's screen layout "sheet", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Turned right</source>
+        <target>Tournée à droite</target>
       </segment>
     </unit>
   </file>

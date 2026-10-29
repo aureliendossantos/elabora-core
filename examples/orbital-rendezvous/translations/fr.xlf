@@ -1779,9 +1779,21 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <target>Revenez à la règle pratique et au laboratoire, puis refaites les questions : freinez pour gagner environ $3\,T\,\Delta v$ par orbite, puis repoussez en sens inverse au même point.</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.lead.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/lead/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "lead" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Lead</source>
+        <target>Chapeau</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.lead">
       <notes>
-        <note category="location">course.json /theme/styles/text/lead</note>
+        <note category="location">course.json /theme/styles/text/lead/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "lead" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1790,9 +1802,21 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <target>Grand paragraphe d’introduction</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.legend.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/legend/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "legend" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Legend</source>
+        <target>Légende</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.legend">
       <notes>
-        <note category="location">course.json /theme/styles/text/legend</note>
+        <note category="location">course.json /theme/styles/text/legend/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "legend" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1801,9 +1825,21 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <target>Légende numérotée d’une figure (les numéros répondent aux repères)</target>
       </segment>
     </unit>
+    <unit id="theme.style.callout.rule.label">
+      <notes>
+        <note category="location">course.json /theme/styles/callout/rule/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the callout style "rule" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Key rule</source>
+        <target>Règle clé</target>
+      </segment>
+    </unit>
     <unit id="theme.style.callout.rule">
       <notes>
-        <note category="location">course.json /theme/styles/callout/rule</note>
+        <note category="location">course.json /theme/styles/callout/rule/description</note>
         <note category="format">text</note>
         <note category="context">What the callout style "rule" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1812,9 +1848,21 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <target>La seule règle à retenir, sur une carte de verre lumineuse</target>
       </segment>
     </unit>
+    <unit id="theme.style.callout.glass.label">
+      <notes>
+        <note category="location">course.json /theme/styles/callout/glass/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the callout style "glass" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Glass</source>
+        <target>Verre</target>
+      </segment>
+    </unit>
     <unit id="theme.style.callout.glass">
       <notes>
-        <note category="location">course.json /theme/styles/callout/glass</note>
+        <note category="location">course.json /theme/styles/callout/glass/description</note>
         <note category="format">text</note>
         <note category="context">What the callout style "glass" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1823,9 +1871,21 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <target>Un panneau translucide qui laisse passer le champ d’étoiles</target>
       </segment>
     </unit>
+    <unit id="theme.style.image.bare.label">
+      <notes>
+        <note category="location">course.json /theme/styles/image/bare/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the image style "bare" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>No frame</source>
+        <target>Sans cadre</target>
+      </segment>
+    </unit>
     <unit id="theme.style.image.bare">
       <notes>
-        <note category="location">course.json /theme/styles/image/bare</note>
+        <note category="location">course.json /theme/styles/image/bare/description</note>
         <note category="format">text</note>
         <note category="context">What the image style "bare" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1986,6 +2046,17 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
       <segment state="translated">
         <source>A choice question whose options are burns, shown as cards with a diagram of the thrust direction. A fork of the quiz block: same scoring, feedback, saved state and SCORM records.</source>
         <target>Une question à choix dont les options sont des poussées, montrées en cartes avec un schéma du sens de la poussée. Une variante du bloc question : même notation, mêmes retours, même état enregistré et mêmes données SCORM.</target>
+      </segment>
+    </unit>
+    <unit id="component.maneuver-quiz.prop.options.item.figure.description">
+      <notes>
+        <note category="location">components/maneuver-quiz/component.json /propsExtend/properties/options/items/properties/figure/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "options[].figure" of the course's block type "maneuver-quiz" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Diagram of the burn (decorative: the option text says it).</source>
+        <target>Schéma de la poussée (décoratif : le texte de l’option le dit).</target>
       </segment>
     </unit>
     <unit id="component.mission.title">
@@ -2164,6 +2235,28 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <target>figure : une colonne de figure plus large ; activity : une colonne d’explication plus large, pour une activité à côté de la figure.</target>
       </segment>
     </unit>
+    <unit id="component.split.prop.balance.value.figure">
+      <notes>
+        <note category="location">components/split/component.json /props/properties/balance/x-enum-labels/figure</note>
+        <note category="format">text</note>
+        <note category="context">Value "figure" of the setting "balance" of the course's screen layout "split", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Wider figure</source>
+        <target>Figure plus large</target>
+      </segment>
+    </unit>
+    <unit id="component.split.prop.balance.value.activity">
+      <notes>
+        <note category="location">components/split/component.json /props/properties/balance/x-enum-labels/activity</note>
+        <note category="format">text</note>
+        <note category="context">Value "activity" of the setting "balance" of the course's screen layout "split", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Wider activity</source>
+        <target>Activité plus large</target>
+      </segment>
+    </unit>
     <unit id="component.split.prop.figure.description">
       <notes>
         <note category="location">components/split/component.json /props/properties/figure/description</note>
@@ -2173,6 +2266,28 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
       <segment state="translated">
         <source>column: the figure's blocks one under the other; stack: drawn over each other in one square frame, for a figure built in steps (an image with its caption first, then orbit flights and hotspots).</source>
         <target>column : les blocs de la figure l’un sous l’autre ; stack : dessinés les uns sur les autres dans un même cadre carré, pour une figure construite par étapes (une image avec sa légende d’abord, puis des vols en orbite et des repères).</target>
+      </segment>
+    </unit>
+    <unit id="component.split.prop.figure.value.column">
+      <notes>
+        <note category="location">components/split/component.json /props/properties/figure/x-enum-labels/column</note>
+        <note category="format">text</note>
+        <note category="context">Value "column" of the setting "figure" of the course's screen layout "split", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>One under the other</source>
+        <target>L’un sous l’autre</target>
+      </segment>
+    </unit>
+    <unit id="component.split.prop.figure.value.stack">
+      <notes>
+        <note category="location">components/split/component.json /props/properties/figure/x-enum-labels/stack</note>
+        <note category="format">text</note>
+        <note category="context">Value "stack" of the setting "figure" of the course's screen layout "split", as authors choose it (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Drawn over each other</source>
+        <target>Superposés</target>
       </segment>
     </unit>
     <unit id="component.stat-card.title">

@@ -855,7 +855,7 @@
         },
         "styles": {
           "type": "object",
-          "description": "Named styles declared by the theme, per type (a built-in type, a course component id, or \"screen\"), with a one-line description for editors: {\"callout\": {\"rule\": \"Key rule on a dark card\"}}. Blocks and screens pick one with style; the player adds data-style and the class t-s-<name>; the stylesheet styles it. Styles declared for a type also apply to its forks. Components can declare their own styles in component.json. (Not to be confused with the callout prop variant: info, tip, warning, important.)",
+          "description": "Named styles declared by the theme, per type (a built-in type, a course component id, or \"screen\"), each with its name for editors and a one-line description: {\"callout\": {\"rule\": {\"label\": \"Key rule\", \"description\": \"Key rule on a dark card\"}}}, or the description alone (the name is then the style's, capitalised). The name and the description are translated with the course. Blocks and screens pick one with style; the player adds data-style and the class t-s-<name>; the stylesheet styles it. Styles declared for a type also apply to its forks. Components can declare their own styles in component.json. (Not to be confused with the callout prop variant: info, tip, warning, important.)",
           "propertyNames": {
             "pattern": "^[a-z][a-z0-9-]{0,47}$"
           },
@@ -865,11 +865,7 @@
             "propertyNames": {
               "pattern": "^[a-z][a-z0-9-]{0,31}$"
             },
-            "additionalProperties": {
-              "type": "string",
-              "minLength": 1,
-              "maxLength": 300
-            }
+            "additionalProperties": { "$ref": "defs.schema.json#/$defs/designWords" }
           }
         },
         "effects": {
@@ -928,12 +924,8 @@
                   "const": "none"
                 }
               },
-              "additionalProperties": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 200
-              },
-              "description": "Named variants a screen can pick with backdrop, each with a one-line description for editors: {\"dim\": \"Darker sky behind dense screens\"}. The stylesheet styles .t-backdrop[data-variant=…]; the object receives the variant."
+              "additionalProperties": { "$ref": "defs.schema.json#/$defs/designWords" },
+              "description": "Named variants a screen can pick with backdrop, each with its name for editors and a one-line description: {\"dim\": {\"label\": \"Dim\", \"description\": \"Darker sky behind dense screens\"}}, or the description alone (the name is then the variant's, capitalised). The stylesheet styles .t-backdrop[data-variant=…]; the object receives the variant."
             },
             "default": {
               "type": "string",

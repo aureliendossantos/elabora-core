@@ -39,7 +39,7 @@
     },
     "props": {
       "type": "object",
-      "description": "JSON Schema of the props (type object, properties, required). Strings take x-kind: text (default), markdown (Elabora Markdown, maths included), tex (LaTeX equation), asset (file in assets/), token (name of a theme token, rendered as var(--t-…)). Mark text x-translatable. x-group \"design\" marks settings authors may change (tokens, enums). Text and Markdown props accept { \"textRef\": \"TXT-n\" } in instances (locked plan texts)."
+      "description": "JSON Schema of the props (type object, properties, required). Strings take x-kind: text (default), markdown (Elabora Markdown, maths included), tex (LaTeX equation), asset (file in assets/), token (name of a theme token, rendered as var(--t-…)). Mark text x-translatable. x-group \"design\" marks settings authors may change (tokens, enums). An enum holds values for the template (stack, split); x-enum-labels says how each reads in the inspector, in the course's language ({ \"stack\": \"Stacked\", \"split\": \"Side by side\" }, keys are values of the enum, on a prop or on a field of a list's items): a value without words shows capitalised. They are translated with the course. Text and Markdown props accept { \"textRef\": \"TXT-n\" } in instances (locked plan texts)."
     },
     "propsExtend": {
       "type": "object",
@@ -79,9 +79,9 @@
     "styles": {
       "type": "object",
       "maxProperties": 20,
-      "description": "Named styles of this component, with a description for editors (forks inherit them). The course theme can add more in theme.styles.<id>.",
+      "description": "Named styles of this component, each with its name for editors and a one-line description ({\"label\": \"Dark\", \"description\": \"…\"}, or the description alone), forks inherit them. The course theme can add more in theme.styles.<id>.",
       "propertyNames": { "pattern": "^[a-z][a-z0-9-]{0,31}$" },
-      "additionalProperties": { "type": "string", "minLength": 1, "maxLength": 300 }
+      "additionalProperties": { "$ref": "defs.schema.json#/$defs/designWords" }
     },
     "examples": {
       "type": "array",

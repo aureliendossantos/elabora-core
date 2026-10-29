@@ -103,16 +103,11 @@ body { background: transparent; }
 .t-s-lead .t-text, .t-text.t-s-lead { font-family: var(--t-font-heading); font-style: italic; font-size: 1.625rem; line-height: 1.4; }
 
 /* ── Openings: cover, part and end ────────────────────────────────────────────────────────────
-   A tall italic title on the open paper, and a dab of the part's wash under it instead of the
-   opening's rule. */
+   A tall italic title on the open paper, with no rule under it: the washes around say the part. */
 .t-opening .t-screen-title { font-size: clamp(2.75rem, 1.5rem + 3.6vw, 4.75rem); line-height: 1; letter-spacing: -0.015em; max-width: 13em; font-weight: 420; }
 .t-s-cover .t-opening .t-screen-title { font-size: clamp(3rem, 1.4rem + 4.6vw, 5.75rem); line-height: .98; max-width: 11em; }
 .t-opening-lead { font-size: clamp(1.1875rem, 1.05rem + .45vw, 1.4375rem); color: var(--t-text); max-width: 34em; }
-.t-opening--title .t-opening-copy::after {
-  width: 5.5rem; height: .75rem; margin-top: 1.75rem;
-  border-radius: 46% 54% 38% 62% / 60% 45% 55% 40%;
-  background: radial-gradient(closest-side, var(--wc-part), color-mix(in srgb, var(--wc-part) 55%, transparent) 75%, transparent);
-}
+.t-opening--title .t-opening-copy::after { content: none; }
 [data-presentation="slides"] .t-layout--opening .t-opening { justify-content: center; }
 [data-presentation="slides"] .t-layout--opening .t-opening-head { flex: 0 0 auto; }
 .t-layout--opening .t-opening-copy { padding-bottom: .75rem; }
@@ -207,11 +202,7 @@ body { background: transparent; }
 
 /* ── Statements and quotes ───────────────────────────────────────────────────────────────── */
 .t-statement-text { font-style: italic; font-weight: 420; font-size: clamp(2.25rem, 1.25rem + 2.8vw, 3.75rem); line-height: 1.14; letter-spacing: -0.012em; }
-.t-statement--statement::before {
-  width: 5.5rem; height: .75rem; margin-bottom: 2rem;
-  border-radius: 46% 54% 38% 62% / 60% 45% 55% 40%;
-  background: radial-gradient(closest-side, var(--wc-part), color-mix(in srgb, var(--wc-part) 50%, transparent) 75%, transparent);
-}
+.t-statement--statement::before { content: none; }
 .t-statement--quote .t-statement-text { font-size: clamp(1.875rem, 1.1rem + 2.2vw, 3rem); line-height: 1.22; }
 .t-statement-mark { width: 3.75rem; fill: var(--wc-pigment); opacity: .85; }
 .t-statement-author { font-family: var(--t-font-heading); font-style: italic; font-weight: 500; font-size: 1.375rem; }

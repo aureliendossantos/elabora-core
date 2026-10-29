@@ -116,20 +116,34 @@ test('a course from a template: its id and title, the cover saying it, in French
   assert.throws(() => moduleTemplate('nope'), /No template "nope"\. Templates: organic, flow, clear, shapes/);
 });
 
-test('a module made in French from a template has no English left: what learners read, and what the editor shows of its charter', async () => {
+test('a module made in French from a template has no English left: what learners read, and what the editor shows of its charter, the names of its styles, variants and choices included', async () => {
   const words = (value: unknown): value is string => typeof value === 'string' && /\p{L}/u.test(value);
   // What the editor shows of a course's own design (the Charte, the block picker, the inspector), by
   // file and pointer, read from the files rather than from the translation units: a text the units
-  // leave out is found too. A component's instructions are for agents and stay in English.
-  const design = (dir: string): Map<string, string> => {
+  // leave out is found too. A component's instructions are for agents and stay in English. unnamed:
+  // what the editor would name by its identifier, capitalised (a style or a variant without its
+  // label, a value of a component's choice without its x-enum-labels): English in any language.
+  const design = (dir: string): { found: Map<string, string>; unnamed: string[] } => {
     const found = new Map<string, string>();
+    const unnamed: string[] = [];
     const put = (file: string, pointer: string, value: unknown) => { if (words(value)) found.set(`${file}#${pointer}`, value); };
+    const named = (file: string, pointer: string, value: unknown) => {
+      if (typeof value !== 'object' || value === null) { put(file, pointer, value); unnamed.push(`${file}#${pointer}: no label`); return; }
+      const { label, description } = value as { label?: unknown; description?: unknown };
+      put(file, `${pointer}/label`, label);
+      put(file, `${pointer}/description`, description);
+    };
     const theme = readJSON(dir, 'course.json').theme ?? {};
-    for (const [kind, styles] of Object.entries<Record<string, unknown>>(theme.styles ?? {})) for (const [name, text] of Object.entries(styles)) put('course.json', `/theme/styles/${kind}/${name}`, text);
-    for (const [name, text] of Object.entries(theme.backdrop?.variants ?? {})) put('course.json', `/theme/backdrop/variants/${name}`, text);
+    for (const [kind, styles] of Object.entries<Record<string, unknown>>(theme.styles ?? {})) for (const [name, value] of Object.entries(styles)) named('course.json', `/theme/styles/${kind}/${name}`, value);
+    for (const [name, value] of Object.entries(theme.backdrop?.variants ?? {})) named('course.json', `/theme/backdrop/variants/${name}`, value);
     const setting = (file: string, node: Record<string, unknown>, at: string): void => {
       put(file, `${at}/title`, node.title);
       put(file, `${at}/description`, node.description);
+      const labels = (node['x-enum-labels'] ?? {}) as Record<string, unknown>;
+      for (const value of Array.isArray(node.enum) ? node.enum.map(String) : []) {
+        if (words(labels[value])) put(file, `${at}/x-enum-labels/${value}`, labels[value]);
+        else unnamed.push(`${file}#${at}: no x-enum-labels for "${value}"`);
+      }
       for (const [name, child] of Object.entries<Record<string, unknown>>((node.properties ?? {}) as Record<string, Record<string, unknown>>)) setting(file, child, `${at}/properties/${name}`);
       if (node.items && typeof node.items === 'object') setting(file, node.items as Record<string, unknown>, `${at}/items`);
     };
@@ -140,9 +154,11 @@ test('a module made in French from a template has no English left: what learners
       put(file, '/title', component.title);
       put(file, '/description', component.description);
       (component.slots ?? []).forEach((slot: { label?: unknown }, i: number) => put(file, `/slots/${i}/label`, slot.label));
-      for (const [name, child] of Object.entries<Record<string, unknown>>(component.props?.properties ?? {})) setting(file, child, `/props/properties/${name}`);
+      for (const [name, value] of Object.entries(component.styles ?? {})) named(file, `/styles/${name}`, value);
+      const props = component.props ? ['props', component.props] : ['propsExtend', component.propsExtend ?? {}];
+      for (const [name, child] of Object.entries<Record<string, unknown>>(props[1].properties ?? {})) setting(file, child, `/${props[0]}/properties/${name}`);
     }
-    return found;
+    return { found, unnamed };
   };
   const units = (dir: string) => new Map(extractUnits(loadProjectFromDir(dir)).map((unit) => [unit.id, unit.text]));
   for (const template of listModuleTemplates()) {
@@ -150,9 +166,10 @@ test('a module made in French from a template has no English left: what learners
     await createFromTemplate(template.dir, french, { id: `essai-${template.id}`, title: 'Un module en français', language: 'fr' });
     // Words that are the same in both languages are the translation's own choice (« Page »).
     const same = new Set([...readXliff(fs.readFileSync(path.join(template.dir, 'translations/fr.xlf'), 'utf8')).units.values()].filter((unit) => unit.target === unit.source).map((unit) => unit.source));
-    const left: string[] = [];
-    for (const [english, made] of [[units(template.dir), units(french)], [design(template.dir), design(french)]]) {
-      for (const [where, text] of made) if (english.get(where) === text && !same.has(text)) left.push(`${where}: ${text}`);
+    const made = design(french);
+    const left: string[] = [...made.unnamed];
+    for (const [english, translated] of [[units(template.dir), units(french)], [design(template.dir).found, made.found]]) {
+      for (const [where, text] of translated) if (english.get(where) === text && !same.has(text)) left.push(`${where}: ${text}`);
     }
     assert.deepEqual(left, [], `${template.id}: English left in a module made in French`);
   }

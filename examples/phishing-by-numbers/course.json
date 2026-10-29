@@ -194,16 +194,28 @@
     "stylesheet": "theme/theme.css",
     "styles": {
       "callout": {
-        "email": "An email as the learner would read it in their inbox"
+        "email": {
+          "label": "Email",
+          "description": "An email as the learner would read it in their inbox"
+        }
       },
       "donut": {
-        "aside": "The takeaway beside the chart, for a chart taller than wide"
+        "aside": {
+          "label": "Takeaway beside",
+          "description": "The takeaway beside the chart, for a chart taller than wide"
+        }
       },
       "matrix": {
-        "aside": "The takeaway beside the chart, for a chart taller than wide"
+        "aside": {
+          "label": "Takeaway beside",
+          "description": "The takeaway beside the chart, for a chart taller than wide"
+        }
       },
       "cycle": {
-        "aside": "The takeaway beside the chart, for a chart taller than wide"
+        "aside": {
+          "label": "Takeaway beside",
+          "description": "The takeaway beside the chart, for a chart taller than wide"
+        }
       }
     },
     "custom": {

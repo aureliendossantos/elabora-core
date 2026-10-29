@@ -17,7 +17,11 @@
         ],
         "default": "figure",
         "x-group": "design",
-        "description": "figure: a wider figure column; activity: a wider explanation column, for an activity next to the figure."
+        "description": "figure: a wider figure column; activity: a wider explanation column, for an activity next to the figure.",
+        "x-enum-labels": {
+          "figure": "Wider figure",
+          "activity": "Wider activity"
+        }
       },
       "figure": {
         "enum": [
@@ -26,7 +30,11 @@
         ],
         "default": "column",
         "x-group": "design",
-        "description": "column: the figure's blocks one under the other; stack: drawn over each other in one square frame, for a figure built in steps (an image with its caption first, then orbit flights and hotspots)."
+        "description": "column: the figure's blocks one under the other; stack: drawn over each other in one square frame, for a figure built in steps (an image with its caption first, then orbit flights and hotspots).",
+        "x-enum-labels": {
+          "column": "One under the other",
+          "stack": "Drawn over each other"
+        }
       }
     }
   },

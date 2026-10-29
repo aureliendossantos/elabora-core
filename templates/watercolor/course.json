@@ -125,17 +125,17 @@
     "stylesheet": "theme/theme.css",
     "styles": {
       "screen": {
-        "cover": "Cover and closing: the title set large in italic on the open paper"
+        "cover": { "label": "Cover", "description": "For the cover and the end: the title set large in italic on the open paper" }
       },
       "text": {
-        "lead": "Large opening paragraph in italic serif",
-        "objectives": "Numbered list under large italic numerals, in the colour of the part",
-        "meta": "Short facts on one line, each after a small drop of colour",
-        "takeaways": "Numbered takeaways side by side, each under a large italic numeral"
+        "lead": { "label": "Lead", "description": "Large opening paragraph in italic serif" },
+        "objectives": { "label": "Objectives", "description": "Numbered list under large italic numerals, in the colour of the part" },
+        "meta": { "label": "At a glance", "description": "Short facts on one line, each after a small drop of colour" },
+        "takeaways": { "label": "Takeaways", "description": "Numbered takeaways side by side, each under a large italic numeral" }
       },
       "columns": {
-        "cards": "Each column on a sheet of paper with a soft wash pooled at its top",
-        "compare": "Two columns face to face: the first left unpainted, the second on a wash"
+        "cards": { "label": "Cards", "description": "Each column on a sheet of paper with a soft wash pooled at its top" },
+        "compare": { "label": "Face to face", "description": "Two columns face to face: the first left unpainted, the second on a wash" }
       }
     },
     "backdrop": {
@@ -149,9 +149,9 @@
         "props": {}
       },
       "variants": {
-        "quiet": "Paler washes kept to the edges, for dense screens",
-        "ink": "Indigo ink: light washes on a deep ground, light text, for one sentence set large",
-        "dawn": "Warm blush and ochre washes, to open gently or to close"
+        "quiet": { "label": "Quiet", "description": "Paler washes kept to the edges, for dense screens" },
+        "ink": { "label": "Indigo ink", "description": "Light washes on a deep ground, light text, for one sentence set large" },
+        "dawn": { "label": "Dawn", "description": "Warm blush and ochre washes, to open gently or to close" }
       }
     }
   },

@@ -1078,20 +1078,44 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
 - Les ressources sont dans la barre du haut</target>
       </segment>
     </unit>
+    <unit id="theme.style.screen.part.label">
+      <notes>
+        <note category="location">course.json /theme/styles/screen/part/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the screen style "part" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Part opener</source>
+        <target>Intercalaire</target>
+      </segment>
+    </unit>
     <unit id="theme.style.screen.part">
       <notes>
-        <note category="location">course.json /theme/styles/screen/part</note>
+        <note category="location">course.json /theme/styles/screen/part/description</note>
         <note category="format">text</note>
         <note category="context">What the screen style "part" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Part opener: the part's number in a soft blob above the title</source>
-        <target>Intercalaire : le numéro de la partie dans une forme douce, au-dessus du titre</target>
+        <source>The part's number in a soft blob above the title</source>
+        <target>Le numéro de la partie dans une forme douce, au-dessus du titre</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.lead.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/lead/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "lead" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Lead</source>
+        <target>Chapeau</target>
       </segment>
     </unit>
     <unit id="theme.style.text.lead">
       <notes>
-        <note category="location">course.json /theme/styles/text/lead</note>
+        <note category="location">course.json /theme/styles/text/lead/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "lead" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1100,9 +1124,21 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
         <target>Grand paragraphe d'ouverture</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.objectives.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/objectives/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "objectives" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Objectives</source>
+        <target>Objectifs</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.objectives">
       <notes>
-        <note category="location">course.json /theme/styles/text/objectives</note>
+        <note category="location">course.json /theme/styles/text/objectives/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "objectives" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1111,9 +1147,21 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
         <target>Liste numérotée dans des pastilles rondes et douces (objectifs, points à retenir)</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.meta.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/meta/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "meta" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>At a glance</source>
+        <target>En bref</target>
+      </segment>
+    </unit>
     <unit id="theme.style.text.meta">
       <notes>
-        <note category="location">course.json /theme/styles/text/meta</note>
+        <note category="location">course.json /theme/styles/text/meta/description</note>
         <note category="format">text</note>
         <note category="context">What the text style "meta" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1122,9 +1170,21 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
         <target>Informations courtes dans des étiquettes arrondies (public, format, contenu de la partie)</target>
       </segment>
     </unit>
+    <unit id="theme.style.columns.cards.label">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/cards/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the columns style "cards" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Cards</source>
+        <target>Cartes</target>
+      </segment>
+    </unit>
     <unit id="theme.style.columns.cards">
       <notes>
-        <note category="location">course.json /theme/styles/columns/cards</note>
+        <note category="location">course.json /theme/styles/columns/cards/description</note>
         <note category="format">text</note>
         <note category="context">What the columns style "cards" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1133,9 +1193,21 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
         <target>Chaque colonne sur une carte aux coins doux</target>
       </segment>
     </unit>
+    <unit id="theme.style.columns.compare.label">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/compare/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the columns style "compare" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Face to face</source>
+        <target>Face à face</target>
+      </segment>
+    </unit>
     <unit id="theme.style.columns.compare">
       <notes>
-        <note category="location">course.json /theme/styles/columns/compare</note>
+        <note category="location">course.json /theme/styles/columns/compare/description</note>
         <note category="format">text</note>
         <note category="context">What the columns style "compare" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
@@ -1144,37 +1216,73 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
         <target>Deux colonnes face à face : la première atténuée, la seconde dans la couleur de la partie</target>
       </segment>
     </unit>
+    <unit id="theme.backdrop.variant.pastel.label">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/pastel/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the backdrop variant "pastel", as authors pick it (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Pastel</source>
+        <target>Pastel</target>
+      </segment>
+    </unit>
     <unit id="theme.backdrop.variant.pastel">
       <notes>
-        <note category="location">course.json /theme/backdrop/variants/pastel</note>
+        <note category="location">course.json /theme/backdrop/variants/pastel/description</note>
         <note category="format">text</note>
-        <note category="context">When the backdrop variant "pastel" is used (the Charte). Editor only: authors read it, learners never do</note>
+        <note category="context">What the backdrop variant "pastel" is for (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
         <source>Paler, calmer blobs behind dense screens</source>
         <target>Des formes plus pâles et plus calmes, derrière les écrans chargés</target>
       </segment>
     </unit>
-    <unit id="theme.backdrop.variant.night">
+    <unit id="theme.backdrop.variant.night.label">
       <notes>
-        <note category="location">course.json /theme/backdrop/variants/night</note>
+        <note category="location">course.json /theme/backdrop/variants/night/label</note>
         <note category="format">text</note>
-        <note category="context">When the backdrop variant "night" is used (the Charte). Editor only: authors read it, learners never do</note>
+        <note category="context">Name of the backdrop variant "night", as authors pick it (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
       </notes>
       <segment state="translated">
-        <source>Deep night: glowing blobs on a dark ground, light text</source>
-        <target>Nuit profonde : des formes lumineuses sur un fond sombre, le texte en clair</target>
+        <source>Night</source>
+        <target>Nuit</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.night">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/night/description</note>
+        <note category="format">text</note>
+        <note category="context">What the backdrop variant "night" is for (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Glowing blobs on a dark ground, light text</source>
+        <target>Des formes lumineuses sur un fond sombre, le texte en clair</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.mono.label">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/mono/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the backdrop variant "mono", as authors pick it (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Monochrome</source>
+        <target>Monochrome</target>
       </segment>
     </unit>
     <unit id="theme.backdrop.variant.mono">
       <notes>
-        <note category="location">course.json /theme/backdrop/variants/mono</note>
+        <note category="location">course.json /theme/backdrop/variants/mono/description</note>
         <note category="format">text</note>
-        <note category="context">When the backdrop variant "mono" is used (the Charte). Editor only: authors read it, learners never do</note>
+        <note category="context">What the backdrop variant "mono" is for (the Charte, the inspector of a screen). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Monochrome: tints of the ink colour, for sober screens</source>
-        <target>Monochrome : des teintes de la couleur de l'encre, pour les écrans sobres</target>
+        <source>Tints of the ink colour, for sober screens</source>
+        <target>Des teintes de la couleur de l'encre, pour les écrans sobres</target>
       </segment>
     </unit>
     <unit id="component.organic-part.title">
@@ -1197,6 +1305,28 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
       <segment state="translated">
         <source>Opens a part of the module: the part's number in a soft blob, then the opening's head (the part's large rounded title and its lead) and its page.</source>
         <target>Ouvre une partie du module : le numéro de la partie dans une forme douce, puis la tête de l'ouverture (le grand titre arrondi de la partie et son chapeau) et sa page.</target>
+      </segment>
+    </unit>
+    <unit id="component.organic-part.prop.number.title">
+      <notes>
+        <note category="location">components/organic-part/component.json /propsExtend/properties/number/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "number" of the course's screen layout "organic-part" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Part number</source>
+        <target>Numéro de la partie</target>
+      </segment>
+    </unit>
+    <unit id="component.organic-part.prop.number.description">
+      <notes>
+        <note category="location">components/organic-part/component.json /propsExtend/properties/number/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "number" of the course's screen layout "organic-part" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The part's number, in a soft blob above the title (1, 2…).</source>
+        <target>Le numéro de la partie, dans une forme douce au-dessus du titre (1, 2…).</target>
       </segment>
     </unit>
   </file>

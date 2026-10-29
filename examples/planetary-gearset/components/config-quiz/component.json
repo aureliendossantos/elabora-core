@@ -19,7 +19,7 @@
           "additionalProperties": false,
           "required": ["symbol", "label"],
           "properties": {
-            "symbol": { "enum": ["held", "input", "output"] },
+            "symbol": { "enum": ["held", "input", "output"], "x-enum-labels": {"held": "Held", "input": "Input", "output": "Output"} },
             "label": { "type": "string", "minLength": 1, "maxLength": 60, "x-translatable": true }
           }
         }
