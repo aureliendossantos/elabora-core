@@ -98,12 +98,11 @@
 .t-dialogue-quality[data-quality="ok"] .t-icon { color: var(--t-accent); }
 .t-dialogue-quality[data-quality="bad"] .t-icon { color: var(--t-error); }
 
-/* A first choice gone back on: one grey line on the learner's side. « Choisir autrement » under a consequence. */
+/* A first choice gone back on: one grey line on the learner's side. */
 .t-dialogue-row[data-role="first-choice"] { justify-content: flex-end; flex-direction: column; align-items: flex-end; gap: 0.125rem; }
 .t-dialogue-first { display: flex; align-items: center; gap: 0.375rem; max-width: min(34rem, 80%); margin: 0.25rem 0 0; font-size: 0.8125rem; color: var(--t-muted); }
 .t-dialogue-first-label { flex: none; font-weight: 600; }
 .t-dialogue-first-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--t-muted) 55%, transparent); }
-.t-dialogue-row[data-role="retry"] { padding-inline-start: var(--t-dl-indent); }
 .t-dialogue-link { display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2.25rem; margin: 0.125rem 0 0; padding: 0 0.625rem; border: 0; border-radius: 999px; color: var(--t-primary); background: none; font: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: background-color 180ms var(--t-ease-out); }
 .t-dialogue-link:hover { background: color-mix(in srgb, var(--t-primary) 8%, transparent); }
 .t-dialogue-link .t-icon svg, .t-dialogue-action .t-icon svg { width: 1rem; height: 1rem; }
@@ -326,8 +325,8 @@
   /* Over the backdrop, a note keeps a surface of its own. */
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="note"] { padding: 0; justify-content: center; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-note { max-width: 74%; padding: 0.7em 1.15em 0.8em; font-size: 0.8em; border-radius: 1em; background: color-mix(in srgb, var(--t-surface) 94%, transparent); box-shadow: 0 1px 2px color-mix(in srgb, var(--t-text) 6%, transparent), 0 10px 22px color-mix(in srgb, var(--t-text) 9%, transparent); }
-  .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="retry"], .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="first-choice"] { padding-inline-start: 0; justify-content: center; align-items: center; }
-  .t-dialogue-root[data-t-look="scene"] .t-dialogue-log .t-dialogue-link, .t-dialogue-root[data-t-look="scene"] .t-dialogue-first { background: color-mix(in srgb, var(--t-surface) 92%, transparent); }
+  .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="first-choice"] { padding-inline-start: 0; justify-content: center; align-items: center; }
+  .t-dialogue-root[data-t-look="scene"] .t-dialogue-first { background: color-mix(in srgb, var(--t-surface) 92%, transparent); }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-first { padding: 0.25rem 0.75rem; border-radius: 999px; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-row[data-role="end"] { padding: 0.25rem 15%; }
   .t-dialogue-root[data-t-look="scene"] .t-dialogue-end { padding: 0.35em 1em; border-radius: 999px; background: color-mix(in srgb, var(--t-surface) 92%, transparent); }
