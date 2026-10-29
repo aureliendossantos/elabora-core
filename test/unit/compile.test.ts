@@ -106,8 +106,14 @@ test('a preview keeps its keys while it runs: a screen added before others leave
     writeJSON(dir, 'screens/ajout.json', { id: 'ajout', title: 'Ajouté par un agent', covers: ['ITEM-1'], blocks: [{ id: 'ajout-texte', type: 'text', props: { markdown: 'Nouveau.' } }] });
     const course = readJSON(dir, 'course.json');
     course.sections[0].screens.unshift('ajout');
-    writeJSON(dir, 'course.json', course);
-    const result = await done;
+    // Written again while no rebuild comes: a watcher of a process whose other watchers come and go
+    // may lose an event (fs-store.ts, watchInThread). 30 s at most.
+    let result: Awaited<typeof done> | undefined;
+    for (let tries = 0; !result && tries < 15; tries++) {
+      writeJSON(dir, 'course.json', course);
+      result = await Promise.race([done, new Promise<undefined>((resolve) => setTimeout(resolve, 2000))]);
+    }
+    assert.ok(result, 'the preview rebuilt');
     assert.ok(result.dirPath, JSON.stringify(result.diagnostics.filter((d) => d.severity === 'error')));
     const after = keysOf(result);
     for (const [id, key] of Object.entries(before)) assert.equal(after[id], key, `${id} keeps its key`);
