@@ -3,7 +3,10 @@
 // learner needs to come back where they left:
 // - progress "local": in the browser's localStorage, from one visit to the next (lesson location,
 //   status, score and suspend data, the same encoding and keys as in an LMS, D4); interactions and
-//   session time are an LMS's journal and are not kept;
+//   session time are an LMS's journal and are not kept. Dated at each save, it is forgotten a year
+//   after the last one (D41, amended on 29 Oct 2026): Elabora's hosting does the same for whatever
+//   an origin keeps, with a cookie this player never sees (elabora-cloud C33); here the rule holds
+//   on any server;
 // - progress "none": nothing is kept anywhere; a reload starts the module again.
 // It never looks for an LMS and shows no banner: unlike the preview's standalone adapter, it is what
 // the public sees.
@@ -29,6 +32,10 @@ export interface WebAdapterOptions {
 // Elements a visit keeps: what resuming reads, not the LMS's journal.
 const KEPT = /^cmi\.(suspend_data|core\.(lesson_location|lesson_status|exit|score\.(raw|min|max)))$/;
 
+// When the progress was last saved (milliseconds), beside the kept elements; a year later it is forgotten.
+const SAVED_AT = 'savedAt';
+export const WEB_PROGRESS_KEPT_MS = 365 * 86_400_000;
+
 export const webStorageKey = (courseId: string): string => `elabora:web:${courseId}`;
 
 function defaultStorage(): WebStorage | null {
@@ -42,7 +49,9 @@ export function createWebAdapter(courseId: string, { progress, storage = progres
   if (store) {
     try {
       const stored: unknown = JSON.parse(store.getItem(key) || '{}');
-      if (isRecord(stored)) for (const [element, value] of Object.entries(stored)) if (KEPT.test(element) && typeof value === 'string') data[element] = value;
+      const savedAt = isRecord(stored) ? stored[SAVED_AT] : undefined;
+      if (typeof savedAt === 'number' && now() - savedAt > WEB_PROGRESS_KEPT_MS) store.removeItem(key);
+      else if (isRecord(stored)) for (const [element, value] of Object.entries(stored)) if (KEPT.test(element) && typeof value === 'string') data[element] = value;
     } catch { /* unreadable: a fresh start */ }
   }
   const log: LmsCall[] = [];
@@ -54,8 +63,9 @@ export function createWebAdapter(courseId: string, { progress, storage = progres
   };
   const persist = () => {
     if (!store) return;
-    const kept: Record<string, string> = {};
+    const kept: Record<string, string | number> = {};
     for (const element of Object.keys(data).sort()) if (KEPT.test(element)) kept[element] = data[element];
+    kept[SAVED_AT] = now();
     try { store.setItem(key, JSON.stringify(kept)); } catch { /* full or refused: this visit only */ }
   };
   const set = (element: string, value: string | number) => {

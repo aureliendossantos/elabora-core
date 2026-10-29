@@ -159,8 +159,10 @@ function sessionCredential(api: string): Credential {
 const accountCall = <T>(credential: Credential, method: string, path: string, json?: unknown): Promise<T> =>
   guard(credential, () => new CloudClient(credential.api, credential.token).request<T>(method, path, json === undefined ? {} : { json }));
 
-// The account's address, once: it names the space and never changes. displayName: the name of the
-// author's replies (and the review page's « … vous invite »), given at the same time.
+// The account's address: the first one names the space; a later one renames it (protocol 7), once in
+// 30 days, with no redirect: the old address stops at once and is held a year, links to it break, and
+// learners start their progress again at the new one. displayName: the name of the author's replies
+// (and the review page's « … vous invite »), given at the same time.
 export async function chooseHandle(handle: string, { displayName, api = cloudUrl() }: { displayName?: string; api?: string } = {}): Promise<CloudAccount> {
   const credential = sessionCredential(api);
   const { account } = await accountCall<{ account: CloudAccount }>(credential, 'PATCH', '/v1/account', { handle, ...(displayName !== undefined ? { displayName } : {}) });

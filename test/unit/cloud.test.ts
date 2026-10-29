@@ -594,6 +594,23 @@ test('the account for Réglages › Compte: devices, the display name, the handl
   assert.equal(fake.tokens.has(here.token), false);
 });
 
+test('the handle changes once in 30 days (protocol 7): the command line asks for --change, the session follows the new name', async () => {
+  await signIn('rename-author');
+  const refused = await elabora(['account', 'handle', 'rename-other']);
+  assert.equal(refused.status, 1);
+  assert.match(refused.stderr, /stops the old address at once[\s\S]*--change/);
+  assert.equal((await accountStatus()).account!.handle, 'rename-author', 'nothing changed without --change');
+  const changed = await elabora(['account', 'handle', 'rename-other', '--change', '--json']);
+  assert.equal(changed.status, 0, changed.stderr);
+  const account = JSON.parse(changed.stdout).account;
+  assert.equal(account.handle, 'rename-other');
+  assert.ok(Date.parse(account.nextHandleChangeAt) > Date.now() + 29 * 86_400_000);
+  assert.equal(JSON.parse(fs.readFileSync(process.env.ELABORA_CLOUD_SESSION_FILE!, 'utf8')).handle, 'rename-other', 'the session file names the new space');
+  await assert.rejects(chooseHandle('rename-third'), (error: CloudError) => error.code === 'handle-change-too-soon');
+  const status = await elabora(['account', 'status']);
+  assert.match(status.stdout, /may change again from \d{4}-\d{2}-\d{2}/);
+});
+
 test('unpublish (« Retirer du web ») and a review\'s title', async () => {
   await signIn('unpublish-author');
   const dir = copy(path.join(ROOT, 'examples/medieval-charts'));
