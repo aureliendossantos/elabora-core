@@ -1,0 +1,16 @@
+{
+  "name": "elabora",
+  "description": "Elabora, the agent-native authoring tool for e-learning: its plugin for Claude Code.",
+  "owner": {
+    "name": "Elabora",
+    "url": "https://elabora.studio"
+  },
+  "plugins": [
+    {
+      "name": "elabora",
+      "source": "./plugins/elabora",
+      "description": "Work on Elabora e-learning modules: connects the elabora command installed on this computer (its tools, skills and documentation, at its own version).",
+      "category": "productivity"
+    }
+  ]
+}

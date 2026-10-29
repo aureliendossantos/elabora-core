@@ -79,6 +79,7 @@ export interface ToolDefinition<Schema extends InputSchema> {
   readOnly?: boolean; // reads the course, changes nothing (also idempotent)
   destructive?: boolean; // deletes content
   openWorld?: boolean; // reaches a service outside this computer (Elabora's hosting)
+  anywhere?: boolean; // needs no course: a server started outside one offers it (mcp.ts)
   inputSchema: Schema;
   handler(args: ArgumentsOf<Schema>, context: ToolContext): CallToolResult | Promise<CallToolResult>;
 }
@@ -89,6 +90,7 @@ export interface Tool {
   readonly readOnly: boolean;
   readonly destructive: boolean;
   readonly openWorld: boolean;
+  readonly anywhere: boolean;
   readonly inputSchema: InputSchema;
   // Checks the arguments against the input schema, then runs the handler.
   call(args: unknown, context: ToolContext): Promise<CallToolResult>;
@@ -104,6 +106,7 @@ export function defineTool<Schema extends InputSchema>(definition: ToolDefinitio
     readOnly: !!definition.readOnly,
     destructive: !!definition.destructive,
     openWorld: !!definition.openWorld,
+    anywhere: !!definition.anywhere,
     inputSchema: definition.inputSchema,
     async call(args, context) {
       validate ??= ajv.compile<ArgumentsOf<Schema>>(definition.inputSchema);

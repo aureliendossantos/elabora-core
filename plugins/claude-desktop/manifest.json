@@ -1,0 +1,39 @@
+{
+  "$schema": "https://raw.githubusercontent.com/modelcontextprotocol/mcpb/main/schemas/mcpb-manifest-latest.schema.json",
+  "manifest_version": "0.3",
+  "name": "elabora",
+  "display_name": "Elabora",
+  "version": "0.1.0",
+  "description": "Work on your Elabora e-learning modules with Claude: the plan, screens, quizzes, design, narration, translation and checks.",
+  "long_description": "Elabora is a local-first authoring tool for e-learning. This extension connects Claude to the Elabora app installed on your computer, on the module folders you choose: Claude reads and writes them with Elabora's own tools, and follows the rules and guidance of your Elabora version. Elabora shows what Claude changes as it happens, and undoes it in one step. Requires the Elabora app (elabora.studio), in the Applications folder on a Mac.",
+  "author": { "name": "Elabora", "url": "https://elabora.studio" },
+  "homepage": "https://elabora.studio",
+  "documentation": "https://elabora.studio/en/docs/claude/",
+  "support": "https://github.com/aureliendossantos/elabora-core/issues",
+  "repository": { "type": "git", "url": "https://github.com/aureliendossantos/elabora-core" },
+  "license": "Apache-2.0",
+  "icon": "icon.png",
+  "keywords": ["e-learning", "scorm", "course authoring", "instructional design", "elabora"],
+  "server": {
+    "type": "node",
+    "entry_point": "server/launch.cjs",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/launch.cjs", "${user_config.courses}"]
+    }
+  },
+  "user_config": {
+    "courses": {
+      "type": "directory",
+      "title": "Module folders",
+      "description": "The Elabora modules Claude may work on: a module's folder (Elabora shows it at the bottom of the module's settings), or a folder that holds several, such as Elabora's library.",
+      "multiple": true,
+      "required": true
+    }
+  },
+  "tools_generated": true,
+  "compatibility": {
+    "platforms": ["darwin", "win32"],
+    "runtimes": { "node": ">=18.0.0" }
+  }
+}

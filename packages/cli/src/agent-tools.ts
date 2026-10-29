@@ -69,7 +69,7 @@ export async function callAgentTool(name: string, args: unknown, context: ToolCo
   const tool = agentTools(options).find((candidate) => candidate.name === name);
   if (!tool) return errorResult({ error: `Unknown tool ${name}` });
   const root = path.resolve(context.root);
-  if (!fs.existsSync(path.join(root, 'course.json'))) return errorResult({ error: `${root} is not an Elabora course (no course.json)` });
+  if (!tool.anywhere && !fs.existsSync(path.join(root, 'course.json'))) return errorResult({ error: `${root} is not an Elabora course (no course.json)` });
   try {
     return await tool.call(args, { ...context, root });
   } catch (error) {

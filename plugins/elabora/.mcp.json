@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "elabora": {
+      "command": "elabora",
+      "args": ["mcp", "."]
+    }
+  }
+}

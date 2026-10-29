@@ -27,7 +27,8 @@
     "sounds": "node scripts/sounds.ts",
     "fixtures:sources": "node scripts/source-fixtures.ts",
     "release:prepare": "node scripts/release.ts prepare",
-    "release:check": "node scripts/release.ts check"
+    "release:check": "node scripts/release.ts check",
+    "mcpb": "pnpm dlx @anthropic-ai/mcpb@2.1.2 validate plugins/claude-desktop/manifest.json && pnpm dlx @anthropic-ai/mcpb@2.1.2 pack plugins/claude-desktop dist/elabora.mcpb"
   },
   "devDependencies": {
     "@elabora/cli": "workspace:*",

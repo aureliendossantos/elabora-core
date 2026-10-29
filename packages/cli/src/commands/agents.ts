@@ -5,8 +5,10 @@ import { ArgumentError } from '../arguments.ts';
 import { defineCommand, printJson, reportingFailures } from './command.ts';
 import type { CommandGroup } from './command.ts';
 
-const HELP = `  mcp [dir] [--read-only] [--tools <name>,…]           MCP server on stdio, scoped to one course folder; optionally expose
-                                                      only the named agent tools (unknown names are refused)
+const HELP = `  mcp [dir…] [--read-only] [--tools <name>,…]          MCP server on stdio for a course folder; several folders, or a folder
+                                                      of courses, give a course argument to each operation; outside a
+                                                      course, only the docs, skills and library. --tools: only the named
+                                                      agent tools (unknown names are refused)
   codes [--json]                                      Catalogue of diagnostic codes
   docs [<page>] [--section <heading>] [--full]        The documentation as Markdown, without a checkout: the map of pages,
                                                       a page (D29: a decision; a long one as its outline), or one section
@@ -19,9 +21,9 @@ const HELP = `  mcp [dir] [--read-only] [--tools <name>,…]           MCP serve
 const mcp = defineCommand({
   name: 'mcp',
   flags: { 'read-only': 'boolean', tools: 'list' },
-  async run({ positionals: [dir = '.'], flags }) {
+  async run({ positionals, flags }) {
     const { startMcpServer } = await import('../mcp.ts');
-    await startMcpServer(dir, { readOnly: flags['read-only'], tools: flags.tools });
+    await startMcpServer(positionals.length > 1 ? positionals : positionals[0] ?? '.', { readOnly: flags['read-only'], tools: flags.tools });
     return null; // keeps running
   }
 });

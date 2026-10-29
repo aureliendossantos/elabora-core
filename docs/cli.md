@@ -619,8 +619,10 @@ lesson-md import [dir] <lesson.md> --covers ITEM-n [--id <screen-id>] [--section
 ## Agents
 
 ```text
-mcp [dir] [--read-only] [--tools <name>,…]           MCP server on stdio, scoped to one course folder; optionally expose
-                                                    only the named agent tools (unknown names are refused)
+mcp [dir…] [--read-only] [--tools <name>,…]          MCP server on stdio for a course folder; several folders, or a folder
+                                                    of courses, give a course argument to each operation; outside a
+                                                    course, only the docs, skills and library. --tools: only the named
+                                                    agent tools (unknown names are refused)
 codes [--json]                                      Catalogue of diagnostic codes
 docs [<page>] [--section <heading>] [--full]        The documentation as Markdown, without a checkout: the map of pages,
                                                     a page (D29: a decision; a long one as its outline), or one section
