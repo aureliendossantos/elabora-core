@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.4/plan.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.5/plan.schema.json",
   "id": "PLAN-FLOW",
   "title": "Flow — module template",
   "businessGoal": "Give authors a ready charter (neon field, ribbons and particles that leap forward at each screen) and one screen of each common kind, to replace with their own content.",

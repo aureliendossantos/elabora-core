@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.5/layouts/opening.schema.json",
+  "title": "opening layout props",
+  "description": "An opening (« Ouverture »), a built-in screen layout: the head of a lesson, then its page. The head holds the screen's title, a lead and the reading time, and no line above the title; presentations: title (the head alone, in the reading column), band (the title over an image edge to edge, on the theme's scrim), split (the title and the lead beside the image) and cover (the first view of the page: the image fills the window, the title over it). Its slots: question, a question asked before the lesson (a quiz or a reflection), and body, the page (the default slot), laid out as the default column.",
+  "x-category": "layout",
+  "x-ai-instructions": "One opening per lesson page, on the first screen of a lesson; the rest of the page goes in body. Nothing above the title: where the learner is belongs to the module's UI, or to numbering of the course's own style (a screen component that forks opening). lead: one or two sentences that say what the learner will be able to do or why it matters, not a summary. An image must set the scene of the lesson (alt unless decorative); without one, use title. A pre-question in question primes the lesson: ask what the lesson answers, unscored. band and cover put the title over the image: elabora fit measures its contrast.",
+  "x-slots": [
+    { "id": "question", "label": "Question before the lesson", "description": "A question asked before the lesson starts, to prime it: a quiz or a reflection, unscored.", "accepts": ["quiz", "reflection"], "maxBlocks": 1 },
+    { "id": "body", "label": "Page", "description": "The lesson, in reading order.", "default": true }
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "presentation": {
+      "enum": ["title", "band", "split", "cover"],
+      "default": "title",
+      "x-group": "design",
+      "description": "title: the head alone, in the reading column; band: the title over image, edge to edge, on the theme's scrim; split: the title and lead beside image; cover: image fills the first view of the page, the title over it."
+    },
+    "lead": { "type": "string", "$ref": "../defs.schema.json#/$defs/markdown", "maxLength": 500, "x-translatable": true, "description": "One or two sentences under the title: what the lesson brings." },
+    "image": { "$ref": "../defs.schema.json#/$defs/assetPath", "description": "band, split and cover: the picture of the lesson." },
+    "alt": { "type": "string", "maxLength": 250, "x-translatable": true, "description": "What the picture shows. Required with an image unless decorative is true." },
+    "decorative": { "type": "boolean", "default": false, "description": "True when the picture carries no information." },
+    "generated": { "type": "boolean", "default": false, "description": "True if the picture was produced by an AI model; the player shows a mark and the build report lists it." },
+    "focus": { "$ref": "../defs.schema.json#/$defs/focus", "description": "Where the subject of the picture is, kept in view when it is cropped." },
+    "duration": { "type": "boolean", "default": true, "x-group": "design", "description": "Show the reading time of the page (« 6 min »), computed by the build from its words, its media and its narration." }
+  }
+}

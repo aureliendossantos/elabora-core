@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "title": "Elabora screen (screens/<id>.json)",
+  "description": "One screen of the course: blocks in reading order, optional layers (overlays opened by events, like Storyline layers) and events. Each screen covers at least one plan item.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "title",
+    "covers",
+    "blocks"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "id": {
+      "$ref": "defs.schema.json#/$defs/slug",
+      "description": "Must match the file name screens/<id>.json."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Screen title, rendered as the level-1 heading and used in the menu.",
+      "x-translatable": true
+    },
+    "covers": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "defs.schema.json#/$defs/planId"
+      },
+      "description": "Plan items this screen implements. No screen without a plan item (guardrail A1)."
+    },
+    "layout": {
+      "$ref": "defs.schema.json#/$defs/slug",
+      "description": "Layout of the screen: a built-in layout (opening: the head of a lesson, then its page) or the id of a screen-level component (components/<id>/, level \"screen\"), an HTML/CSS template with named slots. Blocks choose their slot with slot; blocks without slot go to the default slot. Without layout, blocks stack in one column."
+    },
+    "layoutProps": {
+      "type": "object",
+      "description": "Values of the props declared by the layout (layouts/<id>.schema.json for a built-in one, the component's props otherwise: a part number, an image, a background token…). Text and Markdown props may be { \"textRef\": \"TXT-n\" }."
+    },
+    "style": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,31}$",
+      "description": "Named screen style declared in course.json theme.styles.screen."
+    },
+    "backdrop": {
+      "type": "string",
+      "pattern": "^(none|[a-z][a-z0-9-]{0,31})$",
+      "description": "Backdrop of this screen: a variant declared in theme.backdrop.variants, or none (no backdrop: the object pauses). Default: the course backdrop as it is."
+    },
+    "required": {
+      "type": "boolean",
+      "default": true,
+      "description": "Counts for course completion."
+    },
+    "completeWhen": {
+      "enum": [
+        "viewed",
+        "interactions-done",
+        "action"
+      ],
+      "default": "viewed",
+      "description": "viewed: complete as soon as it is shown. interactions-done: when every quiz and decision is answered and every free object has emitted its completion event. action: only when an event runs complete-screen."
+    },
+    "continueRevealsSteps": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether Continue reveals the next step (the Continue button in the page in scroll presentation, the Next button in slides). false: only the screen's own triggers reveal its steps (click events with reveal-step on markers or buttons, like the builds of a Storyline slide, or steps that open once answered); the button reads Next and, with navigation.lockUntilComplete, waits for the last step."
+    },
+    "steps": {
+      "type": "object",
+      "description": "How each step of the screen opens, keyed by step number (blocks carry the step). By default a step opens with Continue: in scroll presentation a Continue button in the page, at the cut, like the continue dividers of Rise; in slides the Next button, relabelled Continue. opens \"answered\": the step opens by itself once every activity of the steps above is answered (submitted, right or wrong), like content shown after a knowledge check opens \"explored\": Continue stays locked, saying what is left, until the blocks above are explored and their activities answered, like Rise's Continue that waits for the block above.",
+      "propertyNames": {
+        "pattern": "^[1-9][0-9]{0,2}$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "opens": {
+            "enum": [
+              "continue",
+              "answered",
+              "explored"
+            ],
+            "default": "continue",
+            "description": "continue: the learner presses Continue (in the page in scroll presentation, Next in slides). answered: it opens by itself once the activities of the steps above are answered. explored: Continue (Next in slides) is shown but locked until every activity of the steps above is answered and every control of their blocks is visited (items of a sequence, flip cards, disclosures, tabs, buttons, elements to bring into view), optional blocks aside; locked, it says what is left."
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "x-translatable": true,
+            "description": "Text of the Continue button that opens this step in scroll presentation (default: the player's Continue label)."
+          },
+          "duration": {
+            "type": "number",
+            "minimum": 0.5,
+            "maximum": 600,
+            "description": "Screens without narration whose blocks are timed in seconds: how long this step's stretch of the timeline lasts (default: until its last timed block has come or gone). A narrated step lasts as long as its lines."
+          }
+        }
+      }
+    },
+    "narration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lines"
+      ],
+      "description": "The voice of the screen, script first: its lines in the order they are spoken, each in a step of the screen. A narrated screen has a timeline: its steps are segments of the narration, the player shows a bar (play, pause, replay the step, seek, captions, speed, transcript) and captions and the transcript are generated from the lines. Layers have their own narration (layers[].narration). The audio of each line lives in assets/narration/<language>/<screen>/<line>.m4a with its sidecar <line>.json (docs/decisions.md D24); the build lays the lines of a screen end to end into one track.",
+      "properties": {
+        "advance": {
+          "enum": [
+            "learner",
+            "auto",
+            "next-screen"
+          ],
+          "description": "learner (default, or the course's narration.advance): playback stops at the end of each step and Continue plays the next one. auto: the steps follow each other; the learner can always pause. next-screen: the steps follow each other, then the player goes to the next screen by itself (an introduction, credits: a time limit learners did not choose, WCAG 2.2.1, W_AUTO_ADVANCE). Learners may turn auto and next-screen back into learner with « M'arrêter à chaque étape »; phones always go step by step."
+        },
+        "seek": {
+          "enum": [
+            "seen",
+            "free",
+            "none"
+          ],
+          "description": "How far the learner may move in the timeline (default: the course's narration.seek, else seen). seen: back anywhere, forward up to the furthest point reached. free: anywhere. none: no seek bar, play, pause and replay the step only."
+        },
+        "lines": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 200,
+          "items": {
+            "if": {
+              "type": "object",
+              "required": [
+                "sound"
+              ]
+            },
+            "then": {
+              "type": "object",
+              "$ref": "defs.schema.json#/$defs/soundLine",
+              "description": "A sound of the narration (D67): a sound of the course said at its place among the lines, in a step of the screen, with its caption; it lasts as long as the sound.",
+              "properties": {
+                "step": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 999,
+                  "default": 1,
+                  "description": "The step of the screen this line belongs to: its segment of the timeline. Lines are in step order."
+                },
+                "pauseBefore": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10,
+                  "description": "Seconds of silence before the line. Default: 0.4, and 0 for the first line of the screen."
+                }
+              },
+              "unevaluatedProperties": false
+            },
+            "else": {
+              "type": "object",
+              "$ref": "defs.schema.json#/$defs/voiceLine",
+              "description": "A line of the screen's narration: a voice line (id, speaker, text, delivery, pronunciations) in a step of the screen.",
+              "properties": {
+                "step": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 999,
+                  "default": 1,
+                  "description": "The step of the screen this line belongs to: its segment of the timeline. Lines are in step order."
+                },
+                "pauseBefore": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 10,
+                  "description": "Seconds of silence before the line. Default: 0.4, and 0 for the first line of the screen."
+                }
+              },
+              "unevaluatedProperties": false
+            }
+          }
+        }
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "block.schema.json"
+      }
+    },
+    "layers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "blocks"
+        ],
+        "properties": {
+          "id": {
+            "$ref": "defs.schema.json#/$defs/slug"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "description": "Accessible title of the layer dialog.",
+            "x-translatable": true
+          },
+          "presentation": {
+            "enum": [
+              "dialog",
+              "panel"
+            ],
+            "default": "dialog",
+            "description": "dialog: modal window over the dimmed course; the learner closes it to go on. panel: opens over part of the screen, which stays usable (like a Storyline layer); for feedback, hints and details that must not move the slide."
+          },
+          "narration": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "lines"
+            ],
+            "description": "The layer's own voice (docs/decisions.md D62): its lines in the order they are spoken. A layer with a narration, or with blocks timed (timing), has its own timeline: it starts at 0 when the layer opens, stops when it closes and starts again at 0 when it opens again; its compact bar (play, pause, replay, seek, captions) is in the layer. While the layer speaks, the screen's timeline is paused (two voices never overlap): a dialog resumes it when it closes, a panel when its narration ends. The lines' ids are unique in the screen with those of the screen's narration; their audio lives in assets/narration/<language>/<screen>/<line>.m4a like the screen's, and the build lays them into one track for the layer.",
+            "properties": {
+              "seek": {
+                "enum": [
+                  "seen",
+                  "free",
+                  "none"
+                ],
+                "description": "How far the learner may move in the layer's timeline (default: the course's narration.seek, else seen). seen: back anywhere, forward up to the furthest point reached. free: anywhere. none: no seek bar."
+              },
+              "lines": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "items": {
+                  "if": {
+                    "type": "object",
+                    "required": [
+                      "sound"
+                    ]
+                  },
+                  "then": {
+                    "type": "object",
+                    "$ref": "defs.schema.json#/$defs/soundLine",
+                    "description": "A sound of the layer's narration (D67), at its place among the lines, with its caption; it lasts as long as the sound.",
+                    "properties": {
+                      "pauseBefore": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10,
+                        "description": "Seconds of silence before the line. Default: 0.4, and 0 for the first line of the layer."
+                      }
+                    },
+                    "unevaluatedProperties": false
+                  },
+                  "else": {
+                    "type": "object",
+                    "$ref": "defs.schema.json#/$defs/voiceLine",
+                    "description": "A line of the layer's narration: a voice line (id, speaker, text, delivery, pronunciations). A layer has no steps: its lines follow each other with 0.4 s between them.",
+                    "properties": {
+                      "pauseBefore": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 10,
+                        "description": "Seconds of silence before the line. Default: 0.4, and 0 for the first line of the layer."
+                      }
+                    },
+                    "unevaluatedProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "blocks": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "block.schema.json"
+            },
+            "description": "The blocks of the layer. They may be timed (timing) on the layer's timeline: anchored to the layer's lines, or { \"seconds\": n } from its opening when it has no narration."
+          }
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "event.schema.json"
+      }
+    },
+    "showTitle": {
+      "type": "boolean",
+      "default": true,
+      "description": "Render the title visibly (it stays available to screen readers when false)."
+    }
+  }
+}

@@ -1,6 +1,6 @@
-# Built-in block catalogue (format elabora/0.1, schemas 0.1.4)
+# Built-in block catalogue (format elabora/0.1, schemas 0.1.5)
 
-Generated from `packages/format/schemas/0.1.4/blocks/` and the built-in components (`packages/core/src/components/builtin/`). Agents: call `elabora_get_schema <type>` for the full schema; course components are listed by `elabora_list_components` (docs/components.md).
+Generated from `packages/format/schemas/0.1.5/blocks/` and the built-in components (`packages/core/src/components/builtin/`). Agents: call `elabora_get_schema <type>` for the full schema; course components are listed by `elabora_list_components` (docs/components.md).
 
 ## `heading` (content)
 
@@ -735,7 +735,7 @@ Template `packages/core/src/components/builtin/hotspots.html`: fork it to change
 
 # Built-in screen layouts
 
-Generated from `packages/format/schemas/0.1.4/layouts/`. A screen uses one with `"layout": "<id>"` and its `layoutProps`; blocks choose a slot with `slot` (docs/components.md).
+Generated from `packages/format/schemas/0.1.5/layouts/`. A screen uses one with `"layout": "<id>"` and its `layoutProps`; blocks choose a slot with `slot` (docs/components.md).
 
 ## `opening` (layout)
 
