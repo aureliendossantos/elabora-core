@@ -196,8 +196,24 @@ test('messaging in a slide: the thread, whole bubbles, the ink on the clock, cue
     await choose(page, 'appel-marc', 'b');
     assert.equal((await until(page, 'appel-marc', 'choosing')).node, 'ticket');
     assert.equal(await wrap.locator('.t-dialogue-row[data-line="m4"]').count(), 1, 'b\'s own node on the way');
-    // Practice: no going back before the end.
-    assert.equal(await wrap.locator('.t-dialogue-resume:not([hidden])').count(), 0);
+    // Practice, before the end: only the last answer goes back, « Choisir autrement » by the arrow beside
+    // it (not beside c, retried before it). Nothing of the kind is a line of the thread: at this decision
+    // it would head the conversation.
+    const backs = () => wrap.locator('.t-dialogue-resume:not([hidden])').evaluateAll((nodes) => nodes.map((node) => {
+      const row = node.closest<HTMLElement>('.t-dialogue-row')!;
+      return { decision: row.dataset.decision, label: node.getAttribute('aria-label'), last: row === [...row.parentElement!.querySelectorAll('.t-dialogue-row[data-role="learner"]')].at(-1) };
+    }));
+    assert.deepEqual(await backs(), [{ decision: '0', label: 'Choisir autrement', last: true }]);
+    assert.deepEqual(await wrap.locator('[data-t-log] button:visible').evaluateAll((nodes) => nodes.map((node) => node.className)), ['t-dialogue-tool t-dialogue-resume'], 'no control in the thread but the arrow beside the last answer');
+    // It works: back to the first question, « Vous reprenez ici » under what is kept, b once more.
+    await wrap.locator('.t-dialogue-row[data-role="learner"]').last().hover();
+    await wrap.locator('.t-dialogue-resume:not([hidden])').click();
+    assert.equal((await until(page, 'appel-marc', 'choosing')).node, 'premiere-question');
+    assert.equal(await wrap.locator('.t-dialogue-marker').innerText(), 'Vous reprenez ici');
+    assert.equal(await wrap.locator('[data-option="b"] .t-dialogue-previous').count(), 1, 'b, taken back, says so');
+    assert.deepEqual(await backs(), [], 'nothing to go back to while the decision waits again');
+    await choose(page, 'appel-marc', 'b');
+    assert.equal((await until(page, 'appel-marc', 'choosing')).node, 'ticket');
     await choose(page, 'appel-marc', 'a');
     assert.equal((await until(page, 'appel-marc', 'choosing')).node, 'escalade');
     assert.ok(await wrap.locator('.t-dialogue-final').count(), 'a final decision says so');

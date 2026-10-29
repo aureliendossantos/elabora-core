@@ -14,7 +14,7 @@ import type { DialogueWalk } from './walk.ts';
 import { explorePaths } from './paths.ts';
 import { choose, canRetryLast, retryLast, canRevisit, revisit, jump, scoredResult, openDialogue } from './run.ts';
 import type { DialogueRun } from './run.ts';
-import { retryRow, markerRow, speakerName } from './thread.ts';
+import { markerRow, speakerName } from './thread.ts';
 import type { ViewParts, ViewState } from './view-parts.ts';
 import type { ThreadBox } from './box.ts';
 import type { Cast } from './cast.ts';
@@ -48,7 +48,6 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
   const reduced = parts.reduced;
   // What each beat shown put in the thread, by its key (a key changes when the beat would show otherwise).
   const shown: { key: string; nodes: HTMLElement[] }[] = [];
-  let retry: HTMLElement | null = null;
   let leavingCount = 0;
   // « Vous reprenez ici »: where the path shown begins again, before the beat at (one at a time: the
   // last place the learner went back to).
@@ -89,7 +88,6 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
     if (started) trigger('dialogue.started', { target: block.id });
     if (state.disposed) return;
     syncTools();
-    syncRetry();
     if (!live) { renderAll(); return; }
     if (back && cutting) parts.signal('back', { kind: back });
     state.phase = 'playing';
@@ -116,8 +114,6 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
     shown.length = Math.min(shown.length, common);
     state.presented = Math.min(state.presented, common);
     cast.setExpressions(expressionsOf({ beats: state.beats.slice(0, state.presented) }));
-    retry?.remove();
-    retry = null;
     room.clearDebrief();
     if (box.paging()) box.repage();
   }
@@ -174,28 +170,28 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
     }
   }
 
-  // « Reprendre d'ici » on the past choices that allow it; « Choisir autrement » under the last consequence.
+  // The arrow beside the learner's past answers: « Reprendre d'ici » where going back is open, and
+  // « Choisir autrement » on the last answer after its consequence (in practice, before the first end).
+  // Never a line of the thread: at the next decision it would head the conversation (in a scene, the
+  // History holds the answer once its page has turned).
   function syncTools() {
-    for (const button of log.querySelectorAll<HTMLButtonElement>('.t-dialogue-resume')) {
-      const decision = Number(button.closest<HTMLElement>('.t-dialogue-row')?.dataset.decision);
-      button.hidden = !(Number.isInteger(decision) && canRevisit(state.run, decision) && state.phase !== 'playing');
-    }
+    const buttons = [...log.querySelectorAll<HTMLButtonElement>('.t-dialogue-resume')];
+    const decisionOf = (button: HTMLElement) => button.closest<HTMLElement>('.t-dialogue-row')?.dataset.decision;
+    buttons.forEach((button, index) => {
+      let way = backWay(Number(decisionOf(button)));
+      // « Choisir autrement » on the answer that closed the decision, not on an option retried before it.
+      if (way === 'retry' && buttons.slice(index + 1).some((other) => decisionOf(other) === decisionOf(button))) way = null;
+      button.hidden = !way || state.phase === 'playing';
+      const label = way === 'retry' ? thread.labels.dialogueChooseAgain : thread.labels.dialogueResumeHere;
+      if (button.getAttribute('aria-label') !== label) { button.setAttribute('aria-label', label); button.title = label; }
+    });
   }
-  function syncRetry() {
-    const walk = state.run.walk;
-    const last = [...walk.decisions].reverse().find((decision) => decision.closed && !decision.auto);
-    const wanted = !!last && last.choice !== null && canRetryLast(state.run) && state.phase !== 'playing';
-    if (!wanted || !last) { retry?.remove(); retry = null; return; }
-    // After the beats of its consequence (up to the next node).
-    const choice = walk.beats.findIndex((beat) => beat.type === 'choice' && beat.decision === last.index && !beat.auto && beat.option === last.choice);
-    if (choice < 0) { retry?.remove(); retry = null; return; }
-    let end = choice;
-    while (end + 1 < walk.beats.length && !['node', 'jump', 'end', 'decision'].includes(walk.beats[end + 1].type)) end++;
-    if (end >= state.presented) return;
-    const anchor = [...shown.slice(choice, end + 1)].reverse().flatMap((entry) => entry?.nodes ?? []).find((node) => node.isConnected);
-    if (!anchor) return;
-    if (!retry) retry = retryRow(thread, () => { if (canRetryLast(state.run)) move(retryLast(state.run), { back: 'retry' }); });
-    if (anchor.nextElementSibling !== retry) anchor.after(retry);
+  // How the learner may go back to a decision from their answer: revisit it, retry it (the last one), or not.
+  function backWay(decision: number): 'revisit' | 'retry' | null {
+    if (!Number.isInteger(decision)) return null;
+    if (canRevisit(state.run, decision)) return 'revisit';
+    const last = [...state.run.walk.decisions].reverse().find((entry) => entry.closed && !entry.auto);
+    return last?.index === decision && canRetryLast(state.run) ? 'retry' : null;
   }
 
   // ── Showing at once: back on the screen, the editor's canvas, a jump of the canvas ──
@@ -209,7 +205,6 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
     box.scrollLog(false);
     if (state.run.walk.status === 'choosing') { state.phase = 'choosing'; room.showOptions(); } else { state.phase = 'ended'; room.showEnd(false); }
     syncTools();
-    syncRetry();
   }
   // The editor's canvas: the dialogue after these choices (option ids, in order), at a node.
   function showPath(choices: readonly string[], node?: string) {
@@ -254,7 +249,11 @@ export function createMoves(parts: ViewParts, state: ViewState, { courseState, r
   }
 
   return {
-    shownBeat, record, move, renderAll, showPath, showLine, transcript, syncTools, syncRetry,
-    revisit(decision: number) { if (canRevisit(state.run, decision)) move(revisit(state.run, decision), { back: 'revisit' }); }
+    shownBeat, record, move, renderAll, showPath, showLine, transcript, syncTools,
+    revisit(decision: number) {
+      const way = backWay(decision);
+      if (way === 'revisit') move(revisit(state.run, decision), { back: 'revisit' });
+      else if (way === 'retry') move(retryLast(state.run), { back: 'retry' });
+    }
   };
 }

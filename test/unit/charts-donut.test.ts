@@ -38,12 +38,13 @@ test('donut: the centre says the highlighted part at rest and counts it; the oth
   assert.match(html, /data-t-item="reported"[^>]*style="--c:var\(--t-donut-hl\)/);
   assert.match(html, /data-t-item="deleted"[^>]*style="--c:var\(--t-donut-k0\)/);
   assert.match(html, /data-t-item="clicked"[^>]*style="--c:var\(--t-donut-k1\)/);
-  // A part moves out along its bisector: Reported spans 0 to 0.48 of the turn, so it leans right.
-  const reported = /data-t-item="reported"[^>]*data-turn="([\d.]+) ([\d.]+)"[^>]*style="[^"]*--ux:([-\d.]+);--uy:([-\d.]+)"/.exec(html);
+  // A part's place on the ring (the pointer picks by angle): Reported spans 0 to 0.48 of the turn. A
+  // part never moves: its style is its colour alone.
+  const reported = /data-t-item="reported"[^>]*data-turn="([\d.]+) ([\d.]+)"[^>]*style="([^"]*)"/.exec(html);
   assert.ok(reported);
   assert.equal(Number(reported[1]), 0);
   assert.equal(Number(reported[2]), 0.48);
-  assert.ok(Number(reported[3]) > 0.99 && Math.abs(Number(reported[4])) < 0.07);
+  assert.equal(reported[3], '--c:var(--t-donut-hl)');
 });
 
 test('donut: without a highlight (or with center total), the centre says the total and the parts take steps of the accent', () => {

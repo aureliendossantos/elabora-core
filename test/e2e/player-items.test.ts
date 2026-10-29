@@ -298,15 +298,32 @@ test('the progress in parts: a segment per section, the part shown, Tab and the 
       { label: 'Partie 3 sur 3 : Valider, pas encore disponible', tab: '-1', current: false, done: false, locked: true, fill: '0' }
     ]);
     assert.deepEqual(await box(page, '.t-item--progress'), before, 'nothing moves from one part to the next');
+    // The pointer going from part to part without leaving the bar: the tooltip follows it with each
+    // part's name, and never goes in between.
+    const centres = await page.$$eval('.t-part', (nodes) => nodes.map((node) => { const r = node.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }));
+    await page.mouse.move(centres[0][0], centres[0][1]);
+    await waitTip(page, 'Découvrir');
+    await page.evaluate(() => {
+      const tip = document.getElementById('t-tip')!;
+      tip.dataset.gone = '0';
+      new MutationObserver(() => { if (tip.hidden) tip.dataset.gone = String(Number(tip.dataset.gone) + 1); }).observe(tip, { attributes: true, attributeFilter: ['hidden'] });
+    });
+    for (const [index, title] of [[1, 'Pratiquer'], [2, 'Valider'], [1, 'Pratiquer'], [0, 'Découvrir'], [2, 'Valider']] as const) {
+      await page.mouse.move(centres[index][0], centres[index][1], { steps: 8 });
+      await waitTip(page, title);
+    }
+    assert.equal(await page.evaluate(() => document.getElementById('t-tip')!.dataset.gone), '0', 'the tooltip never goes from one part to the next');
+    await page.mouse.move(800, 500);
+    await page.waitForFunction(() => document.getElementById('t-tip')!.hidden);
     // One stop for Tab, at the part shown; the arrows go from part to part with their tooltip.
     await page.focus('.t-skip');
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-label')), 'Partie 2 sur 3 : Pratiquer, en cours');
-    await waitTip(page, 'Pratiquer · en cours');
+    await waitTip(page, 'Pratiquer');
     await page.keyboard.press('ArrowLeft');
-    await waitTip(page, 'Découvrir · terminée');
+    await waitTip(page, 'Découvrir');
     await page.keyboard.press('End');
-    await waitTip(page, 'Valider · pas encore disponible');
+    await waitTip(page, 'Valider');
     await page.keyboard.press('Home');
     assert.deepEqual((await parts(page)).map((part) => part.tab), ['0', '-1', '-1']);
     // Enter goes to the part's first screen.
@@ -317,8 +334,8 @@ test('the progress in parts: a segment per section, the part shown, Tab and the 
     // A part not open yet: its reason in the tooltip and the live region, and the learner stays.
     await go(page, 'premier-reflexe');
     await page.click('.t-part:nth-child(3)', { force: true });
-    await waitTip(page, 'Cette partie s’ouvre après les précédentes.');
-    await said(page, 'Cette partie s’ouvre après les précédentes.');
+    await waitTip(page, 'Cette partie n’est pas encore disponible.');
+    await said(page, 'Cette partie n’est pas encore disponible.');
     assert.equal(await shown(page), 'premier-reflexe');
     // The part that follows the screen shown refuses as Next does, with its reason.
     await complete(page, ['premier-reflexe']);
@@ -326,7 +343,7 @@ test('the progress in parts: a segment per section, the part shown, Tab and the 
     await page.click('.t-nav-btn--next', { force: true });
     await page.waitForFunction(() => !document.getElementById('t-tip')!.hidden);
     const next = await shownTip(page);
-    assert.ok(next && next !== 'Cette partie s’ouvre après les précédentes.', `Next refuses (${next})`);
+    assert.ok(next && next !== 'Cette partie n’est pas encore disponible.', `Next refuses (${next})`);
     await page.mouse.move(800, 500);
     await page.click('.t-part:nth-child(3)', { force: true });
     await waitTip(page, next!);
