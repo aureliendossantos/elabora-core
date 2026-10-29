@@ -26,7 +26,7 @@ The marketplaces are `../.claude-plugin/marketplace.json` (Claude Code) and `../
 
 ## The extension (Claude, desktop)
 
-`manifest.json` (MCPB 0.3) runs `server/launch.cjs` with Claude's own Node. The launcher finds the app (`/Applications/Elabora.app` or `~/Applications/Elabora.app`, then `/usr/local/bin/elabora`, on macOS; `%LOCALAPPDATA%\Programs\elabora` on Windows, where it runs `Elabora.exe` as Node because a `.cmd` cannot start without a shell) and starts `elabora mcp` on the folders the author picked (`user_config.courses`, several allowed). `ELABORA_COMMAND` names another `elabora` (a checkout, a test). Several folders, or a folder of modules such as the library, need an Elabora whose `elabora mcp` takes several folders (after 0.3.0); 0.3.0 serves one module folder.
+`manifest.json` (MCPB 0.3) runs `server/launch.cjs` with Claude's own Node. The launcher finds the app (`/Applications/Elabora.app` or `~/Applications/Elabora.app` on macOS; `%LOCALAPPDATA%\Programs\elabora` on Windows, where it runs `Elabora.exe` as Node because a `.cmd` cannot start without a shell) and starts `elabora mcp` on the folders the author picked (`user_config.courses`, several allowed). `ELABORA_COMMAND` names another `elabora` (a checkout, a test). Several folders, or a folder of modules such as the library, need an Elabora whose `elabora mcp` takes several folders (after 0.3.0); 0.3.0 serves one module folder.
 
 ```bash
 pnpm run mcpb                                            # validates, then writes dist/elabora.mcpb

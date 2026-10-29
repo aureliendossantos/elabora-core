@@ -27,22 +27,27 @@ const NO_COURSE = `Only the documentation, the skills and the app's library are 
 const isCourse = (dir: string) => fs.existsSync(path.join(dir, 'course.json'));
 
 // The courses a server serves: each folder given that is a course, else the courses directly in it
-// (a folder of modules, the app's library). A folder that is gone is skipped and said, so that one
-// course deleted does not stop a host from reaching the others.
-export interface ServedCourses { courses: string[]; missing: string[] }
+// (a folder of modules, the app's library). A folder that is gone or unreadable is skipped and said,
+// so that one course deleted does not stop a host from reaching the others; when it is the only
+// folder given, that is an error. `found`: the courses met inside a folder, not named themselves.
+export interface ServedCourses { courses: string[]; found: string[]; missing: string[] }
 export function servedCourses(dirs: readonly string[]): ServedCourses {
   const courses: string[] = [];
+  const found: string[] = [];
   const missing: string[] = [];
   for (const dir of dirs.map((each) => path.resolve(each))) {
-    if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) missing.push(dir);
-    else if (isCourse(dir)) courses.push(dir);
-    else {
+    if (isCourse(dir)) { courses.push(dir); continue; }
+    try {
       for (const entry of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
-        if (entry.isDirectory() && !entry.name.startsWith('.') && isCourse(path.join(dir, entry.name))) courses.push(path.join(dir, entry.name));
+        const course = path.join(dir, entry.name);
+        if (entry.isDirectory() && !entry.name.startsWith('.') && isCourse(course)) { courses.push(course); found.push(course); }
       }
+    } catch {
+      missing.push(dir);
     }
   }
-  return { courses: [...new Set(courses)], missing };
+  if (dirs.length === 1 && missing.length) throw new Error(`${missing[0]} is not a folder this server can read`);
+  return { courses: [...new Set(courses)], found, missing };
 }
 
 interface ServedCourse { name: string; folder: string; id: string | null; title: string | null }
@@ -67,7 +72,7 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
   const { readOnly = false } = options;
   // Validate host configuration before updating course rules; use one selection for list/call.
   agentTools(options);
-  const { courses: folders, missing } = servedCourses(typeof dirs === 'string' ? [dirs] : dirs);
+  const { courses: folders, found, missing } = servedCourses(typeof dirs === 'string' ? [dirs] : dirs);
   const served = nameCourses(folders);
   const mode = served.length === 0 ? 'none' : served.length === 1 ? 'one' : 'several';
   // Outside a course, only the tools that need none.
@@ -80,11 +85,19 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
   if (mode === 'several') tools.unshift({ name: 'elabora_courses', description: 'The courses this server serves: the name every course operation takes as course, the course id, title and folder.', inputSchema: objectSchema({}), annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false } });
 
   // The course's rules for agents, brought up to date when nobody edited them (agent-rules.ts, D34);
-  // a read-only server writes nothing, and only says what it finds.
+  // a read-only server writes nothing, and only says what it finds. A course met inside a folder is
+  // brought up to date only when an operation first works on it: a session opened in a folder of
+  // modules does not rewrite them all.
+  const pending = new Set(readOnly ? [] : found);
   const notes = served.map((course) => {
-    const note = readOnly ? agentRulesNote(course.folder) : syncAgentRules(course.folder);
+    const note = readOnly || pending.has(course.folder) ? agentRulesNote(course.folder) : syncAgentRules(course.folder);
     return note && mode === 'several' ? `${course.name}: ${note}` : note;
   }).filter((note): note is string => !!note);
+  const settle = (folder: string) => {
+    if (!pending.delete(folder)) return;
+    const note = syncAgentRules(folder);
+    if (note) process.stderr.write(`${note}\n`);
+  };
   const gone = missing.length ? `Not found, so not served: ${missing.join(', ')}.` : '';
   // Said to the agent too, in the server's instructions: a host keeps a server's stderr in its logs.
   for (const note of [...notes, gone]) if (note) process.stderr.write(`${note}\n`);
@@ -102,10 +115,14 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
     const author: Author = client ? { kind: 'agent', name: client } : { kind: 'agent' };
     if (mode === 'several' && name === 'elabora_courses') return textResult(served);
     const tool = byName.get(name);
-    if (mode !== 'several' || !tool || tool.anywhere) return callAgentTool(name, args, { root: served[0]?.folder ?? process.cwd(), author }, selection);
+    if (mode !== 'several' || !tool || tool.anywhere) {
+      if (mode === 'one' && tool && !tool.anywhere) settle(served[0]!.folder);
+      return callAgentTool(name, args, { root: served[0]?.folder ?? process.cwd(), author }, selection);
+    }
     const { course: wanted, ...rest } = args;
     const course = served.find((each) => each.name === wanted || each.folder === (typeof wanted === 'string' ? path.resolve(wanted) : null));
     if (!course) return errorResult({ error: `${wanted === undefined ? 'No course given' : `No course ${JSON.stringify(wanted)} here`}: course is one of ${served.map((each) => each.name).join(', ')}.` });
+    settle(course.folder);
     return callAgentTool(name, rest, { root: course.folder, author }, selection);
   });
 

@@ -20,7 +20,7 @@ function candidates() {
     return [{ command: path.join(dir, 'Elabora.exe'), args: [path.join(dir, 'resources', 'app', 'cli', 'elabora.js')], env: { ELECTRON_RUN_AS_NODE: '1' } }];
   }
   const apps = ['/Applications/Elabora.app', path.join(home, 'Applications', 'Elabora.app')];
-  return [...apps.map((app) => ({ command: path.join(app, 'Contents', 'Resources', 'bin', 'elabora'), args: [] })), { command: '/usr/local/bin/elabora', args: [] }];
+  return apps.map((app) => ({ command: path.join(app, 'Contents', 'Resources', 'bin', 'elabora'), args: [] }));
 }
 
 const found = candidates().find((each) => [each.command, ...each.args].every((file) => fs.existsSync(file)));

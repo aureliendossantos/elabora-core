@@ -8,6 +8,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { ROOT, copyExample } from '../helpers.ts';
+import { callAgentTool } from '@elabora/cli';
 
 // The folders a host gives the MCP server (a plugin starts it wherever a session opens; the Claude
 // extension, on the folders the author picks): one course, several, or none.
@@ -87,6 +88,42 @@ test('MCP on one course: the tools as they are, without course', async () => {
     await client.close();
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('MCP in a folder that holds one course: served as it is; its rules are brought up to date when an operation first works on it', async () => {
+  const parent = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-parent-'));
+  const dir = path.join(parent, 'module');
+  const source = copyExample();
+  fs.cpSync(source, dir, { recursive: true });
+  fs.rmSync(source, { recursive: true, force: true });
+  const rules = path.join(dir, 'AGENTS.md');
+  fs.writeFileSync(rules, fs.readFileSync(rules, 'utf8').replace(/revision=\d+/, 'revision=1'));
+  const before = fs.readFileSync(rules, 'utf8');
+  try {
+    const server = createMcpServer(parent);
+    const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
+    await server.connect(serverSide);
+    const client = new Client({ name: 'test', version: '1' });
+    await client.connect(clientSide);
+    assert.match(client.getInstructions() ?? '', new RegExp(`scoped to one course: ${dir.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&')}`));
+    assert.equal(fs.readFileSync(rules, 'utf8'), before);
+    assert.ok(!(await client.callTool({ name: 'elabora_get_plan', arguments: {} })).isError);
+    assert.notEqual(fs.readFileSync(rules, 'utf8'), before);
+    await client.close();
+  } finally {
+    fs.rmSync(parent, { recursive: true, force: true });
+  }
+});
+
+test('outside a course: a folder that is gone is an error when it is the only one; the library and docs answer without a course', async () => {
+  assert.throws(() => createMcpServer(path.join(os.tmpdir(), 'elabora-no-such-folder')), /is not a folder this server can read/);
+  const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-nocourse-'));
+  try {
+    const result = await callAgentTool('elabora_projects_path', {}, { root: empty, author: { kind: 'agent' } });
+    assert.ok(!result.isError);
+  } finally {
+    fs.rmSync(empty, { recursive: true, force: true });
   }
 });
 
