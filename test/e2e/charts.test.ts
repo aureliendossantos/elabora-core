@@ -31,6 +31,7 @@ function chartsCourse(): string {
     { id: 'origine', type: 'bars', props: bars },
     { id: 'reflexe', type: 'diagram', props: { takeaway: 'Survoler avant de cliquer', mermaid: 'flowchart LR\n  A[Un e-mail arrive] --> B{Un lien ?}\n  B -- oui --> C[Survoler le lien]\n  B -- non --> D[Lire la suite]', highlight: 'C' } }
   );
+  chemin.blocks.push({ id: 'parts', type: 'donut', props: { takeaway: 'La messagerie, loin devant', highlight: 'mail', unit: '%', parts: [{ id: 'mail', label: 'Messagerie', value: 62 }, { id: 'web', label: 'Sites piégés', value: 18 }, { id: 'usb', label: 'Clés USB', value: 20 }] } });
   writeJSON(dir, 'screens/chemin.json', chemin);
   const reflexe = readJSON(dir, 'screens/premier-reflexe.json');
   reflexe.blocks.push({ id: 'clics', type: 'trend', props: { takeaway: 'Les clics fondent en un an', unit: '%', mode: 'predict', points: months, predict: { from: 'mai' } } });
@@ -95,6 +96,24 @@ test('charts: the entrance settles on the markup; the pointer and the keys point
     await page.waitForTimeout(300);
     const lit = await diagram.locator('.t-diagram-wide .is-lit').evaluateAll((elements) => elements.map((element) => (element as HTMLElement).dataset.tItem ?? (element as HTMLElement).dataset.id));
     assert.deepEqual([...new Set(lit)].sort(), ['A', 'B', 'C', 'L_A_B_0', 'L_B_C_0'].sort());
+    // The donut: the part pointed at takes the accent (the highlight gives it up) and never moves; the
+    // centre's faces cross-fade on one time and curve, so that one makes up for the other.
+    const donut = page.locator('.t-block[data-block="parts"] .t-chart');
+    await donut.scrollIntoViewIfNeeded();
+    await page.waitForFunction(() => { const root = document.querySelector('.t-block[data-block="parts"] .t-chart'); return !!root && root.classList.contains('is-pulled') && !root.classList.contains('is-entering') && root.getAnimations({ subtree: true }).length === 0; }, null, { timeout: 30000 });
+    const arc = (id: string) => page.$eval(`.t-block[data-block="parts"] .t-donut-arc[data-t-item="${id}"]`, (element) => ({ fill: getComputedStyle(element).fill, translate: getComputedStyle(element).translate }));
+    const accent = (await arc('mail')).fill;
+    await donut.locator('.t-donut-row[data-t-item="web"]').hover();
+    await page.waitForFunction(() => {
+      const face = document.querySelector('.t-block[data-block="parts"] .t-donut-face[data-t-item="web"]');
+      return !!face && face.classList.contains('is-pointed') && Number(getComputedStyle(face).opacity) === 1;
+    }, null, { timeout: 30000 });
+    await page.waitForTimeout(300);
+    assert.deepEqual(await arc('web'), { fill: accent, translate: 'none' });
+    assert.notEqual((await arc('mail')).fill, accent);
+    const fades = await donut.locator('.t-donut-face').evaluateAll((faces) => faces.map((face) => { const style = getComputedStyle(face); return `${style.transitionProperty} ${style.transitionDuration} ${style.transitionTimingFunction} ${style.transitionDelay}`; }));
+    assert.equal(new Set(fades).size, 1, JSON.stringify(fades));
+    await page.mouse.move(5, 5);
   });
 });
 
