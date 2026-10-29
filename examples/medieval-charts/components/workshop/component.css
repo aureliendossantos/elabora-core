@@ -30,7 +30,8 @@
     .mc-workshop-card { animation: mc-focus linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
   }
 }
-@keyframes mc-focus { 0% { opacity: .72; translate: 0 1.5rem; } 32%, 68% { opacity: 1; translate: 0 0; } 100% { opacity: .72; translate: 0 -1rem; } }
+/* A card comes to rest as it nears the middle and leaves the same way, without a jolt at either end. */
+@keyframes mc-focus { 0% { opacity: .72; translate: 0 1.5rem; animation-timing-function: var(--t-ease-out); } 32%, 68% { opacity: 1; translate: 0 0; animation-timing-function: var(--t-ease-in-out); } 100% { opacity: .72; translate: 0 -1rem; } }
 
 @container (max-width: 860px) {
   .mc-workshop, .mc-workshop--side-end { grid-template-columns: 1fr; grid-template-areas: "figure" "steps"; gap: 0; }

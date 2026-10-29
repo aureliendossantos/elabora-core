@@ -4,7 +4,7 @@
 // Colours come from the theme tokens; noise is seeded, so every run writes the same bytes.
 import {
   COAST, ISLANDS, PORTS, SHEET, SCALE_BAR, HIDDEN_CIRCLE, MILES_PER_UNIT, ROTATION_DEG, ORIGIN,
-  inkLine, islandOutline, port, roseCentres, rhumbs, rng, sheetOutline
+  inkLine, islandOutline, port, rhumbOpacity, roseCentres, rhumbs, rng, sheetOutline
 } from '../objects/chart-table/chart.js';
 
 export const meta = { description: 'T-O world map in layers, the two leaves of the diptych, the stages of a portolan chart and the whole chart (same geometry as the 3D chart table), a harbour plotted from two others, the 9° tilt against a modern map, dividers on a scale of miles, a 32-point wind rose and the hero rose, without text.' };
@@ -184,12 +184,13 @@ function workshopLayers(C) {
   const pricks = roseCentres().map((point) => `<circle cx="${X(point.x)}" cy="${Y(point.y)}" r="3.2" fill="${C.vellumLight}" stroke="${C.ink}" stroke-width="1.6"/><circle cx="${X(point.x)}" cy="${Y(point.y)}" r="1" fill="${C.ink}"/>`).join('');
   const circle = `${open}<circle cx="${X(hx)}" cy="${Y(hy)}" r="${f(hr * S)}" fill="none" stroke="${C.sepia}" stroke-width="1.4" stroke-dasharray="1 5" stroke-linecap="round" opacity=".8"/>${pricks}</svg>`;
 
-  // 3. The rhumb lines: black for the eight winds, green for the half-winds, red for the quarters.
+  // 3. The rhumb lines: black for the eight winds, green for the half-winds, red for the quarters, in
+  // the chart's one ink (chart.js RHUMB_INK, as on the 3D table), faint under the coasts and names.
   const color = { wind: C.wind, half: C.half, quarter: C.quarter };
   const widths = { wind: 1.05, half: 0.9, quarter: 0.8 };
   let lines = '';
   for (const kind of ['quarter', 'half', 'wind']) {
-    lines += `<g stroke="${color[kind]}" stroke-width="${widths[kind]}" opacity="${kind === 'wind' ? 0.5 : 0.36}">`;
+    lines += `<g stroke="${color[kind]}" stroke-width="${widths[kind]}" opacity="${f(rhumbOpacity(kind, widths[kind] / S))}">`;
     for (const line of rhumbs()) if (line.kind === kind) lines += `<line x1="${X(line.x1)}" y1="${Y(line.y1)}" x2="${X(line.x2)}" y2="${Y(line.y2)}"/>`;
     lines += '</g>';
   }
@@ -237,12 +238,11 @@ function workshopLayers(C) {
   const rose = roseShape(C, X(2.4), Y(-8.6), 2.2 * S, { cross: true });
   const finish = `${open}<defs>${clip}</defs><g clip-path="url(#ws-sheet)">${fills}${scale}${rose}</g></svg>`;
 
-  // The finished chart in one image (the opening of the course and its close), its rhumb lines
-  // dimmed so that the coasts, the names and the labels over it read first.
+  // The finished chart in one image (the opening of the course and its close): the same layers.
   const inner = (svg) => svg.slice(svg.indexOf('>') + 1, svg.lastIndexOf('</svg>')).replace(/<defs>[\s\S]*?<\/defs>/, '');
   const whole = `${open}<defs>${clip}<radialGradient id="ws-age" cx="50%" cy="50%" r="62%"><stop offset=".55" stop-color="${C.vellumLight}"/><stop offset="1" stop-color="${C.vellumDeep}"/></radialGradient>
 <filter id="ws-grain" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="3" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .35  0 0 0 0 .25  0 0 0 0 .1  0 0 0 .09 0"/><feComposite in2="SourceGraphic" operator="in"/></filter></defs>
-${inner(skin)}${inner(circle)}<g opacity=".5">${inner(network)}</g>${inner(coasts)}${inner(names)}${inner(finish)}</svg>`;
+${inner(skin)}${inner(circle)}${inner(network)}${inner(coasts)}${inner(names)}${inner(finish)}</svg>`;
 
   return { skin, circle, rhumbs: network, plot, coasts, names, finish, whole };
 }

@@ -10,7 +10,7 @@
 import * as THREE from 'three';
 import {
   COAST, ISLANDS, PORTS, SHEET, SCALE_BAR, HIDDEN_CIRCLE, MILES_PER_UNIT, WINDS, VOYAGE_PORTS,
-  angleGap, bearing, inkLine, islandOutline, miles as milesBetween, nearestWind, port, rhumbs, rng, roseCentres, sheetOutline
+  angleGap, bearing, inkLine, islandOutline, miles as milesBetween, nearestWind, port, rhumbOpacity, rhumbs, rng, roseCentres, sheetOutline
 } from './chart.js';
 
 const W = 0.1;                                  // world units per chart unit
@@ -772,10 +772,9 @@ function paintNet(C, px) {
   g.save();
   g.clip(skinPath());
   const colour = { wind: C.wind, half: C.half, quarter: C.quarter };
-  const alpha = { wind: 0.46, half: 0.32, quarter: 0.26 };
   for (const kind of ['quarter', 'half', 'wind']) {
-    g.strokeStyle = rgba(colour[kind], alpha[kind]);
     g.lineWidth = (kind === 'wind' ? 1.5 : 1.2) / k;
+    g.strokeStyle = rgba(colour[kind], rhumbOpacity(kind, g.lineWidth));
     g.beginPath();
     for (const line of rhumbs()) if (line.kind === kind) { g.moveTo(line.x1, line.y1); g.lineTo(line.x2, line.y2); }
     g.stroke();

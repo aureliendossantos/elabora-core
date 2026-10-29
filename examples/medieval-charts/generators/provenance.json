@@ -13,117 +13,117 @@
     },
     "images/chart-whole.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
-      "outputHash": "sha256:476c652621169cb71ebb02b1fbeec827aa2ac708ec0ae174bdd827a6e9cb8dfc"
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
+      "outputHash": "sha256:a82958e3b2bebdb3f2938dcc49efb1a3aa28ad8f2a4ad5e564fd22edef500aab"
     },
     "images/hero-rose.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:e44ffd03a14a09bffb9806595ef2e423a091839f8653c8b800018517ae996ad9"
     },
     "images/leaf-mappa.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:b9bde85241cc3db700874d520d7a3b01ab919a89c0a4c5554e391f63d6a567df"
     },
     "images/leaf-portolan.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:d48848232f427c120c7669d774b1a39f5a72adde5baf2c8b02ee8ef4fd2aa570"
     },
     "images/scale-dividers.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:ceec8a5345ff07f3dd3fac8f64dd4c9bf1d1945b1c9cc47f90af109cc99c269b"
     },
     "images/tilt-chart.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:e9f25fe22bc68c913f86b3dcf3d89b5f7a98d0a9b494ee682c41672d84a6376b"
     },
     "images/tilt-modern.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:8c3dc5a61825eededb4a35574e1fbad11e80ed311539e7a9580bf89b6fcfe84f"
     },
     "images/tilt-needles.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:408f0d65e3c434afe09e78b957f17fe07aa56be49f7a0c07799b44316a9648b4"
     },
     "images/to-africa.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:cc3a3691410b4d734e89839356ea099ea3d02e8d5df1973ed89fb3426f141b57"
     },
     "images/to-asia.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:ec5960c8a5aaf3a8a6683a9818b3e5c42797c571b5050e6c89eeb1d8f8fdc607"
     },
     "images/to-europe.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:70167172097e0ceeb7c84b56b54428b0afd8d866ca79fc209604cc8e301a16fc"
     },
     "images/to-jerusalem.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:094f256c4871189c2dc1aa270cb52086fcc319bbc392e8fa10fcf8ac36cd74c3"
     },
     "images/to-ocean.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:03877128707c4712cac6448c72aa7c12537d6af70847905777922fd9c93aa71d"
     },
     "images/to-paradise.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:2a1ccf502625eaf57ff0a0f7e8c3a2912815b4ca0d07f6b3566c669b74128c64"
     },
     "images/to-tee.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:b4ef2f68475064e1479ad0ac12e715da453d9e8df30789b384a1647a2a1d9e1a"
     },
     "images/wind-rose.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:02c57ce00d9ea4e593d37eb823cc01f781430e3c34b3ae89c283201678a52f9d"
     },
     "images/ws-circle.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:be0a2c3314b4bf3b981eb2bfb69b247cb63c0b163ce5e85851bfe7f8c8611aed"
     },
     "images/ws-coasts.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:88d7cb5512bf3a170527b9f7b1e11b0041756f5337b179e977766198c567d74c"
     },
     "images/ws-finish.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:1f52ba0a0ff6193f5f0b6509186e585b9deb069eb37a4a6a88d895a5ea159348"
     },
     "images/ws-names.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:b097f3c9a52d4b9d84bd43bd3edabf3914ca359bf08686f459629b940f58651b"
     },
     "images/ws-plot.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:336a0809f0ec623e3c8d6648843b105f657016c4c07ce16810c4bf74d7717f73"
     },
     "images/ws-rhumbs.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
-      "outputHash": "sha256:2d694c125ad5b3d356799a223bf32dfad01f01bece8ef0d32b5e96a87ad5f5ee"
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
+      "outputHash": "sha256:cff1c7f64849f790d18e52aebcce8ed5ee8331cd16b28028b32433d4bee8c471"
     },
     "images/ws-skin.svg": {
       "generator": "generators/figures.mjs",
-      "inputsHash": "sha256:3b13f2ba22d64b0fc45b829b9d5c90a25a8279178845aee1efd8d736d023682b",
+      "inputsHash": "sha256:d4e2b22b4889c0f78a25c3cab5f400c11b1627fe4d4bfc4419390b37a52f2a66",
       "outputHash": "sha256:c7358aa05df50caf86a26ae90851390c0ec1d753d944a1ca9a7a1ce50042fc5c"
     }
   }

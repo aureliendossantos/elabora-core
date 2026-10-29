@@ -279,6 +279,10 @@ test('visited marks: items, cards, details and reveals are saved and restored on
     // The details' toggle event comes with the next task.
     await page.waitForFunction(() => document.querySelector('[data-block="explore-more"] details')?.hasAttribute('data-t-visited'));
     await go(page, 'timeline');
+    // The events' words come in with the scroll on the player's rule (--t-scroll-in): a fade and a rise
+    // on a view timeline.
+    assert.deepEqual(await page.$eval('[data-t-reveal="e1500"] > .t-steps-words', (node) => node.getAnimations().map((animation) => `${(animation as CSSAnimation).animationName} ${animation.timeline?.constructor.name}`).sort()),
+      ['t-scroll-in-fade ViewTimeline', 't-scroll-in-rise ViewTimeline']);
     // Reveals: the first events are in view at once; the others once scrolled to.
     const revealed = () => page.$$eval('[data-block="day"] [data-t-reveal][data-t-visited]', (nodes) => nodes.map((node) => node.getAttribute('data-t-reveal')));
     const first = await revealed();
