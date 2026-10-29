@@ -1,0 +1,239 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "editorial",
+  "title": "Your module title",
+  "description": "Editorial: the magazine page for long reads in culture, history and management. Warm paper with a fine grain, ink rules, folios and drop caps; one colour plate per part, which unfolds from the page edge on part openers and folds back into a thumb tab; texts and pictures come in through masks and the folio turns at the foot of the page.",
+  "language": "en",
+  "version": "1.0.0",
+  "durationMinutes": 15,
+  "sections": [
+    {
+      "id": "opening",
+      "title": "Getting started",
+      "screens": [
+        "cover",
+        "objectives"
+      ]
+    },
+    {
+      "id": "part-1",
+      "title": "First part title",
+      "screens": [
+        "part-one",
+        "key-message",
+        "text-and-picture",
+        "cards"
+      ]
+    },
+    {
+      "id": "part-2",
+      "title": "Second part title",
+      "screens": [
+        "key-figures",
+        "practice",
+        "steps",
+        "quote"
+      ]
+    },
+    {
+      "id": "part-3",
+      "title": "Third part title",
+      "screens": [
+        "comparison",
+        "chart"
+      ]
+    },
+    {
+      "id": "closing",
+      "title": "Wrapping up",
+      "screens": [
+        "recap",
+        "the-end"
+      ]
+    }
+  ],
+  "variables": [],
+  "speakers": [
+    {
+      "id": "colleague",
+      "name": "Alex, a colleague",
+      "color": "color.plate-2"
+    }
+  ],
+  "theme": {
+    "cascade": "components-over-theme",
+    "fonts": [
+      {
+        "family": "Fraunces",
+        "src": "theme/fonts/fraunces/fraunces-latin-wght-normal.woff2",
+        "weight": "100 900"
+      },
+      {
+        "family": "Fraunces",
+        "src": "theme/fonts/fraunces/fraunces-latin-wght-italic.woff2",
+        "weight": "100 900",
+        "style": "italic"
+      },
+      {
+        "family": "Source Sans 3",
+        "src": "theme/fonts/source-sans-3/source-sans-3-latin-wght-normal.woff2",
+        "weight": "200 900"
+      },
+      {
+        "family": "Source Sans 3",
+        "src": "theme/fonts/source-sans-3/source-sans-3-latin-wght-italic.woff2",
+        "weight": "200 900",
+        "style": "italic"
+      }
+    ],
+    "tokens": {
+      "font.heading": "\"Fraunces\", \"Iowan Old Style\", Georgia, serif",
+      "font.body": "\"Source Sans 3\", \"Segoe UI\", system-ui, -apple-system, Arial, sans-serif",
+      "color.primary": "#1C1A17",
+      "color.onPrimary": "#F7F2E8",
+      "color.accent": "#B23A26",
+      "color.surface": "#F3EDE2",
+      "color.text": "#1C1A17",
+      "color.muted": "#4D473E",
+      "color.success": "#2F6B45",
+      "color.error": "#8F2C1A",
+      "color.focus": "#1F4A73",
+      "radius": 0,
+      "player.top.background": "#F3EDE2",
+      "player.top.text": "#1C1A17",
+      "player.bottom.background": "#F3EDE2",
+      "player.bottom.text": "#1C1A17",
+      "player.accent": "#1C1A17",
+      "player.onAccent": "#F7F2E8",
+      "player.radius": 0
+    },
+    "custom": {
+      "color.paper": "#F3EDE2",
+      "color.paper-deep": "#E7DECF",
+      "color.grain": "#3A2E1F",
+      "color.plate-1": "#B23A26",
+      "color.plate-2": "#1F4A73",
+      "color.plate-3": "#2E5B47",
+      "color.plate-4": "#7A5313",
+      "color.plate-5": "#6E2A35",
+      "color.on-plate": "#F7F2E8",
+      "color.ink-ground": "#1C1A17",
+      "color.text-on-ink": "#EFE8DC",
+      "color.muted-on-ink": "#B9B0A2",
+      "color.accent-on-ink": "#E58A6C"
+    },
+    "stylesheet": "theme/theme.css",
+    "styles": {
+      "screen": {
+        "cover": "Cover: a large serif title on the left of the page, for the plate backdrop (the plates of every part side by side on the right)",
+        "opener": "Part opener: with the layout editorial-opener and the plate backdrop, the part number set large on the part plate"
+      },
+      "text": {
+        "dek": "Standfirst: a large italic serif paragraph under a title",
+        "dropcap": "Opening paragraph with a drop cap in the colour of the part",
+        "contents": "Contents: a numbered list with large serif numerals in the part colour and rules between rows",
+        "ledger": "Ruled list: one point per row between hairlines (takeaways, recap)",
+        "colophon": "Colophon: short facts in a row of small capitals between two rules (duration, audience, edition)"
+      },
+      "columns": {
+        "spread": "Magazine columns: a heavy rule on top and fine column rules between them",
+        "versus": "Face to face: the first column on deeper paper, the second under a rule in the part colour"
+      },
+      "statement": {
+        "pull": "Pull quote: the sentence set very large in serif, between a heavy and a fine rule"
+      },
+      "image": {
+        "plate": "Figure on the page with a hairline caption; the text beside it opens with a drop cap"
+      }
+    },
+    "backdrop": {
+      "layers": [
+        "paper",
+        "ink",
+        "grain"
+      ],
+      "object": {
+        "id": "folio",
+        "props": {}
+      },
+      "variants": {
+        "paper": "Paper page: rules under the top bar, the folio at the foot, the part thumb tab at the page edge",
+        "plate": "Colour plate on the right of the page: the part plate on part openers, every plate side by side on the first and last screens",
+        "ink": "Black spread: ink ground, paper-coloured text and rules, for a quotation or a pause"
+      },
+      "default": "paper"
+    }
+  },
+  "navigation": {
+    "mode": "linear",
+    "lockUntilComplete": true
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "logo",
+          "enabled": false
+        },
+        {
+          "id": "title"
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "outline"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "completion": {
+    "reportAs": "completed-incomplete"
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  },
+  "presentation": {
+    "mode": "slides",
+    "contentWidth": 720,
+    "wideWidth": 1200,
+    "fit": {
+      "reference": "1600x900",
+      "minimum": "1280x720"
+    }
+  }
+}

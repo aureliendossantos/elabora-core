@@ -15,6 +15,9 @@ The course is a copy of the template under your id and title, in the language as
 | [`flow`](flow/) | Luminous ribbons and particles on a dark field: the particles leap at each screen, then settle | tech, cybersecurity, launches, sales |
 | [`clear`](clear/) | One accent on white: a short rule under the top bar moves to the part in progress | compliance, procedures, HR, internal communication |
 | [`shapes`](shapes/) | Bauhaus shapes in flat colours: a new tableau for each part, one shape moving at each screen | methods, frameworks, processes, young learners |
+| [`editorial`](editorial/) | The magazine page: rules and folios, a thumb tab per part that unfolds into a colour plate on a part opener; the folio turns at each screen | culture, history, management, long reads |
+| [`paper`](paper/) | Cut paper on kraft with real soft shadows: a paper theatre whose hills slide at each screen and whose scene changes at each part, in stop motion | storytelling, primary school, associations, awareness |
+| [`watercolor`](watercolor/) | Washes of water tones on cold-pressed paper: at each screen a new wash spreads from where the last one was, one tone per part | arts, care, sensitive subjects |
 
 ## The same screens in every template
 

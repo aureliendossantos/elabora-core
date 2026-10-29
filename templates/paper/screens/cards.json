@@ -1,0 +1,72 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "cards",
+  "title": "Three ideas, side by side",
+  "covers": [
+    "ITEM-3"
+  ],
+  "blocks": [
+    {
+      "id": "three-cards-columns",
+      "type": "columns",
+      "width": "wide",
+      "style": "cards",
+      "props": {
+        "count": 3
+      },
+      "blocks": [
+        {
+          "id": "three-cards-one",
+          "type": "heading",
+          "slot": "first",
+          "props": {
+            "text": "First block",
+            "level": 2
+          }
+        },
+        {
+          "id": "three-cards-one-text",
+          "type": "text",
+          "slot": "first",
+          "props": {
+            "markdown": "One or two sentences that say what this block is and when it helps. About twenty-five words."
+          }
+        },
+        {
+          "id": "three-cards-two",
+          "type": "heading",
+          "slot": "second",
+          "props": {
+            "text": "Second block",
+            "level": 2
+          }
+        },
+        {
+          "id": "three-cards-two-text",
+          "type": "text",
+          "slot": "second",
+          "props": {
+            "markdown": "One or two sentences that say what this block is and when it helps. About twenty-five words."
+          }
+        },
+        {
+          "id": "three-cards-three",
+          "type": "heading",
+          "slot": "third",
+          "props": {
+            "text": "Third block",
+            "level": 2
+          }
+        },
+        {
+          "id": "three-cards-three-text",
+          "type": "text",
+          "slot": "third",
+          "props": {
+            "markdown": "One or two sentences that say what this block is and when it helps. About twenty-five words."
+          }
+        }
+      ]
+    }
+  ]
+}

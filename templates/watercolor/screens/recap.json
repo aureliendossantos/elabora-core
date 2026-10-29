@@ -1,0 +1,34 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "recap",
+  "title": "What to remember",
+  "covers": [
+    "ITEM-6"
+  ],
+  "backdrop": "dawn",
+  "blocks": [
+    {
+      "id": "recap-list",
+      "type": "text",
+      "style": "takeaways",
+      "width": "wide",
+      "props": {
+        "markdown": "1. **First key idea.** One sentence that sums it up, as the learner should keep it.\n2. **Second key idea.** One sentence that sums it up, with the word that matters.\n3. **Third key idea.** One sentence that sums it up, and when to use it."
+      }
+    },
+    {
+      "id": "recap-guide",
+      "type": "speech",
+      "props": {
+        "speaker": "guide",
+        "lines": [
+          {
+            "id": "breathe",
+            "markdown": "Take a moment before you move on. Which of these three ideas will you try first, and with whom?"
+          }
+        ]
+      },
+      "width": "wide"
+    }
+  ]
+}

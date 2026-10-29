@@ -1,0 +1,41 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "key-figures",
+  "title": "Key figures",
+  "covers": [
+    "ITEM-4"
+  ],
+  "blocks": [
+    {
+      "id": "key-figures-chart",
+      "type": "key-figures",
+      "width": "wide",
+      "props": {
+        "takeaway": "Three figures that make the case at a glance",
+        "items": [
+          {
+            "id": "share",
+            "figure": "72 %",
+            "label": "Share of readers concerned by the subject",
+            "count": {
+              "to": 72,
+              "format": "percent"
+            }
+          },
+          {
+            "id": "ratio",
+            "figure": "3 in 4",
+            "label": "Cases where the key idea changes the outcome"
+          },
+          {
+            "id": "time",
+            "figure": "1850",
+            "label": "Year the story begins"
+          }
+        ],
+        "highlight": "share",
+        "source": "Source: name of the study, the archive or the report, year"
+      }
+    }
+  ]
+}

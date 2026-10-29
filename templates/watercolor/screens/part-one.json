@@ -1,0 +1,25 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "part-one",
+  "title": "Title of the first part",
+  "covers": [
+    "ITEM-2"
+  ],
+  "layout": "watercolor-part",
+  "layoutProps": {
+    "number": "1",
+    "presentation": "title",
+    "lead": "One sentence that sets up this part: the question it answers, or what it changes in the learner's daily practice.",
+    "duration": false
+  },
+  "blocks": [
+    {
+      "id": "part-one-meta",
+      "type": "text",
+      "style": "meta",
+      "props": {
+        "markdown": "- The key message\n- An explanation with an example\n- Three ideas side by side"
+      }
+    }
+  ]
+}

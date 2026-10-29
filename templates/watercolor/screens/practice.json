@@ -1,0 +1,43 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "practice",
+  "title": "Your turn",
+  "covers": [
+    "ITEM-5"
+  ],
+  "backdrop": "quiet",
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "practice-quiz",
+      "type": "quiz",
+      "props": {
+        "stem": "A short, realistic situation told in two sentences. Someone you support shares something that is hard for them to say. **What do you do first?**",
+        "mode": "single",
+        "scored": false,
+        "objective": "OBJ-1",
+        "feedbackStyle": "compact",
+        "options": [
+          {
+            "id": "a",
+            "text": "Reassure them straight away that it will all be fine",
+            "correct": false,
+            "feedback": "Kind, and quick. Yet it moves past what they feel before they have said it: listen first."
+          },
+          {
+            "id": "b",
+            "text": "Thank them for telling you, and ask what they need now",
+            "correct": true,
+            "feedback": "Yes. Thanking them honours the trust; the question lets them lead the next step."
+          },
+          {
+            "id": "c",
+            "text": "Suggest the service that usually handles this kind of case",
+            "correct": false,
+            "feedback": "It may help later, once you know what they need. For now it can feel like a door closing."
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "id": "part-number",
+  "title": "Part number",
+  "version": "1.0.0",
+  "level": "block",
+  "category": "content",
+  "description": "The number of a part, written large by hand on a cut-paper shape taped onto the kraft: a disc, a scalloped disc (cut with pinking shears) or a star.",
+  "instructions": "One per part opener, in the side slot of a split sheet. number is short (« 1 », « 2 », « A »). Pick another shape and paper for each part; keep to the light papers, the number stays in ink.",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["number"],
+    "properties": {
+      "number": { "type": "string", "maxLength": 3, "title": "Number", "description": "The part's number, short: « 1 ».", "x-translatable": true },
+      "shape": {
+        "type": "string",
+        "enum": ["disc", "scallop", "star"],
+        "default": "scallop",
+        "title": "Shape",
+        "description": "The paper shape under the number.",
+        "x-enum-labels": { "disc": "Disc", "scallop": "Scalloped disc", "star": "Star" },
+        "x-group": "design"
+      },
+      "paper": {
+        "type": "string",
+        "x-kind": "token",
+        "x-token-prefix": "color.",
+        "default": "color.paper-mustard",
+        "title": "Paper",
+        "description": "The colour of the shape (a theme token). The number stays in ink: keep to the light papers.",
+        "x-group": "design"
+      }
+    }
+  },
+  "fallback": [
+    { "type": "heading", "props": { "text": "{{number}}", "level": 2 } }
+  ],
+  "examples": [
+    { "title": "First part", "props": { "number": "1", "shape": "scallop", "paper": "color.paper-mustard" } },
+    { "title": "Second part", "props": { "number": "2", "shape": "star", "paper": "color.paper-pink" } }
+  ]
+}

@@ -1,0 +1,219 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "paper",
+  "title": "Your module title",
+  "language": "en",
+  "version": "1.0.0",
+  "sections": [
+    {
+      "id": "opening",
+      "title": "Getting started",
+      "screens": [
+        "cover",
+        "objectives"
+      ]
+    },
+    {
+      "id": "part-1",
+      "title": "First part title",
+      "screens": [
+        "part-one",
+        "key-message",
+        "text-and-picture",
+        "cards"
+      ]
+    },
+    {
+      "id": "part-2",
+      "title": "Second part title",
+      "screens": [
+        "key-figures",
+        "practice",
+        "steps",
+        "quote"
+      ]
+    },
+    {
+      "id": "part-3",
+      "title": "Third part title",
+      "screens": [
+        "comparison",
+        "chart"
+      ]
+    },
+    {
+      "id": "closing",
+      "title": "Wrapping up",
+      "screens": [
+        "recap",
+        "the-end"
+      ]
+    }
+  ],
+  "variables": [],
+  "theme": {
+    "cascade": "components-over-theme",
+    "fonts": [
+      {
+        "family": "Figtree",
+        "src": "theme/fonts/figtree/figtree-latin-wght-normal.woff2",
+        "weight": "300 900"
+      },
+      {
+        "family": "Figtree",
+        "src": "theme/fonts/figtree/figtree-latin-wght-italic.woff2",
+        "weight": "300 900",
+        "style": "italic"
+      },
+      {
+        "family": "Caveat",
+        "src": "theme/fonts/caveat/caveat-latin-wght-normal.woff2",
+        "weight": "400 700"
+      }
+    ],
+    "tokens": {
+      "font.body": "\"Figtree\", \"Avenir Next\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "font.heading": "\"Figtree\", \"Avenir Next\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "color.primary": "#2B2118",
+      "color.onPrimary": "#FBF4E6",
+      "color.accent": "#B23A24",
+      "color.surface": "#FBF4E6",
+      "color.text": "#2B2118",
+      "color.muted": "#4A3B2C",
+      "color.success": "#2E6B3A",
+      "color.error": "#A3301F",
+      "color.focus": "#1F5FA8",
+      "radius": 6,
+      "player.top.background": "#FBF4E6",
+      "player.top.text": "#2B2118",
+      "player.bottom.background": "#FBF4E6",
+      "player.bottom.text": "#2B2118",
+      "player.accent": "#2B2118",
+      "player.onAccent": "#FBF4E6",
+      "player.radius": 8
+    },
+    "custom": {
+      "font.display": "\"Caveat\", \"Segoe Print\", \"Bradley Hand\", cursive",
+      "color.kraft": "#D2AE7C",
+      "color.kraft-deep": "#B88E58",
+      "color.paper": "#FBF4E6",
+      "color.calm": "#EFE4CF",
+      "color.paper-coral": "#E8644B",
+      "color.paper-mustard": "#F2B632",
+      "color.paper-teal": "#1B7A72",
+      "color.paper-sky": "#79AEDD",
+      "color.paper-leaf": "#7DB356",
+      "color.paper-pink": "#F4A3B1",
+      "color.night": "#1F2A44",
+      "color.night-paper": "#33456E",
+      "color.night-text": "#FBF4E6",
+      "color.night-muted": "#D9CBB2",
+      "color.fibre": "#5A3A16",
+      "color.tape": "#FFF8EA",
+      "color.ink": "#2B2118"
+    },
+    "stylesheet": "theme/theme.css",
+    "styles": {
+      "text": {
+        "lead": "Large opening paragraph",
+        "numbered": "Numbered list, each number handwritten on a paper disc (objectives, takeaways)",
+        "tags": "Short facts as handwritten paper tags (length, format, audience)"
+      },
+      "columns": {
+        "cards": "Each column on its own coloured paper card, taped down",
+        "compare": "Two sheets face to face: a plain kraft one, then a bright one"
+      },
+      "statement": {
+        "banner": "The sentence on a strip of coloured paper, taped down"
+      }
+    },
+    "backdrop": {
+      "layers": [
+        "kraft",
+        "calm",
+        "night",
+        "grain"
+      ],
+      "object": {
+        "id": "cutouts",
+        "props": {}
+      },
+      "variants": {
+        "calm": "Calm: a pale sheet, the paper hills lowered and the sky cleared, for dense screens",
+        "night": "Night: deep blue paper, a pale moon and stars, for quotes and pauses"
+      }
+    }
+  },
+  "navigation": {
+    "mode": "linear",
+    "lockUntilComplete": true
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "logo",
+          "enabled": false
+        },
+        {
+          "id": "title"
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "outline"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "completion": {
+    "reportAs": "completed-incomplete"
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  },
+  "presentation": {
+    "mode": "slides",
+    "contentWidth": 720,
+    "wideWidth": 1100,
+    "fit": {
+      "reference": "1600x900",
+      "minimum": "1280x720"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "quote",
+  "title": "In their words",
+  "covers": [
+    "ITEM-4"
+  ],
+  "showTitle": false,
+  "blocks": [
+    {
+      "id": "quote-statement",
+      "type": "statement",
+      "props": {
+        "presentation": "quote",
+        "markdown": "A short quotation that gives a human voice to the idea, in the exact words of the person who said it.",
+        "author": "First name Last name",
+        "role": "Role, organisation"
+      }
+    }
+  ]
+}

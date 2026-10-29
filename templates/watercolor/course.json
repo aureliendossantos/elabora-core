@@ -1,0 +1,238 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "watercolor",
+  "title": "Your module title",
+  "language": "en",
+  "version": "1.0.0",
+  "sections": [
+    {
+      "id": "opening",
+      "title": "Getting started",
+      "screens": [
+        "cover",
+        "objectives"
+      ]
+    },
+    {
+      "id": "part-1",
+      "title": "First part title",
+      "screens": [
+        "part-one",
+        "key-message",
+        "text-and-picture",
+        "cards"
+      ]
+    },
+    {
+      "id": "part-2",
+      "title": "Second part title",
+      "screens": [
+        "key-figures",
+        "practice",
+        "steps",
+        "quote"
+      ]
+    },
+    {
+      "id": "part-3",
+      "title": "Third part title",
+      "screens": [
+        "comparison",
+        "chart"
+      ]
+    },
+    {
+      "id": "closing",
+      "title": "Wrapping up",
+      "screens": [
+        "recap",
+        "the-end"
+      ]
+    }
+  ],
+  "variables": [],
+  "theme": {
+    "cascade": "components-over-theme",
+    "fonts": [
+      {
+        "family": "EB Garamond",
+        "src": "theme/fonts/eb-garamond/eb-garamond-latin-wght-normal.woff2",
+        "weight": "400 800"
+      },
+      {
+        "family": "EB Garamond",
+        "src": "theme/fonts/eb-garamond/eb-garamond-latin-wght-italic.woff2",
+        "weight": "400 800",
+        "style": "italic"
+      },
+      {
+        "family": "Lato",
+        "src": "theme/fonts/lato/lato-latin-400-normal.woff2"
+      },
+      {
+        "family": "Lato",
+        "src": "theme/fonts/lato/lato-latin-700-normal.woff2",
+        "weight": "700"
+      },
+      {
+        "family": "Lato",
+        "src": "theme/fonts/lato/lato-latin-400-italic.woff2",
+        "style": "italic"
+      },
+      {
+        "family": "Lato",
+        "src": "theme/fonts/lato/lato-latin-700-italic.woff2",
+        "weight": "700",
+        "style": "italic"
+      }
+    ],
+    "tokens": {
+      "font.heading": "\"EB Garamond\", Garamond, \"Iowan Old Style\", \"Palatino Linotype\", Georgia, serif",
+      "font.body": "\"Lato\", \"Segoe UI\", system-ui, -apple-system, Arial, sans-serif",
+      "color.primary": "#1E3140",
+      "color.onPrimary": "#FAF7F1",
+      "color.accent": "#1D6A70",
+      "color.surface": "#FAF7F1",
+      "color.text": "#1E3140",
+      "color.muted": "#3A4955",
+      "color.success": "#2C6E4F",
+      "color.error": "#A33A2C",
+      "color.focus": "#1F5FBF",
+      "radius": 6,
+      "player.top.background": "#FAF7F1",
+      "player.top.text": "#1E3140",
+      "player.bottom.background": "#FAF7F1",
+      "player.bottom.text": "#1E3140",
+      "player.accent": "#1E3140",
+      "player.onAccent": "#FAF7F1",
+      "player.radius": 10
+    },
+    "custom": {
+      "color.wash-lagoon": "#8CCFCB",
+      "color.wash-cerulean": "#9BBFE4",
+      "color.wash-sea": "#A6D6B8",
+      "color.wash-deep": "#9DB6DA",
+      "color.wash-blush": "#F0B4A3",
+      "color.wash-ochre": "#EDCD8C",
+      "color.sheet": "#FFFDF9",
+      "color.line": "#E2DCD0",
+      "color.ink-ground": "#142838",
+      "color.ink-text": "#F5F1E8",
+      "color.ink-muted": "#C3CDD4",
+      "color.pigment-warm": "#8A5440"
+    },
+    "stylesheet": "theme/theme.css",
+    "styles": {
+      "screen": {
+        "cover": "Cover and closing: the title set large in italic on the open paper"
+      },
+      "text": {
+        "lead": "Large opening paragraph in italic serif",
+        "objectives": "Numbered list under large italic numerals, in the colour of the part",
+        "meta": "Short facts on one line, each after a small drop of colour",
+        "takeaways": "Numbered takeaways side by side, each under a large italic numeral"
+      },
+      "columns": {
+        "cards": "Each column on a sheet of paper with a soft wash pooled at its top",
+        "compare": "Two columns face to face: the first left unpainted, the second on a wash"
+      }
+    },
+    "backdrop": {
+      "layers": [
+        "paper",
+        "ink",
+        "grain"
+      ],
+      "object": {
+        "id": "bloom",
+        "props": {}
+      },
+      "variants": {
+        "quiet": "Paler washes kept to the edges, for dense screens",
+        "ink": "Indigo ink: light washes on a deep ground, light text, for one sentence set large",
+        "dawn": "Warm blush and ochre washes, to open gently or to close"
+      }
+    }
+  },
+  "navigation": {
+    "mode": "linear",
+    "lockUntilComplete": true
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "logo",
+          "enabled": false
+        },
+        {
+          "id": "title"
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "outline"
+        },
+        {
+          "id": "controls"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "completion": {
+    "reportAs": "completed-incomplete"
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  },
+  "presentation": {
+    "mode": "slides",
+    "contentWidth": 760,
+    "wideWidth": 1200,
+    "fit": {
+      "reference": "1600x900",
+      "minimum": "1280x720"
+    }
+  },
+  "description": "Watercolour: a template for the arts, care and sensitive subjects. Washes of water tones bloom behind every screen and spread from one screen to the next, like paint running into wet paper.",
+  "durationMinutes": 15,
+  "speakers": [
+    {
+      "id": "guide",
+      "name": "Alex, your guide",
+      "color": "color.accent"
+    }
+  ]
+}

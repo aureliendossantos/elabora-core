@@ -1,0 +1,44 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "chart",
+  "title": "What the data shows",
+  "covers": [
+    "ITEM-4"
+  ],
+  "backdrop": "calm",
+  "blocks": [
+    {
+      "id": "chart-bars",
+      "type": "bars",
+      "width": "wide",
+      "props": {
+        "takeaway": "The first step takes the most time, and saves the most",
+        "unit": "%",
+        "highlight": "r1",
+        "source": "Source of the data, year",
+        "rows": [
+          {
+            "id": "r1",
+            "label": "Look at the situation",
+            "value": 38
+          },
+          {
+            "id": "r2",
+            "label": "Choose the tool",
+            "value": 24
+          },
+          {
+            "id": "r3",
+            "label": "Act in small steps",
+            "value": 22
+          },
+          {
+            "id": "r4",
+            "label": "Share what you learnt",
+            "value": 16
+          }
+        ]
+      }
+    }
+  ]
+}

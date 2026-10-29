@@ -1,0 +1,33 @@
+/* Watercolour part opener: a fork of the opening whose part number stands very large in italic
+   beside the title, over a pool of the part's wash (--wc-part, --wc-pigment: the theme sets them
+   from the section's rank). The pool soaks in when the screen arrives (opacity only). */
+.wc-part .wc-part-copy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: clamp(2rem, 4.5vw, 4.5rem);
+  align-items: center;
+}
+.wc-part .wc-part-copy > :not(.wc-part-number) { grid-column: 2; }
+.wc-part .wc-part-copy::after { display: none; }
+.wc-part-number {
+  position: relative; isolation: isolate;
+  grid-column: 1; grid-row: 1 / span 3;
+  margin: 0; padding: 0 .12em 0 0;
+  font-family: var(--t-font-heading); font-style: italic; font-weight: 400;
+  font-size: clamp(9rem, 5rem + 10vw, 15rem); line-height: .82;
+  color: var(--wc-pigment, var(--t-accent));
+}
+.wc-part-number::before {
+  content: ""; position: absolute; z-index: -1; inset: -22% -55% -14% -45%;
+  border-radius: 48% 52% 42% 58% / 56% 44% 56% 44%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--wc-part, transparent) 62%, transparent), var(--wc-wash-thin, transparent) 70%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .wc-part-number::before { animation: wc-soak 1.8s cubic-bezier(.33, 0, .2, 1) both; }
+}
+@keyframes wc-soak { from { opacity: 0; } }
+
+@container (max-width: 640px) {
+  .wc-part .wc-part-copy { column-gap: 1.25rem; }
+  .wc-part-number { font-size: 6.5rem; }
+}

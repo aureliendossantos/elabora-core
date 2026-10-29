@@ -1,0 +1,24 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "text-and-picture",
+  "title": "A title that names the idea of this screen",
+  "covers": [
+    "ITEM-3"
+  ],
+  "blocks": [
+    {
+      "id": "text-and-picture-figure",
+      "type": "image",
+      "width": "wide",
+      "props": {
+        "presentation": "beside",
+        "asset": "images/collage.svg",
+        "decorative": true,
+        "side": "end",
+        "share": "half",
+        "title": "A short heading for the explanation",
+        "markdown": "Two or three sentences that explain the idea in plain words. Say what it is, then what it changes for the learner in their daily work.\n\nA second short paragraph adds an example, a nuance or the one detail people often miss. Keep each paragraph under forty words."
+      }
+    }
+  ]
+}

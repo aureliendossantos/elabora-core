@@ -1,0 +1,15 @@
+{
+  "format": "elabora-generated/1",
+  "assets": {
+    "images/paper.svg": {
+      "generator": "generators/watercolor.mjs",
+      "inputsHash": "sha256:6256a5856ebc0f6e08520af684e37aa82689fafc6e37f9f803f856eb7191d5c0",
+      "outputHash": "sha256:5c2f7a3cbda28408569ce4c0b3f86a95fe076f7a08e70335eaf2c459e65bee9d"
+    },
+    "images/watercolor-washes.svg": {
+      "generator": "generators/watercolor.mjs",
+      "inputsHash": "sha256:6256a5856ebc0f6e08520af684e37aa82689fafc6e37f9f803f856eb7191d5c0",
+      "outputHash": "sha256:51dfe461948f6743b5e83bc39f73062a55504ef2d89d9957a2c0a176b24705ca"
+    }
+  }
+}

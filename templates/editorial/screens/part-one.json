@@ -1,0 +1,27 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "part-one",
+  "title": "Title of the first part",
+  "covers": [
+    "ITEM-2"
+  ],
+  "layout": "editorial-opener",
+  "layoutProps": {
+    "number": "1",
+    "presentation": "title",
+    "lead": "One sentence that sets up what this part covers and why it comes first.",
+    "duration": false
+  },
+  "style": "opener",
+  "backdrop": "plate",
+  "blocks": [
+    {
+      "id": "part-intro-points",
+      "type": "text",
+      "style": "ledger",
+      "props": {
+        "markdown": "- The key idea, in one sentence\n- Where it comes from and how it applies\n- Three points to keep in mind"
+      }
+    }
+  ]
+}

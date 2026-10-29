@@ -1,0 +1,403 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "The cover: lagoon, cerulean and a touch of blush",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "cover",
+        "section": "opening",
+        "step": 1,
+        "variant": null,
+        "screenIndex": 0,
+        "screenCount": 14,
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 10
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screen": "cover",
+            "washes": 4,
+            "settled": true
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "cover"
+        }
+      ]
+    },
+    {
+      "name": "Moving on: a new wash spreads from where the last one was, the old ones dry",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "objectives",
+        "section": "opening",
+        "step": 1,
+        "variant": "quiet",
+        "screenIndex": 1,
+        "screenCount": 14,
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 10
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "part-one",
+            "section": "part-1",
+            "step": 1,
+            "variant": null,
+            "screenIndex": 2,
+            "screenCount": 14,
+            "sectionIndex": 1,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 45
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screen": "part-one",
+            "section": "part-1",
+            "settled": false
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "spreading"
+        },
+        {
+          "action": "step",
+          "frames": 240
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screen": "part-one",
+            "washes": 3,
+            "settled": true
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "spread"
+        }
+      ]
+    },
+    {
+      "name": "Going back: the washes fade, nothing shrinks",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "key-figures",
+        "section": "part-2",
+        "step": 1,
+        "variant": null,
+        "screenIndex": 6,
+        "screenCount": 14,
+        "sectionIndex": 2,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 10
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "cards",
+            "section": "part-1",
+            "step": 1,
+            "variant": "quiet",
+            "screenIndex": 5,
+            "screenCount": 14,
+            "sectionIndex": 1,
+            "sectionCount": 5,
+            "direction": "back"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 40
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screen": "cards",
+            "settled": false
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "fading"
+        },
+        {
+          "action": "step",
+          "frames": 120
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screen": "cards",
+            "variant": "quiet",
+            "settled": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Variants: ink and dawn",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "key-message",
+        "section": "part-1",
+        "step": 1,
+        "variant": "ink",
+        "screenIndex": 3,
+        "screenCount": 14,
+        "sectionIndex": 1,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 10
+        },
+        {
+          "action": "snapshot",
+          "name": "ink"
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "recap",
+            "section": "closing",
+            "step": 1,
+            "variant": "dawn",
+            "screenIndex": 12,
+            "screenCount": 14,
+            "sectionIndex": 4,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 260
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "variant": "dawn",
+            "settled": true
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "dawn"
+        }
+      ]
+    },
+    {
+      "name": "Reduced motion: the new screen at once",
+      "reducedMotion": true,
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "key-figures",
+        "section": "part-2",
+        "step": 1,
+        "variant": null,
+        "screenIndex": 6,
+        "screenCount": 14,
+        "sectionIndex": 2,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "practice",
+            "section": "part-2",
+            "step": 1,
+            "variant": "quiet",
+            "screenIndex": 7,
+            "screenCount": 14,
+            "sectionIndex": 2,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 3
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screen": "practice",
+            "settled": true
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "still"
+        }
+      ]
+    },
+    {
+      "name": "Phone",
+      "size": [
+        375,
+        812
+      ],
+      "safeArea": {
+        "top": 52,
+        "right": 0,
+        "bottom": 64,
+        "left": 0
+      },
+      "context": {
+        "screen": "comparison",
+        "section": "part-3",
+        "step": 1,
+        "variant": "quiet",
+        "screenIndex": 10,
+        "screenCount": 14,
+        "sectionIndex": 3,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 10
+        },
+        {
+          "action": "snapshot",
+          "name": "phone"
+        }
+      ]
+    },
+    {
+      "name": "Settings apply without remounting",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "chart",
+        "section": "part-3",
+        "step": 1,
+        "variant": null,
+        "screenIndex": 11,
+        "screenCount": 14,
+        "sectionIndex": 3,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 10
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "count": 5,
+            "strength": 0.5
+          }
+        },
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "washes": 5,
+            "settled": true
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "five-pale"
+        }
+      ]
+    }
+  ]
+}

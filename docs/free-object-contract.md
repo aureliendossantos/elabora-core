@@ -40,7 +40,8 @@ export function mount(container, ctx) {
   // ctx.props, ctx.tokens, ctx.objects, ctx.locale, ctx.reducedMotion, ctx.testMode, ctx.savedState
   // ctx.safeArea {top, right, bottom, left}: px of the frame covered by the course layout
   // ctx.t(key, values), ctx.strings                        (words: manifest strings, as the block words them)
-  // ctx.context {screen, section, step, variant}           (decorations of the backdrop)
+  // ctx.context {screen, section, step, variant, screenIndex, screenCount, sectionIndex, sectionCount, direction}
+  //                                                        (decorations of the backdrop, §4c)
   // ctx.view {visible, ratio, progress, entry, exit}       (where the frame is in the window)
   // ctx.host.onFrame((dt, frame) => …)  → unsubscribe     (all animation and time)
   // ctx.host.random(), ctx.host.now()                      (determinism)
@@ -51,6 +52,8 @@ export function mount(container, ctx) {
   // ctx.host.onSafeArea((area) => …)  → unsubscribe        (the layout covers another part)
   // ctx.host.onContext((context) => …) → unsubscribe       (decorations: the learner moved)
   // ctx.host.onView((view) => …) → unsubscribe             (the learner scrolled: entrances, parallax)
+  // ctx.host.log(...values)                               (a line in the page's console, as information; an error thrown
+  //                                                        reaches it as an error, which look and screenshot list)
   return {
     update(nextProps, transition) {},   // apply props without remounting; transition: the block carries on from another screen (§4e)
     getState() {},          // matches manifest.state
@@ -69,7 +72,7 @@ export function mount(container, ctx) {
 |---|---|---|
 | object → host | `object/ready` | Frame loaded; the host may initialise |
 | host → object | `object/initialize` | props, seed, locale, reducedMotion, tokens, objects, testMode, savedState, fonts (ArrayBuffers of the course fonts), rootSize (px of 1rem in the course page: the frame sets its own 1rem to it) |
-| host → object | `object/context` | context `{screen, section, step, variant}` of a decoration, when the learner moves |
+| host → object | `object/context` | context of a decoration (`screen`, `section`, `step`, `variant` and their ranks, §4c), when the learner moves |
 | host → object | `object/safe-area` | safeArea `{top, right, bottom, left}` in px, when the part of the frame covered by the layout changes |
 | host → object | `object/set-root-size` | rootSize, when the course window changes size class (1rem of 16, 15 or 14 px): text in rem follows |
 | host → object | `object/view` | view `{visible, ratio, progress, entry, exit}`: where the frame is in the window, when it changes (at most once a frame; also in initialize) |
@@ -94,7 +97,7 @@ The frame has an opaque origin: messages use target origin `*` and are authentic
 ## 4c. Decorations (course backdrop)
 A free object with `pedagogicalRole: "decoration"` is mounted once behind the course by `theme.backdrop.object` (see design.md, Backdrop), never in a block. It is hidden from screen readers and out of the tab order; it has no planRefs, no events (`events: []`), no saved state and no focusable element (gate 6 checks it); its default budgets are smaller (30 draw calls, 60,000 triangles). `elabora object new . <id> --decoration` writes one to start from: a 2D canvas that follows the course, out of the player's bars, which lands at once when frames are still.
 
-It receives `ctx.context` and `host.onContext` to follow the course: `screen`, `section`, `step` (from 1), `variant`, and where they stand: `screenIndex` (from 0) of `screenCount`, `sectionIndex` (from 0, `null` outside a section) of `sectionCount`, and `direction`, `forward` or `back` in the course order (`null` on the first screen shown, or a session resumed: be there at once). Its safe area (`ctx.safeArea`, `host.onSafeArea`) is the room the player's bars cover, top and bottom; it changes with them.
+It receives `ctx.context` and `host.onContext` to follow the course: `screen`, `section`, `step` (from 1), `variant`, and where they stand: `screenIndex` (from 0) of `screenCount`, `sectionIndex` (from 0, `null` outside a section) of `sectionCount`, and `direction`, `forward` or `back` in the course order (`null` on the first screen shown, or a session resumed: be there at once). Its safe area (`ctx.safeArea`, `host.onSafeArea`) is the room the player's bars cover, top and bottom; it changes with them. `elabora look` and the editor's canvas show one screen at a time, at rest: the context counts its ranks in the whole course and the safe area is their bars', but `direction` stays `null` (each screen is shown as reached at once), and an edit of the object's files starts it again with them; `elabora object replay` and `elabora screenshot` show the passages.
 
 Under reduced motion, and on a machine that renders below 24 frames per second, the frame runs it in still mode: frames run for 1.5 s after mount and 1 s after each change of context, props or safe area, then nothing. `host.still` says it (true from mount under reduced motion), and `host.onStill(callback)` is called once if the machine freezes it later: a movement then lands where it goes in the frames that follow, rather than stopping on its way. In tests, `context` takes the same fields; `step` starts at 1. Its gates' snapshots are taken in a frame of the test's `size`, without the course: `elabora object replay` shows it behind the course. A baseline recorded in a single colour (the object drew nothing) is reported (`W_GATE_VISUAL_BLANK`).
 

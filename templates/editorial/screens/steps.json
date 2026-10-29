@@ -1,0 +1,41 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "steps",
+  "title": "Four steps, in order",
+  "covers": [
+    "ITEM-4"
+  ],
+  "blocks": [
+    {
+      "id": "process-chart",
+      "type": "process",
+      "width": "wide",
+      "props": {
+        "takeaway": "Each step prepares the next one",
+        "items": [
+          {
+            "id": "s1",
+            "title": "Step 1: Observe",
+            "text": "One sentence on what to look at first, and when."
+          },
+          {
+            "id": "s2",
+            "title": "Step 2: Question",
+            "text": "One sentence on what to check before going further."
+          },
+          {
+            "id": "s3",
+            "title": "Step 3: Decide",
+            "text": "One sentence on the decision itself and who takes it."
+          },
+          {
+            "id": "s4",
+            "title": "Step 4: Share",
+            "text": "One sentence on where to record it and whom to tell."
+          }
+        ],
+        "highlight": "s3"
+      }
+    }
+  ]
+}

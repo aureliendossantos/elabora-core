@@ -172,6 +172,20 @@ function textRuns(band: Band = { top: 0, bottom: 1 }): TextRun[] {
   const EDGE = 4;
   const fold = footer ? footer.getBoundingClientRect().top - EDGE : innerHeight;
   const ceiling = header ? header.getBoundingClientRect().bottom + EDGE : 0;
+  // Text a box of 1 px clips away is read by screen readers only (the visually hidden pattern: a
+  // chart's table, a live region): it is not read against the pixels where it would be.
+  const clipped = new Map<Element, boolean>();
+  const clippedAway = (element: Element | null): boolean => {
+    if (!element || element === document.body) return false;
+    const known = clipped.get(element);
+    if (known !== undefined) return known;
+    const style = getComputedStyle(element);
+    const box = element.getBoundingClientRect();
+    const hides = style.clipPath === 'inset(50%)' || /^rect\(0(px)?,? 0(px)?,? 0(px)?,? 0(px)?\)$/.test(style.clip) || (style.overflow !== 'visible' && box.width <= 1 && box.height <= 1);
+    const value = hides || clippedAway(element.parentElement);
+    clipped.set(element, value);
+    return value;
+  };
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     const data = node.textContent ?? '';
     if (!data.trim()) continue;
@@ -185,7 +199,7 @@ function textRuns(band: Band = { top: 0, bottom: 1 }): TextRun[] {
     const rects = [...range.getClientRects()].filter((rect) => rect.width > 2 && rect.height > 2 && rect.bottom > top && rect.top < bottom && rect.right > 0 && rect.left < innerWidth)
       .map((rect): Rect => [Math.max(0, rect.left), Math.max(top, rect.top), Math.min(innerWidth, rect.right), Math.min(bottom, rect.bottom)]);
     if (!rects.length) continue;
-    if (element.closest('.t-backdrop, .t-sr-only, [aria-hidden="true"], [inert], [aria-disabled="true"], :disabled, script, style')) continue;
+    if (element.closest('.t-backdrop, .t-sr-only, [aria-hidden="true"], [inert], [aria-disabled="true"], :disabled, script, style') || clippedAway(element)) continue;
     // Not rendered: closed disclosures (content-visibility), hidden or fully transparent elements.
     if (element.checkVisibility && !element.checkVisibility({ visibilityProperty: true, opacityProperty: true })) continue;
     const style = getComputedStyle(element);

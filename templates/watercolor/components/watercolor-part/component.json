@@ -1,0 +1,24 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/component.schema.json",
+  "id": "watercolor-part",
+  "title": "Watercolour part opener",
+  "description": "Opens a part of the module: the part's number set very large in italic, over a wash of the part's colour, beside the opening's head (the part's title and its lead), then its page.",
+  "instructions": "The first screen of a section. number: the part's number (1, 2…), the only mark of where the learner is: nothing else goes above or beside the title. The title names the part; lead says what it brings; the body holds one text block with the style meta (what the part holds, in a few words).",
+  "version": "1.0.0",
+  "level": "screen",
+  "extends": {
+    "component": "opening",
+    "version": "0.1.0"
+  },
+  "propsExtend": {
+    "properties": {
+      "number": {
+        "type": "string",
+        "title": "Part number",
+        "description": "The part's number, set very large in italic beside the title (1, 2…).",
+        "maxLength": 3,
+        "default": "1"
+      }
+    }
+  }
+}

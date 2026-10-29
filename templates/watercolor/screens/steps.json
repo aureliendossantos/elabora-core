@@ -1,0 +1,41 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "steps",
+  "title": "Four steps, in order",
+  "covers": [
+    "ITEM-4"
+  ],
+  "backdrop": "quiet",
+  "blocks": [
+    {
+      "id": "steps-chart",
+      "type": "process",
+      "width": "wide",
+      "props": {
+        "takeaway": "Four steps, from noticing to following up",
+        "items": [
+          {
+            "id": "notice",
+            "title": "Notice the moment",
+            "text": "One sentence that says what to look for."
+          },
+          {
+            "id": "pause",
+            "title": "Slow down and listen",
+            "text": "One sentence that says how to make room."
+          },
+          {
+            "id": "ask",
+            "title": "Ask a gentle question",
+            "text": "One sentence with an example of the question."
+          },
+          {
+            "id": "follow",
+            "title": "Agree on what comes next",
+            "text": "One sentence on how to close the exchange."
+          }
+        ]
+      }
+    }
+  ]
+}

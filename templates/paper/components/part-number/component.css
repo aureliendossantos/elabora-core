@@ -1,0 +1,48 @@
+/* Part number: a numeral written by hand on a cut-paper shape. The shape is masked (its shadow comes
+   from the wrapper's drop-shadow, so it follows the cut), the number sits on it in ink. */
+.t-block--part-number { display: grid; place-items: center; }
+.pp-number {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(12rem, 22vw, 20rem);
+  aspect-ratio: 1;
+  rotate: -4deg;
+}
+.pp-number-shadow {
+  position: absolute;
+  inset: 0;
+  filter: var(--pp-shadow-drop-3, drop-shadow(0.375rem 0.625rem 0.75rem rgb(58 36 16 / 0.28)));
+}
+.pp-number-cut {
+  position: absolute;
+  inset: 0;
+  background: var(--pp-number-paper, var(--t-color-paper-mustard));
+  border-radius: 50%;
+}
+.pp-number[data-shape="scallop"] .pp-number-cut {
+  border-radius: 0;
+  -webkit-mask: url(../../assets/images/scallop.svg) center / contain no-repeat;
+  mask: url(../../assets/images/scallop.svg) center / contain no-repeat;
+}
+.pp-number[data-shape="star"] .pp-number-cut {
+  border-radius: 0;
+  -webkit-mask: url(../../assets/images/star.svg) center / contain no-repeat;
+  mask: url(../../assets/images/star.svg) center / contain no-repeat;
+}
+.pp-number-text {
+  position: relative;
+  margin: 0;
+  color: var(--t-color-ink);
+  font-family: var(--t-font-display);
+  font-weight: 700;
+  font-size: clamp(7rem, 13vw, 12rem);
+  line-height: 1;
+  translate: 0 -0.04em;
+}
+.pp-number[data-shape="star"] .pp-number-text { font-size: clamp(5.5rem, 10vw, 9rem); translate: 0 0.04em; }
+@container (max-width: 820px) {
+  .pp-number { width: 9rem; }
+  .pp-number-text { font-size: 5.5rem; }
+  .pp-number[data-shape="star"] .pp-number-text { font-size: 4.25rem; }
+}

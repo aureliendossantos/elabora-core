@@ -705,8 +705,8 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
         <note category="max-length">160</note>
       </notes>
       <segment state="translated">
-        <source>Four steps, always in the same order</source>
-        <target>Quatre étapes, toujours dans le même ordre</target>
+        <source>Each step prepares the next one</source>
+        <target>Chaque étape prépare la suivante</target>
       </segment>
     </unit>
     <unit id="block.process-chart.items.s1.title">

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "cutouts",
+  "version": "1.0.0",
+  "title": "Paper cut-outs",
+  "pedagogicalRole": "decoration",
+  "props": {
+    "type": "object",
+    "properties": {
+      "coral": { "type": "string", "format": "color", "default": "#E8644B", "title": "Coral paper", "description": "Colour of the coral paper", "x-group": "Papers", "x-control": "color", "x-token": "color.paper-coral" },
+      "mustard": { "type": "string", "format": "color", "default": "#F2B632", "title": "Mustard paper", "description": "Colour of the mustard paper", "x-group": "Papers", "x-control": "color", "x-token": "color.paper-mustard" },
+      "teal": { "type": "string", "format": "color", "default": "#1B7A72", "title": "Teal paper", "description": "Colour of the teal paper", "x-group": "Papers", "x-control": "color", "x-token": "color.paper-teal" },
+      "sky": { "type": "string", "format": "color", "default": "#79AEDD", "title": "Sky paper", "description": "Colour of the sky-blue paper", "x-group": "Papers", "x-control": "color", "x-token": "color.paper-sky" },
+      "leaf": { "type": "string", "format": "color", "default": "#7DB356", "title": "Leaf paper", "description": "Colour of the leaf-green paper", "x-group": "Papers", "x-control": "color", "x-token": "color.paper-leaf" },
+      "pink": { "type": "string", "format": "color", "default": "#F4A3B1", "title": "Pink paper", "description": "Colour of the pink paper", "x-group": "Papers", "x-control": "color", "x-token": "color.paper-pink" },
+      "paper": { "type": "string", "format": "color", "default": "#FBF4E6", "title": "White paper", "description": "Colour of the white paper (clouds, foam, the moon)", "x-group": "Papers", "x-control": "color", "x-token": "color.paper" },
+      "nightPaper": { "type": "string", "format": "color", "default": "#33456E", "title": "Night paper", "description": "Colour of the blue hills at night", "x-group": "Papers", "x-control": "color", "x-token": "color.night-paper" },
+      "shadow": { "type": "string", "format": "color", "default": "#5A3A16", "title": "Shadow", "description": "Colour of the shadows the papers cast", "x-group": "Papers", "x-control": "color", "x-token": "color.fibre" },
+      "band": { "type": "number", "minimum": 0.5, "maximum": 1.5, "multipleOf": 0.05, "default": 0.75, "title": "Height of the hills", "description": "How high the paper hills rise from the bottom of the window (1: about a fifth of it)", "x-group": "Scene", "x-control": "slider" },
+      "pan": { "type": "number", "minimum": 0, "maximum": 1, "multipleOf": 0.05, "default": 0.5, "title": "Slide per screen", "description": "How far the hills slide sideways at each screen (0: they stay)", "x-group": "Motion", "x-control": "slider" },
+      "travel": { "type": "number", "minimum": 0.4, "maximum": 3, "multipleOf": 0.1, "default": 1.1, "title": "Duration", "description": "Seconds a move takes (a change of part takes half as long again)", "x-group": "Motion", "x-control": "slider" },
+      "fps": { "type": "integer", "minimum": 6, "maximum": 24, "default": 12, "title": "Poses per second", "description": "Stop motion: how many poses a second a move is drawn in (fewer: more handmade)", "x-group": "Motion", "x-control": "slider" },
+      "boil": { "type": "number", "minimum": 0, "maximum": 1, "multipleOf": 0.05, "default": 0.6, "title": "Tremble", "description": "How much each piece trembles between two poses while it moves, as if moved by hand (0: none)", "x-group": "Motion", "x-control": "slider" }
+    },
+    "required": ["coral", "mustard", "teal", "sky", "leaf", "pink", "paper", "nightPaper", "shadow", "band", "pan", "travel", "fps", "boil"]
+  },
+  "state": {
+    "type": "object",
+    "properties": {
+      "screenIndex": { "type": "integer", "minimum": 0 },
+      "sectionIndex": { "type": ["integer", "null"] },
+      "scene": { "type": "string" }
+    },
+    "required": ["screenIndex", "sectionIndex", "scene"]
+  },
+  "events": [],
+  "budgets": { "bootMsMax": 1500 },
+  "a11y": { "motion": { "pausable": true, "respectsReducedMotion": true } },
+  "sandbox": { "network": "none", "permissions": [] }
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "practice",
+  "title": "Your turn",
+  "covers": [
+    "ITEM-5"
+  ],
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "check-row",
+      "type": "columns",
+      "width": "wide",
+      "props": {
+        "count": 2,
+        "widths": "wide-end",
+        "align": "start"
+      },
+      "blocks": [
+        {
+          "id": "check-colleague",
+          "type": "speech",
+          "slot": "first",
+          "props": {
+            "speaker": "colleague",
+            "lines": [
+              {
+                "id": "case",
+                "markdown": "A short, realistic situation in two sentences. Something has just happened and I would like your view."
+              }
+            ]
+          }
+        },
+        {
+          "id": "check-quiz",
+          "type": "quiz",
+          "slot": "second",
+          "props": {
+            "stem": "Which reading of the situation is the right one?",
+            "mode": "single",
+            "objective": "OBJ-1",
+            "scored": false,
+            "feedbackStyle": "compact",
+            "options": [
+              {
+                "id": "a",
+                "text": "A plausible reading that leaves out part of the context",
+                "correct": false,
+                "feedback": "Not quite. This leaves out the context that changes the picture."
+              },
+              {
+                "id": "b",
+                "text": "The reading the key idea of the module supports",
+                "correct": true,
+                "feedback": "Right. The key idea applies here, and it explains the outcome."
+              },
+              {
+                "id": "c",
+                "text": "A reasonable reading that belongs to a later stage",
+                "correct": false,
+                "feedback": "Not yet. This comes later, once the first point is settled."
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

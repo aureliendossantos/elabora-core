@@ -1,0 +1,18 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "recap",
+  "title": "What to remember",
+  "covers": [
+    "ITEM-6"
+  ],
+  "blocks": [
+    {
+      "id": "recap-list",
+      "type": "text",
+      "style": "ledger",
+      "props": {
+        "markdown": "- **The context.** One sentence that restates where the subject comes from.\n- **The key idea.** One sentence that says it again in plain words.\n- **The choice.** One sentence on the closer reading and why it holds.\n- **To read further.** A book, an archive or a page, in a few words."
+      }
+    }
+  ]
+}

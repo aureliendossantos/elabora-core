@@ -69,12 +69,15 @@ export function forkComponent(context: CommandContext, { component, id, title, c
   const draft = new Draft(context.files);
   if (draft.exists(`components/${id}/component.json`)) throw new CommandError(`components/${id} already exists`);
   const manifest = {
-    $schema: SCHEMA, id, title: title || `${parent.title} (fork)`, ...(parent.description ? { description: parent.description } : {}), version: '1.0.0',
+    // The parent's description, said to be a fork's: the fork's author rewrites it with what changes.
+    $schema: SCHEMA, id, title: title || `${parent.title} (fork)`, ...(parent.description ? { description: `A fork of ${component}. ${parent.description}` } : {}), version: '1.0.0',
     ...(parent.level === 'screen' ? { level: 'screen' } : {}), extends: { component, version: parent.version }
   };
   draft.writeText(`components/${id}/component.json`, stringifyJSON(manifest));
   draft.writeText(`components/${id}/template.html`, parent.template || '');
-  draft.writeText(`components/${id}/component.css`, copyCss && parent.css ? parent.css : `/* Fork of "${component}": its stylesheet still applies (instances carry .t-block--${component}). Add or override rules here, scoped with .t-block--${id}. */\n`);
+  // A screen layout's instances are screens (.t-layout--<id>), a block's are blocks (.t-block--<id>).
+  const scope = parent.level === 'screen' ? 't-layout' : 't-block';
+  draft.writeText(`components/${id}/component.css`, copyCss && parent.css ? parent.css : `/* Fork of "${component}": its stylesheet still applies (instances carry .${scope}--${component}). Add or override rules here, scoped with .${scope}--${id}. */\n`);
   return { files: draft.files(), result: { component: id, files: createdFiles(id) } };
 }
 

@@ -1,0 +1,25 @@
+{
+  "format": "elabora-generated/1",
+  "assets": {
+    "images/collage.svg": {
+      "generator": "generators/paper.mjs",
+      "inputsHash": "sha256:878288c932d7115b691d1fee5feb95b553fcd34bfe7710e900f58b48710e4367",
+      "outputHash": "sha256:84d63cd21adc5360174ef876ade39fbaac8b329e7f0043ed6c45a60e42243a0d"
+    },
+    "images/fibre.svg": {
+      "generator": "generators/paper.mjs",
+      "inputsHash": "sha256:878288c932d7115b691d1fee5feb95b553fcd34bfe7710e900f58b48710e4367",
+      "outputHash": "sha256:c85018c0567da2aa48cc446432e6580715b16d48abf273908db4cfcd9b075736"
+    },
+    "images/scallop.svg": {
+      "generator": "generators/paper.mjs",
+      "inputsHash": "sha256:878288c932d7115b691d1fee5feb95b553fcd34bfe7710e900f58b48710e4367",
+      "outputHash": "sha256:6122455744adf35322ca6a4c5d257cb0eb728ac053d106b97c7ce1235c85cdce"
+    },
+    "images/star.svg": {
+      "generator": "generators/paper.mjs",
+      "inputsHash": "sha256:878288c932d7115b691d1fee5feb95b553fcd34bfe7710e900f58b48710e4367",
+      "outputHash": "sha256:90550b9582ce45b6be47daf9ac06c48ac4f3ec2bfb0b665ab88aa073f7cb46cd"
+    }
+  }
+}

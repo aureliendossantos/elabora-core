@@ -1,0 +1,24 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "chart",
+  "title": "What the data shows",
+  "covers": [
+    "ITEM-4"
+  ],
+  "blocks": [
+    {
+      "id": "chart-proportion",
+      "type": "proportion",
+      "props": {
+        "takeaway": "Most people feel better heard after a single pause",
+        "source": "Name of the source, year",
+        "of": 20,
+        "part": 14,
+        "figure": "7 in 10",
+        "label": "felt listened to when the other person paused before replying",
+        "icon": "circle",
+        "columns": 10
+      }
+    }
+  ]
+}

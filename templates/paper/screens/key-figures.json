@@ -1,0 +1,37 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "key-figures",
+  "title": "Key figures",
+  "covers": [
+    "ITEM-4"
+  ],
+  "blocks": [
+    {
+      "id": "key-figures-chart",
+      "type": "key-figures",
+      "width": "wide",
+      "props": {
+        "takeaway": "The sentence these figures prove, written as a finding",
+        "source": "Source of the figures, year",
+        "highlight": "b",
+        "items": [
+          {
+            "id": "a",
+            "label": "teams that already use part of the method",
+            "figure": "3 in 4"
+          },
+          {
+            "id": "b",
+            "label": "of the time saved comes from the first step",
+            "figure": "72 %"
+          },
+          {
+            "id": "c",
+            "label": "to set it up the first time",
+            "figure": "15 min"
+          }
+        ]
+      }
+    }
+  ]
+}

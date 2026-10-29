@@ -1,4 +1,5 @@
-import type { ObjectManifest } from '../project/model.ts';
+import type { ObjectManifest, Project } from '../project/model.ts';
+import { screenOrder } from '../project/load.ts';
 import { parseJSON, stringifyJSON } from '../util/json.ts';
 import { isRecord } from '../util/values.ts';
 import { fieldOf } from '@elabora/player/json';
@@ -26,6 +27,7 @@ export function createObject(context: CommandContext, { id, title, objectives, i
   if (!decoration && !objectives?.length) throw new CommandError('A free object serves plan objectives: give them (--objectives OBJ-1,OBJ-2, the ids in plan.json), or --decoration for a decoration of the course backdrop (theme.backdrop.object).');
   for (const file of OBJECT_FILES) {
     let content = templates[file].replaceAll('__ID__', id).replaceAll('__TITLE__', title || id);
+    if (file === 'object.tests.json' && decoration) content = decorationTests(content, context.project());
     if (file === 'object.manifest.json' && !decoration) {
       const manifest = JSON.parse(content) as ObjectManifest;
       manifest.planRefs = { objectives: objectives || [], ...(items?.length ? { items } : {}) };
@@ -34,6 +36,30 @@ export function createObject(context: CommandContext, { id, title, objectives, i
     draft.writeText(`objects/${id}/${file}`, content);
   }
   return { files: draft.files(), result: { object: id, files: OBJECT_FILES.map((f) => `objects/${id}/${f}`) } };
+}
+
+// A decoration's tests walk the course's own screens: its first, then one in a later part (the
+// template's names its own example screens).
+function decorationTests(content: string, project: Project): string {
+  const order = screenOrder(project).filter((entry) => project.screens.has(entry.id));
+  const parsed = parseJSON(content).value;
+  const test = isRecord(parsed) && Array.isArray(parsed.tests) && isRecord(parsed.tests[0]) ? parsed.tests[0] : null;
+  if (order.length < 2 || !test || !Array.isArray(test.steps)) return content;
+  const sections = [...new Set(order.map((entry) => entry.section).filter((id) => !!id))];
+  const first = order[0];
+  const later = order.find((entry) => entry.section && entry.section !== first.section) ?? order[order.length - 1];
+  const at = (entry: (typeof order)[number], direction: 'forward' | null) => ({
+    screen: entry.id, section: entry.section || null, step: 1, variant: null, screenIndex: order.indexOf(entry), screenCount: order.length,
+    sectionIndex: entry.section ? sections.indexOf(entry.section) : null, sectionCount: sections.length, direction
+  });
+  test.context = at(first, null);
+  let now = at(first, null);
+  for (const step of test.steps) {
+    if (!isRecord(step)) continue;
+    if (step.action === 'set-context') step.context = now = at(later, 'forward');
+    else if (step.action === 'expect-state') step.state = { screenIndex: now.screenIndex, sectionIndex: now.sectionIndex };
+  }
+  return stringifyJSON(parsed);
 }
 
 export interface WriteObjectFileArgs {

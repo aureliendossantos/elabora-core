@@ -1,0 +1,230 @@
+/* Editorial — the theme.
+   The magazine page: warm paper with a fine grain, ink rules, folios and drop caps. A serif for
+   display (Fraunces, roman and italic) and a sans for reading (Source Sans 3). Each part of the
+   module has its colour plate (color.plate-1 to color.plate-5, in the order of the sections): the
+   decoration object (objects/folio) draws the thumb tab of the part at the page edge, unfolds it
+   into a plate on part openers and turns the folio at the foot of the page; this stylesheet gives
+   the same colour to the drop caps, the part numbers, the charts' highlight and the rules that mark
+   the part (--ed-plate). Texts and pictures come in through masks; under reduced motion they are
+   simply there.
+   Variants of the backdrop: paper (default), plate (part openers, first and last screens), ink (the
+   black spread). Every colour is a token of course.json. */
+
+html { background: var(--t-color-paper); }
+body { background: transparent; }
+
+:root {
+  /* The page: the wide column, with a margin on narrow windows; text held to the measure. */
+  --ed-page: min(var(--t-wide-width, 75rem), 100vw - 4rem);
+  --ed-measure: min(42rem, var(--ed-page));
+  /* Where the plate begins across the window: the decoration object's plateStart (0.58). */
+  --ed-plate-x: 58vw;
+  --ed-rule: var(--t-text);
+  --ed-hair: color-mix(in srgb, var(--t-text) 22%, transparent);
+  --ed-deep: var(--t-color-paper-deep);
+  --ed-plate: var(--t-color-plate-1);
+  --ed-fade: 600ms;
+  font-kerning: normal;
+}
+@media (max-width: 760px) { :root { --ed-page: calc(100vw - 2.5rem); } }
+
+/* ── The part's plate: one colour per section, in their order (five, then again) ── */
+#elabora-app:has(> .t-backdrop:is([data-section-index="0"], [data-section-index="5"], [data-section-index="10"])) { --ed-plate: var(--t-color-plate-1); }
+#elabora-app:has(> .t-backdrop:is([data-section-index="1"], [data-section-index="6"], [data-section-index="11"])) { --ed-plate: var(--t-color-plate-2); }
+#elabora-app:has(> .t-backdrop:is([data-section-index="2"], [data-section-index="7"], [data-section-index="12"])) { --ed-plate: var(--t-color-plate-3); }
+#elabora-app:has(> .t-backdrop:is([data-section-index="3"], [data-section-index="8"], [data-section-index="13"])) { --ed-plate: var(--t-color-plate-4); }
+#elabora-app:has(> .t-backdrop:is([data-section-index="4"], [data-section-index="9"], [data-section-index="14"])) { --ed-plate: var(--t-color-plate-5); }
+
+/* ── Backdrop: paper, ink (CSS), the folio and plates (object), the grain over them ── */
+.t-backdrop-layer[data-layer="paper"] {
+  background:
+    radial-gradient(120% 90% at 30% 20%, color-mix(in srgb, var(--t-color-on-plate) 55%, transparent), transparent 70%),
+    var(--t-color-paper);
+}
+.t-backdrop-layer[data-layer="ink"] { background: var(--t-color-ink-ground); opacity: 0; transition: opacity var(--ed-fade) ease; }
+.t-backdrop[data-variant="ink"] .t-backdrop-layer[data-layer="ink"] { opacity: 1; }
+.t-backdrop-layer[data-layer="grain"] {
+  z-index: 2; opacity: .28; mix-blend-mode: multiply;
+  background: url(../assets/images/paper-grain.svg) 0 0 / 280px 280px repeat;
+}
+.t-backdrop[data-variant="ink"] .t-backdrop-layer[data-layer="grain"] { opacity: .35; mix-blend-mode: screen; }
+
+/* ── The black spread: ink ground, paper-coloured text, a lighter accent ── */
+#elabora-app[data-backdrop="ink"] {
+  --t-text: var(--t-color-text-on-ink);
+  --t-muted: var(--t-color-muted-on-ink);
+  --t-primary: var(--t-color-text-on-ink);
+  --t-on-primary: var(--t-color-ink-ground);
+  --t-surface: var(--t-color-ink-ground);
+  --t-accent: var(--t-color-accent-on-ink);
+  --t-focus: var(--t-color-accent-on-ink);
+  --ed-deep: color-mix(in srgb, var(--t-color-text-on-ink) 8%, var(--t-color-ink-ground));
+  --t-pl-top-bg: var(--t-color-ink-ground);
+  --t-pl-top-fg: var(--t-color-text-on-ink);
+  --t-pl-bottom-bg: var(--t-color-ink-ground);
+  --t-pl-bottom-fg: var(--t-color-text-on-ink);
+  --t-pl-accent: var(--t-color-text-on-ink);
+  --t-pl-on-accent: var(--t-color-ink-ground);
+  --t-pl-tip-bg: var(--t-color-text-on-ink);
+  --t-pl-tip-fg: var(--t-color-ink-ground);
+  color: var(--t-text);
+}
+/* On the black spread the part's colour gives way to the light accent (over the section rules above). */
+#elabora-app[data-backdrop="ink"]:has(> .t-backdrop) { --ed-plate: var(--t-color-accent-on-ink); }
+.t-bar { transition: background-color var(--ed-fade) ease, color var(--ed-fade) ease; }
+/* The rules of the backdrop are the page's header: no second line under the top bar. */
+.t-bar--top, .t-bar--bottom { box-shadow: none; border: 0; }
+
+/* ── Type ──────────────────────────────────────────────────────────────── */
+h1, h2, h3, h4 { font-family: var(--t-font-heading); font-weight: 500; letter-spacing: -0.01em; }
+.t-screen-title { max-width: min(30em, var(--ed-page)); margin: 0 0 2rem; font-size: clamp(2rem, 1.3rem + 1.5vw, 2.75rem); font-weight: 450; line-height: 1.08; letter-spacing: -0.018em; text-wrap: balance; }
+.t-text { font-size: 1.125rem; line-height: 1.6; }
+.t-text strong { font-weight: 650; }
+.t-text em { font-style: italic; }
+.t-block--heading h2, .t-columns h2 { font-size: 1.5rem; font-weight: 500; line-height: 1.2; margin: 0 0 .5rem; }
+
+/* ── The page: everything flush left on the page, text held to the measure ── */
+[data-presentation="slides"] .t-main { padding-block: 3.75rem 4.5rem; }
+[data-presentation="slides"] .t-main:not([data-full-bleed]) > .t-screen:not(.t-layout) { flex: 1; display: flex; flex-direction: column; margin-block: 0; }
+[data-presentation="slides"] .t-main:not([data-full-bleed]) > .t-screen:not(.t-layout) > .t-blocks { width: 100%; }
+/* A screen without a visible title (a key message, a quotation) holds its statement in the middle. */
+[data-presentation="slides"] .t-main:not([data-full-bleed]) > .t-screen:not(.t-layout):has(> .t-blocks > .t-block--statement:only-child) > .t-blocks { margin-block: auto; }
+.t-screen { width: 100%; max-width: var(--ed-page); }
+.t-main[data-full-bleed] > .t-screen { max-width: none; }
+.t-blocks { gap: 1.5rem 0; }
+.t-block { max-width: var(--ed-measure); justify-self: start; }
+.t-block.t-w-wide, :is(.t-screen > .t-blocks) > .t-block:is(:has(> .t-image--beside, > .t-columns, > .t-chart)) { max-width: var(--ed-page); }
+
+/* ── Openings: the cover, the part openers, the end ──────────────────────── */
+.t-opening { --t-opening-gutter: 0px; }
+.t-main[data-full-bleed] .t-opening { --t-opening-gutter: max(1.25rem, calc((100vw - var(--ed-page)) / 2)); }
+.t-opening-copy { padding-block: clamp(2.5rem, 7vh, 5.5rem) 1.25rem; }
+.t-opening--title .t-opening-copy::after { display: none; }
+.t-opening .t-screen-title { max-width: 12em; font-size: clamp(2.75rem, 1.4rem + 3vw, 4.5rem); font-weight: 400; line-height: 1.02; letter-spacing: -0.028em; }
+.t-opening-lead { max-width: 30em; margin-top: 1.5rem; color: var(--t-muted); font-family: var(--t-font-heading); font-size: clamp(1.25rem, 1.05rem + .45vw, 1.5rem); font-style: italic; font-weight: 350; line-height: 1.38; }
+.t-opening-body.t-slot { max-width: none; padding-inline: var(--t-opening-gutter); }
+.t-opening-body.t-slot > .t-block { max-width: var(--ed-measure); justify-self: start; margin-inline: 0; }
+/* With the plate of the backdrop, the copy keeps to the left of the page. */
+.t-screen:is(.t-s-cover, .t-s-opener) :is(.t-opening-copy, .t-opening-body.t-slot) { box-sizing: border-box; width: min(100%, calc(var(--ed-plate-x) - 3.5rem)); margin-inline: 0; padding-inline-end: 0; }
+.t-screen.t-s-cover .t-screen-title { font-size: clamp(3rem, 1.2rem + 3.9vw, 5.5rem); line-height: .98; }
+@media (max-width: 760px) {
+  .t-screen:is(.t-s-cover, .t-s-opener) :is(.t-opening-copy, .t-opening-body.t-slot) { width: auto; padding-inline-end: calc(var(--t-opening-gutter) + .75rem); }
+}
+
+/* ── Text styles ───────────────────────────────────────────────────────── */
+/* Standfirst. */
+.t-s-dek .t-text, .t-text.t-s-dek { color: var(--t-muted); font-family: var(--t-font-heading); font-size: 1.375rem; font-style: italic; font-weight: 350; line-height: 1.42; }
+
+/* Drop cap: the first letter of the first paragraph, three lines tall, in the part's colour. */
+:is(.t-s-dropcap .t-text > p:first-of-type, .t-text.t-s-dropcap > p:first-of-type, .t-s-plate .t-image-text p:first-of-type)::first-letter {
+  float: left; margin: .06em .1em 0 0; color: var(--ed-plate);
+  font-family: var(--t-font-heading); font-size: 3.55em; font-weight: 500; line-height: .82;
+}
+@supports (initial-letter: 3) {
+  :is(.t-s-dropcap .t-text > p:first-of-type, .t-text.t-s-dropcap > p:first-of-type, .t-s-plate .t-image-text p:first-of-type)::first-letter { float: none; margin: 0 .12em 0 0; font-size: inherit; line-height: inherit; initial-letter: 3; }
+}
+
+/* Contents: large serif numerals in the part's colour, rules between the rows. */
+.t-s-contents ol { counter-reset: ed-contents; margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--ed-hair); }
+.t-s-contents li { counter-increment: ed-contents; position: relative; padding: 1.125rem 0 1.125rem 4.5rem; border-top: 1px solid var(--ed-hair); color: var(--t-muted); }
+.t-s-contents li:first-child { border-top: 2px solid var(--ed-rule); }
+.t-s-contents li::before { content: counter(ed-contents); position: absolute; left: 0; top: 1rem; color: var(--ed-plate); font-family: var(--t-font-heading); font-size: 3rem; font-style: italic; font-weight: 300; line-height: .9; }
+.t-s-contents li > p { margin: 0; }
+.t-s-contents li strong { display: inline-block; margin-bottom: .25rem; color: var(--t-text); font-family: var(--t-font-heading); font-size: 1.5rem; font-weight: 500; line-height: 1.2; }
+
+/* Ruled list: one point per row between hairlines, a short rule of the part's colour before each. */
+.t-s-ledger ul { margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--ed-hair); }
+.t-s-ledger li { position: relative; padding: .875rem 0 .875rem 2.25rem; border-top: 1px solid var(--ed-hair); }
+.t-s-ledger li:first-child { border-top: 2px solid var(--ed-rule); }
+.t-s-ledger li::before { content: ""; position: absolute; left: 0; top: 1.6rem; width: 1.25rem; height: 2px; background: var(--ed-plate); }
+.t-s-ledger li > p { margin: 0; }
+/* A short window (1280×720): the rows of an opening hold closer. */
+@media (max-height: 760px) { .t-opening-body .t-s-ledger li { padding-block: .625rem; } .t-opening-body .t-s-ledger li::before { top: 1.35rem; } }
+
+/* Colophon: small capitals in a row between two rules. */
+.t-s-colophon ul { display: flex; flex-wrap: wrap; gap: .375rem 0; margin: 0; padding: .75rem 0; list-style: none; border-block: 1px solid var(--ed-rule); color: var(--t-text); font-size: .875rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.t-s-colophon li:not(:last-child)::after { content: ""; display: inline-block; width: 1px; height: .875em; margin: 0 1rem; vertical-align: -0.1em; background: var(--ed-hair); }
+
+/* ── Columns: magazine columns and face to face ───────────────────────── */
+.t-columns { column-gap: 0; }
+.t-s-spread .t-columns { border-top: 2px solid var(--ed-rule); }
+.t-s-spread .t-columns > .t-slot { gap: .5rem; padding: 1.5rem 1.75rem .5rem; }
+.t-s-spread .t-columns > .t-slot:first-child { padding-inline-start: 0; }
+.t-s-spread .t-columns > .t-slot + .t-slot:not([data-empty]) { border-inline-start: 1px solid var(--ed-hair); }
+@container (max-width: 560px) {
+  .t-s-spread .t-columns > .t-slot { padding-inline: 0; }
+  .t-s-spread .t-columns > .t-slot + .t-slot:not([data-empty]) { border-inline-start: 0; border-top: 1px solid var(--ed-hair); }
+}
+.t-s-versus .t-columns { gap: 1.5rem; }
+.t-s-versus .t-columns > .t-slot { gap: .5rem; padding: 1.5rem 1.75rem 1.75rem; }
+.t-s-versus .t-columns > .t-slot:first-child { background: var(--ed-deep); color: var(--t-muted); border-top: 2px solid var(--ed-hair); }
+.t-s-versus .t-columns > .t-slot:nth-child(2) { border-top: 4px solid var(--ed-plate); background: color-mix(in srgb, var(--t-color-on-plate) 60%, transparent); }
+.t-s-versus .t-columns > .t-slot:nth-child(2) h2 { color: var(--ed-plate); }
+.t-s-versus ul { margin: 0; padding: 0; list-style: none; }
+.t-s-versus li { padding: .625rem 0; border-top: 1px solid var(--ed-hair); }
+
+/* ── Statements ────────────────────────────────────────────────────────── */
+.t-statement { padding-block: 1rem; }
+.t-statement--statement::before { display: none; }
+.t-s-pull .t-statement, .t-statement.t-s-pull { --t-statement-size: clamp(2.25rem, 1.2rem + 2.6vw, 3.75rem); padding-block: 2.25rem 2.5rem; border-block: 1px solid var(--ed-rule); border-top-width: 4px; }
+.t-s-pull .t-statement-text { max-width: 18em; font-weight: 400; line-height: 1.1; letter-spacing: -0.022em; }
+.t-s-pull .t-statement-text em { color: var(--ed-plate); }
+.t-statement--quote .t-statement-text { max-width: 22em; font-size: clamp(2rem, 1.2rem + 2vw, 3.25rem); font-style: italic; font-weight: 350; line-height: 1.16; letter-spacing: -0.015em; }
+.t-statement--quote .t-statement-mark { width: 4.5rem; margin-bottom: 1.5rem; fill: var(--ed-plate); }
+.t-statement-author { font-family: var(--t-font-body); font-size: .9375rem; font-style: normal; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.t-statement-role { font-family: var(--t-font-heading); font-size: 1rem; font-style: italic; }
+
+/* ── Pictures ──────────────────────────────────────────────────────────── */
+.t-image--beside { align-items: start; column-gap: 3rem; }
+.t-image--beside .t-figure img { max-height: min(30rem, 56vh); object-fit: contain; object-position: left top; }
+@media (max-height: 760px) { .t-image--beside .t-figure img { max-height: 50vh; } }
+.t-image-title { font-family: var(--t-font-heading); font-size: 1.75rem; font-weight: 450; line-height: 1.15; }
+.t-image-caption, figcaption { padding-top: .5rem; color: var(--t-muted); font-family: var(--t-font-heading); font-size: .9375rem; font-style: italic; }
+.t-s-plate .t-image-text { padding-top: 1rem; border-top: 2px solid var(--ed-rule); }
+
+/* ── No coloured side rules: notes and prompts on deeper paper under a rule ── */
+.t-callout { border: 0; border-top: 2px solid var(--ed-rule); border-radius: 0; background: var(--ed-deep); }
+.t-callout:is(.t-callout--important, .t-callout--warning, .t-callout--tip) { border-left: 0; background: var(--ed-deep); }
+.t-callout--important { border-top-color: var(--ed-plate); }
+.t-callout--warning { border-top-color: var(--t-error); }
+.t-callout--tip { border-top-color: var(--t-success); }
+.t-reflection-model { border: 0; border-top: 2px solid var(--ed-rule); border-radius: 0; background: var(--ed-deep); }
+.t-panels-prompt, .t-aside { padding-inline-start: 0; border-inline-start: 0; }
+.t-aside { font-family: var(--t-font-heading); font-style: italic; }
+
+/* ── Charts, activities, characters ─────────────────────────────────────── */
+.t-chart { --t-chart-accent: var(--ed-plate); --t-chart-radius: 0px; }
+.t-chart-title { max-width: 30ch; font-size: 1.75rem; font-weight: 450; line-height: 1.15; }
+.t-chart-source { padding-top: .5rem; border-top: 1px solid var(--ed-hair); font-style: italic; }
+.t-figures-grid { gap: 0; border-top: 2px solid var(--ed-rule); }
+.t-figures-card { padding: 1.75rem 1.75rem 1.5rem; border-radius: 0; background: transparent; }
+.t-figures-card:first-child { padding-inline-start: 0; }
+.t-figures-card + .t-figures-card { border-inline-start: 1px solid var(--ed-hair); }
+.t-figures-figure { font-size: clamp(3.5rem, 2rem + 3vw, 5.5rem); font-weight: 350; letter-spacing: -0.035em; }
+.t-figures-label { font-size: 1.0625rem; }
+@container (max-width: 40rem) {
+  .t-figures-card { padding-inline: 0; }
+  .t-figures-card + .t-figures-card { border-inline-start: 0; border-top: 1px solid var(--ed-hair); }
+}
+.t-option { border-radius: 0; background: color-mix(in srgb, var(--t-color-on-plate) 55%, transparent); }
+.t-speech-bubble { border-radius: 0; }
+
+/* ── Masks: texts and pictures come in through them, once, when a page opens ── */
+@media (prefers-reduced-motion: no-preference) {
+  .t-screen > .t-screen-title,
+  .t-opening-copy > *,
+  .t-screen > .t-blocks > .t-block,
+  .t-opening-body > .t-block { animation: ed-mask-rise 760ms var(--t-ease-out, ease-out) backwards; }
+  .t-opening-copy > :nth-child(2), .t-screen > .t-blocks > .t-block:nth-child(1), .t-opening-body > .t-block:nth-child(1) { animation-delay: 120ms; }
+  .t-opening-copy > :nth-child(3), .t-screen > .t-blocks > .t-block:nth-child(2), .t-opening-body > .t-block:nth-child(2) { animation-delay: 220ms; }
+  .t-screen > .t-blocks > .t-block:nth-child(n + 3) { animation-delay: 300ms; }
+  :is(.t-figure, .t-image-frame) img { animation: ed-mask-wipe 1100ms var(--t-ease-in-out, ease-in-out) 200ms backwards; }
+}
+@keyframes ed-mask-rise {
+  from { clip-path: inset(100% 0 0 0); translate: 0 calc(1.5rem * var(--t-move, 1)); }
+  to { clip-path: inset(0); translate: 0 0; }
+}
+@keyframes ed-mask-wipe {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0); }
+}

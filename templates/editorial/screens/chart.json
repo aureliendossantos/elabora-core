@@ -1,0 +1,48 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "chart",
+  "title": "What the data shows",
+  "covers": [
+    "ITEM-4"
+  ],
+  "blocks": [
+    {
+      "id": "chart-bars",
+      "type": "bars",
+      "width": "wide",
+      "props": {
+        "takeaway": "One category clearly leads the others",
+        "rows": [
+          {
+            "id": "a",
+            "label": "First category",
+            "value": 46
+          },
+          {
+            "id": "b",
+            "label": "Second category",
+            "value": 27
+          },
+          {
+            "id": "c",
+            "label": "Third category",
+            "value": 15
+          },
+          {
+            "id": "d",
+            "label": "Fourth category",
+            "value": 8
+          },
+          {
+            "id": "e",
+            "label": "Other",
+            "value": 4
+          }
+        ],
+        "highlight": "a",
+        "unit": "%",
+        "source": "Source: name of the survey, sample size, year"
+      }
+    }
+  ]
+}

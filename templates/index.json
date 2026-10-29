@@ -36,6 +36,33 @@
         "fr": "Cercles, quarts de cercle et barres Bauhaus en aplats : un tableau par partie, une forme qui bouge à chaque écran."
       },
       "audiences": { "en": "Methods, frameworks, processes, young learners", "fr": "Méthodes, cadres, processus, jeunes publics" }
+    },
+    {
+      "id": "editorial",
+      "name": { "en": "Editorial", "fr": "Revue" },
+      "summary": {
+        "en": "The magazine page for long reads: warm paper, ink rules and folios, a colour plate for each part, and texts that come in through masks.",
+        "fr": "La page de magazine pour les lectures longues : papier chaud, filets et folios, une planche de couleur par partie et des textes qui entrent par des masques."
+      },
+      "audiences": { "en": "Culture, history, management, long reads", "fr": "Culture, histoire, management, lectures longues" }
+    },
+    {
+      "id": "paper",
+      "name": { "en": "Paper", "fr": "Atelier" },
+      "summary": {
+        "en": "Cut paper on kraft, with real soft shadows: a paper theatre slides its hills at each screen and changes scene at each part, in stop motion.",
+        "fr": "Du papier découpé sur du kraft, avec de vraies ombres douces : un théâtre de papier fait glisser ses collines à chaque écran et change de décor à chaque partie, image par image."
+      },
+      "audiences": { "en": "Storytelling, primary school, associations, awareness", "fr": "Récit, école primaire, associations, sensibilisation" }
+    },
+    {
+      "id": "watercolor",
+      "name": { "en": "Watercolour", "fr": "Aquarelle" },
+      "summary": {
+        "en": "Washes of water tones bloom behind the screens and spread from one screen to the next, like paint running into wet paper.",
+        "fr": "Des lavis de tons d'eau fleurissent derrière les écrans et se diffusent d'un écran à l'autre, comme la peinture sur un papier mouillé."
+      },
+      "audiences": { "en": "Arts, care, sensitive subjects", "fr": "Arts, soin, sujets sensibles" }
     }
   ]
 }

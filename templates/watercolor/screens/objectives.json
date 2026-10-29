@@ -1,0 +1,19 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "objectives",
+  "title": "What you will be able to do",
+  "covers": [
+    "ITEM-1"
+  ],
+  "backdrop": "quiet",
+  "blocks": [
+    {
+      "id": "objectives-list",
+      "type": "text",
+      "style": "objectives",
+      "props": {
+        "markdown": "1. **Notice** the first signs that a situation needs care, and say why they matter.\n2. **Respond** to a delicate moment with words that open rather than close.\n3. **Choose** one small gesture to try with the people you support this week."
+      }
+    }
+  ]
+}

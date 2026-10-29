@@ -74,6 +74,8 @@ interface Mounted {
   place: ((screen: ScreenData, outline: RenderOutline | null) => void) | null;
   // The course's screens (the render's outline).
   outline: RenderOutline | null;
+  // The inert bars' heights, measured (chrome=player).
+  bars: ResizeObserver | null;
 }
 
 // The canvas is a page its host embeds (the editor's canvas, the « Lecteur » tab's preview): it never
@@ -239,7 +241,10 @@ function render(data: ScreenRender) {
   const screen = data.course.screens.find((candidate) => candidate.id === data.screen);
   if (!screen) throw new Error(`The render data has no screen "${data.screen}".`);
   const current = mounted;
-  if (!current || current.courseKey !== courseKey(data.course) || objectsChanged(current.course.objects, data.course.objects)) { mount(data, screen); return; }
+  // The backdrop's object whose code or assets changed starts again with them, as a block's does.
+  const decoration = data.course.backdrop?.object?.object;
+  const decorationChanged = !!decoration && [...changed].some((path) => path.startsWith(`objects/${decoration}/`));
+  if (!current || current.courseKey !== courseKey(data.course) || objectsChanged(current.course.objects, data.course.objects) || decorationChanged) { mount(data, screen); return; }
   // Screens added, moved or renamed: the live bars' outline, Previous and Next follow.
   if (JSON.stringify(current.outline) !== JSON.stringify(data.outline ?? null)) { current.outline = data.outline ?? null; current.live?.setOutline(current.outline); }
   const course = current.course;
@@ -277,6 +282,7 @@ function mount(data: ScreenRender, screen: ScreenData) {
   // What the live bars had open opens again in the new ones (the course's fields changed).
   const reopen: LiveOpen | null = mounted?.live?.opened() ?? null;
   mounted?.live?.dispose();
+  mounted?.bars?.disconnect();
   mounted?.view.destroy();
   app.replaceChildren();
   const course: CourseData = { ...data.course, screens: [screen] };
@@ -290,6 +296,7 @@ function mount(data: ScreenRender, screen: ScreenData) {
   let timelineHost: HTMLElement | null = null;
   let live: LiveChrome | null = null;
   let place: Mounted['place'] = null;
+  let barsResized: ResizeObserver | null = null;
   const outline = data.outline ?? null;
   if (chromeMode === 'live' && tooltip) {
     // As the player wires them; what leaves the screen is the host's (navigate, language).
@@ -311,6 +318,15 @@ function mount(data: ScreenRender, screen: ScreenData) {
     const bars = createChrome(course, labels, { actions: null, tooltip: null });
     for (const bar of [bars.top, bars.bottom]) if (bar) bar.inert = true;
     bars.setNav({ previous: true, next: true, nextLabel: 'next' });
+    // Their heights, as the player writes them: the backdrop keeps out of them (its safe area), and
+    // what the player's stylesheet sizes between them (a cover's head) is sized as in a package.
+    const measure = () => {
+      const height = (bar: HTMLElement | null) => (bar && !bar.hidden && bar.dataset.position !== 'page' ? bar.offsetHeight : 0);
+      app.style.setProperty('--t-bar-top', `${height(bars.top)}px`);
+      app.style.setProperty('--t-bar-bottom', `${height(bars.bottom)}px`);
+    };
+    barsResized = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
+    for (const bar of [bars.top, bars.bottom]) if (bar) barsResized?.observe(bar);
     // The progress as a learner at this screen sees it, having completed those before it.
     place = (shown, screens) => {
       const section = screens?.sections.find((candidate) => candidate.screens.some((entry) => entry.id === shown.id));
@@ -332,6 +348,8 @@ function mount(data: ScreenRender, screen: ScreenData) {
     announce: (message) => { liveRegion.textContent = ''; setTimeout(() => { liveRegion.textContent = message; }, 30); },
     // Nothing is recorded or saved: the canvas is not a learner session.
     recordInteraction: () => {}, syncSoon: () => {}, still: true,
+    // One screen at a time: the backdrop counts its ranks in the outline the canvas has now.
+    order: () => (mounted?.outline ?? outline)?.sections.flatMap((section) => section.screens.map((entry) => ({ id: entry.id, section: section.id }))) ?? null,
     afterEvents: () => scheduleLayout(), afterReveal: () => scheduleLayout(),
     // next and previous are the screens around the one the event is on, in the outline the canvas
     // has now (the view outlives renders of other screens, and the outline changes with the course).
@@ -346,7 +364,7 @@ function mount(data: ScreenRender, screen: ScreenData) {
       ...(live ? { tooltip, sheetHost: app } : {})
     }
   });
-  mounted = { course, courseKey: courseKey(course), state, view, requested: data.view, live, place, outline };
+  mounted = { course, courseKey: courseKey(course), state, view, requested: data.view, live, place, outline, bars: barsResized };
   view.show(screen);
   applyView(mounted, data.view, true);
   if (live) {

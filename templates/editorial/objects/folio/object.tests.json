@@ -1,0 +1,568 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "The cover: every part plate side by side",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "cover",
+        "section": "opening",
+        "step": 1,
+        "variant": "plate",
+        "screenIndex": 0,
+        "screenCount": 14,
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 0,
+            "sectionIndex": 0,
+            "variant": "plate"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "cover"
+        }
+      ]
+    },
+    {
+      "name": "The next page: the plates fold into the thumb index and the folio turns",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "cover",
+        "section": "opening",
+        "step": 1,
+        "variant": "plate",
+        "screenIndex": 0,
+        "screenCount": 14,
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "objectives",
+            "section": "opening",
+            "step": 1,
+            "variant": "paper",
+            "screenIndex": 1,
+            "screenCount": 14,
+            "sectionIndex": 0,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 24
+        },
+        {
+          "action": "snapshot",
+          "name": "folding"
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 1,
+            "sectionIndex": 0,
+            "variant": "paper"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "objectives"
+        }
+      ]
+    },
+    {
+      "name": "A part opener: the part tab unfolds into its plate, then folds back",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "objectives",
+        "section": "opening",
+        "step": 1,
+        "variant": "paper",
+        "screenIndex": 1,
+        "screenCount": 14,
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "part-one",
+            "section": "part-1",
+            "step": 1,
+            "variant": "plate",
+            "screenIndex": 2,
+            "screenCount": 14,
+            "sectionIndex": 1,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 24
+        },
+        {
+          "action": "snapshot",
+          "name": "unfolding"
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 2,
+            "sectionIndex": 1,
+            "variant": "plate"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "part-one"
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "key-message",
+            "section": "part-1",
+            "step": 1,
+            "variant": "paper",
+            "screenIndex": 3,
+            "screenCount": 14,
+            "sectionIndex": 1,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 80
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 3,
+            "sectionIndex": 1,
+            "variant": "paper"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "key-message"
+        }
+      ]
+    },
+    {
+      "name": "Going back: the folio turns down",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "key-figures",
+        "section": "part-2",
+        "step": 1,
+        "variant": "paper",
+        "screenIndex": 6,
+        "screenCount": 14,
+        "sectionIndex": 2,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "cards",
+            "section": "part-1",
+            "step": 1,
+            "variant": "paper",
+            "screenIndex": 5,
+            "screenCount": 14,
+            "sectionIndex": 1,
+            "sectionCount": 5,
+            "direction": "back"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 22
+        },
+        {
+          "action": "snapshot",
+          "name": "turning-back"
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 5,
+            "sectionIndex": 1,
+            "variant": "paper"
+          }
+        }
+      ]
+    },
+    {
+      "name": "The black spread: light rules on ink",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "steps",
+        "section": "part-2",
+        "step": 1,
+        "variant": "paper",
+        "screenIndex": 8,
+        "screenCount": 14,
+        "sectionIndex": 2,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "quote",
+            "section": "part-2",
+            "step": 1,
+            "variant": "ink",
+            "screenIndex": 9,
+            "screenCount": 14,
+            "sectionIndex": 2,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 80
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 9,
+            "sectionIndex": 2,
+            "variant": "ink"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "quote"
+        }
+      ]
+    },
+    {
+      "name": "The last screen: every plate again",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "recap",
+        "section": "closing",
+        "step": 1,
+        "variant": "paper",
+        "screenIndex": 12,
+        "screenCount": 14,
+        "sectionIndex": 4,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "the-end",
+            "section": "closing",
+            "step": 1,
+            "variant": "plate",
+            "screenIndex": 13,
+            "screenCount": 14,
+            "sectionIndex": 4,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 80
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 13,
+            "sectionIndex": 4,
+            "variant": "plate"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "the-end"
+        }
+      ]
+    },
+    {
+      "name": "Reduced motion: the new page at once",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "reducedMotion": true,
+      "context": {
+        "screen": "objectives",
+        "section": "opening",
+        "step": 1,
+        "variant": "paper",
+        "screenIndex": 1,
+        "screenCount": 14,
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 3
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "part-one",
+            "section": "part-1",
+            "step": 1,
+            "variant": "plate",
+            "screenIndex": 2,
+            "screenCount": 14,
+            "sectionIndex": 1,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 2
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 2,
+            "sectionIndex": 1,
+            "variant": "plate"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "still"
+        }
+      ]
+    },
+    {
+      "name": "Phone: tabs and a slim plate along the edge",
+      "size": [
+        375,
+        812
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 64,
+        "left": 0
+      },
+      "context": {
+        "screen": "part-one",
+        "section": "part-1",
+        "step": 1,
+        "variant": "plate",
+        "screenIndex": 2,
+        "screenCount": 14,
+        "sectionIndex": 1,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "snapshot",
+          "name": "phone-opener"
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "key-message",
+            "section": "part-1",
+            "step": 1,
+            "variant": "paper",
+            "screenIndex": 3,
+            "screenCount": 14,
+            "sectionIndex": 1,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 80
+        },
+        {
+          "action": "snapshot",
+          "name": "phone-page"
+        }
+      ]
+    },
+    {
+      "name": "Settings apply without remounting",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "text-and-picture",
+        "section": "part-1",
+        "step": 1,
+        "variant": "paper",
+        "screenIndex": 4,
+        "screenCount": 14,
+        "sectionIndex": 1,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "tabWidth": 1.5,
+            "folio": false,
+            "plate2": "#2B2B2B"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 4,
+            "sectionIndex": 1,
+            "variant": "paper"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "settings"
+        }
+      ]
+    }
+  ]
+}

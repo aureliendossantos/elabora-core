@@ -11,7 +11,7 @@
       "type": "process",
       "width": "wide",
       "props": {
-        "takeaway": "Four steps, always in the same order",
+        "takeaway": "Each step prepares the next one",
         "items": [
           {
             "id": "s1",

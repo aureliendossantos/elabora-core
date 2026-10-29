@@ -1,0 +1,56 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "comparison",
+  "title": "Two ways of doing it",
+  "covers": [
+    "ITEM-4"
+  ],
+  "blocks": [
+    {
+      "id": "compare-row",
+      "type": "columns",
+      "style": "versus",
+      "width": "wide",
+      "props": {
+        "count": 2,
+        "widths": "equal"
+      },
+      "blocks": [
+        {
+          "id": "compare-a-title",
+          "type": "heading",
+          "slot": "first",
+          "props": {
+            "text": "The usual view",
+            "level": 2
+          }
+        },
+        {
+          "id": "compare-a-list",
+          "type": "text",
+          "slot": "first",
+          "props": {
+            "markdown": "- A first assumption, described in a few words\n- A second assumption and what it hides\n- A third assumption that seems obvious"
+          }
+        },
+        {
+          "id": "compare-b-title",
+          "type": "heading",
+          "slot": "second",
+          "props": {
+            "text": "A closer reading",
+            "level": 2
+          }
+        },
+        {
+          "id": "compare-b-list",
+          "type": "text",
+          "slot": "second",
+          "props": {
+            "markdown": "- The first correction, described in a few words\n- The second correction and what it reveals\n- The third correction, and why it holds"
+          }
+        }
+      ]
+    }
+  ]
+}

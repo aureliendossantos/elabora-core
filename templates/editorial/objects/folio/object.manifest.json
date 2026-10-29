@@ -1,0 +1,40 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "folio",
+  "version": "1.0.0",
+  "title": "Folio and plates",
+  "pedagogicalRole": "decoration",
+  "props": {
+    "type": "object",
+    "properties": {
+      "plate1": { "type": "string", "format": "color", "default": "#B23A26", "title": "Plate 1", "description": "Plate of the first section (and of the sixth, the plates repeat)", "x-group": "Plates", "x-control": "color", "x-token": "color.plate-1" },
+      "plate2": { "type": "string", "format": "color", "default": "#1F4A73", "title": "Plate 2", "description": "Plate of the second section", "x-group": "Plates", "x-control": "color", "x-token": "color.plate-2" },
+      "plate3": { "type": "string", "format": "color", "default": "#2E5B47", "title": "Plate 3", "description": "Plate of the third section", "x-group": "Plates", "x-control": "color", "x-token": "color.plate-3" },
+      "plate4": { "type": "string", "format": "color", "default": "#7A5313", "title": "Plate 4", "description": "Plate of the fourth section", "x-group": "Plates", "x-control": "color", "x-token": "color.plate-4" },
+      "plate5": { "type": "string", "format": "color", "default": "#6E2A35", "title": "Plate 5", "description": "Plate of the fifth section", "x-group": "Plates", "x-control": "color", "x-token": "color.plate-5" },
+      "ink": { "type": "string", "format": "color", "default": "#1C1A17", "title": "Ink", "description": "Colour of the rules and the folio on paper", "x-group": "Page", "x-control": "color", "x-token": "color.text" },
+      "inkLight": { "type": "string", "format": "color", "default": "#EFE8DC", "title": "Ink on black", "description": "Colour of the rules and the folio on the black spread (variant ink)", "x-group": "Page", "x-control": "color", "x-token": "color.text-on-ink" },
+      "onPlate": { "type": "string", "format": "color", "default": "#F7F2E8", "title": "Folio on a plate", "description": "Colour of the folio where it falls on a plate", "x-group": "Page", "x-control": "color", "x-token": "color.on-plate" },
+      "plateStart": { "type": "number", "minimum": 0.4, "maximum": 0.8, "multipleOf": 0.01, "default": 0.58, "title": "Plate start", "description": "Where the plate begins across the window (0.58: at 58 % of its width). The theme's --ed-plate-x must say the same.", "x-group": "Page", "x-control": "slider" },
+      "measure": { "type": "number", "minimum": 40, "maximum": 100, "multipleOf": 0.5, "default": 75, "title": "Page width", "description": "Width of the rules in rem: the course's wide width divided by 16", "x-group": "Page", "x-control": "slider" },
+      "tabWidth": { "type": "number", "minimum": 0.25, "maximum": 2, "multipleOf": 0.125, "default": 0.75, "title": "Tab width", "description": "Width in rem of the thumb tab of the part in progress", "x-group": "Page", "x-control": "slider" },
+      "folio": { "type": "boolean", "default": true, "title": "Folio", "description": "Show the page number and the rule at the foot of the page", "x-group": "Page", "x-control": "toggle" },
+      "duration": { "type": "number", "minimum": 0, "maximum": 2, "multipleOf": 0.05, "default": 0.9, "title": "Duration", "description": "Seconds a plate takes to unfold or fold, and the folio to turn", "x-group": "Motion", "x-control": "slider" }
+    },
+    "required": ["plate1", "plate2", "plate3", "plate4", "plate5", "ink", "inkLight", "onPlate", "plateStart", "measure", "tabWidth", "folio", "duration"]
+  },
+  "state": {
+    "type": "object",
+    "properties": {
+      "screenIndex": { "type": "integer", "minimum": 0 },
+      "sectionIndex": { "type": ["integer", "null"] },
+      "variant": { "type": ["string", "null"] }
+    },
+    "required": ["screenIndex", "sectionIndex", "variant"]
+  },
+  "events": [],
+  "budgets": { "bootMsMax": 1500 },
+  "a11y": { "motion": { "pausable": true, "respectsReducedMotion": true } },
+  "sandbox": { "network": "none", "permissions": [] }
+}

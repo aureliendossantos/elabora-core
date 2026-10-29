@@ -1,0 +1,380 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "The opening scene on the cover",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "cover",
+        "section": "opening",
+        "step": 1,
+        "variant": null,
+        "screenIndex": 0,
+        "screenCount": 14,
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 0,
+            "sectionIndex": 0,
+            "scene": "part-0"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "cover"
+        }
+      ]
+    },
+    {
+      "name": "A new part: the old pieces pulled out, the new ones slid in",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "objectives",
+        "section": "opening",
+        "step": 1,
+        "variant": null,
+        "screenIndex": 1,
+        "screenCount": 14,
+        "sectionIndex": 0,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "part-one",
+            "section": "part-1",
+            "step": 1,
+            "variant": null,
+            "screenIndex": 2,
+            "screenCount": 14,
+            "sectionIndex": 1,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 40
+        },
+        {
+          "action": "snapshot",
+          "name": "midway"
+        },
+        {
+          "action": "step",
+          "frames": 90
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 2,
+            "sectionIndex": 1,
+            "scene": "part-1"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "part one"
+        }
+      ]
+    },
+    {
+      "name": "Within a part the hills slide sideways",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "key-message",
+        "section": "part-1",
+        "step": 1,
+        "variant": null,
+        "screenIndex": 3,
+        "screenCount": 14,
+        "sectionIndex": 1,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "text-and-picture",
+            "section": "part-1",
+            "step": 1,
+            "variant": null,
+            "screenIndex": 4,
+            "screenCount": 14,
+            "sectionIndex": 1,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 90
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 4,
+            "sectionIndex": 1,
+            "scene": "part-1"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "slid"
+        }
+      ]
+    },
+    {
+      "name": "Variants: calm, then night",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "practice",
+        "section": "part-2",
+        "step": 1,
+        "variant": "calm",
+        "screenIndex": 7,
+        "screenCount": 14,
+        "sectionIndex": 2,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 7,
+            "sectionIndex": 2,
+            "scene": "part-2-calm"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "calm"
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "quote",
+            "section": "part-2",
+            "step": 1,
+            "variant": "night",
+            "screenIndex": 9,
+            "screenCount": 14,
+            "sectionIndex": 2,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 140
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 9,
+            "sectionIndex": 2,
+            "scene": "night"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "night"
+        }
+      ]
+    },
+    {
+      "name": "Reduced motion: still frames, the new scene at once",
+      "size": [
+        1600,
+        900
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "reducedMotion": true,
+      "context": {
+        "screen": "chart",
+        "section": "part-3",
+        "step": 1,
+        "variant": null,
+        "screenIndex": 11,
+        "screenCount": 14,
+        "sectionIndex": 3,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 3
+        },
+        {
+          "action": "set-context",
+          "context": {
+            "screen": "recap",
+            "section": "closing",
+            "step": 1,
+            "variant": null,
+            "screenIndex": 12,
+            "screenCount": 14,
+            "sectionIndex": 4,
+            "sectionCount": 5,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 2
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 12,
+            "sectionIndex": 4,
+            "scene": "part-4"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "still"
+        }
+      ]
+    },
+    {
+      "name": "Portrait tablet: the scene stays; on a phone the paper is left plain",
+      "size": [
+        820,
+        1180
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "cards",
+        "section": "part-1",
+        "step": 1,
+        "variant": null,
+        "screenIndex": 5,
+        "screenCount": 14,
+        "sectionIndex": 1,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "snapshot",
+          "name": "phone"
+        }
+      ]
+    },
+    {
+      "name": "Phone: nothing drawn under the reading",
+      "size": [
+        375,
+        812
+      ],
+      "safeArea": {
+        "top": 56,
+        "right": 0,
+        "bottom": 72,
+        "left": 0
+      },
+      "context": {
+        "screen": "cards",
+        "section": "part-1",
+        "step": 1,
+        "variant": null,
+        "screenIndex": 5,
+        "screenCount": 14,
+        "sectionIndex": 1,
+        "sectionCount": 5,
+        "direction": null
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "screenIndex": 5,
+            "sectionIndex": 1,
+            "scene": "part-1"
+          }
+        }
+      ]
+    }
+  ]
+}

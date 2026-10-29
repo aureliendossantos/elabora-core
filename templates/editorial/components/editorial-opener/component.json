@@ -1,0 +1,24 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/component.schema.json",
+  "id": "editorial-opener",
+  "title": "Editorial part opener",
+  "description": "Opens a part of the module like a magazine section: the part's number set very large on the part's colour plate, on the right of the page; the part's title, its standfirst and its page on the left.",
+  "instructions": "The first screen of a section, with the screen style opener and the backdrop plate (the backdrop draws the plate in the colour of the section). number: the part's number, one or two characters (1, 2, 3… or I, II, III), the only mark of where the learner is: nothing else goes above the title. The title names the part in a few words; lead is its standfirst, one sentence; the body holds one text block with the style ledger (three points at most). No image: the plate is the picture.",
+  "version": "1.0.0",
+  "level": "screen",
+  "extends": {
+    "component": "opening",
+    "version": "0.1.0"
+  },
+  "propsExtend": {
+    "properties": {
+      "number": {
+        "type": "string",
+        "title": "Part number",
+        "description": "The part's number, set very large on its plate (1, 2, 3… or I, II, III).",
+        "maxLength": 3,
+        "default": "1"
+      }
+    }
+  }
+}

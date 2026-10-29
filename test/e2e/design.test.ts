@@ -125,6 +125,26 @@ test('fit measures the contrast of text against the pixels behind it', { timeout
   assert.ok(!d.some((x) => x.target !== 'accueil'), JSON.stringify(d.filter((x) => x.target !== 'accueil')));
 });
 
+test('measured contrast: text a 1 px box clips away (a chart\'s table for screen readers) is not read over the pixels where it would be', { timeout: 120000 }, async () => {
+  const { measureContrast } = await import('@elabora/node/contrast');
+  const browser = await launchBrowser('chromium');
+  try {
+    const page = await browser.newPage({ viewport: { width: 800, height: 600 } });
+    // Dark ink on a white card, over a dark ground; the table's text would lie on the ground.
+    await page.setContent(`<!doctype html><html><body style="margin:0;background:#1d2b3a">
+      <div data-block="figures" style="position:relative;margin:60px;padding:24px;background:#fff;color:#222">
+        <p>72 % of the readers</p>
+        <table style="position:absolute;top:300px;left:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap"><tr><td>72 % of the readers, as a table</td></tr></table>
+      </div></body></html>`);
+    assert.deepEqual(await measureContrast(page), []);
+    // The same text shown over the ground is read, and reported.
+    await page.evaluate(() => { document.querySelector<HTMLElement>('table')!.style.cssText = 'position:absolute;top:300px;left:0;color:#222'; });
+    assert.deepEqual((await measureContrast(page)).map((found) => found.text), ['72 % of the readers, as a table']);
+  } finally {
+    await browser.close();
+  }
+});
+
 test('fit on a phone: the contrast of text down the page and a bar of the player that goes onto two lines', { timeout: 240000 }, async () => {
   // Faint text and items too wide for one line, on a phone only.
   const { dir } = slidesCopy({ css: '@media (max-width: 600px) { [data-screen="accueil"] .t-text { color: #e6e9ec; } .t-bar--bottom > * { min-width: 9rem; } }' });

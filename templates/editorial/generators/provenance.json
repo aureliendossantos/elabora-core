@@ -1,0 +1,15 @@
+{
+  "format": "elabora-generated/1",
+  "assets": {
+    "images/paper-grain.svg": {
+      "generator": "generators/paper.mjs",
+      "inputsHash": "sha256:aa58e34d510557707bcc60ba3645192156c1bd380aa8442855300249971b3b75",
+      "outputHash": "sha256:fce60d2b90695532f5f6d980521213877156f8585c4589dfe061615bb298a9b1"
+    },
+    "images/plate-print.svg": {
+      "generator": "generators/paper.mjs",
+      "inputsHash": "sha256:aa58e34d510557707bcc60ba3645192156c1bd380aa8442855300249971b3b75",
+      "outputHash": "sha256:1e786e0b2b7eead65b7e9b572d82dd6870d0294462c63a1824b851d1cea0761e"
+    }
+  }
+}

@@ -65,7 +65,7 @@ node bin/elabora.js init my-course --id my-course --title "My course" --lang en
 Or start from a module template ([D68](decisions/D68.md)): a charter already made (theme, fonts, components, an animated backdrop and its variants) on 14 screens of placeholder texts, the same screens in every template.
 
 ```bash
-node bin/elabora.js templates                                  # Organic, Flow, Clear, Shapes
+node bin/elabora.js templates                                  # Organic, Flow, Clear, Shapes, Editorial, Paper, Watercolour
 node bin/elabora.js init my-course --template flow --id my-course --title "My course" --lang en
 ```
 

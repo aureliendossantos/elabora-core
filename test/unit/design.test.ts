@@ -396,6 +396,8 @@ test('object gates: the last full run is recorded and the dossier tells passed f
 test('colours of masks are not charter colours: only their alpha counts', () => {
   assert.deepEqual(literalColors('.a { mask-image: radial-gradient(#000 40%, transparent); -webkit-mask-image: conic-gradient(#000 var(--sweep), transparent 0); }'), []);
   assert.deepEqual(literalColors('.a { mask: linear-gradient(#000, transparent); background: #123456; }'), ['#123456']);
+  // A fallback of var() is not the charter's colour: the token shows; the colour alone still counts.
+  assert.deepEqual(literalColors('.a { color: var(--t-color-on-plate, #fff); border: 1px solid var(--x, var(--y, #abc)); fill: #fafafa; }'), ['#fafafa']);
 });
 
 test('fit: an overflowing slide names the quizzes whose compact feedback would reserve less room', async () => {

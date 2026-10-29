@@ -1,0 +1,69 @@
+{
+  "object": "bloom",
+  "version": "1.0.0",
+  "elabora": "0.1.0",
+  "at": "2026-10-29T02:22:19.864Z",
+  "ok": true,
+  "browser": {
+    "engine": "electron",
+    "version": "152.0.7977.167"
+  },
+  "gates": {
+    "smoke": "passed",
+    "behaviour": "passed",
+    "budget": "passed",
+    "visual": "passed",
+    "accessibility": "passed"
+  },
+  "perf": {
+    "drawCalls": null,
+    "triangles": null,
+    "textures": null,
+    "geometries": null,
+    "maxTextureSize": null,
+    "webglContexts": 0,
+    "contextLost": false,
+    "bootMs": 92,
+    "bootSamples": [
+      77,
+      75,
+      106,
+      110,
+      113,
+      70,
+      92,
+      93
+    ]
+  },
+  "tests": [
+    {
+      "name": "The cover: lagoon, cerulean and a touch of blush",
+      "ok": true
+    },
+    {
+      "name": "Moving on: a new wash spreads from where the last one was, the old ones dry",
+      "ok": true
+    },
+    {
+      "name": "Going back: the washes fade, nothing shrinks",
+      "ok": true
+    },
+    {
+      "name": "Variants: ink and dawn",
+      "ok": true
+    },
+    {
+      "name": "Reduced motion: the new screen at once",
+      "ok": true
+    },
+    {
+      "name": "Phone",
+      "ok": true
+    },
+    {
+      "name": "Settings apply without remounting",
+      "ok": true
+    }
+  ],
+  "fingerprint": "sha256:a8487eedb6ed99583b6118d9c3dac30a4be355e4a2fef05a8ec48cb31ea163d0"
+}

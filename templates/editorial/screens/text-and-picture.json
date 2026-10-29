@@ -1,0 +1,25 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "text-and-picture",
+  "title": "A title that names the idea of this screen",
+  "covers": [
+    "ITEM-3"
+  ],
+  "blocks": [
+    {
+      "id": "text-figure-body",
+      "type": "image",
+      "style": "plate",
+      "props": {
+        "presentation": "beside",
+        "side": "end",
+        "share": "half",
+        "asset": "images/plate-print.svg",
+        "alt": "Abstract print: a disc of red halftone dots over a blue block, above a field of fine engraved lines and a small ochre bar.",
+        "caption": "A caption of one line that says what the picture shows.",
+        "title": "A heading for this idea",
+        "markdown": "Two or three sentences open the article and explain the idea in plain words: what it is, where it comes from and what it changes for the reader.\n\nA second, shorter paragraph adds an example or a nuance. Keep the whole text under ninety words so that it reads at a glance."
+      }
+    }
+  ]
+}

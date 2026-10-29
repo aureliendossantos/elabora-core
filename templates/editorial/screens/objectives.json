@@ -1,0 +1,26 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "id": "objectives",
+  "title": "What you will be able to do",
+  "covers": [
+    "ITEM-1"
+  ],
+  "blocks": [
+    {
+      "id": "contents-list",
+      "type": "text",
+      "style": "contents",
+      "props": {
+        "markdown": "1. **Understand the context**  \n   One line on where the subject comes from, and why it matters now.\n2. **Read the key ideas**  \n   One line on the ideas, figures and voices that shape it.\n3. **Weigh the choices**  \n   One line on comparing two approaches and choosing between them."
+      }
+    },
+    {
+      "id": "contents-note",
+      "type": "text",
+      "style": "dek",
+      "props": {
+        "markdown": "Three parts, about fifteen minutes, and one question along the way."
+      }
+    }
+  ]
+}

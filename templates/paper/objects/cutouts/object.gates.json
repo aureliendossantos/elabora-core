@@ -1,0 +1,69 @@
+{
+  "object": "cutouts",
+  "version": "1.0.0",
+  "elabora": "0.1.0",
+  "at": "2026-10-29T02:08:49.392Z",
+  "ok": true,
+  "browser": {
+    "engine": "electron",
+    "version": "152.0.7977.167"
+  },
+  "gates": {
+    "smoke": "passed",
+    "behaviour": "passed",
+    "budget": "passed",
+    "visual": "passed",
+    "accessibility": "passed"
+  },
+  "perf": {
+    "drawCalls": null,
+    "triangles": null,
+    "textures": null,
+    "geometries": null,
+    "maxTextureSize": null,
+    "webglContexts": 0,
+    "contextLost": false,
+    "bootMs": 53,
+    "bootSamples": [
+      70,
+      53,
+      234,
+      47,
+      46,
+      58,
+      56,
+      46
+    ]
+  },
+  "tests": [
+    {
+      "name": "The opening scene on the cover",
+      "ok": true
+    },
+    {
+      "name": "A new part: the old pieces pulled out, the new ones slid in",
+      "ok": true
+    },
+    {
+      "name": "Within a part the hills slide sideways",
+      "ok": true
+    },
+    {
+      "name": "Variants: calm, then night",
+      "ok": true
+    },
+    {
+      "name": "Reduced motion: still frames, the new scene at once",
+      "ok": true
+    },
+    {
+      "name": "Portrait tablet: the scene stays; on a phone the paper is left plain",
+      "ok": true
+    },
+    {
+      "name": "Phone: nothing drawn under the reading",
+      "ok": true
+    }
+  ],
+  "fingerprint": "sha256:4d10661975de361332079cb791bab68afe4d07042f21a0b7740f1cab910f2a78"
+}

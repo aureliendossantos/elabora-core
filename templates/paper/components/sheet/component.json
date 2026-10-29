@@ -1,0 +1,47 @@
+{
+  "id": "sheet",
+  "title": "Paper sheet",
+  "version": "1.0.0",
+  "level": "screen",
+  "category": "structure",
+  "description": "A sheet of paper taped onto the kraft: the screen's title, its lead and the page on it. cover: a large sheet for the module's first screen; stack: a sheet on the left, the backdrop's scene around it; split: the sheet on the left and a second place on the right (a part's number, a list on its own paper).",
+  "instructions": "Use for the cover, the objectives, part openers, the recap and the end. Keep the title to two lines and the lead to one or two sentences. Pick a light paper (white, mustard, pink, sky, leaf): the text stays in ink on it. split puts the side slot beside the sheet, for a part-number block or a short list.",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "arrangement": {
+        "type": "string",
+        "enum": ["cover", "stack", "split"],
+        "default": "stack",
+        "title": "Arrangement",
+        "description": "cover: a large sheet, the title set large; stack: one sheet with the title, the lead and the page; split: the sheet on the left, the side slot on the right.",
+        "x-enum-labels": { "cover": "Cover", "stack": "Sheet", "split": "Sheet and side" },
+        "x-group": "design"
+      },
+      "paper": {
+        "type": "string",
+        "x-kind": "token",
+        "x-token-prefix": "color.",
+        "default": "color.paper",
+        "title": "Paper",
+        "description": "The colour of the sheet (a theme token). The text stays in ink: keep to the light papers.",
+        "x-group": "design"
+      },
+      "tilt": {
+        "type": "string",
+        "enum": ["none", "left", "right"],
+        "default": "left",
+        "title": "Tilt",
+        "description": "How the sheet was laid down: straight, or turned a little to the left or the right.",
+        "x-enum-labels": { "none": "Straight", "left": "Turned left", "right": "Turned right" },
+        "x-group": "design"
+      }
+    }
+  },
+  "slots": [
+    { "id": "lead", "label": "Lead under the title", "accepts": ["text"], "maxBlocks": 1 },
+    { "id": "body", "label": "Page", "default": true },
+    { "id": "side", "label": "Beside the sheet (split)" }
+  ]
+}

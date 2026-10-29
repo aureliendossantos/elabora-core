@@ -1,0 +1,67 @@
+/* Paper sheet: a sheet taped onto the kraft, holding the screen's title, lead and page.
+   The theme tunes it with --pp-shadow-2 (its shadow), --pp-tape (the tape's colour) and
+   --pp-lay (the stop-motion entrance); the sheet's paper is the prop « paper ». */
+.t-layout--sheet { display: flex; flex-direction: column; justify-content: center; }
+.pp-sheet {
+  --pp-sheet-rotate: 0deg;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: center;
+  width: 100%;
+  max-width: var(--t-wide-width);
+  margin-inline: auto;
+}
+.pp-sheet[data-tilt="left"] { --pp-sheet-rotate: -1.2deg; }
+.pp-sheet[data-tilt="right"] { --pp-sheet-rotate: 0.9deg; }
+.pp-sheet[data-arrangement="split"] { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 4rem; }
+
+.pp-sheet-paper {
+  position: relative;
+  max-width: 46rem;
+  padding: 2.75rem 3rem 2.5rem;
+  border-radius: 3px;
+  color: var(--t-color-ink);
+  background: var(--pp-sheet-paper, var(--t-color-paper));
+  box-shadow: var(--pp-shadow-2, 0.25rem 0.5rem 1.25rem rgb(58 36 16 / 0.22));
+  rotate: var(--pp-sheet-rotate);
+  animation: var(--pp-lay, none);
+}
+.pp-sheet[data-arrangement="cover"] .pp-sheet-paper { max-width: 50rem; padding: 3.5rem 3.75rem 3rem; }
+/* A strip of paper tape over the top edge. */
+.pp-sheet-paper::before {
+  content: "";
+  position: absolute;
+  top: -0.875rem;
+  left: 50%;
+  width: 7rem;
+  height: 1.75rem;
+  translate: -50% 0;
+  rotate: -3deg;
+  background: var(--pp-tape, rgb(255 248 234 / 0.62));
+  box-shadow: 0 1px 2px rgb(58 36 16 / 0.12);
+}
+.pp-sheet .t-screen-title {
+  margin: 0;
+  color: var(--t-color-ink);
+  font-family: var(--t-font-heading);
+  font-weight: 850;
+  font-size: clamp(2.125rem, 3.3vw, 3rem);
+  line-height: 1.05;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.pp-sheet[data-arrangement="cover"] .t-screen-title { font-size: clamp(2.75rem, 4.6vw, 4.25rem); line-height: 1; letter-spacing: -0.03em; }
+.pp-sheet-lead:not([data-empty]) { margin-top: 1.125rem; }
+.pp-sheet-lead .t-text { color: var(--t-color-ink); font-size: 1.3125rem; line-height: 1.45; max-width: 38rem; }
+.pp-sheet-lead .t-text p { margin: 0; }
+.pp-sheet-body:not([data-empty]) { margin-top: 1.75rem; }
+.pp-sheet-body .t-blocks, .pp-sheet-body { gap: 1.25rem; }
+.pp-sheet-side[data-empty] { display: none; }
+.pp-sheet-side { display: grid; justify-items: center; }
+
+@container (max-width: 820px) {
+  .pp-sheet, .pp-sheet[data-arrangement="split"] { grid-template-columns: minmax(0, 1fr); gap: 2rem; }
+  .pp-sheet-paper, .pp-sheet[data-arrangement="cover"] .pp-sheet-paper { padding: 2rem 1.5rem 1.75rem; }
+  .pp-sheet-side { justify-items: start; }
+}

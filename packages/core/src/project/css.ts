@@ -23,7 +23,7 @@ export const isExternalUrl = (u: string): boolean => /^([a-z][a-z0-9+.-]*:|\/\/)
 // Hex colours written outside custom property declarations (--x: #fff is fine: it names a value).
 export function literalColors(css: string | null | undefined): string[] {
   const out: string[] = [];
-  for (const decl of stripComments(css).replace(/[{}]/g, ';').split(';')) {
+  for (const decl of withoutFallbacks(stripComments(css)).replace(/[{}]/g, ';').split(';')) {
     const d = decl.trim();
     if (!d || d.startsWith('--') || d.startsWith('@')) continue;
     const i = d.indexOf(':');
@@ -33,6 +33,27 @@ export function literalColors(css: string | null | undefined): string[] {
     for (const m of d.slice(i + 1).matchAll(/#[0-9a-f]{3,8}\b/gi)) out.push(m[0]);
   }
   return out;
+}
+
+// The fallbacks of var(): var(--t-color-x, #fff) shows its token, the colour only where no theme
+// gives one (a component in a library), so it is not a hard-coded colour of the charter.
+function withoutFallbacks(css: string): string {
+  let out = '';
+  let at = 0;
+  for (let start = css.indexOf('var(', at); start >= 0; start = css.indexOf('var(', at)) {
+    let depth = 0, comma = -1, end = -1;
+    for (let i = start + 4; i < css.length && end < 0; i++) {
+      const c = css[i];
+      if (c === '(') depth++;
+      else if (c === ')') { if (depth === 0) end = i; else depth--; }
+      else if (c === ',' && depth === 0 && comma < 0) comma = i;
+      else if (c === ';' || c === '}') break;
+    }
+    if (end < 0) break;
+    out += css.slice(at, comma >= 0 ? comma : end) + ')';
+    at = end + 1;
+  }
+  return out + css.slice(at);
 }
 
 // content: "…" with letters: text in CSS cannot be translated or edited by authors.

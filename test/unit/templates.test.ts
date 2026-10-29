@@ -26,9 +26,9 @@ const tempDir = (prefix: string): string => {
 const readJSON = (dir: string, file: string) => JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
 const files = (dir: string, base = dir): string[] => fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => (entry.isDirectory() ? files(path.join(dir, entry.name), base) : [path.relative(base, path.join(dir, entry.name)).split(path.sep).join('/')]));
 
-test('the templates: the four of index.json, the same screens, sections and plan, each translated into French', () => {
+test('the templates: those of index.json, the same screens, sections and plan, each translated into French', () => {
   const templates = listModuleTemplates();
-  assert.deepEqual(templates.map((template) => template.id), ['organic', 'flow', 'clear', 'shapes']);
+  assert.deepEqual(templates.map((template) => template.id), ['organic', 'flow', 'clear', 'shapes', 'editorial', 'paper', 'watercolor']);
   const folders = fs.readdirSync(MODULE_TEMPLATES_DIR, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort();
   assert.deepEqual(folders, templates.map((template) => template.id).sort(), 'every folder of templates/ is in index.json');
   const titles = new Map<string, string>();
@@ -49,7 +49,7 @@ test('the templates: the four of index.json, the same screens, sections and plan
     }
     plans.add(JSON.stringify(readJSON(template.dir, 'plan.json').items));
   }
-  assert.equal(plans.size, 1, 'one plan for the four');
+  assert.equal(plans.size, 1, 'one plan for them all');
 });
 
 test('each template validates (only a template\'s two warnings), its French is complete, it is CC0 with OFL fonts and nothing generated', () => {
@@ -129,7 +129,7 @@ test('the library creates a project from a template and records where it comes f
 test('elabora templates lists them; elabora init --template makes the course', () => {
   const list = spawnSync(process.execPath, [BIN, 'templates', '--json'], { encoding: 'utf8' });
   assert.equal(list.status, 0, list.stderr);
-  assert.deepEqual(JSON.parse(list.stdout).map((template: { id: string }) => template.id), ['organic', 'flow', 'clear', 'shapes']);
+  assert.deepEqual(JSON.parse(list.stdout).map((template: { id: string }) => template.id), ['organic', 'flow', 'clear', 'shapes', 'editorial', 'paper', 'watercolor']);
   const dir = path.join(tempDir('elabora-template-'), 'course');
   const init = spawnSync(process.execPath, [BIN, 'init', dir, '--template', 'clear', '--id', 'procedure', '--title', 'The incident procedure', '--lang', 'en'], { encoding: 'utf8' });
   assert.equal(init.status, 0, init.stderr);

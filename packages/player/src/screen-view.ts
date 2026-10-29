@@ -96,6 +96,10 @@ export interface ScreenViewOptions {
   // The player's sounds (D67): a question's feedback makes the interface sound of a dialogue's
   // (none in the editor's canvas).
   sounds?: Sounds | null;
+  // The course's screens in order, with their sections, when the view holds fewer (the editor's
+  // canvas and looks show one screen): the backdrop's context counts its ranks there. Default: the
+  // course's screens.
+  order?(): { id: string; section: string | null }[] | null;
 }
 
 export type ScreenView = ReturnType<typeof createScreenView>;
@@ -1073,16 +1077,19 @@ export function createScreenView(options: ScreenViewOptions) {
     }
   }
   function backdropContext(): ObjectContext {
-    const index = screen ? screenIndex(screen.id) : -1;
+    const order = options.order?.() ?? null;
+    const sections = order ? [...new Set(order.map((entry) => entry.section).filter((id): id is string => !!id))] : sectionOrder;
+    const index = !screen ? -1 : order ? order.findIndex((entry) => entry.id === screen?.id) : screenIndex(screen.id);
     if (index >= 0 && index !== backdropIndex) {
-      backdropDirection = backdropIndex === null ? null : index > backdropIndex ? 'forward' : 'back';
+      // The editor's canvas shows each screen at rest: no passage from the screen shown before.
+      backdropDirection = backdropIndex === null || options.still ? null : index > backdropIndex ? 'forward' : 'back';
       backdropIndex = index;
     }
     const section = screen?.section || null;
     return {
       screen: screen?.id || null, section, step: revealed, variant: screen?.backdrop || backdrop?.default || null,
-      screenIndex: Math.max(0, index), screenCount: course.screens.length,
-      sectionIndex: section ? sectionOrder.indexOf(section) : null, sectionCount: sectionOrder.length, direction: backdropDirection
+      screenIndex: Math.max(0, index), screenCount: order ? order.length : course.screens.length,
+      sectionIndex: section ? sections.indexOf(section) : null, sectionCount: sections.length, direction: backdropDirection
     };
   }
   function updateBackdrop() {

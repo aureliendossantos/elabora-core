@@ -1,0 +1,180 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.5/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "bloom",
+  "version": "1.0.0",
+  "title": "Watercolour blooms",
+  "pedagogicalRole": "decoration",
+  "language": "en",
+  "props": {
+    "type": "object",
+    "properties": {
+      "lagoon": {
+        "type": "string",
+        "format": "color",
+        "default": "#8CCFCB",
+        "title": "Lagoon",
+        "description": "Wash of the opening and of the closing part, and the light tone of every other part.",
+        "x-group": "Water tones",
+        "x-control": "color",
+        "x-token": "color.wash-lagoon"
+      },
+      "cerulean": {
+        "type": "string",
+        "format": "color",
+        "default": "#9BBFE4",
+        "title": "Cerulean",
+        "description": "Wash of the first part.",
+        "x-group": "Water tones",
+        "x-control": "color",
+        "x-token": "color.wash-cerulean"
+      },
+      "sea": {
+        "type": "string",
+        "format": "color",
+        "default": "#A6D6B8",
+        "title": "Sea glass",
+        "description": "Wash of the second part.",
+        "x-group": "Water tones",
+        "x-control": "color",
+        "x-token": "color.wash-sea"
+      },
+      "deep": {
+        "type": "string",
+        "format": "color",
+        "default": "#9DB6DA",
+        "title": "Deep water",
+        "description": "Wash of the third part, the deepest tone of the journey.",
+        "x-group": "Water tones",
+        "x-control": "color",
+        "x-token": "color.wash-deep"
+      },
+      "blush": {
+        "type": "string",
+        "format": "color",
+        "default": "#F0B4A3",
+        "title": "Blush",
+        "description": "The warm counterpoint: a touch on the cover and in the closing part, the main tone of the dawn variant.",
+        "x-group": "Warm tones",
+        "x-control": "color",
+        "x-token": "color.wash-blush"
+      },
+      "ochre": {
+        "type": "string",
+        "format": "color",
+        "default": "#EDCD8C",
+        "title": "Ochre",
+        "description": "Second warm tone, in the closing part and the dawn variant.",
+        "x-group": "Warm tones",
+        "x-control": "color",
+        "x-token": "color.wash-ochre"
+      },
+      "strength": {
+        "type": "number",
+        "minimum": 0.2,
+        "maximum": 1,
+        "multipleOf": 0.05,
+        "default": 0.85,
+        "title": "Pigment",
+        "description": "How much pigment the washes hold: lower is paler. Text keeps its contrast at every value up to 1.",
+        "x-group": "Washes",
+        "x-control": "slider"
+      },
+      "count": {
+        "type": "integer",
+        "minimum": 2,
+        "maximum": 5,
+        "default": 3,
+        "title": "Washes per screen",
+        "description": "How many washes bloom on each screen (the cover has one more).",
+        "x-group": "Washes",
+        "x-control": "slider"
+      },
+      "spread": {
+        "type": "number",
+        "minimum": 0.8,
+        "maximum": 5,
+        "multipleOf": 0.1,
+        "default": 2.8,
+        "title": "Spreading (s)",
+        "description": "Seconds a new wash takes to spread into the paper when the learner moves on.",
+        "x-group": "Motion",
+        "x-control": "slider"
+      },
+      "fade": {
+        "type": "number",
+        "minimum": 0.4,
+        "maximum": 3,
+        "multipleOf": 0.1,
+        "default": 1.4,
+        "title": "Drying (s)",
+        "description": "Seconds a wash takes to dry into a pale stain, or to fade away.",
+        "x-group": "Motion",
+        "x-control": "slider"
+      }
+    },
+    "required": [
+      "lagoon",
+      "cerulean",
+      "sea",
+      "deep",
+      "blush",
+      "ochre",
+      "strength",
+      "count",
+      "spread",
+      "fade"
+    ]
+  },
+  "state": {
+    "type": "object",
+    "properties": {
+      "screen": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "section": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "variant": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "washes": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "settled": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "screen",
+      "section",
+      "variant",
+      "washes",
+      "settled"
+    ]
+  },
+  "events": [],
+  "budgets": {
+    "bootMsMax": 1500
+  },
+  "a11y": {
+    "motion": {
+      "pausable": true,
+      "respectsReducedMotion": true
+    }
+  },
+  "sandbox": {
+    "network": "none",
+    "permissions": []
+  }
+}

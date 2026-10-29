@@ -1,0 +1,281 @@
+/* Paper — a cut-paper charter for Elabora (cascade layer elabora.theme: the course's defaults).
+   Kraft under everything, coloured papers on it, each sheet casting the soft shadow of paper lifted a
+   little above the one under it; the light comes from the top left, so every shadow falls to the
+   bottom right, the same in the backdrop's object (objects/cutouts) and here. A solid sans (Figtree)
+   for reading, a hand (Caveat) for accents: numbers, tags, notes. Every colour is a token of
+   course.json (theme.tokens and theme.custom): change them there for a brand. No words here.
+
+   Motion: a sheet is laid down in four poses, stop motion (--pp-lay); its shadow shrinks as it comes
+   down, because it really comes down. Nothing moves under reduced motion. */
+
+/* ── Shadows: three heights of paper ─────────────────────────────────── */
+:root {
+  --pp-shade: var(--t-color-fibre);
+  --pp-shadow-1: 0.0625rem 0.125rem 0.1875rem color-mix(in srgb, var(--pp-shade) 22%, transparent), 0.125rem 0.25rem 0.5rem color-mix(in srgb, var(--pp-shade) 14%, transparent);
+  --pp-shadow-2: 0.125rem 0.1875rem 0.25rem color-mix(in srgb, var(--pp-shade) 18%, transparent), 0.3125rem 0.5rem 1.25rem color-mix(in srgb, var(--pp-shade) 22%, transparent);
+  --pp-shadow-3: 0.1875rem 0.25rem 0.375rem color-mix(in srgb, var(--pp-shade) 16%, transparent), 0.5rem 0.875rem 2rem color-mix(in srgb, var(--pp-shade) 26%, transparent);
+  --pp-shadow-drop-3: drop-shadow(0.375rem 0.625rem 0.75rem color-mix(in srgb, var(--pp-shade) 30%, transparent));
+  --pp-tape: color-mix(in srgb, var(--t-color-tape) 64%, transparent);
+  --pp-lay: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  :root { --pp-lay: pp-lay 0.42s steps(4, jump-none) both; }
+}
+/* Laid down by hand: lifted a little and turned, then flat on the table; its shadow shrinks with it. */
+@keyframes pp-lay {
+  from { translate: 0.375rem -0.875rem; scale: 1.015; box-shadow: var(--pp-shadow-3); }
+}
+
+/* ── Ground and backdrop ─────────────────────────────────────────────── */
+html { background: var(--t-color-kraft); min-height: 100%; }
+body { background: transparent; }
+
+.t-backdrop-layer[data-layer="kraft"] { background: var(--t-color-kraft); }
+/* The other grounds are other sheets: they are slid in place of the kraft, here faded in a few poses. */
+.t-backdrop-layer[data-layer="calm"],
+.t-backdrop-layer[data-layer="night"] { opacity: 0; transition: opacity 0.6s steps(5, jump-none); }
+.t-backdrop-layer[data-layer="calm"] { background: var(--t-color-calm); }
+.t-backdrop-layer[data-layer="night"] { background: var(--t-color-night); }
+.t-backdrop[data-variant="calm"] .t-backdrop-layer[data-layer="calm"],
+.t-backdrop[data-variant="night"] .t-backdrop-layer[data-layer="night"] { opacity: 1; }
+/* The fibres of the paper, over the ground and the cut-outs alike (above the object's frame). */
+.t-backdrop-layer[data-layer="grain"] {
+  z-index: 2;
+  background: url(../assets/images/fibre.svg) 0 0 / 320px 320px repeat;
+  opacity: 0.11;
+}
+.t-backdrop[data-variant="night"] .t-backdrop-layer[data-layer="grain"] { opacity: 0.1; }
+
+/* Night: the text in pale ink; the sheets keep theirs. */
+#elabora-app[data-backdrop="night"] { --t-text: var(--t-color-night-text); --t-muted: var(--t-color-night-muted); }
+
+/* ── Type ────────────────────────────────────────────────────────────── */
+body { font-family: var(--t-font-body); font-size: 1.0625rem; line-height: 1.5; }
+.t-screen { color: var(--t-text); }
+.t-screen-title {
+  font-family: var(--t-font-heading);
+  font-weight: 850;
+  font-size: clamp(2rem, 3.1vw, 2.75rem);
+  line-height: 1.06;
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.t-screen h2, .t-screen h3 { font-family: var(--t-font-heading); font-weight: 800; letter-spacing: -0.012em; line-height: 1.15; }
+.t-text strong { font-weight: 750; }
+.t-course-title { font-family: var(--t-font-heading); font-weight: 800; }
+
+/* A screen without a layout: its title lines up with wide content. */
+.t-screen:not(.t-layout):has(> .t-blocks > .t-w-wide) > .t-screen-title { max-width: var(--t-wide-width); }
+
+/* ── Text styles ─────────────────────────────────────────────────────── */
+.t-s-lead .t-text, .t-s-lead.t-text { font-size: 1.3125rem; line-height: 1.45; }
+
+/* numbered: each number written by hand on a paper disc, the papers taking turns. */
+.t-s-numbered .t-text ol { list-style: none; margin: 0; padding: 0; counter-reset: pp-n; display: grid; gap: 1rem; }
+.t-s-numbered .t-text ol > li {
+  counter-increment: pp-n;
+  display: grid;
+  grid-template-columns: 3rem minmax(0, 1fr);
+  gap: 1.125rem;
+  align-items: center;
+  margin: 0;
+  font-size: 1.1875rem;
+  line-height: 1.4;
+}
+.t-s-numbered .t-text ol > li::before {
+  content: counter(pp-n);
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  color: var(--t-color-ink);
+  background: var(--t-color-paper-mustard);
+  box-shadow: var(--pp-shadow-1);
+  font-family: var(--t-font-display);
+  font-weight: 700;
+  font-size: 2rem;
+  line-height: 1;
+  rotate: -6deg;
+}
+.t-s-numbered .t-text ol > li:nth-child(3n + 2)::before { background: var(--t-color-paper-pink); rotate: 4deg; }
+.t-s-numbered .t-text ol > li:nth-child(3n)::before { background: var(--t-color-paper-sky); rotate: -2deg; }
+
+/* tags: short facts written by hand on paper tags. */
+.t-s-tags .t-text ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.875rem 1rem; }
+.t-s-tags .t-text ul > li {
+  margin: 0;
+  padding: 0.25rem 1rem 0.375rem;
+  border-radius: 2px;
+  color: var(--t-color-ink);
+  background: var(--t-color-paper-mustard);
+  box-shadow: var(--pp-shadow-1);
+  font-family: var(--t-font-display);
+  font-weight: 700;
+  font-size: 1.625rem;
+  line-height: 1.1;
+  rotate: -2deg;
+}
+.t-s-tags .t-text ul > li:nth-child(3n + 2) { background: var(--t-color-paper-pink); rotate: 1.5deg; }
+.t-s-tags .t-text ul > li:nth-child(3n) { background: var(--t-color-paper-sky); rotate: -1deg; }
+
+/* ── Paper surfaces ──────────────────────────────────────────────────── */
+/* Cards: each column a coloured sheet, taped down, laid a little askew. */
+.t-s-cards .t-columns { gap: 2rem; }
+.t-s-cards .t-column {
+  position: relative;
+  padding: 2.25rem 1.875rem 2rem;
+  border-radius: 3px;
+  color: var(--t-color-ink);
+  background: var(--t-color-paper-pink);
+  box-shadow: var(--pp-shadow-2);
+  rotate: -1deg;
+  animation: var(--pp-lay);
+}
+.t-s-cards .t-column:nth-child(2) { background: var(--t-color-paper-sky); rotate: 0.8deg; animation-delay: 0.08s; }
+.t-s-cards .t-column:nth-child(3) { background: var(--t-color-paper-mustard); rotate: -0.4deg; animation-delay: 0.16s; }
+.t-s-cards .t-column::before,
+.t-s-compare .t-column::before {
+  content: "";
+  position: absolute;
+  top: -0.75rem;
+  left: 50%;
+  width: 5.5rem;
+  height: 1.5rem;
+  translate: -50% 0;
+  rotate: 2deg;
+  background: var(--pp-tape);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--pp-shade) 12%, transparent);
+}
+.t-s-cards .t-column :is(h2, h3) { margin: 0 0 0.625rem; color: var(--t-color-ink); font-size: 1.5rem; }
+.t-s-cards .t-column .t-text { color: var(--t-color-ink); }
+.t-s-cards .t-column .t-text p { margin: 0; }
+
+/* Compare: a plain sheet, then a bright one. */
+.t-s-compare .t-columns { gap: 2.5rem; }
+.t-s-compare .t-column {
+  position: relative;
+  padding: 2.25rem 2.25rem 2rem;
+  border-radius: 3px;
+  color: var(--t-color-ink);
+  background: var(--t-color-calm);
+  box-shadow: var(--pp-shadow-1);
+  rotate: -0.6deg;
+}
+.t-s-compare .t-column:nth-child(2) { background: var(--t-color-paper-leaf); box-shadow: var(--pp-shadow-2); rotate: 0.7deg; animation: var(--pp-lay); }
+.t-s-compare .t-column :is(h2, h3) { margin: 0 0 0.875rem; color: var(--t-color-ink); font-size: 1.625rem; }
+.t-s-compare .t-text { color: var(--t-color-ink); }
+.t-s-compare .t-text ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 0.75rem; }
+.t-s-compare .t-text li { display: grid; grid-template-columns: 0.875rem minmax(0, 1fr); gap: 0.875rem; align-items: baseline; margin: 0; }
+.t-s-compare .t-text li::before { content: ""; width: 0.75rem; height: 0.75rem; border-radius: 50%; border: 2px solid currentColor; translate: 0 0.0625rem; }
+.t-s-compare .t-column:nth-child(2) .t-text li::before { border: 0; background: currentColor; }
+
+.t-columns--2 > .t-column:nth-child(3)[data-empty] { display: none; }
+
+/* Callouts: a sticky note, never a coloured rule down the side. */
+.t-callout {
+  position: relative;
+  border: 0;
+  border-radius: 2px;
+  padding: 1.25rem 1.5rem 1.375rem;
+  color: var(--t-color-ink);
+  background: var(--t-color-paper-mustard);
+  box-shadow: var(--pp-shadow-1);
+  rotate: 0.8deg;
+}
+.t-callout--important, .t-callout--warning, .t-callout--tip, .t-callout--info { border: 0; background: var(--t-color-paper-mustard); }
+.t-callout-title { font-family: var(--t-font-display); font-weight: 700; font-size: 1.75rem; line-height: 1; margin-bottom: 0.375rem; }
+.t-callout .t-text { color: var(--t-color-ink); }
+.t-aside, .t-panels-prompt { border: 0; padding-inline-start: 0; }
+
+/* ── Statement and quotation ─────────────────────────────────────────── */
+.t-statement .t-statement-text {
+  font-family: var(--t-font-heading);
+  font-weight: 850;
+  font-size: clamp(2.25rem, 3.8vw, 3.5rem);
+  line-height: 1.08;
+  letter-spacing: -0.024em;
+  text-wrap: balance;
+}
+/* banner: the sentence on a strip of coloured paper, taped at both ends. */
+.t-s-banner .t-statement {
+  position: relative;
+  padding: 3rem 3.5rem 3.25rem;
+  border-radius: 3px;
+  color: var(--t-color-ink);
+  background: var(--t-color-paper-mustard);
+  box-shadow: var(--pp-shadow-2);
+  rotate: -1deg;
+  animation: var(--pp-lay);
+}
+.t-s-banner .t-statement .t-statement-text { color: var(--t-color-ink); }
+.t-s-banner .t-statement::before,
+.t-s-banner .t-statement::after {
+  content: "";
+  position: absolute;
+  top: -0.75rem;
+  width: 6rem;
+  height: 1.625rem;
+  background: var(--pp-tape);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--pp-shade) 12%, transparent);
+}
+.t-s-banner .t-statement::before { left: 2rem; rotate: -8deg; }
+.t-s-banner .t-statement::after { right: 2rem; rotate: 6deg; }
+
+.t-statement-mark { width: 3.5rem; fill: var(--t-color-paper-mustard); filter: drop-shadow(0.125rem 0.1875rem 0.1875rem color-mix(in srgb, var(--pp-shade) 55%, transparent)); rotate: -4deg; }
+.t-statement--quote .t-statement-text { font-size: clamp(1.875rem, 3vw, 2.625rem); line-height: 1.18; font-weight: 750; }
+.t-statement-author { font-weight: 800; }
+.t-statement-role { color: var(--t-muted); }
+
+/* ── Activities: the question on a sheet, the options on slips of paper ─ */
+.t-block--quiz .t-quiz {
+  position: relative;
+  padding: 2rem 2.25rem 1.75rem;
+  border-radius: 3px;
+  color: var(--t-color-ink);
+  background: var(--t-color-paper);
+  box-shadow: var(--pp-shadow-2);
+  animation: var(--pp-lay);
+}
+.t-quiz .t-option {
+  border-radius: 3px;
+  border: 2px solid color-mix(in srgb, var(--t-color-ink) 18%, transparent);
+  background: var(--t-color-paper);
+  box-shadow: var(--pp-shadow-1);
+}
+.t-quiz .t-option.is-selected { border-color: var(--t-color-ink); background: color-mix(in srgb, var(--t-color-paper-mustard) 40%, var(--t-color-paper)); }
+.t-btn { font-weight: 750; }
+
+/* ── Charts: on paper, the figures written by hand ───────────────────── */
+.t-chart-title { font-weight: 800; font-size: 1.5rem; letter-spacing: -0.012em; }
+:is(.t-block--bars, .t-block--process) .t-chart {
+  --t-chart-ink: var(--t-color-ink);
+  --t-chart-paper: var(--t-color-paper);
+  --t-chart-muted: var(--t-color-muted, var(--t-muted));
+  padding: 2rem 2.5rem 1.75rem;
+  border-radius: 3px;
+  background: var(--t-color-paper);
+  box-shadow: var(--pp-shadow-2);
+  animation: var(--pp-lay);
+}
+.t-bars-bar { height: 1.875rem; border-radius: 2px; box-shadow: var(--pp-shadow-1); }
+.t-process-n { font-family: var(--t-font-display); font-weight: 700; font-size: 1.625rem; box-shadow: var(--pp-shadow-1); }
+
+.t-block--key-figures .t-chart { --t-chart-ink: var(--t-color-ink); --t-chart-paper: var(--t-color-paper); }
+.t-block--key-figures .t-chart-head, .t-block--key-figures .t-chart-source { color: var(--t-text); }
+.t-block--key-figures .t-chart-title { color: var(--t-text); }
+.t-figures-grid { gap: 2rem; }
+.t-figures-card {
+  overflow: visible;
+  padding: 1.75rem 1.75rem 1.5rem;
+  border-radius: 3px;
+  color: var(--t-color-ink);
+  background: var(--t-color-paper);
+  box-shadow: var(--pp-shadow-2);
+  rotate: -0.8deg;
+  animation: var(--pp-lay);
+}
+.t-figures-card:nth-child(2) { rotate: 0.6deg; animation-delay: 0.08s; }
+.t-figures-card:nth-child(3) { rotate: -0.3deg; animation-delay: 0.16s; }
+.t-figures-figure { font-family: var(--t-font-display); font-weight: 700; font-size: 4.75rem; letter-spacing: -0.01em; line-height: 0.95; }
+.t-figures-label { font-size: 1.0625rem; color: var(--t-color-ink); }

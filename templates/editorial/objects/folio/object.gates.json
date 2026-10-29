@@ -1,0 +1,79 @@
+{
+  "object": "folio",
+  "version": "1.0.0",
+  "elabora": "0.1.0",
+  "at": "2026-10-29T02:02:05.831Z",
+  "ok": true,
+  "browser": {
+    "engine": "electron",
+    "version": "152.0.7977.167"
+  },
+  "gates": {
+    "smoke": "passed",
+    "behaviour": "passed",
+    "budget": "passed",
+    "visual": "passed",
+    "accessibility": "passed"
+  },
+  "perf": {
+    "drawCalls": null,
+    "triangles": null,
+    "textures": null,
+    "geometries": null,
+    "maxTextureSize": null,
+    "webglContexts": 0,
+    "contextLost": false,
+    "bootMs": 47,
+    "bootSamples": [
+      49,
+      65,
+      48,
+      44,
+      47,
+      52,
+      46,
+      45,
+      47,
+      51
+    ]
+  },
+  "tests": [
+    {
+      "name": "The cover: every part plate side by side",
+      "ok": true
+    },
+    {
+      "name": "The next page: the plates fold into the thumb index and the folio turns",
+      "ok": true
+    },
+    {
+      "name": "A part opener: the part tab unfolds into its plate, then folds back",
+      "ok": true
+    },
+    {
+      "name": "Going back: the folio turns down",
+      "ok": true
+    },
+    {
+      "name": "The black spread: light rules on ink",
+      "ok": true
+    },
+    {
+      "name": "The last screen: every plate again",
+      "ok": true
+    },
+    {
+      "name": "Reduced motion: the new page at once",
+      "ok": true
+    },
+    {
+      "name": "Phone: tabs and a slim plate along the edge",
+      "ok": true
+    },
+    {
+      "name": "Settings apply without remounting",
+      "ok": true
+    }
+  ],
+  "fingerprint": "sha256:bb068a89c0da0b4c9e40d7ac81b431272e8532c5d6eb03cc0cc5b911b667aa1b"
+}
