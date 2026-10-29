@@ -16,7 +16,7 @@ The folder holds `index.html`, `elabora/` (player, compiled course, theme), `ass
 
 | Setting | Values | Default |
 |---|---|---|
-| `--progress` | `local`: the lesson location, status, score and suspend data in the browser's `localStorage` (`elabora:web:<course id>`), resumed at the next visit, across updates (the permanent keys of D4); `none`: nothing kept anywhere, a reload starts again | `local` |
+| `--progress` | `local`: the lesson location, status, score and suspend data in the browser's `localStorage` (`elabora:web:<course id>`), resumed at the next visit, across updates (the permanent keys of D4), and forgotten a year after the last visit; `none`: nothing kept anywhere, a reload starts again | `local` |
 | `--navigation` | `authored`: the course's navigation rules and locks; `free`: every screen open from the outline and Next, nothing to complete, hear or visit first, narrations seekable | `authored` |
 | `--noindex` | `<meta name="robots" content="noindex">` | indexable |
 | `--url <address>` | the absolute address of the module (`https://…/`): canonical link, `og:url`, the sharing image's address | none |
@@ -39,11 +39,12 @@ Then serve the folder over HTTPS, open the address, reload, and check the sharin
 
 ## Runtime
 - The player never looks for an LMS in a module for the web, and shows neither the preview's banner nor Quit. An event's `exit` action still ends the visit, with a message of the web's own: the progress is kept in this browser (`local`, label `webEndedKept`), or nothing is kept (`none`, `webEndedNotKept`).
-- Commits are those of a SCORM package (after each change, on `visibilitychange: hidden`, on `pagehide`, every `heartbeatSeconds`); with `local` each writes the kept elements to `localStorage`. A refused or full storage keeps the visit's progress in memory, never an error.
+- Commits are those of a SCORM package (after each change, on `visibilitychange: hidden`, on `pagehide`, every `heartbeatSeconds`); with `local` each writes the kept elements to `localStorage`, dated (`savedAt`). A progress saved more than a year ago is removed when the module opens, and the visit starts afresh. A refused or full storage keeps the visit's progress in memory, never an error.
 - `none` writes nothing: no `localStorage`, no `sessionStorage` (the narration's preferences included), no cookie.
 - With `local` the learner is told where the progress is, and may clear it: the outline ends with « Votre progression reste dans ce navigateur. » and « Effacer ma progression » (also on the page an `exit` leaves), which asks once, then removes `elabora:web:<course id>` and starts the module again (labels `progressKept`, `clearProgress`, `clearProgressConfirm`, `clearProgressYes`, `cancel`; D41).
 
 ## What the host must give
 - **One origin per publisher at least.** `localStorage` is per origin: two courses with the same id on one origin share their progress, and a course's pages can read another's storage.
+- **An origin that changes hands must start empty.** Whoever serves the module next at the same address runs their scripts on the same origin and could read what learners' browsers kept. Elabora's hosting clears the origin's storage in the browser (`Clear-Site-Data`) for a new owner of a handle, and a year after a learner's last visit (elabora-cloud C33).
 - HTTPS, the folder served as it is (relative paths), `index.html` for the folder's address.
 - For a whole publication out of search engines, `X-Robots-Tag: noindex` on every file: the free objects' frames are pages of their own, without the meta tag.

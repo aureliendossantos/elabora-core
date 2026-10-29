@@ -405,13 +405,16 @@ account login --email <address> [--device <name>] [--language fr|en] [--handle <
                                                     Signs in to Elabora's hosting: a code is sent to the address and
                                                     read from the input (never an argument); the session is kept
                                                     readable by you only in Elabora's local data. At the first sign-in,
-                                                    --handle (or the input) chooses the account's address, once.
+                                                    --handle (or the input) chooses the account's address.
                                                     The device is named « Elabora CLI · macOS » (or Windows, Linux),
                                                     never after your computer; --device names it as you like
 account login --invitation <file>|- --space <space> [--json]
                                                     Keeps a tester's invitation key instead (from a file, or the input
                                                     with -), after checking it opens its space
-account handle <name> [--json]                      Chooses the account's address once: https://<name>.elabora.page/
+account handle <name> [--change] [--json]           Chooses the account's address: https://<name>.elabora.page/.
+                                                    --change renames it (once in 30 days, no redirect: the old
+                                                    address stops at once, links to it break, learners start
+                                                    their progress again; the old name is held a year)
 account status [--json]                             Who is signed in (the token masked, where it is kept), the space,
                                                     the account's limits and usage
 account logout [--json]                             Ends the session on the server and forgets it here (an invitation

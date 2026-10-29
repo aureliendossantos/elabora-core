@@ -41,6 +41,10 @@ export interface CloudAccount {
   language: string;
   state: string;
   space: { name: string; url: string } | null;
+  // Protocol 7: a handle changes once in 30 days. The last change (choosing the first is not one), and
+  // when the next is allowed (null: now).
+  handleChangedAt?: string | null;
+  nextHandleChangeAt?: string | null;
   createdAt?: string;
   updatedAt?: string;
   lastLoginAt?: string;

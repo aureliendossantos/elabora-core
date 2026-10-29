@@ -80,6 +80,8 @@ test('web adapter, progress local: the location, status, score and suspend data 
   assert.equal(storage.writes, 0, 'nothing is written before a commit');
   assert.equal(first.commit(), true);
   const saved = JSON.parse(storage.items.get(webStorageKey('reseau')) ?? '{}');
+  assert.equal(typeof saved.savedAt, 'number', 'dated at each save');
+  delete saved.savedAt;
   assert.deepEqual(saved, { 'cmi.core.lesson_location': 's7', 'cmi.core.lesson_status': 'incomplete', 'cmi.core.score.raw': '80', 'cmi.suspend_data': '{"v":3,"s":"s1.s7"}' });
   first.finish();
   assert.equal(first.phase, 'finished');
@@ -96,6 +98,32 @@ test('web adapter, progress local: the location, status, score and suspend data 
   assert.equal(other.get('cmi.core.entry'), 'ab-initio');
   next.reset?.();
   assert.equal(storage.items.has(webStorageKey('reseau')), false);
+});
+
+test('web adapter, progress local: forgotten a year after the last save, renewed by each visit (D41, 29 Oct 2026)', () => {
+  const storage = memoryStorage();
+  const DAY = 86_400_000;
+  let clock = Date.UTC(2026, 0, 1);
+  const visit = () => createWebAdapter('reseau', { progress: 'local', storage, now: () => clock });
+  const first = visit();
+  first.initialize();
+  first.set('cmi.core.lesson_location', 's4');
+  first.commit();
+  clock += 300 * DAY;
+  const again = visit();
+  again.initialize();
+  assert.equal(again.get('cmi.core.lesson_location'), 's4', 'within the year');
+  again.finish(); // a visit saves, and dates the progress again
+  clock += 300 * DAY;
+  const later = visit();
+  later.initialize();
+  assert.equal(later.get('cmi.core.lesson_location'), 's4', 'a year after the last visit, not the first');
+  clock += 366 * DAY;
+  const gone = visit();
+  gone.initialize();
+  assert.equal(gone.get('cmi.core.entry'), 'ab-initio');
+  assert.equal(gone.get('cmi.core.lesson_location'), '');
+  assert.equal(storage.items.has(webStorageKey('reseau')), false, 'removed from the browser too');
 });
 
 test('web adapter, progress local: unreadable, foreign or refused storage gives a fresh start and never throws', () => {

@@ -25,7 +25,7 @@ function canonical(value: unknown): string {
 interface Principal { kind: 'session' | 'invitation' | 'ai'; space: string | null; account?: Account; label: string; session?: string; id?: string }
 interface FakeSession { id: string; device: string; createdAt: string; lastUsedAt: string; expiresAt: string; account: Account; token: string }
 interface AiKey { id: string; name: string; createdAt: string; lastUsedAt: string | null; key: string; account: Account }
-interface Account { id: string; email: string; handle: string | null; displayName: string | null; language: string }
+interface Account { id: string; email: string; handle: string | null; displayName: string | null; language: string; handleChangedAt?: string | null }
 interface Publication { name: string; visibility: 'public' | 'private'; version: string; manifest: { files: Record<string, { sha256: string; size: number }>; noindex: boolean; meta: Record<string, unknown> }; committedAt: string; versions: string[] }
 interface Upload { id: string; space: string; name: string; visibility: 'public' | 'private'; version: string; manifest: Publication['manifest']; previous: string | null }
 interface Review { id: string; space: string; publication: string; title: string; state: 'open' | 'read-only' | 'closed'; versions: { number: number; version: string; addedAt: string; withdrawn?: boolean; course: unknown }[]; rev: number; link: string; createdAt: string; note: string | null; invitedBy: string | null }
@@ -181,8 +181,16 @@ export class FakeCloud {
       if (method === 'PATCH' && parts.length === 2) {
         const body = json();
         if (typeof body.handle === 'string') {
-          if (account.handle) return fail(409, 'handle-fixed', 'The handle never changes.');
           if (body.handle === 'essai') return fail(409, 'handle-unavailable', 'This address is reserved.', { reason: 'reserved' });
+          // Protocol 7: a change once in 30 days; the space's publications, blobs and reviews follow its name here.
+          const old = account.handle;
+          if (old && old !== body.handle) {
+            const next = this.#nextChange(account);
+            if (next) return fail(409, 'handle-change-too-soon', 'A handle changes once in 30 days.', { nextHandleChangeAt: next });
+            for (const map of [this.blobs, this.publications] as Map<string, unknown>[]) if (map.has(old)) { map.set(body.handle, map.get(old)); map.delete(old); }
+            for (const review of this.reviews.values()) if (review.space === old) review.space = body.handle;
+            account.handleChangedAt = new Date().toISOString();
+          }
           account.handle = body.handle;
           for (const p of this.tokens.values()) if (p.account === account) p.space = body.handle;
         }
@@ -427,12 +435,19 @@ export class FakeCloud {
     return fail(404, 'no-route', `No such route: ${method} ${url.pathname}`);
   }
 
+  #nextChange(account: Account): string | null {
+    if (!account.handleChangedAt) return null;
+    const next = new Date(Date.parse(account.handleChangedAt) + 30 * 86_400_000);
+    return next.getTime() > Date.now() ? next.toISOString() : null;
+  }
+
   #stored(space: string | null): number {
     return space ? [...(this.blobs.get(space)?.values() ?? [])].reduce((sum, bytes) => sum + bytes.byteLength, 0) : 0;
   }
 
   #account(account: Account) {
-    return { ...account, state: 'active', space: account.handle ? { name: account.handle, url: `https://${account.handle}.elabora.page/` } : null };
+    return { ...account, state: 'active', space: account.handle ? { name: account.handle, url: `https://${account.handle}.elabora.page/` } : null,
+      handleChangedAt: account.handleChangedAt ?? null, nextHandleChangeAt: this.#nextChange(account) };
   }
 
   #publication(space: string, p: Publication) {

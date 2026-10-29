@@ -24,13 +24,16 @@ const ACCOUNT_HELP = `  account login --email <address> [--device <name>] [--lan
                                                       Signs in to Elabora's hosting: a code is sent to the address and
                                                       read from the input (never an argument); the session is kept
                                                       readable by you only in Elabora's local data. At the first sign-in,
-                                                      --handle (or the input) chooses the account's address, once.
+                                                      --handle (or the input) chooses the account's address.
                                                       The device is named « Elabora CLI · macOS » (or Windows, Linux),
                                                       never after your computer; --device names it as you like
   account login --invitation <file>|- --space <space> [--json]
                                                       Keeps a tester's invitation key instead (from a file, or the input
                                                       with -), after checking it opens its space
-  account handle <name> [--json]                      Chooses the account's address once: https://<name>.elabora.page/
+  account handle <name> [--change] [--json]           Chooses the account's address: https://<name>.elabora.page/.
+                                                      --change renames it (once in 30 days, no redirect: the old
+                                                      address stops at once, links to it break, learners start
+                                                      their progress again; the old name is held a year)
   account status [--json]                             Who is signed in (the token masked, where it is kept), the space,
                                                       the account's limits and usage
   account logout [--json]                             Ends the session on the server and forgets it here (an invitation
@@ -190,7 +193,7 @@ const login = defineCommand({
           const signedIn = await verifySignIn(email, code, { ...(flags.device ? { device: flags.device } : {}), language: flags.language, api });
           let account = signedIn.account;
           if (signedIn.next === 'choose-handle') {
-            const handle = flags.handle ?? await input.ask('Choose your space\'s address, https://<name>.elabora.page/ (it never changes; empty: later with elabora account handle): ');
+            const handle = flags.handle ?? await input.ask('Choose your space\'s address, https://<name>.elabora.page/ (it changes at most once in 30 days, and a change breaks its links; empty: later with elabora account handle): ');
             if (handle) account = await chooseHandle(handle, { api });
           }
           if (flags.json) printJson({ ok: true, kind: 'session', account, file: signedIn.file, next: account.handle ? null : 'choose-handle' });
@@ -214,13 +217,21 @@ const login = defineCommand({
 
 const handle = defineCommand({
   name: 'account handle',
-  flags: { json: 'boolean' },
+  flags: { change: 'boolean', json: 'boolean' },
   run: ({ positionals, flags }) => cloudFailures(flags.json, async () => {
     const [name, ...extra] = positionals;
-    if (!name || extra.length) { console.error('Usage: elabora account handle <name> [--json]'); return 2; }
+    if (!name || extra.length) { console.error('Usage: elabora account handle <name> [--change] [--json]'); return 2; }
+    // A change is the author's to decide (it breaks every link to the old address): it is asked for by name.
+    const current = (await accountStatus()).account;
+    if (current?.handle && current.handle !== name && !flags.change) {
+      const message = `Your space is ${current.space?.url}. Renaming it to https://${name}.elabora.page/ stops the old address at once, with no redirect: links to it break, and learners start their progress again. The old name is held a year. Run again with --change to do it.`;
+      if (flags.json) printJson({ ok: false, code: 'E_CLOUD_HANDLE_CHANGE_UNCONFIRMED', message, nextHandleChangeAt: current.nextHandleChangeAt ?? null });
+      else console.error(message);
+      return 1;
+    }
     const account = await chooseHandle(name);
     if (flags.json) printJson({ ok: true, account });
-    else console.log(`✔ Your space is ${account.space?.url ?? name}. It never changes.`);
+    else console.log(`✔ Your space is ${account.space?.url ?? name}.${account.nextHandleChangeAt ? ` It may change again from ${account.nextHandleChangeAt.slice(0, 10)}.` : ''}`);
     return 0;
   })
 });
@@ -242,6 +253,7 @@ const status = defineCommand({
     const where = view.credential.source === 'environment' ? `ELABORA_CLOUD_KEY_FILE (${view.credential.file})` : view.credential.file;
     if (view.account) {
       console.log(`Signed in as ${view.account.email}${view.account.displayName ? ` (${view.account.displayName})` : ''}, ${view.account.space ? `space ${view.account.space.url}` : 'no address yet (elabora account handle <name>)'}`);
+      if (view.account.nextHandleChangeAt) console.log(`  The address may change again from ${view.account.nextHandleChangeAt.slice(0, 10)}.`);
       console.log(`  Session ${view.credential.masked}${view.credential.device ? ` « ${view.credential.device} »` : ''}, kept in ${where}`);
       if (view.limits && view.usage) {
         console.log(`  Storage ${kilobytes(view.usage.storageBytes)} of ${kilobytes(view.limits.storageBytes)} · public publications ${view.usage.publicPublications} of ${view.limits.publicPublications} · open reviews ${view.usage.openReviews} of ${view.limits.openReviews}${view.limits.indexing ? ' · may be indexed' : ' · noindex only'}`);
