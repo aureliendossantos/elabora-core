@@ -1,8 +1,8 @@
 import type { Course, CourseGlossary, PlayerBar, PlayerItem } from '@elabora/format';
 import type { PlayerItemId } from '@elabora/player/course-data';
 import { isRecord } from '../util/values.ts';
-import { DEFAULT_PLACES, DEFAULT_PLAYER, PLAYER_ITEMS, PLAYER_TOKENS, BARS, SPEEDS } from '../player/config.ts';
-import type { BarName } from '../player/config.ts';
+import { DEFAULT_PLACES, DEFAULT_PLAYER, PLAYER_ITEMS, PLAYER_TOKENS, BARS, SPEEDS, OUTLINE_LABELS } from '../player/config.ts';
+import type { BarName, OutlineLabel } from '../player/config.ts';
 import { CommandError, Draft, type CommandContext, type CommandOutput } from './context.ts';
 import { linkGlossaryTerms, unlinkGlossaryTerms } from './glossary-links.ts';
 import type { LinkedTranslation, PlacedLink, RemovedLink } from './glossary-links.ts';
@@ -22,7 +22,7 @@ export interface UpdatePlayerArgs {
   // Options by item; null puts an option back to its default.
   options?: {
     logo?: { asset?: string | null; alt?: string | null; plate?: boolean | null };
-    outline?: { screenTitle?: boolean | null };
+    outline?: { label?: OutlineLabel | null };
     glossary?: { linkTerms?: boolean | null };
     controls?: { seekBar?: boolean | null; captionsByDefault?: boolean | null; volume?: boolean | null; transcript?: boolean | null; speeds?: 'none' | '0.75-1.5' | '0.75-2' | null };
   };
@@ -121,6 +121,7 @@ export function updatePlayer(context: CommandContext, args: UpdatePlayerArgs): C
     const next: Record<string, unknown> = { ...(isRecord(item.options) ? item.options : {}) };
     for (const [key, value] of Object.entries(options)) {
       if (id === 'controls' && key === 'speeds' && value !== null && !(String(value) in SPEEDS)) throw new CommandError(`controls speeds: none, 0.75-1.5 or 0.75-2, not "${String(value)}".`);
+      if (id === 'outline' && key === 'label' && value !== null && !(OUTLINE_LABELS as readonly unknown[]).includes(value)) throw new CommandError(`outline label: outline, section or screen, not "${String(value)}".`);
       if (value === null || value === undefined || value === '') delete next[key]; else next[key] = value;
       changed.push(`${id}.${key}`);
     }

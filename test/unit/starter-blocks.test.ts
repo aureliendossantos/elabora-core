@@ -106,6 +106,12 @@ test('opening: a built-in screen layout in the registry and the format, refused 
   assert.deepEqual(fork.lineage, ['chapter-opening', 'opening']);
   assert.deepEqual(fork.slots.map((slot) => slot.id), ['question', 'body']);
   assert.deepEqual(codes(findings(dir)).filter((code) => /^E_/.test(code)), []);
+  // Its own markup may show the reading time, never where the screen is (D63 amended).
+  writeFixture(dir, 'components/chapter-opening/template.html', '<header><p data-t-duration></p><div data-title></div></header><div data-slot="question"></div><div data-slot="body"></div>');
+  assert.deepEqual(codes(findings(dir)).filter((code) => /^E_/.test(code)), []);
+  writeFixture(dir, 'components/chapter-opening/template.html', '<header><p data-t-lesson></p><div data-title></div></header><div data-slot="question"></div><div data-slot="body"></div>');
+  found = codes(findings(dir));
+  assert.ok(found.includes('E_COMPONENT_HOOK'), found.join());
 });
 
 test('opening: the build gives the player the page\'s reading time, and nothing about where the screen is', () => {

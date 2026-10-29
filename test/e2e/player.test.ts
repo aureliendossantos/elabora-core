@@ -202,7 +202,7 @@ test('nothing moves between screens: the bottom bar on a phone, the outline\'s b
     assert.deepEqual(await measure(), narrated, 'the same bar on a screen without narration');
   }, { width: 390, height: 844 });
   const course = readJSON(dir, 'course.json');
-  course.player.bottom.items = course.player.bottom.items.map((item: { id: string }) => (item.id === 'outline' ? { id: 'outline', options: { screenTitle: true } } : item));
+  course.player.bottom.items = course.player.bottom.items.map((item: { id: string }) => (item.id === 'outline' ? { id: 'outline', options: { label: 'screen' } } : item));
   writeJSON(dir, 'course.json', course);
   await player(dir, async (page) => {
     const measure = () => page.evaluate(() => ({

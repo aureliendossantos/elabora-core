@@ -276,7 +276,7 @@ export function addLateProbe(dir: string): void {
 // through PlayerWindow, which adds to whatever the program declares for window.
 export interface PlayerHandle {
   course: { id: string };
-  engine: { screens: { id: string; key: string; narration?: { lines: { id: string; start: number; end: number; words?: [string, number, number][] }[] } }[]; st: { visited: Set<string>; completed: Set<string> }; screenComplete(screen: unknown): boolean; getVar(id: string): unknown };
+  engine: { screens: { id: string; key: string; narration?: { lines: { id: string; start: number; end: number; words?: [string, number, number][] }[] } }[]; st: { visited: Set<string>; completed: Set<string> }; screenComplete(screen: unknown): boolean; getVar(id: string): unknown; visit(screen: unknown): void; markComplete(screen: unknown): boolean };
   readonly screen: string | undefined;
   step: { revealed: number; steps: number[] };
   go(id: string | number): void;

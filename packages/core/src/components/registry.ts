@@ -116,10 +116,10 @@ export const BEHAVIORS: Readonly<Record<Behavior, BehaviorHooks>> = {
 export const PRIMITIVE_HOOKS = ['click', 'toggle', 'part', 'open', 'tabs', 'tab', 'panel', 'selected', 'label', 'bleed', 'compare', 'compare-label',
   'sequence', 'item', 'prev', 'next', 'goto', 'position', 'card', 'face', 'flip', 'zoom', 'caption', 'exclusive', 'details', 'reveal',
   'follow'];
-// Hooks of screen layouts only (D63): what the player writes about the screen, from its labels.
-// section (the title of the screen's section), lesson (« Leçon 2 sur 6 »), duration (« 6 min », the
-// reading time the build computes for the screen).
-export const LAYOUT_HOOKS = ['section', 'lesson', 'duration'];
+// Hooks of screen layouts only (D63): what the player writes about the screen, from its labels:
+// duration (« 6 min », the reading time the build computes for the screen). Nothing about where the
+// screen is (D63 amended: no line above a title), so data-t-section or data-t-lesson is unknown.
+export const LAYOUT_HOOKS = ['duration'];
 export const BUTTON_HOOKS = ['click', 'toggle', 'tab', 'submit', 'choice', 'retry', 'start', 'sort-item', 'place', 'download', 'prev', 'next', 'goto', 'flip', 'zoom'];
 // Elements the primitives' hooks may sit on (the behaviours' are in BEHAVIORS tags).
 export const PRIMITIVE_TAGS: Readonly<Record<string, readonly string[]>> = { prev: ['button'], next: ['button'], goto: ['button'], flip: ['button'], zoom: ['button'], details: ['details'] };

@@ -1,6 +1,8 @@
 /* Folio page: a tall opening band, then a reading column. Spacing in rem (size classes). The rose
    turns a little as the page scrolls; the blocks of the page rise into place as they come into
-   view (scroll-driven animations, progressive: without them, or with reduced motion, all is there). */
+   view, as the player brings things in with the scroll (--t-scroll-in: they slow down to rest), from
+   a little lower (scroll-driven animations, progressive: without them, or with reduced motion, all is
+   there). */
 .mc-folio { position: relative; }
 .mc-folio-band {
   position: relative; isolation: isolate; overflow: clip;
@@ -36,14 +38,12 @@
     .mc-folio-rose { animation: mc-folio-turn linear both; animation-timeline: scroll(root); animation-range: 0 120vh; }
     .mc-folio-cue { animation: mc-folio-fade linear both; animation-timeline: scroll(root); animation-range: 0 30vh; }
     .mc-folio-copy { animation: mc-folio-lift linear both; animation-timeline: scroll(root); animation-range: 0 90vh; }
-    /* Preserve the delayed entrance and first fifth; finish the rise at 60%. */
-    .mc-folio-body > .t-block:not(.t-block--free-object):not(.t-block--workshop) { animation: mc-rise linear(0, .2 20%, .325 30%, .5 40%, .725 50%, 1 60%, 1) both; animation-timeline: view(); animation-range: entry 8svh entry 38svh; }
+    .mc-folio-body > .t-block:not(.t-block--free-object):not(.t-block--workshop) { --t-scroll-in-distance: 1.5rem; animation: var(--t-scroll-in); animation-timeline: view(); animation-range: entry 8svh entry 38svh; }
   }
 }
 @keyframes mc-folio-turn { from { rotate: 0deg; } to { rotate: 28deg; } }
 @keyframes mc-folio-fade { to { opacity: 0; } }
 @keyframes mc-folio-lift { to { translate: 0 -2.5rem; opacity: .8; } }
-@keyframes mc-rise { from { opacity: 0; translate: 0 2.4rem; } to { opacity: 1; translate: 0 0; } }
 
 @container (max-width: 760px) {
   .mc-folio-band { min-height: auto; padding: 4.5rem 1rem 3.25rem; }

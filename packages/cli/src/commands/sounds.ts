@@ -61,8 +61,9 @@ const search = defineCommand({
 
 function printLibrary(found: LibrarySound[], words: string) {
   if (!found.length) { console.log(`Nothing in the library for « ${words} »: try other words, --source openverse, or elabora sound generate.`); return; }
-  console.log(`« Sons courants », Elabora's library (CC0 or public domain: no credit owed):\n`);
-  for (const sound of found) console.log(`  ${sound.id.padEnd(26)}${length(sound.duration).padEnd(9)}${sound.kind === 'ambience' ? 'ambience (loops)' : sound.category}\n  ${''.padEnd(26)}${sound.title.fr} — ${sound.title.en}${sound.caption?.fr ? `\n  ${''.padEnd(26)}caption: « ${sound.caption.fr} »` : ''}`);
+  const credited = found.some((sound) => !/^(CC0|PDM)/.test(sound.license));
+  console.log(`« Sons courants », Elabora's library (${credited ? 'CC0 or public domain, unless a licence is said: a CC BY sound is credited in « IA et crédits » by itself' : 'CC0 or public domain: no credit owed'}):\n`);
+  for (const sound of found) console.log(`  ${sound.id.padEnd(26)}${length(sound.duration).padEnd(9)}${sound.kind === 'ambience' ? 'ambience (loops)' : sound.category}${/^(CC0|PDM)/.test(sound.license) ? '' : `, ${sound.license} ${sound.author}`}\n  ${''.padEnd(26)}${sound.title.fr} — ${sound.title.en}${sound.caption?.fr ? `\n  ${''.padEnd(26)}caption: « ${sound.caption.fr} »` : ''}`);
   console.log(`\n${found.length} sound${found.length === 1 ? '' : 's'}. elabora sound add [dir] <id> [--trim start:end] [--caption "…"]`);
 }
 

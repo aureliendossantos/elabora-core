@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.4/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.5/component.schema.json",
   "id": "figure-split",
   "title": "Figure and explanation",
   "description": "A figure with its legend on one side (it stays in view while the learner scrolls), the explanation and the activities on the other. Stacks on narrow screens, figure first.",

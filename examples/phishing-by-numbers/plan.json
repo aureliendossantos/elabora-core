@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.4/plan.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.5/plan.schema.json",
   "id": "PLAN-QUILLON-PHISHING-V1",
   "title": "Phishing by numbers",
   "businessGoal": "At Quillon Freight (fictional company), raise the share of employees who report a phishing drill to the security desk from 1 in 7 to 1 in 2 by the end of 2026, and keep password entries in drills under 2%.",

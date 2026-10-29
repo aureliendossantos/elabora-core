@@ -216,6 +216,16 @@ export function rhumbs(extent = SHEET) {
   return out;
 }
 
+// The rhumb lines' ink, one setting for every picture of the chart (the 3D table's skin, the whole
+// chart and the workshop's stages): faint, each kind in its colour (tokens color.rhumb-*), so that the
+// coasts and the names read first. A picture rules its lines at its own width (in chart units) and the
+// ink is spread over that width: a line twice as wide is half as opaque, and looks the same from the
+// reader's distance.
+export const RHUMB_INK = { wind: 0.01123, half: 0.00625, quarter: 0.00508 };
+export function rhumbOpacity(kind, width) {
+  return Math.min(1, RHUMB_INK[kind] / width);
+}
+
 // ── Hand-drawn coasts ─────────────────────────────────────────────────
 // Medieval coasts are drawn as chains of small curves (bays and capes larger than life, the
 // harbours a sailor needs). A coast is densified and its points nudged sideways by seeded noise,

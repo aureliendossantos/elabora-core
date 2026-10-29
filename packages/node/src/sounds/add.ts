@@ -16,6 +16,7 @@ import { runCommand, type EditOptions, type EditResult } from '../edit/executor.
 import { libraryFile, librarySounds } from './library.ts';
 import { openverseSound } from './openverse.ts';
 import { ELABORA_VERSION } from '../bundles.ts';
+import type { AddSoundArgs } from './types.ts';
 
 const run = promisify(execFile);
 
@@ -24,24 +25,8 @@ const run = promisify(execFile);
 // needs no cut is kept as it came (no second lossy encoding before the build); a cut, a fade or a
 // lossless original are written as FLAC, or as AAC at 256 kb/s for an ambience or a long sound.
 
-export interface AddSoundRequest {
-  // A library id (telephone-fixe), openverse:<uuid>, or a file.
-  from: string;
-  id?: string;
-  // The part kept (seconds) and a fade out at its end (seconds).
-  trim?: { start: number; end: number };
-  fade?: number;
-  loop?: boolean;
-  // For a file: what its source says.
-  title?: string;
-  author?: string;
-  license?: string;
-  url?: string;
-  caption?: Record<string, string>;
-  // Made by an AI service (sound generate).
-  generated?: Sound['generated'];
-  signal?: AbortSignal;
-}
+// A library id (telephone-fixe), openverse:<uuid>, or a file (types.ts, for the engine's protocol).
+export type AddSoundRequest = AddSoundArgs & { signal?: AbortSignal };
 
 // Kept as they come when nothing is cut: FLAC, and the lossy formats (never encoded twice).
 const KEPT = new Map([['flac', '.flac'], ['vorbis', '.ogg'], ['opus', '.opus'], ['aac', '.m4a'], ['mp3', '.mp3']]);
@@ -53,7 +38,7 @@ const LONG = 20;
 export async function addSound(dir: string, request: AddSoundRequest, options?: EditOptions): Promise<EditResult & AddSoundResult & { source: string; license: string; duration: number }> {
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-sound-'));
   try {
-    const { file, sidecar, id } = await source(request, work);
+    const { file, sidecar, id } = await source(request, work, courseLanguage(dir));
     const licence = classifyLicence(sidecar.license);
     if (!licence.ok) throw new CommandError(`${request.from} is under ${licence.name || 'a licence not given'}: a course may ship CC0, public-domain, CC BY or CC BY-SA sounds, the author's own (--license own) or generated ones.`);
     const tools = await findMediaTools();
@@ -68,9 +53,18 @@ export async function addSound(dir: string, request: AddSoundRequest, options?: 
     if (!keep) {
       const length = request.trim ? request.trim.end - request.trim.start : info.duration ?? 0;
       if (loops || length > LONG) extension = '.m4a';
-      output = path.join(work, `out${extension}`);
       const filters = [request.trim ? `atrim=start=${request.trim.start}:end=${request.trim.end},asetpts=PTS-STARTPTS` : null, request.fade ? `afade=t=out:st=${Math.max(0, length - request.fade)}:d=${request.fade}` : null].filter(Boolean);
-      await run(tools.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-i', file, '-vn', '-map_metadata', '-1', ...(filters.length ? ['-af', filters.join(',')] : []), ...(extension === '.flac' ? ['-c:a', 'flac'] : ['-c:a', 'aac', '-b:a', '256k', '-movflags', '+faststart']), '-fflags', '+bitexact', '-flags:a', '+bitexact', output]);
+      const encode = (to: string) => run(tools.ffmpeg, ['-nostdin', '-v', 'error', '-y', '-i', file, '-vn', '-map_metadata', '-1', ...(filters.length ? ['-af', filters.join(',')] : []), ...(to === '.flac' ? ['-c:a', 'flac'] : ['-c:a', 'aac', '-b:a', '256k', '-movflags', '+faststart']), '-fflags', '+bitexact', '-flags:a', '+bitexact', path.join(work, `out${to}`)]);
+      try {
+        await encode(extension);
+      } catch (error) {
+        // An ffmpeg built without the FLAC encoder (a reduced build: the app's before its profile
+        // elabora-2): the master is AAC at 256 kb/s, as an ambience's, rather than no sound at all.
+        if (extension !== '.flac' || !/Unknown encoder 'flac'|Encoder not found/i.test(String((error as { stderr?: unknown }).stderr ?? (error as Error).message))) throw error;
+        extension = '.m4a';
+        await encode(extension);
+      }
+      output = path.join(work, `out${extension}`);
       if (request.trim) modified.push('trimmed');
       if (request.fade) modified.push('faded');
       if (!request.trim && !request.fade) modified.push('converted');
@@ -80,8 +74,8 @@ export async function addSound(dir: string, request: AddSoundRequest, options?: 
     const bytes = fs.readFileSync(output);
     const hash = hashBytes(bytes);
     const result = runCommand(dir, {
-      name: 'add_sound', args: { id: request.id ?? id, from: request.from },
-      run: (context) => addSoundCommand(context, { id: request.id ?? id, extension, file: binaryFile(bytes.length, { hash }), sidecar: full }),
+      name: 'add_sound', args: { id: request.id ?? id, from: request.from, ...(request.line ? { line: request.line } : {}) },
+      run: (context) => addSoundCommand(context, { id: request.id ?? id, extension, file: binaryFile(bytes.length, { hash }), sidecar: full, ...(request.line ? { line: request.line } : {}) }),
       sources: new Map([[hash, output]])
     }, options);
     return { ...result, source: full.source ?? 'file', license: full.license, duration };
@@ -97,13 +91,14 @@ export function courseLanguage(dir: string): string {
 
 const today = () => new Date().toISOString().slice(0, 10);
 
-async function source(request: AddSoundRequest, work: string): Promise<{ file: string; sidecar: Sound; id: string }> {
+// language: the course's; a library sound is titled in it (credits and the app name it so).
+async function source(request: AddSoundRequest, work: string, language: string): Promise<{ file: string; sidecar: Sound; id: string }> {
   const given = (sidecar: Sound): Sound => ({ ...sidecar, ...(request.title ? { title: request.title } : {}), ...(request.caption ? { caption: { ...sidecar.caption, ...request.caption } } : {}) });
   const library = librarySounds().find((sound) => sound.id === request.from);
   if (library) {
     return {
       file: libraryFile(library), id: library.id,
-      sidecar: given({ title: library.title.en, source: 'library', sourceId: library.id, url: library.url, author: library.author, license: library.license, licenseUrl: library.licenseUrl, checked: library.checked, ...(library.kind === 'ambience' ? { loop: true } : {}), ...(library.caption ? { caption: library.caption } : {}) })
+      sidecar: given({ title: (language.split('-')[0] === 'fr' ? library.title.fr : null) || library.title.en, source: 'library', sourceId: library.id, url: library.url, author: library.author, license: library.license, licenseUrl: library.licenseUrl, ...(library.credit ? { credit: library.credit } : {}), checked: library.checked, ...(library.kind === 'ambience' ? { loop: true } : {}), ...(library.caption ? { caption: library.caption } : {}) })
     };
   }
   if (request.from.startsWith('openverse:')) {

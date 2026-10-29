@@ -5,13 +5,14 @@ import path from 'node:path';
 import { covers, needsApproval, quotaPercent, shareOf } from '@elabora/core/ai/quota';
 import { expectedShare } from '@elabora/core/ai/costs';
 import { COST_BOOK } from '@elabora/core/ai/cost-ledger.generated';
-import type { Quota } from '@elabora/core/ai/quota';
 import { baseUrl, cacheDir, failure } from '../voice/elevenlabs/api.ts';
 import { requireKey, scrub } from '../voice/elevenlabs/key.ts';
 import { noteSpent, readQuota } from '../voice/elevenlabs/costs.ts';
 import { VoiceError } from '../voice/provider.ts';
 import type { EditOptions } from '../edit/executor.ts';
 import { addSound } from './add.ts';
+import type { AddSoundRequest } from './add.ts';
+import type { GenerateSoundParams, SoundEstimate } from './types.ts';
 
 // « Créer avec ElevenLabs » (docs/decisions.md D67): a sound effect made from a description with the
 // author's own key, kept as the MP3 the service gives (no second lossy encoding before the build),
@@ -28,12 +29,7 @@ export const SOUND_MODEL = 'eleven_text_to_sound_v2';
 export const LIST_CREDITS_PER_SECOND = 10;
 export const AUTO_SECONDS = 30;
 
-export interface SoundEstimate {
-  credits: number;
-  quota: Quota | null;
-  percent: number | null;
-  needsApproval: boolean;
-}
+export type { SoundEstimate };
 
 // The credits a sound of so many seconds (or of the length the service chooses) is expected to cost on a plan.
 export const soundCredits = (duration: number | undefined, plan: string | null = null): number =>
@@ -45,18 +41,14 @@ export async function estimateSound({ duration, signal }: { duration?: number; s
   return { credits, quota, percent: quota && quota.limit > 0 ? quotaPercent(shareOf(credits, quota.limit)) : null, needsApproval: needsApproval(credits, quota) };
 }
 
-export interface GenerateSoundRequest {
-  prompt: string;
-  duration?: number; // 0.5 to 30 s; without it, ElevenLabs chooses
-  loop?: boolean;
-  influence?: number; // 0 to 1: how closely it follows the description (default 0.3)
-  id?: string;
-  caption?: Record<string, string>;
-  approvedPercent?: number;
-  signal?: AbortSignal;
+export type GenerateSoundRequest = GenerateSoundParams & { signal?: AbortSignal };
+
+export function generateSound(dir: string, request: GenerateSoundRequest, options?: EditOptions) {
+  return generateSoundWith(request, (added) => addSound(dir, added, options));
 }
 
-export async function generateSound(dir: string, request: GenerateSoundRequest, options?: EditOptions) {
+// The same, the sound made added by write (add_sound): an engine runs it through its session's queue.
+export async function generateSoundWith<Added extends object>(request: GenerateSoundRequest, write: (request: AddSoundRequest) => Promise<Added>): Promise<Added & { credits: number | null; estimatedCredits: number; percent: number | null; cached: boolean }> {
   const prompt = request.prompt.trim();
   if (!prompt) throw new VoiceError('E_VOICE_REQUEST', 'Describe the sound to make (« a desk phone rings twice, close »).');
   if (request.duration !== undefined && !(request.duration >= 0.5 && request.duration <= 30)) throw new VoiceError('E_VOICE_REQUEST', 'A sound effect lasts from 0.5 to 30 seconds.');
@@ -75,7 +67,7 @@ export async function generateSound(dir: string, request: GenerateSoundRequest, 
   try {
     const mp3 = path.join(work, 'generated.mp3');
     fs.copyFileSync(file, mp3);
-    const added = await addSound(dir, { from: mp3, id: request.id ?? slugOf(prompt), license: 'generated', title: prompt.slice(0, 200), ...(request.loop ? { loop: true } : {}), ...(request.caption ? { caption: request.caption } : {}), generated: { provider: 'elevenlabs', model: SOUND_MODEL, prompt: prompt.slice(0, 1000), createdAt: new Date().toISOString().slice(0, 10) } }, options);
+    const added = await write({ from: mp3, id: request.id ?? slugOf(prompt), license: 'generated', title: prompt.slice(0, 200), ...(request.loop ? { loop: true } : {}), ...(request.caption ? { caption: request.caption } : {}), generated: { provider: 'elevenlabs', model: SOUND_MODEL, prompt: prompt.slice(0, 1000), createdAt: new Date().toISOString().slice(0, 10) } });
     return { ...added, credits: cost, estimatedCredits: estimate.credits, percent: estimate.quota && cost !== null ? quotaPercent(shareOf(cost, estimate.quota.limit)) : estimate.percent, cached };
   } finally {
     fs.rmSync(work, { recursive: true, force: true });

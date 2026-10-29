@@ -8,7 +8,7 @@
 // opens or closes a panel (elabora/open, elabora/close), and hears which item the author clicked
 // (elabora/item). Protocol elabora-player-preview/1 (canvas-protocol.ts).
 
-import { createChrome, languageName } from './chrome.ts';
+import { createChrome, languageName, partsAt, percentText } from './chrome.ts';
 import type { Chrome, SheetName } from './chrome.ts';
 import { createResources, isImage, isPdf } from './resources.ts';
 import { createGlossary } from './glossary.ts';
@@ -60,7 +60,7 @@ export function createLiveChrome(options: LiveChromeOptions) {
   const setOrder = () => { order = outline?.sections.flatMap((section) => section.screens.map((entry) => entry.id)) ?? []; };
   setOrder();
   const indexOf = () => (screen === null ? -1 : order.indexOf(screen));
-  const go = (target: string | undefined, by: 'previous' | 'next' | 'outline') => { if (target) post({ type: 'elabora/navigate', screen: target, by }); };
+  const go = (target: string | undefined, by: 'previous' | 'next' | 'outline' | 'progress') => { if (target) post({ type: 'elabora/navigate', screen: target, by }); };
   const refuse = (button: HTMLElement | null, reason: string) => { options.announce(reason); if (button) tooltip.flash(button, reason); };
 
   const chrome: Chrome = createChrome(course, labels, {
@@ -78,6 +78,8 @@ export function createLiveChrome(options: LiveChromeOptions) {
       // Quit leaves nothing in the editor.
       quit: () => {},
       outline: () => toggleOutline(),
+      // A part goes to its first screen; nothing is locked in the editor.
+      part: (index) => { const first = outline?.sections[index]?.screens[0]?.id; if (first && first !== screen) go(first, 'progress'); },
       sheet: (name, button) => sheets[name]?.sheet.toggle(button),
       language: () => languagePopover?.toggle(),
       display: () => menuPopover?.toggle()
@@ -154,8 +156,12 @@ export function createLiveChrome(options: LiveChromeOptions) {
     const index = indexOf();
     const more = options.steps().more;
     chrome.setNav({ previous: index > 0, previousWhy: labels.firstScreen, next: more || (index >= 0 && index < order.length - 1), nextWhy: labels.lastScreen, nextLabel: more ? 'continue' : 'next' });
-    const title = outline?.sections.flatMap((section) => section.screens).find((entry) => entry.id === screen)?.title;
-    if (title) chrome.setScreen(title);
+    const section = outline?.sections.find((candidate) => candidate.screens.some((entry) => entry.id === screen));
+    const title = section?.screens.find((entry) => entry.id === screen)?.title;
+    if (title) chrome.setPlace(title, section?.title ?? null);
+    const { parts, percent } = partsAt(outline, screen);
+    chrome.setParts(parts);
+    chrome.setProgress(percent, percentText(percent, course.language));
     renderOutline();
   }
 
