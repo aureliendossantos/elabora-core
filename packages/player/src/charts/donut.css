@@ -19,23 +19,24 @@
 .t-donut-ring { position: relative; aspect-ratio: 1; }
 .t-donut-svg { display: block; width: 100%; height: 100%; overflow: visible; }
 
-/* A part: it moves a few pixels out along its bisector when pointed at (px are viewBox units here:
-   2.8 of 200, about 3–4 px on screen), on ease-out, without overshoot. */
-.t-donut-arc {
+/* A part never moves. Its colour changes over the pull's half second (charts.css), and at the
+   calm pace while the learner points. (.t-chart: stronger than charts.css's opacity alone.) */
+.t-chart .t-donut-arc {
   fill: var(--c);
-  transition: opacity var(--t-chart-calm) ease, translate var(--t-chart-calm) var(--t-ease-out), fill var(--t-chart-pull) ease;
+  transition: opacity var(--t-chart-calm) ease, fill var(--t-chart-pull) ease;
 }
-.t-chart.is-focused .t-donut-arc.is-pointed { translate: calc(var(--ux) * 2.8px) calc(var(--uy) * 2.8px); }
+.t-chart.is-focused .t-donut-arc { transition: opacity var(--t-chart-calm) ease, fill var(--t-chart-calm) ease; }
 
-/* The centre: the face at rest, and one face per part, stacked; the one shown cross-fades in. */
+/* The centre: the face at rest, and one face per part, stacked in one cell. The face shown and the one
+   before cross-fade on the same time and curve, so that one makes up for the other (never a blink),
+   and nothing moves. (Stronger than the 40 % of charts.css: a face is shown whole or not at all.) */
 .t-donut-center { position: absolute; inset: 27%; display: grid; place-items: center; pointer-events: none; }
 .t-donut-face { grid-area: 1 / 1; display: flex; flex-direction: column; align-items: center; margin: 0; text-align: center; }
-/* (Stronger than the 40 % of charts.css: a face is shown whole or not at all.) */
-.t-chart.t-chart--donut .t-donut-face { opacity: 0; transition: opacity 120ms ease; }
+.t-chart.t-chart--donut .t-donut-face { opacity: 0; transition: opacity var(--t-chart-calm) ease; }
 .t-chart.t-chart--donut .t-donut-face.is-rest { opacity: 1; }
 .t-chart.t-chart--donut:is(.is-focused, .is-spotlit) .t-donut-face.is-rest { opacity: 0; }
 .t-chart.t-chart--donut.is-focused .t-donut-face.is-pointed,
-.t-chart.t-chart--donut.is-spotlit:not(.is-focused) .t-donut-face.is-spoken { opacity: 1; transition: opacity 180ms ease 40ms; }
+.t-chart.t-chart--donut.is-spotlit:not(.is-focused) .t-donut-face.is-spoken { opacity: 1; }
 .t-donut-figure { font-family: var(--t-font-heading, var(--t-font-body)); font-size: 2.5rem; font-weight: 700; line-height: 1; letter-spacing: -0.02em; white-space: nowrap; font-variant-numeric: tabular-nums; transition: color var(--t-chart-pull) ease; }
 .t-donut-name { display: -webkit-box; max-width: 9rem; margin-top: 0.375rem; overflow: hidden; color: var(--t-chart-muted); font-size: 0.875rem; line-height: 1.25; text-wrap: balance; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
 
@@ -44,6 +45,7 @@
 .t-donut-row { display: grid; grid-template-columns: 0.75rem minmax(0, 1fr) auto; align-items: baseline; gap: 0.75rem; padding: 0.5rem 0; border-bottom: 1px solid var(--t-chart-rule); font-size: 1rem; line-height: 1.3; }
 .t-donut-row:last-child { border-bottom: 0; }
 .t-donut-swatch { align-self: start; margin-top: calc((1.3em - 0.75rem) / 2); width: 0.75rem; height: 0.75rem; border-radius: 3px; background: var(--c); transition: background-color var(--t-chart-pull) ease; }
+.t-chart.is-focused .t-donut-swatch { transition-duration: var(--t-chart-calm); }
 .t-donut-label { text-wrap: pretty; }
 .t-donut-value { font-weight: 650; white-space: nowrap; font-variant-numeric: tabular-nums; transition: color var(--t-chart-pull) ease; }
 
@@ -52,17 +54,21 @@
 .t-chart.is-pulled .t-donut-row.is-hl .t-donut-swatch { background: var(--t-chart-accent); }
 .t-chart.is-pulled .t-donut-row.is-hl .t-donut-label { font-weight: 650; }
 .t-chart.is-pulled :is(.t-donut-row, .t-donut-face).is-hl :is(.t-donut-value, .t-donut-figure) { color: var(--t-chart-accent); }
-/* The voice: the part it names takes the accent while the rest steps back. */
-.t-chart.is-spotlit:not(.is-focused) .t-donut-arc.is-spoken { fill: var(--t-chart-accent); }
-.t-chart.is-spotlit:not(.is-focused) .t-donut-row.is-spoken .t-donut-swatch { background: var(--t-chart-accent); }
-.t-chart.is-entering :is(.t-donut-arc, .t-donut-row, .t-donut-face, .t-donut-swatch) { transition: none; }
+/* The voice and the pointer: the part named or pointed at takes the accent while the rest steps back
+   (the highlight gives its accent up meanwhile: one part in colour at a time). */
+.t-chart.is-spotlit:not(.is-focused) .t-donut-arc.is-spoken,
+.t-chart.is-focused .t-donut-arc.is-pointed { fill: var(--t-chart-accent); }
+.t-chart.is-spotlit:not(.is-focused) .t-donut-row.is-spoken .t-donut-swatch,
+.t-chart.is-focused .t-donut-row.is-pointed .t-donut-swatch { background: var(--t-chart-accent); }
+.t-chart.is-focused .t-donut-arc.is-hl:not(.is-pointed) { fill: var(--t-donut-hl); }
+.t-chart.is-focused .t-donut-row.is-hl:not(.is-pointed) .t-donut-swatch { background: var(--t-donut-hl); }
+.t-chart.is-focused .t-donut-row.is-hl:not(.is-pointed) .t-donut-value { color: inherit; }
+/* The entrance is written frame by frame; the centre's faces still cross-fade as the voice moves on. */
+.t-chart.is-entering :is(.t-donut-arc, .t-donut-row, .t-donut-swatch) { transition: none; }
 
 @container (max-width: 560px) {
   .t-donut-layout { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 1.5rem; }
   .t-donut-ring { width: min(100%, 15rem); }
   .t-donut-legend { width: 100%; }
   .t-donut-figure { font-size: 2.125rem; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .t-chart.is-focused .t-donut-arc.is-pointed { translate: none; }
 }

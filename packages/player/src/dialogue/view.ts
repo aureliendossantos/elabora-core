@@ -206,7 +206,6 @@ export function createDialogues(context: DialoguesContext) {
       if (state.run.walk.status === 'choosing') { state.phase = 'choosing'; roomView.showOptions(); }
       else { state.phase = 'ended'; roomView.showEnd(); }
       moves.syncTools();
-      moves.syncRetry();
     }
 
     // « Suite » (or Entrée, or a click on a bubble while the dialogue waits): the line being said ends

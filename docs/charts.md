@@ -38,7 +38,7 @@ Items have ids: highlights, voice beats and translations name them, and an id st
 - **At rest without script.** The build draws each chart as HTML and SVG from the course's tokens and language (numbers with its separators). Packages, captures, fit checks, the Document export and the editor's canvas all show the finished chart. A table of the data is there for screen readers; LESSON.md and the project view get the takeaway and that table.
 - **Phones.** Under 560 px of width, a chart changes layout (labels above bars, a vertical timeline) instead of shrinking.
 - **The entrance** plays once, when the chart first comes into view: bars grow, the line draws itself with its value riding at its head, cards count up, nodes arrive by depth. About a second, then the highlight takes the colour.
-- **Pointing.** The nearest item answers the pointer, a tap or the arrow keys (each item is read aloud). It stands while the others fade to 40 %, over about 200 ms, without bounce; its value appears in a bubble that glides to the next item only while it is still shown.
+- **Pointing.** The nearest item answers the pointer, a tap or the arrow keys (each item is read aloud). It stands while the others fade to 40 %, over about 200 ms, without bounce; its value appears in a bubble that glides to the next item only while it is still shown. A donut's part never moves: the one pointed at takes the accent, as the part the voice names does, and the figure in the centre cross-fades to its value (the two values one over the other, never a blank).
 - **Less motion.** When the learner asks for less motion, charts are shown at rest at once.
 
 ## With a voice

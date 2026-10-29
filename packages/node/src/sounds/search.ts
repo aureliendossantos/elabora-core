@@ -44,7 +44,9 @@ const TYPES: Record<string, string> = { '.flac': 'audio/flac', '.m4a': 'audio/mp
 // for Freesound, the original for Commons), or the player's own interface sound (elabora:<role>).
 // Nothing is kept.
 const PREVIEW_MAX = 40 * 1024 * 1024;
-export async function soundPreview(from: string, { signal }: { signal?: AbortSignal } = {}): Promise<{ audio: Uint8Array; type: string }> {
+// onProgress: an Openverse sound's bytes received, and its size when the server says it (null else),
+// as they come: the editor shows a slow download for what it is.
+export async function soundPreview(from: string, { signal, onProgress }: { signal?: AbortSignal; onProgress?: (received: number, total: number | null) => void } = {}): Promise<{ audio: Uint8Array; type: string }> {
   const role = /^elabora:([a-z]+)$/.exec(from)?.[1];
   if (role) return { audio: new Uint8Array(playerSoundFile(`elabora/sounds/${role}.m4a`)), type: 'audio/mp4' };
   const library = librarySounds().find((sound) => sound.id === from);
@@ -57,7 +59,9 @@ export async function soundPreview(from: string, { signal }: { signal?: AbortSig
   const response = await fetch(found.file, { headers: { 'user-agent': `Elabora/${ELABORA_VERSION} (+https://elabora.studio)` }, signal: signal ?? AbortSignal.timeout(60000) });
   if (!response.ok) throw new Error(`The sound could not be downloaded from ${new URL(found.file).host} (${response.status}).`);
   const tooLarge = () => new Error(`The sound on ${new URL(found.file).host} is too large to hear here: open its page.`);
-  if (Number(response.headers.get('content-length') ?? 0) > PREVIEW_MAX) throw tooLarge();
+  const total = Number(response.headers.get('content-length') ?? 0) || null;
+  if (total !== null && total > PREVIEW_MAX) throw tooLarge();
+  onProgress?.(0, total);
   const type = response.headers.get('content-type')?.split(';')[0]?.trim() || TYPES[path.extname(new URL(found.file).pathname).toLowerCase()] || 'audio/mpeg';
   // Read up to the cap, whether or not the server said the length.
   const chunks: Uint8Array[] = [];
@@ -66,6 +70,7 @@ export async function soundPreview(from: string, { signal }: { signal?: AbortSig
     size += chunk.byteLength;
     if (size > PREVIEW_MAX) throw tooLarge(); // leaving the loop cancels the download
     chunks.push(chunk);
+    onProgress?.(size, total);
   }
   return { audio: Buffer.concat(chunks), type };
 }

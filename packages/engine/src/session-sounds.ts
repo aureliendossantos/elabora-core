@@ -7,6 +7,7 @@ import { OpenverseError } from '@elabora/node/sounds/openverse';
 import { estimateSound, generateSoundWith } from '@elabora/node/sounds/generate';
 import type { GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, SoundSearchParams } from '@elabora/node/sounds/types';
 import { EngineError } from './errors.ts';
+import type { EngineEvent } from './protocol.ts';
 import type { Session } from './session.ts';
 
 // The sounds of an editing session (docs/decisions.md D67): what the sound browser searches and hears
@@ -19,11 +20,13 @@ export class SessionSounds {
   readonly #project: () => Project;
   readonly #run: Session['run'];
   readonly #assertOpen: () => void;
+  readonly #emit: (event: EngineEvent) => void;
 
-  constructor(init: { project: () => Project; run: Session['run']; assertOpen: () => void }) {
+  constructor(init: { project: () => Project; run: Session['run']; assertOpen: () => void; emit: (event: EngineEvent) => void }) {
     this.#project = init.project;
     this.#run = init.run;
     this.#assertOpen = init.assertOpen;
+    this.#emit = init.emit;
   }
 
   async soundSearch(params: SoundSearchParams): Promise<{ sounds: SoundFound[] }> {
@@ -38,7 +41,16 @@ export class SessionSounds {
     this.#assertOpen();
     if (typeof from !== 'string' || !from) throw new EngineError('bad-request', 'soundPreview takes from: a library id or openverse:<id>');
     try {
-      return await soundPreview(from);
+      // What came of an Openverse sound (soundProgress events): its start, then every 100 ms at most.
+      let told = 0;
+      return await soundPreview(from, {
+        onProgress: (received, total) => {
+          const now = Date.now();
+          if (received > 0 && received !== total && now - told < 100) return;
+          told = now;
+          this.#emit({ type: 'soundProgress', from, received, total });
+        }
+      });
     } catch (error) {
       if (error instanceof OpenverseError) throw soundError(error);
       throw new EngineError('not-found', error instanceof Error ? error.message : String(error));

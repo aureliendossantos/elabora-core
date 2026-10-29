@@ -235,7 +235,7 @@ export class Session {
     const reportError = (error: unknown, context: string) => this.#emitError(error, context);
     this.#canvas = new SessionCanvas({ root: this.root, project, reportError });
     this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
-    this.#sounds = new SessionSounds({ project, run: this.run.bind(this), assertOpen: () => this.#assertOpen() });
+    this.#sounds = new SessionSounds({ project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#monitor = new SessionMonitor({ store: this.store, journalDir: this.#tail.dir, options: this.#options, closing: () => this.#closing !== null, refresh: () => this.#queue.run(() => this.#refresh()), reportError });
     for (const [rel, file] of init.state.files) if (file.kind === 'binary' && file.media) this.#mediaChecked.set(rel, file.hash ?? '');
     for (const { path: rel, message } of init.state.media?.unreadable ?? []) {

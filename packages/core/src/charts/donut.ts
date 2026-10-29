@@ -69,10 +69,8 @@ export const donut: ChartType = {
     const id = (suffix: string) => `${context.id}-donut-${suffix}`;
     const ring = arcs.map((d, index) => {
       const part = d.data;
-      const mid = (d.startAngle + d.endAngle) / 2;
-      // The direction a pointed part moves to (along its bisector), and its place on the ring as
-      // turns (the pointer picks by angle).
-      const style = `--c:${colours[index]};--ux:${n(Math.sin(mid))};--uy:${n(-Math.cos(mid))}`;
+      // Its colour; its place on the ring as turns (the pointer picks by angle).
+      const style = `--c:${colours[index]}`;
       const say = `${part.label}: ${value(part.value)}`;
       const path = shape(d) ?? '';
       return `<mask id="${esc(id(`m${index}`))}" maskUnits="userSpaceOnUse" x="-110" y="-110" width="220" height="220"><path class="t-donut-sweep" d="${middle(d.startAngle, d.endAngle)}" pathLength="1" fill="none" stroke="#fff" stroke-width="44"/></mask>`

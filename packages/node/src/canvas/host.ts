@@ -18,9 +18,10 @@ import { serveFile, mimeType } from './files.ts';
 //   elabora/events              render data, as server-sent events (push sends them)
 //   objects/<id>/frame.html   generated, object.js bundled from the object's folder (cached)
 //   any other path            a file of the project folder that a render listed (assets, stylesheet
-//                             files, fonts, object assets), or the audio of a narration line
-//                             (assets/narration/<language>/<screen>/<line>.m4a: the editor plays
-//                             it), streamed with range requests
+//                             files, fonts, object assets), the audio of a narration line
+//                             (assets/narration/<language>/<screen>/<line>.m4a) or a sound of the
+//                             course (assets/sounds/<id>.<ext>, D67), which the editor plays
+//                             whatever the screen shown, streamed with range requests
 // The page sits where the root of a package sits, so the paths of the course data resolve as in a
 // package. Nothing is copied: media come from the project folder.
 
@@ -61,6 +62,9 @@ export interface CanvasHost extends Omit<CanvasHandler, 'close'> {
 const PREFIX = '/canvas/';
 // A narration line's audio (docs/decisions.md D24), which no render lists: the editor plays it.
 const NARRATION_AUDIO = /^assets\/narration\/[^/]+\/[^/]+\/[^/]+\.m4a$/;
+// A sound of the course (D67): the editor's sound browser and inspector play it on any screen, and a
+// sound just added or made is in no render yet.
+const COURSE_SOUND = /^assets\/sounds\/[^/]+\.(?:flac|m4a|mp3|ogg|oga|opus|wav)$/;
 const LOCAL_HOST = /^(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/i;
 
 // The connector of the page served by this host: render data arrives as server-sent events.
@@ -160,7 +164,7 @@ export function createCanvasHandler({ root, debug = true, token = crypto.randomB
       return;
     }
     const rel = projectPath(name);
-    const kind = rel === null ? undefined : allowed.get(rel) ?? (NARRATION_AUDIO.test(rel) ? 'asset' : undefined);
+    const kind = rel === null ? undefined : allowed.get(rel) ?? (NARRATION_AUDIO.test(rel) || COURSE_SOUND.test(rel) ? 'asset' : undefined);
     if (rel === null || !kind) return text(404, 'not found');
     const object = /^objects\/([^/]+)\//.exec(rel)?.[1];
     if (object && kind === 'object-frame') {

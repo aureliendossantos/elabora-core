@@ -297,7 +297,8 @@ export function createChrome(course: CourseData, labels: Labels, { actions, tool
         actions?.part(index, button, { touch: by === 'touch' });
       }
     }, element('span', { class: 't-part-track' }, element('span', { class: 't-part-fill' })));
-    hint(button, () => (parts[index] ? `${parts[index].title} · ${partState(parts[index])}` : null));
+    // The tooltip names the part; where it stands is said to screen readers (its name, setParts).
+    hint(button, () => parts[index]?.title ?? null);
     return button;
   }
   // The progress in one piece (a course without parts), or one segment per part.

@@ -665,6 +665,8 @@ export type EngineEvent =
   | { type: 'alignProgress'; screen?: string; progress: AlignProgress }
   // The transcriber downloading (phase install) or hearing a recording.
   | { type: 'transcribeProgress'; progress: TranscribeProgress }
+  // An Openverse sound downloading to be heard (soundPreview): bytes received, its size when known.
+  | { type: 'soundProgress'; from: string; received: number; total: number | null }
   | { type: 'backupTaken'; version: BackupSummary }
   // An AI batch is over: idle for 5 minutes, a human change, a mark, or the session closing.
   | { type: 'batchClosed'; batch: string; reason: 'idle' | 'human' | 'mark' | 'close'; version: string | null }

@@ -18,7 +18,7 @@ import type { OfferedOption } from './walk.ts';
 import type { ScoredDecision } from './run.ts';
 
 export type Side = 'left' | 'right' | 'center';
-export type RowRole = 'character' | 'learner' | 'narration' | 'note' | 'first-choice' | 'retry' | 'end' | 'debrief';
+export type RowRole = 'character' | 'learner' | 'narration' | 'note' | 'first-choice' | 'end' | 'debrief';
 
 export interface ThreadContext {
   data: DialogueData;
@@ -210,11 +210,6 @@ export function firstChoiceRow(context: ThreadContext, options: readonly Dialogu
     options.map((option) => element('p', { class: 't-dialogue-first' },
       element('span', { class: 't-dialogue-first-label', text: `${labels.dialogueFirstChoice}${labels.colon}` }),
       element('span', { class: 't-dialogue-first-text', text: option.text ?? option.label ?? option.id }))));
-}
-
-export function retryRow(context: ThreadContext, onClick: () => void): HTMLElement {
-  return element('div', { class: 't-dialogue-row', 'data-role': 'retry' },
-    element('button', { type: 'button', class: 't-dialogue-link', onclick: onClick }, icon('undo'), element('span', { text: context.labels.dialogueChooseAgain })));
 }
 
 // Where the thread goes on after the learner went back: « Vous reprenez ici », or « Nouvel essai » at

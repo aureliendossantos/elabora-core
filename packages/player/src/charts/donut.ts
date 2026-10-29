@@ -2,9 +2,10 @@
 // while the centre counts up with the share of the ring drawn; then the focus pull gives the
 // highlighted part the accent (donut.css).
 //
-// Pointing at a part (on the ring, by angle, or at its legend row) is soothing: the part moves a few
-// pixels out along its bisector, the others step back, and the centre cross-fades to the part's face
-// (CSS: faces carry their part's data-t-item). The core's markup is described in core charts/donut.ts.
+// Pointing at a part (on the ring, by angle, or at its legend row) is soothing and nothing moves: the
+// part takes the accent (the highlight gives it up meanwhile), the others step back, and the centre
+// cross-fades to the part's face (CSS: faces carry their part's data-t-item). The core's markup is
+// described in core charts/donut.ts.
 
 import type { ChartDom, ChartView } from './view.ts';
 import { count } from './view.ts';
