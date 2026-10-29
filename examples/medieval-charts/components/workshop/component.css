@@ -13,7 +13,7 @@
   font-style: italic; font-weight: 600; font-size: clamp(.78rem, 2.1cqi, 1.12rem); color: var(--t-color-ink);
   text-shadow: 0 0 .45em var(--t-color-vellum-light), 0 0 .25em var(--t-color-vellum-light), 0 0 .12em var(--t-color-vellum-light), 0 0 .05em var(--t-color-vellum-light); }
 .mc-workshop-label--name, .mc-workshop-label--name-rubric { translate: 0 -50%; transform-origin: 0 50%; padding-left: .4em; }
-.mc-workshop-label--name-rubric { color: color-mix(in srgb, var(--t-primary) 74%, var(--t-color-ink)); }
+.mc-workshop-label--name-rubric { color: color-mix(in srgb, var(--t-primary) 70%, var(--t-color-ink)); }
 .mc-workshop-label--note { translate: -50% -50%; font-weight: 600; font-size: clamp(.74rem, 1.8cqi, 1rem); color: var(--t-color-ink); }
 .mc-workshop-steps { grid-area: steps; list-style: none; margin: 0; padding: 18svh 0 26svh; display: grid; counter-reset: mc-stage; }
 .mc-workshop-step { counter-increment: mc-stage; min-height: 62svh; display: grid; align-content: center; }
@@ -27,11 +27,14 @@
   /* Each layer and label inks in once its stage is current, and stays: stage n shows layers 1 to n. */
   .mc-workshop[data-t-following] :is(.mc-workshop-layer, .mc-workshop-label) { opacity: clamp(0, calc(var(--t-current, 1) - var(--layer) + 1), 1); transition: opacity .6s cubic-bezier(.3, 0, .2, 1); will-change: opacity; }
   @supports (animation-timeline: view()) {
-    .mc-workshop-card { animation: mc-focus linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
+    .mc-workshop-card { animation: mc-focus-in var(--t-ease-out) backwards, mc-focus-out var(--t-ease-in-out) forwards; animation-timeline: view(); animation-range: cover 0% cover 32%, cover 68% cover 100%; }
   }
 }
-/* A card comes to rest as it nears the middle and leaves the same way, without a jolt at either end. */
-@keyframes mc-focus { 0% { opacity: .72; translate: 0 1.5rem; animation-timing-function: var(--t-ease-out); } 32%, 68% { opacity: 1; translate: 0 0; animation-timing-function: var(--t-ease-in-out); } 100% { opacity: .72; translate: 0 -1rem; } }
+/* A card comes to rest as it nears the middle (the player's --t-ease-out) and sets off again slowly as
+   it leaves (--t-ease-in-out), without a jolt at either end. Two animations, as a keyframe does not
+   read var() in its own timing function. */
+@keyframes mc-focus-in { from { opacity: .72; translate: 0 1.5rem; } }
+@keyframes mc-focus-out { to { opacity: .72; translate: 0 -1rem; } }
 
 @container (max-width: 860px) {
   .mc-workshop, .mc-workshop--side-end { grid-template-columns: 1fr; grid-template-areas: "figure" "steps"; gap: 0; }

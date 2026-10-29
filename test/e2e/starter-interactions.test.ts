@@ -141,6 +141,10 @@ test('steps timeline: each event visited once in view, its dot filled; the date 
     await sized(page, 1280, 520);
     await go(page, 'etapes-frise');
     const block = 'etapes-frise-bloc';
+    // The events' words come in with the scroll on the player's rule (--t-scroll-in): a fade and a rise
+    // on a view timeline.
+    assert.deepEqual(await page.$eval('[data-t-reveal="serveur"] > .t-steps-words', (node) => node.getAnimations().map((animation) => `${(animation as CSSAnimation).animationName} ${animation.timeline?.constructor.name}`).sort()),
+      ['t-scroll-in-fade ViewTimeline', 't-scroll-in-rise ViewTimeline']);
     const first = await visited(page, block, 'reveal');
     assert.ok(first.length >= 1 && first.length < 5, JSON.stringify(first));
     await page.$eval('[data-t-reveal="serveur"]', (node) => node.scrollIntoView({ block: 'center' }));
