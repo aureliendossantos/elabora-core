@@ -116,7 +116,11 @@ export function backgroundTracks(project: Project): BackgroundTrackData[] {
     const from = order.indexOf(track.from);
     const to = order.indexOf(typeof track.to === 'string' ? track.to : track.from);
     if (from < 0 || to < from) return [];
-    return [{ sound: track.sound, screens: order.slice(from, to + 1), volume: typeof track.volume === 'number' ? track.volume : DEFAULT_BACKGROUND_VOLUME, fade: typeof track.fade === 'number' ? track.fade : DEFAULT_BACKGROUND_FADE }];
+    return [{
+      sound: track.sound, screens: order.slice(from, to + 1), volume: typeof track.volume === 'number' ? track.volume : DEFAULT_BACKGROUND_VOLUME, fade: typeof track.fade === 'number' ? track.fade : DEFAULT_BACKGROUND_FADE,
+      // The part of its file that loops (schemas 0.1.7).
+      ...(typeof track.start === 'number' ? { start: track.start } : {}), ...(typeof track.end === 'number' ? { end: track.end } : {})
+    }];
   });
 }
 export const DEFAULT_BACKGROUND_VOLUME = 0.25;

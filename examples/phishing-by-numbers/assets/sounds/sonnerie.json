@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.6/sound.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.7/sound.schema.json",
   "title": "Office phone ringing (one double ring)",
   "source": "library",
   "sourceId": "telephone-fixe",

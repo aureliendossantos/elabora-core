@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.6/object-tests.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.7/object-tests.schema.json",
   "tests": [
     {
       "name": "The cover: every part plate side by side",

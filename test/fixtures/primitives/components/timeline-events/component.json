@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.6/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.7/component.schema.json",
   "id": "timeline-events",
   "title": "Events in time",
   "description": "A vertical timeline: each event is visited once it has been in view (data-t-reveal), and its mark fills in.",

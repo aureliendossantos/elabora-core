@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.7/component.schema.json",
+  "title": "Component manifest (components/<id>/component.json)",
+  "description": "A component defined by the course: a block type (level block) or a screen layout (level screen). template.html renders its props (bindings, lists, conditions, slots, behaviour hooks: docs/components.md); component.css styles it (cascade layer elabora.components). No JavaScript: interactions come from the player's behaviours and primitives. Words live in props, never in the template. A fork extends another component (built-in or not) and remembers it. Authors edit instances through the props form; agents and developers edit the definition.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "version"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "id": { "$ref": "defs.schema.json#/$defs/slug", "description": "Equal to the folder name. Must not be a built-in type." },
+    "title": { "type": "string", "minLength": 1, "maxLength": 100, "description": "Name shown to authors in the block picker." },
+    "description": { "type": "string", "maxLength": 1000, "description": "What it is for, when to use it." },
+    "instructions": { "type": "string", "maxLength": 2000, "description": "Authoring instructions for agents (like x-ai-instructions of built-in blocks)." },
+    "category": { "enum": ["content", "structure", "assessment", "scenario", "interaction", "layout"], "description": "Group in the block picker." },
+    "version": { "$ref": "defs.schema.json#/$defs/semver", "description": "Version of the definition. Increase it when the definition changes; a change of the props shape needs a migration (migrations.mjs) for the instances." },
+    "level": { "enum": ["block", "screen"], "default": "block", "description": "block: a block type placed on screens and in slots. screen: a screen layout (screen layout: \"<id>\"); its template may hold one data-title element for the screen title." },
+    "extends": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["component"],
+      "description": "Fork: the component this one was derived from. Without props, template, slots or fallback, the parent's are used; propsExtend adds props to the parent's, propsOmit drops those the fork does not use. A fork of quiz, numeric, fill-in, sort, reflection, decision or results keeps that behaviour (scoring, saved state, SCORM records), so its template must provide the behaviour hooks.",
+      "properties": {
+        "component": { "$ref": "defs.schema.json#/$defs/slug" },
+        "version": { "type": "string", "maxLength": 40, "description": "Version of the parent when the fork was made (to see later changes of the parent)." }
+      }
+    },
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["library", "component", "version", "hash"],
+      "description": "Written by elabora component add/upgrade: the library the component was copied from. The course keeps its own copy (pinned); upgrades are explicit.",
+      "properties": {
+        "library": { "type": "string", "maxLength": 100 },
+        "component": { "$ref": "defs.schema.json#/$defs/slug" },
+        "version": { "type": "string", "maxLength": 40 },
+        "hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    },
+    "props": {
+      "type": "object",
+      "description": "JSON Schema of the props (type object, properties, required). Strings take x-kind: text (default), markdown (Elabora Markdown, maths included), tex (LaTeX equation), asset (file in assets/), token (name of a theme token, rendered as var(--t-…)). Mark text x-translatable. x-group \"design\" marks settings authors may change (tokens, enums). An enum holds values for the template (stack, split); x-enum-labels says how each reads in the inspector, in the course's language ({ \"stack\": \"Stacked\", \"split\": \"Side by side\" }, keys are values of the enum, on a prop or on a field of a list's items): a value without words shows capitalised. They are translated with the course. Text and Markdown props accept { \"textRef\": \"TXT-n\" } in instances (locked plan texts)."
+    },
+    "propsExtend": {
+      "type": "object",
+      "description": "Forks only: schema merged into the parent's props schema (add a property, a field to list items…)."
+    },
+    "propsOmit": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 50,
+      "items": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_]*$" },
+      "description": "Forks only: props of the parent this fork does not use (its template draws without them), dropped from its schema before propsExtend adds its own: [\"image\", \"alt\"]. A prop the parent's behaviour needs (a quiz's questions) cannot be dropped."
+    },
+    "slots": {
+      "type": "array",
+      "maxItems": 12,
+      "description": "Named places where authors put blocks (native blocks or other components). Each slot is an empty element marked data-slot=\"<id>\" in the template.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label"],
+        "properties": {
+          "id": { "$ref": "defs.schema.json#/$defs/slug" },
+          "label": { "type": "string", "minLength": 1, "maxLength": 60 },
+          "description": { "type": "string", "maxLength": 300 },
+          "default": { "type": "boolean", "description": "Receives blocks without slot. At most one slot; the first slot otherwise." },
+          "accepts": { "type": "array", "items": { "$ref": "defs.schema.json#/$defs/slug" }, "description": "Block types allowed in this slot (all if absent). A fork is accepted where its parent is." },
+          "maxBlocks": { "type": "integer", "minimum": 1, "maximum": 50 }
+        }
+      }
+    },
+    "fallback": {
+      "type": "array",
+      "maxItems": 30,
+      "description": "The component expressed with native blocks, for exports, text views, translation and detach. Items: { type, props } templates where strings take {{prop}}, {{#list}}…{{/list}}, {{^prop}}…{{/prop}}; { \"$if\": \"expr\", … }; { \"$each\": \"list\", … }; { \"$slot\": \"<slot id>\" }. Without it, Elabora generates one from the props. Forks of a built-in fall back to the built-in.",
+      "items": { "type": "object" }
+    },
+    "styles": {
+      "type": "object",
+      "maxProperties": 20,
+      "description": "Named styles of this component, each with its name for editors and a one-line description ({\"label\": \"Dark\", \"description\": \"…\"}, or the description alone), forks inherit them. The course theme can add more in theme.styles.<id>.",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9-]{0,31}$" },
+      "additionalProperties": { "$ref": "defs.schema.json#/$defs/designWords" }
+    },
+    "examples": {
+      "type": "array",
+      "maxItems": 10,
+      "description": "Sample instances: checked like real instances, shown by elabora component preview and by editors.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["props"],
+        "properties": {
+          "title": { "type": "string", "maxLength": 100 },
+          "props": { "type": "object" },
+          "blocks": { "type": "array", "items": { "$ref": "block.schema.json" } }
+        }
+      }
+    },
+    "fullBleed": { "type": "boolean", "default": false, "description": "Screen level: the screen spans the whole window, edge to edge (no page padding, no maximum width): the layout owns its spacing." }
+  }
+}

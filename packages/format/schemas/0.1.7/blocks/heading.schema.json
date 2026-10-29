@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.7/blocks/heading.schema.json",
+  "title": "heading block props",
+  "description": "A section heading inside a screen. The screen title is already rendered as the level-1 heading.",
+  "x-category": "content",
+  "x-ai-instructions": "Use headings to signal structure (guardrail E5). Use textRef when the plan has a locked text for it.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Heading text. Use text or textRef, not both.", "x-translatable": true },
+    "textRef": { "$ref": "../defs.schema.json#/$defs/planId", "description": "Id of a validated text of the plan: the block shows the plan's wording, and rewording it writes the plan." },
+    "level": { "enum": [2, 3, 4], "default": 2, "description": "Heading level. Do not skip levels." }
+  }
+}

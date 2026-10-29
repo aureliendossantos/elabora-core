@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.6/lms-profile.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.7/lms-profile.schema.json",
   "id": "scorm-cloud",
   "name": "SCORM Cloud (Rustici) — reference test environment",
   "documentedAt": "2026-10",

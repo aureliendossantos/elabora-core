@@ -228,7 +228,7 @@ export function createLines(parts: ViewParts, state: ViewState, { box, cast, sho
       const voiced = !!voice.src;
       const playback = createLinePlayback({
         voice, clock, silent: host().virtual || still, instant: instant() || !voiced, host: root,
-        rate, volume: () => host().prefs().volume, muted: () => host().prefs().muted,
+        rate, volume: () => host().prefs().volume * (host().voiceLevel?.() ?? 1), muted: () => host().prefs().muted,
         onRefused: () => { if (built.listen) built.listen.hidden = false; },
         onPlaying: () => { if (built.listen) built.listen.hidden = true; }
       });
