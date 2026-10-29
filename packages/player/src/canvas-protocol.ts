@@ -30,9 +30,9 @@
 //   canvas → host
 //     { type: 'elabora/item', id, bar }         the author clicked an item of the bars
 //     { type: 'elabora/language', language }    the author chose a language in « Langue »
-// Previous, Next and the outline post elabora/navigate with by: previous, next or outline; the
-// host renders that screen (or not). Next on a slide with steps left reveals the next one, as
-// Continue does.
+// Previous, Next, the outline and a part of the progress post elabora/navigate with by: previous,
+// next, outline or progress; the host renders that screen (or not). Next on a slide with steps
+// left reveals the next one, as Continue does.
 
 import type { CourseData, PlayerItemId } from './course-data.ts';
 
@@ -180,7 +180,7 @@ export type CanvasMessage =
   | { type: 'elabora/ready'; chrome: 'none' | 'player' | 'live'; protocol?: typeof PLAYER_PREVIEW_PROTOCOL }
   | LayoutMessage
   // by: what went there in the live bars (an event of the screen says none).
-  | { type: 'elabora/navigate'; screen: string; by?: 'previous' | 'next' | 'outline' }
+  | { type: 'elabora/navigate'; screen: string; by?: 'previous' | 'next' | 'outline' | 'progress' }
   | { type: 'elabora/error'; id: string | number | null; message: string }
   | { type: 'elabora/item'; protocol: typeof PLAYER_PREVIEW_PROTOCOL; id: PlayerItemId; bar: 'top' | 'bottom' }
   | { type: 'elabora/language'; protocol: typeof PLAYER_PREVIEW_PROTOCOL; language: string };

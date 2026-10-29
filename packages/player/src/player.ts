@@ -13,7 +13,7 @@ import { createScreenView } from './screen-view.ts';
 import { labelsFor, formatLabel } from './labels.ts';
 import { element } from './dom.ts';
 import { icon } from './icons.ts';
-import { createChrome, languageName } from './chrome.ts';
+import { createChrome, languageName, percentText } from './chrome.ts';
 import type { Chrome, SheetName } from './chrome.ts';
 import { createTooltip } from './tooltip.ts';
 import type { Sheet } from './sheet.ts';
@@ -228,6 +228,7 @@ function mountBars() {
     tooltip,
     actions: {
       previous: () => onPrevious(), next: () => onNext(), quit: () => confirmQuit(), outline: () => toggleMenu(),
+      part: (index, button, { touch }) => onPart(index, button, touch),
       sheet: (name, button) => sheets[name]?.sheet.toggle(button),
       language: () => languageMenu?.toggle(),
       display: () => displayMenu?.toggle()
@@ -330,6 +331,20 @@ function onPrevious() {
   if (current <= 0) { refuse(chrome.previousButton, labels.firstScreen); return; }
   go(current - 1);
 }
+// A part of the progress goes to the part's first screen, as a book's chapter or a video's: what the
+// tooltip names is where the click leads, whatever the learner did in it (the outline goes to a screen
+// of it, Next and the LMS's bookmark resume). A part not open yet refuses as Next does. On a phone a
+// segment is too narrow for a finger: a tap opens the outline, where each screen is a line.
+const narrow = () => window.matchMedia?.('(max-width: 760px)').matches ?? false;
+function onPart(index: number, button: HTMLElement, touch: boolean) {
+  if (ended) return;
+  if (touch && narrow() && menu && chrome.outlineButton) { toggleMenu(true); return; }
+  const first = screenNumber(course.sections[index]?.screens[0]);
+  if (first === undefined) return;
+  // The part that follows the screen shown opens as Next would: the same reason when it is locked.
+  if (!reachable(first)) { refuse(button, first === current + 1 && nextLocked() ? lockReason() : labels.partLocked); return; }
+  go(first);
+}
 function onNext() {
   if (nextLocked()) { refuse(chrome.nextButton, lockReason()); return; }
   if (nextReveals()) view.revealStep(view.nextStep());
@@ -373,7 +388,8 @@ function updateNav() {
   });
   // A bottom bar at the end of the page waits for the page's last step (scroll presentation).
   if (chrome.bottom && bottomAtEnd) chrome.bottom.hidden = !ended && !slides() && view.revealed < view.lastStep();
-  if (screen) chrome.setScreen(screen.title);
+  if (screen) chrome.setPlace(screen.title, sectionOf(screen.id)?.title ?? null);
+  updateParts();
   renderMenu();
   view.updateBackdrop();
 }
@@ -382,9 +398,28 @@ function updateProgress() {
   const required = requiredScreens();
   const done = required.filter((screen) => courseState.screenComplete(screen)).length;
   const percent = required.length ? Math.round((100 * done) / required.length) : 100;
-  let text = `${percent} %`;
-  try { text = new Intl.NumberFormat(course.language, { style: 'percent' }).format(percent / 100); } catch { /* the plain number */ }
-  chrome.setProgress(percent, text);
+  chrome.setProgress(percent, percentText(percent, course.language));
+  updateParts();
+}
+
+const sectionOf = (id: string) => course.sections.find((section) => section.screens.includes(id));
+// The parts of the progress: each section's screens that count (the required ones, else all of them)
+// completed, the one the learner is in, and those not open yet.
+function updateParts() {
+  if (course.sections.length < 2) return;
+  const shown = currentScreen()?.id;
+  chrome.setParts(course.sections.map((section) => {
+    const screens = section.screens.map((id) => courseState.screens[courseState.screenIndex.get(id)!]);
+    const required = screens.filter((screen) => screen.required !== false);
+    const counted = required.length ? required : screens;
+    const first = screenNumber(section.screens[0]);
+    return {
+      title: section.title, screens: screens.length, total: counted.length,
+      done: counted.filter((screen) => courseState.screenComplete(screen)).length,
+      current: shown !== undefined && section.screens.includes(shown),
+      locked: first === undefined || !reachable(first)
+    };
+  }));
 }
 
 function toggleMenu(force?: boolean) {

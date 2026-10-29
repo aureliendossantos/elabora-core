@@ -8,10 +8,17 @@
 // another item (all of them to the end when the bar holds nothing else). Nothing in a bar changes
 // size while learners use it: Next is as wide as its longest label, Previous and Next unavailable
 // stay in place, greyed, and what they would say goes into the tooltip.
+//
+// The progress of a course in parts (two sections or more) is one segment per part, as wide as its
+// share of the screens: a part fills as its screens are completed, the one the learner is in is
+// marked, and each segment is a button to the part's first screen (D58, revised on 29 Oct 2026).
+// One stop for Tab (the part shown), the arrows between parts, the part's name and progress in the
+// tooltip.
 
 import { element } from './dom.ts';
 import { icon } from './icons.ts';
 import type { IconName } from './icons.ts';
+import { formatLabel } from './labels.ts';
 import type { Labels } from './labels.ts';
 import type { CourseData, PlayerBarData, PlayerItemData, PlayerItemId } from './course-data.ts';
 import type { Tooltip } from './tooltip.ts';
@@ -28,11 +35,48 @@ export function languageName(code: string): string {
 
 export type SheetName = 'resources' | 'glossary' | 'about';
 
+// A part of the course (a section) as the progress shows it.
+export interface PartView {
+  title: string;
+  // Its screens: the segment's share of the bar.
+  screens: number;
+  // Of its screens that count (the required ones, else all of them), how many are completed.
+  done: number;
+  total: number;
+  // The screen shown is in it.
+  current: boolean;
+  // Its first screen cannot be opened yet (course.json navigation).
+  locked: boolean;
+}
+
+// A share in the course's language (« 40 % », « 40% »).
+export function percentText(percent: number, language: string): string {
+  try { return new Intl.NumberFormat(language, { style: 'percent' }).format(percent / 100); } catch { return `${percent} %`; }
+}
+
+// The parts at a screen of the outline, as a learner who completed every screen before it sees
+// them (the editor's canvases), and the share of the screens done.
+export function partsAt(outline: { sections: readonly { title: string; screens: readonly { id: string }[] }[] } | null, screen: string | null): { parts: PartView[]; percent: number } {
+  const sections = outline?.sections ?? [];
+  const order = sections.flatMap((section) => section.screens.map((entry) => entry.id));
+  const at = screen === null ? -1 : order.indexOf(screen);
+  let before = 0;
+  const parts = sections.map((section) => {
+    const done = Math.max(0, Math.min(section.screens.length, at - before));
+    const current = at >= before && at < before + section.screens.length;
+    before += section.screens.length;
+    return { title: section.title, screens: section.screens.length, done, total: section.screens.length, current, locked: false };
+  });
+  return { parts, percent: order.length && at > 0 ? Math.round((100 * at) / order.length) : 0 };
+}
+
 export interface ChromeActions {
   previous(): void;
   next(): void;
   quit(): void;
   outline(): void;
+  // A part of the progress, clicked or activated with the keyboard; touch: by a finger.
+  part(index: number, button: HTMLElement, how: { touch: boolean }): void;
   sheet(name: SheetName, button: HTMLElement): void;
   // « Langue » and « Affichage »: their menus, from their buttons.
   language(button: HTMLElement): void;
@@ -48,10 +92,19 @@ export type Chrome = ReturnType<typeof createChrome>;
 export function createChrome(course: CourseData, labels: Labels, { actions, tooltip }: { actions: ChromeActions | null; tooltip: Tooltip | null }) {
   const run = (action: () => void) => () => { if (actions) action(); };
   const hint = (node: HTMLElement, text: string | (() => string | null)) => { tooltip?.attach(node, text); };
+  const format = (label: string, values: Readonly<Record<string, unknown>>) => formatLabel(label, values, course.language);
 
+  let progressItem = null as HTMLElement | null;
   let progress = null as HTMLElement | null;
   let progressBar = null as HTMLElement | null;
   let progressValue = null as HTMLElement | null;
+  let progressPercent = 0;
+  let progressText = '';
+  // The parts of the progress: their buttons and what they last showed.
+  let partButtons: HTMLButtonElement[] = [];
+  let parts: PartView[] = [];
+  // The pointer that pressed a part (a click from the keyboard has none).
+  let pressedBy: string | null = null;
   let outlineButton = null as HTMLButtonElement | null;
   let outlineLabel = null as HTMLElement | null;
   let menu = null as HTMLElement | null;
@@ -99,16 +152,16 @@ export function createChrome(course: CourseData, labels: Labels, { actions, tool
         node.append(element('p', { class: 't-course-title', text: course.title }));
         break;
       case 'progress':
-        progressBar = element('div', { class: 't-progress-bar' });
-        progress = element('div', { class: 't-progress', role: 'progressbar', 'aria-label': labels.progress, 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': '0' }, progressBar);
+        progressItem = node;
         progressValue = element('span', { class: 't-progress-value', 'aria-hidden': 'true' });
-        node.append(progress, progressValue);
+        // The course's parts, nothing done yet: the player says where the learner is once a screen shows.
+        setParts(course.sections.map((section, index) => ({ title: section.title, screens: section.screens.length, done: 0, total: section.screens.length, current: index === 0, locked: index > 0 })));
         break;
       case 'outline':
         outlineLabel = element('span', { class: 't-outline-label', text: labels.menu });
-        outlineButton = element('button', { type: 'button', class: 't-bar-btn t-outline-btn', 'aria-expanded': 'false', 'aria-controls': 't-menu', 'data-screen-title': data.screenTitle ? '' : undefined, onclick: run(() => actions?.outline()) }, icon('menu'), outlineLabel);
-        // The screen's title, cut to the button's width: the whole of it in the tooltip.
-        if (data.screenTitle) { const label = outlineLabel; hint(outlineButton, () => (label.scrollWidth > label.clientWidth + 1 ? label.textContent : null)); }
+        outlineButton = element('button', { type: 'button', class: 't-bar-btn t-outline-btn', 'aria-expanded': 'false', 'aria-controls': 't-menu', 'data-label': data.label === 'outline' ? undefined : data.label, onclick: run(() => actions?.outline()) }, icon('menu'), outlineLabel);
+        // The part's or the screen's title, cut to the button's width: the whole of it in the tooltip.
+        if (data.label !== 'outline') { const label = outlineLabel; hint(outlineButton, () => (label.scrollWidth > label.clientWidth + 1 ? label.textContent : null)); }
         // The outline follows its button so that Tab moves into it; it floats over the screen.
         menu = element('nav', { id: 't-menu', class: 't-menu', 'aria-label': labels.menu, hidden: true });
         node.append(outlineButton, menu);
@@ -193,25 +246,104 @@ export function createChrome(course: CourseData, labels: Labels, { actions, tool
     }
   }
 
+  // The share of the required screens completed: the bar's fill (one piece), or the toolbar's name (in parts).
   function setProgress(percent: number, text: string) {
-    if (!progress || !progressBar || !progressValue) return;
-    progressBar.style.setProperty('--t-progress', String(percent));
-    progress.setAttribute('aria-valuenow', String(percent));
-    progress.setAttribute('aria-valuetext', text);
+    if (!progress || !progressValue) return;
+    progressPercent = percent;
+    progressText = text;
     progressValue.textContent = text;
+    if (progressBar) {
+      progressBar.style.setProperty('--t-progress', String(percent));
+      progress.setAttribute('aria-valuenow', String(percent));
+      progress.setAttribute('aria-valuetext', text);
+    } else progress.setAttribute('aria-label', `${labels.progress}${labels.colon}${text}`);
   }
 
-  // The outline's button reads « Sommaire », or the title of the screen shown (option screenTitle).
-  function setScreen(title: string) {
+  // Where a part stands, in words: « en cours, 2 écrans terminés sur 5 », « terminée », « pas commencée ».
+  function partState(part: PartView): string {
+    const count = format(labels.partScreens, { done: part.done, total: part.total });
+    if (part.current) return part.done > 0 ? `${labels.partCurrent}, ${count}` : labels.partCurrent;
+    if (part.total > 0 && part.done >= part.total) return labels.partDone;
+    if (part.locked) return labels.menuLocked;
+    return part.done > 0 ? count : labels.partNew;
+  }
+  // The part of the toolbar that Tab reaches: the one focus is on, else the part shown.
+  function rove(index: number) {
+    partButtons.forEach((button, at) => { button.tabIndex = at === index ? 0 : -1; });
+  }
+  function onPartsKey(event: Event) {
+    if (!(event instanceof KeyboardEvent)) return;
+    const index = partButtons.indexOf(document.activeElement as HTMLButtonElement);
+    if (index < 0 || !progress) return;
+    const forward = getComputedStyle(progress).direction === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
+    const backward = forward === 'ArrowRight' ? 'ArrowLeft' : 'ArrowRight';
+    const target = event.key === 'Home' ? 0 : event.key === 'End' ? partButtons.length - 1
+      : event.key === forward ? Math.min(index + 1, partButtons.length - 1) : event.key === backward ? Math.max(index - 1, 0) : -1;
+    if (target < 0) return;
+    event.preventDefault();
+    rove(target);
+    partButtons[target].focus();
+  }
+  function partButton(index: number): HTMLButtonElement {
+    const button = element('button', {
+      type: 'button', class: 't-part', tabindex: '-1',
+      onpointerdown: (event: Event) => { pressedBy = (event as PointerEvent).pointerType; },
+      onclick: () => { const touch = pressedBy === 'touch'; pressedBy = null; actions?.part(index, button, { touch }); }
+    }, element('span', { class: 't-part-track' }, element('span', { class: 't-part-fill' })));
+    hint(button, () => (parts[index] ? `${parts[index].title} · ${partState(parts[index])}` : null));
+    return button;
+  }
+  // The progress in one piece (a course without parts), or one segment per part.
+  function buildProgress(count: number) {
+    if (!progressItem || !progressValue) return;
+    if (count < 2) {
+      progressBar = element('div', { class: 't-progress-bar' });
+      progress = element('div', { class: 't-progress', role: 'progressbar', 'aria-label': labels.progress, 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': '0' }, progressBar);
+      partButtons = [];
+      delete progressItem.dataset.parts;
+      progressItem.style.removeProperty('--t-parts');
+    } else {
+      progressBar = null;
+      partButtons = Array.from({ length: count }, (_, index) => partButton(index));
+      progress = element('div', { class: 't-progress t-progress--parts', role: 'toolbar', 'aria-label': labels.progress, onkeydown: onPartsKey }, ...partButtons);
+      progressItem.dataset.parts = String(count);
+      progressItem.style.setProperty('--t-parts', String(count));
+    }
+    progressItem.replaceChildren(progress, progressValue);
+  }
+  // What each part shows: its share of the bar, its fill, whether the learner is in it, its name and
+  // where it stands for screen readers. The segments are made again only when the parts are not as many.
+  function setParts(next: readonly PartView[]) {
+    if (!progressItem) return;
+    const count = next.length >= 2 ? next.length : 0;
+    if (!progress || count !== partButtons.length) { buildProgress(count); if (progressText) setProgress(progressPercent, progressText); }
+    parts = count ? next.map((part) => ({ ...part })) : [];
+    parts.forEach((part, index) => {
+      const button = partButtons[index];
+      button.style.flexGrow = String(Math.max(1, part.screens));
+      button.style.setProperty('--t-part', String(part.total ? Math.round((100 * Math.min(part.done, part.total)) / part.total) : 0));
+      button.toggleAttribute('data-current', part.current);
+      button.toggleAttribute('data-done', part.total > 0 && part.done >= part.total);
+      if (part.locked && !part.current) button.setAttribute('aria-disabled', 'true'); else button.removeAttribute('aria-disabled');
+      button.setAttribute('aria-label', `${format(labels.partOf, { n: index + 1, total: parts.length })}${labels.colon}${part.title}, ${partState(part)}`);
+    });
+    // Tab comes to the part shown, unless focus is already on one.
+    if (count && !partButtons.includes(document.activeElement as HTMLButtonElement)) rove(Math.max(0, parts.findIndex((part) => part.current)));
+  }
+
+  // The outline's button reads « Sommaire », or the title of the part or of the screen shown (option label).
+  function setPlace(screen: string, section: string | null) {
     const option = [...(course.player?.top?.items ?? []), ...(course.player?.bottom?.items ?? [])].find((entry) => entry.id === 'outline');
-    if (!outlineButton || !outlineLabel || !option || option.id !== 'outline' || !option.screenTitle) return;
+    if (!outlineButton || !outlineLabel || !option || option.id !== 'outline' || option.label === 'outline') return;
+    const title = option.label === 'section' ? section ?? screen : screen;
     outlineLabel.textContent = title;
     outlineButton.setAttribute('aria-label', `${labels.menu}${labels.colon}${title}`);
   }
 
   return {
-    top, bottom, menu, controls, sheetButtons, setNav, setProgress, setScreen,
+    top, bottom, menu, controls, sheetButtons, setNav, setProgress, setParts, setPlace,
     get progress() { return progress; },
+    get partButtons() { return partButtons; },
     get outlineButton() { return outlineButton; },
     get previousButton() { return previousButton; },
     get nextButton() { return nextButton; },
