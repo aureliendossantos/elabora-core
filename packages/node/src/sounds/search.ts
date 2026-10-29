@@ -56,7 +56,16 @@ export async function soundPreview(from: string, { signal }: { signal?: AbortSig
   const found = await openverseSound(from, { signal });
   const response = await fetch(found.file, { headers: { 'user-agent': `Elabora/${ELABORA_VERSION} (+https://elabora.studio)` }, signal: signal ?? AbortSignal.timeout(60000) });
   if (!response.ok) throw new Error(`The sound could not be downloaded from ${new URL(found.file).host} (${response.status}).`);
-  if (Number(response.headers.get('content-length') ?? 0) > PREVIEW_MAX) throw new Error(`The sound on ${new URL(found.file).host} is too large to hear here: open its page.`);
+  const tooLarge = () => new Error(`The sound on ${new URL(found.file).host} is too large to hear here: open its page.`);
+  if (Number(response.headers.get('content-length') ?? 0) > PREVIEW_MAX) throw tooLarge();
   const type = response.headers.get('content-type')?.split(';')[0]?.trim() || TYPES[path.extname(new URL(found.file).pathname).toLowerCase()] || 'audio/mpeg';
-  return { audio: new Uint8Array(await response.arrayBuffer()), type };
+  // Read up to the cap, whether or not the server said the length.
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for await (const chunk of response.body ?? []) {
+    size += chunk.byteLength;
+    if (size > PREVIEW_MAX) throw tooLarge(); // leaving the loop cancels the download
+    chunks.push(chunk);
+  }
+  return { audio: Buffer.concat(chunks), type };
 }

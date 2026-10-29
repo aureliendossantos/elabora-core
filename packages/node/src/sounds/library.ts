@@ -5,8 +5,8 @@ import { fileURLToPath } from 'node:url';
 // Elabora's library of sounds, « Sons courants » (docs/decisions.md D67): CC0 or public-domain sounds
 // in packages/node/sounds/files/, their catalogue written by `pnpm run sounds`. Offline. Another
 // library may join it (ELABORA_SOUND_LIBRARIES: folders, separated as PATH is, each with its own
-// catalogue.json and files/, written by `pnpm run sounds -- --library <dir>`): the desktop app's, whose
-// CC BY sounds carry the credit they ask for. Ids are unique across libraries: the core's first.
+// catalogue.json and files/): the desktop app's, written by its own `pnpm run sounds`, whose CC BY
+// sounds carry the credit they ask for. Ids are unique across libraries: the core's first.
 
 export interface LibrarySound {
   id: string;
