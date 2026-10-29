@@ -4,7 +4,7 @@
 // stains; a new part brings its own tone. Going back, nothing un-spreads: the washes of the screen
 // left fade out and those of the screen found again fade in. It draws on a 2D canvas, out of the
 // player's bars, and only while something changes; still frames land at once.
-import { wash, extent } from './wash.js';
+import { wash, extent, seeded } from './wash.js';
 
 // ── Composition ──
 // Spots around the edges of the room between the bars (0..1), so the reading area stays light.
@@ -49,6 +49,18 @@ function composition(where, screenIndex, count) {
   return list;
 }
 
+// ── Motion ──
+const DIRECTIONS = 180;
+const smooth = (t) => t * t * (3 - 2 * t);
+const spreadOut = (t) => 1 - Math.pow(1 - t, 3.2);
+// How far a stretch of the outline has run at time t (0 to 1) of the spread: it starts after its
+// delay, hurries and hesitates as water does (never back), and slows down long before it stops.
+function flow(t, pace) {
+  const local = Math.min(1, Math.max(0, (t - pace.lag) / (1 - pace.lag)));
+  const surge = local + 0.035 * Math.sin(local * Math.PI * 5 + pace.phase) * Math.sin(local * Math.PI);
+  return spreadOut(Math.min(1, Math.max(0, surge)));
+}
+
 export function mount(container, ctx) {
   const { host } = ctx;
   let props = { ...ctx.props };
@@ -78,8 +90,27 @@ export function mount(container, ctx) {
   // the outline the paint has reached.
   const shapes = new Map();
   const shapeOf = (seed) => {
-    if (!shapes.has(seed)) shapes.set(seed, wash(seed, { layers: 22, detail: 3 }));
-    return shapes.get(seed);
+    if (shapes.has(seed)) return shapes.get(seed);
+    const shape = wash(seed, { layers: 22, detail: 3 });
+    // The front is a mask grown from the drop, one radius per direction (never folding on itself):
+    // in each direction, as far as the wash's paint goes, so that at the end it holds all of it.
+    const bin = (p) => Math.floor(((Math.atan2(p.y, p.x) + Math.PI) / (Math.PI * 2)) * DIRECTIONS) % DIRECTIONS;
+    const far = new Array(DIRECTIONS).fill(0);
+    for (const points of [shape.base, ...shape.glazes]) for (const p of points) far[bin(p)] = Math.max(far[bin(p)], Math.hypot(p.x, p.y));
+    for (let i = 0; i < DIRECTIONS; i++) if (!far[i]) for (let d = 1; d < DIRECTIONS / 2 && !far[i]; d++) far[i] = far[(i + d) % DIRECTIONS] || far[(i + DIRECTIONS - d) % DIRECTIONS];
+    // Each direction runs at its own pace, as water finds its way through the paper's grain: a
+    // delay and surges, smooth around the drop, and a finer unevenness of the wet edge.
+    const rand = seeded(seed ^ 0x2545f491);
+    const wave = (ks) => ks.map((k) => ({ k: k + Math.floor(rand() * 2), phase: rand() * Math.PI * 2, amp: 0.5 + rand() * 0.5 }));
+    const noise = (waves, angle) => waves.reduce((sum, w) => sum + w.amp * Math.sin(w.k * angle + w.phase), 0) / waves.reduce((sum, w) => sum + w.amp, 0);
+    const lobes = wave([1, 2, 3]), edge = wave([7, 11, 17]);
+    const turn = rand() * Math.PI * 2;
+    shape.front = far.map((reach, i) => {
+      const angle = ((i + 0.5) / DIRECTIONS) * Math.PI * 2 - Math.PI;
+      return { angle, reach: reach * 1.04, lag: 0.12 * (1 + noise(lobes, angle)), phase: 2 * angle + turn, edge: noise(edge, angle) };
+    });
+    shapes.set(seed, shape);
+    return shape;
   };
   function picture(entry) {
     const id = `${entry.seed}|${entry.tone}|${entry.mode}`;
@@ -98,28 +129,43 @@ export function mount(container, ctx) {
     };
     const colour = props[entry.tone] ?? props.lagoon;
     brush.fillStyle = colour; brush.strokeStyle = colour;
-    brush.lineWidth = 1.4 * ratio;
-    shape.glazes.forEach((glaze, i) => {
+    shape.glazes.forEach((glaze) => {
       trace(glaze);
       brush.globalAlpha = 0.055;
       brush.fill();
-      if (i >= shape.glazes.length - 3) { brush.globalAlpha = 0.05; brush.stroke(); }
     });
-    // Back-runs: water pushed the pigment out of a pool and left a darker rim around it.
-    for (const pool of shape.pools) {
-      trace(pool);
-      brush.globalCompositeOperation = 'destination-out';
-      brush.globalAlpha = 0.22; brush.fill();
-      brush.globalCompositeOperation = 'source-over';
-      brush.globalAlpha = 0.16; brush.stroke();
-    }
-    const made = { sheet, size, radius };
+    // Back-runs: water pushed the pigment out of a pool.
+    brush.globalCompositeOperation = 'destination-out';
+    for (const pool of shape.pools) { trace(pool); brush.globalAlpha = 0.22; brush.fill(); }
+    brush.globalCompositeOperation = 'source-over';
+    // Wet paper: the glazes melt into one another and into the paper, once for the whole wash (no
+    // stair of layers, no frayed fringe); then a thin rim where the water stopped and the pigment
+    // gathered, and around the pools it pushed back.
+    const wet = document.createElement('canvas');
+    wet.width = size; wet.height = size;
+    const soft = wet.getContext('2d');
+    soft.filter = `blur(${Math.max(0.8, radius / 110).toFixed(2)}px)`;
+    soft.drawImage(sheet, 0, 0);
+    soft.filter = `blur(${Math.max(0.4, radius / 420).toFixed(2)}px)`;
+    soft.strokeStyle = colour;
+    soft.lineWidth = 1.2 * ratio;
+    const rim = (points, alpha) => {
+      soft.beginPath();
+      points.forEach((p, i) => (i ? soft.lineTo(size / 2 + p.x * radius, size / 2 + p.y * radius) : soft.moveTo(size / 2 + p.x * radius, size / 2 + p.y * radius)));
+      soft.closePath();
+      soft.globalAlpha = alpha;
+      soft.stroke();
+    };
+    rim(shape.glazes[shape.glazes.length - 1], 0.09);
+    for (const pool of shape.pools) rim(pool, 0.08);
+    const made = { sheet: wet, size, radius };
     images.set(id, made);
     return made;
   }
 
   // ── What is on the paper ──
-  // Each wash has a reach (0: a drop, 1: spread out) and an opacity going toward its target.
+  // Each wash has a reach (0: a drop, 1: spread out) and an opacity easing toward its target, from
+  // where it was when the target changed (from, f).
   const entries = new Map();
   let dirty = true;
   const moving = () => !(host.still || ctx.reducedMotion);
@@ -136,12 +182,13 @@ export function mount(container, ctx) {
       for (const b of composition(before, index - 1, count)) wanted.set(`${b.key}|${mode}|${b.tone}`, { ...b, mode, target: 0.38, current: false });
     }
     const spreads = moving() && next?.direction === 'forward' && previous != null;
-    for (const [id, entry] of entries) if (!wanted.has(id)) entry.target = 0;
+    const aim = (entry, target) => { if (entry.target !== target) { entry.target = target; entry.from = entry.opacity; entry.f = 0; } };
+    for (const [id, entry] of entries) if (!wanted.has(id)) aim(entry, 0);
     for (const [id, b] of wanted) {
       const entry = entries.get(id);
-      if (entry) { entry.target = b.target; continue; }
+      if (entry) { aim(entry, b.target); continue; }
       const fresh = spreads && b.current;
-      entries.set(id, { ...b, reach: fresh ? 0 : 1, opacity: fresh ? 1 : 0 });
+      entries.set(id, { ...b, reach: fresh ? 0 : 1, opacity: fresh ? 1 : 0, from: fresh ? 1 : 0, f: 0 });
     }
     if (!moving() || next?.direction == null) settle();
     dirty = true;
@@ -149,7 +196,7 @@ export function mount(container, ctx) {
 
   function settle() {
     for (const [id, entry] of entries) {
-      entry.reach = 1; entry.opacity = entry.target;
+      entry.reach = 1; entry.opacity = entry.target; entry.from = entry.target; entry.f = 1;
       if (entry.target === 0) entries.delete(id);
     }
   }
@@ -179,25 +226,55 @@ export function mount(container, ctx) {
         paint.drawImage(shown.sheet, cx - shown.size / 2, cy - shown.size / 2);
         continue;
       }
-      // The wet front: the outline the paint has reached, a little softer just past it.
+      // The wet front: each stretch of the outline where its water has run (flow), the wash drawn
+      // once inside it, and a pale damp halo just past it that dries as the spread ends, so that the
+      // last frame of the spread is the wash at rest.
       const shape = shapeOf(entry.seed);
+      const t = entry.reach;
       const towardX = Math.sign(entry.x - 0.5) * 0.35, towardY = Math.sign(entry.y - 0.5) * 0.3;
       // The drop falls off-centre, toward the edge of the window, and the paint runs inward.
-      const ox = cx + towardX * shown.radius * (1 - entry.reach), oy = cy + towardY * shown.radius * (1 - entry.reach);
-      const reach = 1.8 * entry.reach;
-      for (const [grow, share] of [[1.12, 0.35], [1, 1]]) {
-        paint.save();
-        paint.beginPath();
-        shape.base.forEach((p, i) => {
-          const x = ox + p.x * shown.radius * reach * grow;
-          const y = oy + p.y * shown.radius * reach * grow;
+      const settled = 1 - Math.pow(1 - t, 3);
+      const ox = cx + towardX * shown.radius * (1 - settled), oy = cy + towardY * shown.radius * (1 - settled);
+      // The wash grows together, its lobes a little ahead or behind, its wet edge uneven until it
+      // rests; past the paint the mask keeps growing, unseen, so that nothing is clipped at the end.
+      const together = spreadOut(t);
+      const beyond = 0.12 * smooth(Math.max(0, (t - 0.85) / 0.15));
+      const front = (grow) => {
+        shape.front.forEach((d, i) => {
+          const r = shown.radius * (d.reach * (0.6 * together + 0.4 * flow(t, d)) * (1 + 0.05 * (1 - t) * d.edge) + beyond) * grow;
+          const x = ox + Math.cos(d.angle) * r, y = oy + Math.sin(d.angle) * r;
           if (i) paint.lineTo(x, y); else paint.moveTo(x, y);
         });
-        paint.closePath(); paint.clip();
-        paint.globalAlpha = alpha * share;
+        paint.closePath();
+      };
+      paint.save();
+      paint.beginPath(); front(1); paint.clip();
+      paint.globalAlpha = alpha;
+      paint.drawImage(shown.sheet, cx - shown.size / 2, cy - shown.size / 2);
+      paint.restore();
+      const damp = 0.3 * Math.pow(1 - t, 2);
+      if (damp > 0.002) {
+        paint.save();
+        paint.beginPath(); front(1.08); front(1); paint.clip('evenodd');
+        paint.globalAlpha = alpha * damp;
         paint.drawImage(shown.sheet, cx - shown.size / 2, cy - shown.size / 2);
         paint.restore();
       }
+    }
+    // The paper stays light where one reads: the washes thin out toward the middle of the room.
+    if (props.clear > 0) {
+      paint.save();
+      paint.globalCompositeOperation = 'destination-out';
+      paint.globalAlpha = props.clear;
+      paint.translate(canvas.width / 2, top + room / 2);
+      paint.scale(canvas.width * 0.42, room * 0.46);
+      const veil = paint.createRadialGradient(0, 0, 0, 0, 0, 1);
+      veil.addColorStop(0, props.lagoon);
+      veil.addColorStop(0.45, props.lagoon);
+      veil.addColorStop(1, 'transparent');
+      paint.fillStyle = veil;
+      paint.fillRect(-1, -1, 2, 2);
+      paint.restore();
     }
     // The washes thin out before the bars rather than stopping on a straight line.
     const fade = Math.min(room / 4, 56 * ratio);
@@ -217,20 +294,20 @@ export function mount(container, ctx) {
   }
 
   // ── Time ──
-  const easeOut = (t) => 1 - Math.pow(1 - t, 3);
+  // reach is the spread's time (0 to 1, linear); flow turns it into how far a stretch has run.
   const offFrame = host.onFrame((dt) => {
     let changed = dirty;
     const spreadRate = dt / Math.max(0.1, props.spread);
     const fadeRate = dt / Math.max(0.1, props.fade);
     for (const [id, entry] of entries) {
       if (entry.reach < 1) {
-        entry.linear = Math.min(1, (entry.linear ?? 0) + spreadRate);
-        entry.reach = entry.linear >= 1 ? 1 : easeOut(entry.linear);
+        entry.reach = Math.min(1, entry.reach + spreadRate);
         changed = true;
       }
       if (entry.opacity !== entry.target) {
-        const step = Math.sign(entry.target - entry.opacity) * fadeRate;
-        entry.opacity = Math.abs(entry.target - entry.opacity) <= Math.abs(step) ? entry.target : entry.opacity + step;
+        // Drying eases in and out: no start, no stop to see.
+        entry.f = Math.min(1, entry.f + fadeRate);
+        entry.opacity = entry.f >= 1 ? entry.target : entry.from + (entry.target - entry.from) * smooth(entry.f);
         changed = true;
       }
       if (entry.opacity === 0 && entry.target === 0) entries.delete(id);

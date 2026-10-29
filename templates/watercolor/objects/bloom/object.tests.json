@@ -238,7 +238,7 @@
         },
         {
           "action": "step",
-          "frames": 260
+          "frames": 300
         },
         {
           "action": "expect-state",

@@ -90,23 +90,34 @@
         "x-group": "Washes",
         "x-control": "slider"
       },
+      "clear": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 0.8,
+        "multipleOf": 0.05,
+        "default": 0.5,
+        "title": "Reading area",
+        "description": "How light the paper stays in the middle of the window, where one reads: the washes thin out toward it (0: as strong everywhere).",
+        "x-group": "Washes",
+        "x-control": "slider"
+      },
       "spread": {
         "type": "number",
-        "minimum": 0.8,
-        "maximum": 5,
+        "minimum": 1.5,
+        "maximum": 8,
         "multipleOf": 0.1,
-        "default": 2.8,
+        "default": 4.5,
         "title": "Spreading (s)",
-        "description": "Seconds a new wash takes to spread into the paper when the learner moves on.",
+        "description": "Seconds a new wash takes to spread into the paper when the learner moves on: quick at first, then slower and slower, each stretch of its edge at its own pace.",
         "x-group": "Motion",
         "x-control": "slider"
       },
       "fade": {
         "type": "number",
-        "minimum": 0.4,
-        "maximum": 3,
+        "minimum": 0.6,
+        "maximum": 5,
         "multipleOf": 0.1,
-        "default": 1.4,
+        "default": 2.4,
         "title": "Drying (s)",
         "description": "Seconds a wash takes to dry into a pale stain, or to fade away.",
         "x-group": "Motion",
@@ -122,6 +133,7 @@
       "ochre",
       "strength",
       "count",
+      "clear",
       "spread",
       "fade"
     ]

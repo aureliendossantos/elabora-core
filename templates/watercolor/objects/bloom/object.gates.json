@@ -2,7 +2,7 @@
   "object": "bloom",
   "version": "1.0.0",
   "elabora": "0.1.0",
-  "at": "2026-10-29T02:22:19.864Z",
+  "at": "2026-10-29T11:08:58.813Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -23,16 +23,16 @@
     "maxTextureSize": null,
     "webglContexts": 0,
     "contextLost": false,
-    "bootMs": 92,
+    "bootMs": 102,
     "bootSamples": [
-      77,
-      75,
-      106,
-      110,
-      113,
-      70,
-      92,
-      93
+      125,
+      76,
+      104,
+      102,
+      112,
+      112,
+      96,
+      91
     ]
   },
   "tests": [
@@ -65,5 +65,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:a8487eedb6ed99583b6118d9c3dac30a4be355e4a2fef05a8ec48cb31ea163d0"
+  "fingerprint": "sha256:1ac9f20783278620c47610744ec2c421a1860b15a480bc6f33d630c97b965cf5"
 }
