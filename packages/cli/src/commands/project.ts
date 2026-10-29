@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { projectMarkdown } from '@elabora/core/project/markdown';
 import { summarizeNotes } from '@elabora/core/format/migrations/index';
 import { formatDiagnostic } from '@elabora/core/diagnostics/index';
@@ -40,7 +42,10 @@ const init = defineCommand({
       return reportingFailures(async () => {
         const template = moduleTemplate(flags.template!);
         const made = await createFromTemplate(template.dir, dir, { id: flags.id!, title: flags.title!, language: flags.lang || 'fr', ...(Object.values(brief).some((value) => value !== undefined) ? { brief } : {}) });
-        console.log(`Created ${made.dir} from the template ${template.id} (${template.name.en}), in ${made.language}: ${made.files} files.\nNext: README.md says how the charter works; replace the placeholder texts with the storyboard's, then run elabora validate.`);
+        // Its free objects are someone else's code: the map to read before changing one.
+        const objectsDir = path.join(made.dir, 'objects');
+        const objects = fs.existsSync(objectsDir) ? fs.readdirSync(objectsDir).filter((name) => fs.existsSync(path.join(objectsDir, name, 'object.manifest.json'))) : [];
+        console.log(`Created ${made.dir} from the template ${template.id} (${template.name.en}), in ${made.language}: ${made.files} files.\nNext: README.md says how the charter works; replace the placeholder texts with the storyboard's, then run elabora validate.${objects.length ? `\nIts free objects (${objects.join(', ')}): elabora object map ${made.dir} <id> gives one's sections and lines before you change it; elabora object replay ${made.dir} <id> shows it moving in the course.` : ''}`);
         return 0;
       });
     }

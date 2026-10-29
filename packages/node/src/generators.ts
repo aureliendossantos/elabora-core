@@ -70,8 +70,17 @@ export async function runGenerators(dir: string, { course, plan, only }: Generat
     fs.mkdirSync(path.dirname(moduleFile), { recursive: true });
     fs.writeFileSync(moduleFile, code);
     const written: string[] = [];
+    // The tokens it reads: by name; listing them all (Object.keys…), or reading course.theme, counts as all.
+    const read = new Set<string>();
+    let readAll = false;
+    const watchedTokens = new Proxy(tokens, {
+      get(target, key, receiver) { if (typeof key === 'string') read.add(key); return Reflect.get(target, key, receiver); },
+      has(target, key) { if (typeof key === 'string') read.add(key); return Reflect.has(target, key); },
+      ownKeys(target) { readAll = true; return Reflect.ownKeys(target); }
+    });
+    const watchedCourse = course ? new Proxy(course, { get(target, key, receiver) { if (key === 'theme') readAll = true; return Reflect.get(target, key, receiver); } }) : course;
     const api: GeneratorApi = {
-      tokens, course, plan, language: course?.language || 'en',
+      tokens: watchedTokens, course: watchedCourse, plan, language: course?.language || 'en',
       write(target, content) {
         const normalized = path.posix.normalize(String(target).replace(/^assets\//, ''));
         if (normalized.startsWith('..') || path.posix.isAbsolute(normalized) || !/^[A-Za-z0-9._/-]+$/.test(normalized)) throw new Error(`write("${target}"): use a portable path inside assets/`);
@@ -89,6 +98,15 @@ export async function runGenerators(dir: string, { course, plan, only }: Generat
       if (typeof run !== 'function') throw new Error('the module must export a default function');
       await (run as Generator)(api); // the author's function: its signature cannot be checked at run time
       for (const [asset, entry] of Object.entries(provenance.assets)) if (entry.generator === rel && !written.includes(asset)) delete provenance.assets[asset];
+      // Its assets depend on the tokens it read, not on the others.
+      // A token read before it exists counts too: adding it later makes the assets stale.
+      const names = readAll ? null : [...read].sort();
+      const narrowed = names ? generatorInputsHash(files, course, rel, names) : null;
+      for (const asset of written) {
+        const entry = provenance.assets[asset];
+        if (!entry) continue;
+        if (names && narrowed?.hash) { entry.tokens = names; entry.inputsHash = narrowed.hash; } else delete entry.tokens;
+      }
       const description = fieldOf(fieldOf(module, 'meta'), 'description');
       results.push({ generator: rel, outputs: written, description: typeof description === 'string' && description ? description : null });
     } catch (error) {

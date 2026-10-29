@@ -128,18 +128,18 @@ export function checkGenerators(ctx: CourseCheckContext): void {
   const { project, reporter } = ctx;
   const generators = listGenerators(project);
   const provenance = readProvenance(project);
-  const byGenerator = new Map<unknown, { asset: string; inputsHash: unknown }[]>();
+  const byGenerator = new Map<unknown, { asset: string; inputsHash: unknown; tokens: string[] | null }[]>();
   for (const [asset, entry] of Object.entries(provenance.assets || {})) {
-    const { generator, inputsHash, outputHash } = fieldsOf(entry);
+    const { generator, inputsHash, outputHash, tokens } = fieldsOf(entry);
     if (!byGenerator.has(generator)) byGenerator.set(generator, []);
-    byGenerator.get(generator)?.push({ asset, inputsHash });
+    byGenerator.get(generator)?.push({ asset, inputsHash, tokens: Array.isArray(tokens) ? tokens.map(String) : null });
     const hash = fileHash(project.files, `assets/${asset}`);
     if (hash !== null && hash !== outputHash) reporter.emit('W_GENERATED_ASSET_EDITED', { file: `assets/${asset}`, target: asset, message: `assets/${asset} differs from what ${generator} produced.` });
   }
   for (const generator of generators) {
-    const { hash, error } = generatorInputsHash(project.files, ctx.course, generator);
-    if (error) { reporter.emit('E_GENERATOR', { file: generator, message: error }); continue; }
     const entries = byGenerator.get(generator) || [];
+    const { hash, error } = generatorInputsHash(project.files, ctx.course, generator, entries[0]?.tokens);
+    if (error) { reporter.emit('E_GENERATOR', { file: generator, message: error }); continue; }
     if (!entries.length) reporter.emit('W_GENERATED_ASSET_STALE', { file: generator, message: `${generator} has never been run.` });
     else if (entries.some((entry) => entry.inputsHash !== hash)) reporter.emit('W_GENERATED_ASSET_STALE', { file: generator, message: `${generator} or one of its inputs changed: ${entries.length} asset(s) to regenerate (${entries.map((entry) => entry.asset).slice(0, 4).join(', ')}).` });
   }

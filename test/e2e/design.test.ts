@@ -418,6 +418,30 @@ test('backdrop decoration: object new --decoration, its gates, where the screen 
   assert.equal(replay.frames.length, 4, 'three snapshots and the end');
 });
 
+test('#elabora-app says where the screen stands in the course, backdrop or not: data-screen-index, data-section-index, data-section-count and the same as custom properties', { timeout: 180000 }, async () => {
+  const { dir } = slidesCopy();
+  const project = loadProjectFromDir(dir);
+  const ids = screenOrder(project).map((entry) => entry.id);
+  const sections: { id: string; screens: string[] }[] = project.course!.sections;
+  const sectionOf = (id: string) => sections.findIndex((section) => section.screens.includes(id));
+  await openPlayer(dir, async (page, errors) => {
+    for (const id of [ids[0], ids.at(-1)!]) {
+      await page.evaluate((screen) => (window as PlayerWindow).__elabora.go(screen), id);
+      const where = await page.evaluate(() => {
+        const app = document.getElementById('elabora-app')!;
+        const style = getComputedStyle(app);
+        return { data: { screen: app.dataset.screenIndex, section: app.dataset.sectionIndex ?? null, count: app.dataset.sectionCount }, css: { screen: style.getPropertyValue('--t-screen-index').trim(), count: style.getPropertyValue('--t-section-count').trim() } };
+      });
+      assert.equal(where.data.screen, String(ids.indexOf(id)));
+      assert.equal(where.css.screen, String(ids.indexOf(id)));
+      assert.equal(where.data.count, String(sections.length));
+      assert.equal(where.css.count, String(sections.length));
+      assert.equal(where.data.section, sectionOf(id) >= 0 ? String(sectionOf(id)) : null, id);
+    }
+    assert.deepEqual(errors, []);
+  });
+});
+
 test('a click in the slide reveals the next step; back on the screen, the step reached', { timeout: 180000 }, async () => {
   const { dir } = slidesCopy();
   const s = readJSON(dir, 'screens/chemin.json');

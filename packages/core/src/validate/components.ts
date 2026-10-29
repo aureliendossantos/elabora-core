@@ -80,7 +80,7 @@ export function checkComponents(ctx: CourseCheckContext): void {
 }
 
 function checkDefinition(ctx: CourseCheckContext, component: ComponentDescriptor, source: ComponentSource): void {
-  const { project, reporter } = ctx;
+  const { project, reporter, registry } = ctx;
   const manifest = source.manifest;
   if (!manifest) return;
   const file = component.file;
@@ -102,6 +102,18 @@ function checkDefinition(ctx: CourseCheckContext, component: ComponentDescriptor
     for (const problem of enumLabelProblems(name, prop)) reporter.emit('E_COMPONENT_SCHEMA', { file, path: `${own.at}/properties/${name}${problem.path}`, target: id, message: `${id}: ${problem.message}.` });
   }
   if (manifest.extends && manifest.props && component.behavior) reporter.emit('E_COMPONENT_SCHEMA', { file, path: '/props', target: id, message: `A fork of ${component.root} keeps the props of ${component.root}: use propsExtend to add props instead of replacing them.` });
+  const omitted = Array.isArray(manifest.propsOmit) ? manifest.propsOmit.map(String) : [];
+  if (omitted.length && !manifest.extends) reporter.emit('E_COMPONENT_SCHEMA', { file, path: '/propsOmit', target: id, message: 'propsOmit is for forks: it drops props of the parent.' });
+  else if (omitted.length && manifest.props) reporter.emit('E_COMPONENT_SCHEMA', { file, path: '/propsOmit', target: id, message: 'propsOmit drops props of the parent: a fork that declares its own props leaves those out instead.' });
+  else if (omitted.length) {
+    const parent = component.parent ? registry.get(component.parent) : null;
+    const inherited = parent && isRecord(parent.schema?.properties) ? parent.schema.properties : {};
+    const kept = new Set(Array.isArray(parent?.schema?.required) && component.behavior ? parent.schema.required.map(String) : []);
+    for (const name of omitted) {
+      if (!(name in inherited)) reporter.emit('E_COMPONENT_SCHEMA', { file, path: '/propsOmit', target: id, message: `propsOmit names "${name}", which ${component.parent} does not have. Its props: ${Object.keys(inherited).join(', ') || 'none'}.` });
+      else if (kept.has(name)) reporter.emit('E_COMPONENT_SCHEMA', { file, path: '/propsOmit', target: id, message: `"${name}" is required by the behaviour of ${component.root}: a fork of it cannot drop it.` });
+    }
+  }
   if (manifest.propsExtend && !manifest.extends) reporter.emit('E_COMPONENT_SCHEMA', { file, path: '/propsExtend', target: id, message: 'propsExtend is for forks: without extends, declare props.' });
   if (component.level === 'screen' && component.behavior) reporter.emit('E_COMPONENT_LEVEL', { file, path: '/level', target: id, message: 'A screen layout cannot fork an activity.' });
 

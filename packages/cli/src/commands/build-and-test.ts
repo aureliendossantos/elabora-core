@@ -57,7 +57,7 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       opens every screen, whatever the course's rules
   look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|answered] [--step <n>] [--layer <id>]
        [--at <moment> | --sheet] [--scroll <px|N%|block>,…] [--block <id> [--scale 2] [--act <action>]…] [--viewport] [--motion]
-       [--language <code>] [--controls] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
+       [--language <code>] [--controls] [--select <css>] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
                                                       See a screen while designing, in well under a second: a look server kept warm
                                                       for the course (one browser, no build) renders it from the files as they are,
                                                       with the player's header and footer; free objects an edit did not touch keep
@@ -86,13 +86,17 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       at rest after those choices, its end in the window: notes, the next options,
                                                       or the debrief. On a screen with free objects it says each control the
                                                       page covers (a click on its middle would not reach it); --controls lists
-                                                      every control with its box in the window, instead of looking for them
+                                                      every control with its box in the window, instead of looking for them.
+                                                      --select <css>: the computed styles of what it matches (a layout's title, an
+                                                      ornament) and its parent's layout
   screenshot [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial,answered] [--step <n>] [--layer <id>]
-             [--at 0,2000,4000|l1,l2:end | --scroll 0,25%,50%,1800] [--motion] [--viewport] [--out shot.png | --out-dir <dir>]
+             [--at 0,2000,4000|l1,l2:end | --scroll 0,25%,50%,1800] [--motion] [--viewport] [--language <code> [--allow-missing]]
+             [--from <screen>] [--out shot.png | --out-dir <dir>]
                                                       Render screens to PNG once images and free objects are ready. answered: every
                                                       activity shows its tallest feedback. --at: filmstrip of the animations (ms),
                                                       or of a narrated screen as each line starts (l2) or ends (l2:end), with
-                                                      --layer of that layer's own timeline;
+                                                      --layer of that layer's own timeline; with --from <screen>, the passage from
+                                                      that screen (times from the move, animations on: continuity, the backdrop);
                                                       --scroll: filmstrip down the page (px or % of it: scroll-driven animations and
                                                       objects). One contact sheet. Several shots share one build and one browser;
                                                       --out names one image, so several shots are refused with it (exit code 2):
@@ -177,8 +181,8 @@ const test = defineCommand({
   name: 'test',
   flags: { package: 'string', profile: 'list', mode: 'list', browser: 'list', parallel: 'string', 'no-a11y': 'boolean', out: 'string', json: 'boolean' },
   async run({ positionals: [dir = '.'], flags }) {
-    const { testPackage } = await import('@elabora/node/emulator/run');
-    const runLine = (run: PackageRun) => `${run.ok ? '✔' : '✘'} ${run.profile.padEnd(15)} ${run.launch.padEnd(14)} ${run.browser}${run.ok ? '' : `\n    ${run.failures.map((f) => `${f.code}: ${f.message}`).join('\n    ')}`}`;
+    const { testPackage, TIMED_OUT } = await import('@elabora/node/emulator/run');
+    const runLine = (run: PackageRun) => `${run.ok ? '✔' : '✘'} ${run.profile.padEnd(15)} ${run.launch.padEnd(14)} ${run.browser}${run.retried ? ' (run again alone after a timeout)' : ''}${run.ok ? '' : `\n    ${run.failures.map((f) => `${f.code}: ${f.message}`).join('\n    ')}`}`;
     const onRun = flags.json ? undefined : (run: PackageRun) => console.log(runLine(run));
     const parallel = Number(flags.parallel) || undefined;
     const report = (result: PackageTestWithFit, reportPath: string | null) => {
@@ -191,8 +195,8 @@ const test = defineCommand({
         for (const d of result.diagnostics.filter((d) => ['W_SLIDE_OVERFLOW', 'I_SLIDE_OVERFLOW_MINIMUM', 'W_SLIDE_SHIFT', 'W_TEXT_CONTRAST_MEASURED', 'W_PLAYER_BAR_WRAPS', 'W_SCROLL_ANIMATION_UNFINISHED'].includes(d.code))) console.log(`  ${d.severity} ${d.code} ${d.message}`);
         console.log(`\n${result.ok ? '✔' : '✘'} ${result.runs.filter((run) => run.ok).length}/${result.runs.length} runs passed.${reportPath ? ` Results added to ${path.basename(reportPath)}.` : ''}`);
         // Runs that waited too long fail on a loaded machine more than in the course.
-        const late = result.runs.filter((run) => !run.ok && run.failures.some((failure) => /Timeout \d+ms exceeded|no progress for \d+ s|did not open/i.test(failure.message)));
-        if (late.length && parallel !== 1) console.log(`  ${late.length} run(s) failed on a timeout (load average ${os.loadavg()[0].toFixed(1)} on ${os.availableParallelism()} cores): run again with --parallel 1 before looking for a cause in the course.`);
+        const late = result.runs.filter((run) => !run.ok && run.failures.some((failure) => TIMED_OUT.test(failure.message)));
+        if (late.length) console.log(`  ${late.length} run(s) failed on a timeout${result.runs.some((run) => run.retried) ? ', run again alone' : ''} (load average ${os.loadavg()[0].toFixed(1)} on ${os.availableParallelism()} cores): try again when the machine is quieter before looking for a cause in the course.`);
       }
       return result.ok ? 0 : 1;
     };
@@ -249,7 +253,7 @@ const previewCommand = defineCommand({
 
 const screenshot = defineCommand({
   name: 'screenshot',
-  flags: { screen: 'list', size: 'list', width: 'string', height: 'string', state: 'list', step: 'string', layer: 'string', at: 'list', scroll: 'list', motion: 'boolean', viewport: 'boolean', out: 'string', 'out-dir': 'string' },
+  flags: { screen: 'list', size: 'list', width: 'string', height: 'string', state: 'list', step: 'string', layer: 'string', at: 'list', scroll: 'list', motion: 'boolean', viewport: 'boolean', language: 'string', 'allow-missing': 'boolean', from: 'string', out: 'string', 'out-dir': 'string' },
   async run({ positionals: [dir = '.'], flags }) {
     // Every combination of screens × sizes × states, in one build and one browser.
     const { capture } = await import('@elabora/node/capture');
@@ -259,15 +263,24 @@ const screenshot = defineCommand({
     const states = flags.state || ['initial'];
     // Times in ms, or narration lines (l2, l2:end).
     const at = flags.at?.map((value) => (/^\d+(\.\d+)?$/.test(value.trim()) ? Number(value) : value.trim()));
+    if (flags.from && !at?.length) { console.error('✘ --from films a passage: give --at the moments to capture (ms from the move), e.g. --at 0,300,600,900.'); return 2; }
     const shots: Shot[] = [];
     for (const screen of screens) for (const [width, height] of sizes) for (const state of states) {
-      shots.push({ screen, width, height, state, step: flags.step ? Number(flags.step) : undefined, layer: flags.layer, at, scroll: flags.scroll, motion: flags.motion, fullPage: !flags.viewport });
+      shots.push({ screen, width, height, state, step: flags.step ? Number(flags.step) : undefined, layer: flags.layer, at, scroll: flags.scroll, motion: flags.motion || !!flags.from, fullPage: !flags.viewport, ...(flags.from ? { from: flags.from } : {}) });
     }
     // --out names the file of one shot. For several, the files would go where --out says nothing of:
     // into screenshots/ of the folder the command runs in (the course's, for an agent), unasked.
     if (shots.length > 1 && flags.out) { console.error(`✘ --out names one image, and ${shots.length} shots were asked (${screens.length} screen(s) × ${sizes.length} size(s) × ${states.length} state(s)): give --out-dir <dir>, which gets one file per shot (<screen>-<width>x<height>.png).`); return 2; }
     if (flags.out && flags['out-dir']) { console.error('✘ Give --out (one image) or --out-dir (a folder), not both.'); return 2; }
-    const result = await capture(dir, shots);
+    if (flags['allow-missing'] && !flags.language) { console.error('✘ --allow-missing goes with --language <code>.'); return 2; }
+    const { withCourseLanguage } = await import('@elabora/node/translate');
+    let result: Awaited<ReturnType<typeof capture>>;
+    try {
+      result = await withCourseLanguage(dir, { language: flags.language, allowMissing: flags['allow-missing'] }, (root) => capture(root, shots));
+    } catch (error) {
+      console.error(`✘ ${errorMessage(error)}`);
+      return 2;
+    }
     if (!result.shots) { printDiagnostics(result.diagnostics); return 1; }
     // A filmstrip shows the screen's own animations; free objects run on their own clock.
     if (at && result.shots.some((taken) => taken.ok && taken.objects?.length)) console.log(`note: ${OBJECTS_AT_NOTE}`);

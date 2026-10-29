@@ -81,6 +81,26 @@ const MAX_PAGES = 3;
 // Tool folders and files that are not the course's.
 const NOT_COURSE = /^(\.elabora|dist|node_modules|\.git)([\\/]|$)/;
 
+// The elements a selector matches, with the styles that place and paint them and their parent's layout
+// (what centres a child: align-items, justify-content, text-align…).
+const SELECT_STYLES = ['display', 'position', 'inset', 'z-index', 'width', 'height', 'margin', 'padding', 'align-self', 'justify-self', 'text-align', 'font-family', 'font-size', 'font-weight', 'line-height', 'color', 'background-color', 'border', 'opacity', 'transform', 'overflow'];
+const PARENT_STYLES = ['display', 'flex-direction', 'align-items', 'justify-content', 'justify-items', 'grid-template-columns', 'text-align', 'gap'];
+export function selectedElements(page: Page, selector: string): Promise<NonNullable<Extract<LookResult, { ok: true }>['selected']>> {
+  return page.evaluate(({ selector, own, parentKeys }) => {
+    const name = (node: Element) => `${node.tagName.toLowerCase()}${node.id ? `#${node.id}` : ''}${[...node.classList].slice(0, 4).map((c) => `.${c}`).join('')}`;
+    const pick = (node: Element, keys: string[]) => { const style = getComputedStyle(node); return Object.fromEntries(keys.map((key) => [key, style.getPropertyValue(key)]).filter(([, value]) => value !== '')); };
+    let nodes: Element[];
+    try { nodes = [...document.querySelectorAll(selector)]; } catch (error) { return { selector, count: 0, elements: [], selectorError: String((error as Error).message) }; }
+    return {
+      selector, count: nodes.length,
+      elements: nodes.slice(0, 5).map((node) => {
+        const box = node.getBoundingClientRect();
+        return { element: name(node), rect: { x: Math.round(box.x + scrollX), y: Math.round(box.y + scrollY), width: Math.round(box.width), height: Math.round(box.height) }, styles: pick(node, own), parent: node.parentElement ? { element: name(node.parentElement), styles: pick(node.parentElement, parentKeys) } : null };
+      })
+    };
+  }, { selector, own: SELECT_STYLES, parentKeys: PARENT_STYLES });
+}
+
 // The backdrop as the page shows it (null: the course has none).
 export function backdropReport(page: Page): Promise<BackdropReport | null> {
   return page.evaluate(() => {
@@ -344,11 +364,12 @@ export async function startLooker(dir: string, { port = 0, live = true }: Looker
     const backdrop = await backdropReport(tab);
     // Where the objects' controls are, and what covers them (the window as captured).
     const controls = objects.length ? await objectControls(tab).catch(() => []) : [];
+    const selected = request.select ? await selectedElements(tab, request.select) : null;
     return {
       ok: true, screen, width, height, state: view.state, step: view.step, layer: view.layer,
       presentation: project.course.presentation?.mode === 'slides' ? 'slides' : 'scroll',
       type: marks || downThePage ? 'png' : type, image, objects, started: startedFrames, page: metrics, blocks, styles, ...(marks ? { marks: marks.map((mark) => ({ time: mark.time, label: mark.label })) } : {}),
-      ...(scrolled ? { scrolled } : {}), ...(clip ? { clip } : {}), ...(report ? { motion: report } : {}), ...(acted ? { act: acted } : {}), ...(backdrop ? { backdrop } : {}), ...(controls.length ? { controls } : {}), consoleErrors: [...target.errors],
+      ...(scrolled ? { scrolled } : {}), ...(clip ? { clip } : {}), ...(report ? { motion: report } : {}), ...(acted ? { act: acted } : {}), ...(backdrop ? { backdrop } : {}), ...(controls.length ? { controls } : {}), ...(selected ? { selected } : {}), consoleErrors: [...target.errors],
       browser: browserIdentity(tab.context().browser()!),
       ms: Math.round(performance.now() - started)
     };

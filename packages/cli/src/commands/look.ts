@@ -15,7 +15,7 @@ import { motionText } from '@elabora/node/motion-report';
 
 export const look = defineCommand({
   name: 'look',
-  flags: { screen: 'list', size: 'list', state: 'string', step: 'string', layer: 'string', at: 'string', sheet: 'boolean', scroll: 'list', block: 'string', scale: 'string', act: 'repeat', viewport: 'boolean', motion: 'boolean', language: 'string', out: 'string', 'out-dir': 'string', json: 'boolean', url: 'boolean', stop: 'boolean', serve: 'boolean', idle: 'string', controls: 'boolean' },
+  flags: { screen: 'list', size: 'list', state: 'string', step: 'string', layer: 'string', at: 'string', sheet: 'boolean', scroll: 'list', block: 'string', scale: 'string', act: 'repeat', viewport: 'boolean', motion: 'boolean', language: 'string', out: 'string', 'out-dir': 'string', json: 'boolean', url: 'boolean', stop: 'boolean', serve: 'boolean', idle: 'string', controls: 'boolean', select: 'string' },
   async run({ positionals: [dir = '.'], flags }) {
     const root = path.resolve(dir);
     if (!fs.existsSync(path.join(root, 'course.json'))) { console.error(`${root} is not an Elabora course (no course.json).`); return 2; }
@@ -53,7 +53,7 @@ export const look = defineCommand({
       const type = flags.out ? (/\.png$/i.test(flags.out) ? 'png' : 'jpeg') : undefined;
       const { result } = await looks.lookThroughServer(root, {
         screen, width, height, state: flags.state === 'answered' ? 'answered' : 'initial', step, layer: flags.layer, ...(flags.at ? { at: flags.at } : {}), ...(flags.sheet ? { sheet: true } : {}), language: flags.language, full: !flags.viewport, motion: flags.motion, type,
-        ...(flags.scroll?.length ? { scroll: flags.scroll } : {}), ...(flags.block ? { block: flags.block } : {}), ...(flags.scale ? { scale: flags.scale === '2' ? 2 : 1 } : {}), ...(flags.act?.length ? { act: flags.act } : {})
+        ...(flags.scroll?.length ? { scroll: flags.scroll } : {}), ...(flags.block ? { block: flags.block } : {}), ...(flags.scale ? { scale: flags.scale === '2' ? 2 : 1 } : {}), ...(flags.act?.length ? { act: flags.act } : {}), ...(flags.select ? { select: flags.select } : {})
       }, { start });
       if (!result.ok) {
         failed = true;
@@ -71,8 +71,9 @@ export const look = defineCommand({
       const objects = result.objects.length ? `; ${result.objects.length} free object(s)${result.objects.some((object) => object.failed) ? `, failed: ${result.objects.filter((object) => object.failed).map((object) => object.block).join(', ')}` : ''}${result.started ? `, ${result.started} (re)started` : ', kept running'}` : '';
       if (result.scrolled && result.scrolled.length > 1) console.log(`✔ ${file}  ${(result.ms / 1000).toFixed(2)} s — down the page:\n    ${result.scrolled.map((stop) => stop.label).join('\n    ')}`);
       else if (result.marks) console.log(`✔ ${file}  ${(result.ms / 1000).toFixed(2)} s — ${result.marks.length} marks:\n    ${result.marks.map((mark) => mark.label).join('\n    ')}`);
-      else console.log(`✔ ${file}  ${(result.ms / 1000).toFixed(2)} s — ${room}${objects}${backdropText(result.backdrop)}${result.consoleErrors.length ? `\n  console errors:\n    ${result.consoleErrors.join('\n    ')}` : ''}`);
+      else console.log(`✔ ${file}  ${(result.ms / 1000).toFixed(2)} s — ${room}${objects}${backdropText(result.backdrop, dir)}${result.consoleErrors.length ? `\n  console errors:\n    ${result.consoleErrors.join('\n    ')}` : ''}`);
       for (const line of looks.controlsText(result.controls ?? [], flags.controls)) console.log(`  ${line}`);
+      if (result.selected) for (const line of looks.selectedText(result.selected)) console.log(`  ${line}`);
       if ((flags.at || flags.sheet) && result.objects.length) console.log(`  note: ${looks.OBJECTS_AT_NOTE}`);
       if (result.clip) console.log(`  close-up of ${flags.block}: ${result.clip.width}×${result.clip.height} px of the page at ${result.clip.x},${result.clip.y}, ×${result.clip.scale}`);
       if (result.act) console.log(`  after ${result.act.actions.join(', ')}: state ${JSON.stringify(result.act.state)}${result.act.events.length ? `; events ${result.act.events.map((event) => `${event.name} ${JSON.stringify(event.payload)}`).join(', ')}` : '; no event'}`);
@@ -107,8 +108,9 @@ async function serveLooks(root: string, idleMs: number | undefined): Promise<num
 }
 
 // The backdrop in a look's line: its variant (or none shown) and its object's state.
-export function backdropText(backdrop: BackdropReport | undefined): string {
+export function backdropText(backdrop: BackdropReport | undefined, dir = '.'): string {
   if (!backdrop) return '';
   const variant = backdrop.hidden ? 'hidden (variant none)' : backdrop.variant ? `variant ${backdrop.variant}` : 'no variant';
-  return `; backdrop ${variant}${backdrop.section ? `, section ${backdrop.section}` : ''}${backdrop.object ? `, object ${backdrop.object.id} ${backdrop.object.state}` : ''}`;
+  // A look shows the decoration at rest: where to see it move (a passage, its timing).
+  return `; backdrop ${variant}${backdrop.section ? `, section ${backdrop.section}` : ''}${backdrop.object ? `, object ${backdrop.object.id} ${backdrop.object.state} (moving: elabora object replay ${dir} ${backdrop.object.id})` : ''}`;
 }

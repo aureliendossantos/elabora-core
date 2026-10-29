@@ -311,6 +311,7 @@ Generated from `packages/core/src/diagnostics/codes.ts` by `pnpm run docs`. Code
 | `I_SLIDE_OVERFLOW_MINIMUM` | Slide scrolls at the minimum window | At presentation.fit.minimum (1280×720 by default) this slide scrolls a little. That is accepted for the smallest supported size; check that nothing important is cut and that the activity stays usable. | F1 |
 | `I_COMPONENT_SINGLE_USE` | Component used once | A component pays off when reused. For a one-off look, a native block with a named style may be simpler to maintain. |  |
 | `I_COMPONENT_PARENT_CHANGED` | The parent of a fork has changed | Review the parent changes; update extends.version once the fork is up to date. |  |
+| `I_GATE_VISUAL_OTHER_ENGINE` | Gate 5: baselines recorded for this browser, the object has another's | Snapshots are compared with the baselines of the same browser engine (fonts and WebGL draw differently). The object's baselines were made with another engine: run elabora object test with that --browser to compare with them, or keep the new ones for this engine. |  |
 | `I_GATE_HUMAN_PENDING` | Human review pending (gates 7–8) | Pedagogical review and code review by a person; the client sees props and notes, not code. |  |
 
 ## Rules

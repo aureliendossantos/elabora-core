@@ -22,6 +22,10 @@ const HELP = `  object new [dir] <id> [--title <t>] [--objectives OBJ-1,OBJ-2 | 
                                                       and its expectations checked. The backdrop's decoration replays behind the
                                                       course with its bars, from --screen (default: the first one)`;
 
+const isDecoration = (dir: string, id: string): boolean => {
+  try { return JSON.parse(fs.readFileSync(path.join(dir, 'objects', id, 'object.manifest.json'), 'utf8')).pedagogicalRole === 'decoration'; } catch { return false; }
+};
+
 const USAGE = 'Usage: elabora object new|map|test|replay [dir] <id>';
 
 // [dir] <id>: with two positionals, the first one is the course folder.
@@ -73,6 +77,8 @@ const test = defineCommand({
       if (result.snapshots?.removed.length) console.log(`snapshots      removed, no test names their state any more: ${result.snapshots.removed.join(', ')}`);
       if (result.snapshots?.kept.length) console.log(`snapshots      kept for other browsers and systems, whose runs compare with them: ${result.snapshots.kept.join(', ')}`);
       console.log(`\n${result.ok ? '✔' : '✘'} ${id}${flags.only ? ` (only tests matching "${flags.only}": not recorded)` : ` — recorded in objects/${id}/object.gates.json`}`);
+      // The gates test it in an empty frame: a decoration is seen in the course by its replay.
+      if (isDecoration(dir, id)) console.log(`  Behind the course, with its bars: elabora object replay ${dir} ${id} [--screen <id>]`);
       // A step that waited too long fails on a loaded machine more than in the object (as elabora test says).
       const late = result.diagnostics.filter((d) => d.severity === 'error' && /Timeout \d+ms exceeded/i.test(d.message));
       if (late.length) console.log(`  ${late.length} failure(s) on a timeout (load average ${os.loadavg()[0].toFixed(1)} on ${os.availableParallelism()} cores): run the test again alone (--only "<test name>") before looking for a cause in the object.`);

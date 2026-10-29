@@ -58,7 +58,12 @@ export interface PackageRun {
   ok: boolean;
   failures: Diagnostic[];
   checks: { name: string; ok: boolean }[];
+  // Run again alone after it failed on a timeout beside others (a loaded machine).
+  retried?: boolean;
 }
+
+// A failure that says the machine was slow rather than the course wrong.
+export const TIMED_OUT = /Timeout \d+ms exceeded|no progress for \d+ s|content window did not open/i;
 
 export interface AccessibilityReport {
   screens: number; // screen states checked
@@ -162,7 +167,19 @@ export async function testPackage(options: TestPackageOptions): Promise<PackageT
   try {
     let next = 0;
     const worker = async () => { while (next < tasks.length) { const index = next++; await runTask(tasks[index], index); } };
-    await Promise.all(Array.from({ length: Math.max(1, Math.min(options.parallel || defaultParallel(), tasks.length)) }, worker));
+    const parallel = Math.max(1, Math.min(options.parallel || defaultParallel(), tasks.length));
+    await Promise.all(Array.from({ length: parallel }, worker));
+    // Runs that timed out beside others run again, one at a time: on a loaded machine that is what
+    // the author would do next (the accessibility audit of the first run is counted once).
+    if (parallel > 1) {
+      for (const [index, run] of runs.entries()) {
+        if (run.ok || !run.failures.some((failure) => TIMED_OUT.test(failure.message))) continue;
+        if (index === 0) Object.assign(accessibility, { screens: 0, violations: 0, details: [] }), delete accessibility.overflow;
+        await runTask(tasks[index], index);
+        runs[index].retried = true;
+        options.onRun?.(runs[index]);
+      }
+    }
   } finally {
     for (const browser of browsersOpen.values()) await (await browser.catch(() => null))?.close();
     await server.close();

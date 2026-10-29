@@ -170,6 +170,7 @@ See a screen while designing, in well under a second: a look server kept warm fo
 | `language` | string |  | A translation of the course (default: its language). |
 | `viewport` | boolean |  | Only the window (default: the whole page). |
 | `motion` | boolean |  | Animations on (default: reduced motion, transitions settled). |
+| `select` | string |  | A CSS selector: the computed styles of the elements it matches (five at most) and their parent's layout, for what a template or the theme draws outside the blocks (a title, a number, an ornament). |
 | `controls` | boolean |  | List every control of the screen's free objects with its box in the window (those covered by the page, a click on their middle not reaching them, are always said). |
 | `scroll` | string[] |  | The window scrolled to a position, animations on: px ("1800"), a percentage of the page ("100%"), or a block's id (the block in view). Several positions (or sheet on a screen without a timeline, default 0/25/50/75/100%): a contact sheet down the page, to see scroll-driven animations build up. |
 | `block` | string |  | A close-up of this block (cropped to its box with a small margin; PNG by default up to 2 megapixels, else JPEG), scrolled into view unless scroll says where. With scroll, block or motion the note says what moves: visible/clipped/outside, the animations and transitions of each block in the window (or of this block), their timeline (time, scroll, view) and progress, and the scroll-driven ones that CANNOT FINISH because the page ends before their range. |

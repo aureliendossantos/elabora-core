@@ -29,6 +29,8 @@ export interface ProvenanceEntry {
   generator: string;
   inputsHash: string;
   outputHash: string;
+  // The theme tokens the generator read when it ran (its hash covers those only); without it, all.
+  tokens?: string[];
 }
 
 export interface Provenance {
@@ -108,10 +110,13 @@ export function generatorInputs(files: ProjectFiles, entry: string): { inputs: s
   return errors.length ? { error: errors.join('; ') } : { inputs: [...seen].sort() };
 }
 
-// Hash of what a generator's output depends on: its input files, the theme tokens, the language.
-export function generatorInputsHash(files: ProjectFiles, course: Course | null | undefined, rel: string): { hash: string; inputs: string[]; error?: undefined } | { hash?: undefined; inputs?: undefined; error: string } {
+// Hash of what a generator's output depends on: its input files, the theme tokens (those it read,
+// when known: a token it never reads does not make its assets stale), the language.
+export function generatorInputsHash(files: ProjectFiles, course: Course | null | undefined, rel: string, tokenNames?: readonly string[] | null): { hash: string; inputs: string[]; error?: undefined } | { hash?: undefined; inputs?: undefined; error: string } {
   const r = generatorInputs(files, rel);
   if (r.error !== undefined) return { error: r.error };
   const hashes = Object.fromEntries(r.inputs.map((f) => [f, fileHash(files, f)]));
-  return { hash: `sha256:${sha256(canonicalJSON({ files: hashes, tokens: generatorTokens(course), language: course?.language || 'en' }))}`, inputs: r.inputs };
+  const all = generatorTokens(course);
+  const tokens = tokenNames ? Object.fromEntries(tokenNames.map((name) => [name, all[name] ?? null])) : all;
+  return { hash: `sha256:${sha256(canonicalJSON({ files: hashes, tokens, language: course?.language || 'en' }))}`, inputs: r.inputs };
 }

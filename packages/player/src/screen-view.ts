@@ -1097,9 +1097,26 @@ export function createScreenView(options: ScreenViewOptions) {
       sectionIndex: section ? sections.indexOf(section) : null, sectionCount: sections.length, direction: backdropDirection
     };
   }
+  // Where the screen stands in the course, on #elabora-app for every theme (backdrop or not):
+  // data-screen-index, data-section-index, data-section-count, and as numbers for calc():
+  // --t-screen-index, --t-section-index, --t-section-count. A screen outside any section has no
+  // section index.
+  let whereSent = '';
+  function markWhere(context: ObjectContext) {
+    const key = `${context.screenIndex}/${context.sectionIndex}/${context.sectionCount}`;
+    if (key === whereSent) return;
+    whereSent = key;
+    for (const name of ['screenIndex', 'sectionIndex', 'sectionCount'] as const) {
+      const value = context[name];
+      const property = `--t-${name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
+      if (value == null) { delete app.dataset[name]; app.style.removeProperty(property); }
+      else { app.dataset[name] = String(value); app.style.setProperty(property, String(value)); }
+    }
+  }
   function updateBackdrop() {
-    if (!backdropElement) return;
     const context = backdropContext();
+    if (screen) markWhere(context);
+    if (!backdropElement) return;
     const key = JSON.stringify(context);
     if (key === backdropSent) return;
     backdropSent = key;
@@ -1257,6 +1274,8 @@ export function createScreenView(options: ScreenViewOptions) {
       barsWatch?.disconnect();
       backdropElement?.remove();
       delete app.dataset.backdrop;
+      for (const name of ['screenIndex', 'sectionIndex', 'sectionCount'] as const) delete app.dataset[name];
+      for (const property of ['--t-screen-index', '--t-section-index', '--t-section-count']) app.style.removeProperty(property);
       for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog.t-layer')) dialog.remove();
       window.removeEventListener('resize', onResize);
     },

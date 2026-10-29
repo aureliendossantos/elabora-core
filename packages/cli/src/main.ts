@@ -67,6 +67,9 @@ export async function main(argv: readonly string[]): Promise<ExitCode> {
   if (word === undefined || word === 'help' || word === '--help') { console.log(HELP); return 0; }
   if (word === 'version' || word === '--version') { console.log(ELABORA_VERSION); return 0; }
   if (argv.includes('--help')) {
+    // A command: its own usage; a group's word (object, plan…): the group.
+    const named = COMMANDS.get(`${word} ${subcommand}`) ?? (subcommand === '--help' || !GROUP_OF_WORD.get(word)?.commands.some((command) => command.name.startsWith(`${word} `)) ? COMMANDS.get(word) : undefined);
+    if (named) { console.log(`${commandUsage(named.group, named.command.name)}\n(elabora help: every command)`); return 0; }
     const group = GROUP_OF_WORD.get(word);
     console.log(group ? section(group) : HELP);
     return 0;
@@ -96,7 +99,7 @@ export async function main(argv: readonly string[]): Promise<ExitCode> {
     return await command.run(args);
   } catch (error) {
     if (!(error instanceof ArgumentError)) throw error;
-    console.error(`${error.message} for "elabora ${command.name}".\n\nUsage:\n${commandUsage(group, command.name)}\n(elabora ${command.name.split(' ')[0]} --help: its whole group)`);
+    console.error(`${error.message} for "elabora ${command.name}".\n\nUsage:\n${commandUsage(group, command.name)}\n(elabora help: every command)`);
     return 2;
   }
 }

@@ -35,6 +35,9 @@ export interface Shot {
   // objects that follow the scroll (host.onView). Takes precedence over at.
   scroll?: (number | string)[];
   motion?: boolean; // animations on (default off: reduced motion, so steps and transitions are settled)
+  // With at: the passage from this screen to the one shot. The page shows it first, then goes to the
+  // screen; the times count from that move (continuity, D65; the backdrop; the screen's entrances).
+  from?: string;
   fullPage?: boolean; // default true (not with a layer)
 }
 
@@ -107,7 +110,8 @@ export async function capture(dir: string | null, shots: Shot[], { pkgDir }: { p
       const ids = await page.evaluate(openAllScreens);
       for (const [index, shot] of group.items) {
         const target = shot.screen || ids[0];
-        if (!ids.includes(target)) { results[index] = { ok: false, error: `Unknown screen "${target}". Screens: ${ids.join(', ')}` }; continue; }
+        const unknown = [target, shot.from].find((id) => id !== undefined && !ids.includes(id));
+        if (unknown) { results[index] = { ok: false, error: `Unknown screen "${unknown}". Screens: ${ids.join(', ')}` }; continue; }
         errors.length = 0;
         try { results[index] = { ok: true, ...(await shoot(browser, page, target, shot, group, momentAt)), browser: browserIdentity(browser), consoleErrors: [...errors] }; } catch (error) { results[index] = { ok: false, error: errorMessage(error).split('\n')[0] }; }
       }
@@ -133,14 +137,39 @@ interface ShotGroup {
 }
 
 async function shoot(browser: Browser, page: Page, screen: string, shot: Shot, group: ShotGroup, momentAt: (screen: string, anchor: string, layer?: string | null) => number) {
-  await page.evaluate(({ screen, step }) => {
+  const passage = !!shot.from && !!shot.at?.length;
+  if (passage) {
+    // The learner's progress as they leave it (the screens before it done).
+    await page.evaluate((from) => {
+      const elabora = window.__elabora;
+      const order = elabora.engine.screens;
+      elabora.engine.st.visited.clear();
+      elabora.engine.st.completed.clear();
+      for (const before of order.slice(0, Math.max(0, order.findIndex((candidate) => candidate.id === from)))) { elabora.engine.st.visited.add(before.key); elabora.engine.st.completed.add(before.key); }
+      elabora.go(from);
+      elabora.revealAll();
+    }, shot.from!);
+    await page.evaluate(() => window.__elabora.ready());
+    await page.waitForTimeout(400);
+  }
+  const moved = Date.now();
+  await page.evaluate(({ screen, step, passage }) => {
     const elabora = window.__elabora;
     for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog.t-layer')) dialog.close();
+    // The learner's progress when they reach this screen: the screens before it done, not the others
+    // (the bar and the outline show where a learner would be, not a course already finished).
+    const order = elabora.engine.screens;
+    const reached = order.findIndex((candidate) => candidate.id === screen);
+    for (const [index, candidate] of order.entries()) {
+      // A passage from a later screen keeps what the learner had done.
+      if (index < reached) { elabora.engine.st.visited.add(candidate.key); elabora.engine.st.completed.add(candidate.key); }
+      else if (!passage) { elabora.engine.st.visited.delete(candidate.key); elabora.engine.st.completed.delete(candidate.key); }
+    }
     elabora.go(screen);
     if (step) elabora.reveal(step); else elabora.revealAll();
     const active = document.activeElement;
     if (active instanceof HTMLElement || active instanceof SVGElement) active.blur();
-  }, { screen, step: shot.step || 0 });
+  }, { screen, step: shot.step || 0, passage });
   // Wait for images and free objects (not a fixed delay), then let objects render a few frames.
   const ready = await page.evaluate(() => window.__elabora.ready());
   const answered = shot.state === 'answered' ? await page.evaluate(() => window.__elabora.showAnswered()) : null;
@@ -156,8 +185,9 @@ async function shoot(browser: Browser, page: Page, screen: string, shot: Shot, g
     await page.evaluate(() => window.__elabora.ready());
   }
   const layered = shot.layer ? await page.evaluate((id) => !!window.__elabora.timeline.layer(id), shot.layer) : false;
-  const begin = Date.now();
-  await page.waitForTimeout(ready.objects.length ? 1500 : 120); // auto-height objects resize after their first frames
+  // A passage counts from the move; a screen, from once it is ready.
+  const begin = passage ? moved : Date.now();
+  if (!passage) await page.waitForTimeout(ready.objects.length ? 1500 : 120); // auto-height objects resize after their first frames
   const fullPage = shot.fullPage !== false && !shot.layer && !shot.scroll?.length && !linesOf(shot).length;
 
   // In a full-page capture the footer sits at the end of the page, not over the content.
@@ -202,7 +232,7 @@ async function shoot(browser: Browser, page: Page, screen: string, shot: Shot, g
       await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       frames.push({ ms: 0, png: await page.screenshot({ fullPage: false }), label: anchor });
     }
-    return { ...base, at: frames.map((frame) => frame.ms), frames, png: await contactSheet(browser, frames, `${screen} — ${group.width}×${group.height}`) };
+    return { ...base, at: frames.map((frame) => frame.ms), frames, png: await contactSheet(browser, frames, `${passage ? `${shot.from} → ` : ''}${screen} — ${group.width}×${group.height}`) };
   } finally {
     await restore?.evaluate((node) => { node.parentNode?.removeChild(node); });
   }

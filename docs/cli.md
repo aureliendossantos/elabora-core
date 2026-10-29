@@ -338,7 +338,7 @@ preview [dir] [--port 4807] [--profile <id>] [--navigation authored|free]
                                                     opens every screen, whatever the course's rules
 look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|answered] [--step <n>] [--layer <id>]
      [--at <moment> | --sheet] [--scroll <px|N%|block>,…] [--block <id> [--scale 2] [--act <action>]…] [--viewport] [--motion]
-     [--language <code>] [--controls] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
+     [--language <code>] [--controls] [--select <css>] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
                                                     See a screen while designing, in well under a second: a look server kept warm
                                                     for the course (one browser, no build) renders it from the files as they are,
                                                     with the player's header and footer; free objects an edit did not touch keep
@@ -367,13 +367,17 @@ look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|an
                                                     at rest after those choices, its end in the window: notes, the next options,
                                                     or the debrief. On a screen with free objects it says each control the
                                                     page covers (a click on its middle would not reach it); --controls lists
-                                                    every control with its box in the window, instead of looking for them
+                                                    every control with its box in the window, instead of looking for them.
+                                                    --select <css>: the computed styles of what it matches (a layout's title, an
+                                                    ornament) and its parent's layout
 screenshot [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial,answered] [--step <n>] [--layer <id>]
-           [--at 0,2000,4000|l1,l2:end | --scroll 0,25%,50%,1800] [--motion] [--viewport] [--out shot.png | --out-dir <dir>]
+           [--at 0,2000,4000|l1,l2:end | --scroll 0,25%,50%,1800] [--motion] [--viewport] [--language <code> [--allow-missing]]
+           [--from <screen>] [--out shot.png | --out-dir <dir>]
                                                     Render screens to PNG once images and free objects are ready. answered: every
                                                     activity shows its tallest feedback. --at: filmstrip of the animations (ms),
                                                     or of a narrated screen as each line starts (l2) or ends (l2:end), with
-                                                    --layer of that layer's own timeline;
+                                                    --layer of that layer's own timeline; with --from <screen>, the passage from
+                                                    that screen (times from the move, animations on: continuity, the backdrop);
                                                     --scroll: filmstrip down the page (px or % of it: scroll-driven animations and
                                                     objects). One contact sheet. Several shots share one build and one browser;
                                                     --out names one image, so several shots are refused with it (exit code 2):
@@ -595,6 +599,10 @@ plan export [dir] [--version <Vn|current>] [--format pdf|docx|html] [--out <file
 ```text
 translate export [dir] --to <lang>                  Create or update the XLIFF 2.0 file: every string, what changed since
 translate status [dir] [--to <lang>]                Translated, to translate and stale units; broken maths or placeholders
+translate reuse [dir] --to <lang> --from <course or .xlf> [--json]
+                                                    Fill the units to translate (or stale) whose source text another course
+                                                    already translated, word for word (a module made from the same template:
+                                                    --from its folder), in one undoable change
 translate build [dir] --to <lang> --out <dir> [--allow-missing] [--json]
                                                     Generate the translated course (then elabora build it as any course)
 translate approve [dir] --to <lang> --by "<name, organisation>" [--reference <ref>]

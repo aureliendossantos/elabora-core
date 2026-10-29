@@ -10,7 +10,7 @@ import { extractUnits } from '@elabora/core/i18n/units';
 import { translatedCourse, translationReady, translationTable } from '@elabora/core/i18n/translate';
 import { findText } from '@elabora/core/commands/text';
 import { screenParts } from '@elabora/core/project/parts';
-import { exportTranslation, translationStatus, buildTranslation, approveTranslation, translationFile, withCourseLanguage } from '@elabora/node/translate';
+import { exportTranslation, translationStatus, buildTranslation, approveTranslation, translationFile, withCourseLanguage, reuseTranslation } from '@elabora/node/translate';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { validateDir } from '@elabora/node/project-reader';
 import type { Block } from '@elabora/format';
@@ -340,4 +340,27 @@ test('translation units: the text of a Continue button that opens a step', () =>
   assert.ok(unit, 'unit extracted');
   assert.equal(unit.text, 'Voir la règle');
   assert.equal(unit.pointer, '/steps/2/label');
+});
+
+test('translate reuse: the units another course translated are filled as one undoable edit; a unit whose maths would change is left', () => {
+  const memory = copyExample(path.join(ROOT, 'examples/orbital-rendezvous'));
+  const dir = copyExample(path.join(ROOT, 'examples/orbital-rendezvous'));
+  fs.rmSync(path.join(dir, 'translations'), { recursive: true });
+  const before = exportTranslation(dir, { to: 'fr' });
+  assert.ok(before.toTranslate > 10);
+  // The memory loses an equation in one unit: that unit is not reused.
+  const xlf = path.join(memory, 'translations/fr.xlf');
+  const text = fs.readFileSync(xlf, 'utf8');
+  const target = readXliff(text).units.get('plan.question.Q-1.feedback.correct')!.target!;
+  const xml = (value: string) => value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  assert.ok(text.includes(xml(target)));
+  fs.writeFileSync(xlf, text.replace(xml(target), xml(target.replace(/\$/g, ''))));
+  const r = reuseTranslation(dir, { to: 'fr', from: memory });
+  assert.ok(r.reused.length > 10, `reused ${r.reused.length}`);
+  assert.ok(!r.reused.includes('plan.question.Q-1.feedback.correct'), 'the unit whose maths changed is left');
+  assert.ok(r.change, 'one change, undoable');
+  const after = exportTranslation(dir, { to: 'fr' });
+  assert.equal(after.toTranslate + after.stale, r.left);
+  assert.ok(r.left < before.toTranslate);
+  assert.throws(() => reuseTranslation(dir, { to: 'de', from: memory }), /No translation to reuse/);
 });

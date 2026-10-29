@@ -173,7 +173,7 @@ Checks: each fallback block must be valid (`E_COMPONENT_FALLBACK`); text of an i
     "options": { "items": { "properties": { "figure": { "type": "string", "x-kind": "asset" } } } } } } }
 ```
 
-`elabora component fork quiz config-quiz` (MCP `elabora_fork_component`) copies the template so it can change and records the parent and its version. Until the fork declares them, props, slots, styles, fallback and template come from the parent; `propsExtend` merges into the parent's props (a fork of an activity cannot replace them). The parent's stylesheet still applies. `I_COMPONENT_PARENT_CHANGED` tells when the parent moved on.
+`elabora component fork quiz config-quiz` (MCP `elabora_fork_component`) copies the template so it can change and records the parent and its version. Until the fork declares them, props, slots, styles, fallback and template come from the parent; `propsOmit` drops the parent's props the fork does not use (`"propsOmit": ["body", "steps"]`: no `W_COMPONENT_PROP_UNUSED` for them, and instances may no longer give them; a name the parent lacks is refused, so is a prop the parent's behaviour needs), then `propsExtend` merges into the parent's props (a fork of an activity cannot replace them). The parent's stylesheet still applies. `I_COMPONENT_PARENT_CHANGED` tells when the parent moved on.
 
 With a plan question (`questionRef`), a quiz fork may still add presentation fields per option, keyed by option id: the plan's text, correctness and feedback always win, and options that try to change them are refused (`E_QUIZ_SOURCE`).
 
