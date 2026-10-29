@@ -80,6 +80,10 @@ export interface BuildOptions {
   // no LMS profile or LMS rule, its own index.html (description, sharing image, noindex).
   target?: BuildTarget;
   web?: WebBuildOptions; // the web target's settings (refused with scorm12)
+  // A SCORM package's navigation: authored (default, the course's rules) or free (every screen open
+  // from the outline and Next, nothing to do or hear first: the Aperçu's « Déverrouiller la
+  // progression »). A module for the web says it in web.navigation.
+  navigation?: WebNavigation;
   // 'all': one package of every language (D59): the course's own and each translation that is ready
   // and approved, which learners switch in place (the player's language item). Default: the course's
   // own language only.
@@ -104,8 +108,10 @@ function targetOf(options: BuildOptions): { target: BuildTarget; web: Required<P
   if (target !== 'scorm12' && target !== 'web') throw new TypeError(`target is scorm12 or web (not ${JSON.stringify(target)})`);
   if (target !== 'web') {
     if (options.web !== undefined) throw new TypeError('web settings are for the web target (target: "web")');
+    if (options.navigation !== undefined && !WEB_NAVIGATION.includes(options.navigation)) throw new TypeError(`navigation is authored or free (not ${JSON.stringify(options.navigation)})`);
     return { target, web: null };
   }
+  if (options.navigation !== undefined) throw new TypeError('a module for the web says its navigation in web.navigation');
   if (options.profiles?.length) throw new TypeError('LMS profiles are for the scorm12 target: a module for the web reports to no LMS');
   const review = options.web?.review;
   if (review !== undefined && (typeof review !== 'object' || review === null || !Array.isArray(review.origins) || !review.origins.every((origin) => typeof origin === 'string'))) throw new TypeError('web review is { origins: string[] }');
@@ -313,6 +319,8 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   if (review) for (const [name, content] of Object.entries(await reviewFiles({ debug: options.debug }))) files.set(name, Buffer.from(content));
 
   const delivery: WebDelivery | undefined = web ? { target: 'web', progress: web.progress, navigation: web.navigation, ...(review ? { review } : {}) } : undefined;
+  // A SCORM package with free navigation (the Aperçu unlocked); the web target's is in delivery.
+  const free = !web && options.navigation === 'free' ? { navigation: 'free' as const } : {};
   const buildId = sha256(canonicalJSON({
     elabora: ELABORA_VERSION, course, plan, keys, media: quality !== 'high' && packaged.media.length ? quality : undefined, design: [...design.files.entries()].map(([name, content]) => [name, sha256(content)]),
     fontLicenses: licenses.length ? licenses.map((name) => [name, sha256(files.get(name) as Buffer)]) : undefined,
@@ -320,7 +328,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     screens: [...project.screens.entries()].sort(), objects: [...usedObjects].sort().map((id) => [id, project.objects.get(id)?.manifest, project.objects.get(id)?.code]),
     narration: tracks.size ? [...tracks.values()].map((track) => [track.name, track.key]) : undefined,
     dialogueLines: dialogueLines.lines.length ? dialogueLines.lines.map((line) => [line.path, line.hash, line.mouth]) : undefined,
-    delivery,
+    delivery, ...free,
     languages: others.length ? languages.map((language) => [language, fileHash(project.files, `translations/${language}.xlf`) ?? null, [...(otherTracks.get(language)?.values() ?? [])].map((track) => [track.name, track.key]), ...(otherLines.get(language)?.lines.length ? [otherLines.get(language)!.lines.map((line) => [line.path, line.hash, line.mouth])] : [])]) : undefined
   })).slice(0, 16);
   const several = others.length ? { languages } : {};
@@ -333,7 +341,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   const data: CompiledCourse = compileCourseData(project, keys, {
     buildId, ...assetPathOf, interfaceSounds: interfaceSettings, ...linesOf(dialogueLines),
     ...(tracks.size ? { narration: (screen: string, layer?: string) => tracks.get(trackName(screen, layer ?? null))?.track } : {}),
-    ...(delivery ? { delivery } : {}), ...several
+    ...(delivery ? { delivery } : {}), ...free, ...several
   });
   files.set('elabora/course.js', Buffer.from(`window.ELABORA_COURSE = ${JSON.stringify(data)};\n`));
   // The player's interface sounds the course data names, and what every sound is, for the LMS's
@@ -347,7 +355,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     const translated = compileCourseData(other.project, keys, {
       buildId, ...assetPathOf, interfaceSounds: interfaceSettings, ...linesOf(otherLines.get(other.language)),
       ...(own?.size ? { narration: (screen: string, layer?: string) => own.get(trackName(screen, layer ?? null))?.track } : {}),
-      ...(delivery ? { delivery } : {}), ...several
+      ...(delivery ? { delivery } : {}), ...free, ...several
     });
     files.set(`elabora/course.${other.language}.js`, Buffer.from(`(window.ELABORA_COURSES = window.ELABORA_COURSES || {})[${JSON.stringify(other.language)}] = ${JSON.stringify(translated)};\n`));
   }

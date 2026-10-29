@@ -50,8 +50,11 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
   test [dir] [--package <zip>] [--profile a,b|all] [--mode iframe,popup…] [--browser chromium,electron,chrome,msedge,playwright,firefox,webkit] [--parallel 4] [--no-a11y] [--json]
                                                       Run the package in the LMS emulator (profiles × launch modes × browsers);
                                                       4 runs side by side by default, fewer on a loaded machine
-  preview [dir] [--port 4807] [--profile <id>]        Live preview (standalone and in the LMS emulator): pages reload after each
-                                                      rebuild; free objects show in the in-app browsers of agent apps
+  preview [dir] [--port 4807] [--profile <id>] [--navigation authored|free]
+                                                      Live preview (standalone and in the LMS emulator): pages reload after each
+                                                      rebuild; free objects show in the in-app browsers of agent apps. The
+                                                      emulator plays the course's LMS (--profile: another); --navigation free
+                                                      opens every screen, whatever the course's rules
   look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|answered] [--step <n>] [--layer <id>]
        [--at <moment> | --sheet] [--scroll <px|N%|block>,…] [--block <id> [--scale 2] [--act <action>]…] [--viewport] [--motion]
        [--language <code>] [--controls] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
@@ -227,14 +230,16 @@ const test = defineCommand({
 
 const previewCommand = defineCommand({
   name: 'preview',
-  flags: { port: 'string', profile: 'string' },
+  flags: { port: 'string', profile: 'string', navigation: 'string' },
   async run({ positionals: [dir = '.'], flags }) {
+    const { navigation } = flags;
+    if (navigation !== undefined && !WEB_NAVIGATION.some((value) => value === navigation)) { console.error(`--navigation is authored or free (not "${navigation}").`); return 2; }
     const { preview } = await import('@elabora/node/preview');
     // The preview shows the course with the errors that only stop a delivery (accessibility, plan
     // coverage, package limits): they are still said.
     const codes = (result: BuildResult) => result.diagnostics.filter((d) => d.severity === 'error' && !d.waived).map((d) => d.code).join(', ');
     const onRebuild = (result: BuildResult) => console.log(result.ok ? `↻ rebuilt${codes(result) ? ` (errors to fix before a delivery: ${codes(result)})` : ''}` : `✘ ${result.summary.errors} error(s): ${codes(result)}`);
-    const session = await preview(dir, { port: Number(flags.port) || 4807, profile: flags.profile || 'unknown', onRebuild });
+    const session = await preview(dir, { port: Number(flags.port) || 4807, ...(flags.profile ? { profile: flags.profile } : {}), navigation: WEB_NAVIGATION.find((value) => value === navigation) ?? 'authored', onRebuild });
     if (session.result.summary.errors) printDiagnostics(session.result.diagnostics);
     console.log(`Preview (standalone): ${session.urls.standalone}\nPreview in the LMS emulator: ${session.urls.lms}\nWatching for changes. Ctrl+C to stop.`);
     await new Promise(() => {});

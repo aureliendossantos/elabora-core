@@ -160,9 +160,10 @@ export async function startServer({ port = 0, iisLike = false, frames = false }:
 
 // The course page of a preview: object frames from the frames port, and a reload when the package
 // is built again (the player resumes on the screen shown: the standalone adapter keeps the location
-// for the tab; in the LMS emulator the launch page reloads, as a learner relaunching).
+// for the tab; in the LMS emulator the launch page reloads, as a learner relaunching, whatever page
+// shows the emulator: the app's Aperçu, of another origin, keeps its own).
 function previewPage(html: string, name: string, framesPort: number | null): string {
-  const reload = `<script>new EventSource('/preview-events/${encodeURIComponent(name)}').onmessage = function () { try { window.top.location.reload(); } catch (error) { location.reload(); } };</script>`;
+  const reload = `<script>new EventSource('/preview-events/${encodeURIComponent(name)}').onmessage = function () { var page = window; try { for (var up = window; up.parent !== up; up = up.parent) if (up.parent.__lmsReady) { page = up.parent; break; } if (page === window && window.opener && window.opener.__lmsReady) page = window.opener; } catch (error) {} page.location.reload(); };</script>`;
   const frames = framesPort ? `\n<meta name="elabora-object-frames" content="${framesPort}">` : '';
   return html.replace('<meta charset="utf-8">', `<meta charset="utf-8">${frames}`).replace('</body>', `${reload}\n</body>`);
 }
