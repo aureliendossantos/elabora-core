@@ -1070,5 +1070,181 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
 - Édition 1.0, mois et année</target>
       </segment>
     </unit>
+    <unit id="theme.style.screen.cover">
+      <notes>
+        <note category="location">course.json /theme/styles/screen/cover</note>
+        <note category="format">text</note>
+        <note category="context">What the screen style "cover" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Cover: a large serif title on the left of the page, for the plate backdrop (the plates of every part side by side on the right)</source>
+        <target>Couverture : un grand titre à empattements à gauche de la page, avec le décor plate (les planches de toutes les parties côte à côte, à droite)</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.screen.opener">
+      <notes>
+        <note category="location">course.json /theme/styles/screen/opener</note>
+        <note category="format">text</note>
+        <note category="context">What the screen style "opener" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Part opener: with the layout editorial-opener and the plate backdrop, the part number set large on the part plate</source>
+        <target>Intercalaire : avec la mise en page editorial-opener et le décor plate, le numéro de la partie en grand sur la planche de la partie</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.dek">
+      <notes>
+        <note category="location">course.json /theme/styles/text/dek</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "dek" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Standfirst: a large italic serif paragraph under a title</source>
+        <target>Chapeau : un grand paragraphe en italique à empattements, sous un titre</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.dropcap">
+      <notes>
+        <note category="location">course.json /theme/styles/text/dropcap</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "dropcap" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Opening paragraph with a drop cap in the colour of the part</source>
+        <target>Paragraphe d'ouverture avec une lettrine dans la couleur de la partie</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.contents">
+      <notes>
+        <note category="location">course.json /theme/styles/text/contents</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "contents" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Contents: a numbered list with large serif numerals in the part colour and rules between rows</source>
+        <target>Sommaire : une liste numérotée aux grands chiffres à empattements dans la couleur de la partie, des filets entre les lignes</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.ledger">
+      <notes>
+        <note category="location">course.json /theme/styles/text/ledger</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "ledger" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Ruled list: one point per row between hairlines (takeaways, recap)</source>
+        <target>Liste à filets : un point par ligne, entre des filets fins (points à retenir, récapitulatif)</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.colophon">
+      <notes>
+        <note category="location">course.json /theme/styles/text/colophon</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "colophon" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colophon: short facts in a row of small capitals between two rules (duration, audience, edition)</source>
+        <target>Ours : des informations courtes en petites capitales, sur une ligne entre deux filets (durée, public, édition)</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.columns.spread">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/spread</note>
+        <note category="format">text</note>
+        <note category="context">What the columns style "spread" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Magazine columns: a heavy rule on top and fine column rules between them</source>
+        <target>Colonnes de magazine : un filet épais en haut et des filets fins entre les colonnes</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.columns.versus">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/versus</note>
+        <note category="format">text</note>
+        <note category="context">What the columns style "versus" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Face to face: the first column on deeper paper, the second under a rule in the part colour</source>
+        <target>Face à face : la première colonne sur un papier plus soutenu, la seconde sous un filet dans la couleur de la partie</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.statement.pull">
+      <notes>
+        <note category="location">course.json /theme/styles/statement/pull</note>
+        <note category="format">text</note>
+        <note category="context">What the statement style "pull" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Pull quote: the sentence set very large in serif, between a heavy and a fine rule</source>
+        <target>Exergue : la phrase en très grand, à empattements, entre un filet épais et un filet fin</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.image.plate">
+      <notes>
+        <note category="location">course.json /theme/styles/image/plate</note>
+        <note category="format">text</note>
+        <note category="context">What the image style "plate" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Figure on the page with a hairline caption; the text beside it opens with a drop cap</source>
+        <target>Une figure dans la page, sa légende sous un filet fin ; le texte à côté s'ouvre sur une lettrine</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.paper">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/paper</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "paper" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Paper page: rules under the top bar, the folio at the foot, the part thumb tab at the page edge</source>
+        <target>Page de papier : des filets sous la barre du haut, le folio en pied de page, l'onglet de la partie au bord de la page</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.plate">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/plate</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "plate" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colour plate on the right of the page: the part plate on part openers, every plate side by side on the first and last screens</source>
+        <target>Planche de couleur à droite de la page : la planche de la partie sur les intercalaires, toutes les planches côte à côte sur le premier et le dernier écran</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.ink">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/ink</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "ink" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Black spread: ink ground, paper-coloured text and rules, for a quotation or a pause</source>
+        <target>Double page noire : un fond d'encre, le texte et les filets couleur papier, pour une citation ou une pause</target>
+      </segment>
+    </unit>
+    <unit id="component.editorial-opener.title">
+      <notes>
+        <note category="location">components/editorial-opener/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's screen layout "editorial-opener" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Editorial part opener</source>
+        <target>Intercalaire Revue</target>
+      </segment>
+    </unit>
+    <unit id="component.editorial-opener.description">
+      <notes>
+        <note category="location">components/editorial-opener/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's screen layout "editorial-opener" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Opens a part of the module like a magazine section: the part's number set very large on the part's colour plate, on the right of the page; the part's title, its standfirst and its page on the left.</source>
+        <target>Ouvre une partie du module comme une rubrique de magazine : le numéro de la partie en très grand sur la planche de couleur de la partie, à droite de la page ; le titre de la partie, son chapeau et sa page à gauche.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

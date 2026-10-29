@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="fr">
-  <file id="f1" original="flow@0.1.0" xml:space="preserve">
+  <file id="f1" original="flow@1.0.0" xml:space="preserve">
     <unit id="course.title">
       <notes>
         <note category="location">course.json /title</note>
@@ -942,6 +942,193 @@ Un second paragraphe dit ce qui change quand l'idée est appliquée, et où l'ap
       <segment state="translated">
         <source>Contact · Resources · Next module</source>
         <target>Contact · Ressources · Module suivant</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.lead">
+      <notes>
+        <note category="location">course.json /theme/styles/text/lead</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "lead" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Large introductory paragraph</source>
+        <target>Grand paragraphe d'introduction</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.meta">
+      <notes>
+        <note category="location">course.json /theme/styles/text/meta</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "meta" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Small monospaced line: a date, a duration, a version</source>
+        <target>Petite ligne en chasse fixe : une date, une durée, une version</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.list">
+      <notes>
+        <note category="location">course.json /theme/styles/text/list</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "list" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Numbered list with large monospaced numbers (objectives, agenda)</source>
+        <target>Liste numérotée aux grands chiffres en chasse fixe (objectifs, programme)</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.recap">
+      <notes>
+        <note category="location">course.json /theme/styles/text/recap</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "recap" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Checklist on a card (recap, what to remember)</source>
+        <target>Liste cochée sur une carte (récapitulatif, ce qu'il faut retenir)</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.columns.cards">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/cards</note>
+        <note category="format">text</note>
+        <note category="context">What the columns style "cards" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Each column on its own card</source>
+        <target>Chaque colonne sur sa propre carte</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.columns.versus">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/versus</note>
+        <note category="format">text</note>
+        <note category="context">What the columns style "versus" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Two columns face to face, the second in the accent colour</source>
+        <target>Deux colonnes face à face, la seconde dans la couleur d'accent</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.hero">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/hero</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "hero" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The ribbons rise across the right of the window: the cover and the end</source>
+        <target>Les rubans montent sur la droite de la fenêtre : la couverture et la fin</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.calm">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/calm</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "calm" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Quieter ribbons and fewer particles, behind dense screens</source>
+        <target>Des rubans plus calmes et moins de particules, derrière les écrans chargés</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.ink">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/ink</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "ink" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Light paper with ink-coloured ribbons</source>
+        <target>Un papier clair et des rubans couleur d'encre</target>
+      </segment>
+    </unit>
+    <unit id="component.flow-cover.title">
+      <notes>
+        <note category="location">components/flow-cover/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's screen layout "flow-cover" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Flow cover</source>
+        <target>Couverture Flux</target>
+      </segment>
+    </unit>
+    <unit id="component.flow-cover.description">
+      <notes>
+        <note category="location">components/flow-cover/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's screen layout "flow-cover" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The first and the last view of a Flow module: a very large title, a lead and a line of details, on the left; the backdrop's ribbons rise across the right (the backdrop variant hero).</source>
+        <target>Le premier et le dernier écran d'un module Flux : un très grand titre, un chapeau et une ligne de détails, à gauche ; les rubans du décor montent sur la droite (la variante de décor hero).</target>
+      </segment>
+    </unit>
+    <unit id="component.flow-cover.slot.body.label">
+      <notes>
+        <note category="location">components/flow-cover/component.json /slots/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "body" of the course's screen layout "flow-cover". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Lead and details</source>
+        <target>Chapeau et détails</target>
+      </segment>
+    </unit>
+    <unit id="component.flow-section.title">
+      <notes>
+        <note category="location">components/flow-section/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's screen layout "flow-section" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Flow part opener</source>
+        <target>Intercalaire Flux</target>
+      </segment>
+    </unit>
+    <unit id="component.flow-section.description">
+      <notes>
+        <note category="location">components/flow-section/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's screen layout "flow-section" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Opens a part of the module: the part's number set large in the monospaced font, a large title and a lead.</source>
+        <target>Ouvre une partie du module : le numéro de la partie en grand, dans la police à chasse fixe, un grand titre et un chapeau.</target>
+      </segment>
+    </unit>
+    <unit id="component.flow-section.slot.body.label">
+      <notes>
+        <note category="location">components/flow-section/component.json /slots/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "body" of the course's screen layout "flow-section". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Lead</source>
+        <target>Chapeau</target>
+      </segment>
+    </unit>
+    <unit id="component.flow-section.prop.number.title">
+      <notes>
+        <note category="location">components/flow-section/component.json /props/properties/number/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "number" of the course's screen layout "flow-section" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Part number</source>
+        <target>Numéro de partie</target>
+      </segment>
+    </unit>
+    <unit id="component.flow-section.prop.number.description">
+      <notes>
+        <note category="location">components/flow-section/component.json /props/properties/number/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "number" of the course's screen layout "flow-section" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The part's number, set large above the title (01, 02…).</source>
+        <target>Le numéro de la partie, en grand au-dessus du titre (01, 02…).</target>
       </segment>
     </unit>
   </file>

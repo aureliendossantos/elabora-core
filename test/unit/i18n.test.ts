@@ -14,7 +14,7 @@ import { exportTranslation, translationStatus, buildTranslation, approveTranslat
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { validateDir } from '@elabora/node/project-reader';
 import type { Block } from '@elabora/format';
-import { copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
+import { ROOT, copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
 
 test('messages: values, plurals and selects follow the language', () => {
   assert.equal(formatMessage('Requirement {i} of {n}', { i: 1, n: 3 }), 'Requirement 1 of 3');
@@ -136,6 +136,41 @@ test('translation: how a free object\'s choices read in the editor, translated i
   }) }));
   const screen = translatedCourse(loadProjectFromDir(dir), { to: 'en', allowMissing: true }).files.get('screens/simulation.json') as { blocks: Block[] };
   assert.deepEqual((screen.blocks[1].props as { enumLabels: unknown }).enumLabels, { failingDevice: english });
+});
+
+test('translation: the words the editor shows of the course\'s design (styles, backdrop variants, components, placed objects), translated in their own files; not words learners find', () => {
+  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const course = readJSON(dir, 'course.json');
+  course.theme.styles = { text: { encadre: 'Un paragraphe sur un fond pâle' } };
+  course.theme.backdrop = { layers: ['fond'], variants: { calme: 'Un fond plus calme, derrière les écrans chargés' } };
+  writeJSON(dir, 'course.json', course);
+  const project = loadProjectFromDir(dir);
+  const units = extractUnits(project).filter((u) => /^(theme|component|object)\./.test(u.id));
+  const at = (id: string) => units.find((u) => u.id === id);
+  assert.deepEqual([at('theme.style.text.encadre')?.pointer, at('theme.backdrop.variant.calme')?.pointer], ['/theme/styles/text/encadre', '/theme/backdrop/variants/calme']);
+  assert.deepEqual([at('component.network-path.title')?.file, at('component.network-path.prop.steps.item.label.title')?.pointer], ['components/network-path/component.json', '/props/properties/steps/items/properties/label/title']);
+  assert.deepEqual([at('object.diagnostic-reseau.prop.failingDevice.group')?.text, at('object.diagnostic-reseau.event.completed.description')?.pointer], ['Scénario', '/events/2/description']);
+  assert.ok(units.every((u) => u.editor && /Editor only/.test(u.note ?? '')), 'authors read them, not learners');
+  assert.ok(!units.some((u) => /instructions/.test(u.pointer)), 'a component\'s instructions are for agents');
+  assert.deepEqual(findText(project, 'Ticket de support').filter((match) => match.unit.startsWith('component.')), []);
+  // Translated into the files they come from.
+  exportTranslation(dir, { to: 'en' });
+  const x = readXliff(fs.readFileSync(translationFile(dir, 'en'), 'utf8'));
+  const english: Record<string, string> = {
+    'theme.backdrop.variant.calme': 'A calmer ground, behind dense screens',
+    'component.support-ticket.title': 'Support ticket',
+    'object.diagnostic-reseau.prop.failingDevice.group': 'Scenario'
+  };
+  fs.writeFileSync(translationFile(dir, 'en'), toXliff({ srcLang: 'fr', trgLang: 'en', original: 'x', units: [...x.units.values()].map((u) => ({ id: u.id, source: u.source, ...(english[u.id] ? { target: english[u.id], state: 'translated' as const } : {}) })) }));
+  const { files } = translatedCourse(loadProjectFromDir(dir), { to: 'en', allowMissing: true });
+  assert.equal((files.get('course.json') as { theme: { backdrop: { variants: Record<string, string> } } }).theme.backdrop.variants.calme, english['theme.backdrop.variant.calme']);
+  assert.equal((files.get('components/support-ticket/component.json') as { title: string }).title, 'Support ticket');
+  assert.equal((files.get('objects/diagnostic-reseau/object.manifest.json') as unknown as { props: { properties: Record<string, Record<string, string>> } }).props.properties.failingDevice!['x-group'], 'Scenario');
+  // An object no block places has no settings in the editor: its words are not units.
+  const s = readJSON(dir, 'screens/simulation.json');
+  s.blocks = s.blocks.filter((block: Block) => block.type !== 'free-object');
+  writeJSON(dir, 'screens/simulation.json', s);
+  assert.ok(!extractUnits(loadProjectFromDir(dir)).some((u) => u.id.startsWith('object.')));
 });
 
 test('how a free object\'s choices read: the block\'s words over the manifest\'s, for event editors (screenParts)', () => {

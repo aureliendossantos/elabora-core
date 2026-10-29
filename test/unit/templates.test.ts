@@ -4,7 +4,9 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { validateDir } from '@elabora/node/project-reader';
+import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
+import { extractUnits } from '@elabora/core/i18n/units';
+import { readXliff } from '@elabora/core/i18n/xliff';
 import { translationStatus } from '@elabora/node/translate';
 import { createFromTemplate, listModuleTemplates, moduleTemplate, MODULE_TEMPLATES_DIR } from '@elabora/node/module-templates';
 import { createProject, libraryRoot } from '@elabora/node/library/index';
@@ -112,6 +114,48 @@ test('a course from a template: its id and title, the cover saying it, in French
   await assert.rejects(createFromTemplate(moduleTemplate('clear').dir, english, { id: 'x', title: 'X' }), /already contains a course\.json/);
   await assert.rejects(createFromTemplate(moduleTemplate('clear').dir, path.join(tempDir('elabora-template-'), 'id'), { id: 'Bad Id', title: 'X' }), /^Error: id:/);
   assert.throws(() => moduleTemplate('nope'), /No template "nope"\. Templates: organic, flow, clear, shapes/);
+});
+
+test('a module made in French from a template has no English left: what learners read, and what the editor shows of its charter', async () => {
+  const words = (value: unknown): value is string => typeof value === 'string' && /\p{L}/u.test(value);
+  // What the editor shows of a course's own design (the Charte, the block picker, the inspector), by
+  // file and pointer, read from the files rather than from the translation units: a text the units
+  // leave out is found too. A component's instructions are for agents and stay in English.
+  const design = (dir: string): Map<string, string> => {
+    const found = new Map<string, string>();
+    const put = (file: string, pointer: string, value: unknown) => { if (words(value)) found.set(`${file}#${pointer}`, value); };
+    const theme = readJSON(dir, 'course.json').theme ?? {};
+    for (const [kind, styles] of Object.entries<Record<string, unknown>>(theme.styles ?? {})) for (const [name, text] of Object.entries(styles)) put('course.json', `/theme/styles/${kind}/${name}`, text);
+    for (const [name, text] of Object.entries(theme.backdrop?.variants ?? {})) put('course.json', `/theme/backdrop/variants/${name}`, text);
+    const setting = (file: string, node: Record<string, unknown>, at: string): void => {
+      put(file, `${at}/title`, node.title);
+      put(file, `${at}/description`, node.description);
+      for (const [name, child] of Object.entries<Record<string, unknown>>((node.properties ?? {}) as Record<string, Record<string, unknown>>)) setting(file, child, `${at}/properties/${name}`);
+      if (node.items && typeof node.items === 'object') setting(file, node.items as Record<string, unknown>, `${at}/items`);
+    };
+    const components = path.join(dir, 'components');
+    for (const id of fs.existsSync(components) ? fs.readdirSync(components) : []) {
+      const file = `components/${id}/component.json`;
+      const component = readJSON(dir, file);
+      put(file, '/title', component.title);
+      put(file, '/description', component.description);
+      (component.slots ?? []).forEach((slot: { label?: unknown }, i: number) => put(file, `/slots/${i}/label`, slot.label));
+      for (const [name, child] of Object.entries<Record<string, unknown>>(component.props?.properties ?? {})) setting(file, child, `/props/properties/${name}`);
+    }
+    return found;
+  };
+  const units = (dir: string) => new Map(extractUnits(loadProjectFromDir(dir)).map((unit) => [unit.id, unit.text]));
+  for (const template of listModuleTemplates()) {
+    const french = path.join(tempDir('elabora-template-'), template.id);
+    await createFromTemplate(template.dir, french, { id: `essai-${template.id}`, title: 'Un module en français', language: 'fr' });
+    // Words that are the same in both languages are the translation's own choice (« Page »).
+    const same = new Set([...readXliff(fs.readFileSync(path.join(template.dir, 'translations/fr.xlf'), 'utf8')).units.values()].filter((unit) => unit.target === unit.source).map((unit) => unit.source));
+    const left: string[] = [];
+    for (const [english, made] of [[units(template.dir), units(french)], [design(template.dir), design(french)]]) {
+      for (const [where, text] of made) if (english.get(where) === text && !same.has(text)) left.push(`${where}: ${text}`);
+    }
+    assert.deepEqual(left, [], `${template.id}: English left in a module made in French`);
+  }
 });
 
 test('the library creates a project from a template and records where it comes from', async () => {

@@ -1779,5 +1779,841 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <target>Revenez à la règle pratique et au laboratoire, puis refaites les questions : freinez pour gagner environ $3\,T\,\Delta v$ par orbite, puis repoussez en sens inverse au même point.</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.lead">
+      <notes>
+        <note category="location">course.json /theme/styles/text/lead</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "lead" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Large introductory paragraph</source>
+        <target>Grand paragraphe d’introduction</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.legend">
+      <notes>
+        <note category="location">course.json /theme/styles/text/legend</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "legend" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Numbered legend of a figure (numbers match the markers)</source>
+        <target>Légende numérotée d’une figure (les numéros répondent aux repères)</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.callout.rule">
+      <notes>
+        <note category="location">course.json /theme/styles/callout/rule</note>
+        <note category="format">text</note>
+        <note category="context">What the callout style "rule" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The one rule to remember, on a glowing glass card</source>
+        <target>La seule règle à retenir, sur une carte de verre lumineuse</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.callout.glass">
+      <notes>
+        <note category="location">course.json /theme/styles/callout/glass</note>
+        <note category="format">text</note>
+        <note category="context">What the callout style "glass" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Translucent panel that lets the starfield through</source>
+        <target>Un panneau translucide qui laisse passer le champ d’étoiles</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.image.bare">
+      <notes>
+        <note category="location">course.json /theme/styles/image/bare</note>
+        <note category="format">text</note>
+        <note category="context">What the image style "bare" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>No frame: for figures drawn on the starfield</source>
+        <target>Sans cadre : pour les figures dessinées sur le champ d’étoiles</target>
+      </segment>
+    </unit>
+    <unit id="component.cosmos-hero.title">
+      <notes>
+        <note category="location">components/cosmos-hero/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's screen layout "cosmos-hero" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Cosmic hero</source>
+        <target>Ouverture cosmique</target>
+      </segment>
+    </unit>
+    <unit id="component.cosmos-hero.description">
+      <notes>
+        <note category="location">components/cosmos-hero/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's screen layout "cosmos-hero" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Opening screen on the starfield: a very large title and a lead text, a side column for goals, a row of cards at the bottom, and the limb of a planet rising behind the cards with an orbital sunrise. Stacks on narrow screens.</source>
+        <target>Écran d’ouverture sur le champ d’étoiles : un très grand titre et un chapeau, une colonne latérale pour les objectifs, une rangée de cartes en bas, et le bord d’une planète qui se lève derrière les cartes avec un lever de soleil orbital. S’empile sur les écrans étroits.</target>
+      </segment>
+    </unit>
+    <unit id="component.cosmos-hero.slot.lead.label">
+      <notes>
+        <note category="location">components/cosmos-hero/component.json /slots/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "lead" of the course's screen layout "cosmos-hero". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Lead text</source>
+        <target>Chapeau</target>
+      </segment>
+    </unit>
+    <unit id="component.cosmos-hero.slot.side.label">
+      <notes>
+        <note category="location">components/cosmos-hero/component.json /slots/1/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "side" of the course's screen layout "cosmos-hero". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Side column</source>
+        <target>Colonne latérale</target>
+      </segment>
+    </unit>
+    <unit id="component.cosmos-hero.slot.cards.label">
+      <notes>
+        <note category="location">components/cosmos-hero/component.json /slots/2/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "cards" of the course's screen layout "cosmos-hero". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Cards</source>
+        <target>Cartes</target>
+      </segment>
+    </unit>
+    <unit id="component.hotspot.title">
+      <notes>
+        <note category="location">components/hotspot/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's block type "hotspot" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Hotspot</source>
+        <target>Repère</target>
+      </segment>
+    </unit>
+    <unit id="component.hotspot.description">
+      <notes>
+        <note category="location">components/hotspot/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's block type "hotspot" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>A numbered marker placed over a figure that the learner selects to reveal what it points at (a click event; usually reveal-step). It pulses while it is the next thing to select, then stays as a plain marker.</source>
+        <target>Un repère numéroté posé sur une figure, que l’apprenant sélectionne pour révéler ce qu’il montre (un évènement de clic, d’ordinaire reveal-step). Il pulse tant qu’il est le prochain à sélectionner, puis reste un simple repère.</target>
+      </segment>
+    </unit>
+    <unit id="component.hotspot.prop.marker.description">
+      <notes>
+        <note category="location">components/hotspot/component.json /props/properties/marker/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "marker" of the course's block type "hotspot" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Number shown on the marker; the matching stat card or text uses the same number.</source>
+        <target>Le numéro affiché sur le repère ; la carte de chiffre ou le texte qui lui répond porte le même numéro.</target>
+      </segment>
+    </unit>
+    <unit id="component.hotspot.prop.label.description">
+      <notes>
+        <note category="location">components/hotspot/component.json /props/properties/label/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "label" of the course's block type "hotspot" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Accessible name of the button: what selecting it shows, with the marker number (Orbit 1: Space Station).</source>
+        <target>Nom accessible du bouton : ce que sa sélection montre, avec le numéro du repère (Orbite 1 : station spatiale).</target>
+      </segment>
+    </unit>
+    <unit id="component.hotspot.prop.x.description">
+      <notes>
+        <note category="location">components/hotspot/component.json /props/properties/x/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "x" of the course's block type "hotspot" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Horizontal centre of the marker, in % of the figure width.</source>
+        <target>Centre horizontal du repère, en % de la largeur de la figure.</target>
+      </segment>
+    </unit>
+    <unit id="component.hotspot.prop.y.description">
+      <notes>
+        <note category="location">components/hotspot/component.json /props/properties/y/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "y" of the course's block type "hotspot" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Vertical centre of the marker, in % of the figure height.</source>
+        <target>Centre vertical du repère, en % de la hauteur de la figure.</target>
+      </segment>
+    </unit>
+    <unit id="component.hotspot.prop.accent.description">
+      <notes>
+        <note category="location">components/hotspot/component.json /props/properties/accent/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "accent" of the course's block type "hotspot" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colour of the pulse around the marker.</source>
+        <target>Couleur de la pulsation autour du repère.</target>
+      </segment>
+    </unit>
+    <unit id="component.maneuver-quiz.title">
+      <notes>
+        <note category="location">components/maneuver-quiz/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's block type "maneuver-quiz" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Manoeuvre question</source>
+        <target>Question de manœuvre</target>
+      </segment>
+    </unit>
+    <unit id="component.maneuver-quiz.description">
+      <notes>
+        <note category="location">components/maneuver-quiz/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's block type "maneuver-quiz" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>A choice question whose options are burns, shown as cards with a diagram of the thrust direction. A fork of the quiz block: same scoring, feedback, saved state and SCORM records.</source>
+        <target>Une question à choix dont les options sont des poussées, montrées en cartes avec un schéma du sens de la poussée. Une variante du bloc question : même notation, mêmes retours, même état enregistré et mêmes données SCORM.</target>
+      </segment>
+    </unit>
+    <unit id="component.mission.title">
+      <notes>
+        <note category="location">components/mission/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's screen layout "mission" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Mission stage</source>
+        <target>Scène de mission</target>
+      </segment>
+    </unit>
+    <unit id="component.mission.description">
+      <notes>
+        <note category="location">components/mission/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's screen layout "mission" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>A full-window stage for a 3D scene drawn on the course sky, without a frame. On wide screens the title and the brief float over the top left of the stage, where the scene leaves the sky free; on narrow screens they sit above it.</source>
+        <target>Une scène pleine fenêtre pour une scène 3D dessinée sur le ciel du cours, sans cadre. Sur les grands écrans, le titre et la consigne flottent en haut à gauche de la scène, là où elle laisse le ciel libre ; sur les écrans étroits, ils se placent au-dessus.</target>
+      </segment>
+    </unit>
+    <unit id="component.mission.slot.brief.label">
+      <notes>
+        <note category="location">components/mission/component.json /slots/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "brief" of the course's screen layout "mission". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Brief</source>
+        <target>Consigne</target>
+      </segment>
+    </unit>
+    <unit id="component.mission.slot.stage.label">
+      <notes>
+        <note category="location">components/mission/component.json /slots/1/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "stage" of the course's screen layout "mission". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Stage</source>
+        <target>Scène</target>
+      </segment>
+    </unit>
+    <unit id="component.orbit-flight.title">
+      <notes>
+        <note category="location">components/orbit-flight/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's block type "orbit-flight" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Orbit flight</source>
+        <target>Vol en orbite</target>
+      </segment>
+    </unit>
+    <unit id="component.orbit-flight.description">
+      <notes>
+        <note category="location">components/orbit-flight/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's block type "orbit-flight" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>One orbit of a stacked figure: its ring and craft, and the trail of one hour of flight. When its step is revealed, the craft flies that hour around the Earth and the trail draws behind it (still, fully drawn, under reduced motion or when the screen is visited again).</source>
+        <target>Une orbite d’une figure en couches : son anneau et son engin, et la trace d’une heure de vol. Quand son étape est révélée, l’engin vole cette heure autour de la Terre et la trace se dessine derrière lui (immobile et entière avec moins d’animations, ou quand l’écran est revu).</target>
+      </segment>
+    </unit>
+    <unit id="component.orbit-flight.prop.craft.description">
+      <notes>
+        <note category="location">components/orbit-flight/component.json /props/properties/craft/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "craft" of the course's block type "orbit-flight" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Layer with the orbit ring, the craft and its speed arrow (square, centred on the Earth).</source>
+        <target>Le calque de l’anneau de l’orbite, de l’engin et de sa flèche de vitesse (carré, centré sur la Terre).</target>
+      </segment>
+    </unit>
+    <unit id="component.orbit-flight.prop.trail.description">
+      <notes>
+        <note category="location">components/orbit-flight/component.json /props/properties/trail/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "trail" of the course's block type "orbit-flight" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Layer with the trail of one hour of flight, ending at the craft.</source>
+        <target>Le calque de la trace d’une heure de vol, qui finit à l’engin.</target>
+      </segment>
+    </unit>
+    <unit id="component.orbit-flight.prop.at.description">
+      <notes>
+        <note category="location">components/orbit-flight/component.json /props/properties/at/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "at" of the course's block type "orbit-flight" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Angle of the craft in the figure, degrees counter-clockwise from 3 o'clock.</source>
+        <target>Angle de l’engin dans la figure, en degrés dans le sens inverse des aiguilles d’une montre depuis 3 heures.</target>
+      </segment>
+    </unit>
+    <unit id="component.orbit-flight.prop.sweep.description">
+      <notes>
+        <note category="location">components/orbit-flight/component.json /props/properties/sweep/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "sweep" of the course's block type "orbit-flight" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Angle flown in one hour, degrees.</source>
+        <target>Angle parcouru en une heure, en degrés.</target>
+      </segment>
+    </unit>
+    <unit id="component.orbit-flight.prop.alt.description">
+      <notes>
+        <note category="location">components/orbit-flight/component.json /props/properties/alt/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "alt" of the course's block type "orbit-flight" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>What this orbit shows (height, distance flown in one hour, speed).</source>
+        <target>Ce que montre cette orbite (altitude, distance parcourue en une heure, vitesse).</target>
+      </segment>
+    </unit>
+    <unit id="component.split.title">
+      <notes>
+        <note category="location">components/split/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's screen layout "split" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Figure and explanation</source>
+        <target>Figure et explication</target>
+      </segment>
+    </unit>
+    <unit id="component.split.description">
+      <notes>
+        <note category="location">components/split/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's screen layout "split" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The title across the top, a figure column (figure, legend, short text) and an explanation column side by side. Stacks on narrow screens, figure first.</source>
+        <target>Le titre en haut, sur toute la largeur, une colonne de figure (figure, légende, texte court) et une colonne d’explication côte à côte. S’empile sur les écrans étroits, la figure d’abord.</target>
+      </segment>
+    </unit>
+    <unit id="component.split.slot.figure.label">
+      <notes>
+        <note category="location">components/split/component.json /slots/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "figure" of the course's screen layout "split". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Figure column</source>
+        <target>Colonne de la figure</target>
+      </segment>
+    </unit>
+    <unit id="component.split.slot.body.label">
+      <notes>
+        <note category="location">components/split/component.json /slots/1/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "body" of the course's screen layout "split". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Explanation</source>
+        <target>Explication</target>
+      </segment>
+    </unit>
+    <unit id="component.split.prop.balance.description">
+      <notes>
+        <note category="location">components/split/component.json /props/properties/balance/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "balance" of the course's screen layout "split" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>figure: a wider figure column; activity: a wider explanation column, for an activity next to the figure.</source>
+        <target>figure : une colonne de figure plus large ; activity : une colonne d’explication plus large, pour une activité à côté de la figure.</target>
+      </segment>
+    </unit>
+    <unit id="component.split.prop.figure.description">
+      <notes>
+        <note category="location">components/split/component.json /props/properties/figure/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "figure" of the course's screen layout "split" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>column: the figure's blocks one under the other; stack: drawn over each other in one square frame, for a figure built in steps (an image with its caption first, then orbit flights and hotspots).</source>
+        <target>column : les blocs de la figure l’un sous l’autre ; stack : dessinés les uns sur les autres dans un même cadre carré, pour une figure construite par étapes (une image avec sa légende d’abord, puis des vols en orbite et des repères).</target>
+      </segment>
+    </unit>
+    <unit id="component.stat-card.title">
+      <notes>
+        <note category="location">components/stat-card/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's block type "stat-card" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Stat card</source>
+        <target>Carte de chiffre</target>
+      </segment>
+    </unit>
+    <unit id="component.stat-card.description">
+      <notes>
+        <note category="location">components/stat-card/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's block type "stat-card" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>One figure that matters, large, with its unit, a short label and an optional sentence. The marker number links the card to a numbered marker in a figure next to it.</source>
+        <target>Un chiffre qui compte, en grand, avec son unité, un court libellé et une phrase facultative. Le numéro de repère relie la carte à un repère numéroté d’une figure voisine.</target>
+      </segment>
+    </unit>
+    <unit id="component.stat-card.prop.label.description">
+      <notes>
+        <note category="location">components/stat-card/component.json /props/properties/label/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "label" of the course's block type "stat-card" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>What the figure measures, in a few words.</source>
+        <target>Ce que mesure le chiffre, en quelques mots.</target>
+      </segment>
+    </unit>
+    <unit id="component.stat-card.prop.value.description">
+      <notes>
+        <note category="location">components/stat-card/component.json /props/properties/value/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "value" of the course's block type "stat-card" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The figure, formatted for the course language.</source>
+        <target>Le chiffre, écrit selon la langue du cours.</target>
+      </segment>
+    </unit>
+    <unit id="component.stat-card.prop.unit.description">
+      <notes>
+        <note category="location">components/stat-card/component.json /props/properties/unit/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "unit" of the course's block type "stat-card" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Unit shown after the figure.</source>
+        <target>L’unité affichée après le chiffre.</target>
+      </segment>
+    </unit>
+    <unit id="component.stat-card.prop.body.description">
+      <notes>
+        <note category="location">components/stat-card/component.json /props/properties/body/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "body" of the course's block type "stat-card" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>One short sentence of context.</source>
+        <target>Une courte phrase de contexte.</target>
+      </segment>
+    </unit>
+    <unit id="component.stat-card.prop.marker.description">
+      <notes>
+        <note category="location">components/stat-card/component.json /props/properties/marker/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "marker" of the course's block type "stat-card" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Number of the matching marker in a figure on the same screen.</source>
+        <target>Le numéro du repère qui lui répond, dans une figure du même écran.</target>
+      </segment>
+    </unit>
+    <unit id="component.stat-card.prop.accent.description">
+      <notes>
+        <note category="location">components/stat-card/component.json /props/properties/accent/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "accent" of the course's block type "stat-card" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colour of the figure and of the glow.</source>
+        <target>Couleur du chiffre et de sa lueur.</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.title">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Phasing lab</source>
+        <target>Labo de phasage</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.instruction.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/instruction/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "instruction" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Instruction shown at the top of the control panel</source>
+        <target>La consigne affichée en haut du panneau de commande</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.instruction.group">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/instruction/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "instruction" of the free object "phasing-lab" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Content</source>
+        <target>Contenu</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.requirements.title">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/requirements/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "requirements" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Requirements</source>
+        <target>Exigences</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.requirements.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/requirements/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "requirements" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The requirements to meet, in order (one to six), each a distance to the client, the most phasing orbits allowed and the propellant for both burns. When you change them, change the text version of the block too.</source>
+        <target>Les exigences à remplir, dans l’ordre (une à six) : pour chacune, une distance au client, le nombre maximal d’orbites de phasage et l’ergol des deux poussées. Si vous les changez, changez aussi la version texte du bloc.</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.requirements.group">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/requirements/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "requirements" of the free object "phasing-lab" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Requirements</source>
+        <target>Exigences</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.requirements.item.title">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/requirements/items/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "requirements[]" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Requirement</source>
+        <target>Exigence</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.requirements.item.gap.title">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/requirements/items/properties/gap/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "requirements[].gap" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Distance to the client (km)</source>
+        <target>Distance au client (km)</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.requirements.item.gap.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/requirements/items/properties/gap/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "requirements[].gap" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Distance to the client in km (positive: the client is ahead; negative: it is behind)</source>
+        <target>Distance au client, en km (positive : le client est devant ; négative : il est derrière)</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.requirements.item.orbits.title">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/requirements/items/properties/orbits/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "requirements[].orbits" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Most phasing orbits</source>
+        <target>Orbites de phasage au plus</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.requirements.item.orbits.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/requirements/items/properties/orbits/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "requirements[].orbits" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Most phasing orbits allowed</source>
+        <target>Le nombre maximal d’orbites de phasage</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.requirements.item.budget.title">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/requirements/items/properties/budget/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "requirements[].budget" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Propellant (m/s)</source>
+        <target>Ergol (m/s)</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.requirements.item.budget.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/requirements/items/properties/budget/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "requirements[].budget" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Propellant for both burns, in m/s</source>
+        <target>L’ergol des deux poussées, en m/s</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.tolerance.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/tolerance/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "tolerance" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Distance to the client, in km, at which the rendezvous counts as met</source>
+        <target>La distance au client, en km, à laquelle le rendez-vous est réussi</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.tolerance.group">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/tolerance/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "tolerance" of the free object "phasing-lab" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Requirements</source>
+        <target>Exigences</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.showPrediction.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/showPrediction/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "showPrediction" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Show the path and the predicted final gap before executing (for novices: it removes the need to calculate)</source>
+        <target>Montrer la trajectoire et l’écart final prévu avant d’exécuter (pour les débutants : plus besoin de calculer)</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.showPrediction.group">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/showPrediction/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "showPrediction" of the free object "phasing-lab" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Help</source>
+        <target>Aide</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.exaggeration.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/exaggeration/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "exaggeration" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>How many times the distance between the two craft is magnified in the 3D view (the plot is at true scale)</source>
+        <target>Combien de fois la distance entre les deux engins est agrandie dans la vue 3D (le graphique est à l’échelle réelle)</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.exaggeration.group">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/exaggeration/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "exaggeration" of the free object "phasing-lab" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>View</source>
+        <target>Vue</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.secondsPerOrbit.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/secondsPerOrbit/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "secondsPerOrbit" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Duration of one simulated orbit on screen, in seconds</source>
+        <target>La durée d’une orbite simulée à l’écran, en secondes</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.secondsPerOrbit.group">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/secondsPerOrbit/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "secondsPerOrbit" of the free object "phasing-lab" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Animation</source>
+        <target>Animation</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.servicerColor.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/servicerColor/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "servicerColor" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colour of your servicer and of its path</source>
+        <target>La couleur de votre engin de service et de sa trajectoire</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.servicerColor.group">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/servicerColor/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "servicerColor" of the free object "phasing-lab" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Style</source>
+        <target>Style</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.clientColor.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/clientColor/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "clientColor" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colour of the client satellite</source>
+        <target>La couleur du satellite client</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.clientColor.group">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/clientColor/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "clientColor" of the free object "phasing-lab" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Style</source>
+        <target>Style</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.orbitColor.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/orbitColor/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "orbitColor" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colour of the circular orbit</source>
+        <target>La couleur de l’orbite circulaire</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.orbitColor.group">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/orbitColor/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "orbitColor" of the free object "phasing-lab" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Style</source>
+        <target>Style</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.atmosphereColor.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/atmosphereColor/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "atmosphereColor" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colour of the atmosphere glow</source>
+        <target>La couleur de la lueur de l’atmosphère</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.atmosphereColor.group">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/atmosphereColor/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "atmosphereColor" of the free object "phasing-lab" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Style</source>
+        <target>Style</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.event.manoeuvre.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /events/0/description</note>
+        <note category="format">text</note>
+        <note category="context">When the free object "phasing-lab" sends its event "manoeuvre" (the events of a screen). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>A manoeuvre has been flown for an open requirement.</source>
+        <target>Une manœuvre a été effectuée pour une exigence en cours.</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.event.requirement_met.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /events/1/description</note>
+        <note category="format">text</note>
+        <note category="context">When the free object "phasing-lab" sends its event "requirement_met" (the events of a screen). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>A requirement is met; the next one opens.</source>
+        <target>Une exigence est remplie ; la suivante s’ouvre.</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.event.completed.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /events/2/description</note>
+        <note category="format">text</note>
+        <note category="context">When the free object "phasing-lab" sends its event "completed" (the events of a screen). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Every requirement is met.</source>
+        <target>Toutes les exigences sont remplies.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

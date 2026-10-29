@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="fr">
-  <file id="f1" original="clear@0.1.0" xml:space="preserve">
+  <file id="f1" original="clear@1.0.0" xml:space="preserve">
     <unit id="course.title">
       <notes>
         <note category="location">course.json /title</note>
@@ -303,7 +303,7 @@
       <notes>
         <note category="location">screens/part-one.json /layoutProps/lead</note>
         <note category="format">markdown</note>
-        <note category="context">Layout opening of screen "Title of the first part"</note>
+        <note category="context">Layout clear-section of screen "Title of the first part"</note>
         <note category="max-length">500</note>
       </notes>
       <segment state="translated">
@@ -1080,6 +1080,160 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
         <target>- Contact : nom de l'équipe
 - Procédure complète : voir Ressources
 - Version 1.0, mois et année</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.screen.cover">
+      <notes>
+        <note category="location">course.json /theme/styles/screen/cover</note>
+        <note category="format">text</note>
+        <note category="context">What the screen style "cover" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Cover: the title on the left seven columns, the accent panel on the right (with the feature backdrop)</source>
+        <target>Couverture : le titre sur les sept colonnes de gauche, le panneau d'accent à droite (avec le décor feature)</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.screen.section">
+      <notes>
+        <note category="location">course.json /theme/styles/screen/section</note>
+        <note category="format">text</note>
+        <note category="context">What the screen style "section" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Part opener: the part's number set large in the accent, the title on the left columns (with the feature backdrop)</source>
+        <target>Intercalaire : le numéro de la partie en grand dans l'accent, le titre sur les colonnes de gauche (avec le décor feature)</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.lead">
+      <notes>
+        <note category="location">course.json /theme/styles/text/lead</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "lead" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Large introductory paragraph</source>
+        <target>Grand paragraphe d'introduction</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.agenda">
+      <notes>
+        <note category="location">course.json /theme/styles/text/agenda</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "agenda" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Numbered agenda: one row per part, large numbers, hairlines between rows</source>
+        <target>Programme numéroté : une ligne par partie, de grands chiffres, des filets entre les lignes</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.checklist">
+      <notes>
+        <note category="location">course.json /theme/styles/text/checklist</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "checklist" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Ticked list on hairlines: takeaways, recap</source>
+        <target>Liste cochée sur des filets : points à retenir, récapitulatif</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.meta">
+      <notes>
+        <note category="location">course.json /theme/styles/text/meta</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "meta" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Short facts in a row, separated by hairlines (audience, duration, owner)</source>
+        <target>Informations courtes sur une ligne, séparées par des filets (public, durée, responsable)</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.columns.cards">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/cards</note>
+        <note category="format">text</note>
+        <note category="context">What the columns style "cards" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Each column on a flat card, numbered in the accent colour</source>
+        <target>Chaque colonne sur une carte plate, numérotée dans la couleur d'accent</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.columns.compare">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/compare</note>
+        <note category="format">text</note>
+        <note category="context">What the columns style "compare" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Two columns face to face: the first in grey, the second outlined in the accent</source>
+        <target>Deux colonnes face à face : la première en gris, la seconde cernée de l'accent</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.statement.accent">
+      <notes>
+        <note category="location">course.json /theme/styles/statement/accent</note>
+        <note category="format">text</note>
+        <note category="context">What the statement style "accent" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The statement set large with a short accent rule above it</source>
+        <target>La phrase en grand, sous un court filet d'accent</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.feature">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/feature</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "feature" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Accent panel on the right columns: cover, part openers and the end</source>
+        <target>Un panneau d'accent sur les colonnes de droite : la couverture, les intercalaires et la fin</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.tint">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/tint</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "tint" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>A pale wash of the accent: a key message, a moment that stands out</source>
+        <target>Un lavis pâle de l'accent : un message clé, un moment qui se détache</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.ink">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/ink</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "ink" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Dark screen: dark ground, light text, a lighter accent</source>
+        <target>Écran sombre : un fond sombre, le texte en clair, un accent plus lumineux</target>
+      </segment>
+    </unit>
+    <unit id="component.clear-section.title">
+      <notes>
+        <note category="location">components/clear-section/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's screen layout "clear-section" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Clear part opener</source>
+        <target>Intercalaire Clair</target>
+      </segment>
+    </unit>
+    <unit id="component.clear-section.description">
+      <notes>
+        <note category="location">components/clear-section/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's screen layout "clear-section" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Opens a part of the module: the part's number set large in the accent, then the opening's head (the part's title and its lead) and its page, on the left columns of the grid.</source>
+        <target>Ouvre une partie du module : le numéro de la partie en grand dans l'accent, puis la tête de l'ouverture (le titre de la partie et son chapeau) et sa page, sur les colonnes de gauche de la grille.</target>
       </segment>
     </unit>
   </file>

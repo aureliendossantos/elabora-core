@@ -5,7 +5,7 @@ import { hasFile, readText } from '../project/files.ts';
 import { stringifyJSON } from '../util/json.ts';
 import { localDay } from '../util/local-day.ts';
 import { validateSchema } from '@elabora/format/schemas';
-import type { Project, Course, Plan, PlanVersion, Screen, TranslationApproval } from '../project/model.ts';
+import type { Project, Course, Plan, PlanVersion, Screen, ComponentManifest, ObjectManifest, TranslationApproval } from '../project/model.ts';
 import { planVersionFile, versionedPlan } from '../project/plan-versions.ts';
 import { extractUnits, setAt, valueAt, invariants, writeUnit } from './units.ts';
 import type { TranslationUnit } from './units.ts';
@@ -28,7 +28,7 @@ export const translationPath = (language: string): string => `translations/${lan
 export const approvalPath = (language: string): string => `translations/${language}.approval.json`;
 
 // A translated file: course.json, plan.json or a screen, with the translations applied.
-export type TranslatedDocument = Course | Plan | PlanVersion | Screen;
+export type TranslatedDocument = Course | Plan | PlanVersion | Screen | ComponentManifest | ObjectManifest;
 
 export interface TranslationCounts {
   translated: number;
@@ -383,8 +383,7 @@ function schemaProblems(project: Project, xliff: XliffDocument, units: readonly 
   const { files } = applyTargets(project, project.course, xliff, units);
   const found: TranslationProblem[] = [];
   for (const [file, data] of files) {
-    const name = file === 'course.json' ? 'course' : file === 'plan.json' ? 'plan' : 'screen';
-    for (const error of validateSchema(name, data)) {
+    for (const error of validateSchema(schemaOf(file), data)) {
       const unit = units.find((candidate) => candidate.file === file && candidate.pointer === error.path);
       if (unit) found.push({ id: unit.id, message: error.message });
     }
@@ -408,7 +407,7 @@ function applyTargets<C extends Course | null>(project: Project, source: C, xlif
   const files = new Map<string, TranslatedDocument>();
   const documentOf = (file: string): TranslatedDocument | undefined => {
     if (!files.has(file)) {
-      const document = file === 'course.json' ? course : file === 'plan.json' ? plan : screenCopy(project, file);
+      const document = file === 'course.json' ? course : file === 'plan.json' ? plan : designCopy(project, file) ?? screenCopy(project, file);
       if (document) files.set(file, document);
     }
     return files.get(file);
@@ -446,12 +445,25 @@ function applyTargets<C extends Course | null>(project: Project, source: C, xlif
   return { files, course, plan, unplaced };
 }
 
+// The schema a translated file is checked against.
+const schemaOf = (file: string) => (file === 'course.json' ? 'course' : file === 'plan.json' ? 'plan' : /^components\/[^/]+\/component\.json$/.test(file) ? 'component' : /^objects\/[^/]+\/object\.manifest\.json$/.test(file) ? 'object-manifest' : 'screen');
+
+// A component's or a free object's manifest, whose words authors read in the editor (designUnits).
+const designCopy = (project: Project, file: string): ComponentManifest | ObjectManifest | undefined => {
+  const component = /^components\/([^/]+)\/component\.json$/.exec(file)?.[1];
+  if (component) { const manifest = project.components.get(component)?.manifest; return manifest ? structuredClone(manifest) : undefined; }
+  const object = /^objects\/([^/]+)\/object\.manifest\.json$/.exec(file)?.[1];
+  if (object) { const manifest = project.objects.get(object)?.manifest; return manifest ? structuredClone(manifest) : undefined; }
+  return undefined;
+};
+
 const screenCopy = (project: Project, file: string): Screen | undefined => {
   const screen = [...project.screens.values()].find((entry) => entry.file === file)?.data;
   return screen && structuredClone(screen);
 };
 
-// The translated files, in memory: course.json, plan.json and the screens with the targets applied.
+// The translated files, in memory: course.json, plan.json, the screens, and the components' and free
+// objects' manifests whose editor words are translated, with the targets applied.
 // skipBroken: translations that break the text are left out (their source text stays), rather than
 // stopping everything: a translation shown while it is being written (the app's « En contexte »).
 function translatedFiles(project: Project, xliff: XliffDocument, language: string, { allowMissing = false, skipBroken = false }: { allowMissing?: boolean; skipBroken?: boolean } = {}): TranslatedFiles<Course> & { units: TranslationUnit[]; missing: string[]; broken: string[]; approved: boolean } {

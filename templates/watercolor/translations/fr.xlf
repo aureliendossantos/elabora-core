@@ -998,5 +998,137 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
 - Les ressources sont dans la barre du haut</target>
       </segment>
     </unit>
+    <unit id="theme.style.screen.cover">
+      <notes>
+        <note category="location">course.json /theme/styles/screen/cover</note>
+        <note category="format">text</note>
+        <note category="context">What the screen style "cover" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Cover and closing: the title set large in italic on the open paper</source>
+        <target>Couverture et fin : le titre en grand, en italique, sur le papier libre</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.lead">
+      <notes>
+        <note category="location">course.json /theme/styles/text/lead</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "lead" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Large opening paragraph in italic serif</source>
+        <target>Grand paragraphe d'ouverture, en italique à empattements</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.objectives">
+      <notes>
+        <note category="location">course.json /theme/styles/text/objectives</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "objectives" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Numbered list under large italic numerals, in the colour of the part</source>
+        <target>Liste numérotée sous de grands chiffres en italique, dans la couleur de la partie</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.meta">
+      <notes>
+        <note category="location">course.json /theme/styles/text/meta</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "meta" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Short facts on one line, each after a small drop of colour</source>
+        <target>Informations courtes sur une ligne, chacune après une petite goutte de couleur</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.takeaways">
+      <notes>
+        <note category="location">course.json /theme/styles/text/takeaways</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "takeaways" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Numbered takeaways side by side, each under a large italic numeral</source>
+        <target>Points à retenir numérotés côte à côte, chacun sous un grand chiffre en italique</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.columns.cards">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/cards</note>
+        <note category="format">text</note>
+        <note category="context">What the columns style "cards" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Each column on a sheet of paper with a soft wash pooled at its top</source>
+        <target>Chaque colonne sur une feuille de papier, un lavis doux déposé en haut</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.columns.compare">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/compare</note>
+        <note category="format">text</note>
+        <note category="context">What the columns style "compare" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Two columns face to face: the first left unpainted, the second on a wash</source>
+        <target>Deux colonnes face à face : la première laissée sans peinture, la seconde sur un lavis</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.quiet">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/quiet</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "quiet" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Paler washes kept to the edges, for dense screens</source>
+        <target>Des lavis plus pâles, tenus aux bords, pour les écrans chargés</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.ink">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/ink</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "ink" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Indigo ink: light washes on a deep ground, light text, for one sentence set large</source>
+        <target>Encre indigo : des lavis clairs sur un fond profond, le texte en clair, pour une phrase en grand</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.dawn">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/dawn</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "dawn" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Warm blush and ochre washes, to open gently or to close</source>
+        <target>Des lavis chauds, rose et ocre, pour ouvrir en douceur ou pour finir</target>
+      </segment>
+    </unit>
+    <unit id="component.watercolor-part.title">
+      <notes>
+        <note category="location">components/watercolor-part/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's screen layout "watercolor-part" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Watercolour part opener</source>
+        <target>Intercalaire Aquarelle</target>
+      </segment>
+    </unit>
+    <unit id="component.watercolor-part.description">
+      <notes>
+        <note category="location">components/watercolor-part/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's screen layout "watercolor-part" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Opens a part of the module: the part's number set very large in italic, over a wash of the part's colour, beside the opening's head (the part's title and its lead), then its page.</source>
+        <target>Ouvre une partie du module : le numéro de la partie en très grand, en italique, sur un lavis de la couleur de la partie, à côté de la tête de l'ouverture (le titre de la partie et son chapeau), puis sa page.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

@@ -1009,5 +1009,258 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
 - Module suivant : son titre</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.lead">
+      <notes>
+        <note category="location">course.json /theme/styles/text/lead</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "lead" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Large opening paragraph</source>
+        <target>Grand paragraphe d'ouverture</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.numbered">
+      <notes>
+        <note category="location">course.json /theme/styles/text/numbered</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "numbered" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Numbered list, each number in a flat shape (objectives, takeaways)</source>
+        <target>Liste numérotée, chaque chiffre dans une forme plate (objectifs, points à retenir)</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.meta">
+      <notes>
+        <note category="location">course.json /theme/styles/text/meta</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "meta" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Short facts set as bold tags (length, format, audience)</source>
+        <target>Informations courtes en étiquettes grasses (durée, format, public)</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.columns.cards">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/cards</note>
+        <note category="format">text</note>
+        <note category="context">What the columns style "cards" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Each column on a flat card topped by a shape</source>
+        <target>Chaque colonne sur une carte plate surmontée d'une forme</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.columns.compare">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/compare</note>
+        <note category="format">text</note>
+        <note category="context">What the columns style "compare" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Two columns face to face: the first on paper, the second on the blue shape colour</source>
+        <target>Deux colonnes face à face : la première sur le papier, la seconde sur le bleu des formes</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.earth">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/earth</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "earth" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Earth tones: terracotta, ochre and olive shapes on sand</source>
+        <target>Tons de terre : des formes terre cuite, ocre et olive sur un fond sable</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.mono">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/mono</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "mono" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Monochrome and calmer: ink tints kept to the edges, for dense screens</source>
+        <target>Monochrome et plus calme : des teintes d'encre tenues aux bords, pour les écrans chargés</target>
+      </segment>
+    </unit>
+    <unit id="component.part-mark.title">
+      <notes>
+        <note category="location">components/part-mark/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's block type "part-mark" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Part mark</source>
+        <target>Marque de partie</target>
+      </segment>
+    </unit>
+    <unit id="component.part-mark.description">
+      <notes>
+        <note category="location">components/part-mark/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's block type "part-mark" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The number of a part set large inside a flat Bauhaus shape: a circle, a quarter circle, a half disc or a square.</source>
+        <target>Le numéro d'une partie en grand dans une forme plate façon Bauhaus : un cercle, un quart de cercle, un demi-disque ou un carré.</target>
+      </segment>
+    </unit>
+    <unit id="component.part-mark.prop.label.title">
+      <notes>
+        <note category="location">components/part-mark/component.json /props/properties/label/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "label" of the course's block type "part-mark" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Label</source>
+        <target>Libellé</target>
+      </segment>
+    </unit>
+    <unit id="component.part-mark.prop.label.description">
+      <notes>
+        <note category="location">components/part-mark/component.json /props/properties/label/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "label" of the course's block type "part-mark" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>What the number counts, above it (« Part »).</source>
+        <target>Ce que compte le numéro, au-dessus de lui (« Partie »).</target>
+      </segment>
+    </unit>
+    <unit id="component.part-mark.prop.number.title">
+      <notes>
+        <note category="location">components/part-mark/component.json /props/properties/number/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "number" of the course's block type "part-mark" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Number</source>
+        <target>Numéro</target>
+      </segment>
+    </unit>
+    <unit id="component.part-mark.prop.number.description">
+      <notes>
+        <note category="location">components/part-mark/component.json /props/properties/number/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "number" of the course's block type "part-mark" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The part's number, short: « 01 ».</source>
+        <target>Le numéro de la partie, court : « 01 ».</target>
+      </segment>
+    </unit>
+    <unit id="component.part-mark.prop.shape.title">
+      <notes>
+        <note category="location">components/part-mark/component.json /props/properties/shape/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "shape" of the course's block type "part-mark" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Shape</source>
+        <target>Forme</target>
+      </segment>
+    </unit>
+    <unit id="component.part-mark.prop.shape.description">
+      <notes>
+        <note category="location">components/part-mark/component.json /props/properties/shape/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "shape" of the course's block type "part-mark" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The flat shape behind the number.</source>
+        <target>La forme plate derrière le numéro.</target>
+      </segment>
+    </unit>
+    <unit id="component.part-mark.prop.colour.title">
+      <notes>
+        <note category="location">components/part-mark/component.json /props/properties/colour/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "colour" of the course's block type "part-mark" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colour</source>
+        <target>Couleur</target>
+      </segment>
+    </unit>
+    <unit id="component.part-mark.prop.colour.description">
+      <notes>
+        <note category="location">components/part-mark/component.json /props/properties/colour/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "colour" of the course's block type "part-mark" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The colour of the shape (a theme token). The number stays in the ink colour: keep to the light shape colours.</source>
+        <target>La couleur de la forme (un jeton du thème). Le numéro reste couleur d'encre : gardez les couleurs de forme claires.</target>
+      </segment>
+    </unit>
+    <unit id="component.poster.title">
+      <notes>
+        <note category="location">components/poster/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's screen layout "poster" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Poster</source>
+        <target>Affiche</target>
+      </segment>
+    </unit>
+    <unit id="component.poster.description">
+      <notes>
+        <note category="location">components/poster/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's screen layout "poster" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>An asymmetric poster page: a large title and its lead, then the page. Stacked, it keeps the left of the slide so the shapes of the backdrop compose the right; split, the title takes the left and the page the right.</source>
+        <target>Une page d'affiche asymétrique : un grand titre et son chapeau, puis la page. En pile, elle tient la gauche de la diapositive et laisse les formes du décor composer la droite ; partagée, le titre prend la gauche et la page la droite.</target>
+      </segment>
+    </unit>
+    <unit id="component.poster.slot.lead.label">
+      <notes>
+        <note category="location">components/poster/component.json /slots/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "lead" of the course's screen layout "poster". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Lead under the title</source>
+        <target>Chapeau sous le titre</target>
+      </segment>
+    </unit>
+    <unit id="component.poster.slot.body.label">
+      <notes>
+        <note category="location">components/poster/component.json /slots/1/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "body" of the course's screen layout "poster". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Page</source>
+        <target>Page</target>
+      </segment>
+    </unit>
+    <unit id="component.poster.prop.arrangement.title">
+      <notes>
+        <note category="location">components/poster/component.json /props/properties/arrangement/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "arrangement" of the course's screen layout "poster" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Arrangement</source>
+        <target>Disposition</target>
+      </segment>
+    </unit>
+    <unit id="component.poster.prop.arrangement.description">
+      <notes>
+        <note category="location">components/poster/component.json /props/properties/arrangement/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "arrangement" of the course's screen layout "poster" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>stack: title, lead and page one under the other, on the left of the slide; split: title and lead on the left, the page on the right.</source>
+        <target>stack : le titre, le chapeau et la page l'un sous l'autre, à gauche de la diapositive ; split : le titre et le chapeau à gauche, la page à droite.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>

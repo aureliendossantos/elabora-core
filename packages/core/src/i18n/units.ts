@@ -27,6 +27,9 @@ import type { XliffMark } from './xliff.ts';
 //   block.<id>.nodes.<node>.lines.<line>.text · ….options.<option>.text · ….options.<option>.reply.<line>.text (a dialogue's voice lines)
 //   block.<id>.<prop path> (array items by id when they have one) · block.<id>.strings.<key>
 //   block.<id>.enumLabels.<prop or prop_field>.<value>
+//   theme.style.<kind>.<name> · theme.backdrop.variant.<name> (editor only, as the next ones)
+//   component.<id>.title / .description / .slot.<id>.label / .prop.<setting>.title / .description
+//   object.<id>.title / .prop.<setting>.title / .description / .group / .event.<name>.description
 // Ids only use letters, digits, '.', '-' and '_' (XLIFF unit ids are NMTOKENs). Words never live in
 // CSS, templates or figures (the validator sees to it), so these units are the whole text of a course.
 export type UnitFormat = 'text' | 'markdown' | 'icu';
@@ -42,8 +45,9 @@ export interface TranslationUnit {
   // What the file holds at a pointer above this one, written there first when the file has nothing:
   // a free-object list a block leaves to the manifest default (its words are in the default's items).
   base?: { pointer: string; value: unknown };
-  // Words authors read in the editor, not learners (how a free object's choices read): translated
-  // with the course, never found by findText.
+  // Words authors read in the editor, not learners (how a free object's choices read; the course's
+  // design: its styles, variants, components and objects' settings): translated with the course,
+  // never found by findText.
   editor?: boolean;
   // A narration line's word anchors (docs/decisions.md D28): the markers translators place.
   marks?: (XliffMark & { word: string })[];
@@ -72,6 +76,8 @@ export function extractUnits(project: Project): TranslationUnit[] {
   const units: TranslationUnit[] = [];
   const registry = getRegistry(project);
   const seen = new Set<string>();
+  // The free objects the course's blocks place: their settings show in the inspector.
+  const placed = new Set<string>();
   const add = (id: string, file: string, pointer: string, text: unknown, { format = 'text', note, maxLength, base, editor, marks, voice }: UnitOptions = {}): void => {
     if (typeof text !== 'string' || !/\p{L}/u.test(text) || seen.has(id)) return;
     seen.add(id);
@@ -187,12 +193,68 @@ export function extractUnits(project: Project): TranslationUnit[] {
       // A fill-in's text holds its blanks (D63): translated with their sentence, kept as blanks.
       const blanks = descriptor.root === 'fill-in' ? `${path}/props/markdown` : null;
       walkProps(descriptor.schema, block.props, `${path}/props`, `block.${block.id}`, descriptor.builtin, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: pointer === blanks ? `${where}: a text with blanks, [[answer|other accepted answer]]: translate the answers inside the brackets with their sentence, keep the double brackets and the | between the answers` : where, ...voiced.get(pointer) }));
-      if (descriptor.root === 'free-object') objectUnits(project, block, path, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: options.note || where }));
+      if (descriptor.root === 'free-object') {
+        placed.add(textOf(recordOf(block.props).object));
+        objectUnits(project, block, path, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: options.note || where }));
+      }
       if (descriptor.root === 'trend') followPoints(units, block, path);
       if (descriptor.root === 'diagram') diagramUnits(block, path, (unitId, pointer, text, options) => add(unitId, file, pointer, text, { ...options, note: `${options.note} (${where})` }));
     }
   }
+  designUnits(project, placed, add);
   return units;
+}
+
+// The words of the course's own design, as authors read them in the editor, never learners: what
+// its styles and backdrop variants are for (the Charte, the inspector), its components' names,
+// descriptions, slots and settings (the block picker, the layouts, the inspector), and the settings
+// and events of the free objects its blocks place (the inspector, the events). Translated with the
+// course, so that a course made in another language (elabora init --template) reads in it in the
+// editor as well. A component's instructions are for agents and stay as written, as AGENTS.md does.
+function designUnits(project: Project, placed: ReadonlySet<string>, add: (id: string, file: string, pointer: string, text: unknown, options: UnitOptions) => void): void {
+  const editor = (note: string): UnitOptions => ({ editor: true, note: `${note}. Editor only: authors read it, learners never do` });
+  const theme = recordOf(project.course?.theme);
+  for (const [kind, styles] of Object.entries(recordOf(theme.styles))) {
+    for (const [name, description] of Object.entries(recordOf(styles))) add(`theme.style.${segment(kind)}.${segment(name)}`, 'course.json', `/theme/styles${pointer(kind, name)}`, description, editor(`What the ${kind} style "${name}" of the course's charter is for (the Charte, the inspector)`));
+  }
+  for (const [name, description] of Object.entries(recordOf(recordOf(theme.backdrop).variants))) add(`theme.backdrop.variant.${segment(name)}`, 'course.json', `/theme/backdrop/variants${pointer(name)}`, description, editor(`When the backdrop variant "${name}" is used (the Charte)`));
+  for (const [id, source] of project.components) {
+    const manifest = source.manifest;
+    if (!manifest) continue;
+    const file = `${source.folder}/component.json`;
+    const base = `component.${segment(id)}`;
+    const what = manifest.level === 'screen' ? `the course's screen layout "${id}"` : `the course's block type "${id}"`;
+    add(`${base}.title`, file, '/title', manifest.title, editor(`Name of ${what} (the block picker, the layouts, the inspector)`));
+    add(`${base}.description`, file, '/description', manifest.description, editor(`What ${what} is (the block picker, the layouts)`));
+    listOf(manifest.slots).forEach((slot, i) => { if (isRecord(slot)) add(`${base}.slot.${segment(slot.id)}.label`, file, `/slots/${i}/label`, slot.label, editor(`Name of the slot "${String(slot.id)}" of ${what}`)); });
+    settingWords(manifest.props, '/props', `${base}.prop`, what, false, (unitId, at, text, note) => add(unitId, file, at, text, editor(note)));
+  }
+  for (const id of [...placed].sort()) {
+    const object = project.objects.get(id);
+    const manifest = object?.manifest;
+    if (!object || !manifest) continue;
+    const file = `${object.folder}/object.manifest.json`;
+    const base = `object.${segment(id)}`;
+    const what = `the free object "${id}"`;
+    add(`${base}.title`, file, '/title', manifest.title, editor(`Name of ${what} (the inspector)`));
+    settingWords(manifest.props, '/props', `${base}.prop`, what, true, (unitId, at, text, note) => add(unitId, file, at, text, editor(note)));
+    listOf(manifest.events).forEach((event, i) => { if (isRecord(event)) add(`${base}.event.${segment(event.name)}.description`, file, `/events/${i}/description`, event.description, editor(`When ${what} sends its event "${String(event.name)}" (the events of a screen)`)); });
+  }
+}
+
+// The words of a props schema the inspector shows: each setting's title and description, and those
+// of the fields of its objects and lists; a free object's settings also by group (x-group: a
+// component's is not shown).
+function settingWords(schema: unknown, at: string, idBase: string, what: string, groups: boolean, addWord: (id: string, pointer: string, text: unknown, note: string) => void): void {
+  const walk = (node: unknown, path: string, id: string, name: string): void => {
+    if (!isRecord(node)) return;
+    addWord(`${id}.title`, `${path}/title`, node.title, `Label of the setting "${name}" of ${what} (the inspector)`);
+    addWord(`${id}.description`, `${path}/description`, node.description, `Help of the setting "${name}" of ${what} (the inspector)`);
+    if (groups) addWord(`${id}.group`, `${path}/x-group`, node['x-group'], `The group the setting "${name}" of ${what} is in (the inspector): the same words for every setting of the group`);
+    for (const [child, value] of Object.entries(recordOf(node.properties))) walk(value, `${path}/properties${pointer(child)}`, `${id}.${segment(child)}`, `${name}.${child}`);
+    if (isRecord(node.items)) walk(node.items, `${path}/items`, `${id}.item`, `${name}[]`);
+  };
+  for (const [name, value] of Object.entries(recordOf(recordOf(schema).properties))) walk(value, `${at}/properties${pointer(name)}`, `${idBase}.${segment(name)}`, name);
 }
 
 // Strings of block or layout props: built-in schemas mark them x-translatable; in components, props

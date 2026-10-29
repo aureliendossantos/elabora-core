@@ -997,5 +997,302 @@ Un second paragraphe court ajoute un exemple, une nuance ou le détail qu'on oub
 - Module suivant : son titre</target>
       </segment>
     </unit>
+    <unit id="theme.style.text.lead">
+      <notes>
+        <note category="location">course.json /theme/styles/text/lead</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "lead" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Large opening paragraph</source>
+        <target>Grand paragraphe d'ouverture</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.numbered">
+      <notes>
+        <note category="location">course.json /theme/styles/text/numbered</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "numbered" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Numbered list, each number handwritten on a paper disc (objectives, takeaways)</source>
+        <target>Liste numérotée, chaque chiffre écrit à la main sur un disque de papier (objectifs, points à retenir)</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.tags">
+      <notes>
+        <note category="location">course.json /theme/styles/text/tags</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "tags" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Short facts as handwritten paper tags (length, format, audience)</source>
+        <target>Informations courtes sur des étiquettes de papier écrites à la main (durée, format, public)</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.columns.cards">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/cards</note>
+        <note category="format">text</note>
+        <note category="context">What the columns style "cards" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Each column on its own coloured paper card, taped down</source>
+        <target>Chaque colonne sur sa propre carte de papier de couleur, scotchée</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.columns.compare">
+      <notes>
+        <note category="location">course.json /theme/styles/columns/compare</note>
+        <note category="format">text</note>
+        <note category="context">What the columns style "compare" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Two sheets face to face: a plain kraft one, then a bright one</source>
+        <target>Deux feuilles face à face : une de kraft nu, puis une de couleur vive</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.statement.banner">
+      <notes>
+        <note category="location">course.json /theme/styles/statement/banner</note>
+        <note category="format">text</note>
+        <note category="context">What the statement style "banner" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The sentence on a strip of coloured paper, taped down</source>
+        <target>La phrase sur une bande de papier de couleur, scotchée</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.calm">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/calm</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "calm" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Calm: a pale sheet, the paper hills lowered and the sky cleared, for dense screens</source>
+        <target>Calme : une feuille pâle, les collines de papier abaissées et le ciel dégagé, pour les écrans chargés</target>
+      </segment>
+    </unit>
+    <unit id="theme.backdrop.variant.night">
+      <notes>
+        <note category="location">course.json /theme/backdrop/variants/night</note>
+        <note category="format">text</note>
+        <note category="context">When the backdrop variant "night" is used (the Charte). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Night: deep blue paper, a pale moon and stars, for quotes and pauses</source>
+        <target>Nuit : un papier bleu profond, une lune pâle et des étoiles, pour les citations et les pauses</target>
+      </segment>
+    </unit>
+    <unit id="component.part-number.title">
+      <notes>
+        <note category="location">components/part-number/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's block type "part-number" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Part number</source>
+        <target>Numéro de partie</target>
+      </segment>
+    </unit>
+    <unit id="component.part-number.description">
+      <notes>
+        <note category="location">components/part-number/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's block type "part-number" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The number of a part, written large by hand on a cut-paper shape taped onto the kraft: a disc, a scalloped disc (cut with pinking shears) or a star.</source>
+        <target>Le numéro d'une partie, écrit en grand à la main sur une forme de papier découpé scotchée sur le kraft : un disque, un disque festonné (découpé aux ciseaux cranteurs) ou une étoile.</target>
+      </segment>
+    </unit>
+    <unit id="component.part-number.prop.number.title">
+      <notes>
+        <note category="location">components/part-number/component.json /props/properties/number/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "number" of the course's block type "part-number" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Number</source>
+        <target>Numéro</target>
+      </segment>
+    </unit>
+    <unit id="component.part-number.prop.number.description">
+      <notes>
+        <note category="location">components/part-number/component.json /props/properties/number/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "number" of the course's block type "part-number" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The part's number, short: « 1 ».</source>
+        <target>Le numéro de la partie, court : « 1 ».</target>
+      </segment>
+    </unit>
+    <unit id="component.part-number.prop.shape.title">
+      <notes>
+        <note category="location">components/part-number/component.json /props/properties/shape/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "shape" of the course's block type "part-number" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Shape</source>
+        <target>Forme</target>
+      </segment>
+    </unit>
+    <unit id="component.part-number.prop.shape.description">
+      <notes>
+        <note category="location">components/part-number/component.json /props/properties/shape/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "shape" of the course's block type "part-number" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The paper shape under the number.</source>
+        <target>La forme de papier sous le numéro.</target>
+      </segment>
+    </unit>
+    <unit id="component.part-number.prop.paper.title">
+      <notes>
+        <note category="location">components/part-number/component.json /props/properties/paper/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "paper" of the course's block type "part-number" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Paper</source>
+        <target>Papier</target>
+      </segment>
+    </unit>
+    <unit id="component.part-number.prop.paper.description">
+      <notes>
+        <note category="location">components/part-number/component.json /props/properties/paper/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "paper" of the course's block type "part-number" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The colour of the shape (a theme token). The number stays in ink: keep to the light papers.</source>
+        <target>La couleur de la forme (un jeton du thème). Le numéro reste à l'encre : gardez les papiers clairs.</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.title">
+      <notes>
+        <note category="location">components/sheet/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's screen layout "sheet" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Paper sheet</source>
+        <target>Feuille de papier</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.description">
+      <notes>
+        <note category="location">components/sheet/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's screen layout "sheet" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>A sheet of paper taped onto the kraft: the screen's title, its lead and the page on it. cover: a large sheet for the module's first screen; stack: a sheet on the left, the backdrop's scene around it; split: the sheet on the left and a second place on the right (a part's number, a list on its own paper).</source>
+        <target>Une feuille de papier scotchée sur le kraft, avec le titre de l'écran, son chapeau et la page. cover : une grande feuille pour le premier écran du module ; stack : une feuille à gauche, la scène du décor autour ; split : la feuille à gauche et une seconde place à droite (le numéro d'une partie, une liste sur son propre papier).</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.slot.lead.label">
+      <notes>
+        <note category="location">components/sheet/component.json /slots/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "lead" of the course's screen layout "sheet". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Lead under the title</source>
+        <target>Chapeau sous le titre</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.slot.body.label">
+      <notes>
+        <note category="location">components/sheet/component.json /slots/1/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "body" of the course's screen layout "sheet". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Page</source>
+        <target>Page</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.slot.side.label">
+      <notes>
+        <note category="location">components/sheet/component.json /slots/2/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "side" of the course's screen layout "sheet". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Beside the sheet (split)</source>
+        <target>À côté de la feuille (split)</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.prop.arrangement.title">
+      <notes>
+        <note category="location">components/sheet/component.json /props/properties/arrangement/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "arrangement" of the course's screen layout "sheet" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Arrangement</source>
+        <target>Disposition</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.prop.arrangement.description">
+      <notes>
+        <note category="location">components/sheet/component.json /props/properties/arrangement/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "arrangement" of the course's screen layout "sheet" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>cover: a large sheet, the title set large; stack: one sheet with the title, the lead and the page; split: the sheet on the left, the side slot on the right.</source>
+        <target>cover : une grande feuille, le titre en grand ; stack : une feuille avec le titre, le chapeau et la page ; split : la feuille à gauche, l'emplacement d'à côté à droite.</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.prop.paper.title">
+      <notes>
+        <note category="location">components/sheet/component.json /props/properties/paper/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "paper" of the course's screen layout "sheet" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Paper</source>
+        <target>Papier</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.prop.paper.description">
+      <notes>
+        <note category="location">components/sheet/component.json /props/properties/paper/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "paper" of the course's screen layout "sheet" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The colour of the sheet (a theme token). The text stays in ink: keep to the light papers.</source>
+        <target>La couleur de la feuille (un jeton du thème). Le texte reste à l'encre : gardez les papiers clairs.</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.prop.tilt.title">
+      <notes>
+        <note category="location">components/sheet/component.json /props/properties/tilt/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "tilt" of the course's screen layout "sheet" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Tilt</source>
+        <target>Inclinaison</target>
+      </segment>
+    </unit>
+    <unit id="component.sheet.prop.tilt.description">
+      <notes>
+        <note category="location">components/sheet/component.json /props/properties/tilt/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "tilt" of the course's screen layout "sheet" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>How the sheet was laid down: straight, or turned a little to the left or the right.</source>
+        <target>Comment la feuille a été posée : droite, ou un peu tournée vers la gauche ou vers la droite.</target>
+      </segment>
+    </unit>
   </file>
 </xliff>
