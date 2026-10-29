@@ -82,8 +82,14 @@ export function createTooltip(root: HTMLElement = document.body) {
     place(anchor, options.placement, options.x);
   }
 
+  // Hidden, and what was about to show with it (Escape, a scroll, the bars changing).
   function hide() {
     clearTimeout(showTimer);
+    conceal();
+  }
+  // The pointer gone from it: the tooltip goes, not what the anchor the pointer moved on to is about to
+  // show.
+  function conceal() {
     clearTimeout(hideTimer);
     clearTimeout(flashTimer);
     flashing = false;
@@ -100,12 +106,15 @@ export function createTooltip(root: HTMLElement = document.body) {
       if (flashing && owner === anchor) return;
       clearTimeout(showTimer);
       if (owner === anchor) clearTimeout(hideTimer);
-      showTimer = setTimeout(() => { const value = resolve(text); if (value) show(anchor, value, options); else if (owner === anchor) hide(); }, delay);
+      // Shown for a neighbour (the pointer going along the progress's parts or the bar's buttons), it
+      // follows at once rather than going and coming back.
+      const shown = owner !== null && owner !== anchor && !tip.hidden && !flashing;
+      showTimer = setTimeout(() => { const value = resolve(text); if (value) show(anchor, value, options); else if (owner === anchor) hide(); }, shown ? 0 : delay);
     };
     const leave = () => {
       clearTimeout(showTimer);
       if (owner !== anchor || flashing) return;
-      hideTimer = setTimeout(hide, LEAVE_DELAY);
+      hideTimer = setTimeout(conceal, LEAVE_DELAY);
     };
     const onEnter = (event: PointerEvent) => { if (event.pointerType !== 'touch') open(options.immediate ? 0 : HOVER_DELAY); };
     const onFocus = () => { if (anchor.matches(':focus-visible')) open(0); };
@@ -129,7 +138,7 @@ export function createTooltip(root: HTMLElement = document.body) {
     flashing = true;
     anchor.setAttribute('aria-describedby', tip.id);
     // Its time over, it goes, unless the pointer is on it: then it goes when the pointer leaves.
-    flashTimer = setTimeout(() => { if (owner !== anchor) return; if (hovered) flashing = false; else hide(); }, duration);
+    flashTimer = setTimeout(() => { if (owner !== anchor) return; if (hovered) flashing = false; else conceal(); }, duration);
   }
 
   // Follows a point along an anchor (the seek bar): the text, or nothing.
@@ -140,7 +149,7 @@ export function createTooltip(root: HTMLElement = document.body) {
 
   // The pointer may go onto the tooltip without losing it (WCAG 1.4.13, hoverable).
   tip.addEventListener('pointerenter', () => { hovered = true; clearTimeout(hideTimer); });
-  tip.addEventListener('pointerleave', () => { hovered = false; if (!flashing) hideTimer = setTimeout(hide, LEAVE_DELAY); });
+  tip.addEventListener('pointerleave', () => { hovered = false; if (!flashing) hideTimer = setTimeout(conceal, LEAVE_DELAY); });
   const onKey = (event: KeyboardEvent) => { if (event.key === 'Escape' && !tip.hidden) hide(); };
   const onScroll = () => { if (!tip.hidden && owner && !flashing) hide(); };
   document.addEventListener('keydown', onKey);
