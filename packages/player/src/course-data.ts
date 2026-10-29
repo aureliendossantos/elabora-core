@@ -84,7 +84,8 @@ export interface PlayerBarData {
 
 export type PlayerItemData =
   | { id: 'logo'; src: string; alt: string; plate: boolean }
-  | { id: 'outline'; screenTitle: boolean }
+  // label: what its button reads, « Sommaire », the title of the part shown or of the screen shown.
+  | { id: 'outline'; label: 'outline' | 'section' | 'screen' }
   | { id: 'controls'; seekBar: boolean; captionsByDefault: boolean; volume: boolean; transcript: boolean; speeds: number[] }
   | { id: 'title' | 'progress' | 'spacer' | 'resources' | 'glossary' | 'language' | 'display' | 'credits' | 'previous' | 'next' | 'exit' };
 

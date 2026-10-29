@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.4/course.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.5/course.schema.json",
   "format": "elabora/0.1",
   "id": "organic",
   "title": "Your module title",

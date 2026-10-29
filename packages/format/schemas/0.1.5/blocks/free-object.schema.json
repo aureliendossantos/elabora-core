@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.5/blocks/free-object.schema.json",
+  "title": "free-object block props",
+  "description": "Places a free object (governed custom code, for example a three.js scene) on the screen. The object lives in objects/<object>/ with its manifest, code, tests and notes. props holds values for the props the manifest declares: change them here, never in the code.",
+  "x-category": "free",
+  "x-ai-instructions": "Only when no native block can do the job, and on explicit request. Write the manifest first, then tests, then code (see skill elabora-free-objects). textAlternative must give an equivalent activity or a full description.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "object",
+    "title",
+    "textAlternative"
+  ],
+  "properties": {
+    "object": {
+      "$ref": "../defs.schema.json#/$defs/slug",
+      "description": "Free object id (folder name in objects/)."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Accessible name of the embedded object.",
+      "x-translatable": true
+    },
+    "props": {
+      "type": "object",
+      "description": "Values of the props declared in the object manifest. Missing props use their manifest default."
+    },
+    "a11y": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What screen readers say about the object, worded for this block (defaults: the manifest a11y description and keyboard). Translations write here.",
+      "properties": {
+        "description": { "type": "string", "minLength": 1, "maxLength": 1000, "x-translatable": true },
+        "keyboard": { "type": "string", "minLength": 1, "maxLength": 300, "x-translatable": true }
+      }
+    },
+    "strings": {
+      "type": "object",
+      "description": "Wording of the object's strings for this block (keys declared in the manifest strings; same placeholders). Required when the course language differs from the manifest language; translations write here.",
+      "propertyNames": { "pattern": "^[A-Za-z][A-Za-z0-9_]{0,47}$" },
+      "additionalProperties": { "type": "string", "minLength": 1, "maxLength": 500 }
+    },
+    "enumLabels": {
+      "type": "object",
+      "description": "Wording of the values of the object's choices for this block, as the editor shows them (defaults: the manifest x-enum-labels). Keys are props with an enum, or <prop>.<field> for a field of a list's items; each maps values of that enum to words. Translations write here.",
+      "propertyNames": { "pattern": "^[a-z][a-zA-Z0-9]{0,31}(\\.[a-z][a-zA-Z0-9]{0,31})?$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": { "type": "string", "minLength": 1, "maxLength": 60 }
+      }
+    },
+    "aspectRatio": {
+      "$ref": "../defs.schema.json#/$defs/aspectRatio",
+      "default": "16:9",
+      "description": "Shape of the frame on wide containers. auto: the object sets its height with host.requestHeight(px). fill: the frame takes the height of its layout slot."
+    },
+    "narrowAspectRatio": {
+      "$ref": "../defs.schema.json#/$defs/aspectRatio",
+      "description": "Shape when the block is narrower than 640 px (phones, narrow slots). Typically 3:4, 2:3 or auto. Defaults to aspectRatio."
+    },
+    "minHeight": {
+      "type": "integer",
+      "minimum": 120,
+      "maximum": 2000,
+      "description": "Minimum frame height in px."
+    },
+    "maxHeight": {
+      "type": "integer",
+      "minimum": 120,
+      "maximum": 4000,
+      "description": "Maximum frame height in px."
+    },
+    "textAlternative": {
+      "$ref": "../defs.schema.json#/$defs/markdown",
+      "description": "Equivalent text activity or full description, shown on demand (WCAG 1.1.1).",
+      "x-translatable": true
+    },
+    "scored": {
+      "type": "boolean",
+      "default": false,
+      "description": "Use the object's score event in the course score."
+    },
+    "weight": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 10,
+      "default": 1
+    }
+  }
+}
