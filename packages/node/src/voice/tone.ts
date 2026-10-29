@@ -57,3 +57,43 @@ export const toneProvider: VoiceProvider = {
   },
   async dispose() {}
 };
+
+// ELABORA_VOICE_FAKE=1 (voice/index.ts): a stand-in for a local provider, for the app's routine checks
+// of what the author sees (its try: scripts), which need a voice that speaks, not Pocket TTS's model:
+// the provider's own id, voices, credits and model, said installed, each line a tone of its voice
+// (its pitch from the voice's id, its length from the text, as the tones above) after
+// ELABORA_VOICE_TONE_SECONDS (0.5 s by default, so that the busy states show), progress told and
+// stopped by its signal. The same text and voice always give the same audio. Never a course's voice:
+// the real model is tried with ELABORA_VOICE_FAKE unset.
+export function standIn(provider: VoiceProvider): VoiceProvider {
+  const hz = (voice: string) => 180 + ([...voice].reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) % 997, 7) % 260);
+  return {
+    id: provider.id,
+    name: provider.name,
+    voices: (language) => provider.voices(language),
+    status(language) {
+      const real = provider.status(language);
+      return real && { installed: true, supported: true, size: 0, onDisk: 0, download: real.download ?? real.size, installing: null, inUse: false };
+    },
+    async install() {},
+    model: provider.model ? (language) => provider.model!(language) : undefined,
+    uninstall: provider.uninstall ? async () => ({ freed: 0 }) : undefined,
+    hold: provider.hold ? async () => () => {} : undefined,
+    async synthesize(request: SynthesisRequest): Promise<SynthesisResult> {
+      const voice = provider.voices(request.language).find((v) => v.id === request.voice);
+      if (!voice) throw new Error(`${provider.name} has no voice "${request.voice}" in ${request.language}.`);
+      await taking(sayingTime() || 500, request.onProgress, request.signal);
+      const silence = Math.round(0.3 * RATE);
+      const sound = Math.round(Math.max(0.3, 0.06 * withoutDirections(request.text).length) * RATE);
+      const samples = new Float32Array(silence * 2 + sound);
+      // A tone whose loudness rises and falls by word, so that a wave drawn from it has bars of
+      // different heights, as a voice's.
+      const pitch = hz(voice.id);
+      for (let i = 0; i < sound; i++) samples[silence + i] = (0.15 + 0.15 * Math.abs(Math.sin((Math.PI * i) / (0.35 * RATE)))) * Math.sin((2 * Math.PI * pitch * i) / RATE);
+      request.onProgress?.(1);
+      const language = primary(request.language);
+      return { samples, sampleRate: RATE, model: `${provider.id} stand-in`, credit: voice.credit[language] ?? voice.credit.en ?? Object.values(voice.credit)[0] ?? '', retries: 0, settings: {} };
+    },
+    async dispose() {}
+  };
+}
