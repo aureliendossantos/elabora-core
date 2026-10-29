@@ -1,4 +1,5 @@
 ---
+npm/elabora: patch (Fixed)
 npm/@elabora/core: patch (Fixed)
 npm/@elabora/node: patch (Fixed)
 ---
