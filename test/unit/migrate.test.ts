@@ -73,6 +73,15 @@ test('a step migrates in memory, and elabora migrate writes it as one system cha
   assert.equal(edit.migrateIfOutdated(dir, { steps: [step] })?.to, FORMAT);
 });
 
+test('a migration writes the CLAUDE.md that points Claude to AGENTS.md when the course has none (D34)', () => {
+  const { dir, current } = older();
+  fs.rmSync(path.join(dir, 'CLAUDE.md'));
+  const result = edit.migrateProject(dir, { steps: [step] });
+  assert.ok(result.migrated);
+  assert.equal(fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf8'), '@AGENTS.md\n');
+  assert.deepEqual(folder(dir), current);
+});
+
 test('a newer format is refused and nothing past course.json is loaded; an unknown one loads as it is', () => {
   const dir = copy();
   const course = readJSON(dir, 'course.json');

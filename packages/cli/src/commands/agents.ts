@@ -62,7 +62,7 @@ const rules = defineCommand({
     const said: Record<string, string> = {
       current: 'the course\'s AGENTS.md holds these rules.',
       outdated: 'the course\'s AGENTS.md holds older rules nobody edited: Elabora updates them (elabora rules update).',
-      edited: 'the course\'s AGENTS.md rules were edited: Elabora leaves them; elabora rules update --force replaces them.',
+      edited: 'the course\'s AGENTS.md rules were edited: Elabora leaves them; elabora rules update --force puts these back (the notes after « elabora:rules end » are kept; elabora undo reverts it).',
       newer: 'the course\'s AGENTS.md holds the rules of a newer Elabora: the commands it names may be missing from this elabora.',
       missing: 'the course has no AGENTS.md: elabora rules update --force writes one.',
       custom: 'the course\'s AGENTS.md was not written by Elabora: elabora rules update --force replaces it (elabora undo reverts it).'
@@ -80,7 +80,7 @@ const rulesUpdate = defineCommand({
     const result = updateAgentRules(dir, { force: flags.force });
     if (flags.json) { printJson(result); return 0; }
     if (!result.updated) console.log(`✔ AGENTS.md: nothing to update (rules revision ${result.to}${result.from !== null && result.from !== result.to ? `; the course's are revision ${result.from}, edited: --force replaces them` : ''}).`);
-    else console.log(`✔ AGENTS.md: rules revision ${result.from ?? '(not Elabora\'s)'} → ${result.to}. Undo: elabora undo --change ${result.change?.seq}`);
+    else console.log(`✔ ${[result.rules ? `AGENTS.md: rules revision ${result.from ?? '(not Elabora\'s)'} → ${result.to}` : null, result.claude ? 'CLAUDE.md written (@AGENTS.md: Claude reads the rules)' : null].filter(Boolean).join('; ')}. Undo: elabora undo --change ${result.change?.seq}`);
     return 0;
   })
 });

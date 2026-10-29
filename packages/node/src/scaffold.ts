@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getProfile } from '@elabora/core/lms/profiles';
 import { stringifyJSON } from '@elabora/core/util/json';
-import { agentsFile, courseNotes } from './agent-rules.ts';
+import { agentsFile, courseNotes, CLAUDE_FILE, CLAUDE_TEXT } from './agent-rules.ts';
 
 export const TEMPLATES_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../templates');
 
@@ -51,7 +51,8 @@ const starterTexts = (language: string): Record<string, string> => {
   return short === 'fr' || short === 'en' ? STARTER_TEXTS[short] : STARTER_TEXTS.en;
 };
 
-// Scaffolds a course project: course.json, plan.json (draft), an intro screen, AGENTS.md, .gitignore.
+// Scaffolds a course project: course.json, plan.json (draft), an intro screen, AGENTS.md and the
+// CLAUDE.md that points to it, .gitignore.
 export function initProject(dir: string, { id, title, language = 'fr', brief }: InitOptions): { dir: string; files: string[] } {
   const root = path.resolve(dir);
   if (fs.existsSync(path.join(root, 'course.json'))) throw new Error(`${root} already contains a course.json`);
@@ -84,9 +85,10 @@ export function initProject(dir: string, { id, title, language = 'fr', brief }: 
   // The rules for agents between their markers, kept up to date by Elabora (agent-rules.ts, D34);
   // the author's notes after them, which Elabora never changes.
   fs.writeFileSync(path.join(root, 'AGENTS.md'), agentsFile(courseNotes(brief?.notes)));
+  fs.writeFileSync(path.join(root, CLAUDE_FILE), CLAUDE_TEXT);
   copy('gitignore', '.gitignore');
   fs.mkdirSync(path.join(root, 'assets'), { recursive: true });
-  return { dir: root, files: ['course.json', 'plan.json', 'screens/intro.json', 'AGENTS.md', '.gitignore'] };
+  return { dir: root, files: ['course.json', 'plan.json', 'screens/intro.json', 'AGENTS.md', CLAUDE_FILE, '.gitignore'] };
 }
 
 // Refused before anything is written, with the plan's limits (plan.schema.json).

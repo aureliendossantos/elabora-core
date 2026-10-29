@@ -412,6 +412,27 @@ test('opening a course brings its rules for agents up to date when nobody edited
   assert.deepEqual([change.author, change.command?.name], [{ kind: 'system' }, 'update_agent_rules']);
 });
 
+test('opening a course without CLAUDE.md writes the one that points Claude to AGENTS.md; an author\'s is left', async () => {
+  const dir = copyExample();
+  temporary.push(dir);
+  fs.rmSync(path.join(dir, 'CLAUDE.md'));
+  const session = await openProject(dir, QUIET);
+  sessions.push(session);
+  const deadline = Date.now() + 8000;
+  while (!fs.existsSync(path.join(dir, 'CLAUDE.md')) && Date.now() < deadline) await sleep(20);
+  assert.equal(fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf8'), '@AGENTS.md\n');
+  assert.deepEqual([changes(dir).at(-1)!.author, changes(dir).at(-1)!.command?.name], [{ kind: 'system' }, 'update_agent_rules']);
+  await session.close();
+  fs.writeFileSync(path.join(dir, 'CLAUDE.md'), '# Mes consignes\n');
+  const count = changes(dir).length;
+  const again = await openProject(dir, QUIET);
+  sessions.push(again);
+  await again.flush();
+  await sleep(200);
+  assert.equal(fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf8'), '# Mes consignes\n');
+  assert.equal(changes(dir).filter((entry) => entry.command?.name === 'update_agent_rules').length, changes(dir).slice(0, count).filter((entry) => entry.command?.name === 'update_agent_rules').length);
+});
+
 test('watch readiness gates opening and close reconciles a pending observed file', async () => {
   const dir = copyExample();
   temporary.push(dir);

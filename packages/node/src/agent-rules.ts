@@ -10,7 +10,7 @@ import { runCommand, type EditOptions, type EditResult } from './edit/executor.t
 // ── The rules a course gives its agents (docs/decisions.md D34) ───────
 // A course's AGENTS.md holds the rules of the Elabora that wrote it, between two markers, then the
 // author's notes, which Elabora never touches:
-//   <!-- elabora:rules revision=29 sha256=<16 hex> … -->
+//   <!-- elabora:rules revision=18 sha256=<16 hex> … -->
 //   # AGENTS.md — Elabora course project … (packages/node/templates/course/AGENTS.md)
 //   <!-- elabora:rules end -->
 //   ## Notes for this course …
@@ -20,6 +20,9 @@ import { runCommand, type EditOptions, type EditResult } from './edit/executor.t
 // author or an agent edited, which it leaves and reports. An Elabora older than the rules says so
 // (they may name commands it lacks). AGENTS.md files written before the markers are recognised by
 // their whole text, a revision of the template (templates/agents-revisions.json).
+// Beside it, CLAUDE.md is the one line `@AGENTS.md`: Claude Code reads AGENTS.md only where no
+// CLAUDE.md is found in the folder or above it, so a course kept under a folder with its own
+// CLAUDE.md would hide its rules. Elabora writes it where it is missing, never over one an author has.
 
 export interface AgentRulesRevision { revision: number; sha: string; date: string }
 
@@ -27,6 +30,8 @@ const TEMPLATES_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)),
 const TEMPLATE = path.join(TEMPLATES_DIR, 'course', 'AGENTS.md');
 const HISTORY = path.join(TEMPLATES_DIR, 'agents-revisions.json');
 export const AGENTS_FILE = 'AGENTS.md';
+export const CLAUDE_FILE = 'CLAUDE.md';
+export const CLAUDE_TEXT = '@AGENTS.md\n';
 // A file with Windows line ends (git's autocrlf) is read too (its rules then count as edited: their
 // fingerprint is of the text Elabora wrote).
 const START = /^<!-- elabora:rules revision=(\d+) sha256=([0-9a-f]{16})[^\r\n]*-->\r?\n/;
@@ -67,6 +72,9 @@ export function agentsFile(notes: string = NOTES): string {
   return `<!-- elabora:rules revision=${revision} sha256=${sha} · Elabora keeps the rules down to « elabora:rules end » up to date while nobody edits them; write your own notes after it. -->\n${text.endsWith('\n') ? text.slice(0, -1) : text}${END}${notes}`;
 }
 
+// A course whose AGENTS.md has no CLAUDE.md beside it (whatever the rules are: an author's own too).
+export const claudeMissing = (agents: string | null, claude: boolean): boolean => agents !== null && !claude;
+
 export type AgentRulesState =
   | { status: 'current'; revision: number }
   // Written by an earlier Elabora and not edited since: updated without asking.
@@ -101,6 +109,8 @@ export function agentRulesState(text: string | null): AgentRulesState {
 
 export interface AgentRulesUpdate extends EditResult {
   updated: boolean;
+  rules: boolean; // AGENTS.md's rules written
+  claude: boolean; // CLAUDE.md written (it was missing)
   from: number | null; // the revision the course had (null: an AGENTS.md Elabora did not write, or none)
   to: number;
 }
@@ -110,60 +120,74 @@ export interface AgentRulesUpdate extends EditResult {
 export function updateAgentRules(dir: string, { force = false, ...options }: EditOptions & { force?: boolean } = {}): AgentRulesUpdate {
   const { revision } = currentRules();
   let from: number | null = null;
+  let claude = false;
+  let rules = false;
   const result = runCommand(path.resolve(dir), {
     name: 'update_agent_rules', args: { to: revision, ...(force ? { force } : {}) },
     run: (context) => {
+      rules = claude = false;
       const draft = new Draft(context.files);
       const text = draft.text(AGENTS_FILE);
       const state = agentRulesState(text);
       from = 'revision' in state ? state.revision : null;
-      if (state.status === 'outdated') draft.writeFile(AGENTS_FILE, textFile(agentsFile(state.notes)));
+      if (state.status === 'outdated') { draft.writeFile(AGENTS_FILE, textFile(agentsFile(state.notes))); rules = true; }
       else if (force && state.status !== 'current') {
         if (state.status === 'newer') throw new CommandError(`AGENTS.md holds the rules of a newer Elabora (revision ${state.revision}; this one has ${revision}): use that Elabora.`);
         const end = text === null ? { at: -1, length: 0 } : rulesEnd(text, 0);
         draft.writeFile(AGENTS_FILE, textFile(agentsFile(text !== null && START.test(text) && end.at >= 0 ? text.slice(end.at + end.length) : NOTES)));
-      } else return { files: context.files, result: {} };
-      return { files: draft.files(), result: {} };
+        rules = true;
+      }
+      if (claudeMissing(draft.text(AGENTS_FILE), draft.exists(CLAUDE_FILE))) { draft.writeFile(CLAUDE_FILE, textFile(CLAUDE_TEXT)); claude = true; }
+      return rules || claude ? { files: draft.files(), result: {} } : { files: context.files, result: {} };
     }
   }, { ...options, author: { kind: 'system' } });
-  return { ...result, updated: result.change !== null, from, to: revision };
+  return { ...result, updated: result.change !== null, rules, claude, from, to: revision };
 }
 
-// The rules of a course in this Elabora's format (null: none, or another format, whose migration or a
-// newer Elabora comes first).
-function courseRules(root: string): AgentRulesState | null {
+// The rules of a course in this Elabora's format, and whether its CLAUDE.md is missing (null: no
+// AGENTS.md, or another format, whose migration or a newer Elabora comes first).
+function courseRules(root: string): { state: AgentRulesState; claude: boolean } | null {
   let text: string;
   try { text = fs.readFileSync(path.join(root, AGENTS_FILE), 'utf8'); } catch { return null; }
   try { if ((JSON.parse(fs.readFileSync(path.join(root, 'course.json'), 'utf8')) as { format?: unknown }).format !== FORMAT) return null; } catch { return null; }
-  return agentRulesState(text);
+  return { state: agentRulesState(text), claude: claudeMissing(text, fs.existsSync(path.join(root, CLAUDE_FILE))) };
 }
 
 // What a read-only look at a course says about its rules, writing nothing.
 export function agentRulesNote(dir: string): string | null {
-  const state = courseRules(path.resolve(dir));
-  if (state?.status === 'outdated') return `AGENTS.md holds older rules for agents (revision ${state.revision} < ${currentRules().revision}), which Elabora brings up to date when it writes in the course (elabora rules update).`;
-  return state ? stateNote(state) : null;
+  const found = courseRules(path.resolve(dir));
+  if (!found) return null;
+  const { state } = found;
+  if (state.status === 'outdated') return `AGENTS.md holds older rules for agents (revision ${state.revision} < ${currentRules().revision}), which Elabora brings up to date when it writes in the course (elabora rules update).`;
+  return stateNote(state);
 }
 
-// What a command run in a course says about its rules, and updates when nobody edited them: null
-// when there is nothing to say. Never throws (a locked project, a read-only folder: next time).
+// What a command run in a course says about its rules, and updates when nobody edited them (and
+// CLAUDE.md, when it is missing): null when there is nothing to say. Never throws (a locked
+// project, a read-only folder: next time).
 export function syncAgentRules(dir: string, options: EditOptions = {}): string | null {
   const root = path.resolve(dir);
-  const state = courseRules(root);
-  if (!state) return null;
-  const note = stateNote(state);
-  if (note || state.status !== 'outdated') return note;
+  const found = courseRules(root);
+  if (!found) return null;
+  const note = stateNote(found.state);
+  if (found.state.status !== 'outdated' && !found.claude) return note;
   try {
     const result = updateAgentRules(root, options);
-    return result.updated ? `AGENTS.md: the rules for agents brought up to date (revision ${result.from ?? '?'} → ${result.to}; change ${result.change?.seq ?? '?'}).` : null;
+    if (!result.updated) return note;
+    const change = result.change?.seq ?? '?';
+    return [
+      result.rules ? `AGENTS.md: the rules for agents brought up to date (revision ${result.from ?? '?'} → ${result.to}; change ${change}).` : null,
+      result.claude ? `CLAUDE.md: written beside AGENTS.md, the one line @AGENTS.md, so that Claude reads its rules (change ${change}).` : null,
+      note
+    ].filter(Boolean).join('\n');
   } catch {
-    return null;
+    return note;
   }
 }
 
 function stateNote(state: AgentRulesState): string | null {
   const { revision } = currentRules();
   if (state.status === 'newer') return `AGENTS.md holds the rules of a newer Elabora (revision ${state.revision}) than this elabora command (revision ${revision}): the commands it names may be missing here. Use the elabora command of the app that opened the course last (Elabora › Réglages shows where), or update this one.`;
-  if (state.status === 'edited' && !state.current) return `AGENTS.md's rules for agents were edited, and are older than this elabora command's (revision ${state.revision ?? '?'} < ${revision}): elabora rules prints the current ones; elabora rules update --force replaces them (your notes after « elabora:rules end » are kept; elabora undo reverts it).`;
+  if (state.status === 'edited' && !state.current) return `AGENTS.md's rules for agents were edited, and are older than this elabora command's (revision ${state.revision ?? '?'} < ${revision}): elabora rules update --force puts the current ones back (what was edited in them is lost, the notes after « elabora:rules end » are kept, elabora undo reverts it; elabora rules prints them first).`;
   return null;
 }

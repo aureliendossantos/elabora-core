@@ -5,8 +5,11 @@ import path from 'node:path';
 import os from 'node:os';
 import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { agentRulesState, agentsFile, currentRules, updateAgentRules } from '@elabora/node/agent-rules';
+import { agentRulesState, agentsFile, currentRules, updateAgentRules, agentRulesNote } from '@elabora/node/agent-rules';
 import { initProject } from '@elabora/node/scaffold';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { createMcpServer } from '@elabora/cli/mcp';
 import * as edit from '@elabora/node/edit';
 import { ROOT, copyExample } from '../helpers.ts';
 
@@ -24,7 +27,9 @@ test('the rules history ends with the template, and the examples and module temp
   const courses = [...['examples', 'templates'].flatMap((folder) => fs.readdirSync(path.join(ROOT, folder), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => path.join(folder, entry.name))), path.join('test/fixtures/format-0.1/diagnostic-reseau')];
   for (const course of courses) {
     const file = path.join(ROOT, course, 'AGENTS.md');
-    if (fs.existsSync(file)) assert.equal(agentRulesState(fs.readFileSync(file, 'utf8')).status, 'current', course);
+    if (!fs.existsSync(file)) continue;
+    assert.equal(agentRulesState(fs.readFileSync(file, 'utf8')).status, 'current', course);
+    assert.equal(fs.readFileSync(path.join(ROOT, course, 'CLAUDE.md'), 'utf8'), '@AGENTS.md\n', `${course}: pnpm run gen writes its CLAUDE.md`);
   }
 });
 
@@ -70,6 +75,7 @@ test('an AGENTS.md copied whole from a template before the markers is recognised
     const dir = path.join(root, 'c');
     initProject(dir, { id: 'essai', title: 'Essai' });
     assert.equal(agentRulesState(fs.readFileSync(path.join(dir, 'AGENTS.md'), 'utf8')).status, 'current', 'elabora init writes the current rules');
+    assert.equal(fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf8'), '@AGENTS.md\n', 'and the CLAUDE.md that points Claude to them');
     fs.writeFileSync(path.join(dir, 'AGENTS.md'), currentRules().text);
     assert.equal(agentRulesState(currentRules().text).status, 'outdated');
     assert.ok(updateAgentRules(dir).updated);
@@ -102,4 +108,63 @@ test('course entrypoint stays short and routes optional skills without altering 
   assert.match(template, /elabora_docs \{ page: "skills\/<name>" \}/, 'a host without MCP resources reads skills through elabora_docs');
   const notes = "\n## Notes for this course\nKeep the author's words here.\n";
   assert.ok(agentsFile(notes).endsWith(notes));
+});
+
+// Claude Code reads AGENTS.md only where no CLAUDE.md is found in the folder or above it: a course
+// kept under a folder with its own CLAUDE.md would hide its rules, without the course's own.
+test('a course without CLAUDE.md gets the one line @AGENTS.md from any command; an author\'s CLAUDE.md is never touched', () => {
+  const dir = copyExample();
+  try {
+    fs.rmSync(path.join(dir, 'CLAUDE.md'));
+    assert.equal(agentRulesNote(dir), null, 'a read-only look writes nothing and has nothing to ask');
+    assert.ok(!fs.existsSync(path.join(dir, 'CLAUDE.md')));
+    const run = elabora(['validate', dir]);
+    assert.match(run.stderr, /^CLAUDE\.md: written beside AGENTS\.md, the one line @AGENTS\.md, so that Claude reads its rules \(change \d+\)\.\n$/);
+    assert.equal(fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf8'), '@AGENTS.md\n');
+    assert.equal(elabora(['validate', dir]).stderr, '', 'written once');
+    // A system change, which elabora undo reverts.
+    assert.ok(edit.undo(dir).change);
+    assert.ok(!fs.existsSync(path.join(dir, 'CLAUDE.md')));
+    // With outdated rules, both in one change; rules update says what it wrote.
+    fs.writeFileSync(path.join(dir, 'AGENTS.md'), currentRules().text);
+    const both = updateAgentRules(dir);
+    assert.deepEqual([both.rules, both.claude], [true, true]);
+    edit.undo(dir);
+    assert.match(elabora(['rules', 'update', dir]).stdout, /^✔ AGENTS\.md: rules revision \d+ → \d+; CLAUDE\.md written/);
+    // The author's own: left as it is, whatever the rules.
+    fs.writeFileSync(path.join(dir, 'CLAUDE.md'), '# Mes consignes\nVoir AGENTS.md.\n');
+    fs.writeFileSync(path.join(dir, 'AGENTS.md'), currentRules().text);
+    assert.match(elabora(['validate', dir]).stderr, /^AGENTS\.md: the rules for agents brought up to date/);
+    assert.equal(fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf8'), '# Mes consignes\nVoir AGENTS.md.\n');
+    assert.equal(updateAgentRules(dir, { force: true }).claude, false);
+    assert.equal(fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf8'), '# Mes consignes\nVoir AGENTS.md.\n');
+    // Without an AGENTS.md, nothing to point to.
+    fs.rmSync(path.join(dir, 'AGENTS.md'));
+    fs.rmSync(path.join(dir, 'CLAUDE.md'));
+    assert.equal(elabora(['validate', dir]).stderr, '');
+    assert.ok(!fs.existsSync(path.join(dir, 'CLAUDE.md')));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('the note an agent gets about edited rules says what elabora rules update --force does, through the CLI and the MCP server', async () => {
+  const dir = copyExample();
+  try {
+    const old = marked(0, '# Old rules\n1. Never edit plan.json, except in draft.\n');
+    fs.writeFileSync(path.join(dir, 'AGENTS.md'), old.replace(/sha256=[0-9a-f]{16}/, 'sha256=0000000000000000'));
+    const note = /rules for agents were edited, and are older than this elabora command's \(revision 0 < \d+\): elabora rules update --force puts the current ones back \(what was edited in them is lost, the notes after « elabora:rules end » are kept, elabora undo reverts it/;
+    assert.match(elabora(['validate', dir]).stderr, note);
+    assert.match(elabora(['rules', dir]).stdout, /were edited: Elabora leaves them; elabora rules update --force puts these back \(the notes after « elabora:rules end » are kept/);
+    // The MCP server says it in its instructions: a host keeps the server's stderr in its logs.
+    const server = createMcpServer(dir, { readOnly: true });
+    const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
+    await server.connect(serverSide);
+    const client = new Client({ name: 'test', version: '1' });
+    await client.connect(clientSide);
+    assert.match(client.getInstructions() ?? '', note);
+    await client.close();
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });

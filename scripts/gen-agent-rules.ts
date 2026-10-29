@@ -21,11 +21,11 @@ if (import.meta.main) {
     fs.writeFileSync(HISTORY, `${JSON.stringify(history, null, 2)}\n`);
   }
   console.log(path.relative(ROOT, HISTORY));
-  // The examples, the module templates and the test courses in the current format carry the current rules (tests run
+  // The examples, the module templates and the test courses in the current format carry the current rules and their CLAUDE.md (tests run
   // commands in copies of them: rules that Elabora would bring up to date there would be written by
   // every test).
   // Courses in an older format (the fixtures of older formats) keep theirs: a migration updates them.
-  const { agentRulesState, agentsFile } = await import('../packages/node/src/agent-rules.ts');
+  const { agentRulesState, agentsFile, CLAUDE_FILE, CLAUDE_TEXT } = await import('../packages/node/src/agent-rules.ts');
   const { FORMAT } = await import('../packages/format/src/schemas.ts');
   const fixtures = `test/fixtures/format-${FORMAT.split('/')[1]}`;
   const courses = [...['examples', 'templates'].flatMap((folder) => fs.readdirSync(path.join(ROOT, folder)).map((name) => path.join(folder, name))), ...fs.readdirSync(path.join(ROOT, fixtures)).map((name) => path.join(fixtures, name))];
@@ -35,5 +35,8 @@ if (import.meta.main) {
     try { if (JSON.parse(fs.readFileSync(path.join(ROOT, course, 'course.json'), 'utf8')).format !== FORMAT) continue; } catch { continue; }
     const state = agentRulesState(fs.readFileSync(file, 'utf8'));
     if (state.status === 'outdated') { fs.writeFileSync(file, agentsFile(state.notes)); console.log(path.relative(ROOT, file)); }
+    // And the CLAUDE.md beside it, which Elabora would write there too.
+    const claude = path.join(ROOT, course, CLAUDE_FILE);
+    if (!fs.existsSync(claude)) { fs.writeFileSync(claude, CLAUDE_TEXT); console.log(path.relative(ROOT, claude)); }
   }
 }

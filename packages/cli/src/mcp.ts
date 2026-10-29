@@ -29,8 +29,9 @@ export function createMcpServer(dir: string, options: ToolOptions = {}): Server 
   // The course's rules for agents, brought up to date when nobody edited them (agent-rules.ts, D34);
   // a read-only server writes nothing, and only says what it finds.
   const rulesNote = readOnly ? agentRulesNote(root) : syncAgentRules(root);
+  // Said to the agent too, in the server's instructions: a host keeps a server's stderr in its logs.
   if (rulesNote) process.stderr.write(`${rulesNote}\n`);
-  const server = new Server({ name: 'elabora', version: ELABORA_VERSION }, { capabilities: { tools: {}, resources: {} }, instructions: INSTRUCTIONS });
+  const server = new Server({ name: 'elabora', version: ELABORA_VERSION }, { capabilities: { tools: {}, resources: {} }, instructions: rulesNote ? `${INSTRUCTIONS}\n\n${rulesNote}` : INSTRUCTIONS });
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
 
