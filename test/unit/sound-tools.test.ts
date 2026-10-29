@@ -13,6 +13,7 @@ import { addSound } from '@elabora/node/sounds/add';
 import { generateSound, estimateSound } from '@elabora/node/sounds/generate';
 import { searchLibrary, librarySounds, libraryFile } from '@elabora/node/sounds/library';
 import { searchOpenverse } from '@elabora/node/sounds/openverse';
+import { soundPreview } from '@elabora/node/sounds/search';
 import { forgetQuota } from '@elabora/node/voice/elevenlabs/costs';
 import { ROOT, copyExample, codes } from '../helpers.ts';
 import { FFMPEG, hasFfmpeg } from '../narration.ts';
@@ -46,7 +47,7 @@ before(async () => {
         { id: '44444444-4444-4444-4444-444444444444', title: 'Knock (SA)', creator: 'Di', license: 'by-sa', url: 'https://example.org/d.mp3', source: 'freesound' }
       ] });
       if (request.url === '/v1/audio/11111111-1111-1111-1111-111111111111/') return json({ id: '11111111-1111-1111-1111-111111111111', title: 'Door knock', creator: 'Ann', license: 'cc0', url: `http://127.0.0.1:${(server.address() as AddressInfo).port}/file.mp3`, foreign_landing_url: 'https://freesound.org/s/1/', duration: 2100, source: 'freesound' });
-      if (request.url === '/file.mp3') { response.writeHead(200, { 'content-type': 'audio/mpeg' }); return response.end(mp3); }
+      if (request.url === '/file.mp3') { response.writeHead(200, { 'content-type': 'audio/mpeg', 'content-length': mp3.length }); return response.end(mp3); }
       response.writeHead(404); response.end('{}');
     });
   });
@@ -120,6 +121,14 @@ test('Openverse: CC0, public domain and CC BY only (its commercial filter lets N
   const added = await addSound(dir, { from: found[0].id });
   const sidecar = JSON.parse(fs.readFileSync(path.join(dir, `assets/sounds/${added.id}.json`), 'utf8'));
   assert.deepEqual([added.id, sidecar.source, sidecar.url, sidecar.author, sidecar.license], ['door-knock', 'openverse', 'https://freesound.org/s/1/', 'Ann', 'CC0-1.0']);
+});
+
+test('Openverse: a sound heard before it is added says what it received of its size as it downloads', { skip: NO_FFMPEG }, async () => {
+  const told: [number, number | null][] = [];
+  const heard = await soundPreview('openverse:11111111-1111-1111-1111-111111111111', { onProgress: (received, total) => told.push([received, total]) });
+  assert.equal(heard.audio.byteLength, mp3.length);
+  assert.deepEqual(told[0], [0, mp3.length], 'its start, with the size the server said');
+  assert.deepEqual(told.at(-1), [mp3.length, mp3.length], 'all of it');
 });
 
 test('sound generate: under 1 % of the quota it runs, from 1 % it asks; the same request is never paid twice; its sidecar says it was generated', { skip: NO_FFMPEG }, async () => {

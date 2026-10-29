@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
@@ -128,6 +129,25 @@ test('canvas host: the audio of a narration line served for the editor to play, 
     assert.equal((await get(`${host.base}/canvas/assets/narration/fr/accueil/l1.json`)).status, 404, 'its sidecar is not served');
     assert.equal((await get(`${host.base}/canvas/assets/narration/fr/accueil/l9.m4a`)).status, 404, 'a line without audio');
     assert.equal((await get(`${host.base}/canvas/course.json`)).status, 404);
+  } finally {
+    await host.close();
+  }
+});
+
+test('canvas host: a sound of the course served for the editor to play on any screen, not its sidecar', async () => {
+  const dir = copyExample();
+  fs.mkdirSync(path.join(dir, 'assets/sounds/more'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'assets/sounds/sonnerie.flac'), 'fLaC');
+  fs.writeFileSync(path.join(dir, 'assets/sounds/sonnerie.json'), '{}');
+  fs.writeFileSync(path.join(dir, 'assets/sounds/more/porte.mp3'), 'ID3');
+  const host = await startCanvasHost({ root: dir });
+  try {
+    const sound = await get(`${host.base}/canvas/assets/sounds/sonnerie.flac`);
+    assert.equal(sound.status, 200);
+    assert.equal(sound.type, 'audio/flac');
+    assert.equal((await get(`${host.base}/canvas/assets/sounds/sonnerie.json`)).status, 404, 'its sidecar is not served');
+    assert.equal((await get(`${host.base}/canvas/assets/sounds/more/porte.mp3`)).status, 404, 'a sound is a file of assets/sounds/');
+    assert.equal((await get(`${host.base}/canvas/assets/sounds/pluie.flac`)).status, 404, 'a sound the course has not');
   } finally {
     await host.close();
   }
