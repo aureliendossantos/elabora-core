@@ -24,9 +24,10 @@ pnpm run typecheck    # strict TypeScript, every package
 pnpm run test:e2e     # Chrome, tens of minutes
 pnpm run test:matrix  # the LMS matrix and the sample courses, a few minutes
 pnpm run test:all     # the three suites
+pnpm run test:affected  # typecheck, unit suite, and the e2e and matrix files of what changed
 ```
 
-A change is finished when the unit suite, the typecheck and the end-to-end suite pass. Run the matrix as well when a change touches the player, the emulator, the player's layout or a sample course, and before a release.
+A change is finished when `pnpm run test:affected` passes: the typecheck, the unit suite, and the end-to-end and matrix files that cover the files it changed (`test/groups.ts`). The whole suites run on main and before a release.
 
 The unit suite covers the schemas, the validator's rules, the plan, the state codec, the determinism of packages, the compiler, the status machine, edits and undo, LESSON.md, update diffs, the agent interfaces and these docs' links. The end-to-end suite runs the LMS emulator in Moodle with axe-core, checks that a package relying on `unload` is caught and that stuck runs and objects fail instead of hanging, runs the free-object gates (deliberately broken objects included), and checks slides: no layout shift when answering, contrast, captures, steps and resume. The matrix runs the other launch topologies (the SuccessFactors popup chain, Docebo's nested iframe), Chrome with `unload` deprecated and allowed, and the sample courses at desktop and phone widths.
 

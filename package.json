@@ -17,6 +17,7 @@
     "test:e2e": "node --test --test-global-setup=test/isolate.ts --import ./scripts/heavy-slots.ts --test-concurrency=2 \"test/e2e/*.test.ts\"",
     "test:matrix": "node --test --test-global-setup=test/isolate.ts --import ./scripts/heavy-slots.ts --test-concurrency=2 \"test/matrix/*.test.ts\"",
     "test:all": "pnpm test && pnpm run test:e2e && pnpm run test:matrix",
+    "test:affected": "node scripts/test-affected.ts",
     "typecheck": "tsc -p packages/format && tsc -p packages/player && tsc -p packages/fonts && tsc -p packages/core && tsc -p packages/node && tsc -p packages/engine && tsc -p packages/cli && tsc -p .",
     "vendor": "node scripts/vendor-three.ts",
     "docs": "node scripts/gen-docs.ts",
