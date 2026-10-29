@@ -335,6 +335,7 @@ function onPrevious() {
 // tooltip names is where the click leads, whatever the learner did in it (the outline goes to a screen
 // of it, Next and the LMS's bookmark resume). A part not open yet refuses as Next does. On a phone a
 // segment is too narrow for a finger: a tap opens the outline, where each screen is a line.
+// The width of player.css's « Phones and narrow windows », where the segments are narrowest.
 const narrow = () => window.matchMedia?.('(max-width: 760px)').matches ?? false;
 function onPart(index: number, button: HTMLElement, touch: boolean) {
   if (ended) return;
@@ -342,7 +343,7 @@ function onPart(index: number, button: HTMLElement, touch: boolean) {
   const first = screenNumber(course.sections[index]?.screens[0]);
   if (first === undefined) return;
   // The part that follows the screen shown opens as Next would: the same reason when it is locked.
-  if (!reachable(first)) { refuse(button, first === current + 1 && nextLocked() ? lockReason() : labels.partLocked); return; }
+  if (!reachable(first)) { refuse(button, first === current + 1 ? lockReason() : labels.partLocked); return; }
   go(first);
 }
 function onNext() {

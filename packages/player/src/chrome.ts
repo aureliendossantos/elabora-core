@@ -287,8 +287,15 @@ export function createChrome(course: CourseData, labels: Labels, { actions, tool
   function partButton(index: number): HTMLButtonElement {
     const button = element('button', {
       type: 'button', class: 't-part', tabindex: '-1',
+      // A click says its pointer (empty from the keyboard); a browser whose click does not is told by the
+      // press before it, forgotten when the press comes to nothing.
       onpointerdown: (event: Event) => { pressedBy = (event as PointerEvent).pointerType; },
-      onclick: () => { const touch = pressedBy === 'touch'; pressedBy = null; actions?.part(index, button, { touch }); }
+      onpointercancel: () => { pressedBy = null; },
+      onclick: (event: Event) => {
+        const by = typeof (event as PointerEvent).pointerType === 'string' ? (event as PointerEvent).pointerType : pressedBy;
+        pressedBy = null;
+        actions?.part(index, button, { touch: by === 'touch' });
+      }
     }, element('span', { class: 't-part-track' }, element('span', { class: 't-part-fill' })));
     hint(button, () => (parts[index] ? `${parts[index].title} · ${partState(parts[index])}` : null));
     return button;
@@ -296,6 +303,8 @@ export function createChrome(course: CourseData, labels: Labels, { actions, tool
   // The progress in one piece (a course without parts), or one segment per part.
   function buildProgress(count: number) {
     if (!progressItem || !progressValue) return;
+    // A tooltip shown over a segment that goes, goes with it.
+    if (tooltip && partButtons.includes(tooltip.owner as HTMLButtonElement)) tooltip.hide();
     if (count < 2) {
       progressBar = element('div', { class: 't-progress-bar' });
       progress = element('div', { class: 't-progress', role: 'progressbar', 'aria-label': labels.progress, 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': '0' }, progressBar);
