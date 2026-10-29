@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.7/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.8/component.schema.json",
   "id": "workshop",
   "title": "Scrolling workshop",
   "description": "« Étapes » in the course's folio style: a figure that builds up while the learner reads. The figure stays in view (beside the stages on wide windows, at the top on narrow ones) and each stage, as it crosses the middle of the window, inks its layer and its labels (harbour names, a bearing); the stages are numbered in Roman numerals on leaves of vellum. With reduced motion, or without the player, the figure shows complete beside the stages.",

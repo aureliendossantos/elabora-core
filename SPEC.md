@@ -1,6 +1,6 @@
 # Elabora course format — specification 0.2
 
-**Status:** draft for implementation, 6 October 2026. **Format id:** `elabora/0.1`. **Licence of this text:** Apache-2.0. The JSON Schemas in [`packages/format/schemas/0.1.7/`](packages/format/schemas/0.1.7/) are normative; this document explains them. Where they disagree, the schemas win.
+**Status:** draft for implementation, 6 October 2026. **Format id:** `elabora/0.1`. **Licence of this text:** Apache-2.0. The JSON Schemas in [`packages/format/schemas/0.1.8/`](packages/format/schemas/0.1.8/) are normative; this document explains them. Where they disagree, the schemas win.
 
 The format describes an e-learning module as plain files that people, agents and other tools can read and write. It separates three layers with different rules:
 
@@ -32,7 +32,7 @@ sources/                    the author's files the course is made from, and thei
 
 `sources/` is reserved: what it holds is never validated, built or published, and a course file that points into it is an error (`E_SOURCE_REFERENCED`). Tools may keep a readable version of each source beside it (`<file>.md`, whose first line is an `<!-- elabora:readable {…} -->` marker, and `<file>.files/`).
 
-All JSON files are UTF-8, and may carry `"$schema"` pointing to `https://elabora.studio/schemas/0.1.7/<name>.schema.json`. Tools write them with two-space indentation and a final newline.
+All JSON files are UTF-8, and may carry `"$schema"` pointing to `https://elabora.studio/schemas/0.1.8/<name>.schema.json`. Tools write them with two-space indentation and a final newline.
 
 ## 2. Identifiers
 
@@ -202,7 +202,7 @@ Two blocks the learner goes through, their items controls of the player's primit
 - **Actions**: `play-sound` (`sound`; `volume`, 0 to 2, default 1, an ambience 0.3; `loop`: an ambience of the screen; `fade`, seconds of fade in; `fadeOut`, seconds of fade out at its end, or, for an ambience, when it stops without a fade of its own; `start` and `end`, the part of the file played, in seconds; `duck`, dB; `caption`) and `stop-sound` (`sound`, or every sound of the story; `fade`), in events, cues and a dialogue's options (presentation actions). Sounds of the story and ambiences stop at the end of their screen. Since schemas 0.1.7:
   - **A volume above 1** (up to 200 %) raises a sound recorded too quietly, no further than brings its loudest sample, over the part played, to −1 dBFS: louder would clip. A sound already that loud plays at its own level.
   - **A part** (`start`, `end`) plays a piece of a longer file, the file left whole; an ambience loops its part. `end` after `start`, both inside the file, else `E_SOUND_PART`. Fades in and out longer together than the part are shortened together.
-  - **`duck`** (above 0, at most 30 dB) lowers the music and the ambiences while a sound played once plays: down in 0.1 s as it starts, back up in 0.5 s after it; the deepest of two at once wins. 6 lowers a little, 12 clearly, 20 much. A sound never lowers a voice (the narration, a dialogue's lines, a layer's, an audio or video block): the voice comes first. An ambience never ducks (`W_SOUND_DUCK_LOOP`).
+  - **`duck`** (above 0, at most 30 dB; since 0.1.8, the music and the ambiences only) lowers the music and the ambiences while a sound played once plays: down in 0.1 s as it starts, back up in 0.5 s after it; the deepest of two at once wins. 6 lowers a little, 12 clearly, 20 much. A sound never lowers a voice (the narration, a dialogue's lines, a layer's, an audio or video block): the voice comes first. An ambience never ducks (`W_SOUND_DUCK_LOOP`).
 - **Music and ambiences** (`sounds.background[]`: `sound`, `from`, `to` (default `from`), `volume` 0.25 (up to 2, as `play-sound`'s), `fade` 2 s, `start` and `end`, the part of the file looped): a sound looped with a crossfade over a range of screens in the course's order, playing on from one screen of its range to the next; ranges that do not exist, run backwards or overlap are `E_SOUND_BACKGROUND`. Music and ambiences are lowered by 20 dB while a voice or a media block plays (WCAG 1.4.7); learners switch them off in « Affichage » (« Musique et ambiances »); hidden, it is `W_SOUND_MUSIC_SWITCH_HIDDEN`.
 - **Captions** of sounds are advised when a sound carries meaning no text gives, never required: no finding asks for one. They are units of translation.
 - **Credits**: « IA et crédits » gives the credit line of each CC BY or BY-SA sound (the sidecar's `credit`, else one made from its title, author, licence, changes and address; hidden, `W_SOUND_CREDITS_HIDDEN`) and says when sounds were generated; `CREDITS.txt` at the root of the package lists every sound shipped with its source and licence.

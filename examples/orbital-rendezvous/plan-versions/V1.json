@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.7/plan-version.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.8/plan-version.schema.json",
   "version": 1,
   "date": "2026-10-05",
   "contentHash": "sha256:d9f9d8caaadeff2df1781aecd78cac85433539b2738606195e8b90a7f97a144c",

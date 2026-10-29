@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.8/blocks/speech.schema.json",
+  "title": "speech block props",
+  "description": "A character (« Personnage »): a speaker of the course says something to the learner, in bubbles beside its portrait. Its name, colour and look come from course.json speakers (an SVG character or a portrait picture; without a look, its initial). Several lines are several bubbles, one under the other. kind thought draws them as a thought.",
+  "x-category": "content",
+  "x-ai-instructions": "Use a character to give a voice to someone the learner will meet (a colleague who asks, a client who complains, an expert who warns), or a guide who frames a page in a conversational tone, in one to three short lines (a sentence or two each). It is not a dialogue: nothing to choose (for choices, use a dialogue block). The speaker must be in course.json speakers, with a name and ideally a look; the same character keeps one side (side) in a module. Write what the character says in its own words, never the lesson's text in quotes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["speaker", "lines"],
+  "properties": {
+    "speaker": { "$ref": "../defs.schema.json#/$defs/slug", "description": "A speaker of course.json speakers: its name, colour and look." },
+    "lines": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "description": "What the character says, a bubble per line, in order.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "markdown"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]{1,24}$", "description": "Stable id of the line (translations name it)." },
+          "markdown": { "type": "string", "$ref": "../defs.schema.json#/$defs/markdown", "maxLength": 600, "x-translatable": true, "description": "The line, one or two sentences." }
+        }
+      }
+    },
+    "side": { "enum": ["start", "end"], "default": "start", "x-group": "design", "description": "Where the portrait is: start (left in left-to-right languages) or end, the bubbles beside it." },
+    "kind": { "enum": ["speech", "thought"], "default": "speech", "x-group": "design", "description": "speech: speech bubbles; thought: thought bubbles (what the character thinks, not says)." }
+  }
+}

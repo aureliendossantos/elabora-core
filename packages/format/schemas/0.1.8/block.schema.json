@@ -1,0 +1,833 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.8/block.schema.json",
+  "title": "Block",
+  "description": "A block placed on a screen, a layer or in a slot of a component instance. id identifies it in the whole course. type is a built-in type (the native catalogue, props in blocks/<type>.schema.json) or the id of a course component (components/<id>/component.json declares its props).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "props"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "defs.schema.json#/$defs/slug"
+    },
+    "type": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,47}$",
+      "description": "Built-in type (heading, text, image, video, audio, callout, button, accordion, math, quiz, numeric, fill-in, sort, reflection, decision, dialogue, free-object, results, stack; charts: key-figures, bars, donut, trend, proportion, before-after, levels, process, cycle, matrix, milestones, diagram; content and structure: statement, divider, gallery, columns; interaction: speech, steps (« Étapes », not the screen's steps), hotspots) or the id of a course component. Call elabora_list_components (MCP) for the types of this course and elabora_get_schema for their props."
+    },
+    "props": {
+      "type": "object"
+    },
+    "blocks": {
+      "type": "array",
+      "description": "Blocks placed in the slots of this component instance (each picks its slot with slot; without slot, the default slot). Only for components that declare slots.",
+      "items": {
+        "$ref": "block.schema.json"
+      }
+    },
+    "hidden": {
+      "type": "boolean",
+      "default": false,
+      "description": "Initial state: hidden blocks are shown later by a show-block action."
+    },
+    "step": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 12,
+      "default": 1,
+      "description": "Step of the screen that reveals this block (blocks of the screen, not those nested in a component or in a layer). Next, labelled Continue while steps remain, reveals the following step before leaving the screen: below the previous ones in scroll presentation, in their reserved place in slides. Activities of a step must be done before Continue when navigation.lockUntilComplete is set. A screen visited before shows all its steps."
+    },
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "description": "When the block appears (in) and leaves (out) on the screen's timeline, and how: anchored to the narration's lines and words (\"in\": { \"at\": { \"line\": \"l2\", \"word\": \"imprimante\" }, \"effect\": \"rise\" }), or in seconds on a screen without narration. Without in, it shows from the start of its step; without out, until the end of the screen. A timed block keeps its place while it is not there (nothing moves around it), stays out of reach of the keyboard and of screen readers until it shows, and is recomputed when learners seek: what is seen is a function of the time. Blocks of the screen and of its components' slots (the contents of a stack follow one another); not in layers.",
+      "properties": {
+        "in": {
+          "$ref": "defs.schema.json#/$defs/moment"
+        },
+        "out": {
+          "$ref": "defs.schema.json#/$defs/moment"
+        }
+      }
+    },
+    "width": {
+      "enum": [
+        "full",
+        "wide",
+        "half",
+        "bleed"
+      ],
+      "default": "full",
+      "description": "Layout hint in the default column layout: full (the reading column), wide (the wide column), half (two consecutive half blocks sit side by side on wide screens and stack on small ones), bleed (edge to edge of the window in scroll presentation, of the slide in slides; the text inside keeps the reading width). Inside a layout slot, the layout CSS decides: bleed fills the slot."
+    },
+    "slot": {
+      "$ref": "defs.schema.json#/$defs/slug",
+      "description": "Slot that receives this block: a slot of the screen layout for blocks of the screen, a slot of the component instance for blocks inside its blocks. Reading order follows the template, then the block order."
+    },
+    "style": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,31}$",
+      "description": "Named style declared for this type: in course.json theme.styles.<type> or in the component's styles (also those of its parents)."
+    },
+    "optional": {
+      "type": "boolean",
+      "default": false,
+      "description": "Extra the learner may skip (a transcript, more detail): its activities and controls count neither for a step that opens once explored (steps.<n>.opens \"explored\") nor for completeWhen \"interactions-done\"."
+    },
+    "continuity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "key"
+      ],
+      "description": "Continuity between screens (D65): blocks of different screens that share a key are one thing to the learner. Going from one of those screens to another (Next, Previous, the outline, an event), the block carries on instead of appearing again: a free object keeps running and receives the arriving block's props with a transition (free-object contract, update(props, transition)); another block glides from where its counterpart was. Nothing else on the screen moves; with less motion asked it is a clean cut. Blocks sharing a key have the same type (free objects the same object); a key appears once per screen, never in a layer, never on a free object with a timing. A free object's saved state is the chain's: one for every block of the key.",
+      "properties": {
+        "key": {
+          "$ref": "defs.schema.json#/$defs/slug",
+          "description": "The name the blocks of the chain share, the same on each screen (\"lock\", \"hero-title\"). Lowercase letters, digits and hyphens."
+        },
+        "duration": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3000,
+          "default": 700,
+          "description": "How long the passage to this block lasts, in milliseconds (the arriving block's): the glide of its frame or box, and the time a free object is given to move to its new settings. 0: a cut that keeps the object running."
+        }
+      }
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Note for reviewers and authors; never shown to learners."
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "heading"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/heading.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "text"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/text.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "image"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/image.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "video"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/video.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "audio"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/audio.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "callout"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/callout.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "button"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/button.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "accordion"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/accordion.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "math"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/math.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "quiz"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/quiz.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "numeric"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/numeric.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "decision"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/decision.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "dialogue"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/dialogue.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "free-object"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/free-object.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "results"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/results.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "stack"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/stack.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "key-figures"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/key-figures.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "bars"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/bars.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "donut"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/donut.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "trend"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/trend.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "proportion"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/proportion.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "before-after"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/before-after.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "levels"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/levels.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "process"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/process.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "cycle"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/cycle.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "matrix"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/matrix.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "milestones"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/milestones.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "diagram"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/diagram.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "fill-in"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/fill-in.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "sort"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/sort.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "reflection"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/reflection.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "statement"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/statement.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "divider"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/divider.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "gallery"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/gallery.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "columns"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/columns.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "speech"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/speech.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "steps"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/steps.schema.json"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "hotspots"
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "properties": {
+          "props": {
+            "$ref": "blocks/hotspots.schema.json"
+          }
+        }
+      }
+    }
+  ]
+}

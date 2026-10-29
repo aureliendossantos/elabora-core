@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.7/lms-profile.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.8/lms-profile.schema.json",
   "id": "moodle",
   "name": "Moodle 4.5–5.2 (mod_scorm)",
   "documentedAt": "2026-09",

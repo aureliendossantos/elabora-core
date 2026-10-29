@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.8/blocks/stack.schema.json",
+  "title": "stack block props",
+  "description": "A stack (« Pile »): several contents that follow one another in the same place of a timed screen, each with its moment (its blocks' timing.in), as objects stacked on a Storyline slide. The stack takes the size of its largest content, so nothing moves around it when one replaces another. Its contents are the blocks of its items slot; each shows from its moment until the next one's (or its own timing.out). On a screen without a timeline the contents stack one under the other.",
+  "x-category": "structure",
+  "x-ai-instructions": "Use on narrated slides to show successive visuals in one place as the voice names them (a printer offline, then an error message, then a diagram). Give every content a timing.in anchored to the word that brings it; the first may start with its step. Do not use for content learners must compare side by side.",
+  "x-slots": [
+    { "id": "items", "label": "Contents", "description": "The contents, in the order they come.", "default": true, "maxBlocks": 12 }
+  ],
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "transition": {
+      "enum": ["crossfade", "cut", "slide"],
+      "default": "crossfade",
+      "description": "How a content gives way to the next, unless the content sets its own effect: crossfade (one fades out as the next fades in), cut (at once), slide (the next comes from the right)."
+    },
+    "duration": { "type": "number", "minimum": 0, "maximum": 3, "default": 0.4, "description": "Seconds of the transition." }
+  }
+}

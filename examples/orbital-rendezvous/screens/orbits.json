@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.7/screen.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.8/screen.schema.json",
   "id": "orbits",
   "title": "Lower is faster",
   "covers": [

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.8/blocks/process.schema.json",
+  "title": "process block props",
+  "description": "A short procedure: numbered steps joined by a line that draws itself.",
+  "x-category": "chart",
+  "x-ai-instructions": "One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). 2 to 7 steps; a title is a verb (\"Press Report\").",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "takeaway",
+    "items"
+  ],
+  "properties": {
+    "takeaway": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "x-translatable": true,
+      "description": "The sentence the chart proves, shown as its title: \"Most incidents start with an email\", not \"Incidents by origin\"."
+    },
+    "context": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240,
+      "x-translatable": true,
+      "description": "Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway."
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "x-translatable": true,
+      "description": "Where the data comes from, shown under the chart."
+    },
+    "items": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 7,
+      "description": "The steps, in order.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,24}$",
+            "description": "Stable id of the item: highlights, voice beats and translations name it."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60,
+            "x-translatable": true,
+            "description": "The step, as an action."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "x-translatable": true,
+            "description": "What it involves."
+          },
+          "at": {
+            "$ref": "../defs.schema.json#/$defs/anchor",
+            "description": "Narrated screens: the moment the voice brings this item ({ \"line\": \"l2\", \"word\": \"phishing\" }). It appears then, and the other items step back while the voice talks about it, until the next item's moment."
+          }
+        }
+      }
+    },
+    "highlight": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]{1,24}$",
+      "description": "Id of the step that carries the idea: it takes the accent colour, the others step back."
+    },
+    "spotlightEnd": {
+      "$ref": "../defs.schema.json#/$defs/anchor",
+      "description": "Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came."
+    },
+    "revealOnBeats": {
+      "type": "boolean",
+      "default": true,
+      "description": "Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false)."
+    }
+  }
+}

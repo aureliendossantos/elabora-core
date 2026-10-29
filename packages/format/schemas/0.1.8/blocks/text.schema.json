@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.8/blocks/text.schema.json",
+  "title": "text block props",
+  "description": "Rich text in the Elabora Markdown subset, with an optional note in the margin (aside): beside the text on wide windows, after it, indented, on narrow ones.",
+  "x-category": "content",
+  "x-ai-instructions": "Short paragraphs, conversational 'you' (E6), no decorative anecdotes (E1). Keep a screen under about 250 words (E3). When the plan has a locked text, use textRef instead of copying it. aside: a margin note of one or two sentences (a word explained, a source, a nuance); the text must read without it.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "markdown": { "$ref": "../defs.schema.json#/$defs/markdown", "description": "Text content. Use markdown or textRef, not both.", "x-translatable": true },
+    "textRef": { "$ref": "../defs.schema.json#/$defs/planId", "description": "Id of a validated text of the plan: the block shows the plan's wording, and rewording it writes the plan." },
+    "aside": { "type": "string", "$ref": "../defs.schema.json#/$defs/markdown", "maxLength": 400, "x-translatable": true, "description": "A note in the margin: beside the text on wide windows, after it, indented, on narrow ones; read after the text by screen readers." }
+  }
+}

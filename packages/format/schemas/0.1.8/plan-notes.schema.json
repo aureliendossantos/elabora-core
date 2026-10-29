@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.8/plan-notes.schema.json",
+  "title": "Notes for the client on changes not in a version yet (plan-versions/notes.json)",
+  "description": "The author's notes for the client on the changes made since the latest version of the plan, one per change, optional (D52). The next version takes those whose change is still there and freezes them; the document of the working copy shows them in its margin and Word as comments. Never in a SCORM or web package.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["notes"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "notes": {
+      "type": "array",
+      "maxItems": 500,
+      "items": { "$ref": "plan-version.schema.json#/$defs/note" }
+    }
+  }
+}

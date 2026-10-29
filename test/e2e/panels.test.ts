@@ -93,7 +93,7 @@ function panelsCourse({ slides = false }: { slides?: boolean } = {}): string {
     explored('explore-pile', panels('x-stack', 'stack')),
     explored('explore-galerie', { id: 'x-car', type: 'gallery', props: { presentation: 'carousel', images: IMAGES } })
   ];
-  for (const screen of screens) writeJSON(dir, `screens/${screen.id}.json`, { $schema: 'https://elabora.studio/schemas/0.1.7/screen.schema.json', ...screen });
+  for (const screen of screens) writeJSON(dir, `screens/${screen.id}.json`, { $schema: 'https://elabora.studio/schemas/0.1.8/screen.schema.json', ...screen });
   course.sections = [{ id: 'essai', title: 'Essai', screens: screens.map((screen) => screen.id) }, ...course.sections];
   writeJSON(dir, 'course.json', course);
   return dir;

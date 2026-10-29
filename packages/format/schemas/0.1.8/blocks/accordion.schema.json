@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.8/blocks/accordion.schema.json",
+  "title": "accordion block props",
+  "description": "Panels (« Panneaux »): titled items the learner opens one by one, in four presentations of the same items: accordion (panels that open in place, the default), tabs (one panel at a time under a row of tabs; an accordion in narrow containers), cards (a grid of flip cards: the title and the image in front, the text behind) and stack (the flip cards one at a time, with Previous and Next). Revealing content is not practice (guardrail B2): follow it with a question when the learner must remember it.",
+  "x-category": "structure",
+  "x-ai-instructions": "Use panels for optional or parallel detail the learner may read in any order, not for the main thread of a page nor for content to compare side by side. Choose accordion for 3 to 7 independent sections a learner picks from (long bodies, phones); tabs for 2 to 5 parallel facets of one subject with short labels (one or two words, 24 characters at most); cards for a few terms or claims to recall before turning over (a front of a few words, a back of one to three sentences: write prompt to say what to think of first); stack for a short series of cards seen one at a time. Switching presentation keeps the items: write titles and bodies that work in all four. Give an item an image only when it carries information (alt says what), and keep bodies to a few sentences (about 120 to 270 characters).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["items"],
+  "properties": {
+    "presentation": {
+      "enum": ["accordion", "tabs", "cards", "stack"],
+      "default": "accordion",
+      "x-group": "design",
+      "description": "accordion: panels that open in place (allowMultiple: several at once); tabs: a row of tabs, one panel shown at a time in the room of the tallest (an accordion in containers narrower than 560 px); cards: a grid of flip cards, title and image in front, text behind (two columns on phones); stack: the flip cards one at a time, with Previous, Next and where the learner is."
+    },
+    "prompt": { "type": "string", "maxLength": 300, "x-translatable": true, "description": "What to think about before opening or turning over (above the panels): « Before you turn each card, say what you think it means. »" },
+    "items": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "markdown"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]{1,24}$", "description": "Stable id of the item: its visited state, translations and conversions name it." },
+          "title": { "type": "string", "minLength": 1, "maxLength": 200, "x-translatable": true, "description": "The panel's title, the tab's label, the card's front (tabs: 24 characters at most)." },
+          "markdown": { "$ref": "../defs.schema.json#/$defs/markdown", "x-translatable": true, "description": "What the panel shows once opened (the back of a card)." },
+          "image": { "$ref": "../defs.schema.json#/$defs/assetPath", "description": "An image of the item: on the front of a card, at the top of a panel." },
+          "alt": { "type": "string", "maxLength": 250, "x-translatable": true, "description": "What the image shows. Required with image; an empty alt (\"\") marks it decorative." },
+          "focus": { "$ref": "../defs.schema.json#/$defs/focus", "description": "Where the subject of the image is, kept in view when a card crops it." }
+        }
+      }
+    },
+    "allowMultiple": { "type": "boolean", "default": true, "description": "accordion: allow several panels open at once." },
+    "hint": { "type": "boolean", "default": true, "x-group": "design", "description": "cards and stack: show « Turn the card over » on each card (else only its button's name says it, for screen readers)." }
+  }
+}
