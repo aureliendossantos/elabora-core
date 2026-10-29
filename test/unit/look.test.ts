@@ -43,7 +43,7 @@ test('preview server: the course page asks for frames from the second port and r
     server.addPackage('plain', dir);
     const page = await get(`${server.base}/pkg/preview/index.html`);
     assert.match(page.body, new RegExp(`<meta charset="utf-8">\\n<meta name="elabora-object-frames" content="${server.framesPort}">`));
-    assert.match(page.body, /new EventSource\('\/preview-events\/preview'\)/);
+    assert.match(page.body, /new EventSource\("\/preview-events\/preview"\)/);
     // Only the course page of a preview; the frames port serves the same.
     assert.doesNotMatch((await get(`${server.base}/pkg/plain/index.html`)).body, /elabora-object-frames|EventSource/);
     assert.doesNotMatch((await get(`${server.base}/pkg/preview/other.html`)).body, /elabora-object-frames/);
