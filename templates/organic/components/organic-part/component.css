@@ -1,0 +1,10 @@
+/* Organic part opener: a fork of the opening whose number of the part sits in a soft blob above the
+   title, in the colour of the part (--org-part, which follows the section). The rest is the opening's
+   (the player's stylesheet) and the theme's. */
+.organic-part-number {
+  display: grid; place-items: center; width: 4.5rem; height: 4rem; margin: 0 0 1.75rem;
+  border-radius: 58% 42% 55% 45% / 52% 60% 40% 48%;
+  background: var(--org-part); color: var(--t-text);
+  font-family: var(--t-font-heading); font-weight: 850; font-size: 1.75rem; line-height: 1.4;
+  transition: background-color var(--org-slow) var(--org-ease);
+}

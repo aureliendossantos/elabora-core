@@ -1,14 +1,11 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.3/screen.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.4/screen.schema.json",
   "id": "chart-table",
   "title": "Lay a course",
   "covers": [
     "ITEM-5"
   ],
   "layout": "folio",
-  "layoutProps": {
-    "eyebrow": "Lesson 3 · At the chart table"
-  },
   "completeWhen": "interactions-done",
   "blocks": [
     {

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.4/component.schema.json",
+  "id": "organic-part",
+  "title": "Organic part opener",
+  "description": "Opens a part of the module: the part's number in a soft blob, then the opening's head (the part's large rounded title and its lead) and its page.",
+  "instructions": "The first screen of a section, with the screen style part. number: the part's number (1, 2…), the only mark of where the learner is: nothing else goes above the title. The title names the part; lead says what it brings; the body holds one text block with the style meta (a few short facts).",
+  "version": "1.0.0",
+  "level": "screen",
+  "extends": {
+    "component": "opening",
+    "version": "0.1.0"
+  },
+  "propsExtend": {
+    "properties": {
+      "number": {
+        "type": "string",
+        "title": "Part number",
+        "description": "The part's number, in a soft blob above the title (1, 2…).",
+        "maxLength": 3,
+        "default": "1"
+      }
+    }
+  }
+}

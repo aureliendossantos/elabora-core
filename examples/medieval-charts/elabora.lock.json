@@ -35,7 +35,7 @@
   },
   "components": {
     "chart-notes": "2.0.0",
-    "folio": "1.2.0",
+    "folio": "2.0.0",
     "layered-figure": "2.0.0",
     "wind-rose": "1.0.0",
     "workshop": "2.0.0"

@@ -8,7 +8,7 @@ Soft gradient blobs drift behind the screens, under a light grain. For soft skil
 - **Each part has its hue,** from warm to cool: peach for the opening, then gold, sage and lagoon, sky for the closing. The learner feels the module move on without reading anything. The part's hue also tints a few marks of the page (`--org-part`): the objectives' counters, the shapes above the cards, the part opener's number, the quotation mark.
 - **A step revealed** moves the composition a little.
 - **Less motion** asked: nothing drifts, each screen shows its composition at once, and the CSS layers stand still. A session resumed on a later screen shows its composition at once too.
-- **No label above the titles.** A part opener (screen style `part`) shows its number in a soft blob of the part's hue.
+- **No label above the titles.** A part opener (layout `organic-part`) shows its number in a soft blob of the part's hue.
 
 The backdrop (`course.json` › `theme.backdrop`) is CSS layers (`ground`, `night`, two glows that hand over from warm to cool, `grain` over everything, in `theme/theme.css`) and the decoration object `objects/drift/`, a field of rounded lobes drawn on a small canvas the browser enlarges (the enlargement makes the blur). It follows `host.onContext` (screen, section, step, variant) and uses neither WebGL nor the network.
 
@@ -28,7 +28,7 @@ A screen picks one with `"backdrop": "<variant>"` (« Décor » in the editor).
 
 | Block | Style | Look |
 |---|---|---|
-| screen | `part` | Part opener: the part's number in a soft blob above the title (`layoutProps.eyebrow`: the number) |
+| screen | `part` | Part opener, with the layout `organic-part` (a fork of the opening): its `number` in a soft blob above the title |
 | text | `lead` | Large opening paragraph |
 | text | `objectives` | Numbered list in soft round counters (objectives, takeaways) |
 | text | `meta` | Short facts in soft pills (audience, format, what the part holds) |
