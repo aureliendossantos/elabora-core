@@ -9,7 +9,7 @@ import { loadProject } from '@elabora/core/project/load';
 import { readText, textFile, type ProjectFiles } from '@elabora/core/project/files';
 import { validateProject } from '@elabora/core/validate/index';
 import { GATES_FILE, objectFingerprint } from '../objects/gates-record.ts';
-import { AGENTS_FILE, agentRulesState, agentsFile, currentRules } from '../agent-rules.ts';
+import { AGENTS_FILE, CLAUDE_FILE, CLAUDE_TEXT, agentRulesState, agentsFile, claudeMissing, currentRules } from '../agent-rules.ts';
 import { runCommand, snapshotFor, type ChangeRef, type EditOptions, type EditResult, type Written } from './executor.ts';
 
 // Format migrations written to a course folder (docs/architecture/operations.md, Identifiers and format
@@ -104,6 +104,12 @@ function asWritten(root: string, migration: FormatMigration, before?: ProjectFil
     notes = notes.filter((note) => note.file !== AGENTS_FILE);
     if (!changed.includes(AGENTS_FILE)) changed.push(AGENTS_FILE);
     notes.push({ kind: 'changed', file: AGENTS_FILE, path: '', message: `the rules for agents of this Elabora (revision ${state.revision} → ${currentRules().revision})` });
+  }
+  // The CLAUDE.md that points Claude to AGENTS.md, when the course has none.
+  if (claudeMissing(readText(files, AGENTS_FILE), files.has(CLAUDE_FILE))) {
+    files.set(CLAUDE_FILE, textFile(CLAUDE_TEXT));
+    changed.push(CLAUDE_FILE);
+    notes.push({ kind: 'changed', file: CLAUDE_FILE, path: '', message: 'written: the line @AGENTS.md, so that Claude reads the rules for agents' });
   }
   for (const record of [...files.keys()].filter((file) => /^objects\/[^/]+\/[^/]+$/.test(file) && file.endsWith(`/${GATES_FILE}`)).sort()) {
     const folder = record.slice(0, -GATES_FILE.length);

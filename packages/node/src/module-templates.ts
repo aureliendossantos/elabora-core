@@ -9,7 +9,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stringifyJSON } from '@elabora/core/util/json';
-import { agentsFile, courseNotes } from './agent-rules.ts';
+import { agentsFile, courseNotes, CLAUDE_FILE, CLAUDE_TEXT } from './agent-rules.ts';
 import { checkBrief, TEMPLATES_DIR } from './scaffold.ts';
 import type { CourseBrief } from './scaffold.ts';
 import { buildTranslation } from './translate.ts';
@@ -180,6 +180,7 @@ function personalize(dir: string, { id, title, language, brief }: FromTemplateOp
     brief?.notes?.trim() ?? ''
   ].filter(Boolean).join('\n\n');
   fs.writeFileSync(path.join(dir, 'AGENTS.md'), agentsFile(courseNotes(notes)));
+  fs.writeFileSync(path.join(dir, CLAUDE_FILE), CLAUDE_TEXT);
   fs.copyFileSync(path.join(TEMPLATES_DIR, 'course', 'gitignore'), path.join(dir, '.gitignore'));
 }
 

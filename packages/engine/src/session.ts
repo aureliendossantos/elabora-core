@@ -49,7 +49,7 @@ import { withProjectLock } from '@elabora/node/journal/lock';
 import { JOURNAL_DIR, JournalError, appendChange, changeFileHashes, storeChangeBlobs, storeChangeBlobsSync } from '@elabora/node/journal/journal';
 import { projectDataDir } from '@elabora/node/data-dir';
 import { syncArtefact } from '@elabora/node/project-files';
-import { agentRulesState, updateAgentRules, AGENTS_FILE } from '@elabora/node/agent-rules';
+import { agentRulesState, claudeMissing, updateAgentRules, AGENTS_FILE, CLAUDE_FILE } from '@elabora/node/agent-rules';
 import { hasBlob } from '@elabora/node/blobs';
 import type { BlobHash } from '@elabora/node/blobs';
 import { createVersion, listVersions, restore } from '@elabora/node/backups/index';
@@ -274,9 +274,9 @@ export class Session {
     // After the open version (versions are taken one after the other).
     if (this.#options.migrate === 'auto' && this.#state.project.migration) void this.migrate().catch((error) => this.#emitError(error, 'migrating the course format'));
     // The course's rules for agents, written by an earlier Elabora and edited by nobody: brought up to
-    // date, as a system change (agent-rules.ts, D34). A course in an older format waits for its
-    // migration.
-    if (!this.#state.project.migration && this.#agentRulesOutdated()) void this.#change(SYSTEM, async () => this.#committed(updateAgentRules(this.root, this.#editOptions(SYSTEM)))).catch((error) => this.#emitError(error, 'updating the rules for agents'));
+    // date, as a system change (agent-rules.ts, D34), with the CLAUDE.md that points to them when it
+    // is missing. A course in an older format waits for its migration.
+    if (!this.#state.project.migration && this.#agentRulesDue()) void this.#change(SYSTEM, async () => this.#committed(updateAgentRules(this.root, this.#editOptions(SYSTEM)))).catch((error) => this.#emitError(error, 'updating the rules for agents'));
     if (backups.prune !== false) {
       const timer = setTimeout(() => void this.#prune().catch((error) => this.#emitError(error, 'pruning the project data')), backups.pruneDelayMs ?? 60_000);
       timer.unref();
@@ -782,9 +782,11 @@ export class Session {
     return this.#change(SYSTEM, () => this.#migrateFormat(), { migrating: true }).then((ref) => ref && { from: ref.from, to: ref.to, change: this.#changeView(ref.seq) });
   }
 
-  #agentRulesOutdated(): boolean {
+  // Rules written by an earlier Elabora and edited by nobody, or no CLAUDE.md beside them.
+  #agentRulesDue(): boolean {
     const file = this.#state.files.get(AGENTS_FILE);
-    return file?.kind === 'text' && agentRulesState(file.text).status === 'outdated';
+    if (file?.kind !== 'text') return false;
+    return agentRulesState(file.text).status === 'outdated' || claudeMissing(file.text, this.#state.files.has(CLAUDE_FILE));
   }
 
   // Under the lock, in a write: the migration through the node edits, given the snapshot.

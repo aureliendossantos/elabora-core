@@ -101,7 +101,7 @@ test('library: create, list and the cached validation summary', async () => {
   assert.equal(listed[0].validation, null, 'a changed file makes the cached summary stale');
   assert.ok(listed[1].validation);
   assert.ok(listProjects({ validate: true })[0].validation, 'validate: true fills it again');
-  assert.ok(listed[1].size > 0 && listed[1].files === 5 && listed[1].modifiedAt);
+  assert.ok(listed[1].size > 0 && listed[1].files === 6 && listed[1].modifiedAt);
 });
 
 test('library: projects that cannot be read are listed with their error, not hidden', async () => {

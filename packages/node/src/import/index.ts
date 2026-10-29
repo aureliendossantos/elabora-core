@@ -13,7 +13,7 @@ import type { Author } from '@elabora/core/ops/types';
 import { openSource, within } from './source.ts';
 import type { ImportSource } from './source.ts';
 import { findFont } from '../fonts/index.ts';
-import { agentsFile, courseNotes } from '../agent-rules.ts';
+import { agentsFile, courseNotes, CLAUDE_FILE, CLAUDE_TEXT } from '../agent-rules.ts';
 import { TEMPLATES_DIR, checkBrief } from '../scaffold.ts';
 import type { CourseBrief } from '../scaffold.ts';
 import { validateDir } from '../project-reader.ts';
@@ -202,6 +202,8 @@ export async function importCourse(options: ImportCourseOptions): Promise<Import
       }
       const notes = options.brief?.notes;
       await fs.promises.writeFile(path.join(target, 'AGENTS.md'), notes === undefined && kept?.agents ? kept.agents : agentsFile(courseNotes(brief?.notes)));
+      // The module's CLAUDE.md as the author left it, else the line that points Claude to AGENTS.md.
+      await fs.promises.writeFile(path.join(target, CLAUDE_FILE), kept?.claude ?? CLAUDE_TEXT);
       await fs.promises.copyFile(path.join(TEMPLATES_DIR, 'course', 'gitignore'), path.join(target, '.gitignore'));
       await fs.promises.mkdir(path.join(target, 'assets'), { recursive: true });
       for (const medium of converted.media) {
@@ -211,7 +213,7 @@ export async function importCourse(options: ImportCourseOptions): Promise<Import
         files.push(medium.to);
       }
       await fs.promises.writeFile(path.join(target, IMPORT_REPORT_FILE), `${JSON.stringify(converted.report, null, 2)}\n`);
-      files.push('AGENTS.md', '.gitignore', IMPORT_REPORT_FILE);
+      files.push('AGENTS.md', CLAUDE_FILE, '.gitignore', IMPORT_REPORT_FILE);
       // Fonts the module embeds: vetted families, copied with their licence, as `elabora font add`.
       const fonts: string[] = [];
       for (const font of converted.fonts) {
@@ -293,7 +295,7 @@ function keepBrief(files: Map<string, string>, brief: CourseBrief): void {
 // AGENTS.md (the author's notes with it), what the author said of it (D51) in its plan and
 // course.json, and the decisions of its report the author accepted. Its presentation is a choice of
 // the import.
-function keptOf(dir: string): { title?: string; id?: string; language?: string; brief: CourseBrief; agents: string | null; accepted: { id: string; title: string; applied: string }[] } {
+function keptOf(dir: string): { title?: string; id?: string; language?: string; brief: CourseBrief; agents: string | null; claude: string | null; accepted: { id: string; title: string; applied: string }[] } {
   const read = (file: string): Record<string, unknown> => {
     try { const value: unknown = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8')); return value && typeof value === 'object' ? value as Record<string, unknown> : {}; } catch { return {}; }
   };
@@ -311,10 +313,12 @@ function keptOf(dir: string): { title?: string; id?: string; language?: string; 
   if (Array.isArray(lms) && lms.length && lms.every((entry) => typeof entry === 'string')) brief.lms = lms as string[];
   let agents: string | null = null;
   try { agents = fs.readFileSync(path.join(dir, 'AGENTS.md'), 'utf8'); } catch { /* none: the template's */ }
+  let claude: string | null = null;
+  try { claude = fs.readFileSync(path.join(dir, CLAUDE_FILE), 'utf8'); } catch { /* none: Elabora's */ }
   // The decisions of its report the author accepted.
   const decisions = (read(IMPORT_REPORT_FILE) as { decisions?: unknown }).decisions;
   const accepted = (Array.isArray(decisions) ? decisions : []).filter((entry): entry is { id: string; title: string; applied: string } => !!entry && typeof entry === 'object' && (entry as { accepted?: unknown }).accepted === true);
-  return { title: text(course.title), id: text(course.id), language: text(course.language), brief, agents, accepted };
+  return { title: text(course.title), id: text(course.id), language: text(course.language), brief, agents, claude, accepted };
 }
 
 // The source read into the importer's model.
