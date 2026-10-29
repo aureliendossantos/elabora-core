@@ -8,9 +8,6 @@
     "ITEM-3"
   ],
   "layout": "folio",
-  "layoutProps": {
-    "eyebrow": "Lesson 1 · Two ways to draw the world"
-  },
   "completeWhen": "interactions-done",
   "blocks": [
     {
@@ -365,15 +362,6 @@
           }
         },
         {
-          "id": "world-mappa-for",
-          "type": "text",
-          "slot": "first",
-          "style": "eyebrow",
-          "props": {
-            "markdown": "For readers and pilgrims"
-          }
-        },
-        {
           "id": "world-mappa-title",
           "type": "heading",
           "slot": "first",
@@ -397,15 +385,6 @@
           "props": {
             "asset": "images/leaf-portolan.svg",
             "alt": "A corner of a sea chart: the coast of Spain and the Balearic Islands, harbour names written across the land, and black, green and red lines radiating from two points."
-          }
-        },
-        {
-          "id": "world-portolan-for",
-          "type": "text",
-          "slot": "second",
-          "style": "eyebrow",
-          "props": {
-            "markdown": "For pilots"
           }
         },
         {

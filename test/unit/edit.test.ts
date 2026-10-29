@@ -110,9 +110,9 @@ test('a screen duplicated: after it in its section, new ids for its blocks, laye
 test('a screen created with a layout of the course: its props written, its first block in the layout\'s default slot', () => {
   const dir = copyExample(path.join(ROOT, 'examples/medieval-charts'));
   const first = readJSON(dir, 'course.json').sections[0];
-  edit.createScreen(dir, { id: 'page-blanche', title: 'A blank page', covers: [readJSON(dir, 'plan.json').items[0].id], section: first.id, layout: 'folio', layoutProps: { eyebrow: 'Lesson 0' } });
+  edit.createScreen(dir, { id: 'page-blanche', title: 'A blank page', covers: [readJSON(dir, 'plan.json').items[0].id], section: first.id, layout: 'folio', layoutProps: { ornament: 'none' } });
   const screen = readJSON(dir, 'screens/page-blanche.json');
-  assert.deepEqual([screen.layout, screen.layoutProps], ['folio', { eyebrow: 'Lesson 0' }]);
+  assert.deepEqual([screen.layout, screen.layoutProps], ['folio', { ornament: 'none' }]);
   assert.equal(validateDir(dir).diagnostics.filter((d: { severity: string; file?: string }) => d.severity === 'error' && d.file === 'screens/page-blanche.json').length, 0);
 });
 

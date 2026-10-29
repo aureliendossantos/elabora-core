@@ -18,5 +18,7 @@
     "screen:the-end": "d",
     "quiz:check-quiz": "e"
   },
-  "components": {}
+  "components": {
+    "clear-section": "1.0.0"
+  }
 }

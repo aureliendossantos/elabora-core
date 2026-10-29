@@ -6,9 +6,6 @@
     "ITEM-4"
   ],
   "layout": "folio",
-  "layoutProps": {
-    "eyebrow": "Lesson 2 · In the chart-maker's workshop"
-  },
   "completeWhen": "interactions-done",
   "steps": {
     "2": {

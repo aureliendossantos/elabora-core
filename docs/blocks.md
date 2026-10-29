@@ -739,16 +739,15 @@ Generated from `packages/format/schemas/0.1.4/layouts/`. A screen uses one with 
 
 ## `opening` (layout)
 
-An opening (« Ouverture »), a built-in screen layout: the head of a lesson, then its page. The head holds an eyebrow (the section and « Leçon 2 sur 6 » unless you write one), the screen's title, a lead and the reading time; presentations: title (the head alone, in the reading column), band (the title over an image edge to edge, on the theme's scrim), split (the title and the lead beside the image) and cover (the first view of the page: the image fills the window, the title over it). Its slots: question, a question asked before the lesson (a quiz or a reflection), and body, the page (the default slot), laid out as the default column.
+An opening (« Ouverture »), a built-in screen layout: the head of a lesson, then its page. The head holds the screen's title, a lead and the reading time, and no line above the title; presentations: title (the head alone, in the reading column), band (the title over an image edge to edge, on the theme's scrim), split (the title and the lead beside the image) and cover (the first view of the page: the image fills the window, the title over it). Its slots: question, a question asked before the lesson (a quiz or a reflection), and body, the page (the default slot), laid out as the default column.
 
-> One opening per lesson page, on the first screen of a lesson; the rest of the page goes in body. Leave eyebrow empty: the player writes the section and the lesson number. lead: one or two sentences that say what the learner will be able to do or why it matters, not a summary. An image must set the scene of the lesson (alt unless decorative); without one, use title. A pre-question in question primes the lesson: ask what the lesson answers, unscored. band and cover put the title over the image: elabora fit measures its contrast.
+> One opening per lesson page, on the first screen of a lesson; the rest of the page goes in body. Nothing above the title: where the learner is belongs to the module's UI, or to numbering of the course's own style (a screen component that forks opening). lead: one or two sentences that say what the learner will be able to do or why it matters, not a summary. An image must set the scene of the lesson (alt unless decorative); without one, use title. A pre-question in question primes the lesson: ask what the lesson answers, unscored. band and cover put the title over the image: elabora fit measures its contrast.
 
 Template `packages/core/src/components/builtin/opening.html`: fork it (a screen-level component that extends it) to change the markup. Slots: `question` (quiz, reflection), `body` (default).
 
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `presentation` | "title" \| "band" \| "split" \| "cover" |  | title: the head alone, in the reading column; band: the title over image, edge to edge, on the theme's scrim; split: the title and lead beside image; cover: image fills the first view of the page, the title over it. Default "title". |
-| `eyebrow` | string |  | A short line above the title. Empty: the player writes the section's title and « Leçon {n} sur {total} ». |
 | `lead` | markdown |  | One or two sentences under the title: what the lesson brings. |
 | `image` | assetPath |  | band, split and cover: the picture of the lesson. |
 | `alt` | string |  | What the picture shows. Required with an image unless decorative is true. |

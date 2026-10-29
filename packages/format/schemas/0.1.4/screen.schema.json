@@ -40,7 +40,7 @@
     },
     "layoutProps": {
       "type": "object",
-      "description": "Values of the props declared by the layout (layouts/<id>.schema.json for a built-in one, the component's props otherwise: a kicker, an image, a background token…). Text and Markdown props may be { \"textRef\": \"TXT-n\" }."
+      "description": "Values of the props declared by the layout (layouts/<id>.schema.json for a built-in one, the component's props otherwise: a part number, an image, a background token…). Text and Markdown props may be { \"textRef\": \"TXT-n\" }."
     },
     "style": {
       "type": "string",

@@ -210,8 +210,5 @@
     }
   },
   "description": "A template module of the Flow charter: a dark field with luminous ribbons and particles that leap forward at each new screen. Abstract content to replace with your own.",
-  "durationMinutes": 10,
-  "ui": {
-    "lessonOf": "Part {n} of {total}"
-  }
+  "durationMinutes": 10
 }

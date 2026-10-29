@@ -198,9 +198,6 @@
       ]
     }
   },
-  "ui": {
-    "lessonOf": "Part {n} of {total}"
-  },
   "completion": {
     "reportAs": "completed-incomplete"
   },

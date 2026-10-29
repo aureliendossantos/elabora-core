@@ -2,25 +2,16 @@
   "$schema": "https://elabora.studio/schemas/0.1.4/component.schema.json",
   "id": "folio",
   "title": "Folio page",
-  "description": "A long scrolling page opened like a folio: a tall band with an eyebrow, a large title and an opening paragraph, beside either a wind rose turning slowly behind them as the learner scrolls or a figure (the object the page is about), then the body of the page in a reading column (wide blocks run wider).",
+  "description": "A long scrolling page opened like a folio: a tall band with a large title and an opening paragraph, beside either a wind rose turning slowly behind them as the learner scrolls or a figure (the object the page is about), then the body of the page in a reading column (wide blocks run wider).",
   "instructions": "One folio per lesson. Put one or two blocks in the lead (an opening paragraph, style initial) and, when the page is about one picture, that figure in the figure slot: it takes the place of the rose. Everything else goes in the body, in reading order.",
   "category": "layout",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "level": "screen",
   "fullBleed": true,
   "props": {
     "type": "object",
     "additionalProperties": false,
-    "required": [
-      "eyebrow"
-    ],
     "properties": {
-      "eyebrow": {
-        "type": "string",
-        "maxLength": 60,
-        "x-translatable": true,
-        "description": "Short line above the title: the lesson and its theme."
-      },
       "ornament": {
         "enum": [
           "rose",
@@ -62,9 +53,7 @@
   "examples": [
     {
       "title": "Lesson opening",
-      "props": {
-        "eyebrow": "Lesson 1 · Two ways to draw the world"
-      },
+      "props": {},
       "blocks": [
         {
           "id": "specimen-lead",

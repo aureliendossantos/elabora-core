@@ -21,5 +21,7 @@
     "visit:recap-cards#recap-2": "g",
     "visit:recap-cards#recap-3": "h"
   },
-  "components": {}
+  "components": {
+    "organic-part": "1.0.0"
+  }
 }

@@ -6,9 +6,6 @@
     "ITEM-5"
   ],
   "layout": "folio",
-  "layoutProps": {
-    "eyebrow": "Lesson 3 · At the chart table"
-  },
   "completeWhen": "interactions-done",
   "blocks": [
     {

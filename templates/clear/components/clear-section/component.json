@@ -1,0 +1,24 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.4/component.schema.json",
+  "id": "clear-section",
+  "title": "Clear part opener",
+  "description": "Opens a part of the module: the part's number set large in the accent, then the opening's head (the part's title and its lead) and its page, on the left columns of the grid.",
+  "instructions": "The first screen of a section, with the screen style section and the backdrop feature. number: the part's number on two digits (01, 02…), the only mark of where the learner is: nothing else goes above the title. The title names the part; lead says what it covers; the body holds one text block with the style checklist (three points at most).",
+  "version": "1.0.0",
+  "level": "screen",
+  "extends": {
+    "component": "opening",
+    "version": "0.1.0"
+  },
+  "propsExtend": {
+    "properties": {
+      "number": {
+        "type": "string",
+        "title": "Part number",
+        "description": "The part's number, set large in the accent above the title (01, 02…).",
+        "maxLength": 3,
+        "default": "01"
+      }
+    }
+  }
+}

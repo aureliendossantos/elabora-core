@@ -7,7 +7,6 @@
   ],
   "layout": "folio",
   "layoutProps": {
-    "eyebrow": "Before the gallery opens",
     "ornament": "none"
   },
   "completeWhen": "interactions-done",

@@ -98,8 +98,7 @@
       "text": {
         "initial": "Opening paragraph with an illuminated initial",
         "lead": "Large introductory paragraph",
-        "quote": "A visitor's words, set like a quotation in the margin of a manuscript",
-        "eyebrow": "A short line in red small capitals above a heading"
+        "quote": "A visitor's words, set like a quotation in the margin of a manuscript"
       },
       "callout": {
         "rubric": "The idea to remember, ruled in red like a rubric"
