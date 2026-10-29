@@ -89,8 +89,10 @@ export async function main(argv: readonly string[]): Promise<ExitCode> {
   const args = argv.slice(command.name.split(' ').length);
   // A command run in a course brings its rules for agents up to date when nobody edited them, and
   // says when they come from a newer Elabora (agent-rules.ts, D34). On stderr: outputs stay as they are.
+  // The course it runs in, once: for its rules and for what an agent does there.
+  const family = COMMAND_ACTIVITY[command.name];
+  const dir = !OWN_RULES.has(command.name.split(' ')[0]) || family ? courseDirOf(args) : null;
   if (!OWN_RULES.has(command.name.split(' ')[0])) {
-    const dir = courseDirOf(args);
     if (dir) {
       const { syncAgentRules } = await import('@elabora/node/agent-rules');
       const note = syncAgentRules(dir);
@@ -99,8 +101,6 @@ export async function main(argv: readonly string[]): Promise<ExitCode> {
   }
   try {
     // An agent at work in a course: what it does, for the app to say it (activity.ts).
-    const family = COMMAND_ACTIVITY[command.name];
-    const dir = family ? courseDirOf(args) : null;
     if (!family || !dir) return await command.run(args);
     return await withActivity(dir, command.name, family, detectAuthor(), commandPlace(command.name, args), () => command.run(args), (code) => code === 0 || code === null);
   } catch (error) {

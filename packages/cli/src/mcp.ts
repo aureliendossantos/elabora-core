@@ -115,7 +115,9 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
     // Who writes: ELABORA_AUTHOR when the host names its agent (Elabora's own chat says « claude »,
     // not the adapter's client name), else the name its MCP client gives.
     const client = server.getClientVersion()?.name;
-    const author: Author = process.env.ELABORA_AUTHOR?.trim() ? detectAuthor() : client ? { kind: 'agent', name: client } : { kind: 'agent' };
+    // An agent's name only: a shell's ELABORA_AUTHOR=human inherited by the server does not make the agent a person.
+    const named = process.env.ELABORA_AUTHOR?.trim() ? detectAuthor() : null;
+    const author: Author = named?.kind === 'agent' ? named : client ? { kind: 'agent', name: client } : { kind: 'agent' };
     if (mode === 'several' && name === 'elabora_courses') return textResult(served);
     const tool = byName.get(name);
     if (mode !== 'several' || !tool || tool.anywhere) {
