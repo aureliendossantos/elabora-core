@@ -18,6 +18,8 @@ export interface DialogueHost {
   virtual: boolean;
   // The learner's speed, volume and « couper les voix », shared with the narration's bar.
   prefs(): { rate: number; volume: number; muted: boolean };
+  // The voices' gain under a sound of the story that lowers them (duck, D67), read at every frame.
+  voiceLevel?(): number;
   // Two voices never overlap: while a dialogue speaks, the screen's narration is held.
   hold(reason: string): void;
   release(reason: string): void;

@@ -137,11 +137,15 @@ export interface DialogueAction {
   layer?: string;
   step?: number;
   props?: Record<string, unknown>;
-  // play-sound, stop-sound (D67).
+  // play-sound, stop-sound (D67; a part, a fade out and a duck since schemas 0.1.7).
   sound?: string;
   volume?: number;
   loop?: boolean;
   fade?: number;
+  fadeOut?: number;
+  start?: number;
+  end?: number;
+  duck?: number;
   caption?: string;
 }
 

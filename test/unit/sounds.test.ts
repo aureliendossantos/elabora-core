@@ -158,6 +158,33 @@ test('sound checks: a missing sound, an unknown or refused licence, a CC BY cred
   assert.deepEqual(of('W_SOUND_CREDITS_HIDDEN'), [undefined]);
 });
 
+test('sound checks: a part outside its file or ending before it starts, a duck asked of an ambience (schemas 0.1.7)', { skip: !hasFfmpeg() && 'ffmpeg not found' }, () => {
+  const dir = copyExample(QUIET);
+  addSound(dir, 'ring', RINGING, 2);
+  playOnEnter(dir, 'the-cherry', { sound: 'ring', start: 0.4, end: 1.6, volume: 1.8, fadeOut: 0.3, duck: 12 });
+  const course = readJSON(dir, 'course.json');
+  course.sounds = { background: [{ sound: 'ring', from: 'the-cherry', start: 0.5, end: 1.5, volume: 1.5 }] };
+  writeJSON(dir, 'course.json', course);
+  const found = () => validateDir(dir).diagnostics.filter((d) => d.code === 'E_SOUND_PART' || d.code === 'W_SOUND_DUCK_LOOP').map((d) => `${d.code} ${d.path} ${d.message}`);
+  assert.deepEqual(found(), [], 'a part inside the file, a duck on a sound played once, 200 % at most: valid');
+  const screen = readJSON(dir, 'screens/the-cherry.json');
+  screen.events.at(-1).do[0] = { type: 'play-sound', sound: 'ring', start: 1.2, end: 0.8 };
+  screen.events.push({ id: 'rain', on: { type: 'screen.enter' }, do: [{ type: 'play-sound', sound: 'ring', loop: true, duck: 6, start: 3 }] });
+  writeJSON(dir, 'screens/the-cherry.json', screen);
+  course.sounds.background[0].end = 2.5;
+  writeJSON(dir, 'course.json', course);
+  const events = (screen.events as unknown[]).length;
+  assert.deepEqual(found().sort(), [
+    `E_SOUND_PART /events/${events - 2}/do/0/end A play-sound action plays "ring" from 1.2 s to 0.8 s: nothing lies between.`,
+    `E_SOUND_PART /events/${events - 1}/do/0/start A play-sound action plays "ring" from 3 s, and it lasts 2 s.`,
+    'E_SOUND_PART /sounds/background/0/end A track of music or ambience plays "ring" up to 2.5 s, and it lasts 2 s.',
+    `W_SOUND_DUCK_LOOP /events/${events - 1}/do/0/duck An ambience of "ring" asks to lower the voices (duck 6 dB): it plays under them for the whole screen, so it never does.`
+  ].sort());
+  screen.events.at(-1).do[0].volume = 2.5;
+  writeJSON(dir, 'screens/the-cherry.json', screen);
+  assert.ok(validateDir(dir).diagnostics.some((d) => d.code === 'E_SCHEMA' && /volume/.test(`${d.path}`)), 'above 200 %: refused by the schema');
+});
+
 test('a sound of the story: a FLAC master ships as M4A at every quality, in the course data, « IA et crédits » and CREDITS.txt', { skip: !hasFfmpeg() && 'ffmpeg not found' }, async () => {
   const dir = copyExample(QUIET);
   addSound(dir, 'ring', RINGING, 1.5);

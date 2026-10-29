@@ -1,5 +1,6 @@
 import type { CourseCheckContext } from './context.ts';
-import { courseHasMusic, soundAssets, soundSidecar, soundUses } from '../sounds/sounds.ts';
+import { courseHasMusic, soundAssets, soundLength, soundSidecar, soundUses } from '../sounds/sounds.ts';
+import type { SoundUse } from '../sounds/sounds.ts';
 import { classifyLicence } from '../sounds/licences.ts';
 import { reportSchemaErrors } from './structure.ts';
 import { findItem, playerConfig } from '../player/config.ts';
@@ -36,6 +37,7 @@ export function checkSounds(ctx: CourseCheckContext): void {
     if (!licence.ok) reporter.emit('E_SOUND_LICENSE', { file: asset.sidecar, path: '/license', target: use.id, message: `The sound "${use.id}" is under ${REFUSALS[licence.refusal]}${licence.name ? ` (« ${licence.name} »)` : ''}.` });
     else if (licence.credit) credited.push(use.id);
   }
+  checkParts(ctx, assets);
   // Music and ambiences: ranges of the course's screens, one track at a time, and a way to stop them.
   const order = ctx.order.map(({ id }) => id);
   const taken = new Map<string, number>();
@@ -55,4 +57,38 @@ export function checkSounds(ctx: CourseCheckContext): void {
   if (courseHasMusic(project) && !display?.item.enabled) reporter.emit('W_SOUND_MUSIC_SWITCH_HIDDEN', { file: 'course.json', path: '/player', key: 'sounds/music', message: 'The course plays music or ambiences that start by themselves, and the player hides « Affichage », where learners switch them off (WCAG 2.2 1.4.2: audio that plays by itself for more than 3 seconds can be stopped).' });
   const credits = findItem(playerConfig(course), 'credits');
   if (credited.length && !credits?.item.enabled) reporter.emit('W_SOUND_CREDITS_HIDDEN', { file: 'course.json', path: '/player', key: `sounds/credits@${credited.join(',')}`, message: `The course plays ${credited.length === 1 ? `a sound whose licence asks` : `${credited.length} sounds whose licences ask`} to credit its author (${credited.join(', ')}), and the player hides « IA et crédits », where the credits are.` });
+}
+
+// What a play-sound or a track asks of its sound (schemas 0.1.7): a part (start, end) inside the
+// file, after its start; a duck, which an ambience never does (it plays under the voices).
+function checkParts(ctx: CourseCheckContext, assets: ReturnType<typeof soundAssets>): void {
+  const { project, reporter } = ctx;
+  const documents = new Map<string, unknown>([['course.json', project.course]]);
+  for (const [id, entry] of project.screens) documents.set(entry.file ?? `screens/${id}.json`, entry.data);
+  const seconds = (value: number) => `${Math.round(value * 100) / 100} s`;
+  for (const use of soundUses(project)) {
+    if (use.kind !== 'action' && use.kind !== 'background') continue;
+    const at = use.path.replace(/\/sound$/, '');
+    const record = recordAt(documents.get(use.file), at);
+    if (!record || (use.kind === 'action' && record.type !== 'play-sound')) continue;
+    const start = typeof record.start === 'number' ? record.start : undefined;
+    const end = typeof record.end === 'number' ? record.end : undefined;
+    const asset = assets.get(use.id);
+    const length = asset ? soundLength(project, asset) : null;
+    const part = (field: 'start' | 'end', problem: string) => reporter.emit('E_SOUND_PART', { file: use.file, path: `${at}/${field}`, target: use.id, message: `${describe(use)} plays "${use.id}" ${problem}.` });
+    if (start !== undefined && end !== undefined && end <= start) part('end', `from ${seconds(start)} to ${seconds(end)}: nothing lies between`);
+    else if (length !== null && start !== undefined && start >= length) part('start', `from ${seconds(start)}, and it lasts ${seconds(length)}`);
+    else if (length !== null && end !== undefined && end > length + 0.05) part('end', `up to ${seconds(end)}, and it lasts ${seconds(length)}`);
+    if (use.kind === 'action' && record.loop === true && typeof record.duck === 'number') reporter.emit('W_SOUND_DUCK_LOOP', { file: use.file, path: `${at}/duck`, target: use.id, message: `An ambience of "${use.id}" asks to lower the voices (duck ${record.duck} dB): it plays under them for the whole screen, so it never does.` });
+  }
+}
+const describe = (use: SoundUse) => (use.kind === 'background' ? 'A track of music or ambience' : 'A play-sound action');
+// The object a JSON pointer names in a document.
+function recordAt(document: unknown, pointer: string): Record<string, unknown> | null {
+  let value = document;
+  for (const part of pointer.split('/').slice(1)) {
+    const key = part.replace(/~1/g, '/').replace(/~0/g, '~');
+    value = Array.isArray(value) ? value[Number(key)] : value !== null && typeof value === 'object' ? (value as Record<string, unknown>)[key] : undefined;
+  }
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : null;
 }

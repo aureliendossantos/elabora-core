@@ -133,6 +133,9 @@ export interface BackgroundTrackData {
   screens: string[];
   volume: number;
   fade: number;
+  // The part of its file that loops, in seconds (schemas 0.1.7).
+  start?: number;
+  end?: number;
 }
 
 export interface SoundFileData {
@@ -759,7 +762,8 @@ export type Action =
   | { type: 'start-dialogue' | 'restart-dialogue'; block: string }
   | { type: 'goto-dialogue'; block: string; node: string }
   // A sound of the course (D67), by its id in sounds.files; loop: an ambience of the screen.
-  | { type: 'play-sound'; sound: string; volume?: number; loop?: boolean; fade?: number; caption?: string }
+  // Up to 200 %, a part of its file (start, end), a fade out, lowering the voices under it (duck, dB).
+  | { type: 'play-sound'; sound: string; volume?: number; loop?: boolean; fade?: number; fadeOut?: number; start?: number; end?: number; duck?: number; caption?: string }
   // No sound: every sound of the story playing.
   | { type: 'stop-sound'; sound?: string; fade?: number };
 

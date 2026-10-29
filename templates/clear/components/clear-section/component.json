@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.6/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.7/component.schema.json",
   "id": "clear-section",
   "title": "Clear part opener",
   "description": "Opens a part of the module: the part's number set large in the accent, then the opening's head (the part's title and its lead) and its page, on the left columns of the grid.",

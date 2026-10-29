@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.6/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.7/component.schema.json",
   "id": "cosmos-hero",
   "title": "Cosmic hero",
   "description": "Opening screen on the starfield: a very large title and a lead text, a side column for goals, a row of cards at the bottom, and the limb of a planet rising behind the cards with an orbital sunrise. Stacks on narrow screens.",

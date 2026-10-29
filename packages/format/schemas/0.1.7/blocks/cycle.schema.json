@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.7/blocks/cycle.schema.json",
+  "title": "cycle block props",
+  "description": "A loop of stages around a centre; the centre explains the stage pointed at, focused or tapped.",
+  "x-category": "chart",
+  "x-ai-instructions": "One chart says one thing: write takeaway as the finding, set highlight to the item that proves it, keep labels short (they are translated). On a narrated screen, give items an at anchor to the word that names them (see skill elabora-charts). 3 to 8 stages; center says what the loop is.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "takeaway",
+    "items"
+  ],
+  "properties": {
+    "takeaway": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "x-translatable": true,
+      "description": "The sentence the chart proves, shown as its title: \"Most incidents start with an email\", not \"Incidents by origin\"."
+    },
+    "context": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240,
+      "x-translatable": true,
+      "description": "Only what neither the title nor the chart says (the unit, the population or the period the axes do not give), in one line under the title. Most charts need none; never a rephrasing of the takeaway."
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "x-translatable": true,
+      "description": "Where the data comes from, shown under the chart."
+    },
+    "items": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 8,
+      "description": "The stages, clockwise from the top.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]{1,24}$",
+            "description": "Stable id of the item: highlights, voice beats and translations name it."
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "x-translatable": true,
+            "description": "The stage."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "x-translatable": true,
+            "description": "What happens in it, said in the centre."
+          },
+          "at": {
+            "$ref": "../defs.schema.json#/$defs/anchor",
+            "description": "Narrated screens: the moment the voice brings this item ({ \"line\": \"l2\", \"word\": \"phishing\" }). It appears then, and the other items step back while the voice talks about it, until the next item's moment."
+          }
+        }
+      }
+    },
+    "center": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title"
+      ],
+      "description": "What the centre says at rest (optional: without it the centre stays empty).",
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "x-translatable": true,
+          "description": "The loop's name."
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160,
+          "x-translatable": true,
+          "description": "A sentence under it (\"Point at a stage\")."
+        }
+      }
+    },
+    "highlight": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]{1,24}$",
+      "description": "Id of the stage that carries the idea: it takes the accent colour, the others step back."
+    },
+    "spotlightEnd": {
+      "$ref": "../defs.schema.json#/$defs/anchor",
+      "description": "Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came."
+    },
+    "revealOnBeats": {
+      "type": "boolean",
+      "default": true,
+      "description": "Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false)."
+    }
+  }
+}
