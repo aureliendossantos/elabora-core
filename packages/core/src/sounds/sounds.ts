@@ -266,6 +266,11 @@ export interface CourseSound {
   generated: boolean;
   loop: boolean;
   uses: Omit<SoundUse, 'id'>[];
+  // What its sidecar says of where it comes from (an app shows it), and the caption it suggests by language.
+  source: string | null;
+  author: string | null;
+  url: string | null;
+  caption: Record<string, string> | null;
 }
 export function courseSounds(project: Project): CourseSound[] {
   const assets = soundAssets(project);
@@ -280,7 +285,9 @@ export function courseSounds(project: Project): CourseSound[] {
       duration: (file?.kind === 'binary' ? file.media?.duration : null) ?? sidecar?.duration ?? null,
       license: sidecar?.license ?? null, licence: classifyLicence(sidecar?.license), credit: soundCredit(sidecar, project.course?.language ?? 'en'),
       generated: !!sidecar?.generated, loop: sidecar?.loop === true,
-      uses: uses.filter((use) => use.id === id).map(({ id: _id, ...use }) => use)
+      uses: uses.filter((use) => use.id === id).map(({ id: _id, ...use }) => use),
+      source: sidecar?.source ?? null, author: sidecar?.author ?? null, url: sidecar?.url ?? null,
+      caption: sidecar?.caption && typeof sidecar.caption === 'object' ? { ...sidecar.caption } as Record<string, string> : null
     };
   });
 }

@@ -25,7 +25,7 @@ const HELP = `  assets [dir] [--only <name>] [--sheet <file.png>]   Run generato
                                                       language, previous, next, exit), what shows and why not, its tokens and
                                                       findings. With changes: one undoable change. The spacer is one per bar,
                                                       always on: --move spacer:top:3 says where the start of the line ends.
-                                                      --set controls.speeds=0.75-1.5, outline.screenTitle=true,
+                                                      --set controls.speeds=0.75-1.5, outline.label=section,
                                                       controls.transcript=false, logo.plate=true, glossary.linkTerms=false;
                                                       --token player.top.background=#FFFFFF (=default removes it).
                                                       --link-terms links the glossary's terms (all, or the ids given) the
@@ -83,7 +83,7 @@ function optionChanges(values: readonly string[] = []): UpdatePlayerArgs['option
   const options: Record<string, Record<string, unknown>> = {};
   for (const value of values) {
     const match = /^(logo|outline|glossary|controls)\.([A-Za-z]+)=(.*)$/.exec(value);
-    if (!match) throw new ArgumentError(`--set ${value}: write item.option=value (controls.speeds=0.75-2, outline.screenTitle=true, logo.alt=Hélios, logo.plate=true, glossary.linkTerms=false)`);
+    if (!match) throw new ArgumentError(`--set ${value}: write item.option=value (controls.speeds=0.75-2, outline.label=section, logo.alt=Hélios, logo.plate=true, glossary.linkTerms=false)`);
     const [, item, option, raw] = match;
     options[item] = { ...options[item], [option]: raw === 'true' ? true : raw === 'false' ? false : raw === 'null' || raw === 'default' ? null : raw };
   }

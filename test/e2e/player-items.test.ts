@@ -263,3 +263,164 @@ test('« Très grande » in slides: the room reserved for a quiz\'s feedback is 
     assert.deepEqual(await heights(), before, 'the quizzes keep their height once answered');
   });
 });
+
+// ── The progress in parts (D58, revised on 29 Oct 2026) ──────────────────
+const parts = (page: Page) => page.$$eval('.t-part', (nodes) => nodes.map((node) => ({
+  label: node.getAttribute('aria-label'), tab: node.getAttribute('tabindex'), current: node.hasAttribute('data-current'), done: node.hasAttribute('data-done'),
+  locked: node.getAttribute('aria-disabled') === 'true', fill: (node as HTMLElement).style.getPropertyValue('--t-part')
+})));
+const shownTip = (page: Page) => page.evaluate(() => { const node = document.getElementById('t-tip'); return node && !node.hidden ? node.textContent : null; });
+const waitTip = (page: Page, text: string) => page.waitForFunction((value) => { const node = document.getElementById('t-tip'); return !!node && !node.hidden && node.textContent === value; }, text, { timeout: 30000 });
+const said = (page: Page, text: string) => page.waitForFunction((value) => document.querySelector('#elabora-app > [role="status"]')?.textContent === value, text, { timeout: 30000 });
+// Screens gone through to their end, as a learner who did them.
+const complete = (page: Page, ids: string[]) => page.evaluate((list) => {
+  const { engine } = (window as PlayerWindow).__elabora;
+  for (const screen of engine.screens.filter((candidate) => list.includes(candidate.id))) { engine.visit(screen); engine.markComplete(screen); }
+}, ids);
+const go = async (page: Page, id: string) => { await page.evaluate((screen) => (window as PlayerWindow).__elabora.go(screen), id); await page.evaluate(() => (window as PlayerWindow).__elabora.ready()); };
+const shown = (page: Page) => page.evaluate(() => (window as PlayerWindow).__elabora.screen);
+
+test('the progress in parts: a segment per section, the part shown, Tab and the arrows, a part\'s first screen, a part not open yet refused (Next\'s reason when it follows the screen)', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
+  // Scroll presentation, linear, locked until complete; three sections of two screens.
+  await player(copyExample(), async (page) => {
+    assert.equal(await page.locator('.t-item--progress[data-parts="3"] .t-progress[role="toolbar"]').getAttribute('aria-label'), 'Progression : 0 %');
+    assert.deepEqual((await parts(page)).map((part) => [part.label, part.tab]), [
+      ['Partie 1 sur 3 : Découvrir, en cours', '0'],
+      ['Partie 2 sur 3 : Pratiquer, pas encore disponible', '-1'],
+      ['Partie 3 sur 3 : Valider, pas encore disponible', '-1']
+    ]);
+    const before = await box(page, '.t-item--progress');
+    await complete(page, ['accueil', 'chemin']);
+    await go(page, 'premier-reflexe');
+    assert.deepEqual(await parts(page), [
+      { label: 'Partie 1 sur 3 : Découvrir, terminée', tab: '-1', current: false, done: true, locked: false, fill: '100' },
+      { label: 'Partie 2 sur 3 : Pratiquer, en cours', tab: '0', current: true, done: false, locked: false, fill: '0' },
+      { label: 'Partie 3 sur 3 : Valider, pas encore disponible', tab: '-1', current: false, done: false, locked: true, fill: '0' }
+    ]);
+    assert.deepEqual(await box(page, '.t-item--progress'), before, 'nothing moves from one part to the next');
+    // One stop for Tab, at the part shown; the arrows go from part to part with their tooltip.
+    await page.focus('.t-skip');
+    await page.keyboard.press('Tab');
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-label')), 'Partie 2 sur 3 : Pratiquer, en cours');
+    await waitTip(page, 'Pratiquer · en cours');
+    await page.keyboard.press('ArrowLeft');
+    await waitTip(page, 'Découvrir · terminée');
+    await page.keyboard.press('End');
+    await waitTip(page, 'Valider · pas encore disponible');
+    await page.keyboard.press('Home');
+    assert.deepEqual((await parts(page)).map((part) => part.tab), ['0', '-1', '-1']);
+    // Enter goes to the part's first screen.
+    await page.keyboard.press('Enter');
+    await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
+    assert.equal(await shown(page), 'accueil');
+    assert.equal(await page.evaluate(() => document.activeElement?.tagName), 'H1');
+    // A part not open yet: its reason in the tooltip and the live region, and the learner stays.
+    await go(page, 'premier-reflexe');
+    await page.click('.t-part:nth-child(3)', { force: true });
+    await waitTip(page, 'Cette partie s’ouvre après les précédentes.');
+    await said(page, 'Cette partie s’ouvre après les précédentes.');
+    assert.equal(await shown(page), 'premier-reflexe');
+    // The part that follows the screen shown refuses as Next does, with its reason.
+    await complete(page, ['premier-reflexe']);
+    await go(page, 'simulation');
+    await page.click('.t-nav-btn--next', { force: true });
+    await page.waitForFunction(() => !document.getElementById('t-tip')!.hidden);
+    const next = await shownTip(page);
+    assert.ok(next && next !== 'Cette partie s’ouvre après les précédentes.', `Next refuses (${next})`);
+    await page.mouse.move(800, 500);
+    await page.click('.t-part:nth-child(3)', { force: true });
+    await waitTip(page, next!);
+    assert.equal(await shown(page), 'simulation');
+    // Open, it goes.
+    await complete(page, ['simulation']);
+    await go(page, 'simulation');
+    await page.click('.t-part:nth-child(3)');
+    await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
+    assert.equal(await shown(page), 'evaluation');
+    assert.equal((await parts(page))[1].label, 'Partie 2 sur 3 : Pratiquer, terminée');
+  });
+});
+
+test('the progress in one piece for a course without parts; the outline\'s button with the part\'s title, one width on every screen', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
+  const single = copyExample();
+  const course = JSON.parse(fs.readFileSync(path.join(single, 'course.json'), 'utf8'));
+  course.sections = [{ id: 'tout', title: 'Tout', screens: course.sections.flatMap((section: { screens: string[] }) => section.screens) }];
+  fs.writeFileSync(path.join(single, 'course.json'), JSON.stringify(course, null, 2));
+  await player(single, async (page) => {
+    assert.equal(await page.locator('.t-part').count(), 0);
+    assert.equal(await page.locator('.t-item--progress:not([data-parts]) .t-progress[role="progressbar"]').getAttribute('aria-valuetext'), '0 %');
+  });
+  const dir = copyExample();
+  edit.updatePlayer(dir, { options: { outline: { label: 'section' } } });
+  await player(dir, async (page) => {
+    const label = () => page.evaluate(() => [document.querySelector('.t-outline-label')!.textContent, document.querySelector('.t-outline-btn')!.getAttribute('aria-label'), Math.round(document.querySelector('.t-outline-btn')!.getBoundingClientRect().width)]);
+    const first = await label();
+    assert.deepEqual(first.slice(0, 2), ['Découvrir', 'Sommaire : Découvrir']);
+    await complete(page, ['accueil', 'chemin']);
+    await go(page, 'premier-reflexe');
+    assert.deepEqual(await label(), ['Pratiquer', 'Sommaire : Pratiquer', first[2]]);
+  });
+});
+
+test('the progress in parts on a phone: a tap opens the outline (a part is too narrow for a finger), or goes to the part without it; slides; axe on the bars', { timeout: 300000 }, async () => {
+  const { CHROMIUM_CHANNELS } = await import('@elabora/node/emulator/browser');
+  const { loadAxe, axeViolations } = await import('@elabora/node/util/axe');
+  const run = async (dir: string, viewport: { width: number; height: number }, touch: boolean, check: (page: Page) => Promise<void>) => {
+    const b = await build(dir, { emit: 'dir', out: tmp('elabora-parts-'), writeLock: false, debug: true });
+    assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
+    const server = await startServer();
+    server.addPackage('p', b.dirPath);
+    // A phone is an external Chromium's: Elabora's Electron emulates none.
+    const browser = await launchBrowser('chromium', touch ? { channels: CHROMIUM_CHANNELS } : {});
+    try {
+      const page = await (await browser.newContext({ viewport, reducedMotion: 'reduce', hasTouch: touch, isMobile: touch })).newPage();
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      await page.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
+      await page.goto(`${server.base}/pkg/p/index.html`);
+      await page.waitForFunction(() => (window as PlayerWindow).__elabora);
+      await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
+      await check(page);
+      assert.deepEqual(errors, []);
+    } finally {
+      await browser.close();
+      await server.close();
+    }
+  };
+  // Slides, three sections: the learner in the second.
+  const into = async (page: Page) => {
+    const order = await page.evaluate(() => (window as PlayerWindow).__elabora.engine.screens.map((screen) => screen.id));
+    const sections = await page.evaluate(() => ((window as PlayerWindow).__elabora.course as unknown as { sections: { screens: string[] }[] }).sections);
+    await complete(page, order.slice(0, order.indexOf(sections[1].screens[0])));
+    await go(page, sections[1].screens[0]);
+    return sections;
+  };
+  const dir = copyExample('orbital-rendezvous');
+  await run(dir, { width: 375, height: 812 }, true, async (page) => {
+    const sections = await into(page);
+    await page.locator('.t-part').first().tap();
+    await page.waitForSelector('#t-menu:not([hidden])');
+    assert.equal(await shown(page), sections[1].screens[0], 'the tap opened the outline, the screen stays');
+  });
+  const without = copyExample('orbital-rendezvous');
+  edit.updatePlayer(without, { disable: ['outline'] });
+  await run(without, { width: 375, height: 812 }, true, async (page) => {
+    const sections = await into(page);
+    await page.locator('.t-part').first().tap();
+    await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
+    assert.equal(await shown(page), sections[0].screens[0], 'without the outline, the tap goes to the part');
+  });
+  await run(dir, { width: 1600, height: 900 }, false, async (page) => {
+    const sections = await into(page);
+    const target = await box(page, '.t-part:nth-child(1)');
+    assert.ok(target.height >= 44, `a part is as tall as a bar's button (${target.height})`);
+    const axe = loadAxe();
+    if (axe) {
+      const result = await page.evaluate(`${axe};\naxe.run({ include: [['.t-bar']] }, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] } }).then((r) => r.violations.map((v) => ({ id: v.id, impact: v.impact, help: v.help, nodes: v.nodes.length, targets: v.nodes.slice(0, 3).map((n) => String(n.target)) })))`);
+      assert.deepEqual(axeViolations(result), []);
+    }
+    await page.click('.t-part:nth-child(1)');
+    await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
+    assert.equal(await shown(page), sections[0].screens[0]);
+  });
+});

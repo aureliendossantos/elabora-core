@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.4/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.5/component.schema.json",
   "id": "maneuver-quiz",
   "title": "Manoeuvre question",
   "description": "A choice question whose options are burns, shown as cards with a diagram of the thrust direction. A fork of the quiz block: same scoring, feedback, saved state and SCORM records.",

@@ -200,13 +200,13 @@ test('update_player: items enabled, moved and given options, tokens, content, in
   const before = fs.readFileSync(path.join(dir, 'course.json'), 'utf8');
   const result = edit.updatePlayer(dir, {
     disable: ['progress'], move: [{ item: 'outline', bar: 'top', index: 1 }],
-    options: { controls: { speeds: '0.75-1.5', captionsByDefault: true }, outline: { screenTitle: true } },
+    options: { controls: { speeds: '0.75-1.5', captionsByDefault: true }, outline: { label: 'section' } },
     position: { bottom: 'page' }, tokens: { 'player.accent': '#0B5394', 'player.density': 'compact' },
     glossary: [{ id: 'dns', term: 'DNS', definition: 'Le service qui traduit les noms en adresses.' }]
   });
   assert.equal(result.ok, true);
   const course = readJSON(dir, 'course.json');
-  assert.deepEqual(course.player.top.items.slice(0, 3), [{ id: 'logo', options: { asset: 'images/logo-helios.svg', alt: 'Hélios' } }, { id: 'outline', options: { screenTitle: true } }, { id: 'title' }]);
+  assert.deepEqual(course.player.top.items.slice(0, 3), [{ id: 'logo', options: { asset: 'images/logo-helios.svg', alt: 'Hélios' } }, { id: 'outline', options: { label: 'section' } }, { id: 'title' }]);
   assert.deepEqual(course.player.top.items.find((item: { id: string }) => item.id === 'progress'), { id: 'progress', enabled: false });
   assert.deepEqual(course.player.bottom.items.find((item: { id: string }) => item.id === 'controls').options, { captionsByDefault: true, speeds: '0.75-1.5' });
   assert.equal(course.player.bottom.position, 'page');

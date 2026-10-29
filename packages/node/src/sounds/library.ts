@@ -3,7 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // Elabora's library of sounds, « Sons courants » (docs/decisions.md D67): CC0 or public-domain sounds
-// in packages/node/sounds/files/, their catalogue written by `pnpm run sounds`. Offline.
+// in packages/node/sounds/files/, their catalogue written by `pnpm run sounds`. Offline. Another
+// library may join it (ELABORA_SOUND_LIBRARIES: folders, separated as PATH is, each with its own
+// catalogue.json and files/): the desktop app's, written by its own `pnpm run sounds`, whose CC BY
+// sounds carry the credit they ask for. Ids are unique across libraries: the core's first.
 
 export interface LibrarySound {
   id: string;
@@ -24,18 +27,38 @@ export interface LibrarySound {
   licenseUrl: string;
   checked: string;
   caption?: Record<string, string>;
+  // The credit line a CC BY sound asks for, as it should read (else « “Title”, Author — CC BY 4.0 — url »).
+  credit?: string;
   tags: string[];
+  // The folder of the library it comes from (its file is relative to it).
+  library: string;
 }
 
 export const LIBRARY_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../sounds');
 export const SOUND_CATEGORIES = ['telephone', 'doors-footsteps', 'office', 'notifications', 'impacts', 'transitions', 'nature', 'crowds-places', 'stingers'] as const;
 
-let cached: LibrarySound[] | null = null;
-export function librarySounds(): LibrarySound[] {
-  cached ??= (JSON.parse(fs.readFileSync(path.join(LIBRARY_DIR, 'catalogue.json'), 'utf8')) as { sounds: LibrarySound[] }).sounds;
-  return cached;
+// The libraries searched: the core's, then those ELABORA_SOUND_LIBRARIES names (a missing folder or
+// catalogue is left out: the app's library may not be installed in a checkout).
+export function libraryDirs(): string[] {
+  const extra = (process.env.ELABORA_SOUND_LIBRARIES ?? '').split(path.delimiter).filter(Boolean).map((dir) => path.resolve(dir));
+  return [LIBRARY_DIR, ...extra.filter((dir) => dir !== LIBRARY_DIR && fs.existsSync(path.join(dir, 'catalogue.json')))];
 }
-export const libraryFile = (sound: LibrarySound): string => path.join(LIBRARY_DIR, sound.file);
+
+let cached: { key: string; sounds: LibrarySound[] } | null = null;
+export function librarySounds(): LibrarySound[] {
+  const dirs = libraryDirs();
+  const key = dirs.join('\n');
+  if (cached?.key === key) return cached.sounds;
+  const sounds: LibrarySound[] = [];
+  const seen = new Set<string>();
+  for (const dir of dirs) {
+    const catalogue = JSON.parse(fs.readFileSync(path.join(dir, 'catalogue.json'), 'utf8')) as { sounds: Omit<LibrarySound, 'library'>[] };
+    for (const sound of catalogue.sounds) if (!seen.has(sound.id)) { seen.add(sound.id); sounds.push({ ...sound, library: dir }); }
+  }
+  cached = { key, sounds };
+  return sounds;
+}
+export const libraryFile = (sound: LibrarySound): string => path.join(sound.library, sound.file);
 
 // Words a search compares, accents and case aside.
 export const fold = (text: string): string => text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();

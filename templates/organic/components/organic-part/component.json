@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.4/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.5/component.schema.json",
   "id": "organic-part",
   "title": "Organic part opener",
   "description": "Opens a part of the module: the part's number in a soft blob, then the opening's head (the part's large rounded title and its lead) and its page.",

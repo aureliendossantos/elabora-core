@@ -25,7 +25,7 @@ import { createScreenView } from './screen-view.ts';
 import type { ScreenView } from './screen-view.ts';
 import { labelsFor, formatLabel } from './labels.ts';
 import { element } from './dom.ts';
-import { createChrome } from './chrome.ts';
+import { createChrome, partsAt, percentText } from './chrome.ts';
 import { createLiveChrome } from './canvas-live.ts';
 import type { LiveChrome, LiveOpen } from './canvas-live.ts';
 import { createTooltip } from './tooltip.ts';
@@ -70,6 +70,8 @@ interface Mounted {
   requested: RenderView;
   // The live bars (chrome=live).
   live: LiveChrome | null;
+  // The inert bars (chrome=player): they say where a screen is (the outline's label, the progress).
+  place: ((screen: ScreenData, outline: RenderOutline | null) => void) | null;
   // The course's screens (the render's outline).
   outline: RenderOutline | null;
 }
@@ -239,7 +241,7 @@ function render(data: ScreenRender) {
   const current = mounted;
   if (!current || current.courseKey !== courseKey(data.course) || objectsChanged(current.course.objects, data.course.objects)) { mount(data, screen); return; }
   // Screens added, moved or renamed: the live bars' outline, Previous and Next follow.
-  if (current.live && JSON.stringify(current.outline) !== JSON.stringify(data.outline ?? null)) { current.outline = data.outline ?? null; current.live.setOutline(current.outline); }
+  if (JSON.stringify(current.outline) !== JSON.stringify(data.outline ?? null)) { current.outline = data.outline ?? null; current.live?.setOutline(current.outline); }
   const course = current.course;
   const sameScreen = current.view.screen?.id === screen.id;
   // Another screen: the layers of the one shown close without running its events.
@@ -252,6 +254,7 @@ function render(data: ScreenRender) {
   // controls visited, variables); another screen starts afresh.
   current.state.current = createCourseState(course, sameScreen ? { suspendData: current.state.current.encode() } : {});
   const fresh = current.view.update(screen, usingFiles(screen, changed));
+  current.place?.(screen, current.outline);
   if (!sameScreen) { applyView(current, data.view, true); current.live?.show(screen.id); return; }
   // The same view goes on: new steps show when every step is shown, blocks rendered anew show their
   // answers, layers closed because their own data changed open again. Then what the view changes.
@@ -286,6 +289,7 @@ function mount(data: ScreenRender, screen: ScreenData) {
   // The bar of a narrated screen goes where the player puts it: its controls item (with the bars only).
   let timelineHost: HTMLElement | null = null;
   let live: LiveChrome | null = null;
+  let place: Mounted['place'] = null;
   const outline = data.outline ?? null;
   if (chromeMode === 'live' && tooltip) {
     // As the player wires them; what leaves the screen is the host's (navigate, language).
@@ -307,7 +311,15 @@ function mount(data: ScreenRender, screen: ScreenData) {
     const bars = createChrome(course, labels, { actions: null, tooltip: null });
     for (const bar of [bars.top, bars.bottom]) if (bar) bar.inert = true;
     bars.setNav({ previous: true, next: true, nextLabel: 'next' });
-    if (screen) bars.setScreen(screen.title);
+    // The progress as a learner at this screen sees it, having completed those before it.
+    place = (shown, screens) => {
+      const section = screens?.sections.find((candidate) => candidate.screens.some((entry) => entry.id === shown.id));
+      bars.setPlace(shown.title, section?.title ?? null);
+      const { parts, percent } = partsAt(screens, shown.id);
+      bars.setParts(parts);
+      bars.setProgress(percent, percentText(percent, course.language));
+    };
+    place(screen, outline);
     app.append(...[bars.top, main, bars.bottom, liveRegion].filter((node) => node !== null));
     timelineHost = bars.controls;
   } else app.append(main, liveRegion);
@@ -334,7 +346,7 @@ function mount(data: ScreenRender, screen: ScreenData) {
       ...(live ? { tooltip, sheetHost: app } : {})
     }
   });
-  mounted = { course, courseKey: courseKey(course), state, view, requested: data.view, live, outline };
+  mounted = { course, courseKey: courseKey(course), state, view, requested: data.view, live, place, outline };
   view.show(screen);
   applyView(mounted, data.view, true);
   if (live) {

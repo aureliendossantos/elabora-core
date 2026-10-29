@@ -75,6 +75,9 @@ import type { DiskRead, SessionStore } from './disk.ts';
 import { COMMANDS, commandResult, isCommandName, runNamedCommand } from './commands.ts';
 import { SessionCanvas } from './session-canvas.ts';
 import { SessionVoice } from './session-voice.ts';
+import { SessionSounds } from './session-sounds.ts';
+import type { GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, SoundSearchParams } from '@elabora/node/sounds/types';
+import type { CourseSound } from '@elabora/core/sounds/sounds';
 import { SessionMonitor } from './session-monitor.ts';
 import { momentTime } from './render.ts';
 import type { RenderedScreen } from '@elabora/core/render/screen';
@@ -211,6 +214,7 @@ export class Session {
   #settlingSince: number | null = null;
   readonly #canvas: SessionCanvas;
   readonly #voice: SessionVoice;
+  readonly #sounds: SessionSounds;
   // Media: the hash each media file was probed at, what could not be read, whether ffprobe is there,
   // and whether media jobs started or finished since the media status was last given.
   readonly #mediaChecked = new Map<string, string>();
@@ -231,6 +235,7 @@ export class Session {
     const reportError = (error: unknown, context: string) => this.#emitError(error, context);
     this.#canvas = new SessionCanvas({ root: this.root, project, reportError });
     this.#voice = new SessionVoice({ root: this.root, author: this.author, project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
+    this.#sounds = new SessionSounds({ project, run: this.run.bind(this), assertOpen: () => this.#assertOpen() });
     this.#monitor = new SessionMonitor({ store: this.store, journalDir: this.#tail.dir, options: this.#options, closing: () => this.#closing !== null, refresh: () => this.#queue.run(() => this.#refresh()), reportError });
     for (const [rel, file] of init.state.files) if (file.kind === 'binary' && file.media) this.#mediaChecked.set(rel, file.hash ?? '');
     for (const { path: rel, message } of init.state.media?.unreadable ?? []) {
@@ -417,6 +422,11 @@ export class Session {
       case 'voiceAccount': return this.voiceAccount(request.params);
       case 'voiceSearch': return this.voiceSearch(request.params);
       case 'voiceEstimate': return this.voiceEstimate(request.params);
+      case 'soundSearch': return this.soundSearch(request.params);
+      case 'soundPreview': return this.soundPreview(request.params);
+      case 'courseSounds': return this.courseSounds();
+      case 'soundEstimate': return this.soundEstimate(request.params ?? {});
+      case 'generateSound': return this.generateSound(request.params);
       case 'aligners': return this.aligners(request.params.language);
       case 'alignNarration': return this.alignNarration(request.params);
       case 'build': return this.build(request.params);
@@ -950,6 +960,14 @@ export class Session {
   async transcribeRecording({ file, language, install, service, approvedPercent }: { file: string; language?: string; install?: boolean; service?: TranscriptionService; approvedPercent?: number }): Promise<Transcript> { return this.#voice.transcribeRecording({ file, language, install, service, approvedPercent }); }
   async transcriptionEstimate({ file, screen, line, language }: { file?: string; screen?: string; line?: string; language?: string }): Promise<TranscriptionEstimate> { return this.#voice.transcriptionEstimate({ file, screen, line, language }); }
   async transcribeLine({ screen, line, language, install, service, approvedPercent }: { screen: string; line: string; language?: string; install?: boolean; service?: TranscriptionService; approvedPercent?: number }): Promise<{ before: string; transcript: Transcript; audioHash: `sha256:${string}` | null }> { return this.#voice.transcribeLine({ screen, line, language, install, service, approvedPercent }); }
+
+  // ── sounds (session-sounds.ts, D67) ────────────────────────────────
+
+  async soundSearch(params: SoundSearchParams): Promise<{ sounds: SoundFound[] }> { return this.#sounds.soundSearch(params); }
+  async soundPreview(params: { from: string }): Promise<{ audio: Uint8Array; type: string }> { return this.#sounds.soundPreview(params); }
+  courseSounds(): CourseSound[] { return this.#sounds.courseSounds(); }
+  async soundEstimate(params: { duration?: number } = {}): Promise<SoundEstimate> { return this.#sounds.soundEstimate(params); }
+  async generateSound(params: GenerateSoundParams, author: Author = this.author): Promise<GeneratedSound> { return this.#sounds.generateSound(params, author); }
 
   async importMedia(input: string, options: { to?: string; name?: string } = {}, author: Author = this.author): Promise<MediaImportResult> {
     this.#assertOpen();
@@ -1634,7 +1652,7 @@ const REQUEST_TYPES: Record<RequestType, true> = {
   diagnostics: true, importMedia: true, mediaJobs: true, cancelMediaJob: true, backups: true, createBackup: true, restoreBackup: true,
   renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, migrate: true, build: true, close: true, narration: true, voices: true,
   installVoices: true, setSpeakerVoice: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,
-  setVoiceKey: true, voiceAccount: true, voiceSearch: true, voiceEstimate: true,
+  setVoiceKey: true, voiceAccount: true, voiceSearch: true, voiceEstimate: true, soundSearch: true, soundPreview: true, courseSounds: true, soundEstimate: true, generateSound: true,
   alignNarration: true, timeline: true, timelineAt: true, timelineMarks: true, narrationPeaks: true, importNarrationFiles: true, planVoiceover: true, planVersions: true, planDiff: true, planDocument: true, planDocumentPage: true, exportPlanDocument: true, dialogue: true, dialoguePlay: true, dialoguePage: true, exportDialogue: true, effects: true, transcribeRecording: true, transcribers: true, transcriptionEstimate: true, transcribeLine: true
 };
 

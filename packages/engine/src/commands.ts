@@ -3,6 +3,7 @@ import type { EditOptions, EditResult } from '@elabora/node/edit';
 import type { CommandArgs, CommandName } from './protocol.ts';
 import { setNarrationAudio } from '@elabora/node/narration/audio';
 import { addNarrationLineFromAudio, setNarrationTextFromAudio } from '@elabora/node/narration/from-audio';
+import { addSound } from '@elabora/node/sounds/add';
 
 // The commands a session runs, by journaled name: the edits of @elabora/node, which run the pure
 // commands of @elabora/core as journaled changes under the project lock. The session passes its
@@ -78,7 +79,8 @@ export const COMMANDS: { readonly [Name in CommandName]: Runner<Name> } = {
   add_component: edit.addLibraryComponent,
   publish_component: edit.publishComponent,
   add_font: edit.addFont,
-  settle_import_report: edit.settleImportReport
+  settle_import_report: edit.settleImportReport,
+  add_sound: addSound
 };
 
 export const isCommandName = (name: string): name is CommandName => Object.hasOwn(COMMANDS, name);

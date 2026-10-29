@@ -831,6 +831,23 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-progress-bar { height: 100%; width: 100%; border-radius: inherit; translate: calc((var(--t-progress, 0) - 100) * 1%) 0; background: var(--t-player-progress, currentColor); transition: translate var(--t-dur-modal) var(--t-ease-out); }
 .t-progress-bar:dir(rtl) { translate: calc((100 - var(--t-progress, 0)) * 1%) 0; }
 .t-progress-value { min-width: 3.25em; font-size: 0.8125rem; font-weight: 600; font-variant-numeric: tabular-nums; opacity: .85; }
+/* A course in parts: one segment per part, as wide as its share of the screens, a little wider for
+   many parts. Each is a button as tall as a bar's button around its slim line; the part shown has a
+   stronger line, one completed is full. Hovered, a line darkens; nothing else changes. */
+.t-item--progress[data-parts] { flex-basis: clamp(11rem, calc(var(--t-parts) * 1.75rem + 4rem), 22rem); }
+.t-progress--parts { display: flex; gap: 3px; height: auto; border-radius: 0; background: none; overflow: visible; }
+.t-part { display: flex; align-items: center; flex: 1 1 0; min-width: 0; height: var(--t-pl-btn); padding: 0; border: 0; border-radius: 4px; color: inherit; background: transparent; cursor: pointer; }
+.t-part-track { width: 100%; height: 6px; border-radius: 3px; background: color-mix(in srgb, currentColor 20%, transparent); overflow: hidden; transition: background-color var(--t-dur-press) ease; }
+.t-part[data-current] .t-part-track { background: color-mix(in srgb, currentColor 38%, transparent); }
+/* A halo too, which a full part shows (its fill covers the line). */
+.t-part:not([aria-disabled="true"]):hover .t-part-track { background: color-mix(in srgb, currentColor 32%, transparent); box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 16%, transparent); }
+.t-part[data-current]:hover .t-part-track { background: color-mix(in srgb, currentColor 46%, transparent); }
+.t-part[aria-disabled="true"], #elabora-app[data-ended] .t-part { cursor: default; }
+.t-part-fill { display: block; height: 100%; width: 100%; border-radius: inherit; translate: calc((var(--t-part, 0) - 100) * 1%) 0; background: var(--t-player-progress, currentColor); transition: translate var(--t-dur-modal) var(--t-ease-out); }
+.t-part-fill:dir(rtl) { translate: calc((100 - var(--t-part, 0)) * 1%) 0; }
+/* Focused, the ring goes around the line, not around the tall button. */
+.t-bar .t-part:focus-visible { outline: none; }
+.t-part:focus-visible .t-part-track { outline: 3px solid var(--t-focus); outline-offset: 2px; }
 
 /* Buttons of the bars: a ghost (the outline), a chip (Ressources, Glossaire, Quitter), an icon (IA et
    crédits, the narration's tools), Previous and Next. Icons are 20 px, 16 px in chips. */
@@ -847,10 +864,10 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-icon-btn { width: var(--t-pl-icon-btn); height: var(--t-pl-icon-btn); border-radius: 50%; }
 .t-outline-btn { max-width: 18rem; }
 .t-outline-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* With the screen's title as its label, one width for every screen (the full title in the tooltip
-   when it is cut), so that nothing after it moves from one screen to the next. */
-.t-outline-btn[data-screen-title] { width: min(15rem, 24vw); justify-content: flex-start; }
-.t-outline-btn[data-screen-title] .t-outline-label { flex: 1; min-width: 0; text-align: start; }
+/* With the part's or the screen's title as its label, one width for every screen (the full title in
+   the tooltip when it is cut), so that nothing after it moves from one screen to the next. */
+.t-outline-btn[data-label] { width: min(15rem, 24vw); justify-content: flex-start; }
+.t-outline-btn[data-label] .t-outline-label { flex: 1; min-width: 0; text-align: start; }
 .t-nav-btn { height: var(--t-pl-btn); padding: 0 1.25rem; border-radius: var(--t-pl-radius); font-weight: 700; box-shadow: inset 0 0 0 1.5px currentColor; }
 .t-nav-btn .t-icon svg { width: 1.0625rem; height: 1.0625rem; }
 .t-nav-btn--previous { padding-inline-start: 0.875rem; }
@@ -1141,19 +1158,20 @@ button.t-timeline-line:disabled { color: var(--t-muted); }
 .t-timeline-start:focus-visible { outline: none; }
 .t-timeline-start:focus-visible .t-timeline-start-circle { outline: 3px solid var(--t-focus); outline-offset: 4px; }
 
-/* Phones and narrow windows: chips keep their icon, the bar of a narrated screen takes its own row. */
+/* Phones and narrow windows (player.ts narrow(): a tap on the progress opens the outline): chips keep their icon, the bar of a narrated screen takes its own row. */
 @media (max-width: 760px) {
   .t-bar--top { padding: 0.25rem 0.5rem 0.25rem 1rem; }
   .t-bar[data-position="window"].t-bar--top { position: relative; }
   .t-bar--bottom { flex-wrap: wrap; padding: 0.5rem 0.75rem; gap: 0.5rem; }
   .t-chip { width: var(--t-pl-icon-btn); height: var(--t-pl-icon-btn); padding: 0; border-radius: 50%; }
   .t-chip-label, .t-outline-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-  .t-item--progress { flex-basis: 5rem; min-width: 4rem; }
+  .t-item--progress, .t-item--progress[data-parts] { flex-basis: 5rem; min-width: 4rem; }
+  .t-progress--parts { gap: 2px; }
   .t-progress-value { display: none; }
   /* The controls' row is there on every screen of a course that has one (empty on the others), so
      the bar keeps its height from one screen to the next. */
   .t-item--controls { flex-basis: 100%; order: -1; min-height: max(var(--t-pl-btn), 3rem); padding-inline: 0; box-shadow: none !important; }
-  .t-outline-btn[data-screen-title] { width: auto; }
+  .t-outline-btn[data-label] { width: auto; }
   /* On its line (the controls on theirs), the spacer takes what remains. */
   .t-item--spacer { flex-grow: 1 !important; }
   .t-timeline-time { display: none; }
