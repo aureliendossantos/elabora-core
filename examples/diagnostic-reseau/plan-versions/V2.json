@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/plan-version.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/plan-version.schema.json",
   "version": 2,
   "date": "2026-10-03",
   "note": "Après les retours de Sophie Durand sur la V1.",

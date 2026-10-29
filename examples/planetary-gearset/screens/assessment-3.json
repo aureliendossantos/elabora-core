@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/screen.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/screen.schema.json",
   "id": "assessment-3",
   "title": "Check your skills: 3 of 3",
   "covers": [

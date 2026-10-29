@@ -97,8 +97,14 @@ function addFont(dir: string, { family, weights, styles, flags }: { family?: str
   for (const [token, { from, to }] of Object.entries(result.tokens)) console.log(`  ${token} = ${to}${from && from !== to ? `   (was ${from})` : ''}`);
   if (!Object.keys(result.tokens).length) console.log(`  No token set: use font-family: "${font.family}" in the stylesheet, or elabora font add --for <token>.`);
   for (const note of result.notes) console.log(`  ${note}`);
+  // What concerns the font (its folder, the theme's tokens) is said; an error of the course elsewhere
+  // in a file it touched (course.json's sections) is only counted: the font is added all the same.
   const touched = new Set(result.files);
-  printDiagnostics(result.diagnostics.filter((d) => d.file !== undefined && touched.has(d.file)));
+  const shown = result.diagnostics.filter((d) => d.file !== undefined && touched.has(d.file));
+  const own = shown.filter((d) => d.file?.startsWith(`${font.folder}/`) || (d.path ?? '').startsWith('/theme'));
+  const elsewhere = shown.filter((d) => !own.includes(d) && d.severity === 'error');
+  printDiagnostics(own);
+  if (elsewhere.length) console.log(`  The font is added. The course has ${elsewhere.length} error(s) elsewhere (${[...new Set(elsewhere.map((d) => d.code))].join(', ')}): elabora validate . shows them.`);
   console.log(`  Undo: elabora undo --change ${result.change.seq}`);
   return 0;
 }

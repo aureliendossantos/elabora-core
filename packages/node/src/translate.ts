@@ -5,6 +5,8 @@ import { translationStatus as statusOf, translatedCourse } from '@elabora/core/i
 import * as commands from '@elabora/core/commands/translation';
 import { stringifyJSON } from '@elabora/core/util/json';
 import { listGenerators } from '@elabora/core/project/generators';
+import { readXliff } from '@elabora/core/i18n/xliff';
+import { extractUnits, invariants } from '@elabora/core/i18n/units';
 import { loadProjectFromDir } from './project-reader.ts';
 import { runGenerators } from './generators.ts';
 import { writeFileAtomic } from './util/fs.ts';
@@ -97,4 +99,44 @@ export async function withCourseLanguage<T>(dir: string, options: { language?: s
 // Approve the translated plan (a person who read it): stored with the source course.
 export function approveTranslation(dir: string, args: { to: string; by: string; reference?: string; date?: string }, options?: EditOptions) {
   return runCommand(dir, { name: 'approve_translation', args, run: (context) => commands.approveTranslation(context, args) }, options).approval;
+}
+
+// ── Reusing a translation ─────────────────────────────────────────────
+// Texts already translated elsewhere (another course made from the same template, a module of the
+// same series): each unit of this course still to translate, or stale, whose source text is the
+// same as a translated unit of that XLIFF takes its translation, in one change (undoable, as
+// elabora_translate_text). A unit whose translation would lose the source's maths, links or
+// placeholders, or a line a voice says (word anchors), is left to translate.
+export interface ReuseResult {
+  language: string;
+  from: string;
+  reused: string[];
+  left: number; // units still to translate or stale after it
+  change?: number;
+}
+
+export function reuseTranslation(dir: string, { to, from }: { to: string; from: string }, options?: EditOptions): ReuseResult {
+  const source = fs.existsSync(path.join(from, 'translations', `${to}.xlf`)) ? path.join(from, 'translations', `${to}.xlf`) : from;
+  if (!fs.existsSync(source) || !fs.statSync(source).isFile()) throw new Error(`No translation to reuse at ${from}: give an .xlf file, or a course with translations/${to}.xlf.`);
+  const memory = readXliff(fs.readFileSync(source, 'utf8'));
+  if (memory.trgLang && memory.trgLang !== to) throw new Error(`${from} translates into ${memory.trgLang}, not ${to}.`);
+  const known = new Map<string, string>();
+  for (const unit of memory.units.values()) if (unit.target?.trim() && !unit.sourceMarks?.length && unit.state !== 'initial') known.set(unit.source, unit.target);
+  const project = loadProjectFromDir(dir);
+  const currentFile = path.join(project.root, 'translations', `${to}.xlf`);
+  const current = fs.existsSync(currentFile) ? readXliff(fs.readFileSync(currentFile, 'utf8')) : null;
+  const texts: { unit: string; target: string }[] = [];
+  let left = 0;
+  for (const unit of extractUnits(project)) {
+    const have = current?.units.get(unit.id);
+    if (have?.target?.trim() && have.source === unit.text) continue;
+    const target = known.get(unit.text);
+    const fits = target !== undefined && !unit.marks?.length && (!unit.maxLength || target.length <= unit.maxLength)
+      && JSON.stringify(invariants(unit.text, unit.format)) === JSON.stringify(invariants(target, unit.format));
+    if (fits) texts.push({ unit: unit.id, target }); else left++;
+  }
+  if (!texts.length) return { language: to, from: source, reused: [], left };
+  const args = { language: to, texts };
+  const result = runCommand(dir, { name: 'translate_text', args, run: (context) => commands.translateText(context, args) }, options);
+  return { language: to, from: source, reused: texts.map((text) => text.unit), left, ...(result.change ? { change: result.change.seq } : {}) };
 }

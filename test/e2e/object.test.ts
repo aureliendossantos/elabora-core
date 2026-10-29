@@ -126,7 +126,7 @@ test('a snapshot of a canvas that dry frames left stale is taken with every fram
   const tests = [{ name: 'colour', steps: [{ action: 'step', frames: 20 }, { action: 'snapshot', name: 'end' }] }];
   addDrawProbe(dir, tests, { before: 'green', after: 'green' });
   const first = await testObject(dir, 'draw-probe');
-  assert.equal(first.gates.visual, 'passed', JSON.stringify(first.diagnostics));
+  assert.equal(first.gates.visual, 'recorded', JSON.stringify(first.diagnostics));
   assert.equal(first.gates.frames?.tests.colour, 'every frame (records baselines)');
   // Now the object turns red at frame 10 and draws only then: dry, that draw is skipped and the
   // canvas would still show the green of the baseline.
@@ -158,7 +158,7 @@ test('with Elabora\'s Electron, a snapshot shows the object down to its last row
   const file = path.join(dir, 'objects/draw-probe/object.js');
   fs.writeFileSync(file, fs.readFileSync(file, 'utf8').replace("  container.appendChild(button);", "  container.appendChild(button);\n  const bar = document.createElement('div');\n  bar.style.cssText = 'position: fixed; left: 0; right: 0; bottom: 0; height: 12px; background: #1d4ed8';\n  container.appendChild(bar);"));
   const r = await testObject(dir, 'draw-probe', { browser: 'electron', updateSnapshots: true });
-  assert.equal(r.gates.visual, 'passed', JSON.stringify(r.diagnostics));
+  assert.equal(r.gates.visual, 'recorded', JSON.stringify(r.diagnostics));
   const folder = path.join(dir, 'objects/draw-probe/__snapshots__');
   const shot = fs.readdirSync(folder).find((name) => name.startsWith('bar--bottom'));
   assert.ok(shot, 'the snapshot');

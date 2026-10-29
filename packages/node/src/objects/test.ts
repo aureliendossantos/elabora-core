@@ -299,7 +299,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
   };
 
   // ── Gates 3 and 5: a behaviour test and its snapshots ──
-  interface TestRun { failures: string[]; visual: Reporter; snapshots: number; recorded: boolean; blank: string[]; bootMs: number | null; stuck: boolean; redo: Redo | null }
+  interface TestRun { failures: string[]; visual: Reporter; snapshots: number; compared: number; recorded: boolean; blank: string[]; bootMs: number | null; stuck: boolean; redo: Redo | null }
   // The object mounted for a test: mounts run one at a time, so that each boot time is measured
   // with nothing else running; the tests then run side by side.
   type Host = Awaited<ReturnType<typeof openHost>>;
@@ -311,7 +311,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
   const runTest = async (test: ObjectTest, skip: Skip, { page, errors, ready, bootMs }: Host, mayRedoLost = true): Promise<TestRun> => {
     const failures: string[] = [];
     const visual = createReporter();
-    const run: TestRun = { failures, visual, snapshots: 0, recorded: false, blank: [], bootMs: null, stuck: false, redo: null };
+    const run: TestRun = { failures, visual, snapshots: 0, compared: 0, recorded: false, blank: [], bootMs: null, stuck: false, redo: null };
     if (!ready.ok) failures.push(`mount failed: ${ready.error}`);
     else run.bootMs = bootMs;
     // Dry, the frames are drawn from the last frame of the last step that runs frames before each
@@ -388,6 +388,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
               run.recorded = true;
               if (comparison.uniform) run.blank.push(`${file}/__snapshots__/${name}`);
             }
+            if (comparison.status === 'same' || comparison.status === 'different') run.compared++;
             if (comparison.status === 'different') visual.emit('E_GATE_VISUAL', { file: `${file}/__snapshots__/${name}`, target: objectId, measured: `${comparison.ratio.toFixed(3)} %`, limit: '0.1 %', message: `Snapshot "${step.name}" of test "${test.name}" differs from its baseline.` });
           }
         } catch (error) {
@@ -433,6 +434,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
     if (stuck) for (const gate of ['behaviour', 'budget', 'visual', 'accessibility'] as const) gates[gate] = 'not-run (object stuck)';
     else if (!tests.length) { gates.behaviour = 'no tests'; gates.visual = 'no tests'; }
     let snapshots = 0;
+    let compared = 0;
     let snapshotFailures = 0;
     const testResults: NonNullable<ObjectGates['tests']> = [];
     // Tests run side by side, a few at a time (atOnce), in the order of object.tests.json; a run done
@@ -468,6 +470,7 @@ export async function testObject(projectDir: string, objectId: string, { updateS
       if (run.stuck || run.recorded) keepable = false;
       if (run.bootMs !== null) boots.push(run.bootMs);
       snapshots += run.snapshots;
+      compared += run.compared;
       snapshotFailures += run.visual.items.length;
       reporter.merge(run.visual.items);
       for (const blank of run.blank) reporter.emit('W_GATE_VISUAL_BLANK', { file: blank, target: objectId, message: `The baseline just recorded for "${test.name}" is a single colour: the object may draw nothing there (a canvas of no size, a context lost on a loaded machine). Look at it before keeping it.` });
@@ -476,7 +479,11 @@ export async function testObject(projectDir: string, objectId: string, { updateS
     }
     if (tests.length) {
       gates.behaviour = testResults.every((result) => result.ok) ? 'passed' : 'failed';
-      gates.visual = snapshotFailures ? 'failed' : snapshots ? 'passed' : 'no snapshots';
+      // Recorded: baselines written and nothing compared with them (a first run, --update-snapshots,
+      // or a browser whose baselines the object does not have yet): nothing was checked.
+      gates.visual = snapshotFailures ? 'failed' : compared ? 'passed' : snapshots ? 'recorded' : 'no snapshots';
+      const others = !updateSnapshots && compared < snapshots ? otherEngines(snapshotDir, snapshotEngine) : [];
+      if (others.length) reporter.emit('I_GATE_VISUAL_OTHER_ENGINE', { file: `${file}/__snapshots__`, target: objectId, message: `${snapshots - compared} baseline(s) recorded for ${snapshotEngine}, compared with nothing: the object's baselines are ${others.join(', ')}'s. Run elabora object test . ${objectId} --browser ${others[0]} to compare with them.` });
       gates.tests = testResults;
     }
     // ── Gate 4, boot time: median of the mounts of the runs kept (the smoke run, a run per test) ──
@@ -648,6 +655,18 @@ type SnapshotComparison = { status: 'created'; uniform: boolean } | { status: 's
 // (2 to 3 % of a 3D object's frame). A snapshot is compared with the baseline of this system,
 // <name>-<platform>.png for Chromium, <name>-<engine>-<platform>.png for Electron, Firefox and
 // WebKit. Engines never overwrite each other's baselines; a legacy suffix-free one is macOS Chrome.
+// The engines other than this one that have baselines in the folder (electron, firefox…; chromium's carry none).
+function otherEngines(snapshotDir: string, engine: string): string[] {
+  if (!fs.existsSync(snapshotDir)) return [];
+  const found = new Set<string>();
+  for (const name of fs.readdirSync(snapshotDir)) {
+    const named = /-(electron|firefox|webkit)-[a-z0-9]+\.png$/.exec(name);
+    found.add(named ? named[1] : 'chromium');
+  }
+  found.delete(engine);
+  return [...found].sort();
+}
+
 function snapshotFiles(snapshotDir: string, stem: string, engine = 'chromium'): { name: string; baseline: string | null } {
   const name = `${stem}${engine === 'chromium' ? '' : `-${engine}`}-${process.platform}.png`;
   if (fs.existsSync(path.join(snapshotDir, name))) return { name, baseline: path.join(snapshotDir, name) };

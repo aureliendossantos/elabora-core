@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/plan.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/plan.schema.json",
   "id": "PLAN-KESTREL-PGS-V1",
   "title": "Planetary gearsets: one gearset, many ratios",
   "businessGoal": "Halve the gearbox configuration errors found in design reviews of application engineers during their first six months at Kestrel Drives (fictional client).",

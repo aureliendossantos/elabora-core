@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/plan.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/plan.schema.json",
   "id": "PLAN-FERNHILL-COFFEE-V1",
   "title": "From cherry to cup: coffee in brief",
   "businessGoal": "Give the new baristas of Fernhill Coffee (a fictional café chain) the story behind the beans they sell, so that in their first week they can answer customers' questions about origin, processing and roast, and fix a sour or bitter pour-over without calling a shift lead.",

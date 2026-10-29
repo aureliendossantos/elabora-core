@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/lms-profile.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/lms-profile.schema.json",
   "id": "successfactors",
   "name": "SAP SuccessFactors Learning (2H 2026)",
   "documentedAt": "2026-10",

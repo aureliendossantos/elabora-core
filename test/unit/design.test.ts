@@ -301,10 +301,10 @@ test('figures: words inside an SVG are reported, numbers are not', () => {
   assert.ok(codes(validateDir(dir).diagnostics).includes('W_ASSET_SVG_TEXT'));
 });
 
-test('generators: provenance, stale inputs and hand edits', async () => {
+test('generators: provenance, stale inputs (the tokens it reads) and hand edits', async () => {
   const dir = copyExample();
   write(dir, 'generators/_lib.mjs', 'export const shape = (c) => `<svg xmlns="http://www.w3.org/2000/svg"><rect width="10" height="10" fill="${c}"/></svg>`;\n');
-  write(dir, 'generators/badge.mjs', "import { shape } from './_lib.mjs';\nexport default async function ({ tokens, write }) { write('images/badge.svg', shape(tokens['color.accent'])); }\n");
+  write(dir, 'generators/badge.mjs', "import { shape } from './_lib.mjs';\nexport default async function ({ tokens, write }) { write('images/badge.svg', shape(tokens['color.accent']) + (tokens['color.later'] ?? '')); }\n");
   assert.ok(codes(validateDir(dir).diagnostics).includes('W_GENERATED_ASSET_STALE'), 'never run');
   const p = loadProjectFromDir(dir);
   const r = await runGenerators(dir, { course: p.course, plan: p.plan });
@@ -312,7 +312,17 @@ test('generators: provenance, stale inputs and hand edits', async () => {
   assert.match(fs.readFileSync(path.join(dir, 'assets/images/badge.svg'), 'utf8'), new RegExp(String(p.course?.theme?.tokens?.['color.accent'])));
   let c = codes(validateDir(dir).diagnostics);
   assert.ok(!c.includes('W_GENERATED_ASSET_STALE') && !c.includes('W_GENERATED_ASSET_EDITED'));
+  // A token it does not read changes nothing for its assets.
+  assert.deepEqual(readJSON(dir, 'generators/provenance.json').assets['images/badge.svg'].tokens, ['color.accent', 'color.later']);
   const course = readJSON(dir, 'course.json');
+  course.theme.tokens['color.text'] = '#101820';
+  writeJSON(dir, 'course.json', course);
+  assert.ok(!codes(validateDir(dir).diagnostics).includes('W_GENERATED_ASSET_STALE'), 'an unread token');
+  // A token it read before it existed: adding it makes its assets stale.
+  course.theme.tokens['color.later'] = '#123456';
+  writeJSON(dir, 'course.json', course);
+  assert.ok(codes(validateDir(dir).diagnostics).includes('W_GENERATED_ASSET_STALE'), 'a token read before it existed');
+  delete course.theme.tokens['color.later'];
   course.theme.tokens['color.accent'] = '#9A3412';
   writeJSON(dir, 'course.json', course);
   write(dir, 'assets/images/badge.svg', '<svg/>');

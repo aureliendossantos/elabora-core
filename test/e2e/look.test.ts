@@ -47,6 +47,15 @@ test('look: an edit shows in well under 2 s, the free object keeps running; its 
     assert.deepEqual(edited.objects, [{ block: OBJECT_BLOCK, ready: true, failed: false }]);
     assert.ok(edited.ms < 2000, `${edited.ms} ms`);
 
+    // --select: the elements matched, their box, styles and their parent's layout; a bad selector says so.
+    const selected = await looker.look({ select: '[data-block="look-added"]' });
+    assert.ok(selected.ok && selected.selected, JSON.stringify(selected.ok && selected.selected));
+    assert.equal(selected.selected.count, 1);
+    const [added] = selected.selected.elements;
+    assert.ok(added.rect.width > 0 && added.rect.height > 0 && added.styles.display && added.parent?.styles.display, JSON.stringify(added));
+    const badSelector = await looker.look({ select: '[[' });
+    assert.ok(badSelector.ok && badSelector.selected?.selectorError, JSON.stringify(badSelector.ok && badSelector.selected));
+
     // Its code edited: the object starts again with the new code.
     const code = path.join(dir, 'objects/diagnostic-reseau/object.js');
     fs.appendFileSync(code, '\n// edited while looking\n');

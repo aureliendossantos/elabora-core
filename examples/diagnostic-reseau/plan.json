@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/plan.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/plan.schema.json",
   "id": "PLAN-HELIOS-NET-V1",
   "title": "Diagnostiquer une panne d'impression réseau",
   "businessGoal": "Réduire de 30 % les tickets « impression impossible » transférés du niveau 1 au niveau 2.",

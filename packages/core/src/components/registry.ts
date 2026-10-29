@@ -210,6 +210,14 @@ export function mergeSchema(base: unknown, ext: unknown): unknown {
   return out;
 }
 
+// The schema without these top-level props (in properties and required).
+export function omitProps(schema: JsonSchema, names: readonly string[]): JsonSchema {
+  const drop = new Set(names);
+  const properties = isObject(schema.properties) ? Object.fromEntries(Object.entries(schema.properties).filter(([name]) => !drop.has(name))) : schema.properties;
+  const required = Array.isArray(schema.required) ? schema.required.filter((name) => !drop.has(String(name))) : schema.required;
+  return { ...schema, ...(properties ? { properties } : {}), ...(required ? { required } : {}) } as JsonSchema;
+}
+
 export function defaultSlotOf(slots: readonly ComponentSlot[] | null | undefined): string | null {
   const declared = objectsIn(slots);
   return (declared.find((s) => s.default) || declared[0])?.id || null;
@@ -247,6 +255,8 @@ export function buildRegistry(project: Pick<Project, 'components'>): Registry {
     }
     resolving.delete(id);
     let schema = (m.props ? derefSchema(m.props) : parent ? parent.schema : { type: 'object', properties: {} }) as JsonSchema;
+    // A fork drops the parent's props it does not use (propsOmit), then adds its own (propsExtend).
+    if (parent && !m.props && Array.isArray(m.propsOmit) && m.propsOmit.length) schema = omitProps(schema, m.propsOmit);
     if (m.propsExtend) schema = mergeSchema(schema, derefSchema(m.propsExtend)) as JsonSchema;
     if (schema && !schema.type) schema = { type: 'object', ...schema };
     const template = c.template ?? parent?.template ?? null;

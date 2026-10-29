@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.5/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.6/component.schema.json",
   "id": "zoom-images",
   "title": "Images to enlarge",
   "description": "A row of images with their captions; each opens at full size in the player's lightbox (data-t-zoom), with previous and next between them.",

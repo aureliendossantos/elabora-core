@@ -4,6 +4,10 @@ import { translationReady } from '@elabora/core/i18n/translate';
 
 const HELP = `  translate export [dir] --to <lang>                  Create or update the XLIFF 2.0 file: every string, what changed since
   translate status [dir] [--to <lang>]                Translated, to translate and stale units; broken maths or placeholders
+  translate reuse [dir] --to <lang> --from <course or .xlf> [--json]
+                                                      Fill the units to translate (or stale) whose source text another course
+                                                      already translated, word for word (a module made from the same template:
+                                                      --from its folder), in one undoable change
   translate build [dir] --to <lang> --out <dir> [--allow-missing] [--json]
                                                       Generate the translated course (then elabora build it as any course)
   translate approve [dir] --to <lang> --by "<name, organisation>" [--reference <ref>]
@@ -42,6 +46,19 @@ const status = defineCommand({
   }, { json: flags.json })
 });
 
+const reuse = defineCommand({
+  name: 'translate reuse',
+  flags: { to: 'string', from: 'string', json: 'boolean' },
+  run: ({ positionals: [dir = '.'], flags }) => reportingFailures(async () => {
+    const { reuseTranslation } = await import('@elabora/node/translate');
+    if (!flags.to || !flags.from) { console.error('Usage: elabora translate reuse [dir] --to <lang> --from <course folder or .xlf>'); return 2; }
+    const result = reuseTranslation(dir, { to: flags.to, from: flags.from });
+    if (flags.json) { printJson(result); return 0; }
+    console.log(`${result.reused.length ? '✔' : '·'} ${result.reused.length} unit(s) translated from ${result.from}; ${result.left} still to translate or stale${result.change ? ` · undo: elabora undo --change ${result.change}` : ''}${result.left ? ' (elabora translate status --to ' + result.language + ')' : ''}`);
+    return 0;
+  }, { json: flags.json })
+});
+
 const buildCommand = defineCommand({
   name: 'translate build',
   flags: { to: 'string', out: 'string', 'allow-missing': 'boolean', json: 'boolean' },
@@ -72,6 +89,6 @@ const approve = defineCommand({
 export const translationCommands: CommandGroup = {
   title: 'Translation (one package per language; translations live in the source course, translations/<lang>.xlf)',
   help: HELP,
-  commands: [exportCommand, status, buildCommand, approve],
-  subcommandUsage: { translate: 'Usage: elabora translate export|status|build|approve …' }
+  commands: [exportCommand, status, reuse, buildCommand, approve],
+  subcommandUsage: { translate: 'Usage: elabora translate export|status|reuse|build|approve …' }
 };

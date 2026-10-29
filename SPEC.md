@@ -1,6 +1,6 @@
 # Elabora course format — specification 0.2
 
-**Status:** draft for implementation, 6 October 2026. **Format id:** `elabora/0.1`. **Licence of this text:** Apache-2.0. The JSON Schemas in [`packages/format/schemas/0.1.5/`](packages/format/schemas/0.1.5/) are normative; this document explains them. Where they disagree, the schemas win.
+**Status:** draft for implementation, 6 October 2026. **Format id:** `elabora/0.1`. **Licence of this text:** Apache-2.0. The JSON Schemas in [`packages/format/schemas/0.1.6/`](packages/format/schemas/0.1.6/) are normative; this document explains them. Where they disagree, the schemas win.
 
 The format describes an e-learning module as plain files that people, agents and other tools can read and write. It separates three layers with different rules:
 
@@ -32,7 +32,7 @@ sources/                    the author's files the course is made from, and thei
 
 `sources/` is reserved: what it holds is never validated, built or published, and a course file that points into it is an error (`E_SOURCE_REFERENCED`). Tools may keep a readable version of each source beside it (`<file>.md`, whose first line is an `<!-- elabora:readable {…} -->` marker, and `<file>.files/`).
 
-All JSON files are UTF-8, and may carry `"$schema"` pointing to `https://elabora.studio/schemas/0.1.5/<name>.schema.json`. Tools write them with two-space indentation and a final newline.
+All JSON files are UTF-8, and may carry `"$schema"` pointing to `https://elabora.studio/schemas/0.1.6/<name>.schema.json`. Tools write them with two-space indentation and a final newline.
 
 ## 2. Identifiers
 
@@ -228,7 +228,7 @@ The course stylesheet (`theme/`), component templates and stylesheets (`componen
 
 The cascade (`theme.cascade`, D32): `components-over-theme` orders the player, the course stylesheet (its defaults), the component stylesheets, then the course stylesheet's top-level `@layer overrides` blocks (what it overrides in components on purpose); without it, as written before 13 October 2026, the course stylesheet comes after the components (`theme-over-components`), and `elabora theme upgrade` changes the order without changing the look.
 
-`theme.backdrop` declares a decorative background behind every screen: CSS layers the stylesheet paints, which follow the learner through `data-screen`, `data-section`, `data-step`, `data-variant`, `data-screen-index`, `data-section-index`, `data-section-count` and `data-direction`, and an optional decorative object that receives the same context and the room the player's bars cover; screens pick a variant or `none`, the others take `default`, and `#elabora-app[data-backdrop]` is the variant shown. In slides, nothing moves when the learner answers: activities reserve the room of their tallest outcome, blocks shown by events keep their place, and layers can open as a `panel` over part of the screen instead of a modal `dialog`.
+`theme.backdrop` declares a decorative background behind every screen: CSS layers the stylesheet paints, which follow the learner through `data-screen`, `data-section`, `data-step`, `data-variant`, `data-screen-index`, `data-section-index`, `data-section-count` and `data-direction`, and an optional decorative object that receives the same context and the room the player's bars cover; screens pick a variant or `none`, the others take `default`, and `#elabora-app[data-backdrop]` is the variant shown. With a backdrop or without, `#elabora-app` says where the screen stands (`data-screen-index`, `data-section-index`, `data-section-count`, and `--t-screen-index`, `--t-section-index`, `--t-section-count`, from 0), so a theme can vary by part. In slides, nothing moves when the learner answers: activities reserve the room of their tallest outcome, blocks shown by events keep their place, and layers can open as a `panel` over part of the screen instead of a modal `dialog`.
 
 ## 6. Delivery: SCORM 1.2
 

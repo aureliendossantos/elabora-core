@@ -112,22 +112,25 @@ test('codes --json and profiles --json print the catalogues', async () => {
   assert.deepEqual(JSON.parse(profiles.stdout), asPrinted(listProfiles()));
 });
 
-test('flags: unknown ones and missing values are refused; --help shows the command group', async () => {
+test('flags: unknown ones and missing values are refused; --help shows the command, or a group word its group', async () => {
   const [unknown, missing, valued, help] = await Promise.all([
     elabora(['validate', '--jsn']), elabora(['build', '--out']), elabora(['codes', '--json=yes']), elabora(['validate', '--help'])
   ]);
-  const project = `Project\n${HELP.split('\nProject\n')[1].split('\n\n')[0]}\n`;
   // The command's own usage, not its whole group.
   assert.equal(unknown.status, 2);
   assert.match(unknown.stderr, /^Unknown option --jsn for "elabora validate"\.\n\nUsage:\n {2}validate \[dir\]/);
-  assert.match(unknown.stderr, /\(elabora validate --help: its whole group\)\n$/);
+  assert.match(unknown.stderr, /\(elabora help: every command\)\n$/);
   assert.ok(!/\n {2}project /.test(unknown.stderr), 'only validate');
   assert.equal(missing.status, 2);
   assert.match(missing.stderr, /^--out needs a value for "elabora build"\.\n\nUsage:\n {2}build \[dir\]/);
   assert.ok(!/\n {2}test \[dir\]/.test(missing.stderr), 'only build');
   assert.equal(valued.status, 2);
   assert.match(valued.stderr, /^--json takes no value for "elabora codes"\.\n\nUsage:\n {2}codes/);
-  assert.deepEqual(help, { status: 0, stdout: project, stderr: '' });
+  // --help of a command: its own usage.
+  assert.equal(help.status, 0);
+  assert.match(help.stdout, /^ {2}validate \[dir\][^\n]*\n\(elabora help: every command\)\n$/);
+  const group = await elabora(['object', '--help']);
+  assert.match(group.stdout, /^Free objects\n {2}object new /);
 });
 
 test('MCP: the tool catalogue is unchanged and the skills are served', async () => {

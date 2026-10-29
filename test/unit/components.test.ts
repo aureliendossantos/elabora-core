@@ -311,3 +311,25 @@ test('template headings marked data-t-heading follow the page: one level under t
   write(dir, 'components/fact-card/template.html', '<article class="fact" data-t-heading><h3>{{title}}</h3><p>{{detail}}</p><div class="t-text">{{body}}</div></article>\n');
   assert.ok(validateDir(dir).diagnostics.some((d) => d.code === 'E_COMPONENT_HOOK' && /data-t-heading goes on a heading/.test(d.message)));
 });
+
+test('a fork drops the parent\'s props it does not use (propsOmit): no unused-prop warning, its schema without them; a name the parent lacks, or no extends, is refused', () => {
+  const dir = copyExample();
+  addCard(dir);
+  const fork = (manifest: Record<string, unknown>) => {
+    write(dir, 'components/plain-card/component.json', { id: 'plain-card', title: 'Plain card', version: '1.0.0', extends: { component: 'key-card', version: '1.0.0' }, slots: [], fallback: [{ type: 'text', props: { markdown: '**{{title}}**' } }], ...manifest });
+    write(dir, 'components/plain-card/template.html', '<div class="pc"><h2>{{title}}</h2></div>');
+  };
+  fork({});
+  const unused = validateDir(dir).diagnostics.filter((d) => d.code === 'W_COMPONENT_PROP_UNUSED' && d.target === 'plain-card').map((d) => d.path);
+  assert.ok(unused.includes('/props/properties/body') && unused.includes('/props/properties/steps'), JSON.stringify(unused));
+  fork({ propsOmit: ['body', 'steps', 'accent'] });
+  const v = validateDir(dir);
+  assert.deepEqual(v.diagnostics.filter((d) => d.target === 'plain-card' && d.severity !== 'info' && d.code !== 'W_COMPONENT_UNUSED').map((d) => d.code), []);
+  assert.deepEqual(Object.keys(getRegistry(loadProjectFromDir(dir)).get('plain-card')?.schema.properties ?? {}), ['title']);
+  fork({ propsOmit: ['subtitle'] });
+  assert.ok(errors(dir).some((d) => d.code === 'E_COMPONENT_SCHEMA' && d.path === '/propsOmit' && /does not have/.test(d.message)));
+  fork({ props: { type: 'object', properties: { title: { type: 'string' } } }, propsOmit: ['body'] });
+  assert.ok(errors(dir).some((d) => d.code === 'E_COMPONENT_SCHEMA' && d.path === '/propsOmit' && /declares its own props/.test(d.message)));
+  write(dir, 'components/plain-card/component.json', { id: 'plain-card', title: 'Plain card', version: '1.0.0', props: { type: 'object', properties: { title: { type: 'string' } } }, propsOmit: ['title'] });
+  assert.ok(errors(dir).some((d) => d.code === 'E_COMPONENT_SCHEMA' && d.path === '/propsOmit' && /for forks/.test(d.message)));
+});

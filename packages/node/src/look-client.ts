@@ -44,6 +44,17 @@ export interface LookRequest {
   act?: string[];
   // JPEG by default (PNG for a close-up up to 2 megapixels): designed pages (textures, gradients) take seconds to encode as PNG.
   type?: ImageType;
+  // A CSS selector: the computed styles of the elements it matches (five at most), with their
+  // parent's layout, for what a template or the theme draws outside the blocks.
+  select?: string;
+}
+
+// An element a look selected (select): its box in px of the page, its computed styles, its parent's layout.
+export interface SelectedElement {
+  element: string;
+  rect: { x: number; y: number; width: number; height: number };
+  styles: Record<string, string>;
+  parent: { element: string; styles: Record<string, string> } | null;
 }
 
 // An action on a free object (elabora look --act): click:<text>, click:role=<role>[name=<name>],
@@ -120,6 +131,8 @@ export type LookResult =
     backdrop?: BackdropReport;
     // The controls of the screen's free objects: where they are in the window, and what covers them.
     controls?: ObjectControl[];
+    // With select: the elements matched (selectorError: the selector does not parse).
+    selected?: { selector: string; count: number; elements: SelectedElement[]; selectorError?: string };
     consoleErrors: string[];
     browser?: BrowserIdentity;
     ms: number;
@@ -222,3 +235,15 @@ export function controlsText(controls: readonly ObjectControl[], all = false): s
   }
   return lines;
 }
+
+// The elements a look selected, as lines.
+export function selectedText(selected: NonNullable<Extract<LookResult, { ok: true }>['selected']>): string[] {
+  if (selected.selectorError) return [`✘ --select "${selected.selector}" does not parse: ${selected.selectorError}`];
+  if (!selected.count) return [`nothing matches "${selected.selector}" on this screen`];
+  const styles = (record: Record<string, string>) => Object.entries(record).map(([key, value]) => `${key}: ${value}`).join('; ');
+  return [`${selected.count} element(s) match "${selected.selector}"${selected.count > selected.elements.length ? ` (the first ${selected.elements.length})` : ''}:`, ...selected.elements.flatMap((element) => [
+    `- ${element.element} at ${element.rect.x},${element.rect.y} ${element.rect.width}×${element.rect.height}: ${styles(element.styles)}`,
+    ...(element.parent ? [`  in ${element.parent.element}: ${styles(element.parent.styles)}`] : [])
+  ])];
+}
+
