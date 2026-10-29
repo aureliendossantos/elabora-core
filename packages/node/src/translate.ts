@@ -21,7 +21,7 @@ export const translationFile = (dir: string, language: string): string => path.j
 // Create or update translations/<lang>.xlf.
 export function exportTranslation(dir: string, { to }: { to: string }, options?: EditOptions) {
   const result = runCommand(dir, { name: 'export_translation', args: { to }, run: (context) => commands.exportTranslation(context, { to }) }, options);
-  return { file: translationFile(dir, to), units: result.units, translated: result.translated, toTranslate: result.toTranslate, stale: result.stale, removed: result.removed, details: result.details, change: result.change, undo: result.undo };
+  return { file: translationFile(dir, to), units: result.units, translated: result.translated, toTranslate: result.toTranslate, stale: result.stale, removed: result.removed, editor: result.editor, details: result.details, change: result.change, undo: result.undo };
 }
 
 export function translationStatus(dir: string, options: { to?: string } = {}) {

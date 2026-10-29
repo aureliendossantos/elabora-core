@@ -17,7 +17,7 @@ const exportCommand = defineCommand({
     if (!flags.to) { console.error('Usage: elabora translate export [dir] --to <lang>'); return 2; }
     const result = exportTranslation(dir, { to: flags.to });
     if (flags.json) { printJson(result); return 0; }
-    console.log(`✔ ${result.file}\n  ${result.units} units: ${result.translated} translated, ${result.toTranslate} to translate, ${result.stale} stale (source changed)${result.removed ? `, ${result.removed} removed` : ''}.`);
+    console.log(`✔ ${result.file}\n  ${result.units} units: ${result.translated} translated, ${result.toTranslate} to translate, ${result.stale} stale (source changed)${result.removed ? `, ${result.removed} removed` : ''}${result.editor ? `; ${result.editor} editor word(s) to translate (authors read them, learners never: they hold nothing back)` : ''}.`);
     return 0;
   }, { json: flags.json })
 });
@@ -33,7 +33,7 @@ const status = defineCommand({
     if (!languages.length) console.log('No translation yet: elabora translate export --to <lang>.');
     for (const language of languages) {
       if (!language.exists) { console.log(`${language.language}: no translations/${language.language}.xlf`); continue; }
-      console.log(`${language.language}: ${language.translated}/${language.units} translated, ${language.toTranslate} to translate, ${language.stale} stale${language.removed ? `, ${language.removed} removed` : ''} · translated plan: ${language.plan}`);
+      console.log(`${language.language}: ${language.translated}/${language.units} translated, ${language.toTranslate} to translate, ${language.stale} stale${language.removed ? `, ${language.removed} removed` : ''}${language.editor ? ` · ${language.editor} editor word(s) to translate (they hold nothing back)` : ''} · translated plan: ${language.plan}`);
       for (const id of language.details.stale.slice(0, 10)) console.log(`  stale  ${id}`);
       for (const problem of language.problems.slice(0, 10)) console.log(`  ✘ ${problem.id}: ${problem.message}`);
       for (const anchor of language.anchors.toPlace.slice(0, 10)) console.log(`  anchor ${anchor.unit}: place <mrk id="${anchor.id}">…</mrk> on the words that say « ${anchor.word} »`);

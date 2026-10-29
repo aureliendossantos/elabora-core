@@ -61,7 +61,7 @@ test('each template validates (only a template\'s two warnings), its French is c
     assert.deepEqual([...new Set(diagnostics.filter((d) => d.severity === 'warning').map((d) => d.code))].sort(), ['W_PLAN_DRAFT', 'W_SPACING_MISSING'], template.id);
     const [french] = translationStatus(template.dir, { to: 'fr' });
     assert.ok(french.exists, `${template.id}: translated into French`);
-    assert.deepEqual({ toTranslate: french.toTranslate, stale: french.stale, problems: french.problems.length }, { toTranslate: 0, stale: 0, problems: 0 }, `${template.id}: French complete and current`);
+    assert.deepEqual({ toTranslate: french.toTranslate, stale: french.stale, editor: french.editor, problems: french.problems.length }, { toTranslate: 0, stale: 0, editor: 0, problems: 0 }, `${template.id}: French complete and current, the charter's words included`);
     // The project's own data (.elabora/, written by any command run there) stays out of git.
     const all = files(template.dir).filter((file) => !file.startsWith('.elabora/'));
     assert.ok(!all.some((file) => /^(dist|captures)\//.test(file)), `${template.id}: nothing generated`);

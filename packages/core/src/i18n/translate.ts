@@ -30,12 +30,16 @@ export const approvalPath = (language: string): string => `translations/${langua
 // A translated file: course.json, plan.json or a screen, with the translations applied.
 export type TranslatedDocument = Course | Plan | PlanVersion | Screen | ComponentManifest | ObjectManifest;
 
+// What learners read counts: toTranslate and stale hold a language back. The words only authors read
+// (editor units: the charter's, a free object's choices) are counted apart, in editor: missing, a
+// translated course keeps the source's words there, and the language is no less ready.
 export interface TranslationCounts {
   translated: number;
   toTranslate: number;
   stale: number;
   removed: number;
-  details: { toTranslate: string[]; stale: string[]; removed: string[] };
+  editor: number; // editor units to translate or changed since
+  details: { toTranslate: string[]; stale: string[]; removed: string[]; editor: string[] };
 }
 
 export interface TranslationProblem {
@@ -77,17 +81,16 @@ interface UnitStatus {
   fresh: string[];
   stale: string[];
   removed: string[];
+  editor: string[]; // editor units new or stale: they hold nothing back
 }
 
 function compare(units: readonly TranslationUnit[], previous: XliffDocument | null): UnitStatus {
-  const status: UnitStatus = { translated: [], fresh: [], stale: [], removed: [] };
+  const status: UnitStatus = { translated: [], fresh: [], stale: [], removed: [], editor: [] };
   const ids = new Set(units.map((unit) => unit.id));
   for (const unit of units) {
     const translated = previous?.units.get(unit.id);
-    if (!translated || translated.target == null || translated.target === '') status.fresh.push(unit.id);
-    else if (translated.source !== unit.text) status.stale.push(unit.id);
-    else if (translated.state === 'initial') status.fresh.push(unit.id);
-    else status.translated.push(unit.id);
+    const kind = !translated || translated.target == null || translated.target === '' ? 'fresh' : translated.source !== unit.text ? 'stale' : translated.state === 'initial' ? 'fresh' : 'translated';
+    status[kind !== 'translated' && unit.editor ? 'editor' : kind].push(unit.id);
   }
   for (const id of previous?.units.keys() || []) if (!ids.has(id)) status.removed.push(id);
   return status;
@@ -106,8 +109,8 @@ function marked(text: string, marks: readonly XliffMark[]): string {
 }
 
 const counts = (status: UnitStatus): TranslationCounts => ({
-  translated: status.translated.length, toTranslate: status.fresh.length, stale: status.stale.length, removed: status.removed.length,
-  details: { toTranslate: status.fresh, stale: status.stale, removed: status.removed }
+  translated: status.translated.length, toTranslate: status.fresh.length, stale: status.stale.length, removed: status.removed.length, editor: status.editor.length,
+  details: { toTranslate: status.fresh, stale: status.stale, removed: status.removed, editor: status.editor }
 });
 
 // Create or update translations/<lang>.xlf: unchanged units keep their translation; changed units keep
@@ -167,6 +170,8 @@ export interface TranslationRow {
   note: string | null;
   maxLength: number | null;
   problem: string | null;
+  // Words only authors read (the charter's, a free object's choices): they hold no language back.
+  editor: boolean;
   // A narration line's word anchors (D28): each source word, and the words of the translation its
   // marker is placed on (null: to place). With the texts as XLIFF writes them, markers included.
   anchors?: { id: string; word: string; placed: WordAnchor | null }[];
@@ -195,7 +200,7 @@ export function translationTable(project: Project, language: string): Translatio
     return {
       id: unit.id, file: unit.file, screen: /^screens\/(.+)\.json$/.exec(unit.file)?.[1] ?? null, block: unit.id.startsWith('block.') ? unit.id.split('.')[1] ?? null : null,
       source: unit.text, target, state: translated?.state ?? 'initial', status, previousSource: status === 'stale' ? translated!.source : null,
-      format: unit.format, note: unit.note ?? null, maxLength: unit.maxLength ?? null, problem: broken.get(unit.id) ?? null,
+      format: unit.format, note: unit.note ?? null, maxLength: unit.maxLength ?? null, problem: broken.get(unit.id) ?? null, editor: unit.editor === true,
       ...(unit.marks?.length ? {
         anchors: unit.marks.map((mark) => ({ id: mark.id, word: mark.word, placed: placed.get(mark.id) ?? null })),
         sourceMarked: marked(unit.text, unit.marks), targetMarked: target === null ? null : marked(target, translated?.targetMarks ?? [])

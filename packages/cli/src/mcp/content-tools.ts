@@ -191,7 +191,7 @@ export const replaceTextTool = defineTool({
 export const translationStatusTool = defineTool({
   name: 'elabora_translation_status',
   readOnly: true,
-  description: 'Translation readiness for one language, or all existing translations: counts and ids of missing, stale and removed units, broken text or schema constraints, word anchors to place, and translated-plan approval. ready means the texts are present, current, valid and anchored; course validation and human plan approval are separate. Use elabora_translation_table with todo to work on what remains, elabora_look with language to see it, then elabora_build with language to generate its package without changing servers or editing a generated copy.',
+  description: 'Translation readiness for one language, or all existing translations: counts and ids of missing, stale and removed units, broken text or schema constraints, word anchors to place, and translated-plan approval. ready means the texts are present, current, valid and anchored; editor counts apart the words only authors read (the charter\'s), which hold nothing back; course validation and human plan approval are separate. Use elabora_translation_table with todo to work on what remains, elabora_look with language to see it, then elabora_build with language to generate its package without changing servers or editing a generated copy.',
   inputSchema: objectSchema({ language: LANGUAGE }),
   handler: ({ language }, { root }) => textResult({ languages: translationStatus(loadProjectFromDir(root), { to: language }).map((status) => ({ ...status, ready: translationReady(status) })) })
 });
@@ -199,23 +199,24 @@ export const translationStatusTool = defineTool({
 export const translationTableTool = defineTool({
   name: 'elabora_translation_table',
   readOnly: true,
-  description: 'A language of the course as a bilingual table: every text a learner (or the approver of the translated plan) reads, as a translation unit with its source, its translation and what it asks for: to-translate, to-review (a translation kept from a previous source, or not confirmed), stale (the source changed since: previousSource), translated; problem: what breaks the text (lost maths, links, code or placeholders, too long); anchors: a narration line\'s word anchors, as markers in its source and target, and the words of the translation each is placed on (null: to place). screen: only the texts that screen shows (the plan\'s validated texts and questions its blocks show included, with the block and field that show each). todo: only what asks for something. A language the course does not have yet lists every text to translate; elabora_translate_text starts it.',
+  description: 'A language of the course as a bilingual table: every text a learner (or the approver of the translated plan) reads, as a translation unit with its source, its translation and what it asks for: to-translate, to-review (a translation kept from a previous source, or not confirmed), stale (the source changed since: previousSource), translated; problem: what breaks the text (lost maths, links, code or placeholders, too long); anchors: a narration line\'s word anchors, as markers in its source and target, and the words of the translation each is placed on (null: to place). screen: only the texts that screen shows (the plan\'s validated texts and questions its blocks show included, with the block and field that show each). editor: true marks words only authors read (what the charter\'s styles and variants are for, its components\' names and settings, a free object\'s settings): translate them so the course reads in its language in the editor too; they hold nothing back. todo: only what asks for something. A language the course does not have yet lists every text to translate; elabora_translate_text starts it.',
   inputSchema: objectSchema({ language: LANGUAGE, screen: SLUG, todo: { type: 'boolean', default: false } }, ['language']),
   handler: ({ language, screen, todo }, { root }) => {
     const project = loadProjectFromDir(root);
     if (screen && !project.screens.has(screen)) return errorResult(`No screen "${screen}".`);
     const table = screen ? screenTranslation(project, { screen, language }) : translationTable(project, language);
     const all = table.rows as (TranslationRow & { field?: string | null })[];
-    const count = (status: TranslationRow['status']) => all.filter((row) => row.status === status).length;
+    // Editor rows (words only authors read) hold nothing back: counted apart.
+    const count = (status: TranslationRow['status']) => all.filter((row) => row.status === status && !row.editor).length;
     const rows = all.filter((row) => !todo || row.status !== 'translated' || row.problem !== null || row.anchors?.some((anchor) => !anchor.placed)).map((row) => ({
       unit: row.id, screen: row.screen, block: row.block, ...(row.field ? { field: row.field } : {}), source: row.sourceMarked ?? row.source, target: row.targetMarked !== undefined ? row.targetMarked : row.target, status: row.status,
       ...(row.anchors ? { anchors: row.anchors.map((anchor) => ({ id: anchor.id, word: anchor.word, placed: anchor.placed?.word ?? null })) } : {}),
       ...(row.previousSource !== null ? { previousSource: row.previousSource } : {}), format: row.format,
-      ...(row.note ? { note: row.note } : {}), ...(row.maxLength ? { maxLength: row.maxLength } : {}), ...(row.problem ? { problem: row.problem } : {})
+      ...(row.note ? { note: row.note } : {}), ...(row.maxLength ? { maxLength: row.maxLength } : {}), ...(row.problem ? { problem: row.problem } : {}), ...(row.editor ? { editor: true } : {})
     }));
     return textResult({
       language, source: table.source, exists: table.exists, ...(screen ? { screen } : {}),
-      progress: { units: all.length, translated: count('translated'), toReview: count('to-review'), toTranslate: count('to-translate'), stale: count('stale'), broken: all.filter((row) => row.problem).length },
+      progress: { units: all.length, translated: count('translated'), toReview: count('to-review'), toTranslate: count('to-translate'), stale: count('stale'), editor: all.filter((row) => row.editor && row.status !== 'translated').length, broken: all.filter((row) => row.problem).length },
       rows
     });
   }

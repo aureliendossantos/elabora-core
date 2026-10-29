@@ -7,7 +7,7 @@ import { formatMessage } from '@elabora/player/message';
 import { labelsFor, labelKeys, labelLanguages, formatLabel } from '@elabora/player/labels';
 import { toXliff, readXliff } from '@elabora/core/i18n/xliff';
 import { extractUnits } from '@elabora/core/i18n/units';
-import { translatedCourse } from '@elabora/core/i18n/translate';
+import { translatedCourse, translationReady, translationTable } from '@elabora/core/i18n/translate';
 import { findText } from '@elabora/core/commands/text';
 import { screenParts } from '@elabora/core/project/parts';
 import { exportTranslation, translationStatus, buildTranslation, approveTranslation, translationFile, withCourseLanguage } from '@elabora/node/translate';
@@ -173,6 +173,23 @@ test('translation: the words the editor shows of the course\'s design (styles, b
   assert.ok(!extractUnits(loadProjectFromDir(dir)).some((u) => u.id.startsWith('object.')));
 });
 
+test('translation: the words only authors read hold no language back; missing, the translated course keeps the source\'s', () => {
+  const dir = copyExample(path.join(ROOT, 'examples/orbital-rendezvous'));
+  const file = translationFile(dir, 'fr');
+  const x = readXliff(fs.readFileSync(file, 'utf8'));
+  const editor = /^(theme|component|object)\./;
+  fs.writeFileSync(file, toXliff({ srcLang: 'en', trgLang: 'fr', original: 'x', units: [...x.units.values()].map((u) => (editor.test(u.id) ? { id: u.id, source: u.source } : u)) }));
+  const [french] = translationStatus(dir, { to: 'fr' });
+  assert.ok(french?.exists);
+  assert.deepEqual({ toTranslate: french.toTranslate, stale: french.stale }, { toTranslate: 0, stale: 0 });
+  assert.ok(french.editor > 50 && french.details.editor.every((id) => editor.test(id)), `${french.editor} editor words counted apart`);
+  assert.ok(translationReady(french), 'the language is ready for learners');
+  const { files, missing } = translatedCourse(loadProjectFromDir(dir), { to: 'fr' });
+  assert.deepEqual(missing, []);
+  assert.equal((files.get('components/stat-card/component.json') as { title: string } | undefined)?.title ?? 'Stat card', 'Stat card', 'the source\'s words where none is given');
+  assert.ok(translationTable(loadProjectFromDir(dir), 'fr').rows.filter((row) => editor.test(row.id)).every((row) => row.editor && row.status === 'to-translate'));
+});
+
 test('how a free object\'s choices read: the block\'s words over the manifest\'s, for event editors (screenParts)', () => {
   const dir = copyExample();
   withDeviceLabels(dir);
@@ -188,7 +205,7 @@ test('translation: export, status, build, approval, then a stale unit when the s
   const dir = copyExample();
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-tr-'));
   const r = exportTranslation(dir, { to: 'en' });
-  assert.ok(r.units > 20 && r.toTranslate === r.units);
+  assert.ok(r.units > 20 && r.toTranslate + r.editor === r.units && r.editor > 0, 'learners\' words to translate, the editor\'s counted apart');
   // Translate: here, every target is its source prefixed (maths and placeholders kept).
   const x = readXliff(fs.readFileSync(translationFile(dir, 'en'), 'utf8'));
   fs.writeFileSync(translationFile(dir, 'en'), toXliff({ srcLang: 'fr', trgLang: 'en', original: 'x', units: [...x.units.values()].map((u) => ({ id: u.id, source: u.source, target: `EN ${u.source}`.slice(0, 190), state: 'translated' })) }));

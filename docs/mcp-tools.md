@@ -75,7 +75,7 @@ Where words occur in what learners read (course.json and the screens, not the pl
 
 ### `elabora_translation_table`
 
-A language of the course as a bilingual table: every text a learner (or the approver of the translated plan) reads, as a translation unit with its source, its translation and what it asks for: to-translate, to-review (a translation kept from a previous source, or not confirmed), stale (the source changed since: previousSource), translated; problem: what breaks the text (lost maths, links, code or placeholders, too long); anchors: a narration line's word anchors, as markers in its source and target, and the words of the translation each is placed on (null: to place). screen: only the texts that screen shows (the plan's validated texts and questions its blocks show included, with the block and field that show each). todo: only what asks for something. A language the course does not have yet lists every text to translate; elabora_translate_text starts it.
+A language of the course as a bilingual table: every text a learner (or the approver of the translated plan) reads, as a translation unit with its source, its translation and what it asks for: to-translate, to-review (a translation kept from a previous source, or not confirmed), stale (the source changed since: previousSource), translated; problem: what breaks the text (lost maths, links, code or placeholders, too long); anchors: a narration line's word anchors, as markers in its source and target, and the words of the translation each is placed on (null: to place). screen: only the texts that screen shows (the plan's validated texts and questions its blocks show included, with the block and field that show each). editor: true marks words only authors read (what the charter's styles and variants are for, its components' names and settings, a free object's settings): translate them so the course reads in its language in the editor too; they hold nothing back. todo: only what asks for something. A language the course does not have yet lists every text to translate; elabora_translate_text starts it.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -85,7 +85,7 @@ A language of the course as a bilingual table: every text a learner (or the appr
 
 ### `elabora_translation_status`
 
-Translation readiness for one language, or all existing translations: counts and ids of missing, stale and removed units, broken text or schema constraints, word anchors to place, and translated-plan approval. ready means the texts are present, current, valid and anchored; course validation and human plan approval are separate. Use elabora_translation_table with todo to work on what remains, elabora_look with language to see it, then elabora_build with language to generate its package without changing servers or editing a generated copy.
+Translation readiness for one language, or all existing translations: counts and ids of missing, stale and removed units, broken text or schema constraints, word anchors to place, and translated-plan approval. ready means the texts are present, current, valid and anchored; editor counts apart the words only authors read (the charter's), which hold nothing back; course validation and human plan approval are separate. Use elabora_translation_table with todo to work on what remains, elabora_look with language to see it, then elabora_build with language to generate its package without changing servers or editing a generated copy.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
