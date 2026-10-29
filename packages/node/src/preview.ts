@@ -58,13 +58,14 @@ export async function preview(dir: string, { port = 4807, profile, navigation: a
   };
   show(last);
   // One build at a time: a change and a new navigation wait for the build before them.
+  // A build that throws fails its caller only: the next one still runs.
   let queue = Promise.resolve(last);
-  const again = () => (queue = queue.then(async () => { last = await rebuild(); show(last); onRebuild?.(last); return last; }));
+  const again = () => (queue = queue.catch(() => last).then(async () => { last = await rebuild(); show(last); onRebuild?.(last); return last; }));
   const watched = ['course.json', 'plan.json', 'screens', 'objects', 'components', 'theme', 'assets'].map((name) => path.join(root, name)).filter((file) => fs.existsSync(file));
   let timer: ReturnType<typeof setTimeout> | undefined;
   const watchers = watched.map((file) => fs.watch(file, { recursive: true }, () => {
     clearTimeout(timer);
-    timer = setTimeout(() => void again(), 250);
+    timer = setTimeout(() => void again().catch(() => {}), 250);
   }));
   const mode = getProfile(lms).launch.default === 'nested-iframe' ? 'nested-iframe' : 'iframe';
   return {
@@ -78,9 +79,11 @@ export async function preview(dir: string, { port = 4807, profile, navigation: a
     get locks() { return locks(readCourse(root)); },
     get navigation() { return navigation; },
     setNavigation: (next) => {
-      if (next === navigation) return queue;
+      if (next === navigation) return queue.catch(() => last);
+      const before = navigation;
       navigation = next;
-      return again();
+      // A build that throws leaves the navigation the page still has.
+      return again().catch((error: unknown) => { navigation = before; throw error; });
     },
     close: async () => { clearTimeout(timer); for (const watcher of watchers) watcher.close(); await server.close(); }
   };
