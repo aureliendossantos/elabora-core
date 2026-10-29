@@ -438,7 +438,6 @@ export function createScreenView(options: ScreenViewOptions) {
     timeline = createTimeline({
       narration, labels, format: options.formatLabel, host: settings.host, overlay: main, prefs: settings.prefs, virtual: settings.virtual,
       controls: settings.controls, tooltip: settings.tooltip, sheetHost: settings.sheetHost, onVolume: settings.onVolume,
-      voiceLevel: () => options.sounds?.voiceLevel() ?? 1,
       start, reached: start, autoplay: autoplay && !done, phone,
       offerStopAtSteps: course.screens.some((candidate) => !!candidate.narration && candidate.narration.advance !== 'learner'),
       // A layer that speaks has the shortcuts (D62); the transcript adds each layer's lines.
@@ -563,7 +562,7 @@ export function createScreenView(options: ScreenViewOptions) {
     entry.timeline = createTimeline({
         narration, labels, format: options.formatLabel, host, overlay: dialog, prefs: settings.prefs, virtual: settings.virtual,
         controls: { seekBar: settings.controls?.seekBar ?? true, volume: false, transcript: false, speeds: [] }, tooltip: settings.tooltip,
-        compact: true, label: `${labels.narration} · ${layer.title}`, keys: () => speakingLayer() === layer.id, voiceLevel: () => options.sounds?.voiceLevel() ?? 1,
+        compact: true, label: `${labels.narration} · ${layer.title}`, keys: () => speakingLayer() === layer.id,
         start: 0, reached: 0, autoplay: settings.autoplay, phone: () => false, offerStopAtSteps: false,
         view: {
           revealed: () => 1, lastStep: () => 1, display: () => {}, chain: () => false, canReach: () => false, reach: () => {}, segmentEnded: () => {}, advance: () => {}, proceed: () => false,
@@ -733,7 +732,6 @@ export function createScreenView(options: ScreenViewOptions) {
     dialogueHost: {
       virtual: options.timeline?.virtual === true || window.ELABORA_TEST?.virtualTime === true,
       prefs: () => options.timeline?.prefs ?? FALLBACK_PREFS,
-      voiceLevel: () => options.sounds?.voiceLevel() ?? 1,
       hold: (reason) => {
         for (const entry of layerTimelines.values()) if (entry.timeline.playing) entry.timeline.pause();
         if (timeline && !dialogueHolds.has(reason)) { dialogueHolds.set(reason, timeline); timeline.hold(reason); }

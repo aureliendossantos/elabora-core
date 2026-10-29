@@ -6,8 +6,9 @@
 //     « Affichage » (a course's background tracks over a range of screens, a play-sound with loop).
 // The player's volume and mute (the narration's controls) apply to all of them. The narration and
 // the dialogues' lines keep their own <audio>: they are the clock of their timelines (D24, D61).
-// A sound of the story may lower them, and the music, while it plays (duck): they read voiceLevel()
-// at every frame. How a sound is mixed (its part, its gain, its fades, its duck) is sound-mix.ts's.
+// A sound of the story never lowers a voice: the voice comes first. It may lower the music and the
+// ambiences while it plays (duck). How a sound is mixed (its part, its gain, its fades, its duck) is
+// sound-mix.ts's.
 //
 // Browsers let a page sound only after a gesture: an AudioContext made before one stays suspended.
 // The context is made at the learner's first pointer or key press (an LMS frame gets the gesture in
@@ -16,7 +17,7 @@
 // are the package's own.
 
 import type { SoundsData, InterfaceRole, SoundFileData } from './course-data.ts';
-import { channelsOf, duckGainAt, fadesOf, gainOf, partOf, peakOf, scheduleDucks } from './sound-mix.ts';
+import { UNDER_VOICE_ATTACK, UNDER_VOICE_GAIN, UNDER_VOICE_RELEASE, channelsOf, duckGainAt, fadesOf, gainOf, partOf, peakOf, scheduleDucks } from './sound-mix.ts';
 import type { Duck, SoundPart } from './sound-mix.ts';
 
 export type { InterfaceRole };
@@ -54,7 +55,7 @@ export interface SoundsState {
   interface: boolean; // interface sounds on for this course and this learner
   music: boolean; // music and ambiences on for this learner
   ducked: boolean; // a voice speaks: music and ambiences lowered
-  voiceLevel: number; // the voices' gain under a sound that lowers them (1: as they are)
+  musicLevel: number; // the music and ambiences' gain under the sounds that lower them (1: as they are)
   playing: { sound: string; kind: 'story' | 'ambience' | 'background' }[];
   played: PlayedSound[];
 }
@@ -73,10 +74,6 @@ export interface SoundRequest {
   caption?: string;
 }
 
-// Lowered by this much under a voice: 20 dB (WCAG 1.4.7), a tenth of the amplitude.
-export const DUCK_GAIN = 0.1;
-const UNDER_VOICE_ATTACK = 0.25;
-const UNDER_VOICE_RELEASE = 0.8;
 // A sound of the story asked before the first gesture still plays if the gesture comes this soon.
 const STORY_LATE = 1.5;
 const AMBIENCE_VOLUME = 0.3;
@@ -128,7 +125,7 @@ export function createSounds(options: SoundsOptions) {
   const loops = new Map<string, Loop>(); // by kind and sound id (ambience:rain, background:theme)
   const shots = new Set<OneShot>();
   const voices = new Set<string>();
-  // The sounds of the story that lower the voices and the music while they play, on the context's
+  // The sounds of the story that lower the music and the ambiences while they play, on the context's
   // clock; forgotten once they are back up.
   let ducks: Duck[] = [];
   // The loudest sample of a decoded file over a part (a boosted sound stops below the ceiling).
@@ -194,7 +191,7 @@ export function createSounds(options: SoundsOptions) {
     master.gain.setTargetAtTime(muted ? 0 : Math.max(0, Math.min(1, volume)), now, 0.015);
     interfaceBus.gain.setTargetAtTime(interfaceOn() ? data?.interface?.volume ?? 0.5 : 0, now, 0.015);
     musicBus.gain.setTargetAtTime(prefs.music ? 1 : 0, now, 0.05);
-    duckBus.gain.setTargetAtTime(voices.size ? DUCK_GAIN : 1, now, voices.size ? UNDER_VOICE_ATTACK / 3 : UNDER_VOICE_RELEASE / 3);
+    duckBus.gain.setTargetAtTime(voices.size ? UNDER_VOICE_GAIN : 1, now, voices.size ? UNDER_VOICE_ATTACK / 3 : UNDER_VOICE_RELEASE / 3);
   }
 
   function load(src: string): Promise<AudioBuffer | null> {
@@ -271,16 +268,13 @@ export function createSounds(options: SoundsOptions) {
   }
   // The gain a volume gives this part: above 100 % only as far as its peak allows (sound-mix.ts).
   const gainFor = (volume: number, buffer: AudioBuffer, part: SoundPart) => gainOf(volume, volume > 1 ? peak(buffer, part) : null);
-  // A sound that lowers the voices and the music while it plays: the music bus follows the ducks on
-  // the context's clock, the voices read voiceLevel() at every frame.
+  // A sound that lowers the music and the ambiences while it plays: their bus follows the ducks on the
+  // context's clock (on top of what a voice lowers them by).
   function addDuck(ctx: Context, duck: Duck) {
     const now = ctx.currentTime;
     ducks = [...ducks.filter((other) => other.at + other.length + 1 > now), duck];
     if (cueBus) scheduleDucks(cueBus.gain, ducks, now);
   }
-  // The voices' gain under the ducks now; as they are when the context does not run (its clock stands
-  // still then, while the voices' own elements may play).
-  const level = () => (context?.state === 'running' && ducks.length ? duckGainAt(ducks, context.currentTime) : 1);
   // Sounds stopped before their end: what they lowered comes back up from now.
   function endDucks(ctx: Context, ended: (duck: Duck) => boolean) {
     const now = ctx.currentTime;
@@ -300,8 +294,8 @@ export function createSounds(options: SoundsOptions) {
     return now + Math.max(0.01, fade);
   }
 
-  // A sound of the story, once: its part of the file, its gain, its fades; it lowers the voices and
-  // the music while it plays when it asks to (duck).
+  // A sound of the story, once: its part of the file, its gain, its fades; it lowers the music and the
+  // ambiences while it plays when it asks to (duck).
   function playOnce(request: SoundRequest, file: SoundFileData) {
     const entry = log({ kind: 'story', sound: request.sound, src: file.src, at: performance.now(), heard: false });
     if (request.caption) options.caption?.(request.caption, file.duration !== null ? partOf(request.start, request.end, file.duration).length : 2);
@@ -466,17 +460,12 @@ export function createSounds(options: SoundsOptions) {
       if (speaking) voices.add(reason); else voices.delete(reason);
       if (voices.size !== before) applyGains();
     },
-    // The voices' gain under the sounds that lower them (1: none does): the narration's and the
-    // dialogues' lines multiply their volume by it at every frame.
-    voiceLevel(): number {
-      return level();
-    },
     // Whether the course has interface sounds, music or ambiences (their switches in « Affichage »).
     get hasInterface() { return !!data?.interface; },
     get hasMusic() { return !!data?.music; },
     state(): SoundsState {
       return {
-        context: context ? context.state : 'none', interface: interfaceOn(), music: prefs.music, ducked: voices.size > 0, voiceLevel: level(),
+        context: context ? context.state : 'none', interface: interfaceOn(), music: prefs.music, ducked: voices.size > 0, musicLevel: context && ducks.length ? duckGainAt(ducks, context.currentTime) : 1,
         playing: [...[...shots].map((shot) => ({ sound: shot.sound, kind: 'story' as const })), ...[...loops.values()].map((loop) => ({ sound: loop.sound, kind: loop.kind }))],
         played: played.map((entry) => ({ ...entry }))
       };

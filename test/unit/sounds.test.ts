@@ -178,7 +178,7 @@ test('sound checks: a part outside its file or ending before it starts, a duck a
     `E_SOUND_PART /events/${events - 2}/do/0/end A play-sound action plays "ring" from 1.2 s to 0.8 s: nothing lies between.`,
     `E_SOUND_PART /events/${events - 1}/do/0/start A play-sound action plays "ring" from 3 s, and it lasts 2 s.`,
     'E_SOUND_PART /sounds/background/0/end A track of music or ambience plays "ring" up to 2.5 s, and it lasts 2 s.',
-    `W_SOUND_DUCK_LOOP /events/${events - 1}/do/0/duck An ambience of "ring" asks to lower the voices (duck 6 dB): it plays under them for the whole screen, so it never does.`
+    `W_SOUND_DUCK_LOOP /events/${events - 1}/do/0/duck An ambience of "ring" asks to lower the music and the ambiences (duck 6 dB): it is one of them, and it plays for the whole screen, so it never does.`
   ].sort());
   screen.events.at(-1).do[0].volume = 2.5;
   writeJSON(dir, 'screens/the-cherry.json', screen);

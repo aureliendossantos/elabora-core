@@ -60,7 +60,7 @@ export function checkSounds(ctx: CourseCheckContext): void {
 }
 
 // What a play-sound or a track asks of its sound (schemas 0.1.7): a part (start, end) inside the
-// file, after its start; a duck, which an ambience never does (it plays under the voices).
+// file, after its start; a duck, which an ambience never does (it is one of what a duck lowers).
 function checkParts(ctx: CourseCheckContext, assets: ReturnType<typeof soundAssets>): void {
   const { project, reporter } = ctx;
   const documents = new Map<string, unknown>([['course.json', project.course]]);
@@ -79,7 +79,7 @@ function checkParts(ctx: CourseCheckContext, assets: ReturnType<typeof soundAsse
     if (start !== undefined && end !== undefined && end <= start) part('end', `from ${seconds(start)} to ${seconds(end)}: nothing lies between`);
     else if (length !== null && start !== undefined && start >= length) part('start', `from ${seconds(start)}, and it lasts ${seconds(length)}`);
     else if (length !== null && end !== undefined && end > length + 0.05) part('end', `up to ${seconds(end)}, and it lasts ${seconds(length)}`);
-    if (use.kind === 'action' && record.loop === true && typeof record.duck === 'number') reporter.emit('W_SOUND_DUCK_LOOP', { file: use.file, path: `${at}/duck`, target: use.id, message: `An ambience of "${use.id}" asks to lower the voices (duck ${record.duck} dB): it plays under them for the whole screen, so it never does.` });
+    if (use.kind === 'action' && record.loop === true && typeof record.duck === 'number') reporter.emit('W_SOUND_DUCK_LOOP', { file: use.file, path: `${at}/duck`, target: use.id, message: `An ambience of "${use.id}" asks to lower the music and the ambiences (duck ${record.duck} dB): it is one of them, and it plays for the whole screen, so it never does.` });
   }
 }
 const describe = (use: SoundUse) => (use.kind === 'background' ? 'A track of music or ambience' : 'A play-sound action');

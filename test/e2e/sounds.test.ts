@@ -110,7 +110,7 @@ const sound = (dir: string, id: string, seconds: number, extra: Record<string, u
   flac(path.join(dir, `assets/sounds/${id}.flac`), seconds, 660, louder);
   fs.writeFileSync(path.join(dir, `assets/sounds/${id}.json`), `${JSON.stringify({ license: 'CC0-1.0', duration: seconds, ...extra }, null, 2)}\n`);
 };
-type FullState = { context: string; music: boolean; ducked: boolean; voiceLevel: number; playing: { sound: string; kind: string }[]; played: (Played & { part?: { offset: number; length: number }; gain?: number; fades?: { in: number; out: number }; duck?: number })[] };
+type FullState = { context: string; music: boolean; ducked: boolean; musicLevel: number; playing: { sound: string; kind: string }[]; played: (Played & { part?: { offset: number; length: number }; gain?: number; fades?: { in: number; out: number }; duck?: number })[] };
 const fullState = (page: Page) => page.evaluate(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state());
 
 test('sounds of the story, ambiences and music: played after the first gesture, stopped at the end of their screen or range, « Musique et ambiances » off', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
@@ -173,7 +173,7 @@ test('sounds of the story, ambiences and music: played after the first gesture, 
   });
 });
 
-test('a sound of the story: its part of the file, louder than recorded up to −1 dBFS, faded out, the voices lowered under it; an ambience loops its part (schemas 0.1.7)', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
+test('a sound of the story: its part of the file, louder than recorded up to −1 dBFS, faded out, the music and ambiences lowered under it; an ambience loops its part (schemas 0.1.7)', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
   const dir = copyExample('coffee-in-brief');
   sound(dir, 'ring', 3, {}, 6);
   sound(dir, 'cafe', 6, { loop: true });
@@ -185,8 +185,9 @@ test('a sound of the story: its part of the file, louder than recorded up to −
     await page.mouse.click(5, 450);
     await page.evaluate(() => (window as PlayerWindow).__elabora.go('green-coffee'));
     await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().played.some((entry) => entry.sound === 'ring' && entry.heard), null, { timeout: 30000, polling: 20 });
-    // The voices go down while it plays (12 dB: a quarter of their level), and come back after it.
-    await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().voiceLevel < 0.3, null, { timeout: 5000, polling: 20 });
+    // The music and the ambiences (the café here) go down while it plays (12 dB: a quarter of their
+    // level), and come back after it; a voice never does.
+    await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().musicLevel < 0.3, null, { timeout: 5000, polling: 20 });
     const state = await fullState(page);
     const ring = state.played.find((entry) => entry.sound === 'ring')!;
     assert.deepEqual([ring.part, ring.fades, ring.duck], [{ offset: 0.5, length: 1.5 }, { in: 0, out: 0.4 }, 12]);
@@ -194,7 +195,7 @@ test('a sound of the story: its part of the file, louder than recorded up to −
     assert.ok(ring.gain! > 1.08 && ring.gain! < 1.25, `gain ${ring.gain}`);
     const cafe = state.played.find((entry) => entry.sound === 'cafe')!;
     assert.deepEqual([cafe.kind, cafe.part, cafe.fades?.out, cafe.gain], ['ambience', { offset: 1, length: 3 }, 1.5, 0.3]);
-    await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().voiceLevel === 1, null, { timeout: 5000, polling: 20 });
+    await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().musicLevel === 1, null, { timeout: 5000, polling: 20 });
   });
 });
 

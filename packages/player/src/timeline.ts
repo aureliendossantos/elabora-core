@@ -143,8 +143,6 @@ export interface TimelineOptions {
   offerStopAtSteps: boolean;
   // A layer's bar (D62): play, replay, seek, the time and captions; no settings, volume, transcript.
   compact?: boolean;
-  // The voice's gain under a sound of the story that lowers it (duck, D67), read at every frame.
-  voiceLevel?(): number;
   // The bar's accessible name (default: the player's « Narration »).
   label?: string;
   // Whether its keyboard shortcuts act now (a layer that speaks takes them from the screen's bar).
@@ -271,15 +269,7 @@ export function createTimeline(options: TimelineOptions) {
   if (!controls.speeds.includes(prefs.rate)) prefs.rate = 1;
   clock.setRate(prefs.rate);
   clock.setMuted(prefs.muted);
-  // The learner's volume, under a sound that lowers the voice while it plays (set when it changes).
-  let appliedVolume = -1;
-  const applyVolume = () => {
-    const volume = prefs.volume * (options.voiceLevel?.() ?? 1);
-    if (Math.abs(volume - appliedVolume) < 1e-4) return;
-    appliedVolume = volume;
-    clock.setVolume(volume);
-  };
-  applyVolume();
+  clock.setVolume(prefs.volume);
 
   // ── Segments ──────────────────────────────────────────────────────
   const segmentOf = (step: number): SegmentData | undefined => segments.find((segment) => segment.step === step);
@@ -366,7 +356,6 @@ export function createTimeline(options: TimelineOptions) {
   // step reached. advancing false: only read where the clock is (a pause).
   function tick(advancing = true, trackEnded = false): void {
     if (disposed) return;
-    applyVolume();
     let now = Math.min(duration, Math.max(0, clock.time()));
     if (trackEnded) now = Math.max(now, frontierEnd());
     if (!advancing || now < t) { if (!advancing) { t = Math.min(now, frontierEnd()); afterMove(); } return; }
@@ -562,7 +551,7 @@ export function createTimeline(options: TimelineOptions) {
   volumeInput.addEventListener('input', () => {
     prefs.volume = Number(volumeInput.value) / 100;
     if (prefs.muted && prefs.volume > 0) { prefs.muted = false; clock.setMuted(false); }
-    applyVolume();
+    clock.setVolume(prefs.volume);
     choose(prefs, 'volume');
     options.onVolume?.();
     render();

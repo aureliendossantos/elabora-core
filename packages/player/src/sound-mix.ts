@@ -1,5 +1,6 @@
 // How a sound of the story is mixed (D67, schemas 0.1.7): the part of its file played, its gain
-// under a ceiling, its fades, and how far it lowers the voice, the music and the ambiences under it.
+// under a ceiling, its fades, and how far it lowers the music and the ambiences under it (never a
+// voice: the voice comes first).
 // Pure: the player plays with it (sounds.ts), and the desktop app's editor hears a cue with it, so
 // that the author judges by ear what learners will hear.
 
@@ -8,11 +9,16 @@
 // louder would clip, which is a distortion, not a louder sound.
 export const VOLUME_MAX = 2;
 export const PEAK_CEILING = 10 ** (-1 / 20);
+// Music and ambiences under a voice: 20 dB down (WCAG 1.4.7), a tenth of the amplitude, in a quarter
+// of a second, back in 0.8 s once every voice is done.
+export const UNDER_VOICE_GAIN = 0.1;
+export const UNDER_VOICE_ATTACK = 0.25;
+export const UNDER_VOICE_RELEASE = 0.8;
 // Seconds of fade in or out at most.
 export const FADE_MAX = 10;
-// A sound that lowers what plays under it: by up to 30 dB, down in 0.1 s as it starts (quick, so its
-// first moment is heard over the voice; slower would let the voice cover its attack), back up in
-// 0.5 s once it is done (slower than down, so the voice does not jump back).
+// A sound that lowers the music and the ambiences: by up to 30 dB, down in 0.1 s as it starts (quick,
+// so its first moment is heard over them), back up in 0.5 s once it is done (slower than down, so
+// they do not jump back).
 export const DUCK_MAX = 30;
 export const DUCK_ATTACK = 0.1;
 export const DUCK_RELEASE = 0.5;
@@ -103,7 +109,7 @@ export function duckTimes(ducks: readonly Duck[]): number[] {
   return [...times].sort((a, b) => a - b);
 }
 // Schedules the gain under ducks on an AudioParam from a time on (what was scheduled after it is
-// replaced): the player's music bus, the editor's voice.
+// replaced): the player's music bus, the music the editor plays with a cue.
 export function scheduleDucks(param: AudioParam, ducks: readonly Duck[], from: number): void {
   param.cancelScheduledValues(from);
   param.setValueAtTime(duckGainAt(ducks, from), from);
