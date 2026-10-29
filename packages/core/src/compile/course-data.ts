@@ -79,8 +79,8 @@ export interface CompileContext {
   glossary: GlossaryData[];
   // A package of several languages (D59): its languages, the course's own first.
   languages?: string[];
-  // elabora.lock.json as the project has it: a dialogue's bit fields count the keys of options
-  // removed since (dialogue/keys.ts).
+  // elabora.lock.json as the project has it (or the lock a preview keeps): a dialogue's bit fields
+  // count the keys of options removed since (dialogue/keys.ts).
   lock?: StateLock | null;
   // The audio of each line of a dialogue the build ships (D61; none: the lines' voices from their
   // sidecars, or estimated, without audio).
@@ -104,6 +104,8 @@ export interface CompileOptions {
   delivery?: WebDelivery;
   // free: every screen open, nothing to do or hear first (the web target says it in delivery).
   navigation?: 'authored' | 'free';
+  // The lock the keys came from, when it is not elabora.lock.json (a preview's, BuildOptions.lock).
+  lock?: StateLock;
   // The languages of a package of several languages (D59): the language item shows with them.
   languages?: string[];
   dialogueAudio?: PackagedLines;
@@ -111,7 +113,7 @@ export interface CompileOptions {
   interfaceSounds?: InterfaceSounds;
 }
 
-export function createCompileContext(project: Project, keys: StateKeys, { assetPath = defaultAssetPath, fields = false, narration, delivery, navigation: asked, languages, dialogueAudio }: CompileOptions = {}): CompileContext {
+export function createCompileContext(project: Project, keys: StateKeys, { assetPath = defaultAssetPath, fields = false, narration, delivery, navigation: asked, lock, languages, dialogueAudio }: CompileOptions = {}): CompileContext {
   const course = project.course;
   if (!course) throw new Error('The project has no course.json to compile.');
   const sectionOf = new Map<string, string>();
@@ -121,7 +123,7 @@ export function createCompileContext(project: Project, keys: StateKeys, { assetP
   const config = navigation === 'free' ? withItemEnabled(playerConfig(course), 'outline') : playerConfig(course);
   const several = languages && languages.length > 1 ? languages : undefined;
   const player = shownPlayer(config, playerContent(project, { web: !!delivery, languages: several?.length ?? 1 }), { assetPath });
-  return { course, registry: getRegistry(project), planIndex: planIndex(project.plan), tokens: withPlayerTokens(resolveTokens(course)), keys, lock: readLock(project), sectionOf, assetPath, ...(fields ? { fields } : {}), ...(narration ? { narration } : {}), ...(delivery ? { delivery } : {}), navigation, player, glossary: glossaryOf(course), ...(several ? { languages: several } : {}), ...(dialogueAudio ? { dialogueAudio } : {}) };
+  return { course, registry: getRegistry(project), planIndex: planIndex(project.plan), tokens: withPlayerTokens(resolveTokens(course)), keys, lock: lock ?? readLock(project), sectionOf, assetPath, ...(fields ? { fields } : {}), ...(narration ? { narration } : {}), ...(delivery ? { delivery } : {}), navigation, player, glossary: glossaryOf(course), ...(several ? { languages: several } : {}), ...(dialogueAudio ? { dialogueAudio } : {}) };
 }
 
 // The course's glossary as the player reads it.
@@ -157,8 +159,8 @@ export interface CompiledScreen {
   objects: Map<string, ObjectDefinition>; // by object id
 }
 
-export function compileCourseData(project: Project, keys: StateKeys, { buildId, assetPath, narration, delivery, navigation, languages, dialogueAudio, interfaceSounds }: { buildId: string } & CompileOptions): CourseData {
-  const context = createCompileContext(project, keys, { assetPath, narration, delivery, navigation, languages, dialogueAudio });
+export function compileCourseData(project: Project, keys: StateKeys, { buildId, assetPath, narration, delivery, navigation, lock, languages, dialogueAudio, interfaceSounds }: { buildId: string } & CompileOptions): CourseData {
+  const context = createCompileContext(project, keys, { assetPath, narration, delivery, navigation, ...(lock ? { lock } : {}), languages, dialogueAudio });
   const usedObjects = new Map<string, ObjectDefinition>();
   // A listed screen without its file is reported by the validator (E_SCREEN_NOT_FOUND).
   const screens = screenOrder(project).filter(({ id }) => project.screens.has(id)).map(({ id }) => {

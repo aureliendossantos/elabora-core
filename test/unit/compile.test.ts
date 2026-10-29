@@ -89,6 +89,35 @@ test('a preview shows the course with the errors that only stop a delivery; when
   }
 });
 
+test('a preview keeps its keys while it runs: a screen added before others leaves theirs, and elabora.lock.json, as they were', async () => {
+  const dir = copyExample();
+  // Nothing built yet: every key is the preview's own.
+  fs.rmSync(path.join(dir, 'elabora.lock.json'), { force: true });
+  const keysOf = (result: { dirPath?: string }): Record<string, string> => {
+    const text = fs.readFileSync(path.join(result.dirPath as string, 'elabora/course.js'), 'utf8');
+    const data = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1)) as { screens: { id: string; key: string }[] };
+    return Object.fromEntries(data.screens.map((screen) => [screen.id, screen.key]));
+  };
+  let rebuilt: (result: { dirPath?: string; diagnostics: { severity: string; code: string; message: string }[] }) => void = () => {};
+  const session = await preview(dir, { port: 0, onRebuild: (result) => rebuilt(result) });
+  try {
+    const before = keysOf(session.built);
+    const done = new Promise<{ dirPath?: string; diagnostics: { severity: string; code: string; message: string }[] }>((resolve) => { rebuilt = resolve; });
+    writeJSON(dir, 'screens/ajout.json', { id: 'ajout', title: 'Ajouté par un agent', covers: ['ITEM-1'], blocks: [{ id: 'ajout-texte', type: 'text', props: { markdown: 'Nouveau.' } }] });
+    const course = readJSON(dir, 'course.json');
+    course.sections[0].screens.unshift('ajout');
+    writeJSON(dir, 'course.json', course);
+    const result = await done;
+    assert.ok(result.dirPath, JSON.stringify(result.diagnostics.filter((d) => d.severity === 'error')));
+    const after = keysOf(result);
+    for (const [id, key] of Object.entries(before)) assert.equal(after[id], key, `${id} keeps its key`);
+    assert.ok(after.ajout && !Object.values(before).includes(after.ajout), 'the new screen a key of its own');
+    assert.equal(fs.existsSync(path.join(dir, 'elabora.lock.json')), false, 'the project\'s lock left as it was');
+  } finally {
+    await session.close();
+  }
+});
+
 test('package rules of the target LMS are enforced', async () => {
   const dir = copyExample();
   fs.writeFileSync(path.join(dir, 'assets/images/schema.php'), '<?php echo 1;');

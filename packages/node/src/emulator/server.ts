@@ -159,14 +159,47 @@ export async function startServer({ port = 0, iisLike = false, frames = false }:
 }
 
 // The course page of a preview: object frames from the frames port, and a reload when the package
-// is built again (the player resumes on the screen shown: the standalone adapter keeps the location
-// for the tab; in the LMS emulator the launch page reloads, as a learner relaunching, whatever page
-// shows the emulator: the app's Aperçu, of another origin, keeps its own).
+// is built again, as a learner relaunching: in the LMS emulator its page reloads, whatever page shows
+// the emulator (the app's Aperçu, of another origin, keeps its own). The player resumes on the screen
+// shown and its step (the learner state: the standalone adapter keeps it for the tab, the emulator
+// for the registration); the page also keeps, for the tab, where it was (the screen, its place in the
+// course, the scroll), to scroll back there, and when the screen is no longer in the course (taken
+// out, or renamed without its key), to show the one now at its place.
 function previewPage(html: string, name: string, framesPort: number | null): string {
-  const reload = `<script>new EventSource('/preview-events/${encodeURIComponent(name)}').onmessage = function () { var page = window; try { for (var up = window; up.parent !== up; up = up.parent) if (up.parent.__lmsReady) { page = up.parent; break; } if (page === window && window.opener && window.opener.__lmsReady) page = window.opener; } catch (error) {} page.location.reload(); };</script>`;
+  const reload = `<script>${PREVIEW_RELOAD.replace('__EVENTS__', JSON.stringify(`/preview-events/${encodeURIComponent(name)}`))}</script>`;
   const frames = framesPort ? `\n<meta name="elabora-object-frames" content="${framesPort}">` : '';
   return html.replace('<meta charset="utf-8">', `<meta charset="utf-8">${frames}`).replace('</body>', `${reload}\n</body>`);
 }
+
+// Plain JavaScript, in the course page as it is written.
+const PREVIEW_RELOAD = `(function () {
+  var KEY = 'elabora-preview-place';
+  new EventSource(__EVENTS__).onmessage = function () {
+    try {
+      var hooks = window.__elabora;
+      if (hooks && hooks.screen) sessionStorage.setItem(KEY, JSON.stringify({ screen: hooks.screen, order: hooks.course.screens.map(function (screen) { return screen.id; }), scroll: window.scrollY }));
+    } catch (error) {}
+    var page = window;
+    try {
+      for (var up = window; up.parent !== up; up = up.parent) if (up.parent.__lmsReady) { page = up.parent; break; }
+      if (page === window && window.opener && window.opener.__lmsReady) page = window.opener;
+    } catch (error) {}
+    page.location.reload();
+  };
+  var place = null;
+  try { place = JSON.parse(sessionStorage.getItem(KEY) || 'null'); sessionStorage.removeItem(KEY); } catch (error) {}
+  if (!place) return;
+  var tries = 0;
+  (function back() {
+    var hooks = window.__elabora;
+    if (!hooks || !hooks.screen) { if (++tries < 200) setTimeout(back, 50); return; }
+    var ids = hooks.course.screens.map(function (screen) { return screen.id; });
+    var same = ids.indexOf(place.screen) >= 0;
+    var target = same ? place.screen : ids[Math.min(Math.max(place.order.indexOf(place.screen), 0), ids.length - 1)];
+    if (target && hooks.screen !== target) hooks.go(target);
+    if (same && place.scroll && hooks.screen === target) Promise.resolve(hooks.ready && hooks.ready()).then(function () { window.scrollTo(0, place.scroll); });
+  })();
+})();`;
 
 function readBody(request: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {

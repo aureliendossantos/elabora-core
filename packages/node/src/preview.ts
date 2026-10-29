@@ -7,6 +7,8 @@ import { projectDataDir } from './data-dir.ts';
 import { escapeHtml } from '@elabora/core/util/html';
 import { codeInfo } from '@elabora/core/diagnostics/codes';
 import { getProfile, listProfiles, targetProfileIds } from '@elabora/core/lms/profiles';
+import { LOCK_FILE, readLock } from '@elabora/core/compile/state-model';
+import { textFile } from '@elabora/core/project/files';
 
 export interface PreviewOptions {
   port?: number;
@@ -49,7 +51,11 @@ export async function preview(dir: string, { port = 4807, profile, navigation: a
   // An LMS Elabora has no profile for (the build says so): the unknown LMS.
   const lms = listProfiles().some((known) => known.id === chosen) ? chosen : 'unknown';
   let navigation = asked;
-  const rebuild = () => build(root, { profiles: [lms], emit: 'dir', out, debug: true, writeLock: false, media: 'link', preview: true, ...(navigation === 'free' ? { navigation } : {}) });
+  // The preview's own lock: elabora.lock.json as it is now, then the keys of what is added while it
+  // runs. Only a delivery writes the project's; without its own, a screen an agent adds between two
+  // rebuilds would move the keys of those added before it, and the learner's place with them.
+  const lock = readLock({ files: new Map(fs.existsSync(path.join(root, LOCK_FILE)) ? [[LOCK_FILE, textFile(fs.readFileSync(path.join(root, LOCK_FILE), 'utf8'))]] : []) });
+  const rebuild = () => build(root, { profiles: [lms], emit: 'dir', out, debug: true, writeLock: false, lock, media: 'link', preview: true, ...(navigation === 'free' ? { navigation } : {}) });
   let last = await rebuild();
   const server = await startServer({ port, frames: true });
   const show = (result: BuildResult) => {

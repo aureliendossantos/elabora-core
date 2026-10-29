@@ -17,6 +17,7 @@ import type { Reporter, Summary } from '@elabora/core/diagnostics/index';
 import { canonicalJSON, stringifyJSON } from '@elabora/core/util/json';
 import { escapeHtml } from '@elabora/core/util/html';
 import { readLock, assignKeys, buildStateModel, syncComponentVersions } from '@elabora/core/compile/state-model';
+import type { StateLock } from '@elabora/core/compile/state-model';
 import { worstCaseLength } from '@elabora/player/state-codec';
 import { compileCourseData } from '@elabora/core/compile/course-data';
 import { scorm12Manifest, structureFingerprint } from '@elabora/core/compile/scorm12-manifest';
@@ -65,6 +66,11 @@ export interface BuildOptions {
   emit?: 'zip' | 'dir' | 'both'; // 'dir' is used by preview and tests
   debug?: boolean; // unminified runtime
   writeLock?: boolean; // false: leave elabora.lock.json as it is (previews, captures)
+  // The lock keys come from and new elements get theirs in, in place of elabora.lock.json, which
+  // stays as it is: a preview keeps one for its life, so that an element added between two
+  // rebuilds (a screen an agent writes) leaves the keys of the others, and its learner's place, as
+  // they were.
+  lock?: StateLock;
   mediaQuality?: PresetName; // overrides course.json delivery.mediaQuality (default high: the masters)
   // 'link' (the preview): media are not written to the output folder; result.media says where they
   // are, and media a job is still writing are listed with null instead of stopping the build.
@@ -167,11 +173,12 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
 
   const reporter = createReporter();
   reporter.merge(validation.diagnostics);
-  const lock = readLock(project);
+  const lock = options.lock ?? readLock(project);
   const { keys, added } = assignKeys(project, lock);
   const stateKeys: Record<string, string> = keys;
   const versionsChanged = syncComponentVersions(project, lock);
-  if ((added || versionsChanged) && options.writeLock !== false) writeLock(project.root, lock);
+  if ((added || versionsChanged) && options.writeLock !== false && !options.lock) writeLock(project.root, lock);
+  const ownLock = options.lock ? { lock: options.lock } : {};
 
   const files = new Map<string, Buffer>();
 
@@ -341,7 +348,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   const data: CompiledCourse = compileCourseData(project, keys, {
     buildId, ...assetPathOf, interfaceSounds: interfaceSettings, ...linesOf(dialogueLines),
     ...(tracks.size ? { narration: (screen: string, layer?: string) => tracks.get(trackName(screen, layer ?? null))?.track } : {}),
-    ...(delivery ? { delivery } : {}), ...free, ...several
+    ...(delivery ? { delivery } : {}), ...free, ...ownLock, ...several
   });
   files.set('elabora/course.js', Buffer.from(`window.ELABORA_COURSE = ${JSON.stringify(data)};\n`));
   // The player's interface sounds the course data names, and what every sound is, for the LMS's
@@ -355,7 +362,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     const translated = compileCourseData(other.project, keys, {
       buildId, ...assetPathOf, interfaceSounds: interfaceSettings, ...linesOf(otherLines.get(other.language)),
       ...(own?.size ? { narration: (screen: string, layer?: string) => own.get(trackName(screen, layer ?? null))?.track } : {}),
-      ...(delivery ? { delivery } : {}), ...free, ...several
+      ...(delivery ? { delivery } : {}), ...free, ...ownLock, ...several
     });
     files.set(`elabora/course.${other.language}.js`, Buffer.from(`(window.ELABORA_COURSES = window.ELABORA_COURSES || {})[${JSON.stringify(other.language)}] = ${JSON.stringify(translated)};\n`));
   }
