@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.8/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.9/component.schema.json",
   "id": "ratio-card",
   "title": "Ratio card",
   "description": "A key ratio as a large figure, with its label and the configuration that gives it. Two to four side by side, for example in the cards slot of the hero layout.",

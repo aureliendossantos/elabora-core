@@ -36,6 +36,13 @@ export type OutlineLabel = typeof OUTLINE_LABELS[number];
 
 export const CONTROLS_DEFAULTS: Readonly<ControlsOptions> = { seekBar: true, captionsByDefault: false, volume: true, transcript: true, speeds: '0.75-2' };
 
+// The progress: in parts (one per section, each a button to it), or one bar in one piece; its percentage.
+export interface ProgressOptions {
+  parts: boolean;
+  percent: boolean;
+}
+export const PROGRESS_DEFAULTS: Readonly<ProgressOptions> = { parts: true, percent: true };
+
 // The speeds learners may choose, by option.
 export const SPEEDS: Readonly<Record<ControlsOptions['speeds'], readonly number[]>> = {
   none: [1],
@@ -47,9 +54,10 @@ export const SPEEDS: Readonly<Record<ControlsOptions['speeds'], readonly number[
 export type ConfiguredItem =
   | { id: 'logo'; enabled: boolean; options: { asset: string | null; alt: string; plate: boolean } }
   | { id: 'outline'; enabled: boolean; options: { label: OutlineLabel } }
+  | { id: 'progress'; enabled: boolean; options: ProgressOptions }
   | { id: 'controls'; enabled: boolean; options: ControlsOptions }
   | { id: 'glossary'; enabled: boolean; options: { linkTerms: boolean } }
-  | { id: Exclude<PlayerItemId, 'logo' | 'outline' | 'controls' | 'glossary'>; enabled: boolean; options: Record<string, never> };
+  | { id: Exclude<PlayerItemId, 'logo' | 'outline' | 'progress' | 'controls' | 'glossary'>; enabled: boolean; options: Record<string, never> };
 
 export interface ConfiguredBar {
   position: 'window' | 'page';
@@ -92,12 +100,13 @@ export function configuredItem(item: PlayerItem): ConfiguredItem | null {
   if (!isItemId(item.id)) return null;
   const enabled = item.enabled !== false;
   const options = isRecord(item.options) ? item.options : {};
-  const flag = (name: keyof ControlsOptions | 'plate' | 'linkTerms', fallback: boolean) => (typeof options[name] === 'boolean' ? options[name] as boolean : fallback);
+  const flag = (name: keyof ControlsOptions | keyof ProgressOptions | 'plate' | 'linkTerms', fallback: boolean) => (typeof options[name] === 'boolean' ? options[name] as boolean : fallback);
   switch (item.id) {
     case 'logo': return { id: 'logo', enabled, options: { asset: typeof options.asset === 'string' && options.asset ? options.asset : null, alt: typeof options.alt === 'string' ? options.alt : '', plate: flag('plate', false) } };
     case 'glossary': return { id: 'glossary', enabled, options: { linkTerms: flag('linkTerms', true) } };
     // « Espace flexible »: always on.
     case 'spacer': return { id: 'spacer', enabled: true, options: {} };
+    case 'progress': return { id: 'progress', enabled, options: { parts: flag('parts', PROGRESS_DEFAULTS.parts), percent: flag('percent', PROGRESS_DEFAULTS.percent) } };
     case 'outline': return { id: 'outline', enabled, options: { label: (OUTLINE_LABELS as readonly unknown[]).includes(options.label) ? options.label as OutlineLabel : 'outline' } };
     case 'controls': return {
       id: 'controls', enabled,
@@ -207,6 +216,7 @@ export function shownPlayer(config: PlayerConfig, content: PlayerContent, { asse
       switch (item.id) {
         case 'logo': return [{ id: 'logo', src: assetPath(item.options.asset ?? ''), alt: item.options.alt, plate: item.options.plate }];
         case 'outline': return [{ id: 'outline', label: item.options.label }];
+        case 'progress': return [{ id: 'progress', parts: item.options.parts, percent: item.options.percent }];
         case 'controls': return [{ id: 'controls', seekBar: item.options.seekBar, captionsByDefault: item.options.captionsByDefault, volume: item.options.volume, transcript: item.options.transcript, speeds: [...SPEEDS[item.options.speeds]] }];
         default: return [{ id: item.id }];
       }

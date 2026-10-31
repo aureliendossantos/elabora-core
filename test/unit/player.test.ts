@@ -219,6 +219,23 @@ test('update_player: items enabled, moved and given options, tokens, content, in
   assert.equal(fs.readFileSync(path.join(dir, 'course.json'), 'utf8'), before);
 });
 
+test('the progress\'s options: in parts with its percentage by default, else one bar in one piece or no percentage; an unknown option is refused', () => {
+  const dir = copyExample();
+  const progress = (data: CourseData) => data.player.top!.items.find((item) => item.id === 'progress');
+  assert.deepEqual(progress(compiled(dir)), { id: 'progress', parts: true, percent: true });
+  assert.equal(edit.updatePlayer(dir, { options: { progress: { parts: false, percent: false } } }).ok, true);
+  assert.deepEqual(readJSON(dir, 'course.json').player.top.items.find((item: { id: string }) => item.id === 'progress'), { id: 'progress', options: { parts: false, percent: false } });
+  assert.deepEqual(progress(compiled(dir)), { id: 'progress', parts: false, percent: false });
+  assert.ok(!codes(validateDir(dir).diagnostics).some((code) => code.startsWith('E_')));
+  // null puts an option back to its default.
+  edit.updatePlayer(dir, { options: { progress: { parts: null } } });
+  assert.deepEqual(progress(compiled(dir)), { id: 'progress', parts: true, percent: false });
+  const course = readJSON(dir, 'course.json');
+  course.player.top.items.find((item: { id: string }) => item.id === 'progress').options.segments = 3;
+  writeJSON(dir, 'course.json', course);
+  assert.ok(codes(validateDir(dir).diagnostics).includes('E_SCHEMA'));
+});
+
 test('elabora_player reads the bars with what shows and why not, the tokens with their values, and the findings', () => {
   const dir = copyCourse(); // the test fixture: no narration, no player of its own
   const report = playerReport(dir);

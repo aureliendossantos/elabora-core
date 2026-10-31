@@ -221,3 +221,16 @@ test('course delivery: update_course sets the media preset, checked against the 
   edit.updateCourseSettings(dir, { presentation: { mode: 'slides', fit: { reference: '1280x720' } } });
   assert.deepEqual(readJSON(dir, 'course.json').presentation, { mode: 'slides', fit: { reference: '1280x720' } });
 });
+
+test('update_course: null removes a setting (the last pronunciation, the sounds), never one a course needs', () => {
+  const dir = copyExample();
+  edit.updateCourseSettings(dir, { pronunciations: { fr: [{ text: 'DNS', say: 'dé enne esse' }] }, sounds: { interface: { when: 'on' } } });
+  assert.deepEqual(readJSON(dir, 'course.json').sounds, { interface: { when: 'on' } });
+  edit.updateCourseSettings(dir, { pronunciations: null, sounds: null });
+  const course = readJSON(dir, 'course.json');
+  assert.ok(!('pronunciations' in course) && !('sounds' in course));
+  // Left out, a setting stays as it is.
+  edit.updateCourseSettings(dir, { sounds: undefined, title: course.title });
+  assert.ok(!('sounds' in readJSON(dir, 'course.json')));
+  assert.throws(() => edit.updateCourseSettings(dir, { title: null }), /title: a course needs it/);
+});

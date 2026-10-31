@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.8/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.9/component.schema.json",
   "id": "hotspot",
   "title": "Hotspot",
   "description": "A numbered marker placed over a figure that the learner selects to reveal what it points at (a click event; usually reveal-step). It pulses while it is the next thing to select, then stays as a plain marker.",

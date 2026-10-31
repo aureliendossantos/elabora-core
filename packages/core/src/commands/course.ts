@@ -5,13 +5,21 @@ import { keySubject } from '../diagnostics/index.ts';
 
 // Settings of course.json that update_course replaces (sections included: reorders become moves).
 export const COURSE_FIELDS = ['title', 'description', 'version', 'durationMinutes', 'theme', 'presentation', 'navigation', 'completion', 'tracking', 'delivery', 'ui', 'sections', 'speakers', 'pronunciations', 'narration', 'sounds'] as const;
-export type UpdateCourseArgs = { [K in (typeof COURSE_FIELDS)[number]]?: Course[K] };
+// A field left out stays as it is; null removes it (the last pronunciation, the sounds), never one a course needs.
+export type UpdateCourseArgs = { [K in (typeof COURSE_FIELDS)[number]]?: Course[K] | null };
+const REQUIRED: ReadonlySet<string> = new Set(['title', 'version', 'sections']);
 
 export function updateCourseSettings(context: CommandContext, fields: UpdateCourseArgs): CommandOutput<Record<string, never>> {
   const draft = new Draft(context.files);
   const course = draft.json<Course>('course.json');
   const record = course as Record<string, unknown>;
-  for (const key of COURSE_FIELDS) if (fields[key] !== undefined) record[key] = fields[key];
+  for (const key of COURSE_FIELDS) {
+    const value = fields[key];
+    if (value === undefined) continue;
+    if (value !== null) record[key] = value;
+    else if (REQUIRED.has(key)) throw new CommandError(`${key}: a course needs it, so it cannot be removed (null).`);
+    else delete record[key];
+  }
   draft.writeJson('course.json', course);
   return { files: draft.files(), result: {} };
 }

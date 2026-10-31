@@ -87,7 +87,8 @@ export type PlayerItemData =
   // label: what its button reads, « Sommaire », the title of the part shown or of the screen shown.
   | { id: 'outline'; label: 'outline' | 'section' | 'screen' }
   | { id: 'controls'; seekBar: boolean; captionsByDefault: boolean; volume: boolean; transcript: boolean; speeds: number[] }
-  | { id: 'title' | 'progress' | 'spacer' | 'resources' | 'glossary' | 'language' | 'display' | 'credits' | 'previous' | 'next' | 'exit' };
+  | { id: 'progress'; parts: boolean; percent: boolean }
+  | { id: 'title' | 'spacer' | 'resources' | 'glossary' | 'language' | 'display' | 'credits' | 'previous' | 'next' | 'exit' };
 
 export type PlayerItemId = PlayerItemData['id'];
 

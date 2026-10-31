@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.9/blocks/audio.schema.json",
+  "title": "audio block props",
+  "description": "An audio file (narration, interview, ambiance) the learner plays, with its transcript unless it is decorative.",
+  "x-category": "content",
+  "x-ai-instructions": "Do not duplicate the narration as on-screen text (E4). A transcript is mandatory for a sound that carries information (F3); an ambiance or music that carries none is decorative: true. No autoplay.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["asset", "title"],
+  "properties": {
+    "asset": { "$ref": "../defs.schema.json#/$defs/assetPath", "description": "MP3, M4A or OGG file." },
+    "title": { "type": "string", "minLength": 1, "maxLength": 200, "x-translatable": true },
+    "transcript": { "$ref": "../defs.schema.json#/$defs/markdown", "description": "What is said, for those who cannot hear it. Required unless decorative.", "x-translatable": true },
+    "decorative": { "type": "boolean", "default": false, "description": "True only if the sound carries no information (an ambiance, music): no transcript. The learner still starts it." },
+    "generated": { "type": "boolean", "default": false }
+  }
+}

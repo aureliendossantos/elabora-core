@@ -358,7 +358,7 @@ test('the progress in parts: a segment per section, the part shown, Tab and the 
   });
 });
 
-test('the progress in one piece for a course without parts; the outline\'s button with the part\'s title, one width on every screen', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
+test('the progress in one piece for a course without parts, or with options.progress.parts false, its percentage hidden; the outline\'s button with the part\'s title, one width on every screen', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
   const single = copyExample();
   const course = JSON.parse(fs.readFileSync(path.join(single, 'course.json'), 'utf8'));
   course.sections = [{ id: 'tout', title: 'Tout', screens: course.sections.flatMap((section: { screens: string[] }) => section.screens) }];
@@ -367,9 +367,13 @@ test('the progress in one piece for a course without parts; the outline\'s butto
     assert.equal(await page.locator('.t-part').count(), 0);
     assert.equal(await page.locator('.t-item--progress:not([data-parts]) .t-progress[role="progressbar"]').getAttribute('aria-valuetext'), '0 %');
   });
+  // The progress in one piece and without its percentage in a course of three parts (options.progress).
   const dir = copyExample();
-  edit.updatePlayer(dir, { options: { outline: { label: 'section' } } });
+  edit.updatePlayer(dir, { options: { outline: { label: 'section' }, progress: { parts: false, percent: false } } });
   await player(dir, async (page) => {
+    assert.equal(await page.locator('.t-part').count(), 0);
+    assert.equal(await page.locator('.t-progress-value').count(), 0);
+    assert.equal(await page.locator('.t-item--progress:not([data-parts]) .t-progress[role="progressbar"]').getAttribute('aria-valuetext'), '0 %');
     const label = () => page.evaluate(() => [document.querySelector('.t-outline-label')!.textContent, document.querySelector('.t-outline-btn')!.getAttribute('aria-label'), Math.round(document.querySelector('.t-outline-btn')!.getBoundingClientRect().width)]);
     const first = await label();
     assert.deepEqual(first.slice(0, 2), ['Découvrir', 'Sommaire : Découvrir']);

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://elabora.studio/schemas/0.1.9/blocks/results.schema.json",
+  "title": "results block props",
+  "description": "Shows the learner's score and status. The final status is decided when the assessment is complete, and shown here, rather than sent at exit.",
+  "x-category": "assessment",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "showScore": { "type": "boolean", "default": true },
+    "showStatus": { "type": "boolean", "default": true },
+    "allowRetry": { "type": "boolean", "default": false, "description": "Offer to retake scored items when failed. A failed status is never downgraded to incomplete." },
+    "passedMessage": { "$ref": "../defs.schema.json#/$defs/markdown", "x-translatable": true },
+    "failedMessage": { "$ref": "../defs.schema.json#/$defs/markdown", "x-translatable": true },
+    "completedMessage": { "$ref": "../defs.schema.json#/$defs/markdown", "x-translatable": true }
+  }
+}

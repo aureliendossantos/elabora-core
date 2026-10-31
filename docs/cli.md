@@ -498,7 +498,8 @@ player [dir] [--enable <items>] [--disable <items>] [--move <item:bar[:index]>] 
                                                     findings. With changes: one undoable change. The spacer is one per bar,
                                                     always on: --move spacer:top:3 says where the start of the line ends.
                                                     --set controls.speeds=0.75-1.5, outline.label=section,
-                                                    controls.transcript=false, logo.plate=true, glossary.linkTerms=false;
+                                                    controls.transcript=false, logo.plate=true, progress.parts=false,
+                                                    progress.percent=false, glossary.linkTerms=false;
                                                     --token player.top.background=#FFFFFF (=default removes it).
                                                     --link-terms links the glossary's terms (all, or the ids given) the
                                                     first time each is in each screen. --add-resource copies any file into

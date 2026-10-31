@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.8/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.9/component.schema.json",
   "id": "editorial-opener",
   "title": "Editorial part opener",
   "description": "Opens a part of the module like a magazine section: the part's number set very large on the part's colour plate, on the right of the page; the part's title, its standfirst and its page on the left.",

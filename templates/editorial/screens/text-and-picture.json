@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.8/screen.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.9/screen.schema.json",
   "id": "text-and-picture",
   "title": "A title that names the idea of this screen",
   "covers": [

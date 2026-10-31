@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.8/plan.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.9/plan.schema.json",
   "id": "PLAN-ASTER-RDV-V1",
   "title": "Slow down to catch up: orbital rendezvous",
   "businessGoal": "Cut the phasing errors made by new mission operators of Aster Orbital Services (fictional client) in their first simulator campaign, before they assist the flight dynamics team on a satellite-servicing mission.",

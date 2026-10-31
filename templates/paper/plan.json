@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.8/plan.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.9/plan.schema.json",
   "id": "PLAN-PAPER",
   "title": "Your module title",
   "businessGoal": "Replace with the change this module should bring to the team (template placeholder).",

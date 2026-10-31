@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.8/screen.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.9/screen.schema.json",
   "id": "rules",
   "title": "Our rules, and why",
   "showTitle": false,

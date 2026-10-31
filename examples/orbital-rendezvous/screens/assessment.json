@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.8/screen.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.9/screen.schema.json",
   "id": "assessment",
   "title": "Check your planning",
   "covers": ["ITEM-6"],

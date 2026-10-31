@@ -23,6 +23,7 @@ export interface UpdatePlayerArgs {
   options?: {
     logo?: { asset?: string | null; alt?: string | null; plate?: boolean | null };
     outline?: { label?: OutlineLabel | null };
+    progress?: { parts?: boolean | null; percent?: boolean | null };
     glossary?: { linkTerms?: boolean | null };
     controls?: { seekBar?: boolean | null; captionsByDefault?: boolean | null; volume?: boolean | null; transcript?: boolean | null; speeds?: 'none' | '0.75-1.5' | '0.75-2' | null };
   };

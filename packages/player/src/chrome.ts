@@ -100,6 +100,9 @@ export function createChrome(course: CourseData, labels: Labels, { actions, tool
   let progressValue = null as HTMLElement | null;
   let progressPercent = 0;
   let progressText = '';
+  // Its options: in parts (one per section), or one bar in one piece; its percentage shown or not.
+  let progressParts = true;
+  let progressShowsPercent = true;
   // The parts of the progress: their buttons and what they last showed.
   let partButtons: HTMLButtonElement[] = [];
   let parts: PartView[] = [];
@@ -153,6 +156,8 @@ export function createChrome(course: CourseData, labels: Labels, { actions, tool
         break;
       case 'progress':
         progressItem = node;
+        progressParts = data.parts;
+        progressShowsPercent = data.percent;
         progressValue = element('span', { class: 't-progress-value', 'aria-hidden': 'true' });
         // The course's parts, nothing done yet: the player says where the learner is once a screen shows.
         setParts(course.sections.map((section, index) => ({ title: section.title, screens: section.screens.length, done: 0, total: section.screens.length, current: index === 0, locked: index > 0 })));
@@ -319,13 +324,14 @@ export function createChrome(course: CourseData, labels: Labels, { actions, tool
       progressItem.dataset.parts = String(count);
       progressItem.style.setProperty('--t-parts', String(count));
     }
-    progressItem.replaceChildren(progress, progressValue);
+    // The percentage hidden, screen readers still hear it (the bar's value, the toolbar's name).
+    if (progressShowsPercent) progressItem.replaceChildren(progress, progressValue); else progressItem.replaceChildren(progress);
   }
   // What each part shows: its share of the bar, its fill, whether the learner is in it, its name and
   // where it stands for screen readers. The segments are made again only when the parts are not as many.
   function setParts(next: readonly PartView[]) {
     if (!progressItem) return;
-    const count = next.length >= 2 ? next.length : 0;
+    const count = progressParts && next.length >= 2 ? next.length : 0;
     if (!progress || count !== partButtons.length) { buildProgress(count); if (progressText) setProgress(progressPercent, progressText); }
     parts = count ? next.map((part) => ({ ...part })) : [];
     parts.forEach((part, index) => {

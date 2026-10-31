@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.8/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.9/component.schema.json",
   "id": "watercolor-part",
   "title": "Watercolour part opener",
   "description": "Opens a part of the module: the part's number set very large in italic, over a wash of the part's colour, beside the opening's head (the part's title and its lead), then its page.",
