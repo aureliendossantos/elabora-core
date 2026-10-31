@@ -40,7 +40,7 @@ export function dialogueKeys(block: string, keys: StateKeys, lock: Pick<StateLoc
   const choicePrefix = `choice:${block}#`;
   const endingPrefix = `ending:${block}#`;
   const all = new Map<string, string>([...Object.entries(lock?.keys ?? {}), ...Object.entries(keys)]);
-  const ranked = (prefix: string) => [...all].filter(([entity]) => entity.startsWith(prefix)).sort(([, a], [, b]) => parseInt(a, 36) - parseInt(b, 36) || a.localeCompare(b));
+  const ranked = (prefix: string) => [...all].filter(([entity]) => entity.startsWith(prefix)).sort(([, a], [, b]) => parseInt(a, 36) - parseInt(b, 36) || String(a).localeCompare(String(b)));
   ranked(choicePrefix).forEach(([entity, key], place) => {
     const ref = entity.slice(choicePrefix.length);
     if (keys[entity] === undefined) return;

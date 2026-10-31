@@ -28,8 +28,8 @@ test('fit keys: a screen file, a component, the object code and an image change 
   // The outline of the bars shows every screen's title: a title is the one change every screen sees.
   assert.deepEqual(changed(before, keys(dir)), all);
   before = keys(dir);
-  const block = accueil.blocks.find((candidate: { type: string }) => candidate.type === 'callout');
-  block.props.markdown = `${block.props.markdown} Encore.`;
+  const block = accueil.blocks.find((candidate: { type: string }) => candidate.type === 'support-ticket');
+  block.props.subject = `${block.props.subject} (encore)`;
   writeJSON(dir, 'screens/accueil.json', accueil);
   assert.deepEqual(changed(before, keys(dir)), ['accueil']);
 
@@ -41,7 +41,7 @@ test('fit keys: a screen file, a component, the object code and an image change 
   before = keys(dir);
   const template = path.join(dir, 'components/network-path/template.html');
   fs.writeFileSync(template, fs.readFileSync(template, 'utf8').replace('class="network-path__caption"', 'class="network-path__caption network-path__caption--revu"'));
-  assert.deepEqual(changed(before, keys(dir)), ['chemin', 'premier-reflexe'], 'the path of chemin, and the one of the layer rappel-regle');
+  assert.deepEqual(changed(before, keys(dir)), ['chemin', 'premier-reflexe', 'titre'], 'the path of chemin and of titre, and the one of the layer rappel-regle');
 
   // The code of a free object: the screen that places it.
   before = keys(dir);

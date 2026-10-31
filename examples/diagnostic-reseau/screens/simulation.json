@@ -1,23 +1,71 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.8/screen.schema.json",
   "id": "simulation",
-  "title": "Simulation : trouvez l'équipement défaillant",
-  "covers": ["ITEM-4"],
+  "title": "Trouver ce qui bloque",
+  "covers": [
+    "ITEM-4"
+  ],
   "completeWhen": "interactions-done",
   "blocks": [
-    { "id": "simulation-consigne", "type": "text", "props": { "markdown": "Inspectez les équipements **dans l'ordre du chemin**. Cliquez sur un équipement (ou utilisez Tab puis Entrée) pour le contrôler." } },
-    { "id": "simulation-scene", "type": "free-object", "width": "wide", "props": {
-      "object": "diagnostic-reseau",
-      "title": "Simulation du réseau de l'étage comptable",
-      "scored": true,
-      "weight": 2,
-      "props": { "instruction": "Repérez l'équipement qui bloque les paquets de Marc.", "failingDevice": "parefeu", "packetSpeed": 1 },
-      "textAlternative": "**Version texte de la simulation.** Le poste de Marc a une adresse IP valide. Le voyant du port sur le commutateur est vert. Le routeur transmet les paquets vers le réseau des serveurs. Le journal du pare-feu montre des paquets rejetés à destination du port 9100 du serveur d'impression. Le serveur d'impression est en ligne mais ne reçoit rien. Quel équipement est en panne ? Réponse : le pare-feu, dont une règle bloque le port 9100."
-    } },
-    { "id": "simulation-bravo", "type": "callout", "hidden": true, "props": { "variant": "tip", "title": "Panne trouvée", "markdown": "Une règle du pare-feu bloquait le port d'impression. En suivant le chemin dans l'ordre, vous l'avez trouvée sans couper aucun service." } }
+    {
+      "id": "simulation-scene",
+      "type": "free-object",
+      "width": "wide",
+      "props": {
+        "object": "diagnostic-reseau",
+        "title": "Simulation du réseau de l'étage comptable",
+        "scored": true,
+        "weight": 2,
+        "props": {
+          "instruction": "Poursuivez le diagnostic de Marc dans l’ordre. Cliquez sur un équipement, ou utilisez Tab puis Entrée.",
+          "failingDevice": "parefeu",
+          "packetSpeed": 1
+        },
+        "textAlternative": "**Version texte de la simulation.** Le poste de Marc a une adresse IP valide. Le voyant du port sur le commutateur est vert. Le routeur transmet les paquets vers le réseau des serveurs. Le journal du pare-feu montre des paquets rejetés à destination du port 9100 du serveur d'impression. Le serveur d'impression est en ligne mais ne reçoit rien. Quel équipement est en panne ? Réponse : le pare-feu, dont une règle bloque le port 9100.",
+        "narrowAspectRatio": "9:16"
+      }
+    },
+    {
+      "id": "simulation-bravo",
+      "type": "callout",
+      "hidden": true,
+      "props": {
+        "variant": "tip",
+        "title": "Panne trouvée",
+        "markdown": "Une règle du pare-feu bloque le port d’impression. Le diagnostic a localisé la panne sans redémarrer le serveur."
+      }
+    }
   ],
   "events": [
-    { "id": "simulation-indice", "on": { "type": "object.event", "target": "simulation-scene", "name": "hint_shown" }, "do": [ { "type": "set-variable", "variable": "indiceVu", "value": true } ] },
-    { "id": "simulation-fin", "description": "Afficher l'explication quand la panne est trouvée.", "on": { "type": "object.event", "target": "simulation-scene", "name": "completed" }, "do": [ { "type": "show-block", "block": "simulation-bravo" } ] }
+    {
+      "id": "simulation-indice",
+      "on": {
+        "type": "object.event",
+        "target": "simulation-scene",
+        "name": "hint_shown"
+      },
+      "do": [
+        {
+          "type": "set-variable",
+          "variable": "indiceVu",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "simulation-fin",
+      "description": "Afficher l'explication quand la panne est trouvée.",
+      "on": {
+        "type": "object.event",
+        "target": "simulation-scene",
+        "name": "completed"
+      },
+      "do": [
+        {
+          "type": "show-block",
+          "block": "simulation-bravo"
+        }
+      ]
+    }
   ]
 }

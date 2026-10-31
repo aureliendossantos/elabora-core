@@ -423,7 +423,7 @@ test('review comments: each comment placed in the course\'s sources, with what c
 
 test('MCP: the author\'s AI reads reviews and placed comments; no tool publishes, shares, answers or resolves', async () => {
   const { dir, review, version } = await reviewedCourse('mcp-author');
-  fake.reviewerComment(review, { version, language: 'fr', screen: '0', block: 'accueil-objectifs', frame: { width: 1600, height: 900 } }, 'Objectifs : trop vagues.');
+  fake.reviewerComment(review, { version, language: 'fr', screen: '0', block: 'accueil-situation', frame: { width: 1600, height: 900 } }, 'Objectifs : trop vagues.');
   for (const readOnly of [false, true]) {
     const server = createMcpServer(dir, { readOnly });
     const client = new Client({ name: 'cloud-test', version: '1' });
@@ -437,7 +437,7 @@ test('MCP: the author\'s AI reads reviews and placed comments; no tool publishes
     assert.deepEqual([list.space, list.course, list.reviews.map((r: { id: string }) => r.id)], ['mcp-author', 'diagnostic-reseau', [review]]);
     const answer = JSON.parse(((await client.callTool({ name: 'elabora_review_comments', arguments: { state: 'open' } })).content as { text: string }[])[0].text);
     const [comment] = answer.reviews[0].comments;
-    assert.deepEqual([comment.place.screen.file, comment.place.block.type, comment.text], ['screens/accueil.json', 'callout', 'Objectifs : trop vagues.']);
+    assert.deepEqual([comment.place.screen.file, comment.place.block.type, comment.text], ['screens/accueil.json', 'text', 'Objectifs : trop vagues.']);
     await client.close();
   }
   // Signed out: the tool says to ask the author, never for a code.

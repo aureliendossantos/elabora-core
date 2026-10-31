@@ -23,7 +23,7 @@ pnpm install
 
 ## Validate, build and test a sample
 
-[`examples/diagnostic-reseau`](../examples/diagnostic-reseau/) is a short French module: a plan, six screens, a decision, a 3D free object, an assessment and two narrated screens.
+[`examples/diagnostic-reseau`](../examples/diagnostic-reseau/) is a short French module: a plan, seven screens (a title screen first), a decision, a 3D free object, an assessment and three narrated screens.
 
 ```bash
 node bin/elabora.js validate examples/diagnostic-reseau --profile moodle,successfactors

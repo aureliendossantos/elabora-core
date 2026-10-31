@@ -16,12 +16,12 @@ import { hasFfmpeg } from '../narration.ts';
 
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
 const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-// The sample: two narrated screens, a glossary its texts link to, a PDF among its resources.
+// The sample: three narrated screens after its title screen, a glossary its texts link to, a PDF among its resources.
 const copyExample = () => copyCourse(path.join(ROOT, 'examples/diagnostic-reseau'));
 
 // clock: the page's timers on Playwright's clock, which only the test moves (a loaded computer cannot
 // run them out between two of its steps).
-async function player(dir: string, run: (page: Page) => Promise<void>, { width = 1600, height = 900, clock = false } = {}) {
+async function player(dir: string, run: (page: Page) => Promise<void>, { width = 1600, height = 900, clock = false, start = 'accueil' } = {}) {
   const b = await build(dir, { emit: 'dir', out: tmp('elabora-player-'), writeLock: false, debug: true });
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
   const server = await startServer();
@@ -37,6 +37,8 @@ async function player(dir: string, run: (page: Page) => Promise<void>, { width =
     await page.waitForFunction(() => (window as PlayerWindow).__elabora);
     await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
     await page.evaluate(() => { const t = (window as PlayerWindow).__elabora; for (const s of t.engine.screens) t.engine.st.visited.add(s.key); });
+    // The title screen has no voice: the checks start on the first narrated one.
+    await page.evaluate((id) => (window as PlayerWindow).__elabora.go(id), start);
     await run(page);
     assert.deepEqual(errors, []);
   } finally {
