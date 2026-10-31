@@ -36,12 +36,7 @@ node bin/elabora.js mcp examples/diagnostic-reseau     # an MCP server on stdio,
 node bin/elabora.js tools list --json                  # or the same operations from a shell
 ```
 
-With the Elabora app installed, Claude Code and Codex connect it through the plugin of this repository, and Claude (the desktop app) through its extension: [plugins/](plugins/README.md).
-
-```bash
-claude plugin install elabora --marketplace aureliendossantos/elabora-core   # in a session: /plugin install elabora --marketplace aureliendossantos/elabora-core
-codex plugin marketplace add aureliendossantos/elabora-core --sparse .agents --sparse plugins/elabora && codex plugin add elabora@elabora
-```
+Coding agents (Claude Code, Codex…) need nothing more: opened in a course's folder, they read its `AGENTS.md` and run `elabora`. Claude, the desktop app, has no shell: its extension connects the server to the courses the author picks ([plugins/](plugins/README.md)).
 
 Agents start with `elabora_overview`, follow the course's `AGENTS.md` and load the skills the server serves. Writes are journaled: `elabora undo --batch` takes back a whole batch of AI work and keeps what people edited since. Versions of the plan, the client's validation, publishing and paid services stay with people. [Agent tools](docs/mcp-tools.md)
 
