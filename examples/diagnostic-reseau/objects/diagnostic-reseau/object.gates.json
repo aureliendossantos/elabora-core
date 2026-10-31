@@ -2,7 +2,7 @@
   "object": "diagnostic-reseau",
   "version": "1.0.0",
   "elabora": "0.1.0",
-  "at": "2026-10-31T00:29:09.425Z",
+  "at": "2026-10-31T00:45:12.417Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -12,7 +12,7 @@
     "smoke": "passed",
     "behaviour": "passed",
     "budget": "passed",
-    "visual": "recorded",
+    "visual": "passed",
     "accessibility": "passed"
   },
   "perf": {
@@ -23,13 +23,13 @@
     "maxTextureSize": 8192,
     "webglContexts": 1,
     "contextLost": false,
-    "bootMs": 301,
+    "bootMs": 325,
     "bootSamples": [
-      296,
-      311,
-      309,
-      297,
-      301
+      316,
+      325,
+      322,
+      330,
+      339
     ]
   },
   "tests": [
