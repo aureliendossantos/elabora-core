@@ -327,7 +327,7 @@ test('versions and notes stay with the course (its archive, its backups), never 
   const { createVersion } = await import('@elabora/node/backups/index');
   const { proofMarkdown } = await import('@elabora/core/compile/proof');
   const { ROOT } = await import('../helpers.ts');
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau')); // V2 validated, two changes since, a note
+  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau')); // V2 validated, nine changes since, a note
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-versions-build-'));
   try {
     for (const options of [{ release: true }, { release: true, target: 'web' as const }]) {
@@ -338,11 +338,11 @@ test('versions and notes stay with the course (its archive, its backups), never 
       assert.ok(![...files.values()].some((content) => content.toString('utf8').includes('Formulation plus directe')), 'no note for the client in a package');
       const plan = result.report!.plan;
       assert.deepEqual(plan.validated && [plan.validated.version, plan.validated.by], ['V2', 'Claire Martin, Hélios Énergie (client fictif)']);
-      assert.deepEqual(plan.changesSince?.changes.map((change) => change.key), ['text:TXT-2', 'item:ITEM-3']);
+      assert.deepEqual(plan.changesSince?.changes.map((change) => change.key), ['item:ITEM-7', 'item:ITEM-1', 'text:TXT-1', 'item:ITEM-2', 'text:TXT-2', 'item:ITEM-3', 'item:ITEM-4', 'item:ITEM-5', 'item:ITEM-6']);
       assert.ok(result.diagnostics.some((d) => d.code === 'W_PLAN_MODIFIED_SINCE_VALIDATION'));
       const proof = proofMarkdown(result.report!);
       assert.match(proof, /V2, validée par Claire Martin, Hélios Énergie \(client fictif\) le 2026-10-05 \(Storyboard v3 validé par courriel\)/);
-      assert.match(proof, /2 modification\(s\) depuis la V2 validée, livrées sans validation du client/);
+      assert.match(proof, /9 modification\(s\) depuis la V2 validée, livrées sans validation du client/);
       assert.match(proof, /  - Texte TXT-2 « Suivez toujours le chemin/);
     }
     const archive = await exportProject(dir, path.join(out, 'course.elabora'));
