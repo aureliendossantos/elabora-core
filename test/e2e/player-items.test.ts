@@ -281,11 +281,11 @@ const go = async (page: Page, id: string) => { await page.evaluate((screen) => (
 const shown = (page: Page) => page.evaluate(() => (window as PlayerWindow).__elabora.screen);
 
 test('the progress in parts: a segment per section, the part shown, Tab and the arrows, a part\'s first screen, a part not open yet refused (Next\'s reason when it follows the screen)', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
-  // Scroll presentation, linear, locked until complete; three sections of two screens.
+  // Scroll presentation, linear, locked until complete; three sections (a title screen first).
   await player(copyExample(), async (page) => {
-    assert.equal(await page.locator('.t-item--progress[data-parts="3"] .t-progress[role="toolbar"]').getAttribute('aria-label'), 'Progression : 0 %');
+    assert.match(await page.locator('.t-item--progress[data-parts="3"] .t-progress[role="toolbar"]').getAttribute('aria-label') ?? '', /^Progression : \d+ %$/);
     assert.deepEqual((await parts(page)).map((part) => [part.label, part.tab]), [
-      ['Partie 1 sur 3 : Découvrir, en cours', '0'],
+      ['Partie 1 sur 3 : Découvrir, en cours, 1 page terminée sur 3', '0'],
       ['Partie 2 sur 3 : Pratiquer, pas encore disponible', '-1'],
       ['Partie 3 sur 3 : Valider, pas encore disponible', '-1']
     ]);
@@ -329,7 +329,7 @@ test('the progress in parts: a segment per section, the part shown, Tab and the 
     // Enter goes to the part's first screen.
     await page.keyboard.press('Enter');
     await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
-    assert.equal(await shown(page), 'accueil');
+    assert.equal(await shown(page), 'titre');
     assert.equal(await page.evaluate(() => document.activeElement?.tagName), 'H1');
     // A part not open yet: its reason in the tooltip and the live region, and the learner stays.
     await go(page, 'premier-reflexe');

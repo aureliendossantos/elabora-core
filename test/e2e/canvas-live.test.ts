@@ -74,7 +74,8 @@ test('the live bars: panels, the outline, Previous and Next said to the host, th
     await page.click('.t-glossary-btn');
     assert.equal(await page.locator('.t-sheet[data-sheet="glossary"]').isVisible(), true);
     assert.equal(await isClosed(page.locator('.t-sheet[data-sheet="resources"]')), true, 'one panel open at a time');
-    // A term of the screen shows its definition.
+    // A term of the screen shows its definition (in the roles' accordion: the router's panel opened).
+    await page.click('#t-main .t-panels-summary >> text=Le routeur');
     await page.hover('#t-main a.t-term[data-term="paquet"]');
     await page.waitForFunction(() => { const tip = document.getElementById('t-tip'); return !!tip && !tip.hidden && /Petit morceau/.test(tip.textContent ?? ''); });
     let messages = await sent();
@@ -83,11 +84,11 @@ test('the live bars: panels, the outline, Previous and Next said to the host, th
     await page.click('.t-nav-btn--next');
     await page.click('.t-nav-btn--previous');
     await page.click('.t-outline-btn');
-    assert.match(await page.locator('.t-menu-where').textContent() ?? '', /2 sur 6/);
-    await page.click('.t-menu-item >> text=Simulation');
-    // The progress in parts: the learner at the second screen of the first part, every part open; a
+    assert.match(await page.locator('.t-menu-where').textContent() ?? '', /3 sur 7/);
+    await page.click('.t-menu-item >> text=Trouver ce qui bloque');
+    // The progress in parts: the learner at the third screen of the first part, every part open; a
     // part goes to its first screen.
-    assert.deepEqual(await page.$$eval('.t-part', (nodes) => nodes.map((node) => [node.hasAttribute('data-current'), (node as HTMLElement).style.getPropertyValue('--t-part'), node.getAttribute('aria-disabled')])), [[true, '50', null], [false, '0', null], [false, '0', null]]);
+    assert.deepEqual(await page.$$eval('.t-part', (nodes) => nodes.map((node) => [node.hasAttribute('data-current'), (node as HTMLElement).style.getPropertyValue('--t-part'), node.getAttribute('aria-disabled')])), [[true, '67', null], [false, '0', null], [false, '0', null]]);
     await page.click('.t-part:nth-child(3)');
     messages = await sent();
     assert.deepEqual(messages.filter((message) => message.type === 'elabora/navigate'), [
@@ -100,7 +101,7 @@ test('the live bars: panels, the outline, Previous and Next said to the host, th
     // The host renders the screen the author went to: the bars follow.
     await show('premier-reflexe', 2);
     await page.click('.t-outline-btn');
-    assert.match(await page.locator('.t-menu-where').textContent() ?? '', /3 sur 6/);
+    assert.match(await page.locator('.t-menu-where').textContent() ?? '', /4 sur 7/);
     await page.press('.t-outline-btn', 'Escape');
     // Highlight: one item, a spacer of a bar.
     await post({ type: 'elabora/highlight', protocol, item: 'spacer', bar: 'bottom' });

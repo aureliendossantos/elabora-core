@@ -383,7 +383,7 @@ test('the editor\'s canvas renders a timed screen again as the first time: a blo
   const { loadProjectFromDir } = await import('@elabora/node/project-reader');
   const { renderScreen } = await import('@elabora/core/render/screen');
   type CanvasWindow = Window & typeof globalThis & { __elaboraCanvas: import('@elabora/player/canvas').CanvasApi };
-  // The example: on « accueil » the ticket comes on « impression », the aims on « trajet ».
+  // The example: on « accueil » the ticket comes on « impression ».
   const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
   const host = await startCanvasHost({ root: dir });
   const browser = await launchBrowser('chromium');
@@ -397,17 +397,17 @@ test('the editor\'s canvas renders a timed screen again as the first time: a blo
     };
     host.push(renderScreen(loadProjectFromDir(dir), 'accueil', { fields: true }), { id: 1 });
     const first = await states(1);
-    assert.deepEqual(first, [['accueil-illustration', 'shown', false], ['accueil-objectifs', 'shown', false]]);
-    // The callout edited: the screen rendered again, the same view.
+    assert.deepEqual(first, [['accueil-illustration', 'shown', false]]);
+    // The ticket edited: the screen rendered again, the same view.
     const screen = readJSON(dir, 'screens/accueil.json');
-    screen.blocks[2].props.title = 'Dans ce module, en bref';
+    screen.blocks.find((block: { id: string }) => block.id === 'accueil-illustration').props.subject = 'Aucune feuille ne sort';
     writeJSON(dir, 'screens/accueil.json', screen);
     host.push(renderScreen(loadProjectFromDir(dir), 'accueil', { fields: true }), { id: 2 });
     assert.deepEqual(await states(2), first);
     // At a moment of the playhead, rendered again: still that moment.
     host.push(renderScreen(loadProjectFromDir(dir), 'accueil', { fields: true, at: { time: 1 } }), { id: 3 });
     const early = await states(3);
-    assert.deepEqual(early.map(([, state]) => state), ['before', 'before']);
+    assert.deepEqual(early.map(([, state]) => state), ['before']);
     host.push(renderScreen(loadProjectFromDir(dir), 'accueil', { fields: true, at: { time: 1 } }), { id: 4 });
     assert.deepEqual(await states(4), early);
   } finally {
