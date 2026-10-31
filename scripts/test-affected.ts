@@ -23,7 +23,12 @@ if (args.includes('--dry-run')) process.exit(0);
 const run = (label: string, command: string[]): boolean => {
   console.log(`\n── ${label}`);
   const started = Date.now();
-  const status = spawnSync(command[0]!, command.slice(1), { cwd: root, stdio: 'inherit' }).status;
+  // pnpm is a .cmd shim on Windows; executables such as Node still run without a shell.
+  const result = process.platform === 'win32' && command[0] === 'pnpm'
+    ? spawnSync(command.join(' '), { cwd: root, stdio: 'inherit', shell: true })
+    : spawnSync(command[0]!, command.slice(1), { cwd: root, stdio: 'inherit' });
+  if (result.error) console.error(result.error.message);
+  const status = result.status;
   console.log(`── ${label}: ${status === 0 ? 'ok' : 'FAIL'} in ${Math.round((Date.now() - started) / 1000)} s`);
   return status === 0;
 };

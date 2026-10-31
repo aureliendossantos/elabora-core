@@ -116,7 +116,7 @@ export function courseWithDialogue(dialogue: unknown = MARC_DIALOGUE): string {
 // as characters (agent B's SVGs, D61), a messaging dialogue (appel: practice, scored by quality, a cue
 // that shows a block, a retry, a final decision) and a scene (rencontre: assessment, the office
 // backdrop, the cast left and right). presentation: slides (default) or scroll.
-export const DIALOGUES_FIXTURE = path.join(path.dirname(new URL(import.meta.url).pathname), 'fixtures/dialogues');
+export const DIALOGUES_FIXTURE = path.join(import.meta.dirname, 'fixtures/dialogues');
 // Navigation is free (tests go to a screen directly) unless locked is asked.
 export function dialogueCourse({ presentation = 'slides', screens = ['appel', 'rencontre'], locked = false }: { presentation?: 'slides' | 'scroll'; screens?: string[]; locked?: boolean } = {}): string {
   const dir = copyExample();

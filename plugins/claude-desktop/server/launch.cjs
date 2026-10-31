@@ -13,7 +13,11 @@ const path = require('node:path');
 // the app's own Electron runs the CLI as Node, as resources\bin\elabora.cmd does: a .cmd cannot be
 // started without a shell. ELABORA_COMMAND names another elabora (a checkout, a test).
 function candidates() {
-  if (process.env.ELABORA_COMMAND) return [{ command: process.env.ELABORA_COMMAND, args: [] }];
+  if (process.env.ELABORA_COMMAND) {
+    const command = process.env.ELABORA_COMMAND;
+    // A checkout's Node entry point has no executable shebang on Windows.
+    return /\.[cm]?js$/i.test(command) ? [{ command: process.execPath, args: [command] }] : [{ command, args: [] }];
+  }
   const home = os.homedir();
   if (process.platform === 'win32') {
     const dir = path.join(process.env.LOCALAPPDATA || path.join(home, 'AppData', 'Local'), 'Programs', 'elabora');

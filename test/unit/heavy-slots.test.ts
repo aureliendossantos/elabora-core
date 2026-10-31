@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-const module = path.resolve(import.meta.dirname, '../../scripts/heavy-slots.ts');
+const module = new URL('../../scripts/heavy-slots.ts', import.meta.url).href;
 
 // A process that takes a slot, says so, holds it ms milliseconds, then ends (killed with SIGKILL
 // when kill is set: it gives nothing back).
@@ -23,7 +23,7 @@ function holder(env: NodeJS.ProcessEnv, ms: number, kill = false) {
 
 const fresh = (slots: number): NodeJS.ProcessEnv => ({ ...process.env, ELABORA_HEAVY_SLOTS: String(slots), ELABORA_HEAVY_SLOTS_DIR: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-slots-test-')), ELABORA_HEAVY_SLOT: '', NODE_TEST_CONTEXT: undefined });
 
-test('heavy slots: a process waits while every slot is taken, then takes the one given back', async () => {
+test('heavy slots: a process waits while every slot is taken, then takes the one given back', { timeout: 30_000 }, async () => {
   const env = fresh(1);
   const first = holder(env, 1500);
   assert.ok((await first.said).waited < 1000);
@@ -33,7 +33,7 @@ test('heavy slots: a process waits while every slot is taken, then takes the one
   await Promise.all([first.ended, second.ended]);
 });
 
-test('heavy slots: two slots run two at once', async () => {
+test('heavy slots: two slots run two at once', { timeout: 30_000 }, async () => {
   const env = fresh(2);
   const first = holder(env, 1500);
   await first.said;
@@ -42,7 +42,7 @@ test('heavy slots: two slots run two at once', async () => {
   await Promise.all([first.ended, second.ended]);
 });
 
-test('heavy slots: the slot of a process killed is taken back', async () => {
+test('heavy slots: the slot of a process killed is taken back', { timeout: 30_000 }, async () => {
   const env = fresh(1);
   const killed = holder(env, 0, true);
   await killed.said;
@@ -53,7 +53,7 @@ test('heavy slots: the slot of a process killed is taken back', async () => {
   await next.ended;
 });
 
-test('heavy slots: a child of the holder takes its slot at once, a stranger waits', async () => {
+test('heavy slots: a child of the holder takes its slot at once, a stranger waits', { timeout: 30_000 }, async () => {
   const env = fresh(1);
   const parent = holder(env, 2500);
   const handed = (await parent.said).env;
