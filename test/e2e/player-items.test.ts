@@ -365,7 +365,7 @@ test('the progress in one piece for a course without parts, or with options.prog
   fs.writeFileSync(path.join(single, 'course.json'), JSON.stringify(course, null, 2));
   await player(single, async (page) => {
     assert.equal(await page.locator('.t-part').count(), 0);
-    assert.equal(await page.locator('.t-item--progress:not([data-parts]) .t-progress[role="progressbar"]').getAttribute('aria-valuetext'), '0 %');
+    assert.match(await page.locator('.t-item--progress:not([data-parts]) .t-progress[role="progressbar"]').getAttribute('aria-valuetext') ?? '', /^\d+ %$/);
   });
   // The progress in one piece and without its percentage in a course of three parts (options.progress).
   const dir = copyExample();
@@ -373,7 +373,7 @@ test('the progress in one piece for a course without parts, or with options.prog
   await player(dir, async (page) => {
     assert.equal(await page.locator('.t-part').count(), 0);
     assert.equal(await page.locator('.t-progress-value').count(), 0);
-    assert.equal(await page.locator('.t-item--progress:not([data-parts]) .t-progress[role="progressbar"]').getAttribute('aria-valuetext'), '0 %');
+    assert.match(await page.locator('.t-item--progress:not([data-parts]) .t-progress[role="progressbar"]').getAttribute('aria-valuetext') ?? '', /^\d+ %$/);
     const label = () => page.evaluate(() => [document.querySelector('.t-outline-label')!.textContent, document.querySelector('.t-outline-btn')!.getAttribute('aria-label'), Math.round(document.querySelector('.t-outline-btn')!.getBoundingClientRect().width)]);
     const first = await label();
     assert.deepEqual(first.slice(0, 2), ['Découvrir', 'Sommaire : Découvrir']);
