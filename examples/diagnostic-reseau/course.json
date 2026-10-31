@@ -3,15 +3,16 @@
   "format": "elabora/0.1",
   "id": "diagnostic-reseau",
   "title": "Diagnostiquer une panne d'impression réseau",
-  "description": "Module de 15 minutes pour les techniciens support de niveau 1 : suivre le chemin des paquets pour trouver l'équipement en panne.",
+  "description": "Aidez Marc à localiser une panne d'impression réseau : un dialogue, une simulation 3D et deux questions pour suivre le chemin dans l'ordre.",
   "language": "fr",
   "version": "1.0.0",
-  "durationMinutes": 15,
+  "durationMinutes": 6,
   "sections": [
     {
       "id": "decouvrir",
       "title": "Découvrir",
       "screens": [
+        "titre",
         "accueil",
         "chemin"
       ]

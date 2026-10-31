@@ -103,10 +103,11 @@ export async function digestFile(file: string, onBytes?: (bytes: number) => void
   let crc = 0;
   let size = 0;
   const handle = await fs.promises.open(file, 'r');
-  const buffer = Buffer.allocUnsafe(CHUNK);
   try {
+    // Tiny assets must not each leave a megabyte waiting for garbage collection.
+    const buffer = Buffer.allocUnsafe(Math.max(1, Math.min(CHUNK, (await handle.stat()).size)));
     for (;;) {
-      const { bytesRead } = await handle.read(buffer, 0, CHUNK, size);
+      const { bytesRead } = await handle.read(buffer, 0, buffer.length, size);
       if (bytesRead === 0) break;
       const chunk = buffer.subarray(0, bytesRead);
       hash.update(chunk);

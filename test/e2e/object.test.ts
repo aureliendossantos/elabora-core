@@ -13,7 +13,9 @@ import type { DryFrames } from '@elabora/player/dry-frames';
 
 test('the example free object passes gates 2 to 6', { timeout: 180000 }, async () => {
   const dir = copyExample();
-  const r = await testObject(dir, 'diagnostic-reseau');
+  let r = await testObject(dir, 'diagnostic-reseau');
+  // A platform without checked-in baselines records them first; the next run compares them.
+  if (r.ok && r.gates.visual === 'recorded') r = await testObject(dir, 'diagnostic-reseau');
   assert.ok(r.ok, JSON.stringify(r.diagnostics.filter((d) => d.severity === 'error'), null, 1));
   for (const gate of ['smoke', 'behaviour', 'budget', 'visual', 'accessibility'] as const) assert.equal(r.gates[gate], 'passed', gate);
   // Nothing looks at the smoke test's frames, nor at those of tests without snapshots: decided dry.

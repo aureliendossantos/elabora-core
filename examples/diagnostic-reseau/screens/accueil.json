@@ -33,24 +33,6 @@
           "effect": "rise"
         }
       }
-    },
-    {
-      "id": "accueil-objectifs",
-      "type": "callout",
-      "props": {
-        "variant": "info",
-        "title": "Dans ce module",
-        "markdown": "Vous allez apprendre à **localiser l'équipement en panne** en suivant le chemin d'une impression, puis vous entraîner sur une simulation."
-      },
-      "timing": {
-        "in": {
-          "at": {
-            "line": "guide-mission",
-            "word": "trajet"
-          },
-          "effect": "fade"
-        }
-      }
     }
   ],
   "narration": {

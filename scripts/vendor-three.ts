@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as esbuild from 'esbuild';
 
-const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+const root = path.resolve(import.meta.dirname, '..');
 // three's exports do not include ./package.json: walk up from its entry point to its folder.
 let threeDir = path.dirname(fileURLToPath(import.meta.resolve('three')));
 while (!fs.existsSync(path.join(threeDir, 'package.json')) || JSON.parse(fs.readFileSync(path.join(threeDir, 'package.json'), 'utf8')).name !== 'three') {

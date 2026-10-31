@@ -1,44 +1,23 @@
 # Elabora for AI hosts
 
-What connects Elabora to the hosts authors work in. None of it carries a copy of Elabora: each starts the `elabora` command of the Elabora app installed on the computer, whose MCP server serves the tools, the course rules and the skills of that version. A plugin installed from this repository's `main` can be newer or older than the author's app and still say nothing that disagrees with it.
+A coding agent with a shell (Claude Code, Codex, in a terminal or in their desktop apps) needs nothing from here: the Elabora app opens it in the course's folder with a request that names the `elabora` command, and the course's `AGENTS.md` (read by Codex, and by Claude Code through `CLAUDE.md`) says the rest. A plugin for them was tried on 29 Oct 2026 and removed on 31 Oct: it added almost nothing to that, and could fail where the command alone works.
 
-| Folder | Host | Install |
-|---|---|---|
-| [`elabora/`](elabora/) | Claude Code (`.claude-plugin/plugin.json`) and Codex (`.codex-plugin/plugin.json`), sharing `skills/` and `.mcp.json` | From this repository as a marketplace (below) |
-| [`claude-desktop/`](claude-desktop/) | Claude, the desktop app: an MCP bundle (`.mcpb`) | `pnpm run mcpb` writes `dist/elabora.mcpb`; the author opens the file |
+Claude, the desktop app, has no shell. [`claude-desktop/`](claude-desktop/) is its extension, an MCP bundle (`.mcpb`): Claude's chat (and Cowork) then works on the courses the author picks, with the tools, rules and skills of the Elabora installed on the computer. It carries no copy of Elabora.
 
-## The plugin (Claude Code and Codex)
+## The extension
 
-```bash
-# Claude Code (in a session: /plugin install elabora --marketplace aureliendossantos/elabora-core)
-claude plugin install elabora --marketplace aureliendossantos/elabora-core
-# Codex (or /plugins in a session)
-codex plugin marketplace add aureliendossantos/elabora-core --sparse .agents --sparse plugins/elabora
-codex plugin add elabora@elabora
-```
+`manifest.json` (MCPB 0.3) runs `server/launch.cjs` with Claude's own Node. The launcher finds the app (`/Applications/Elabora.app` or `~/Applications/Elabora.app` on macOS; `%LOCALAPPDATA%\Programs\elabora` on Windows, where it runs `Elabora.exe` as Node because a `.cmd` cannot start without a shell) and starts `elabora mcp` on the folders the author picked (`user_config.courses`, several allowed). `ELABORA_COMMAND` names another `elabora` (a checkout, a test). Several folders, or a folder of courses such as the library, need an Elabora whose `elabora mcp` takes several folders (after 0.3.0); 0.3.0 serves one course folder.
 
-The marketplaces are `../.claude-plugin/marketplace.json` (Claude Code) and `../.agents/plugins/marketplace.json` (Codex). Both hosts clone the repository: about 150 MB for Claude Code, which has no partial checkout; Codex's `--sparse` takes only the two folders it needs (2 MB).
-
-- **MCP**: `.mcp.json` starts `elabora mcp .`. Both hosts start it in the session's folder. A course folder is served as it is; a folder of courses is served whole, each operation then taking `course`; elsewhere, the server offers only the documentation, the skills and the app's library, and says how to reach a course (docs/agents.md, « Host integration »). So the plugin can stay enabled everywhere.
-- **Skill**: `skills/elabora/SKILL.md` only sends the agent to the course's `AGENTS.md` and to the server's skills (`elabora://skills/<name>`, `elabora_docs`), as `AGENTS.md` itself says, and covers the two failures: no course here, no `elabora` on the PATH. Keep it free of anything a version of Elabora can change.
-- **`elabora` not on the PATH**: the server fails to start and the host says so (Claude Code: `/mcp`). On macOS, Elabora's settings › Tools for AI install the command; on Windows the installer puts it on the Path. Not checked on Windows: hosts that start a command without a shell may not run `elabora.cmd`.
-- **Version**: `version` in both manifests pins what users have installed until it changes. Raise it (in both) when the plugin's files change.
-
-## The extension (Claude, desktop)
-
-`manifest.json` (MCPB 0.3) runs `server/launch.cjs` with Claude's own Node. The launcher finds the app (`/Applications/Elabora.app` or `~/Applications/Elabora.app` on macOS; `%LOCALAPPDATA%\Programs\elabora` on Windows, where it runs `Elabora.exe` as Node because a `.cmd` cannot start without a shell) and starts `elabora mcp` on the folders the author picked (`user_config.courses`, several allowed). `ELABORA_COMMAND` names another `elabora` (a checkout, a test). Several folders, or a folder of modules such as the library, need an Elabora whose `elabora mcp` takes several folders (after 0.3.0); 0.3.0 serves one module folder.
+- **From the app**: Réglages › Outils pour les IA › « Installer dans Claude », shown when Claude's app is found. The app carries this folder (`claude-extension/` in its resources), packs it into an `.mcpb` and opens it with Claude, which installs it and asks for the folders (elabora-app `src/main/claude-extension.ts`).
+- **From the site**: `/downloads/elabora.mcpb`, which `pnpm run mcpb` builds here (`dist/elabora.mcpb`, validated by the official `mcpb` tool).
 
 ```bash
 pnpm run mcpb                                            # validates, then writes dist/elabora.mcpb
 npx @modelcontextprotocol/inspector --cli -e ELABORA_COMMAND=$PWD/bin/elabora.js node plugins/claude-desktop/server/launch.cjs examples/coffee-in-brief --method tools/list
 ```
 
-Raise `version` in `manifest.json` when the extension changes; the site serves the built file at `/downloads/elabora.mcpb`.
+Raise `version` in `manifest.json` when the extension changes, and copy the built file to the site.
 
-## Directories and submissions
+## Directories
 
-Nothing here is submitted anywhere; that is the founder's call. What each listing asks for:
-
-- **Anthropic's directory (Claude Code, and claude.ai)**: a plugin from a public GitHub repository, submitted at claude.ai/directory/manage, with `claude plugin validate` passing; `icon`, `documentationUrl`, `supportUrl`, `privacyPolicyUrl`, `termsOfServiceUrl` in `plugin.json`. Plugins with a top-level `bin/` are not installed by claude.ai or Cowork (this one has none). The directory no longer takes `.mcpb` submissions: the extension is installed from its file.
-- **OpenAI's plugin directory (Codex, ChatGPT)**: local MCP servers are listed for approved partners only; otherwise a ZIP, a verified identity, listing texts and icon, website, support, privacy and terms URLs, five positive and three negative test cases, a video and release notes. The git marketplace above needs none of it.
-- **The MCP registry**: a `server.json` describing a published package (npm, a container…). Elabora's server comes with the app, not as its own package, so it would first need one.
+Nothing here is submitted anywhere; that is the founder's call. Anthropic's directory no longer takes `.mcpb` submissions: a local server is listed inside a Claude plugin (a public GitHub repository submitted at claude.ai/directory/manage, `claude plugin validate` passing, `icon`, `documentationUrl`, `supportUrl`, `privacyPolicyUrl` and `termsOfServiceUrl` in `plugin.json`). The MCP registry lists published packages (`server.json`); Elabora's server comes with the app, not as its own package.

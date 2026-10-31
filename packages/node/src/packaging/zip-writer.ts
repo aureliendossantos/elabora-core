@@ -142,10 +142,11 @@ async function measureFile(file: string, deflate: boolean): Promise<{ crc: numbe
 // Reads a file into one reused buffer: stored media go through without leaving garbage behind.
 async function eachChunk(file: string, use: (chunk: Buffer) => void | Promise<void>): Promise<void> {
   const handle = await fs.promises.open(file, 'r');
-  const buffer = Buffer.allocUnsafe(CHUNK);
   try {
+    // Bound scratch space by the file too: an archive often contains many small assets.
+    const buffer = Buffer.allocUnsafe(Math.max(1, Math.min(CHUNK, (await handle.stat()).size)));
     for (let position = 0; ;) {
-      const { bytesRead } = await handle.read(buffer, 0, CHUNK, position);
+      const { bytesRead } = await handle.read(buffer, 0, buffer.length, position);
       if (bytesRead === 0) return;
       await use(buffer.subarray(0, bytesRead));
       position += bytesRead;

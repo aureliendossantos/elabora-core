@@ -10,7 +10,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { ROOT, copyExample } from '../helpers.ts';
 import { callAgentTool } from '@elabora/cli';
 
-// The folders a host gives the MCP server (a plugin starts it wherever a session opens; the Claude
+// The folders a host gives the MCP server (the Claude
 // extension, on the folders the author picks): one course, several, or none.
 async function connect(dirs: string | string[]) {
   const server = createMcpServer(dirs, { readOnly: true });
@@ -127,14 +127,12 @@ test('outside a course: a folder that is gone is an error when it is the only on
   }
 });
 
-// The plugins start the installed elabora themselves (plugins/elabora/.mcp.json); the Claude extension
-// goes through its launcher, which finds the app and passes the folders the author picked.
+// The Claude extension goes through its launcher, which finds the app and passes the folders the author picked.
 test('the Claude extension\'s launcher starts elabora mcp on the folders it is given', async () => {
   const dir = copyExample();
   try {
     const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'plugins/claude-desktop/manifest.json'), 'utf8'));
     assert.deepEqual(manifest.server.mcp_config.args, ['${__dirname}/server/launch.cjs', '${user_config.courses}']);
-    assert.deepEqual(JSON.parse(fs.readFileSync(path.join(ROOT, 'plugins/elabora/.mcp.json'), 'utf8')).mcpServers.elabora, { command: 'elabora', args: ['mcp', '.'] });
     const transport = new StdioClientTransport({ command: process.execPath, args: [path.join(ROOT, 'plugins/claude-desktop/server/launch.cjs'), dir], env: { ...process.env as Record<string, string>, ELABORA_COMMAND: path.join(ROOT, 'bin/elabora.js') }, stderr: 'ignore' });
     const client = new Client({ name: 'test', version: '1' });
     await client.connect(transport);

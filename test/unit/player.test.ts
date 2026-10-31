@@ -84,14 +84,14 @@ test('the player\'s checks: the way back, the end reachable without Next, Quit, 
   course.resources.push({ id: 'fiche-reflexe', title: 'Encore', asset: 'resources/absente.pages' });
   writeJSON(dir, 'course.json', course);
   const screen = readJSON(dir, 'screens/chemin.json');
-  screen.blocks[0].props.markdown += ' Voir le [proxy](glossary:proxy).';
+  screen.blocks.find((block: { id: string }) => block.id === 'chemin-regle').props.markdown += ' Voir le [proxy](glossary:proxy).';
   writeJSON(dir, 'screens/chemin.json', screen);
   const found = validateDir(dir).diagnostics;
   const has = (code: string) => found.filter((d) => d.code === code);
   assert.equal(has('W_PLAYER_NO_WAY_BACK').length, 1);
   const end = has('W_PLAYER_END_UNREACHABLE');
   assert.equal(end.length, 1);
-  assert.equal((end[0].details as { screens: { screen: string }[] }).screens[0].screen, 'accueil', 'the first screen has no way forward');
+  assert.equal((end[0].details as { screens: { screen: string }[] }).screens[0].screen, 'titre', 'the first screen has no way forward');
   assert.equal(has('W_PLAYER_EXIT_HIDDEN').length, 1);
   assert.equal(has('E_PLAYER_ITEM_DUPLICATE')[0].path, '/player/top/items/7');
   assert.deepEqual(has('E_DUPLICATE_ENTRY').map((d) => d.path), ['/resources/2/id']);

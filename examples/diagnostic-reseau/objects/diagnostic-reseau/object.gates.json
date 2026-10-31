@@ -2,8 +2,12 @@
   "object": "diagnostic-reseau",
   "version": "1.0.0",
   "elabora": "0.1.0",
-  "at": "2026-10-05T18:30:18.820Z",
+  "at": "2026-10-31T00:45:12.417Z",
   "ok": true,
+  "browser": {
+    "engine": "electron",
+    "version": "152.0.7977.167"
+  },
   "gates": {
     "smoke": "passed",
     "behaviour": "passed",
@@ -18,13 +22,14 @@
     "geometries": 8,
     "maxTextureSize": 8192,
     "webglContexts": 1,
-    "bootMs": 460,
+    "contextLost": false,
+    "bootMs": 325,
     "bootSamples": [
-      2132,
-      469,
-      423,
-      457,
-      460
+      316,
+      325,
+      322,
+      330,
+      339
     ]
   },
   "tests": [
@@ -45,5 +50,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:9f90284024e5e16717758b49ef531b5796497a3b6ae87e088a973d75e7e02fc3"
+  "fingerprint": "sha256:a1b5d7a90ca85eddfae012ea6ed53cf57af7ed7d44b2ed46a7118e3bd1793f89"
 }

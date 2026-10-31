@@ -22,8 +22,8 @@ Write the plan with elabora_write_plan, even after a validation, and tell the au
 Use only tools exposed by this connection; CLI/file tools are alternatives when the host has them. Running a stdio server in a shell does not connect your agent.`;
 
 // Outside a course, the server offers what needs none (the documentation, the skills, the app's
-// library) and says how to reach one: a host plugin starts it wherever its session opens.
-const NO_COURSE = `Only the documentation, the skills and the app's library are offered here. elabora_projects_list gives the author's courses and their folders. To work on one, this server must be started on its folder: open the session in that folder (a host that starts Elabora where the session opens, as its Claude Code and Codex plugins do), or add the folder to Elabora's settings in the host (its Claude extension). With a shell, elabora tools call <tool> <folder> --args '<json>' runs any operation on a course. Do not change the author's agent configuration yourself.`;
+// library) and says how to reach one.
+const NO_COURSE = `Only the documentation, the skills and the app's library are offered here. elabora_projects_list gives the author's courses and their folders. To work on one, this server must be started on its folder: add the folder to Elabora's settings in the host (in Claude, the extension's), or open the session in that folder. With a shell, elabora tools call <tool> <folder> --args '<json>' runs any operation on a course. Do not change the author's agent configuration yourself.`;
 
 const isCourse = (dir: string) => fs.existsSync(path.join(dir, 'course.json'));
 
