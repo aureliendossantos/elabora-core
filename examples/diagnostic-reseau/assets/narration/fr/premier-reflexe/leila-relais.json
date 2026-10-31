@@ -1,0 +1,88 @@
+{
+  "screen": "premier-reflexe",
+  "line": "leila-relais",
+  "language": "fr",
+  "textHash": "sha256:46685ee6469ed41b77bfbe6eaba8c798c08a62376f676d5267405a36e7f78137",
+  "duration": 3.52,
+  "provider": "elevenlabs",
+  "voice": "YxrwjAKoUKULGd0g8K9Y",
+  "generated": true,
+  "audioHash": "sha256:839db8a4afc1ac4d4f0fa9ad50b0e04b58602b8ca6fadb9734f50430f5deb5e4",
+  "createdAt": "2026-10-30T00:10:56Z",
+  "take": 1,
+  "spokenHash": "sha256:46685ee6469ed41b77bfbe6eaba8c798c08a62376f676d5267405a36e7f78137",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Lucie (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Poste et commutateur répondent. Je poursuis les vérifications dans l'ordre.",
+  "mouth": "ccwwwssccoocwwwcccsswwwcwwwwwwsssssccssooooooccccccccccccwwwccoosssssooooooooosssscwwwsssooooooooooocssscc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Poste",
+      "start": 0.02,
+      "end": 0.295,
+      "score": 0.994
+    },
+    {
+      "text": "et",
+      "start": 0.302,
+      "end": 0.382,
+      "score": 0.925
+    },
+    {
+      "text": "commutateur",
+      "start": 0.382,
+      "end": 0.979,
+      "score": 0.99
+    },
+    {
+      "text": "répondent",
+      "start": 1.026,
+      "end": 1.543,
+      "score": 0.988
+    },
+    {
+      "text": "Je",
+      "start": 1.891,
+      "end": 2.005,
+      "score": 1
+    },
+    {
+      "text": "poursuis",
+      "start": 2.032,
+      "end": 2.354,
+      "score": 0.982
+    },
+    {
+      "text": "les",
+      "start": 2.354,
+      "end": 2.454,
+      "score": 0.977
+    },
+    {
+      "text": "vérifications",
+      "start": 2.454,
+      "end": 3.078,
+      "score": 0.983
+    },
+    {
+      "text": "dans",
+      "start": 3.078,
+      "end": 3.218,
+      "score": 0.938
+    },
+    {
+      "text": "l'",
+      "start": 3.218,
+      "end": 3.299,
+      "score": 0.695
+    },
+    {
+      "text": "ordre",
+      "start": 3.299,
+      "end": 3.514,
+      "score": 0.973
+    }
+  ]
+}

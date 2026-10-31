@@ -1,15 +1,42 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.8/screen.schema.json",
   "id": "bilan",
-  "title": "À retenir",
-  "covers": ["ITEM-6"],
+  "title": "Le bilan du diagnostic",
+  "covers": [
+    "ITEM-6"
+  ],
   "blocks": [
-    { "id": "bilan-resultat", "type": "results", "props": {
-      "allowRetry": true,
-      "passedMessage": "Vous savez localiser une panne en suivant le chemin des paquets.",
-      "failedMessage": "Reprenez la règle SUP-NET-04, puis retentez l'évaluation."
-    } },
-    { "id": "bilan-regle", "type": "callout", "props": { "variant": "important", "title": "Une seule règle", "markdown": "Poste → commutateur → routeur → pare-feu → serveur d'impression. **Dans l'ordre, sans sauter d'étape.**" } },
-    { "id": "bilan-suite", "type": "text", "props": { "markdown": "Dans deux jours, vous recevrez un cas pratique de cinq minutes pour ancrer ce réflexe." } }
+    {
+      "id": "bilan-ticket",
+      "type": "text",
+      "props": {
+        "markdown": "Dans le cas de Marc, la demande est bloquée par une règle du pare-feu. La panne est localisée : le ticket peut être transmis avec un diagnostic précis."
+      }
+    },
+    {
+      "id": "bilan-resultat",
+      "type": "results",
+      "props": {
+        "allowRetry": true,
+        "passedMessage": "Vous savez localiser une panne en suivant le chemin des paquets.",
+        "failedMessage": "Reprenez la règle SUP-NET-04, puis retentez l'évaluation."
+      }
+    },
+    {
+      "id": "bilan-regle",
+      "type": "callout",
+      "props": {
+        "variant": "important",
+        "title": "Une seule règle",
+        "markdown": "Poste → commutateur → routeur → pare-feu → serveur d'impression. **Dans l'ordre, sans sauter d'étape.**"
+      }
+    },
+    {
+      "id": "bilan-suite",
+      "type": "text",
+      "props": {
+        "markdown": "Gardez la méthode à portée de main : ouvrez **Ressources**, puis la **Fiche réflexe : panne d’impression réseau**."
+      }
+    }
   ]
 }

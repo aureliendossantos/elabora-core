@@ -1,0 +1,43 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.8/screen.schema.json",
+  "id": "titre",
+  "title": "Diagnostiquer une panne d'impression réseau",
+  "covers": [
+    "ITEM-7"
+  ],
+  "layout": "opening",
+  "layoutProps": {
+    "presentation": "title",
+    "lead": "Aidez Marc à trouver ce qui bloque, en suivant le chemin d’une impression.",
+    "duration": false
+  },
+  "blocks": [
+    {
+      "id": "titre-chemin",
+      "type": "network-path",
+      "width": "wide",
+      "props": {
+        "caption": "Un ticket, cinq équipements, une panne à localiser.",
+        "steps": [
+          {
+            "label": "Poste",
+            "detail": "de Marc"
+          },
+          {
+            "label": "Commutateur"
+          },
+          {
+            "label": "Routeur"
+          },
+          {
+            "label": "Pare-feu"
+          },
+          {
+            "label": "Serveur",
+            "detail": "d'impression"
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 {
   "format": "elabora-lock/1",
-  "next": 31,
+  "next": 35,
   "keys": {
     "screen:accueil": "0",
     "screen:chemin": "1",
@@ -28,11 +28,15 @@
     "ending:appel-marc#maitrise": "n",
     "ending:appel-marc#en-route": "o",
     "ending:appel-marc#a-revoir": "p",
-    "visit:chemin-roles#poste": "q",
-    "visit:chemin-roles#commutateur": "r",
-    "visit:chemin-roles#routeur": "s",
-    "visit:chemin-roles#pare-feu": "t",
-    "visit:chemin-roles#serveur": "u"
+    "screen:titre": "q",
+    "visit:chemin-roles#poste": "r",
+    "visit:chemin-roles#commutateur": "s",
+    "visit:chemin-roles#routeur": "t",
+    "visit:chemin-roles#pare-feu": "u",
+    "visit:chemin-roles#serveur": "v",
+    "block:evaluation-q1": "w",
+    "block:evaluation-suite": "x",
+    "visit:evaluation-suite": "y"
   },
   "components": {
     "network-path": "1.0.0",

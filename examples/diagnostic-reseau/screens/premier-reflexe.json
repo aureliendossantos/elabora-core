@@ -178,62 +178,17 @@
           },
           {
             "id": "commutateur",
-            "title": "Ce que vous dites à Marc",
+            "title": "Poursuivre le diagnostic",
             "lines": [
               {
                 "id": "commutateur-port",
                 "text": "Sur le commutateur du deuxième étage, le port de Marc est actif."
               },
               {
-                "id": "marc-grave",
-                "speaker": "marc",
-                "text": "Et donc, c'est grave ?",
-                "expression": "inquiet"
-              }
-            ],
-            "prompt": "Que dites-vous à Marc ?",
-            "options": [
-              {
-                "id": "a",
-                "text": "Poste et commutateur sont bons. Je passe au routeur et vous rappelle à 10 h.",
-                "quality": "good",
-                "reply": [
-                  {
-                    "id": "marc-soulage",
-                    "speaker": "marc",
-                    "expression": "soulage",
-                    "text": "[soulagé] D'accord. Au moins, je sais où vous en êtes."
-                  }
-                ],
-                "feedback": "Vous dites où vous en êtes et quand vous rappelez : Marc peut s'organiser, et le ticket reste entre vos mains."
-              },
-              {
-                "id": "b",
-                "text": "Je cherche encore, je vous tiens au courant dès que j'en sais plus.",
-                "quality": "ok",
-                "reply": [
-                  {
-                    "id": "marc-midi",
-                    "speaker": "marc",
-                    "expression": "agace",
-                    "text": "[agacé] Dès que vous en savez plus… La paie part à midi, je vous rappelle."
-                  }
-                ],
-                "feedback": "Sans étape franchie ni heure de rappel, Marc rappellera dans dix minutes. Dites où vous en êtes et quand vous rappelez."
-              },
-              {
-                "id": "c",
-                "text": "Votre poste n'y est pour rien : voyez plutôt avec l'équipe réseau.",
-                "quality": "bad",
-                "reply": [
-                  {
-                    "id": "marc-equipe",
-                    "speaker": "marc",
-                    "expression": "agace",
-                    "text": "[agacé] L'équipe réseau ? Je ne sais même pas qui appeler."
-                  }
-                ],
-                "feedback": "Le ticket reste au support jusqu'à ce que la panne soit trouvée. Renvoyer Marc vers une autre équipe lui fait perdre sa matinée."
+                "id": "leila-relais",
+                "speaker": "leila",
+                "expression": "concentree",
+                "text": "Poste et commutateur répondent. Je poursuis les vérifications dans l'ordre."
               }
             ],
             "end": true
@@ -243,7 +198,7 @@
           {
             "id": "maitrise",
             "title": "Diagnostic bien parti",
-            "text": "Vous êtes parti du poste, vous avez tenu l'ordre du chemin malgré la pression, et Marc sait quand vous le rappelez.",
+            "text": "Vous êtes parti du poste et avez tenu l’ordre malgré la pression. À vous de poursuivre le diagnostic dans la simulation.",
             "if": [
               {
                 "score": {
@@ -256,12 +211,12 @@
           {
             "id": "en-route",
             "title": "Sur la bonne voie",
-            "text": "Le chemin est suivi, au prix d'un détour. Revenez au choix marqué « moyen » pour entendre l'autre réponse.",
+            "text": "Vous avez fait un détour. Reprenez le chemin depuis le poste, puis poursuivez le diagnostic dans la simulation.",
             "if": [
               {
                 "score": {
                   "op": "gte",
-                  "value": 70
+                  "value": 75
                 }
               }
             ]
@@ -269,7 +224,7 @@
           {
             "id": "a-revoir",
             "title": "À revoir",
-            "text": "Un choix a sauté des étapes du chemin. Écoutez le rappel de la règle, puis recommencez l'appel."
+            "text": "Un raccourci a interrompu l’ordre du diagnostic. Écoutez le rappel, puis poursuivez dans la simulation. Vous pouvez aussi rejouer l’appel."
           }
         ]
       }

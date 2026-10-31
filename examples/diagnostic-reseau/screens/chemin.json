@@ -7,13 +7,6 @@
   ],
   "blocks": [
     {
-      "id": "chemin-intro",
-      "type": "text",
-      "props": {
-        "markdown": "Quand Marc clique sur **Imprimer**, sa demande part en [paquets](glossary:paquet) et traverse cinq équipements avant d'atteindre l'imprimante. Si un seul est en panne, rien ne sort."
-      }
-    },
-    {
       "id": "chemin-schema",
       "type": "network-path",
       "width": "wide",
@@ -31,8 +24,7 @@
             "label": "Routeur"
           },
           {
-            "label": "Pare-feu",
-            "highlight": true
+            "label": "Pare-feu"
           },
           {
             "label": "Serveur",
@@ -145,7 +137,8 @@
             "markdown": "Il reçoit les demandes et les transmet à l'imprimante. Une [file d'attente](glossary:file-attente) bloquée arrête toutes les impressions."
           }
         ]
-      }
+      },
+      "optional": true
     }
   ],
   "narration": {

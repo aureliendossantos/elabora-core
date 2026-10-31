@@ -1,12 +1,80 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.8/screen.schema.json",
   "id": "evaluation",
-  "title": "Évaluation",
-  "covers": ["ITEM-5"],
+  "title": "Vérifier ses réflexes",
+  "covers": [
+    "ITEM-5"
+  ],
   "completeWhen": "interactions-done",
   "blocks": [
-    { "id": "evaluation-intro", "type": "text", "props": { "markdown": "Deux questions pour vérifier que vous savez appliquer la procédure. Vous avez un seul essai par question." } },
-    { "id": "evaluation-q1", "type": "quiz", "props": { "questionRef": "Q-1" } },
-    { "id": "evaluation-q2", "type": "quiz", "props": { "questionRef": "Q-2" } }
+    {
+      "id": "evaluation-intro",
+      "type": "text",
+      "props": {
+        "markdown": "Deux questions, un seul essai par question. Lisez le retour avant de passer à la suivante."
+      }
+    },
+    {
+      "id": "evaluation-q1",
+      "type": "quiz",
+      "props": {
+        "questionRef": "Q-1"
+      },
+      "step": 1
+    },
+    {
+      "id": "evaluation-suite",
+      "type": "button",
+      "hidden": true,
+      "props": {
+        "label": "Question suivante",
+        "variant": "primary"
+      }
+    },
+    {
+      "id": "evaluation-q2",
+      "type": "quiz",
+      "props": {
+        "questionRef": "Q-2"
+      },
+      "step": 2
+    }
+  ],
+  "continueRevealsSteps": false,
+  "events": [
+    {
+      "id": "evaluation-premiere-reponse",
+      "on": {
+        "type": "quiz.submitted",
+        "target": "evaluation-q1"
+      },
+      "do": [
+        {
+          "type": "show-block",
+          "block": "evaluation-suite"
+        }
+      ]
+    },
+    {
+      "id": "evaluation-question-suivante",
+      "on": {
+        "type": "click",
+        "target": "evaluation-suite"
+      },
+      "do": [
+        {
+          "type": "hide-block",
+          "block": "evaluation-q1"
+        },
+        {
+          "type": "hide-block",
+          "block": "evaluation-suite"
+        },
+        {
+          "type": "reveal-step",
+          "step": 2
+        }
+      ]
+    }
   ]
 }

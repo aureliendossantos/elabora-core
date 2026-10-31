@@ -36,17 +36,26 @@
   ],
   "items": [
     {
+      "id": "ITEM-7",
+      "kind": "intro",
+      "title": "Diagnostiquer une panne d'impression réseau",
+      "part": "Découvrir",
+      "objectives": [],
+      "description": "Couverture silencieuse : aider Marc à trouver ce qui bloque en suivant le chemin d’une impression. Entrée immédiate dans le cas avec le bouton Suivant du player."
+    },
+    {
       "id": "ITEM-1",
       "kind": "intro",
       "title": "Le ticket de Marc",
       "objectives": [],
-      "description": "Mise en situation : Marc, du service comptable, ne peut plus imprimer.",
+      "description": "Le ticket présente le contexte et l’échéance. Marc expose le problème à l’oral ; Claire invite à repérer le trajet avant d’intervenir.",
       "lockedTexts": [
         {
           "id": "TXT-1",
-          "text": "Lundi, 9 h 05. Marc, du service comptable, vous appelle : il doit imprimer les bulletins de paie avant midi et l'imprimante ne répond plus. Vous allez l'aider en suivant la procédure **SUP-NET-04**."
+          "text": "Votre mission : trouver où la demande d'impression de Marc s'arrête, avec la procédure **SUP-NET-04**."
         }
-      ]
+      ],
+      "part": "Découvrir"
     },
     {
       "id": "ITEM-2",
@@ -58,13 +67,14 @@
       "sources": [
         "SRC-1"
       ],
-      "description": "Les cinq équipements traversés par une demande d'impression et la règle de diagnostic.",
+      "description": "Le chemin des cinq équipements et la règle, avant la pratique. Schéma sans indice sur la panne ; explications synchronisées des deux réseaux ; rôle des équipements consultable à la demande.",
       "lockedTexts": [
         {
           "id": "TXT-2",
           "text": "Suivez toujours le chemin dans l'ordre : **poste → commutateur → routeur → pare-feu → serveur d'impression**. N'en sautez aucune étape, même quand la cause vous paraît évidente."
         }
-      ]
+      ],
+      "part": "Découvrir"
     },
     {
       "id": "ITEM-3",
@@ -73,21 +83,23 @@
       "objectives": [
         "OBJ-2"
       ],
-      "description": "Décision : par où commencer le diagnostic, et pourquoi."
+      "description": "Deux décisions techniques : commencer par le poste, puis tenir l’ordre sous la pression de Marc. La communication de fin d’appel devient une conclusion non notée qui conduit à la simulation ; rappel conditionnel après un raccourci.",
+      "part": "Pratiquer"
     },
     {
       "id": "ITEM-4",
       "kind": "scenario",
-      "title": "Simulation : trouver l'équipement défaillant",
+      "title": "Trouver ce qui bloque",
       "objectives": [
         "OBJ-2"
       ],
-      "description": "Simulation 3D du réseau : l'apprenant inspecte les équipements dans l'ordre jusqu'à trouver la panne."
+      "description": "Poursuivre le cas de Marc dans la simulation 3D : inspecter les équipements dans l’ordre pour localiser la panne. Une seule consigne et une explication brève après réussite ; indice, clavier et reprise conservés.",
+      "part": "Pratiquer"
     },
     {
       "id": "ITEM-5",
       "kind": "assessment",
-      "title": "Évaluation",
+      "title": "Vérifier ses réflexes",
       "objectives": [
         "OBJ-1",
         "OBJ-2"
@@ -151,14 +163,17 @@
             }
           ]
         }
-      ]
+      ],
+      "description": "Deux questions inchangées, présentées successivement. Le passage à la seconde se fait après lecture du feedback de la première.",
+      "part": "Valider"
     },
     {
       "id": "ITEM-6",
       "kind": "summary",
-      "title": "À retenir",
+      "title": "Le bilan du diagnostic",
       "objectives": [],
-      "description": "Bilan, score et règle de diagnostic."
+      "description": "Refermer le cas sur la panne localisée, afficher le résultat et la règle mémorisable, orienter vers la fiche réflexe dans Ressources. Aucun envoi futur promis.",
+      "part": "Valider"
     }
   ],
   "spacing": [
@@ -166,5 +181,37 @@
     "J+7",
     "J+30"
   ],
-  "waivers": []
+  "waivers": [],
+  "decided": [
+    {
+      "topic": "format",
+      "choice": "Sept écrans reliés par le ticket de Marc",
+      "why": "Réorganisation approuvée par l’auteur : couverture, trajet expliqué avant l’appel, simulation, vérification et bilan.",
+      "items": [
+        "ITEM-7",
+        "ITEM-1",
+        "ITEM-2",
+        "ITEM-3",
+        "ITEM-4",
+        "ITEM-5",
+        "ITEM-6"
+      ]
+    },
+    {
+      "topic": "duration",
+      "choice": "Cible de 5 à 7 minutes, hors exploration des variantes",
+      "why": "Estimation à confirmer en usage ; deux décisions dans l’appel et détails techniques facultatifs."
+    },
+    {
+      "topic": "navigation",
+      "label": "Exploration de la démo",
+      "choice": "Export web en navigation libre, sans progression conservée",
+      "why": "Permettre l’accès direct aux fonctionnalités depuis le sommaire ; conserver les règles du parcours pédagogique dans le projet."
+    },
+    {
+      "topic": "voices",
+      "choice": "Couverture silencieuse ; voix existantes conservées",
+      "why": "Marc et Leïla dans l’histoire, Claire pour la méthode ; une courte conclusion de Leïla remplace la troisième décision."
+    }
+  ]
 }
