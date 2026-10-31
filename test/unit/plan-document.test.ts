@@ -45,7 +45,7 @@ const course = (source?: string): string => {
   return dir;
 };
 const GEARS = path.join(ROOT, 'examples/planetary-gearset');
-const NETWORK = path.join(ROOT, 'examples/diagnostic-reseau'); // V1 sent, V2 validated, two changes since
+const NETWORK = path.join(ROOT, 'examples/diagnostic-reseau'); // V1 sent, V2 validated, nine changes since
 const PERSON = { author: { kind: 'human' as const, name: 'Aurélien' } };
 const AGENT = { author: { kind: 'agent' as const, name: 'claude-code' } };
 const DATE = '2026-10-15';
@@ -139,7 +139,7 @@ test('the status follows the versions: a draft without one, a version to approve
   // The working copy changed since V2, validated: the marks start there; V2 itself reads « Bon pour production ».
   const network = course(NETWORK);
   doc = documentOf(network, 'current');
-  assert.deepEqual([doc.status, doc.shows, doc.marks], [{ state: 'modified', label: 'Modifié depuis la V2 validée' }, { version: null, label: 'V2, et 2 modifications depuis', current: true }, { since: 'V2', changes: 2 }]);
+  assert.deepEqual([doc.status, doc.shows, doc.marks], [{ state: 'modified', label: 'Modifié depuis la V2 validée' }, { version: null, label: 'V2, et 9 modifications depuis', current: true }, { since: 'V2', changes: 9 }]);
   assert.equal(doc.kicker, 'Plan du module');
   assert.equal(doc.properties.find((property) => property.key === 'history')!.value, 'V1 envoyée le 1 octobre 2026\nV2 validée par Claire Martin, Hélios Énergie (client fictif) le 5 octobre 2026 (Storyboard v3 validé par courriel)');
   assert.deepEqual(documentOf(network).status, { state: 'approved', label: 'Bon pour production' }, 'an export shows the latest version by default');
@@ -158,30 +158,31 @@ test('the changes since the validated version read in place: words deleted and i
     ['del', 'Ne '], ['ins', 'N\'en '], ['del', 'si vous pensez connaître la cause.'], ['ins', 'quand la cause vous paraît évidente.']
   ]);
   assert.match(text.text.markdown, /N'en sautez aucune étape/, 'the text is the plan\'s wording now');
-  const item = section(doc, 'sequence').items[2]!;
+  const item = section(doc, 'sequence').items[3]!;
   assert.deepEqual([item.id, item.mark?.summary], ['ITEM-3', 'Modifié']);
   // V2's notes explain V2's changes since V1: in V2's document, nothing is marked.
   assert.equal(section(documentOf(dir), 'sequence').items[5]!.mark, null);
 
   // Elements added, removed, moved; fields not read in place said in the mark.
   const plan = readJSON(dir, 'plan.json');
-  const [removed] = plan.items.splice(3, 1);
-  plan.items.splice(1, 0, plan.items.splice(4, 1)[0]); // ITEM-6 after ITEM-1
-  plan.items.push({ id: 'ITEM-7', kind: 'summary', title: 'Pour aller plus loin', objectives: [] });
-  plan.items[0].kind = 'exposition';
+  const take = (id: string) => plan.items.splice(plan.items.findIndex((entry: { id: string }) => entry.id === id), 1)[0];
+  take('ITEM-4');
+  plan.items.splice(2, 0, take('ITEM-6')); // ITEM-6 after ITEM-1
+  plan.items.push({ id: 'ITEM-8', kind: 'summary', title: 'Pour aller plus loin', objectives: [] });
+  plan.items.find((entry: { id: string }) => entry.id === 'ITEM-1').kind = 'exposition';
   plan.objectives[0].statement = 'Nommer le rôle des cinq équipements du chemin d\'impression.';
   writeJSON(dir, 'plan.json', plan);
   doc = documentOf(dir, 'current');
   const items = section(doc, 'sequence').items;
   assert.deepEqual(items.map((entry) => [entry.id, entry.number, entry.mark?.status ?? null]), [
-    ['ITEM-1', '1', 'changed'], ['ITEM-6', '2', 'changed'], ['ITEM-2', '3', null], ['ITEM-3', '4', 'changed'], ['ITEM-4', '', 'removed'], ['ITEM-5', '5', null], ['ITEM-7', '6', 'added']
+    ['ITEM-7', '1', 'added'], ['ITEM-1', '2', 'changed'], ['ITEM-6', '3', 'changed'], ['ITEM-2', '4', 'changed'], ['ITEM-3', '5', 'changed'], ['ITEM-4', '', 'removed'], ['ITEM-5', '6', 'changed'], ['ITEM-8', '7', 'added']
   ]);
-  assert.equal(items[0]!.mark!.summary, 'Modifié · modifié\u202f: nature');
-  assert.equal(items[1]!.mark!.summary, 'Modifié · déplacé, c’était le point 6');
-  assert.equal(items[4]!.heading, 'Le point 4');
-  assert.equal(items[4]!.title, removed.title);
-  assert.ok(items[4]!.titleChange!.every((part) => part.change === 'del'));
-  assert.ok(items[6]!.titleChange!.every((part) => part.change === 'ins'));
+  assert.equal(items[1]!.mark!.summary, 'Modifié · modifié\u202f: nature');
+  assert.equal(items[2]!.mark!.summary, 'Modifié · déplacé, c’était le point 6');
+  assert.equal(items[5]!.heading, 'Le point 4');
+  assert.equal(items[5]!.title, 'Simulation : trouver l\'équipement défaillant', 'a removed point reads as the validated version had it');
+  assert.ok(items[5]!.titleChange!.every((part) => part.change === 'del'));
+  assert.ok(items[7]!.titleChange!.every((part) => part.change === 'ins'));
   assert.ok(section(doc, 'objectives').objectives[0]!.statement.blocks.some((block) => JSON.stringify(block).includes('"change":"del"')));
   // The page marks them; Word too, as tracked changes and a comment.
   const html = planDocumentHtml(doc);
@@ -408,7 +409,7 @@ test('elabora plan export writes Word and HTML where asked, in dist/ by default;
   assert.ok(!fs.existsSync(path.join(draft, 'plan-versions')));
   // The working copy of a plan changed since its latest version, said.
   const network = course(NETWORK);
-  assert.match((await elabora(['plan', 'export', network, '--format', 'html', '--date', DATE])).stdout, /showing V2, recorded as sent\. The plan changed since: 2 change\(s\) are in no version/);
+  assert.match((await elabora(['plan', 'export', network, '--format', 'html', '--date', DATE])).stdout, /showing V2, recorded as sent\. The plan changed since: 9 change\(s\) are in no version/);
   assert.match((await elabora(['plan', 'export', network, '--version', 'current', '--format', 'html', '--date', DATE])).stdout, /showing the working copy\. It shows its changes since the validated version\.\n$/);
 });
 

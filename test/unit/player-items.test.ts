@@ -164,14 +164,14 @@ test('the logo: its colours against the bar, the plate that lets it read', () =>
 test('« Relier les termes aux écrans »: the first time in each screen, deterministic, never in links, code or locked texts', () => {
   const dir = copyExample();
   const accueil = readJSON(dir, 'screens/accueil.json');
-  const callout = accueil.blocks.find((block: { id: string }) => block.id === 'accueil-objectifs');
+  const callout = accueil.blocks.find((block: { id: string }) => block.id === 'accueil-situation');
   callout.props.markdown = 'Le `routeur` en code, [le routeur](https://example.com) en lien, <span title="routeur">x</span>, puis le Routeur du siège et un autre routeur.';
   writeJSON(dir, 'screens/accueil.json', accueil);
   const before = readJSON(dir, 'screens/chemin.json');
   const first = edit.updatePlayer(dir, { linkTerms: ['routeur'] });
-  const text = readJSON(dir, 'screens/accueil.json').blocks.find((block: { id: string }) => block.id === 'accueil-objectifs').props.markdown;
+  const text = readJSON(dir, 'screens/accueil.json').blocks.find((block: { id: string }) => block.id === 'accueil-situation').props.markdown;
   assert.equal(text, 'Le `routeur` en code, [le routeur](https://example.com) en lien, <span title="routeur">x</span>, puis le [Routeur](glossary:routeur) du siège et un autre routeur.');
-  assert.deepEqual(first.linked.find((link) => link.screen === 'accueil'), { screen: 'accueil', term: 'routeur', text: 'Routeur', unit: 'block.accueil-objectifs.markdown' });
+  assert.deepEqual(first.linked.find((link) => link.screen === 'accueil'), { screen: 'accueil', term: 'routeur', text: 'Routeur', unit: 'block.accueil-situation.markdown' });
   // Once per screen; a screen that already links the term is left as it is; the plan's locked text
   // (accueil-situation, textRef) is not the screen's to change.
   assert.equal(new Set(first.linked.map((link) => link.screen)).size, first.linked.length);
@@ -277,8 +277,8 @@ test('a package of every language (D59): the course data of each, the languages 
 test('the canvas render data carries what the live bars need: the outline, the resources, « IA et crédits », their files, the languages', () => {
   const dir = copyExample();
   const render = renderScreen(loadProjectFromDir(dir), 'chemin', {});
-  assert.deepEqual(render.outline?.sections.map((section) => section.screens.map((entry) => entry.id)), [['accueil', 'chemin'], ['premier-reflexe', 'simulation'], ['evaluation', 'bilan']]);
-  assert.equal(render.outline?.sections[0].screens[1].title, 'Le chemin d\'une impression');
+  assert.deepEqual(render.outline?.sections.map((section) => section.screens.map((entry) => entry.id)), [['titre', 'accueil', 'chemin'], ['premier-reflexe', 'simulation'], ['evaluation', 'bilan']]);
+  assert.equal(render.outline?.sections[0].screens[2].title, 'Le chemin d\'une impression');
   assert.deepEqual(render.course.resources?.map((resource) => resource.id), ['fiche-reflexe', 'equipements']);
   assert.ok(render.course.about?.ai);
   // The host serves the logo and the resources' files (the preview, the downloads).
@@ -294,7 +294,7 @@ test('the canvas render data carries what the live bars need: the outline, the r
 test('linking reads Markdown as the player does: case for acronyms, links, references, code, URLs; the longest term first, whatever the glossary\'s order', () => {
   const dir = copyExample();
   const accueil = readJSON(dir, 'screens/accueil.json');
-  const callout = accueil.blocks.find((block: { id: string }) => block.id === 'accueil-objectifs');
+  const callout = accueil.blocks.find((block: { id: string }) => block.id === 'accueil-situation');
   callout.props.markdown = 'Si vous êtes prêt, le SI répond. Voir [le guide][routeur], [un [routeur] imbriqué](https://example.com) et https://example.com/routeur/doc.\n\n    routeur dans un bloc de code\n\nPuis le réseau privé virtuel, et le réseau.';
   writeJSON(dir, 'screens/accueil.json', accueil);
   const course = readJSON(dir, 'course.json');
@@ -307,7 +307,7 @@ test('linking reads Markdown as the player does: case for acronyms, links, refer
   edit.updatePlayer(dir, { options: { glossary: { linkTerms: false } } });
   edit.updatePlayer(dir, { glossary });
   edit.updatePlayer(dir, { linkTerms: ['si', 'routeur', 'reseau', 'rpv'] });
-  const text = readJSON(dir, 'screens/accueil.json').blocks.find((block: { id: string }) => block.id === 'accueil-objectifs').props.markdown;
+  const text = readJSON(dir, 'screens/accueil.json').blocks.find((block: { id: string }) => block.id === 'accueil-situation').props.markdown;
   assert.equal(text, 'Si vous êtes prêt, le [SI](glossary:si) répond. Voir [le guide][routeur], [un [routeur] imbriqué](https://example.com) et https://example.com/routeur/doc.\n\n    routeur dans un bloc de code\n\nPuis le [réseau privé virtuel](glossary:rpv), et le [réseau](glossary:reseau).');
 });
 
@@ -371,7 +371,7 @@ test('a glossary entry removed takes its links: the words stay, placed or writte
   edit.updatePlayer(dir, { linkTerms: true });
   // A link written by hand, by reference, in a screen that has the term linked already.
   const chemin = readJSON(dir, 'screens/chemin.json');
-  const intro = chemin.blocks.find((block: { id: string }) => block.id === 'chemin-intro');
+  const intro = chemin.blocks.find((block: { id: string }) => block.id === 'chemin-regle');
   intro.props.markdown = `${intro.props.markdown}\n\nVoir aussi [le routeur du siège][siege].\n\n[siege]: glossary:routeur`;
   writeJSON(dir, 'screens/chemin.json', chemin);
   const screens = () => fs.readdirSync(path.join(dir, 'screens')).map((name) => fs.readFileSync(path.join(dir, 'screens', name), 'utf8')).join('\n');
@@ -385,7 +385,7 @@ test('a glossary entry removed takes its links: the words stay, placed or writte
   assert.equal(removed.unlinked.filter((link) => link.text === 'le routeur du siège').length, 1);
   assert.ok(removed.unlinked.every((link) => link.term === 'routeur' && link.text.length > 0));
   assert.ok(removed.changed.includes(`unlink removed terms (${removed.unlinked.length} links)`), removed.changed.join(', '));
-  assert.match(readJSON(dir, 'screens/chemin.json').blocks.find((block: { id: string }) => block.id === 'chemin-intro').props.markdown, /Voir aussi le routeur du siège\.$/);
+  assert.match(readJSON(dir, 'screens/chemin.json').blocks.find((block: { id: string }) => block.id === 'chemin-regle').props.markdown, /Voir aussi le routeur du siège\.$/);
   assert.equal(validateDir(dir).diagnostics.some((d) => d.code === 'E_GLOSSARY_TERM_UNKNOWN'), false);
   // One change: undone, the entry and its links come back.
   edit.undo(dir);
