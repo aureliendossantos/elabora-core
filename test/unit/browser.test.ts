@@ -1,7 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { spawn } from 'node:child_process';
+import { once } from 'node:events';
 import type { Browser, LaunchOptions } from 'playwright-core';
-import { CHROMIUM_CHANNELS, chromiumArgs, launchChromium } from '@elabora/node/emulator/browser';
+import { CHROMIUM_CHANNELS, chromiumArgs, closingWithin, launchChromium } from '@elabora/node/emulator/browser';
 
 // A Playwright chromium whose channels are installed or not, or fail to start: what each launch got.
 function fakeChromium(installed: Record<string, 'starts' | string>) {
@@ -72,4 +74,38 @@ test('elabora test runs fewer packages side by side on a loaded machine', async 
   assert.equal(defaultParallel(2, 10), 4);
   assert.equal(defaultParallel(6, 10), 2);
   assert.equal(defaultParallel(13, 10), 1);
+});
+
+test('a Chromium that is slow to end does not hold its close: past the grace, its process is ended', async () => {
+  // A browser whose process (a Node that waits a minute) ends only when killed: Chrome 155 on macOS 27.2
+  // took ten seconds once its pages were gone.
+  const child = spawn(process.execPath, ['-e', 'setTimeout(() => {}, 60000)'], { stdio: 'ignore' });
+  const ended = once(child, 'exit');
+  const sent: string[] = [];
+  const browser = closingWithin({
+    isConnected: () => true,
+    newBrowserCDPSession: async () => ({
+      send: async (method: string) => { sent.push(method); return { processInfo: [{ type: 'renderer', id: 1 }, { type: 'browser', id: child.pid }] }; },
+      detach: async () => {}
+    }),
+    close: async () => { await ended; }
+  } as unknown as Browser, 200);
+  const begin = Date.now();
+  await browser.close();
+  assert.ok(Date.now() - begin < 5000, `closed in ${Date.now() - begin} ms`);
+  assert.equal(child.signalCode, 'SIGKILL');
+  assert.deepEqual(sent, ['SystemInfo.getProcessInfo']);
+
+  // One that ends within the grace is left to end, and one that cannot say its process closes as before.
+  let kills = 0;
+  const quick = closingWithin({ isConnected: () => true, newBrowserCDPSession: async () => ({ send: async () => ({ processInfo: [{ type: 'browser', id: 999999 }] }), detach: async () => {} }), close: async () => {} } as unknown as Browser, 200);
+  const kill = process.kill;
+  process.kill = ((...args: Parameters<typeof process.kill>) => { kills++; return kill(...args); }) as typeof process.kill;
+  try {
+    await quick.close();
+    await closingWithin({ isConnected: () => false, close: async () => {} } as unknown as Browser, 200).close();
+  } finally {
+    process.kill = kill;
+  }
+  assert.equal(kills, 0);
 });

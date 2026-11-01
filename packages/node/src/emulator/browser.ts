@@ -99,7 +99,7 @@ export async function launchChromium(chromium: Pick<BrowserType, 'launch'>, chan
   const failed: string[] = [];
   for (const channel of channels) {
     try {
-      return await chromium.launch({ ...options, ...(channel === 'playwright' ? {} : { channel }) });
+      return closingWithin(await chromium.launch({ ...options, ...(channel === 'playwright' ? {} : { channel }) }));
     } catch (error) {
       const reason = errorMessage(error).split('\n')[0].replace(/^browserType\.launch: /, '');
       if (!/is not found at|executable doesn't exist/i.test(reason)) failed.push(`${CHANNEL_NAMES[channel]} did not start (${reason})`);
@@ -110,4 +110,39 @@ export async function launchChromium(chromium: Pick<BrowserType, 'launch'>, chan
   const chromeFailed = channels.includes('chrome') && !missing.includes(CHANNEL_NAMES.chrome);
   const developers = channels.includes('playwright') ? ' (developers: npx playwright install chromium works too)' : '';
   throw new Error(`Cannot open a browser: ${[...absent, ...failed].join('; ') || 'no browser to try'}. ${chromeFailed ? 'Update or reinstall' : 'Install'} Google Chrome (https://www.google.com/chrome/), then run the command again${developers}.`);
+}
+
+// How long a Chromium closing is waited for before its process is ended. Its pages and GPU go at
+// once; its main process may take much longer (Google Chrome 155 on macOS 27.2: ten seconds), and a
+// check of fit, a capture or a look server replaced waited as long.
+const CLOSE_GRACE_MS = 1000;
+
+// The browser, its close bounded: past the grace, its process is ended, as Elabora's worker is
+// (launchElectron). Playwright does not give a launched browser's process; Chromium's own protocol
+// does (SystemInfo.getProcessInfo).
+export function closingWithin(browser: Browser, graceMs = CLOSE_GRACE_MS): Browser {
+  const close = browser.close.bind(browser);
+  browser.close = async (options) => {
+    const pid = await browserPid(browser);
+    const closing = close(options);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const closed = await Promise.race([closing.then(() => true, () => true), new Promise<boolean>((resolve) => { timer = setTimeout(() => resolve(false), graceMs); })]);
+    clearTimeout(timer);
+    if (!closed && pid) try { process.kill(pid, 'SIGKILL'); } catch { /* gone meanwhile */ }
+    await closing;
+  };
+  return browser;
+}
+
+// The browser's process, while it is connected; null when it cannot say.
+async function browserPid(browser: Browser): Promise<number | null> {
+  try {
+    if (!browser.isConnected()) return null;
+    const session = await browser.newBrowserCDPSession();
+    const { processInfo } = await session.send('SystemInfo.getProcessInfo');
+    await session.detach().catch(() => {});
+    return processInfo.find((info) => info.type === 'browser')?.id ?? null;
+  } catch {
+    return null;
+  }
 }
