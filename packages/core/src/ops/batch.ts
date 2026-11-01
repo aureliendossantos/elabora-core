@@ -1,4 +1,4 @@
-import type { Author, ChangeLike, JournalEntry } from './types.ts';
+import type { Author, ChangeLike, JournalEntry, MarkEntry } from './types.ts';
 
 // Batches: one piece of AI work, the unit of « Annuler le travail de l'IA ».
 
@@ -14,8 +14,15 @@ export function isAiAuthor(author: Author): boolean {
 // previous change when that one was also AI work and less than 5 minutes older; a human or
 // system change, or a mark, in between closes the batch. Other changes open their own batch,
 // named after their id.
-export function assignBatch(previous: JournalEntry | undefined, next: { id: string; at: string; author: Author }): string {
-  if (!isAiAuthor(next.author) || !previous || previous.type === 'mark' || !isAiAuthor(previous.author)) return next.id;
+// A change an agent makes in Elabora's chat (author.chat) joins its conversation's current turn
+// instead: turn, the id of that conversation's last mark, whatever was written since and however
+// long the agent thought. Without a turn it goes on its conversation's batch, as above.
+export function assignBatch(previous: JournalEntry | undefined, next: { id: string; at: string; author: Author }, turn?: string): string {
+  if (!isAiAuthor(next.author)) return next.id;
+  if (next.author.chat && turn) return turn;
+  // An agent outside the chat never joins a turn; a file written by no Elabora tool (external) joins
+  // the AI work just before it, a turn included.
+  if (!previous || previous.type === 'mark' || !isAiAuthor(previous.author) || (next.author.kind === 'agent' && previous.author.chat !== next.author.chat)) return next.id;
   return Date.parse(next.at) - Date.parse(previous.at) < BATCH_IDLE_MS ? previous.batch : next.id;
 }
 
@@ -41,6 +48,7 @@ export function changesToUndo(entries: readonly JournalEntry[], target: { batch:
 export interface BatchSummary {
   id: string;
   label?: string;       // the request of the mark that opened it
+  chat?: string;        // a turn of Elabora's chat: its conversation (the batch's id is the turn's)
   ai: boolean;
   authors: Author[];
   changes: string[];    // oldest first
@@ -58,10 +66,13 @@ export function summarizeBatches(entries: readonly JournalEntry[]): BatchSummary
   const undone = undoneChanges(sorted);
   const batches = new Map<string, BatchSummary & { fileSet: Set<string> }>();
   // A mark labels the next AI batch, even when the human edits something before the AI starts.
+  // A turn of the chat labels its own batch, named after it.
   let request: string | undefined;
+  const turns = new Map<string, MarkEntry>();
   for (const entry of sorted) {
     if (entry.type === 'mark') {
-      request = entry.request;
+      if (entry.chat) turns.set(entry.id, entry);
+      else request = entry.request;
       continue;
     }
     let batch = batches.get(entry.batch);
@@ -70,7 +81,11 @@ export function summarizeBatches(entries: readonly JournalEntry[]): BatchSummary
         id: entry.batch, ai: isAiAuthor(entry.author), authors: [], changes: [], firstSeq: entry.seq, lastSeq: entry.seq,
         start: entry.at, end: entry.at, files: [], undone: true, fileSet: new Set()
       };
-      if (batch.ai && request !== undefined) {
+      const turn = turns.get(entry.batch);
+      if (turn) {
+        batch.label = turn.request;
+        batch.chat = turn.chat;
+      } else if (batch.ai && request !== undefined) {
         batch.label = request;
         request = undefined;
       }

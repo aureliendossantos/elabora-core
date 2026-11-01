@@ -5,16 +5,21 @@ import { formatPath } from '@elabora/core/ops/path';
 import { undoneChanges } from '@elabora/core/ops/batch';
 import * as edit from '@elabora/node/edit';
 import { readJournal } from '@elabora/node/journal/index';
+import { MIN_TURNS, summarizeChats } from '@elabora/node/chats';
 import { defineCommand, printJson, reportingFailures } from './command.ts';
 import type { CommandGroup } from './command.ts';
 
 const HELP = `  history [dir] [--limit 20] [--json]                 Changes grouped by batch of AI work: when, who, the request, what
                                                       changed, what was undone
+  history [dir] --chats [--json]                      The turns of Elabora's chat: the tools refused to the agent (file
+                                                      edits, shell), what it did instead, what each turn cost, and
+                                                      whether refusals call for a new Elabora tool
   undo [dir]                                          Undo the last change made through Elabora tools or by an agent
   undo [dir] --change <id|seq>                        Undo one change (an undo too: that redoes it)
   undo [dir] --batch [<id>]                           Undo a batch of AI work (default: the last one). Whatever changed
                                                       since is kept, and listed
-  mark [dir] "<request>"                              Label the next batch of AI work with the request that starts it.
+  mark [dir] "<request>" [--chat <id>]                Label the next batch of AI work with the request that starts it.
+                                                      --chat: a turn of Elabora's chat, whose agent's changes all join it
                                                       Claude Code: a UserPromptSubmit hook running elabora mark --stdin
                                                       labels each batch with the prompt (read from the hook's JSON)`;
 
@@ -116,10 +121,46 @@ export function describeChange(change: ChangeLike): string {
 const day = (at: string) => { const d = new Date(at); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 const time = (at: string) => { const d = new Date(at); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
 
+const percent = (value: number | null) => (value === null ? '—' : `${Math.round(value * 100)} %`);
+const tokens = (value: number | null) => (value === null ? '—' : `${Math.round(value).toLocaleString('en-US')} tokens`);
+
+// The turns of Elabora's chat, and what refusals say about writing through Elabora's tools only.
+function printChats(dir: string, json: boolean): number {
+  const report = summarizeChats(dir);
+  if (json) { printJson(report); return 0; }
+  if (!report.turns.length) { console.log('No turn of Elabora\'s chat yet.'); return 0; }
+  let currentDay = '';
+  for (const turn of report.turns) {
+    if (day(turn.at) !== currentDay) { currentDay = day(turn.at); console.log(currentDay); }
+    const request = turn.request === undefined ? '(request no longer in the journal)' : `"${turn.request.length > 60 ? `${turn.request.slice(0, 59)}…` : turn.request}"`;
+    const header = [time(turn.at), ...(turn.agent ? [turn.agent] : []), request, `${turn.changes} change(s)${turn.undone ? ', undone' : ''}`, turn.stopReason ?? 'not ended', ...(turn.tokens === undefined ? [] : [`${turn.tokens.toLocaleString('en-US')} tokens`]), `turn ${turn.turn}`];
+    console.log(`  ${header.join(' · ')}`);
+    const detours = [...turn.detours];
+    for (const refusal of turn.refusals) {
+      const index = detours.findIndex((each) => each.after === refusal.tool);
+      const detour = index < 0 ? undefined : detours.splice(index, 1)[0];
+      console.log(`    refused ${refusal.tool}${refusal.path ? ` ${refusal.path}` : refusal.command ? ` $ ${refusal.command}` : ''} (${refusal.how === 'permission' ? 'asked, refused' : 'not allowed'}) → ${detour ? `then ${detour.op}` : 'no Elabora operation after it'}`);
+    }
+  }
+  console.log('');
+  console.log(`${report.refused} turn(s) of ${report.turns.length} hit a refusal (${percent(report.share)}).`);
+  if (report.refused) {
+    console.log(`  with a refusal: ${percent(report.withRefusal.succeeded)} succeeded, ${tokens(report.withRefusal.tokens)} on average`);
+    console.log(`  without:        ${percent(report.without.succeeded)} succeeded, ${tokens(report.without.tokens)} on average`);
+    console.log(`  needs: ${report.needs.map((need) => `${need.need} (${need.refusals}, ${need.turns} turn(s))`).join(', ')}`);
+  }
+  for (const reason of report.reasons) console.log(`  ${reason}`);
+  console.log(report.verdict === 'open-a-tool' ? 'Open that need with an Elabora tool rather than letting the agent write files.'
+    : report.verdict === 'keep' ? 'Writing through Elabora\'s tools only holds: refusals are rare and scattered.'
+    : `Too few turns to judge (${report.turns.length} of ${MIN_TURNS}).`);
+  return 0;
+}
+
 const history = defineCommand({
   name: 'history',
-  flags: { limit: 'string', json: 'boolean' },
+  flags: { limit: 'string', json: 'boolean', chats: 'boolean' },
   run: ({ positionals: [dir = '.'], flags }) => reportingFailures(() => {
+    if (flags.chats) return printChats(dir, !!flags.json);
     const batches = edit.historyBatches(dir, Number(flags.limit) || 20);
     if (flags.json) { printJson(batches); return 0; }
     if (!batches.length) { console.log('No change yet.'); return 0; }
@@ -194,7 +235,7 @@ function requestFromInput(input: string): string {
 
 const mark = defineCommand({
   name: 'mark',
-  flags: { stdin: 'boolean' },
+  flags: { stdin: 'boolean', chat: 'string' },
   run: ({ positionals, flags }) => reportingFailures(() => {
     // A UserPromptSubmit hook adds what it prints to the prompt: with --stdin, only errors are
     // printed (on stderr), and an empty prompt marks nothing.
@@ -203,7 +244,7 @@ const mark = defineCommand({
     if (!request && !flags.stdin) { console.error('Usage: elabora mark [dir] "<request>" | elabora mark [dir] --stdin'); return 2; }
     if (!fs.existsSync(path.join(dir, 'course.json'))) throw new edit.EditError(`${path.resolve(dir)} is not an Elabora course (no course.json)`);
     if (!request) return 0;
-    edit.appendMark(dir, request);
+    edit.appendMark(dir, request, flags.chat ? { chat: flags.chat } : {});
     if (!flags.stdin) console.log(`✔ The next batch of AI work is labelled "${request}".`);
     return 0;
   })

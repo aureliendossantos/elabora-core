@@ -5,7 +5,7 @@ import { undoChanges } from '@elabora/core/ops/undo';
 import { changesToUndo, lastAiBatch, summarizeBatches, undoneChanges, type BatchSummary } from '@elabora/core/ops/batch';
 import { CommandError } from '@elabora/core/commands/index';
 import { hasBlob, type BlobHash } from '../blobs.ts';
-import { withProjectLockSync, readJournal, appendUndo, appendMark as appendJournalMark, detectAuthor } from '../journal/index.ts';
+import { withProjectLockSync, readJournal, appendUndo, appendMark as appendJournalMark, detectAuthor, CHAT_ID } from '../journal/index.ts';
 import { changedOnDisk, restoreOriginalTexts } from './disk.ts';
 import { commit, conflict, editResult, pruneAfter, snapshotFor, translateErrors, type EditOptions, type EditResult } from './executor.ts';
 import { takeAutoVersion, type AutoVersion } from './auto-version.ts';
@@ -82,8 +82,10 @@ export function undoBatch(dir: string, batch?: string, options: EditOptions = {}
 }
 
 // Written when the user asks the AI for something: closes the current batch and labels the next.
-export function appendMark(dir: string, request: string, options: { author?: Author } = {}): { ok: true; mark: { id: string; seq: number } } {
-  const mark = translateErrors(() => appendJournalMark(dir, { request, author: options.author ?? { kind: 'human' } }));
+// chat: a turn of Elabora's chat; the mark's id is the turn's, and its batch's.
+export function appendMark(dir: string, request: string, options: { author?: Author; chat?: string } = {}): { ok: true; mark: { id: string; seq: number } } {
+  if (options.chat !== undefined && !CHAT_ID.test(options.chat)) throw new CommandError(`Not a chat id: ${JSON.stringify(options.chat)} (letters, digits, - and _, at most 64)`);
+  const mark = translateErrors(() => appendJournalMark(dir, { request, author: options.author ?? { kind: 'human' }, ...(options.chat ? { chat: options.chat } : {}) }));
   return { ok: true, mark: { id: mark.id, seq: mark.seq } };
 }
 

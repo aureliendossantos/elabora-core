@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { Author, ChangeLike, JournalEntry, Op } from '@elabora/core/ops/types';
+import type { Author, ChangeLike, JournalEntry, MarkEntry, Op } from '@elabora/core/ops/types';
+import { recordTurnEnd } from '@elabora/node/chats';
 import { diffFiles } from '@elabora/core/ops/diff';
 import { invertOps } from '@elabora/core/ops/apply';
 import { isJsonPath, sameContent } from '@elabora/core/ops/json';
@@ -94,7 +95,7 @@ import { isPresetName } from '@elabora/core/media/presets';
 import { EngineError, protocolError } from './errors.ts';
 import type {
   BackupSummary, BuildParams, BuildView, CanvasInfo, CanvasMoment, CanvasView, ChangeSource, ChangeView, CommandArgs, CommandName, DiagnosticsView, EngineEvent, EventMessage, FileEntry, FileView,
-  FormatMigrationView, FormatStatus, HistoryView, MarkResult, MediaImportResult, MediaJobInfo, ProjectSummary, RenderScreenParams, RequestMessage,
+  FormatMigrationView, FormatStatus, HistoryView, MarkResult, EndTurnParams, EndTurnResult, BatchCloseReason, MediaImportResult, MediaJobInfo, ProjectSummary, RenderScreenParams, RequestMessage,
   RequestResult, RequestType, ResponseMessage, RestoreView, RunResult, ScreenView, TranslationBuildParams, TranslationBuildView, UndoView, VoiceView, GenerateVoiceParams, AlignNarrationParams, ConversionsParams, ConversionsView
 } from './protocol.ts';
 import { takeDialogue } from '@elabora/node/voice/index';
@@ -206,7 +207,10 @@ export class Session {
   readonly #media: MediaSupervisor | null;
   #openBatch: { id: string; at: number } | null = null;
   #batchTimer: NodeJS.Timeout | null = null;
-  #closures: { id: string; reason: 'idle' | 'human' | 'mark' | 'close' }[] = [];
+  #closures: { id: string; reason: BatchCloseReason }[] = [];
+  // The turns of Elabora's chat not ended yet, by conversation: the mark's id is the turn's batch,
+  // which neither a human change nor 5 idle minutes close, only the turn's end (endTurn) or the next mark.
+  readonly #turns = new Map<string, string>();
   #versionTimer: NodeJS.Timeout | null = null;
   #versionInFlight: Promise<string | null> | null = null;
   #pruned = false;
@@ -404,7 +408,8 @@ export class Session {
       case 'undo': return this.undo(request.params.seq);
       case 'undoBatch': return this.undoBatch(request.params.batch);
       case 'history': return this.history(request.params.limit, { ops: request.params.ops });
-      case 'mark': return this.mark(request.params.request);
+      case 'mark': return this.mark(request.params.request, this.author, request.params.chat);
+      case 'endTurn': return this.endTurn(request.params);
       case 'diagnostics': return this.diagnostics(request.params.screen);
       case 'importMedia': return this.importMedia(request.params.path, { to: request.params.to, name: request.params.name });
       case 'mediaJobs': return this.mediaJobs();
@@ -934,7 +939,9 @@ export class Session {
 
   // « Demander à l'IA »: closes the AI batch, writes the mark that labels the next one, and keeps a
   // before-ai version (the newest version when nothing changed since it).
-  async mark(request: string, author: Author = this.author): Promise<MarkResult> {
+  // chat: a turn of Elabora's chat begins; the mark's id is the turn's, and the batch of all its
+  // agent writes until endTurn.
+  async mark(request: string, author: Author = this.author, chat?: string): Promise<MarkResult> {
     this.#assertOpen();
     return this.#queue.run(async () => {
       this.#assertPresent();
@@ -943,7 +950,7 @@ export class Session {
       const mark = await this.#locked(async () => {
         await this.#syncWithDisk();
         try {
-          const { mark } = edit.appendMark(this.root, request, { author });
+          const { mark } = edit.appendMark(this.root, request, { author, ...(chat ? { chat } : {}) });
           this.#sources.set(mark.seq, 'engine');
           return mark;
         } finally {
@@ -953,6 +960,25 @@ export class Session {
       await this.#afterChange();
       const version = await this.#takeVersion('before-ai', { author });
       return { mark, version };
+    });
+  }
+
+  // A turn of Elabora's chat ended (the host has session/prompt's answer): its batch closes (the
+  // after-ai version, batchClosed with reason turn) and the transcript keeps why and what it cost.
+  async endTurn(params: EndTurnParams): Promise<EndTurnResult> {
+    this.#assertOpen();
+    return this.#queue.run(async () => {
+      // The agent's last changes, written by its MCP server, may not have reached the session yet.
+      if (await this.#tail.hasNew()) await this.#locked(() => this.#syncWithDisk());
+      const mark = this.#entries.find((entry): entry is MarkEntry => entry.type === 'mark' && entry.id === params.turn);
+      const chat = mark?.chat;
+      if (!chat) throw new EngineError('not-found', `No turn ${params.turn} of the chat in the journal`);
+      if (this.#turns.get(chat) === params.turn) this.#turns.delete(chat);
+      if (this.#openBatch?.id === params.turn) this.#closeOpenBatch('turn');
+      await this.#flushClosures();
+      recordTurnEnd(this.root, { chat, turn: params.turn, stopReason: params.stopReason, ...(params.usage ? { usage: params.usage } : {}), ...(params.context ? { context: params.context } : {}), ...(params.cost ? { cost: params.cost } : {}) });
+      const changes = this.#entries.filter((entry) => entry.type !== 'mark' && entry.batch === params.turn).length;
+      return { batch: changes ? params.turn : null, changes };
     });
   }
 
@@ -1468,15 +1494,23 @@ export class Session {
   #noteBatch(entry: JournalEntry): void {
     if (entry.type === 'mark') {
       this.#closeOpenBatch('mark');
+      if (entry.chat) this.#turns.set(entry.chat, entry.id);
       return;
     }
     if (!isAiAuthor(entry.author)) {
       this.#closeOpenBatch('human');
       return;
     }
-    if (this.#openBatch && this.#openBatch.id !== entry.batch) this.#closeOpenBatch('idle');
+    if (this.#openBatch && this.#openBatch.id !== entry.batch) this.#closeOpenBatch(this.#isTurn(this.#openBatch.id) ? 'turn' : 'idle', true);
     this.#openBatch = { id: entry.batch, at: Date.now() };
-    this.#armBatchTimer(this.#options.batchIdleMs ?? FIVE_MINUTES);
+    if (this.#isTurn(entry.batch)) {
+      if (this.#batchTimer) clearTimeout(this.#batchTimer);
+      this.#batchTimer = null;
+    } else this.#armBatchTimer(this.#options.batchIdleMs ?? FIVE_MINUTES);
+  }
+
+  #isTurn(batch: string | undefined): boolean {
+    return batch !== undefined && [...this.#turns.values()].includes(batch);
   }
 
   // An AI batch still open when the session starts (an agent worked moments ago).
@@ -1504,8 +1538,11 @@ export class Session {
     this.#batchTimer.unref();
   }
 
-  #closeOpenBatch(reason: 'idle' | 'human' | 'mark' | 'close'): void {
+  // A turn of the chat stays open while the author works (human) and the agent thinks (idle): only
+  // its end, the next mark, another AI batch (force) or the session closing close it.
+  #closeOpenBatch(reason: BatchCloseReason, force = false): void {
     if (!this.#openBatch) return;
+    if (!force && (reason === 'human' || reason === 'idle') && this.#isTurn(this.#openBatch.id)) return;
     this.#closures.push({ id: this.#openBatch.id, reason });
     this.#openBatch = null;
     if (this.#batchTimer) clearTimeout(this.#batchTimer);
@@ -1515,7 +1552,7 @@ export class Session {
   // The after-ai versions of the batches that ended (outside the project lock: other writers go on).
   async #flushClosures(): Promise<void> {
     while (this.#closures.length) {
-      const { id, reason } = this.#closures.shift() as { id: string; reason: 'idle' | 'human' | 'mark' | 'close' };
+      const { id, reason } = this.#closures.shift() as { id: string; reason: BatchCloseReason };
       const version = this.#options.backups?.enabled === false ? null : await this.#takeVersion('after-ai', { batch: id, author: SYSTEM });
       this.#emit({ type: 'batchClosed', batch: id, reason, version });
     }
@@ -1663,7 +1700,7 @@ export class Session {
 // refused as bad-request).
 const REQUEST_TYPES: Record<RequestType, true> = {
   summary: true, readFile: true, listFiles: true, readScreen: true, screenParts: true, findText: true, conversions: true, translationStatus: true,
-  translationTable: true, screenTranslation: true, buildTranslation: true, run: true, undo: true, undoBatch: true, history: true, mark: true,
+  translationTable: true, screenTranslation: true, buildTranslation: true, run: true, undo: true, undoBatch: true, history: true, mark: true, endTurn: true,
   diagnostics: true, importMedia: true, mediaJobs: true, activity: true, cancelMediaJob: true, backups: true, createBackup: true, restoreBackup: true,
   renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, migrate: true, build: true, close: true, narration: true, voices: true,
   installVoices: true, setSpeakerVoice: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,

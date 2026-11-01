@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import type { Author } from '@elabora/core/ops/types';
 import { recordActivity } from '@elabora/node/activity';
+import { noteDetour } from '@elabora/node/chats';
 import type { ActivityEntry, ActivityFamily } from '@elabora/node/activity';
 
 // What each agent operation says while it runs (@elabora/node/activity): its family, from which the
@@ -115,6 +116,8 @@ export async function withActivity<T>(root: string, op: string, family: Activity
   if (!family || (author.kind !== 'agent' && author.kind !== 'external')) return run();
   const id = randomUUID();
   const base = { id, op, family, author, ...place };
+  // In Elabora's chat, the first operation after a refusal is its detour.
+  noteDetour(root, author, op, family);
   recordActivity(root, { at: new Date().toISOString(), phase: 'start', ...base });
   let succeeded = false;
   let more: Place = {};

@@ -14,6 +14,7 @@ import type { MigrationNote } from '@elabora/core/format/migrations/types';
 import type { PresetName } from '@elabora/core/media/presets';
 import type { WebBuildOptions } from '@elabora/node/build-types';
 import type { ActivityEntry } from '@elabora/node/activity-types';
+import type { TurnUsage } from '@elabora/node/chats-types';
 import type { VoiceInfo, VoiceStatus, GenerateResult, TakeInfo, VoiceProgress, VoiceQuery, VoiceSearchResult, VoiceAccount, VoiceEstimate } from '@elabora/node/voice/types';
 import type { AlignerView, AlignProgress, AlignResult } from '@elabora/node/align/types';
 import type { TranscribeProgress, Transcript, TranscriberView, TranscriptionEstimate, TranscriptionService } from '@elabora/node/transcribe/types';
@@ -307,6 +308,22 @@ export interface HistoryView {
   openBatch: string | null; // the AI batch still open (closed after 5 minutes without AI changes)
 }
 
+// A turn of Elabora's chat ended: session/prompt's stopReason and usage, the last usage_update's
+// context and cost (@elabora/node/chats, recordTurnEnd).
+export interface EndTurnParams {
+  turn: string; // the mark's id
+  stopReason: string;
+  usage?: TurnUsage;
+  context?: { used: number; size: number };
+  cost?: { amount: number; currency: string };
+}
+// batch: the turn's batch (its id), null when the agent wrote nothing.
+export interface EndTurnResult { batch: string | null; changes: number }
+
+// Why an AI batch closed: idle for 5 minutes, a human change, a mark, the session closing, or the
+// end of its turn of the chat.
+export type BatchCloseReason = 'idle' | 'human' | 'mark' | 'close' | 'turn';
+
 export interface MarkResult {
   mark: { id: string; seq: number };
   version: string | null; // the before-ai version (or the newest one, when nothing changed since)
@@ -561,7 +578,9 @@ export interface Requests {
   undo: { params: { seq?: number }; result: UndoView };
   undoBatch: { params: { batch?: string }; result: UndoView };
   history: { params: { limit?: number; ops?: boolean }; result: HistoryView };
-  mark: { params: { request: string }; result: MarkResult };
+  // chat: a turn of Elabora's chat begins (its id is the mark's); endTurn ends it.
+  mark: { params: { request: string; chat?: string }; result: MarkResult };
+  endTurn: { params: EndTurnParams; result: EndTurnResult };
   diagnostics: { params: { screen?: string }; result: DiagnosticsView };
   importMedia: { params: { path: string; to?: string; name?: string }; result: MediaImportResult };
   mediaJobs: { params: NoParams; result: MediaJobInfo[] };
@@ -674,8 +693,8 @@ export type EngineEvent =
   // Lines an agent's operations appended to the activity next to the journal (@elabora/node/activity):
   // what it reads, looks at, checks and writes, for the window to say while it works.
   | { type: 'activity'; entries: ActivityEntry[] }
-  // An AI batch is over: idle for 5 minutes, a human change, a mark, or the session closing.
-  | { type: 'batchClosed'; batch: string; reason: 'idle' | 'human' | 'mark' | 'close'; version: string | null }
+  // An AI batch is over: idle for 5 minutes, a human change, a mark, the session closing, or its turn of the chat ended.
+  | { type: 'batchClosed'; batch: string; reason: BatchCloseReason; version: string | null }
   // A background task failed (the watcher, a version, a media job's reconciliation…).
   | { type: 'error'; message: string; code?: string; context?: string }
   | { type: 'closed' };

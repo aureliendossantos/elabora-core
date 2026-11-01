@@ -11,7 +11,10 @@ export const ACTIVITY_FAMILIES = [
   // Looking and checking
   'look', 'check', 'fit', 'try-object', 'dialogue',
   // Writing
-  'write-screen', 'write-plan', 'write-course', 'design', 'write-object', 'translate', 'media', 'record', 'listen', 'package', 'download', 'undo'
+  'write-screen', 'write-plan', 'write-course', 'design', 'write-object', 'translate', 'media', 'record', 'listen', 'package', 'download', 'undo',
+  // Elabora's chat refused one of the agent's own tools (a file edit, a shell): a single line, its end
+  // (@elabora/node/chats, recordRefusal)
+  'refused'
 ] as const;
 export type ActivityFamily = (typeof ACTIVITY_FAMILIES)[number];
 
@@ -26,5 +29,8 @@ export interface ActivityEntry {
   screen?: string;
   page?: string;
   language?: string;
+  // A refusal's target: the file (relative to the course when inside it), or a shell's program.
+  path?: string;
+  command?: string;
   ok?: boolean;         // at the end: whether it succeeded
 }
