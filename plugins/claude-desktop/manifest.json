@@ -3,9 +3,9 @@
   "manifest_version": "0.3",
   "name": "elabora",
   "display_name": "Elabora",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Work on your Elabora e-learning courses with Claude: the plan, screens, quizzes, design, narration, translation and checks.",
-  "long_description": "Elabora is a local-first authoring tool for e-learning. This extension connects Claude to the Elabora app installed on your computer, on the course folders you choose: Claude reads and writes them with Elabora's own tools, and follows the rules and guidance of your Elabora version. Elabora shows what Claude changes as it happens, and undoes it in one step. Requires the Elabora app (elabora.studio), in the Applications folder on a Mac.",
+  "long_description": "Elabora is a local-first authoring tool for e-learning. This extension connects Claude to the Elabora app installed on your computer, on the courses Elabora knows (its library and the folders it opened), with nothing to set up: Claude reads and writes them with Elabora's own tools, and follows the rules and guidance of your Elabora version. Elabora shows what Claude changes as it happens, and undoes it in one step. Requires the Elabora app (elabora.studio), in the Applications folder on a Mac.",
   "author": { "name": "Elabora", "url": "https://elabora.studio" },
   "homepage": "https://elabora.studio",
   "documentation": "https://elabora.studio/en/docs/claude/",
@@ -19,16 +19,7 @@
     "entry_point": "server/launch.cjs",
     "mcp_config": {
       "command": "node",
-      "args": ["${__dirname}/server/launch.cjs", "${user_config.courses}"]
-    }
-  },
-  "user_config": {
-    "courses": {
-      "type": "directory",
-      "title": "Course folders",
-      "description": "The Elabora courses Claude may work on: a course's folder (Elabora shows it at the bottom of Course settings), or a folder that holds several, such as Elabora's library.",
-      "multiple": true,
-      "required": true
+      "args": ["${__dirname}/server/launch.cjs"]
     }
   },
   "tools_generated": true,

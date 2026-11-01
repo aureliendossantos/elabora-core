@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Elabora's extension for Claude (the desktop app): starts the MCP server of the Elabora installed on
-// this computer (elabora mcp) on the folders the author picked. It carries no copy of Elabora, so the
-// tools, rules and skills are always those of the author's own version. Plain Node with no
+// this computer (elabora mcp) on the courses Elabora knows: its library and the folders the app
+// opened, found by the server itself, so that installing asks nothing. It carries no copy of Elabora,
+// so the tools, rules and skills are always those of the author's own version. Plain Node with no
 // dependency: Claude runs it with the Node it ships.
 'use strict';
 const { spawn } = require('node:child_process');
@@ -33,12 +34,11 @@ if (!found) {
   process.exit(1);
 }
 
-// The folders picked in the extension's settings, each a course or a folder of courses. With none,
-// a folder without courses, so that the server offers only its documentation and says why.
+// Folders given after the launcher (a test, a hand-made setup) are served instead.
 const folders = process.argv.slice(2).filter(Boolean);
 const env = { ...process.env, ...found.env };
 delete env.NODE_OPTIONS; // Claude's Node settings are not Elabora's
-const child = spawn(found.command, [...found.args, 'mcp', ...(folders.length ? folders : [__dirname])], { stdio: 'inherit', env, windowsHide: true });
+const child = spawn(found.command, [...found.args, 'mcp', ...folders], { stdio: 'inherit', env, windowsHide: true });
 child.on('error', (error) => { process.stderr.write(`Elabora could not start: ${error.message}\n`); process.exit(1); });
 child.on('exit', (code, signal) => process.exit(code ?? (signal ? 1 : 0)));
 for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => child.kill(signal));

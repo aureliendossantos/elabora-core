@@ -1,7 +1,7 @@
 // The project library and archives (docs/architecture/storage.md, Project library and archives): the app
 // keeps its projects as plain folders in a library it manages, and people exchange projects as
 // `.elabora` archives. The `elabora` command still works on any folder.
-export { libraryRoot, setLibraryRoot, ensureLibrary, settingsPath, LIBRARY_MARKER, TRASH_DIR, type LibraryMoveResult, type SetLibraryRootOptions } from './location.ts';
+export { libraryRoot, knownFolders, setLibraryRoot, ensureLibrary, settingsPath, LIBRARY_MARKER, TRASH_DIR, APP_SETTINGS_FILE, type LibraryMoveResult, type SetLibraryRootOptions } from './location.ts';
 export {
   listProjects, getProject, findProjectsByCourseId, resolveProjectId, readCourseInfo, libraryProjectDir, createProject, duplicateProject, renameProject, validateLibraryProject,
   THUMBNAIL_FILE, ORIGIN_FILE, type LibraryProject, type ProjectOrigin, type ValidationSummary, type ListOptions, type CreateProjectOptions, type DuplicateOptions
