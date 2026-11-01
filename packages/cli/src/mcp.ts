@@ -6,7 +6,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { ListToolsRequestSchema, CallToolRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import type { Author } from '@elabora/core/ops/types';
 import { ELABORA_VERSION } from '@elabora/node/bundles';
-import { detectAuthor } from '@elabora/node/journal/author';
+import { chatFromEnv, detectAuthor } from '@elabora/node/journal/author';
 import { agentTools, listAgentTools, callAgentTool } from './agent-tools.ts';
 import { errorResult, objectSchema, textResult } from './mcp/tool.ts';
 import type { ToolOptions } from './agent-tools.ts';
@@ -24,6 +24,10 @@ Use only tools exposed by this connection; CLI/file tools are alternatives when 
 // Outside a course, the server offers what needs none (the documentation, the skills, the app's
 // library) and says how to reach one.
 const NO_COURSE = `Only the documentation, the skills and the app's library are offered here. elabora_projects_list gives the author's courses and their folders. To work on one, this server must be started on its folder: add the folder to Elabora's settings in the host (in Claude, the extension's), or open the session in that folder. With a shell, elabora tools call <tool> <folder> --args '<json>' runs any operation on a course. Do not change the author's agent configuration yourself.`;
+
+// In Elabora's own chat (ELABORA_CHAT), the agent's file edits and shell are refused: said up front,
+// so that it reaches for these tools first.
+const IN_CHAT = `You are in Elabora's chat, inside the author's app. Write only through these tools: your own file edits and shell are refused here. Read freely. Answer in the author's language.`;
 
 const isCourse = (dir: string) => fs.existsSync(path.join(dir, 'course.json'));
 
@@ -105,7 +109,7 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
   const scope = mode === 'one' ? `Elabora MCP server, scoped to one course: ${served[0]!.folder}.`
     : mode === 'none' ? `Elabora MCP server, started outside a course: ${typeof dirs === 'string' ? path.resolve(dirs) : dirs.map((dir) => path.resolve(dir)).join(', ')} holds no Elabora course (a folder with course.json). ${NO_COURSE}`
     : `Elabora MCP server, serving ${served.length} courses: every course operation takes course, its name below. Each course has its own AGENTS.md and author notes: read those of the course you work on before editing it.\n${served.map((course) => `- ${course.name}: ${course.title ?? '(no title)'} (${course.folder})`).join('\n')}`;
-  const instructions = [scope, INSTRUCTIONS, ...notes, gone].filter(Boolean).join('\n\n');
+  const instructions = [scope, chatFromEnv() ? IN_CHAT : '', INSTRUCTIONS, ...notes, gone].filter(Boolean).join('\n\n');
   const server = new Server({ name: 'elabora', version: ELABORA_VERSION }, { capabilities: { tools: {}, resources: {} }, instructions });
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
@@ -116,8 +120,11 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
     // not the adapter's client name), else the name its MCP client gives.
     const client = server.getClientVersion()?.name;
     // An agent's name only: a shell's ELABORA_AUTHOR=human inherited by the server does not make the agent a person.
+    // ELABORA_CHAT: the conversation of Elabora's chat this server works for (one server per
+    // conversation); its changes join the conversation's turn.
     const named = process.env.ELABORA_AUTHOR?.trim() ? detectAuthor() : null;
-    const author: Author = named?.kind === 'agent' ? named : client ? { kind: 'agent', name: client } : { kind: 'agent' };
+    const chat = chatFromEnv();
+    const author: Author = named?.kind === 'agent' ? named : { kind: 'agent', ...(client ? { name: client } : {}), ...(chat ? { chat } : {}) };
     if (mode === 'several' && name === 'elabora_courses') return textResult(served);
     const tool = byName.get(name);
     if (mode !== 'several' || !tool || tool.anywhere) {

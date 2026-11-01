@@ -204,6 +204,10 @@ function textRuns(band: Band = { top: 0, bottom: 1 }): TextRun[] {
     if (element.checkVisibility && !element.checkVisibility({ visibilityProperty: true, opacityProperty: true })) continue;
     const style = getComputedStyle(element);
     if (style.visibility !== 'visible' || parseFloat(style.opacity) === 0) continue;
+    // Letters painted by a background clipped to them (a gradient's: their own fill is transparent):
+    // their colours are that background's, which the capture does not tell from what is behind them.
+    // Not measured here.
+    if (rgba(style.webkitTextFillColor)[3] === 0) continue;
     let run = out.get(element);
     if (!run) {
       const size = parseFloat(style.fontSize);

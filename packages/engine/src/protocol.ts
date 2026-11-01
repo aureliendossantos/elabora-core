@@ -307,6 +307,15 @@ export interface HistoryView {
   openBatch: string | null; // the AI batch still open (closed after 5 minutes without AI changes)
 }
 
+// A turn of Elabora's chat ended: its batch closes. turn: the id of the mark that opened it.
+export interface EndTurnParams { turn: string }
+// batch: the turn's batch (its id), null when the agent wrote nothing.
+export interface EndTurnResult { batch: string | null; changes: number }
+
+// Why an AI batch closed: idle for 5 minutes, a human change, a mark, the session closing, or the
+// end of its turn of the chat.
+export type BatchCloseReason = 'idle' | 'human' | 'mark' | 'close' | 'turn';
+
 export interface MarkResult {
   mark: { id: string; seq: number };
   version: string | null; // the before-ai version (or the newest one, when nothing changed since)
@@ -561,7 +570,9 @@ export interface Requests {
   undo: { params: { seq?: number }; result: UndoView };
   undoBatch: { params: { batch?: string }; result: UndoView };
   history: { params: { limit?: number; ops?: boolean }; result: HistoryView };
-  mark: { params: { request: string }; result: MarkResult };
+  // chat: a turn of Elabora's chat begins (its id is the mark's); endTurn ends it.
+  mark: { params: { request: string; chat?: string }; result: MarkResult };
+  endTurn: { params: EndTurnParams; result: EndTurnResult };
   diagnostics: { params: { screen?: string }; result: DiagnosticsView };
   importMedia: { params: { path: string; to?: string; name?: string }; result: MediaImportResult };
   mediaJobs: { params: NoParams; result: MediaJobInfo[] };
@@ -674,8 +685,8 @@ export type EngineEvent =
   // Lines an agent's operations appended to the activity next to the journal (@elabora/node/activity):
   // what it reads, looks at, checks and writes, for the window to say while it works.
   | { type: 'activity'; entries: ActivityEntry[] }
-  // An AI batch is over: idle for 5 minutes, a human change, a mark, or the session closing.
-  | { type: 'batchClosed'; batch: string; reason: 'idle' | 'human' | 'mark' | 'close'; version: string | null }
+  // An AI batch is over: idle for 5 minutes, a human change, a mark, the session closing, or its turn of the chat ended.
+  | { type: 'batchClosed'; batch: string; reason: BatchCloseReason; version: string | null }
   // A background task failed (the watcher, a version, a media job's reconciliation…).
   | { type: 'error'; message: string; code?: string; context?: string }
   | { type: 'closed' };

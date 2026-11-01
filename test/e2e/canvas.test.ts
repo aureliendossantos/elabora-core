@@ -226,6 +226,60 @@ test('canvas: the layout gives the texts of each block the author can point at (
   });
 });
 
+test('canvas: the layout gives the texts outside the blocks in the order of the page: the title, the layout\'s texts and pictures, a layer\'s title, a part\'s number with its label; what screen readers skip says so; a figure with nothing to read is none', { timeout: 120000 }, async () => {
+  const coffee = loadProjectFromDir(path.join(ROOT, 'examples', 'coffee-in-brief'));
+  await withCanvas(coffee.root, createRenderContext(coffee, { fields: true }), async ({ page, show, errors }) => {
+    const texts = async () => ((await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.layout())) as LayoutMessage).texts ?? [];
+    const first = coffee.screens.get('roasting')!.data.blocks[0]!.id;
+    // An opening: its title, lead and reading time, then its picture named by its alternative, before its first block.
+    await show(coffee, 'roasting');
+    const opening = await texts();
+    assert.deepEqual(opening.map(({ kind, path: field, read, before, layer }) => ({ kind, field, read, before, layer })), [
+      { kind: 'title', field: null, read: true, before: first, layer: null },
+      { kind: 'field', field: 'lead', read: true, before: first, layer: null },
+      { kind: 'field', field: 'duration', read: true, before: first, layer: null },
+      { kind: 'image', field: null, read: true, before: first, layer: null }
+    ], JSON.stringify(opening));
+    assert.equal(opening[0]!.text, coffee.screens.get('roasting')!.data.title);
+    assert.match(opening[2]!.text, /^Reading time/);
+    assert.match(opening[3]!.text, /^Coffee beans tumbling/);
+    for (const text of opening) assert.ok(text.rect.width > 1 && text.rect.height > 1, JSON.stringify(text));
+    // Its picture decorative: still there, skipped by screen readers.
+    const decorative = withScreen(coffee, 'roasting', (screen) => { screen.layoutProps = { ...screen.layoutProps, decorative: true }; });
+    await show(decorative, 'roasting');
+    assert.deepEqual((await texts()).map(({ kind, read }) => `${kind}:${read}`), ['title:true', 'field:true', 'field:true', 'image:false']);
+    // A title not shown is still read.
+    const hidden = withScreen(coffee, 'brewing', (screen) => { screen.showTitle = false; });
+    await show(hidden, 'brewing');
+    const [title] = await texts();
+    assert.deepEqual([title!.kind, title!.read], ['title', true]);
+    assert.deepEqual(errors, []);
+  });
+  const planetary = loadProjectFromDir(PLANETARY);
+  await withCanvas(planetary.root, createRenderContext(planetary, { fields: true }), async ({ page, show }) => {
+    // A screen without layout: its title alone, before its blocks.
+    await show(planetary, 'lab', { layer: 'lab-debrief' });
+    const texts = ((await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.layout())) as LayoutMessage).texts!;
+    assert.deepEqual(texts.filter((text) => !text.layer).map(({ kind, before }) => ({ kind, before })), [{ kind: 'title', before: planetary.screens.get('lab')!.data.blocks[0]!.id }]);
+    // A layer open: its title, before its blocks.
+    assert.deepEqual(texts.filter((text) => text.layer).map(({ kind, text, before }) => ({ kind, text, before })), [{ kind: 'title', text: 'Six configurations, one equation', before: 'lab-summary' }]);
+  });
+  const watercolor = loadProjectFromDir(path.join(ROOT, 'templates', 'watercolor'));
+  await withCanvas(watercolor.root, createRenderContext(watercolor, { fields: true }), async ({ page, show, errors }) => {
+    const texts = async () => ((await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.layout())) as LayoutMessage).texts ?? [];
+    // A part opener: its number, read « Part 1 » with the player's label, before its title.
+    await show(watercolor, 'part-one');
+    assert.deepEqual((await texts()).slice(0, 2).map(({ kind, path: field, text, read }) => ({ kind, field, text, read })), [
+      { kind: 'field', field: 'number', text: 'Part 1', read: true },
+      { kind: 'title', field: null, text: watercolor.screens.get('part-one')!.data.title, read: true }
+    ]);
+    // A decorative picture beside its text: its figure is none for screen readers, its text is there.
+    await show(watercolor, 'text-and-picture');
+    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('[data-block="picture-beside"] figure')].map((figure) => figure.getAttribute('role'))), ['none']);
+    assert.deepEqual(errors, []);
+  });
+});
+
 test('canvas: elabora/focus moves a picture\'s crop at once, without a render; the saved focus comes back with the next render', { timeout: 120000 }, async () => {
   const base = loadProjectFromDir(EXAMPLE);
   const project = withScreen(base, 'chemin', (screen) => { screen.blocks.splice(1, 0, { id: 'chemin-bande', type: 'image', props: { presentation: 'band', asset: 'images/chemin-impression.svg', alt: 'Le chemin d\'une impression', focus: { x: 0.2, y: 0.3 } } } as Block); });
