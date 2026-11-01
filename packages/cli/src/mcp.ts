@@ -98,11 +98,14 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
   const { courses: folders, found, missing } = start ?? { courses: [], found: [], missing: [] };
   const names = new Map<string, string>();
   const served = nameCourses(folders, names);
-  // The courses of a call: those of the start, or Elabora's as they are now.
-  const current = (): ServedCourse[] | null => {
-    if (!known) return served;
+  // The courses of a call: those of the start; with no folder, Elabora's as last read, read again
+  // when `fresh` (elabora_courses, a course not found, the resources' list).
+  let last: ServedCourse[] | null = start && served;
+  const current = (fresh = false): ServedCourse[] | null => {
+    if (!known || (!fresh && last)) return known ? last : served;
     const now = knownCourses();
-    return now && nameCourses(now.courses, names);
+    last = now && nameCourses(now.courses, names);
+    return last;
   };
   const mode = known || served.length > 1 ? 'several' : served.length === 1 ? 'one' : 'none';
   // Outside a course, only the tools that need none.
@@ -119,7 +122,8 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
   // brought up to date only when an operation first works on it: a session opened in a folder of
   // modules does not rewrite them all.
   const lazy = new Set(found);
-  const notes = served.map((course) => {
+  // With no folder, every course is brought up to date at its first operation, and said then.
+  const notes = (known ? [] : served).map((course) => {
     const note = readOnly || lazy.has(course.folder) ? agentRulesNote(course.folder) : syncAgentRules(course.folder);
     return note && mode === 'several' ? `${course.name}: ${note}` : note;
   }).filter((note): note is string => !!note);
@@ -156,12 +160,14 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
       if (mode === 'one' && tool && !tool.anywhere) settle(served[0]!.folder);
       return callAgentTool(name, args, { root: served[0]?.folder ?? process.cwd(), author }, selection);
     }
-    const courses = current();
+    if (!tool && name !== 'elabora_courses') return callAgentTool(name, args, { root: process.cwd(), author }, selection);
+    const { course: wanted, ...rest } = args;
+    const find = (list: readonly ServedCourse[]) => list.find((each) => each.name === wanted || each.folder === (typeof wanted === 'string' ? path.resolve(wanted) : null));
+    let courses = current(name === 'elabora_courses');
+    if (courses && name !== 'elabora_courses' && !find(courses)) courses = current(true);
     if (!courses) return errorResult({ error: NOT_OPENED });
     if (name === 'elabora_courses') return textResult(courses);
-    if (!tool) return callAgentTool(name, args, { root: process.cwd(), author }, selection);
-    const { course: wanted, ...rest } = args;
-    const course = courses.find((each) => each.name === wanted || each.folder === (typeof wanted === 'string' ? path.resolve(wanted) : null));
+    const course = find(courses);
     if (!course) {
       const choice = courses.length ? `course is one of ${courses.map((each) => each.name).join(', ')}` : 'there is no course yet: the author creates one in Elabora';
       return errorResult({ error: `${wanted === undefined ? 'No course given' : `No course ${JSON.stringify(wanted)} here`}: ${choice}.` });
@@ -179,10 +185,10 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
   const skills = listSkills();
   const rulesOf = (courses: readonly ServedCourse[]) => new Map(courses.filter((course) => fs.existsSync(path.join(course.folder, 'AGENTS.md')))
     .map((course) => [mode === 'one' ? 'elabora://course/AGENTS.md' : `elabora://course/${course.name}/AGENTS.md`, course]));
-  const rules = () => rulesOf(current() ?? []);
+  const rules = (fresh = false) => rulesOf(current(fresh) ?? []);
   server.setRequestHandler(ListResourcesRequestSchema, async () => ({
     resources: [
-      ...[...rules()].map(([uri, course]) => ({ uri, name: mode === 'one' ? 'Course rules for agents' : `Course rules for agents: ${course.name}`, mimeType: 'text/markdown' })),
+      ...[...rules(true)].map(([uri, course]) => ({ uri, name: mode === 'one' ? 'Course rules for agents' : `Course rules for agents: ${course.name}`, mimeType: 'text/markdown' })),
       ...skills.flatMap(({ name, references }) => [
         { uri: `elabora://skills/${name}`, name: `Skill ${name}`, mimeType: 'text/markdown' },
         ...references.map((reference) => ({ uri: `elabora://skills/${name}/references/${reference}`, name: `Skill reference ${name}/${reference}`, mimeType: 'text/markdown' }))
