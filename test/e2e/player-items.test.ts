@@ -283,7 +283,7 @@ const shown = (page: Page) => page.evaluate(() => (window as PlayerWindow).__ela
 test('the progress in parts: a segment per section, the part shown, Tab and the arrows, a part\'s first screen, a part not open yet refused (Next\'s reason when it follows the screen)', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
   // Scroll presentation, linear, locked until complete; three sections (a title screen first).
   await player(copyExample(), async (page) => {
-    assert.match(await page.locator('.t-item--progress[data-parts="3"] .t-progress[role="toolbar"]').getAttribute('aria-label') ?? '', /^Progression : \d+ %$/);
+    assert.match(await page.locator('.t-item--progress[data-parts="3"] .t-parts[role="toolbar"]').getAttribute('aria-label') ?? '', /^Progression : \d+ %$/);
     assert.deepEqual((await parts(page)).map((part) => [part.label, part.tab]), [
       ['Partie 1 sur 3 : Découvrir, en cours, 1 page terminée sur 3', '0'],
       ['Partie 2 sur 3 : Pratiquer, pas encore disponible', '-1'],
@@ -355,6 +355,32 @@ test('the progress in parts: a segment per section, the part shown, Tab and the 
     await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
     assert.equal(await shown(page), 'evaluation');
     assert.equal((await parts(page))[1].label, 'Partie 2 sur 3 : Pratiquer, terminée');
+  });
+});
+
+// A theme written for the classic bar (its track: .t-progress, as the Nietzsche module's, 14 Oct 2026)
+// drew a second bar over the parts, the toolbar being a .t-progress too (the founder, 1 Nov 2026).
+test('a theme that draws the classic bar\'s track draws it there only: the parts stay alone, the classic bar takes it', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
+  const dir = copyExample();
+  fs.mkdirSync(path.join(dir, 'theme'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'theme', 'theme.css'), '.t-progress { height: 3px; background: rgb(255, 0, 0); }\n.t-progress-bar { background: rgb(0, 0, 255); }\n');
+  const course = JSON.parse(fs.readFileSync(path.join(dir, 'course.json'), 'utf8'));
+  course.theme.stylesheet = 'theme/theme.css';
+  fs.writeFileSync(path.join(dir, 'course.json'), JSON.stringify(course, null, 2));
+  // What the item draws: each element with a background, its colour and height.
+  const drawn = (page: Page) => page.$$eval('.t-item--progress *', (nodes) => nodes.flatMap((node) => {
+    const style = getComputedStyle(node);
+    return style.backgroundColor === 'rgba(0, 0, 0, 0)' ? [] : [`${node.className} ${style.backgroundColor} ${style.height}`];
+  }));
+  await player(dir, async (page) => {
+    assert.equal(await page.locator('.t-part').count(), 3);
+    assert.equal(await page.locator('.t-item--progress .t-progress').count(), 0);
+    assert.deepEqual((await drawn(page)).filter((entry) => entry.includes('rgb(255, 0, 0)')), [], 'no track of the theme under the parts');
+  });
+  edit.updatePlayer(dir, { options: { progress: { parts: false } } });
+  await player(dir, async (page) => {
+    assert.equal(await page.locator('.t-part').count(), 0);
+    assert.deepEqual((await drawn(page)).filter((entry) => entry.startsWith('t-progress ')), ['t-progress rgb(255, 0, 0) 3px'], 'the classic bar, as the theme draws it');
   });
 });
 

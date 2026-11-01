@@ -841,9 +841,11 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 .t-progress-value { min-width: 3.25em; font-size: 0.8125rem; font-weight: 600; font-variant-numeric: tabular-nums; opacity: .85; }
 /* A course in parts: one segment per part, as wide as its share of the screens, a little wider for
    many parts. Each is a button as tall as a bar's button around its slim line; the part shown has a
-   stronger line, one completed is full. Hovered, a line darkens; nothing else changes. */
+   stronger line, one completed is full. Hovered, a line darkens; nothing else changes. The toolbar is
+   not a .t-progress: a theme (elabora.theme, which wins over the player) that draws the classic bar's
+   track there would draw it under the parts too, a second bar. */
 .t-item--progress[data-parts] { flex-basis: clamp(11rem, calc(var(--t-parts) * 1.75rem + 4rem), 22rem); }
-.t-progress--parts { display: flex; gap: 3px; height: auto; border-radius: 0; background: none; overflow: visible; }
+.t-parts { display: flex; flex: 1 1 auto; gap: 3px; min-width: 0; }
 .t-part { display: flex; align-items: center; flex: 1 1 0; min-width: 0; height: var(--t-pl-btn); padding: 0; border: 0; border-radius: 4px; color: inherit; background: transparent; cursor: pointer; }
 .t-part-track { width: 100%; height: 6px; border-radius: 3px; background: color-mix(in srgb, currentColor 20%, transparent); overflow: hidden; transition: background-color var(--t-dur-press) ease; }
 .t-part[data-current] .t-part-track { background: color-mix(in srgb, currentColor 38%, transparent); }
@@ -1174,7 +1176,7 @@ button.t-timeline-line:disabled { color: var(--t-muted); }
   .t-chip { width: var(--t-pl-icon-btn); height: var(--t-pl-icon-btn); padding: 0; border-radius: 50%; }
   .t-chip-label, .t-outline-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .t-item--progress, .t-item--progress[data-parts] { flex-basis: 5rem; min-width: 4rem; }
-  .t-progress--parts { gap: 2px; }
+  .t-parts { gap: 2px; }
   .t-progress-value { display: none; }
   /* The controls' row is there on every screen of a course that has one (empty on the others), so
      the bar keeps its height from one screen to the next. */

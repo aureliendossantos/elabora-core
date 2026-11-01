@@ -320,7 +320,7 @@ export function createChrome(course: CourseData, labels: Labels, { actions, tool
     } else {
       progressBar = null;
       partButtons = Array.from({ length: count }, (_, index) => partButton(index));
-      progress = element('div', { class: 't-progress t-progress--parts', role: 'toolbar', 'aria-label': labels.progress, onkeydown: onPartsKey }, ...partButtons);
+      progress = element('div', { class: 't-parts', role: 'toolbar', 'aria-label': labels.progress, onkeydown: onPartsKey }, ...partButtons);
       progressItem.dataset.parts = String(count);
       progressItem.style.setProperty('--t-parts', String(count));
     }
