@@ -14,7 +14,6 @@ import type { MigrationNote } from '@elabora/core/format/migrations/types';
 import type { PresetName } from '@elabora/core/media/presets';
 import type { WebBuildOptions } from '@elabora/node/build-types';
 import type { ActivityEntry } from '@elabora/node/activity-types';
-import type { TurnUsage } from '@elabora/node/chats-types';
 import type { VoiceInfo, VoiceStatus, GenerateResult, TakeInfo, VoiceProgress, VoiceQuery, VoiceSearchResult, VoiceAccount, VoiceEstimate } from '@elabora/node/voice/types';
 import type { AlignerView, AlignProgress, AlignResult } from '@elabora/node/align/types';
 import type { TranscribeProgress, Transcript, TranscriberView, TranscriptionEstimate, TranscriptionService } from '@elabora/node/transcribe/types';
@@ -308,16 +307,8 @@ export interface HistoryView {
   openBatch: string | null; // the AI batch still open (closed after 5 minutes without AI changes)
 }
 
-// A turn of Elabora's chat ended: session/prompt's stopReason and usage, the last usage_update's
-// context and cost (@elabora/node/chats, recordTurnEnd).
-// Without stopReason, the batch closes and the transcript is left to the host (recordTurnEnd).
-export interface EndTurnParams {
-  turn: string; // the mark's id
-  stopReason?: string;
-  usage?: TurnUsage;
-  context?: { used: number; size: number };
-  cost?: { amount: number; currency: string };
-}
+// A turn of Elabora's chat ended: its batch closes. turn: the id of the mark that opened it.
+export interface EndTurnParams { turn: string }
 // batch: the turn's batch (its id), null when the agent wrote nothing.
 export interface EndTurnResult { batch: string | null; changes: number }
 

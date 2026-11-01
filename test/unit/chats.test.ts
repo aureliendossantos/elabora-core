@@ -7,9 +7,9 @@ import type { EngineEvent, Session } from '@elabora/engine';
 import { createMcpServer } from '@elabora/cli/mcp';
 import { callAgentTool } from '@elabora/cli';
 import { main } from '@elabora/cli/main';
-import { readActivity } from '@elabora/node/activity';
+import { activityPath, readActivity } from '@elabora/node/activity';
 import { appendChange, appendMark, chatTurn, readJournal, detectAuthor, type NewChange } from '@elabora/node/journal/index';
-import { appendChat, chatPath, listChats, noteDetour, readChat, recordRefusal, recordTurnEnd, refusalNeed, summarizeChats, turnSummary } from '@elabora/node/chats';
+import { appendChat, chatPath, listChats, noteDetour, readChat, recordRefusal, refusalNeed, summarizeChats, turnSummary } from '@elabora/node/chats';
 import { assignBatch, summarizeBatches, lastAiBatch, BATCH_IDLE_MS } from '@elabora/core/ops/batch';
 import type { Author, ChangeEntry, ChangeLike, MarkEntry } from '@elabora/core/ops/types';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -118,44 +118,40 @@ test('ELABORA_CHAT puts the conversation on the agent\'s author, the MCP server\
 
 // ── refusals and detours ─────────────────────────────────────────────
 
-test('a refusal: an activity line and a transcript line, the tool and its target, never any content', async () => {
+test('a refusal: an activity line with the tool and its target, never any content; the next operation is its detour', async () => {
   const dir = course();
   const mark = appendMark(dir, { request: 'Écris un générateur', chat: 'c1' });
-  recordRefusal(dir, { chat: 'c1', turn: mark.id, tool: 'write', path: path.join(dir, 'generators/carte.mjs'), how: 'config', author: { kind: 'agent', name: 'opencode' } });
-  recordRefusal(dir, { chat: 'c1', turn: mark.id, tool: 'bash', command: '/usr/bin/sed -i "s/secret text/other/" screens/accueil.json', how: 'permission', author: { kind: 'agent', name: 'opencode' } });
-  recordRefusal(dir, { chat: '../escape', tool: 'edit', how: 'config', author: chatAgent });
-  recordRefusal(dir, { chat: 'c2', tool: 'read', path: '/Users/someone/Documents/brief.md', how: 'permission', author: chatAgent });
-  assert.deepEqual(readChat(dir, 'c2').map((line) => [line.path, line.outside]), [['brief.md', true]], 'outside the course: the file\'s name only');
-  assert.equal(refusalNeed({ tool: 'read', path: 'brief.md', outside: true }), 'outside the course');
-  const refused = readActivity(dir).filter((entry) => entry.family === 'refused' && entry.author.chat === 'c1');
-  assert.deepEqual(refused.map((entry) => [entry.phase, entry.op, entry.path, entry.command, entry.ok, entry.author.chat]), [
-    ['end', 'write', 'generators/carte.mjs', undefined, false, 'c1'], ['end', 'bash', undefined, 'sed', false, 'c1']
-  ]);
-  const lines = readChat(dir, 'c1');
-  assert.deepEqual(lines.map((line) => [line.type, line.turn, line.tool, line.path ?? line.command, line.how]), [
-    ['refused', mark.id, 'write', 'generators/carte.mjs', 'config'], ['refused', mark.id, 'bash', 'sed', 'permission']
-  ]);
-  assert.ok(!fs.readFileSync(chatPath(dir, 'c1'), 'utf8').includes('secret'), 'nothing of the command\'s arguments');
-  assert.equal(fs.existsSync(path.join(path.dirname(chatPath(dir, 'c1')), '..', 'escape.jsonl')), false);
+  const opencode: Author = { kind: 'agent', name: 'opencode' };
+  recordRefusal(dir, { chat: 'c1', mark: mark.id, tool: 'write', path: path.join(dir, 'generators/carte.mjs'), author: opencode });
+  recordRefusal(dir, { chat: 'c1', mark: mark.id, tool: 'bash', command: '/usr/bin/sed -i "s/secret text/other/" screens/accueil.json', author: opencode });
+  recordRefusal(dir, { chat: '../escape', tool: 'edit', author: chatAgent });
+  recordRefusal(dir, { chat: 'c2', tool: 'read', path: '/Users/someone/Documents/brief.md', author: chatAgent });
+  const refused = readActivity(dir).filter((entry) => entry.family === 'refused');
+  assert.deepEqual(refused.map((entry) => [entry.phase, entry.op, entry.path, entry.outside, entry.command, entry.ok, entry.author.chat]), [
+    ['end', 'write', 'generators/carte.mjs', undefined, undefined, false, 'c1'], ['end', 'bash', undefined, undefined, 'sed', false, 'c1'],
+    ['end', 'read', 'brief.md', true, undefined, false, 'c2']
+  ], 'outside the course: the file\'s name only');
+  assert.ok(!fs.readFileSync(activityPath(dir), 'utf8').includes('secret'), 'nothing of the command\'s arguments');
+  assert.deepEqual(readChat(dir, 'c1'), [], 'the transcript\'s refused line is the host\'s');
 
   // The next Elabora operation of the conversation is the detour, once.
   await callAgentTool('elabora_write_object_file', { object: 'nope', file: 'index.html', content: '<p></p>' }, { root: dir, author: chatAgent });
   await callAgentTool('elabora_overview', {}, { root: dir, author: chatAgent });
   const detours = readChat(dir, 'c1').filter((line) => line.type === 'detour');
-  assert.deepEqual(detours.map((line) => [line.turn, line.op, line.family, line.after]), [[mark.id, 'elabora_write_object_file', 'write-object', 'bash']]);
+  assert.deepEqual(detours.map((line) => [line.mark, line.op, line.family, line.after]), [[mark.id, 'elabora_write_object_file', 'write-object', 'bash']]);
   noteDetour(dir, otherAgent, 'elabora_overview', 'module');
   assert.equal(readChat(dir, 'c1').filter((line) => line.type === 'detour').length, 1);
 });
 
-test('the transcript keeps the app\'s own lines, and lists its conversations', () => {
+test('the transcript: whole lines read back, its conversations listed', () => {
   const dir = course();
-  appendChat(dir, 'c1', { type: 'prompt', turn: 't1', text: 'Bonjour' });
-  appendChat(dir, 'c2', { type: 'message', text: 'Salut' });
-  fs.appendFileSync(chatPath(dir, 'c1'), '{"type":"message","at":"2026-11');
-  assert.deepEqual(readChat(dir, 'c1').map((line) => [line.type, line.text]), [['prompt', 'Bonjour']]);
+  appendChat(dir, 'c1', { type: 'user', turn: 1, text: 'Bonjour' });
+  appendChat(dir, 'c2', { type: 'reply', turn: 1, text: 'Salut' });
+  fs.appendFileSync(chatPath(dir, 'c1'), '{"type":"reply","at":"2026-11');
+  assert.deepEqual(readChat(dir, 'c1').map((line) => [line.type, line.text]), [['user', 'Bonjour']]);
   assert.deepEqual(listChats(dir).map((each) => each.chat).sort(), ['c1', 'c2']);
   assert.deepEqual(readChat(dir, 'absent'), []);
-  assert.throws(() => appendChat(dir, 'a/b', { type: 'prompt' }), /Not a chat id/);
+  assert.throws(() => appendChat(dir, 'a/b', { type: 'user' }), /Not a chat id/);
 });
 
 // ── the summary ──────────────────────────────────────────────────────
@@ -169,13 +165,17 @@ test('refusalNeed: by the shape of the target', () => {
   assert.equal(refusalNeed({ tool: 'webfetch' }), 'webfetch');
 });
 
-// count turns, `refusals` of which hit these needs; each turn writes one change and ends.
-function turns(dir: string, specs: { refused?: string[]; stop?: string; tokens?: number; undo?: boolean }[]): MarkEntry[] {
+// Turns of conversation c1 as the app writes them: the request with its mark, the refusals, one
+// change of the agent, the end with its tokens.
+function turns(dir: string, specs: { refused?: string[]; reason?: string; tokens?: number }[]): MarkEntry[] {
   return specs.map((spec, index) => {
+    const turn = index + 1;
     const mark = appendMark(dir, { request: `Demande ${index}`, chat: 'c1' });
-    for (const target of spec.refused ?? []) recordRefusal(dir, { chat: 'c1', turn: mark.id, tool: 'write', path: target, how: 'config', author: chatAgent });
+    appendChat(dir, 'c1', { type: 'user', turn, text: `Demande ${index}`, mark: mark.id });
+    for (const target of spec.refused ?? []) appendChat(dir, 'c1', { type: 'refused', turn, tool: 'write', path: target });
     appendChange(dir, change(chatAgent, index));
-    recordTurnEnd(dir, { chat: 'c1', turn: mark.id, stopReason: spec.stop ?? 'end_turn', ...(spec.tokens ? { usage: { inputTokens: spec.tokens, outputTokens: 0 } } : {}) });
+    appendChat(dir, 'c1', { type: 'reply', turn, text: 'Fait.' });
+    appendChat(dir, 'c1', { type: 'turn-end', turn, reason: spec.reason ?? 'end', batch: mark.id, ms: 1000, cost: 0, ...(spec.tokens ? { tokens: { input: spec.tokens, output: 0 } } : {}) });
     return mark;
   });
 }
@@ -194,7 +194,7 @@ test('summary: too few turns, then the threshold of one turn in five', () => {
   assert.deepEqual([kept.withRefusal.succeeded, kept.without.succeeded], [1, 1]);
 
   const often = course();
-  turns(often, [{ refused: ['a.css'], stop: 'cancelled' }, {}, { refused: ['b/x.json'] }, {}, {}]);
+  turns(often, [{ refused: ['a.css'], reason: 'cancelled' }, {}, { refused: ['b/x.json'] }, {}, {}]);
   const open = summarizeChats(often);
   assert.equal(open.verdict, 'open-a-tool');
   assert.match(open.reasons[0]!, /2 turn\(s\) in 5/);
@@ -211,10 +211,20 @@ test('summary: one need behind most refusals, in more than one turn, calls for a
   assert.equal(report.share < 0.2, true);
   assert.equal(report.verdict, 'open-a-tool');
   assert.deepEqual(report.needs, [{ need: 'generators/*.mjs', refusals: 3, turns: 2 }]);
-  const turn = report.turns.find((each) => each.turn === marks[1]!.id)!;
-  assert.deepEqual([turn.request, turn.agent, turn.changes, turn.stopReason, turn.refusals.length], ['Demande 1', 'opencode', 1, 'end_turn', 2]);
-  assert.deepEqual(turnSummary(dir, 'c1', marks[1]!.id), turn, 'one turn, as the chat shows it when it ends');
-  assert.equal(turnSummary(dir, 'c2', marks[1]!.id), null, 'not a turn of that conversation');
+  const turn = report.turns.find((each) => each.turn === 2)!;
+  assert.deepEqual([turn.request, turn.mark, turn.agent, turn.changes, turn.reason, turn.refusals.length], ['Demande 1', marks[1]!.id, 'opencode', 1, 'end', 2]);
+  assert.deepEqual(turnSummary(dir, 'c1', 2), turn, 'one turn, as the chat shows it when it ends');
+  assert.equal(turnSummary(dir, 'c2', 2), null, 'not a turn of that conversation');
+});
+
+test('summary: a detour goes to the turn of its refusal', async () => {
+  const dir = course();
+  const [first] = turns(dir, [{ refused: ['generators/a.mjs'] }]);
+  recordRefusal(dir, { chat: 'c1', mark: first!.id, tool: 'write', author: chatAgent });
+  await callAgentTool('elabora_overview', {}, { root: dir, author: chatAgent });
+  const turn = turnSummary(dir, 'c1', 1)!;
+  assert.deepEqual(turn.detours, [{ op: 'elabora_overview', family: 'module', after: 'write' }]);
+  assert.equal(turn.succeeded, true);
 });
 
 test('elabora history --chats says each turn and the verdict', async () => {
@@ -229,8 +239,8 @@ test('elabora history --chats says each turn and the verdict', async () => {
     console.log = log;
   }
   const text = printed.join('\n');
-  assert.match(text, /"Demande 0" · 1 change\(s\) · end_turn/);
-  assert.match(text, /refused write generators\/a\.mjs \(not allowed\) → no Elabora operation after it/);
+  assert.match(text, /"Demande 0" · 1 change\(s\) · end · turn 1 of c1/);
+  assert.match(text, /refused write generators\/a\.mjs → no Elabora operation after it/);
   assert.match(text, /1 turn\(s\) of 2 hit a refusal \(50 %\)/);
   assert.match(text, /Too few turns to judge/);
 });
@@ -253,12 +263,11 @@ test('engine: a turn\'s batch stays open through the author\'s changes and close
   assert.equal(events.filter((event) => event.type === 'batchClosed').length, 0, 'another agent\'s work did not close the turn');
   assert.equal(session.openBatch, mark.id);
 
-  const ended = await session.endTurn({ turn: mark.id, stopReason: 'end_turn', usage: { inputTokens: 1200, outputTokens: 300 }, context: { used: 6000, size: 200000 } });
+  const ended = await session.endTurn({ turn: mark.id });
   assert.deepEqual(ended, { batch: mark.id, changes: 2 });
   assert.equal(session.openBatch, null);
   const closed = events.filter((event): event is Extract<EngineEvent, { type: 'batchClosed' }> => event.type === 'batchClosed');
   assert.deepEqual(closed.map((event) => [event.batch, event.reason]), [[mark.id, 'turn']]);
-  assert.deepEqual(readChat(dir, 'c1').map((line) => [line.type, line.turn, line.stopReason]), [['end', mark.id, 'end_turn']]);
   const undone = await session.undoBatch(mark.id);
   assert.equal(undone.undone.length, 2);
   assert.equal(session.readScreen('accueil').data.title, 'Titre de l\'auteur', 'the author\'s change is kept');
@@ -273,7 +282,7 @@ test('engine: a turn\'s batch stays open through the author\'s changes and close
   await again.run('update_screen', { id: 'accueil', title: 'Encore l\'auteur' });
   await new Promise((resolve) => setTimeout(resolve, 400));
   assert.equal(again.openBatch, open.mark.id, 'still open after the author\'s change and the idle time');
-  recordTurnEnd(dir, { chat: 'c1', turn: open.mark.id, stopReason: 'end_turn' });
+  appendChat(dir, 'c1', { type: 'turn-end', turn: 2, reason: 'end', batch: open.mark.id, ms: 10, cost: 0 });
   await again.close();
   const reopened = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0, batchIdleMs: 200 });
   sessions.push(reopened);
@@ -284,9 +293,8 @@ test('engine: a turn\'s batch stays open through the author\'s changes and close
   const session2 = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 });
   sessions.push(session2);
 
-  // A turn where the agent only answered: no batch; without stopReason, the transcript is the host's.
+  // A turn where the agent only answered: no batch.
   const quiet = await session2.mark('Une question', session2.author, 'c1');
   assert.deepEqual(await session2.endTurn({ turn: quiet.mark.id }), { batch: null, changes: 0 });
-  assert.equal(readChat(dir, 'c1').length, 2);
-  await assert.rejects(session2.endTurn({ turn: 'nope', stopReason: 'end_turn' }), /No turn nope/);
+  await assert.rejects(session2.endTurn({ turn: 'nope' }), /No turn nope/);
 });

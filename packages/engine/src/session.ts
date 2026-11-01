@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Author, ChangeLike, JournalEntry, MarkEntry, Op } from '@elabora/core/ops/types';
-import { readChat, recordTurnEnd } from '@elabora/node/chats';
+import { readChat } from '@elabora/node/chats';
 import { diffFiles } from '@elabora/core/ops/diff';
 import { invertOps } from '@elabora/core/ops/apply';
 import { isJsonPath, sameContent } from '@elabora/core/ops/json';
@@ -964,7 +964,7 @@ export class Session {
   }
 
   // A turn of Elabora's chat ended (the host has session/prompt's answer): its batch closes (the
-  // after-ai version, batchClosed with reason turn) and the transcript keeps why and what it cost.
+  // after-ai version, batchClosed with reason turn). The transcript is the host's.
   async endTurn(params: EndTurnParams): Promise<EndTurnResult> {
     this.#assertOpen();
     return this.#queue.run(async () => {
@@ -976,7 +976,6 @@ export class Session {
       if (this.#turns.get(chat) === params.turn) this.#turns.delete(chat);
       if (this.#openBatch?.id === params.turn) this.#closeOpenBatch('turn');
       await this.#flushClosures();
-      if (params.stopReason) recordTurnEnd(this.root, { chat, turn: params.turn, stopReason: params.stopReason, ...(params.usage ? { usage: params.usage } : {}), ...(params.context ? { context: params.context } : {}), ...(params.cost ? { cost: params.cost } : {}) });
       const changes = this.#entries.filter((entry) => entry.type !== 'mark' && entry.batch === params.turn).length;
       return { batch: changes ? params.turn : null, changes };
     });
@@ -1520,13 +1519,14 @@ export class Session {
 
   // An AI batch still open when the session starts (an agent worked moments ago).
   // A turn of the chat begun before the session opened (the window reloaded while the agent worked)
-  // is open again when its transcript has no end and it began less than a day ago.
+  // is open again when its transcript has no turn-end since and it began less than a day ago.
   #resumeBatch(): void {
     const since = Date.now() - TURN_RESUME_MS;
     for (const entry of [...this.#entries].reverse()) {
       if (Date.parse(entry.at) < since) break;
       if (entry.type !== 'mark' || !entry.chat || this.#turns.has(entry.chat)) continue;
-      const ended = readChat(this.root, entry.chat).some((line) => line.type === 'end' && line.turn === entry.id);
+      // The host writes turn-end in the transcript once a turn is over: one after the mark ended it.
+      const ended = readChat(this.root, entry.chat).some((line) => line.type === 'turn-end' && line.at >= entry.at);
       this.#turns.set(entry.chat, ended ? '' : entry.id);
     }
     for (const [chat, turn] of this.#turns) if (!turn) this.#turns.delete(chat);

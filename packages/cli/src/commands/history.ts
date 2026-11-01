@@ -133,14 +133,14 @@ function printChats(dir: string, json: boolean, limit: number): number {
   let currentDay = '';
   for (const turn of report.turns.slice(-limit)) {
     if (day(turn.at) !== currentDay) { currentDay = day(turn.at); console.log(currentDay); }
-    const request = turn.request === undefined ? '(request no longer in the journal)' : `"${turn.request.length > 60 ? `${turn.request.slice(0, 59)}…` : turn.request}"`;
-    const header = [time(turn.at), ...(turn.agent ? [turn.agent] : []), request, `${turn.changes} change(s)${turn.undone ? ', undone' : ''}`, turn.stopReason ?? 'not ended', ...(turn.tokens === undefined ? [] : [`${turn.tokens.toLocaleString('en-US')} tokens`]), `turn ${turn.turn}`];
+    const request = turn.request === undefined ? '(no request)' : `"${turn.request.length > 60 ? `${turn.request.slice(0, 59)}…` : turn.request}"`;
+    const header = [time(turn.at), ...(turn.agent ? [turn.agent] : []), request, `${turn.changes} change(s)${turn.undone ? ', undone' : ''}`, turn.reason ?? 'not ended', ...(turn.tokens === undefined ? [] : [`${turn.tokens.toLocaleString('en-US')} tokens`]), `turn ${turn.turn} of ${turn.chat}`];
     console.log(`  ${header.join(' · ')}`);
     const detours = [...turn.detours];
     for (const refusal of turn.refusals) {
       const index = detours.findIndex((each) => each.after === refusal.tool);
       const detour = index < 0 ? undefined : detours.splice(index, 1)[0];
-      console.log(`    refused ${refusal.tool}${refusal.path ? ` ${refusal.outside ? '(outside the course) ' : ''}${refusal.path}` : refusal.command ? ` $ ${refusal.command}` : ''} (${refusal.how === 'permission' ? 'asked, refused' : 'not allowed'}) → ${detour ? `then ${detour.op}` : 'no Elabora operation after it'}`);
+      console.log(`    refused ${refusal.tool}${refusal.path ? ` ${refusal.path}` : refusal.command ? ` $ ${refusal.command}` : ''} → ${detour ? `then ${detour.op}` : 'no Elabora operation after it'}`);
     }
   }
   console.log('');

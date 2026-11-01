@@ -1,28 +1,27 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
-import type { Author, ChangeLike, MarkEntry } from '@elabora/core/ops/types';
+import type { Author, ChangeLike } from '@elabora/core/ops/types';
 import { summarizeBatches } from '@elabora/core/ops/batch';
 import { projectDataDir } from './data-dir.ts';
 import { CHAT_ID } from './journal/author.ts';
 import { readJournal } from './journal/journal.ts';
 import { recordActivity } from './activity.ts';
 import type { ActivityFamily } from './activity-types.ts';
-import type { ChatLine, ChatsReport, DetourLine, EndLine, Refusal, RefusedLine, TurnEnd, TurnSummary } from './chats-types.ts';
+import type { ChatLine, ChatsReport, DetourLine, Refusal, RefusedLine, TurnEndLine, TurnSummary, UserLine } from './chats-types.ts';
 
-export type { ChatLine, ChatsReport, DetourLine, EndLine, Refusal, RefusalHow, RefusedLine, TurnEnd, TurnSummary, TurnUsage } from './chats-types.ts';
+export type { ChatLine, ChatsReport, DetourLine, Refusal, RefusedLine, TurnEndLine, TurnSummary, UserLine } from './chats-types.ts';
 
-// Elabora's chat, what the core keeps of it (reports/chat-agentique, phase 2). A conversation is a
-// transcript, .elabora/chats/<chat>.jsonl in the course's data folder: one line per event, kept as
-// long as the course. The app writes its own lines there (the requests, the answers, the steps), of
-// its own types; the core writes and reads three:
-//   refused  the agent tried one of its own tools the chat does not allow (a file edit, a shell):
-//            the tool and its target, never any content
-//   detour   the Elabora operation it ran next, in the same conversation
-//   end      a turn ended: why, and what it cost in tokens
-// A turn is a mark of the journal with its chat (appendMark): its id is the turn's, and the batch
-// of everything the agent wrote during it. elabora history --chats sums it up per turn, to see
-// whether agents suffer from writing through Elabora's tools only (the founder's choice 6).
+// Elabora's chat, what the core does with it (reports/chat-agentique, phase 2).
+// - A turn is a mark of the journal with its chat (appendMark): the batch of everything the
+//   conversation's agent writes during it is named after the mark (journal/journal.ts).
+// - The conversation's transcript, .elabora/chats/<chat>.jsonl, is the app's (its ChatEntry: the
+//   requests, the replies, the tools refused, the turns' ends). The core reads it, and adds one line
+//   type: detour, the Elabora operation the agent ran after a refusal.
+// - A refusal (the host said no to one of the agent's own tools: a file edit, a shell) is said in the
+//   activity at once (recordRefusal), with the tool and its target, never any content.
+// elabora history --chats sums the turns up, to see whether agents suffer from writing through
+// Elabora's tools only (the founder's choice 6).
 
 export const CHATS_DIR = 'chats';
 
@@ -83,8 +82,8 @@ export function listChats(root: string): { chat: string; modified: string }[] {
   }).sort((a, b) => b.modified.localeCompare(a.modified));
 }
 
-// The target of a refused tool as the summary keeps it: relative to the course when inside it; of
-// a file outside it, its name only (the author's folders stay out of the course's data).
+// The target of a refused tool in the activity: relative to the course when inside it; of a file
+// outside it, its name only (the author's folders stay out of the course's data).
 function targetPath(root: string, target: string | undefined): { path?: string; outside?: true } {
   if (!target?.trim()) return {};
   const absolute = path.resolve(root, target.trim());
@@ -93,53 +92,43 @@ function targetPath(root: string, target: string | undefined): { path?: string; 
 }
 
 // The program a shell command runs, nothing of its arguments.
-function program(command: string | undefined): string | undefined {
+export function commandProgram(command: string | undefined): string | undefined {
   const first = command?.trim().split(/\s+/)[0];
   if (!first) return undefined;
   return path.basename(first).slice(0, 40);
 }
 
-// The host refused one of the agent's own tools: said in the activity (the window can tell it at
-// once) and kept in the transcript; the next Elabora operation of the conversation is its detour.
-// Never fails: a refusal is reported as a courtesy, the conversation goes on.
+// The host refused one of the agent's own tools: said in the activity at once (family refused), and
+// kept for the next Elabora operation of the conversation, its detour. The transcript's own line is
+// the host's. Never fails: a refusal is reported as a courtesy, the conversation goes on.
 export function recordRefusal(root: string, refusal: Refusal): void {
   try {
     const chat = checkChat(refusal.chat);
-    const command = program(refusal.command);
-    const author: Author = { ...refusal.author, chat };
-    const where = { ...targetPath(root, refusal.path), ...(command ? { command } : {}) };
-    recordActivity(root, { at: new Date().toISOString(), id: randomUUID(), phase: 'end', op: refusal.tool, family: 'refused', author, ...where, ok: false });
-    appendChat(root, chat, { type: 'refused', ...(refusal.turn ? { turn: refusal.turn } : {}), tool: refusal.tool, ...where, how: refusal.how, author });
-    fs.writeFileSync(pendingPath(root, chat), JSON.stringify({ turn: refusal.turn, tool: refusal.tool }));
+    const command = commandProgram(refusal.command);
+    recordActivity(root, {
+      at: new Date().toISOString(), id: randomUUID(), phase: 'end', op: refusal.tool, family: 'refused', author: { ...refusal.author, chat },
+      ...targetPath(root, refusal.path), ...(command ? { command } : {}), ok: false
+    });
+    fs.mkdirSync(chatsDir(root), { recursive: true });
+    fs.writeFileSync(pendingPath(root, chat), JSON.stringify({ mark: refusal.mark, tool: refusal.tool }));
   } catch {
     // Reported as a courtesy.
   }
 }
 
-// An agent of the chat starts an Elabora operation: the detour of a refusal waiting for one. The
-// first operation after a refusal takes it, the others find none. Never fails.
+// An agent of the chat starts an Elabora operation: the detour of a refusal waiting for one, a line
+// of the transcript. The first operation after a refusal takes it, the others find none. Never fails.
 export function noteDetour(root: string, author: Author, op: string, family: ActivityFamily): void {
   if (!author.chat || !CHAT_ID.test(author.chat)) return;
   try {
     const file = pendingPath(root, author.chat);
     if (!fs.existsSync(file)) return;
-    const pending = JSON.parse(fs.readFileSync(file, 'utf8')) as { turn?: string; tool?: string };
+    const pending = JSON.parse(fs.readFileSync(file, 'utf8')) as { mark?: string; tool?: string };
     fs.unlinkSync(file); // another operation that took it first makes this throw: it is its detour
-    appendChat(root, author.chat, { type: 'detour', ...(pending.turn ? { turn: pending.turn } : {}), op, family, after: pending.tool ?? '' });
+    appendChat(root, author.chat, { type: 'detour', ...(pending.mark ? { mark: pending.mark } : {}), op, family, after: pending.tool ?? '' });
   } catch {
     // Reported as a courtesy.
   }
-}
-
-// A turn ended (the host has session/prompt's answer): its reason and its cost. A refusal no
-// operation followed had no detour.
-export function recordTurnEnd(root: string, end: TurnEnd): EndLine {
-  const line = appendChat(root, end.chat, {
-    type: 'end', turn: end.turn, stopReason: end.stopReason,
-    ...(end.usage ? { usage: end.usage } : {}), ...(end.context ? { context: end.context } : {}), ...(end.cost ? { cost: end.cost } : {})
-  }) as EndLine;
-  fs.rmSync(pendingPath(root, end.chat), { force: true });
-  return line;
 }
 
 // ── the summary ──────────────────────────────────────────────────────
@@ -148,9 +137,10 @@ export const MIN_TURNS = 5;
 export const REFUSED_SHARE = 0.2;
 
 // What a refusal needed, by the shape of its target: generators/*.mjs, *.css, $ node.
-export function refusalNeed(refusal: { tool: string; path?: string; outside?: boolean; command?: string }): string {
+// path: relative to the course, or absolute outside it (as the app's transcript writes it).
+export function refusalNeed(refusal: { tool: string; path?: string; command?: string }): string {
   if (refusal.path) {
-    if (refusal.outside || path.isAbsolute(refusal.path)) return 'outside the course';
+    if (path.isAbsolute(refusal.path) || refusal.path.startsWith('..')) return 'outside the course';
     const parts = refusal.path.split('/');
     const ext = path.extname(refusal.path);
     const name = ext ? `*${ext}` : parts[parts.length - 1]!;
@@ -162,10 +152,10 @@ export function refusalNeed(refusal: { tool: string; path?: string; outside?: bo
 
 const average = (values: number[]): number | null => (values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null);
 
-// One turn, as the chat shows it when it ends: its batch (the turn's id, when the agent wrote), its
-// refusals and detours. null when neither the journal nor the transcript knows it.
-export function turnSummary(root: string, chat: string, turn: string): TurnSummary | null {
-  return collectTurns(root, [chat]).find((each) => each.turn === turn && each.chat === chat) ?? null;
+// One turn (its number in the conversation), as the chat shows it when it ends: its batch, its
+// refusals and detours. null when the transcript does not know it.
+export function turnSummary(root: string, chat: string, turn: number): TurnSummary | null {
+  return collectTurns(root, [chat]).find((each) => each.turn === turn) ?? null;
 }
 
 // Every turn of the course's conversations, and what refusals say about writing through Elabora's tools only.
@@ -173,49 +163,62 @@ export function summarizeChats(root: string): ChatsReport {
   return report(collectTurns(root, listChats(root).map(({ chat }) => chat)));
 }
 
-// The turns of these conversations, oldest first, from the journal (the marks, the batches) and their transcripts.
+// The turns of these conversations, oldest first: from their transcripts, joined to the journal by
+// each turn's mark (its batch: the changes, whether they were undone, the agent).
 function collectTurns(root: string, chats: readonly string[]): TurnSummary[] {
   const journal = readJournal(root);
   const batches = new Map(summarizeBatches(journal).map((batch) => [batch.id, batch]));
-  const marks = new Map(journal.filter((entry): entry is MarkEntry => entry.type === 'mark' && !!entry.chat).map((mark) => [mark.id, mark]));
   const writers = new Map<string, string>();
-  for (const entry of journal) if (entry.type !== 'mark' && marks.has(entry.batch) && (entry as ChangeLike).author.name) writers.set(entry.batch, (entry as ChangeLike).author.name!);
-  const turns = new Map<string, TurnSummary>();
-  const turnOf = (id: string, chat: string, at: string): TurnSummary => {
-    let turn = turns.get(id);
-    if (!turn) {
-      const mark = marks.get(id);
-      const batch = batches.get(id);
-      turn = {
-        turn: id, chat, at: mark?.at ?? at, ...(mark ? { request: mark.request } : {}), ...(writers.has(id) ? { agent: writers.get(id) } : {}),
-        refusals: [], detours: [], changes: batch?.changes.length ?? 0, undone: batch?.undone ?? false, succeeded: false
-      };
-      turns.set(id, turn);
-    }
-    return turn;
-  };
-  for (const mark of marks.values()) if (chats.includes(mark.chat!)) turnOf(mark.id, mark.chat!, mark.at);
+  for (const entry of journal) if (entry.type !== 'mark' && (entry as ChangeLike).author.chat && (entry as ChangeLike).author.name) writers.set(entry.batch, (entry as ChangeLike).author.name!);
+  const list: TurnSummary[] = [];
   for (const chat of chats) {
+    const turns = new Map<number, TurnSummary>();
+    const turnOf = (number: number, at: string): TurnSummary => {
+      let turn = turns.get(number);
+      if (!turn) {
+        turn = { chat, turn: number, at, refusals: [], detours: [], changes: 0, undone: false, succeeded: false };
+        turns.set(number, turn);
+      }
+      return turn;
+    };
+    let current: TurnSummary | undefined;
     for (const line of readChat(root, chat)) {
-      if (!line.turn) continue;
-      if (line.type === 'refused') {
+      if (line.type === 'user' && typeof line.turn === 'number') {
+        const user = line as UserLine;
+        current = turnOf(user.turn, user.at);
+        current.at = user.at;
+        current.request = user.text;
+        if (typeof user.mark === 'string') current.mark = user.mark;
+      } else if (line.type === 'refused' && typeof line.turn === 'number') {
         const refused = line as RefusedLine;
-        turnOf(line.turn, chat, line.at).refusals.push({ tool: refused.tool, ...(refused.path ? { path: refused.path } : {}), ...(refused.outside ? { outside: true } : {}), ...(refused.command ? { command: refused.command } : {}), how: refused.how, need: refusalNeed(refused) });
+        const command = commandProgram(refused.command);
+        turnOf(refused.turn, refused.at).refusals.push({ tool: refused.tool, ...(refused.path ? { path: refused.path } : {}), ...(command ? { command } : {}), need: refusalNeed({ ...refused, command }) });
+      } else if (line.type === 'turn-end' && typeof line.turn === 'number') {
+        const end = line as TurnEndLine;
+        const turn = turnOf(end.turn, end.at);
+        turn.reason = end.reason;
+        if (!turn.mark && end.batch) turn.mark = end.batch;
+        const tokens = (end.tokens?.input ?? 0) + (end.tokens?.output ?? 0);
+        if (tokens > 0) turn.tokens = tokens;
       } else if (line.type === 'detour') {
+        // The turn of its mark, else the turn under way when it was written.
         const detour = line as DetourLine;
-        turnOf(line.turn, chat, line.at).detours.push({ op: detour.op, family: detour.family, after: detour.after });
-      } else if (line.type === 'end') {
-        const end = line as EndLine;
-        const turn = turnOf(line.turn, chat, line.at);
-        turn.stopReason = end.stopReason;
-        const tokens = (end.usage?.inputTokens ?? 0) + (end.usage?.outputTokens ?? 0);
-        if (end.usage && tokens > 0) turn.tokens = tokens;
+        const turn = (detour.mark ? [...turns.values()].find((each) => each.mark === detour.mark) : undefined) ?? current;
+        turn?.detours.push({ op: detour.op, family: detour.family, after: detour.after });
       }
     }
+    for (const turn of turns.values()) {
+      const batch = turn.mark ? batches.get(turn.mark) : undefined;
+      if (batch) {
+        turn.changes = batch.changes.length;
+        turn.undone = batch.undone;
+      }
+      if (turn.mark && writers.has(turn.mark)) turn.agent = writers.get(turn.mark);
+      turn.succeeded = turn.reason === 'end' && !turn.undone;
+      list.push(turn);
+    }
   }
-  const list = [...turns.values()].sort((a, b) => a.at.localeCompare(b.at));
-  for (const turn of list) turn.succeeded = turn.stopReason === 'end_turn' && !turn.undone;
-  return list;
+  return list.sort((a, b) => a.at.localeCompare(b.at));
 }
 
 function report(list: TurnSummary[]): ChatsReport {
@@ -225,13 +228,13 @@ function report(list: TurnSummary[]): ChatsReport {
   for (const turn of refusedTurns) for (const refusal of turn.refusals) {
     const need = needs.get(refusal.need) ?? { need: refusal.need, refusals: 0, turns: new Set<string>() };
     need.refusals++;
-    need.turns.add(turn.turn);
+    need.turns.add(`${turn.chat}#${turn.turn}`);
     needs.set(refusal.need, need);
   }
   const needList = [...needs.values()].map(({ need, refusals, turns: seen }) => ({ need, refusals, turns: seen.size })).sort((a, b) => b.refusals - a.refusals || b.turns - a.turns);
   const totalRefusals = needList.reduce((sum, need) => sum + need.refusals, 0);
   const share = list.length ? refusedTurns.length / list.length : 0;
-  const ended = (group: TurnSummary[]) => group.filter((turn) => turn.stopReason !== undefined);
+  const ended = (group: TurnSummary[]) => group.filter((turn) => turn.reason !== undefined);
   const rate = (group: TurnSummary[]) => (ended(group).length ? ended(group).filter((turn) => turn.succeeded).length / ended(group).length : null);
   const tokens = (group: TurnSummary[]) => average(group.flatMap((turn) => (turn.tokens === undefined ? [] : [turn.tokens])));
 

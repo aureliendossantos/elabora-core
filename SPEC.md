@@ -30,7 +30,7 @@ AGENTS.md                   rules for agents working on this course
 sources/                    the author's files the course is made from, and their readable versions (<file>.md, <file>.files/): not part of the course
 ```
 
-Tools keep their own data beside these files, in `.elabora/` by default: the journal of changes, the backup versions, the agents' activity and the transcripts of Elabora's chat ([storage](docs/architecture/storage.md#machine-local-data)). It is machine-local, never part of the course: in Elabora's chat, everything the agent writes during one turn is one batch of the journal, undone at once, and the transcript keeps the tools refused to it (a file edit, a shell), their target and never any content.
+Tools keep their own data beside these files, in `.elabora/` by default: the journal of changes, the backup versions, the agents' activity and the transcripts of Elabora's chat ([storage](docs/architecture/storage.md#machine-local-data)). It is machine-local, never part of the course: in Elabora's chat, everything the agent writes during one turn is one batch of the journal, undone at once, and the tools refused to it (a file edit, a shell) are kept with their target, never any content.
 
 `sources/` is reserved: what it holds is never validated, built or published, and a course file that points into it is an error (`E_SOURCE_REFERENCED`). Tools may keep a readable version of each source beside it (`<file>.md`, whose first line is an `<!-- elabora:readable {…} -->` marker, and `<file>.files/`).
 

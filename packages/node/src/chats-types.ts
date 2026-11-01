@@ -1,56 +1,46 @@
 import type { Author } from '@elabora/core/ops/types';
 import type { ActivityFamily } from './activity-types.ts';
 
-// Elabora's chat as the core keeps it (chats.ts writes and reads it): no Node here, the app's window
-// imports these types.
+// Elabora's chat as the core reads it (chats.ts): no Node here, the app's window imports these types.
 
-// A line of a transcript: its type, when, the turn it belongs to, and the rest as its writer wants.
+// A line of a transcript, .elabora/chats/<chat>.jsonl. The app writes it (its ChatEntry: user,
+// reply, tool, refused, usage, turn-end…), turns numbered 1, 2… in the conversation; the core reads
+// what it needs and adds one type of its own, detour.
 export interface ChatLine {
   type: string;
   at: string;
-  turn?: string;
   [key: string]: unknown;
 }
 
-export type RefusalHow = 'permission' | 'config'; // the host said no to a request, or the agent's configuration forbids the tool
+// The lines the core reads, with the fields it needs.
+export interface UserLine extends ChatLine { type: 'user'; turn: number; text: string; mark?: string } // mark: the journal's mark that opened the turn
+export interface RefusedLine extends ChatLine { type: 'refused'; turn: number; tool: string; path?: string; command?: string }
+export interface TurnEndLine extends ChatLine { type: 'turn-end'; turn: number; reason: string; batch: string | null; cost: number | null; tokens?: { input: number; output: number } }
+// The Elabora operation that followed a refusal, written by the course's MCP server.
+export interface DetourLine extends ChatLine { type: 'detour'; mark?: string; op: string; family: ActivityFamily; after: string }
 
+// The host refused one of the agent's own tools (recordRefusal).
 export interface Refusal {
   chat: string;
-  turn?: string;
+  mark?: string;      // the turn's mark in the journal
   tool: string;       // the agent's own tool: edit, write, bash…
-  path?: string;      // the file it aimed at (relative to the course when inside it)
-  command?: string;   // for a shell, the program only (node, sed): never its arguments
-  how: RefusalHow;
+  path?: string;      // the file it aimed at, absolute or relative to the course
+  command?: string;   // for a shell, the command: only its program (node, sed) is kept
   author: Author;
 }
 
-// outside: the file was outside the course; path is then its name only.
-export interface RefusedLine extends ChatLine { type: 'refused'; tool: string; path?: string; outside?: true; command?: string; how: RefusalHow; author: Author }
-export interface DetourLine extends ChatLine { type: 'detour'; op: string; family: ActivityFamily; after: string }
-
-// What a turn cost, as ACP gives it: session/prompt's usage, the last usage_update's context and cost.
-export interface TurnUsage { inputTokens?: number; outputTokens?: number; totalTokens?: number; thoughtTokens?: number; cachedReadTokens?: number; cachedWriteTokens?: number }
-export interface TurnEnd {
-  chat: string;
-  turn: string;
-  stopReason: string; // end_turn, cancelled, refusal, max_tokens, max_turn_requests, or the host's own (error…)
-  usage?: TurnUsage;
-  context?: { used: number; size: number };
-  cost?: { amount: number; currency: string };
-}
-export interface EndLine extends ChatLine { type: 'end'; turn: string; stopReason: string; usage?: TurnUsage; context?: { used: number; size: number }; cost?: { amount: number; currency: string } }
-
 export interface TurnSummary {
-  turn: string;
   chat: string;
+  turn: number;            // in the conversation
+  mark?: string;           // the journal's mark: the turn's batch
   at: string;
-  request?: string;        // from the journal's mark (gone after 30 days)
+  request?: string;
   agent?: string;
-  refusals: { tool: string; path?: string; outside?: true; command?: string; how: RefusalHow; need: string }[];
+  refusals: { tool: string; path?: string; command?: string; need: string }[];
   detours: { op: string; family: string; after: string }[];
   changes: number;
   undone: boolean;         // everything it wrote was undone (false when it wrote nothing)
-  stopReason?: string;     // none: the turn did not end, or the app did not say
+  reason?: string;         // how it ended (turn-end: end, cancelled, refused, error, limit); none: not ended
   tokens?: number;         // input and output
   succeeded: boolean;      // it ended normally and what it wrote stands
 }
