@@ -105,7 +105,7 @@ JSON Schema of the props of a block type (built-in like "quiz" or a course compo
 
 ### `elabora_get_component`
 
-A component (built-in or course): manifest, template, stylesheet, effective props schema, slots, styles, fallback, behaviour hooks it must provide, lineage, instances and pending migrations. Read it before forking or editing one.
+A component (built-in or course): manifest, template, stylesheet, effective props schema, slots, styles, fallback, behaviour hooks it must provide, lineage, instances and pending migrations. Read it before forking or editing one. To change its CSS, template or props: elabora_write_component_file (a built-in: elabora_fork_component first).
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -1059,7 +1059,7 @@ Fork a component (built-in or course) under a new id: the fork remembers its par
 
 ### `elabora_write_component_file`
 
-Write a file of a course component: component.json (manifest: props, slots, fallback, styles, examples, version), template.html, component.css or migrations.mjs (steps that migrate instance props when the props shape changes).
+Write a file of a course component, to change its look, markup or props: component.json (manifest: props, slots, fallback, styles, examples, version), template.html, component.css or migrations.mjs (steps that migrate instance props when the props shape changes).
 
 | Argument | Type | Required | Description |
 |---|---|---|---|

@@ -41,7 +41,7 @@ function componentUses(project: Project): Map<string, number> {
 export const getComponent = defineTool({
   name: 'elabora_get_component',
   readOnly: true,
-  description: 'A component (built-in or course): manifest, template, stylesheet, effective props schema, slots, styles, fallback, behaviour hooks it must provide, lineage, instances and pending migrations. Read it before forking or editing one.',
+  description: 'A component (built-in or course): manifest, template, stylesheet, effective props schema, slots, styles, fallback, behaviour hooks it must provide, lineage, instances and pending migrations. Read it before forking or editing one. To change its CSS, template or props: elabora_write_component_file (a built-in: elabora_fork_component first).',
   inputSchema: objectSchema({ id: SLUG }, ['id']),
   handler({ id }, { root }) {
     const project = loadProjectFromDir(root);
@@ -54,7 +54,8 @@ export const getComponent = defineTool({
     }
     const behavior = d.behavior ? BEHAVIORS[d.behavior] : null;
     return textResult({
-      id: d.id, title: d.title, builtin: d.builtin, level: d.level, version: d.version, lineage: d.lineage, behavior: d.behavior,
+      id: d.id, title: d.title, builtin: d.builtin,
+      edit: d.builtin ? `Built-in: fork it (elabora_fork_component), then change the fork with elabora_write_component_file.` : `Change its files with elabora_write_component_file: component.css, template.html, component.json.`, level: d.level, version: d.version, lineage: d.lineage, behavior: d.behavior,
       ...(behavior ? { hooks: { required: behavior.required.map((h) => `data-t-${h}`), optional: (behavior.optional || []).map((h) => `data-t-${h}`) } } : {}),
       primitives: PRIMITIVE_HOOKS.map((h) => `data-t-${h}`),
       manifest: d.source?.manifest || null, template: d.template, templateFile: d.templateFile, css: d.css, schema: d.schema,
@@ -81,7 +82,7 @@ export const forkComponent = defineTool({
 
 export const writeComponentFile = defineTool({
   name: 'elabora_write_component_file',
-  description: 'Write a file of a course component: component.json (manifest: props, slots, fallback, styles, examples, version), template.html, component.css or migrations.mjs (steps that migrate instance props when the props shape changes).',
+  description: 'Write a file of a course component, to change its look, markup or props: component.json (manifest: props, slots, fallback, styles, examples, version), template.html, component.css or migrations.mjs (steps that migrate instance props when the props shape changes).',
   inputSchema: objectSchema({ component: SLUG, file: { enum: ['component.json', 'template.html', 'component.css', 'migrations.mjs'] }, content: { type: 'string' } }, ['component', 'file', 'content']),
   handler: (args, { root, author }) => editResult(edit.writeComponentFile(root, args, { author }))
 });
