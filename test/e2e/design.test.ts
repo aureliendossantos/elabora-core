@@ -145,6 +145,24 @@ test('measured contrast: text a 1 px box clips away (a chart\'s table for screen
   }
 });
 
+test('measured contrast: letters painted by a gradient clipped to them are not measured against themselves', { timeout: 120000 }, async () => {
+  const { measureContrast } = await import('@elabora/node/contrast');
+  const browser = await launchBrowser('chromium');
+  try {
+    const page = await browser.newPage({ viewport: { width: 800, height: 600 } });
+    // A part's number in bright gradient letters on a dark ground, its own colour dark (the theme's).
+    await page.setContent(`<!doctype html><html><body style="margin:0;background:#0b1020">
+      <p data-block="opener" style="margin:60px;font:700 96px sans-serif;color:#1d2b3a;background:linear-gradient(100deg,#5ef2ff,#c86bff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent"><span>01</span></p>
+      </body></html>`);
+    assert.deepEqual(await measureContrast(page), []);
+    // The same colour as plain text is read, and reported.
+    await page.evaluate(() => { document.querySelector<HTMLElement>('p')!.style.cssText = 'margin:60px;font:700 96px sans-serif;color:#1d2b3a'; });
+    assert.deepEqual((await measureContrast(page)).map((found) => found.text), ['01']);
+  } finally {
+    await browser.close();
+  }
+});
+
 test('fit on a phone: the contrast of text down the page and a bar of the player that goes onto two lines', { timeout: 240000 }, async () => {
   // Faint text and items too wide for one line, on a phone only.
   const { dir } = slidesCopy({ css: '@media (max-width: 600px) { [data-screen="accueil"] .t-text { color: #e6e9ec; } .t-bar--bottom > * { min-width: 9rem; } }' });

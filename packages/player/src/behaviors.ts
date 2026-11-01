@@ -43,6 +43,10 @@ import { createDialogues } from './dialogue/view.ts';
 import { bindSpeech } from './speech.ts';
 import type { DialogueHost } from './dialogue/view.ts';
 
+// What makes a figure worth its name: a caption, a picture with its alternative, a drawing or a
+// medium not hidden, a table.
+const MEANINGFUL_IN_FIGURE = 'figcaption, img:not([alt=""]), svg:not([aria-hidden="true"]), [role="img"], video, audio, iframe, canvas, object, table';
+
 export interface BehaviorContext {
   courseState: CourseState;
   labels: Labels;
@@ -139,6 +143,11 @@ export function createBehaviors({ courseState, labels, language, formatLabel, an
   }
   function primitives(root: HTMLElement, owner: ControlOwner) {
     for (const node of findHooks(root, 'label')) if (!node.textContent?.trim()) node.textContent = labels[node.getAttribute('data-t-label') ?? ''] ?? '';
+    // A figure that holds nothing screen readers read as its own (a decorative picture without caption)
+    // is no figure for them: VoiceOver would announce an empty one. A zoom button in it stays.
+    for (const figure of root.querySelectorAll('figure')) {
+      if (!figure.hasAttribute('role') && !figure.hasAttribute('aria-label') && !figure.querySelector(MEANINGFUL_IN_FIGURE)) figure.setAttribute('role', 'none');
+    }
     // Bound before the slots are filled: the controls of nested blocks belong to those blocks.
     controlsOf.set(root, (['click', 'tab', 'toggle'] as const).flatMap((hook) => findHooks(root, hook).map((node) => ({ node, hook, name: node.getAttribute(`data-t-${hook}`) || '' }))));
     for (const button of findHooks(root, 'click')) {

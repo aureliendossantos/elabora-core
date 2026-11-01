@@ -226,7 +226,7 @@ test('canvas: the layout gives the texts of each block the author can point at (
   });
 });
 
-test('canvas: the layout gives the texts outside the blocks in the order of the page: the title, the layout\'s texts and pictures, a layer\'s title; what screen readers skip says so', { timeout: 120000 }, async () => {
+test('canvas: the layout gives the texts outside the blocks in the order of the page: the title, the layout\'s texts and pictures, a layer\'s title, a part\'s number with its label; what screen readers skip says so; a figure with nothing to read is none', { timeout: 120000 }, async () => {
   const coffee = loadProjectFromDir(path.join(ROOT, 'examples', 'coffee-in-brief'));
   await withCanvas(coffee.root, createRenderContext(coffee, { fields: true }), async ({ page, show, errors }) => {
     const texts = async () => ((await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.layout())) as LayoutMessage).texts ?? [];
@@ -263,6 +263,20 @@ test('canvas: the layout gives the texts outside the blocks in the order of the 
     assert.deepEqual(texts.filter((text) => !text.layer).map(({ kind, before }) => ({ kind, before })), [{ kind: 'title', before: planetary.screens.get('lab')!.data.blocks[0]!.id }]);
     // A layer open: its title, before its blocks.
     assert.deepEqual(texts.filter((text) => text.layer).map(({ kind, text, before }) => ({ kind, text, before })), [{ kind: 'title', text: 'Six configurations, one equation', before: 'lab-summary' }]);
+  });
+  const watercolor = loadProjectFromDir(path.join(ROOT, 'templates', 'watercolor'));
+  await withCanvas(watercolor.root, createRenderContext(watercolor, { fields: true }), async ({ page, show, errors }) => {
+    const texts = async () => ((await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.layout())) as LayoutMessage).texts ?? [];
+    // A part opener: its number, read « Part 1 » with the player's label, before its title.
+    await show(watercolor, 'part-one');
+    assert.deepEqual((await texts()).slice(0, 2).map(({ kind, path: field, text, read }) => ({ kind, field, text, read })), [
+      { kind: 'field', field: 'number', text: 'Part 1', read: true },
+      { kind: 'title', field: null, text: watercolor.screens.get('part-one')!.data.title, read: true }
+    ]);
+    // A decorative picture beside its text: its figure is none for screen readers, its text is there.
+    await show(watercolor, 'text-and-picture');
+    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('[data-block="picture-beside"] figure')].map((figure) => figure.getAttribute('role'))), ['none']);
+    assert.deepEqual(errors, []);
   });
 });
 

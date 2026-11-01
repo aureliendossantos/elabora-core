@@ -45,7 +45,9 @@ export function textLayouts(): TextLayout[] {
     const image = node instanceof HTMLImageElement;
     const kind: TextLayout['kind'] = node.matches('h1, .t-dialog-title') ? 'title' : image ? 'image' : 'field';
     if (kind === 'field' && node.closest('[data-t-duration]') && !node.textContent?.trim()) continue;
-    const text = (image ? node.getAttribute('alt') ?? '' : node.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 200);
+    // A text said with a player label before it (« Partie » before a part's number) is read with it.
+    const label = !image && node.previousElementSibling?.matches('[data-t-label]') ? `${node.previousElementSibling.textContent ?? ''} ` : '';
+    const text = (image ? node.getAttribute('alt') ?? '' : label + (node.textContent ?? '')).replace(/\s+/g, ' ').trim().slice(0, 200);
     const before = blocks.find((block) => node.compareDocumentPosition(block) & Node.DOCUMENT_POSITION_FOLLOWING && !node.contains(block));
     texts.push({
       kind, path: kind === 'field' ? node.dataset.tField ?? 'duration' : null, text, rect: rectOf(node),
