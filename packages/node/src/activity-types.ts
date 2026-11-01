@@ -29,8 +29,9 @@ export interface ActivityEntry {
   screen?: string;
   page?: string;
   language?: string;
-  // A refusal's target: the file (relative to the course when inside it), or a shell's program.
+  // A refusal's target: the file (relative to the course; its name only when outside it), or a shell's program.
   path?: string;
+  outside?: true;
   command?: string;
   ok?: boolean;         // at the end: whether it succeeded
 }

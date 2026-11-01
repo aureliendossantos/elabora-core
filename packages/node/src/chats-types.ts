@@ -24,7 +24,8 @@ export interface Refusal {
   author: Author;
 }
 
-export interface RefusedLine extends ChatLine { type: 'refused'; tool: string; path?: string; command?: string; how: RefusalHow; author: Author }
+// outside: the file was outside the course; path is then its name only.
+export interface RefusedLine extends ChatLine { type: 'refused'; tool: string; path?: string; outside?: true; command?: string; how: RefusalHow; author: Author }
 export interface DetourLine extends ChatLine { type: 'detour'; op: string; family: ActivityFamily; after: string }
 
 // What a turn cost, as ACP gives it: session/prompt's usage, the last usage_update's context and cost.
@@ -45,7 +46,7 @@ export interface TurnSummary {
   at: string;
   request?: string;        // from the journal's mark (gone after 30 days)
   agent?: string;
-  refusals: { tool: string; path?: string; command?: string; how: RefusalHow; need: string }[];
+  refusals: { tool: string; path?: string; outside?: true; command?: string; how: RefusalHow; need: string }[];
   detours: { op: string; family: string; after: string }[];
   changes: number;
   undone: boolean;         // everything it wrote was undone (false when it wrote nothing)

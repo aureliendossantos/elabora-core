@@ -74,17 +74,22 @@ export function listChats(root: string): { chat: string; modified: string }[] {
   } catch {
     return [];
   }
-  return names.filter((name) => name.endsWith('.jsonl') && CHAT_ID.test(name.slice(0, -6)))
-    .map((name) => ({ chat: name.slice(0, -6), modified: fs.statSync(path.join(chatsDir(root), name)).mtime.toISOString() }))
-    .sort((a, b) => b.modified.localeCompare(a.modified));
+  return names.filter((name) => name.endsWith('.jsonl') && CHAT_ID.test(name.slice(0, -6))).flatMap((name) => {
+    try {
+      return [{ chat: name.slice(0, -6), modified: fs.statSync(path.join(chatsDir(root), name)).mtime.toISOString() }];
+    } catch {
+      return []; // deleted meanwhile
+    }
+  }).sort((a, b) => b.modified.localeCompare(a.modified));
 }
 
-// The target of a refused tool as the summary keeps it: relative to the course when inside it.
-function targetPath(root: string, target: string | undefined): string | undefined {
-  if (!target?.trim()) return undefined;
+// The target of a refused tool as the summary keeps it: relative to the course when inside it; of
+// a file outside it, its name only (the author's folders stay out of the course's data).
+function targetPath(root: string, target: string | undefined): { path?: string; outside?: true } {
+  if (!target?.trim()) return {};
   const absolute = path.resolve(root, target.trim());
   const relative = path.relative(path.resolve(root), absolute);
-  return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? relative.split(path.sep).join('/') : absolute;
+  return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? { path: relative.split(path.sep).join('/') } : { path: path.basename(absolute), outside: true };
 }
 
 // The program a shell command runs, nothing of its arguments.
@@ -100,10 +105,9 @@ function program(command: string | undefined): string | undefined {
 export function recordRefusal(root: string, refusal: Refusal): void {
   try {
     const chat = checkChat(refusal.chat);
-    const target = targetPath(root, refusal.path);
     const command = program(refusal.command);
     const author: Author = { ...refusal.author, chat };
-    const where = { ...(target ? { path: target } : {}), ...(command ? { command } : {}) };
+    const where = { ...targetPath(root, refusal.path), ...(command ? { command } : {}) };
     recordActivity(root, { at: new Date().toISOString(), id: randomUUID(), phase: 'end', op: refusal.tool, family: 'refused', author, ...where, ok: false });
     appendChat(root, chat, { type: 'refused', ...(refusal.turn ? { turn: refusal.turn } : {}), tool: refusal.tool, ...where, how: refusal.how, author });
     fs.writeFileSync(pendingPath(root, chat), JSON.stringify({ turn: refusal.turn, tool: refusal.tool }));
@@ -144,9 +148,9 @@ export const MIN_TURNS = 5;
 export const REFUSED_SHARE = 0.2;
 
 // What a refusal needed, by the shape of its target: generators/*.mjs, *.css, $ node.
-export function refusalNeed(refusal: { tool: string; path?: string; command?: string }): string {
+export function refusalNeed(refusal: { tool: string; path?: string; outside?: boolean; command?: string }): string {
   if (refusal.path) {
-    if (path.isAbsolute(refusal.path)) return 'outside the course';
+    if (refusal.outside || path.isAbsolute(refusal.path)) return 'outside the course';
     const parts = refusal.path.split('/');
     const ext = path.extname(refusal.path);
     const name = ext ? `*${ext}` : parts[parts.length - 1]!;
@@ -196,7 +200,7 @@ function collectTurns(root: string, chats: readonly string[]): TurnSummary[] {
       if (!line.turn) continue;
       if (line.type === 'refused') {
         const refused = line as RefusedLine;
-        turnOf(line.turn, chat, line.at).refusals.push({ tool: refused.tool, ...(refused.path ? { path: refused.path } : {}), ...(refused.command ? { command: refused.command } : {}), how: refused.how, need: refusalNeed(refused) });
+        turnOf(line.turn, chat, line.at).refusals.push({ tool: refused.tool, ...(refused.path ? { path: refused.path } : {}), ...(refused.outside ? { outside: true } : {}), ...(refused.command ? { command: refused.command } : {}), how: refused.how, need: refusalNeed(refused) });
       } else if (line.type === 'detour') {
         const detour = line as DetourLine;
         turnOf(line.turn, chat, line.at).detours.push({ op: detour.op, family: detour.family, after: detour.after });

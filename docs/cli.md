@@ -61,7 +61,7 @@ import <file> [dir] [--title <t>] [--id <id>] [--lang fr] [--choose <decision>=<
 ```text
 history [dir] [--limit 20] [--json]                 Changes grouped by batch of AI work: when, who, the request, what
                                                     changed, what was undone
-history [dir] --chats [--json]                      The turns of Elabora's chat: the tools refused to the agent (file
+history [dir] --chats [--limit 20] [--json]         The turns of Elabora's chat: the tools refused to the agent (file
                                                     edits, shell), what it did instead, what each turn cost, and
                                                     whether refusals call for a new Elabora tool
 undo [dir]                                          Undo the last change made through Elabora tools or by an agent

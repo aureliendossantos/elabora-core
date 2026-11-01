@@ -10,7 +10,7 @@ import { main } from '@elabora/cli/main';
 import { readActivity } from '@elabora/node/activity';
 import { appendChange, appendMark, chatTurn, readJournal, detectAuthor, type NewChange } from '@elabora/node/journal/index';
 import { appendChat, chatPath, listChats, noteDetour, readChat, recordRefusal, recordTurnEnd, refusalNeed, summarizeChats, turnSummary } from '@elabora/node/chats';
-import { assignBatch, summarizeBatches, BATCH_IDLE_MS } from '@elabora/core/ops/batch';
+import { assignBatch, summarizeBatches, lastAiBatch, BATCH_IDLE_MS } from '@elabora/core/ops/batch';
 import type { Author, ChangeEntry, ChangeLike, MarkEntry } from '@elabora/core/ops/types';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
@@ -73,6 +73,9 @@ test('journal: everything the chat\'s agent writes during a turn is one batch, l
   assert.deepEqual([one.label, one.chat, one.changes], ['Ajoute une question', 'c1', [first.id, late.id]]);
   assert.equal(batches.find((batch) => batch.id === turn2.id)?.label, 'Raccourcis l\'accueil');
   assert.equal(batches.find((batch) => batch.id === outside.id)?.label, undefined, 'a chat\'s mark labels only its turn');
+  assert.equal(lastAiBatch(readJournal(dir))?.id, turn2.id);
+  const beforeTurn2 = readJournal(dir).filter((entry) => entry.seq < turn2.seq);
+  assert.equal(lastAiBatch(beforeTurn2)?.id, turn1.id, 'the turn wrote after the other agent began: it is the newest AI work');
 });
 
 test('chatTurn: the conversation\'s last mark, read from the end; none past a day', () => {
@@ -121,7 +124,10 @@ test('a refusal: an activity line and a transcript line, the tool and its target
   recordRefusal(dir, { chat: 'c1', turn: mark.id, tool: 'write', path: path.join(dir, 'generators/carte.mjs'), how: 'config', author: { kind: 'agent', name: 'opencode' } });
   recordRefusal(dir, { chat: 'c1', turn: mark.id, tool: 'bash', command: '/usr/bin/sed -i "s/secret text/other/" screens/accueil.json', how: 'permission', author: { kind: 'agent', name: 'opencode' } });
   recordRefusal(dir, { chat: '../escape', tool: 'edit', how: 'config', author: chatAgent });
-  const refused = readActivity(dir).filter((entry) => entry.family === 'refused');
+  recordRefusal(dir, { chat: 'c2', tool: 'read', path: '/Users/someone/Documents/brief.md', how: 'permission', author: chatAgent });
+  assert.deepEqual(readChat(dir, 'c2').map((line) => [line.path, line.outside]), [['brief.md', true]], 'outside the course: the file\'s name only');
+  assert.equal(refusalNeed({ tool: 'read', path: 'brief.md', outside: true }), 'outside the course');
+  const refused = readActivity(dir).filter((entry) => entry.family === 'refused' && entry.author.chat === 'c1');
   assert.deepEqual(refused.map((entry) => [entry.phase, entry.op, entry.path, entry.command, entry.ok, entry.author.chat]), [
     ['end', 'write', 'generators/carte.mjs', undefined, false, 'c1'], ['end', 'bash', undefined, 'sed', false, 'c1']
   ]);
@@ -242,8 +248,10 @@ test('engine: a turn\'s batch stays open through the author\'s changes and close
   await session.run('update_screen', { id: 'accueil', title: 'Titre de l\'auteur' });
   await new Promise((resolve) => setTimeout(resolve, 400));
   assert.equal(session.openBatch, mark.id, 'neither the author\'s change nor the idle time closed it');
+  await session.run('update_screen', { id: 'chemin', title: 'Titre d\'un autre agent' }, otherAgent);
   await session.run('update_screen', { id: 'chemin', title: 'Second titre de l\'agent' }, chatAgent);
-  assert.equal(events.filter((event) => event.type === 'batchClosed').length, 0);
+  assert.equal(events.filter((event) => event.type === 'batchClosed').length, 0, 'another agent\'s work did not close the turn');
+  assert.equal(session.openBatch, mark.id);
 
   const ended = await session.endTurn({ turn: mark.id, stopReason: 'end_turn', usage: { inputTokens: 1200, outputTokens: 300 }, context: { used: 6000, size: 200000 } });
   assert.deepEqual(ended, { batch: mark.id, changes: 2 });
@@ -255,9 +263,30 @@ test('engine: a turn\'s batch stays open through the author\'s changes and close
   assert.equal(undone.undone.length, 2);
   assert.equal(session.readScreen('accueil').data.title, 'Titre de l\'auteur', 'the author\'s change is kept');
 
+  // A session opened during a turn takes it up; once its end is in the transcript, it does not.
+  const open = await session.mark('Encore', session.author, 'c1');
+  await session.run('update_screen', { id: 'chemin', title: 'Pendant le tour' }, chatAgent);
+  await session.close();
+  const again = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0, batchIdleMs: 200 });
+  sessions.push(again);
+  assert.equal(again.openBatch, open.mark.id);
+  await again.run('update_screen', { id: 'accueil', title: 'Encore l\'auteur' });
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  assert.equal(again.openBatch, open.mark.id, 'still open after the author\'s change and the idle time');
+  recordTurnEnd(dir, { chat: 'c1', turn: open.mark.id, stopReason: 'end_turn' });
+  await again.close();
+  const reopened = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0, batchIdleMs: 200 });
+  sessions.push(reopened);
+  await reopened.run('update_screen', { id: 'chemin', title: 'Après le tour' }, chatAgent);
+  await new Promise((resolve) => setTimeout(resolve, 400));
+  assert.equal(reopened.openBatch, null, 'an ended turn closes after its idle time like any batch');
+  await reopened.close();
+  const session2 = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 });
+  sessions.push(session2);
+
   // A turn where the agent only answered: no batch; without stopReason, the transcript is the host's.
-  const quiet = await session.mark('Une question', session.author, 'c1');
-  assert.deepEqual(await session.endTurn({ turn: quiet.mark.id }), { batch: null, changes: 0 });
-  assert.equal(readChat(dir, 'c1').length, 1);
-  await assert.rejects(session.endTurn({ turn: 'nope', stopReason: 'end_turn' }), /No turn nope/);
+  const quiet = await session2.mark('Une question', session2.author, 'c1');
+  assert.deepEqual(await session2.endTurn({ turn: quiet.mark.id }), { batch: null, changes: 0 });
+  assert.equal(readChat(dir, 'c1').length, 2);
+  await assert.rejects(session2.endTurn({ turn: 'nope', stopReason: 'end_turn' }), /No turn nope/);
 });

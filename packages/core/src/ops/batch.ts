@@ -101,7 +101,8 @@ export function summarizeBatches(entries: readonly JournalEntry[]): BatchSummary
   return [...batches.values()].map(({ fileSet, ...batch }) => ({ ...batch, files: [...fileSet].sort() }));
 }
 
-// The newest AI batch that is not undone yet: what « Annuler le travail de l'IA » undoes.
+// The newest AI batch that is not undone yet: what « Annuler le travail de l'IA » undoes. Newest by
+// its last change: a turn of the chat goes on while another agent's batch begins and ends.
 export function lastAiBatch(entries: readonly JournalEntry[]): BatchSummary | undefined {
-  return summarizeBatches(entries).filter((batch) => batch.ai && !batch.undone).pop();
+  return summarizeBatches(entries).filter((batch) => batch.ai && !batch.undone).reduce<BatchSummary | undefined>((newest, batch) => (!newest || batch.lastSeq > newest.lastSeq ? batch : newest), undefined);
 }

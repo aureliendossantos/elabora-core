@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { Author, ChangeLike, JournalEntry, MarkEntry, Op } from '@elabora/core/ops/types';
-import { recordTurnEnd } from '@elabora/node/chats';
+import { readChat, recordTurnEnd } from '@elabora/node/chats';
 import { diffFiles } from '@elabora/core/ops/diff';
 import { invertOps } from '@elabora/core/ops/apply';
 import { isJsonPath, sameContent } from '@elabora/core/ops/json';
@@ -1501,7 +1501,12 @@ export class Session {
       this.#closeOpenBatch('human');
       return;
     }
-    if (this.#openBatch && this.#openBatch.id !== entry.batch) this.#closeOpenBatch(this.#isTurn(this.#openBatch.id) ? 'turn' : 'idle', true);
+    if (this.#openBatch && this.#openBatch.id !== entry.batch) {
+      // Another AI's work during a turn (a file no Elabora tool wrote, an agent outside the chat) is
+      // left out of the open batch: the turn stays open until its end.
+      if (this.#isTurn(this.#openBatch.id)) return;
+      this.#closeOpenBatch('idle');
+    }
     this.#openBatch = { id: entry.batch, at: Date.now() };
     if (this.#isTurn(entry.batch)) {
       if (this.#batchTimer) clearTimeout(this.#batchTimer);
@@ -1514,8 +1519,22 @@ export class Session {
   }
 
   // An AI batch still open when the session starts (an agent worked moments ago).
+  // A turn of the chat begun before the session opened (the window reloaded while the agent worked)
+  // is open again when its transcript has no end and it began less than a day ago.
   #resumeBatch(): void {
+    const since = Date.now() - TURN_RESUME_MS;
+    for (const entry of [...this.#entries].reverse()) {
+      if (Date.parse(entry.at) < since) break;
+      if (entry.type !== 'mark' || !entry.chat || this.#turns.has(entry.chat)) continue;
+      const ended = readChat(this.root, entry.chat).some((line) => line.type === 'end' && line.turn === entry.id);
+      this.#turns.set(entry.chat, ended ? '' : entry.id);
+    }
+    for (const [chat, turn] of this.#turns) if (!turn) this.#turns.delete(chat);
     const last = this.#entries[this.#entries.length - 1];
+    if (last && last.type !== 'mark' && this.#isTurn(last.batch)) {
+      this.#openBatch = { id: last.batch, at: Date.parse(last.at) };
+      return;
+    }
     if (!last || last.type === 'mark' || !isAiAuthor(last.author)) return;
     const idle = this.#options.batchIdleMs ?? FIVE_MINUTES;
     const age = Date.now() - Date.parse(last.at);
@@ -1539,10 +1558,10 @@ export class Session {
   }
 
   // A turn of the chat stays open while the author works (human) and the agent thinks (idle): only
-  // its end, the next mark, another AI batch (force) or the session closing close it.
-  #closeOpenBatch(reason: BatchCloseReason, force = false): void {
+  // its end, the next mark or the session closing close it.
+  #closeOpenBatch(reason: BatchCloseReason): void {
     if (!this.#openBatch) return;
-    if (!force && (reason === 'human' || reason === 'idle') && this.#isTurn(this.#openBatch.id)) return;
+    if ((reason === 'human' || reason === 'idle') && this.#isTurn(this.#openBatch.id)) return;
     this.#closures.push({ id: this.#openBatch.id, reason });
     this.#openBatch = null;
     if (this.#batchTimer) clearTimeout(this.#batchTimer);
@@ -1693,6 +1712,9 @@ export class Session {
     if (!fs.existsSync(this.root)) throw new EngineError('not-found', `The project folder ${this.root} is gone (moved or deleted)`);
   }
 }
+
+// How far back an open turn of the chat is looked for when a session opens: no turn lasts a day.
+const TURN_RESUME_MS = 24 * 60 * 60 * 1000;
 
 // ── helpers ──────────────────────────────────────────────────────────
 

@@ -11,7 +11,7 @@ import type { CommandGroup } from './command.ts';
 
 const HELP = `  history [dir] [--limit 20] [--json]                 Changes grouped by batch of AI work: when, who, the request, what
                                                       changed, what was undone
-  history [dir] --chats [--json]                      The turns of Elabora's chat: the tools refused to the agent (file
+  history [dir] --chats [--limit 20] [--json]         The turns of Elabora's chat: the tools refused to the agent (file
                                                       edits, shell), what it did instead, what each turn cost, and
                                                       whether refusals call for a new Elabora tool
   undo [dir]                                          Undo the last change made through Elabora tools or by an agent
@@ -125,12 +125,13 @@ const percent = (value: number | null) => (value === null ? '—' : `${Math.roun
 const tokens = (value: number | null) => (value === null ? '—' : `${Math.round(value).toLocaleString('en-US')} tokens`);
 
 // The turns of Elabora's chat, and what refusals say about writing through Elabora's tools only.
-function printChats(dir: string, json: boolean): number {
+// limit: the last turns printed (the figures cover them all).
+function printChats(dir: string, json: boolean, limit: number): number {
   const report = summarizeChats(dir);
   if (json) { printJson(report); return 0; }
   if (!report.turns.length) { console.log('No turn of Elabora\'s chat yet.'); return 0; }
   let currentDay = '';
-  for (const turn of report.turns) {
+  for (const turn of report.turns.slice(-limit)) {
     if (day(turn.at) !== currentDay) { currentDay = day(turn.at); console.log(currentDay); }
     const request = turn.request === undefined ? '(request no longer in the journal)' : `"${turn.request.length > 60 ? `${turn.request.slice(0, 59)}…` : turn.request}"`;
     const header = [time(turn.at), ...(turn.agent ? [turn.agent] : []), request, `${turn.changes} change(s)${turn.undone ? ', undone' : ''}`, turn.stopReason ?? 'not ended', ...(turn.tokens === undefined ? [] : [`${turn.tokens.toLocaleString('en-US')} tokens`]), `turn ${turn.turn}`];
@@ -139,7 +140,7 @@ function printChats(dir: string, json: boolean): number {
     for (const refusal of turn.refusals) {
       const index = detours.findIndex((each) => each.after === refusal.tool);
       const detour = index < 0 ? undefined : detours.splice(index, 1)[0];
-      console.log(`    refused ${refusal.tool}${refusal.path ? ` ${refusal.path}` : refusal.command ? ` $ ${refusal.command}` : ''} (${refusal.how === 'permission' ? 'asked, refused' : 'not allowed'}) → ${detour ? `then ${detour.op}` : 'no Elabora operation after it'}`);
+      console.log(`    refused ${refusal.tool}${refusal.path ? ` ${refusal.outside ? '(outside the course) ' : ''}${refusal.path}` : refusal.command ? ` $ ${refusal.command}` : ''} (${refusal.how === 'permission' ? 'asked, refused' : 'not allowed'}) → ${detour ? `then ${detour.op}` : 'no Elabora operation after it'}`);
     }
   }
   console.log('');
@@ -160,7 +161,7 @@ const history = defineCommand({
   name: 'history',
   flags: { limit: 'string', json: 'boolean', chats: 'boolean' },
   run: ({ positionals: [dir = '.'], flags }) => reportingFailures(() => {
-    if (flags.chats) return printChats(dir, !!flags.json);
+    if (flags.chats) return printChats(dir, !!flags.json, Number(flags.limit) || 20);
     const batches = edit.historyBatches(dir, Number(flags.limit) || 20);
     if (flags.json) { printJson(batches); return 0; }
     if (!batches.length) { console.log('No change yet.'); return 0; }
