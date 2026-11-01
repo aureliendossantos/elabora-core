@@ -26,6 +26,8 @@
   .t-layout--editorial-opener .t-opening-head { display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; }
   .t-layout--editorial-opener .t-opening-copy,
   .t-layout--editorial-opener .t-opening-body.t-slot { width: auto; }
+  /* The lead clear of the slim plate along the edge (0.75rem); the blocks below keep to their measure. */
+  .t-layout--editorial-opener .t-opening-copy { padding-inline-end: calc(var(--t-opening-gutter, 1.25rem) + .75rem); }
   .t-layout--editorial-opener .ed-opener-number {
     position: static; display: block; align-self: flex-start; padding: 2rem var(--t-opening-gutter, 1.25rem) 0;
     color: var(--ed-plate, currentColor); font-size: 6rem; line-height: .9; text-align: start;
