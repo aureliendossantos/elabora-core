@@ -7,6 +7,7 @@ import { ListToolsRequestSchema, CallToolRequestSchema, ListResourcesRequestSche
 import type { Author } from '@elabora/core/ops/types';
 import { ELABORA_VERSION } from '@elabora/node/bundles';
 import { detectAuthor } from '@elabora/node/journal/author';
+import { knownFolders } from '@elabora/node/library/index';
 import { agentTools, listAgentTools, callAgentTool } from './agent-tools.ts';
 import { errorResult, objectSchema, textResult } from './mcp/tool.ts';
 import type { ToolOptions } from './agent-tools.ts';
@@ -23,16 +24,20 @@ Use only tools exposed by this connection; CLI/file tools are alternatives when 
 
 // Outside a course, the server offers what needs none (the documentation, the skills, the app's
 // library) and says how to reach one.
-const NO_COURSE = `Only the documentation, the skills and the app's library are offered here. elabora_projects_list gives the author's courses and their folders. To work on one, this server must be started on its folder: add the folder to Elabora's settings in the host (in Claude, the extension's), or open the session in that folder. With a shell, elabora tools call <tool> <folder> --args '<json>' runs any operation on a course. Do not change the author's agent configuration yourself.`;
+const NO_COURSE = `Only the documentation, the skills and the app's library are offered here. elabora_projects_list gives the author's courses and their folders. To work on one, this server must be started on its folder, or with no folder to serve every course Elabora knows (what Elabora's extension for Claude does). With a shell, elabora tools call <tool> <folder> --args '<json>' runs any operation on a course. Do not change the author's agent configuration yourself.`;
+
+// Started with no folder, on the courses Elabora knows, before the app was ever opened here.
+const NOT_OPENED = 'Elabora has not been opened on this computer yet: ask the author to open it once (or to install it from https://elabora.studio), and their courses show up here, with no restart.';
 
 const isCourse = (dir: string) => fs.existsSync(path.join(dir, 'course.json'));
 
 // The courses a server serves: each folder given that is a course, else the courses directly in it
 // (a folder of modules, the app's library). A folder that is gone or unreadable is skipped and said,
 // so that one course deleted does not stop a host from reaching the others; when it is the only
-// folder given, that is an error. `found`: the courses met inside a folder, not named themselves.
+// folder given, that is an error, unless `lenient`. `found`: the courses met inside a folder, not
+// named themselves.
 export interface ServedCourses { courses: string[]; found: string[]; missing: string[] }
-export function servedCourses(dirs: readonly string[]): ServedCourses {
+export function servedCourses(dirs: readonly string[], { lenient = false } = {}): ServedCourses {
   const courses: string[] = [];
   const found: string[] = [];
   const missing: string[] = [];
@@ -47,35 +52,59 @@ export function servedCourses(dirs: readonly string[]): ServedCourses {
       missing.push(dir);
     }
   }
-  if (dirs.length === 1 && missing.length) throw new Error(`${missing[0]} is not a folder this server can read`);
+  if (dirs.length === 1 && missing.length && !lenient) throw new Error(`${missing[0]} is not a folder this server can read`);
   return { courses: [...new Set(courses)], found, missing };
 }
 
 interface ServedCourse { name: string; folder: string; id: string | null; title: string | null }
 
 // Several courses: each is named by its course id (the folder's name when it has none), with -2, -3…
-// when two share it.
-function nameCourses(folders: readonly string[]): ServedCourse[] {
-  const taken = new Map<string, number>();
+// when two share it. `names` (folder → name) keeps a course's name from one reading to the next: a
+// course added since never takes the name an agent already knows for another.
+function nameCourses(folders: readonly string[], names = new Map<string, string>()): ServedCourse[] {
+  const used = new Set(names.values());
   return folders.map((folder) => {
     let info: { id?: unknown; title?: unknown } = {};
     try { info = JSON.parse(fs.readFileSync(path.join(folder, 'course.json'), 'utf8')); } catch { /* validate says why */ }
     const id = typeof info.id === 'string' ? info.id : null;
-    const base = id ?? path.basename(folder);
-    const seen = (taken.get(base) ?? 0) + 1;
-    taken.set(base, seen);
-    return { name: seen === 1 ? base : `${base}-${seen}`, folder, id, title: typeof info.title === 'string' ? info.title : null };
+    let name = names.get(folder);
+    if (!name) {
+      const base = id ?? path.basename(folder);
+      name = base;
+      for (let n = 2; used.has(name); n++) name = `${base}-${n}`;
+      names.set(folder, name);
+      used.add(name);
+    }
+    return { name, folder, id, title: typeof info.title === 'string' ? info.title : null };
   });
 }
 
-// dirs: the course folder, or several folders (each a course or a folder of courses).
+// dirs: the course folder, or several folders (each a course or a folder of courses). None: the
+// courses Elabora knows (its library and the folders the app opened), read again at each call, so
+// that a course created or opened after the server started is served without restarting it.
 export function createMcpServer(dirs: string | readonly string[], options: ToolOptions = {}): Server {
   const { readOnly = false } = options;
   // Validate host configuration before updating course rules; use one selection for list/call.
   agentTools(options);
-  const { courses: folders, found, missing } = servedCourses(typeof dirs === 'string' ? [dirs] : dirs);
-  const served = nameCourses(folders);
-  const mode = served.length === 0 ? 'none' : served.length === 1 ? 'one' : 'several';
+  const known = typeof dirs !== 'string' && dirs.length === 0;
+  // Elabora's courses as they are now; null when Elabora has no data on this computer.
+  const knownCourses = (): ServedCourses | null => {
+    const folders = knownFolders();
+    if (!folders) return null;
+    const { courses } = servedCourses(folders, { lenient: true });
+    return { courses, found: courses, missing: [] };
+  };
+  const start = known ? knownCourses() : servedCourses(typeof dirs === 'string' ? [dirs] : dirs);
+  const { courses: folders, found, missing } = start ?? { courses: [], found: [], missing: [] };
+  const names = new Map<string, string>();
+  const served = nameCourses(folders, names);
+  // The courses of a call: those of the start, or Elabora's as they are now.
+  const current = (): ServedCourse[] | null => {
+    if (!known) return served;
+    const now = knownCourses();
+    return now && nameCourses(now.courses, names);
+  };
+  const mode = known || served.length > 1 ? 'several' : served.length === 1 ? 'one' : 'none';
   // Outside a course, only the tools that need none.
   const anywhere = agentTools({ readOnly, ...(options.tools === undefined ? {} : { tools: options.tools }) }).filter((tool) => tool.anywhere).map((tool) => tool.name);
   const selection: ToolOptions = { readOnly, ...(mode === 'none' ? { tools: anywhere } : options.tools === undefined ? {} : { tools: [...options.tools] }) };
@@ -89,22 +118,26 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
   // a read-only server writes nothing, and only says what it finds. A course met inside a folder is
   // brought up to date only when an operation first works on it: a session opened in a folder of
   // modules does not rewrite them all.
-  const pending = new Set(readOnly ? [] : found);
+  const lazy = new Set(found);
   const notes = served.map((course) => {
-    const note = readOnly || pending.has(course.folder) ? agentRulesNote(course.folder) : syncAgentRules(course.folder);
+    const note = readOnly || lazy.has(course.folder) ? agentRulesNote(course.folder) : syncAgentRules(course.folder);
     return note && mode === 'several' ? `${course.name}: ${note}` : note;
   }).filter((note): note is string => !!note);
+  const settled = new Set(folders.filter((folder) => !lazy.has(folder)));
   const settle = (folder: string) => {
-    if (!pending.delete(folder)) return;
+    if (readOnly || settled.has(folder)) return;
+    settled.add(folder);
     const note = syncAgentRules(folder);
     if (note) process.stderr.write(`${note}\n`);
   };
   const gone = missing.length ? `Not found, so not served: ${missing.join(', ')}.` : '';
   // Said to the agent too, in the server's instructions: a host keeps a server's stderr in its logs.
   for (const note of [...notes, gone]) if (note) process.stderr.write(`${note}\n`);
-  const scope = mode === 'one' ? `Elabora MCP server, scoped to one course: ${served[0]!.folder}.`
+  const list = served.map((course) => `- ${course.name}: ${course.title ?? '(no title)'} (${course.folder})`).join('\n');
+  const scope = known ? (start ? `Elabora MCP server, serving the courses of the Elabora app on this computer (its library and the folders it opened): every course operation takes course, its name as elabora_courses gives it; call elabora_courses again for a course created or opened since. Each course has its own AGENTS.md and author notes: read those of the course you work on before editing it.\n${list || 'No course yet: the author creates one in Elabora.'}` : `Elabora MCP server. ${NOT_OPENED}`)
+    : mode === 'one' ? `Elabora MCP server, scoped to one course: ${served[0]!.folder}.`
     : mode === 'none' ? `Elabora MCP server, started outside a course: ${typeof dirs === 'string' ? path.resolve(dirs) : dirs.map((dir) => path.resolve(dir)).join(', ')} holds no Elabora course (a folder with course.json). ${NO_COURSE}`
-    : `Elabora MCP server, serving ${served.length} courses: every course operation takes course, its name below. Each course has its own AGENTS.md and author notes: read those of the course you work on before editing it.\n${served.map((course) => `- ${course.name}: ${course.title ?? '(no title)'} (${course.folder})`).join('\n')}`;
+    : `Elabora MCP server, serving ${served.length} courses: every course operation takes course, its name below. Each course has its own AGENTS.md and author notes: read those of the course you work on before editing it.\n${list}`;
   const instructions = [scope, INSTRUCTIONS, ...notes, gone].filter(Boolean).join('\n\n');
   const server = new Server({ name: 'elabora', version: ELABORA_VERSION }, { capabilities: { tools: {}, resources: {} }, instructions });
 
@@ -118,15 +151,21 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
     // An agent's name only: a shell's ELABORA_AUTHOR=human inherited by the server does not make the agent a person.
     const named = process.env.ELABORA_AUTHOR?.trim() ? detectAuthor() : null;
     const author: Author = named?.kind === 'agent' ? named : client ? { kind: 'agent', name: client } : { kind: 'agent' };
-    if (mode === 'several' && name === 'elabora_courses') return textResult(served);
     const tool = byName.get(name);
-    if (mode !== 'several' || !tool || tool.anywhere) {
+    if (mode !== 'several' || (tool && tool.anywhere)) {
       if (mode === 'one' && tool && !tool.anywhere) settle(served[0]!.folder);
       return callAgentTool(name, args, { root: served[0]?.folder ?? process.cwd(), author }, selection);
     }
+    const courses = current();
+    if (!courses) return errorResult({ error: NOT_OPENED });
+    if (name === 'elabora_courses') return textResult(courses);
+    if (!tool) return callAgentTool(name, args, { root: process.cwd(), author }, selection);
     const { course: wanted, ...rest } = args;
-    const course = served.find((each) => each.name === wanted || each.folder === (typeof wanted === 'string' ? path.resolve(wanted) : null));
-    if (!course) return errorResult({ error: `${wanted === undefined ? 'No course given' : `No course ${JSON.stringify(wanted)} here`}: course is one of ${served.map((each) => each.name).join(', ')}.` });
+    const course = courses.find((each) => each.name === wanted || each.folder === (typeof wanted === 'string' ? path.resolve(wanted) : null));
+    if (!course) {
+      const choice = courses.length ? `course is one of ${courses.map((each) => each.name).join(', ')}` : 'there is no course yet: the author creates one in Elabora';
+      return errorResult({ error: `${wanted === undefined ? 'No course given' : `No course ${JSON.stringify(wanted)} here`}: ${choice}.` });
+    }
     settle(course.folder);
     return callAgentTool(name, rest, { root: course.folder, author }, selection);
   });
@@ -138,11 +177,12 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
   const docPages = docsShipped ? allPages() : [];
   const listedPages = docsShipped ? docsIndex() : [];
   const skills = listSkills();
-  const rules = new Map(served.filter((course) => fs.existsSync(path.join(course.folder, 'AGENTS.md')))
+  const rulesOf = (courses: readonly ServedCourse[]) => new Map(courses.filter((course) => fs.existsSync(path.join(course.folder, 'AGENTS.md')))
     .map((course) => [mode === 'one' ? 'elabora://course/AGENTS.md' : `elabora://course/${course.name}/AGENTS.md`, course]));
+  const rules = () => rulesOf(current() ?? []);
   server.setRequestHandler(ListResourcesRequestSchema, async () => ({
     resources: [
-      ...[...rules].map(([uri, course]) => ({ uri, name: mode === 'one' ? 'Course rules for agents' : `Course rules for agents: ${course.name}`, mimeType: 'text/markdown' })),
+      ...[...rules()].map(([uri, course]) => ({ uri, name: mode === 'one' ? 'Course rules for agents' : `Course rules for agents: ${course.name}`, mimeType: 'text/markdown' })),
       ...skills.flatMap(({ name, references }) => [
         { uri: `elabora://skills/${name}`, name: `Skill ${name}`, mimeType: 'text/markdown' },
         ...references.map((reference) => ({ uri: `elabora://skills/${name}/references/${reference}`, name: `Skill reference ${name}/${reference}`, mimeType: 'text/markdown' }))
@@ -153,7 +193,7 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
   server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
     const { uri } = request.params;
     let file: string | null = null;
-    const course = rules.get(uri);
+    const course = uri.startsWith('elabora://course/') ? rules().get(uri) : undefined;
     if (course) file = path.join(course.folder, 'AGENTS.md');
     const skill = /^elabora:\/\/skills\/([a-z0-9-]+)(?:\/references\/([a-z0-9-]+))?$/.exec(uri);
     if (skill) {

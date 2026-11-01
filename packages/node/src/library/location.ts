@@ -77,6 +77,22 @@ export function libraryRoot(): string {
   return path.join(localDataRoot(), DEFAULT_LIBRARY_NAME);
 }
 
+// The app's own settings, in the same local data folder (its user data on macOS and Windows): the
+// folders it opened in place, outside the library (elabora-app, src/main/settings.ts).
+export const APP_SETTINGS_FILE = 'elabora-app.json';
+
+// The folders whose courses Elabora knows, as the app shows them: the library, then the folders the
+// app opened in place. Null when Elabora has no data on this computer (never opened).
+export function knownFolders(): string[] | null {
+  if (!process.env.ELABORA_LIBRARY && !fs.existsSync(localDataRoot())) return null;
+  let opened: unknown;
+  try {
+    opened = (JSON.parse(fs.readFileSync(path.join(localDataRoot(), APP_SETTINGS_FILE), 'utf8')) as { folders?: unknown }).folders;
+  } catch { /* none opened in place */ }
+  const folders = Array.isArray(opened) ? opened.filter((dir): dir is string => typeof dir === 'string' && path.isAbsolute(dir)) : [];
+  return [libraryRoot(), ...folders];
+}
+
 // Creates the library folders when needed, and clears staging folders left by a process that died
 // in the middle of an import (their content came from an archive or a folder that still exists).
 export function ensureLibrary(root: string = libraryRoot()): string {

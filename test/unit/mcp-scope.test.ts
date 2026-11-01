@@ -10,8 +10,8 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 import { ROOT, copyExample } from '../helpers.ts';
 import { callAgentTool } from '@elabora/cli';
 
-// The folders a host gives the MCP server (the Claude
-// extension, on the folders the author picks): one course, several, or none.
+// The folders a host gives the MCP server: one course, several, none of them a course, or no folder
+// at all (the courses Elabora knows, as the Claude extension serves them).
 async function connect(dirs: string | string[]) {
   const server = createMcpServer(dirs, { readOnly: true });
   const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
@@ -127,19 +127,104 @@ test('outside a course: a folder that is gone is an error when it is the only on
   }
 });
 
-// The Claude extension goes through its launcher, which finds the app and passes the folders the author picked.
-test('the Claude extension\'s launcher starts elabora mcp on the folders it is given', async () => {
-  const dir = copyExample();
+// Elabora's own data, in a folder of the test: its library (a course in it) and the app's settings
+// (elabora-app.json, the folders it opened in place).
+function elaboraData(opened: string[]) {
+  const local = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-local-'));
+  const library = path.join(local, 'Library');
+  fs.mkdirSync(library);
+  const inLibrary = path.join(library, 'a-first');
+  const source = copyExample();
+  fs.cpSync(source, inLibrary, { recursive: true });
+  fs.rmSync(source, { recursive: true, force: true });
+  fs.writeFileSync(path.join(local, 'elabora-app.json'), JSON.stringify({ folders: opened, autoUpdate: true }));
+  return { local, library, inLibrary };
+}
+
+// The environment of one test, put back after it.
+async function withEnv(change: Record<string, string | undefined>, run: () => Promise<void>) {
+  const before = Object.fromEntries(Object.keys(change).map((key) => [key, process.env[key]]));
+  const set = (values: Record<string, string | undefined>) => {
+    for (const [key, value] of Object.entries(values)) if (value === undefined) delete process.env[key]; else process.env[key] = value;
+  };
+  set(change);
+  try { await run(); } finally { set(before); }
+}
+
+test('MCP with no folder: the courses Elabora knows, its library and the folders the app opened, read again at each call', async () => {
+  const outside = copyExample();
+  const { local, library, inLibrary } = elaboraData([outside, path.join(os.tmpdir(), 'elabora-opened-then-gone')]);
+  const id = JSON.parse(fs.readFileSync(path.join(outside, 'course.json'), 'utf8')).id;
   try {
-    const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'plugins/claude-desktop/manifest.json'), 'utf8'));
-    assert.deepEqual(manifest.server.mcp_config.args, ['${__dirname}/server/launch.cjs', '${user_config.courses}']);
-    const transport = new StdioClientTransport({ command: process.execPath, args: [path.join(ROOT, 'plugins/claude-desktop/server/launch.cjs'), dir], env: { ...process.env as Record<string, string>, ELABORA_COMMAND: path.join(ROOT, 'bin/elabora.js') }, stderr: 'ignore' });
+    await withEnv({ ELABORA_LOCAL_DATA_DIR: local, ELABORA_LIBRARY: undefined }, async () => {
+      const client = await connect([]);
+      const { tools } = await client.listTools();
+      assert.deepEqual(tools.find((tool) => tool.name === 'elabora_overview')!.inputSchema.required, ['course']);
+      assert.match(client.getInstructions() ?? '', /serving the courses of the Elabora app on this computer/);
+      const courses = () => client.callTool({ name: 'elabora_courses', arguments: {} }).then((result) => body(result).map((each: { name: string; folder: string }) => [each.name, each.folder]));
+      assert.deepEqual(await courses(), [[id, inLibrary], [`${id}-2`, outside]]);
+      // A course created after the start (in the library, before the first one in its order) is
+      // served at the next call, under a name of its own: the others keep theirs.
+      const added = path.join(library, '0-added');
+      fs.cpSync(inLibrary, added, { recursive: true });
+      assert.deepEqual(await courses(), [[`${id}-3`, added], [id, inLibrary], [`${id}-2`, outside]]);
+      assert.ok(!(await client.callTool({ name: 'elabora_get_plan', arguments: { course: `${id}-3` } })).isError);
+      assert.ok(!(await client.callTool({ name: 'elabora_get_plan', arguments: { course: `${id}-2` } })).isError);
+      const { resources } = await client.listResources();
+      assert.ok(resources.some((resource) => resource.uri === `elabora://course/${id}-3/AGENTS.md`));
+      await client.close();
+    });
+  } finally {
+    fs.rmSync(outside, { recursive: true, force: true });
+    fs.rmSync(local, { recursive: true, force: true });
+  }
+});
+
+test('MCP with no folder, Elabora never opened here: one sentence says what to do, and its courses come once it is', async () => {
+  const local = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-none-')), 'Elabora');
+  try {
+    await withEnv({ ELABORA_LOCAL_DATA_DIR: local, ELABORA_LIBRARY: undefined }, async () => {
+      const client = await connect([]);
+      assert.match(client.getInstructions() ?? '', /Elabora has not been opened on this computer yet: ask the author to open it once/);
+      const missing = await client.callTool({ name: 'elabora_courses', arguments: {} });
+      assert.equal(missing.isError, true);
+      assert.match(body(missing).error, /^Elabora has not been opened on this computer yet/);
+      assert.ok(!(await client.callTool({ name: 'elabora_docs', arguments: {} })).isError);
+      fs.mkdirSync(path.join(local, 'Library'), { recursive: true });
+      assert.deepEqual(body(await client.callTool({ name: 'elabora_courses', arguments: {} })), []);
+      assert.match(body(await client.callTool({ name: 'elabora_get_plan', arguments: { course: 'x' } })).error, /there is no course yet: the author creates one in Elabora/);
+      await client.close();
+    });
+  } finally {
+    fs.rmSync(path.dirname(local), { recursive: true, force: true });
+  }
+});
+
+// The Claude extension goes through its launcher, which finds the app and starts its server with no
+// folder: installing it asks nothing. Folders given to the launcher are served instead.
+test('the Claude extension asks nothing: its launcher starts elabora mcp on Elabora\'s courses, or on the folders it is given', async () => {
+  const dir = copyExample();
+  const { local } = elaboraData([]);
+  const start = async (args: string[]) => {
+    const transport = new StdioClientTransport({ command: process.execPath, args: [path.join(ROOT, 'plugins/claude-desktop/server/launch.cjs'), ...args], env: { ...process.env as Record<string, string>, ELABORA_COMMAND: path.join(ROOT, 'bin/elabora.js'), ELABORA_LOCAL_DATA_DIR: local }, stderr: 'ignore' });
     const client = new Client({ name: 'test', version: '1' });
     await client.connect(transport);
-    assert.match(client.getInstructions() ?? '', /scoped to one course/);
-    assert.ok((await client.listTools()).tools.some((tool) => tool.name === 'elabora_overview'));
-    await client.close();
+    return client;
+  };
+  try {
+    const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'plugins/claude-desktop/manifest.json'), 'utf8'));
+    assert.equal(manifest.user_config, undefined);
+    assert.deepEqual(manifest.server.mcp_config.args, ['${__dirname}/server/launch.cjs']);
+    const known = await start([]);
+    assert.match(known.getInstructions() ?? '', /serving the courses of the Elabora app on this computer/);
+    assert.equal(body(await known.callTool({ name: 'elabora_courses', arguments: {} })).length, 1);
+    await known.close();
+    const given = await start([dir]);
+    assert.match(given.getInstructions() ?? '', /scoped to one course/);
+    assert.ok((await given.listTools()).tools.some((tool) => tool.name === 'elabora_overview'));
+    await given.close();
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(local, { recursive: true, force: true });
   }
 });
