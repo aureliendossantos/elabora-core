@@ -10,7 +10,7 @@ import { localAiSupported, requireLocalAi } from '../models/platform.ts';
 // Optional downloads (docs/decisions.md D38): what Elabora downloads once per computer on first use and
 // keeps out of every course: the local voices' models (D25), the word aligners (D27), the transcriber
 // (D46), and whatever comes next. Each kind registers here with what it is for, what happens without
-// it, its downloads (by language or not), their state (on this computer with its size on disk, or the
+// it, its downloads (by language, by variant or one), their state (on this computer with its size on disk, or the
 // size to download; a download under way in any process; in use) and how to install and remove one.
 // Elabora's settings list them all, the command line (elabora downloads) and agents (elabora_downloads)
 // too. Removing one is refused while it is in use, in any process, and never touches what modules
@@ -30,12 +30,13 @@ export interface DownloadKind {
   title: string;               // « Local voices », in English (the app has its own words by kind)
   serves: string;              // what it is for
   without: string;             // what happens without it
-  // Its downloads: one per language, or one (language null).
+  // Its downloads: one per language, one per variant (language null), or one.
   list(): Omit<DownloadView, 'id' | 'kind' | 'title' | 'serves' | 'without'>[];
-  install(language: string | null, options: DownloadInstallOptions): Promise<void>;
+  // key: the download's language, or its variant (null: the kind's only one).
+  install(key: string | null, options: DownloadInstallOptions): Promise<void>;
   // The bytes freed; refused with an E_…_IN_USE code while it is used or downloaded. partial: only
   // what a stopped download left, kept when it is all there (another process finished it meanwhile).
-  uninstall(language: string | null, options?: { partial?: boolean }): Promise<number>;
+  uninstall(key: string | null, options?: { partial?: boolean }): Promise<number>;
 }
 
 export class DownloadError extends Error {
@@ -54,7 +55,8 @@ export function registerDownloadKind(kind: DownloadKind): void {
 
 export const downloadKinds = (): DownloadKind[] => [...kinds.values()];
 
-const idOf = (kind: string, language: string | null) => (language ? `${kind}-${language}` : kind);
+const keyOf = (view: { language: string | null; variant?: string }): string | null => view.variant ?? view.language;
+const idOf = (kind: string, key: string | null) => (key ? `${kind}-${key}` : kind);
 
 // Every optional download, by kind in the order they registered then by language code, or those of a kind or a language
 // (its primary subtag: fr-CA lists fr).
@@ -64,8 +66,8 @@ export function optionalDownloads({ kind, language }: { kind?: string; language?
     .filter((entry) => !kind || entry.kind === kind)
     .flatMap((entry) => entry.list()
       .filter((view) => !primary || view.language === primary)
-      .sort((a, b) => (a.language ?? '').localeCompare(b.language ?? ''))
-      .map((view) => ({ id: idOf(entry.kind, view.language), kind: entry.kind, title: entry.title, serves: entry.serves, without: entry.without, ...view,
+      .sort((a, b) => (keyOf(a) ?? '').localeCompare(keyOf(b) ?? ''))
+      .map((view) => ({ id: idOf(entry.kind, keyOf(view)), kind: entry.kind, title: entry.title, serves: entry.serves, without: entry.without, ...view,
         ...(['voices', 'aligner', 'transcriber'].includes(entry.kind) ? { supported: localAiSupported() } : {}) })));
 }
 
@@ -78,13 +80,13 @@ function find(id: string): { kind: DownloadKind; view: DownloadView } {
 export async function installDownload(id: string, options: DownloadInstallOptions = {}): Promise<DownloadView> {
   const { kind, view } = find(id);
   if (view.supported === false) requireLocalAi();
-  await kind.install(view.language, options);
+  await kind.install(keyOf(view), options);
   return find(id).view;
 }
 
 export async function uninstallDownload(id: string, options: { partial?: boolean } = {}): Promise<{ id: string; freed: number }> {
   const { kind, view } = find(id);
-  return { id, freed: await kind.uninstall(view.language, options) };
+  return { id, freed: await kind.uninstall(keyOf(view), options) };
 }
 
 // ── the first kinds ──────────────────────────────────────────────────

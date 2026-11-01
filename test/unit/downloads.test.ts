@@ -109,7 +109,7 @@ test('downloads: the transcriber is one download for every language it hears, re
   assert.equal(optionalDownloads({ kind: 'transcriber' })[0].installed, false);
 });
 
-test('downloads: a new kind only registers (its list, install, removal)', async () => {
+test('downloads: a new kind only registers (its list, install, removal), by language or by variant', async () => {
   // In a process of its own: the registry lasts as long as the process and has no way to forget a
   // kind, so the cases of the built-in kinds would see this one in whatever order they ran.
   const script = `
@@ -125,6 +125,18 @@ test('downloads: a new kind only registers (its list, install, removal)', async 
     assert.deepEqual(optionalDownloads({ kind: 'test-kind' }).map(({ id, language, installed, size }) => ({ id, language, installed, size })), [{ id: 'test-kind', language: null, installed: false, size: 7 }]);
     assert.equal((await installDownload('test-kind')).installed, true);
     assert.deepEqual(await uninstallDownload('test-kind'), { id: 'test-kind', freed: 5 });
+    // A kind whose downloads are not by language (the app's agents): one id per variant, its key given back.
+    const asked = [];
+    registerDownloadKind({
+      kind: 'test-variants', title: 'Variants', serves: 'tests', without: 'nothing',
+      list: () => ['zed', 'alpha'].map((variant) => ({ language: null, variant, model: variant, installed: false, size: 1, download: 1, installing: null, inUse: false })),
+      install: async (key) => { asked.push(['install', key]); },
+      uninstall: async (key) => { asked.push(['uninstall', key]); return 0; }
+    });
+    assert.deepEqual(optionalDownloads({ kind: 'test-variants' }).map(({ id }) => id), ['test-variants-alpha', 'test-variants-zed']);
+    await installDownload('test-variants-zed');
+    await uninstallDownload('test-variants-alpha');
+    assert.deepEqual(asked, [['install', 'zed'], ['uninstall', 'alpha']]);
   `;
   await execFileAsync(process.execPath, ['--input-type=module', '-e', script], { cwd: ROOT, env: process.env });
 });
