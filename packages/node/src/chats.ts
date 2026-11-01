@@ -158,8 +158,19 @@ export function refusalNeed(refusal: { tool: string; path?: string; command?: st
 
 const average = (values: number[]): number | null => (values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null);
 
-// Every turn of the course's conversations, from the journal (the marks, the batches) and the transcripts.
+// One turn, as the chat shows it when it ends: its batch (the turn's id, when the agent wrote), its
+// refusals and detours. null when neither the journal nor the transcript knows it.
+export function turnSummary(root: string, chat: string, turn: string): TurnSummary | null {
+  return collectTurns(root, [chat]).find((each) => each.turn === turn && each.chat === chat) ?? null;
+}
+
+// Every turn of the course's conversations, and what refusals say about writing through Elabora's tools only.
 export function summarizeChats(root: string): ChatsReport {
+  return report(collectTurns(root, listChats(root).map(({ chat }) => chat)));
+}
+
+// The turns of these conversations, oldest first, from the journal (the marks, the batches) and their transcripts.
+function collectTurns(root: string, chats: readonly string[]): TurnSummary[] {
   const journal = readJournal(root);
   const batches = new Map(summarizeBatches(journal).map((batch) => [batch.id, batch]));
   const marks = new Map(journal.filter((entry): entry is MarkEntry => entry.type === 'mark' && !!entry.chat).map((mark) => [mark.id, mark]));
@@ -179,8 +190,8 @@ export function summarizeChats(root: string): ChatsReport {
     }
     return turn;
   };
-  for (const mark of marks.values()) turnOf(mark.id, mark.chat!, mark.at);
-  for (const { chat } of listChats(root)) {
+  for (const mark of marks.values()) if (chats.includes(mark.chat!)) turnOf(mark.id, mark.chat!, mark.at);
+  for (const chat of chats) {
     for (const line of readChat(root, chat)) {
       if (!line.turn) continue;
       if (line.type === 'refused') {
@@ -200,7 +211,10 @@ export function summarizeChats(root: string): ChatsReport {
   }
   const list = [...turns.values()].sort((a, b) => a.at.localeCompare(b.at));
   for (const turn of list) turn.succeeded = turn.stopReason === 'end_turn' && !turn.undone;
+  return list;
+}
 
+function report(list: TurnSummary[]): ChatsReport {
   const refusedTurns = list.filter((turn) => turn.refusals.length);
   const others = list.filter((turn) => !turn.refusals.length);
   const needs = new Map<string, { need: string; refusals: number; turns: Set<string> }>();

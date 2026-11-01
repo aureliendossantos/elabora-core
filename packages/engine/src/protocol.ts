@@ -310,9 +310,10 @@ export interface HistoryView {
 
 // A turn of Elabora's chat ended: session/prompt's stopReason and usage, the last usage_update's
 // context and cost (@elabora/node/chats, recordTurnEnd).
+// Without stopReason, the batch closes and the transcript is left to the host (recordTurnEnd).
 export interface EndTurnParams {
   turn: string; // the mark's id
-  stopReason: string;
+  stopReason?: string;
   usage?: TurnUsage;
   context?: { used: number; size: number };
   cost?: { amount: number; currency: string };

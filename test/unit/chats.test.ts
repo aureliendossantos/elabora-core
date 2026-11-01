@@ -9,7 +9,7 @@ import { callAgentTool } from '@elabora/cli';
 import { main } from '@elabora/cli/main';
 import { readActivity } from '@elabora/node/activity';
 import { appendChange, appendMark, chatTurn, readJournal, detectAuthor, type NewChange } from '@elabora/node/journal/index';
-import { appendChat, chatPath, listChats, noteDetour, readChat, recordRefusal, recordTurnEnd, refusalNeed, summarizeChats } from '@elabora/node/chats';
+import { appendChat, chatPath, listChats, noteDetour, readChat, recordRefusal, recordTurnEnd, refusalNeed, summarizeChats, turnSummary } from '@elabora/node/chats';
 import { assignBatch, summarizeBatches, BATCH_IDLE_MS } from '@elabora/core/ops/batch';
 import type { Author, ChangeEntry, ChangeLike, MarkEntry } from '@elabora/core/ops/types';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
@@ -207,6 +207,8 @@ test('summary: one need behind most refusals, in more than one turn, calls for a
   assert.deepEqual(report.needs, [{ need: 'generators/*.mjs', refusals: 3, turns: 2 }]);
   const turn = report.turns.find((each) => each.turn === marks[1]!.id)!;
   assert.deepEqual([turn.request, turn.agent, turn.changes, turn.stopReason, turn.refusals.length], ['Demande 1', 'opencode', 1, 'end_turn', 2]);
+  assert.deepEqual(turnSummary(dir, 'c1', marks[1]!.id), turn, 'one turn, as the chat shows it when it ends');
+  assert.equal(turnSummary(dir, 'c2', marks[1]!.id), null, 'not a turn of that conversation');
 });
 
 test('elabora history --chats says each turn and the verdict', async () => {
@@ -253,8 +255,9 @@ test('engine: a turn\'s batch stays open through the author\'s changes and close
   assert.equal(undone.undone.length, 2);
   assert.equal(session.readScreen('accueil').data.title, 'Titre de l\'auteur', 'the author\'s change is kept');
 
-  // A turn where the agent only answered: no batch.
+  // A turn where the agent only answered: no batch; without stopReason, the transcript is the host's.
   const quiet = await session.mark('Une question', session.author, 'c1');
-  assert.deepEqual(await session.endTurn({ turn: quiet.mark.id, stopReason: 'end_turn' }), { batch: null, changes: 0 });
+  assert.deepEqual(await session.endTurn({ turn: quiet.mark.id }), { batch: null, changes: 0 });
+  assert.equal(readChat(dir, 'c1').length, 1);
   await assert.rejects(session.endTurn({ turn: 'nope', stopReason: 'end_turn' }), /No turn nope/);
 });

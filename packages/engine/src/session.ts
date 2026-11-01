@@ -976,7 +976,7 @@ export class Session {
       if (this.#turns.get(chat) === params.turn) this.#turns.delete(chat);
       if (this.#openBatch?.id === params.turn) this.#closeOpenBatch('turn');
       await this.#flushClosures();
-      recordTurnEnd(this.root, { chat, turn: params.turn, stopReason: params.stopReason, ...(params.usage ? { usage: params.usage } : {}), ...(params.context ? { context: params.context } : {}), ...(params.cost ? { cost: params.cost } : {}) });
+      if (params.stopReason) recordTurnEnd(this.root, { chat, turn: params.turn, stopReason: params.stopReason, ...(params.usage ? { usage: params.usage } : {}), ...(params.context ? { context: params.context } : {}), ...(params.cost ? { cost: params.cost } : {}) });
       const changes = this.#entries.filter((entry) => entry.type !== 'mark' && entry.batch === params.turn).length;
       return { batch: changes ? params.turn : null, changes };
     });

@@ -53,11 +53,15 @@ Projects (the app's library: one plain folder per project; archives to exchange 
 History (changes made through Elabora tools and by agents; AI work is grouped in batches)
   history [dir] [--limit 20] [--json]                 Changes grouped by batch of AI work: when, who, the request, what
                                                       changed, what was undone
+  history [dir] --chats [--json]                      The turns of Elabora's chat: the tools refused to the agent (file
+                                                      edits, shell), what it did instead, what each turn cost, and
+                                                      whether refusals call for a new Elabora tool
   undo [dir]                                          Undo the last change made through Elabora tools or by an agent
   undo [dir] --change <id|seq>                        Undo one change (an undo too: that redoes it)
   undo [dir] --batch [<id>]                           Undo a batch of AI work (default: the last one). Whatever changed
                                                       since is kept, and listed
-  mark [dir] "<request>"                              Label the next batch of AI work with the request that starts it.
+  mark [dir] "<request>" [--chat <id>]                Label the next batch of AI work with the request that starts it.
+                                                      --chat: a turn of Elabora's chat, whose agent's changes all join it
                                                       Claude Code: a UserPromptSubmit hook running elabora mark --stdin
                                                       labels each batch with the prompt (read from the hook's JSON)
 
