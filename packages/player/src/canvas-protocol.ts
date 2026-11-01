@@ -157,6 +157,23 @@ export interface FieldLayout {
   rect: LayoutRect;
 }
 
+// A text of the screen outside its blocks, as screen readers meet it: the screen's title (a layer's
+// when it is open), a text of its layout (data-t-field: a prop's path below layoutProps, duration:
+// the reading time) or a picture of its layout, its alternative as text.
+export interface TextLayout {
+  kind: 'title' | 'field' | 'image';
+  path: string | null;
+  // What is read (a picture: its alternative), at most 200 characters.
+  text: string;
+  rect: LayoutRect;
+  // The layer it is in (null: the screen).
+  layer: string | null;
+  // Read by screen readers (false: under aria-hidden, or a picture without alternative).
+  read: boolean;
+  // The first block after it in the page (null: none).
+  before: string | null;
+}
+
 export interface LayoutMessage {
   type: 'elabora/layout';
   // The last render or view message applied.
@@ -172,6 +189,9 @@ export interface LayoutMessage {
   viewport: { width: number; height: number; scrollX: number; scrollY: number };
   screenRect: LayoutRect | null;
   blocks: BlockLayout[];
+  // The texts outside the blocks, in the order of the page: the reading order of the screen is
+  // these and its blocks (the app's « Ordre de lecture »).
+  texts?: TextLayout[];
 }
 
 export type CanvasMessage =
