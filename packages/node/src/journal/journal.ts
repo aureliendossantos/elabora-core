@@ -55,8 +55,8 @@ export interface AppendOptions {
 
 export function appendChange(dir: string, change: NewChange, options: AppendOptions = {}): ChangeEntry {
   assertBlobs(dir, change);
-  return append(dir, options, (head, previous): ChangeEntry => ({
-    type: 'change', ...head, author: change.author, batch: assignBatch(previous, { ...head, author: change.author }),
+  return append(dir, options, (head, previous, root): ChangeEntry => ({
+    type: 'change', ...head, author: change.author, batch: assignBatch(previous, { ...head, author: change.author }, chatTurn(root, change.author, head.at)),
     ...(change.command ? { command: change.command } : {}), ops: change.ops, inverse: change.inverse, files: change.files,
     ...(change.unavailable?.length ? { unavailable: change.unavailable } : {})
   }));
@@ -64,24 +64,42 @@ export function appendChange(dir: string, change: NewChange, options: AppendOpti
 
 export function appendUndo(dir: string, undo: NewUndo, options: AppendOptions = {}): UndoEntry {
   assertBlobs(dir, undo);
-  return append(dir, options, (head, previous): UndoEntry => ({
-    type: 'undo', ...head, author: undo.author, batch: assignBatch(previous, { ...head, author: undo.author }),
+  return append(dir, options, (head, previous, root): UndoEntry => ({
+    type: 'undo', ...head, author: undo.author, batch: assignBatch(previous, { ...head, author: undo.author }, chatTurn(root, undo.author, head.at)),
     ...(undo.command ? { command: undo.command } : {}), undoes: undo.undoes, skipped: undo.skipped,
     ops: undo.ops, inverse: undo.inverse, files: undo.files, ...(undo.unavailable?.length ? { unavailable: undo.unavailable } : {})
   }));
 }
 
 // Written when the user asks the AI for something: closes the current batch, labels the next.
-export function appendMark(dir: string, mark: { request: string; author?: Author }, options: AppendOptions = {}): MarkEntry {
-  return append(dir, options, (head): MarkEntry => ({ type: 'mark', ...head, author: mark.author ?? { kind: 'human' }, request: mark.request }));
+// chat: a turn of Elabora's chat, whose id is the mark's (chatTurn).
+export function appendMark(dir: string, mark: { request: string; author?: Author; chat?: string }, options: AppendOptions = {}): MarkEntry {
+  return append(dir, options, (head): MarkEntry => ({ type: 'mark', ...head, author: mark.author ?? { kind: 'human' }, request: mark.request, ...(mark.chat ? { chat: mark.chat } : {}) }));
 }
 
-function append<T extends JournalEntry>(dir: string, options: AppendOptions, build: (head: { seq: number; id: string; at: string }, previous: JournalEntry | undefined) => T): T {
+// How far back a chat's change looks for its turn: no turn lasts a day.
+const TURN_LOOKBACK_MS = 24 * 60 * 60 * 1000;
+
+// The turn a change of Elabora's chat joins: the id of its conversation's last mark, read backwards
+// from the end of the journal (the turn began moments ago, the journal can be long).
+export function chatTurn(dir: string, author: Author, at: string = new Date().toISOString()): string | undefined {
+  if (!author.chat) return undefined;
+  const since = Date.parse(at) - TURN_LOOKBACK_MS;
+  for (const file of monthFiles(dir).reverse()) {
+    for (const entry of entriesBackward(file)) {
+      if (entry.type === 'mark' && entry.chat === author.chat) return entry.id;
+      if (Date.parse(entry.at) < since) return undefined;
+    }
+  }
+  return undefined;
+}
+
+function append<T extends JournalEntry>(dir: string, options: AppendOptions, build: (head: { seq: number; id: string; at: string }, previous: JournalEntry | undefined, root: string) => T): T {
   const root = path.resolve(dir);
   return withProjectLockSync(root, () => {
     const previous = lastEntry(root);
     const at = (options.now ?? new Date()).toISOString();
-    const entry = build({ seq: (previous?.seq ?? 0) + 1, id: crypto.randomBytes(6).toString('hex'), at }, previous);
+    const entry = build({ seq: (previous?.seq ?? 0) + 1, id: crypto.randomBytes(6).toString('hex'), at }, previous, root);
     // A clock set back across a month boundary must not reorder the files.
     const months = monthFiles(root);
     const newest = months.length ? path.basename(months[months.length - 1], '.jsonl') : '';
@@ -185,8 +203,14 @@ function readMonth(file: string): JournalEntry[] {
   return entries;
 }
 
-// The last valid line of a month file, read backwards by chunks: the file can be large.
+// The last valid line of a month file.
 function lastEntryOf(file: string): JournalEntry | undefined {
+  for (const entry of entriesBackward(file)) return entry;
+  return undefined;
+}
+
+// The valid lines of a month file, last first, read backwards by chunks: the file can be large.
+function* entriesBackward(file: string): Generator<JournalEntry> {
   const fd = fs.openSync(file, 'r');
   try {
     let end = fs.fstatSync(fd).size;
@@ -202,14 +226,13 @@ function lastEntryOf(file: string): JournalEntry | undefined {
         const newline = lineEnd > 0 ? buffer.lastIndexOf(0x0a, lineEnd - 1) : -1;
         if (newline < 0 && start > 0) break; // the line may begin in an earlier chunk
         const entry = parseEntry(buffer.subarray(newline + 1, lineEnd).toString('utf8'));
-        if (entry) return entry;
-        if (newline < 0) return undefined;
+        if (entry) yield entry;
+        if (newline < 0) return;
         lineEnd = newline;
       }
       carry = buffer.subarray(0, lineEnd);
       end = start;
     }
-    return undefined;
   } finally {
     fs.closeSync(fd);
   }

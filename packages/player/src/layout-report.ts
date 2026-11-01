@@ -2,7 +2,7 @@
 // page: shared by the editor canvas (canvas.ts, the app's selection) and the review bridge (review.ts,
 // the review page's pins and its comment mode).
 
-import type { BlockLayout, LayoutRect } from './canvas-protocol.ts';
+import type { BlockLayout, LayoutRect, TextLayout } from './canvas-protocol.ts';
 
 export const round = (value: number): number => Math.round(value * 100) / 100;
 export const rectOf = (node: Element): LayoutRect => { const box = node.getBoundingClientRect(); return { x: round(box.x), y: round(box.y), width: round(box.width), height: round(box.height) }; };
@@ -27,6 +27,36 @@ export function blockLayouts(timedOf: (id: string) => Pick<BlockLayout, 'timed'>
     });
   }
   return blocks;
+}
+
+// The texts of the screen and of the open layers outside their blocks, in the order of the page: the
+// title of the screen (or of a layer), the texts and pictures of its layout. Their place among the
+// blocks is the first block after them.
+export function textLayouts(): TextLayout[] {
+  const texts: TextLayout[] = [];
+  const blocks = [...document.querySelectorAll<HTMLElement>('#t-main .t-block[data-block], dialog.t-layer[open] .t-block[data-block]')];
+  const nodes = document.querySelectorAll<HTMLElement>([
+    '#t-main > article.t-screen h1', '#t-main > article.t-screen :is([data-t-field], [data-t-duration], img)',
+    'dialog.t-layer[open] > .t-dialog-title'
+  ].join(', '));
+  for (const node of nodes) {
+    // Within a block, within another text, or not drawn (display: none) and so not read either.
+    if (node.closest('.t-block[data-block]') || node.parentElement?.closest('[data-t-field], [data-t-duration]') || !node.getClientRects().length) continue;
+    const image = node instanceof HTMLImageElement;
+    const kind: TextLayout['kind'] = node.matches('h1, .t-dialog-title') ? 'title' : image ? 'image' : 'field';
+    if (kind === 'field' && node.closest('[data-t-duration]') && !node.textContent?.trim()) continue;
+    // A text said with a player label before it (« Partie » before a part's number) is read with it.
+    const label = !image && node.previousElementSibling?.matches('[data-t-label]') ? `${node.previousElementSibling.textContent ?? ''} ` : '';
+    const text = (image ? node.getAttribute('alt') ?? '' : label + (node.textContent ?? '')).replace(/\s+/g, ' ').trim().slice(0, 200);
+    const before = blocks.find((block) => node.compareDocumentPosition(block) & Node.DOCUMENT_POSITION_FOLLOWING && !node.contains(block));
+    texts.push({
+      kind, path: kind === 'field' ? node.dataset.tField ?? 'duration' : null, text, rect: rectOf(node),
+      layer: node.closest<HTMLElement>('dialog.t-layer')?.dataset.layer ?? null,
+      read: !node.closest('[aria-hidden="true"]') && text !== '',
+      before: before?.dataset.block ?? null
+    });
+  }
+  return texts;
 }
 
 // What a wheel at that point would scroll: the nearest box under it that can still go that way,

@@ -37,7 +37,9 @@ export type FileContent = TextFile | BinaryFile;
 // Project-relative POSIX path → content. Operations never mutate it: they return a new map.
 export type Files = ReadonlyMap<string, FileContent>;
 
-export interface Author { kind: 'human' | 'agent' | 'external' | 'system'; name?: string }
+// chat: the conversation of Elabora's own chat the agent writes in (ELABORA_CHAT): its changes join
+// the batch of that conversation's current turn.
+export interface Author { kind: 'human' | 'agent' | 'external' | 'system'; name?: string; chat?: string }
 
 // Hashes (sha256:…) of a touched file before and after a change; null when it did not exist.
 export interface FileHash { path: string; before: string | null; after: string | null }
@@ -79,8 +81,10 @@ export interface UndoEntry extends Change {
   undoes: { batch?: string; changes: string[] };
   skipped: SkippedOp[];
 }
-// Written when the user asks the AI for something: closes the batch and labels the next one.
-export interface MarkEntry { type: 'mark'; seq: number; id: string; at: string; author: Author; request: string }
+// Written when the user asks the AI for something: closes the batch and labels the next one. With
+// chat, it opens a turn of Elabora's chat: its id is the turn's, and the batch of every change the
+// conversation's agent makes until the next turn.
+export interface MarkEntry { type: 'mark'; seq: number; id: string; at: string; author: Author; request: string; chat?: string }
 
 export type ChangeLike = ChangeEntry | UndoEntry;
 export type JournalEntry = ChangeEntry | UndoEntry | MarkEntry;

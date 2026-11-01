@@ -6,12 +6,13 @@ export interface DownloadView {
   update?: 'absent' | 'current' | 'available' | 'required';
 
   supported?: boolean;           // false: listed for explanation/removal, never offered for install
-  id: string;                    // <kind>-<language> (voices-fr, aligner-en), or <kind> without a language
+  id: string;                    // <kind>-<language> (voices-fr, aligner-en), <kind>-<variant> (agent-opencode), or <kind> alone
   kind: string;                  // voices, aligner, transcriber
   title: string;                 // the kind, in English: « Local voices »
   serves: string;                // what it is for
   without: string;               // what happens without it
   language: string | null;       // primary language subtag, or none
+  variant?: string;              // a kind's downloads that are not by language: which one (an agent: opencode)
   model: string;                 // what it is, as a sidecar records it
   contents?: { id: string; name: string; gender?: 'female' | 'male' }[]; // what it holds (a language's voices)
   installed: boolean;

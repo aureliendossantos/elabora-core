@@ -2,13 +2,13 @@
 
 A coding agent with a shell (Claude Code, Codex, in a terminal or in their desktop apps) needs nothing from here: the Elabora app opens it in the course's folder with a request that names the `elabora` command, and the course's `AGENTS.md` (read by Codex, and by Claude Code through `CLAUDE.md`) says the rest. A plugin for them was tried on 29 Oct 2026 and removed on 31 Oct: it added almost nothing to that, and could fail where the command alone works.
 
-Claude, the desktop app, has no shell. [`claude-desktop/`](claude-desktop/) is its extension, an MCP bundle (`.mcpb`): Claude's chat (and Cowork) then works on the courses the author picks, with the tools, rules and skills of the Elabora installed on the computer. It carries no copy of Elabora.
+Claude, the desktop app, has no shell. [`claude-desktop/`](claude-desktop/) is its extension, an MCP bundle (`.mcpb`): Claude's chat (and Cowork) then works on the author's courses, with the tools, rules and skills of the Elabora installed on the computer. It carries no copy of Elabora.
 
 ## The extension
 
-`manifest.json` (MCPB 0.3) runs `server/launch.cjs` with Claude's own Node. The launcher finds the app (`/Applications/Elabora.app` or `~/Applications/Elabora.app` on macOS; `%LOCALAPPDATA%\Programs\elabora` on Windows, where it runs `Elabora.exe` as Node because a `.cmd` cannot start without a shell) and starts `elabora mcp` on the folders the author picked (`user_config.courses`, several allowed). `ELABORA_COMMAND` names another `elabora` (a checkout, a test). Several folders, or a folder of courses such as the library, need an Elabora whose `elabora mcp` takes several folders (after 0.3.0); 0.3.0 serves one course folder.
+`manifest.json` (MCPB 0.3) runs `server/launch.cjs` with Claude's own Node. The launcher finds the app (`/Applications/Elabora.app` or `~/Applications/Elabora.app` on macOS; `%LOCALAPPDATA%\Programs\elabora` on Windows, where it runs `Elabora.exe` as Node because a `.cmd` cannot start without a shell) and starts `elabora mcp` with no folder: the server serves the courses Elabora knows, its library and the folders the app opened (`elabora-app.json` in Elabora's data folder), read again at each call. The manifest has no `user_config`, so Claude installs it without asking anything. Folders given after the launcher are served instead; `ELABORA_COMMAND` names another `elabora` (a checkout, a test). It needs an Elabora whose `elabora mcp` serves its courses with no folder (after 0.4.0).
 
-- **From the app**: Réglages › Outils pour les IA › « Installer dans Claude », shown when Claude's app is found. The app carries this folder (`claude-extension/` in its resources), packs it into an `.mcpb` and opens it with Claude, which installs it and asks for the folders (elabora-app `src/main/claude-extension.ts`).
+- **From the app**: Réglages › Outils pour les IA › « Installer dans Claude », shown when Claude's app is found. The app carries this folder (`claude-extension/` in its resources), packs it into an `.mcpb` and opens it with Claude, which installs it (elabora-app `src/main/claude-extension.ts`).
 - **From the site**: `/downloads/elabora.mcpb`, which `pnpm run mcpb` builds here (`dist/elabora.mcpb`, validated by the official `mcpb` tool).
 
 ```bash
