@@ -3018,6 +3018,11 @@ export type StepsProps = {
    * @default 'carousel'
    */
   presentation?: 'carousel' | 'timeline' | 'scroll';
+  /**
+   * carousel and scroll: each step shows its number (the intro and the summary have none).
+   * @default true
+   */
+  numbered?: boolean;
   /** The steps, in order. */
   items: StepsItem[];
   /** carousel: the first item, before the steps (what the process is for, what to look for). The sequence's item intro. */
@@ -3036,11 +3041,6 @@ export type StepsProps = {
     /** What the picture shows; empty: decorative. */
     alt?: string;
   };
-  /**
-   * carousel and scroll: each step shows its number (the intro and the summary have none).
-   * @default true
-   */
-  numbered?: boolean;
   /**
    * scroll: how the figure follows the steps. replace: each step's image replaces the one before (a cross-fade; a step without image keeps it); build: each step's image is a layer added over figureImage, step n showing layers 1 to n; focus: figureImage alone, each step's region outlined and the rest dimmed.
    * @default 'replace'
