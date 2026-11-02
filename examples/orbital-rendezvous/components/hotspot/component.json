@@ -16,7 +16,7 @@
       "label": { "type": "string", "minLength": 3, "maxLength": 60, "x-translatable": true, "description": "Accessible name of the button: what selecting it shows, with the marker number (Orbit 1: Space Station)." },
       "x": { "type": "number", "minimum": 0, "maximum": 100, "description": "Horizontal centre of the marker, in % of the figure width." },
       "y": { "type": "number", "minimum": 0, "maximum": 100, "description": "Vertical centre of the marker, in % of the figure height." },
-      "accent": { "type": "string", "x-kind": "token", "x-token-prefix": "color.", "x-group": "design", "default": "color.text", "description": "Colour of the pulse around the marker." }
+      "accent": { "type": "string", "x-kind": "token", "x-token-prefix": "color.", "x-advanced": true, "default": "color.text", "description": "Colour of the pulse around the marker." }
     }
   },
   "fallback": [

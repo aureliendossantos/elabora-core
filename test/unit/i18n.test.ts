@@ -182,14 +182,14 @@ test('translation: the names of the charter\'s styles and variants and of a comp
   const file = 'components/network-path/component.json';
   const component = readJSON(dir, file);
   component.styles = { large: { label: 'Large', description: 'Les équipements en grand' } };
-  component.props.properties.sens = { type: 'string', title: 'Sens', enum: ['ligne', 'colonne', 'auto'], default: 'auto', 'x-group': 'design', 'x-enum-labels': { ligne: 'En ligne', colonne: 'En colonne' } };
+  component.props.properties.sens = { type: 'string', title: 'Sens', enum: ['ligne', 'colonne', 'auto'], default: 'auto', 'x-group': 'Disposition', 'x-enum-labels': { ligne: 'En ligne', colonne: 'En colonne' } };
   writeJSON(dir, file, component);
   const project = loadProjectFromDir(dir);
   const units = extractUnits(project).filter((u) => /^(theme|component)\./.test(u.id));
   const at = (id: string) => units.find((u) => u.id === id);
   assert.deepEqual(
-    ['theme.style.text.encadre.label', 'theme.style.text.encadre', 'theme.style.text.note', 'theme.backdrop.variant.calme.label', 'component.network-path.style.large.label', 'component.network-path.prop.sens.value.colonne'].map((id) => at(id)?.pointer),
-    ['/theme/styles/text/encadre/label', '/theme/styles/text/encadre/description', '/theme/styles/text/note', '/theme/backdrop/variants/calme/label', '/styles/large/label', '/props/properties/sens/x-enum-labels/colonne']
+    ['theme.style.text.encadre.label', 'theme.style.text.encadre', 'theme.style.text.note', 'theme.backdrop.variant.calme.label', 'component.network-path.style.large.label', 'component.network-path.prop.sens.value.colonne', 'component.network-path.prop.sens.group'].map((id) => at(id)?.pointer),
+    ['/theme/styles/text/encadre/label', '/theme/styles/text/encadre/description', '/theme/styles/text/note', '/theme/backdrop/variants/calme/label', '/styles/large/label', '/props/properties/sens/x-enum-labels/colonne', '/props/properties/sens/x-group']
   );
   assert.equal(at('theme.style.text.encadre.label')?.maxLength, 40);
   assert.equal(at('component.network-path.prop.sens.value.auto'), undefined, 'a value without words shows capitalised: nothing to translate');

@@ -58,16 +58,19 @@
       "description": "Shape of the frame on wide containers. auto: the object sets its height with host.requestHeight(px). fill: the frame takes the height of its layout slot."
     },
     "narrowAspectRatio": {
+      "x-advanced": true,
       "$ref": "../defs.schema.json#/$defs/aspectRatio",
       "description": "Shape when the block is narrower than 640 px (phones, narrow slots). Typically 3:4, 2:3 or auto. Defaults to aspectRatio."
     },
     "minHeight": {
+      "x-advanced": true,
       "type": "integer",
       "minimum": 120,
       "maximum": 2000,
       "description": "Minimum frame height in px."
     },
     "maxHeight": {
+      "x-advanced": true,
       "type": "integer",
       "minimum": 120,
       "maximum": 4000,
@@ -84,6 +87,7 @@
       "description": "Use the object's score event in the course score."
     },
     "weight": {
+      "x-advanced": true,
       "type": "number",
       "minimum": 0.1,
       "maximum": 10,

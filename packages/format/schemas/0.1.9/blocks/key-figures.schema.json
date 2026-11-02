@@ -34,6 +34,7 @@
       "description": "Where the data comes from, shown under the chart."
     },
     "items": {
+      "x-group": "data",
       "type": "array",
       "minItems": 1,
       "maxItems": 4,
@@ -119,6 +120,7 @@
       }
     },
     "highlight": {
+      "x-group": "data",
       "type": "string",
       "pattern": "^[a-z0-9-]{1,24}$",
       "description": "Id of the figure that carries the idea: it takes the accent colour, the others step back."
@@ -128,6 +130,7 @@
       "description": "Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came."
     },
     "revealOnBeats": {
+      "x-group": "data",
       "type": "boolean",
       "default": true,
       "description": "Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false)."

@@ -25,7 +25,7 @@
         }
       }
     },
-    "side": { "enum": ["start", "end"], "default": "start", "x-group": "design", "description": "Where the portrait is: start (left in left-to-right languages) or end, the bubbles beside it." },
-    "kind": { "enum": ["speech", "thought"], "default": "speech", "x-group": "design", "description": "speech: speech bubbles; thought: thought bubbles (what the character thinks, not says)." }
+    "side": { "enum": ["start", "end"], "default": "start", "description": "Where the portrait is: start (left in left-to-right languages) or end, the bubbles beside it." },
+    "kind": { "enum": ["speech", "thought"], "default": "speech", "description": "speech: speech bubbles; thought: thought bubbles (what the character thinks, not says)." }
   }
 }

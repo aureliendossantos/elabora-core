@@ -15,8 +15,7 @@
         "enum": ["stack", "split"], "x-enum-labels": {"stack": "Stacked", "split": "Page on the right"},
         "default": "stack",
         "title": "Arrangement",
-        "description": "stack: title, lead and page one under the other, on the left of the slide; split: title and lead on the left, the page on the right.",
-        "x-group": "design"
+        "description": "stack: title, lead and page one under the other, on the left of the slide; split: title and lead on the left, the page on the right."
       }
     }
   },

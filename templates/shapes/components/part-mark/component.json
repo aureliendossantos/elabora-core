@@ -18,8 +18,7 @@
         "enum": ["circle", "quarter", "half", "square"], "x-enum-labels": {"circle": "Circle", "quarter": "Quarter circle", "half": "Half circle", "square": "Square"},
         "default": "circle",
         "title": "Shape",
-        "description": "The flat shape behind the number.",
-        "x-group": "design"
+        "description": "The flat shape behind the number."
       },
       "colour": {
         "type": "string",
@@ -28,7 +27,7 @@
         "default": "color.shape-1",
         "title": "Colour",
         "description": "The colour of the shape (a theme token). The number stays in the ink colour: keep to the light shape colours.",
-        "x-group": "design"
+        "x-advanced": true
       }
     }
   },

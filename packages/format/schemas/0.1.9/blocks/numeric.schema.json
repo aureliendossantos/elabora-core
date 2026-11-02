@@ -9,48 +9,60 @@
   "additionalProperties": false,
   "properties": {
     "questionRef": {
+      "x-group": "question",
       "$ref": "../defs.schema.json#/$defs/planId",
       "description": "Id of a numeric question of the plan. When set, do not set stem, answer, tolerance, unit, feedback or misconceptions."
     },
     "stem": {
+      "x-group": "question",
       "$ref": "../defs.schema.json#/$defs/markdown",
       "x-translatable": true
     },
     "answer": {
+      "x-group": "question",
       "type": "number",
       "description": "Expected value."
     },
     "tolerance": {
+      "x-group": "question",
       "$ref": "../defs.schema.json#/$defs/numericTolerance"
     },
     "unit": {
+      "x-group": "question",
       "type": "string",
       "maxLength": 30,
       "x-translatable": true,
       "description": "Unit shown after the input, for example rpm."
     },
     "feedback": {
+      "x-group": "question",
       "$ref": "../defs.schema.json#/$defs/numericFeedback"
     },
     "misconceptions": {
+      "x-group": "question",
       "$ref": "../defs.schema.json#/$defs/misconceptions"
     },
     "objective": {
+      "x-group": "scoring",
       "$ref": "../defs.schema.json#/$defs/planId",
       "description": "Plan objective measured. Taken from the plan question when questionRef is used."
     },
     "scored": {
+      "x-group": "scoring",
       "type": "boolean",
       "default": true,
       "description": "Counts in the course score."
     },
     "weight": {
+      "x-group": "scoring",
+      "x-advanced": true,
       "type": "number",
       "minimum": 0.1,
       "maximum": 10,
       "default": 1
     },
     "attempts": {
+      "x-group": "scoring",
       "type": "integer",
       "minimum": 1,
       "maximum": 5,
@@ -58,6 +70,8 @@
       "description": "Tries before the answer is final."
     },
     "showCorrectAnswer": {
+      "x-group": "scoring",
+      "x-advanced": true,
       "type": "boolean",
       "default": true,
       "description": "After the last try, show the expected value."

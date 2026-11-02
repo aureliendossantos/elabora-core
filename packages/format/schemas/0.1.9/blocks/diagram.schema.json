@@ -34,6 +34,7 @@
       "description": "Where the diagram comes from, shown under it."
     },
     "mermaid": {
+      "x-group": "data",
       "type": "string",
       "minLength": 1,
       "maxLength": 20000,
@@ -42,6 +43,7 @@
       "description": "The diagram in Mermaid syntax, its words in the course language."
     },
     "labels": {
+      "x-group": "data",
       "type": "object",
       "description": "Words of nodes and edges by id (as Pele names them: a flowchart node's id, an edge's L_<from>_<to>_<n>, a mind map node's words), replacing the Mermaid text's. Translations write here.",
       "additionalProperties": {
@@ -54,6 +56,7 @@
       }
     },
     "beats": {
+      "x-group": "data",
       "type": "array",
       "maxItems": 40,
       "description": "Narrated screens: nodes brought by the voice.",
@@ -77,6 +80,7 @@
       }
     },
     "highlight": {
+      "x-group": "data",
       "type": "string",
       "pattern": "^[A-Za-z0-9_-]{1,64}$",
       "description": "Id of the node that carries the idea (an outcome): it takes the accent colour."
@@ -86,6 +90,7 @@
       "description": "Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came."
     },
     "revealOnBeats": {
+      "x-group": "data",
       "type": "boolean",
       "default": true,
       "description": "Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false)."

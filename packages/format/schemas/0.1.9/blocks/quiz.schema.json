@@ -9,17 +9,18 @@
   "additionalProperties": false,
   "properties": {
     "presentation": {
+      "x-group": "question",
       "enum": ["text", "images", "image"],
       "default": "text",
-      "x-group": "design",
       "description": "text: the options as a list. images: a grid of picture cards, each option with its image and alt. image: one picture (image, alt) with the options as zones placed at their x and y."
     },
-    "image": { "$ref": "../defs.schema.json#/$defs/assetPath", "description": "image: the picture the zones are placed on." },
+    "image": { "x-group": "options", "$ref": "../defs.schema.json#/$defs/assetPath", "description": "image: the picture the zones are placed on." },
     "alt": { "type": "string", "maxLength": 250, "x-translatable": true, "description": "image: what the picture shows, without naming the zones' answers." },
-    "questionRef": { "$ref": "../defs.schema.json#/$defs/planId", "description": "Id of a plan question. When set, do not set stem, mode or options." },
-    "stem": { "$ref": "../defs.schema.json#/$defs/markdown", "x-translatable": true },
-    "mode": { "enum": ["single", "multiple"] },
+    "questionRef": { "x-group": "question", "$ref": "../defs.schema.json#/$defs/planId", "description": "Id of a plan question. When set, do not set stem, mode or options." },
+    "stem": { "x-group": "question", "$ref": "../defs.schema.json#/$defs/markdown", "x-translatable": true },
+    "mode": { "x-group": "question", "enum": ["single", "multiple"] },
     "options": {
+      "x-group": "options",
       "type": "array",
       "minItems": 2,
       "maxItems": 6,
@@ -39,11 +40,11 @@
         }
       }
     },
-    "objective": { "$ref": "../defs.schema.json#/$defs/planId", "description": "Plan objective measured. Taken from the plan question when questionRef is used." },
-    "scored": { "type": "boolean", "default": true, "description": "Counts in the course score." },
-    "weight": { "type": "number", "minimum": 0.1, "maximum": 10, "default": 1 },
-    "attempts": { "type": "integer", "minimum": 1, "maximum": 5, "default": 1, "description": "Tries before the answer is final." },
-    "showCorrectAnswer": { "type": "boolean", "default": true, "description": "After the last try, highlight the correct options." },
-    "feedbackStyle": { "enum": ["full", "compact"], "default": "full", "description": "How the feedback of the options chosen is shown under the question. full: each option's text in bold, then its feedback. compact: its feedback only, the option being marked where it is (screen readers still hear its text first): about half the room an answered question reserves on a slide, so that two questions fit side by side. With several options' feedback at once (multiple choice), each keeps its text." }
+    "objective": { "x-group": "scoring", "$ref": "../defs.schema.json#/$defs/planId", "description": "Plan objective measured. Taken from the plan question when questionRef is used." },
+    "scored": { "x-group": "scoring", "type": "boolean", "default": true, "description": "Counts in the course score." },
+    "weight": { "x-group": "scoring", "x-advanced": true, "type": "number", "minimum": 0.1, "maximum": 10, "default": 1 },
+    "attempts": { "x-group": "scoring", "type": "integer", "minimum": 1, "maximum": 5, "default": 1, "description": "Tries before the answer is final." },
+    "showCorrectAnswer": { "x-group": "scoring", "x-advanced": true, "type": "boolean", "default": true, "description": "After the last try, highlight the correct options." },
+    "feedbackStyle": { "x-group": "scoring", "x-advanced": true, "enum": ["full", "compact"], "default": "full", "description": "How the feedback of the options chosen is shown under the question. full: each option's text in bold, then its feedback. compact: its feedback only, the option being marked where it is (screen readers still hear its text first): about half the room an answered question reserves on a slide, so that two questions fit side by side. With several options' feedback at once (multiple choice), each keeps its text." }
   }
 }

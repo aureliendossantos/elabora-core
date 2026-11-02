@@ -12,7 +12,6 @@
     "presentation": {
       "enum": ["carousel", "timeline", "scroll"],
       "default": "carousel",
-      "x-group": "design",
       "description": "carousel: one step at a time, Previous and Next, the intro and summary first and last; timeline: the steps one under the other on a line, their date before them; scroll: the text scrolls beside a figure that follows it (above it, a picture per step, in narrow places, in slides and with less motion)."
     },
     "items": {
@@ -48,6 +47,7 @@
       }
     },
     "intro": {
+      "x-advanced": true,
       "type": "object",
       "additionalProperties": false,
       "required": ["title"],
@@ -60,6 +60,7 @@
       }
     },
     "summary": {
+      "x-advanced": true,
       "type": "object",
       "additionalProperties": false,
       "required": ["title"],
@@ -71,15 +72,15 @@
         "alt": { "type": "string", "maxLength": 250, "x-translatable": true, "description": "What the picture shows; empty: decorative." }
       }
     },
-    "numbered": { "type": "boolean", "default": true, "x-group": "design", "description": "carousel and scroll: each step shows its number (the intro and the summary have none)." },
+    "numbered": { "type": "boolean", "default": true, "description": "carousel and scroll: each step shows its number (the intro and the summary have none)." },
     "figure": {
+      "x-group": "figure",
       "enum": ["replace", "build", "focus"],
       "default": "replace",
-      "x-group": "design",
       "description": "scroll: how the figure follows the steps. replace: each step's image replaces the one before (a cross-fade; a step without image keeps it); build: each step's image is a layer added over figureImage, step n showing layers 1 to n; focus: figureImage alone, each step's region outlined and the rest dimmed."
     },
-    "figureImage": { "$ref": "../defs.schema.json#/$defs/assetPath", "description": "scroll: the base of the figure (build: under the layers; focus: the picture whose regions the steps outline)." },
+    "figureImage": { "x-group": "figure", "$ref": "../defs.schema.json#/$defs/assetPath", "description": "scroll: the base of the figure (build: under the layers; focus: the picture whose regions the steps outline)." },
     "figureAlt": { "type": "string", "maxLength": 250, "x-translatable": true, "description": "What figureImage shows. Required with figureImage." },
-    "side": { "enum": ["end", "start"], "default": "end", "x-group": "design", "description": "scroll: where the figure sits beside the text on wide places (end: after it, on the right in a left-to-right language; start: before it)." }
+    "side": { "x-group": "figure", "enum": ["end", "start"], "default": "end", "description": "scroll: where the figure sits beside the text on wide places (end: after it, on the right in a left-to-right language; start: before it)." }
   }
 }

@@ -11,7 +11,6 @@
     "presentation": {
       "enum": ["pairs", "categories", "order"],
       "default": "pairs",
-      "x-group": "design",
       "description": "pairs: each item goes to its own target, each target takes one item. categories: two to four targets, each taking several items. order: no targets, the items are put in order (written in the right order, shown shuffled)."
     },
     "stem": {
@@ -55,10 +54,10 @@
       }
     },
     "feedback": { "$ref": "../defs.schema.json#/$defs/activityFeedback" },
-    "objective": { "$ref": "../defs.schema.json#/$defs/planId", "description": "Plan objective measured." },
-    "scored": { "type": "boolean", "default": true, "description": "Counts in the course score (the share of its items placed right)." },
-    "weight": { "type": "number", "minimum": 0.1, "maximum": 10, "default": 1 },
-    "attempts": { "type": "integer", "minimum": 1, "maximum": 5, "default": 1, "description": "Tries before the placements are final." },
-    "showCorrectAnswer": { "type": "boolean", "default": true, "description": "After the last try, each item placed wrong says where it belonged." }
+    "objective": { "x-group": "scoring", "$ref": "../defs.schema.json#/$defs/planId", "description": "Plan objective measured." },
+    "scored": { "x-group": "scoring", "type": "boolean", "default": true, "description": "Counts in the course score (the share of its items placed right)." },
+    "weight": { "x-group": "scoring", "x-advanced": true, "type": "number", "minimum": 0.1, "maximum": 10, "default": 1 },
+    "attempts": { "x-group": "scoring", "type": "integer", "minimum": 1, "maximum": 5, "default": 1, "description": "Tries before the placements are final." },
+    "showCorrectAnswer": { "x-group": "scoring", "x-advanced": true, "type": "boolean", "default": true, "description": "After the last try, each item placed wrong says where it belonged." }
   }
 }

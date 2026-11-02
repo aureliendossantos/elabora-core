@@ -50,8 +50,7 @@
             "highlight": {
               "type": "boolean",
               "title": "Mettre en évidence",
-              "default": false,
-              "x-group": "design"
+              "default": false
             }
           }
         }

@@ -12,7 +12,6 @@
     "presentation": {
       "enum": ["accordion", "tabs", "cards", "stack"],
       "default": "accordion",
-      "x-group": "design",
       "description": "accordion: panels that open in place (allowMultiple: several at once); tabs: a row of tabs, one panel shown at a time in the room of the tallest (an accordion in containers narrower than 560 px); cards: a grid of flip cards, title and image in front, text behind (two columns on phones); stack: the flip cards one at a time, with Previous, Next and where the learner is."
     },
     "prompt": { "type": "string", "maxLength": 300, "x-translatable": true, "description": "What to think about before opening or turning over (above the panels): « Before you turn each card, say what you think it means. »" },
@@ -34,7 +33,7 @@
         }
       }
     },
-    "allowMultiple": { "type": "boolean", "default": true, "description": "accordion: allow several panels open at once." },
-    "hint": { "type": "boolean", "default": true, "x-group": "design", "description": "cards and stack: show « Turn the card over » on each card (else only its button's name says it, for screen readers)." }
+    "allowMultiple": { "x-advanced": true, "type": "boolean", "default": true, "description": "accordion: allow several panels open at once." },
+    "hint": { "x-advanced": true, "type": "boolean", "default": true, "description": "cards and stack: show « Turn the card over » on each card (else only its button's name says it, for screen readers)." }
   }
 }

@@ -18,8 +18,7 @@
         "default": "scallop",
         "title": "Shape",
         "description": "The paper shape under the number.",
-        "x-enum-labels": { "disc": "Disc", "scallop": "Scalloped disc", "star": "Star" },
-        "x-group": "design"
+        "x-enum-labels": { "disc": "Disc", "scallop": "Scalloped disc", "star": "Star" }
       },
       "paper": {
         "type": "string",
@@ -28,7 +27,7 @@
         "default": "color.paper-mustard",
         "title": "Paper",
         "description": "The colour of the shape (a theme token). The number stays in ink: keep to the light papers.",
-        "x-group": "design"
+        "x-advanced": true
       }
     }
   },

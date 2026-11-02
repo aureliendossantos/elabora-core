@@ -14,7 +14,7 @@
       "label": { "type": "string", "minLength": 1, "maxLength": 40, "x-translatable": true, "description": "Short label above the figure." },
       "value": { "type": "string", "minLength": 1, "maxLength": 16, "x-translatable": true, "description": "The figure, with its operator." },
       "body": { "type": "string", "x-kind": "markdown", "minLength": 1, "maxLength": 300, "x-translatable": true, "description": "One sentence: the configuration that gives this ratio." },
-      "accent": { "type": "string", "x-kind": "token", "x-token-prefix": "color.", "x-group": "design", "default": "color.copper", "description": "Colour of the figure and of the top edge (a colour token of the theme)." }
+      "accent": { "type": "string", "x-kind": "token", "x-token-prefix": "color.", "x-advanced": true, "default": "color.copper", "description": "Colour of the figure and of the top edge (a colour token of the theme)." }
     }
   },
   "fallback": [

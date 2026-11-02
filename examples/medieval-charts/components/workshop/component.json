@@ -81,7 +81,6 @@
                 "note"
               ],
               "default": "note",
-              "x-group": "design",
               "description": "name and name-rubric: a harbour name written from its point (x, y), in black or red; note: a short italic note centred on its point.",
               "x-enum-labels": {
                 "name": "Place name",

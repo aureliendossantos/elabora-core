@@ -11,7 +11,6 @@
     "presentation": {
       "enum": ["statement", "ruled", "quote", "image"],
       "default": "statement",
-      "x-group": "design",
       "description": "statement: large text; ruled: between two rules; quote: a quotation mark before it; image: over image, edge to edge of the window (of the slide in slides), on the theme's scrim."
     },
     "markdown": { "type": "string", "$ref": "../defs.schema.json#/$defs/markdown", "maxLength": 400, "x-translatable": true, "description": "The statement, one or two sentences. Use markdown or textRef, not both." },
@@ -24,6 +23,6 @@
     "decorative": { "type": "boolean", "default": false, "description": "image presentation: true when the picture carries no information beyond the text." },
     "generated": { "type": "boolean", "default": false, "description": "True if the picture or the portrait was produced by an AI model; the player shows a mark and the build report lists it." },
     "focus": { "$ref": "../defs.schema.json#/$defs/focus", "description": "image presentation: where the subject of the picture is, kept in view when it is cropped." },
-    "align": { "enum": ["center", "start"], "default": "center", "x-group": "design", "description": "Where the text sits: centred, or at the start of the line." }
+    "align": { "enum": ["center", "start"], "default": "center", "description": "Where the text sits: centred, or at the start of the line." }
   }
 }

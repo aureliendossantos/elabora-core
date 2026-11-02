@@ -11,10 +11,9 @@
     "presentation": {
       "enum": ["line", "ornament", "number", "space"],
       "default": "line",
-      "x-group": "design",
       "description": "line: a thin rule; ornament: the theme's drawing (a small mark by default); number: the part's number, counted from the first number divider of the screen (01, 02…); space: room only."
     },
-    "size": { "enum": ["medium", "small", "large"], "default": "medium", "x-group": "design", "description": "How much room it takes above and below." },
-    "restart": { "type": "boolean", "default": false, "description": "number: count from 01 again here." }
+    "size": { "enum": ["medium", "small", "large"], "default": "medium", "description": "How much room it takes above and below." },
+    "restart": { "x-advanced": true, "type": "boolean", "default": false, "description": "number: count from 01 again here." }
   }
 }

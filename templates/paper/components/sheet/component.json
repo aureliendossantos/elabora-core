@@ -16,8 +16,7 @@
         "default": "stack",
         "title": "Arrangement",
         "description": "cover: a large sheet, the title set large; stack: one sheet with the title, the lead and the page; split: the sheet on the left, the side slot on the right.",
-        "x-enum-labels": { "cover": "Cover", "stack": "Sheet", "split": "Sheet and side" },
-        "x-group": "design"
+        "x-enum-labels": { "cover": "Cover", "stack": "Sheet", "split": "Sheet and side" }
       },
       "paper": {
         "type": "string",
@@ -26,7 +25,7 @@
         "default": "color.paper",
         "title": "Paper",
         "description": "The colour of the sheet (a theme token). The text stays in ink: keep to the light papers.",
-        "x-group": "design"
+        "x-advanced": true
       },
       "tilt": {
         "type": "string",
@@ -34,8 +33,7 @@
         "default": "left",
         "title": "Tilt",
         "description": "How the sheet was laid down: straight, or turned a little to the left or the right.",
-        "x-enum-labels": { "none": "Straight", "left": "Turned left", "right": "Turned right" },
-        "x-group": "design"
+        "x-enum-labels": { "none": "Straight", "left": "Turned left", "right": "Turned right" }
       }
     }
   },

@@ -35,6 +35,7 @@
       "description": "Where the data comes from, shown under the chart."
     },
     "of": {
+      "x-group": "data",
       "type": "integer",
       "minimum": 2,
       "maximum": 200,
@@ -42,12 +43,14 @@
       "description": "How many icons in all."
     },
     "part": {
+      "x-group": "data",
       "type": "integer",
       "minimum": 0,
       "maximum": 200,
       "description": "How many in the accent colour."
     },
     "figure": {
+      "x-group": "data",
       "type": "string",
       "minLength": 1,
       "maxLength": 24,
@@ -55,6 +58,7 @@
       "description": "The figure beside the icons (\"1 in 10\"). Default: the percentage."
     },
     "label": {
+      "x-group": "data",
       "type": "string",
       "minLength": 1,
       "maxLength": 140,
@@ -62,6 +66,7 @@
       "description": "What the figure counts, under it (\"clicked the link of the test email\")."
     },
     "icon": {
+      "x-group": "data",
       "enum": [
         "person",
         "circle",
@@ -71,12 +76,15 @@
       "description": "The icon."
     },
     "columns": {
+      "x-group": "data",
+      "x-advanced": true,
       "type": "integer",
       "minimum": 5,
       "maximum": 25,
       "description": "Icons per row. Default 10, or 20 from 100 icons."
     },
     "at": {
+      "x-group": "data",
       "$ref": "../defs.schema.json#/$defs/anchor",
       "description": "Narrated screens: the moment the counted icons fill in."
     },
@@ -85,6 +93,7 @@
       "description": "Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came."
     },
     "revealOnBeats": {
+      "x-group": "data",
       "type": "boolean",
       "default": true,
       "description": "Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false)."

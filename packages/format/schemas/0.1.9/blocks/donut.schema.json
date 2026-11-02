@@ -34,6 +34,7 @@
       "description": "Where the data comes from, shown under the chart."
     },
     "parts": {
+      "x-group": "data",
       "type": "array",
       "minItems": 2,
       "maxItems": 6,
@@ -72,17 +73,21 @@
       }
     },
     "highlight": {
+      "x-group": "data",
       "type": "string",
       "pattern": "^[a-z0-9-]{1,24}$",
       "description": "Id of the part that carries the idea: it takes the accent colour, the others step back."
     },
     "unit": {
+      "x-group": "data",
       "type": "string",
       "maxLength": 12,
       "x-translatable": true,
       "description": "Unit written after the values (min, kg, €). \"%\" writes percentages as the language does (62 %, 62%)."
     },
     "decimals": {
+      "x-group": "data",
+      "x-advanced": true,
       "type": "integer",
       "minimum": 0,
       "maximum": 3,
@@ -90,6 +95,7 @@
       "description": "Decimals shown."
     },
     "center": {
+      "x-group": "data",
       "enum": [
         "highlight",
         "total"
@@ -98,6 +104,7 @@
       "description": "What the centre of the ring says at rest."
     },
     "totalLabel": {
+      "x-group": "data",
       "type": "string",
       "minLength": 1,
       "maxLength": 40,
@@ -109,6 +116,7 @@
       "description": "Narrated screens: when the voice is done with the items, so they all stand again and the highlight takes the colour. Default: the end of the line where the last item came."
     },
     "revealOnBeats": {
+      "x-group": "data",
       "type": "boolean",
       "default": true,
       "description": "Narrated screens with item moments: each item appears at its moment (true), or every item is there from the start and the moments only move the spotlight (false)."

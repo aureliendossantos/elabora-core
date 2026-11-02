@@ -8,6 +8,18 @@ test('every schema compiles in strict mode', () => {
   for (const t of BLOCK_TYPES) assert.ok(getSchema(`blocks/${t}`), t);
 });
 
+test('a built-in block\'s settings name their section among the editor\'s, and their rank (x-group, x-advanced)', () => {
+  const sections = new Set(['question', 'options', 'scoring', 'data', 'figure', 'markers']);
+  for (const t of BLOCK_TYPES) {
+    const properties = (getSchema(`blocks/${t}`)?.properties ?? {}) as Record<string, Record<string, unknown>>;
+    for (const [key, prop] of Object.entries(properties)) {
+      if ('x-group' in prop) assert.ok(sections.has(prop['x-group'] as string), `${t}.${key}: ${String(prop['x-group'])}`);
+      if ('x-advanced' in prop) assert.equal(prop['x-advanced'], true, `${t}.${key}`);
+    }
+  }
+  assert.equal((getSchema('blocks/quiz')?.properties as Record<string, Record<string, unknown>>).weight!['x-advanced'], true, 'a quiz\'s weight is rare');
+});
+
 test('every LMS profile matches the profile schema', () => {
   const ps = listProfiles();
   assert.ok(ps.length >= 11);

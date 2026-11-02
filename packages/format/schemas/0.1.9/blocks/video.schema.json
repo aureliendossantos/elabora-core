@@ -16,7 +16,7 @@
     "loop": { "type": "boolean", "default": false, "description": "Plays muted, in a loop, like an animated image: it starts by itself unless the learner prefers reduced motion, and a button pauses it. Its sound is never heard: no captions." },
     "alt": { "type": "string", "maxLength": 250, "description": "Text alternative of a loop or of a video without sound: what it shows. Required for a loop unless decorative.", "x-translatable": true },
     "decorative": { "type": "boolean", "default": false, "description": "True only if the video carries no information: it plays as a loop, ignored by assistive technologies, with nothing to caption, transcribe or describe." },
-    "poster": { "$ref": "../defs.schema.json#/$defs/assetPath" },
+    "poster": { "x-advanced": true, "$ref": "../defs.schema.json#/$defs/assetPath" },
     "generated": { "type": "boolean", "default": false }
   }
 }

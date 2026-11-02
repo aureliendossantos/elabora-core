@@ -13,8 +13,8 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "count": { "type": "integer", "enum": [2, 3], "default": 2, "x-group": "design", "description": "Two or three columns." },
-    "widths": { "enum": ["equal", "wide-start", "wide-end"], "default": "equal", "x-group": "design", "description": "equal; wide-start: the first column is twice as wide; wide-end: the last column is twice as wide." },
-    "align": { "enum": ["start", "center"], "default": "start", "x-group": "design", "description": "Vertical alignment of the columns: at their top, or centred on each other." }
+    "count": { "type": "integer", "enum": [2, 3], "default": 2, "description": "Two or three columns." },
+    "widths": { "enum": ["equal", "wide-start", "wide-end"], "default": "equal", "description": "equal; wide-start: the first column is twice as wide; wide-end: the last column is twice as wide." },
+    "align": { "enum": ["start", "center"], "default": "start", "description": "Vertical alignment of the columns: at their top, or centred on each other." }
   }
 }
