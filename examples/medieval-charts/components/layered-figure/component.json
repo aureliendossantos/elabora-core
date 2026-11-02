@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.9/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.10/component.schema.json",
   "id": "layered-figure",
   "title": "Figure in layers",
   "description": "« Étapes » drawn as one figure that assembles itself as it scrolls into view: figureImage first, then each step's image, a layer drawn over it one after the other (fading, sweeping round, dropping in, wiped from the top), and labels set over the figure at given positions (words, or harbour names written from a point at any angle, as on a chart, or someone's words in a bubble). Square or wide, full size or compact beside the reading column. The steps' titles and texts name the layers for text views and exports; the figure's alt describes it whole. Without scroll-driven animations, with reduced motion, or set to show at once (still), it shows complete.",
@@ -36,7 +36,6 @@
                 "wipe"
               ],
               "default": "fade",
-              "x-group": "design",
               "description": "fade: appears; sweep: drawn round like a compass; drop: falls into place; wipe: drawn from top to bottom.",
               "x-enum-labels": {
                 "fade": "Fade",
@@ -56,7 +55,6 @@
           "wipe"
         ],
         "default": "fade",
-        "x-group": "design",
         "description": "How figureImage appears (see the steps' reveal).",
         "x-enum-labels": {
           "fade": "Fade",
@@ -68,7 +66,6 @@
       "still": {
         "type": "boolean",
         "default": false,
-        "x-group": "design",
         "description": "true: shown complete at once (a figure at the top of a page), without assembling as it scrolls."
       },
       "ratio": {
@@ -76,7 +73,6 @@
         "minimum": 0.5,
         "maximum": 3,
         "default": 1,
-        "x-group": "design",
         "description": "Width ÷ height of the figure and of every layer (1: square; 1.96 for the chart on its skin)."
       },
       "size": {
@@ -85,7 +81,6 @@
           "compact"
         ],
         "default": "full",
-        "x-group": "design",
         "description": "full: as large as the block allows; compact: small enough to see whole with the text around it.",
         "x-enum-labels": {
           "full": "Full",
@@ -133,7 +128,6 @@
                 "bubble-below"
               ],
               "default": "ink",
-              "x-group": "design",
               "description": "ink: small capitals; rubric: small capitals in red; italic: an aside; name and name-rubric: a harbour name as written on a chart, in black or red, starting at its point (x, y) and running at its angle; bubble and bubble-below: someone's words in a speech bubble above or below its point, the tail pointing at it (angle ignored).",
               "x-enum-labels": {
                 "ink": "Ink capitals",

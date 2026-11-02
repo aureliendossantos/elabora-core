@@ -253,15 +253,15 @@ function designUnits(project: Project, placed: ReadonlySet<string>, add: (id: st
 }
 
 // The words of a props schema the inspector shows: each setting's title and description, and those
-// of the fields of its objects and lists; a free object's settings also by group (x-group: a
-// component's is not shown); a component's choices by value (x-enum-labels: a free object's are
-// translated by the blocks that place it, props.enumLabels).
+// of the fields of its objects and lists; the group or section it is in (x-group); a component's
+// choices by value (x-enum-labels: a free object's are translated by the blocks that place it,
+// props.enumLabels).
 function settingWords(schema: unknown, at: string, idBase: string, what: string, owner: 'component' | 'object', addWord: (id: string, pointer: string, text: unknown, note: string) => void): void {
   const walk = (node: unknown, path: string, id: string, name: string): void => {
     if (!isRecord(node)) return;
     addWord(`${id}.title`, `${path}/title`, node.title, `Label of the setting "${name}" of ${what} (the inspector)`);
     addWord(`${id}.description`, `${path}/description`, node.description, `Help of the setting "${name}" of ${what} (the inspector)`);
-    if (owner === 'object') addWord(`${id}.group`, `${path}/x-group`, node['x-group'], `The group the setting "${name}" of ${what} is in (the inspector): the same words for every setting of the group`);
+    addWord(`${id}.group`, `${path}/x-group`, node['x-group'], `The ${owner === 'object' ? 'group' : 'section'} the setting "${name}" of ${what} is in (the inspector): the same words for every setting of the ${owner === 'object' ? 'group' : 'section'}`);
     if (owner === 'component' && Array.isArray(node.enum)) {
       const labels = recordOf(node['x-enum-labels']);
       for (const value of node.enum.map(String)) addWord(`${id}.value.${segment(value)}`, `${path}/x-enum-labels${pointer(value)}`, labels[value], `Value "${value}" of the setting "${name}" of ${what}, as authors choose it (the inspector)`);

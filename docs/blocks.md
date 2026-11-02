@@ -1,6 +1,6 @@
-# Built-in block catalogue (format elabora/0.1, schemas 0.1.9)
+# Built-in block catalogue (format elabora/0.1, schemas 0.1.10)
 
-Generated from `packages/format/schemas/0.1.9/blocks/` and the built-in components (`packages/core/src/components/builtin/`). Agents: call `elabora_get_schema <type>` for the full schema; course components are listed by `elabora_list_components` (docs/components.md).
+Generated from `packages/format/schemas/0.1.10/blocks/` and the built-in components (`packages/core/src/components/builtin/`). Agents: call `elabora_get_schema <type>` for the full schema; course components are listed by `elabora_list_components` (docs/components.md).
 
 ## `heading` (content)
 
@@ -703,10 +703,10 @@ Template `packages/core/src/components/builtin/steps.html`: fork it to change th
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `presentation` | "carousel" \| "timeline" \| "scroll" |  | carousel: one step at a time, Previous and Next, the intro and summary first and last; timeline: the steps one under the other on a line, their date before them; scroll: the text scrolls beside a figure that follows it (above it, a picture per step, in narrow places, in slides and with less motion). Default "carousel". |
+| `numbered` | boolean |  | carousel and scroll: each step shows its number (the intro and the summary have none). Default true. |
 | `items` | array | yes | The steps, in order. |
 | `intro` | object |  | carousel: the first item, before the steps (what the process is for, what to look for). The sequence's item intro. |
 | `summary` | object |  | carousel: the last item, after the steps (what to remember). The sequence's item summary: reaching it means every step was shown. |
-| `numbered` | boolean |  | carousel and scroll: each step shows its number (the intro and the summary have none). Default true. |
 | `figure` | "replace" \| "build" \| "focus" |  | scroll: how the figure follows the steps. replace: each step's image replaces the one before (a cross-fade; a step without image keeps it); build: each step's image is a layer added over figureImage, step n showing layers 1 to n; focus: figureImage alone, each step's region outlined and the rest dimmed. Default "replace". |
 | `figureImage` | assetPath |  | scroll: the base of the figure (build: under the layers; focus: the picture whose regions the steps outline). |
 | `figureAlt` | string |  | What figureImage shows. Required with figureImage. |
@@ -735,7 +735,7 @@ Template `packages/core/src/components/builtin/hotspots.html`: fork it to change
 
 # Built-in screen layouts
 
-Generated from `packages/format/schemas/0.1.9/layouts/`. A screen uses one with `"layout": "<id>"` and its `layoutProps`; blocks choose a slot with `slot` (docs/components.md).
+Generated from `packages/format/schemas/0.1.10/layouts/`. A screen uses one with `"layout": "<id>"` and its `layoutProps`; blocks choose a slot with `slot` (docs/components.md).
 
 ## `opening` (layout)
 
