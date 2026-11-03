@@ -15,8 +15,9 @@
 //                             ="popover" also closes it on a click outside.
 //   data-t-details="<k>"      on <details>: a native disclosure, visited once opened.
 //   data-t-reveal="<k>"       visited once it has been in view.
-//   data-t-follow             a container of reveals (a steps block's scroll): the one crossing the
-//                             middle of the window is current, written on the container as
+//   data-t-follow             a container of reveals (a steps block's scroll): the last one whose
+//                             data-t-words part (its words; the reveal itself without one) has crossed
+//                             the middle of the window is current, written on the container as
 //                             data-t-current="<k>" and --t-current (its rank, from 1) as the page scrolls.
 //
 // Items, cards, details and reveals are controls: visited once used (an item once shown, a card once
@@ -406,39 +407,43 @@ export function bindPrimitives(root: HTMLElement, context: PrimitiveContext): Bo
   }
 
   // ── Reveals followed as the page scrolls (a steps block's scroll, D63) ──
-  // Native scroll: nothing holds the page and nothing listens to scroll events. An observer tells when
-  // a reveal crosses the line in the middle of the window; that one is current, and stays current until
-  // another crosses it (between two, the one above the line). The stylesheet decides what follows it (a
-  // sticky figure on wide places, with motion), from data-t-following, data-t-current and --t-current;
-  // without the player, nothing is followed and each step keeps its own picture.
+  // Native scroll: nothing holds the page and nothing listens to scroll events. A step is current once
+  // the top of its words (its data-t-words part, else the reveal itself) has crossed the middle of the
+  // window, until the next one's has: the last one above the middle, the first before them all. Its
+  // words, not its room: a step's room is taller than its words, which sit in its middle, and its top
+  // crossed the middle while its words had only just come in at the bottom, a step ahead of the text.
+  // Two observers, of the window's upper and lower halves, tell when a top may have crossed it (one that
+  // jumps across the middle, a page down, leaves one half or the other); the document is their root,
+  // so that the halves are this window's in a frame of another origin too (the editor's canvas, an LMS),
+  // where an implicit root ignores rootMargin and the figure showed the lowest step in view.
+  // The stylesheet decides what follows (a sticky figure on wide places, with motion), from
+  // data-t-following, data-t-current and --t-current; without the player, each step keeps its picture.
   for (const box of hooks('follow')) {
     const steps = hooks('reveal', box).filter((node) => node.closest('[data-t-follow]') === box);
     if (!steps.length || typeof IntersectionObserver !== 'function') continue;
     const names = steps.map((step) => step.getAttribute('data-t-reveal') ?? '');
+    const marks = steps.map((step) => step.querySelector<HTMLElement>('[data-t-words]') ?? step);
     let current = -1;
     const set = (index: number) => {
-      if (index === current || index < 0) return;
+      if (index === current) return;
       current = index;
       box.setAttribute('data-t-current', names[index]);
       box.style.setProperty('--t-current', String(index + 1));
     };
     set(0);
     box.setAttribute('data-t-following', '');
-    const crossing = new Set<Element>();
-    // The last step that holds (findLastIndex is newer than the browsers the player supports).
-    const last = (holds: (step: HTMLElement) => boolean) => { for (let i = steps.length - 1; i >= 0; i--) if (holds(steps[i])) return i; return -1; };
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) { if (entry.isIntersecting) crossing.add(entry.target); else crossing.delete(entry.target); }
-      let at = last((step) => crossing.has(step));
-      // None on the line: the last one above it (the first before them all).
-      if (at < 0) {
-        const middle = (window.innerHeight || document.documentElement.clientHeight) / 2;
-        at = Math.max(0, last((step) => step.getBoundingClientRect().top < middle));
-      }
+    // A step not laid out (its block hidden) is never above the middle.
+    const follow = () => {
+      const middle = (window.innerHeight || document.documentElement.clientHeight) / 2;
+      let at = 0;
+      for (let i = steps.length - 1; i > 0; i--) if (marks[i].getClientRects().length && marks[i].getBoundingClientRect().top < middle) { at = i; break; }
       set(at);
-    }, { rootMargin: '-50% 0px -50% 0px', threshold: 0 });
-    for (const step of steps) observer.observe(step);
-    disposers.push(() => observer.disconnect());
+    };
+    // A browser without a document root (before Safari 14.1) observes the top window.
+    const half = (rootMargin: string) => { try { return new IntersectionObserver(follow, { root: document, rootMargin }); } catch { return new IntersectionObserver(follow, { rootMargin }); } };
+    const observers = [half('0px 0px -50% 0px'), half('-50% 0px 0px 0px')];
+    for (const observer of observers) for (const mark of marks) observer.observe(mark);
+    disposers.push(() => { for (const observer of observers) observer.disconnect(); });
   }
 
   bound.refresh = () => { for (const refresh of refreshers) refresh(); };

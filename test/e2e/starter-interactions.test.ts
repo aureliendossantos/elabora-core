@@ -175,15 +175,15 @@ const figure = (page: Page, block: string) => page.evaluate((id) => {
     own: [...root.querySelectorAll<HTMLElement>('.t-steps-own')].filter((own) => own.getBoundingClientRect().height > 2).length
   };
 }, block);
-// Scrolls the page so that a step's top is just above the middle of the window, then waits out the fades.
-// The observer tells the player soon after a scroll; the fades are then waited out (a loaded computer may be slow).
+// Scrolls the page so that a step's words start just above the middle of the window, then waits out the fades.
+// The observers tell the player soon after a scroll; the fades are then waited out (a loaded computer may be slow).
 const reach = async (page: Page, step: string) => {
-  await page.$eval(`[data-t-reveal="${step}"]`, (node) => window.scrollBy(0, node.getBoundingClientRect().top - innerHeight / 2 + 40));
+  await page.$eval(`[data-t-reveal="${step}"] .t-steps-words`, (node) => window.scrollBy(0, node.getBoundingClientRect().top - innerHeight / 2 + 40));
   await page.waitForFunction((name) => document.querySelector(`[data-t-reveal="${name}"]`)?.closest('[data-t-follow]')?.getAttribute('data-t-current') === name, step, { timeout: 30000 });
   await page.evaluate(() => Promise.all(document.getAnimations().filter((animation) => animation instanceof CSSTransition).map((animation) => animation.finished.catch(() => undefined))));
 };
 
-test('steps scroll (replace): native scroll, the figure stays in view and shows the step crossing the middle; each step visited', { timeout: 180000 }, async () => {
+test('steps scroll (replace): native scroll, the figure stays in view and shows the step whose words crossed the middle; each step visited', { timeout: 180000 }, async () => {
   await player(course(), async (page) => {
     await go(page, 'etapes-defile');
     const block = 'etapes-defile-bloc';
@@ -249,6 +249,109 @@ test('steps scroll in slides: its steps one under the other, each with its pictu
     const stacks = await page.$$eval('[data-block="etapes-construire-bloc"] .t-steps-own .t-steps-stack', (nodes) => nodes.map((stack) => [...stack.querySelectorAll('.t-steps-layer')].map((layer) => Number(getComputedStyle(layer).opacity))));
     assert.deepEqual(stacks.map((layers) => layers.filter(Boolean).length), [1, 2, 3, 4, 5], 'step n shows layers 1 to n');
   });
+});
+
+// The roaster of coffee-in-brief, where the founder saw the figure a step ahead of the text: each step's
+// words sit in the middle of a room taller than them, and the player is in a frame of another origin,
+// as in the editor's canvas and in an LMS (where an implicit root ignored the observer's margins).
+const COFFEE = path.resolve(import.meta.dirname, '../../examples/coffee-in-brief');
+test('steps scroll follows the words: the figure changes once a step\'s words cross the middle of the window, not its room; at the top and in a frame of another origin, both ways, by keyboard and wheel', { timeout: 240000 }, async () => {
+  const b = await build(copyExample(COFFEE), { emit: 'dir', out: tmp('elabora-follow-'), writeLock: false, debug: true });
+  assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
+  const server = await startServer();
+  server.addPackage('p', b.dirPath);
+  const browser = await launchBrowser('chromium');
+  try {
+    for (const [framed, motion] of [[true, true], [false, true], [true, false]]) {
+      const context = await browser.newContext({ viewport: { width: 1600, height: 900 }, reducedMotion: motion ? 'no-preference' : 'reduce' });
+      const page = await context.newPage();
+      // The page's timers on Playwright's clock, which only the test moves.
+      await page.clock.install({ time: new Date('2026-11-03T12:00:00Z') });
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      let frame = page.mainFrame();
+      if (framed) {
+        await page.setContent(`<body style="margin:0"><iframe src="${server.base}/pkg/p/index.html" style="display:block;border:0;width:1600px;height:900px"></iframe></body>`);
+        frame = (await (await page.waitForSelector('iframe')).contentFrame())!;
+        assert.equal(await frame.evaluate(() => { try { return Boolean(window.parent.document); } catch { return 'another origin'; } }), 'another origin');
+      } else await page.goto(`${server.base}/pkg/p/index.html`);
+      await frame.waitForFunction(() => (window as PlayerWindow).__elabora);
+      await frame.evaluate(() => (window as PlayerWindow).__elabora.go('roasting'));
+      await frame.evaluate(() => (window as PlayerWindow).__elabora.ready());
+      const block = '[data-block="roast-machine"] .t-steps--scroll';
+      if (!motion) {
+        // Less motion: no figure follows, each step keeps its own picture.
+        assert.deepEqual(await frame.$eval(block, (root) => [getComputedStyle(root.querySelector('.t-steps-stage')!).display, [...root.querySelectorAll('.t-steps-own')].filter((own) => own.getBoundingClientRect().height > 2).length]), ['none', 4]);
+        assert.deepEqual(errors, []);
+        await context.close();
+        continue;
+      }
+      const steps = await frame.$$eval(`${block} [data-t-reveal]`, (nodes) => nodes.map((node) => node.getAttribute('data-t-reveal')!));
+      assert.deepEqual(steps, ['hopper', 'drum', 'burner', 'cooling']);
+      // Scrolls the window so that a step's room or words start by pixels above the middle of the window.
+      const place = (step: string, part: 'room' | 'words', by: number) => frame.evaluate(({ block, step, part, by }) => {
+        const node = document.querySelector(`${block} [data-t-reveal="${step}"]`)!;
+        const top = (part === 'room' ? node : node.querySelector('.t-steps-words')!).getBoundingClientRect().top;
+        window.scrollBy(0, top - innerHeight / 2 + by);
+      }, { block, step, part, by });
+      // The step current once the observers have told, and the region the figure outlines.
+      const current = async (step: string) => {
+        await frame.waitForFunction(({ block, step }) => document.querySelector(block)!.getAttribute('data-t-current') === step, { block, step }, { timeout: 10000 })
+          .catch(async () => assert.fail(`${step} is not current: ${await frame.$eval(block, (root) => root.getAttribute('data-t-current'))}`));
+        await frame.evaluate(() => Promise.all(document.getAnimations().filter((animation) => animation instanceof CSSTransition).map((animation) => animation.finished.catch(() => undefined))));
+        const regions = await frame.$$eval(`${block} .t-steps-frame .t-steps-region`, (nodes) => nodes.map((node) => Math.round(Number(getComputedStyle(node).opacity))));
+        assert.deepEqual(regions, steps.map((name) => (name === step ? 1 : 0)), `${step}: its region alone outlined`);
+      };
+      // What the window shows: the last step whose words have crossed its middle is current.
+      const followed = () => frame.waitForFunction((block) => {
+        const root = document.querySelector(block)!;
+        const tops = [...root.querySelectorAll('.t-steps-step > .t-steps-words')].map((words) => words.getBoundingClientRect().top);
+        let at = 0;
+        tops.forEach((top, index) => { if (top < innerHeight / 2) at = index; });
+        return root.getAttribute('data-t-current') === root.querySelectorAll('[data-t-reveal]')[at].getAttribute('data-t-reveal');
+      }, block, { timeout: 10000 });
+      await place('hopper', 'words', 40);
+      await current('hopper');
+      for (const [index, step] of steps.entries()) {
+        if (!index) continue;
+        // Its room has crossed the middle, its words are still below it: the step before stays.
+        await place(step, 'room', 40);
+        assert.ok(await frame.$eval(`${block} [data-t-reveal="${step}"] .t-steps-words`, (words) => words.getBoundingClientRect().top > innerHeight / 2 + 100));
+        await current(steps[index - 1]);
+        await place(step, 'words', 40);
+        await current(step);
+      }
+      // Back up: a step stays current until its words go below the middle.
+      for (const [index, step] of [...steps.entries()].reverse()) {
+        if (!index) continue;
+        await place(step, 'words', -40);
+        await current(steps[index - 1]);
+      }
+      // By keyboard (a page down jumps across the middle) and by wheel, both ways.
+      await place('hopper', 'words', 40);
+      await frame.click(`${block} [data-t-reveal="hopper"] .t-steps-title`);
+      const scrolled = () => frame.evaluate(() => scrollY);
+      for (const key of ['PageDown', 'PageDown', 'ArrowDown', 'ArrowDown', 'PageDown', 'PageUp', 'ArrowUp', 'PageUp']) {
+        const before = await scrolled();
+        await page.keyboard.press(key);
+        await frame.waitForFunction((y) => scrollY !== y, before, { timeout: 10000 });
+        await followed();
+      }
+      const list = (await frame.$eval(`${block} .t-steps-list`, (node) => { const r = node.getBoundingClientRect(); return { x: r.left + 20, y: 450 }; }));
+      await page.mouse.move(list.x, list.y);
+      for (const delta of [240, 240, 240, 240, 240, -360, -360]) {
+        const before = await scrolled();
+        await page.mouse.wheel(0, delta);
+        await frame.waitForFunction((y) => scrollY !== y, before, { timeout: 10000 });
+        await followed();
+      }
+      assert.deepEqual(errors, []);
+      await context.close();
+    }
+  } finally {
+    await browser.close();
+    await server.close();
+  }
 });
 
 test('interactive picture (popover): markers named « 1. title », one panel open by its marker inside the picture, Escape and a press outside close it, nothing moves', { timeout: 180000 }, async () => {

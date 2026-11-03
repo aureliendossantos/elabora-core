@@ -1257,9 +1257,9 @@ details[data-t-details][open]::details-content { opacity: 1; }
    carousel: one step at a time in a card, its room the tallest step's (the sequence keeps it);
    timeline (« Frise »): the steps on a line, their dates before them, a dot that fills once seen;
    scroll (« Défilé »): the text scrolls beside a figure that follows it (data-t-follow). On wide places,
-   with motion and the player, the figure stays in view while the step crossing the middle of the window
-   decides what it shows; otherwise (a phone, a column, a slide, less motion, no script) each step shows
-   its own picture above its words. Native scroll always; the figure changes by fading (opacity only). */
+   with motion and the player, the figure stays in view while the step whose words have crossed the
+   middle of the window decides what it shows; otherwise (a phone, a column, a slide, less motion, no
+   script) each step shows its own picture above its words. Native scroll always; the figure changes by fading (opacity only). */
 .t-block--steps, .t-block--hotspots { container-type: inline-size; }
 :is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block:is(:has(> .t-steps--scroll, > .t-hotspots--side)) { max-width: var(--t-wide-width, 68.75rem); }
 .t-steps { margin: 0; }

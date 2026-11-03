@@ -1,8 +1,8 @@
 <!-- A steps block (« Étapes », D63). Not the screen's steps: one block whose items the learner goes through.
      carousel: one step at a time (data-t-sequence), the intro and the summary its first and last items.
      timeline: the steps one under the other, each visited once in view (data-t-reveal).
-     scroll: the steps scroll beside a figure the player follows (data-t-follow: the step crossing the middle of
-     the window is current); each step also carries its own picture, shown in narrow places, in slides, with
+     scroll: the steps scroll beside a figure the player follows (data-t-follow: the step whose words, data-t-words,
+     have crossed the middle of the window is current); each step also carries its own picture, shown in narrow places, in slides, with
      less motion and without the player, and read by screen readers (the following figure is aria-hidden). -->
 <div class="t-steps t-steps--carousel" data-if="presentation == carousel" data-t-sequence>
   <div class="t-steps-items">
@@ -84,7 +84,7 @@
           <span class="t-steps-region" data-if="region"></span>
         </figure>
       </div>
-      <div class="t-steps-words">
+      <div class="t-steps-words" data-t-words>
         <p class="t-steps-number" data-if="numbered" aria-hidden="true">{{@number}}</p>
         <h3 class="t-steps-title" data-t-heading>{{title}}</h3>
         <div class="t-steps-body t-text">{{markdown}}</div>
