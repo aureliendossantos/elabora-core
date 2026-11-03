@@ -367,7 +367,9 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 /* Edge to edge (block width bleed, a template's data-t-bleed): as wide as the screen's area (#t-main,
    without the window's scrollbar: --t-page-width, measured by the player), whatever the reading
    column. In a layout's slot, the slot's width. What is inside keeps the reading width (--t-bleed-gutter
-   for templates). #t-main clips the rest, so that a rounding never makes the page scroll sideways. */
+   for templates). #t-main clips the rest, so that a rounding never makes the page scroll sideways.
+   Its width is important: a theme's rule for every block (a page flush left: .t-block { max-width;
+   justify-self: start }) comes in a later layer and would shrink the band to its picture's width, none. */
 .t-main { overflow-x: clip; }
 /* The page's side margin, as #t-main pads the default column. */
 :root { --t-gutter: 1.25rem; }
@@ -377,7 +379,7 @@ summary { cursor: pointer; min-height: 32px; padding: 0.25rem 0; font-weight: 60
 :root { --t-scrim-default: linear-gradient(to top, rgb(10 13 18 / .78), rgb(10 13 18 / .52) 55%, rgb(10 13 18 / .46)); }
 @media (max-width: 760px) { :root { --t-gutter: 0.875rem; --t-scrim-default: linear-gradient(to top, rgb(10 13 18 / .8), rgb(10 13 18 / .64)); } }
 .t-w-bleed { --t-bleed-gutter: max(var(--t-gutter), calc((100% - var(--t-content-width, 47.5rem)) / 2)); }
-:is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block.t-w-bleed { max-width: none; width: auto; justify-self: stretch; margin-inline: calc((100% - var(--t-page-width, 100vw)) / 2); }
+:is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block.t-w-bleed { max-width: none !important; width: auto !important; justify-self: stretch !important; margin-inline: calc((100% - var(--t-page-width, 100vw)) / 2); }
 .t-slot > .t-block.t-w-bleed { margin-inline: 0; }
 /* A band breathes: a little more room around it than between paragraphs. */
 :is(.t-screen > .t-blocks, .t-opening-body.t-slot) > .t-block.t-w-bleed:not(:first-child) { margin-top: .75rem; }

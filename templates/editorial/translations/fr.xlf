@@ -207,7 +207,7 @@
       <notes>
         <note category="location">screens/cover.json /layoutProps/lead</note>
         <note category="format">markdown</note>
-        <note category="context">Layout opening of screen "Your module title, on two lines at most"</note>
+        <note category="context">Layout editorial-cover of screen "Your module title, on two lines at most"</note>
         <note category="max-length">500</note>
       </notes>
       <segment state="translated">
@@ -1046,7 +1046,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
       <notes>
         <note category="location">screens/the-end.json /layoutProps/lead</note>
         <note category="format">markdown</note>
-        <note category="context">Layout opening of screen "Thank you, and well done"</note>
+        <note category="context">Layout editorial-cover of screen "Thank you, and well done"</note>
         <note category="max-length">500</note>
       </notes>
       <segment state="translated">
@@ -1390,6 +1390,28 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
       <segment state="translated">
         <source>Ink ground, paper-coloured text and rules, for a quotation or a pause</source>
         <target>Un fond d'encre, le texte et les filets couleur papier, pour une citation ou une pause</target>
+      </segment>
+    </unit>
+    <unit id="component.editorial-cover.title">
+      <notes>
+        <note category="location">components/editorial-cover/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's screen layout "editorial-cover" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Editorial cover</source>
+        <target>Couverture Revue</target>
+      </segment>
+    </unit>
+    <unit id="component.editorial-cover.description">
+      <notes>
+        <note category="location">components/editorial-cover/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's screen layout "editorial-cover" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Opens and closes the module like a magazine cover: the large serif title, its standfirst and a short page on the left, every part's plate side by side on the right.</source>
+        <target>Ouvre et referme le module comme la couverture d'un magazine : le grand titre, son chapeau et une courte page à gauche, les planches de toutes les parties côte à côte à droite.</target>
       </segment>
     </unit>
     <unit id="component.editorial-opener.title">

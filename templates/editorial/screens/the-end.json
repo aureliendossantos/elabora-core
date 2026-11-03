@@ -5,9 +5,8 @@
   "covers": [
     "ITEM-6"
   ],
-  "layout": "opening",
+  "layout": "editorial-cover",
   "layoutProps": {
-    "presentation": "title",
     "lead": "One sentence on what to do next, and where to find the sources and further reading.",
     "duration": false
   },

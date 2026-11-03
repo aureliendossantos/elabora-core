@@ -219,7 +219,7 @@
       <notes>
         <note category="location">screens/cover.json /layoutProps/lead</note>
         <note category="format">markdown</note>
-        <note category="context">Layout opening of screen "Your module title, on two lines at most"</note>
+        <note category="context">Layout clear-cover of screen "Your module title, on two lines at most"</note>
         <note category="max-length">500</note>
       </notes>
       <segment state="translated">
@@ -1058,7 +1058,7 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
       <notes>
         <note category="location">screens/the-end.json /layoutProps/lead</note>
         <note category="format">markdown</note>
-        <note category="context">Layout opening of screen "Thank you, and well done"</note>
+        <note category="context">Layout clear-cover of screen "Thank you, and well done"</note>
         <note category="max-length">500</note>
       </notes>
       <segment state="translated">
@@ -1356,6 +1356,28 @@ Un second paragraphe, plus court, ajoute un exemple ou une nuance. Gardez l'ense
       <segment state="translated">
         <source>Dark ground, light text, a lighter accent</source>
         <target>Un fond sombre, le texte en clair, un accent plus lumineux</target>
+      </segment>
+    </unit>
+    <unit id="component.clear-cover.title">
+      <notes>
+        <note category="location">components/clear-cover/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's screen layout "clear-cover" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Clear cover</source>
+        <target>Couverture Clair</target>
+      </segment>
+    </unit>
+    <unit id="component.clear-cover.description">
+      <notes>
+        <note category="location">components/clear-cover/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's screen layout "clear-cover" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Opens and closes the module: the title and its lead on the left columns of the grid, the accent panel on the right.</source>
+        <target>Ouvre et referme le module : le titre et son chapeau sur les colonnes de gauche de la grille, le panneau d'accent à droite.</target>
       </segment>
     </unit>
     <unit id="component.clear-section.title">

@@ -19,6 +19,7 @@
     "quiz:check-quiz": "e"
   },
   "components": {
+    "editorial-cover": "1.0.0",
     "editorial-opener": "1.0.0"
   }
 }

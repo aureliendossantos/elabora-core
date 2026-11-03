@@ -40,11 +40,11 @@ interface Canvas {
   show(project: Project, screen: string, options?: RenderOptions, id?: number): Promise<void>;
 }
 
-async function withCanvas(root: string, context: RenderContext, run: (canvas: Canvas) => Promise<void>) {
+async function withCanvas(root: string, context: RenderContext, run: (canvas: Canvas) => Promise<void>, { motion = false } = {}) {
   const host = await startCanvasHost({ root });
   const browser: Browser = await launchBrowser('chromium');
   try {
-    const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: 'reduce' });
+    const page = await browser.newPage({ viewport: { width: 1600, height: 900 }, reducedMotion: motion ? 'no-preference' : 'reduce' });
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
@@ -147,6 +147,24 @@ test('canvas: a block edited in memory shows without a reload, the free object o
     assert.equal(await page.evaluate(() => document.querySelector('iframe') === ((window as CanvasWindow).kept as unknown[])[0]), false);
     assert.deepEqual(errors.filter((error) => !/GL Driver|WebGL|PCFSoftShadowMap/.test(error)), []);
   });
+});
+
+test('canvas: blocks a theme brings in moving (Editorial\'s masks rise 1.5rem) are reported where they come to rest', { timeout: 120000 }, async () => {
+  const project = loadProjectFromDir(path.join(ROOT, 'templates', 'editorial'));
+  const context = createRenderContext(project);
+  await withCanvas(project.root, context, async ({ page, show }) => {
+    await page.evaluate(() => { const w = window as CanvasWindow & { posted?: LayoutMessage[] }; w.posted = []; w.__elaboraCanvas.onMessage((message) => { if (message.type === 'elabora/layout') w.posted!.push(message); }); });
+    await show(project, 'objectives');
+    assert.ok(await page.evaluate(() => document.getAnimations().some((animation) => (animation as CSSAnimation).animationName === 'ed-mask-rise')), 'the blocks rise into place');
+    // Every entrance over (a loop never is).
+    await page.evaluate(() => Promise.all(document.getAnimations().filter((animation) => animation.effect?.getComputedTiming().iterations !== Infinity).map((animation) => animation.finished.catch(() => null))));
+    // The last layout the host got is where the blocks are now, not where they began.
+    await page.waitForFunction(() => {
+      const w = window as CanvasWindow & { posted?: LayoutMessage[] };
+      const last = w.posted?.at(-1);
+      return !!last && JSON.stringify(last.blocks.map((block) => block.rect)) === JSON.stringify(w.__elaboraCanvas.layout().blocks.map((block) => block.rect));
+    }, null, { timeout: 5000 });
+  }, { motion: true });
 });
 
 test('canvas: steps, layers and the answered state as captures show them, kept across updates', { timeout: 120000 }, async () => {

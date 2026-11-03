@@ -17,7 +17,7 @@ The backdrop is three CSS layers (`ground` for the dark variant, `tint`, `panel`
 | Variant | When | What changes |
 |---|---|---|
 | *(none)* | Most screens | White ground, the rail and its rule |
-| `feature` | The cover, part openers, the end (with the screen styles `cover` or `section`) | An accent panel from the eighth column to the window's edge, with one quarter circle |
+| `feature` | The cover and the end (with the layout `clear-cover` and the screen style `cover`), part openers (with the screen style `section`) | An accent panel from the eighth column to the window's edge, with one quarter circle |
 | `tint` | The key message, a moment that stands out | A pale wash of the accent |
 | `ink` | The quotation | The window turns dark (ground, bars, text); the accent and the rail take their tints for dark grounds; the logo gets a light plate |
 
@@ -27,7 +27,7 @@ On phones the panel is hidden (the text takes the whole width).
 
 | Block | Style | Look |
 |---|---|---|
-| screen | `cover` | The copy on the left six columns, for the `feature` backdrop |
+| screen | `cover` | The copy on the left six columns, for the `feature` backdrop, with the layout `clear-cover` (a fork of the opening without a picture or another presentation: a band would cross the panel) |
 | screen | `section` | Part opener, with the layout `clear-section` (a fork of the opening): its `number` (01, 02…) large in the accent, the title on the left columns |
 | text | `lead` | Large introductory paragraph, in grey |
 | text | `agenda` | Numbered list with large accent numbers and hairlines (each item `**Title**`, a line break, one line) |

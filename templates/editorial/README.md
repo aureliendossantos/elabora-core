@@ -19,14 +19,16 @@ The backdrop is three CSS layers (`paper`, `ink` for the black spread, `grain` o
 | Variant | When | What changes |
 |---|---|---|
 | `paper` (default) | Most screens | Paper and grain, the rules, the folio, the thumb index |
-| `plate` | Part openers (with the layout `editorial-opener` and the screen style `opener`); the first and last screens (with the screen style `cover`) | The part's plate on the right of the page (from `--ed-plate-x`, 58 % of the window); every plate side by side on the first and last screens |
+| `plate` | Part openers (with the layout `editorial-opener` and the screen style `opener`); the first and last screens (with the layout `editorial-cover` and the screen style `cover`) | The part's plate on the right of the page (from `--ed-plate-x`, 58 % of the window); every plate side by side on the first and last screens |
 | `ink` | The quotation, or a pause | The black spread: ink ground, paper-coloured text, rules and bars; the accent lightens |
 
 On phones (under 640 px) the plates become a slim strip along the right edge, the rules and the folio step aside (the page scrolls), and the part number goes above the title in the part's colour.
 
-## The component
+## The components
 
 `editorial-opener` (screen layout, a fork of the opening): the part's title, its standfirst (`lead`) and a short page on the left, the `number` (1, 2, 3… or I, II, III) on the plate. Use it with the screen style `opener` and the backdrop `plate`.
+
+`editorial-cover` (screen layout, a fork of the opening): the module's title, its standfirst and a short page on the left, for the first and last screens with the screen style `cover` and the backdrop `plate`. Neither fork has a picture or another presentation: a band or an image would cross the plates.
 
 ## Named styles
 

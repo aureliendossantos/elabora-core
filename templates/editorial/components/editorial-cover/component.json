@@ -1,0 +1,14 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.10/component.schema.json",
+  "id": "editorial-cover",
+  "title": "Editorial cover",
+  "description": "Opens and closes the module like a magazine cover: the large serif title, its standfirst and a short page on the left, every part's plate side by side on the right.",
+  "instructions": "The first and the last screens of the module, with the screen style cover and the backdrop plate (the backdrop draws every part's plate side by side on the right of the page). The title names the module, or thanks the learner on the last screen; lead is its standfirst, one or two sentences; the body holds one text block with the style colophon. No image: the plates are the picture.",
+  "version": "1.0.0",
+  "level": "screen",
+  "extends": {
+    "component": "opening",
+    "version": "0.1.0"
+  },
+  "propsOmit": ["presentation", "image", "alt", "decorative", "generated", "focus"]
+}

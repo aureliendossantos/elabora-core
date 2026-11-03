@@ -113,6 +113,18 @@ test('bleed: edge to edge at every width without a sideways scrollbar, the text 
   });
 });
 
+test('bleed: a theme that holds every block flush left to a column (Editorial, Clear) still lets a band, a text over its picture and a statement on an image go edge to edge', { timeout: 180000 }, async () => {
+  await player(starterCourse({ css: '.t-block { max-width: 40rem; justify-self: start; }\n' }), async (page) => {
+    const client = await page.evaluate(() => document.documentElement.clientWidth);
+    for (const block of ['chemin-bande', 'chemin-dessus', 'chemin-enonce', 'chemin-texte-large']) {
+      const found = await box(page, `[data-block="${block}"]`);
+      assert.ok(Math.abs(found.left) < 1 && Math.abs(found.right - client) < 1, `${block} from edge to edge ${JSON.stringify(found)} in ${client}`);
+    }
+    const picture = await box(page, '[data-block="chemin-dessus"] img');
+    assert.ok(Math.abs(picture.width - client) < 1, `the picture under the text fills the band ${JSON.stringify(picture)}`);
+  });
+});
+
 test('image presentations at 1280 and 375: beside side by side then stacked image first, text over its image', { timeout: 180000 }, async () => {
   await player(starterCourse(), async (page, sized) => {
     await sized(1280, 720);

@@ -5,9 +5,8 @@
   "covers": [
     "ITEM-6"
   ],
-  "layout": "opening",
+  "layout": "clear-cover",
   "layoutProps": {
-    "presentation": "title",
     "lead": "One sentence on what to do next, and where to find help or the full procedure.",
     "duration": false
   },

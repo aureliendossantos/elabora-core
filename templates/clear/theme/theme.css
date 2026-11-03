@@ -82,6 +82,8 @@ h1, h2, h3, h4 { letter-spacing: -0.012em; }
 .t-blocks { gap: 1.5rem 0; }
 .t-block { max-width: var(--cl-measure); justify-self: start; }
 .t-block.t-w-wide, :is(.t-screen > .t-blocks) > .t-block:is(:has(> .t-image--beside, > .t-columns, > .t-chart)) { max-width: var(--cl-grid); }
+/* Edge to edge (a band, text over a picture): its text and caption start on the first line of the grid. */
+.t-w-bleed { --t-bleed-gutter: max(1.25rem, calc((100% - var(--cl-grid)) / 2)); }
 
 /* ── Openings (cover, part opener, end): copy on the left columns of the grid ─ */
 /* The opening owns the page (full bleed): its copy starts on the first line of the grid. */

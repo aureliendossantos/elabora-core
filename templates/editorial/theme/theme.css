@@ -181,6 +181,8 @@ h1, h2, h3, h4 { font-family: var(--t-font-heading); font-weight: 500; letter-sp
 .t-image-title { font-family: var(--t-font-heading); font-size: 1.75rem; font-weight: 450; line-height: 1.15; }
 .t-image-caption, figcaption { padding-top: .5rem; color: var(--t-muted); font-family: var(--t-font-heading); font-size: .9375rem; font-style: italic; }
 .t-s-plate .t-image-text { padding-top: 1rem; border-top: 2px solid var(--ed-rule); }
+/* Edge to edge (a band, text over a picture): its text and caption start where the page does. */
+.t-w-bleed { --t-bleed-gutter: max(1.25rem, calc((100% - var(--ed-page)) / 2)); }
 
 /* ── No coloured side rules: notes and prompts on deeper paper under a rule ── */
 .t-callout { border: 0; border-top: 2px solid var(--ed-rule); border-radius: 0; background: var(--ed-deep); }

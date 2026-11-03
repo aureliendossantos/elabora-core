@@ -19,6 +19,7 @@
     "quiz:check-quiz": "e"
   },
   "components": {
+    "clear-cover": "1.0.0",
     "clear-section": "1.0.0"
   }
 }

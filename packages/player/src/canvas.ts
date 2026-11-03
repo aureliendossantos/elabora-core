@@ -596,6 +596,9 @@ function observeBlocks() {
 new MutationObserver(() => scheduleLayout()).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-t-pending', 'data-t-concealed', 'open', 'hidden'] });
 addEventListener('scroll', scheduleLayout, { capture: true, passive: true });
 addEventListener('resize', scheduleLayout);
+// A theme's entrance moves blocks without resizing them (a mask that rises, a sheet laid down): measured
+// where they come to rest, as the review bridge does, or where they stay when it is cut short.
+for (const type of ['animationend', 'animationcancel', 'transitionend', 'transitioncancel']) addEventListener(type, scheduleLayout, true);
 
 window.__elaboraCanvas = {
   receive,

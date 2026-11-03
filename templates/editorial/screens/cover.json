@@ -5,9 +5,8 @@
   "covers": [
     "ITEM-1"
   ],
-  "layout": "opening",
+  "layout": "editorial-cover",
   "layoutProps": {
-    "presentation": "title",
     "lead": "A standfirst of one or two sentences: what readers will understand by the end, and why it is worth their time.",
     "duration": false
   },

@@ -49,6 +49,6 @@ If `elabora` is not on PATH (on macOS, Elabora installs it from Réglages › Ou
 <!-- What agents should know about this course: its audience, its voice, decisions taken. Elabora never changes this part. -->
 Editorial (« Revue ») module template: a charter with placeholder screens. README.md says how the charter works and how to make it a brand's.
 - The parts' colours are the plates `color.plate-1` … `color.plate-5`, in the order of the sections (then again from the first). The decoration object `objects/folio` draws them (thumb tabs, plates, rules, folio); the theme gives the same colour to drop caps, part numbers and charts through `--ed-plate`.
-- Part openers: layout `editorial-opener`, screen style `opener`, backdrop `plate`, `number` set by hand. The first and the last screens with the backdrop `plate` show every plate side by side.
+- Part openers: layout `editorial-opener`, screen style `opener`, backdrop `plate`, `number` set by hand. The first and the last screens: layout `editorial-cover`, screen style `cover`, backdrop `plate`, which shows every plate side by side.
 - Keep `--ed-plate-x` (theme.css) and the object's `plateStart` equal: the copy of an opener ends where the plate begins.
 - No line above titles: the folio, the thumb tab and the part number say where the reader is.

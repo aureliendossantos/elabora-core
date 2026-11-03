@@ -1,0 +1,14 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.10/component.schema.json",
+  "id": "clear-cover",
+  "title": "Clear cover",
+  "description": "Opens and closes the module: the title and its lead on the left columns of the grid, the accent panel on the right.",
+  "instructions": "The first and the last screens of the module, with the screen style cover and the backdrop feature (the backdrop draws the accent panel on the right of the page). The title names the module, or thanks the learner on the last screen; lead says what it covers, one or two sentences; the body holds one text block with the style meta. No image: the accent panel is the picture.",
+  "version": "1.0.0",
+  "level": "screen",
+  "extends": {
+    "component": "opening",
+    "version": "0.1.0"
+  },
+  "propsOmit": ["presentation", "image", "alt", "decorative", "generated", "focus"]
+}
