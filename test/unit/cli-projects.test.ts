@@ -64,7 +64,7 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     assert.equal((await ok(library, ['projects', 'path'])).stdout, `${library}\n`);
 
     const created = await ok(library, ['projects', 'create', 'premiers-secours', '--title', 'Premiers secours', '--language', 'fr']);
-    assert.match(created.stdout, /^✔ Created "Premiers secours" \(premiers-secours\) as project [0-9a-z]{6}\./);
+    assert.match(created.stdout, /^✔ Created "Premiers secours" \(premiers-secours\) as project [0-9a-z]{6}, in fr\./);
     const [project] = (await json(library, ['projects', 'list', '--json'])).projects;
     assert.equal(project.title, 'Premiers secours');
     assert.equal(project.courseId, 'premiers-secours');
@@ -85,6 +85,9 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     assert.match(duplicated.stdout, /^✔ Duplicated as project [0-9a-z]{6} \("Gestes \(copie\)"\)\./);
     const titles = (await json(library, ['projects', 'list', '--json'])).projects.map((p: { title: string }) => p.title).sort();
     assert.deepEqual(titles, ['Gestes (copie)', 'Gestes qui sauvent']);
+
+    // No course id: the title's, numbered when taken.
+    assert.match((await ok(library, ['projects', 'create', '--title', 'Premiers secours'])).stdout, /^✔ Created "Premiers secours" \(premiers-secours-2\) as project [0-9a-z]{6}, in (fr|en), the app's language\./);
 
     // Usage errors: exit code 2.
     assert.equal((await elabora(library, ['projects'])).status, 2);
