@@ -37,6 +37,9 @@ before(async () => {
     request.on('data', (chunk) => { body += chunk; });
     request.on('end', () => {
       asked.push({ route: request.url ?? '', body });
+      // No connection kept for the next test: a Windows runner took 12 s over the one before, the server had closed its idle
+      // socket and the next fetch, on it, failed in 9 ms ("fetch failed").
+      response.setHeader('connection', 'close');
       const json = (value: unknown) => { response.writeHead(200, { 'content-type': 'application/json' }); response.end(JSON.stringify(value)); };
       if (request.url === '/v1/user') return json({ subscription: { tier: 'starter', character_count: 1000, character_limit: limit } });
       if (request.url?.startsWith('/v1/sound-generation')) { response.writeHead(200, { 'content-type': 'audio/mpeg', 'character-cost': String(Math.ceil(10 * (JSON.parse(body).duration_seconds ?? 5))) }); return response.end(mp3); }
