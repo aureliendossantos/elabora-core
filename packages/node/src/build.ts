@@ -2,10 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Course, Diagnostic, LmsProfile, Plan, PlanWaiver } from '@elabora/format';
 import type { Project } from '@elabora/core/project/model';
-import { findItem, packageLanguages, playerConfig } from '@elabora/core/player/config';
+import { packageLanguages } from '@elabora/core/player/config';
 import { translatedProject } from '@elabora/core/render/screen';
 import { translationPath, translationReady, translationStatus } from '@elabora/core/i18n/translate';
-import { planContentHash, iterateBlocks, screenOrder, resolveBlockProps, planIndex } from '@elabora/core/project/load';
+import { planContentHash, iterateBlocks, screenOrder } from '@elabora/core/project/load';
 import { latestValidated, planState, versionLabel } from '@elabora/core/project/plan-versions';
 import { planDiff } from '@elabora/core/project/plan-diff';
 import { planCourse } from '@elabora/core/project/plan-order';
@@ -34,18 +34,17 @@ import type { WebDelivery } from '@elabora/player/course-data';
 import { designStylesheets, rootStyle, usedTypes } from '@elabora/core/render/styles';
 import { readProvenance } from '@elabora/core/project/generators';
 import { isFontPath, fontLicenses } from '@elabora/core/project/fonts';
-import { interfaceSounds, shippedPlayerSounds, soundAssets, soundUses, soundCreditsText } from '@elabora/core/sounds/sounds';
+import { interfaceSounds, shippedPlayerSounds, soundCreditsText } from '@elabora/core/sounds/sounds';
 import type { SoundsData } from '@elabora/player/course-data';
 import { getRegistry, componentHash } from '@elabora/core/components/registry';
 import type { Registry } from '@elabora/core/components/registry';
-import { valuesOfKind } from '@elabora/core/components/props';
 import { runtimeFiles, reviewFiles, playerSoundFile, vendorThree, compileObjectCode, objectFrameHtml, bundleErrorMessage, ELABORA_VERSION } from './bundles.ts';
 import { planZip, writeZip, hashZip, ZipLimitError } from './packaging/zip-writer.ts';
 import type { ZipInput, ZipPlan } from './packaging/zip-writer.ts';
 import { packageMedia, packageSizes, mediaQualityOf } from './packaging/media.ts';
+import { isMediaAsset, shippedAssets } from './packaging/assets.ts';
 import type { MediaProgress } from './packaging/media.ts';
 import type { PresetName } from '@elabora/core/media/presets';
-import { MEDIA_EXTENSIONS, extensionOf } from '@elabora/core/media/conformance';
 import { isSourcePath, projectPath, SOURCES_DIR, fileHash } from '@elabora/core/project/files';
 import { cloneFile } from './blobs.ts';
 import { loadProjectFromDir } from './project-reader.ts';
@@ -182,40 +181,13 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
 
   const files = new Map<string, Buffer>();
 
-  // Assets referenced by props of kind asset (only those: unused files are not shipped).
+  // Assets referenced by props of kind asset (only those: unused files are not shipped), the player's
+  // logo and resources, and the sounds the course plays (packaging/assets.ts).
   const registry = getRegistry(project);
-  const planLookup = planIndex(plan);
-  const assetNames: string[] = [];
-  const shipAsset = (asset: unknown) => {
-    if (typeof asset === 'string') assetNames.push(asset);
-  };
-  for (const { block } of iterateBlocks(project)) {
-    const descriptor = registry.get(block.type);
-    if (!descriptor) continue;
-    for (const found of valuesOfKind(descriptor.schema, resolveBlockProps(block, planLookup, registry), 'asset')) shipAsset(found.value);
-  }
-  for (const { id } of screenOrder(project)) {
-    const screen = project.screens.get(id)?.data;
-    const layout = screen?.layout ? registry.get(screen.layout) : null;
-    if (layout && screen?.layoutProps) for (const found of valuesOfKind(layout.schema, screen.layoutProps, 'asset')) shipAsset(found.value);
-  }
-  // The player's logo and the course's resources (D58): files of assets/ the course names itself.
-  const logo = findItem(playerConfig(course), 'logo')?.item;
-  if (logo?.id === 'logo' && logo.enabled && logo.options.asset) shipAsset(logo.options.asset);
-  for (const resource of course.resources ?? []) shipAsset(resource.asset);
-  // The sounds of the course its screens play, and those an interface role plays instead of the
-  // player's own when interface sounds are on (D67).
   const interfaceSettings = interfaceSounds(project);
-  const soundFiles = soundAssets(project);
-  for (const use of soundUses(project)) if (!use.inTrack && (use.kind !== 'interface' || interfaceSettings.active)) shipAsset(soundFiles.get(use.id)?.asset);
-  // Media are files on disk (masters, or renditions below the high quality); other assets are read.
+  const names = shippedAssets(project, registry);
   const quality = mediaQualityOf(course, options.mediaQuality);
-  const isMedia = (name: string) => {
-    const file = project.files.get(`assets/${name}`);
-    if (!file) return !!project.media?.processing.includes(`assets/${name}`);
-    return file.kind === 'binary' && (!!file.media || MEDIA_EXTENSIONS.has(extensionOf(name)));
-  };
-  const names = [...new Set(assetNames)];
+  const isMedia = (name: string) => isMediaAsset(project, name);
   for (const name of names) if (!isMedia(name)) files.set(`assets/${name}`, fs.readFileSync(path.join(project.root, 'assets', name)));
   const packaged = await packageMedia(project, names.filter(isMedia), quality, { taken: new Set(files.keys()), onProgress: options.onMedia });
   for (const failure of packaged.failures) reporter.emit('E_MEDIA_RENDITION', { file: failure.asset, message: `${failure.asset} at the ${quality} quality: ${failure.message}` });

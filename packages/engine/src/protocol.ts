@@ -12,6 +12,7 @@ import type { PlayReport } from '@elabora/core/dialogue/play';
 import type { RenderedScreen } from '@elabora/core/render/screen';
 import type { MigrationNote } from '@elabora/core/format/migrations/types';
 import type { PresetName } from '@elabora/core/media/presets';
+import type { QualitySize } from '@elabora/core/lms/package-limits';
 import type { WebBuildOptions } from '@elabora/node/build-types';
 import type { ActivityEntry } from '@elabora/node/activity-types';
 import type { VoiceInfo, VoiceStatus, GenerateResult, TakeInfo, VoiceProgress, VoiceQuery, VoiceSearchResult, VoiceAccount, VoiceEstimate } from '@elabora/node/voice/types';
@@ -634,6 +635,8 @@ export interface Requests {
   aligners: { params: { language?: string }; result: AlignerView[] };
   alignNarration: { params: AlignNarrationParams; result: AlignResult };
   build: { params: BuildParams; result: BuildView };
+  // What a package would weigh at each media quality, as the project is: nothing encoded or written.
+  packageWeights: { params: NoParams; result: QualitySize[] };
   close: { params: NoParams; result: { version: string | null } };
 }
 
