@@ -39,7 +39,9 @@ test('the medieval-charts pages read well down their whole length, animations on
   assert.deepEqual(fitDiagnostics(fit).map((d) => `${d.code} ${d.message}`), []);
 });
 
-test('the chart table of medieval-charts passes its gates', { timeout: 400000 }, async () => {
+// On CI's Linux runners (software rendering on shared cores) the 3D gates take over 7 minutes against under 2 minutes on a Mac and miss the
+// gate's own 60 s per step: they run on the weekly macOS job and on a developer's machine.
+test('the chart table of medieval-charts passes its gates', { skip: process.env.CI && process.platform === 'linux' ? 'too slow on a CI Linux runner (software rendering)' : false, timeout: 400000 }, async () => {
   const r = await testObject(copy(), 'chart-table');
   assert.ok(r.ok, JSON.stringify(r.diagnostics.filter((d) => d.severity === 'error'), null, 1));
 });
