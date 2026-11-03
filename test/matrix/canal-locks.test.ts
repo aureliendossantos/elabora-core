@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { copyExample } from '../helpers.ts';
 import { build } from '@elabora/node/build';
 import { validateDir } from '@elabora/node/project-reader';
 import { testPackage } from '@elabora/node/emulator/run';
@@ -13,11 +14,7 @@ import { testObject } from '@elabora/node/objects/test';
 // one 3D free object that serves four screens (explore, explain, a dialogue's consequences), a
 // component of its own and a watercolour backdrop.
 const SOURCE = path.resolve(import.meta.dirname, '../../examples/canal-locks');
-const copy = () => {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-cl-'));
-  fs.cpSync(SOURCE, dir, { recursive: true, filter: (file) => !/[\\/](dist|\.elabora)([\\/]|$)/.test(file.slice(SOURCE.length)) });
-  return dir;
-};
+const copy = () => copyExample(SOURCE);
 
 test('the canal-locks sample validates and passes the emulator with axe-core, without overflow at phone width', { timeout: 400000 }, async () => {
   const dir = copy();
