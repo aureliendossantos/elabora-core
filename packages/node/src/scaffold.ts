@@ -30,18 +30,17 @@ export interface CourseBrief {
 }
 
 // The texts a new course starts with, to be replaced by the storyboard's, in the course language
-// (another language gets the English ones).
+// (another language gets the English ones). The plan has one item, the intro its screen covers,
+// serving the one objective: a course just created has nothing to fix (no item waits for a screen).
 const STARTER_TEXTS: Record<'fr' | 'en', Record<string, string>> = {
   fr: {
     __TEXT_INTRODUCTION__: 'Introduction',
     __TEXT_OBJECTIVE__: 'À remplacer par un comportement observable : verbe d\'action, condition, critère.',
-    __TEXT_PRACTICE__: 'À remplacer par la première activité du storyboard',
     __TEXT_INTRO__: 'À remplacer par l\'introduction validée dans le storyboard.'
   },
   en: {
     __TEXT_INTRODUCTION__: 'Introduction',
     __TEXT_OBJECTIVE__: 'Replace with an observable behaviour: action verb, condition, criterion.',
-    __TEXT_PRACTICE__: 'Replace with the first activity of the storyboard',
     __TEXT_INTRO__: 'Replace with the introduction validated in the storyboard.'
   }
 };

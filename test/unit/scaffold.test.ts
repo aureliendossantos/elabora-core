@@ -52,10 +52,10 @@ test('scaffold: the texts to replace follow the course language', () => {
   // The default language is French.
   assert.deepEqual(starterTexts(initProject(tempDir(), { id: 'defaut', title: 'Défaut' }).dir), texts);
 
-  // The same findings whatever the language (the practice item waits for its screen).
-  const findings = (dir: string) => validateDir(dir).diagnostics.map((d) => `${d.code} ${d.file}`);
+  // The same findings whatever the language, and nothing to fix: no item waits for a screen.
+  const findings = (dir: string) => validateDir(dir).diagnostics.map((d) => `${d.severity} ${d.code} ${d.file}`);
   assert.deepEqual(findings(french), findings(english));
-  assert.ok(findings(french).includes('E_PLAN_ITEM_UNCOVERED plan.json'));
+  assert.deepEqual(findings(french).filter((finding) => finding.startsWith('error')), []);
 });
 
 test('scaffold: a course created in the library in French starts with French texts', async () => {
