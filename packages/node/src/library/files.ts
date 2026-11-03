@@ -4,7 +4,7 @@ import zlib from 'node:zlib';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { cloneFile, type BlobHash } from '../blobs.ts';
-import { dataLocation, toolDir, PROJECT_ID, TOOL_DIR } from '../data-dir.ts';
+import { dataLocation, toolDir, MODULE_ID_LETTERS, MODULE_ID_PREFIX, PROJECT_ID, TOOL_DIR } from '../data-dir.ts';
 import { lockPath, readLockHolder, type LockHolder } from '../journal/lock.ts';
 import { LibraryError } from './errors.ts';
 
@@ -15,7 +15,7 @@ const CHUNK = 1024 * 1024;
 
 export const ELABORA_VERSION: string = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'package.json'), 'utf8')).version;
 
-export { PROJECT_ID };
+export { MODULE_ID_PREFIX, PROJECT_ID };
 const ID_FILE = 'project-id';
 
 export const isProjectId = (value: string): boolean => PROJECT_ID.test(value);
@@ -41,8 +41,6 @@ export function writeProjectId(projectDir: string, id: string): void {
 // A new project's id, its folder's name in the library: « elabora-module-k7m3qa ». Drawn again while
 // the library, its trash or data kept outside the projects (ELABORA_DATA_DIR) has it: one in a
 // billion, but a trashed project restored, or its history, must never meet another's.
-export const MODULE_ID_PREFIX = 'elabora-module-';
-const MODULE_ID_LETTERS = '23456789abcdefghjkmnpqrstuvwxyz';
 export const TRASH_DIR = '.trash';
 
 export function newProjectId(root: string): string {

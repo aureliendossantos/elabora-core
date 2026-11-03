@@ -4,7 +4,7 @@ import crypto from 'node:crypto';
 import { dataLocation } from '../data-dir.ts';
 import { LibraryError } from './errors.ts';
 import {
-  compactTime, folderSize, heldLock, isEmptyShell, isProjectId, newProjectId, parseCompactTime, readProjectId, removeMovedLock, removeStaleLocks, removeTree,
+  PROJECT_ID, compactTime, folderSize, heldLock, isEmptyShell, isProjectId, newProjectId, parseCompactTime, readProjectId, removeMovedLock, removeStaleLocks, removeTree,
   renameWithRetries, writeProjectId
 } from './files.ts';
 import { TRASH_DIR, ensureLibrary, libraryEntries, libraryRoot } from './location.ts';
@@ -41,7 +41,8 @@ interface TrashRecord {
   from: string;
 }
 
-const ENTRY = /^(\d{8}T\d{9}Z)-([0-9a-f-]{36}|elabora-module-[0-9a-z]{6})(?:-[0-9a-f]+)?$/;
+// <time>-<project id>, a few hex digits more when two were trashed in the same millisecond.
+const ENTRY = new RegExp(`^(\\d{8}T\\d{9}Z)-(${PROJECT_ID.source.slice(1, -1)})(?:-[0-9a-f]+)?$`);
 const recordPath = (trash: string, entry: string) => path.join(trash, `${entry}.json`);
 
 // Moves a project folder (whose lock the caller holds) into the trash and returns the entry name.

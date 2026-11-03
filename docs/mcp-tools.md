@@ -241,7 +241,7 @@ Projects of the Elabora app's library, newest first: id, title, course id, langu
 
 ### `elabora_projects_path`
 
-Folder of the Elabora app's library, or of one of its projects (id, or its first characters as elabora_projects_list shows them).
+Folder of the Elabora app's library, or of one of its projects (its id; a UUID's first characters, or the six letters that end an « elabora-module-… » id).
 
 | Argument | Type | Required | Description |
 |---|---|---|---|

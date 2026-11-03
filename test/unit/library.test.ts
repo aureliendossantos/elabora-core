@@ -121,6 +121,16 @@ test('library: new projects are named elabora-module-xxxxxx, drawn again on a co
   }
   assert.equal(fresh.id, 'elabora-module-k7m3qa');
   assert.equal(draws.length, 0, 'the name taken was drawn again');
+  // So is a name held by a project in the trash: restored, it would meet the new one.
+  const thrown = await createProject({ id: 'jete', title: 'Jeté' });
+  await trashProject(thrown.id);
+  const again = [...thrown.id.slice(-6), ...'w4x9pd'].map((letter) => letters.indexOf(letter));
+  const second = mock.method(crypto, 'randomInt', () => again.shift()!);
+  try {
+    assert.equal((await createProject({ id: 'autre', title: 'Autre' })).id, 'elabora-module-w4x9pd');
+  } finally {
+    second.mock.restore();
+  }
   assert.equal(resolveProjectId('k7m3qa'), fresh.id, 'its six letters find it');
 
   // A project made with a UUID folder: listed, found by its first characters, renamed, copied (the

@@ -24,7 +24,7 @@ export const projectPath = defineTool({
   name: 'elabora_projects_path',
   readOnly: true,
   anywhere: true,
-  description: 'Folder of the Elabora app\'s library, or of one of its projects (id, or its first characters as elabora_projects_list shows them).',
+  description: 'Folder of the Elabora app\'s library, or of one of its projects (its id; a UUID\'s first characters, or the six letters that end an « elabora-module-… » id).',
   inputSchema: objectSchema({ id: { type: 'string' } }),
   handler(args) {
     if (args.id === undefined) return textResult({ library: libraryRoot() });

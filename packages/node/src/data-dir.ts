@@ -39,7 +39,9 @@ export function dataLocation(projectDir: string): DataLocation {
 
 // A project id: a UUID, or what the library names a project it makes, « elabora-module- » and six
 // letters and digits that cannot be misread (no 0/o, 1/l/i), a folder name nobody fears to trust.
-export const PROJECT_ID = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|elabora-module-[2-9a-hjkmnp-z]{6})$/;
+export const MODULE_ID_PREFIX = 'elabora-module-';
+export const MODULE_ID_LETTERS = '23456789abcdefghjkmnpqrstuvwxyz';
+export const PROJECT_ID = new RegExp(`^(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|${MODULE_ID_PREFIX}[${MODULE_ID_LETTERS}]{6})$`);
 
 // The project's id: created once in .elabora/project-id. The library keys its index by it, and data
 // kept outside the project (ELABORA_DATA_DIR) is found by it.
