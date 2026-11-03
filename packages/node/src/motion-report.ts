@@ -171,7 +171,9 @@ async function readMotion({ block, scope }: { block: string | null; scope: 'wind
     await frames();
     for (const { animation, element, fact } of driven) {
       fact.atEnd = progressOf(animation);
-      fact.cannotFinish = fact.atEnd === null || fact.atEnd < 0.999;
+      // A page shorter than the window does not scroll: an animation on its scroll has no timeline
+      // and leaves what it moves as it is (a charter's backdrop on a first, short screen).
+      fact.cannotFinish = !(fact.timeline === 'scroll' && max <= 0) && (fact.atEnd === null || fact.atEnd < 0.999);
       if (!fact.cannotFinish || !element) continue;
       const effect = animation.effect;
       const style = getComputedStyle(element, effect instanceof KeyframeEffect ? effect.pseudoElement : null);

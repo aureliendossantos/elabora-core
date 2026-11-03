@@ -620,7 +620,7 @@ Remove a course variable. Refused while an event reads or writes it: change thos
 
 ### `elabora_projects_create`
 
-Create a module in the Elabora app's library, blank or from a module template (elabora_templates), and return the name to pass as course and its folder; the author finds it in « Mes modules ». No approval needed: the trash takes it back. For a module on a subject, follow the elabora-course-authoring skill next: write the whole draft plan (elabora_write_plan), then build all its screens in one go, without waiting for the plan's validation.
+Create a module in the Elabora app's library, blank, from a module template (elabora_templates), or blank in the charter of another module (charter: its theme, fonts, components, backdrop and player bars, copied; one screen to start from), and return the name to pass as course and its folder; the author finds it in « Mes modules ». No approval needed: the trash takes it back. For a module on a subject, follow the elabora-course-authoring skill next: write the whole draft plan (elabora_write_plan), then build all its screens in one go, without waiting for the plan's validation.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -628,6 +628,7 @@ Create a module in the Elabora app's library, blank or from a module template (e
 | `courseId` | string |  | Its course id (an LMS tells courses by it). Default: the title's, numbered when the library has it. |
 | `language` | string |  | The language of its texts, a BCP 47 tag: the author's, the one you talk with them in. Default: the app's (French or English). |
 | `template` | string |  | A module template's id (elabora_templates). Default: a blank module. |
+| `charter` | string |  | Another module whose charter the new one takes, when the author wants the same look: its project id (elabora_projects_list) or its folder. Not with template. |
 | `request` | string |  | What the author asked for, in their words: kept in the module's notes for agents (its AGENTS.md), and the label of your work on it in its history. |
 
 ### `elabora_projects_duplicate`

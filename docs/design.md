@@ -11,6 +11,8 @@ Agents design freely; content stays structured. An Elabora course separates **wh
 
 The one rule: **words never live in CSS, templates or figures.** The validator reports them (`W_STYLE_TEXT`, `W_COMPONENT_TEXT`, `W_ASSET_SVG_TEXT`).
 
+These layers, less the free objects a course's blocks place, are its **charter**: a new module takes another's whole (`elabora projects create --charter`, MCP `elabora_projects_create` `charter`, [D69](decisions/D69.md)), with the presentation's widths, the player's bars and the files they use, and none of what that module says.
+
 ## 1. Theme
 
 ```json

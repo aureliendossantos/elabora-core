@@ -64,17 +64,19 @@ function started(project: LibraryProject, context: ToolContext, more: Record<str
 export const createProjectTool = defineTool({
   name: 'elabora_projects_create',
   anywhere: true,
-  description: 'Create a module in the Elabora app\'s library, blank or from a module template (elabora_templates), and return the name to pass as course and its folder; the author finds it in « Mes modules ». No approval needed: the trash takes it back. For a module on a subject, follow the elabora-course-authoring skill next: write the whole draft plan (elabora_write_plan), then build all its screens in one go, without waiting for the plan\'s validation.',
+  description: 'Create a module in the Elabora app\'s library, blank, from a module template (elabora_templates), or blank in the charter of another module (charter: its theme, fonts, components, backdrop and player bars, copied; one screen to start from), and return the name to pass as course and its folder; the author finds it in « Mes modules ». No approval needed: the trash takes it back. For a module on a subject, follow the elabora-course-authoring skill next: write the whole draft plan (elabora_write_plan), then build all its screens in one go, without waiting for the plan\'s validation.',
   inputSchema: objectSchema({
     title: { type: 'string', minLength: 1, description: 'The module\'s title, in its language.' },
     courseId: { ...SLUG, description: 'Its course id (an LMS tells courses by it). Default: the title\'s, numbered when the library has it.' },
     language: { ...LANGUAGE, description: 'The language of its texts, a BCP 47 tag: the author\'s, the one you talk with them in. Default: the app\'s (French or English).' },
     template: { type: 'string', description: 'A module template\'s id (elabora_templates). Default: a blank module.' },
+    charter: { type: 'string', description: 'Another module whose charter the new one takes, when the author wants the same look: its project id (elabora_projects_list) or its folder. Not with template.' },
     request: { type: 'string', description: 'What the author asked for, in their words: kept in the module\'s notes for agents (its AGENTS.md), and the label of your work on it in its history.' }
   }, ['title']),
   async handler(args, context) {
-    const { project, template, languageFrom } = await createModule({ ...args, author: context.author });
-    return textResult(started(project, context, { template: template?.id ?? null, languageFrom }));
+    if (args.template && args.charter) return errorResult({ error: 'Give template or charter, not both: a template brings its screens, a charter only the look.' });
+    const { project, template, charter, languageFrom } = await createModule({ ...args, author: context.author });
+    return textResult(started(project, context, { template: template?.id ?? null, ...(charter ? { charter: charter.title ?? charter.dir } : {}), languageFrom }));
   }
 });
 

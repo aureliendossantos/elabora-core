@@ -11,6 +11,7 @@ import { copySources, sourcesSize } from '../sources/index.ts';
 import { HASH_CACHE_FILE, validateDir } from '../project-reader.ts';
 import { initProject } from '../scaffold.ts';
 import { createFromTemplate, moduleTemplate } from '../module-templates.ts';
+import { copyCharter } from '../charter.ts';
 import type { ModuleTemplate } from '../module-templates.ts';
 import type { CourseBrief } from '../scaffold.ts';
 import { withProjectLock } from '../journal/lock.ts';
@@ -302,6 +303,9 @@ export interface CreateProjectOptions {
   // A module template's folder (module-templates.ts, D68): the course starts as a copy of it, in the
   // language asked when the template has its translation.
   template?: string;
+  // A course folder whose charter the course takes (charter.ts, D69): a blank course, one screen, in
+  // that course's theme, fonts, components and backdrop. Not with a template.
+  charter?: string;
 }
 
 // Scaffolds a course (initProject, or a copy of a template) in a staging folder and moves it into the
@@ -311,10 +315,20 @@ export async function createProject(options: CreateProjectOptions): Promise<Libr
   const staging = stagingFolder(root);
   try {
     const dir = path.join(staging, 'project');
+    if (options.template && options.charter) throw new LibraryError('E_INVALID_ARGUMENT', 'A module starts from a template or from another module\'s charter, not both.');
     if (options.template) {
       const template = readCourseInfo(options.template);
       await createFromTemplate(options.template, dir, { id: options.id, title: options.title, language: options.language, brief: options.brief });
       writeOrigin(dir, { kind: 'template', id: template.courseId ?? path.basename(options.template), version: templateVersion(options.template) });
+    } else if (options.charter) {
+      const source = path.resolve(options.charter);
+      const info = readCourseInfo(source);
+      const notes = [charterNote(info.title ?? path.basename(source), info.courseId), options.brief?.notes?.trim() ?? ''].filter(Boolean).join('\n\n');
+      initProject(dir, { id: options.id, title: options.title, language: options.language, brief: { ...options.brief, notes } });
+      // A module of the library is copied as one state of it, as duplicateProject does.
+      const copy = () => Promise.resolve(copyCharter(source, dir, { presentation: options.brief?.presentation }));
+      if (path.dirname(source) === path.resolve(root)) await withLibraryLock(source, copy);
+      else await copy();
     } else initProject(dir, { id: options.id, title: options.title, language: options.language, brief: options.brief });
     const id = newProjectId(root);
     writeProjectId(dir, id);
@@ -340,6 +354,7 @@ export interface NewModuleOptions {
   courseId?: string; // the title's by default (newCourseId)
   language?: string; // the app's by default (appLanguage)
   template?: string; // a module template's id (elabora templates)
+  charter?: string; // a module whose charter it takes (D69): its project id, or a course folder
   request?: string; // the author's request, in their words: kept in the course's notes for agents (D51)
   author?: Author; // an agent: a mark of it labels its work on the module in the history
 }
@@ -347,6 +362,7 @@ export interface NewModuleOptions {
 export interface NewModule {
   project: LibraryProject;
   template: ModuleTemplate | null;
+  charter: { dir: string; title: string | null } | null; // the course whose charter it took
   language: string;
   languageFrom: 'given' | 'app'; // asked for, or the app's
 }
@@ -360,16 +376,31 @@ export async function createModule(options: NewModuleOptions): Promise<NewModule
   const title = options.title.trim();
   if (!title) throw new LibraryError('E_INVALID_ARGUMENT', 'A module needs a title.');
   const template = options.template ? moduleTemplate(options.template) : null;
+  const charter = options.charter ? charterSource(options.charter) : null;
   const language = options.language ?? appLanguage();
   const request = options.request?.trim().replace(/\s*\n\s*/g, ' ');
   const project = await createProject({
     id: options.courseId ?? newCourseId(title), title, language,
     ...(request ? { brief: { notes: requestNotes(request, language) } } : {}),
-    ...(template ? { template: template.dir } : {})
+    ...(template ? { template: template.dir } : {}),
+    ...(charter ? { charter } : {})
   });
   // The module is made: a mark that cannot be written loses its label, not the module (a retry would make another).
   if (options.author?.kind === 'agent') try { appendMark(project.path, { request: request || title, author: options.author }); } catch { /* unlabelled */ }
-  return { project, template, language, languageFrom: options.language ? 'given' : 'app' };
+  return { project, template, charter: charter ? { dir: charter, title: readCourseInfo(charter).title } : null, language, languageFrom: options.language ? 'given' : 'app' };
+}
+
+// The course a charter is taken from: a project of the library by its id, or a course folder.
+export function charterSource(reference: string): string {
+  if (path.isAbsolute(reference) && fs.existsSync(path.join(reference, 'course.json'))) return path.resolve(reference);
+  const dir = libraryProjectDir(resolveProjectId(reference));
+  if (!fs.existsSync(path.join(dir, 'course.json'))) throw new LibraryError('E_INVALID_ARGUMENT', `${reference}: not a module with a course.json.`);
+  return dir;
+}
+
+// What AGENTS.md says of a charter taken from another course, for the agents that write the screens.
+function charterNote(title: string, courseId: string | null): string {
+  return `This course's charter is copied from the module « ${title} »${courseId ? ` (${courseId})` : ''}: its theme (tokens, fonts, stylesheet, named styles, backdrop and its variants), its components and the player's bars. Keep it: build the screens with its components, styles and backdrop variants (elabora look shows them), and change the charter only when the author asks.`;
 }
 
 // The author's request under the course's notes for agents, as the app's « Nouveau module » page

@@ -71,6 +71,12 @@ node bin/elabora.js init my-course --template flow --id my-course --title "My co
 
 The course is a copy of [`templates/flow`](../templates/flow/) under your id and title, in the language asked (each template is in English, translated into French). Its `README.md` says how the charter works and how to make it a brand's.
 
+Or give a new module of the library the look of another one ([D69](decisions/D69.md)): a blank course, one screen to start from, in that module's charter (its theme, fonts, components, backdrop and player bars, copied with their files; none of its screens, plan or narration).
+
+```bash
+node bin/elabora.js projects create --title "My course" --charter <project id or course folder>
+```
+
 ## Work with an agent
 
 Agents work through the same operations, as MCP tools or from the shell:
