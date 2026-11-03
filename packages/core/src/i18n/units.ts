@@ -1,3 +1,4 @@
+import { messagePlaceholders } from './message.ts';
 import { screenOrder, screenBlocks } from '../project/load.ts';
 import { hasDirections } from '../narration/directions.ts';
 import { getRegistry } from '../components/registry.ts';
@@ -421,7 +422,7 @@ export function invariants(text: unknown, format: UnitFormat): Record<string, nu
     };
   }
   if (format === 'icu' || /\{[A-Za-z_]\w*\}/.test(source)) {
-    return { placeholders: [...new Set((source.match(/\{\s*([A-Za-z_]\w*)/g) || []).map((placeholder) => placeholder.replace(/[{\s]/g, '')))].sort().join(',') };
+    return { placeholders: messagePlaceholders(source).join(',') };
   }
   return {};
 }

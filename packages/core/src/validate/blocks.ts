@@ -1,4 +1,5 @@
 import { findingKey } from '../diagnostics/index.ts';
+import { messagePlaceholders } from '../i18n/message.ts';
 import { getFile, hasFile, isSourcePath, projectPath } from '../project/files.ts';
 import { resolveBlockProps, screenBlocks, screenLayout, readingOrder } from '../project/load.ts';
 import type { NumericTolerance } from '@elabora/format';
@@ -446,5 +447,5 @@ export function checkAsset(ctx: CheckContext, asset: unknown, file: string, path
 }
 
 // Placeholder names of an ICU message: {gap}, {n, plural, …} → "gap,n".
-const placeholders = (message: unknown) => [...new Set((String(message).match(/\{\s*([A-Za-z_]\w*)/g) || []).map((x) => x.replace(/[{\s]/g, '')))].sort().join(',');
+const placeholders = (message: unknown) => messagePlaceholders(String(message)).join(',');
 

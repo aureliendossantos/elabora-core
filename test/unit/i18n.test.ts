@@ -6,8 +6,8 @@ import path from 'node:path';
 import { formatMessage } from '@elabora/player/message';
 import { labelsFor, labelKeys, labelLanguages, formatLabel } from '@elabora/player/labels';
 import { toXliff, readXliff } from '@elabora/core/i18n/xliff';
-import { extractUnits } from '@elabora/core/i18n/units';
-import { translatedCourse, translationReady, translationTable } from '@elabora/core/i18n/translate';
+import { extractUnits, invariants } from '@elabora/core/i18n/units';
+import { translatedCourse, translationReady, translationTable, translateUnits } from '@elabora/core/i18n/translate';
 import { findText } from '@elabora/core/commands/text';
 import { screenParts } from '@elabora/core/project/parts';
 import { exportTranslation, translationStatus, buildTranslation, approveTranslation, translationFile, withCourseLanguage, reuseTranslation } from '@elabora/node/translate';
@@ -320,6 +320,40 @@ test('translation: a translation that loses maths or a placeholder is refused', 
   const st = translationStatus(dir, { to: 'en' })[0];
   assert.ok(st.exists);
   assert.ok(st.problems.some((p) => p.id === withMath.id && /maths/.test(p.message)));
+});
+
+test('translation: select and plural branch words translate while every nested argument stays', () => {
+  const source = '{level, select, minimal {Gates} technical {Downstream gates} other {Lower gates}}';
+  const target = '{level, select, minimal {Portes} technical {Portes aval} other {Portes aval}}';
+  assert.deepEqual(invariants(source, 'icu'), { placeholders: 'level' });
+  assert.deepEqual(invariants(target, 'icu'), invariants(source, 'icu'));
+  const nested = '{kind, select, upper {{n, plural, =0 {None} one {# gate for {name}} other {# gates}}} other {{d} m}}';
+  assert.deepEqual(invariants(nested, 'icu'), { placeholders: 'd,kind,n,name' });
+  assert.deepEqual(invariants('{name}: {state}. Press to open.', 'icu'), { placeholders: 'name,state' });
+
+  const dir = copyExample();
+  const file = 'objects/diagnostic-reseau/object.manifest.json';
+  const manifest = readJSON(dir, file);
+  manifest.strings = { gates: { text: source, description: 'Gate label' } };
+  writeJSON(dir, file, manifest);
+  const project = loadProjectFromDir(dir);
+  const unit = extractUnits(project).find((entry) => entry.id.endsWith('.strings.gates'))!;
+  assert.ok(unit);
+  const translated = translateUnits(project, { language: 'en', texts: [{ unit: unit.id, target }] });
+  assert.equal(readXliff(translated.text).units.get(unit.id)?.target, target);
+  const screenFile = 'screens/simulation.json';
+  const screen = readJSON(dir, screenFile);
+  const block = screen.blocks.find((entry: Block) => entry.type === 'free-object');
+  block.props.strings = { gates: target };
+  writeJSON(dir, screenFile, screen);
+  assert.ok(!codes(validateDir(dir).diagnostics).includes('E_OBJECT_STRINGS'), 'translated block strings validate too');
+  for (const invalid of [target.replace('level,', 'mode,'), target.replace('Portes aval}', 'Portes {missing}}')]) {
+    assert.throws(() => translateUnits(project, { language: 'en', texts: [{ unit: unit.id, target: invalid }] }), /changes placeholders/);
+    block.props.strings.gates = invalid;
+    writeJSON(dir, screenFile, screen);
+    assert.ok(codes(validateDir(dir).diagnostics).includes('E_OBJECT_STRINGS'), 'block validation preserves real arguments');
+  }
+  assert.notDeepEqual(invariants(nested.replace('{name}', 'name'), 'icu'), invariants(nested, 'icu'));
 });
 
 test('player labels: scroll presentation names its screens pages, course.ui still has the last word', () => {
