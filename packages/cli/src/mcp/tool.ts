@@ -71,6 +71,9 @@ export const PROFILES = { type: 'array', items: { type: 'string' }, description:
 export interface ToolContext {
   root: string; // the course folder the server is scoped to
   author: Author; // who writes: the agent, by the name its MCP client gives
+  // The name the server serves a course folder under (a project just added to the library), null when
+  // it does not serve it.
+  courseName?: (folder: string) => string | null;
 }
 
 export interface ToolDefinition<Schema extends InputSchema> {

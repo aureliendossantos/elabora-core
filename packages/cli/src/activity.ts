@@ -8,16 +8,16 @@ import type { ActivityEntry, ActivityFamily } from '@elabora/node/activity';
 // What each agent operation says while it runs (@elabora/node/activity): its family, from which the
 // app makes words (« Claude examine l'écran 2.1… »), and where it works. Every tool and every
 // command is named here (test/unit/activity.test.ts): a new one without a family fails the test.
-// A command with null is said nowhere: it is the author's (publish, approve) or no work on the
-// course (init, mcp).
+// An operation with null is said nowhere: it is the author's (publish, approve) or no work on the
+// course (init, mcp, a new module of the library).
 
-export const TOOL_ACTIVITY: Readonly<Record<string, ActivityFamily>> = {
+export const TOOL_ACTIVITY: Readonly<Record<string, ActivityFamily | null>> = {
   elabora_overview: 'module', elabora_agent_guide: 'learn', elabora_docs: 'docs', elabora_sources: 'sources', elabora_source_read: 'sources',
   elabora_get_plan: 'plan', elabora_plan_diff: 'plan', elabora_get_screen: 'screen', elabora_find_text: 'search',
   elabora_translation_table: 'translations', elabora_translation_status: 'translations',
   elabora_list_components: 'blocks', elabora_get_schema: 'blocks', elabora_get_component: 'blocks', elabora_list_fonts: 'blocks',
   elabora_validate: 'check', elabora_get_object: 'object', elabora_object_map: 'object',
-  elabora_list_profiles: 'status', elabora_history: 'status', elabora_projects_list: 'status', elabora_projects_path: 'status', elabora_media_status: 'status', elabora_downloads: 'status', elabora_voice_account: 'status',
+  elabora_list_profiles: 'status', elabora_history: 'status', elabora_projects_list: 'status', elabora_projects_path: 'status', elabora_templates: 'status', elabora_media_status: 'status', elabora_downloads: 'status', elabora_voice_account: 'status',
   elabora_look: 'look', elabora_preview_screenshot: 'look', elabora_preview_component: 'look', elabora_check_fit: 'fit', elabora_replay_object: 'try-object', elabora_test_object: 'try-object',
   elabora_timeline: 'screen', elabora_dialogue_show: 'screen', elabora_dialogue_play: 'dialogue', elabora_dialogue_paths: 'dialogue',
   elabora_voice_list: 'voices', elabora_voice_takes: 'voices', elabora_voice_search: 'voices', elabora_voice_estimate: 'voices', elabora_voice_set: 'voices',
@@ -38,7 +38,8 @@ export const TOOL_ACTIVITY: Readonly<Record<string, ActivityFamily>> = {
   elabora_export_plan_document: 'package', elabora_dialogue_export: 'package', elabora_build: 'package', elabora_test_package: 'package',
   elabora_write_design_file: 'design', elabora_upgrade_theme: 'design', elabora_add_font: 'design', elabora_create_component: 'design', elabora_fork_component: 'design',
   elabora_write_component_file: 'design', elabora_migrate_components: 'design', elabora_add_library_component: 'design', elabora_publish_component: 'design', elabora_build_assets: 'design',
-  elabora_undo: 'undo'
+  elabora_undo: 'undo',
+  elabora_projects_create: null, elabora_projects_duplicate: null, elabora_import: null
 };
 
 export const COMMAND_ACTIVITY: Readonly<Record<string, ActivityFamily | null>> = {

@@ -112,6 +112,9 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
     return last;
   };
   const mode = known || served.length > 1 ? 'several' : served.length === 1 ? 'one' : 'none';
+  // The name a course takes at the next call, read again: a module just created in the library is
+  // served with no restart (null: this server does not serve that folder).
+  const courseName = (folder: string): string | null => mode === 'several' ? current(true)?.find((each) => each.folder === path.resolve(folder))?.name ?? null : null;
   // Outside a course, only the tools that need none.
   const anywhere = agentTools({ readOnly, ...(options.tools === undefined ? {} : { tools: options.tools }) }).filter((tool) => tool.anywhere).map((tool) => tool.name);
   const selection: ToolOptions = { readOnly, ...(mode === 'none' ? { tools: anywhere } : options.tools === undefined ? {} : { tools: [...options.tools] }) };
@@ -142,7 +145,7 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
   // Said to the agent too, in the server's instructions: a host keeps a server's stderr in its logs.
   for (const note of [...notes, gone]) if (note) process.stderr.write(`${note}\n`);
   const list = served.map((course) => `- ${course.name}: ${course.title ?? '(no title)'} (${course.folder})`).join('\n');
-  const scope = known ? (start ? `Elabora MCP server, serving the courses of the Elabora app on this computer (its library and the folders it opened): every course operation takes course, its name as elabora_courses gives it; call elabora_courses again for a course created or opened since. Each course has its own AGENTS.md and author notes: read those of the course you work on before editing it.\n${list || 'No course yet: the author creates one in Elabora.'}` : `Elabora MCP server. ${NOT_OPENED}`)
+  const scope = known ? (start ? `Elabora MCP server, serving the courses of the Elabora app on this computer (its library and the folders it opened): every course operation takes course, its name as elabora_courses gives it; call elabora_courses again for a course created or opened since. Each course has its own AGENTS.md and author notes: read those of the course you work on before editing it. A new module the author asks for: elabora_projects_create, then its whole draft plan and all its screens in one go (elabora-course-authoring).\n${list || 'No course yet: create one when the author asks (elabora_templates offers charters), or import one (elabora_import).'}` : `Elabora MCP server. ${NOT_OPENED}`)
     : mode === 'one' ? `Elabora MCP server, scoped to one course: ${served[0]!.folder}.`
     : mode === 'none' ? `Elabora MCP server, started outside a course: ${typeof dirs === 'string' ? path.resolve(dirs) : dirs.map((dir) => path.resolve(dir)).join(', ')} holds no Elabora course (a folder with course.json). ${NO_COURSE}`
     : `Elabora MCP server, serving ${served.length} courses: every course operation takes course, its name below. Each course has its own AGENTS.md and author notes: read those of the course you work on before editing it.\n${list}`;
@@ -165,7 +168,8 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
     const tool = byName.get(name);
     if (mode !== 'several' || (tool && tool.anywhere)) {
       if (mode === 'one' && tool && !tool.anywhere) settle(served[0]!.folder);
-      return callAgentTool(name, args, { root: served[0]?.folder ?? process.cwd(), author }, selection);
+      // Serving several courses, a tool that needs none works on none of them (no activity on the first).
+      return callAgentTool(name, args, { root: mode === 'one' ? served[0]!.folder : process.cwd(), author, courseName }, selection);
     }
     if (!tool && name !== 'elabora_courses') return callAgentTool(name, args, { root: process.cwd(), author }, selection);
     const { course: wanted, ...rest } = args;
@@ -176,7 +180,7 @@ export function createMcpServer(dirs: string | readonly string[], options: ToolO
     if (name === 'elabora_courses') return textResult(courses);
     const course = find(courses);
     if (!course) {
-      const choice = courses.length ? `course is one of ${courses.map((each) => each.name).join(', ')}` : 'there is no course yet: the author creates one in Elabora';
+      const choice = courses.length ? `course is one of ${courses.map((each) => each.name).join(', ')}` : 'there is no course yet: elabora_projects_create makes one';
       return errorResult({ error: `${wanted === undefined ? 'No course given' : `No course ${JSON.stringify(wanted)} here`}: ${choice}.` });
     }
     settle(course.folder);

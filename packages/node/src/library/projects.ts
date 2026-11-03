@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { parseJSON } from '@elabora/core/util/json';
+import { slugify } from '@elabora/core/import/convert';
 import type { Author } from '@elabora/core/ops/types';
 import { updateCourseSettings } from '../edit/index.ts';
 import { dataLocation } from '../data-dir.ts';
@@ -9,12 +10,14 @@ import { listProjectFiles, type FileInfo } from '../project-files.ts';
 import { copySources, sourcesSize } from '../sources/index.ts';
 import { HASH_CACHE_FILE, validateDir } from '../project-reader.ts';
 import { initProject } from '../scaffold.ts';
-import { createFromTemplate } from '../module-templates.ts';
+import { createFromTemplate, moduleTemplate } from '../module-templates.ts';
+import type { ModuleTemplate } from '../module-templates.ts';
 import type { CourseBrief } from '../scaffold.ts';
 import { withProjectLock } from '../journal/lock.ts';
+import { appendMark } from '../journal/journal.ts';
 import { LibraryError } from './errors.ts';
 import { ELABORA_VERSION, MODULE_ID_PREFIX, copyProjectFile, folderSize, isEmptyShell, isProjectId, newProjectId, readProjectId, removeTree, renameWithRetries, writeProjectId } from './files.ts';
-import { ensureLibrary, libraryEntries, libraryRoot, stagingFolder } from './location.ts';
+import { appLanguage, ensureLibrary, libraryEntries, libraryRoot, stagingFolder } from './location.ts';
 
 // Projects of the library: one folder per project, named by its project id. The folders are the
 // truth; what the home screen shows is read from them (course.json, file times and sizes), plus a
@@ -321,6 +324,59 @@ export async function createProject(options: CreateProjectOptions): Promise<Libr
   } finally {
     await removeTree(staging);
   }
+}
+
+// A new module of the library gets a course id no other module there has (an LMS tells courses by
+// it, and an archive of one would ask to replace the other): the title's, numbered when taken.
+export function newCourseId(title: string, fallback = 'module'): string {
+  const base = slugify(title, fallback, 48);
+  let id = base;
+  for (let n = 2; findProjectsByCourseId(id).length; n++) id = `${base.slice(0, 44).replace(/-+$/, '')}-${n}`;
+  return id;
+}
+
+export interface NewModuleOptions {
+  title: string;
+  courseId?: string; // the title's by default (newCourseId)
+  language?: string; // the app's by default (appLanguage)
+  template?: string; // a module template's id (elabora templates)
+  request?: string; // the author's request, in their words: kept in the course's notes for agents (D51)
+  author?: Author; // an agent: a mark of it labels its work on the module in the history
+}
+
+export interface NewModule {
+  project: LibraryProject;
+  template: ModuleTemplate | null;
+  language: string;
+  languageFrom: 'given' | 'app'; // asked for, or the app's
+}
+
+// A module of the library, as `elabora projects create` and agents (elabora_projects_create) make it:
+// blank or from a template, in the language asked, else the app's. Made by an agent, it begins its
+// history with a mark of that agent, as « Demander à l'IA » does: the agent's first work on it (the
+// plan, the screens) shows as AI work, labelled with the author's request. Nothing in the journal
+// undoes the creation itself: the trash takes a module back.
+export async function createModule(options: NewModuleOptions): Promise<NewModule> {
+  const title = options.title.trim();
+  if (!title) throw new LibraryError('E_INVALID_ARGUMENT', 'A module needs a title.');
+  const template = options.template ? moduleTemplate(options.template) : null;
+  const language = options.language ?? appLanguage();
+  const request = options.request?.trim().replace(/\s*\n\s*/g, ' ');
+  const project = await createProject({
+    id: options.courseId ?? newCourseId(title), title, language,
+    ...(request ? { brief: { notes: requestNotes(request, language) } } : {}),
+    ...(template ? { template: template.dir } : {})
+  });
+  if (options.author?.kind === 'agent') appendMark(project.path, { request: request || title, author: options.author });
+  return { project, template, language, languageFrom: options.language ? 'given' : 'app' };
+}
+
+// The author's request under the course's notes for agents, as the app's « Nouveau module » page
+// writes it, in the course's language (French or English).
+function requestNotes(request: string, language: string, now = new Date()): string {
+  const french = language.toLowerCase().startsWith('fr');
+  const date = now.toLocaleDateString(french ? 'fr-FR' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  return french ? `Ce que l’auteur a dit en créant le module, le ${date} :\n- Demande : « ${request} »` : `What the author said when creating the course, on ${date}:\n- Request: “${request}”`;
 }
 
 export interface DuplicateOptions {

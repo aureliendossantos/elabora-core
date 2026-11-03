@@ -32,9 +32,10 @@ projects list [--json] [--validate]                 Projects of the library, new
 projects path [<id>] [--set <dir> [--move|--copy]]  Folder of the library, or of a project (id or its first characters).
                                                     --set: use another folder; --move takes the projects along; --copy
                                                     moves them by copying and checking every file (another disk)
-projects create <course-id> --title <t> [--language fr] [--template <id>]
+projects create [<course-id>] --title <t> [--language fr] [--template <id>]
                                                     Create a course in the library, blank or from a module template
-                                                    (elabora templates)
+                                                    (elabora templates); the course id is the title's by default, the
+                                                    language the app's
 projects duplicate <id> [--title <t>]               Copy a project under a new id (same course id; the history stays)
 projects rename <id> --title <t>                    Change the title of a project (an undoable edit of course.json)
 projects trash <id>                                 Move a project, history included, to the library's trash

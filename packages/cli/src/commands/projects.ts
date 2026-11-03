@@ -1,15 +1,14 @@
-import fs from 'node:fs';
 import path from 'node:path';
 import { detectAuthor } from '@elabora/node/journal/index';
 import {
-  libraryRoot, setLibraryRoot, listProjects, getProject, resolveProjectId, readCourseInfo, createProject, duplicateProject, renameProject,
-  trashProject, listTrash, restoreFromTrash, deleteFromTrash, emptyTrash, exportProject, importArchive, importFolder, archiveName, MODULE_ID_PREFIX,
+  libraryRoot, setLibraryRoot, listProjects, getProject, resolveProjectId, readCourseInfo, createModule, duplicateProject, renameProject,
+  trashProject, listTrash, restoreFromTrash, deleteFromTrash, emptyTrash, exportProject, archiveName, MODULE_ID_PREFIX,
   type LibraryProject, type Progress, type ImportedProject
 } from '@elabora/node/library/index';
 import { ArgumentError } from '../arguments.ts';
-import { moduleTemplate } from '@elabora/node/module-templates';
 import { sourcesSize } from '@elabora/node/sources/index';
 import type { ImportChoices } from '@elabora/core/import/convert';
+import type { ImportCourseResult, ModuleImport } from '@elabora/node/import/index';
 import { defineCommand, printJson, reportingFailures } from './command.ts';
 import type { CommandGroup } from './command.ts';
 
@@ -28,7 +27,7 @@ const entry = (usage: string, ...description: string[]): string => {
 const HELP = [
   entry('projects list [--json] [--validate]', 'Projects of the library, newest first: title, course, date, size,', 'validation, folder (--validate checks those not checked yet)'),
   entry('projects path [<id>] [--set <dir> [--move|--copy]]', 'Folder of the library, or of a project (id or its first characters).', '--set: use another folder; --move takes the projects along; --copy', 'moves them by copying and checking every file (another disk)'),
-  entry('projects create <course-id> --title <t> [--language fr] [--template <id>]', 'Create a course in the library, blank or from a module template', '(elabora templates)'),
+  entry('projects create [<course-id>] --title <t> [--language fr] [--template <id>]', 'Create a course in the library, blank or from a module template', '(elabora templates); the course id is the title\'s by default, the', 'language the app\'s'),
   entry('projects duplicate <id> [--title <t>]', 'Copy a project under a new id (same course id; the history stays)'),
   entry('projects rename <id> --title <t>', 'Change the title of a project (an undoable edit of course.json)'),
   entry('projects trash <id>', 'Move a project, history included, to the library\'s trash'),
@@ -169,12 +168,11 @@ const create = defineCommand({
   name: 'projects create',
   flags: { title: 'string', language: 'string', template: 'string' },
   run({ positionals: [courseId], flags }) {
-    if (!courseId || !flags.title) { console.error('Usage: elabora projects create <course-id> --title <title> [--language fr] [--template <id>]'); return 2; }
+    if (!flags.title) { console.error('Usage: elabora projects create [<course-id>] --title <title> [--language fr] [--template <id>]'); return 2; }
     return reportingFailures(async () => {
-      const template = flags.template ? moduleTemplate(flags.template) : null;
-      const project = await createProject({ id: courseId, title: flags.title!, language: flags.language ?? (template ? 'fr' : undefined), ...(template ? { template: template.dir } : {}) });
+      const { project, template, language, languageFrom } = await createModule({ title: flags.title!, ...(courseId ? { courseId } : {}), ...(flags.language ? { language: flags.language } : {}), ...(flags.template ? { template: flags.template } : {}), author: detectAuthor() });
       const next = template ? 'README.md says how its charter works; replace the placeholder texts with the storyboard\'s' : 'put the client\'s validated plan in plan.json';
-      console.log(`✔ Created "${project.title}" (${project.courseId}) as project ${shortId(project.id)}${template ? ` from the template ${template.id}` : ''}.\n  ${project.path}\nNext: ${next}, then run elabora validate in that folder.`);
+      console.log(`✔ Created "${project.title}" (${project.courseId}) as project ${shortId(project.id)}${template ? ` from the template ${template.id}` : ''}, in ${language}${languageFrom === 'app' ? ', the app\'s language' : ''}.\n  ${project.path}\nNext: ${next}, then run elabora validate in that folder.`);
       return 0;
     });
   }
@@ -293,10 +291,9 @@ function parseChoices(entries: readonly string[]): Partial<ImportChoices> {
 }
 
 // A Storyline or Rise module made into an Elabora module (beta, docs/decisions.md D47).
-async function importForeign(file: string, dir: string | undefined, flags: { title?: string; id?: string; lang?: string; choose?: string[]; json: boolean }): Promise<number> {
-  const { importCourse, IMPORT_REPORT_FILE } = await import('@elabora/node/import/index');
-  const result = await importCourse({ file, dir, title: flags.title, id: flags.id, language: flags.lang, choices: parseChoices(flags.choose ?? []), author: detectAuthor() });
-  if (flags.json) { printJson(result); return result.validation.errors ? 1 : 0; }
+async function printForeign(result: ImportCourseResult, json: boolean): Promise<number> {
+  const { IMPORT_REPORT_FILE } = await import('@elabora/node/import/index');
+  if (json) { printJson(result); return result.validation.errors ? 1 : 0; }
   const { report } = result;
   console.log(`✔ Beta import of ${report.source.kind === 'rise' ? 'a Rise 360 export' : report.source.kind === 'storyline-source' ? 'a Storyline project' : 'a course published by Storyline'}: ${result.project ? `project ${shortId(result.project.id)} of the library` : 'a new module'}.\n  ${result.dir}`);
   console.log(`  ${report.summary}`);
@@ -323,33 +320,22 @@ const importCommand = defineCommand({
     if (!source) { console.error('Usage: elabora import <archive|folder> [--replace [<id>] | --copy] [--json]\n       elabora import <file.story|published course|Rise export> [dir] [--title <t>] [--choose <decision>=<choice>,…] [--json]'); return 2; }
     if (replace !== undefined && flags.copy) throw new ArgumentError('--replace and --copy exclude each other');
     return reportingFailures(async () => {
-      if (!fs.existsSync(source)) throw new Error(`${source} does not exist.`);
-      // Storyline and Rise first: what is neither goes on as an Elabora archive or folder.
-      const { detectImport } = await import('@elabora/node/import/index');
-      const detected = await detectImport(source);
-      if (detected.kind && detected.kind !== 'elabora-archive' && detected.kind !== 'elabora-folder') {
-        if (replace !== undefined || flags.copy) throw new ArgumentError('--replace and --copy are for Elabora archives: a Storyline or Rise module is always imported as a new module.');
-        return importForeign(source, positionals[1], flags);
-      }
-      if (positionals[1]) throw new ArgumentError(`${source} is ${detected.kind ? detected.reason : 'not a Storyline or Rise module'}: only those are imported into a folder; an Elabora archive or folder goes into the library.`);
-      if (flags.title || flags.id || flags.lang || flags.choose) throw new ArgumentError('--title, --id, --lang and --choose are for Storyline and Rise modules.');
+      // Loaded when used: the importers are heavy for a command that starts often.
+      const { importModule } = await import('@elabora/node/import/index');
       const progress = progressReporter();
-      let result;
+      let imported: ModuleImport;
       try {
-        if (fs.statSync(source).isDirectory()) {
-          if (replace !== undefined) throw new Error('A folder is always imported as a new project: import it, then trash the project it replaces.');
-          result = await importFolder(source, { onProgress: progress.onProgress });
-        } else {
-          result = await importArchive(source, {
-            onExisting: replace !== undefined ? 'replace' : flags.copy ? 'copy' : 'ask',
-            replace: typeof replace === 'string' ? resolveProjectId(replace) : undefined,
-            author: detectAuthor(),
-            onProgress: progress.onProgress
-          });
-        }
+        imported = await importModule(source, {
+          dir: positionals[1], title: flags.title, id: flags.id, language: flags.lang, choices: parseChoices(flags.choose ?? []),
+          ...(replace !== undefined ? { onExisting: 'replace' as const } : flags.copy ? { onExisting: 'copy' as const } : {}),
+          ...(typeof replace === 'string' ? { replace: resolveProjectId(replace) } : {}),
+          author: detectAuthor(), onProgress: progress.onProgress
+        });
       } finally {
         progress.end();
       }
+      const { result } = imported;
+      if ('report' in result) return printForeign(result, flags.json);
       if (flags.json) printJson(result);
       if (result.status === 'exists') {
         if (!flags.json) {

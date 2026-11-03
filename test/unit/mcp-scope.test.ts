@@ -27,7 +27,7 @@ test('MCP outside a course: the docs, skills and library only, and how to reach 
   try {
     const client = await connect(empty);
     const names = (await client.listTools()).tools.map((tool) => tool.name).sort();
-    assert.deepEqual(names, ['elabora_agent_guide', 'elabora_docs', 'elabora_projects_list', 'elabora_projects_path']);
+    assert.deepEqual(names, ['elabora_agent_guide', 'elabora_docs', 'elabora_projects_list', 'elabora_projects_path', 'elabora_templates']);
     assert.match(client.getInstructions() ?? '', /started outside a course: .* holds no Elabora course/);
     assert.match(client.getInstructions() ?? '', /elabora_projects_list gives the author's courses/);
     const { resources } = await client.listResources();
@@ -192,7 +192,7 @@ test('MCP with no folder, Elabora never opened here: one sentence says what to d
       assert.ok(!(await client.callTool({ name: 'elabora_docs', arguments: {} })).isError);
       fs.mkdirSync(path.join(local, 'Library'), { recursive: true });
       assert.deepEqual(body(await client.callTool({ name: 'elabora_courses', arguments: {} })), []);
-      assert.match(body(await client.callTool({ name: 'elabora_get_plan', arguments: { course: 'x' } })).error, /there is no course yet: the author creates one in Elabora/);
+      assert.match(body(await client.callTool({ name: 'elabora_get_plan', arguments: { course: 'x' } })).error, /there is no course yet: elabora_projects_create makes one/);
       await client.close();
     });
   } finally {

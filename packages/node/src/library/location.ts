@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { localDataRoot, TOOL_DIR } from '../data-dir.ts';
 import { withProjectLock } from '../journal/lock.ts';
 import { LibraryError } from './errors.ts';
@@ -92,6 +93,33 @@ export function knownFolders(): string[] | null {
   } catch { /* none opened in place */ }
   const folders = Array.isArray(opened) ? opened.filter((dir): dir is string => typeof dir === 'string' && path.isAbsolute(dir)) : [];
   return [libraryRoot(), ...folders];
+}
+
+// The language of the app's interface, as the app picks it (elabora-app, resolveLocale): the first of
+// the system's preferred languages it speaks, French or English, else English. ELABORA_APP_LOCALE
+// forces it, as it does the app's in development. A new module is written in it unless asked otherwise.
+export function appLanguage(): 'fr' | 'en' {
+  const forced = process.env.ELABORA_APP_LOCALE;
+  if (forced === 'fr' || forced === 'en') return forced;
+  for (const preference of systemLanguages()) {
+    const language = preference.trim().replaceAll('_', '-').split('-')[0]?.toLowerCase();
+    if (language === 'fr' || language === 'en') return language;
+  }
+  return 'en';
+}
+
+// The system's preferred languages, first first: on macOS those of its settings (what Electron's
+// getPreferredSystemLanguages reads), elsewhere the locale's environment, then ICU's (Windows' own).
+function systemLanguages(): string[] {
+  if (process.platform === 'darwin') {
+    try {
+      const listed = execFileSync('defaults', ['read', '-g', 'AppleLanguages'], { encoding: 'utf8', timeout: 2000, stdio: ['ignore', 'pipe', 'ignore'] });
+      const found = [...listed.matchAll(/[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]+)*/g)].map((match) => match[0]);
+      if (found.length) return found;
+    } catch { /* no defaults: the environment says */ }
+  }
+  const { LC_ALL, LC_MESSAGES, LANG, LANGUAGE } = process.env;
+  return [...(LANGUAGE ?? '').split(':'), LC_ALL, LC_MESSAGES, LANG, Intl.DateTimeFormat().resolvedOptions().locale].filter((each): each is string => !!each);
 }
 
 // Creates the library folders when needed, and clears staging folders left by a process that died

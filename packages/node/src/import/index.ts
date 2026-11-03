@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { convertCourse, slugify } from '@elabora/core/import/convert';
+import { convertCourse } from '@elabora/core/import/convert';
 import type { ImportChoices, FontMapping } from '@elabora/core/import/convert';
 import { findRiseCourse, readRiseLocale, readRiseRuntime, readRise, isRisePage, isRiseRuntime, RISE_RUNTIME_FILES } from '@elabora/core/import/rise';
 import { parseProvidedData, readStorylinePublished } from '@elabora/core/import/storyline-published';
@@ -21,9 +21,10 @@ import { dataLocation } from '../data-dir.ts';
 import * as edit from '../edit/index.ts';
 import { ensureLibrary, stagingFolder } from '../library/location.ts';
 import { newProjectId, writeProjectId, renameWithRetries, removeTree } from '../library/files.ts';
-import { findProjectsByCourseId, getProject, validateAndCache } from '../library/projects.ts';
+import { getProject, newCourseId, validateAndCache } from '../library/projects.ts';
 import type { LibraryProject } from '../library/projects.ts';
-import { replaceWithStaged } from '../library/archive.ts';
+import { importArchive, importFolder, replaceWithStaged } from '../library/archive.ts';
+import type { ImportResult, Progress } from '../library/archive.ts';
 
 // Importing a module made elsewhere (docs/decisions.md D47), beta: Storyline 360's source (.story),
 // a course Storyline published (web or LMS, zipped or not), Rise 360's exports (web, SCORM, xAPI).
@@ -179,7 +180,7 @@ export async function importCourse(options: ImportCourseOptions): Promise<Import
     const fallbackTitle = path.basename(resolved).replace(/\.(story|zip)$/i, '').replace(/[_-]+/g, ' ').trim();
     const title = options.title || kept?.title || course.title || fallbackTitle;
     const converted = convertCourse(course, {
-      id: options.id ?? kept?.id ?? (options.dir ? undefined : libraryCourseId(title)),
+      id: options.id ?? kept?.id ?? (options.dir ? undefined : newCourseId(title, 'imported')),
       title,
       language: options.language || kept?.language || course.language || options.defaultLanguage,
       choices: { ...(brief?.presentation ? { presentation: brief.presentation } : {}), ...options.choices },
@@ -264,13 +265,42 @@ export async function importCourse(options: ImportCourseOptions): Promise<Import
   }
 }
 
-// A new module of the library gets a course id no other module there has (an LMS tells courses by
-// it, and an archive of one would ask to replace the other): the title's, numbered when taken.
-function libraryCourseId(title: string): string {
-  const base = slugify(title, 'imported', 48);
-  let id = base;
-  for (let n = 2; findProjectsByCourseId(id).length; n++) id = `${base.slice(0, 44).replace(/-+$/, '')}-${n}`;
-  return id;
+export interface ModuleImportOptions {
+  dir?: string; // a Storyline or Rise module only: the folder to write it into instead of the library
+  // A Storyline or Rise module only (importCourse).
+  title?: string;
+  id?: string;
+  language?: string;
+  choices?: Partial<ImportChoices>;
+  // An Elabora archive only, when the library holds its course already (importArchive).
+  onExisting?: 'ask' | 'replace' | 'copy';
+  replace?: string;
+  author?: Author;
+  onProgress?: (progress: Progress) => void; // an Elabora archive or folder
+}
+
+export type ModuleImport =
+  | { kind: ImportKind; result: ImportCourseResult }
+  | { kind: 'elabora-archive' | 'elabora-folder'; result: ImportResult };
+
+// Any module into the library, as `elabora import` and agents (elabora_import) bring one: a Storyline or
+// Rise module made into an Elabora module (importCourse), an Elabora archive (importArchive) or folder
+// (importFolder). What the file is decides, by its content.
+export async function importModule(file: string, options: ModuleImportOptions = {}): Promise<ModuleImport> {
+  if (!fs.existsSync(file)) throw new ImportError('E_IMPORT_UNREADABLE', `${file} does not exist.`);
+  const detected = await detectImport(file);
+  if (detected.kind && detected.kind !== 'elabora-archive' && detected.kind !== 'elabora-folder') {
+    if (options.onExisting !== undefined || options.replace !== undefined) throw new ImportError('E_IMPORT_TARGET', 'Replace and copy are for Elabora archives: a Storyline or Rise module is always imported as a new module.');
+    const { title, id, language, choices, author, dir } = options;
+    return { kind: detected.kind, result: await importCourse({ file, dir, title, id, language, choices, author }) };
+  }
+  if (options.dir) throw new ImportError('E_IMPORT_TARGET', `${file} is ${detected.kind ? detected.reason : 'not a Storyline or Rise module'}: only those are imported into a folder; an Elabora archive or folder goes into the library.`);
+  if (options.title || options.id || options.language || (options.choices && Object.keys(options.choices).length)) throw new ImportError('E_IMPORT_TARGET', 'A title, a course id, a language and choices are for Storyline and Rise modules.');
+  if (fs.statSync(file).isDirectory()) {
+    if (options.onExisting === 'replace' || options.replace !== undefined) throw new ImportError('E_IMPORT_TARGET', 'A folder is always imported as a new project: import it, then trash the project it replaces.');
+    return { kind: 'elabora-folder', result: await importFolder(file, { onProgress: options.onProgress }) };
+  }
+  return { kind: 'elabora-archive', result: await importArchive(file, { onExisting: options.onExisting, replace: options.replace, author: options.author, onProgress: options.onProgress }) };
 }
 
 const counted = (summary: { errors: number; warnings: number; infos?: number }) => ({ errors: summary.errors, warnings: summary.warnings, infos: summary.infos ?? 0 });

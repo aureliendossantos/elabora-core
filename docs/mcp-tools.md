@@ -1,6 +1,6 @@
 # Agent tools
 
-Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 106 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
+Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 110 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
 
 ## Reading
 
@@ -246,6 +246,10 @@ Folder of the Elabora app's library, or of one of its projects (its id; a UUID's
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `id` | string |  |  |
+
+### `elabora_templates`
+
+The module templates a new module can start from (elabora_projects_create template): a charter (theme, fonts, an animated backdrop) and placeholder screens. Name and summary in the app's languages: offer them to the author by name, as the app's home does.
 
 ### `elabora_media_status`
 
@@ -613,6 +617,39 @@ Remove a course variable. Refused while an event reads or writes it: change thos
 | Argument | Type | Required | Description |
 |---|---|---|---|
 | `id` | string | yes |  |
+
+### `elabora_projects_create`
+
+Create a module in the Elabora app's library, blank or from a module template (elabora_templates), and return the name to pass as course and its folder; the author finds it in « Mes modules ». No approval needed: the trash takes it back. For a module on a subject, follow the elabora-course-authoring skill next: write the whole draft plan (elabora_write_plan), then build all its screens in one go, without waiting for the plan's validation.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `title` | string | yes | The module's title, in its language. |
+| `courseId` | string |  | Its course id (an LMS tells courses by it). Default: the title's, numbered when the library has it. |
+| `language` | string |  | The language of its texts, a BCP 47 tag: the author's, the one you talk with them in. Default: the app's (French or English). |
+| `template` | string |  | A module template's id (elabora_templates). Default: a blank module. |
+| `request` | string |  | What the author asked for, in their words: kept in the module's notes for agents (its AGENTS.md), and the label of your work on it in its history. |
+
+### `elabora_projects_duplicate`
+
+Copy a project of the library under a new project id (elabora_projects_list), with the same course id; its history stays with the original. Returns the name to pass as course and its folder.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `id` | string | yes | The project's id, as elabora_projects_path takes it. |
+| `title` | string |  | The copy's title. Default: the same. |
+
+### `elabora_import`
+
+Import a file of this computer into the library as a new module: an Elabora archive (.elabora) or course folder, or (beta) a Storyline project (.story), a course Storyline published (zip or folder) or a Rise 360 export. A Storyline or Rise module comes with import-report.json: every loss, and the choices the import made; another import with choices makes them otherwise, as a new module. An archive of a course the library holds already imports nothing until you say copy; replacing or trashing a module stays with the author.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `file` | string | yes | The absolute path of the file or folder. |
+| `copy` | boolean |  | An archive whose course the library holds already: import it as a new project beside it. |
+| `title` | string |  | Storyline or Rise: the module's title. Default: the source's. |
+| `language` | string |  | Storyline or Rise: the language of its texts. Default: the source's. |
+| `choices` | object |  | Storyline or Rise: the choices of import-report.json made otherwise. |
 
 ### `elabora_replace_text`
 
