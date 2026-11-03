@@ -127,5 +127,6 @@ export async function packageWeights(project: Project): Promise<QualitySize[]> {
 let runtime: Promise<number> | null = null;
 let threeJs: Promise<number> | null = null;
 const deflated = (contents: Iterable<string | Buffer>) => [...contents].reduce((sum, content) => sum + zlib.deflateRawSync(typeof content === 'string' ? Buffer.from(content) : content, { level: 9 }).length, 0);
-const runtimeBytes = () => (runtime ??= runtimeFiles().then((files) => deflated(Object.values(files))));
-const threeBytes = () => (threeJs ??= Promise.resolve().then(() => deflated(Object.values(vendorThree()))));
+// A failure is not kept: the next weighing tries again.
+const runtimeBytes = () => (runtime ??= runtimeFiles().then((files) => deflated(Object.values(files))).catch((error: unknown) => { runtime = null; throw error; }));
+const threeBytes = () => (threeJs ??= Promise.resolve().then(() => deflated(Object.values(vendorThree()))).catch((error: unknown) => { threeJs = null; throw error; }));
