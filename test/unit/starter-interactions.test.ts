@@ -122,6 +122,10 @@ test('steps and hotspots: the build names their controls and what they are for a
   writeFixture(dir, 'components/my-follow/template.html', '<div data-t-follow><p>Rien</p></div>');
   const hooks = findings(dir).filter((d) => d.code === 'E_COMPONENT_HOOK' && d.target === 'my-follow');
   assert.match(hooks[0]?.message ?? '', /data-t-follow holds the data-t-reveal elements/);
+  // A step's words are marked inside a reveal of a follow, not outside one.
+  writeFixture(dir, 'components/my-follow/template.html', '<div data-t-follow><p data-t-words>Rien</p><section data-t-reveal="a"><p data-t-words>Un</p></section></div>');
+  const words = findings(dir).filter((d) => d.code === 'E_COMPONENT_HOOK' && d.target === 'my-follow');
+  assert.deepEqual(words.map((d) => d.message), ['data-t-words marks the words of a step: inside a data-t-reveal of a data-t-follow.']);
 });
 
 test('steps and hotspots: exports, the client view and translation carry their words', () => {
