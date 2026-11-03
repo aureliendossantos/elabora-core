@@ -38,7 +38,16 @@ if (!found) {
 const folders = process.argv.slice(2).filter(Boolean);
 const env = { ...process.env, ...found.env };
 delete env.NODE_OPTIONS; // Claude's Node settings are not Elabora's
-const child = spawn(found.command, [...found.args, 'mcp', ...folders], { stdio: 'inherit', env, windowsHide: true });
+// The server's input and output go through this process's streams, never its handles: Claude's
+// built-in Node.js (its default) gives this file a process.stdin and a process.stdout of its own,
+// over a message channel, and the process's real ones are not the connection. A server that
+// inherited them read an empty input and closed right after Claude's first message.
+const child = spawn(found.command, [...found.args, 'mcp', ...folders], { stdio: 'pipe', env, windowsHide: true });
 child.on('error', (error) => { process.stderr.write(`Elabora could not start: ${error.message}\n`); process.exit(1); });
-child.on('exit', (code, signal) => process.exit(code ?? (signal ? 1 : 0)));
+process.stdin.on('data', (chunk) => child.stdin.write(chunk));
+process.stdin.on('end', () => child.stdin.end());
+child.stdin.on('error', () => {}); // the server has exited: its close ends this process
+child.stdout.on('data', (chunk) => process.stdout.write(chunk));
+child.stderr.on('data', (chunk) => process.stderr.write(chunk));
+child.on('close', (code, signal) => process.exit(code ?? (signal ? 1 : 0)));
 for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => child.kill(signal));

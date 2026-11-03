@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { spawn, type ChildProcess } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -7,6 +8,8 @@ import { createMcpServer } from '@elabora/cli/mcp';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
+import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js';
 import { ROOT, copyExample } from '../helpers.ts';
 import { callAgentTool } from '@elabora/cli';
 
@@ -225,6 +228,61 @@ test('the Claude extension asks nothing: its launcher starts elabora mcp on Elab
     await given.close();
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
+    fs.rmSync(local, { recursive: true, force: true });
+  }
+});
+
+// Claude's built-in Node.js, its default for an extension, runs the launcher in a host whose own
+// stdin and stdout are not the connection (test/fixtures/claude-node-host.cjs): the launcher passes
+// the server's input and output through process.stdin and process.stdout, which it gave to the
+// server's process before, so that Claude saw the server close right after initialize.
+class HostTransport implements Transport {
+  onmessage?: (message: JSONRPCMessage) => void;
+  onclose?: () => void;
+  onerror?: (error: Error) => void;
+  stderr = '';
+  private host?: ChildProcess;
+  private buffer = '';
+  private args: string[];
+  private env: NodeJS.ProcessEnv;
+  constructor(args: string[], env: NodeJS.ProcessEnv) {
+    this.args = args;
+    this.env = env;
+  }
+  async start() {
+    const host = spawn(process.execPath, [path.join(ROOT, 'test/fixtures/claude-node-host.cjs'), ...this.args], { stdio: ['ignore', 'ignore', 'pipe', 'ipc'], env: this.env });
+    this.host = host;
+    host.stderr!.on('data', (chunk) => { this.stderr += chunk; });
+    host.on('message', (message: { type: string; content: string }) => {
+      if (message.type !== 'stdout') return;
+      this.buffer += message.content;
+      let end;
+      while ((end = this.buffer.indexOf('\n')) !== -1) {
+        const line = this.buffer.slice(0, end).trim();
+        this.buffer = this.buffer.slice(end + 1);
+        if (line) this.onmessage?.(JSON.parse(line));
+      }
+    });
+    host.on('exit', () => this.onclose?.());
+  }
+  async send(message: JSONRPCMessage) {
+    this.host?.send({ type: 'stdin', data: JSON.stringify(message) });
+  }
+  async close() {
+    this.host?.kill();
+  }
+}
+
+test('the Claude extension\'s launcher serves through Claude\'s built-in Node.js, whose stdin and stdout are not the process\'s', async () => {
+  const { local } = elaboraData([]);
+  const transport = new HostTransport([path.join(ROOT, 'plugins/claude-desktop/server/launch.cjs')], { ...process.env, ELABORA_COMMAND: path.join(ROOT, 'bin/elabora.js'), ELABORA_LOCAL_DATA_DIR: local });
+  const client = new Client({ name: 'test', version: '1' });
+  try {
+    await client.connect(transport).catch((error) => assert.fail(`${error.message}\n${transport.stderr}`));
+    assert.match(client.getInstructions() ?? '', /serving the courses of the Elabora app on this computer/);
+    assert.equal(body(await client.callTool({ name: 'elabora_courses', arguments: {} })).length, 1);
+  } finally {
+    await client.close();
     fs.rmSync(local, { recursive: true, force: true });
   }
 });

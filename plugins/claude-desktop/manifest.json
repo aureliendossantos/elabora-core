@@ -3,7 +3,7 @@
   "manifest_version": "0.3",
   "name": "elabora",
   "display_name": "Elabora",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Work on your Elabora e-learning courses with Claude: the plan, screens, quizzes, design, narration, translation and checks.",
   "long_description": "Elabora is a local-first authoring tool for e-learning. This extension connects Claude to the Elabora app installed on your computer, on the courses Elabora knows (its library and the folders it opened), with nothing to set up: Claude reads and writes them with Elabora's own tools, and follows the rules and guidance of your Elabora version. Elabora shows what Claude changes as it happens, and undoes it in one step. Requires the Elabora app (elabora.studio), in the Applications folder on a Mac.",
   "author": { "name": "Elabora", "url": "https://elabora.studio" },
