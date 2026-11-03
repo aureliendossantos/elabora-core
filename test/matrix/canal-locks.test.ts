@@ -42,7 +42,9 @@ test('the canal-locks slides fit at 1600×900 and 1280×720, in English and in F
   assert.deepEqual(fitDiagnostics(french).filter((d) => d.severity !== 'info').map((d) => `${d.code} ${d.message}`), []);
 });
 
-test('the lock of canal-locks passes its gates', { timeout: 900000 }, async () => {
+// On CI's Linux runners (software rendering on shared cores) the 3D gates take 11 minutes against 5 minutes on a Mac and miss the
+// gate's own 60 s per step: they run on the weekly macOS job and on a developer's machine.
+test('the lock of canal-locks passes its gates', { skip: process.env.CI && process.platform === 'linux' ? 'too slow on a CI Linux runner (software rendering)' : false, timeout: 900000 }, async () => {
   const r = await testObject(copy(), 'canal-lock');
   assert.ok(r.ok, JSON.stringify(r.diagnostics.filter((d) => d.severity === 'error'), null, 1));
 });

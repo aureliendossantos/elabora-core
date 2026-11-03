@@ -378,7 +378,12 @@ test('explored step: Continue says what is left in markers, steps and events; vi
     await page.click('[data-block="explore-carousel"] [data-t-goto="summary"]');
     assert.match((await hint()) ?? '', /^Il reste 5 étapes à voir\./, 'the steps jumped over are still to see');
     for (const id of ['poste', 'commutateur', 'routeur', 'pare-feu', 'serveur']) await page.click(`[data-block="explore-carousel"] [data-t-goto="${id}"]`);
-    await page.$eval('[data-block="explore-timeline"] [data-t-reveal="serveur"]', (node) => node.scrollIntoView({ block: 'center' }));
+    // Each event in turn: how many fit in a 600 px window depends on the fonts of the machine (130 px each on
+    // Linux's, where the one before the last stays under half seen when the last is centred).
+    for (const id of ['poste', 'commutateur', 'routeur', 'pare-feu', 'serveur']) {
+      await page.$eval(`[data-block="explore-timeline"] [data-t-reveal="${id}"]`, (node) => node.scrollIntoView({ block: 'center' }));
+      await page.waitForFunction((name) => document.querySelector(`[data-block="explore-timeline"] [data-t-reveal="${name}"]`)?.hasAttribute('data-t-visited'), id);
+    }
     await page.waitForFunction(() => document.querySelector('.t-continue-hint')?.hasAttribute('data-t-empty'));
     assert.equal(await page.$eval('.t-continue-btn', (node) => node.getAttribute('aria-disabled')), null);
   });

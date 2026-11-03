@@ -287,7 +287,8 @@ test('engine: a turn\'s batch stays open through the author\'s changes and close
   const reopened = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0, batchIdleMs: 200 });
   sessions.push(reopened);
   await reopened.run('update_screen', { id: 'chemin', title: 'Après le tour' }, chatAgent);
-  await new Promise((resolve) => setTimeout(resolve, 400));
+  // The idle time (200 ms) starts again at each change the watcher reports: a loaded runner reports them late.
+  for (let waited = 0; reopened.openBatch !== null && waited < 5000; waited += 50) await new Promise((resolve) => setTimeout(resolve, 50));
   assert.equal(reopened.openBatch, null, 'an ended turn closes after its idle time like any batch');
   await reopened.close();
   const session2 = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 });
