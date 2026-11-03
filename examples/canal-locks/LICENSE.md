@@ -8,7 +8,7 @@ Les contenus originaux de ce projet d'exemple sont placés dans le domaine publi
 
 Cela couvre :
 
-- les textes pédagogiques, le dialogue, le glossaire, les scénarios et le plan (`course.json`, `plan.json`, `plan-versions/`, `screens/`, `elabora.lock.json`) ;
+- les textes pédagogiques, le dialogue, le glossaire, les scénarios et le plan (`course.json`, `plan.json`, `plan-versions/`, `screens/`, `translations/`, `elabora.lock.json`) ;
 - le composant et ses styles (`components/`), l'objet libre écrit pour l'exemple (`objects/canal-lock/` : simulation, géométrie, matériaux, interface et effets sonores **synthétisés par son code**, sans fichier audio) et les captures de ses tests (`objects/*/__snapshots__/`) ;
 - le générateur (`generators/`) et les images SVG qu'il produit (`assets/images/*.svg`) ;
 - l'illustration SVG de l'éclusière Nell (`assets/personnages/nell.svg`) ;
