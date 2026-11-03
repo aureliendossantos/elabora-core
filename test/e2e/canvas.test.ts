@@ -210,6 +210,13 @@ test('canvas: steps, layers and the answered state as captures show them, kept a
 
     // The scroll position stays across updates.
     await page.setViewportSize({ width: 1280, height: 420 });
+    // The page lays itself out again after a resize, a frame or more later on a loaded runner (once 635 px tall, then
+    // 603): scrolled before it settles, the position was clamped to the shorter page after the update.
+    await page.evaluate(() => new Promise<void>((resolve) => {
+      let height = -1; let steady = 0;
+      const frame = () => { const now = document.documentElement.scrollHeight; steady = now === height ? steady + 1 : 0; height = now; if (steady >= 5) resolve(); else requestAnimationFrame(frame); };
+      frame();
+    }));
     const scrolled = await page.evaluate(() => { scrollTo(0, 240); return scrollY; });
     assert.ok(scrolled > 20, `${scrolled}`);
     await show(withScreen(numeric, 'practice', (screen) => { blockOf(screen, 'anatomy-example-title').props.text = 'Worked example: ring fixed'; }), 'practice');

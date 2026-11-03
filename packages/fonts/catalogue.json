@@ -1264,7 +1264,7 @@
       "family": "Atkinson Hyperlegible Next",
       "category": "sans-serif",
       "style": "accessible",
-      "use": "Drawn by the Braille Institute for low-vision readers: letters that cannot be mistaken for one another (I l 1, O 0).",
+      "use": "Drawn by the Braille Institute for low-vision readers: hooked and spurred letters (q, l, 1, a slashed 0) that cannot be mistaken for one another. For an audience with low vision; not a default for other courses.",
       "stack": "\"Atkinson Hyperlegible Next\", Verdana, \"Segoe UI\", system-ui, sans-serif",
       "for": [
         "body",

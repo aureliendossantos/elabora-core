@@ -470,4 +470,8 @@ function checkPrimitives(hooks: readonly TemplateHook[], report: (code: string, 
     if (!holds(follow, 'reveal')) report('E_COMPONENT_HOOK', follow.line, 'data-t-follow holds the data-t-reveal elements it follows (the steps).');
     if (holds(follow, 'follow')) report('E_COMPONENT_HOOK', follow.line, 'data-t-follow holds another data-t-follow: one figure follows one list of steps.');
   }
+  for (const words of of('words')) {
+    if (!words.within.includes('reveal') || !words.within.includes('follow')) report('E_COMPONENT_HOOK', words.line, 'data-t-words marks the words of a step: inside a data-t-reveal of a data-t-follow.');
+    if (holds(words, 'words')) report('E_COMPONENT_HOOK', words.line, 'data-t-words holds another data-t-words: one part of a step says when it is current.');
+  }
 }

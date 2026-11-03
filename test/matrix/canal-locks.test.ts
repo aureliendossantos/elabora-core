@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { copyExample } from '../helpers.ts';
+import { copyExample, SKIP_3D_ON_CI_LINUX } from '../helpers.ts';
 import { build } from '@elabora/node/build';
 import { validateDir } from '@elabora/node/project-reader';
 import { testPackage } from '@elabora/node/emulator/run';
@@ -30,7 +30,7 @@ test('the canal-locks sample validates and passes the emulator with axe-core, wi
   assert.deepEqual(r.accessibility.overflow, []);
 });
 
-test('the canal-locks slides fit at 1600×900 and 1280×720, in English and in French', { timeout: 400000 }, async () => {
+test('the canal-locks slides fit at 1600×900 and 1280×720, in English and in French', { skip: SKIP_3D_ON_CI_LINUX, timeout: 400000 }, async () => {
   const fit = await measureFit(copy(), { fresh: true });
   assert.ok(fit.ok, JSON.stringify(fit.diagnostics));
   assert.equal(fit.mode, 'slides');
@@ -42,7 +42,7 @@ test('the canal-locks slides fit at 1600×900 and 1280×720, in English and in F
   assert.deepEqual(fitDiagnostics(french).filter((d) => d.severity !== 'info').map((d) => `${d.code} ${d.message}`), []);
 });
 
-test('the lock of canal-locks passes its gates', { timeout: 900000 }, async () => {
+test('the lock of canal-locks passes its gates', { skip: SKIP_3D_ON_CI_LINUX, timeout: 900000 }, async () => {
   const r = await testObject(copy(), 'canal-lock');
   assert.ok(r.ok, JSON.stringify(r.diagnostics.filter((d) => d.severity === 'error'), null, 1));
 });

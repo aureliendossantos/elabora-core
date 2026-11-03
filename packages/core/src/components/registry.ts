@@ -111,11 +111,11 @@ export const BEHAVIORS: Readonly<Record<Behavior, BehaviorHooks>> = {
 // D63: sequence/item/prev/next/goto/position (one item at a time), card/face/flip (a flip card),
 // zoom/caption (an image opened in the lightbox), exclusive (one part open at a time), details (a
 // native disclosure that is visited), reveal (visited once it has been in view).
-// follow (D63, a steps block's scroll): a container of reveals whose current one, the one crossing the
-// middle of the window, the player writes on it as the page scrolls.
+// follow (D63, a steps block's scroll): a container of reveals whose current one, the last whose words
+// (words, inside a reveal) have crossed the middle of the window, the player writes on it as the page scrolls.
 export const PRIMITIVE_HOOKS = ['click', 'toggle', 'part', 'open', 'tabs', 'tab', 'panel', 'selected', 'label', 'bleed', 'compare', 'compare-label',
   'sequence', 'item', 'prev', 'next', 'goto', 'position', 'card', 'face', 'flip', 'zoom', 'caption', 'exclusive', 'details', 'reveal',
-  'follow'];
+  'follow', 'words'];
 // Hooks of screen layouts only (D63): what the player writes about the screen, from its labels:
 // duration (« 6 min », the reading time the build computes for the screen). Nothing about where the
 // screen is (D63 amended: no line above a title), so data-t-section or data-t-lesson is unknown.

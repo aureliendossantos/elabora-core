@@ -93,7 +93,9 @@ test('a Chromium that is slow to end does not hold its close: past the grace, it
   const begin = Date.now();
   await browser.close();
   assert.ok(Date.now() - begin < 5000, `closed in ${Date.now() - begin} ms`);
-  assert.equal(child.signalCode, 'SIGKILL');
+  // Windows has no signals: process.kill ends the process at once (TerminateProcess, exit code 1) and Node reports no signal.
+  if (process.platform === 'win32') assert.ok(child.exitCode !== null && child.exitCode !== 0, `exit code ${child.exitCode}`);
+  else assert.equal(child.signalCode, 'SIGKILL');
   assert.deepEqual(sent, ['SystemInfo.getProcessInfo']);
 
   // One that ends within the grace is left to end, and one that cannot say its process closes as before.

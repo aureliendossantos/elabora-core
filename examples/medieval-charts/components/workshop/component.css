@@ -1,5 +1,5 @@
 /* Scrolling workshop, a fork of « Étapes » (steps, scroll, figure build): the figure stays in view while
-   the stages scroll past; the stage crossing the middle of the window is current (the player writes
+   the stages scroll past; the stage whose card has crossed the middle of the window is current (the player writes
    --t-current on the block's root and data-t-following once it follows the page), and the figure shows
    the layers and labels of the stages up to it, each inking in. Without the player, or with reduced
    motion: the finished figure beside the stages. Any number of stages. */
