@@ -1,0 +1,342 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "downhill",
+  "title": "Now, what if we go downhill?",
+  "covers": [
+    "ITEM-4",
+    "ITEM-5"
+  ],
+  "layout": "lock-stage",
+  "layoutProps": {
+    "arrangement": "left"
+  },
+  "completeWhen": "action",
+  "continueRevealsSteps": false,
+  "blocks": [
+    {
+      "id": "downhill-talk",
+      "type": "dialogue",
+      "slot": "body",
+      "props": {
+        "title": "Bringing a barge down with Nell",
+        "mode": "practice",
+        "objective": "OBJ-2",
+        "feedback": "now",
+        "debrief": false,
+        "style": "messaging",
+        "nodes": [
+          {
+            "id": "arrival",
+            "title": "The barge waits in the full chamber",
+            "lines": [
+              {
+                "id": "n1",
+                "text": "Later that day, at the same lock. A barge floats in the full chamber, heading downhill."
+              },
+              {
+                "id": "nell1",
+                "speaker": "nell",
+                "expression": "souriant",
+                "text": "Hello! I'm Nell, I keep this lock.",
+                "cues": [
+                  {
+                    "at": {
+                      "word": "Hello"
+                    },
+                    "gesture": "saluer"
+                  }
+                ]
+              },
+              {
+                "id": "nell2",
+                "speaker": "nell",
+                "expression": "agace",
+                "text": "The skipper has been heaving on the lower gates for five minutes. They won't move an inch."
+              }
+            ],
+            "prompt": "What do you suggest?",
+            "options": [
+              {
+                "id": "a",
+                "label": "Open the lower paddles",
+                "text": "Let's open the lower paddles and let the chamber drain into the lower canal.",
+                "quality": "good",
+                "do": [
+                  {
+                    "type": "set-object-props",
+                    "block": "downhill-lock",
+                    "props": {
+                      "command": "close-upper-paddles"
+                    }
+                  },
+                  {
+                    "type": "set-object-props",
+                    "block": "downhill-lock",
+                    "props": {
+                      "command": "open-lower-paddles"
+                    }
+                  }
+                ],
+                "reply": [
+                  {
+                    "id": "nell3",
+                    "speaker": "nell",
+                    "expression": "souriant",
+                    "text": "Hear that rush? The water is running out downstream."
+                  },
+                  {
+                    "id": "n2",
+                    "text": "The level drops, and the barge sinks gently with it."
+                  }
+                ],
+                "feedback": "Right. The higher water in the [chamber](glossary:lock-chamber) was pressing the lower [gates](glossary:gates) shut. Letting it run down to the lower canal brings both levels together."
+              },
+              {
+                "id": "b",
+                "label": "Open both paddles",
+                "text": "Let's open the upper and the lower paddles together, to go faster.",
+                "quality": "ok",
+                "retry": true,
+                "do": [
+                  {
+                    "type": "set-object-props",
+                    "block": "downhill-lock",
+                    "props": {
+                      "command": "open-upper-paddles"
+                    }
+                  },
+                  {
+                    "type": "set-object-props",
+                    "block": "downhill-lock",
+                    "props": {
+                      "command": "open-lower-paddles"
+                    }
+                  }
+                ],
+                "reply": [
+                  {
+                    "id": "nell4",
+                    "speaker": "nell",
+                    "expression": "inquiet",
+                    "text": "Hmm. Now it pours in at the top as fast as it leaves at the bottom."
+                  },
+                  {
+                    "id": "n3",
+                    "text": "The level stops halfway. The lower gates still won't budge."
+                  }
+                ],
+                "feedback": "Half right: the lower [paddles](glossary:paddle) let water out, but the upper ones keep refilling the chamber. Only the way down should be open."
+              },
+              {
+                "id": "c",
+                "label": "Push harder",
+                "text": "Let's both push on the balance beams. The gates must be stuck.",
+                "quality": "bad",
+                "retry": true,
+                "do": [
+                  {
+                    "type": "set-object-props",
+                    "block": "downhill-lock",
+                    "props": {
+                      "command": "open-lower-gates"
+                    }
+                  }
+                ],
+                "reply": [
+                  {
+                    "id": "nell5",
+                    "speaker": "nell",
+                    "expression": "agace",
+                    "text": "We could push all day."
+                  },
+                  {
+                    "id": "n4",
+                    "text": "The beams creak. The gates don't move."
+                  }
+                ],
+                "feedback": "Tonnes of water press on the chamber side of the gates. No one can push against that: the levels must be equal first."
+              }
+            ],
+            "next": "level"
+          },
+          {
+            "id": "level",
+            "title": "The chamber is down",
+            "lines": [
+              {
+                "id": "nell6",
+                "speaker": "nell",
+                "expression": "soulage",
+                "text": "There we are: level with the lower canal."
+              }
+            ],
+            "prompt": "What now?",
+            "options": [
+              {
+                "id": "a",
+                "label": "Open the lower gates",
+                "text": "Now we open the lower gates and let the barge glide out.",
+                "quality": "good",
+                "do": [
+                  {
+                    "type": "set-object-props",
+                    "block": "downhill-lock",
+                    "props": {
+                      "command": "open-lower-gates"
+                    }
+                  },
+                  {
+                    "type": "set-object-props",
+                    "block": "downhill-lock",
+                    "props": {
+                      "command": "boat-forward"
+                    }
+                  }
+                ],
+                "reply": [
+                  {
+                    "id": "nell7",
+                    "speaker": "nell",
+                    "expression": "souriant",
+                    "text": "Easy as a garden gate. Off she goes!"
+                  },
+                  {
+                    "id": "n5",
+                    "text": "The gates swing open, and the barge sails into the lower canal."
+                  }
+                ],
+                "feedback": "Yes: with the same level on both sides, nothing holds the gates shut any more."
+              },
+              {
+                "id": "b",
+                "label": "Wait a little longer",
+                "text": "Let's wait a few minutes, just to be sure the water has settled.",
+                "quality": "ok",
+                "retry": true,
+                "reply": [
+                  {
+                    "id": "nell8",
+                    "speaker": "nell",
+                    "expression": "neutre",
+                    "text": "We can wait. But it won't get any more level than this."
+                  }
+                ],
+                "feedback": "No harm done, but no need: once the levels match, the gates can open straight away."
+              },
+              {
+                "id": "c",
+                "label": "Open the upper gates",
+                "text": "Let's open the upper gates. That's how the barge came in.",
+                "quality": "bad",
+                "retry": true,
+                "do": [
+                  {
+                    "type": "set-object-props",
+                    "block": "downhill-lock",
+                    "props": {
+                      "command": "open-upper-gates"
+                    }
+                  }
+                ],
+                "reply": [
+                  {
+                    "id": "nell9",
+                    "speaker": "nell",
+                    "expression": "inquiet",
+                    "text": "Not a chance! The upper canal is three metres above us now."
+                  }
+                ],
+                "feedback": "Now the upper canal holds the higher water, and it presses the upper gates shut. A pair of gates only opens between equal levels."
+              }
+            ],
+            "next": "farewell"
+          },
+          {
+            "id": "farewell",
+            "title": "Goodbye",
+            "lines": [
+              {
+                "id": "nell10",
+                "speaker": "nell",
+                "expression": "souriant",
+                "text": "See you on the way back up!",
+                "cues": [
+                  {
+                    "at": {
+                      "word": "See"
+                    },
+                    "gesture": "saluer"
+                  }
+                ]
+              }
+            ],
+            "end": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "downhill-lock",
+      "type": "free-object",
+      "slot": "scene",
+      "continuity": {
+        "key": "lock",
+        "duration": 1200
+      },
+      "props": {
+        "object": "canal-lock",
+        "title": "The lock, with the barge in the full chamber",
+        "aspectRatio": "fill",
+        "narrowAspectRatio": "4:3",
+        "minHeight": 380,
+        "props": {
+          "mode": "display",
+          "scenario": "downhill",
+          "rise": 3,
+          "visualStyle": "illustrated",
+          "cameraView": "isometric",
+          "informationLevel": "guided",
+          "showAnnotations": true,
+          "motionIntensity": "expressive",
+          "entrance": "fade",
+          "allowViewChange": false,
+          "sound": false
+        },
+        "a11y": {
+          "description": "The same lock, seen in three-quarter view. The barge floats in the full chamber, level with the upper canal; the lower gates are shut, with the lower canal 3 metres below. Each choice in the conversation operates the lock: paddles let water through, gates swing or strain, and the barge rises or sinks with the water."
+        },
+        "textAlternative": "**Text version of the scene.** The [barge](glossary:barge) floats in the lock chamber, which is full: its water is level with the upper canal, 3 m above the lower canal. Both pairs of gates are shut.\n\nWhat each choice does to the [lock](glossary:lock):\n\n- **Open the lower paddles:** water runs from the chamber into the lower canal; the chamber empties and the barge goes down with it.\n- **Open both paddles:** water runs in at the top as fast as it leaves at the bottom; the level stops halfway.\n- **Push on the gates:** the lower gates strain but stay shut, held by the higher water in the chamber.\n- **Open the lower gates,** once the chamber is level with the lower canal: they swing open and the barge sails out.\n- **Open the upper gates** at that point: they stay shut, held by the higher water of the upper canal."
+      }
+    },
+    {
+      "id": "downhill-coda",
+      "type": "callout",
+      "slot": "note",
+      "style": "coda",
+      "step": 2,
+      "props": {
+        "variant": "info",
+        "textRef": "TXT-2"
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "downhill-end",
+      "description": "Once the conversation ends, show the closing thought and complete the screen.",
+      "on": {
+        "type": "dialogue.ended",
+        "target": "downhill-talk"
+      },
+      "do": [
+        {
+          "type": "reveal-step",
+          "step": 2
+        },
+        {
+          "type": "complete-screen"
+        }
+      ]
+    }
+  ]
+}

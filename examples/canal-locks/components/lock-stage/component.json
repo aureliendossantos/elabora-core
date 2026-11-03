@@ -1,0 +1,61 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/component.schema.json",
+  "id": "lock-stage",
+  "title": "Lock stage",
+  "description": "A full-window stage on the paper for a 3D scene without a frame. The title and its text float at the top of the stage (Top), stand in a column on the left (Left), or open the module with a large title (Hero); a note can sit at the bottom right, over the scene. On narrow screens everything stacks.",
+  "instructions": "Put one free object with aspectRatio fill in Scene. Top: keep the text to two short lines. Left: the column takes up to 36rem (a dialogue fits). The object keeps its subject out of the part the text covers (safe area).",
+  "category": "layout",
+  "version": "1.0.0",
+  "level": "screen",
+  "fullBleed": true,
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "arrangement": {
+        "type": "string",
+        "enum": [
+          "top",
+          "left",
+          "hero"
+        ],
+        "default": "top",
+        "title": "Text placement",
+        "description": "Top: the text floats over the top of the stage. Left: a column of text on the left, from the top. Hero: a larger title in a column on the left, centred in height (opening screens).",
+        "x-group": "design"
+      }
+    }
+  },
+  "slots": [
+    {
+      "id": "body",
+      "label": "Text",
+      "default": true,
+      "accepts": [
+        "text",
+        "callout",
+        "button",
+        "dialogue"
+      ],
+      "maxBlocks": 3
+    },
+    {
+      "id": "scene",
+      "label": "Scene",
+      "accepts": [
+        "free-object",
+        "image"
+      ],
+      "maxBlocks": 1
+    },
+    {
+      "id": "note",
+      "label": "Note over the scene",
+      "accepts": [
+        "text",
+        "callout"
+      ],
+      "maxBlocks": 1
+    }
+  ]
+}

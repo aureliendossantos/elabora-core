@@ -1,0 +1,81 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "intro",
+  "title": "How can a boat travel uphill?",
+  "covers": [
+    "ITEM-1"
+  ],
+  "layout": "lock-stage",
+  "layoutProps": {
+    "arrangement": "hero"
+  },
+  "blocks": [
+    {
+      "id": "intro-text",
+      "type": "text",
+      "slot": "body",
+      "style": "lead",
+      "props": {
+        "textRef": "TXT-1"
+      }
+    },
+    {
+      "id": "intro-start",
+      "type": "button",
+      "slot": "body",
+      "style": "next",
+      "props": {
+        "label": "Find out how",
+        "variant": "primary"
+      }
+    },
+    {
+      "id": "intro-scene",
+      "type": "free-object",
+      "slot": "scene",
+      "continuity": {
+        "key": "lock",
+        "duration": 900
+      },
+      "props": {
+        "object": "canal-lock",
+        "title": "A barge in front of a canal lock",
+        "aspectRatio": "fill",
+        "narrowAspectRatio": "4:3",
+        "minHeight": 360,
+        "props": {
+          "mode": "display",
+          "scenario": "uphill",
+          "visualStyle": "illustrated",
+          "cameraView": "isometric",
+          "informationLevel": "minimal",
+          "showAnnotations": false,
+          "motionIntensity": "subtle",
+          "entrance": "watercolor",
+          "allowViewChange": false,
+          "sound": false
+        },
+        "a11y": {
+          "description": "A small barge floats in the lower canal, in front of a lock: a stone chamber closed by black wooden gates. Beyond the far gates, the upper canal lies about 3 metres higher than the boat."
+        },
+        "textAlternative": "**Text version of the scene.** A small [barge](glossary:barge) floats in the lower canal, in front of a [lock](glossary:lock): a stone [chamber](glossary:lock-chamber) closed at each end by a pair of black wooden [gates](glossary:gates) with white-tipped [balance beams](glossary:balance-beam). Beyond the far gates, the upper canal lies about 3 metres higher than the boat, behind a wall of stone."
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "intro-start-go",
+      "description": "The Start button opens the simulation.",
+      "on": {
+        "type": "click",
+        "target": "intro-start"
+      },
+      "do": [
+        {
+          "type": "go-to",
+          "screen": "next"
+        }
+      ]
+    }
+  ]
+}

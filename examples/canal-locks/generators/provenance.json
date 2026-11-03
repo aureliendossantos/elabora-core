@@ -1,0 +1,30 @@
+{
+  "format": "elabora-generated/1",
+  "assets": {
+    "images/paper-grain.svg": {
+      "generator": "generators/paper.mjs",
+      "inputsHash": "sha256:f4d745ebb9cbfbf3fb13a83ef3be1d868520d78bf54f3b8c37a6cd04373fde83",
+      "outputHash": "sha256:7c00e603214382fa84ec081de57a42bae41d8232d0f2b03a8820078007024bd7"
+    },
+    "images/rule-wave.svg": {
+      "generator": "generators/paper.mjs",
+      "inputsHash": "sha256:f4d745ebb9cbfbf3fb13a83ef3be1d868520d78bf54f3b8c37a6cd04373fde83",
+      "outputHash": "sha256:db4246887874fe17e4b9a6b3b5b28f7b0451633b720d9280f91b65a364a404e3"
+    },
+    "images/wash-ochre.svg": {
+      "generator": "generators/paper.mjs",
+      "inputsHash": "sha256:f4d745ebb9cbfbf3fb13a83ef3be1d868520d78bf54f3b8c37a6cd04373fde83",
+      "outputHash": "sha256:f264b4581cfc16b4f7e21f949e844b479e099e762f4153f7f943ed494a681679"
+    },
+    "images/wash-sage.svg": {
+      "generator": "generators/paper.mjs",
+      "inputsHash": "sha256:f4d745ebb9cbfbf3fb13a83ef3be1d868520d78bf54f3b8c37a6cd04373fde83",
+      "outputHash": "sha256:0eff2a6fc1f87d618aeb04b22fb3819dc9b694d2b958ad4aa88ece539ebfd12a"
+    },
+    "images/wash-water.svg": {
+      "generator": "generators/paper.mjs",
+      "inputsHash": "sha256:f4d745ebb9cbfbf3fb13a83ef3be1d868520d78bf54f3b8c37a6cd04373fde83",
+      "outputHash": "sha256:e2a1cb6a2056704f2c90d66b0cb9d7a2c5eeda2f094a395730a33be862c1f458"
+    }
+  }
+}

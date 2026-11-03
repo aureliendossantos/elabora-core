@@ -1,0 +1,99 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/plan.schema.json",
+  "id": "PLAN-CANAL-LOCKS-V1",
+  "title": "How do canal locks work?",
+  "businessGoal": "Show, in a short demonstration module for Elabora, how an AI can build an original 3D teaching component that an author customises without code, inside a real slide-based e-learning experience.",
+  "audience": {
+    "role": "General public: teenagers and adults curious about canals, with no prior knowledge",
+    "priorKnowledge": "low",
+    "notes": "Self-paced on the web, desktop or phone. No voice-over: every piece of information is written on screen, with discreet sound effects that can be muted."
+  },
+  "sources": [],
+  "objectives": [
+    {
+      "id": "OBJ-1",
+      "short": "Explain how a lock works",
+      "statement": "Explain why a boat changes level in a lock: water flowing from the higher canal (or towards the lower one) changes the level in the chamber, the floating boat follows that level, and a pair of gates opens only when the water is level on both sides.",
+      "bloom": "understand",
+      "criterion": "Brings the boat to the upper canal in the simulation (hints allowed), then follows the three principles of the explanation."
+    },
+    {
+      "id": "OBJ-2",
+      "short": "Apply it going downhill",
+      "statement": "Choose, for a boat waiting in a full lock chamber, the interventions that bring it down to the lower canal, and justify each choice by the water levels on either side of the gates.",
+      "bloom": "apply",
+      "criterion": "Picks the good option at both decisions of the lock keeper's case, at the first try or after one retry."
+    }
+  ],
+  "items": [
+    {
+      "id": "ITEM-1",
+      "kind": "intro",
+      "part": "Discover",
+      "title": "How can a boat travel uphill?",
+      "description": "Opening slide. A little barge waits in the lower canal, facing the closed gates of a lock; behind them the upper canal sits higher. The 3D diorama appears as a watercolour wash. A short narrated hook asks how the boat could ever get up there, without giving the answer, and a Start button opens the simulation.",
+      "lockedTexts": [
+        {
+          "id": "TXT-1",
+          "text": "Canals are flat, but the land is not. Up ahead, the water is higher, and this little barge needs to reach it. How will it get up there?"
+        }
+      ],
+      "objectives": [
+        "OBJ-1"
+      ]
+    },
+    {
+      "id": "ITEM-2",
+      "kind": "practice",
+      "part": "Discover",
+      "title": "Help the boat reach the upper canal",
+      "objectives": [
+        "OBJ-1"
+      ],
+      "description": "Main slide: the learner operates the 3D lock (lower and upper gates, lower and upper paddles, the boat's moves) with controls placed above and below the diorama. Causal rules: the chamber only fills once the lower gates are shut; opening the upper paddle lets water in; the boat follows the water; a pair of gates only opens when the levels on both sides are equal. Mistakes get a visible reaction (the gates strain, the control shakes), never a penalty; screen readers hear the explanation. Progressive hints (a nudge, then what to do, then the control to use), a reset button, a view switch, a mute button and a success animation when the boat sails into the upper canal. No debrief text: once the boat is up, a button leads on to the explanation."
+    },
+    {
+      "id": "ITEM-3",
+      "kind": "demonstration",
+      "part": "Understand",
+      "title": "The secret is water, not lifting",
+      "objectives": [
+        "OBJ-1"
+      ],
+      "description": "The same lock seen in cross-section replays the ascent in short steps the learner goes through with Previous and Next, each in a bubble pointing at what moves, with a Replay button: the barge sails in; the gates close behind it; water flows down from the upper canal into the chamber; the boat floats and rises with the surface; once the levels are equal, the gates open; the barge sails out. Once the last step has played, a button leads on to the case."
+    },
+    {
+      "id": "ITEM-4",
+      "kind": "scenario",
+      "part": "Apply",
+      "title": "Now, what if we go downhill?",
+      "objectives": [
+        "OBJ-2"
+      ],
+      "description": "Nell, the lock keeper, talks with the learner. The boat waits in a full chamber, ready to go down; the lower gates will not open. Decision 1: drain the chamber through the lower paddles (good), open both paddles to go faster (ok: the level stops halfway), force the lower gates (bad: they do not move). Decision 2, once the chamber is low: open the lower gates (good), wait a little longer (ok: nothing changes), open the upper gates (bad: they are now held shut). Every choice gets Nell's reaction, a trainer's note, and a visible consequence on the 3D lock beside the conversation. Retries allowed."
+    },
+    {
+      "id": "ITEM-5",
+      "kind": "summary",
+      "part": "Apply",
+      "title": "Up or down, the water does the work",
+      "objectives": [
+        "OBJ-1",
+        "OBJ-2"
+      ],
+      "description": "Closing line once the conversation ends, on the same slide: boats go up or down because the water level changes.",
+      "lockedTexts": [
+        {
+          "id": "TXT-2",
+          "text": "A lock doesn't lift the boat. It moves water, and the boat simply floats along. Up or down, the water level changes, so the boat changes level too."
+        }
+      ]
+    }
+  ],
+  "spacing": [],
+  "waivers": [],
+  "duration": {
+    "min": 5,
+    "max": 5
+  }
+}
