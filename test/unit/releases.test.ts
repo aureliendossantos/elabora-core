@@ -20,7 +20,10 @@ test('Sampo prepares the core release train and preserves the existing changelog
     fs.writeFileSync(path.join(directory, '.sampo/changesets/fix.md'), '---\nnpm/@elabora/core: patch (Fixed)\n---\n\nPreserve the narration when importing.\n');
     const git = (...args: string[]) => execFileSync('git', args, { cwd: directory, stdio: ['ignore', 'pipe', 'pipe'] });
     git('init', '--initial-branch=main'); git('config', 'user.email', 'test@example.invalid'); git('config', 'user.name', 'Test'); git('add', '.'); git('-c', 'commit.gpgsign=false', 'commit', '-m', 'fixture');
-    execFileSync(process.execPath, [path.join(ROOT, 'node_modules/sampo/bin/sampo.js'), 'release'], { cwd: directory, stdio: ['ignore', 'pipe', 'pipe'] });
+    // Sampo reads the branch from SAMPO_RELEASE_BRANCH, then GITHUB_REF_NAME, then git: on a pull request's
+    // run the runner's GITHUB_REF_NAME is "<n>/merge" and would hide the fixture's own branch. The release
+    // guard (a release leaves only from the configured branch) is the fixture's, so the branch is named.
+    execFileSync(process.execPath, [path.join(ROOT, 'node_modules/sampo/bin/sampo.js'), 'release'], { cwd: directory, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, SAMPO_RELEASE_BRANCH: 'main' } });
     const read = (file: string) => JSON.parse(fs.readFileSync(path.join(directory, file), 'utf8'));
     assert.equal(read('package.json').version, '0.1.1');
     for (const name of packages) assert.equal(read(`packages/${name}/package.json`).version, '0.1.1');
