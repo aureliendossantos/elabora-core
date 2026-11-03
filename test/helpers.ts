@@ -12,6 +12,10 @@ import { readProjectFiles } from '@elabora/node/project-reader';
 process.env.ELABORA_ALIGN ??= '0';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+// The 3D samples' heaviest checks on CI's Linux runners: software rendering on shared cores takes twice a Mac's time
+// or more, and a page of the sample then misses its 30 s to start or a gate its 60 s per step. They run on the weekly
+// macOS job and on a developer's machine.
+export const SKIP_3D_ON_CI_LINUX: string | false = process.env.CI && process.platform === 'linux' ? 'too slow on a CI Linux runner (software rendering)' : false;
 
 // Courses' video is H.264 and their sound AAC (docs/architecture/media.md). Chrome, Edge and the app's
 // Electron play both; Playwright's own Chromium, the last browser the launcher tries, plays neither.
