@@ -41,7 +41,7 @@ interface TrashRecord {
   from: string;
 }
 
-const ENTRY = /^(\d{8}T\d{9}Z)-([0-9a-f-]{36})(?:-[0-9a-f]+)?$/;
+const ENTRY = /^(\d{8}T\d{9}Z)-([0-9a-f-]{36}|elabora-module-[0-9a-z]{6})(?:-[0-9a-f]+)?$/;
 const recordPath = (trash: string, entry: string) => path.join(trash, `${entry}.json`);
 
 // Moves a project folder (whose lock the caller holds) into the trash and returns the entry name.
@@ -116,7 +116,7 @@ export async function restoreFromTrash(entry: string): Promise<LibraryProject> {
   let outsideData: string | null = null;
   if (!isProjectId(id) || fs.existsSync(path.join(root, id))) {
     if (isProjectId(id) && !dataLocation(dir).inProject) outsideData = dataLocation(dir).dir;
-    id = newProjectId();
+    id = newProjectId(root);
     writeProjectId(dir, id);
   }
   removeStaleLocks(dir);

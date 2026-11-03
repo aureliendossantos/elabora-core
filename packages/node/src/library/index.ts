@@ -15,3 +15,4 @@ export {
 } from './archive.ts';
 export type { ArchiveFile, HistorySummary } from './history.ts';
 export { LibraryError, type LibraryErrorCode } from './errors.ts';
+export { MODULE_ID_PREFIX, isProjectId } from './files.ts';

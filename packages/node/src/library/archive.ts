@@ -500,7 +500,7 @@ export async function importArchive(file: string, options: ImportOptions = {}): 
         dir = target.path;
         ({ history, replaced, migratedFrom } = await replaceProject(target.path, projectStage, historyStage, manifest, options));
       } else {
-        const id = newProjectId();
+        const id = newProjectId(root);
         writeProjectId(projectStage, id);
         if (!dataLocation(projectStage).inProject) createdData = dataLocation(projectStage).dir;
         if (options.origin) writeOrigin(projectStage, origin(options.origin));
@@ -650,7 +650,7 @@ export async function importFolder(dir: string, options: ImportFolderOptions = {
     await copyFiles(source, projectStage, files, options.onProgress);
     await copySources(source, projectStage, copyProjectFile);
     checkCourseFormat(readCourseInfo(projectStage).format);
-    const id = newProjectId();
+    const id = newProjectId(root);
     writeProjectId(projectStage, id);
     // The migration writes history (a backup version, a journal): outside the project with
     // ELABORA_DATA_DIR, where nothing must stay if the import fails.

@@ -13,7 +13,7 @@ import { createFromTemplate } from '../module-templates.ts';
 import type { CourseBrief } from '../scaffold.ts';
 import { withProjectLock } from '../journal/lock.ts';
 import { LibraryError } from './errors.ts';
-import { ELABORA_VERSION, copyProjectFile, folderSize, isEmptyShell, isProjectId, newProjectId, readProjectId, removeTree, renameWithRetries, writeProjectId } from './files.ts';
+import { ELABORA_VERSION, MODULE_ID_PREFIX, copyProjectFile, folderSize, isEmptyShell, isProjectId, newProjectId, readProjectId, removeTree, renameWithRetries, writeProjectId } from './files.ts';
 import { ensureLibrary, libraryEntries, libraryRoot, stagingFolder } from './location.ts';
 
 // Projects of the library: one folder per project, named by its project id. The folders are the
@@ -95,12 +95,13 @@ export async function withLibraryLock<T>(dir: string, run: () => Promise<T>): Pr
 }
 
 // A project by its id or a unique start of it (4 characters or more), as people copy them from
-// `elabora projects list`.
+// `elabora projects list`, or the six letters that end an « elabora-module-… » id.
 export function resolveProjectId(reference: string, root: string = libraryRoot()): string {
   const wanted = reference.trim().toLowerCase();
   const ids = libraryEntries(root).filter(isProjectId);
   if (ids.includes(wanted)) return wanted;
-  const matches = wanted.length >= 4 && /^[0-9a-f-]+$/.test(wanted) ? ids.filter((id) => id.startsWith(wanted)) : [];
+  if (ids.includes(MODULE_ID_PREFIX + wanted)) return MODULE_ID_PREFIX + wanted;
+  const matches = wanted.length >= 4 && /^[0-9a-z-]+$/.test(wanted) ? ids.filter((id) => id.startsWith(wanted)) : [];
   if (matches.length === 1) return matches[0];
   if (matches.length > 1) throw new LibraryError('E_PROJECT_NOT_FOUND', `Several projects start with ${reference}: ${matches.join(', ')}.`, { candidates: matches });
   throw new LibraryError('E_PROJECT_NOT_FOUND', `No project ${JSON.stringify(reference)} in the library ${root}.`);
@@ -312,7 +313,7 @@ export async function createProject(options: CreateProjectOptions): Promise<Libr
       await createFromTemplate(options.template, dir, { id: options.id, title: options.title, language: options.language, brief: options.brief });
       writeOrigin(dir, { kind: 'template', id: template.courseId ?? path.basename(options.template), version: templateVersion(options.template) });
     } else initProject(dir, { id: options.id, title: options.title, language: options.language, brief: options.brief });
-    const id = newProjectId();
+    const id = newProjectId(root);
     writeProjectId(dir, id);
     await renameWithRetries(dir, path.join(root, id));
     validateAndCache(path.join(root, id));
@@ -349,7 +350,7 @@ export async function duplicateProject(id: string, options: DuplicateOptions = {
       await copySources(source, dir, copyProjectFile);
     });
     fs.mkdirSync(dir, { recursive: true });
-    const copy = newProjectId();
+    const copy = newProjectId(root);
     writeProjectId(dir, copy);
     // The copies keep the files' sizes and times: the original's summary and file hashes hold for
     // them (a 300 MB course is not hashed again).

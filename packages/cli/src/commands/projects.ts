@@ -3,7 +3,7 @@ import path from 'node:path';
 import { detectAuthor } from '@elabora/node/journal/index';
 import {
   libraryRoot, setLibraryRoot, listProjects, getProject, resolveProjectId, readCourseInfo, createProject, duplicateProject, renameProject,
-  trashProject, listTrash, restoreFromTrash, deleteFromTrash, emptyTrash, exportProject, importArchive, importFolder, archiveName,
+  trashProject, listTrash, restoreFromTrash, deleteFromTrash, emptyTrash, exportProject, importArchive, importFolder, archiveName, MODULE_ID_PREFIX,
   type LibraryProject, type Progress, type ImportedProject
 } from '@elabora/node/library/index';
 import { ArgumentError } from '../arguments.ts';
@@ -55,7 +55,8 @@ function localTime(iso: string | null): string {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-const shortId = (id: string) => (id.length === 36 ? id.slice(0, 8) : id);
+// A UUID's first 8 characters, an « elabora-module-… » id's last 6: what resolveProjectId takes back.
+const shortId = (id: string) => (id.length === 36 ? id.slice(0, 8) : id.startsWith(MODULE_ID_PREFIX) ? id.slice(MODULE_ID_PREFIX.length) : id);
 
 function validationText(project: LibraryProject): string {
   if (project.error) return `✘ ${project.error}`;

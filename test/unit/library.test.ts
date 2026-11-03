@@ -1,4 +1,4 @@
-import { test, after } from 'node:test';
+import { test, after, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -7,13 +7,13 @@ import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { FORMAT } from '@elabora/format';
 import {
-  libraryRoot, setLibraryRoot, listProjects, getProject, createProject, duplicateProject, renameProject, trashProject, listTrash, restoreFromTrash, deleteFromTrash, emptyTrash, TRASH_RETENTION_DAYS,
+  libraryRoot, setLibraryRoot, listProjects, getProject, resolveProjectId, createProject, duplicateProject, renameProject, trashProject, listTrash, restoreFromTrash, deleteFromTrash, emptyTrash, TRASH_RETENTION_DAYS,
   exportProject, inspectArchive, importArchive, importFolder, archiveName, LibraryError, MANIFEST_NAME, THUMBNAIL_FILE,
   type ArchiveManifest, type ImportedProject, type ImportResult, type LibraryErrorCode
 } from '@elabora/node/library/index';
 import { createVersion, listVersions, restore } from '@elabora/node/backups/index';
 import { readJournal } from '@elabora/node/journal/index';
-import { projectDataDir } from '@elabora/node/data-dir';
+import { projectDataDir, projectId } from '@elabora/node/data-dir';
 import { createZip, readZip } from '@elabora/node/zip';
 import { writeZip } from '@elabora/node/packaging/zip-writer';
 import { ZipReader, ZipFormatError } from '@elabora/node/packaging/zip-reader';
@@ -79,7 +79,7 @@ test('library: create, list and the cached validation summary', async () => {
   const root = freshLibrary();
   assert.deepEqual(listProjects(), []);
   const project = await createProject({ id: 'premiers-secours', title: 'Premiers secours', language: 'fr' });
-  assert.match(project.id, /^[0-9a-f-]{36}$/);
+  assert.match(project.id, /^elabora-module-[2-9a-hjkmnp-z]{6}$/);
   assert.equal(project.path, path.join(root, project.id));
   assert.equal(fs.readFileSync(path.join(project.path, '.elabora', 'project-id'), 'utf8').trim(), project.id);
   assert.deepEqual([project.courseId, project.title, project.language, project.format], ['premiers-secours', 'Premiers secours', 'fr', FORMAT]);
@@ -102,6 +102,47 @@ test('library: create, list and the cached validation summary', async () => {
   assert.ok(listed[1].validation);
   assert.ok(listProjects({ validate: true })[0].validation, 'validate: true fills it again');
   assert.ok(listed[1].size > 0 && listed[1].files === 6 && listed[1].modifiedAt);
+});
+
+// A folder named by a UUID, as an app before 0.6 made them: the « Faites-vous confiance au dossier
+// b2f25937-… ? » that an AI app asks frightened authors. Both names stay library projects.
+test('library: new projects are named elabora-module-xxxxxx, drawn again on a collision; UUID folders still work', async () => {
+  const root = freshLibrary();
+  // The first draw is the name a project already has: drawn again.
+  const taken = await createProject({ id: 'pris', title: 'Pris' });
+  const letters = '23456789abcdefghjkmnpqrstuvwxyz';
+  const draws = [...taken.id.slice(-6), ...'k7m3qa'].map((letter) => letters.indexOf(letter));
+  const randomInt = mock.method(crypto, 'randomInt', () => draws.shift()!);
+  let fresh;
+  try {
+    fresh = await createProject({ id: 'neuf', title: 'Neuf' });
+  } finally {
+    randomInt.mock.restore();
+  }
+  assert.equal(fresh.id, 'elabora-module-k7m3qa');
+  assert.equal(draws.length, 0, 'the name taken was drawn again');
+  assert.equal(resolveProjectId('k7m3qa'), fresh.id, 'its six letters find it');
+
+  // A project made with a UUID folder: listed, found by its first characters, renamed, copied (the
+  // copy gets a new name), trashed and restored under its own id.
+  const legacy = path.join(root, 'b2f25937-eb6e-4dd3-bcd8-8df47db2d531');
+  fs.cpSync(fresh.path, legacy, { recursive: true });
+  fs.writeFileSync(path.join(legacy, '.elabora', 'project-id'), 'b2f25937-eb6e-4dd3-bcd8-8df47db2d531\n');
+  const old = listProjects().find((project) => project.path === legacy)!;
+  assert.equal(old.error, null);
+  assert.equal(resolveProjectId('b2f25937'), old.id);
+  assert.equal((await renameProject(old.id, 'Ancien')).title, 'Ancien');
+  assert.match((await duplicateProject(old.id)).id, /^elabora-module-/);
+  const { entry } = await trashProject(old.id);
+  assert.equal(listTrash().find((item) => item.entry === entry)?.id, old.id);
+  assert.equal((await restoreFromTrash(entry)).id, old.id);
+
+  // Data kept outside the projects (ELABORA_DATA_DIR) is found by the new ids too: the id file is
+  // read, never replaced by a UUID.
+  const { entry: gone } = await trashProject(fresh.id);
+  assert.equal(listTrash().find((item) => item.entry === gone)?.id, fresh.id);
+  assert.equal((await restoreFromTrash(gone)).id, fresh.id);
+  assert.equal(projectId(fresh.path), fresh.id);
 });
 
 test('library: projects that cannot be read are listed with their error, not hidden', async () => {

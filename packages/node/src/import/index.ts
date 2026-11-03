@@ -239,7 +239,7 @@ export async function importCourse(options: ImportCourseOptions): Promise<Import
     try {
       const stage = path.join(staging, 'project');
       await fs.promises.mkdir(stage, { recursive: true });
-      const id = newProjectId();
+      const id = newProjectId(root);
       writeProjectId(stage, id);
       if (!dataLocation(stage).inProject) createdData = dataLocation(stage).dir;
       const written = await write(stage);

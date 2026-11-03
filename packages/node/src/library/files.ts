@@ -4,7 +4,7 @@ import zlib from 'node:zlib';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { cloneFile, type BlobHash } from '../blobs.ts';
-import { dataLocation, toolDir, TOOL_DIR } from '../data-dir.ts';
+import { dataLocation, toolDir, PROJECT_ID, TOOL_DIR } from '../data-dir.ts';
 import { lockPath, readLockHolder, type LockHolder } from '../journal/lock.ts';
 import { LibraryError } from './errors.ts';
 
@@ -15,8 +15,7 @@ const CHUNK = 1024 * 1024;
 
 export const ELABORA_VERSION: string = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'package.json'), 'utf8')).version;
 
-// Same rule as data-dir.ts: a project id is a UUID.
-export const PROJECT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+export { PROJECT_ID };
 const ID_FILE = 'project-id';
 
 export const isProjectId = (value: string): boolean => PROJECT_ID.test(value);
@@ -39,7 +38,24 @@ export function writeProjectId(projectDir: string, id: string): void {
   fs.writeFileSync(file, `${id}\n`);
 }
 
-export const newProjectId = (): string => crypto.randomUUID();
+// A new project's id, its folder's name in the library: « elabora-module-k7m3qa ». Drawn again while
+// the library, its trash or data kept outside the projects (ELABORA_DATA_DIR) has it: one in a
+// billion, but a trashed project restored, or its history, must never meet another's.
+export const MODULE_ID_PREFIX = 'elabora-module-';
+const MODULE_ID_LETTERS = '23456789abcdefghjkmnpqrstuvwxyz';
+export const TRASH_DIR = '.trash';
+
+export function newProjectId(root: string): string {
+  const trash = path.join(root, TRASH_DIR);
+  const trashed = fs.existsSync(trash) ? fs.readdirSync(trash) : [];
+  const outside = process.env.ELABORA_DATA_DIR ? path.join(path.resolve(process.env.ELABORA_DATA_DIR), 'projects') : null;
+  for (;;) {
+    let id = MODULE_ID_PREFIX;
+    for (let i = 0; i < 6; i++) id += MODULE_ID_LETTERS[crypto.randomInt(MODULE_ID_LETTERS.length)];
+    if (fs.existsSync(path.join(root, id)) || trashed.some((entry) => entry.includes(`-${id}`)) || (outside && fs.existsSync(path.join(outside, id)))) continue;
+    return id;
+  }
+}
 
 // 20261006T093012345Z: sorts in time order and is a valid file name on Windows (no colons).
 export const compactTime = (date: Date): string => date.toISOString().replace(/[-:]/g, '').replace('.', '');

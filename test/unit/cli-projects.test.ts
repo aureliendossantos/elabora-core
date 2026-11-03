@@ -64,14 +64,14 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     assert.equal((await ok(library, ['projects', 'path'])).stdout, `${library}\n`);
 
     const created = await ok(library, ['projects', 'create', 'premiers-secours', '--title', 'Premiers secours', '--language', 'fr']);
-    assert.match(created.stdout, /^✔ Created "Premiers secours" \(premiers-secours\) as project [0-9a-f]{8}\./);
+    assert.match(created.stdout, /^✔ Created "Premiers secours" \(premiers-secours\) as project [0-9a-z]{6}\./);
     const [project] = (await json(library, ['projects', 'list', '--json'])).projects;
     assert.equal(project.title, 'Premiers secours');
     assert.equal(project.courseId, 'premiers-secours');
     assert.equal(path.dirname(project.path), library);
     assert.ok(project.validation);
     const listed = (await ok(library, ['projects', 'list'])).stdout;
-    assert.ok(listed.includes(project.id.slice(0, 8)) && listed.includes(project.path) && listed.includes('premiers-secours · fr ·'), listed);
+    assert.ok(listed.includes(project.id.slice(-6)) && listed.includes(project.path) && listed.includes('premiers-secours · fr ·'), listed);
 
     // A project by the first characters of its id.
     assert.equal((await ok(library, ['projects', 'path', project.id.slice(0, 6)])).stdout, `${project.path}\n`);
@@ -79,10 +79,10 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     assert.equal(unknown.status, 1);
     assert.match(unknown.stderr, /^✘ No project "ffff" in the library/);
 
-    assert.match((await ok(library, ['projects', 'rename', project.id.slice(0, 8), '--title', 'Gestes qui sauvent'])).stdout, /is now "Gestes qui sauvent"/);
+    assert.match((await ok(library, ['projects', 'rename', project.id.slice(-6), '--title', 'Gestes qui sauvent'])).stdout, /is now "Gestes qui sauvent"/);
     assert.equal(readJournal(project.path).filter((entry) => entry.type === 'change').length, 1, 'the rename is a journaled change');
     const duplicated = await ok(library, ['projects', 'duplicate', project.id, '--title', 'Gestes (copie)']);
-    assert.match(duplicated.stdout, /^✔ Duplicated as project [0-9a-f]{8} \("Gestes \(copie\)"\)\./);
+    assert.match(duplicated.stdout, /^✔ Duplicated as project [0-9a-z]{6} \("Gestes \(copie\)"\)\./);
     const titles = (await json(library, ['projects', 'list', '--json'])).projects.map((p: { title: string }) => p.title).sort();
     assert.deepEqual(titles, ['Gestes (copie)', 'Gestes qui sauvent']);
 
@@ -97,7 +97,7 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     const library = freshLibrary();
     await ok(library, ['projects', 'create', 'jete', '--title', 'Jeté']);
     const [project] = (await json(library, ['projects', 'list', '--json'])).projects;
-    assert.match((await ok(library, ['projects', 'trash', project.id.slice(0, 8)])).stdout, /^✔ Moved "Jeté" to the trash \(\d{8}T\d{9}Z-[0-9a-f-]{36}\)\./);
+    assert.match((await ok(library, ['projects', 'trash', project.id.slice(-6)])).stdout, /^✔ Moved "Jeté" to the trash \(\d{8}T\d{9}Z-elabora-module-[0-9a-z]{6}\)\./);
     assert.deepEqual((await json(library, ['projects', 'list', '--json'])).projects, []);
     const trashList = (await ok(library, ['projects', 'trash', 'list'])).stdout;
     const entry = /^ {2}(\S+)\n/.exec(trashList)![1];
@@ -137,11 +137,11 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
 
     // New course: imported. Again: nothing imported, the existing project is named.
     const first = await ok(library, ['import', archive]);
-    assert.match(first.stdout, /^✔ Imported "Diagnostiquer une panne d'impression réseau" \(diagnostic-reseau\) as project ([0-9a-f]{8})\.\n {2}\S+\n {2}✔ 0 error\(s\)/);
+    assert.match(first.stdout, /^✔ Imported "Diagnostiquer une panne d'impression réseau" \(diagnostic-reseau\) as project ([0-9a-z]{6})\.\n {2}\S+\n {2}✔ 0 error\(s\)/);
     const again = await elabora(library, ['import', archive]);
     assert.equal(again.status, 1);
     assert.equal(again.stdout, '');
-    assert.match(again.stderr, /^✘ The library holds the course diagnostic-reseau already:\n {2}[0-9a-f]{8} {2}Diagnostiquer/);
+    assert.match(again.stderr, /^✘ The library holds the course diagnostic-reseau already:\n {2}[0-9a-z]{6} {4}Diagnostiquer/);
     assert.match(again.stderr, /Nothing imported\. Run again with --replace \(its files go to the trash, its history stays\) or --copy/);
     const asked = await elabora(library, ['import', archive, '--json']);
     assert.equal(asked.status, 1);
@@ -154,14 +154,14 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     const ambiguous = await elabora(library, ['import', archive, '--replace']);
     assert.equal(ambiguous.status, 1);
     assert.match(ambiguous.stderr, /2 projects hold the course diagnostic-reseau: say which one to replace/);
-    const replaced = await ok(library, ['import', '--replace', copy.project.id.slice(0, 8), archive]);
-    assert.match(replaced.stdout, new RegExp(`^✔ Replaced project ${copy.project.id.slice(0, 8)} with "Diagnostiquer`));
+    const replaced = await ok(library, ['import', '--replace', copy.project.id.slice(-6), archive]);
+    assert.match(replaced.stdout, new RegExp(`^✔ Replaced project ${copy.project.id.slice(-6)} with "Diagnostiquer`));
     assert.match(replaced.stdout, /The replaced files are in the trash \(\S+\)\. Backup version [0-9a-f]+ holds the project as it was\./);
     assert.match((await ok(library, ['import', elsewhere, '--copy'])).stdout, /History: \d+ version\(s\) and \d+ month\(s\) of journal added\./);
     // --replace before the archive, without an id: the archive is its value.
     const single = freshLibrary();
     await ok(single, ['import', archive]);
-    assert.match((await ok(single, ['import', '--replace', archive])).stdout, /^✔ Replaced project [0-9a-f]{8} with "Diagnostiquer/);
+    assert.match((await ok(single, ['import', '--replace', archive])).stdout, /^✔ Replaced project [0-9a-z]{6} with "Diagnostiquer/);
 
     // A folder: always a new project.
     const fromFolder = await ok(library, ['import', example('planetary-gearset')]);
@@ -253,7 +253,7 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
       assert.deepEqual(Object.keys(gearset).sort(), ['courseId', 'error', 'id', 'language', 'modifiedAt', 'path', 'size', 'title', 'validation']);
       assert.ok(fs.existsSync(path.join(gearset.path, 'course.json')));
       assert.deepEqual((await call('elabora_projects_path')).body, { library });
-      assert.deepEqual((await call('elabora_projects_path', { id: gearset.id.slice(0, 8) })).body, { library, id: gearset.id, title: gearset.title, courseId: 'planetary-gearset', path: gearset.path });
+      assert.deepEqual((await call('elabora_projects_path', { id: gearset.id.slice(-6) })).body, { library, id: gearset.id, title: gearset.title, courseId: 'planetary-gearset', path: gearset.path });
       const missing = await call('elabora_projects_path', { id: 'ffffffff' });
       assert.equal(missing.error, true);
       assert.match(missing.body.error, /No project "ffffffff"/);

@@ -4,7 +4,9 @@ import crypto from 'node:crypto';
 import { localDataRoot, TOOL_DIR } from '../data-dir.ts';
 import { withProjectLock } from '../journal/lock.ts';
 import { LibraryError } from './errors.ts';
-import { assertSpace, copyFileVerified, folderSize, heldLock, isInside, isProjectId, removeMovedLock, removeTree, renameWithRetries } from './files.ts';
+import { TRASH_DIR, assertSpace, copyFileVerified, folderSize, heldLock, isInside, isProjectId, removeMovedLock, removeTree, renameWithRetries } from './files.ts';
+
+export { TRASH_DIR };
 import type { LockHolder } from '../journal/lock.ts';
 
 // Where the library lives (docs/architecture/storage.md, Project library and archives): ELABORA_LIBRARY when
@@ -17,7 +19,6 @@ export const DEFAULT_LIBRARY_NAME = 'Library';
 // Marks a folder as an Elabora library, so that a library on an external disk is recognised and an
 // interrupted move knows which copy is complete.
 export const LIBRARY_MARKER = '.elabora-library.json';
-export const TRASH_DIR = '.trash';
 export const STAGING_DIR = '.staging';
 const MOVING_DIR = '.moving';
 const STALE_STAGING_MS = 24 * 3_600_000;
