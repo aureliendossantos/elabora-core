@@ -4,6 +4,7 @@ import { spawn } from 'node:child_process';
 import type { Project } from '@elabora/core/project/model';
 import { screenOrder } from '@elabora/core/project/load';
 import { screenTiming, timelineLines } from '@elabora/core/narration/narration';
+import type { NarrationLineInfo } from '@elabora/core/narration/narration';
 import { narratedLayers } from '@elabora/core/narration/voice-lines';
 import { narrationVtt } from '@elabora/core/narration/timing';
 import type { NarrationTrack } from '@elabora/core/compile/course-data';
@@ -72,6 +73,14 @@ export interface TrackOptions {
   onProgress?: (done: number, total: number) => void;
 }
 
+// Where the track of these lines and silences is cached: by the hash of its inputs.
+export async function cachedTrack(project: Project, lines: readonly NarrationLineInfo[], gaps: readonly number[]): Promise<{ key: string; file: string; facts: string }> {
+  const hashes = await Promise.all(lines.map((line) => projectFileHash(project.root, line.audio)));
+  const key = sha256(canonicalJSON({ v: PIPELINE_VERSION, rate: SAMPLE_RATE, bitrate: TRACK_BITRATE, lines: lines.map((line, index) => [hashes[index], gaps[index], ...(line.sound && line.sound.volume !== 1 ? [line.sound.volume] : [])]), ...(gaps[lines.length] ? { tail: gaps[lines.length] } : {}) })).slice(0, 32);
+  const dir = narrationCacheDir(project.root);
+  return { key, file: path.join(dir, `${key}.m4a`), facts: path.join(dir, `${key}.json`) };
+}
+
 export async function narrationTracks(project: Project, options: TrackOptions = {}): Promise<NarrationTracks> {
   const out: NarrationTracks = { tracks: [], silent: [], failures: [] };
   const language = project.course?.language ?? '';
@@ -94,11 +103,8 @@ export async function narrationTracks(project: Project, options: TrackOptions = 
       const laid = screenTiming(project, screen, { language, layer });
       if (!laid) continue;
       const gaps = laid.gaps;
-      const hashes = await Promise.all(lines.map((line) => projectFileHash(project.root, line.audio)));
-      const key = sha256(canonicalJSON({ v: PIPELINE_VERSION, rate: SAMPLE_RATE, bitrate: TRACK_BITRATE, lines: lines.map((line, index) => [hashes[index], gaps[index], ...(line.sound && line.sound.volume !== 1 ? [line.sound.volume] : [])]), ...(gaps[lines.length] ? { tail: gaps[lines.length] } : {}) })).slice(0, 32);
+      const { key, file, facts } = await cachedTrack(project, lines, gaps);
       const dir = narrationCacheDir(project.root);
-      const file = path.join(dir, `${key}.m4a`);
-      const facts = path.join(dir, `${key}.json`);
       let durations = readDurations(facts, lines.length);
       if (!durations || !fs.existsSync(file)) {
         if (tools === undefined) tools = await findMediaTools().catch(() => null);

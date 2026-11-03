@@ -21,6 +21,8 @@ import { CommandError } from '@elabora/core/commands/context';
 import { screenTranslation, translationStatus, translationTable } from '@elabora/core/i18n/translate';
 import type { ScreenTranslation, TranslationStatus, TranslationTable } from '@elabora/core/i18n/translate';
 import { buildTranslation } from '@elabora/node/translate';
+import { packageWeights } from '@elabora/node/packaging/weights';
+import type { QualitySize } from '@elabora/core/lms/package-limits';
 import { planDocument } from '@elabora/core/plan-document/model';
 import type { PlanDocument } from '@elabora/core/plan-document/model';
 import { PLAN_DOCUMENT_FORMATS, planDocumentPage, readPlanDocument, writePlanDocument } from '@elabora/node/plan-document';
@@ -398,6 +400,7 @@ export class Session {
       case 'findText': return this.findText(request.params.query, request.params.caseSensitive);
       case 'conversions': return this.conversions(request.params);
       case 'translationStatus': return this.translationStatus(request.params.to);
+      case 'packageWeights': return this.packageWeights();
       case 'translationTable': return this.translationTable(request.params.language);
       case 'screenTranslation': return this.screenTranslation(request.params.screen, request.params.language);
       case 'buildTranslation': return this.buildTranslation(request.params);
@@ -704,6 +707,13 @@ export class Session {
     this.#assertOpen();
     if (typeof query !== 'string') throw new EngineError('bad-request', 'findText takes a query (the words to find)');
     return findText(this.#state.project, query, { caseSensitive });
+  }
+
+  // What a package would weigh at each media quality (« Publier »), as the project is in memory:
+  // renditions and narration tracks as cached, else estimated; nothing encoded or written.
+  packageWeights(): Promise<QualitySize[]> {
+    this.#assertOpen();
+    return packageWeights(this.#state.project);
   }
 
   translationStatus(to?: string): TranslationStatus[] {
@@ -1724,7 +1734,7 @@ const REQUEST_TYPES: Record<RequestType, true> = {
   summary: true, readFile: true, listFiles: true, readScreen: true, screenParts: true, findText: true, conversions: true, translationStatus: true,
   translationTable: true, screenTranslation: true, buildTranslation: true, run: true, undo: true, undoBatch: true, history: true, mark: true, endTurn: true,
   diagnostics: true, importMedia: true, mediaJobs: true, activity: true, cancelMediaJob: true, backups: true, createBackup: true, restoreBackup: true,
-  renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, migrate: true, build: true, close: true, narration: true, voices: true,
+  renderScreen: true, openCanvas: true, canvasView: true, closeCanvas: true, migrate: true, build: true, packageWeights: true, close: true, narration: true, voices: true,
   installVoices: true, setSpeakerVoice: true, generateVoice: true, voiceTakes: true, cancelVoice: true, voiceSample: true, aligners: true,
   setVoiceKey: true, voiceAccount: true, voiceSearch: true, voiceEstimate: true, soundSearch: true, soundPreview: true, courseSounds: true, soundEstimate: true, generateSound: true,
   alignNarration: true, timeline: true, timelineAt: true, timelineMarks: true, narrationPeaks: true, importNarrationFiles: true, planVoiceover: true, planVersions: true, planDiff: true, planDocument: true, planDocumentPage: true, exportPlanDocument: true, dialogue: true, dialoguePlay: true, dialoguePage: true, exportDialogue: true, effects: true, transcribeRecording: true, transcribers: true, transcriptionEstimate: true, transcribeLine: true
