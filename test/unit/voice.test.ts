@@ -124,8 +124,9 @@ test('models: a language\'s bundle, downloaded once, resumed, checked against it
     const range = /bytes=(\d+)-/.exec(request.headers.range ?? '');
     const start = range ? Number(range[1]) : 0;
     response.writeHead(range ? 206 : 200, { 'content-length': body.length - start });
-    // The first download of a.bin breaks off after 100 KB.
-    if (name === 'a.bin' && cut) { cut = false; response.write(body.subarray(start, 100_000), () => setTimeout(() => response.destroy(), 50)); return; }
+    // The first download of a.bin breaks off after 100 KB: the socket is closed in order (a FIN), not reset: on Windows a reset
+    // throws away the bytes the client has not read yet, and "what was received is kept" then missed its 100 KB.
+    if (name === 'a.bin' && cut) { cut = false; response.write(body.subarray(start, 100_000), () => setTimeout(() => response.socket?.end(), 50)); return; }
     response.end(body.subarray(start));
   });
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
