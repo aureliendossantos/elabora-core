@@ -5,9 +5,9 @@ import { localDataRoot, TOOL_DIR } from '../data-dir.ts';
 import { withProjectLock } from '../journal/lock.ts';
 import { LibraryError } from './errors.ts';
 import { TRASH_DIR, assertSpace, copyFileVerified, folderSize, heldLock, isInside, isProjectId, removeMovedLock, removeTree, renameWithRetries } from './files.ts';
+import type { LockHolder } from '../journal/lock.ts';
 
 export { TRASH_DIR };
-import type { LockHolder } from '../journal/lock.ts';
 
 // Where the library lives (docs/architecture/storage.md, Project library and archives): ELABORA_LIBRARY when
 // set (tests, servers, a developer's own setup), else the path the user chose, kept in the user's
