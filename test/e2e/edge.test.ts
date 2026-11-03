@@ -66,7 +66,8 @@ async function draw(browser: Browser): Promise<{ version: string; renderer: stri
   return { version: browser.version(), renderer, png: await page.screenshot() };
 }
 
-test('Edge draws in software as Chrome does: the same SwiftShader, the same pixels', { timeout: 60000 }, async (t) => {
+// Two browsers started and drawn: a bound for a failure only (a CI runner took the 60 s once, 3 Nov 2026).
+test('Edge draws in software as Chrome does: the same SwiftShader, the same pixels', { timeout: 180000 }, async (t) => {
   const chrome = await only('chrome');
   const edge = await only('msedge');
   try {
