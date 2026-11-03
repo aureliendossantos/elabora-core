@@ -1,0 +1,1045 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "canal-lock",
+  "version": "1.2.1",
+  "title": "Canal lock diorama",
+  "planRefs": {
+    "objectives": [
+      "OBJ-1",
+      "OBJ-2"
+    ],
+    "items": [
+      "ITEM-1",
+      "ITEM-2",
+      "ITEM-3",
+      "ITEM-4"
+    ]
+  },
+  "pedagogicalRole": "simulation-decision",
+  "requires": {
+    "three": "r186"
+  },
+  "props": {
+    "type": "object",
+    "properties": {
+      "mode": {
+        "type": "string",
+        "enum": [
+          "explore",
+          "explain",
+          "display"
+        ],
+        "default": "explore",
+        "title": "Mode",
+        "description": "Explore: the learner operates the gates, the paddles and the boat. Explain: the lock plays the steps of the list below, one at a time, in a bubble with Previous, Next and Replay. Display: the scene alone, moved only by screen events (the Command setting).",
+        "x-enum-labels": {
+          "explore": "Explore: the learner operates the lock",
+          "explain": "Explain: steps with captions",
+          "display": "Display: scene driven by events"
+        },
+        "x-group": "Behaviour",
+        "x-control": "select"
+      },
+      "scenario": {
+        "type": "string",
+        "enum": [
+          "uphill",
+          "downhill"
+        ],
+        "default": "uphill",
+        "title": "Journey",
+        "description": "Uphill: the boat waits in the lower canal and must reach the upper one. Downhill: the boat floats in the full chamber and must reach the lower canal.",
+        "x-enum-labels": {
+          "uphill": "Uphill, from the lower canal",
+          "downhill": "Downhill, from a full chamber"
+        },
+        "x-group": "Behaviour",
+        "x-control": "select"
+      },
+      "rise": {
+        "type": "number",
+        "minimum": 1.5,
+        "maximum": 4.5,
+        "multipleOf": 0.5,
+        "default": 3,
+        "title": "Rise (m)",
+        "description": "Height between the lower and the upper canal, in metres. The chamber fills and empties in proportion.",
+        "x-group": "Behaviour",
+        "x-control": "slider"
+      },
+      "hints": {
+        "type": "boolean",
+        "default": true,
+        "title": "Hints",
+        "description": "Explore mode: show the Hint button (three hints, each more precise, for the step the learner is at).",
+        "x-group": "Behaviour",
+        "x-control": "toggle"
+      },
+      "allowViewChange": {
+        "type": "boolean",
+        "default": true,
+        "title": "Learners change the view",
+        "description": "Show the 3D / Above / Section buttons, so learners can change the camera without losing what they did.",
+        "x-group": "Behaviour",
+        "x-control": "toggle"
+      },
+      "sound": {
+        "type": "boolean",
+        "default": true,
+        "title": "Sound effects",
+        "description": "Soft sounds of water, gates and success, on at first. Learners can always mute them; they start after the learner's first click.",
+        "x-group": "Behaviour",
+        "x-control": "toggle"
+      },
+      "visualStyle": {
+        "type": "string",
+        "enum": [
+          "illustrated",
+          "playful",
+          "technical"
+        ],
+        "default": "illustrated",
+        "title": "Visual style",
+        "description": "Illustrated: watercolour colours with soft ink lines. Playful: bright, saturated colours and lively effects. Technical: a paper model with crisp ink lines and hatched cut faces.",
+        "x-enum-labels": {
+          "illustrated": "Illustrated",
+          "playful": "Playful",
+          "technical": "Technical"
+        },
+        "x-group": "Look",
+        "x-control": "select"
+      },
+      "cameraView": {
+        "type": "string",
+        "enum": [
+          "isometric",
+          "topDown",
+          "section"
+        ],
+        "default": "isometric",
+        "title": "Camera",
+        "description": "Isometric: the diorama in three-quarter view. Top-down: seen from above. Section: cut along the canal, to read the water levels. Changing it keeps the simulation where it is.",
+        "x-enum-labels": {
+          "isometric": "Isometric",
+          "topDown": "Top-down",
+          "section": "Section"
+        },
+        "x-group": "Look",
+        "x-control": "select"
+      },
+      "informationLevel": {
+        "type": "string",
+        "enum": [
+          "minimal",
+          "guided",
+          "technical"
+        ],
+        "default": "guided",
+        "title": "Information level",
+        "description": "Minimal: short names, no labels in the scene. Guided: plain names, the names of the canals and the chamber, and arrows where the water flows. Technical: trade names, the levels in metres, the level the water must reach, the level difference and the flows named.",
+        "x-enum-labels": {
+          "minimal": "Minimal",
+          "guided": "Guided",
+          "technical": "Technical"
+        },
+        "x-group": "Look",
+        "x-control": "select"
+      },
+      "showAnnotations": {
+        "type": "boolean",
+        "default": true,
+        "title": "Annotations",
+        "description": "Labels and arrows drawn in the scene: names of the canals and the chamber and the flow of water (from Guided), the target level and the level difference (Technical).",
+        "x-group": "Look",
+        "x-control": "toggle"
+      },
+      "motionIntensity": {
+        "type": "string",
+        "enum": [
+          "subtle",
+          "expressive"
+        ],
+        "default": "expressive",
+        "title": "Motion",
+        "description": "Subtle: calm water and quiet effects. Expressive: livelier water, bobbing boat, spray and a celebration at the end. The rules and the timings of the lock stay the same; learners who ask their system for reduced motion always get the calm version.",
+        "x-enum-labels": {
+          "subtle": "Subtle",
+          "expressive": "Expressive"
+        },
+        "x-group": "Look",
+        "x-control": "select"
+      },
+      "entrance": {
+        "type": "string",
+        "enum": [
+          "watercolor",
+          "fade",
+          "none"
+        ],
+        "default": "watercolor",
+        "title": "Entrance",
+        "description": "How the diorama appears: watercolour (pigments bloom on the paper, then the 3D scene shows through), a short fade, or at once.",
+        "x-enum-labels": {
+          "watercolor": "Watercolour wash",
+          "fade": "Fade",
+          "none": "None"
+        },
+        "x-group": "Look",
+        "x-control": "select"
+      },
+      "phases": {
+        "type": "array",
+        "title": "Steps of the explanation",
+        "description": "Explain mode: the steps learners go through, in order (one to six), each shown in a bubble pointing at what moves, with Previous and Next. Each plays a moment of the journey chosen in Journey; going on from a step that has ended continues from where the lock is.",
+        "minItems": 1,
+        "maxItems": 6,
+        "items": {
+          "type": "object",
+          "title": "Step",
+          "properties": {
+            "phase": {
+              "type": "string",
+              "title": "Moment",
+              "enum": [
+                "enter",
+                "close",
+                "flow",
+                "level",
+                "open",
+                "exit"
+              ],
+              "x-enum-labels": {
+                "enter": "The boat enters the chamber",
+                "close": "The gates close behind it",
+                "flow": "Water flows through the paddles",
+                "level": "The level changes, the boat follows",
+                "open": "Levels equal: the gates open",
+                "exit": "The boat leaves"
+              },
+              "x-control": "select",
+              "default": "flow"
+            },
+            "title": {
+              "type": "string",
+              "title": "Title",
+              "maxLength": 60,
+              "x-translatable": true,
+              "default": "Step title"
+            },
+            "caption": {
+              "type": "string",
+              "title": "Caption",
+              "maxLength": 220,
+              "x-translatable": true,
+              "x-control": "textarea",
+              "default": "What the learner should notice.",
+              "description": "What the learner should notice, shown in the bubble under the title."
+            }
+          },
+          "required": [
+            "phase",
+            "title",
+            "caption"
+          ]
+        },
+        "default": [
+          {
+            "phase": "enter",
+            "title": "The barge sails in",
+            "caption": "The chamber is at the level of the lower canal, so its lower gates stand open and the barge glides straight in."
+          },
+          {
+            "phase": "close",
+            "title": "The gates close behind it",
+            "caption": "With the lower gates shut, the chamber becomes a closed basin: its water can no longer run away downstream."
+          },
+          {
+            "phase": "flow",
+            "title": "Water flows in from above",
+            "caption": "Opening the paddles, small sluices in the upper gates, lets water run downhill from the upper canal into the chamber."
+          },
+          {
+            "phase": "level",
+            "title": "The boat floats up",
+            "caption": "As the chamber fills, its surface rises, and the barge floats up with it. Nothing pushes it but the water beneath."
+          },
+          {
+            "phase": "open",
+            "title": "Level water, open gates",
+            "caption": "The chamber is now level with the upper canal. The water pushes as hard on both sides of the gates, so they swing open easily."
+          },
+          {
+            "phase": "exit",
+            "title": "On its way, higher up",
+            "caption": "The barge sails out into the upper canal. The lock never lifted it: the water did."
+          }
+        ],
+        "x-group": "Explanation",
+        "x-control": "list"
+      },
+      "demoStep": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 6,
+        "default": 1,
+        "title": "Step to play",
+        "description": "Explain mode: the step that plays when the object appears (0: wait for the learner). A screen event can set it to play another step.",
+        "x-group": "Explanation",
+        "x-control": "number"
+      },
+      "command": {
+        "type": "string",
+        "enum": [
+          "none",
+          "open-lower-gates",
+          "close-lower-gates",
+          "open-upper-gates",
+          "close-upper-gates",
+          "open-lower-paddles",
+          "close-lower-paddles",
+          "open-upper-paddles",
+          "close-upper-paddles",
+          "boat-forward",
+          "boat-back",
+          "reset",
+          "replay",
+          "next-step",
+          "previous-step"
+        ],
+        "default": "none",
+        "title": "Command",
+        "description": "For screen events (set object props) and dialogue choices: each time it is set, the lock runs that operation under the same rules as for learners (gates refuse to open while levels differ). Leave None in the block.",
+        "x-enum-labels": {
+          "none": "None",
+          "open-lower-gates": "Open the lower gates",
+          "close-lower-gates": "Close the lower gates",
+          "open-upper-gates": "Open the upper gates",
+          "close-upper-gates": "Close the upper gates",
+          "open-lower-paddles": "Open the lower paddles",
+          "close-lower-paddles": "Close the lower paddles",
+          "open-upper-paddles": "Open the upper paddles",
+          "close-upper-paddles": "Close the upper paddles",
+          "boat-forward": "Move the boat forward",
+          "boat-back": "Move the boat back",
+          "reset": "Reset the lock",
+          "replay": "Replay the step",
+          "next-step": "Next step",
+          "previous-step": "Previous step"
+        },
+        "x-group": "Commands",
+        "x-control": "select"
+      },
+      "waterColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#5B93A8",
+        "title": "Water",
+        "description": "Colour of the water (course identity).",
+        "x-token": "color.water",
+        "x-object-id": "chamber",
+        "x-group": "Materials",
+        "x-control": "color"
+      },
+      "grassColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#8FA36B",
+        "title": "Grass",
+        "description": "Colour of the grass on the banks.",
+        "x-group": "Materials",
+        "x-control": "color"
+      },
+      "earthColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#9C7B57",
+        "title": "Earth",
+        "description": "Colour of the earth seen where the slice is cut; clay and towpath are derived from it.",
+        "x-group": "Materials",
+        "x-control": "color"
+      },
+      "stoneColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#C9B99A",
+        "title": "Stone",
+        "description": "Colour of the lock's masonry; the coping stones are a lighter shade.",
+        "x-group": "Materials",
+        "x-control": "color"
+      },
+      "gateColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#33403A",
+        "title": "Gates",
+        "description": "Colour of the gate leaves and their balance beams (the beam ends stay white).",
+        "x-object-id": "lower-gates",
+        "x-group": "Materials",
+        "x-control": "color"
+      },
+      "hullColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#2F5D50",
+        "title": "Hull",
+        "description": "Colour of the barge's hull (playful style: the accent colour instead).",
+        "x-object-id": "boat",
+        "x-group": "Materials",
+        "x-control": "color"
+      },
+      "cabinColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#EADFC8",
+        "title": "Wheelhouse",
+        "description": "Colour of the barge's wheelhouse.",
+        "x-group": "Materials",
+        "x-control": "color"
+      }
+    },
+    "required": [
+      "mode",
+      "scenario",
+      "visualStyle",
+      "cameraView",
+      "informationLevel",
+      "motionIntensity",
+      "showAnnotations"
+    ]
+  },
+  "language": "en",
+  "strings": {
+    "ctlLowerGates": {
+      "text": "{level, select, minimal {Gates} technical {Downstream gates} other {Lower gates}}",
+      "description": "Button and label of the lower pair of gates; level is the information level"
+    },
+    "ctlUpperGates": {
+      "text": "{level, select, minimal {Gates} technical {Upstream gates} other {Upper gates}}",
+      "description": "Button and label of the upper pair of gates"
+    },
+    "ctlLowerPaddles": {
+      "text": "{level, select, minimal {Paddles} technical {Downstream paddles} other {Lower paddles}}",
+      "description": "Button of the paddles (sluices) in the lower gates"
+    },
+    "ctlUpperPaddles": {
+      "text": "{level, select, minimal {Paddles} technical {Upstream paddles} other {Upper paddles}}",
+      "description": "Button of the paddles (sluices) in the upper gates"
+    },
+    "ctlBoat": {
+      "text": "Boat",
+      "description": "Label of the boat's controls"
+    },
+    "stOpen": {
+      "text": "Open",
+      "description": "State of gates or paddles, under their name",
+      "maxLength": 12
+    },
+    "stClosed": {
+      "text": "Closed",
+      "description": "State of gates or paddles, under their name",
+      "maxLength": 12
+    },
+    "stOpening": {
+      "text": "Opening…",
+      "description": "State while gates or paddles move",
+      "maxLength": 12
+    },
+    "stClosing": {
+      "text": "Closing…",
+      "description": "State while gates or paddles move",
+      "maxLength": 12
+    },
+    "ariaToggleOpen": {
+      "text": "{name}: {state}. Press to open.",
+      "description": "Screen reader name of a closed control"
+    },
+    "ariaToggleClose": {
+      "text": "{name}: {state}. Press to close.",
+      "description": "Screen reader name of an open control"
+    },
+    "boatAhead": {
+      "text": "Sail ahead",
+      "description": "Button with an arrow that moves the boat towards its goal (its name for screen readers and its tooltip)",
+      "maxLength": 24
+    },
+    "boatBack": {
+      "text": "Back up",
+      "description": "Button with an arrow that moves the boat back the way it came (its name and tooltip)",
+      "maxLength": 24
+    },
+    "toolHint": {
+      "text": "Hint",
+      "description": "Button that shows the next hint",
+      "maxLength": 14
+    },
+    "hintClose": {
+      "text": "Close the hint",
+      "description": "Screen reader name of the button that closes the hint"
+    },
+    "toolReset": {
+      "text": "Reset",
+      "description": "Button that puts the lock back as at the start",
+      "maxLength": 14
+    },
+    "toolSound": {
+      "text": "Sound",
+      "description": "Toggle button for the sound effects",
+      "maxLength": 14
+    },
+    "pauseAria": {
+      "text": "Pause the animation",
+      "description": "Button that freezes the water and the boat's bobbing"
+    },
+    "playAria": {
+      "text": "Play the animation",
+      "description": "Button that resumes the animation"
+    },
+    "viewLabel": {
+      "text": "View",
+      "description": "Name of the group of camera buttons"
+    },
+    "viewIsometric": {
+      "text": "3D",
+      "description": "Camera: three-quarter view",
+      "maxLength": 10
+    },
+    "viewTopDown": {
+      "text": "Above",
+      "description": "Camera: from above",
+      "maxLength": 10
+    },
+    "viewSection": {
+      "text": "Section",
+      "description": "Camera: cut along the canal",
+      "maxLength": 10
+    },
+    "zoneLower": {
+      "text": "Lower canal",
+      "description": "Label on the lower canal"
+    },
+    "zoneChamber": {
+      "text": "Lock chamber",
+      "description": "Label on the chamber between the gates"
+    },
+    "zoneUpper": {
+      "text": "Upper canal",
+      "description": "Label on the upper canal"
+    },
+    "zoneLevel": {
+      "text": "{zone} · {value} m",
+      "description": "Label with the water level (technical); value is formatted, with its sign"
+    },
+    "diffLabel": {
+      "text": "{level, select, technical {Δh {d} m} other {{d} m to go}}",
+      "description": "Level difference between the chamber and the water it must reach; d is formatted"
+    },
+    "sameLevel": {
+      "text": "Same level",
+      "description": "The chamber is level with the canal next to it"
+    },
+    "flowIn": {
+      "text": "{level, select, technical {Inflow through the paddles} other {Water flows in}}",
+      "description": "Arrow of water entering the chamber"
+    },
+    "flowOut": {
+      "text": "{level, select, technical {Outflow through the paddles} other {Water flows out}}",
+      "description": "Arrow of water leaving the chamber"
+    },
+    "stepPrev": {
+      "text": "Previous step",
+      "description": "Explain mode: button of the bubble (its name for screen readers and its tooltip)"
+    },
+    "stepNext": {
+      "text": "Next step",
+      "description": "Explain mode: button of the bubble (its name for screen readers and its tooltip)"
+    },
+    "replay": {
+      "text": "Replay",
+      "description": "Explain mode: button of the bubble that plays the current step again (its name and tooltip)",
+      "maxLength": 14
+    },
+    "readyUphill": {
+      "text": "Your barge is waiting below the lock. Bring it up to the upper canal.",
+      "description": "Status at the start, uphill"
+    },
+    "readyDownhill": {
+      "text": "Your barge floats in the full chamber. Bring it down to the lower canal.",
+      "description": "Status at the start, downhill"
+    },
+    "gateOpening": {
+      "text": "{gate, select, lower {The lower gates swing open.} other {The upper gates swing open.}}",
+      "description": "Status when gates start to open"
+    },
+    "gateClosing": {
+      "text": "{gate, select, lower {The lower gates swing shut.} other {The upper gates swing shut.}}",
+      "description": "Status when gates start to close"
+    },
+    "fill": {
+      "text": "{level, select, minimal {The chamber is filling.} other {Water pours in from the upper canal: the chamber is filling.}}",
+      "description": "Status: upper paddles opened, gates shut"
+    },
+    "drain": {
+      "text": "{level, select, minimal {The chamber is emptying.} other {Water runs out to the lower canal: the chamber is emptying.}}",
+      "description": "Status: lower paddles opened, gates shut"
+    },
+    "leak": {
+      "text": "Water rushes in from above… and straight out through the open lower gates. The chamber can't fill like this.",
+      "description": "Status: upper paddles opened while the lower gates stand open"
+    },
+    "leakDown": {
+      "text": "Water from the upper canal runs through the open upper gates and out below. The chamber can't empty like this.",
+      "description": "Status: lower paddles opened while the upper gates stand open"
+    },
+    "through": {
+      "text": "Now water runs in at the top and out at the bottom: the level will stop halfway.",
+      "description": "Status: both paddles open, gates shut"
+    },
+    "noFlow": {
+      "text": "Nothing flows: the water is already at the same level on both sides.",
+      "description": "Status: paddles opened between equal levels"
+    },
+    "paddlesClosed": {
+      "text": "{side, select, lower {Lower paddles closed.} other {Upper paddles closed.}}",
+      "description": "Status: paddles closed"
+    },
+    "levelUpper": {
+      "text": "The chamber is level with the upper canal. The upper gates can open now.",
+      "description": "Status: levels have just become equal on the upper side"
+    },
+    "levelLower": {
+      "text": "The chamber is level with the lower canal. The lower gates can open now.",
+      "description": "Status: levels have just become equal on the lower side"
+    },
+    "settled": {
+      "text": "The level has stopped halfway: water flows in as fast as it flows out.",
+      "description": "Status: both paddles open, level settled"
+    },
+    "boatSails": {
+      "text": "{to, select, chamber {The boat glides into the chamber.} upper {The boat sails out into the upper canal.} other {The boat sails out into the lower canal.}}",
+      "description": "Status: the boat moves"
+    },
+    "boatInChamber": {
+      "text": "The boat is in the chamber.",
+      "description": "Status: the boat has arrived in the chamber"
+    },
+    "boatBackOut": {
+      "text": "The boat is back in the canal it came from.",
+      "description": "Status: the boat went back"
+    },
+    "waitingGate": {
+      "text": "The boat will set off as soon as the gates are fully open.",
+      "description": "Status: move asked while the gates open"
+    },
+    "waitingLevel": {
+      "text": "The gates will open as soon as the levels match.",
+      "description": "Status: a screen event asked for gates while the level changes"
+    },
+    "successUphill": {
+      "text": "Your barge is in the upper canal! It climbed {rise} m, carried all the way by the water.",
+      "description": "Status at the end, uphill; rise is formatted"
+    },
+    "successDownhill": {
+      "text": "Your barge is in the lower canal. It came down {rise} m, riding the water as it drained.",
+      "description": "Status at the end, downhill"
+    },
+    "refuseLevels": {
+      "text": "{level, select, minimal {The gates won't move: the water levels differ.} technical {The gates won't move: a head of {d} m presses them shut. Equalise the levels first.} other {The gates won't budge: the water is {d} m higher on one side and pushes them shut. Make the levels equal first.}}",
+      "description": "Reaction: gates asked to open while levels differ; d is formatted"
+    },
+    "refuseGateClosed": {
+      "text": "{gate, select, lower {The lower gates are closed: the boat can't pass.} other {The upper gates are closed: the boat can't pass.}}",
+      "description": "Reaction: boat asked to move through closed gates"
+    },
+    "refuseEnd": {
+      "text": "The boat can't go any further this way.",
+      "description": "Reaction: boat asked to go past the end"
+    },
+    "refuseBoatPassing": {
+      "text": "Wait until the boat has cleared the gates.",
+      "description": "Reaction: gates asked to close while the boat passes"
+    },
+    "refuseMoving": {
+      "text": "The boat is already on its way.",
+      "description": "Reaction: boat asked to move while moving"
+    },
+    "resetDone": {
+      "text": "The lock is back as it was at the start.",
+      "description": "Status after Reset"
+    },
+    "hintLabel": {
+      "text": "Hint {i} of 3",
+      "description": "Above the hint text"
+    },
+    "nudgeGates": {
+      "text": "A pair of gates only opens when the water is at the same level on both sides.",
+      "description": "Hint 1: the gate principle"
+    },
+    "nudgeEnter": {
+      "text": "The way is clear. What does the boat need to do now?",
+      "description": "Hint 1: the boat can move"
+    },
+    "nudgeSeal": {
+      "text": "To change the level in the chamber, it must be closed off at both ends.",
+      "description": "Hint 1: close the chamber"
+    },
+    "nudgeWater": {
+      "text": "Water only flows downhill. Where can the chamber get water from, or send it to?",
+      "description": "Hint 1: where water comes from"
+    },
+    "nudgeWait": {
+      "text": "Moving water takes a little time. Watch the level.",
+      "description": "Hint 1: waiting"
+    },
+    "doOpenLowerGates": {
+      "text": "The chamber is level with the lower canal: open the lower gates.",
+      "description": "Hint 2"
+    },
+    "doOpenUpperGates": {
+      "text": "The chamber is level with the upper canal: open the upper gates.",
+      "description": "Hint 2"
+    },
+    "doEnter": {
+      "text": "Sail the boat into the chamber.",
+      "description": "Hint 2"
+    },
+    "doExit": {
+      "text": "Sail the boat out of the chamber.",
+      "description": "Hint 2"
+    },
+    "doCloseLowerGates": {
+      "text": "Close the lower gates, so the chamber is closed off.",
+      "description": "Hint 2"
+    },
+    "doCloseUpperGates": {
+      "text": "Close the upper gates, so the chamber is closed off.",
+      "description": "Hint 2"
+    },
+    "doCloseLowerPaddles": {
+      "text": "Close the lower paddles, or water will keep running out.",
+      "description": "Hint 2"
+    },
+    "doCloseUpperPaddles": {
+      "text": "Close the upper paddles, or water will keep running in.",
+      "description": "Hint 2"
+    },
+    "doFill": {
+      "text": "Open the upper paddles to let water in from the upper canal.",
+      "description": "Hint 2"
+    },
+    "doDrain": {
+      "text": "Open the lower paddles to let water out to the lower canal.",
+      "description": "Hint 2"
+    },
+    "doWaitFill": {
+      "text": "Wait while the chamber fills: the boat rises with it.",
+      "description": "Hint 2"
+    },
+    "doWaitDrain": {
+      "text": "Wait while the chamber empties: the boat goes down with it.",
+      "description": "Hint 2"
+    },
+    "doWaitBoat": {
+      "text": "Let the boat finish its move.",
+      "description": "Hint 2"
+    },
+    "doTurnBack": {
+      "text": "The boat went the wrong way: back up towards the lock.",
+      "description": "Hint 2"
+    },
+    "showControl": {
+      "text": "Use the highlighted control: {control}.",
+      "description": "Hint 3: names the control to use"
+    },
+    "showWait": {
+      "text": "Nothing to press for now: just watch the water.",
+      "description": "Hint 3 while waiting"
+    },
+    "hintDone": {
+      "text": "Your boat has arrived: nothing left to do!",
+      "description": "Hint when the goal is reached"
+    }
+  },
+  "objects": [
+    {
+      "id": "lower-gates",
+      "label": "Lower gates",
+      "selectable": true
+    },
+    {
+      "id": "upper-gates",
+      "label": "Upper gates",
+      "selectable": true
+    },
+    {
+      "id": "lower-paddles",
+      "label": "Lower paddles",
+      "selectable": true
+    },
+    {
+      "id": "upper-paddles",
+      "label": "Upper paddles",
+      "selectable": true
+    },
+    {
+      "id": "boat",
+      "label": "Barge",
+      "selectable": true
+    },
+    {
+      "id": "chamber",
+      "label": "Water of the chamber"
+    }
+  ],
+  "state": {
+    "type": "object",
+    "properties": {
+      "scenario": {
+        "type": "string",
+        "enum": [
+          "uphill",
+          "downhill"
+        ]
+      },
+      "level": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 4.5,
+        "description": "Chamber level in metres above the lower canal"
+      },
+      "lowerGates": {
+        "type": "string",
+        "enum": [
+          "open",
+          "closed"
+        ]
+      },
+      "upperGates": {
+        "type": "string",
+        "enum": [
+          "open",
+          "closed"
+        ]
+      },
+      "lowerPaddles": {
+        "type": "string",
+        "enum": [
+          "open",
+          "closed"
+        ]
+      },
+      "upperPaddles": {
+        "type": "string",
+        "enum": [
+          "open",
+          "closed"
+        ]
+      },
+      "boat": {
+        "type": "string",
+        "enum": [
+          "lower",
+          "chamber",
+          "upper"
+        ]
+      },
+      "done": {
+        "type": "boolean"
+      },
+      "hints": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "mistakes": {
+        "type": "integer",
+        "minimum": 0
+      },
+      "step": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 6,
+        "description": "Explain mode: the step shown (1 to 6, 0 before any)"
+      },
+      "seen": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 63,
+        "description": "Explain mode: steps played to their end, one bit each"
+      },
+      "view": {
+        "type": "string",
+        "enum": [
+          "isometric",
+          "topDown",
+          "section"
+        ]
+      },
+      "muted": {
+        "type": "boolean"
+      },
+      "lab": {
+        "type": "string",
+        "maxLength": 40,
+        "description": "Explore mode: the lock as the learner left it, found again when they come back to an explore block of the chain (continuity, D65). Compact: journey (u or d), chamber level, lower gates, upper gates, lower paddles, upper paddles (o or c), boat (l, c or u), done (1 or 0), comma-separated."
+      }
+    },
+    "required": [
+      "scenario",
+      "level",
+      "lowerGates",
+      "upperGates",
+      "lowerPaddles",
+      "upperPaddles",
+      "boat",
+      "done",
+      "hints",
+      "mistakes",
+      "step",
+      "seen",
+      "view",
+      "muted"
+    ]
+  },
+  "persistState": {
+    "enabled": true,
+    "maxLength": 300
+  },
+  "events": [
+    {
+      "name": "manoeuvre",
+      "description": "The lock was operated (by the learner or a screen event): action names the operation; accepted is false when the lock refused it, and reason says why.",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "accepted",
+          "reason"
+        ]
+      }
+    },
+    {
+      "name": "level_equal",
+      "description": "The chamber has just become level with one of the canals (side: lower or upper).",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "side": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "side"
+        ]
+      }
+    },
+    {
+      "name": "boat_arrived",
+      "description": "The boat finished a move (where: lower, chamber or upper).",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "where": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "where"
+        ]
+      }
+    },
+    {
+      "name": "hint_shown",
+      "description": "Explore mode: the learner asked for a hint (level 1 to 3).",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3
+          }
+        },
+        "required": [
+          "level"
+        ]
+      }
+    },
+    {
+      "name": "step_viewed",
+      "description": "Explain mode: a step played to its end (index from 1).",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "phase": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "index",
+          "phase"
+        ]
+      }
+    },
+    {
+      "name": "completed",
+      "description": "Explore mode: the boat reached its goal. Explain mode: the last step played to its end.",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "hints": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "mistakes": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "hints",
+          "mistakes"
+        ]
+      },
+      "tracking": {
+        "completion": true
+      }
+    }
+  ],
+  "budgets": {
+    "drawCallsMax": 160,
+    "trianglesMax": 120000,
+    "texturePxMax": 1024,
+    "assetsMbMax": 1,
+    "bootMsMax": 3000,
+    "fpsMin": 30,
+    "webglContexts": 1
+  },
+  "a11y": {
+    "description": "A small 3D diorama of a canal lock, cut clean at both ends: the lower canal, a stone chamber between two pairs of black mitre gates with white-tipped balance beams, and the upper canal higher up. A barge floats on the water; paddles in the gates let water through, and the level of the chamber rises or falls while the boat floats with it.",
+    "keyboard": "Tab reaches each control in reading order: the lower gates, lower paddles, upper paddles, upper gates, the boat's two moves, then Hint, Reset, the views, Sound and Pause; in the explanation, the bubble's Replay, Previous and Next. Enter or Space operates it; each result is announced.",
+    "dragAlternative": "Nothing needs dragging: every action is a button.",
+    "motion": {
+      "pausable": true,
+      "respectsReducedMotion": true
+    }
+  },
+  "sandbox": {
+    "network": "none",
+    "permissions": []
+  }
+}

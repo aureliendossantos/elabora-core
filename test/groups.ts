@@ -49,6 +49,7 @@ export const groups: TestMap = {
     { name: 'three.js and generators', files: ['scripts/vendor-three.ts', 'scripts/gen-format.ts', 'scripts/pocket-voices.ts', 'scripts/heavy-slots.ts'], checks: [e2e('object')] },
     { name: 'templates', files: ['templates/**'], checks: [matrix('templates')] },
     { name: 'coffee-in-brief', files: ['examples/coffee-in-brief/**'], checks: [matrix('coffee')] },
+    { name: 'canal-locks', files: ['examples/canal-locks/**'], checks: [matrix('canal-locks')] },
     { name: 'medieval-charts', files: ['examples/medieval-charts/**'], checks: [matrix('medieval')] },
     { name: 'phishing-by-numbers', files: ['examples/phishing-by-numbers/**'], checks: [matrix('phishing')] },
     { name: 'planetary-gearset', files: ['examples/planetary-gearset/**'], checks: [matrix('planetary')] },

@@ -1,0 +1,662 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "Uphill: the best path brings the boat to the upper canal",
+      "steps": [
+        {
+          "action": "step",
+          "frames": 10
+        },
+        {
+          "action": "snapshot",
+          "name": "uphill-start"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "boat": "lower",
+            "lowerGates": "open",
+            "upperGates": "closed",
+            "done": false
+          }
+        },
+        {
+          "action": "click",
+          "object": "boat"
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "action": "boat-forward",
+            "accepted": true,
+            "reason": "sailing"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 240
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "boat": "chamber"
+          }
+        },
+        {
+          "action": "click",
+          "object": "lower-gates"
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "action": "close-lower-gates",
+            "accepted": true,
+            "reason": "closing"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 160
+        },
+        {
+          "action": "click",
+          "object": "upper-paddles"
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "action": "open-upper-paddles",
+            "accepted": true,
+            "reason": "fill"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 150
+        },
+        {
+          "action": "snapshot",
+          "name": "uphill-filling"
+        },
+        {
+          "action": "step",
+          "frames": 360
+        },
+        {
+          "action": "expect-event",
+          "name": "level_equal",
+          "payload": {
+            "side": "upper"
+          }
+        },
+        {
+          "action": "click",
+          "object": "upper-gates"
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "action": "open-upper-gates",
+            "accepted": true,
+            "reason": "opening"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 160
+        },
+        {
+          "action": "click",
+          "object": "boat"
+        },
+        {
+          "action": "step",
+          "frames": 240
+        },
+        {
+          "action": "expect-event",
+          "name": "completed"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "boat": "upper",
+            "done": true,
+            "upperGates": "open"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 30
+        },
+        {
+          "action": "snapshot",
+          "name": "uphill-done"
+        }
+      ]
+    },
+    {
+      "name": "Mistakes get a reaction, never a penalty",
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "click",
+          "object": "upper-gates"
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "action": "open-upper-gates",
+            "accepted": false,
+            "reason": "levels"
+          }
+        },
+        {
+          "action": "click",
+          "object": "upper-paddles"
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "action": "open-upper-paddles",
+            "accepted": true,
+            "reason": "leak"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 300
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "lowerGates": "open",
+            "upperPaddles": "open",
+            "mistakes": 2,
+            "done": false
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "leak-through-open-gates"
+        }
+      ]
+    },
+    {
+      "name": "Changing camera and style keeps the simulation where it is",
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "click",
+          "object": "boat"
+        },
+        {
+          "action": "step",
+          "frames": 240
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "cameraView": "section",
+            "visualStyle": "technical",
+            "informationLevel": "technical"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 90
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "boat": "chamber",
+            "lowerGates": "open"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "section-technical"
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "cameraView": "topDown",
+            "visualStyle": "playful",
+            "informationLevel": "minimal"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 90
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "boat": "chamber",
+            "lowerGates": "open"
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "topdown-playful"
+        }
+      ]
+    },
+    {
+      "name": "Downhill driven by commands, as a dialogue does",
+      "props": {
+        "mode": "display",
+        "scenario": "downhill",
+        "entrance": "none"
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 5
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "boat": "chamber",
+            "level": 3,
+            "lowerGates": "closed"
+          }
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "command": "open-lower-gates"
+          }
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "action": "open-lower-gates",
+            "accepted": false,
+            "reason": "levels"
+          }
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "command": "open-lower-paddles"
+          }
+        },
+        {
+          "action": "expect-event",
+          "name": "manoeuvre",
+          "payload": {
+            "action": "open-lower-paddles",
+            "accepted": true,
+            "reason": "drain"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 120
+        },
+        {
+          "action": "snapshot",
+          "name": "downhill-draining"
+        },
+        {
+          "action": "step",
+          "frames": 420
+        },
+        {
+          "action": "expect-event",
+          "name": "level_equal",
+          "payload": {
+            "side": "lower"
+          }
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "command": "open-lower-gates"
+          }
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "command": "boat-forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 420
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "boat": "lower",
+            "done": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "Explain mode plays its steps in the bubble",
+      "props": {
+        "mode": "explain",
+        "cameraView": "section",
+        "visualStyle": "technical",
+        "entrance": "none",
+        "phases": [
+          {
+            "phase": "flow",
+            "title": "Water flows in from above",
+            "caption": "Opening the upper paddles lets water run downhill, from the upper canal into the closed chamber."
+          },
+          {
+            "phase": "level",
+            "title": "The boat floats up",
+            "caption": "The boat floats, so it rises with the surface. Nothing pushes it up but the water beneath it."
+          },
+          {
+            "phase": "open",
+            "title": "Level water, open gates",
+            "caption": "Once the chamber is level with the upper canal, the water pushes equally on both sides: the gates swing open."
+          }
+        ]
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 150
+        },
+        {
+          "action": "snapshot",
+          "name": "explain-flow"
+        },
+        {
+          "action": "step",
+          "frames": 300
+        },
+        {
+          "action": "expect-event",
+          "name": "step_viewed",
+          "payload": {
+            "index": 1,
+            "phase": "flow"
+          }
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "command": "next-step"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 600
+        },
+        {
+          "action": "expect-event",
+          "name": "step_viewed",
+          "payload": {
+            "index": 2,
+            "phase": "level"
+          }
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "command": "next-step"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 160
+        },
+        {
+          "action": "snapshot",
+          "name": "explain-open"
+        },
+        {
+          "action": "step",
+          "frames": 400
+        },
+        {
+          "action": "expect-event",
+          "name": "completed"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "step": 3,
+            "seen": 7
+          }
+        }
+      ]
+    },
+    {
+      "name": "Explain mode goes on from one step to the next",
+      "props": {
+        "mode": "explain",
+        "cameraView": "section",
+        "informationLevel": "guided",
+        "entrance": "none"
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 330
+        },
+        {
+          "action": "expect-event",
+          "name": "step_viewed",
+          "payload": {
+            "index": 1,
+            "phase": "enter"
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "boat": "chamber",
+            "lowerGates": "open",
+            "step": 1
+          }
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "command": "next-step"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "snapshot",
+          "name": "explain-close"
+        },
+        {
+          "action": "step",
+          "frames": 200
+        },
+        {
+          "action": "expect-event",
+          "name": "step_viewed",
+          "payload": {
+            "index": 2,
+            "phase": "close"
+          }
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "boat": "chamber",
+            "lowerGates": "closed",
+            "step": 2,
+            "seen": 3
+          }
+        },
+        {
+          "action": "expect-no-event",
+          "name": "completed"
+        }
+      ]
+    },
+    {
+      "name": "Narrow frame stacks the controls under the scene",
+      "size": [
+        375,
+        860
+      ],
+      "steps": [
+        {
+          "action": "step",
+          "frames": 20
+        },
+        {
+          "action": "snapshot",
+          "name": "narrow"
+        }
+      ]
+    },
+    {
+      "name": "Carrying on from the lab to the explanation, then downhill: one lock, moved over each passage",
+      "props": {
+        "mode": "explore",
+        "scenario": "uphill",
+        "entrance": "none",
+        "sound": false
+      },
+      "steps": [
+        {
+          "action": "step",
+          "frames": 10
+        },
+        {
+          "action": "click",
+          "object": "boat"
+        },
+        {
+          "action": "step",
+          "frames": 240
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "boat": "chamber"
+          }
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "mode": "explain",
+            "scenario": "uphill",
+            "cameraView": "section",
+            "informationLevel": "guided",
+            "demoStep": 1,
+            "entrance": "none",
+            "sound": false
+          },
+          "transition": {
+            "duration": 1200,
+            "safeArea": {
+              "top": 128
+            }
+          }
+        },
+        {
+          "action": "step",
+          "frames": 18
+        },
+        {
+          "action": "snapshot",
+          "name": "passage-to-section"
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "view": "section",
+            "lab": "u,0,o,c,c,c,c,0"
+          }
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "mode": "display",
+            "scenario": "downhill",
+            "cameraView": "isometric",
+            "entrance": "none",
+            "sound": false
+          },
+          "transition": {
+            "duration": 1200,
+            "direction": "forward"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 54
+        },
+        {
+          "action": "snapshot",
+          "name": "passage-downhill"
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "scenario": "downhill",
+            "boat": "chamber",
+            "level": 3,
+            "view": "isometric"
+          }
+        },
+        {
+          "action": "set-props",
+          "props": {
+            "mode": "explore",
+            "scenario": "uphill",
+            "entrance": "none",
+            "sound": false
+          },
+          "transition": {
+            "duration": 900,
+            "direction": "back"
+          }
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "scenario": "uphill",
+            "boat": "chamber",
+            "lowerGates": "open",
+            "done": false
+          }
+        }
+      ]
+    }
+  ]
+}

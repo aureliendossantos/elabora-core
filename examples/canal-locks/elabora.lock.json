@@ -1,0 +1,28 @@
+{
+  "format": "elabora-lock/1",
+  "next": 19,
+  "keys": {
+    "screen:intro": "0",
+    "screen:lock-lab": "1",
+    "screen:inside-the-lock": "2",
+    "screen:downhill": "3",
+    "visit:intro-start": "4",
+    "object:intro-scene": "5",
+    "object:lock-lab-sim": "6",
+    "object:inside-the-lock-section": "7",
+    "dialogue:downhill-talk": "8",
+    "choice:downhill-talk#arrival.a": "9",
+    "choice:downhill-talk#arrival.b": "a",
+    "choice:downhill-talk#arrival.c": "b",
+    "choice:downhill-talk#level.a": "c",
+    "choice:downhill-talk#level.b": "d",
+    "choice:downhill-talk#level.c": "e",
+    "object:downhill-lock": "f",
+    "continuity:lock": "g",
+    "visit:lock-lab-next": "h",
+    "visit:inside-the-lock-next": "i"
+  },
+  "components": {
+    "lock-stage": "1.0.0"
+  }
+}

@@ -1,0 +1,283 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "canal-locks",
+  "title": "How do canal locks work?",
+  "language": "en",
+  "version": "0.1.0",
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Discover",
+      "screens": [
+        "intro",
+        "lock-lab"
+      ]
+    },
+    {
+      "id": "understand",
+      "title": "Understand",
+      "screens": [
+        "inside-the-lock"
+      ]
+    },
+    {
+      "id": "apply",
+      "title": "Apply",
+      "screens": [
+        "downhill"
+      ]
+    }
+  ],
+  "variables": [],
+  "theme": {
+    "cascade": "components-over-theme",
+    "fonts": [
+      {
+        "family": "Fraunces",
+        "src": "theme/fonts/fraunces/fraunces-latin-wght-normal.woff2",
+        "weight": "100 900"
+      },
+      {
+        "family": "Fraunces",
+        "src": "theme/fonts/fraunces/fraunces-latin-wght-italic.woff2",
+        "weight": "100 900",
+        "style": "italic"
+      },
+      {
+        "family": "Source Sans 3",
+        "src": "theme/fonts/source-sans-3/source-sans-3-latin-wght-normal.woff2",
+        "weight": "200 900"
+      },
+      {
+        "family": "Source Sans 3",
+        "src": "theme/fonts/source-sans-3/source-sans-3-latin-wght-italic.woff2",
+        "weight": "200 900",
+        "style": "italic"
+      }
+    ],
+    "tokens": {
+      "font.heading": "\"Fraunces\", \"Iowan Old Style\", Georgia, serif",
+      "font.body": "\"Source Sans 3\", \"Segoe UI\", system-ui, -apple-system, Arial, sans-serif",
+      "color.primary": "#35573F",
+      "color.onPrimary": "#FBF8F1",
+      "color.accent": "#A4502A",
+      "color.surface": "#F4EFE3",
+      "color.text": "#23302A",
+      "color.muted": "#56625A",
+      "color.success": "#2E6B43",
+      "color.error": "#A13A28",
+      "color.focus": "#1D5C88",
+      "radius": 14,
+      "player.top.background": "#F4EFE3",
+      "player.top.text": "#23302A",
+      "player.bottom.background": "#F4EFE3",
+      "player.bottom.text": "#23302A",
+      "player.accent": "#35573F",
+      "player.onAccent": "#FBF8F1"
+    },
+    "custom": {
+      "color.paper": "#F4EFE3",
+      "color.paper-deep": "#E8DFCB",
+      "color.ink": "#23302A",
+      "color.sage": "#A5B697",
+      "color.sage-light": "#D7DFCB",
+      "color.moss": "#5C7B48",
+      "color.water": "#5B93A8",
+      "color.water-deep": "#2C6378",
+      "color.water-light": "#C4DBE0",
+      "color.ochre": "#C3963D",
+      "color.terracotta": "#A4502A",
+      "shadow.soft": "0 1px 2px rgba(35,48,42,.06), 0 12px 32px rgba(35,48,42,.09)"
+    },
+    "stylesheet": "theme/theme.css",
+    "styles": {
+      "text": {
+        "lead": "Large opening paragraph"
+      },
+      "callout": {
+        "coda": "Closing thought in italic serif, under a wavy rule"
+      },
+      "button": {
+        "next": "The way on to the next screen, with an arrow; it rises into view when revealed"
+      }
+    },
+    "backdrop": {
+      "layers": [
+        "paper",
+        "wash-a",
+        "wash-b",
+        "wash-c"
+      ]
+    }
+  },
+  "navigation": {
+    "mode": "free",
+    "lockUntilComplete": true
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "spacer"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "previous",
+          "enabled": false
+        },
+        {
+          "id": "logo",
+          "enabled": false
+        },
+        {
+          "id": "title",
+          "enabled": false
+        },
+        {
+          "id": "outline",
+          "options": {
+            "label": "screen"
+          }
+        },
+        {
+          "id": "language",
+          "enabled": false
+        },
+        {
+          "id": "progress"
+        },
+        {
+          "id": "controls",
+          "enabled": false
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "glossary"
+        },
+        {
+          "id": "resources"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        },
+        {
+          "id": "next",
+          "enabled": false
+        }
+      ]
+    }
+  },
+  "completion": {
+    "reportAs": "completed-incomplete"
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  },
+  "presentation": {
+    "mode": "slides",
+    "contentWidth": 720,
+    "wideWidth": 1280,
+    "fit": {
+      "reference": "1600x900",
+      "minimum": "1280x720"
+    }
+  },
+  "description": "A 5-minute interactive module for curious minds: operate a 3D canal lock, see in cross-section why the boat rises, then help a lock keeper bring a barge downhill.",
+  "durationMinutes": 5,
+  "speakers": [
+    {
+      "id": "nell",
+      "name": "Nell",
+      "color": "color.moss",
+      "look": {
+        "svg": "personnages/nell.svg"
+      }
+    }
+  ],
+  "glossary": [
+    {
+      "id": "lock",
+      "term": "Lock",
+      "definition": "A short stretch of canal closed by gates at each end, where boats change level. Water is let in or out until the level matches the canal the boat is heading for.",
+      "variants": [
+        "locks",
+        "canal lock"
+      ]
+    },
+    {
+      "id": "lock-chamber",
+      "term": "Lock chamber",
+      "definition": "The stone basin of a lock, between its two pairs of gates. The boat waits there while the water rises or falls around it.",
+      "variants": [
+        "chamber"
+      ]
+    },
+    {
+      "id": "gates",
+      "term": "Lock gates",
+      "definition": "The pairs of heavy wooden doors that close each end of the chamber. They only open when the water is at the same level on both sides: until then, the higher water presses them shut.",
+      "variants": [
+        "gates",
+        "gate"
+      ]
+    },
+    {
+      "id": "balance-beam",
+      "term": "Balance beam",
+      "definition": "The long arm on top of each gate. The lock keeper leans on it to swing the gate open or shut, once the water is level.",
+      "variants": [
+        "balance beams"
+      ]
+    },
+    {
+      "id": "paddle",
+      "term": "Paddle",
+      "definition": "A small sluice in a gate or beside it. Winding it up lets water flow through without opening the gate: that is how a lock fills or empties.",
+      "variants": [
+        "paddles",
+        "sluice",
+        "sluices"
+      ]
+    },
+    {
+      "id": "upstream",
+      "term": "Upstream",
+      "definition": "Towards where the water comes from. At a lock, the upstream side is the upper canal, the higher water.",
+      "variants": []
+    },
+    {
+      "id": "downstream",
+      "term": "Downstream",
+      "definition": "Towards where the water goes. At a lock, the downstream side is the lower canal, the lower water.",
+      "variants": []
+    },
+    {
+      "id": "lock-keeper",
+      "term": "Lock keeper",
+      "definition": "The person who looks after a lock and works its gates and paddles to help boats through.",
+      "variants": [
+        "lock-keeper",
+        "lock keepers"
+      ]
+    },
+    {
+      "id": "barge",
+      "term": "Barge",
+      "definition": "A long, flat-bottomed boat built for canals. Barges once carried goods; many are now homes or holiday boats.",
+      "variants": [
+        "barges"
+      ]
+    }
+  ]
+}

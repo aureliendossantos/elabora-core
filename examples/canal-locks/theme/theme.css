@@ -1,0 +1,89 @@
+/* Canal Locks — a natural-history book on warm paper.
+   Cascade layer elabora.theme: the course defaults; components come after them.
+   Every colour is a token of course.json (theme.tokens, theme.custom). No words in this file.
+   The paper grain and the watercolour washes come from generators/paper.mjs. */
+
+/* ── Paper and washes ─────────────────────────────────────────────────
+   The page is warm paper; the backdrop lays a faint grain and three pigment pools behind every
+   screen. They drift a little from one part of the module to the next, as if the page turned. */
+html { background: var(--t-color-paper) url(../assets/images/paper-grain.svg) repeat; background-size: 320px 320px; min-height: 100%; }
+body { background: transparent; font-feature-settings: "kern", "liga"; }
+.t-backdrop-layer { background-repeat: no-repeat; will-change: transform, opacity; transition: translate 2.6s cubic-bezier(.3, .1, .2, 1), opacity 2.6s ease, scale 2.6s cubic-bezier(.3, .1, .2, 1); }
+.t-backdrop-layer[data-layer="paper"] { background: url(../assets/images/paper-grain.svg) repeat; background-size: 320px 320px; opacity: .55; }
+.t-backdrop-layer[data-layer="wash-a"] { background-image: url(../assets/images/wash-sage.svg); background-size: min(62vw, 980px) auto; background-position: 104% -18%; opacity: .9; }
+.t-backdrop-layer[data-layer="wash-b"] { background-image: url(../assets/images/wash-water.svg); background-size: min(56vw, 880px) auto; background-position: -14% 116%; opacity: .75; }
+.t-backdrop-layer[data-layer="wash-c"] { background-image: url(../assets/images/wash-ochre.svg); background-size: min(30vw, 460px) auto; background-position: 8% -6%; opacity: .55; }
+.t-backdrop[data-section="introduction"][data-screen="lock-lab"] .t-backdrop-layer[data-layer="wash-a"] { translate: 3% 6%; }
+.t-backdrop[data-section="understand"] .t-backdrop-layer[data-layer="wash-a"] { translate: -6% 2%; scale: 1.08; }
+.t-backdrop[data-section="understand"] .t-backdrop-layer[data-layer="wash-b"] { translate: 8% -4%; }
+.t-backdrop[data-section="understand"] .t-backdrop-layer[data-layer="wash-c"] { opacity: .3; translate: 4% 0; }
+.t-backdrop[data-section="apply"] .t-backdrop-layer[data-layer="wash-a"] { translate: -2% 10%; }
+.t-backdrop[data-section="apply"] .t-backdrop-layer[data-layer="wash-b"] { translate: 4% -10%; opacity: .6; }
+.t-backdrop[data-section="apply"] .t-backdrop-layer[data-layer="wash-c"] { translate: 70% 4%; opacity: .5; }
+@media (prefers-reduced-motion: reduce) { .t-backdrop-layer { transition: none; } }
+
+/* ── The player: paper bars, a hairline under the top one ── */
+.t-bar--top { border-bottom: 1px solid color-mix(in srgb, var(--t-color-ink) 10%, transparent); background: color-mix(in srgb, var(--t-color-paper) 82%, transparent); backdrop-filter: blur(6px); }
+.t-bar--bottom { border-top: 1px solid color-mix(in srgb, var(--t-color-ink) 8%, transparent); background: color-mix(in srgb, var(--t-color-paper) 82%, transparent); backdrop-filter: blur(6px); }
+.t-course-title { font-family: var(--t-font-heading); font-weight: 600; font-style: italic; letter-spacing: 0; }
+
+/* ── Titles and text ────────────────────────────────────────────────── */
+h1, h2, h3, h4 { font-family: var(--t-font-heading); letter-spacing: -.012em; }
+.t-screen-title {
+  font-size: clamp(2rem, 3.4vw, 3rem);
+  font-weight: 600;
+  line-height: 1.04;
+  text-wrap: balance;
+  margin-bottom: 1rem;
+}
+.t-text { line-height: 1.6; }
+.t-text strong { font-weight: 650; }
+.t-text em { font-family: var(--t-font-heading); font-style: italic; }
+.t-s-lead .t-text { font-size: clamp(1.125rem, 1.4vw, 1.3125rem); line-height: 1.58; color: color-mix(in srgb, var(--t-text) 92%, var(--t-color-moss)); }
+
+/* A closing thought, set like the last line of a chapter. */
+.t-callout.t-s-coda, .t-s-coda .t-callout {
+  border: 0; background: none; padding: 0; box-shadow: none;
+}
+.t-s-coda .t-callout-title { display: none; }
+.t-s-coda .t-text { font-family: var(--t-font-heading); font-size: clamp(1.0625rem, 1.35vw, 1.25rem); line-height: 1.45; font-style: italic; font-weight: 450; }
+.t-s-coda .t-callout::before { content: ""; display: block; width: 4.5rem; height: 6px; margin-bottom: .75rem; background: url(../assets/images/rule-wave.svg) no-repeat left center / contain; }
+
+/* ── Buttons: soft pills in moss ── */
+.t-btn { border-radius: 999px; font-weight: 650; letter-spacing: .005em; }
+.t-btn--primary { box-shadow: 0 1px 2px color-mix(in srgb, var(--t-color-ink) 14%, transparent), 0 8px 20px color-mix(in srgb, var(--t-primary) 22%, transparent); }
+.t-block--button .t-btn { min-height: 52px; padding-inline: 1.75rem; font-size: 1.0625rem; }
+
+/* The way on to the next screen, inside the slide: an arrow that leans forward on hover. */
+.t-s-next .t-btn { display: inline-flex; align-items: center; gap: .625rem; padding-inline-end: 1.375rem; }
+.t-s-next .t-btn::after {
+  content: ""; flex: none; width: 1.125rem; height: 1.125rem; background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 12h14M13 6.5l5.5 5.5-5.5 5.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4.5 12h14M13 6.5l5.5 5.5-5.5 5.5'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: translate .25s ease;
+}
+.t-s-next .t-btn:hover::after, .t-s-next .t-btn:focus-visible::after { translate: 3px 0; }
+@media (prefers-reduced-motion: reduce) { .t-s-next .t-btn::after { transition: none; } }
+
+/* ── Layers: the debrief panel is a page of the same book ── */
+.t-panel, .t-dialog { background: var(--t-color-paper); box-shadow: var(--t-shadow-soft); border-color: color-mix(in srgb, var(--t-color-ink) 10%, transparent); }
+.t-panel .t-text ol { padding-left: 1.25rem; }
+.t-panel .t-text li { margin-bottom: .375rem; }
+.t-panel .t-text li::marker { font-family: var(--t-font-heading); font-weight: 600; color: var(--t-color-moss); }
+
+/* ── Free objects sit on the paper, without a frame ── */
+.t-object-frame { border: 0; border-radius: 0; background: transparent; overflow: visible; }
+.t-text-alt { font-size: .9375rem; }
+.t-text-alt > summary { color: var(--t-muted); cursor: pointer; }
+
+/* ── Dialogue: bubbles of paper and sage ── */
+.t-dialogue-bubble { box-shadow: 0 1px 2px color-mix(in srgb, var(--t-color-ink) 8%, transparent); }
+.t-dialogue-choice { border-radius: 1rem; }
+
+/* ── Focus stays visible on the paper ── */
+:focus-visible { outline: 3px solid var(--t-focus); outline-offset: 3px; }
+
+/* The debrief of the lock opens in the empty part of the text column, so the barge stays in view. */
+@media (min-width: 900px) {
+  .t-panel[data-layer="lock-lab-debrief"] { inset: auto auto 7.5rem 3.5rem; width: min(30rem, 34%); }
+}

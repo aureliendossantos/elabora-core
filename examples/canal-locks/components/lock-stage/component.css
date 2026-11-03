@@ -1,0 +1,76 @@
+/* Screen layout "lock-stage" — cascade layer elabora.components.
+   The scene takes the whole stage, on the paper; the text floats over it where the object leaves
+   room (the safe area tells the object which part is covered). */
+[data-presentation="slides"] .t-layout--lock-stage { flex: 1; display: flex; flex-direction: column; margin-block: 0; }
+.t-layout--lock-stage .lk-stage {
+  position: relative; flex: 1; overflow: clip;
+  display: grid; grid-template-areas: "all"; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(30rem, 1fr);
+}
+.t-layout--lock-stage .lk-stage-text,
+.t-layout--lock-stage .lk-stage-scene,
+.t-layout--lock-stage .lk-stage-note { grid-area: all; min-width: 0; }
+
+/* Text over the top of the stage: clicks pass through to the scene, except on the blocks. */
+.t-layout--lock-stage .lk-stage-text { position: relative; z-index: 2; align-self: start; max-width: 50rem; padding: 2rem 0 0 3.5rem; pointer-events: none; }
+.t-layout--lock-stage .lk-stage-body > * { pointer-events: auto; }
+.t-layout--lock-stage .lk-stage-title .t-screen-title { margin: 0 0 .625rem; font-size: clamp(2rem, 3.1vw, 2.875rem); line-height: 1.05; max-width: 22ch; }
+.t-layout--lock-stage .lk-stage-body .t-text { font-size: clamp(1rem, 1.2vw, 1.125rem); max-width: 40rem; }
+.t-layout--lock-stage .lk-stage-scene { display: flex; flex-direction: column; min-height: 0; --t-safe-top: 8rem; }
+/* Top: a title and a line of text, wide enough to stay within the 8rem the scene leaves them. The
+   blocks span the whole width, over the scene's controls: only their own controls take clicks. */
+.t-layout--lock-stage .lk-stage--top .lk-stage-text { max-width: min(64rem, calc(100% - 7rem)); }
+.t-layout--lock-stage .lk-stage--top .lk-stage-title .t-screen-title { max-width: none; }
+.t-layout--lock-stage .lk-stage--top .lk-stage-body .t-text { max-width: 60rem; }
+.t-layout--lock-stage .lk-stage--top .lk-stage-body > * { pointer-events: none; }
+.t-layout--lock-stage .lk-stage--top .lk-stage-body :is(a, button, input, select, textarea, summary) { pointer-events: auto; }
+.t-layout--lock-stage .lk-stage-scene > .t-block { flex: 1; display: flex; flex-direction: column; }
+.t-layout--lock-stage .lk-stage-scene .t-object { position: relative; flex: 1; display: flex; flex-direction: column; }
+
+/* The text version opens over the scene, next to the object's pause button. */
+.t-layout--lock-stage .lk-stage-scene .t-text-alt {
+  position: absolute; z-index: 3; top: .875rem; right: 4.5rem;
+  max-width: min(34rem, calc(100% - 6rem)); max-height: 72%; overflow: auto; margin: 0;
+  padding: .5rem .875rem; border-radius: 999px;
+  background: color-mix(in srgb, var(--t-color-paper, var(--t-surface)) 88%, transparent);
+}
+.t-layout--lock-stage .lk-stage-scene .t-text-alt[open] { border-radius: 1rem; padding: .875rem 1.125rem 1rem; box-shadow: 0 10px 30px color-mix(in srgb, var(--t-text) 14%, transparent); }
+
+/* Note at the bottom right, over the scene; the object keeps clear of it. */
+.t-layout--lock-stage .lk-stage-note { position: relative; z-index: 2; align-self: end; justify-self: end; width: min(32rem, 40%); padding: 0 3.5rem 1.75rem 0; }
+.t-layout--lock-stage .lk-stage:has(.lk-stage-note:not([data-empty])) .lk-stage-scene { --t-safe-bottom: 11rem; }
+.t-layout--lock-stage .lk-stage-note[data-empty] { display: none; }
+
+/* Left and Hero: a column of text beside the scene. */
+.t-layout--lock-stage :is(.lk-stage--left, .lk-stage--hero) .lk-stage-text {
+  align-self: stretch; width: min(36%, 34rem); max-width: none;
+  padding: 2rem 0 1.75rem 3.5rem;
+  display: flex; flex-direction: column; justify-content: flex-start; gap: .25rem;
+}
+.t-layout--lock-stage :is(.lk-stage--left, .lk-stage--hero) .lk-stage-body { display: flex; flex-direction: column; gap: 1.25rem; min-height: 0; }
+.t-layout--lock-stage :is(.lk-stage--left, .lk-stage--hero) .lk-stage-scene { --t-safe-top: 0px; --t-safe-left: min(38%, 36rem); }
+.t-layout--lock-stage .lk-stage--hero .lk-stage-text { justify-content: center; width: min(38%, 36rem); padding-bottom: 3rem; }
+.t-layout--lock-stage .lk-stage--hero .lk-stage-title .t-screen-title { font-size: clamp(2.75rem, 4.4vw, 4.25rem); line-height: 1; max-width: 11ch; margin-bottom: 1.25rem; }
+.t-layout--lock-stage .lk-stage--hero .lk-stage-body .t-text { font-size: clamp(1.125rem, 1.4vw, 1.3125rem); }
+
+/* Reeds at the edges of the page, faint, like a margin drawing. */
+.t-layout--lock-stage .lk-reeds { position: absolute; z-index: 0; width: 9rem; height: auto; pointer-events: none; color: var(--t-color-moss, var(--t-primary)); opacity: .32; }
+.t-layout--lock-stage .lk-reeds--a { left: -1.25rem; bottom: -.5rem; }
+.t-layout--lock-stage .lk-reeds--b { right: -2rem; bottom: -.75rem; width: 7rem; opacity: .26; }
+.t-layout--lock-stage .lk-leaf { fill: currentColor; opacity: .55; }
+.t-layout--lock-stage .lk-stem { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.t-layout--lock-stage .lk-head { fill: var(--t-color-terracotta, var(--t-accent)); opacity: .65; }
+.t-layout--lock-stage .lk-stage-text, .t-layout--lock-stage .lk-stage-scene, .t-layout--lock-stage .lk-stage-note { z-index: 1; }
+.t-layout--lock-stage .lk-stage-text, .t-layout--lock-stage .lk-stage-note { z-index: 2; }
+
+/* Narrow: title and text, then the scene, then the note. */
+@container (max-width: 900px) {
+  .t-layout--lock-stage .lk-stage { grid-template-areas: "text" "scene" "note"; grid-template-rows: auto auto auto; }
+  .t-layout--lock-stage .lk-stage-text,
+  .t-layout--lock-stage :is(.lk-stage--left, .lk-stage--hero) .lk-stage-text { grid-area: text; width: auto; max-width: none; padding: 1.5rem 1.25rem .75rem; pointer-events: auto; }
+  .t-layout--lock-stage .lk-stage-scene,
+  .t-layout--lock-stage :is(.lk-stage--left, .lk-stage--hero) .lk-stage-scene { grid-area: scene; --t-safe-top: 0px; --t-safe-left: 0px; --t-safe-bottom: 0px; padding: 0 1rem; }
+  .t-layout--lock-stage .lk-stage:has(.lk-stage-note:not([data-empty])) .lk-stage-scene { --t-safe-bottom: 0px; }
+  .t-layout--lock-stage .lk-stage-note { grid-area: note; justify-self: stretch; width: auto; padding: 1rem 1.25rem 1.5rem; }
+  .t-layout--lock-stage .lk-stage-scene .t-text-alt { position: static; max-width: none; margin: .5rem 0 0; border-radius: .75rem; }
+  .t-layout--lock-stage .lk-reeds { display: none; }
+}

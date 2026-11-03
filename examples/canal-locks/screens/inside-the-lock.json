@@ -1,0 +1,128 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1/screen.schema.json",
+  "id": "inside-the-lock",
+  "title": "The secret is water, not lifting",
+  "covers": [
+    "ITEM-3"
+  ],
+  "layout": "lock-stage",
+  "layoutProps": {
+    "arrangement": "top"
+  },
+  "completeWhen": "interactions-done",
+  "continueRevealsSteps": false,
+  "blocks": [
+    {
+      "id": "inside-the-lock-intro",
+      "type": "text",
+      "slot": "body",
+      "props": {
+        "markdown": "Let's slice the [lock](glossary:lock) open and replay the climb, one moment at a time."
+      }
+    },
+    {
+      "id": "inside-the-lock-next",
+      "type": "button",
+      "slot": "body",
+      "step": 2,
+      "style": "next",
+      "props": {
+        "label": "Try going downhill",
+        "variant": "primary"
+      }
+    },
+    {
+      "id": "inside-the-lock-section",
+      "type": "free-object",
+      "slot": "scene",
+      "continuity": {
+        "key": "lock",
+        "duration": 1200
+      },
+      "props": {
+        "object": "canal-lock",
+        "title": "Cross-section of the lock, replaying the climb step by step",
+        "aspectRatio": "fill",
+        "narrowAspectRatio": "auto",
+        "minHeight": 440,
+        "props": {
+          "mode": "explain",
+          "scenario": "uphill",
+          "rise": 3,
+          "cameraView": "section",
+          "informationLevel": "guided",
+          "showAnnotations": true,
+          "motionIntensity": "expressive",
+          "entrance": "watercolor",
+          "allowViewChange": true,
+          "sound": true,
+          "demoStep": 1,
+          "phases": [
+            {
+              "phase": "enter",
+              "title": "The barge sails in",
+              "caption": "The chamber is at the level of the lower canal, so its lower gates stand open and the barge glides straight in."
+            },
+            {
+              "phase": "close",
+              "title": "The gates close behind it",
+              "caption": "With the lower gates shut, the chamber becomes a closed basin: its water can no longer run away downstream."
+            },
+            {
+              "phase": "flow",
+              "title": "Water flows in from above",
+              "caption": "Opening the paddles, small sluices in the upper gates, lets water run downhill from the upper canal into the chamber."
+            },
+            {
+              "phase": "level",
+              "title": "The boat floats up",
+              "caption": "As the chamber fills, its surface rises, and the barge floats up with it. Nothing pushes it but the water beneath."
+            },
+            {
+              "phase": "open",
+              "title": "Level water, open gates",
+              "caption": "The chamber is now level with the upper canal. The water pushes as hard on both sides of the gates, so they swing open easily."
+            },
+            {
+              "phase": "exit",
+              "title": "On its way, 3 metres higher",
+              "caption": "The barge sails out into the upper canal. The lock never lifted it: the water did."
+            }
+          ]
+        },
+        "textAlternative": "**Text version of the explanation.** The lock is shown cut along the canal: the lower canal on the left, the [chamber](glossary:lock-chamber) in the middle, the upper canal on the right, 3 m higher.\n\n1. **The [barge](glossary:barge) sails in.** The chamber is at the level of the lower canal, so its lower [gates](glossary:gates) stand open and the barge glides in.\n2. **The gates close behind it.** With the lower gates shut, the chamber is a closed basin.\n3. **Water flows in from above.** The [paddles](glossary:paddle) of the upper gates open. Water runs downhill, from the upper canal into the chamber.\n4. **The boat floats up.** The chamber fills and its surface rises; the barge floats on it and rises too. Nothing pushes it up but the water beneath it.\n5. **Level water, open gates.** When the chamber is level with the upper canal, the water pushes equally on both sides of the upper gates, so they swing open.\n6. **On its way.** The barge sails out into the upper canal, 3 m higher than it started."
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "inside-the-lock-done",
+      "description": "Once the last step of the explanation has played to its end, show the button that leads on to the case.",
+      "on": {
+        "type": "object.event",
+        "target": "inside-the-lock-section",
+        "name": "completed"
+      },
+      "do": [
+        {
+          "type": "reveal-step",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "inside-the-lock-next-go",
+      "description": "The button leads on to the next screen.",
+      "on": {
+        "type": "click",
+        "target": "inside-the-lock-next"
+      },
+      "do": [
+        {
+          "type": "go-to",
+          "screen": "next"
+        }
+      ]
+    }
+  ]
+}
