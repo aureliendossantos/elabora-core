@@ -636,7 +636,7 @@ Copy a project of the library under a new project id (elabora_projects_list), wi
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
-| `id` | string | yes | The project's id, as elabora_projects_path takes it. |
+| `id` | string | yes | The project's id, as elabora_projects_path takes it, or its folder (elabora_courses). |
 | `title` | string |  | The copy's title. Default: the same. |
 
 ### `elabora_import`
@@ -645,7 +645,7 @@ Import a file of this computer into the library as a new module: an Elabora arch
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
-| `file` | string | yes | The absolute path of the file or folder. |
+| `file` | string | yes | The absolute path of the file or folder on this computer. |
 | `copy` | boolean |  | An archive whose course the library holds already: import it as a new project beside it. |
 | `title` | string |  | Storyline or Rise: the module's title. Default: the source's. |
 | `language` | string |  | Storyline or Rise: the language of its texts. Default: the source's. |

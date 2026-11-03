@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { libraryRoot, listProjects, getProject, resolveProjectId, createModule, duplicateProject } from '@elabora/node/library/index';
 import type { LibraryProject } from '@elabora/node/library/index';
 import { listModuleTemplates } from '@elabora/node/module-templates';
@@ -82,11 +83,13 @@ export const duplicateProjectTool = defineTool({
   anywhere: true,
   description: 'Copy a project of the library under a new project id (elabora_projects_list), with the same course id; its history stays with the original. Returns the name to pass as course and its folder.',
   inputSchema: objectSchema({
-    id: { type: 'string', description: 'The project\'s id, as elabora_projects_path takes it.' },
+    id: { type: 'string', description: 'The project\'s id, as elabora_projects_path takes it, or its folder (elabora_courses).' },
     title: { type: 'string', minLength: 1, description: 'The copy\'s title. Default: the same.' }
   }, ['id']),
   async handler(args, context) {
-    const copy = await duplicateProject(resolveProjectId(args.id), { ...(args.title !== undefined ? { title: args.title } : {}), author: context.author });
+    // Its folder in the library is named by its project id.
+    const id = path.isAbsolute(args.id) && path.dirname(path.resolve(args.id)) === path.resolve(libraryRoot()) ? path.basename(args.id) : args.id;
+    const copy = await duplicateProject(resolveProjectId(id), { ...(args.title !== undefined ? { title: args.title } : {}), author: context.author });
     return textResult(started(copy, context));
   }
 });
@@ -98,7 +101,7 @@ export const importProjectTool = defineTool({
   anywhere: true,
   description: 'Import a file of this computer into the library as a new module: an Elabora archive (.elabora) or course folder, or (beta) a Storyline project (.story), a course Storyline published (zip or folder) or a Rise 360 export. A Storyline or Rise module comes with import-report.json: every loss, and the choices the import made; another import with choices makes them otherwise, as a new module. An archive of a course the library holds already imports nothing until you say copy; replacing or trashing a module stays with the author.',
   inputSchema: objectSchema({
-    file: { type: 'string', minLength: 1, description: 'The absolute path of the file or folder.' },
+    file: { type: 'string', minLength: 1, description: 'The absolute path of the file or folder on this computer.' },
     copy: { type: 'boolean', description: 'An archive whose course the library holds already: import it as a new project beside it.' },
     title: { type: 'string', minLength: 1, description: 'Storyline or Rise: the module\'s title. Default: the source\'s.' },
     language: { ...LANGUAGE, description: 'Storyline or Rise: the language of its texts. Default: the source\'s.' },
@@ -114,6 +117,7 @@ export const importProjectTool = defineTool({
     }
   }, ['file']),
   async handler(args, context) {
+    if (!path.isAbsolute(args.file)) return errorResult({ error: `${args.file} is not an absolute path: give the file's whole path on this computer.` });
     // Loaded when used: the importers would slow every server's start.
     const { importModule } = await import('@elabora/node/import/index');
     const { DECISION_CHOICE } = await import('@elabora/core/import/report');

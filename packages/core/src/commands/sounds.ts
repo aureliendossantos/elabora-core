@@ -1,7 +1,7 @@
 import type { Sound } from '@elabora/format';
 import type { SourceFile } from '../project/files.ts';
 import { fileHash, getFile, textFile } from '../project/files.ts';
-import { slugify } from '../import/convert.ts';
+import { slugify } from '../util/slug.ts';
 import { stringifyJSON } from '../util/json.ts';
 import { SCHEMA_VERSION } from '@elabora/format';
 import { SOUNDS_FOLDER, soundAssets } from '../sounds/sounds.ts';

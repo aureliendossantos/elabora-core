@@ -1,7 +1,7 @@
 import type { Course } from '@elabora/format';
 import type { SourceFile } from '../project/files.ts';
 import { getFile, pathsUnder, fileHash } from '../project/files.ts';
-import { slugify } from '../import/convert.ts';
+import { slugify } from '../util/slug.ts';
 import { CommandError, Draft, listIn, type CommandContext, type CommandOutput } from './context.ts';
 import type { CourseResource } from './player.ts';
 

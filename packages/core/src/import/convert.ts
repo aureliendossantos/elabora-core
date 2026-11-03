@@ -1,4 +1,5 @@
 import { schemaId, FORMAT } from '@elabora/format';
+import { slugify } from '../util/slug.ts';
 import type { SourceCourse, SourcePage, SourceItem, SourceLayer, SourceTrigger, SourceAction, SourceMedia, SourceVariable, ImportKind } from './model.ts';
 import { layoutTree, flatten, isBackground, visualTitle } from './layout.ts';
 import type { LayoutNode } from './layout.ts';
@@ -57,11 +58,6 @@ const SUPPORTED_MEDIA: Record<SourceMedia['kind'], RegExp> = {
 };
 const MEDIA_FOLDER: Record<SourceMedia['kind'] | 'captions', string> = { image: 'images', video: 'video', audio: 'audio', captions: 'captions' };
 
-export function slugify(text: string, fallback: string, max = 40): string {
-  const slug = String(text ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, max).replace(/-+$/, '');
-  if (!slug) return fallback;
-  return /^[a-z]/.test(slug) ? slug : `${fallback}-${slug}`.slice(0, max).replace(/-+$/, '');
-}
 
 const variableId = (name: string): string => {
   const words = String(name).normalize('NFD').replace(/[̀-ͯ]/g, '').split(/[^A-Za-z0-9]+/).filter(Boolean);

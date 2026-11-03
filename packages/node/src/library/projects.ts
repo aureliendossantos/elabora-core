@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { parseJSON } from '@elabora/core/util/json';
-import { slugify } from '@elabora/core/import/convert';
+import { slugify } from '@elabora/core/util/slug';
 import type { Author } from '@elabora/core/ops/types';
 import { updateCourseSettings } from '../edit/index.ts';
 import { dataLocation } from '../data-dir.ts';
@@ -367,7 +367,8 @@ export async function createModule(options: NewModuleOptions): Promise<NewModule
     ...(request ? { brief: { notes: requestNotes(request, language) } } : {}),
     ...(template ? { template: template.dir } : {})
   });
-  if (options.author?.kind === 'agent') appendMark(project.path, { request: request || title, author: options.author });
+  // The module is made: a mark that cannot be written loses its label, not the module (a retry would make another).
+  if (options.author?.kind === 'agent') try { appendMark(project.path, { request: request || title, author: options.author }); } catch { /* unlabelled */ }
   return { project, template, language, languageFrom: options.language ? 'given' : 'app' };
 }
 

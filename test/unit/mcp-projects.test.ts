@@ -100,6 +100,10 @@ test('MCP: a copy of a module, an Elabora folder or archive imported; an archive
     const copy = body(await client.callTool({ name: 'elabora_projects_duplicate', arguments: { id: created.id, title: 'Gestes (copie)' } }));
     assert.deepEqual([copy.courseId, copy.title, copy.course], ['gestes', 'Gestes (copie)', 'gestes-2']);
     assert.notEqual(copy.folder, created.folder);
+    const byFolder = body(await client.callTool({ name: 'elabora_projects_duplicate', arguments: { id: created.folder } }));
+    assert.deepEqual([byFolder.courseId, byFolder.title], ['gestes', 'Gestes']);
+    const relative = await client.callTool({ name: 'elabora_import', arguments: { file: 'examples/diagnostic-reseau' } });
+    assert.match(body(relative).error, /is not an absolute path/);
     const folder = body(await client.callTool({ name: 'elabora_import', arguments: { file: path.join(ROOT, 'examples', 'diagnostic-reseau') } }));
     assert.equal(folder.kind, 'elabora-folder');
     assert.equal(path.dirname(folder.folder), library);
@@ -110,7 +114,7 @@ test('MCP: a copy of a module, an Elabora folder or archive imported; an archive
       const refused = await client.callTool({ name: 'elabora_import', arguments: { file: archive } });
       assert.equal(refused.isError, true);
       assert.match(body(refused).error, /holds the course gestes already: nothing imported/);
-      assert.equal(body(refused).existing.length, 2);
+      assert.equal(body(refused).existing.length, 3);
       const again = body(await client.callTool({ name: 'elabora_import', arguments: { file: archive, copy: true } }));
       assert.deepEqual([again.kind, again.courseId], ['elabora-archive', 'gestes']);
       const titled = await client.callTool({ name: 'elabora_import', arguments: { file: archive, title: 'Autre' } });
