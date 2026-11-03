@@ -144,8 +144,7 @@
           }
         },
         {
-          "id": "language",
-          "enabled": false
+          "id": "language"
         },
         {
           "id": "progress"
