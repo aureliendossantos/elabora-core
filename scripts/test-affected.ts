@@ -37,6 +37,6 @@ const results = [
   run('typecheck', ['pnpm', 'run', 'typecheck']),
   run('unit tests', ['pnpm', 'test'])
 ];
-if (selection.checks.length) results.push(run(`${selection.checks.length} e2e and matrix file(s)`, [node, '--test', '--test-global-setup=test/isolate.ts', '--import', './scripts/heavy-slots.ts', '--test-concurrency=2', ...selection.checks.map((check) => `test/${check}.test.ts`)]));
+if (selection.checks.length) results.push(run(`${selection.checks.length} e2e and matrix file(s)`, [node, '--test', '--test-force-exit', '--test-global-setup=test/isolate.ts', '--import', './scripts/heavy-slots.ts', '--test-concurrency=2', ...selection.checks.map((check) => `test/${check}.test.ts`)]));
 console.log(`\n${results.every(Boolean) ? 'The checks of this change pass' : 'A check failed'}${selection.widened ? '; shared code changed: the batch run on main covers the rest' : ''}.`);
 process.exitCode = results.every(Boolean) ? 0 : 1;

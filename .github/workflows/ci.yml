@@ -45,18 +45,19 @@ jobs:
 
       # ffmpeg: the GPL builds of BtbN/FFmpeg-Builds (libx264, libwebp, zimg) on Linux and
       # Windows, Homebrew on macOS. Google Chrome and Microsoft Edge are already installed on the
-      # runners (test/e2e/edge.test.ts compares them).
+      # runners (test/e2e/edge.test.ts compares them). Both downloads retry: BtbN's `latest`
+      # answers 404 while it rebuilds at night (3 Nov 2026).
       - name: ffmpeg (Linux)
         if: runner.os == 'Linux'
         run: |
-          curl -sSL -o ffmpeg.tar.xz https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-linux64-gpl-9.0.tar.xz
+          curl -fsSL --retry 5 --retry-delay 30 --retry-all-errors -o ffmpeg.tar.xz https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-linux64-gpl-9.0.tar.xz
           mkdir -p "$RUNNER_TEMP/ffmpeg" && tar -xJf ffmpeg.tar.xz -C "$RUNNER_TEMP/ffmpeg" --strip-components=1 && rm ffmpeg.tar.xz
           echo "$RUNNER_TEMP/ffmpeg/bin" >> "$GITHUB_PATH"
       - name: ffmpeg (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Invoke-WebRequest -Uri https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-win64-gpl-9.0.zip -OutFile ffmpeg.zip
+          Invoke-WebRequest -MaximumRetryCount 5 -RetryIntervalSec 30 -Uri https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n9.0-latest-win64-gpl-9.0.zip -OutFile ffmpeg.zip
           Expand-Archive ffmpeg.zip -DestinationPath "$env:RUNNER_TEMP"
           Remove-Item ffmpeg.zip
           $bin = (Get-ChildItem "$env:RUNNER_TEMP" -Directory -Filter 'ffmpeg-*').FullName + '\bin'
