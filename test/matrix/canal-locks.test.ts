@@ -9,6 +9,7 @@ import { validateDir } from '@elabora/node/project-reader';
 import { testPackage } from '@elabora/node/emulator/run';
 import { fitDiagnostics, measureFit } from '@elabora/node/fit';
 import { testObject } from '@elabora/node/objects/test';
+import { withCourseLanguage } from '@elabora/node/translate';
 
 // The canal-locks sample (slow; pnpm run test:matrix): a short slide module with no recorded media,
 // one 3D free object that serves four screens (explore, explain, a dialogue's consequences), a
@@ -29,12 +30,16 @@ test('the canal-locks sample validates and passes the emulator with axe-core, wi
   assert.deepEqual(r.accessibility.overflow, []);
 });
 
-test('the canal-locks slides fit at 1600×900 and 1280×720', { timeout: 400000 }, async () => {
+test('the canal-locks slides fit at 1600×900 and 1280×720, in English and in French', { timeout: 400000 }, async () => {
   const fit = await measureFit(copy(), { fresh: true });
   assert.ok(fit.ok, JSON.stringify(fit.diagnostics));
   assert.equal(fit.mode, 'slides');
   assert.ok(['1600x900', '1280x720'].every((size) => fit.sizes.some((measured) => measured.size === size)));
   assert.deepEqual(fitDiagnostics(fit).filter((d) => d.severity !== 'info').map((d) => `${d.code} ${d.message}`), []);
+  // The French translation (longer words, the same screens).
+  const french = await withCourseLanguage(copy(), { language: 'fr' }, (root) => measureFit(root, { fresh: true }));
+  assert.ok(french.ok, JSON.stringify(french.diagnostics));
+  assert.deepEqual(fitDiagnostics(french).filter((d) => d.severity !== 'info').map((d) => `${d.code} ${d.message}`), []);
 });
 
 test('the lock of canal-locks passes its gates', { timeout: 900000 }, async () => {
