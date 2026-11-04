@@ -6,6 +6,12 @@ import { optimizeMedia, mediaToOptimize } from '@elabora/node/media/optimize';
 import { MediaQueue, readJobs, isFinished } from '@elabora/node/media/jobs';
 import type { MediaJob } from '@elabora/node/media/jobs';
 import * as edit from '@elabora/node/edit';
+import { loadProjectFromDir } from '@elabora/node/project-reader';
+import { packageWeights } from '@elabora/node/packaging/weights';
+import { isPresetName } from '@elabora/core/media/presets';
+import { sizeText } from '@elabora/core/lms/package-limits';
+import { bytesAt, durationText } from '@elabora/core/media/weights';
+import type { MediaUse, MediaWeight } from '@elabora/core/media/weights';
 import { defineCommand, errorMessage, printDiagnostics, printFormatMigration, printJson, reportingFailures } from './command.ts';
 import type { CommandGroup } from './command.ts';
 import { mediaProgress } from '../media-progress.ts';
@@ -21,6 +27,14 @@ const HELP = `  media import [dir] <file…> [--to <folder>] [--name <name>] [--
                                                       Captions of a video block (E_VIDEO_CAPTIONS_MISSING): the file written
                                                       under assets/captions/ (SubRip converted to WebVTT), named by the
                                                       block, in one undoable change
+  media weights [dir] [--media-quality high|medium|low] [--all] [--json]
+                                                      What the package weighs at each media quality, media by media,
+                                                      heaviest first: kind, file, duration and size, what high, medium
+                                                      and low ship (made or estimated), where the course uses it; a
+                                                      media that weighs more than five minutes of video at the quality
+                                                      stands out, with why and what lightens it. Nothing is encoded or
+                                                      written. At the course's quality unless --media-quality; the ten
+                                                      heaviest unless --all
   media status [dir] [--wait] [--json]                Media jobs (queued, running, done, failed) and media to optimise
   media cancel [dir] <job>                            Cancel a media job
   media worker [dir]                                  Run the project's media jobs until none is left (import --no-wait)`;
@@ -147,6 +161,67 @@ const captions = defineCommand({
   })
 });
 
+const SHOWN = 10;
+// A media's size: in KB under a megabyte, as sizeText above.
+const bytesText = (bytes: number) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : sizeText(bytes));
+
+// Where the course uses a media, in a few words.
+export function useText(uses: readonly MediaUse[]): string {
+  const words = uses.map((use) => {
+    if (use.as === 'logo') return "the player's logo";
+    if (use.as === 'resource') return 'a resource';
+    if (use.as === 'interface-sound') return 'an interface sound';
+    if (use.as === 'background') return 'a background track';
+    const within = [use.block, use.layer ? `layer ${use.layer}` : ''].filter(Boolean).join(', ');
+    return `${use.screen}${within ? ` (${within})` : ''}`;
+  });
+  const unique = [...new Set(words)];
+  return unique.length > 3 ? `${unique.slice(0, 3).join(', ')} and ${unique.length - 3} more` : unique.join(', ');
+}
+
+// What a media is: its duration, its size and the size it ships at, its lines.
+export function mediaFacts(media: MediaWeight, quality: MediaWeight['qualities'][number]['quality']): string {
+  const shipped = media.qualities.find((size) => size.quality === quality);
+  const size = media.width && media.height ? `${media.width}×${media.height}${shipped?.width && (shipped.width !== media.width || shipped.height !== media.height) ? ` → ${shipped.width}×${shipped.height}` : ''}` : '';
+  const lines = media.lines ? `${media.lines} line${media.lines === 1 ? '' : 's'}` : '';
+  return [media.seconds ? durationText(media.seconds) : '', size, lines].filter(Boolean).join(' · ');
+}
+
+const weights = defineCommand({
+  name: 'media weights',
+  flags: { 'media-quality': 'string', all: 'boolean', json: 'boolean' },
+  run: ({ positionals: [dir = '.'], flags }) => reportingFailures(async () => {
+    if (notACourse(dir)) { console.error(`✘ ${path.resolve(dir)} is not an Elabora course (no course.json).`); return 1; }
+    const asked = flags['media-quality'];
+    if (asked !== undefined && !isPresetName(asked)) { console.error(`--media-quality is high, medium or low (not "${asked}").`); return 2; }
+    const project = loadProjectFromDir(dir);
+    const result = await packageWeights(project, asked ? { quality: asked } : {});
+    if (flags.json) { printJson(result); return 0; }
+    const { quality, qualities, media, rest } = result;
+    const about = (bytes: number, estimated: boolean) => `${estimated ? 'about ' : ''}${sizeText(bytes)}`;
+    const total = qualities.find((size) => size.quality === quality)!;
+    const others = qualities.filter((size) => size.quality !== quality).map((size) => `${size.quality} ${about(size.bytes, size.estimated)}`).join(', ');
+    console.log(`${project.course?.title ?? path.resolve(dir)}: ${about(total.bytes, total.estimated)} at ${quality}${asked ? '' : ' (the course\'s quality)'}; ${others}.`);
+    console.log(`Media ${sizeText(total.bytes - rest)}, the rest ${sizeText(rest)} (the player, fonts and texts, at every quality).${total.estimated ? ' "about": renditions or narration tracks not made yet, estimated from bitrates.' : ''}`);
+    if (!media.length) { console.log('\nNo media.'); return 0; }
+    const shown = flags.all ? media : media.slice(0, SHOWN);
+    const width = Math.max(...shown.map((one) => bytesText(bytesAt(one, quality)).length));
+    console.log('');
+    for (const one of shown) {
+      const name = one.path ?? (one.kind === 'narration' ? 'narration track' : 'dialogue lines');
+      const same = one.qualities.every((size) => size.bytes === one.qualities[0]!.bytes && !size.rendition);
+      const ladder = same ? `the same at every quality${one.qualities[0]!.estimated ? ' (estimated)' : ''}` : one.qualities.map((size) => `${size.quality} ${bytesText(size.bytes)}${size.estimated ? '*' : ''}${size.rendition ? '' : ' (as is)'}`).join(', ');
+      const facts = mediaFacts(one, quality);
+      console.log(`${one.heavy ? '!' : ' '} ${bytesText(bytesAt(one, quality)).padStart(width)}  ${one.kind.padEnd(9)} ${name}${facts ? `  ${facts}` : ''}`);
+      console.log(`  ${' '.repeat(width)}  ${' '.repeat(9)} ${ladder}${one.uses.length ? ` · ${useText(one.uses)}` : ''}`);
+      if (one.why) console.log(`  ${' '.repeat(width)}  ${' '.repeat(9)} Stands out: ${one.why}`);
+    }
+    if (shown.length < media.length) console.log(`\n${media.length - shown.length} lighter media (--all lists them).`);
+    console.log(`\n* estimated from bitrates; (as is): the master ships at that quality. ! weighs more than five minutes of video at ${quality}.`);
+    return 0;
+  })
+});
+
 const status = defineCommand({
   name: 'media status',
   flags: { wait: 'boolean', json: 'boolean' },
@@ -204,6 +279,6 @@ const worker = defineCommand({
 export const mediaCommands: CommandGroup = {
   title: 'Media (video, audio and images of assets/)',
   help: HELP,
-  commands: [importCommand, optimize, captions, status, cancel, worker],
-  subcommandUsage: { media: `Usage: elabora media import|optimize|captions|status|cancel|worker\n\n${HELP}` }
+  commands: [importCommand, optimize, captions, weights, status, cancel, worker],
+  subcommandUsage: { media: `Usage: elabora media import|optimize|captions|weights|status|cancel|worker\n\n${HELP}` }
 };

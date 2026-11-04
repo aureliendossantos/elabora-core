@@ -1,6 +1,6 @@
 # Agent tools
 
-Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 110 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
+Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 111 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
 
 ## Reading
 
@@ -254,6 +254,15 @@ The module templates a new module can start from (elabora_projects_create templa
 ### `elabora_media_status`
 
 Media jobs of the course (imports, optimisations, renditions: queued, running with progress, done, failed) and the media files of assets/ that are not masters yet (W_MEDIA_NOT_OPTIMIZED).
+
+### `elabora_media_weights`
+
+What the package weighs at each media quality (high, medium, low), media by media, heaviest first: why a package is heavy, and what a lower quality would change. Each media: kind (video, audio, image, vector, file: an asset the qualities leave as it is, narration: a screen's track, dialogue: a dialogue block's lines), path under assets/, uses (screen and block, or the player's logo, a resource, a sound), the master's bytes, width, height and seconds, and at each quality its bytes, whether estimated from bitrates (not made yet), whether a rendition or the master as is, and the width and height shipped; heavy: it weighs more than five minutes of video at the quality (about 292 MB at high, 148 at medium, 57 at low), with why and what lightens it. Also the package at each quality and the rest (player, fonts, texts). Nothing is encoded or written. mediaQuality: order and judge at it rather than the course's delivery.mediaQuality.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `mediaQuality` | "high" \| "medium" \| "low" |  | The quality media are ordered by and judged at (default: the course's delivery.mediaQuality). |
+| `limit` | integer |  | How many media, heaviest first (default 20). |
 
 ### `elabora_timeline`
 

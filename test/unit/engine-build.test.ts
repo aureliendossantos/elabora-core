@@ -126,10 +126,12 @@ test('build over the protocol: typed result, bad parameters refused', async () =
   }
 });
 
-test('packageWeights: what the package would weigh at each media quality, with nothing written', async () => {
+test('packageWeights: what the package would weigh at each media quality, and each media, with nothing written', async () => {
   const { dir, session } = await open();
-  const weights = await session.packageWeights();
+  const { quality, qualities: weights, media, rest } = await session.packageWeights();
+  assert.equal(quality, 'high');
   assert.deepEqual(weights.map((size) => size.quality), ['high', 'medium', 'low']);
+  assert.equal(weights[0]!.bytes, rest + media.reduce((sum, one) => sum + one.qualities[0]!.bytes, 0), 'the package is its media and the rest');
   assert.ok(weights.every((size) => size.bytes > 100_000), 'the player at least');
   assert.ok(!fs.existsSync(path.join(dir, 'dist')), 'nothing written');
   const built = await session.build({});
