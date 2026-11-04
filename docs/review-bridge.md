@@ -14,15 +14,15 @@ elabora build . --target web --review-origin https://revue.elabora.studio --revi
 - `--review-origin` is repeatable (or comma-separated): the production page and the development pages. An origin is `https://host[:port]`; `http://` only for this computer (`localhost`, `127.0.0.1`, `[::1]`, `*.localhost`). No path, query, credentials or wildcard: `E_WEB_REVIEW_ORIGIN` otherwise.
 - MCP: `elabora_build { target: "web", web: { review: { origins: ["https://revue.elabora.studio"] } } }`. Engine: the build request's `web.review`. Node: `build(dir, { target: 'web', web: { review: { origins } } })`.
 - A review build's defaults are a review's: `progress none` (nothing kept), `navigation free` (go to any screen, nothing locked), `noindex`. Each can still be given (`--progress local` to resume a reviewer where they left).
-- What changes in the module: `elabora/review.js`, a `<script src="elabora/review.js">` after the player's in `index.html`, and `delivery.review { origins, languages }` in the compiled course (its build id with it). The player's files are the same bytes as in any build; **a build without `--review-origin` is unchanged, byte for byte** (`test/unit/review-bridge.test.ts`).
+- What changes in the module: `elabora/review.js`, a `<script src="elabora/review.js">` after the player's in `index.html`, and `delivery.review { origins, languages }` in the compiled course (its build id with it). The player's files are the same bytes as in any build, and **a build without `--review-origin` keeps exactly the same bytes** (`test/unit/review-bridge.test.ts`).
 - The build report says `web.review { origins }`; the proof dossier names the origins.
 
 ## Security
-- The module takes a message only from **the window that embeds it** (`event.source === window.parent`), only from **an origin the build named**, and, once the page has spoken, only from **that page's origin**. Anything else is ignored, without an answer.
-- It posts **only to that origin**: to the embedder's origin when the browser gives it (`location.ancestorOrigins`, Chrome and Safari), else to each named origin until the page speaks (`postMessage` drops a message whose target origin is not the recipient's; never `'*'`). Embedded by a page of another origin, the module says nothing and does nothing it is asked.
-- It opens no connection: no `fetch`, no WebSocket, nothing but `postMessage` to its parent (AGENTS.md rule 2). Comments go from the page to the comments API, never through the module.
-- Free objects stay in their sandboxed frames (opaque origin): the bridge never talks to them, and they cannot talk to it (their messages do not come from the parent).
-- The host should also serve review publications with `Content-Security-Policy: frame-ancestors https://revue.elabora.studio` (and the development origins), so that no other site frames them at all.
+- The module takes a message only from **the window that embeds it** (`event.source === window.parent`), only from **an origin the build named**, and, once the page has spoken, only from **that page's origin**. The module ignores anything else, and stays silent.
+- It posts **only to that origin**: to the embedder's origin when the browser gives it (`location.ancestorOrigins`, Chrome and Safari), else to each named origin until the page speaks (`postMessage` drops a message whose target origin is not the recipient's; never `'*'`). Embedded by a page of another origin, the module stays silent and ignores what it is asked.
+- Its only channel is `postMessage` to its parent: the player opens no `fetch` or WebSocket connection (rule 2 of the repository's `AGENTS.md`). Comments go straight from the page to the comments API.
+- Free objects stay in their sandboxed frames (opaque origin). The bridge and the objects ignore each other: an object's messages come from its own frame, and the bridge listens to the parent only.
+- The host should also serve review publications with `Content-Security-Policy: frame-ancestors https://revue.elabora.studio` (and the development origins), so only those pages can frame them.
 
 ## Messages
 
@@ -51,7 +51,7 @@ Every message is a plain object with `protocol: "elabora-review/1"` and a `type`
 - `fontSize`: the root text size the module takes in its frame. It follows the **frame**, not the window: `baseFontSize` (16 px, the browser's) times the scale of the last rule of `sizes` that matches (a rule matches when the frame is at most `maxWidth` wide, at most `maxHeight` high, or in portrait at most `portraitMaxWidth` wide). These are player.css's media queries (a unit test keeps them equal). `textScale(frame)` computes it.
 - `column`: the screen shown, its column's width, the cap of the course's columns at this text size (`presentation.wideWidth`, 68.75 rem by default), whether the screen is full bleed (no column). `widest`: the widest column the module can have in this frame, the cap or the room the frame leaves.
 - `inset`: the margin the page keeps (see `layout` below) and whether the column moved into the room left.
-- `chrome`: the heights of the module's header and footer, its navigation: a floating panel sits between them and never covers them.
+- `chrome`: the heights of the module's header and footer, its navigation. A floating panel sits between them.
 
 **`location`**: whenever the screen, the step, the open layer, the narration's line or word, or its playing state changes (the time alone does not make a message while the narration plays; it does when it is still, after a seek).
 ```json
@@ -75,8 +75,8 @@ Every message is a plain object with `protocol: "elabora-review/1"` and a `type`
 - `kind`: the built-in kind (`heading`, `text`, `image`, `video`, `audio`, `quiz`, `numeric`, `decision`, `results`, `free-object`, `accordion`, `button`, `callout`, `math`, `stack`), a course component's from its lineage, `component` when it has none. `name`: a short accessible name in the module's language, the kind and the block's own words (an image's description, a heading, a question's stem, its first words; 40 characters at most), or the kind numbered among those on the screen when it has none (« Texte 2 »). The page may show `name`, or its own words for `kind` with `label`.
 - `order`: reading order, from 1 (the screen, then the open layers). Comment mode's Tab goes through the visible blocks in this order.
 - `parent`: the component whose slot holds the block. `layer`: the layer it is in.
-- `hidden`: not visible now (a step to come, concealed by an event, timed and not there at this time). The page does not point at hidden blocks.
-- A free object is one block (`object: true`): its frame is sandboxed, so a comment points at the object, not inside it.
+- `hidden`: out of sight now (a step to come, concealed by an event, timed and absent at this time). The page points at visible blocks only.
+- A free object is one block (`object: true`): its frame is sandboxed, so a comment points at the object as a whole.
 
 **`went`**: the answer to `go`: `{ "type": "went", "re": "g1", "ok": false, "missing": ["block", "word"] }`. `missing` lists what of the anchor the module no longer has (`screen`, `step`, `layer`, `line`, `word`, `time`, `block`): it went as far as it could (a screen without the block: the screen; a line without the word: the line's start).
 

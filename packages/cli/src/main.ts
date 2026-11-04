@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { ELABORA_VERSION } from '@elabora/node/bundles';
-import { ArgumentError } from './arguments.ts';
+import { ArgumentError, editDistance } from './arguments.ts';
 import { detectAuthor } from '@elabora/node/journal/author';
 import { COMMAND_ACTIVITY, commandPlace, withActivity } from './activity.ts';
 import type { Command, CommandGroup, ExitCode } from './commands/command.ts';
@@ -42,12 +42,29 @@ export function commandUsage(group: CommandGroup, name: string): string {
   const end = lines.findIndex((line, index) => index > start && /^ {2}[a-z]/.test(line));
   return lines.slice(start, end < 0 ? lines.length : end).join('\n');
 }
-// Every command, for a word that is none of them.
-const commandList = () => `Commands: ${[...new Set(GROUPS.flatMap((group) => group.commands.map((command) => command.name)))].join(', ')}.\nelabora --help prints the reference, elabora <command> --help its group.`;
+// The commands closest to a mistyped word: same first letters, the word inside, or one or two
+// letters off (valdate, lok).
+function nearCommands(word: string): string[] {
+  const names = [...COMMANDS.keys()];
+  const close = (name: string) => { const first = name.split(' ')[0]; return first !== word && editDistance(word, first) <= (word.length > 5 ? 2 : 1); };
+  return names.filter((name) => name.startsWith(word.slice(0, 3)) || name.includes(word) || close(name)).slice(0, 6);
+}
+const orList = (items: readonly string[]) => (items.length > 1 ? `${items.slice(0, -1).join(', ')} or ${items[items.length - 1]}` : items[0]);
+const SEE_HELP = 'Run elabora help to see every command.';
 
-const HELP = `elabora ${ELABORA_VERSION} — open e-learning format, SCORM 1.2 compiler and checks for AI agents
+const HELP = `elabora ${ELABORA_VERSION} — turns a course folder into a SCORM 1.2 package for your LMS
+
+A course is plain files in an open format: agents write them, people review them, elabora checks and builds them.
 
 Usage: elabora <command> [options]
+       elabora <command> --help     show one command's options
+
+Start here (in a checkout of elabora-core)
+  elabora validate examples/canal-locks               Check a sample course
+  elabora build examples/canal-locks                  Make its SCORM 1.2 package in examples/canal-locks/dist/
+  elabora preview examples/canal-locks                Open it in a browser; pages reload when its files change
+  elabora init my-course --id my-course --title "My course" --lang en
+                                                      Create your own course, then check it with elabora validate my-course
 
 ${GROUPS.map(section).join('\n\n')}
 `;
@@ -66,23 +83,25 @@ for (const group of GROUPS) {
 
 export async function main(argv: readonly string[]): Promise<ExitCode> {
   const [word, subcommand] = argv;
+  // elabora help validate: as elabora validate --help.
+  if (word === 'help' && subcommand !== undefined && subcommand !== '--help') return main([...argv.slice(1), '--help']);
   if (word === undefined || word === 'help' || word === '--help') { console.log(HELP); return 0; }
   if (word === 'version' || word === '--version') { console.log(ELABORA_VERSION); return 0; }
   if (argv.includes('--help')) {
     // A command: its own usage; a group's word (object, plan…): the group.
     const named = COMMANDS.get(`${word} ${subcommand}`) ?? (subcommand === '--help' || !GROUP_OF_WORD.get(word)?.commands.some((command) => command.name.startsWith(`${word} `)) ? COMMANDS.get(word) : undefined);
-    if (named) { console.log(`${commandUsage(named.group, named.command.name)}\n(elabora help: every command)`); return 0; }
+    if (named) { console.log(`${commandUsage(named.group, named.command.name)}\n${SEE_HELP}`); return 0; }
     const group = GROUP_OF_WORD.get(word);
     console.log(group ? section(group) : HELP);
     return 0;
   }
-  if (word.startsWith('--')) { console.error(`Unknown option ${word}: the command comes first.\n${commandList()}`); return 2; }
+  if (word.startsWith('--')) { console.error(`Unknown option ${word}: put the command first (elabora validate --json).\n${SEE_HELP}`); return 2; }
   const found = COMMANDS.get(`${word} ${subcommand}`) ?? COMMANDS.get(word);
   if (!found) {
     const usage = SUBCOMMAND_USAGE.get(word);
     if (usage) { console.error(usage); return 2; }
-    const near = [...COMMANDS.keys()].filter((name) => name.startsWith(word.slice(0, 3)) || name.includes(word)).slice(0, 6);
-    console.error(`Unknown command "${word}".${near.length ? ` Maybe: ${near.join(', ')}.` : ''}\n${commandList()}`);
+    const near = nearCommands(word);
+    console.error(`Unknown command "${word}".${near.length ? ` Did you mean ${orList(near)}?` : ''}\n${SEE_HELP}`);
     return 2;
   }
   const { command, group } = found;
@@ -105,7 +124,7 @@ export async function main(argv: readonly string[]): Promise<ExitCode> {
     return await withActivity(dir, command.name, family, detectAuthor(), commandPlace(command.name, args), () => command.run(args), (code) => code === 0 || code === null);
   } catch (error) {
     if (!(error instanceof ArgumentError)) throw error;
-    console.error(`${error.message} for "elabora ${command.name}".\n\nUsage:\n${commandUsage(group, command.name)}\n(elabora help: every command)`);
+    console.error(`${error.message} for "elabora ${command.name}".${error.hint ? ` ${error.hint}` : ''}\n\nUsage:\n${commandUsage(group, command.name)}\n${SEE_HELP}`);
     return 2;
   }
 }

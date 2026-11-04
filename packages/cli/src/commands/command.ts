@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { formatDiagnostic } from '@elabora/core/diagnostics/index';
 import type { Diagnostic } from '@elabora/core/diagnostics/index';
 import { parseArguments } from '../arguments.ts';
@@ -47,6 +49,24 @@ export function printDiagnostics(diagnostics: readonly Diagnostic[], { json = fa
 // An edit of a course in an older format migrated it first, as its own change.
 export function printFormatMigration(migration: FormatMigrationRef | undefined): void {
   if (migration) console.log(`✔ Migrated the course from ${migration.from} to ${migration.to} first (change ${migration.change?.seq ?? '?'}; elabora undo --change ${migration.change?.seq ?? '<seq>'} reverts it).`);
+}
+
+// What a command that needs a course says of a folder that holds none, in one line (null: a course).
+export function notACourseMessage(dir: string): string | null {
+  const root = path.resolve(dir);
+  if (fs.existsSync(path.join(root, 'course.json'))) return null;
+  return fs.existsSync(root) ? `✘ ${root} is not an Elabora course (no course.json).` : `✘ Folder not found: ${root}`;
+}
+
+// The first LMS profile of --profile that does not exist, said with those that do (null: all known).
+// all: whether the command takes « all » for every profile. The profiles load when asked: elabora
+// look imports this module and starts fast.
+export async function unknownProfileMessage(ids: readonly string[] | undefined, { all = true }: { all?: boolean } = {}): Promise<string | null> {
+  if (!ids?.length) return null;
+  const { listProfiles } = await import('@elabora/core/lms/profiles');
+  const known = listProfiles().map((profile) => profile.id);
+  const unknown = ids?.find((id) => !(all && id === 'all') && !known.includes(id));
+  return unknown === undefined ? null : `Unknown LMS profile "${unknown}". Known profiles: ${known.join(', ')}${all ? ', or all' : ''}.`;
 }
 
 // Messages of errors thrown by node services, which are not always Error instances.

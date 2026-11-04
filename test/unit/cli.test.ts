@@ -74,12 +74,36 @@ test('elabora --help, help and no command print the reference', async () => {
   }
 });
 
-test('an unknown command lists the commands on stderr, with the near ones, and exits with 2', async () => {
-  const [nope, near] = await Promise.all([elabora(['nope']), elabora(['objct'])]);
+test('an unknown command says so on stderr, with the near ones, and exits with 2', async () => {
+  const [nope, near, typo] = await Promise.all([elabora(['nope']), elabora(['objct']), elabora(['valdate'])]);
   assert.equal(nope.status, 2);
-  assert.match(nope.stderr, /^Unknown command "nope"\.\nCommands: init, .*validate, .*object map.*\.\nelabora --help prints the reference/s);
-  assert.ok(nope.stderr.length < 4000, 'not the whole reference');
-  assert.match(near.stderr, /^Unknown command "objct"\. Maybe: object new, object map, object test, object replay\./);
+  assert.equal(nope.stderr, 'Unknown command "nope".\nRun elabora help to see every command.\n');
+  assert.match(near.stderr, /^Unknown command "objct"\. Did you mean object new, object map, object test or object replay\?\n/);
+  assert.match(typo.stderr, /^Unknown command "valdate"\. Did you mean validate\?\n/);
+});
+
+test('common mistakes get one line each: a folder without a course, an unknown LMS profile, a folder MCP cannot read, init without arguments', async () => {
+  const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-empty-'));
+  const missing = path.join(empty, 'no-such-folder');
+  try {
+    const [validate, build, json, profile, mcp, init] = await Promise.all([
+      elabora(['validate', missing]), elabora(['build', empty]), elabora(['validate', missing, '--json']),
+      elabora(['validate', COURSES[0].dir, '--profile', 'nope']), elabora(['mcp', missing]), elabora(['init'])
+    ]);
+    assert.deepEqual(validate, { status: 1, stdout: '', stderr: `✘ Folder not found: ${missing}\n` });
+    assert.deepEqual(build, { status: 1, stdout: '', stderr: `✘ ${empty} is not an Elabora course (no course.json).\n` });
+    // --json keeps the findings, for scripts.
+    assert.deepEqual(JSON.parse(json.stdout).diagnostics.map((d: { code: string }) => d.code), ['E_FILE_MISSING', 'E_FILE_MISSING']);
+    assert.equal(profile.status, 2);
+    assert.match(profile.stderr, /^Unknown LMS profile "nope"\. Known profiles: .*moodle.*, or all\.\n$/);
+    assert.equal(mcp.status, 1);
+    assert.match(mcp.stderr, /^✘ .*no-such-folder is not a folder this server can read\. Give a course folder/);
+    assert.ok(!/\n\s+at /.test(mcp.stderr), 'no stack trace');
+    assert.equal(init.status, 2);
+    assert.match(init.stderr, /\nExample: elabora init my-course --id my-course --title "My course" --lang en\n$/);
+  } finally {
+    fs.rmSync(empty, { recursive: true, force: true });
+  }
 });
 
 test('validate --json gives the validation of each example', async () => {
@@ -118,8 +142,8 @@ test('flags: unknown ones and missing values are refused; --help shows the comma
   ]);
   // The command's own usage, not its whole group.
   assert.equal(unknown.status, 2);
-  assert.match(unknown.stderr, /^Unknown option --jsn for "elabora validate"\.\n\nUsage:\n {2}validate \[dir\]/);
-  assert.match(unknown.stderr, /\(elabora help: every command\)\n$/);
+  assert.match(unknown.stderr, /^Unknown option --jsn for "elabora validate"\. Did you mean --json\?\n\nUsage:\n {2}validate \[dir\]/);
+  assert.match(unknown.stderr, /\nRun elabora help to see every command\.\n$/);
   assert.ok(!/\n {2}project /.test(unknown.stderr), 'only validate');
   assert.equal(missing.status, 2);
   assert.match(missing.stderr, /^--out needs a value for "elabora build"\.\n\nUsage:\n {2}build \[dir\]/);
@@ -128,7 +152,8 @@ test('flags: unknown ones and missing values are refused; --help shows the comma
   assert.match(valued.stderr, /^--json takes no value for "elabora codes"\.\n\nUsage:\n {2}codes/);
   // --help of a command: its own usage.
   assert.equal(help.status, 0);
-  assert.match(help.stdout, /^ {2}validate \[dir\][^\n]*\n\(elabora help: every command\)\n$/);
+  assert.match(help.stdout, /^ {2}validate \[dir\][^\n]*\nRun elabora help to see every command\.\n$/);
+  assert.equal((await elabora(['help', 'validate'])).stdout, help.stdout);
   const group = await elabora(['object', '--help']);
   assert.match(group.stdout, /^Free objects\n {2}object new /);
 });

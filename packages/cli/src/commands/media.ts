@@ -20,7 +20,7 @@ import { mediaProgress } from '../media-progress.ts';
 const HELP = `  media import [dir] <file…> [--to <folder>] [--name <name>] [--no-wait] [--json]
                                                       Bring media into assets/ (video, audio, images): converted in the
                                                       background to web masters (MP4 H.264/AAC, M4A, WebP; SVG as is),
-                                                      metadata such as GPS positions removed, the original never copied.
+                                                      metadata such as GPS positions removed; only the master is copied.
                                                       Prints the paths at once, then waits (--no-wait: a worker goes on)
   media optimize [dir] [<path>…|--all] [--json]       Convert media of assets/ that are not masters (W_MEDIA_NOT_OPTIMIZED);
                                                       references follow a new extension, in one undoable change

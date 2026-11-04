@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import * as looks from '@elabora/node/look-client';
 import type { BackdropReport } from '@elabora/node/look-client';
-import { defineCommand, errorMessage, printJson } from './command.ts';
+import { defineCommand, errorMessage, notACourseMessage, printJson } from './command.ts';
 import { startLookServer } from '../look-server.ts';
 import { styleConflictDiagnostics } from '@elabora/node/style-cascade';
 import { formatDiagnostic } from '@elabora/core/diagnostics/index';
@@ -18,7 +18,8 @@ export const look = defineCommand({
   flags: { screen: 'list', size: 'list', state: 'string', step: 'string', layer: 'string', at: 'string', sheet: 'boolean', scroll: 'list', block: 'string', scale: 'string', act: 'repeat', viewport: 'boolean', motion: 'boolean', language: 'string', out: 'string', 'out-dir': 'string', json: 'boolean', url: 'boolean', stop: 'boolean', serve: 'boolean', idle: 'string', controls: 'boolean', select: 'string' },
   async run({ positionals: [dir = '.'], flags }) {
     const root = path.resolve(dir);
-    if (!fs.existsSync(path.join(root, 'course.json'))) { console.error(`${root} is not an Elabora course (no course.json).`); return 2; }
+    const missing = notACourseMessage(root);
+    if (missing) { console.error(missing); return 2; }
     if (flags.serve) return serveLooks(root, Number(flags.idle) * 1000 || undefined);
     if (flags.stop) { console.log(await looks.stopLookServer(root) ? '✔ Look server stopped.' : 'No look server runs for this course.'); return 0; }
     const start = () => startLookServer(root);

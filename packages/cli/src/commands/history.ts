@@ -6,21 +6,21 @@ import { undoneChanges } from '@elabora/core/ops/batch';
 import * as edit from '@elabora/node/edit';
 import { readJournal } from '@elabora/node/journal/index';
 import { MIN_TURNS, summarizeChats } from '@elabora/node/chats';
-import { defineCommand, printJson, reportingFailures } from './command.ts';
+import { defineCommand, notACourseMessage, printJson, reportingFailures } from './command.ts';
 import type { CommandGroup } from './command.ts';
 
-const HELP = `  history [dir] [--limit 20] [--json]                 Changes grouped by batch of AI work: when, who, the request, what
+const HELP = `  history [dir] [--limit 20] [--json]                 List the changes by batch of AI work: when, who, the request, what
                                                       changed, what was undone
-  history [dir] --chats [--limit 20] [--json]         The turns of Elabora's chat: the tools refused to the agent (file
+  history [dir] --chats [--limit 20] [--json]         List the turns of Elabora's chat: the tools refused to the agent (file
                                                       edits, shell), what it did instead, what each turn cost, and
                                                       whether refusals call for a new Elabora tool
   undo [dir]                                          Undo the last change made through Elabora tools or by an agent
-  undo [dir] --change <id|seq>                        Undo one change (an undo too: that redoes it)
-  undo [dir] --batch [<id>]                           Undo a batch of AI work (default: the last one). Whatever changed
-                                                      since is kept, and listed
+  undo [dir] --change <id|seq>                        Undo one change (undoing an undo redoes it)
+  undo [dir] --batch [<id>]                           Undo a batch of AI work (default: the last one). Later changes stay,
+                                                      and are listed
   mark [dir] "<request>" [--chat <id>]                Label the next batch of AI work with the request that starts it.
-                                                      --chat: a turn of Elabora's chat, whose agent's changes all join it
-                                                      Claude Code: a UserPromptSubmit hook running elabora mark --stdin
+                                                      --chat: a turn of Elabora's chat, whose agent's changes all join it.
+                                                      In Claude Code, a UserPromptSubmit hook running elabora mark --stdin
                                                       labels each batch with the prompt (read from the hook's JSON)`;
 
 // ── history ──
@@ -162,6 +162,8 @@ const history = defineCommand({
   name: 'history',
   flags: { limit: 'string', json: 'boolean', chats: 'boolean' },
   run: ({ positionals: [dir = '.'], flags }) => reportingFailures(() => {
+    const missing = flags.json ? null : notACourseMessage(dir);
+    if (missing) { console.error(missing); return 1; }
     if (flags.chats) return printChats(dir, !!flags.json, Number(flags.limit) || 20);
     const batches = edit.historyBatches(dir, Number(flags.limit) || 20);
     if (flags.json) { printJson(batches); return 0; }
@@ -204,6 +206,8 @@ const undo = defineCommand({
   run: ({ positionals: [dir = '.'], flags }) => reportingFailures(() => {
     const change = flags.change ?? flags.seq; // --seq: the former name of --change
     if (change !== undefined && flags.batch !== undefined) { console.error('Usage: elabora undo [dir] [--change <id|seq> | --batch [<id>]]'); return 2; }
+    const missing = notACourseMessage(dir);
+    if (missing) { console.error(missing); return 1; }
     if (flags.batch !== undefined) {
       const result = edit.undoBatch(dir, flags.batch === true ? undefined : flags.batch);
       const label = edit.historyBatches(dir, Infinity).find((batch) => batch.id === result.batch)?.label;
@@ -253,7 +257,7 @@ const mark = defineCommand({
 });
 
 export const historyCommands: CommandGroup = {
-  title: 'History (changes made through Elabora tools and by agents; AI work is grouped in batches)',
+  title: 'History (changes made through Elabora and by agents, in batches of AI work)',
   help: HELP,
   commands: [history, undo, mark]
 };
