@@ -96,7 +96,7 @@ function soundConformance(info: MediaInfo): Conformance {
   const reasons: ConformanceReason[] = [];
   if (!info.audioCodec || !SOUND_MASTER_CODECS.has(info.audioCodec)) reasons.push({ code: 'audio-codec', message: `Audio codec ${info.audioCodec ?? 'unknown'}: a sound is kept as FLAC, or as the lossy file it came as (Vorbis, Opus, AAC, MP3).`, fix: 'encode', stream: 'audio' });
   if (info.coverArt) reasons.push({ code: 'cover-art', message: 'Cover art inside the audio file: dead weight in a course.', fix: 'remux' });
-  if (info.location) reasons.push({ code: 'location', message: 'GPS position in the metadata: it would ship with the course.', fix: 'remux' });
+  if (info.location) reasons.push({ code: 'location', message: 'GPS position in the metadata: the file keeps it wherever the project goes (packages leave it out when ffmpeg is there).', fix: 'remux' });
   return { conformant: reasons.length === 0, reasons };
 }
 
@@ -176,7 +176,7 @@ export function conformance(info: MediaInfo): Conformance {
     if (longSide(info) > i.maxLongSide) reasons.push({ code: 'dimensions', message: `${info.width}×${info.height}: the long side is above ${i.maxLongSide} px.`, fix: 'encode' });
     if (info.size > i.maxBytes) reasons.push({ code: 'file-size', message: `${(info.size / 1048576).toFixed(1)} MB: above ${i.maxBytes / 1048576} MB.`, fix: 'encode' });
   }
-  if (info.location) reasons.push({ code: 'location', message: 'GPS position in the metadata: it would ship with the course.', fix: 'remux' });
+  if (info.location) reasons.push({ code: 'location', message: 'GPS position in the metadata: the file keeps it wherever the project goes (packages leave it out when ffmpeg is there).', fix: 'remux' });
   return { conformant: reasons.length === 0, reasons };
 }
 

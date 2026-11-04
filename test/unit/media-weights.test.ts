@@ -9,6 +9,7 @@ import type { FileMedia, MediaInfo } from '@elabora/core/media/conformance';
 import type { PresetName } from '@elabora/core/media/presets';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { packageWeights } from '@elabora/node/packaging/weights';
+import { renditionPath } from '@elabora/node/media/renditions';
 import { copyExample, readJSON, writeJSON } from '../helpers.ts';
 
 const MB = 1024 * 1024;
@@ -106,6 +107,17 @@ test('a video or an image that should ship as a rendition but ships as it is (no
   // Made as it should be: nothing to say.
   assert.equal(weightNotice(weight('video', 'assets/video/interview.mov', at(40, 25, 9, [true, true, true])), prores, 'high'), null);
   assert.equal(weightNotice(raw, prores, 'medium'), null, 'medium re-encodes it');
+});
+
+test('without ffmpeg, a package at high ships a video or an image as it is: nothing probed, nothing to encode', async () => {
+  const dir = copyExample();
+  try {
+    fs.mkdirSync(path.join(dir, 'assets/images'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'assets/images/photo.png'), 'not even a PNG');
+    assert.equal(await renditionPath(dir, 'assets/images/photo.png', 'high', { tools: null }), path.join(dir, 'assets/images/photo.png'));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('never noticed: under 2 MB, a narration, a file the qualities leave as it is', () => {
