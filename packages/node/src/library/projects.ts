@@ -403,6 +403,9 @@ export function charterSource(reference: string): string {
     if (error instanceof LibraryError && error.code === 'E_PROJECT_NOT_FOUND') throw new LibraryError('E_PROJECT_NOT_FOUND', `${error.message} Nor a folder with a course.json at ${folder}.`);
     throw error;
   }
+  // Only a whole id beats the folder of that name: a prefix of an id is a shorthand, not a reason to leave it.
+  const wanted = reference.trim().toLowerCase();
+  if (isFolder && id !== wanted && id !== `mod-${wanted}`) return folder;
   const dir = libraryProjectDir(id);
   if (!fs.existsSync(path.join(dir, 'course.json'))) throw new LibraryError('E_INVALID_ARGUMENT', `${reference}: not a module with a course.json.`);
   return dir;

@@ -217,6 +217,7 @@ async function fitPage(browser: Browser, base: string, size: string, motion: boo
     await page.goto(`${base}/pkg/fit/index.html`);
     await page.waitForFunction(() => window.__elabora, null, { timeout: PLAYER_START_MS });
   } catch (error) {
+    if (!opened) await page.close().catch(() => {});
     throw new Error(`The player did not start at ${size} within ${PLAYER_START_MS / 1000} s${trouble.length ? ` (${trouble.join('; ')})` : ' (nothing failed in the page: the computer is too busy, or the browser is stuck)'}: ${(error as Error).message.split('\n')[0]}`);
   } finally {
     page.off('pageerror', onError);
