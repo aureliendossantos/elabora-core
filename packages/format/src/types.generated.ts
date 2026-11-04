@@ -3221,7 +3221,7 @@ export type VideoProps = {
   /** Shown under the video, as an image's caption (in place of the title under a video played with its controls). */
   caption?: string;
   /**
-   * loop: the video opens at full size in the player's lightbox, with its caption, and loops there (a screen recording, a detailed animation).
+   * loop, unless decorative: the video opens at full size in the player's lightbox, with its caption, and loops there (a screen recording, a detailed animation).
    * @default false
    */
   zoom?: boolean;

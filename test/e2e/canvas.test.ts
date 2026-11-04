@@ -513,6 +513,16 @@ test('canvas: a video takes an image\'s caption, under it; a loop that zooms ope
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => !document.querySelector('dialog.t-lightbox'));
     assert.equal(await page.evaluate(() => document.activeElement?.matches('[data-block="chemin-voyant"] .t-zoom')), true);
+    // Paused by the learner on the page, it is still when enlarged.
+    await page.click('[data-block="chemin-voyant"] .t-loop-toggle');
+    await page.click(zoom);
+    await page.waitForSelector('dialog.t-lightbox[open] video');
+    await page.waitForTimeout(500);
+    assert.deepEqual(await page.evaluate(() => {
+      const video = document.querySelector<HTMLVideoElement>('dialog.t-lightbox video')!;
+      return { paused: video.paused, autoplay: video.autoplay, toggle: document.querySelector('dialog.t-lightbox .t-loop-toggle')!.getAttribute('aria-label') };
+    }), { paused: true, autoplay: false, toggle: 'Lire l’animation' });
+    await page.keyboard.press('Escape');
     assert.deepEqual(errors, []);
   });
 });

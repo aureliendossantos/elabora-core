@@ -73,7 +73,7 @@ Rendered by code: cannot be forked; place it in a component slot.
 | `alt` | string |  | Text alternative of a loop or of a video without sound: what it shows. Required for a loop unless decorative. |
 | `decorative` | boolean |  | True only if the video carries no information: it plays as a loop, ignored by assistive technologies, with nothing to caption, transcribe or describe. Default false. |
 | `caption` | string |  | Shown under the video, as an image's caption (in place of the title under a video played with its controls). |
-| `zoom` | boolean |  | loop: the video opens at full size in the player's lightbox, with its caption, and loops there (a screen recording, a detailed animation). Default false. |
+| `zoom` | boolean |  | loop, unless decorative: the video opens at full size in the player's lightbox, with its caption, and loops there (a screen recording, a detailed animation). Default false. |
 | `poster` | assetPath |  |  |
 | `generated` | boolean |  |  Default false. |
 

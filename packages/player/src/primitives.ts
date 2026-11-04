@@ -29,7 +29,7 @@
 import type { Labels } from './labels.ts';
 import { element, uniqueId } from './dom.ts';
 import { icon } from './icons.ts';
-import { createLoop } from './loop.ts';
+import { createLoop, loopOf } from './loop.ts';
 import type { Loop } from './loop.ts';
 
 export type PrimitiveHook = 'item' | 'flip' | 'details' | 'reveal';
@@ -280,17 +280,16 @@ export function bindPrimitives(root: HTMLElement, context: PrimitiveContext): Bo
       const following = several ? element('button', { type: 'button', class: 't-icon-btn t-lightbox-next', 'aria-label': labels.nextImage, onclick: () => move(1) }, icon('chevronRight')) : null;
       const dialog: HTMLDialogElement = element('dialog', { class: 't-viewer t-lightbox', 'aria-describedby': caption.id },
         stage, element('div', { class: 't-lightbox-foot' }, caption, previous, position, following, close));
-      // A loop shown (a video block's, loop.ts): it loops there too, its own pause button with it.
+      // A loop shown (a video block's, loop.ts): the same loop, its own pause button with it, still if
+      // the learner had paused it.
       let shownLoop: Loop | null = null;
       const render = (fade: boolean) => {
         const button = zooms[current];
         const source = button.querySelector('img');
         const looping = source ? null : button.querySelector('video');
         shownLoop?.dispose();
-        shownLoop = looping ? createLoop({
-          src: looping.querySelector('source')?.src || looping.currentSrc, poster: looping.poster || undefined,
-          alt: looping.getAttribute('aria-label') ?? undefined, decorative: looping.getAttribute('aria-hidden') === 'true'
-        }, labels) : null;
+        const loop = looping ? loopOf(looping) : null;
+        shownLoop = loop ? createLoop(loop, labels) : null;
         shownLoop?.video.classList.add('t-lightbox-image');
         const image = source ? element('img', { class: 't-lightbox-image', src: source.currentSrc || source.src, alt: source.alt }) : shownLoop?.frame ?? button.querySelector('svg')?.cloneNode(true) as Element | undefined;
         if (image instanceof SVGElement) image.classList.add('t-lightbox-image');
@@ -298,7 +297,7 @@ export function bindPrimitives(root: HTMLElement, context: PrimitiveContext): Bo
         const text = captionOf(button);
         caption.replaceChildren(...(text ? [...text.cloneNode(true).childNodes] : []));
         caption.hidden = !text?.textContent?.trim();
-        dialog.setAttribute('aria-label', source?.alt || looping?.getAttribute('aria-label') || text?.textContent?.trim() || labels.enlargeImage);
+        dialog.setAttribute('aria-label', source?.alt || loop?.alt || text?.textContent?.trim() || labels.enlargeImage);
         if (position) position.textContent = formatLabel(labels.position, { n: current + 1, count: zooms.length });
         if (previous) setDisabled(previous, current === 0);
         if (following) setDisabled(following, current === zooms.length - 1);

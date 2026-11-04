@@ -855,7 +855,7 @@ export function createScreenView(options: ScreenViewOptions) {
       const loops = block.props.loop || block.props.decorative;
       wrap.append(loops ? loopFigure(block) : videoFigure(block));
       // A loop that zooms: the lightbox of the primitives, as an image's.
-      if (loops && block.props.zoom) {
+      if (loops && block.props.zoom && !block.props.decorative) {
         behaviors.primitives(wrap, block);
         cleanup(block.id, () => behaviors.release(wrap));
       }

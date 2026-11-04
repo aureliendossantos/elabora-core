@@ -14,8 +14,18 @@ export interface LoopSource {
   poster?: string;
   alt?: string;
   decorative?: boolean;
-  // The video is a button that opens it in the lightbox (data-t-zoom, bound by the primitives).
+  // The video is a button that opens it in the lightbox (data-t-zoom, bound by the primitives); a
+  // decorative loop carries no information to enlarge.
   zoom?: boolean;
+  // Paused by the learner from the start (the same loop enlarged, which they had paused).
+  held?: boolean;
+}
+
+// What each loop was made from, and whether the learner paused it: the lightbox makes the same loop.
+const made = new WeakMap<HTMLVideoElement, { source: LoopSource; held: () => boolean }>();
+export function loopOf(video: HTMLVideoElement): LoopSource | null {
+  const loop = made.get(video);
+  return loop ? { ...loop.source, zoom: false, held: loop.held() } : null;
 }
 
 export interface Loop {
@@ -28,7 +38,7 @@ export function createLoop(source: LoopSource, labels: Pick<Labels, 'playAnimati
   const motion = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
   const still = () => !!motion?.matches;
   const video = element('video', {
-    class: 't-loop', muted: true, loop: true, playsinline: true, autoplay: !still(), preload: 'auto', poster: source.poster,
+    class: 't-loop', muted: true, loop: true, playsinline: true, autoplay: !still() && !source.held, preload: 'auto', poster: source.poster,
     disablepictureinpicture: true, disableremoteplayback: true,
     'aria-hidden': source.decorative ? 'true' : undefined, role: source.decorative ? undefined : 'img', 'aria-label': source.decorative ? undefined : source.alt || undefined
   });
@@ -39,7 +49,7 @@ export function createLoop(source: LoopSource, labels: Pick<Labels, 'playAnimati
   video.append(element('source', { src: source.src }));
   const toggle = element('button', { type: 'button', class: 't-loop-toggle' });
   // The learner paused it: neither its data arriving nor a change of preference starts it again.
-  let held = false;
+  let held = !!source.held;
   // In the window (as far as the observer below knows; without one, always).
   let seen = typeof IntersectionObserver !== 'function';
   const show = (state: 'playing' | 'paused') => {
@@ -73,10 +83,11 @@ export function createLoop(source: LoopSource, labels: Pick<Labels, 'playAnimati
   };
   motion?.addEventListener('change', onMotion);
   disposers.push(() => motion?.removeEventListener('change', onMotion));
-  show(still() ? 'paused' : 'playing');
+  show(still() || held ? 'paused' : 'playing');
+  made.set(video, { source, held: () => held });
   // Zoomed, the video is a button (its alt names it, the primitives say what it does); the pause
   // button stays beside it, never inside.
-  const shown = source.zoom ? element('button', { type: 'button', class: 't-zoom', 'data-t-zoom': true }, video) : video;
+  const shown = source.zoom && !source.decorative ? element('button', { type: 'button', class: 't-zoom', 'data-t-zoom': true }, video) : video;
   return {
     frame: element('div', { class: 't-loop-frame' }, shown, toggle),
     video,
