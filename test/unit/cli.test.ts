@@ -257,6 +257,30 @@ test('media captions and MCP elabora_set_captions give a video its captions, as 
   fs.rmSync(path.dirname(srt), { recursive: true, force: true });
 });
 
+test('media weights and MCP elabora_media_weights: what the package weighs, media by media, nothing written', async () => {
+  const { dir } = COURSES[0]; // diagnostic-reseau: narrated, a dialogue, resources
+  const run = await elabora(['media', 'weights', dir, '--json']);
+  assert.equal(run.status, 0, run.stderr);
+  const weights = JSON.parse(run.stdout);
+  assert.equal(weights.quality, 'high');
+  assert.deepEqual(weights.qualities.map((size: { quality: string }) => size.quality), ['high', 'medium', 'low']);
+  assert.equal(weights.qualities[0].bytes, weights.rest + weights.media.reduce((sum: number, media: { qualities: { bytes: number }[] }) => sum + media.qualities[0]!.bytes, 0));
+  assert.deepEqual([...new Set(weights.media.map((media: { kind: string }) => media.kind))].sort(), ['dialogue', 'file', 'narration', 'vector']);
+  assert.ok(weights.media.some((media: { path: string; uses: unknown[] }) => media.path === 'assets/resources/fiche-reflexe-impression.pdf' && JSON.stringify(media.uses) === '[{"screen":null,"as":"resource"}]'));
+  assert.ok(!fs.existsSync(path.join(dir, 'dist')), 'nothing built');
+
+  const text = await elabora(['media', 'weights', dir, '--media-quality', 'low']);
+  assert.equal(text.status, 0, text.stderr);
+  assert.match(text.stdout, /^Diagnostiquer une panne d'impression réseau: about [\d.]+ MB at low; high about [\d.]+ MB, medium about [\d.]+ MB\.\n/);
+  assert.match(text.stdout, /dialogue +dialogue lines +\d+ s · \d+ lines\n.* · premier-reflexe \(appel-marc\)\n/);
+  assert.deepEqual([(await elabora(['media', 'weights', dir, '--media-quality', 'ultra'])).status, (await elabora(['media', 'weights', path.dirname(dir)])).status], [2, 1]);
+
+  const client = await connectMcp(dir);
+  const two = await callJSON(client, 'elabora_media_weights', { quality: 'medium', limit: 2 });
+  assert.deepEqual([two.quality, two.media.length, two.more], ['medium', 2, weights.media.length - 2]);
+  await client.close();
+});
+
 test('MCP: words found and replaced, a screen duplicated, a variable renamed and kept while used', async () => {
   const dir = copyExample();
   const client = await connectMcp(dir, 'test-agent');

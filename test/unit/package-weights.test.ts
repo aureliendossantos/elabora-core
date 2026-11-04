@@ -41,7 +41,7 @@ function addBlocks(dir: string, ...blocks: Block[]): void {
   screen.blocks.push(...blocks);
   writeJSON(dir, 'screens/accueil.json', screen);
 }
-const weigh = async (dir: string) => Object.fromEntries((await packageWeights(loadProjectFromDir(dir))).map((size) => [size.quality, size]));
+const weigh = async (dir: string) => Object.fromEntries((await packageWeights(loadProjectFromDir(dir))).qualities.map((size) => [size.quality, size]));
 // Within 2 % of the package, or 16 KB for a small one: the ZIP's headers and the compiled course data.
 const near = (weight: number, zip: number, what: string) => assert.ok(Math.abs(weight - zip) <= Math.max(zip * 0.02, 16 * 1024), `${what}: weighed ${weight}, the ZIP has ${zip}`);
 
@@ -91,6 +91,46 @@ test('a package weighed before it is built: the masters at high, renditions esti
   }
 });
 
+test('media by media: each at each quality, its size there, where the course uses it; the package is the media and the rest', async (t) => {
+  if (!tools) return t.skip(NO_FFMPEG);
+  const dir = copyExample();
+  try {
+    place(dir, 'master.mp4', 'assets/video/master.mp4');
+    place(dir, 'figure.png', 'assets/images/figure.png');
+    place(dir, 'figure.png', 'assets/images/unused.png');
+    fs.writeFileSync(path.join(dir, 'assets/video/master.vtt'), 'WEBVTT\n');
+    addBlocks(dir,
+      { id: 'clip', type: 'video', props: { asset: 'video/master.mp4', captions: 'video/master.vtt', title: 'Clip', transcript: 'A test clip.' } } as Block,
+      { id: 'figure', type: 'image', props: { asset: 'images/figure.png', alt: 'A test pattern with colour bars.' } } as Block);
+    const weights = await packageWeights(loadProjectFromDir(dir));
+    assert.equal(weights.quality, 'high', 'the course\'s quality');
+    const paths = weights.media.map((media) => media.path);
+    assert.deepEqual(paths.filter((rel) => rel?.includes('/master.') || rel?.includes('figure')), ['assets/video/master.mp4', 'assets/images/figure.png', 'assets/video/master.vtt'], 'heaviest first');
+    assert.ok(!paths.includes('assets/images/unused.png'), 'the unused file left out');
+    const high = weights.media.map((media) => media.qualities[0]!.bytes);
+    assert.deepEqual(high, [...high].sort((a, b) => b - a));
+    for (const size of weights.qualities) assert.equal(size.bytes, weights.rest + weights.media.reduce((sum, media) => sum + media.qualities.find((one) => one.quality === size.quality)!.bytes, 0), `${size.quality}: the media and the rest`);
+
+    const [clip, figure, captions] = ['assets/video/master.mp4', 'assets/images/figure.png', 'assets/video/master.vtt'].map((rel) => weights.media.find((media) => media.path === rel));
+    assert.deepEqual([clip!.kind, clip!.width, clip!.height, Math.round(clip!.seconds!)], ['video', 1920, 1080, 4]);
+    assert.deepEqual(clip!.uses, [{ screen: 'accueil', block: 'clip' }]);
+    assert.equal(clip!.master, fs.statSync(path.join(dir, 'assets/video/master.mp4')).size);
+    assert.deepEqual(clip!.qualities.map(({ quality, rendition, width, height }) => [quality, rendition, width, height]), [['high', false, 1920, 1080], ['medium', true, 1280, 720], ['low', true, 854, 480]], 'the master at high, resized below');
+    assert.deepEqual(clip!.qualities.map((size) => size.estimated), [false, true, true], 'renditions not made: estimated');
+    assert.deepEqual(figure!.qualities.map(({ width, height }) => [width, height]), [[2400, 1350], [2400, 1350], [1600, 900]], 'an image within medium keeps its size there');
+    assert.deepEqual([captions!.kind, captions!.uses, captions!.qualities.map((size) => size.bytes)], ['file', [{ screen: 'accueil', block: 'clip' }], [7, 7, 7]]);
+    assert.ok(weights.media.every((media) => !media.heavy && media.why === undefined), 'nothing stands out');
+
+    // Once a rendition is made, it is measured.
+    const low = await build(dir, { out: path.join(dir, 'out', 'low'), mediaQuality: 'low', writeLock: false });
+    assert.ok(low.ok, JSON.stringify(low.diagnostics.filter((d) => d.severity === 'error')));
+    const made = (await packageWeights(loadProjectFromDir(dir))).media.find((media) => media.path === 'assets/video/master.mp4')!;
+    assert.deepEqual(made.qualities.map((size) => size.estimated), [false, true, false]);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('a narrated course: its tracks estimated at 64 kb/s before they are made, then measured', async (t) => {
   if (!tools) return t.skip(NO_FFMPEG);
   const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
@@ -102,6 +142,11 @@ test('a narrated course: its tracks estimated at 64 kb/s before they are made, t
     assert.ok((high.report.narration?.tracks.length ?? 0) > 0, 'the example is narrated');
     near(before.high!.bytes, high.report.package.bytes, 'tracks estimated');
     near((await weigh(dir)).high!.bytes, high.report.package.bytes, 'tracks made');
+    // Each track, by its screen, the same at every quality.
+    const tracks = (await packageWeights(loadProjectFromDir(dir))).media.filter((media) => media.kind === 'narration');
+    assert.equal(tracks.length, high.report.narration!.tracks.length);
+    assert.ok(tracks.every((track) => track.path === null && track.uses.length === 1 && track.uses[0]!.screen && (track.lines ?? 0) > 0 && (track.seconds ?? 0) > 0));
+    assert.ok(tracks.every((track) => new Set(track.qualities.map((size) => size.bytes)).size === 1 && !track.qualities[0]!.estimated), 'made once, at 64 kb/s');
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

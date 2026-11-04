@@ -22,7 +22,7 @@ import { screenTranslation, translationStatus, translationTable } from '@elabora
 import type { ScreenTranslation, TranslationStatus, TranslationTable } from '@elabora/core/i18n/translate';
 import { buildTranslation } from '@elabora/node/translate';
 import { packageWeights } from '@elabora/node/packaging/weights';
-import type { QualitySize } from '@elabora/core/lms/package-limits';
+import type { PackageWeights } from '@elabora/core/media/weights';
 import { planDocument } from '@elabora/core/plan-document/model';
 import type { PlanDocument } from '@elabora/core/plan-document/model';
 import { PLAN_DOCUMENT_FORMATS, planDocumentPage, readPlanDocument, writePlanDocument } from '@elabora/node/plan-document';
@@ -709,9 +709,10 @@ export class Session {
     return findText(this.#state.project, query, { caseSensitive });
   }
 
-  // What a package would weigh at each media quality (« Publier »), as the project is in memory:
-  // renditions and narration tracks as cached, else estimated; nothing encoded or written.
-  packageWeights(): Promise<QualitySize[]> {
+  // What a package would weigh at each media quality (« Publier »), and each media in it, as the
+  // project is in memory: renditions and narration tracks as cached, else estimated; nothing encoded
+  // or written.
+  packageWeights(): Promise<PackageWeights> {
     this.#assertOpen();
     return packageWeights(this.#state.project);
   }

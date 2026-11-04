@@ -17,7 +17,7 @@ export const TOOL_ACTIVITY: Readonly<Record<string, ActivityFamily | null>> = {
   elabora_translation_table: 'translations', elabora_translation_status: 'translations',
   elabora_list_components: 'blocks', elabora_get_schema: 'blocks', elabora_get_component: 'blocks', elabora_list_fonts: 'blocks',
   elabora_validate: 'check', elabora_get_object: 'object', elabora_object_map: 'object',
-  elabora_list_profiles: 'status', elabora_history: 'status', elabora_projects_list: 'status', elabora_projects_path: 'status', elabora_templates: 'status', elabora_media_status: 'status', elabora_downloads: 'status', elabora_voice_account: 'status',
+  elabora_list_profiles: 'status', elabora_history: 'status', elabora_projects_list: 'status', elabora_projects_path: 'status', elabora_templates: 'status', elabora_media_status: 'status', elabora_media_weights: 'status', elabora_downloads: 'status', elabora_voice_account: 'status',
   elabora_look: 'look', elabora_preview_screenshot: 'look', elabora_preview_component: 'look', elabora_check_fit: 'fit', elabora_replay_object: 'try-object', elabora_test_object: 'try-object',
   elabora_timeline: 'screen', elabora_dialogue_show: 'screen', elabora_dialogue_play: 'dialogue', elabora_dialogue_paths: 'dialogue',
   elabora_voice_list: 'voices', elabora_voice_takes: 'voices', elabora_voice_search: 'voices', elabora_voice_estimate: 'voices', elabora_voice_set: 'voices',
