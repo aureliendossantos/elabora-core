@@ -9,7 +9,7 @@ import { audioNeedsRendition, estimateBytes, mediaKindOfPath, presetDimensions, 
 import type { MediaInfo } from '@elabora/core/media/conformance';
 import { PRESET_NAMES } from '@elabora/core/media/presets';
 import type { PresetName } from '@elabora/core/media/presets';
-import { bytesAt, heavyBytes, heavyWhy } from '@elabora/core/media/weights';
+import { bytesAt, weightNotice } from '@elabora/core/media/weights';
 import type { MediaAtQuality, MediaUse, MediaWeight, MediaWeightKind, PackageWeights } from '@elabora/core/media/weights';
 import { isFontPath } from '@elabora/core/project/fonts';
 import { compileSounds, shippedPlayerSounds } from '@elabora/core/sounds/sounds';
@@ -89,10 +89,12 @@ export async function packageWeights(project: Project, options: { quality?: Pres
     }
     if (file.kind === 'binary' && isMediaAsset(project, name)) {
       const kind: MediaWeightKind = file.media?.kind ?? mediaKindOfPath(name) ?? 'file';
-      list.push({ kind, path: rel, uses, master: file.size, ...probed(file.media), qualities: await atQualities(rel, file.media), heavy: false });
+      const media: MediaWeight = { kind, path: rel, uses, master: file.size, ...probed(file.media), qualities: await atQualities(rel, file.media) };
+      const notice = weightNotice(media, file.media, quality);
+      list.push(notice ? { ...media, notice } : media);
     } else {
       const bytes = file.kind === 'binary' ? file.size : Buffer.byteLength(file.text);
-      list.push({ kind: mediaKindOfPath(name) ?? 'file', path: rel, uses, master: bytes, qualities: same(bytes), heavy: false });
+      list.push({ kind: mediaKindOfPath(name) ?? 'file', path: rel, uses, master: bytes, qualities: same(bytes) });
     }
   }
 
@@ -111,7 +113,7 @@ export async function packageWeights(project: Project, options: { quality?: Pres
       const voiced = lines.filter((line) => !line.sound).length;
       list.push({
         kind: 'narration', path: null, uses: [{ screen, ...(layer ? { layer } : {}) }], seconds: laid.duration, lines: voiced,
-        qualities: same(made ?? Math.round(laid.duration * TRACK_BYTES_PER_SECOND), made !== null), heavy: false
+        qualities: same(made ?? Math.round(laid.duration * TRACK_BYTES_PER_SECOND), made !== null)
       });
     }
     // The dialogues' lines, one file each at the package's quality, counted by dialogue.
@@ -121,7 +123,7 @@ export async function packageWeights(project: Project, options: { quality?: Pres
       const file = project.files.get(info.audio);
       const sizes = await atQualities(info.audio, file?.kind === 'binary' ? file.media : undefined);
       const block = info.track.block;
-      const dialogue = dialogues.get(block) ?? { kind: 'dialogue', path: null, uses: [{ screen, block }], master: 0, seconds: 0, lines: 0, qualities: same(0), heavy: false };
+      const dialogue = dialogues.get(block) ?? { kind: 'dialogue', path: null, uses: [{ screen, block }], master: 0, seconds: 0, lines: 0, qualities: same(0) };
       dialogues.set(block, dialogue);
       dialogue.master! += file?.kind === 'binary' ? file.size : 0;
       dialogue.seconds! += info.duration;
@@ -157,11 +159,6 @@ export async function packageWeights(project: Project, options: { quality?: Pres
   }
   rest += zlib.deflateRawSync(Buffer.from(texts.join('\n'))).length;
 
-  const limit = heavyBytes(quality);
-  for (const media of list) {
-    media.heavy = bytesAt(media, quality) > limit;
-    if (media.heavy) media.why = heavyWhy(media, quality);
-  }
   list.sort((a, b) => bytesAt(b, quality) - bytesAt(a, quality) || (a.path ?? '').localeCompare(b.path ?? ''));
   const qualities = PRESET_NAMES.map((q) => ({ quality: q, bytes: rest + list.reduce((sum, media) => sum + bytesAt(media, q), 0), estimated }));
   return { quality, qualities, media: list, rest };

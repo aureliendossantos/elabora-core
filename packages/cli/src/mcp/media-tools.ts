@@ -6,6 +6,7 @@ import { mediaToOptimize } from '@elabora/node/media/optimize';
 import { MediaQueue, readJobs } from '@elabora/node/media/jobs';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { packageWeights } from '@elabora/node/packaging/weights';
+import { noticedFirst } from '@elabora/core/media/weights';
 import { errorMessage } from '../commands/command.ts';
 import { defineTool, editResult, errorResult, objectSchema, SLUG, textResult } from './tool.ts';
 
@@ -60,15 +61,15 @@ export const mediaStatus = defineTool({
 export const mediaWeights = defineTool({
   name: 'elabora_media_weights',
   readOnly: true,
-  description: 'What the package weighs at each media quality (high, medium, low), media by media, heaviest first: why a package is heavy, and what a lower quality would change. Each media: kind (video, audio, image, vector, file: an asset the qualities leave as it is, narration: a screen\'s track, dialogue: a dialogue block\'s lines), path under assets/, uses (screen and block, or the player\'s logo, a resource, a sound), the master\'s bytes, width, height and seconds, and at each quality its bytes, whether estimated from bitrates (not made yet), whether a rendition or the master as is, and the width and height shipped; heavy: it weighs more than five minutes of video at the quality (about 292 MB at high, 148 at medium, 57 at low), with why and what lightens it. Also the package at each quality and the rest (player, fonts, texts). Nothing is encoded or written. mediaQuality: order and judge at it rather than the course\'s delivery.mediaQuality.',
+  description: 'What the package weighs at each media quality (high, medium, low), media by media: why a package is heavy, and what a lower quality would change. Each media: kind (video, audio, image, vector, file: an asset the qualities leave as it is, narration: a screen\'s track, dialogue: a dialogue block\'s lines), path under assets/, uses (screen and block, or the player\'s logo, a resource, a sound), the master\'s bytes, width, height and seconds, and at each quality its bytes, whether estimated from bitrates (not made yet), whether a rendition or the master as is, and the width and height shipped; notice: only on a media that seems heavier than it needs to be at the quality, for what its file shows rather than its size (a long video that weighs is not one): reason not-optimized (a video or an image not in its web format, shipped as it is), animated (an animated image, several times lighter as a video), dense-image (a still image of more than a byte a pixel, a photo saved as PNG), dense-video (a video stream at more than twice the bitrate Elabora spends on its size), and why, with what lightens it. The media noticed come first. Also the package at each quality and the rest (player, fonts, texts). Nothing is encoded or written. mediaQuality: order and judge at it rather than the course\'s delivery.mediaQuality.',
   inputSchema: objectSchema({
     mediaQuality: { enum: ['high', 'medium', 'low'], description: 'The quality media are ordered by and judged at (default: the course\'s delivery.mediaQuality).' },
-    limit: { type: 'integer', minimum: 1, description: 'How many media, heaviest first (default 20).' }
+    limit: { type: 'integer', minimum: 1, description: 'How many media, the noticed first, then the heaviest (default 20).' }
   }),
   async handler(args, { root }) {
     const weights = await packageWeights(loadProjectFromDir(root), args.mediaQuality ? { quality: args.mediaQuality } : {});
     const limit = args.limit ?? 20;
-    return textResult({ ...weights, media: weights.media.slice(0, limit), ...(weights.media.length > limit ? { more: weights.media.length - limit } : {}) });
+    return textResult({ ...weights, media: noticedFirst(weights.media).slice(0, limit), ...(weights.media.length > limit ? { more: weights.media.length - limit } : {}) });
   }
 });
 

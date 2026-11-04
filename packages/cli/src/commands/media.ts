@@ -10,7 +10,7 @@ import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { packageWeights } from '@elabora/node/packaging/weights';
 import { isPresetName } from '@elabora/core/media/presets';
 import { sizeText } from '@elabora/core/lms/package-limits';
-import { bytesAt, durationText } from '@elabora/core/media/weights';
+import { bytesAt, durationText, noticedFirst } from '@elabora/core/media/weights';
 import type { MediaUse, MediaWeight } from '@elabora/core/media/weights';
 import { defineCommand, errorMessage, printDiagnostics, printFormatMigration, printJson, reportingFailures } from './command.ts';
 import type { CommandGroup } from './command.ts';
@@ -30,11 +30,12 @@ const HELP = `  media import [dir] <file…> [--to <folder>] [--name <name>] [--
   media weights [dir] [--media-quality high|medium|low] [--all] [--json]
                                                       What the package weighs at each media quality, media by media,
                                                       heaviest first: kind, file, duration and size, what high, medium
-                                                      and low ship (made or estimated), where the course uses it; a
-                                                      media that weighs more than five minutes of video at the quality
-                                                      stands out, with why and what lightens it. Nothing is encoded or
-                                                      written. At the course's quality unless --media-quality; the ten
-                                                      heaviest unless --all
+                                                      and low ship (made or estimated), where the course uses it. A
+                                                      media heavier than it needs to be for what its file shows (not
+                                                      in its web format, an animated image, a still image or a video
+                                                      far denser than its size needs) comes first, with why and what
+                                                      lightens it. Nothing is encoded or written. At the course's
+                                                      quality unless --media-quality; ten unless --all
   media status [dir] [--wait] [--json]                Media jobs (queued, running, done, failed) and media to optimise
   media cancel [dir] <job>                            Cancel a media job
   media worker [dir]                                  Run the project's media jobs until none is left (import --no-wait)`;
@@ -204,7 +205,8 @@ const weights = defineCommand({
     console.log(`${project.course?.title ?? path.resolve(dir)}: ${about(total.bytes, total.estimated)} at ${quality}${asked ? '' : ' (the course\'s quality)'}; ${others}.`);
     console.log(`Media ${sizeText(total.bytes - rest)}, the rest ${sizeText(rest)} (the player, fonts and texts, at every quality).${total.estimated ? ' "about": renditions or narration tracks not made yet, estimated from bitrates.' : ''}`);
     if (!media.length) { console.log('\nNo media.'); return 0; }
-    const shown = flags.all ? media : media.slice(0, SHOWN);
+    const noticed = media.filter((one) => one.notice).length;
+    const shown = flags.all ? noticedFirst(media) : noticedFirst(media).slice(0, Math.max(SHOWN, noticed));
     const width = Math.max(...shown.map((one) => bytesText(bytesAt(one, quality)).length));
     console.log('');
     for (const one of shown) {
@@ -212,12 +214,12 @@ const weights = defineCommand({
       const same = one.qualities.every((size) => size.bytes === one.qualities[0]!.bytes && !size.rendition);
       const ladder = same ? `the same at every quality${one.qualities[0]!.estimated ? ' (estimated)' : ''}` : one.qualities.map((size) => `${size.quality} ${bytesText(size.bytes)}${size.estimated ? '*' : ''}${size.rendition ? '' : ' (as is)'}`).join(', ');
       const facts = mediaFacts(one, quality);
-      console.log(`${one.heavy ? '!' : ' '} ${bytesText(bytesAt(one, quality)).padStart(width)}  ${one.kind.padEnd(9)} ${name}${facts ? `  ${facts}` : ''}`);
+      console.log(`${one.notice ? '!' : ' '} ${bytesText(bytesAt(one, quality)).padStart(width)}  ${one.kind.padEnd(9)} ${name}${facts ? `  ${facts}` : ''}`);
       console.log(`  ${' '.repeat(width)}  ${' '.repeat(9)} ${ladder}${one.uses.length ? ` · ${useText(one.uses)}` : ''}`);
-      if (one.why) console.log(`  ${' '.repeat(width)}  ${' '.repeat(9)} Stands out: ${one.why}`);
+      if (one.notice) console.log(`  ${' '.repeat(width)}  ${' '.repeat(9)} Heavier than it needs to be (${one.notice.reason}): ${one.notice.why}`);
     }
-    if (shown.length < media.length) console.log(`\n${media.length - shown.length} lighter media (--all lists them).`);
-    console.log(`\n* estimated from bitrates; (as is): the master ships at that quality. ! weighs more than five minutes of video at ${quality}.`);
+    if (shown.length < media.length) console.log(`\n${media.length - shown.length} more media (--all lists them).`);
+    console.log(`\n* estimated from bitrates; (as is): the master ships at that quality.${noticed ? ` ! heavier than it needs to be at ${quality}, for what its file shows.` : ` No media seems heavier than it needs to be at ${quality}.`}`);
     return 0;
   })
 });

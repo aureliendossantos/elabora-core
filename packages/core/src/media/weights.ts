@@ -4,6 +4,8 @@
 
 import { sizeText } from '../lms/package-limits.ts';
 import type { QualitySize } from '../lms/package-limits.ts';
+import { renditionPlan } from './conformance.ts';
+import type { FileMedia } from './conformance.ts';
 import { PRESETS, PRESET_NAMES } from './presets.ts';
 import type { MediaKind, PresetName } from './presets.ts';
 
@@ -41,45 +43,89 @@ export interface MediaWeight {
   seconds?: number;    // a video's or a sound's duration; a narration's or a dialogue's, its lines'
   lines?: number;      // a narration's or a dialogue's lines
   qualities: MediaAtQuality[];
-  // It weighs more than five minutes of video at the quality of PackageWeights (heavyBytes), and why.
-  heavy: boolean;
-  why?: string;
+  // It seems heavier than it needs to be at the quality of PackageWeights, for a reason its file
+  // shows (weightNotice). Absent for nearly every media: a long video that weighs is not one.
+  notice?: WeightNotice;
 }
 
 // What a package of the course would weigh, at each quality and media by media.
 export interface PackageWeights {
-  quality: PresetName;    // what media are ordered by and stand out at: the course's (delivery.mediaQuality, else high) unless asked
+  quality: PresetName;    // what media are ordered by and noticed at: the course's (delivery.mediaQuality, else high) unless asked
   qualities: QualitySize[];
   media: MediaWeight[];   // heaviest first at that quality
   rest: number;           // the same at every quality: the player, its sounds, the fonts, the free objects, the texts
 }
 
-// A media stands out when it weighs more than five minutes of video at the quality's ceiling: about
-// 292 MB at high, 148 MB at medium, 57 MB at low (megabytes as sizeText prints them). Ordinary videos
-// of a few minutes never do; a long video still does after its resize, as a large file the qualities
-// do not compress.
-export const HEAVY_SECONDS = 300;
-export function heavyBytes(quality: PresetName): number {
-  const video = PRESETS[quality].video;
-  return Math.round((HEAVY_SECONDS * (video.maxBitrate + video.audioBitrate)) / 8);
+// Why a media weighs more than it needs to, measured on its file rather than against a size: a
+// long video of 500 MB is what it is, a picture of 6 MB is often a photo saved as PNG.
+//   not-optimized  a video or an image not in its web format (W_MEDIA_NOT_OPTIMIZED), shipped as it is
+//   animated       an animated image (GIF, animated WebP or PNG), which a video makes several times lighter
+//   dense-image    a still image shipped as it is with more than a byte a pixel (a photo saved as PNG)
+//   dense-video    a video whose own stream ships at more than twice the bitrate Elabora would spend on
+//                  its size and frame rate (a 720p screen recording exported at 10 Mb/s)
+// why: in English for agents, what it is and what lightens it.
+export type WeightNoticeReason = 'not-optimized' | 'animated' | 'dense-image' | 'dense-video';
+export interface WeightNotice {
+  reason: WeightNoticeReason;
+  why: string;
+}
+
+// Below it, what a media could save is not worth an author's attention.
+export const NOTICE_BYTES = 2 * 1024 * 1024;
+// A photo in WebP or JPEG takes about 0.2 to 0.4 bytes a pixel; above 1, it is barely compressed.
+export const DENSE_IMAGE_BYTES_PER_PIXEL = 1;
+export const DENSE_VIDEO_RATIO = 2;
+
+// The bitrate Elabora spends at most on a video of this size and frame rate: the high quality's
+// ceiling for 1080p at 30 fps, scaled by the pixels a second to the power 0.75 as estimateBytes does
+// (bitrate grows slower than the pixel count).
+export function videoCeiling(width: number, height: number, fps: number): number {
+  return PRESETS.high.video.maxBitrate * ((width * height * fps) / (1920 * 1080 * 30)) ** 0.75;
 }
 
 export const bytesAt = (media: MediaWeight, quality: PresetName): number => media.qualities.find((size) => size.quality === quality)?.bytes ?? 0;
 
-// What makes a heavy media weigh, in English for agents, and what would lighten it.
-export function heavyWhy(media: MediaWeight, quality: PresetName): string {
-  const at = (q: PresetName) => sizeText(bytesAt(media, q));
-  const lower = PRESET_NAMES.slice(PRESET_NAMES.indexOf(quality) + 1).filter((q) => bytesAt(media, q) < bytesAt(media, quality) * 0.95);
-  const lighter = lower.map((q) => `${at(q)} at ${q}`).join(', ');
-  if (media.kind === 'file') return `${at(quality)}: the media qualities leave such a file as it is. Make it lighter or split it, or link to it rather than ship it.`;
-  const seconds = media.seconds ?? 0;
-  const remedy = media.kind === 'video' ? 'Shorten or split it, or host it on a video platform and link to it from the course.' : 'Shorten or split it.';
-  if (seconds >= HEAVY_SECONDS) {
-    if (!lighter) return `${durationText(seconds)} long: ${quality === 'low' ? 'even ' : ''}${at(quality)} at ${quality}${quality === 'low' ? '' : ', and no lower quality lightens it'}. ${remedy}`;
-    return `${durationText(seconds)} long: ${at(quality)} at ${quality}, still ${lighter}. ${remedy}`;
+// The media noticed first, then the others, each heaviest first: the order a list shows them in.
+export const noticedFirst = (media: readonly MediaWeight[]): MediaWeight[] => [...media.filter((one) => one.notice), ...media.filter((one) => !one.notice)];
+
+// Whether a media of the list seems heavier than it needs to be at the quality, from its master's probe
+// (FileMedia): null for nearly all. A media under NOTICE_BYTES, a narration track, a dialogue and a file
+// the qualities leave as they are never are; neither is a rendition, Elabora's own encoding, except as an
+// animated image or for a video stream it copies.
+export function weightNotice(media: MediaWeight, info: FileMedia | undefined, quality: PresetName): WeightNotice | null {
+  const at = media.qualities.find((size) => size.quality === quality);
+  if (!info || !at || !media.path || at.bytes < NOTICE_BYTES) return null;
+  const size = sizeText(at.bytes);
+  const pixels = info.width && info.height ? `${info.width}×${info.height}` : '';
+  if (info.kind === 'image' && info.animated) {
+    return { reason: 'animated', why: `An animated image of ${size}${pixels ? ` (${pixels}${info.duration ? `, ${durationText(info.duration)}` : ''})` : ''}: as a video (MP4) it would weigh several times less. Make it a video and show it in a video block.` };
   }
-  const rate = seconds ? ` (${(bytesAt(media, quality) * 8 / seconds / 1e6).toFixed(1)} Mb/s over ${durationText(seconds)})` : '';
-  return `${at(quality)} at ${quality}${rate}${lighter ? `; ${lighter}` : ''}. ${lighter ? `A lower quality lightens it. ${remedy}` : remedy}`;
+  const reasons = info.reasons.filter((reason) => reason.fix === 'encode');
+  if (!at.rendition && !info.conformant && reasons.length && (info.kind === 'video' || info.kind === 'image')) {
+    return { reason: 'not-optimized', why: `Not in its web format (${reasons.map((reason) => reason.message.replace(/\.$/, '')).join('; ')}): at ${quality} it ships as it is, ${size}. \`elabora media optimize ${media.path}\` makes it a web master, usually much lighter.` };
+  }
+  if (info.kind === 'image' && !at.rendition && info.width && info.height) {
+    const perPixel = at.bytes / (info.width * info.height);
+    if (perPixel > DENSE_IMAGE_BYTES_PER_PIXEL) {
+      const saved = info.container === 'png' ? 'a photo or a detailed picture saved as PNG, most likely' : 'saved at a very high quality';
+      return { reason: 'dense-image', why: `${size} for ${pixels} px, ${perPixel.toFixed(1)} bytes a pixel where a photo in WebP or JPEG takes about 0.3: ${saved}. As WebP${info.alpha ? '' : ' or JPEG'} it would weigh several times less: save it again that way and replace it.${quality === 'high' ? ' The lower qualities re-encode it as WebP.' : ''}` };
+    }
+  }
+  if (info.kind === 'video' && info.width && info.height) {
+    const bitrate = info.videoBitrate ?? info.bitrate;
+    const kept = quality === 'high' || renditionPlan(info, quality).video === 'copy';
+    const fps = info.fps ?? 30;
+    const ceiling = videoCeiling(info.width, info.height, fps);
+    if (kept && bitrate && bitrate > DENSE_VIDEO_RATIO * ceiling) {
+      const rate = (bits: number) => `${(bits / 1e6).toFixed(1)} Mb/s`;
+      const seconds = info.duration ?? media.seconds;
+      // The first lower quality that lightens it (to 95 % or less).
+      const lower = media.qualities.slice(PRESET_NAMES.indexOf(quality) + 1).find((one) => one.bytes < at.bytes * 0.95);
+      const lowerText = lower ? `, or choose a lower quality, which re-encodes it (at ${lower.quality}, ${lower.estimated ? 'about ' : ''}${sizeText(lower.bytes)})` : '';
+      return { reason: 'dense-video', why: `${rate(bitrate)} for ${pixels} at ${Math.round(fps)} fps, more than twice the ${rate(ceiling)} Elabora spends at most on a video of that size: ${size}${seconds ? ` for ${durationText(seconds)}` : ''}. Export it again at a lower bitrate and replace it${lowerText}.` };
+    }
+  }
+  return null;
 }
 
 // 45 s, 4 min 30 s, 24 min, 1 h 05.
