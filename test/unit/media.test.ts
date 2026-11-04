@@ -322,6 +322,24 @@ test('jobs: persisted, resumed after a crash, cancelled', async (t: TestContext)
   assert.deepEqual(fs.readdirSync(path.join(projectDataDir(dir), 'media', 'tmp')), []);
   assert.deepEqual(readJobs(dir).map((j) => j.status), ['done', 'cancelled', 'cancelled']);
 
+  // A source the author deletes while it is optimized, or before its job starts: the job is
+  // cancelled and leaves nothing in the project (an animated GIF would come back as an orphan PNG).
+  fs.mkdirSync(path.join(dir, 'assets/images'), { recursive: true });
+  const gif = (name: string) => run(tools.ffmpeg, ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=size=320x180:rate=10:duration=2', path.join(dir, 'assets/images', name)]);
+  await Promise.all([gif('during.gif'), gif('before.gif')]);
+  const optimize = (name: string, start = true) => queue.add({ type: 'optimize', input: `assets/images/${name}.gif`, output: `assets/images/${name}.png`, replaces: `assets/images/${name}.gif` }, { start });
+  const during = optimize('during');
+  queue.once('progress', () => fs.rmSync(path.join(dir, 'assets/images/during.gif')));
+  const [gone] = await queue.wait([during.id]);
+  assert.equal(gone.status, 'cancelled', gone.error ?? '');
+  const before = optimize('before', false);
+  fs.rmSync(path.join(dir, 'assets/images/before.gif'));
+  queue.start();
+  const [goneBefore] = await queue.wait([before.id]);
+  assert.equal(goneBefore.status, 'cancelled', goneBefore.error ?? '');
+  assert.deepEqual(fs.readdirSync(path.join(dir, 'assets/images')), []);
+  assert.deepEqual(fs.readdirSync(path.join(projectDataDir(dir), 'media', 'tmp')), []);
+
   // Cancelling kills ffmpeg at once.
   const controller = new AbortController();
   const endless = runFfmpeg(tools, ['-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=320x240', '-f', 'null', '-'], { signal: controller.signal });
