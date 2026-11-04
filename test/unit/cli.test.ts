@@ -273,6 +273,7 @@ test('media weights and MCP elabora_media_weights: what the package weighs, medi
   assert.equal(text.status, 0, text.stderr);
   assert.match(text.stdout, /^Diagnostiquer une panne d'impression réseau: about [\d.]+ MB at low; high about [\d.]+ MB, medium about [\d.]+ MB\.\n/);
   assert.match(text.stdout, /dialogue +dialogue lines +\d+ s · \d+ lines\n.* · premier-reflexe \(appel-marc\)\n/);
+  assert.match(text.stdout, /No media seems heavier than it needs to be at low\.\n$/);
   assert.deepEqual([(await elabora(['media', 'weights', dir, '--media-quality', 'ultra'])).status, (await elabora(['media', 'weights', path.dirname(dir)])).status], [2, 1]);
 
   const client = await connectMcp(dir);
