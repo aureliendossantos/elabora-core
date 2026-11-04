@@ -285,7 +285,7 @@ test('the progress in parts: a segment per section, the part shown, Tab and the 
   await player(copyExample(), async (page) => {
     assert.match(await page.locator('.t-item--progress[data-parts="3"] .t-parts[role="toolbar"]').getAttribute('aria-label') ?? '', /^Progression : \d+ %$/);
     assert.deepEqual((await parts(page)).map((part) => [part.label, part.tab]), [
-      ['Partie 1 sur 3 : Découvrir, en cours, 1 page terminée sur 3', '0'],
+      ['Partie 1 sur 3 : Découvrir, en cours, 1 page complétée sur 3', '0'],
       ['Partie 2 sur 3 : Pratiquer, pas encore disponible', '-1'],
       ['Partie 3 sur 3 : Valider, pas encore disponible', '-1']
     ]);

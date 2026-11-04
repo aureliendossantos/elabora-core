@@ -264,7 +264,7 @@ export function createChrome(course: CourseData, labels: Labels, { actions, tool
     } else progress.setAttribute('aria-label', `${labels.progress}${labels.colon}${text}`);
   }
 
-  // Where a part stands, in words: « en cours, 2 écrans terminés sur 5 », « terminée », « pas commencée ».
+  // Where a part stands, in words: « en cours, 2 écrans complétés sur 5 », « terminée », « pas commencée ».
   function partState(part: PartView): string {
     const count = format(labels.partScreens, { done: part.done, total: part.total });
     if (part.current) return part.done > 0 ? `${labels.partCurrent}, ${count}` : labels.partCurrent;
