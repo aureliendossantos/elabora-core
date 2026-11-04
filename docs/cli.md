@@ -116,6 +116,14 @@ media captions [dir] <block> <file.vtt|.srt> [--name <name>] [--json]
                                                     Captions of a video block (E_VIDEO_CAPTIONS_MISSING): the file written
                                                     under assets/captions/ (SubRip converted to WebVTT), named by the
                                                     block, in one undoable change
+media weights [dir] [--media-quality high|medium|low] [--all] [--json]
+                                                    What the package weighs at each media quality, media by media,
+                                                    heaviest first: kind, file, duration and size, what high, medium
+                                                    and low ship (made or estimated), where the course uses it; a
+                                                    media that weighs more than five minutes of video at the quality
+                                                    stands out, with why and what lightens it. Nothing is encoded or
+                                                    written. At the course's quality unless --media-quality; the ten
+                                                    heaviest unless --all
 media status [dir] [--wait] [--json]                Media jobs (queued, running, done, failed) and media to optimise
 media cancel [dir] <job>                            Cancel a media job
 media worker [dir]                                  Run the project's media jobs until none is left (import --no-wait)
