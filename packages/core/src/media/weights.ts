@@ -11,8 +11,8 @@ import type { MediaKind, PresetName } from './presets.ts';
 // or layer's track, made from its lines; dialogue: a dialogue block's lines, one file each.
 export type MediaWeightKind = MediaKind | 'file' | 'narration' | 'dialogue';
 
-// Where the course shows or plays a media: a block of a screen, a screen's layout (no block), a
-// narration (its layer, if it is a layer's), or the whole module (no screen): the player's logo, a
+// Where the course shows or plays a media: a block of a screen (and its layer, if it is in one), a
+// screen's layout (no block), a narration (its layer, if it is a layer's), or the whole module (no screen): the player's logo, a
 // resource, a sound of the interface, a background track.
 export interface MediaUse {
   screen: string | null;
@@ -55,8 +55,9 @@ export interface PackageWeights {
 }
 
 // A media stands out when it weighs more than five minutes of video at the quality's ceiling: about
-// 306 MB at high, 155 MB at medium, 60 MB at low. Ordinary videos of a few minutes never do; a long
-// video still does after its resize, as a large file the qualities do not compress.
+// 292 MB at high, 148 MB at medium, 57 MB at low (megabytes as sizeText prints them). Ordinary videos
+// of a few minutes never do; a long video still does after its resize, as a large file the qualities
+// do not compress.
 export const HEAVY_SECONDS = 300;
 export function heavyBytes(quality: PresetName): number {
   const video = PRESETS[quality].video;

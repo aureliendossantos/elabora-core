@@ -60,13 +60,13 @@ export const mediaStatus = defineTool({
 export const mediaWeights = defineTool({
   name: 'elabora_media_weights',
   readOnly: true,
-  description: 'What the package weighs at each media quality (high, medium, low), media by media, heaviest first: why a package is heavy, and what a lower quality would change. Each media: kind (video, audio, image, vector, file: an asset the qualities leave as it is, narration: a screen\'s track, dialogue: a dialogue block\'s lines), path under assets/, uses (screen and block, or the player\'s logo, a resource, a sound), the master\'s bytes, width, height and seconds, and at each quality its bytes, whether estimated from bitrates (not made yet), whether a rendition or the master as is, and the width and height shipped; heavy: it weighs more than five minutes of video at the quality (about 306 MB at high, 155 at medium, 60 at low), with why and what lightens it. Also the package at each quality and the rest (player, fonts, texts). Nothing is encoded or written. quality: order and judge at it rather than the course\'s delivery.mediaQuality.',
+  description: 'What the package weighs at each media quality (high, medium, low), media by media, heaviest first: why a package is heavy, and what a lower quality would change. Each media: kind (video, audio, image, vector, file: an asset the qualities leave as it is, narration: a screen\'s track, dialogue: a dialogue block\'s lines), path under assets/, uses (screen and block, or the player\'s logo, a resource, a sound), the master\'s bytes, width, height and seconds, and at each quality its bytes, whether estimated from bitrates (not made yet), whether a rendition or the master as is, and the width and height shipped; heavy: it weighs more than five minutes of video at the quality (about 292 MB at high, 148 at medium, 57 at low), with why and what lightens it. Also the package at each quality and the rest (player, fonts, texts). Nothing is encoded or written. mediaQuality: order and judge at it rather than the course\'s delivery.mediaQuality.',
   inputSchema: objectSchema({
-    quality: { enum: ['high', 'medium', 'low'], description: 'The quality media are ordered by and judged at (default: the course\'s).' },
+    mediaQuality: { enum: ['high', 'medium', 'low'], description: 'The quality media are ordered by and judged at (default: the course\'s delivery.mediaQuality).' },
     limit: { type: 'integer', minimum: 1, description: 'How many media, heaviest first (default 20).' }
   }),
   async handler(args, { root }) {
-    const weights = await packageWeights(loadProjectFromDir(root), args.quality ? { quality: args.quality } : {});
+    const weights = await packageWeights(loadProjectFromDir(root), args.mediaQuality ? { quality: args.mediaQuality } : {});
     const limit = args.limit ?? 20;
     return textResult({ ...weights, media: weights.media.slice(0, limit), ...(weights.media.length > limit ? { more: weights.media.length - limit } : {}) });
   }

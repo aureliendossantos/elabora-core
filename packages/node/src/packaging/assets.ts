@@ -26,12 +26,12 @@ export function assetUses(project: Project, registry: Registry = getRegistry(pro
     if (typeof asset !== 'string') return;
     const known = uses.get(asset);
     if (!known) uses.set(asset, [use]);
-    else if (!known.some((other) => other.screen === use.screen && other.block === use.block && other.as === use.as)) known.push(use);
+    else if (!known.some((other) => other.screen === use.screen && other.block === use.block && other.layer === use.layer && other.as === use.as)) known.push(use);
   };
-  for (const { screen, block } of iterateBlocks(project)) {
+  for (const { screen, layer, block } of iterateBlocks(project)) {
     const descriptor = registry.get(block.type);
     if (!descriptor) continue;
-    for (const found of valuesOfKind(descriptor.schema, resolveBlockProps(block, planLookup, registry), 'asset')) ship(found.value, { screen: screen.id, ...(typeof block.id === 'string' ? { block: block.id } : {}) });
+    for (const found of valuesOfKind(descriptor.schema, resolveBlockProps(block, planLookup, registry), 'asset')) ship(found.value, { screen: screen.id, ...(typeof block.id === 'string' ? { block: block.id } : {}), ...(typeof layer?.id === 'string' ? { layer: layer.id } : {}) });
   }
   for (const { id } of screenOrder(project)) {
     const screen = project.screens.get(id)?.data;

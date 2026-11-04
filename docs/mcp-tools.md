@@ -257,11 +257,11 @@ Media jobs of the course (imports, optimisations, renditions: queued, running wi
 
 ### `elabora_media_weights`
 
-What the package weighs at each media quality (high, medium, low), media by media, heaviest first: why a package is heavy, and what a lower quality would change. Each media: kind (video, audio, image, vector, file: an asset the qualities leave as it is, narration: a screen's track, dialogue: a dialogue block's lines), path under assets/, uses (screen and block, or the player's logo, a resource, a sound), the master's bytes, width, height and seconds, and at each quality its bytes, whether estimated from bitrates (not made yet), whether a rendition or the master as is, and the width and height shipped; heavy: it weighs more than five minutes of video at the quality (about 306 MB at high, 155 at medium, 60 at low), with why and what lightens it. Also the package at each quality and the rest (player, fonts, texts). Nothing is encoded or written. quality: order and judge at it rather than the course's delivery.mediaQuality.
+What the package weighs at each media quality (high, medium, low), media by media, heaviest first: why a package is heavy, and what a lower quality would change. Each media: kind (video, audio, image, vector, file: an asset the qualities leave as it is, narration: a screen's track, dialogue: a dialogue block's lines), path under assets/, uses (screen and block, or the player's logo, a resource, a sound), the master's bytes, width, height and seconds, and at each quality its bytes, whether estimated from bitrates (not made yet), whether a rendition or the master as is, and the width and height shipped; heavy: it weighs more than five minutes of video at the quality (about 292 MB at high, 148 at medium, 57 at low), with why and what lightens it. Also the package at each quality and the rest (player, fonts, texts). Nothing is encoded or written. mediaQuality: order and judge at it rather than the course's delivery.mediaQuality.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
-| `quality` | "high" \| "medium" \| "low" |  | The quality media are ordered by and judged at (default: the course's). |
+| `mediaQuality` | "high" \| "medium" \| "low" |  | The quality media are ordered by and judged at (default: the course's delivery.mediaQuality). |
 | `limit` | integer |  | How many media, heaviest first (default 20). |
 
 ### `elabora_timeline`

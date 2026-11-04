@@ -276,7 +276,7 @@ test('media weights and MCP elabora_media_weights: what the package weighs, medi
   assert.deepEqual([(await elabora(['media', 'weights', dir, '--media-quality', 'ultra'])).status, (await elabora(['media', 'weights', path.dirname(dir)])).status], [2, 1]);
 
   const client = await connectMcp(dir);
-  const two = await callJSON(client, 'elabora_media_weights', { quality: 'medium', limit: 2 });
+  const two = await callJSON(client, 'elabora_media_weights', { mediaQuality: 'medium', limit: 2 });
   assert.deepEqual([two.quality, two.media.length, two.more], ['medium', 2, weights.media.length - 2]);
   await client.close();
 });

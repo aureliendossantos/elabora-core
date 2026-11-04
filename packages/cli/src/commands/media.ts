@@ -172,7 +172,8 @@ export function useText(uses: readonly MediaUse[]): string {
     if (use.as === 'resource') return 'a resource';
     if (use.as === 'interface-sound') return 'an interface sound';
     if (use.as === 'background') return 'a background track';
-    return `${use.screen}${use.block ? ` (${use.block})` : use.layer ? ` (layer ${use.layer})` : ''}`;
+    const within = [use.block, use.layer ? `layer ${use.layer}` : ''].filter(Boolean).join(', ');
+    return `${use.screen}${within ? ` (${within})` : ''}`;
   });
   const unique = [...new Set(words)];
   return unique.length > 3 ? `${unique.slice(0, 3).join(', ')} and ${unique.length - 3} more` : unique.join(', ');

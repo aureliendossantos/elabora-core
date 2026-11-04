@@ -5,7 +5,7 @@ import type { Project } from '@elabora/core/project/model';
 import { iterateBlocks, screenOrder } from '@elabora/core/project/load';
 import { narrationLines, screenTiming, timelineLines } from '@elabora/core/narration/narration';
 import { narratedLayers } from '@elabora/core/narration/voice-lines';
-import { estimateBytes, mediaKindOfPath, presetDimensions, renditionPlan } from '@elabora/core/media/conformance';
+import { audioNeedsRendition, estimateBytes, mediaKindOfPath, presetDimensions, renditionPlan } from '@elabora/core/media/conformance';
 import type { MediaInfo } from '@elabora/core/media/conformance';
 import { PRESET_NAMES } from '@elabora/core/media/presets';
 import type { PresetName } from '@elabora/core/media/presets';
@@ -59,7 +59,8 @@ export async function packageWeights(project: Project, options: { quality?: Pres
     for (const preset of PRESET_NAMES) {
       const rendition = info ? await renditionPath(project.root, rel, preset).catch(() => null) : null;
       const made = rendition ? sizeOf(rendition) : null;
-      const encoded = rendition ? rendition !== master : !!info && preset !== 'high' && renditionPlan(info, preset).action !== 'reuse';
+      // Without its path (a probe or hash that failed), from its plan: a sound kept as FLAC has one at high too.
+      const encoded = rendition ? rendition !== master : !!info && (preset === 'high' ? audioNeedsRendition(info) : renditionPlan(info, preset).action !== 'reuse');
       const size: MediaAtQuality = { quality: preset, bytes: masterBytes, estimated: false, rendition: encoded };
       if (made !== null) size.bytes = made;
       else if (info) {

@@ -54,6 +54,12 @@ test('a large file the qualities leave as it is stands out at low, with where it
     assert.deepEqual([first!.kind, first!.uses, first!.heavy], ['file', [{ screen: null, as: 'resource' }], true]);
     assert.match(first!.why!, /^64\.0 MB: the media qualities leave such a file as it is/);
     assert.ok(weights.media.slice(1).every((media) => !media.heavy));
+    // A file shown in a layer says its layer.
+    const screen = readJSON(dir, 'screens/premier-reflexe.json');
+    screen.layers[0].blocks.push({ id: 'rappel-fiche', type: 'image', props: { asset: 'images/ticket-marc.svg', alt: 'Le ticket de Marc.' } });
+    writeJSON(dir, 'screens/premier-reflexe.json', screen);
+    const ticket = (await packageWeights(loadProjectFromDir(dir))).media.find((media) => media.path === 'assets/images/ticket-marc.svg')!;
+    assert.ok(ticket.uses.some((use) => use.screen === 'premier-reflexe' && use.block === 'rappel-fiche' && use.layer === 'rappel-regle'), JSON.stringify(ticket.uses));
 
     course.delivery.mediaQuality = 'high';
     writeJSON(dir, 'course.json', course);
