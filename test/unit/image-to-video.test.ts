@@ -10,6 +10,7 @@ import { undo } from '@elabora/node/edit';
 import { probeMedia } from '@elabora/node/media/probe';
 import { findMediaTools } from '@elabora/node/media/tools';
 import { imageToVideo } from '@elabora/node/media/to-video';
+import { openProject } from '@elabora/engine';
 import { copyExample, readJSON, writeJSON } from '../helpers.ts';
 
 const run = promisify(execFile);
@@ -107,6 +108,29 @@ test('an animated PNG becomes a video too; a file another block still shows stay
     await assert.rejects(imageToVideo(dir, { block: 'still' }, { tools }), /is not animated/);
     await assert.rejects(imageToVideo(dir, { block: 'pulse' }, { tools }), /is a video block/);
   } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('the engine runs image_to_video as a change of the app, one undo', async (t) => {
+  if (!tools?.h264.length) return t.skip(NO_FFMPEG);
+  const dir = copyExample();
+  place(dir, 'spinner.gif', 'assets/images/spinner.gif');
+  addBlocks(dir, { id: 'spinner', type: 'image', props: { asset: 'images/spinner.gif', alt: 'The router restarts.' } } as Block);
+  const session = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 });
+  try {
+    await session.flush();
+    const result = await session.run('image_to_video', { block: 'spinner' }, { kind: 'human' });
+    assert.deepEqual([...result.files].sort(), ['assets/images/spinner-poster.' + (tools.webp ? 'webp' : 'jpg'), 'assets/images/spinner.gif', 'assets/video/spinner.mp4', 'screens/accueil.json']);
+    assert.equal(session.readFile('assets/video/spinner.mp4').kind, 'binary');
+    assert.equal(blockOf(dir, 'spinner').type, 'video');
+    const own = Object.values(session.diagnostics().screens).flat().filter((finding) => finding.target === 'spinner');
+    assert.deepEqual(own.filter((finding) => finding.severity === 'error'), []);
+    await session.undo();
+    assert.equal(blockOf(dir, 'spinner').type, 'image');
+    assert.equal(fs.existsSync(path.join(dir, 'assets/images/spinner.gif')), true);
+  } finally {
+    await session.close();
     fs.rmSync(dir, { recursive: true, force: true });
   }
 });
