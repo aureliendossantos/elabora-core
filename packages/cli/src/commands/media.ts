@@ -218,7 +218,7 @@ const weights = defineCommand({
       console.log(`  ${' '.repeat(width)}  ${' '.repeat(9)} ${ladder}${one.uses.length ? ` · ${useText(one.uses)}` : ''}`);
       if (one.notice) console.log(`  ${' '.repeat(width)}  ${' '.repeat(9)} Heavier than it needs to be (${one.notice.reason}): ${one.notice.why}`);
     }
-    if (shown.length < media.length) console.log(`\n${media.length - shown.length} lighter media (--all lists them).`);
+    if (shown.length < media.length) console.log(`\n${media.length - shown.length} more media (--all lists them).`);
     console.log(`\n* estimated from bitrates; (as is): the master ships at that quality.${noticed ? ` ! heavier than it needs to be at ${quality}, for what its file shows.` : ` No media seems heavier than it needs to be at ${quality}.`}`);
     return 0;
   })
