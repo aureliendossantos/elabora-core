@@ -104,6 +104,34 @@ function soundConformance(info: MediaInfo): Conformance {
 // players need AAC or MP3 (a sound kept as FLAC, Vorbis or Opus, D67).
 export const audioNeedsRendition = (info: MediaInfo): boolean => info.kind === 'audio' && info.audioCodec !== 'aac' && info.audioCodec !== 'mp3';
 
+// Denser than its size needs: a master an import keeps (a web format within the limits) that is
+// still heavier than Elabora's own encoding of it would be, by far. A still image of more than a byte
+// a pixel: a photo saved as PNG, a JPEG at a very high quality (a photo in WebP or JPEG takes 0.2 to
+// 0.4, a screenshot or a diagram in PNG under 0.2, and a picture of text never comes near it). A
+// video stream at more than twice what Elabora spends at most on its size and frame rate (a 720p
+// screen recording exported at 10 Mb/s). Never under DENSE_MIN_BYTES: re-encoding would save too little.
+export const DENSE_MIN_BYTES = 2 * 1024 * 1024;
+export const DENSE_IMAGE_BYTES_PER_PIXEL = 1;
+export const DENSE_VIDEO_RATIO = 2;
+
+// The bitrate Elabora spends at most on a video of this size and frame rate: the high quality's
+// ceiling for 1080p at 30 fps, scaled by the pixels a second to the power 0.75 as estimateBytes does
+// (bitrate grows slower than the pixel count).
+export function videoCeiling(width: number, height: number, fps: number): number {
+  return PRESETS.high.video.maxBitrate * ((width * height * fps) / (1920 * 1080 * 30)) ** 0.75;
+}
+
+export function isDense(info: MediaInfo): boolean {
+  if (info.size < DENSE_MIN_BYTES || !info.width || !info.height) return false;
+  if (info.kind === 'image') return !info.animated && info.size / (info.width * info.height) > DENSE_IMAGE_BYTES_PER_PIXEL;
+  const bitrate = info.videoBitrate ?? info.bitrate;
+  return info.kind === 'video' && !!bitrate && bitrate > DENSE_VIDEO_RATIO * videoCeiling(info.width, info.height, info.fps ?? 30);
+}
+
+// Whether a package at high ships something else than the master (renditionPlan): audio a browser
+// may not play, a video or an image an import would not have left as it is.
+export const needsHighRendition = (info: MediaInfo): boolean => (info.kind === 'audio' ? audioNeedsRendition(info) : renditionPlan(info, 'high').action !== 'reuse');
+
 const mbps = (bits: number) => `${(bits / 1_000_000).toFixed(1)} Mb/s`;
 const kbps = (bits: number) => `${Math.round(bits / 1000)} kb/s`;
 const longSide = (info: MediaInfo) => Math.max(info.width ?? 0, info.height ?? 0);
@@ -202,12 +230,24 @@ export function masterPlan(info: MediaInfo, options: PlanOptions = {}): MediaPla
 }
 
 // Turning a master into a rendition at a lower preset. Streams already within the preset are
-// copied, not re-encoded: a 720p master at medium only gets its audio re-encoded.
+// copied, not re-encoded: a 720p master at medium only gets its audio re-encoded. A stream denser
+// than its size needs (isDense) is re-encoded at every preset.
+//
+// At high the master ships as an import would have left it. Otherwise its rendition is what an
+// import makes of it (masterPlan: a web format, without metadata), re-encoded at high when it is
+// dense. A video with transparency ships as it is: H.264 has none.
 export function renditionPlan(master: MediaInfo, preset: PresetName, options: PlanOptions = {}): MediaPlan {
   const p = PRESETS[preset];
   const plan = (action: MediaPlan['action'], extension: string | null, video: MediaPlan['video'] = null, audio: MediaPlan['audio'] = null): MediaPlan => ({ action, extension, video, audio, reasons: [] });
   const tolerance = 1.05; // encoders overshoot their target a little
   if (master.kind === 'vector') return plan('reuse', null);
+  if (preset === 'high' && master.kind !== 'audio') {
+    const dense = isDense(master);
+    if ((conformance(master).conformant && !dense) || (master.kind === 'video' && master.alpha)) return plan('reuse', null);
+    const made = masterPlan(master, options);
+    if (!dense) return { ...made, reasons: [] };
+    return master.kind === 'image' ? plan('encode', imageExtension(master, options), 'encode') : plan('encode', CANONICAL.video.extension, 'encode', made.audio);
+  }
   // An image's quality cannot be read from the file: always encoded, kept only if smaller.
   if (master.kind === 'image') return plan('encode', imageExtension(master, options), 'encode');
   const audioFits = (bitrate: number) => master.audioCodec === 'aac' && (master.audioBitrate ?? bitrate) <= bitrate * tolerance;
@@ -217,6 +257,7 @@ export function renditionPlan(master: MediaInfo, preset: PresetName, options: Pl
   }
   const masterReasons = conformance(master).reasons;
   const videoFits = !masterReasons.some((r) => r.stream === 'video')
+    && !isDense(master)
     && longSide(master) <= p.video.maxLongSide
     && (master.videoBitrate ?? master.bitrate ?? Infinity) <= p.video.maxBitrate * tolerance
     && (p.video.maxFps === null || (master.fps ?? 0) <= p.video.maxFps + 0.5);
@@ -235,22 +276,28 @@ export function presetDimensions(info: MediaInfo, preset: PresetName): { width: 
 }
 
 // Expected size of a master's rendition at a preset, before it exists: the master itself when it
-// already fits the preset; otherwise from the bitrates (the video bitrate scaled by the pixel count
-// to the power 0.75, as bitrate grows slower than the pixel count, and capped by the preset). An
-// estimate for E_PACKAGE_TOO_LARGE: renditions that exist are measured instead.
+// already fits the preset (at high, when it ships as it is); otherwise from the bitrates (the video
+// bitrate scaled by the pixel count to the power 0.75, as bitrate grows slower than the pixel count,
+// and capped by the preset and by what Elabora spends at most on the rendition's size), an image from
+// its pixels (a still one at most what WebP takes for a detailed photo at the preset's quality). An estimate for
+// E_PACKAGE_TOO_LARGE and the weights: renditions that exist are measured instead.
+const IMAGE_FACTOR: Readonly<Record<PresetName, number>> = { high: 1, medium: 0.7, low: 0.5 };
+const IMAGE_BYTES_PER_PIXEL: Readonly<Record<PresetName, number>> = { high: 0.5, medium: 0.4, low: 0.3 };
 export function estimateBytes(info: MediaInfo, preset: PresetName): number {
-  if (preset === 'high' || info.kind === 'vector') return info.size;
+  if (info.kind === 'vector' || (preset === 'high' && !needsHighRendition(info))) return info.size;
   const plan = renditionPlan(info, preset);
-  if (plan.action === 'reuse') return info.size;
+  if (plan.action === 'reuse' || (info.kind === 'image' && plan.action === 'remux')) return info.size;
   const p = PRESETS[preset];
   const dims = presetDimensions(info, preset);
   const pixels = dims && info.width && info.height ? (dims.width * dims.height) / (info.width * info.height) : 1;
   const estimate = (bytes: number) => Math.min(info.size, Math.round(bytes));
-  if (info.kind === 'image') return estimate(info.size * pixels * (preset === 'medium' ? 0.7 : 0.5));
+  if (info.kind === 'image') return estimate(Math.min(info.size * pixels * IMAGE_FACTOR[preset], dims && !info.animated ? dims.width * dims.height * IMAGE_BYTES_PER_PIXEL[preset] : Infinity));
   const duration = info.duration ?? 0;
   if (info.kind === 'audio') return estimate((duration * Math.min(info.audioBitrate ?? info.bitrate ?? 0, p.audio.bitrate)) / 8);
   const sourceVideo = info.videoBitrate ?? info.bitrate ?? 0;
-  const video = plan.video === 'copy' ? sourceVideo : Math.min(sourceVideo * pixels ** 0.75, p.video.maxBitrate);
+  const fps = Math.min(info.fps ?? 30, p.video.maxFps ?? Infinity);
+  const ceiling = dims ? videoCeiling(dims.width, dims.height, fps) : Infinity;
+  const video = plan.video === 'copy' ? sourceVideo : Math.min(sourceVideo * pixels ** 0.75, p.video.maxBitrate, ceiling);
   const audioTarget = info.channels === 1 ? p.video.audioBitrate / 2 : p.video.audioBitrate;
   const audio = !info.audioCodec ? 0 : plan.audio === 'copy' ? (info.audioBitrate ?? 0) : Math.min(info.audioBitrate ?? audioTarget, audioTarget);
   return estimate((duration * (video + audio) * 1.01) / 8); // about 1 % of container

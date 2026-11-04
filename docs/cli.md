@@ -120,9 +120,9 @@ media weights [dir] [--media-quality high|medium|low] [--all] [--json]
                                                     What the package weighs at each media quality, media by media,
                                                     heaviest first: kind, file, duration and size, what high, medium
                                                     and low ship (made or estimated), where the course uses it. A
-                                                    media heavier than it needs to be for what its file shows (not
-                                                    in its web format, an animated image, a still image or a video
-                                                    far denser than its size needs) comes first, with why and what
+                                                    media heavier than it needs to be for what its file shows (an
+                                                    animated image; without ffmpeg, a media that ships as it is
+                                                    rather than as its web copy) comes first, with why and what
                                                     lightens it. Nothing is encoded or written. At the course's
                                                     quality unless --media-quality; ten unless --all
 media status [dir] [--wait] [--json]                Media jobs (queued, running, done, failed) and media to optimise

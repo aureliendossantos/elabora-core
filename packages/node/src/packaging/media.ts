@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Course } from '@elabora/format';
 import type { Project } from '@elabora/core/project/model';
-import { audioNeedsRendition, estimateBytes, extensionOf, replaceExtension } from '@elabora/core/media/conformance';
+import { estimateBytes, extensionOf, needsHighRendition, replaceExtension } from '@elabora/core/media/conformance';
 import type { MediaInfo } from '@elabora/core/media/conformance';
 import { PRESET_NAMES } from '@elabora/core/media/presets';
 import type { PresetName } from '@elabora/core/media/presets';
@@ -11,8 +11,9 @@ import { findMediaTools } from '../media/tools.ts';
 import type { MediaTools } from '../media/tools.ts';
 import type { MediaJob } from '../media/jobs.ts';
 
-// The media of a package (docs/architecture/media.md): the masters at the high quality, and
-// below it renditions encoded from them once and cached. Media are files on disk that the build
+// The media of a package (docs/architecture/media.md): the masters at the high quality (renditions
+// of those an import would not have left as they are), and below it renditions encoded from them
+// once and cached. Media are files on disk that the build
 // streams into the ZIP or clones into a folder; they are never read whole.
 
 export interface PackagedMedia {
@@ -56,7 +57,7 @@ export async function packageMedia(project: Project, names: Iterable<string>, qu
     if (file.kind !== 'binary' || !file.media) continue; // not media: shipped as it is
     const master = path.join(project.root, rel);
     let source = master;
-    if (quality !== 'high' || audioNeedsRendition(file.media)) {
+    if (quality !== 'high' || needsHighRendition(file.media)) {
       try {
         tools ??= await findMediaTools().catch(() => null);
         const result = await ensureRendition(project.root, rel, quality, { tools, onProgress: (job) => options.onProgress?.({ asset: rel, preset: quality, job }) });
@@ -100,7 +101,7 @@ export async function packageSizes(project: Project, media: readonly PackagedMed
     for (const m of media) {
       const master = path.join(project.root, `assets/${m.name}`);
       if (preset === quality) bytes += sizeOf(m.file);
-      else if (preset === 'high') bytes += sizeOf(fs.existsSync(master) ? master : null);
+      else if (preset === 'high' && (!m.info || !needsHighRendition(m.info))) bytes += sizeOf(fs.existsSync(master) ? master : null);
       else if (m.info) {
         const cached = await renditionPath(project.root, `assets/${m.name}`, preset).catch(() => null);
         if (cached && fs.existsSync(cached)) bytes += sizeOf(cached);
