@@ -36,6 +36,11 @@ export async function imageToVideo(dir: string, args: ImageToVideoRequest, optio
   if (typeof args?.block !== 'string' || !args.block) throw new CommandError('block: the image block to make a video.');
   const { tools: given, signal, onProgress, ...edit } = options;
   const source = animatedImageSource(commandContext(snapshotFor(root, edit, []), { root }).project(), args.block);
+  // A file a media job is still turning into its web format (a GIF dropped into assets/) moves under
+  // the conversion: once it is done.
+  if (readJobs(root).some((job) => job.type !== 'rendition' && !isFinished(job.status) && (job.input === source.asset || job.replaces === source.asset))) {
+    throw new CommandError(`${source.asset} is still being converted to its web format: make it a video once that is done.`);
+  }
   const tools = given ?? await findMediaTools();
   if (!tools.h264.length) throw new CommandError('This ffmpeg has no H.264 encoder (libx264, h264_videotoolbox, h264_mf or libopenh264): it cannot make a video.');
   const info = await probeProjectFile(root, source.asset, { tools });

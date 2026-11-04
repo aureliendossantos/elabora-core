@@ -18,7 +18,8 @@ const tools = await findMediaTools().catch(() => null);
 const NO_FFMPEG = 'ffmpeg and ffprobe not found';
 let fixtures = '';
 
-// Animated images of odd sizes: a GIF (its palette made from the frames), an APNG, a still PNG.
+// Animated images of odd sizes: a GIF (its palette made from the frames), an APNG, a still PNG; a
+// heavy GIF.
 before(async () => {
   if (!tools) return;
   fixtures = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-to-video-fixtures-'));
@@ -26,7 +27,9 @@ before(async () => {
   await Promise.all([
     ffmpeg('-f', 'lavfi', '-i', 'testsrc2=size=301x201:rate=12:duration=3', '-vf', 'split[a][b];[a]palettegen[p];[b][p]paletteuse', path.join(fixtures, 'spinner.gif')),
     ffmpeg('-f', 'lavfi', '-i', 'testsrc2=size=160x91:rate=10:duration=1', '-c:v', 'apng', '-plays', '0', '-f', 'apng', path.join(fixtures, 'pulse.png')),
-    ffmpeg('-f', 'lavfi', '-i', 'testsrc2=size=160x90', '-frames:v', '1', path.join(fixtures, 'still.png'))
+    ffmpeg('-f', 'lavfi', '-i', 'testsrc2=size=160x90', '-frames:v', '1', path.join(fixtures, 'still.png')),
+    // Noise in every frame: above the 2 MB under which no media is noticed.
+    ffmpeg('-f', 'lavfi', '-i', 'testsrc2=size=480x270:rate=10:duration=3,noise=alls=90:allf=t', path.join(fixtures, 'noise.gif'))
   ]);
 });
 after(() => { if (fixtures) fs.rmSync(fixtures, { recursive: true, force: true }); });
@@ -112,14 +115,16 @@ test('an animated PNG becomes a video too; a file another block still shows stay
   }
 });
 
-test('the engine runs image_to_video as a change of the app, one undo', async (t) => {
+test('the engine runs image_to_video as a change of the app, one undo; undone, the image is noticed again', async (t) => {
   if (!tools?.h264.length) return t.skip(NO_FFMPEG);
   const dir = copyExample();
-  place(dir, 'spinner.gif', 'assets/images/spinner.gif');
+  place(dir, 'noise.gif', 'assets/images/spinner.gif');
   addBlocks(dir, { id: 'spinner', type: 'image', props: { asset: 'images/spinner.gif', alt: 'The router restarts.' } } as Block);
   const session = await openProject(dir, { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 });
   try {
+    const animated = async () => (await session.packageWeights()).media.find((media) => media.path === 'assets/images/spinner.gif')?.notice?.reason === 'animated';
     await session.flush();
+    assert.equal(await animated(), true, 'noticed before');
     const result = await session.run('image_to_video', { block: 'spinner' }, { kind: 'human' });
     assert.deepEqual([...result.files].sort(), ['assets/images/spinner-poster.' + (tools.webp ? 'webp' : 'jpg'), 'assets/images/spinner.gif', 'assets/video/spinner.mp4', 'screens/accueil.json']);
     assert.equal(session.readFile('assets/video/spinner.mp4').kind, 'binary');
@@ -129,6 +134,9 @@ test('the engine runs image_to_video as a change of the app, one undo', async (t
     await session.undo();
     assert.equal(blockOf(dir, 'spinner').type, 'image');
     assert.equal(fs.existsSync(path.join(dir, 'assets/images/spinner.gif')), true);
+    // Back as it was: its probe's verdict with it, so that its weight's notice comes back.
+    await session.flush();
+    assert.equal(await animated(), true, 'its notice back');
   } finally {
     await session.close();
     fs.rmSync(dir, { recursive: true, force: true });
