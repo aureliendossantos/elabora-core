@@ -309,10 +309,17 @@ export class MediaQueue extends EventEmitter {
       this.finish(job, 'done', null);
     } catch (error) {
       if (signal.aborted) this.finish(job, 'cancelled', null);
+      else if (this.sourceGone(job)) this.finish(job, 'cancelled', `${job.input} left the project: nothing written`);
       else this.finish(job, 'failed', (error as Error).message);
     } finally {
       clearInterval(watcher);
     }
+  }
+
+  // An optimize job works on a file of the project: one its author deleted before the job ran, or
+  // while it ran, cancels it, and nothing is written (the result would come back as an orphan).
+  private sourceGone(job: MediaJob): boolean {
+    return job.type === 'optimize' && !fs.existsSync(path.join(this.projectDir, job.input));
   }
 
   private async execute(job: MediaJob, signal: AbortSignal, onProgress: (fraction: number) => void): Promise<void> {
@@ -354,6 +361,7 @@ export class MediaQueue extends EventEmitter {
     const outputInfo: MediaInfo = await probeMedia(temporary, { tools: tools ?? undefined });
     job.outputHash = await hashFile(temporary);
     if (signal.aborted) throw abortError(signal);
+    if (this.sourceGone(job)) throw new Error(`${job.input} left the project`);
     await moveIntoPlace(temporary, output);
     fs.rmSync(temporaryDir, { recursive: true, force: true });
     if (job.type !== 'rendition') rememberProbe(projectDir, job.output, outputInfo);
