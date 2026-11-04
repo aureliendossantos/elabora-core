@@ -41,7 +41,7 @@ When the author asks for a glossary, or a module has words of the trade its audi
 4. `translate: false` on an entry keeps its term and variants as they are in every language (a product name, an acronym the trade keeps in English); its definition is still translated.
 
 ## Accessibility (F)
-- Alt text describes the information, or `decorative: true`; captions (when it has sound: a WebVTT or SubRip file given to the block with `elabora_set_captions`, `elabora media captions . <block> <file>`) and a transcript for every video the learner plays, a short silent animation as a loop (`loop: true`) with alt, transcript for audio; `decorative: true` only for a video or a sound that carries no information; text alternative for every free object.
+- Alt text describes the information, or `decorative: true`; captions (when it has sound: a WebVTT or SubRip file given to the block with `elabora_set_captions`, `elabora media captions . <block> <file>`) and a transcript for every video the learner plays, a short silent animation as a loop (`loop: true`) with alt (an animated image becomes one: `elabora_image_to_video`), transcript for audio; `decorative: true` only for a video or a sound that carries no information; text alternative for every free object.
 - WCAG 2.2 AA is checked by axe-core in `elabora test`; RGAA criteria that cannot be automated need a human audit.
 
 ## What stays human

@@ -6,6 +6,7 @@ import { mediaToOptimize } from '@elabora/node/media/optimize';
 import { MediaQueue, readJobs } from '@elabora/node/media/jobs';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { packageWeights } from '@elabora/node/packaging/weights';
+import { imageToVideo } from '@elabora/node/media/to-video';
 import { noticedFirst } from '@elabora/core/media/weights';
 import { errorMessage } from '../commands/command.ts';
 import { defineTool, editResult, errorResult, objectSchema, SLUG, textResult } from './tool.ts';
@@ -87,5 +88,17 @@ export const setCaptions = defineTool({
     const text = args.file !== undefined ? fs.readFileSync(path.resolve(root, args.file), 'utf8') : args.text;
     if (text === undefined) return errorResult({ error: 'Give the captions: file (a .vtt or .srt) or text.' });
     return editResult(edit.setCaptions(root, { block: args.block, text, ...(args.name ? { name: args.name } : {}) }, { author }));
+  }
+});
+
+export const imageToVideoTool = defineTool({
+  name: 'elabora_image_to_video',
+  description: 'Make an image block whose file is animated (GIF, animated WebP or PNG; elabora_media_weights notices it as animated) a video block that loops like it, several times lighter: loop: true, muted, starting by itself, still on its first frame for learners who prefer less motion, a pause button. Its file becomes an MP4 (H.264, yuv420p, no sound, its index first) under assets/video/, with its first frame as poster under assets/images/; what was transparent shows white. The block keeps its id, place, width (a wide image is a wide block), alt, decorative and generated; its caption becomes the video\'s title (a loop shows none), its zoom goes. Only a centered or wide image (not a band, nor beside or over a text). The image\'s file is removed when nothing else names it. One change: undo puts the image back. The lighter media qualities make their renditions of the MP4 as of any video.',
+  inputSchema: objectSchema({
+    block: { ...SLUG, description: 'The image block.' }
+  }, ['block']),
+  async handler(args, { root, author }) {
+    const result = await imageToVideo(root, { block: args.block }, { author });
+    return editResult(result);
   }
 });

@@ -1,6 +1,9 @@
 import { rewriteAssetReferences } from '../media/references.ts';
-import type { Screen } from '../project/model.ts';
+import type { Block, Project, Screen } from '../project/model.ts';
+import type { SourceFile } from '../project/files.ts';
+import { slugify } from '../util/slug.ts';
 import { CommandError, Draft, findBlock, listAt, type CommandContext, type CommandOutput } from './context.ts';
+import { moveUnits } from './convert.ts';
 
 // What follows the optimisation of media files whose extension changed (intro.mov → intro.mp4):
 // every reference to an old file names the new one (block props, course.json paths, stylesheet
@@ -85,3 +88,103 @@ export function toWebVtt(text: string): string {
 }
 
 const portableName = (name: string): string => name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\.(vtt|srt)$/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+
+// ── An animated image made a video (`elabora media to-video`) ──────────────
+
+// An image block that can become a looping video: its file, and the name its video takes. A video
+// takes the place of a centered or a wide image; an image in a band, beside a text or under one
+// stays an image (a video is not cropped, nor written over).
+export interface AnimatedImageSource {
+  screen: string;
+  asset: string; // project path: assets/images/spinner.gif
+  base: string;  // portable name of the files to write: spinner
+}
+
+const VIDEO_PLACES: ReadonlySet<string> = new Set(['centered', 'wide']);
+
+export function animatedImageSource(project: Project, blockId: string): AnimatedImageSource {
+  const place = findBlock(project, blockId);
+  const block = place.block;
+  if (block.type !== 'image') throw new CommandError(`Block "${blockId}" is a ${block.type} block: only an image block becomes a video.`);
+  const props = (block.props ?? {}) as Record<string, unknown>;
+  const presentation = typeof props.presentation === 'string' ? props.presentation : 'centered';
+  if (!VIDEO_PLACES.has(presentation)) throw new CommandError(`Image "${blockId}" is shown ${presentation === 'band' ? 'as a band' : presentation === 'beside' ? 'beside a text' : 'under a text'}: a video takes the place of a centered or a wide image only. Show it centered or wide, then make it a video.`);
+  if (typeof props.asset !== 'string' || !props.asset) throw new CommandError(`Image "${blockId}" has no file.`);
+  const name = props.asset.slice(props.asset.lastIndexOf('/') + 1).replace(/\.[^.]+$/, '');
+  return { screen: place.screenId, asset: `assets/${props.asset}`, base: slugify(name, 'animation', 60) };
+}
+
+export interface ImageToVideoArgs {
+  block: string;
+  video: SourceFile;   // the MP4 made from the image's file
+  poster?: SourceFile; // its first frame
+  posterExtension?: '.webp' | '.jpg';
+}
+
+export interface ImageToVideoResult {
+  block: string;
+  screen: string;
+  video: string;          // project paths of the files written
+  poster: string | null;
+  removed: string | null; // the image's file, gone when nothing else names it
+  title: string;
+  lost: string[];         // what the image had that a loop does not show, in a few words
+  translations: number;   // translation units moved (the caption's, which became the title)
+}
+
+// The image block becomes a video block that loops like it, in its place: its id, width, timing,
+// step and events stay; alt, decorative and generated carry over; a wide image is a wide block. Its
+// caption becomes the video's title (a loop shows none: the editor names it), else alt, else the
+// file's name. The image's file goes once nothing else names it. One change, one undo.
+export function imageToVideo(context: CommandContext, args: ImageToVideoArgs): CommandOutput<ImageToVideoResult> {
+  const project = context.project();
+  const source = animatedImageSource(project, args.block);
+  const place = findBlock(project, args.block);
+  const draft = new Draft(context.files);
+  const taken = new Set([...context.files.keys()].map((path) => path.toLowerCase()));
+  const free = (stem: string, extension: string) => {
+    for (let n = 1; ; n++) {
+      const candidate = `${stem}${n === 1 ? '' : `-${n}`}${extension}`;
+      if (!taken.has(candidate.toLowerCase())) { taken.add(candidate.toLowerCase()); return candidate; }
+    }
+  };
+  const video = free(`assets/video/${source.base}`, '.mp4');
+  const poster = args.poster ? free(`assets/images/${source.base}-poster`, args.posterExtension ?? '.webp') : null;
+  draft.writeFile(video, args.video);
+  if (poster && args.poster) draft.writeFile(poster, args.poster);
+
+  const screen = draft.json<Screen>(place.file);
+  const list = listAt(screen, place.list);
+  const image = list[place.index] as Block;
+  const props = (image.props ?? {}) as Record<string, unknown>;
+  const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
+  const caption = text(props.caption);
+  const alt = text(props.alt);
+  const title = (caption || alt || source.base.replace(/[-_]+/g, ' ')).slice(0, 200);
+  const lost: string[] = [];
+  if (caption) lost.push('its caption, shown under it: now the title of the video, which a loop does not show');
+  if (props.zoom) lost.push('its zoom: a video does not open in the lightbox');
+  const wide = props.presentation === 'wide' && (image.width === undefined || image.width === 'full');
+  list[place.index] = {
+    ...image,
+    type: 'video',
+    ...(wide ? { width: 'wide' } : {}),
+    props: {
+      asset: video.slice('assets/'.length),
+      title,
+      loop: true,
+      ...(alt ? { alt } : {}),
+      ...(props.decorative ? { decorative: true } : {}),
+      ...(poster ? { poster: poster.slice('assets/'.length) } : {}),
+      ...(props.generated ? { generated: true } : {})
+    }
+  } as Block;
+  draft.writeJson(place.file, screen);
+  const translations = moveUnits(context, draft, args.block, caption ? [['caption', 'title']] : []);
+
+  // The image's file goes when no other block, page or stylesheet names it any more.
+  const named = [...rewriteAssetReferences(draft.files(), source.asset, `${source.asset}\u0000`).keys()].some((rel) => !CONTRACTS.test(rel) && !rel.startsWith('plan-versions/'));
+  const removed = !named && draft.exists(source.asset) ? source.asset : null;
+  if (removed) draft.remove(removed);
+  return { files: draft.files(), result: { block: args.block, screen: source.screen, video, poster, removed, title, lost, translations } };
+}

@@ -3,7 +3,8 @@ import { spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
 import { extensionOf } from '@elabora/core/media/conformance';
 import type { MediaInfo, MediaPlan } from '@elabora/core/media/conformance';
-import { PRESETS } from '@elabora/core/media/presets';
+import { PRESETS, fitWithin } from '@elabora/core/media/presets';
+import { videoCeiling } from '@elabora/core/media/weights';
 import type { PresetName, VideoPreset } from '@elabora/core/media/presets';
 import type { H264Encoder, MediaTools } from './tools.ts';
 
@@ -151,9 +152,41 @@ function imageArgs({ input, output, info, plan, preset }: EncodeRequest, tools: 
   return args;
 }
 
+// An animated image as a video that loops like it (`elabora media to-video`): MP4 H.264 High in
+// yuv420p, even dimensions, its index first (+faststart), no sound, no metadata. What was
+// transparent shows white, as on a page: yuv420p has no alpha.
+const FLATTEN = 'format=rgba,split[fg][bg];[bg]drawbox=c=white:t=fill[base];[base][fg]overlay=format=auto';
+
+export function loopVideoAttempts(input: string, output: string, info: MediaInfo, tools: MediaTools): EncodeAttempt[] {
+  const p = PRESETS.high.video;
+  // Hardware encoders take a bitrate: what Elabora spends at most on a video of that size, never the
+  // preset's cap (meant for 1080p), or a small animation would weigh more as a video than as itself.
+  const size = fitWithin(info.width ?? p.maxLongSide, info.height ?? p.maxLongSide, p.maxLongSide);
+  const preset = { ...p, maxBitrate: Math.min(p.maxBitrate, Math.max(200_000, Math.round(videoCeiling(size.width, size.height, info.fps ?? 15)))) };
+  return tools.h264.map((encoder) => ({
+    args: [...INPUT(input), '-map', '0:v:0', '-an', '-sn', '-dn', '-vf', `${FLATTEN},${fitFilter(p.maxLongSide, ':force_divisible_by=2')},setsar=1,format=yuv420p`,
+      ...videoEncoderArgs(encoder, preset), ...NO_METADATA, '-movflags', '+faststart', ...PROGRESS, '-f', 'mp4', output],
+    encoder,
+    warnings: []
+  }));
+}
+
+// The first frame of an animated image, the size of its video (loopVideoAttempts): the poster a
+// browser shows before the video plays, or instead of it (less motion, an iPhone in Low Power Mode).
+export function posterArgs(input: string, output: string, tools: MediaTools): string[] {
+  const p = PRESETS.high.image;
+  const frame = [...INPUT(input), '-map', '0:v:0', '-frames:v', '1', '-vf', `${FLATTEN},${fitFilter(PRESETS.high.video.maxLongSide, ':force_divisible_by=2')},setsar=1`, ...NO_METADATA, '-flags:v', '+bitexact'];
+  return tools.webp
+    ? [...frame, '-c:v', 'libwebp', '-quality', String(p.quality), '-compression_level', '6', '-f', 'webp', output]
+    : [...frame, '-c:v', 'mjpeg', '-q:v', jpegScale(p.quality), '-f', 'image2', '-update', '1', output];
+}
+
 // Runs the attempts in order until one succeeds. The output is removed after a failure.
 export async function encodeMedia(request: EncodeRequest, tools: MediaTools, options: RunOptions = {}): Promise<EncodeResult> {
-  const attempts = encodeAttempts(request, tools);
+  return runAttempts(encodeAttempts(request, tools), request, tools, options);
+}
+
+export async function runAttempts(attempts: readonly EncodeAttempt[], request: Pick<EncodeRequest, 'output' | 'info'>, tools: MediaTools, options: RunOptions = {}): Promise<EncodeResult> {
   if (!attempts.length) {
     throw new MediaEncodeError(request.info.kind === 'video'
       ? 'This ffmpeg has no H.264 encoder (libx264, h264_videotoolbox, h264_mf or libopenh264).'

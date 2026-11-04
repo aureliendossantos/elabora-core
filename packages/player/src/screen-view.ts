@@ -882,33 +882,57 @@ export function createScreenView(options: ScreenViewOptions) {
       props.decorative ? null : transcript(props.transcriptHtml));
   }
 
-  // A loop, like an animated image: muted, starting by itself unless the learner prefers reduced
-  // motion, with a button that pauses it (WCAG 2.2.2). Its alt names it as an image; a decorative
-  // one is hidden from assistive technologies, its button is not.
+  // A loop, like an animated image: muted, in a loop, inline, without controls; it starts by itself
+  // unless the learner prefers reduced motion (then it stays on its first frame, its poster), and
+  // follows that preference when it changes. Its button pauses it (WCAG 2.2.2: a loop moves for more
+  // than 5 s however short its file); a pointer that hovers sees it there, a keyboard on focus, a
+  // touch screen always, and anyone once the loop stands still. Its alt names it as an image; a
+  // decorative one is hidden from assistive technologies, its button is not.
   function loopFigure(block: VideoBlock): HTMLElement {
     const props = block.props;
-    const still = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const motion = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
+    const still = () => !!motion?.matches;
     const video = element('video', {
-      class: 't-loop', muted: true, loop: true, playsinline: true, autoplay: !still, preload: 'auto', poster: props.poster,
+      class: 't-loop', muted: true, loop: true, playsinline: true, autoplay: !still(), preload: 'auto', poster: props.poster,
+      disablepictureinpicture: true, disableremoteplayback: true,
       'aria-hidden': props.decorative ? 'true' : undefined, role: props.decorative ? undefined : 'img', 'aria-label': props.decorative ? undefined : props.alt || undefined
-    }, element('source', { src: props.src }));
+    });
+    // Muted before its source is known: Safari on iOS plays by itself only a video muted from the
+    // start, and a muted attribute set by script does not mute an element already made.
+    video.defaultMuted = true;
     video.muted = true;
+    video.append(element('source', { src: props.src }));
     const toggle = element('button', { type: 'button', class: 't-loop-toggle' });
-    const sync = () => {
-      toggle.dataset.state = video.paused ? 'paused' : 'playing';
-      toggle.setAttribute('aria-label', video.paused ? labels.playAnimation : labels.pauseAnimation);
+    // The learner paused it: neither its data arriving nor a change of preference starts it again.
+    let held = false;
+    const show = (state: 'playing' | 'paused') => {
+      toggle.dataset.state = state;
+      toggle.setAttribute('aria-label', state === 'paused' ? labels.playAnimation : labels.pauseAnimation);
     };
+    const sync = () => show(video.paused ? 'paused' : 'playing');
+    const play = () => { void video.play().then(sync, sync); };
     // What the button says, not video.paused: a loop that is still loading (or out of the window,
     // where Chrome holds it) is paused until it starts by itself; « pause » then keeps it still.
     toggle.addEventListener('click', () => {
-      if (toggle.dataset.state === 'paused') void video.play().catch(sync);
-      else video.pause();
-      sync();
+      held = toggle.dataset.state !== 'paused';
+      if (held) video.pause(); else play();
+      show(held ? 'paused' : 'playing');
     });
     video.addEventListener('play', sync);
     video.addEventListener('pause', sync);
-    toggle.dataset.state = still ? 'paused' : 'playing';
-    toggle.setAttribute('aria-label', still ? labels.playAnimation : labels.pauseAnimation);
+    // Asked to play when it comes into the window, as browsers start such a video by themselves: one
+    // that declines (an iPhone in Low Power Mode) says so, and the button then offers to play it.
+    if (typeof IntersectionObserver === 'function') {
+      const seen = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting) && !still() && !held && video.paused) play(); });
+      seen.observe(video);
+      cleanup(block.id, () => seen.disconnect());
+    }
+    const onMotion = () => {
+      if (still()) { video.pause(); video.currentTime = 0; } else if (!held) play();
+    };
+    motion?.addEventListener('change', onMotion);
+    cleanup(block.id, () => motion?.removeEventListener('change', onMotion));
+    show(still() ? 'paused' : 'playing');
     return element('figure', { class: 't-figure t-figure--loop' },
       element('div', { class: 't-loop-frame' }, video, toggle),
       props.generated ? element('p', { class: 't-genmark', text: labels.generated }) : null);
