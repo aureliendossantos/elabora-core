@@ -116,6 +116,7 @@ export function animatedImageSource(project: Project, blockId: string): Animated
 
 export interface ImageToVideoArgs {
   block: string;
+  reserved?: readonly string[]; // paths media jobs will write: never taken
   video: SourceFile;   // the MP4 made from the image's file
   poster?: SourceFile; // its first frame
   posterExtension?: '.webp' | '.jpg';
@@ -141,7 +142,7 @@ export function imageToVideo(context: CommandContext, args: ImageToVideoArgs): C
   const source = animatedImageSource(project, args.block);
   const place = findBlock(project, args.block);
   const draft = new Draft(context.files);
-  const taken = new Set([...context.files.keys()].map((path) => path.toLowerCase()));
+  const taken = new Set([...context.files.keys(), ...(args.reserved ?? [])].map((path) => path.toLowerCase()));
   const free = (stem: string, extension: string) => {
     for (let n = 1; ; n++) {
       const candidate = `${stem}${n === 1 ? '' : `-${n}`}${extension}`;

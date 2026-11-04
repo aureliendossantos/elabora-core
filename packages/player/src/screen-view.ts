@@ -905,6 +905,8 @@ export function createScreenView(options: ScreenViewOptions) {
     const toggle = element('button', { type: 'button', class: 't-loop-toggle' });
     // The learner paused it: neither its data arriving nor a change of preference starts it again.
     let held = false;
+    // In the window (as far as the observer below knows; without one, always).
+    let seen = typeof IntersectionObserver !== 'function';
     const show = (state: 'playing' | 'paused') => {
       toggle.dataset.state = state;
       toggle.setAttribute('aria-label', state === 'paused' ? labels.playAnimation : labels.pauseAnimation);
@@ -923,12 +925,15 @@ export function createScreenView(options: ScreenViewOptions) {
     // Asked to play when it comes into the window, as browsers start such a video by themselves: one
     // that declines (an iPhone in Low Power Mode) says so, and the button then offers to play it.
     if (typeof IntersectionObserver === 'function') {
-      const seen = new IntersectionObserver((entries) => { if (entries.some((entry) => entry.isIntersecting) && !still() && !held && video.paused) play(); });
-      seen.observe(video);
-      cleanup(block.id, () => seen.disconnect());
+      const observer = new IntersectionObserver((entries) => {
+        seen = entries.some((entry) => entry.isIntersecting);
+        if (seen && !still() && !held && video.paused) play();
+      });
+      observer.observe(video);
+      cleanup(block.id, () => observer.disconnect());
     }
     const onMotion = () => {
-      if (still()) { video.pause(); video.currentTime = 0; } else if (!held) play();
+      if (still()) { video.pause(); video.currentTime = 0; } else if (!held && seen) play();
     };
     motion?.addEventListener('change', onMotion);
     cleanup(block.id, () => motion?.removeEventListener('change', onMotion));

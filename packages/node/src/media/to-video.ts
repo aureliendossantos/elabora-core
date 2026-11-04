@@ -11,6 +11,7 @@ import { loopVideoAttempts, posterArgs, runAttempts, runFfmpeg } from './encode.
 import type { RunOptions } from './encode.ts';
 import { probeMedia, probeProjectFile } from './probe.ts';
 import { findMediaTools } from './tools.ts';
+import { isFinished, readJobs } from './jobs.ts';
 import type { MediaTools } from './tools.ts';
 
 // « Transformer en vidéo » (`elabora media to-video`, MCP elabora_image_to_video, the engine's
@@ -36,6 +37,7 @@ export async function imageToVideo(dir: string, args: ImageToVideoRequest, optio
   const { tools: given, signal, onProgress, ...edit } = options;
   const source = animatedImageSource(commandContext(snapshotFor(root, edit, []), { root }).project(), args.block);
   const tools = given ?? await findMediaTools();
+  if (!tools.h264.length) throw new CommandError('This ffmpeg has no H.264 encoder (libx264, h264_videotoolbox, h264_mf or libopenh264): it cannot make a video.');
   const info = await probeProjectFile(root, source.asset, { tools });
   if (info.kind !== 'image' || !info.animated) throw new CommandError(`${source.asset} is not animated: a still image stays an image.`);
   const work = path.join(projectDataDir(root), 'tmp');
@@ -57,6 +59,8 @@ export async function imageToVideo(dir: string, args: ImageToVideoRequest, optio
       sources,
       run: (context) => imageToVideoCommand(context, {
         block: args.block,
+        // Names a media job will write (an import still running) are not free.
+        reserved: readJobs(root).filter((job) => job.type !== 'rendition' && !isFinished(job.status)).map((job) => job.output),
         video: binaryFile(videoInfo.size, { hash: videoHash, media: fileMedia(videoInfo) }),
         poster: binaryFile(posterInfo.size, { hash: posterHash, media: fileMedia(posterInfo) }),
         posterExtension: tools.webp ? '.webp' : '.jpg'

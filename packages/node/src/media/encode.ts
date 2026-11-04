@@ -159,10 +159,11 @@ const FLATTEN = 'format=rgba,split[fg][bg];[bg]drawbox=c=white:t=fill[base];[bas
 
 export function loopVideoAttempts(input: string, output: string, info: MediaInfo, tools: MediaTools): EncodeAttempt[] {
   const p = PRESETS.high.video;
-  // Hardware encoders take a bitrate: what Elabora spends at most on a video of that size, never the
-  // preset's cap (meant for 1080p), or a small animation would weigh more as a video than as itself.
+  // Hardware encoders take a bitrate: what Elabora spends at most on a video of that size (at 30 fps:
+  // an image's probe has no frame rate), never the preset's cap (meant for 1080p), or a small
+  // animation would weigh more as a video than as itself.
   const size = fitWithin(info.width ?? p.maxLongSide, info.height ?? p.maxLongSide, p.maxLongSide);
-  const preset = { ...p, maxBitrate: Math.min(p.maxBitrate, Math.max(200_000, Math.round(videoCeiling(size.width, size.height, info.fps ?? 15)))) };
+  const preset = { ...p, maxBitrate: Math.min(p.maxBitrate, Math.max(200_000, Math.round(videoCeiling(size.width, size.height, info.fps ?? 30)))) };
   return tools.h264.map((encoder) => ({
     args: [...INPUT(input), '-map', '0:v:0', '-an', '-sn', '-dn', '-vf', `${FLATTEN},${fitFilter(p.maxLongSide, ':force_divisible_by=2')},setsar=1,format=yuv420p`,
       ...videoEncoderArgs(encoder, preset), ...NO_METADATA, '-movflags', '+faststart', ...PROGRESS, '-f', 'mp4', output],
