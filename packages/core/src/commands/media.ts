@@ -116,6 +116,7 @@ export function animatedImageSource(project: Project, blockId: string): Animated
 
 export interface ImageToVideoArgs {
   block: string;
+  blocks?: readonly string[];   // other image blocks showing the same file, made videos with it
   reserved?: readonly string[]; // paths media jobs will write: never taken
   video: SourceFile;   // the MP4 made from the image's file
   poster?: SourceFile; // its first frame
@@ -124,6 +125,7 @@ export interface ImageToVideoArgs {
 
 export interface ImageToVideoResult {
   block: string;
+  blocks: string[];       // every block made a video (block first)
   screen: string;
   video: string;          // project paths of the files written
   poster: string | null;
@@ -140,7 +142,6 @@ export interface ImageToVideoResult {
 export function imageToVideo(context: CommandContext, args: ImageToVideoArgs): CommandOutput<ImageToVideoResult> {
   const project = context.project();
   const source = animatedImageSource(project, args.block);
-  const place = findBlock(project, args.block);
   const draft = new Draft(context.files);
   const taken = new Set([...context.files.keys(), ...(args.reserved ?? [])].map((path) => path.toLowerCase()));
   const free = (stem: string, extension: string) => {
@@ -154,38 +155,50 @@ export function imageToVideo(context: CommandContext, args: ImageToVideoArgs): C
   draft.writeFile(video, args.video);
   if (poster && args.poster) draft.writeFile(poster, args.poster);
 
-  const screen = draft.json<Screen>(place.file);
-  const list = listAt(screen, place.list);
-  const image = list[place.index] as Block;
-  const props = (image.props ?? {}) as Record<string, unknown>;
-  const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
-  const caption = text(props.caption);
-  const alt = text(props.alt);
-  const title = (caption || alt || source.base.replace(/[-_]+/g, ' ')).slice(0, 200);
+  // The other image blocks asked that show the same file become videos too, in the same change.
+  const ids = [...new Set([args.block, ...(args.blocks ?? [])])];
+  for (const id of ids.slice(1)) {
+    if (animatedImageSource(project, id).asset !== source.asset) throw new CommandError(`Block "${id}" does not show ${source.asset}: make it a video on its own.`);
+  }
   const lost: string[] = [];
-  if (caption) lost.push('its caption, shown under it: now the title of the video, which a loop does not show');
-  if (props.zoom) lost.push('its zoom: a video does not open in the lightbox');
-  const wide = props.presentation === 'wide' && (image.width === undefined || image.width === 'full');
-  list[place.index] = {
-    ...image,
-    type: 'video',
-    ...(wide ? { width: 'wide' } : {}),
-    props: {
-      asset: video.slice('assets/'.length),
-      title,
-      loop: true,
-      ...(alt ? { alt } : {}),
-      ...(props.decorative ? { decorative: true } : {}),
-      ...(poster ? { poster: poster.slice('assets/'.length) } : {}),
-      ...(props.generated ? { generated: true } : {})
-    }
-  } as Block;
-  draft.writeJson(place.file, screen);
-  const translations = moveUnits(context, draft, args.block, caption ? [['caption', 'title']] : []);
+  let title = '';
+  let translations = 0;
+  for (const id of ids) {
+    const place = findBlock(project, id);
+    const screen = draft.json<Screen>(place.file);
+    const list = listAt(screen, place.list);
+    const image = list[place.index] as Block;
+    const props = (image.props ?? {}) as Record<string, unknown>;
+    const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
+    const caption = text(props.caption);
+    const alt = text(props.alt);
+    const named = (caption || alt || source.base.replace(/[-_]+/g, ' ')).slice(0, 200);
+    if (id === args.block) title = named;
+    const of = ids.length > 1 ? `${id}: ` : '';
+    if (caption) lost.push(`${of}its caption, shown under it: now the title of the video, which a loop does not show`);
+    if (props.zoom) lost.push(`${of}its zoom: a video does not open in the lightbox`);
+    const wide = props.presentation === 'wide' && (image.width === undefined || image.width === 'full');
+    list[place.index] = {
+      ...image,
+      type: 'video',
+      ...(wide ? { width: 'wide' } : {}),
+      props: {
+        asset: video.slice('assets/'.length),
+        title: named,
+        loop: true,
+        ...(alt ? { alt } : {}),
+        ...(props.decorative ? { decorative: true } : {}),
+        ...(poster ? { poster: poster.slice('assets/'.length) } : {}),
+        ...(props.generated ? { generated: true } : {})
+      }
+    } as Block;
+    draft.writeJson(place.file, screen);
+    translations += moveUnits(context, draft, id, caption ? [['caption', 'title']] : []);
+  }
 
   // The image's file goes when no other block, page or stylesheet names it any more.
   const named = [...rewriteAssetReferences(draft.files(), source.asset, `${source.asset}\u0000`).keys()].some((rel) => !CONTRACTS.test(rel) && !rel.startsWith('plan-versions/'));
   const removed = !named && draft.exists(source.asset) ? source.asset : null;
   if (removed) draft.remove(removed);
-  return { files: draft.files(), result: { block: args.block, screen: source.screen, video, poster, removed, title, lost, translations } };
+  return { files: draft.files(), result: { block: args.block, blocks: ids, screen: source.screen, video, poster, removed, title, lost, translations } };
 }

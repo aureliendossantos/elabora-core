@@ -227,6 +227,9 @@ export class Session {
   // Media: the hash each media file was probed at, what could not be read, whether ffprobe is there,
   // and whether media jobs started or finished since the media status was last given.
   readonly #mediaChecked = new Map<string, string>();
+  // What each file's probe said, by path and hash: a file that comes back as it was (an undo restores
+  // a removed image) has it again without a probe, which the hash above would skip.
+  readonly #mediaVerdicts = new Map<string, FileMedia>();
   readonly #unreadable = new Map<string, string>();
   #toolsMissing = false;
   #jobsChanged = false;
@@ -247,7 +250,11 @@ export class Session {
     this.#sounds = new SessionSounds({ project, run: this.run.bind(this), assertOpen: () => this.#assertOpen(), emit: (event) => this.#emit(event) });
     this.#monitor = new SessionMonitor({ store: this.store, journalDir: this.#tail.dir, options: this.#options, closing: () => this.#closing !== null, refresh: () => this.#queue.run(() => this.#refresh()), reportError });
     this.#activity = new SessionActivity({ root: this.root, emit: (event) => this.#emit(event), reportError });
-    for (const [rel, file] of init.state.files) if (file.kind === 'binary' && file.media) this.#mediaChecked.set(rel, file.hash ?? '');
+    for (const [rel, file] of init.state.files) {
+      if (file.kind !== 'binary' || !file.media) continue;
+      this.#mediaChecked.set(rel, file.hash ?? '');
+      this.#mediaVerdicts.set(`${rel}\n${file.hash ?? ''}`, file.media);
+    }
     for (const { path: rel, message } of init.state.media?.unreadable ?? []) {
       this.#unreadable.set(rel, message);
       this.#mediaChecked.set(rel, (init.state.files.get(rel) as { hash?: string } | undefined)?.hash ?? '');
@@ -1360,6 +1367,14 @@ export class Session {
   // cache answers for files the CLI already probed); the media status follows (jobs under way,
   // unreadable files, ffprobe), and media that are not conformant masters are converted.
   async #refreshMedia(): Promise<void> {
+    // Not given to the conversion below: undoing a conversion must not convert it again.
+    const again: [string, SourceFile][] = [];
+    for (const [rel, file] of this.#state.files) {
+      if (file.kind !== 'binary' || file.media || this.#mediaChecked.get(rel) !== (file.hash ?? '')) continue;
+      const media = this.#mediaVerdicts.get(`${rel}\n${file.hash ?? ''}`);
+      if (media) again.push([rel, binaryFile(file.size, { ...(file.hash ? { hash: file.hash } : {}), media })]);
+    }
+    if (again.length) this.#state.update(again);
     const files = this.#state.files;
     const toProbe = [...files].filter(([rel, file]) => file.kind === 'binary' && !file.media && isMediaAsset(rel) && this.#mediaChecked.get(rel) !== (file.hash ?? '')).map(([rel]) => rel);
     let statusChanged = this.#jobsChanged;
@@ -1381,6 +1396,7 @@ export class Session {
         const media = probed.media.get(rel);
         if (this.#unreadable.delete(rel)) statusChanged = true;
         if (!media) continue;
+        this.#mediaVerdicts.set(`${rel}\n${file.hash ?? ''}`, media);
         updates.push([rel, binaryFile(file.size, { ...(file.hash ? { hash: file.hash } : {}), media })]);
         verdicts.push([rel, media]);
       }

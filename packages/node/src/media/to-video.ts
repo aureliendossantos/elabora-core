@@ -23,6 +23,7 @@ import type { MediaTools } from './tools.ts';
 
 export interface ImageToVideoRequest {
   block: string;
+  blocks?: string[]; // other image blocks showing the same file (the app's « Transformer en vidéo » of a media)
 }
 
 export interface ImageToVideoOptions extends EditOptions {
@@ -36,6 +37,11 @@ export async function imageToVideo(dir: string, args: ImageToVideoRequest, optio
   if (typeof args?.block !== 'string' || !args.block) throw new CommandError('block: the image block to make a video.');
   const { tools: given, signal, onProgress, ...edit } = options;
   const source = animatedImageSource(commandContext(snapshotFor(root, edit, []), { root }).project(), args.block);
+  // A file a media job is still turning into its web format (a GIF dropped into assets/) moves under
+  // the conversion: once it is done.
+  if (readJobs(root).some((job) => job.type !== 'rendition' && !isFinished(job.status) && (job.input === source.asset || job.replaces === source.asset))) {
+    throw new CommandError(`${source.asset} is still being converted to its web format: make it a video once that is done.`);
+  }
   const tools = given ?? await findMediaTools();
   if (!tools.h264.length) throw new CommandError('This ffmpeg has no H.264 encoder (libx264, h264_videotoolbox, h264_mf or libopenh264): it cannot make a video.');
   const info = await probeProjectFile(root, source.asset, { tools });
@@ -55,10 +61,11 @@ export async function imageToVideo(dir: string, args: ImageToVideoRequest, optio
     const sources = new Map<string, string>([[videoHash, video], [posterHash, poster]]);
     const result = runCommand(root, {
       name: 'image_to_video',
-      args: { block: args.block },
+      args: { block: args.block, ...(args.blocks?.length ? { blocks: args.blocks } : {}) },
       sources,
       run: (context) => imageToVideoCommand(context, {
         block: args.block,
+        ...(args.blocks?.length ? { blocks: args.blocks } : {}),
         // Names a media job will write (an import still running) are not free.
         reserved: readJobs(root).filter((job) => job.type !== 'rendition' && !isFinished(job.status)).map((job) => job.output),
         video: binaryFile(videoInfo.size, { hash: videoHash, media: fileMedia(videoInfo) }),
