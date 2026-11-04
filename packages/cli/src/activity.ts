@@ -47,7 +47,7 @@ export const COMMAND_ACTIVITY: Readonly<Record<string, ActivityFamily | null>> =
   'projects list': 'status', 'projects path': 'status', 'projects create': null, 'projects duplicate': null, 'projects rename': null, 'projects trash': null, export: null, import: null,
   history: 'status', undo: 'undo', mark: null,
   'sources list': 'sources', 'sources add': 'media', 'sources read': 'sources', 'sources refresh': 'sources', 'sources remove': 'media',
-  'media import': 'media', 'media optimize': 'media', 'media captions': 'media', 'media status': 'status', 'media cancel': null, 'media worker': null,
+  'media import': 'media', 'media optimize': 'media', 'media captions': 'media', 'media weights': 'status', 'media status': 'status', 'media cancel': null, 'media worker': null,
   timeline: 'screen', timing: 'write-screen', 'narration import': 'media', 'narration import-files': 'media', 'narration from-plan': 'write-screen', 'narration transcribe': 'listen',
   'narration add-from-audio': 'listen', 'narration retranscribe': 'listen', 'narration keep': 'write-screen', 'narration split': 'write-screen', 'narration align': 'listen',
   'voice list': 'voices', 'voice models': 'status', 'voice install': 'download', 'voice uninstall': 'download', 'voice set': 'voices', 'voice generate': 'record',
