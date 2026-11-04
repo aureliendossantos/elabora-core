@@ -17,7 +17,7 @@ export {
   type LibraryComponent, type AddLibraryComponentArgs
 } from './components.ts';
 export { schemaFor, schemaProblems } from './schemas.ts';
-export { replaceMediaReferences, setCaptions, toWebVtt, type MediaMove, type ReplaceMediaArgs, type ReplaceMediaResult, type SetCaptionsArgs } from './media.ts';
+export { replaceMediaReferences, setCaptions, toWebVtt, imageToVideo, animatedImageSource, type MediaMove, type ReplaceMediaArgs, type ReplaceMediaResult, type SetCaptionsArgs, type ImageToVideoArgs, type ImageToVideoResult, type AnimatedImageSource } from './media.ts';
 export { renameId, renameVariable, type RenameArgs, type RenameResult, type RenamedKind } from './rename.ts';
 export { exportTranslation, translateText, approveTranslation, type ExportTranslationArgs, type TranslateUnitArgs, type ApproveTranslationArgs } from './translation.ts';
 export { findText, replaceText, type TextMatch, type FindTextOptions, type ReplaceTextArgs, type ReplaceTextResult } from './text.ts';

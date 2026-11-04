@@ -104,6 +104,8 @@ export interface CommandArgs {
   // exportPlanDocument records it by itself.
   record_plan_send: RecordPlanSendArgs;
   set_captions: SetCaptionsArgs;
+  // An animated image block made a video that loops like it (its MP4 and poster made first).
+  image_to_video: { block: string };
   update_narration: UpdateNarrationArgs;
   add_narration_line: AddNarrationLineArgs;
   update_narration_line: UpdateNarrationLineArgs;

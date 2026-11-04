@@ -58,6 +58,7 @@ export function describeChange(change: ChangeLike): string {
     case 'update_block': return `changed block ${of('block')}`;
     case 'set_continuity': return field(args, 'with') ? `made block ${of('block')} carry on from ${of('with')}` : (typeof args === 'object' && args !== null && Reflect.get(args, 'with') === null) ? `cut block ${of('block')} from the screens before it` : `set the passage to block ${of('block')}`;
     case 'set_captions': return `set the captions of video ${of('block')}`;
+    case 'image_to_video': return `made the animated image ${of('block')} a video`;
     case 'update_narration': return `changed the narration of ${of('screen')}`;
     case 'add_narration_line': return `added a narration line to ${of('screen')}`;
     case 'update_narration_line': return `changed narration line ${of('line')} of ${of('screen')}`;

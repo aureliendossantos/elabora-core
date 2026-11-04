@@ -1,6 +1,6 @@
 # Agent tools
 
-Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 111 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
+Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 112 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
 
 ## Reading
 
@@ -752,6 +752,14 @@ Captions for a video block (E_VIDEO_CAPTIONS_MISSING): a WebVTT file, or a SubRi
 | `file` | string |  | Absolute path of a .vtt or .srt file (or give text). |
 | `text` | string |  | The captions themselves, WebVTT or SubRip (or give file). |
 | `name` | string |  | File name under assets/captions/, without extension (default: the block id). |
+
+### `elabora_image_to_video`
+
+Make an image block whose file is animated (GIF, animated WebP or PNG; elabora_media_weights notices it as animated) a video block that loops like it, several times lighter: loop: true, muted, starting by itself, still on its first frame for learners who prefer less motion, a pause button. Its file becomes an MP4 (H.264, yuv420p, no sound, its index first) under assets/video/, with its first frame as poster under assets/images/; what was transparent shows white. The block keeps its id, place, width (a wide image is a wide block), alt, decorative and generated; its caption becomes the video's title (a loop shows none), its zoom goes. Only a centered or wide image (not a band, nor beside or over a text). The image's file is removed when nothing else names it. One change: undo puts the image back. The lighter media qualities make their renditions of the MP4 as of any video.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `block` | string | yes | The image block. |
 
 ### `elabora_import_narration`
 

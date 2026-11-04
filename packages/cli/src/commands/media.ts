@@ -8,6 +8,7 @@ import type { MediaJob } from '@elabora/node/media/jobs';
 import * as edit from '@elabora/node/edit';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { packageWeights } from '@elabora/node/packaging/weights';
+import { imageToVideo } from '@elabora/node/media/to-video';
 import { isPresetName } from '@elabora/core/media/presets';
 import { sizeText } from '@elabora/core/lms/package-limits';
 import { bytesAt, durationText, noticedFirst } from '@elabora/core/media/weights';
@@ -27,6 +28,11 @@ const HELP = `  media import [dir] <file…> [--to <folder>] [--name <name>] [--
                                                       Captions of a video block (E_VIDEO_CAPTIONS_MISSING): the file written
                                                       under assets/captions/ (SubRip converted to WebVTT), named by the
                                                       block, in one undoable change
+  media to-video [dir] <block> [--json]              An image block whose file is animated (GIF, animated WebP or PNG)
+                                                      made a video block that loops like it (loop: true), several
+                                                      times lighter: an MP4 (H.264, no sound) and its first frame as
+                                                      poster; id, place, width, alt kept; its caption becomes the
+                                                      title. Centered or wide images only. One undoable change
   media weights [dir] [--media-quality high|medium|low] [--all] [--json]
                                                       What the package weighs at each media quality, media by media,
                                                       heaviest first: kind, file, duration and size, what high, medium
@@ -162,6 +168,33 @@ const captions = defineCommand({
   })
 });
 
+// An animated image made a looping video, which weighs several times less (the « animated » notice of
+// media weights).
+const toVideo = defineCommand({
+  name: 'media to-video',
+  flags: { json: 'boolean' },
+  run: ({ positionals, flags }) => reportingFailures(async () => {
+    const { dir, rest: [block, ...extra] } = courseAndArguments(positionals);
+    if (!block || extra.length) { console.error('Usage: elabora media to-video [dir] <block> [--json]'); return 2; }
+    if (notACourse(dir)) { console.error(`✘ ${path.resolve(dir)} is not an Elabora course (no course.json).`); return 1; }
+    const result = await imageToVideo(dir, { block });
+    const touched = new Set(result.files);
+    const own = result.diagnostics.filter((d) => d.severity !== 'info' && d.file !== undefined && touched.has(d.file));
+    if (flags.json) {
+      printJson({ ok: true, block, screen: result.screen, video: result.video, poster: result.poster, removed: result.removed, title: result.title, lost: result.lost, bytes: result.bytes, change: result.change, undo: result.undo, files: result.files, diagnostics: own });
+      return 0;
+    }
+    printFormatMigration(result.formatMigration);
+    const { image, video, poster } = result.bytes;
+    console.log(`✔ ${block} is a video that loops: ${result.video} (${bytesText(video)}, and its poster ${bytesText(poster)}), for ${bytesText(image)} as an animated image.`);
+    if (result.removed) console.log(`  ${result.removed} removed: nothing else named it.`);
+    for (const lost of result.lost) console.log(`  Not kept: ${lost}.`);
+    printDiagnostics(own);
+    if (result.change) console.log(`  Undo: elabora undo --change ${result.change.seq}`);
+    return 0;
+  })
+});
+
 const SHOWN = 10;
 // A media's size: in KB under a megabyte, as sizeText above.
 const bytesText = (bytes: number) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : sizeText(bytes));
@@ -281,6 +314,6 @@ const worker = defineCommand({
 export const mediaCommands: CommandGroup = {
   title: 'Media (video, audio and images of assets/)',
   help: HELP,
-  commands: [importCommand, optimize, captions, weights, status, cancel, worker],
-  subcommandUsage: { media: `Usage: elabora media import|optimize|captions|weights|status|cancel|worker\n\n${HELP}` }
+  commands: [importCommand, optimize, captions, toVideo, weights, status, cancel, worker],
+  subcommandUsage: { media: `Usage: elabora media import|optimize|captions|to-video|weights|status|cancel|worker\n\n${HELP}` }
 };

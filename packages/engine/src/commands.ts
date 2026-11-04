@@ -4,6 +4,7 @@ import type { CommandArgs, CommandName } from './protocol.ts';
 import { setNarrationAudio } from '@elabora/node/narration/audio';
 import { addNarrationLineFromAudio, setNarrationTextFromAudio } from '@elabora/node/narration/from-audio';
 import { addSound } from '@elabora/node/sounds/add';
+import { imageToVideo } from '@elabora/node/media/to-video';
 
 // The commands a session runs, by journaled name: the edits of @elabora/node, which run the pure
 // commands of @elabora/core as journaled changes under the project lock. The session passes its
@@ -50,6 +51,7 @@ export const COMMANDS: { readonly [Name in CommandName]: Runner<Name> } = {
   approve_plan: edit.approvePlan,
   record_plan_send: edit.recordPlanSend,
   set_captions: edit.setCaptions,
+  image_to_video: imageToVideo,
   update_narration: edit.updateNarration,
   add_narration_line: edit.addNarrationLine,
   update_narration_line: edit.updateNarrationLine,
