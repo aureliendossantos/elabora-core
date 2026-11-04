@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { audioNeedsRendition, renditionPlan } from '@elabora/core/media/conformance';
+import { extensionOf, mediaKindOfPath, needsHighRendition, renditionPlan } from '@elabora/core/media/conformance';
 import { projectDataDir } from '../data-dir.ts';
 import { toPosix } from './files.ts';
 import { getMediaQueue, isFinished } from './jobs.ts';
@@ -13,9 +13,12 @@ import { projectFileHash } from '../file-hash.ts';
 import { findMediaTools } from './tools.ts';
 import type { MediaTools } from './tools.ts';
 
-// Packages at the medium and low presets ship renditions encoded from the masters, cached in
+// Packages at the medium and low presets ship renditions encoded from the masters, and so does a
+// package at high for a master an import would not have left as it is: a video or an image not in
+// its web format or denser than its size needs, a sound a browser may not play. They are cached in
 // <data dir>/cache/media/ (data-dir.ts) under the master's hash and the preset's parameters: a
-// rendition is made once, and remade only when the master or the preset changes.
+// rendition is made once, and remade only when the master or the preset changes. The project's
+// files never change.
 
 // Audio files that are neither AAC nor MP3 by their name: probed, at high too.
 const LOSSLESS_OR_OTHER_AUDIO = /\.(flac|ogg|oga|opus|wav|webm|aif|aiff|caf|wma)$/i;
@@ -29,22 +32,28 @@ export interface RenditionOptions {
   onProgress?: (job: MediaJob) => void; // while the rendition is encoded, and once it is done
 }
 
-// Absolute path of the file a package at this preset ships for this master: the master itself at
-// high, for SVG and when it already fits the preset; a file of the rendition cache otherwise.
+// Absolute path of the file a package at this preset ships for this master: the master itself when
+// it already fits the preset (at high, as an import leaves a media; SVG always); a file of the
+// rendition cache otherwise.
 export async function renditionPath(projectDir: string, relPath: string, preset: PresetName, options: RenditionOptions = {}): Promise<string> {
   const root = path.resolve(projectDir);
   const rel = toPosix(relPath);
   const master = path.join(root, rel);
-  // At high the master ships, unless it is audio a browser may not play (a sound kept as FLAC, D67).
-  if (preset === 'high' && !LOSSLESS_OR_OTHER_AUDIO.test(rel)) return master;
-  // Without ffmpeg nothing can be encoded, but the path is still known (WebP is then assumed).
+  const kind = mediaKindOfPath(rel);
+  const visual = kind === 'video' || kind === 'image';
+  // At high the master ships, unless it is audio a browser may not play (a sound kept as FLAC, D67),
+  // or a video or an image not in its web format or denser than its size needs (renditionPlan).
+  if (preset === 'high' && !visual && !LOSSLESS_OR_OTHER_AUDIO.test(rel)) return master;
+  // Without ffmpeg nothing can be encoded: below high the path is still known (WebP is then
+  // assumed), and the build says the rendition failed; at high a video or an image ships as it is.
   const tools = options.tools !== undefined ? options.tools : await findMediaTools().catch(() => null);
+  if (preset === 'high' && visual && !tools) return master;
   const info = await probeProjectFile(root, rel, tools ? { tools } : {});
-  if (preset === 'high' && !audioNeedsRendition(info)) return master;
+  if (preset === 'high' && !needsHighRendition(info)) return master;
   const plan = renditionPlan(info, preset, { webp: tools?.webp ?? true });
-  if (plan.action === 'reuse' || !plan.extension) return master;
+  if (plan.action === 'reuse') return master;
   const hash = (await projectFileHash(root, rel)).slice('sha256:'.length, 'sha256:'.length + 32);
-  return path.join(renditionsDir(root), `${hash}-${preset}-${presetHash(preset, info.kind)}${plan.extension}`);
+  return path.join(renditionsDir(root), `${hash}-${preset}-${presetHash(preset, info.kind)}${plan.extension ?? extensionOf(rel)}`);
 }
 
 export interface RenditionResult {

@@ -1,10 +1,9 @@
 import fs from 'node:fs';
 import { spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
-import { extensionOf } from '@elabora/core/media/conformance';
+import { extensionOf, videoCeiling } from '@elabora/core/media/conformance';
 import type { MediaInfo, MediaPlan } from '@elabora/core/media/conformance';
 import { PRESETS, fitWithin } from '@elabora/core/media/presets';
-import { videoCeiling } from '@elabora/core/media/weights';
 import type { PresetName, VideoPreset } from '@elabora/core/media/presets';
 import type { H264Encoder, MediaTools } from './tools.ts';
 

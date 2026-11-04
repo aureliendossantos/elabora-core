@@ -74,7 +74,9 @@ function* probeSteps(file: string, major: number | null): Generator<string[], Me
     const matrix = video.side_data_list?.find((d) => typeof d.rotation === 'number');
     info.rotation = normaliseDegrees(matrix?.rotation ?? number(video.tags?.rotate) ?? 0);
     info.hdr = video.color_transfer === 'smpte2084' ? 'pq' : video.color_transfer === 'arib-std-b67' ? 'hlg' : null;
-    info.alpha = /^(yuva|ya\d|rgba|bgra|argb|abgr|gbrap|pal8)/.test(video.pix_fmt ?? '');
+    // A VP8 or VP9 WebM keeps its transparency in a side stream that ffprobe's decoder does not show
+    // in the pixel format: its Matroska tag says so.
+    info.alpha = /^(yuva|ya\d|rgba|bgra|argb|abgr|gbrap|pal8)/.test(video.pix_fmt ?? '') || Object.entries(video.tags ?? {}).some(([key, value]) => key.toLowerCase() === 'alpha_mode' && value === '1');
     if (kind === 'video') {
       info.fps = ratio(video.avg_frame_rate) || ratio(video.r_frame_rate) || null;
       info.videoBitrate = number(video.bit_rate) ?? (info.bitrate !== null ? info.bitrate - (number(audio?.bit_rate) ?? 0) : null);

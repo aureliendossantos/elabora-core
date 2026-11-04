@@ -5,7 +5,7 @@ import type { Project } from '@elabora/core/project/model';
 import { iterateBlocks, screenOrder } from '@elabora/core/project/load';
 import { narrationLines, screenTiming, timelineLines } from '@elabora/core/narration/narration';
 import { narratedLayers } from '@elabora/core/narration/voice-lines';
-import { audioNeedsRendition, estimateBytes, mediaKindOfPath, presetDimensions, renditionPlan } from '@elabora/core/media/conformance';
+import { estimateBytes, mediaKindOfPath, needsHighRendition, presetDimensions, renditionPlan } from '@elabora/core/media/conformance';
 import type { MediaInfo } from '@elabora/core/media/conformance';
 import { PRESET_NAMES } from '@elabora/core/media/presets';
 import type { PresetName } from '@elabora/core/media/presets';
@@ -25,7 +25,8 @@ import { mediaQualityOf } from './media.ts';
 // loads to go through the whole module, in its own language: the course's language only, as a
 // package of every language (D59) ships the others for learners who switch.
 //
-// The media shipped (docs/architecture/media.md): the masters at high; below it each cached
+// The media shipped (docs/architecture/media.md): the masters at high (a rendition of those an import
+// would not have left as they are); below it each cached
 // rendition, else its size estimated from bitrates (estimateBytes, never above the master). The
 // narration tracks (D24, D62) and the dialogue lines (D61) likewise: made, or estimated. Assets the
 // qualities leave as they are (a PDF, captions) are in the list too, as files. The rest is the
@@ -60,7 +61,7 @@ export async function packageWeights(project: Project, options: { quality?: Pres
       const rendition = info ? await renditionPath(project.root, rel, preset).catch(() => null) : null;
       const made = rendition ? sizeOf(rendition) : null;
       // Without its path (a probe or hash that failed), from its plan: a sound kept as FLAC has one at high too.
-      const encoded = rendition ? rendition !== master : !!info && (preset === 'high' ? audioNeedsRendition(info) : renditionPlan(info, preset).action !== 'reuse');
+      const encoded = rendition ? rendition !== master : !!info && (preset === 'high' ? needsHighRendition(info) : renditionPlan(info, preset).action !== 'reuse');
       const size: MediaAtQuality = { quality: preset, bytes: masterBytes, estimated: false, rendition: encoded };
       if (made !== null) size.bytes = made;
       else if (info) {
@@ -167,7 +168,8 @@ export async function packageWeights(project: Project, options: { quality?: Pres
 // The size a video or an image is shipped at: the master's, unless a rendition resizes it.
 function shippedDimensions(info: MediaInfo, preset: PresetName, encoded: boolean): { width: number; height: number } | null {
   if (!info.width || !info.height) return null;
-  if (!encoded || (info.kind === 'video' && renditionPlan(info, preset).video !== 'encode')) return { width: info.width, height: info.height };
+  const plan = encoded ? renditionPlan(info, preset) : null;
+  if (!plan || plan.action === 'remux' || (info.kind === 'video' && plan.video !== 'encode')) return { width: info.width, height: info.height };
   return presetDimensions(info, preset);
 }
 

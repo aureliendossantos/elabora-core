@@ -26,11 +26,12 @@ before(async () => {
   await Promise.all([
     ffmpeg('-f', 'lavfi', '-i', 'testsrc2=size=1920x1080:rate=30:duration=4', '-f', 'lavfi', '-i', 'sine=frequency=440:sample_rate=48000:duration=4', '-shortest', ...h264, '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '160k', '-movflags', '+faststart', path.join(fixtures, 'master.mp4')),
     ffmpeg('-f', 'lavfi', '-i', 'testsrc2=size=2400x1350', '-frames:v', '1', path.join(fixtures, 'figure.png')),
-    // What a notice is for: a photo-like PNG (noise, about 1.5 bytes a pixel), an animated image, a
-    // 360p video exported at 8 Mb/s.
+    // What Standard does not ship as it is: a photo-like PNG (noise, about 3 bytes a pixel), a 360p
+    // video exported at 8 Mb/s; and an animated image.
     ffmpeg('-f', 'lavfi', '-i', "nullsrc=size=1600x1200,format=rgb24,geq=r='random(1)*255':g='random(2)*255':b='random(3)*255'", '-frames:v', '1', path.join(fixtures, 'noise.png')),
     ffmpeg('-f', 'lavfi', '-i', 'testsrc2=size=480x270:rate=10:duration=3,noise=alls=90:allf=t', path.join(fixtures, 'animation.gif')),
-    ffmpeg('-f', 'lavfi', '-i', 'testsrc2=size=640x360:rate=30:duration=4,noise=alls=60:allf=t', ...h264.map((arg) => (arg === '6M' ? '8M' : arg)), '-maxrate', '8M', '-bufsize', '8M', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', path.join(fixtures, 'dense.mp4'))
+    // Padded to a constant 8 Mb/s, as an export at a bitrate far above what the picture needs.
+    ffmpeg('-f', 'lavfi', '-i', 'testsrc2=size=640x360:rate=30:duration=4', ...h264.map((arg) => (arg === '6M' ? '8M' : arg)), '-minrate', '8M', '-maxrate', '8M', '-bufsize', '8M', ...(tools.h264[0] === 'libx264' ? ['-x264-params', 'nal-hrd=cbr'] : []), '-pix_fmt', 'yuv420p', '-movflags', '+faststart', path.join(fixtures, 'dense.mp4'))
   ]);
 });
 after(() => { if (fixtures) fs.rmSync(fixtures, { recursive: true, force: true }); });
@@ -136,7 +137,7 @@ test('media by media: each at each quality, its size there, where the course use
   }
 });
 
-test('a media heavier than it needs to be for what its file is comes first, with why; at the quality that lightens it, no more', async (t) => {
+test('at high, a photo saved as PNG and a video far denser than its size ship as renditions, the project\'s files unchanged; an animated image is still noticed', async (t) => {
   if (!tools) return t.skip(NO_FFMPEG);
   const dir = copyExample();
   try {
@@ -145,16 +146,28 @@ test('a media heavier than it needs to be for what its file is comes first, with
     place(dir, 'animation.gif', 'assets/images/animation.gif');
     place(dir, 'dense.mp4', 'assets/video/dense.mp4');
     addBlocks(dir,
-      { id: 'clip', type: 'video', props: { asset: 'video/master.mp4', title: 'Clip', transcript: 'A test clip.' } } as Block,
-      { id: 'dense', type: 'video', props: { asset: 'video/dense.mp4', title: 'Dense', transcript: 'Noise.' } } as Block,
+      { id: 'clip', type: 'video', props: { asset: 'video/master.mp4', title: 'Clip', decorative: true } } as Block,
+      { id: 'dense', type: 'video', props: { asset: 'video/dense.mp4', title: 'Dense', decorative: true } } as Block,
       { id: 'photo', type: 'image', props: { asset: 'images/photo.png', alt: 'Noise.' } } as Block,
       { id: 'animation', type: 'image', props: { asset: 'images/animation.gif', alt: 'Moving noise.' } } as Block);
-    const notices = (weights: Awaited<ReturnType<typeof packageWeights>>) => Object.fromEntries(weights.media.filter((media) => /\/(master|dense)\.mp4|photo\.png|animation\.gif/.test(media.path ?? '')).map((media) => [media.path!.split('/').pop(), media.notice?.reason ?? null]));
-    const high = await packageWeights(loadProjectFromDir(dir));
-    assert.deepEqual(notices(high), { 'master.mp4': null, 'dense.mp4': 'dense-video', 'photo.png': 'dense-image', 'animation.gif': 'animated' }, JSON.stringify(high.media.map((media) => [media.path, media.qualities[0]!.bytes])));
-    assert.match(high.media.find((media) => media.path === 'assets/video/dense.mp4')!.notice!.why, /^\d+\.\d Mb\/s for 640×360 at 30 fps, more than twice the 1\.5 Mb\/s .* \(at medium, about [\d.]+ MB\)\.$/);
-    // At medium, Elabora re-encodes the video and the photo; the animation stays an animated image.
-    assert.deepEqual(notices(await packageWeights(loadProjectFromDir(dir), { quality: 'medium' })), { 'master.mp4': null, 'dense.mp4': null, 'photo.png': null, 'animation.gif': 'animated' });
+    const masters = ['video/master.mp4', 'images/photo.png', 'images/animation.gif', 'video/dense.mp4'].map((name) => fs.readFileSync(path.join(dir, 'assets', name)));
+    const atHigh = (weights: Awaited<ReturnType<typeof packageWeights>>) => Object.fromEntries(weights.media.filter((media) => /\/(master|dense)\.mp4|photo\.png|animation\.gif/.test(media.path ?? '')).map((media) => [media.path!.split('/').pop(), [media.qualities[0]!.rendition, media.notice?.reason ?? null]]));
+    const before = await packageWeights(loadProjectFromDir(dir));
+    // The GIF is not a web format: a rendition at high too (animated WebP), and still an animated image.
+    assert.deepEqual(atHigh(before), { 'master.mp4': [false, null], 'dense.mp4': [true, null], 'photo.png': [true, null], 'animation.gif': [true, 'animated'] }, JSON.stringify(before.media.map((media) => [media.path, media.qualities[0]])));
+    const photo = before.media.find((media) => media.path === 'assets/images/photo.png')!;
+    assert.ok(photo.qualities[0]!.estimated && photo.qualities[0]!.bytes < photo.master! / 2, 'estimated, far lighter than the PNG');
+
+    const high = await build(dir, { out: path.join(dir, 'out', 'high'), writeLock: false });
+    assert.ok(high.ok, JSON.stringify(high.diagnostics.filter((d) => d.severity === 'error')));
+    assert.deepEqual(high.report.media?.files.filter((file) => /photo|dense|master/.test(file.path)).map((file) => [file.path, file.rendition]), [[`assets/images/photo${tools.webp ? '.webp' : '.jpg'}`, true], ['assets/video/dense.mp4', true], ['assets/video/master.mp4', false]], 'WebP, or JPEG without a WebP encoder');
+    assert.deepEqual(['video/master.mp4', 'images/photo.png', 'images/animation.gif', 'video/dense.mp4'].map((name, index) => fs.readFileSync(path.join(dir, 'assets', name)).equals(masters[index]!)), [true, true, true, true], 'the project\'s files unchanged');
+    // Made: measured, lighter than the masters.
+    const after = await packageWeights(loadProjectFromDir(dir));
+    for (const rel of ['assets/images/photo.png', 'assets/video/dense.mp4']) {
+      const made = after.media.find((media) => media.path === rel)!;
+      assert.ok(!made.qualities[0]!.estimated && made.qualities[0]!.bytes < made.master!, `${rel}: ${made.qualities[0]!.bytes} of ${made.master}`);
+    }
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }

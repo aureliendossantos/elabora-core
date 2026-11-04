@@ -2,13 +2,14 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { durationText, noticedFirst, videoCeiling, weightNotice } from '@elabora/core/media/weights';
+import { durationText, noticedFirst, weightNotice } from '@elabora/core/media/weights';
 import type { MediaWeight } from '@elabora/core/media/weights';
-import { conformance } from '@elabora/core/media/conformance';
+import { conformance, estimateBytes, isDense, needsHighRendition, renditionPlan, videoCeiling } from '@elabora/core/media/conformance';
 import type { FileMedia, MediaInfo } from '@elabora/core/media/conformance';
 import type { PresetName } from '@elabora/core/media/presets';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { packageWeights } from '@elabora/node/packaging/weights';
+import { renditionPath } from '@elabora/node/media/renditions';
 import { copyExample, readJSON, writeJSON } from '../helpers.ts';
 
 const MB = 1024 * 1024;
@@ -32,37 +33,60 @@ test('Elabora\'s ceiling for a video of a size: the high quality\'s for 1080p at
   assert.deepEqual([videoCeiling(1920, 1080, 30), videoCeiling(1280, 720, 30), videoCeiling(640, 360, 30)].map((bits) => Math.round(bits / 1e5) / 10), [8, 4.4, 1.5]);
 });
 
-test('a long video that weighs is what it is: no notice', () => {
+test('a long video that weighs is what it is: shipped as it is at high, no notice', () => {
   // 24 minutes of 1080p at 5 Mb/s: 900 MB at high, about 500 at medium.
   const info = video(1920, 1080, 5, 24 * 60);
+  assert.equal(renditionPlan(info, 'high').action, 'reuse');
   const visit = weight('video', 'assets/video/visite.mp4', at(900, 497, 275), { seconds: 24 * 60, width: 1920, height: 1080 });
   for (const quality of ['high', 'medium', 'low'] as const) assert.equal(weightNotice(visit, info, quality), null, quality);
 });
 
-test('a video far denser than its size needs: noticed where its own stream ships', () => {
+test('a video far denser than its size needs is re-encoded at every quality, at high too', () => {
   // A 720p screen recording exported at 9.5 Mb/s: more than twice the 4.4 Mb/s Elabora spends on 720p.
   const info = video(1280, 720, 9.5, 158);
-  const demo = weight('video', 'assets/video/demo.mp4', at(191, 77, 30), { seconds: 158, width: 1280, height: 720 });
-  assert.deepEqual(weightNotice(demo, info, 'high'), { reason: 'dense-video', why: '9.5 Mb/s for 1280×720 at 30 fps, more than twice the 4.4 Mb/s Elabora spends at most on a video of that size: 191.0 MB for 2 min 38 s. Export it again at a lower bitrate and replace it, or choose a lower quality, which re-encodes it (at medium, about 77.0 MB).' });
-  assert.equal(weightNotice(demo, info, 'medium'), null, 're-encoded at medium');
-  // At 6 Mb/s it is within twice the ceiling.
-  assert.equal(weightNotice(demo, video(1280, 720, 6, 158), 'high'), null);
-  // A small video whose stream medium copies: noticed at medium too.
-  const small = video(640, 360, 3.9, 300);
-  assert.equal(weightNotice(weight('video', 'assets/video/small.mp4', at(144, 144, 56, [false, false, true])), small, 'medium')?.reason, 'dense-video');
+  assert.ok(info.conformant && isDense(info), 'an import keeps it, but it is dense');
+  assert.deepEqual(renditionPlan(info, 'high'), { action: 'encode', extension: '.mp4', video: 'encode', audio: 'copy', reasons: [] });
+  assert.ok(needsHighRendition(info));
+  // Estimated at most at what Elabora spends on 720p, with its sound.
+  assert.ok(Math.abs(estimateBytes(info, 'high') - (158 * (videoCeiling(1280, 720, 30) + 128_000) * 1.01) / 8) < 1000, String(estimateBytes(info, 'high')));
+  // At 6 Mb/s it is within twice the ceiling: the master ships.
+  assert.equal(renditionPlan(video(1280, 720, 6, 158), 'high').action, 'reuse');
+  // A small video whose stream fits medium's cap is re-encoded rather than copied when it is dense.
+  assert.equal(renditionPlan(video(640, 360, 3.9, 300), 'medium').video, 'encode');
+  assert.equal(renditionPlan(video(640, 360, 2.5, 300), 'medium').video, 'copy');
+  // Under 2 MB, never dense.
+  assert.equal(isDense(video(640, 360, 9, 1)), false);
+  // A video with transparency ships as it is: H.264 has none.
+  assert.equal(renditionPlan(video(1280, 720, 30, 20, { container: 'webm', videoCodec: 'vp9', profile: null, pixelFormat: 'yuva420p', alpha: true }), 'high').action, 'reuse');
 });
 
-test('a still image of more than a byte a pixel shipped as it is: a photo saved as PNG', () => {
-  const info = probe({ kind: 'image', container: 'png', videoCodec: 'png', width: 2400, height: 1600, size: 6.9 * MB });
-  const photo = weight('image', 'assets/images/imprimante.png', at(6.9, 4.8, 1.2), { width: 2400, height: 1600 });
-  assert.deepEqual(weightNotice(photo, info, 'high'), { reason: 'dense-image', why: '6.9 MB for 2400×1600 px, 1.9 bytes a pixel where a photo in WebP or JPEG takes about 0.3: a photo or a detailed picture saved as PNG, most likely. As WebP or JPEG it would weigh several times less: save it again that way and replace it. The lower qualities re-encode it as WebP.' });
-  assert.equal(weightNotice(photo, info, 'medium'), null, 'a rendition, Elabora\'s own encoding');
-  // The same pixels as a JPEG of 1.4 MB: nothing to say.
+test('a still image of more than a byte a pixel ships as WebP at high: a photo saved as PNG; a picture of text stays as it is', () => {
+  const photo = probe({ kind: 'image', container: 'png', videoCodec: 'png', width: 2400, height: 1600, size: 6.9 * MB });
+  assert.deepEqual(renditionPlan(photo, 'high'), { action: 'encode', extension: '.webp', video: 'encode', audio: null, reasons: [] });
+  assert.equal(estimateBytes(photo, 'high'), 2400 * 1600 * 0.5, 'at most half a byte a pixel');
+  // Without a WebP encoder, JPEG; with transparency, PNG, kept only if smaller.
+  assert.equal(renditionPlan(photo, 'high', { webp: false }).extension, '.jpg');
+  assert.equal(renditionPlan({ ...photo, alpha: true }, 'high').extension, '.webp');
+  // A JPEG of a third of a byte a pixel, a screenshot, a detailed diagram: shipped as they are.
   const jpeg = probe({ kind: 'image', container: 'jpeg', videoCodec: 'mjpeg', width: 3200, height: 2400, size: 2.4 * MB });
-  assert.equal(weightNotice(weight('image', 'assets/images/salle.jpg', at(2.4, 1.6, 0.6), { width: 3200, height: 2400 }), jpeg, 'high'), null);
-  // With transparency, WebP alone.
-  const alpha = probe({ kind: 'image', container: 'png', videoCodec: 'png', width: 1600, height: 1200, alpha: true, size: 3 * MB });
-  assert.match(weightNotice(weight('image', 'assets/images/schema.png', at(3, 2, 1)), alpha, 'high')!.why, /As WebP it would weigh/);
+  const screenshot = probe({ kind: 'image', container: 'png', videoCodec: 'png', width: 2880, height: 1800, size: 0.25 * MB });
+  const diagram = probe({ kind: 'image', container: 'png', videoCodec: 'png', width: 1920, height: 1200, size: 1.6 * MB });
+  for (const image of [jpeg, screenshot, diagram]) assert.equal(renditionPlan(image, 'high').action, 'reuse');
+  // An animated image is never dense (its notice says what lightens it).
+  assert.equal(isDense({ ...photo, animated: true }), false);
+});
+
+test('a media an import would have converted gets what the import makes of it at high; the metadata alone, without encoding', () => {
+  const prores = video(1920, 1080, 9, 60, { videoCodec: 'prores', profile: null, container: 'mov', pixelFormat: 'yuv422p10le' });
+  assert.deepEqual(renditionPlan(prores, 'high'), { action: 'encode', extension: '.mp4', video: 'encode', audio: 'copy', reasons: [] });
+  const heic = probe({ kind: 'image', container: 'heif', videoCodec: 'hevc', width: 4032, height: 3024, size: 2.1 * MB });
+  assert.equal(renditionPlan(heic, 'high').extension, '.webp');
+  // A phone's photo with its GPS position: the metadata removed, the pixels kept.
+  const located = probe({ kind: 'image', container: 'jpeg', videoCodec: 'mjpeg', width: 3264, height: 2448, size: 3 * MB, location: true });
+  assert.deepEqual(renditionPlan(located, 'high'), { action: 'remux', extension: null, video: null, audio: null, reasons: [] });
+  assert.equal(estimateBytes(located, 'high'), located.size);
+  const moved = video(1920, 1080, 6, 60, { faststart: false });
+  assert.equal(renditionPlan(moved, 'high').action, 'remux');
 });
 
 test('an animated image: noticed at every quality, its renditions are animated too', () => {
@@ -72,25 +96,41 @@ test('an animated image: noticed at every quality, its renditions are animated t
   assert.equal(weightNotice(animation, info, 'high')!.why, 'An animated image of 14.0 MB (1280×720, 12 s): as a video (MP4) it would weigh several times less. Make its image block a video that loops like it: elabora media to-video <block> (MCP elabora_image_to_video).');
 });
 
-test('a video not in its web format, shipped as it is at high', () => {
-  const info = video(1920, 1080, 9, 60, { videoCodec: 'prores', profile: null, container: 'mov', pixelFormat: 'yuv422p10le' });
+test('a video or an image that should ship as a rendition but ships as it is (no ffmpeg here): not optimized', () => {
+  const prores = video(1920, 1080, 9, 60, { videoCodec: 'prores', profile: null, container: 'mov', pixelFormat: 'yuv422p10le' });
   const raw = weight('video', 'assets/video/interview.mov', at(65, 25, 9));
-  const notice = weightNotice(raw, info, 'high')!;
+  const notice = weightNotice(raw, prores, 'high')!;
   assert.equal(notice.reason, 'not-optimized');
-  assert.match(notice.why, /^Not in its web format \(Video codec prores: browsers need H\.264\): at high it ships as it is, 65\.0 MB\. `elabora media optimize assets\/video\/interview\.mov` makes it a web master/);
-  assert.equal(weightNotice(raw, info, 'medium'), null, 'medium re-encodes it');
+  assert.equal(notice.why, 'Not ready for the web (MOV container: the master format is MP4; Video codec prores: browsers need H.264): at high the package ships a rendition of it, which ffmpeg makes, and ffmpeg is not found here (on the PATH, or ELABORA_FFMPEG); it ships as it is, 65.0 MB.');
+  const photo = probe({ kind: 'image', container: 'png', videoCodec: 'png', width: 2400, height: 1600, size: 6.9 * MB });
+  assert.match(weightNotice(weight('image', 'assets/images/photo.png', at(6.9, 1.5, 0.8)), photo, 'high')!.why, /^Denser than its size needs: at high/);
+  // Made as it should be: nothing to say.
+  assert.equal(weightNotice(weight('video', 'assets/video/interview.mov', at(40, 25, 9, [true, true, true])), prores, 'high'), null);
+  assert.equal(weightNotice(raw, prores, 'medium'), null, 'medium re-encodes it');
+});
+
+test('without ffmpeg, a package at high ships a video or an image as it is: nothing probed, nothing to encode', async () => {
+  const dir = copyExample();
+  try {
+    fs.mkdirSync(path.join(dir, 'assets/images'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'assets/images/photo.png'), 'not even a PNG');
+    assert.equal(await renditionPath(dir, 'assets/images/photo.png', 'high', { tools: null }), path.join(dir, 'assets/images/photo.png'));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test('never noticed: under 2 MB, a narration, a file the qualities leave as it is', () => {
   const info = probe({ kind: 'image', container: 'png', videoCodec: 'png', width: 1000, height: 1000, size: 1.9 * MB });
-  assert.equal(weightNotice(weight('image', 'assets/images/petit.png', at(1.9, 1.3, 0.5)), info, 'high'), null, '1.9 bytes a pixel, but under 2 MB');
+  assert.equal(renditionPlan(info, 'high').action, 'reuse', '1.9 bytes a pixel, but under 2 MB');
+  assert.equal(weightNotice(weight('image', 'assets/images/petit.png', at(1.9, 1.3, 0.5)), info, 'high'), null);
   assert.equal(weightNotice({ kind: 'narration', path: null, uses: [{ screen: 'salle' }], qualities: at(40, 40, 40) }, undefined, 'high'), null);
   assert.equal(weightNotice(weight('file', 'assets/resources/catalogue.pdf', at(64, 64, 64, [false, false, false])), undefined, 'high'), null);
 });
 
 test('the media noticed first, then the heaviest', () => {
-  const [big, noticed, small] = [weight('video', 'a.mp4', at(90, 50, 20)), weight('image', 'b.png', at(7, 5, 1), { notice: { reason: 'dense-image', why: '' } }), weight('image', 'c.jpg', at(1, 1, 1))];
-  assert.deepEqual(noticedFirst([big, noticed, small]).map((media) => media.path), ['b.png', 'a.mp4', 'c.jpg']);
+  const [big, noticed, small] = [weight('video', 'a.mp4', at(90, 50, 20)), weight('image', 'b.gif', at(7, 5, 1), { notice: { reason: 'animated', why: '' } }), weight('image', 'c.jpg', at(1, 1, 1))];
+  assert.deepEqual(noticedFirst([big, noticed, small]).map((media) => media.path), ['b.gif', 'a.mp4', 'c.jpg']);
 });
 
 test('durations as people say them', () => {

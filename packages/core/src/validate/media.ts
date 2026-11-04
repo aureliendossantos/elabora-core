@@ -17,5 +17,5 @@ export function checkMedia(ctx: CheckContext): void {
 
 // The GPS position is a privacy matter before it is a format matter: said so.
 const reasonText = (reason: ConformanceReason): string => (reason.code === 'location'
-  ? 'Privacy: the file holds the GPS position where it was recorded, and it would ship to every learner.'
+  ? 'Privacy: the file holds the GPS position where it was recorded, wherever the project goes; packages leave it out when ffmpeg is there.'
   : reason.message);
