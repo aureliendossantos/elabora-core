@@ -106,6 +106,22 @@ test('common mistakes get one line each: a folder without a course, an unknown L
   }
 });
 
+test('build --target web --image is read from the folder the command runs in, not from the course folder', async () => {
+  const { dir } = COURSES[0];
+  const here = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-image-'));
+  try {
+    const png = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(16)]);
+    fs.writeFileSync(path.join(here, 'cover.png'), png);
+    const built = await elabora(['build', dir, '--target', 'web', '--url', 'https://example.org/m/', '--image', 'cover.png', '--out', path.join(here, 'out'), '--json'], here);
+    const codes = (JSON.parse(built.stdout).diagnostics ?? []).map((d: { code: string }) => d.code);
+    assert.ok(!codes.includes('E_WEB_IMAGE'), built.stdout.slice(0, 400));
+    assert.ok(fs.readdirSync(path.join(here, 'out')).length > 0);
+    // The same name beside the course is not found: the course folder is not where it is read.
+    const other = await elabora(['build', dir, '--target', 'web', '--url', 'https://example.org/m/', '--image', 'cover.png', '--out', path.join(here, 'out2'), '--json'], os.tmpdir());
+    assert.ok((JSON.parse(other.stdout).diagnostics ?? []).some((d: { code: string }) => d.code === 'E_WEB_IMAGE'));
+  } finally { fs.rmSync(here, { recursive: true, force: true }); }
+});
+
 test('validate --json gives the validation of each example', async () => {
   const runs = await Promise.all(COURSES.map(({ dir }) => elabora(['validate', dir, '--json'])));
   for (const [index, { name, dir }] of COURSES.entries()) {

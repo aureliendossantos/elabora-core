@@ -27,7 +27,7 @@ const entry = (usage: string, ...description: string[]): string => {
 const HELP = [
   entry('projects list [--json] [--validate]', 'Projects of the library, newest first: title, course, date, size,', 'validation, folder (--validate checks the unchecked ones)'),
   entry('projects path [<id>] [--set <dir> [--move|--copy]]', 'Folder of the library, or of a project (id or its first characters).', '--set: use another folder; --move takes the projects along; --copy', 'moves them by copying and checking every file (another disk)'),
-  entry('projects create [<course-id>] --title <t> [--language fr] [--template <id> | --charter <id>]', 'Create a course in the library, blank or from a module template', '(elabora templates), or blank in another module\'s charter (its theme,', 'fonts, components and backdrop; --charter: its project id or folder);', 'the course id is the title\'s by default, the language the app\'s'),
+  entry('projects create [<course-id>] --title <t> [--language fr] [--template <id> | --charter <id or folder>]', 'Create a course in the library, blank or from a module template', '(elabora templates), or blank in another module\'s charter (its theme,', 'fonts, components and backdrop; --charter: its project id, or its folder, absolute or relative to here);', 'the course id is the title\'s by default, the language the app\'s'),
   entry('projects duplicate <id> [--title <t>]', 'Copy a project under a new id (same course id; the history stays)'),
   entry('projects rename <id> --title <t>', 'Change the title of a project (an undoable edit of course.json)'),
   entry('projects trash <id>', 'Move a project, history included, to the library\'s trash'),
@@ -168,7 +168,7 @@ const create = defineCommand({
   name: 'projects create',
   flags: { title: 'string', language: 'string', template: 'string', charter: 'string' },
   run({ positionals: [courseId], flags }) {
-    if (!flags.title || (flags.template && flags.charter)) { console.error('Usage: elabora projects create [<course-id>] --title <title> [--language fr] [--template <id> | --charter <id>]'); return 2; }
+    if (!flags.title || (flags.template && flags.charter)) { console.error('Usage: elabora projects create [<course-id>] --title <title> [--language fr] [--template <id> | --charter <id or folder>]'); return 2; }
     return reportingFailures(async () => {
       const { project, template, charter, language, languageFrom } = await createModule({ title: flags.title!, ...(courseId ? { courseId } : {}), ...(flags.language ? { language: flags.language } : {}), ...(flags.template ? { template: flags.template } : {}), ...(flags.charter ? { charter: flags.charter } : {}), author: detectAuthor() });
       const next = template ? 'README.md says how its charter works; replace the placeholder texts with the storyboard\'s' : charter ? 'put the client\'s validated plan in plan.json and build its screens with the charter\'s components (AGENTS.md)' : 'put the client\'s validated plan in plan.json';

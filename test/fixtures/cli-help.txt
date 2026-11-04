@@ -37,10 +37,10 @@ Projects (the app's library: one plain folder per project; archives to exchange 
   projects path [<id>] [--set <dir> [--move|--copy]]  Folder of the library, or of a project (id or its first characters).
                                                       --set: use another folder; --move takes the projects along; --copy
                                                       moves them by copying and checking every file (another disk)
-  projects create [<course-id>] --title <t> [--language fr] [--template <id> | --charter <id>]
+  projects create [<course-id>] --title <t> [--language fr] [--template <id> | --charter <id or folder>]
                                                       Create a course in the library, blank or from a module template
                                                       (elabora templates), or blank in another module's charter (its theme,
-                                                      fonts, components and backdrop; --charter: its project id or folder);
+                                                      fonts, components and backdrop; --charter: its project id, or its folder, absolute or relative to here);
                                                       the course id is the title's by default, the language the app's
   projects duplicate <id> [--title <t>]               Copy a project under a new id (same course id; the history stays)
   projects rename <id> --title <t>                    Change the title of a project (an undoable edit of course.json)

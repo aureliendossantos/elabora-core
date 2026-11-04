@@ -78,6 +78,8 @@ export interface FitOptions {
 // worker per page), never in the background. Two: their captures share the GPU, and more pages wait
 // on each other's (four took longer than one on a ten-core Mac).
 const FIT_PAGES = Math.min(2, os.availableParallelism());
+// A page of a busy computer boots slowly (a free object's first frames); a stuck one is told, not waited for.
+const PLAYER_START_MS = 120000;
 
 export async function measureFit(dir: string | null, options: FitOptions = {}): Promise<FitResult> {
   if (!options.pkgDir && !dir) throw new Error('Give a course folder or pkgDir, a built package.');
@@ -203,8 +205,23 @@ async function fitPage(browser: Browser, base: string, size: string, motion: boo
   const [width, height] = size.split('x').map(Number);
   const page = opened ?? await browser.newPage({ viewport: { width, height }, reducedMotion: motion ? 'no-preference' : 'reduce' });
   await page.addInitScript(() => { window.ELABORA_TEST = { virtualTime: true }; }); // narrated screens hold still
-  await page.goto(`${base}/pkg/fit/index.html`);
-  await page.waitForFunction(() => window.__elabora);
+  // What stops the player starting is in the page, not in a timeout: its errors, the files that did
+  // not load, are told with it.
+  const trouble: string[] = [];
+  const note = (text: string) => { if (trouble.length < 5) trouble.push(text); };
+  const onError = (error: Error) => note(error.message.split('\n')[0]);
+  const onFailed = (request: { url(): string; failure(): { errorText: string } | null }) => note(`${request.url().replace(base, '')}: ${request.failure()?.errorText ?? 'failed'}`);
+  page.on('pageerror', onError);
+  page.on('requestfailed', onFailed);
+  try {
+    await page.goto(`${base}/pkg/fit/index.html`);
+    await page.waitForFunction(() => window.__elabora, null, { timeout: PLAYER_START_MS });
+  } catch (error) {
+    throw new Error(`The player did not start at ${size} within ${PLAYER_START_MS / 1000} s${trouble.length ? ` (${trouble.join('; ')})` : ' (nothing failed in the page: the computer is too busy, or the browser is stuck)'}: ${(error as Error).message.split('\n')[0]}`);
+  } finally {
+    page.off('pageerror', onError);
+    page.off('requestfailed', onFailed);
+  }
   await page.evaluate(openAllScreens);
   return page;
 }

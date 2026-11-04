@@ -69,7 +69,7 @@ node bin/elabora.js look examples/phishing-by-numbers --screen funnel --sheet
 ## Test in the LMS emulator
 
 ```bash
-node bin/elabora.js test examples/phishing-by-numbers --profile moodle,successfactors
+node bin/elabora.js test examples/canal-locks --profile moodle,successfactors
 ```
 
 `test` builds the package, then runs it in an LMS emulator. Each profile replays its LMS's launch modes, an abrupt close and a resume ([SCORM 1.2 and the LMS emulator](delivery-scorm12.md)). It takes a few minutes.
@@ -106,10 +106,10 @@ Each template gives a charter (theme, fonts, components, an animated backdrop an
 To reuse the look of a course you already have, create a blank course in its charter ([D69](decisions/D69.md)). It copies the theme, fonts, components, backdrop and player bars, and starts with one screen:
 
 ```bash
-node bin/elabora.js projects create --title "My course" --charter "$PWD/examples/canal-locks"
+node bin/elabora.js projects create --title "My course" --charter examples/canal-locks
 ```
 
-`projects create` writes the course to the Elabora library (`node bin/elabora.js projects path` prints where). `--charter` takes a library project's id or the absolute path of a course folder.
+`projects create` writes the course to the Elabora library (`node bin/elabora.js projects path` prints where). `--charter` takes a library project's id or a course folder, absolute or relative to the folder you run the command in.
 
 ## Work with an agent
 
