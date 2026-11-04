@@ -1,0 +1,124 @@
+{
+  "screen": "practice",
+  "line": "neil-fine",
+  "language": "fr",
+  "textHash": "sha256:74caf27a3dc0277c54421145ef658731b44680bd25e70159b0ab983349cc494c",
+  "duration": 4.82,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:8e2185173c95783126993a95077ba1549ac32db3e2f22bc2aa4c23837d7f3399",
+  "createdAt": "2026-11-04T22:20:43Z",
+  "take": 1,
+  "spokenHash": "sha256:74caf27a3dc0277c54421145ef658731b44680bd25e70159b0ab983349cc494c",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[soupire] Très bien. Mais si vos camions restent à l’arrêt, il ne faudra pas m’en vouloir.",
+  "mouth": "cccccccccccccccccccccssswwwcooooocccccccccccccccccwwwoosssssssooocwwwcwwwwoowwssccwwwwwwssswwoocccccccccccooooccsssooooccccwwwcooosssssoooooocccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Très",
+      "start": 0.663,
+      "end": 0.878,
+      "score": 1
+    },
+    {
+      "text": "bien",
+      "start": 0.904,
+      "end": 1.098,
+      "score": 0.985
+    },
+    {
+      "text": "Mais",
+      "start": 1.627,
+      "end": 1.821,
+      "score": 1
+    },
+    {
+      "text": "si",
+      "start": 1.908,
+      "end": 2.042,
+      "score": 1
+    },
+    {
+      "text": "vos",
+      "start": 2.049,
+      "end": 2.203,
+      "score": 1
+    },
+    {
+      "text": "camions",
+      "start": 2.209,
+      "end": 2.511,
+      "score": 1
+    },
+    {
+      "text": "restent",
+      "start": 2.511,
+      "end": 2.772,
+      "score": 0.981
+    },
+    {
+      "text": "à",
+      "start": 2.772,
+      "end": 2.832,
+      "score": 0.999
+    },
+    {
+      "text": "l’",
+      "start": 2.832,
+      "end": 2.872,
+      "score": 0.716
+    },
+    {
+      "text": "arrêt",
+      "start": 2.872,
+      "end": 3.167,
+      "score": 0.93
+    },
+    {
+      "text": "il",
+      "start": 3.515,
+      "end": 3.595,
+      "score": 1
+    },
+    {
+      "text": "ne",
+      "start": 3.595,
+      "end": 3.689,
+      "score": 1
+    },
+    {
+      "text": "faudra",
+      "start": 3.695,
+      "end": 3.95,
+      "score": 0.994
+    },
+    {
+      "text": "pas",
+      "start": 4.057,
+      "end": 4.218,
+      "score": 0.998
+    },
+    {
+      "text": "m’",
+      "start": 4.218,
+      "end": 4.278,
+      "score": 0.631
+    },
+    {
+      "text": "en",
+      "start": 4.278,
+      "end": 4.372,
+      "score": 1
+    },
+    {
+      "text": "vouloir",
+      "start": 4.378,
+      "end": 4.774,
+      "score": 0.973
+    }
+  ]
+}

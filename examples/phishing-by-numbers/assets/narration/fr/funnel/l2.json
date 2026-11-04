@@ -1,0 +1,160 @@
+{
+  "screen": "funnel",
+  "line": "l2",
+  "language": "fr",
+  "textHash": "sha256:76226a8b153f9027488a901f72a49ecdc37a6e6b97691fb54913b742178e7749",
+  "duration": 7.22,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:3101d44ff3b5e3cf38d37a8ae7af5de74d5a57ef48644627dd2207d1e00542a0",
+  "createdAt": "2026-11-04T22:18:44Z",
+  "take": 1,
+  "spokenHash": "sha256:76226a8b153f9027488a901f72a49ecdc37a6e6b97691fb54913b742178e7749",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Deux personnes sur trois ont ouvert le message, une sur trois a cliqué et une sur douze a saisi un mot de passe.",
+  "mouth": "ccoooocccwwssssssoooosssscccsssswwwoooosswwwwcssssswwwooooowwcsssscoooooossooccccccccccccccwwwoossoooccccssswwwwcoooocssswwwccooocccccccccccccooccccoooosssssssoooooowwooossssscwwoossssoooossoowwwwcoossccccoooccssscccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Deux",
+      "start": 0.06,
+      "end": 0.255,
+      "score": 1
+    },
+    {
+      "text": "personnes",
+      "start": 0.261,
+      "end": 0.716,
+      "score": 0.999
+    },
+    {
+      "text": "sur",
+      "start": 0.722,
+      "end": 0.896,
+      "score": 1
+    },
+    {
+      "text": "trois",
+      "start": 0.923,
+      "end": 1.237,
+      "score": 0.947
+    },
+    {
+      "text": "ont",
+      "start": 1.384,
+      "end": 1.538,
+      "score": 0.998
+    },
+    {
+      "text": "ouvert",
+      "start": 1.584,
+      "end": 1.885,
+      "score": 0.952
+    },
+    {
+      "text": "le",
+      "start": 1.885,
+      "end": 1.979,
+      "score": 0.999
+    },
+    {
+      "text": "message",
+      "start": 2.006,
+      "end": 2.561,
+      "score": 1
+    },
+    {
+      "text": "une",
+      "start": 3.028,
+      "end": 3.203,
+      "score": 0.999
+    },
+    {
+      "text": "sur",
+      "start": 3.229,
+      "end": 3.423,
+      "score": 1
+    },
+    {
+      "text": "trois",
+      "start": 3.45,
+      "end": 3.744,
+      "score": 0.995
+    },
+    {
+      "text": "a",
+      "start": 3.791,
+      "end": 3.865,
+      "score": 0
+    },
+    {
+      "text": "cliqué",
+      "start": 3.931,
+      "end": 4.306,
+      "score": 0.819
+    },
+    {
+      "text": "et",
+      "start": 4.733,
+      "end": 4.847,
+      "score": 0.999
+    },
+    {
+      "text": "une",
+      "start": 4.954,
+      "end": 5.148,
+      "score": 0.873
+    },
+    {
+      "text": "sur",
+      "start": 5.174,
+      "end": 5.389,
+      "score": 0.997
+    },
+    {
+      "text": "douze",
+      "start": 5.435,
+      "end": 5.81,
+      "score": 0.999
+    },
+    {
+      "text": "a",
+      "start": 5.896,
+      "end": 5.97,
+      "score": 0.744
+    },
+    {
+      "text": "saisi",
+      "start": 6.057,
+      "end": 6.372,
+      "score": 1
+    },
+    {
+      "text": "un",
+      "start": 6.438,
+      "end": 6.518,
+      "score": 0.999
+    },
+    {
+      "text": "mot",
+      "start": 6.518,
+      "end": 6.672,
+      "score": 1
+    },
+    {
+      "text": "de",
+      "start": 6.679,
+      "end": 6.773,
+      "score": 0.987
+    },
+    {
+      "text": "passe",
+      "start": 6.779,
+      "end": 7.114,
+      "score": 0.999
+    }
+  ]
+}

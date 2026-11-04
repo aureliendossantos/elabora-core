@@ -784,7 +784,10 @@ const debugHooks = {
   }
 };
 type DebugHooks = typeof debugHooks;
-const chosen = courseState.st.language;
+// The language it opens in: the learner's choice, kept with the progress; otherwise the one the page asks for
+// (?lang=fr, a site that frames the module in its own language), when the course has it.
+const asked = new URLSearchParams(location.search).get('lang');
+const chosen = courseState.st.language ?? asked;
 if (chosen && chosen !== course.language && initial.languages?.includes(chosen)) {
   void courseIn(chosen).then((data) => { if (data) useCourse(data); boot(); });
 } else boot();

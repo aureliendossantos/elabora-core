@@ -1,0 +1,106 @@
+{
+  "screen": "practice",
+  "line": "neil-iban",
+  "language": "fr",
+  "textHash": "sha256:1dacee8801cf265c3db0325d044f144dc06801da598b86327a9059e7031d1770",
+  "duration": 4.12,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:1bca6e12519acf05e0ed4c6d8128e2dfd45693d0af086b9fd2d573bcb8820157",
+  "createdAt": "2026-11-04T22:20:35Z",
+  "take": 1,
+  "spokenHash": "sha256:1dacee8801cf265c3db0325d044f144dc06801da598b86327a9059e7031d1770",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Parfait. Tout est dans l’e-mail : il suffit de recopier le numéro de compte.",
+  "mouth": "cccooossssssssccccccccccccccoooocwwwwwwwwwoooocoosssscccccccccoosssssssssooowwwwwwwccwwwccccwwoooooooocooooooccccooocccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Parfait",
+      "start": 0.04,
+      "end": 0.476,
+      "score": 0.995
+    },
+    {
+      "text": "Tout",
+      "start": 0.905,
+      "end": 1.099,
+      "score": 1
+    },
+    {
+      "text": "est",
+      "start": 1.105,
+      "end": 1.206,
+      "score": 0.999
+    },
+    {
+      "text": "dans",
+      "start": 1.206,
+      "end": 1.327,
+      "score": 0.992
+    },
+    {
+      "text": "l’",
+      "start": 1.327,
+      "end": 1.387,
+      "score": 0.795
+    },
+    {
+      "text": "e-mail",
+      "start": 1.387,
+      "end": 1.762,
+      "score": 0.776
+    },
+    {
+      "text": "il",
+      "start": 2.07,
+      "end": 2.184,
+      "score": 1
+    },
+    {
+      "text": "suffit",
+      "start": 2.231,
+      "end": 2.532,
+      "score": 0.999
+    },
+    {
+      "text": "de",
+      "start": 2.532,
+      "end": 2.627,
+      "score": 1
+    },
+    {
+      "text": "recopier",
+      "start": 2.673,
+      "end": 3.169,
+      "score": 0.991
+    },
+    {
+      "text": "le",
+      "start": 3.176,
+      "end": 3.27,
+      "score": 1
+    },
+    {
+      "text": "numéro",
+      "start": 3.276,
+      "end": 3.591,
+      "score": 0.999
+    },
+    {
+      "text": "de",
+      "start": 3.638,
+      "end": 3.752,
+      "score": 1
+    },
+    {
+      "text": "compte",
+      "start": 3.758,
+      "end": 4.074,
+      "score": 0.952
+    }
+  ]
+}

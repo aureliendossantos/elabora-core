@@ -1,0 +1,130 @@
+{
+  "screen": "steps",
+  "line": "l1",
+  "language": "fr",
+  "textHash": "sha256:3f1e275a7eef368b17c5c8d25b47909a7d77af7cf60cdf69187afda1d0624b37",
+  "duration": 6.61,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:c346189253a05dda43a040bfef896eb0a26b2579818e64429ad108d16e2592fa",
+  "createdAt": "2026-11-04T22:19:42Z",
+  "take": 1,
+  "spokenHash": "sha256:3f1e275a7eef368b17c5c8d25b47909a7d77af7cf60cdf69187afda1d0624b37",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Un e-mail vous surprend ? Faites une pause. Ne cliquez pas, ne répondez pas et ne le transférez pas.",
+  "mouth": "ccwwwwwwwwcsssscooooooossccooooocccccccccccccccccccccwwwcssswwwccoossssssscccccccccccccccccwwwccsssssccoooocccwwwwooccccwwooooosssssccwwwoooooocccwwwooocccooowwoosssccssooooossscwwooooocccooooccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Un",
+      "start": 0.06,
+      "end": 0.174,
+      "score": 0.999
+    },
+    {
+      "text": "e-mail",
+      "start": 0.22,
+      "end": 0.501,
+      "score": 0.482
+    },
+    {
+      "text": "vous",
+      "start": 0.501,
+      "end": 0.675,
+      "score": 0.99
+    },
+    {
+      "text": "surprend",
+      "start": 0.681,
+      "end": 1.096,
+      "score": 0.999
+    },
+    {
+      "text": "Faites",
+      "start": 1.723,
+      "end": 1.963,
+      "score": 0.993
+    },
+    {
+      "text": "une",
+      "start": 1.963,
+      "end": 2.117,
+      "score": 0.965
+    },
+    {
+      "text": "pause",
+      "start": 2.123,
+      "end": 2.458,
+      "score": 1
+    },
+    {
+      "text": "Ne",
+      "start": 3.025,
+      "end": 3.139,
+      "score": 1
+    },
+    {
+      "text": "cliquez",
+      "start": 3.205,
+      "end": 3.599,
+      "score": 0.995
+    },
+    {
+      "text": "pas",
+      "start": 3.626,
+      "end": 3.84,
+      "score": 0.999
+    },
+    {
+      "text": "ne",
+      "start": 4.046,
+      "end": 4.18,
+      "score": 1
+    },
+    {
+      "text": "répondez",
+      "start": 4.246,
+      "end": 4.781,
+      "score": 0.998
+    },
+    {
+      "text": "pas",
+      "start": 4.807,
+      "end": 5.022,
+      "score": 0.999
+    },
+    {
+      "text": "et",
+      "start": 5.168,
+      "end": 5.288,
+      "score": 0.983
+    },
+    {
+      "text": "ne",
+      "start": 5.288,
+      "end": 5.402,
+      "score": 1
+    },
+    {
+      "text": "le",
+      "start": 5.428,
+      "end": 5.542,
+      "score": 1
+    },
+    {
+      "text": "transférez",
+      "start": 5.569,
+      "end": 6.223,
+      "score": 0.995
+    },
+    {
+      "text": "pas",
+      "start": 6.23,
+      "end": 6.424,
+      "score": 0.999
+    }
+  ]
+}

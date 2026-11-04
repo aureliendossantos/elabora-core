@@ -1,0 +1,82 @@
+{
+  "screen": "drills",
+  "line": "l3",
+  "language": "fr",
+  "textHash": "sha256:bfeaeb2539c1a67cf5b6260843e8138648f723e8f0869d01b7f4efa8bb55f3d8",
+  "duration": 2.89,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:0d42dbbb2dc8a2888f3ff1fcf41636c825e04d851b2894053010f53bd21a9f01",
+  "createdAt": "2026-11-04T22:19:09Z",
+  "take": 1,
+  "spokenHash": "sha256:bfeaeb2539c1a67cf5b6260843e8138648f723e8f0869d01b7f4efa8bb55f3d8",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Dans toutes les équipes, on clique moins qu’en janvier.",
+  "mouth": "ccoowwwwcccooosscooooowwwcssooooccsssscccccwwwwcsssoosscccwwwwwwwsssooooooooooooooooccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Dans",
+      "start": 0.08,
+      "end": 0.295,
+      "score": 0.949
+    },
+    {
+      "text": "toutes",
+      "start": 0.321,
+      "end": 0.576,
+      "score": 0.984
+    },
+    {
+      "text": "les",
+      "start": 0.582,
+      "end": 0.716,
+      "score": 1
+    },
+    {
+      "text": "équipes",
+      "start": 0.783,
+      "end": 1.238,
+      "score": 0.97
+    },
+    {
+      "text": "on",
+      "start": 1.465,
+      "end": 1.559,
+      "score": 0.993
+    },
+    {
+      "text": "clique",
+      "start": 1.606,
+      "end": 1.88,
+      "score": 0.999
+    },
+    {
+      "text": "moins",
+      "start": 1.907,
+      "end": 2.168,
+      "score": 0.985
+    },
+    {
+      "text": "qu’",
+      "start": 2.168,
+      "end": 2.288,
+      "score": 0.775
+    },
+    {
+      "text": "en",
+      "start": 2.288,
+      "end": 2.382,
+      "score": 1
+    },
+    {
+      "text": "janvier",
+      "start": 2.388,
+      "end": 2.804,
+      "score": 0.965
+    }
+  ]
+}

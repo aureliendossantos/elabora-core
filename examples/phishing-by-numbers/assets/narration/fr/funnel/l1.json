@@ -1,0 +1,124 @@
+{
+  "screen": "funnel",
+  "line": "l1",
+  "language": "fr",
+  "textHash": "sha256:0b1061557272b2a48809cb313e44cd5f1a6f46bf45ccf9c68233ca89508b124c",
+  "duration": 5.49,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:f81772d03507cdb797046e6fb6f1399dbfd193e98f24d65240e6a2d147c47693",
+  "createdAt": "2026-11-04T22:18:41Z",
+  "take": 1,
+  "spokenHash": "sha256:0b1061557272b2a48809cb313e44cd5f1a6f46bf45ccf9c68233ca89508b124c",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "En janvier, nous vous avons envoyé à tous une fausse demande de réinitialisation de mot de passe.",
+  "mouth": "ccwwwooowwwwsssooocccccccccccwwwwwssssswwwwwwwooosswwwssswwoocccccooooosssccoowwwwccccwwwsssssswwwcooooooooooossooowwwwwcssssooosssssscsssooooooocssccccccssscccssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "En",
+      "start": 0.06,
+      "end": 0.174,
+      "score": 1
+    },
+    {
+      "text": "janvier",
+      "start": 0.2,
+      "end": 0.615,
+      "score": 1
+    },
+    {
+      "text": "nous",
+      "start": 0.982,
+      "end": 1.142,
+      "score": 1
+    },
+    {
+      "text": "vous",
+      "start": 1.142,
+      "end": 1.296,
+      "score": 0.945
+    },
+    {
+      "text": "avons",
+      "start": 1.302,
+      "end": 1.557,
+      "score": 0.989
+    },
+    {
+      "text": "envoyé",
+      "start": 1.563,
+      "end": 1.897,
+      "score": 0.956
+    },
+    {
+      "text": "à",
+      "start": 1.964,
+      "end": 2.038,
+      "score": 0.999
+    },
+    {
+      "text": "tous",
+      "start": 2.124,
+      "end": 2.438,
+      "score": 0.995
+    },
+    {
+      "text": "une",
+      "start": 2.545,
+      "end": 2.699,
+      "score": 0.999
+    },
+    {
+      "text": "fausse",
+      "start": 2.805,
+      "end": 3.16,
+      "score": 0.974
+    },
+    {
+      "text": "demande",
+      "start": 3.166,
+      "end": 3.527,
+      "score": 0.999
+    },
+    {
+      "text": "de",
+      "start": 3.527,
+      "end": 3.641,
+      "score": 1
+    },
+    {
+      "text": "réinitialisation",
+      "start": 3.667,
+      "end": 4.662,
+      "score": 0.963
+    },
+    {
+      "text": "de",
+      "start": 4.709,
+      "end": 4.803,
+      "score": 0.997
+    },
+    {
+      "text": "mot",
+      "start": 4.829,
+      "end": 4.963,
+      "score": 0.954
+    },
+    {
+      "text": "de",
+      "start": 4.969,
+      "end": 5.063,
+      "score": 0.999
+    },
+    {
+      "text": "passe",
+      "start": 5.069,
+      "end": 5.404,
+      "score": 0.99
+    }
+  ]
+}

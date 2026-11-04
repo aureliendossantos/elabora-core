@@ -1,0 +1,112 @@
+{
+  "screen": "practice",
+  "line": "dana-confirmed",
+  "language": "fr",
+  "textHash": "sha256:d46928f0187d26ce68f7b2acfa243aa4e5d7a2839b5fa19e6217cabbe397ca36",
+  "duration": 6.5,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:97344c41943cfd9614e714c286e4dd8efdf61b4d35b8cf5cb950eee37250896a",
+  "createdAt": "2026-11-04T22:20:58Z",
+  "take": 1,
+  "spokenHash": "sha256:d46928f0187d26ce68f7b2acfa243aa4e5d7a2839b5fa19e6217cabbe397ca36",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Dix minutes plus tard, une réponse cordiale arrive : « Je vous confirme le changement. Merci ! Neil. »",
+  "mouth": "ccssooocoooooccccooocccwwwwooooccccccccwwwwwooooccwwssssccwwwwooooowwwwwsssoossssssssssscccccccccccccccccccooooosssccwwwcccoooocooooosssoooosscoooocccccccccccccssscccoooocccccccccccccwwwooossscccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Dix",
+      "start": 0.06,
+      "end": 0.221,
+      "score": 1
+    },
+    {
+      "text": "minutes",
+      "start": 0.221,
+      "end": 0.522,
+      "score": 0.994
+    },
+    {
+      "text": "plus",
+      "start": 0.522,
+      "end": 0.716,
+      "score": 1
+    },
+    {
+      "text": "tard",
+      "start": 0.722,
+      "end": 1.117,
+      "score": 0.967
+    },
+    {
+      "text": "une",
+      "start": 1.324,
+      "end": 1.478,
+      "score": 1
+    },
+    {
+      "text": "réponse",
+      "start": 1.485,
+      "end": 1.9,
+      "score": 0.973
+    },
+    {
+      "text": "cordiale",
+      "start": 1.906,
+      "end": 2.441,
+      "score": 1
+    },
+    {
+      "text": "arrive",
+      "start": 2.468,
+      "end": 2.923,
+      "score": 1
+    },
+    {
+      "text": "Je",
+      "start": 3.571,
+      "end": 3.685,
+      "score": 0.999
+    },
+    {
+      "text": "vous",
+      "start": 3.712,
+      "end": 3.886,
+      "score": 1
+    },
+    {
+      "text": "confirme",
+      "start": 3.892,
+      "end": 4.347,
+      "score": 0.976
+    },
+    {
+      "text": "le",
+      "start": 4.353,
+      "end": 4.468,
+      "score": 1
+    },
+    {
+      "text": "changement",
+      "start": 4.474,
+      "end": 4.909,
+      "score": 1
+    },
+    {
+      "text": "Merci",
+      "start": 5.276,
+      "end": 5.651,
+      "score": 0.999
+    },
+    {
+      "text": "Neil",
+      "start": 6.099,
+      "end": 6.414,
+      "score": 0.749
+    }
+  ]
+}

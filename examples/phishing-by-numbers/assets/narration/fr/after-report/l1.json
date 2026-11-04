@@ -1,0 +1,106 @@
+{
+  "screen": "after-report",
+  "line": "l1",
+  "language": "fr",
+  "textHash": "sha256:a84c56873385292b35565b6e0cb56de7e652352a72439ab088a20c9c645e8a59",
+  "duration": 5.91,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:57015f8a7965f448fc52e9981f9cb8a28f9b5a0cc79855aec65e7ca74caff09d",
+  "createdAt": "2026-11-04T22:19:59Z",
+  "take": 1,
+  "spokenHash": "sha256:a84c56873385292b35565b6e0cb56de7e652352a72439ab088a20c9c645e8a59",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Votre signalement arrive au service sécurité. En quelques minutes, un analyste examine le message.",
+  "mouth": "ccwwwssssssssssssswwoocwwoooowwwssoossooosscwwooooosssscoooccoooooocccooocccccccccccccccoooccwwwcccsssscwwwooocccsscccwwwwwwwooooossscccccccoooooooocwwoowwwooocssscwwoosssssscccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Votre",
+      "start": 0.06,
+      "end": 0.314,
+      "score": 1
+    },
+    {
+      "text": "signalement",
+      "start": 0.401,
+      "end": 0.895,
+      "score": 1
+    },
+    {
+      "text": "arrive",
+      "start": 0.982,
+      "end": 1.296,
+      "score": 0.932
+    },
+    {
+      "text": "au",
+      "start": 1.302,
+      "end": 1.396,
+      "score": 1
+    },
+    {
+      "text": "service",
+      "start": 1.422,
+      "end": 1.817,
+      "score": 0.999
+    },
+    {
+      "text": "sécurité",
+      "start": 1.843,
+      "end": 2.418,
+      "score": 0.993
+    },
+    {
+      "text": "En",
+      "start": 2.925,
+      "end": 3.039,
+      "score": 0.992
+    },
+    {
+      "text": "quelques",
+      "start": 3.045,
+      "end": 3.406,
+      "score": 0.978
+    },
+    {
+      "text": "minutes",
+      "start": 3.406,
+      "end": 3.84,
+      "score": 0.999
+    },
+    {
+      "text": "un",
+      "start": 3.967,
+      "end": 4.081,
+      "score": 1
+    },
+    {
+      "text": "analyste",
+      "start": 4.107,
+      "end": 4.602,
+      "score": 1
+    },
+    {
+      "text": "examine",
+      "start": 4.708,
+      "end": 5.183,
+      "score": 0.999
+    },
+    {
+      "text": "le",
+      "start": 5.189,
+      "end": 5.283,
+      "score": 1
+    },
+    {
+      "text": "message",
+      "start": 5.289,
+      "end": 5.804,
+      "score": 0.999
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "screen": "rules",
+  "line": "l1",
+  "language": "fr",
+  "textHash": "sha256:5bda9da3270e72f73d0c8be2c90ab0fcb89909f0f139d4e3fcf7e3adbd876e39",
+  "duration": 3.36,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:f097ec8c2ebc8528bb0432f2e4b3d737542843db747d03a4626a87c2af9a2d34",
+  "createdAt": "2026-11-04T22:19:28Z",
+  "take": 1,
+  "spokenHash": "sha256:5bda9da3270e72f73d0c8be2c90ab0fcb89909f0f139d4e3fcf7e3adbd876e39",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Chacune de nos règles répond à une attaque que nous avons subie.",
+  "mouth": "cccoowwwcccsssssswwwwwwwssssoooooooooooooccwwoowwoooowwwoooccwwwwcccccccoooooossssssoosssssooocsssscc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Chacune",
+      "start": 0.101,
+      "end": 0.517,
+      "score": 0.999
+    },
+    {
+      "text": "de",
+      "start": 0.523,
+      "end": 0.638,
+      "score": 1
+    },
+    {
+      "text": "nos",
+      "start": 0.644,
+      "end": 0.839,
+      "score": 1
+    },
+    {
+      "text": "règles",
+      "start": 0.845,
+      "end": 1.221,
+      "score": 1
+    },
+    {
+      "text": "répond",
+      "start": 1.227,
+      "end": 1.603,
+      "score": 0.999
+    },
+    {
+      "text": "à",
+      "start": 1.61,
+      "end": 1.684,
+      "score": 0.998
+    },
+    {
+      "text": "une",
+      "start": 1.71,
+      "end": 1.885,
+      "score": 0.987
+    },
+    {
+      "text": "attaque",
+      "start": 1.891,
+      "end": 2.328,
+      "score": 0.985
+    },
+    {
+      "text": "que",
+      "start": 2.354,
+      "end": 2.489,
+      "score": 0.996
+    },
+    {
+      "text": "nous",
+      "start": 2.515,
+      "end": 2.67,
+      "score": 1
+    },
+    {
+      "text": "avons",
+      "start": 2.696,
+      "end": 2.931,
+      "score": 1
+    },
+    {
+      "text": "subie",
+      "start": 2.958,
+      "end": 3.314,
+      "score": 0.833
+    }
+  ]
+}

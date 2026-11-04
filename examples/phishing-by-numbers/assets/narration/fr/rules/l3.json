@@ -1,0 +1,106 @@
+{
+  "screen": "rules",
+  "line": "l3",
+  "language": "fr",
+  "textHash": "sha256:05d2307c4f8550c784a1f14d14013bfa4447e3039ea57127eff172257bdacd11",
+  "duration": 5.58,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:f8835375eac21d40f453947df07c5d531f809beeed7b4ffd06410f566d4ecfb6",
+  "createdAt": "2026-11-04T22:19:33Z",
+  "take": 1,
+  "spokenHash": "sha256:05d2307c4f8550c784a1f14d14013bfa4447e3039ea57127eff172257bdacd11",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Une fausse facture nous a coûté 48 000 livres. Depuis, nous rappelons les fournisseurs.",
+  "mouth": "cwwwwwwccwwwwooocwwwcccssssoooowwwwwwwwsscooccoooccccooooooooossssoowwwwoooooooossssssscccccccccccccccccwwwwccssoooooccccccccccwwwoowwccccoowwwoosssoooooossssoooosscccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Une",
+      "start": 0.04,
+      "end": 0.215,
+      "score": 0.991
+    },
+    {
+      "text": "fausse",
+      "start": 0.261,
+      "end": 0.542,
+      "score": 0.999
+    },
+    {
+      "text": "facture",
+      "start": 0.542,
+      "end": 1.018,
+      "score": 0.983
+    },
+    {
+      "text": "nous",
+      "start": 1.044,
+      "end": 1.218,
+      "score": 0.997
+    },
+    {
+      "text": "a",
+      "start": 1.224,
+      "end": 1.319,
+      "score": 0.805
+    },
+    {
+      "text": "coûté",
+      "start": 1.345,
+      "end": 1.6,
+      "score": 1
+    },
+    {
+      "text": "48",
+      "start": 1.726,
+      "end": 2.228,
+      "score": 0.746
+    },
+    {
+      "text": "000",
+      "start": 2.228,
+      "end": 2.529,
+      "score": 0
+    },
+    {
+      "text": "livres",
+      "start": 2.529,
+      "end": 2.904,
+      "score": 0.965
+    },
+    {
+      "text": "Depuis",
+      "start": 3.473,
+      "end": 3.888,
+      "score": 0.981
+    },
+    {
+      "text": "nous",
+      "start": 4.235,
+      "end": 4.376,
+      "score": 1
+    },
+    {
+      "text": "rappelons",
+      "start": 4.376,
+      "end": 4.777,
+      "score": 0.998
+    },
+    {
+      "text": "les",
+      "start": 4.777,
+      "end": 4.878,
+      "score": 0.983
+    },
+    {
+      "text": "fournisseurs",
+      "start": 4.878,
+      "end": 5.554,
+      "score": 0.996
+    }
+  ]
+}

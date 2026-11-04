@@ -1,0 +1,76 @@
+{
+  "screen": "practice",
+  "line": "neil-rolling",
+  "language": "fr",
+  "textHash": "sha256:8efd4c406fdb37ac558963aaf743acbff5d25d22a3bba54844931dc89013022b",
+  "duration": 3.42,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:b95097fcbfadc4d70179c9ebaae4d31ba9729aadb6206beac43276e95d020997",
+  "createdAt": "2026-11-04T22:20:47Z",
+  "take": 1,
+  "spokenHash": "sha256:8efd4c406fdb37ac558963aaf743acbff5d25d22a3bba54844931dc89013022b",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Formidable. Vos camions continueront à rouler, c’est promis.",
+  "mouth": "cccwwoooocssswwwwcssssscccccccccccccoooccwwwcoooooccooossssoooooooowwwwsssoooooooccccccsssscccoooocsscc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Formidable",
+      "start": 0.06,
+      "end": 0.778,
+      "score": 0.963
+    },
+    {
+      "text": "Vos",
+      "start": 1.207,
+      "end": 1.348,
+      "score": 1
+    },
+    {
+      "text": "camions",
+      "start": 1.348,
+      "end": 1.71,
+      "score": 0.952
+    },
+    {
+      "text": "continueront",
+      "start": 1.71,
+      "end": 2.294,
+      "score": 0.978
+    },
+    {
+      "text": "à",
+      "start": 2.294,
+      "end": 2.368,
+      "score": 1
+    },
+    {
+      "text": "rouler",
+      "start": 2.414,
+      "end": 2.71,
+      "score": 0.996
+    },
+    {
+      "text": "c’",
+      "start": 2.917,
+      "end": 2.978,
+      "score": 0.504
+    },
+    {
+      "text": "est",
+      "start": 2.978,
+      "end": 3.098,
+      "score": 0.941
+    },
+    {
+      "text": "promis",
+      "start": 3.098,
+      "end": 3.42,
+      "score": 0.733
+    }
+  ]
+}

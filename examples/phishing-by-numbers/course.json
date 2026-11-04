@@ -56,6 +56,11 @@
           "provider": "elevenlabs",
           "voice": "CvD6hF1BJzAFN428j1cO",
           "name": "Kristen - Warm, Corporate and Steady"
+        },
+        "fr": {
+          "provider": "elevenlabs",
+          "voice": "CvD6hF1BJzAFN428j1cO",
+          "name": "Kristen - Warm, Corporate and Steady"
         }
       },
       "narrator": true
@@ -69,6 +74,11 @@
       },
       "voices": {
         "en": {
+          "provider": "elevenlabs",
+          "voice": "nXIYu9FT5meibkBbZFT7",
+          "name": "James - Sales Professional"
+        },
+        "fr": {
           "provider": "elevenlabs",
           "voice": "nXIYu9FT5meibkBbZFT7",
           "name": "James - Sales Professional"
@@ -93,6 +103,12 @@
       {
         "text": "4444",
         "say": "four four four four"
+      }
+    ],
+    "fr": [
+      {
+        "text": "4444",
+        "say": "quatre, quatre, quatre, quatre"
       }
     ]
   },
@@ -120,6 +136,9 @@
         },
         {
           "id": "credits"
+        },
+        {
+          "id": "language"
         },
         {
           "id": "exit"

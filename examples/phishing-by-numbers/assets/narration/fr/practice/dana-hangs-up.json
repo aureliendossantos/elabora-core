@@ -1,0 +1,88 @@
+{
+  "screen": "practice",
+  "line": "dana-hangs-up",
+  "language": "fr",
+  "textHash": "sha256:1b2c5f5860a54fcbd0488f18fbd45d8b90754098a6b41f9cf7f5d37bcb03cc74",
+  "duration": 4.09,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:71a2cb89c3acef31dbefc080c1ccec5a47dd89aab098c8fe50555d1d7d2dc664",
+  "createdAt": "2026-11-04T22:20:50Z",
+  "take": 1,
+  "spokenHash": "sha256:1b2c5f5860a54fcbd0488f18fbd45d8b90754098a6b41f9cf7f5d37bcb03cc74",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Neil raccroche. Son e-mail est toujours dans votre boîte de réception.",
+  "mouth": "ccwwwooooocwwwwccsssssssssscccccccccccccccccccssssswwwooocwwssssssccccooosssooosscwwwooocccooocwwwwssooooooccooocoooooooccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Neil",
+      "start": 0.06,
+      "end": 0.315,
+      "score": 0.727
+    },
+    {
+      "text": "raccroche",
+      "start": 0.361,
+      "end": 0.916,
+      "score": 0.991
+    },
+    {
+      "text": "Son",
+      "start": 1.544,
+      "end": 1.718,
+      "score": 1
+    },
+    {
+      "text": "e-mail",
+      "start": 1.784,
+      "end": 2.079,
+      "score": 0.424
+    },
+    {
+      "text": "est",
+      "start": 2.125,
+      "end": 2.259,
+      "score": 0.987
+    },
+    {
+      "text": "toujours",
+      "start": 2.286,
+      "end": 2.707,
+      "score": 0.995
+    },
+    {
+      "text": "dans",
+      "start": 2.707,
+      "end": 2.867,
+      "score": 1
+    },
+    {
+      "text": "votre",
+      "start": 2.867,
+      "end": 3.081,
+      "score": 1
+    },
+    {
+      "text": "boîte",
+      "start": 3.128,
+      "end": 3.348,
+      "score": 0.924
+    },
+    {
+      "text": "de",
+      "start": 3.348,
+      "end": 3.462,
+      "score": 1
+    },
+    {
+      "text": "réception",
+      "start": 3.469,
+      "end": 4.004,
+      "score": 0.989
+    }
+  ]
+}

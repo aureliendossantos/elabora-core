@@ -1,0 +1,94 @@
+{
+  "screen": "rules",
+  "line": "l2",
+  "language": "fr",
+  "textHash": "sha256:dd4a210cfc3af1099fcca1d1d00cadaf0a8ed090e658645666c1ca055767c0a4",
+  "duration": 5.98,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:e04cd9894aa514a54161a60e5f86be93a33c772d1be935af9be45b50bdf7ca79",
+  "createdAt": "2026-11-04T22:19:30Z",
+  "take": 1,
+  "spokenHash": "sha256:dd4a210cfc3af1099fcca1d1d00cadaf0a8ed090e658645666c1ca055767c0a4",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "La connexion en deux étapes en 2021. Le bouton « Signaler » en 2023.",
+  "mouth": "ccwwwccwwwwoossssssssoowwwwwwwwwwssssoocccwwwcccccccooooooooooooooooooooosscssooosscccccccccccccccccccccwwwwwcssccwwwoooccccccsssssswwwooooooccccccwwoooooooowwooooooooocssssooooccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "La",
+      "start": 0.06,
+      "end": 0.174,
+      "score": 1
+    },
+    {
+      "text": "connexion",
+      "start": 0.221,
+      "end": 0.756,
+      "score": 0.975
+    },
+    {
+      "text": "en",
+      "start": 0.803,
+      "end": 0.897,
+      "score": 0.999
+    },
+    {
+      "text": "deux",
+      "start": 0.963,
+      "end": 1.198,
+      "score": 0.964
+    },
+    {
+      "text": "étapes",
+      "start": 1.264,
+      "end": 1.72,
+      "score": 0.983
+    },
+    {
+      "text": "en",
+      "start": 1.766,
+      "end": 1.86,
+      "score": 1
+    },
+    {
+      "text": "2021",
+      "start": 1.927,
+      "end": 2.783,
+      "score": 0.989
+    },
+    {
+      "text": "Le",
+      "start": 3.452,
+      "end": 3.586,
+      "score": 0.999
+    },
+    {
+      "text": "bouton",
+      "start": 3.612,
+      "end": 3.947,
+      "score": 0.987
+    },
+    {
+      "text": "Signaler",
+      "start": 4.154,
+      "end": 4.71,
+      "score": 0.732
+    },
+    {
+      "text": "en",
+      "start": 4.937,
+      "end": 5.031,
+      "score": 1
+    },
+    {
+      "text": "2023",
+      "start": 5.077,
+      "end": 5.934,
+      "score": 0.98
+    }
+  ]
+}

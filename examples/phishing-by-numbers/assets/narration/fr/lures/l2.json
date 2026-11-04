@@ -1,0 +1,166 @@
+{
+  "screen": "lures",
+  "line": "l2",
+  "language": "fr",
+  "textHash": "sha256:9deafedc424747e47f4ac2809dd6301be1b0538e395dd16da9d2dd202ebfd1b4",
+  "duration": 9.09,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:aca842952ef12c1882c250bfe891ee8516a05d228f16b82d8ee1b083143ff1e7",
+  "createdAt": "2026-11-04T22:18:37Z",
+  "take": 1,
+  "spokenHash": "sha256:9deafedc424747e47f4ac2809dd6301be1b0538e395dd16da9d2dd202ebfd1b4",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "D’abord des avis de livraison, puis des factures, des réinitialisations de mot de passe, des messages du service paie et quelques autres prétextes.",
+  "mouth": "ccwwwoocwwwwwsssoooooowwwsssscwwwwoooooowwoossssoocccccccccccccssssooosssscccwwwccccsssoooooooooccccccoooooooosssooooooooccwwoooooowwwsssoowwooocoooccccccwwwooocccccccccccccccwwwwwcssscwwwwwsssoooossswwsssoosssccccwwwwwsscccccoooccccoooocccwwwwooosssssccoooocwwwwccsssscssc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "D’",
+      "start": 0.06,
+      "end": 0.14,
+      "score": 0.619
+    },
+    {
+      "text": "abord",
+      "start": 0.14,
+      "end": 0.535,
+      "score": 1
+    },
+    {
+      "text": "des",
+      "start": 0.561,
+      "end": 0.715,
+      "score": 0.998
+    },
+    {
+      "text": "avis",
+      "start": 0.761,
+      "end": 1.001,
+      "score": 0.961
+    },
+    {
+      "text": "de",
+      "start": 1.001,
+      "end": 1.095,
+      "score": 1
+    },
+    {
+      "text": "livraison",
+      "start": 1.101,
+      "end": 1.676,
+      "score": 0.993
+    },
+    {
+      "text": "puis",
+      "start": 2.042,
+      "end": 2.317,
+      "score": 0.998
+    },
+    {
+      "text": "des",
+      "start": 2.363,
+      "end": 2.517,
+      "score": 0.936
+    },
+    {
+      "text": "factures",
+      "start": 2.523,
+      "end": 3.278,
+      "score": 1
+    },
+    {
+      "text": "des",
+      "start": 3.464,
+      "end": 3.638,
+      "score": 0.999
+    },
+    {
+      "text": "réinitialisations",
+      "start": 3.664,
+      "end": 4.705,
+      "score": 0.961
+    },
+    {
+      "text": "de",
+      "start": 4.705,
+      "end": 4.799,
+      "score": 0.996
+    },
+    {
+      "text": "mot",
+      "start": 4.805,
+      "end": 4.939,
+      "score": 0.77
+    },
+    {
+      "text": "de",
+      "start": 4.945,
+      "end": 5.06,
+      "score": 0.84
+    },
+    {
+      "text": "passe",
+      "start": 5.066,
+      "end": 5.48,
+      "score": 0.908
+    },
+    {
+      "text": "des",
+      "start": 5.846,
+      "end": 5.981,
+      "score": 0.999
+    },
+    {
+      "text": "messages",
+      "start": 5.987,
+      "end": 6.447,
+      "score": 0.999
+    },
+    {
+      "text": "du",
+      "start": 6.447,
+      "end": 6.561,
+      "score": 0.994
+    },
+    {
+      "text": "service",
+      "start": 6.607,
+      "end": 7.022,
+      "score": 0.835
+    },
+    {
+      "text": "paie",
+      "start": 7.068,
+      "end": 7.362,
+      "score": 0.223
+    },
+    {
+      "text": "et",
+      "start": 7.548,
+      "end": 7.662,
+      "score": 0.996
+    },
+    {
+      "text": "quelques",
+      "start": 7.729,
+      "end": 8.123,
+      "score": 0.961
+    },
+    {
+      "text": "autres",
+      "start": 8.169,
+      "end": 8.429,
+      "score": 0.981
+    },
+    {
+      "text": "prétextes",
+      "start": 8.429,
+      "end": 9.064,
+      "score": 0.995
+    }
+  ]
+}

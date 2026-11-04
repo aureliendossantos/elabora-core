@@ -1,0 +1,130 @@
+{
+  "screen": "steps",
+  "line": "l3",
+  "language": "fr",
+  "textHash": "sha256:4f7f13b9c35c32417227b407765ca2ddc73111ae46dc8163cb6501f1b74981e3",
+  "duration": 6.8,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:5da7bded531e9193dd3d6f0cec92c64403e8f6884d11c2bb5ec3afab8fd0d14e",
+  "createdAt": "2026-11-04T22:19:49Z",
+  "take": 1,
+  "spokenHash": "sha256:f85b8f8ae49414f85b5f85e41cfb8cc21da088affde129e5ee3c3947a4fa29ae",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Vous avez cliqué ou saisi un mot de passe ? Appelez tout de suite le service sécurité au 4444.",
+  "mouth": "cooooowwwoooocssooocooooooooooooossswwoooooowwwcoosscccwwwwcssssscccccccccccccccwwcccooooocccoooocoooooooocooooossswwooooossssoosssssoooocccwwooocccooocccoowwwccssccccwwwwwcssssccccwwwwcsssccoooosscssscccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Vous",
+      "start": 0.02,
+      "end": 0.194,
+      "score": 1
+    },
+    {
+      "text": "avez",
+      "start": 0.201,
+      "end": 0.435,
+      "score": 0.999
+    },
+    {
+      "text": "cliqué",
+      "start": 0.441,
+      "end": 0.776,
+      "score": 0.999
+    },
+    {
+      "text": "ou",
+      "start": 0.963,
+      "end": 1.057,
+      "score": 0.994
+    },
+    {
+      "text": "saisi",
+      "start": 1.103,
+      "end": 1.418,
+      "score": 1
+    },
+    {
+      "text": "un",
+      "start": 1.464,
+      "end": 1.545,
+      "score": 0.999
+    },
+    {
+      "text": "mot",
+      "start": 1.545,
+      "end": 1.685,
+      "score": 0.987
+    },
+    {
+      "text": "de",
+      "start": 1.685,
+      "end": 1.785,
+      "score": 0.893
+    },
+    {
+      "text": "passe",
+      "start": 1.785,
+      "end": 2.16,
+      "score": 0.953
+    },
+    {
+      "text": "Appelez",
+      "start": 2.668,
+      "end": 3.023,
+      "score": 0.991
+    },
+    {
+      "text": "tout",
+      "start": 3.089,
+      "end": 3.25,
+      "score": 1
+    },
+    {
+      "text": "de",
+      "start": 3.25,
+      "end": 3.344,
+      "score": 1
+    },
+    {
+      "text": "suite",
+      "start": 3.37,
+      "end": 3.625,
+      "score": 1
+    },
+    {
+      "text": "le",
+      "start": 3.631,
+      "end": 3.745,
+      "score": 0.999
+    },
+    {
+      "text": "service",
+      "start": 3.791,
+      "end": 4.166,
+      "score": 0.992
+    },
+    {
+      "text": "sécurité",
+      "start": 4.172,
+      "end": 4.748,
+      "score": 0.996
+    },
+    {
+      "text": "au",
+      "start": 4.955,
+      "end": 5.049,
+      "score": 1
+    },
+    {
+      "text": "4444",
+      "start": 5.135,
+      "end": 6.714,
+      "score": 0.64
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "screen": "origins",
+  "line": "l1",
+  "language": "fr",
+  "textHash": "sha256:97d814794409ba2750a8c1685df96fb5a530721b48d0b752a528ceac8e142977",
+  "duration": 3.73,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:7e16f1f01f30718cc86b20476b017faa34065063736b34d806d5a0d4f46a50d7",
+  "createdAt": "2026-11-04T22:18:26Z",
+  "take": 1,
+  "spokenHash": "sha256:97d814794409ba2750a8c1685df96fb5a530721b48d0b752a528ceac8e142977",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Par où commencent la plupart de nos incidents ? Par un e-mail.",
+  "mouth": "cccoosssccooocccwwccoooooccwwwwcccoooccwwwwssoooooossooosssssssooooocccccccccccccccccccwwwssooowwwwwwwcssscssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Par",
+      "start": 0.04,
+      "end": 0.214,
+      "score": 1
+    },
+    {
+      "text": "où",
+      "start": 0.341,
+      "end": 0.435,
+      "score": 0.999
+    },
+    {
+      "text": "commencent",
+      "start": 0.501,
+      "end": 0.943,
+      "score": 0.882
+    },
+    {
+      "text": "la",
+      "start": 0.943,
+      "end": 1.057,
+      "score": 1
+    },
+    {
+      "text": "plupart",
+      "start": 1.063,
+      "end": 1.504,
+      "score": 0.972
+    },
+    {
+      "text": "de",
+      "start": 1.504,
+      "end": 1.598,
+      "score": 1
+    },
+    {
+      "text": "nos",
+      "start": 1.624,
+      "end": 1.779,
+      "score": 1
+    },
+    {
+      "text": "incidents",
+      "start": 1.825,
+      "end": 2.28,
+      "score": 0.999
+    },
+    {
+      "text": "Par",
+      "start": 2.868,
+      "end": 3.042,
+      "score": 0.945
+    },
+    {
+      "text": "un",
+      "start": 3.068,
+      "end": 3.203,
+      "score": 0.999
+    },
+    {
+      "text": "e-mail",
+      "start": 3.249,
+      "end": 3.624,
+      "score": 0.911
+    }
+  ]
+}

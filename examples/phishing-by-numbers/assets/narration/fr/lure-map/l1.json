@@ -1,0 +1,94 @@
+{
+  "screen": "lure-map",
+  "line": "l1",
+  "language": "fr",
+  "textHash": "sha256:601201e0f0a6bc4dfb10f9bb162b1d21f29e2005cccf6c24be1aeb63fe0b3320",
+  "duration": 5.69,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:4167187dad6c1dd52f988d4f58579bdd7fd1f49c1513bd9a34b752c8d692b0a7",
+  "createdAt": "2026-11-04T22:18:51Z",
+  "take": 1,
+  "spokenHash": "sha256:601201e0f0a6bc4dfb10f9bb162b1d21f29e2005cccf6c24be1aeb63fe0b3320",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Pour chaque prétexte, regardez deux choses : est-il fréquent ? Et fait-il souvent cliquer ?",
+  "mouth": "ccooooooowwcccccoooccwwwwccsssccsscccooooowwwooooooooooowwwssssooosssssssccccccccccccccwwwcooooooccwwwwcwwwssccccccccccccccwwwwcccccccccccwwwcoooooooosssssssssssssscoooocc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Pour",
+      "start": 0.02,
+      "end": 0.194,
+      "score": 0.959
+    },
+    {
+      "text": "chaque",
+      "start": 0.22,
+      "end": 0.461,
+      "score": 0.999
+    },
+    {
+      "text": "prétexte",
+      "start": 0.461,
+      "end": 1.096,
+      "score": 0.995
+    },
+    {
+      "text": "regardez",
+      "start": 1.282,
+      "end": 1.737,
+      "score": 0.875
+    },
+    {
+      "text": "deux",
+      "start": 1.803,
+      "end": 1.997,
+      "score": 1
+    },
+    {
+      "text": "choses",
+      "start": 2.024,
+      "end": 2.438,
+      "score": 0.984
+    },
+    {
+      "text": "est-il",
+      "start": 2.885,
+      "end": 3.2,
+      "score": 1
+    },
+    {
+      "text": "fréquent",
+      "start": 3.246,
+      "end": 3.64,
+      "score": 1
+    },
+    {
+      "text": "Et",
+      "start": 4.107,
+      "end": 4.241,
+      "score": 1
+    },
+    {
+      "text": "fait-il",
+      "start": 4.528,
+      "end": 4.903,
+      "score": 0.998
+    },
+    {
+      "text": "souvent",
+      "start": 4.989,
+      "end": 5.303,
+      "score": 0.939
+    },
+    {
+      "text": "cliquer",
+      "start": 5.309,
+      "end": 5.644,
+      "score": 0.991
+    }
+  ]
+}

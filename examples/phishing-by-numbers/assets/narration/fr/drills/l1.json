@@ -1,0 +1,154 @@
+{
+  "screen": "drills",
+  "line": "l1",
+  "language": "fr",
+  "textHash": "sha256:bde7ff7d29aac6a268aefc14cfea0e08783b7e7cd5a85f2b2e7cfbfbae2415c3",
+  "duration": 8.74,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:18e937644f822a39ab029b9767318f21df4156a9cc0718b2b928f86a89e89101",
+  "createdAt": "2026-11-04T22:19:04Z",
+  "take": 1,
+  "spokenHash": "sha256:bde7ff7d29aac6a268aefc14cfea0e08783b7e7cd5a85f2b2e7cfbfbae2415c3",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "En janvier, une personne sur trois a cliqué pendant l’exercice. En mai, après plusieurs exercices mensuels, c’était une sur cinq.",
+  "mouth": "ccwwwwoowwwoooooooccccccccccccccwwwwccwwssssssssssooooccccsswwwwwcoooccssooooccooooccoooooooooossooocssssoooooocccccccccccccccccccccwwwwcwwwwwccccccccccccooccsswwwcccoooooowwwssooooooooccccoossscooossscwwwwwwsssscccccsssooccwwwwccccooooosssooooosssssssssssccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "En",
+      "start": 0.06,
+      "end": 0.174,
+      "score": 1
+    },
+    {
+      "text": "janvier",
+      "start": 0.201,
+      "end": 0.615,
+      "score": 0.987
+    },
+    {
+      "text": "une",
+      "start": 1.062,
+      "end": 1.217,
+      "score": 1
+    },
+    {
+      "text": "personne",
+      "start": 1.223,
+      "end": 1.638,
+      "score": 0.981
+    },
+    {
+      "text": "sur",
+      "start": 1.664,
+      "end": 1.838,
+      "score": 1
+    },
+    {
+      "text": "trois",
+      "start": 1.864,
+      "end": 2.159,
+      "score": 0.96
+    },
+    {
+      "text": "a",
+      "start": 2.205,
+      "end": 2.279,
+      "score": 0.66
+    },
+    {
+      "text": "cliqué",
+      "start": 2.365,
+      "end": 2.72,
+      "score": 0.98
+    },
+    {
+      "text": "pendant",
+      "start": 2.786,
+      "end": 3.047,
+      "score": 1
+    },
+    {
+      "text": "l’",
+      "start": 3.047,
+      "end": 3.127,
+      "score": 0.768
+    },
+    {
+      "text": "exercice",
+      "start": 3.127,
+      "end": 3.702,
+      "score": 1
+    },
+    {
+      "text": "En",
+      "start": 4.39,
+      "end": 4.484,
+      "score": 1
+    },
+    {
+      "text": "mai",
+      "start": 4.53,
+      "end": 4.725,
+      "score": 1
+    },
+    {
+      "text": "après",
+      "start": 5.132,
+      "end": 5.446,
+      "score": 1
+    },
+    {
+      "text": "plusieurs",
+      "start": 5.473,
+      "end": 5.928,
+      "score": 0.984
+    },
+    {
+      "text": "exercices",
+      "start": 5.954,
+      "end": 6.455,
+      "score": 0.777
+    },
+    {
+      "text": "mensuels",
+      "start": 6.455,
+      "end": 7.07,
+      "score": 1
+    },
+    {
+      "text": "c’",
+      "start": 7.257,
+      "end": 7.337,
+      "score": 0.821
+    },
+    {
+      "text": "était",
+      "start": 7.337,
+      "end": 7.631,
+      "score": 0.993
+    },
+    {
+      "text": "une",
+      "start": 7.778,
+      "end": 7.992,
+      "score": 0.92
+    },
+    {
+      "text": "sur",
+      "start": 8.038,
+      "end": 8.253,
+      "score": 1
+    },
+    {
+      "text": "cinq",
+      "start": 8.299,
+      "end": 8.614,
+      "score": 0.936
+    }
+  ]
+}

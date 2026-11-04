@@ -1,0 +1,3328 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="fr">
+  <file id="f1" original="phishing-by-numbers@1.0.0" xml:space="preserve">
+    <unit id="course.title">
+      <notes>
+        <note category="location">course.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Course title</note>
+      </notes>
+      <segment state="translated">
+        <source>Phishing by numbers</source>
+        <target>L’hameçonnage en chiffres</target>
+      </segment>
+    </unit>
+    <unit id="course.description">
+      <notes>
+        <note category="location">course.json /description</note>
+        <note category="format">text</note>
+        <note category="context">Course description (catalogue)</note>
+      </notes>
+      <segment state="translated">
+        <source>A 10-minute narrated module for the employees of Quillon Freight (a fictional company): spotting and reporting phishing, told through the company's own numbers, in twelve charts that follow the voice.</source>
+        <target>Dix minutes pour apprendre à repérer et à signaler les e-mails d’hameçonnage chez Quillon Freight, une entreprise fictive. Douze graphiques prennent vie au fil du récit de Dana, du service sécurité.</target>
+      </segment>
+    </unit>
+    <unit id="course.section.threat.title">
+      <notes>
+        <note category="location">course.json /sections/0/title</note>
+        <note category="format">text</note>
+        <note category="context">Section of the course outline</note>
+      </notes>
+      <segment state="translated">
+        <source>The threat</source>
+        <target>La menace</target>
+      </segment>
+    </unit>
+    <unit id="course.section.catches.title">
+      <notes>
+        <note category="location">course.json /sections/1/title</note>
+        <note category="format">text</note>
+        <note category="context">Section of the course outline</note>
+      </notes>
+      <segment state="translated">
+        <source>How it catches us</source>
+        <target>Comment le piège fonctionne</target>
+      </segment>
+    </unit>
+    <unit id="course.section.changed.title">
+      <notes>
+        <note category="location">course.json /sections/2/title</note>
+        <note category="format">text</note>
+        <note category="context">Section of the course outline</note>
+      </notes>
+      <segment state="translated">
+        <source>What changed</source>
+        <target>Ce qui a changé</target>
+      </segment>
+    </unit>
+    <unit id="course.section.your-move.title">
+      <notes>
+        <note category="location">course.json /sections/3/title</note>
+        <note category="format">text</note>
+        <note category="context">Section of the course outline</note>
+      </notes>
+      <segment state="translated">
+        <source>Your move</source>
+        <target>À vous d’agir</target>
+      </segment>
+    </unit>
+    <unit id="course.speaker.guide.name">
+      <notes>
+        <note category="location">course.json /speakers/0/name</note>
+        <note category="format">text</note>
+        <note category="context">Name of a voice of the narration, shown in captions and in the transcript</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Dana, security desk</source>
+        <target>Dana, service sécurité</target>
+      </segment>
+    </unit>
+    <unit id="course.speaker.neil.name">
+      <notes>
+        <note category="location">course.json /speakers/1/name</note>
+        <note category="format">text</note>
+        <note category="context">Name of a voice of the narration, shown in captions and in the transcript</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Neil</source>
+        <target>Neil</target>
+      </segment>
+    </unit>
+    <unit id="course.speaker.you.name">
+      <notes>
+        <note category="location">course.json /speakers/2/name</note>
+        <note category="format">text</note>
+        <note category="context">Name of a voice of the narration, shown in captions and in the transcript</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>You</source>
+        <target>Vous</target>
+      </segment>
+    </unit>
+    <unit id="plan.title">
+      <notes>
+        <note category="location">plan.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Title of the validated plan</note>
+      </notes>
+      <segment state="translated">
+        <source>Phishing by numbers</source>
+        <target>L’hameçonnage en chiffres</target>
+      </segment>
+    </unit>
+    <unit id="plan.businessGoal">
+      <notes>
+        <note category="location">plan.json /businessGoal</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>At Quillon Freight (fictional company), raise the share of employees who report a phishing drill to the security desk from 1 in 7 to 1 in 2 by the end of 2026, and keep password entries in drills under 2%.</source>
+        <target>Chez Quillon Freight (entreprise fictive), faire passer d’une personne sur sept à une sur deux la proportion du personnel qui signale les simulations d’hameçonnage au service sécurité d’ici fin 2026. Maintenir sous les 2 % la part des participants qui saisissent un mot de passe lors des exercices.</target>
+      </segment>
+    </unit>
+    <unit id="plan.audience.role">
+      <notes>
+        <note category="location">plan.json /audience/role</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Every employee of Quillon Freight (fictional), a freight and logistics company of 1,200 people: office staff, drivers and warehouse teams who read email at work</source>
+        <target>Les 1 200 salariés de Quillon Freight, entreprise fictive de transport et de logistique : personnel de bureau, conducteurs et équipes d’entrepôt qui consultent leurs e-mails au travail.</target>
+      </segment>
+    </unit>
+    <unit id="plan.audience.notes">
+      <notes>
+        <note category="location">plan.json /audience/notes</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Have all received the monthly drills since January 2025. Know the Report button exists; most do not know what happens after they press it, nor which lures work best on them.</source>
+        <target>Tout le personnel reçoit les simulations mensuelles depuis janvier 2025 et connaît le bouton « Signaler ». La plupart des salariés ignorent ce qui se passe ensuite et quels pièges fonctionnent le mieux auprès d’eux.</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-1.statement">
+      <notes>
+        <note category="location">plan.json /objectives/0/statement</note>
+        <note category="format">text</note>
+        <note category="context">Learning objective</note>
+      </notes>
+      <segment state="translated">
+        <source>Spot the signs of phishing in a work email: an unexpected request for a password, money or a file, and a sender or link that does not match who it claims to be.</source>
+        <target>Repérer les signes d’hameçonnage dans un e-mail professionnel : demande inattendue de mot de passe, d’argent ou de fichier ; adresse d’expédition ou lien qui ne correspond pas à l’organisme annoncé.</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-1.short">
+      <notes>
+        <note category="location">plan.json /objectives/0/short</note>
+        <note category="format">text</note>
+        <note category="context">Short name of the learning objective, three to five words</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Spot a phishing email</source>
+        <target>Repérer un e-mail d’hameçonnage</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-1.criterion">
+      <notes>
+        <note category="location">plan.json /objectives/0/criterion</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Right choice in a realistic email scenario, with the signs named in the feedback</source>
+        <target>Choisir la bonne conduite face à un e-mail réaliste ; l’explication précise les indices à repérer.</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-2.statement">
+      <notes>
+        <note category="location">plan.json /objectives/1/statement</note>
+        <note category="format">text</note>
+        <note category="context">Learning objective</note>
+      </notes>
+      <segment state="translated">
+        <source>Report a suspicious email with the Report button rather than replying or forwarding it, and call the security desk at once after a click or a typed password.</source>
+        <target>Signaler un e-mail suspect avec le bouton « Signaler », sans y répondre ni le transférer. Appeler immédiatement le service sécurité si l’on a cliqué ou saisi un mot de passe.</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-2.short">
+      <notes>
+        <note category="location">plan.json /objectives/1/short</note>
+        <note category="format">text</note>
+        <note category="context">Short name of the learning objective, three to five words</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Report, then call if clicked</source>
+        <target>Signaler le message ; en cas de clic, appeler sans attendre</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-2.criterion">
+      <notes>
+        <note category="location">plan.json /objectives/1/criterion</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Chooses to report in the scenario; names the call to 4444 after a click</source>
+        <target>Choisir de signaler le message dans la mise en situation ; indiquer qu’après un clic, il faut appeler le 4444.</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-1.title">
+      <notes>
+        <note category="location">plan.json /items/0/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Phishing at Quillon, in three numbers</source>
+        <target>L’hameçonnage chez Quillon en trois chiffres</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-1.part">
+      <notes>
+        <note category="location">plan.json /items/0/part</note>
+        <note category="format">text</note>
+        <note category="context">Part of the module the item belongs to: the same words for every item of the part</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>The threat</source>
+        <target>La menace</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-1.description">
+      <notes>
+        <note category="location">plan.json /items/0/description</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Three figures frame the module: 1,840 phishing emails reported in 2025, 62% of security incidents started by an email, and a phish now blocked 11 minutes after the first report (4 h 10 in 2022).</source>
+        <target>Trois chiffres donnent le ton : 1 840 e-mails d’hameçonnage signalés en 2025, 62 % des incidents de sécurité déclenchés par un e-mail et un délai de blocage ramené à 11 minutes après le premier signalement, contre 4 h 10 en 2022.</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-2.title">
+      <notes>
+        <note category="location">plan.json /items/1/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Where attacks start and what they look like</source>
+        <target>D’où viennent les attaques et à quoi ressemblent-elles ?</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-2.part">
+      <notes>
+        <note category="location">plan.json /items/1/part</note>
+        <note category="format">text</note>
+        <note category="context">Part of the module the item belongs to: the same words for every item of the part</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>The threat</source>
+        <target>La menace</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-2.description">
+      <notes>
+        <note category="location">plan.json /items/1/description</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Where the 74 incidents of 2025 started (email far ahead of websites, phone calls and USB sticks), and what the 1,840 phishing emails pretended to be: delivery notices, invoices, password resets, payroll messages.</source>
+        <target>L’origine des 74 incidents de 2025 : les e-mails arrivent loin devant les sites web, les appels et les clés USB. Les 1 840 e-mails d’hameçonnage imitaient notamment des avis de livraison, des factures, des demandes de réinitialisation de mot de passe et des messages du service paie.</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-3.title">
+      <notes>
+        <note category="location">plan.json /items/2/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>How a phish catches people</source>
+        <target>Comment un e-mail nous piège</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-3.part">
+      <notes>
+        <note category="location">plan.json /items/2/part</note>
+        <note category="format">text</note>
+        <note category="context">Part of the module the item belongs to: the same words for every item of the part</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>How it catches us</source>
+        <target>Comment le piège fonctionne</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-3.description">
+      <notes>
+        <note category="location">plan.json /items/2/description</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>The January 2025 drill as a funnel (1,200 sent, 790 opened, 384 clicked, 100 typed a password) and the 1 in 7 who reported it; then the lures placed by how often they come and how often people click: invoices and password resets are frequent and convincing.</source>
+        <target>La simulation de janvier 2025, étape par étape : 1 200 e-mails envoyés, 790 personnes ont ouvert le message, 384 ont cliqué et 100 ont saisi un mot de passe. Une personne sur sept a signalé le message. Comparaison des prétextes selon leur fréquence et leur taux de clic : les factures et les réinitialisations de mot de passe sont fréquentes et convaincantes.</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-4.title">
+      <notes>
+        <note category="location">plan.json /items/3/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>What reporting and drills changed</source>
+        <target>Ce que les signalements et les exercices ont changé</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-4.part">
+      <notes>
+        <note category="location">plan.json /items/3/part</note>
+        <note category="format">text</note>
+        <note category="context">Part of the module the item belongs to: the same words for every item of the part</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>What changed</source>
+        <target>Ce qui a changé</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-4.description">
+      <notes>
+        <note category="location">plan.json /items/3/description</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>The learner predicts the click rate of the November drill (5%, from 32% in January), then sees that every team clicks less and the warehouse still most; reports per month before and after the one-click Report button (2023); each rule of the policy answered an attack (two-step sign-in, Report button, supplier call-back, drills).</source>
+        <target>Estimer le taux de clic de novembre (5 %, contre 32 % en janvier), puis comparer les équipes : toutes cliquent moins, mais l’entrepôt reste en tête. Comparer le nombre mensuel de signalements avant et après l’ajout du bouton « Signaler » en 2023. Relier chaque mesure à l’attaque qui l’a motivée : connexion en deux étapes, bouton « Signaler », rappel des fournisseurs et exercices.</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-5.title">
+      <notes>
+        <note category="location">plan.json /items/4/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>What to do with a suspicious email</source>
+        <target>Que faire face à un e-mail suspect ?</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-5.part">
+      <notes>
+        <note category="location">plan.json /items/4/part</note>
+        <note category="format">text</note>
+        <note category="context">Part of the module the item belongs to: the same words for every item of the part</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Your move</source>
+        <target>À vous d’agir</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-5.description">
+      <notes>
+        <note category="location">plan.json /items/4/description</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Pause, check, report, and call 4444 after a click, with an unscored check question on what to do first after a click; what a report sets off (triage, block for all 1,200 inboxes, warning, next drill); the decision path for an unexpected email.</source>
+        <target>Faire une pause, vérifier, signaler. Après un clic, appeler le 4444. Une question non notée porte sur le premier geste après un clic. Suivre les étapes du signalement (analyse, blocage pour les 1 200 boîtes mail, alerte, prochain exercice), puis le chemin à suivre face à un e-mail inattendu.</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-6.title">
+      <notes>
+        <note category="location">plan.json /items/5/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Your turn: new bank details</source>
+        <target>À vous de jouer : un changement de coordonnées bancaires</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-6.part">
+      <notes>
+        <note category="location">plan.json /items/5/part</note>
+        <note category="format">text</note>
+        <note category="context">Part of the module the item belongs to: the same words for every item of the part</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Your move</source>
+        <target>À vous d’agir</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-6.description">
+      <notes>
+        <note category="location">plan.json /items/5/description</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Unscored decision: an email from a known supplier's lookalike address asks Finance to pay this week's invoice to new bank details. Report it, reply to check, or forward it to Finance, with feedback on each.</source>
+        <target>Décision non notée : un e-mail imite l’adresse d’un fournisseur connu et demande au service financier de régler la facture de la semaine sur un nouveau compte. Signaler le message, répondre pour vérifier ou le transférer au service financier : chaque choix est expliqué.</target>
+      </segment>
+    </unit>
+    <unit id="plan.spacing.0">
+      <notes>
+        <note category="location">plan.json /spacing/0</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Monthly: a drill, debrief for those who click</source>
+        <target>Chaque mois : exercice et bilan en cas de clic</target>
+      </segment>
+    </unit>
+    <unit id="plan.spacing.1">
+      <notes>
+        <note category="location">plan.json /spacing/1</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>D+30: each team's drill figures, by its manager</source>
+        <target>À J+30 : bilan par équipe avec son responsable</target>
+      </segment>
+    </unit>
+    <unit id="screen.intro.title">
+      <notes>
+        <note category="location">screens/intro.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Phishing at Quillon, in three numbers</source>
+        <target>L’hameçonnage chez Quillon en trois chiffres</target>
+      </segment>
+    </unit>
+    <unit id="screen.intro.narration.l1.text">
+      <notes>
+        <note category="location">screens/intro.json /narration/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l1 (guide) of screen "Phishing at Quillon, in three numbers": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« reported »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Last year, you <mrk id="w-reported" type="elabora:anchor">reported</mrk> 1,840 phishing emails to the security desk.</source>
+        <target>L’an dernier, vous avez <mrk id="w-reported" type="elabora:anchor">signalé</mrk> 1 840 e-mails d’hameçonnage au service sécurité.</target>
+      </segment>
+    </unit>
+    <unit id="screen.intro.narration.l2.text">
+      <notes>
+        <note category="location">screens/intro.json /narration/lines/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l2 (guide) of screen "Phishing at Quillon, in three numbers": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« Email »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source><mrk id="w-email" type="elabora:anchor">Email</mrk> is where 62 percent of our incidents began.</source>
+        <target>Tout commence par un <mrk id="w-email" type="elabora:anchor">e-mail</mrk> dans 62 % de nos incidents de sécurité.</target>
+      </segment>
+    </unit>
+    <unit id="screen.intro.narration.l3.text">
+      <notes>
+        <note category="location">screens/intro.json /narration/lines/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l3 (guide) of screen "Phishing at Quillon, in three numbers": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« block »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>And thanks to your reports, we now <mrk id="w-block" type="elabora:anchor">block</mrk> a phish in 11 minutes, down from four hours.</source>
+        <target>Grâce à vos signalements, nous <mrk id="w-block" type="elabora:anchor">bloquons</mrk> ces e-mails en onze minutes, contre quatre heures auparavant.</target>
+      </segment>
+    </unit>
+    <unit id="block.intro-figures.takeaway">
+      <notes>
+        <note category="location">screens/intro.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Phishing at Quillon, in three numbers"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>Phishing is our most common attack, and your reports are our best defence</source>
+        <target>L’hameçonnage est l’attaque la plus fréquente. Vos signalements sont notre meilleure défense.</target>
+      </segment>
+    </unit>
+    <unit id="block.intro-figures.context">
+      <notes>
+        <note category="location">screens/intro.json /blocks/0/props/context</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Phishing at Quillon, in three numbers"</note>
+        <note category="max-length">240</note>
+      </notes>
+      <segment state="translated">
+        <source>Quillon Freight, 1,200 employees, year 2025</source>
+        <target>Quillon Freight, 1 200 salariés, 2025</target>
+      </segment>
+    </unit>
+    <unit id="block.intro-figures.source">
+      <notes>
+        <note category="location">screens/intro.json /blocks/0/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Phishing at Quillon, in three numbers"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Security desk report 2025, Quillon Freight (internal report, fictional)</source>
+        <target>Rapport 2025 du service sécurité de Quillon Freight (données internes fictives)</target>
+      </segment>
+    </unit>
+    <unit id="block.intro-figures.items.reported.label">
+      <notes>
+        <note category="location">screens/intro.json /blocks/0/props/items/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Phishing at Quillon, in three numbers"</note>
+        <note category="max-length">140</note>
+      </notes>
+      <segment state="translated">
+        <source>phishing emails reported by you</source>
+        <target>e-mails d’hameçonnage que vous avez signalés</target>
+      </segment>
+    </unit>
+    <unit id="block.intro-figures.items.email.label">
+      <notes>
+        <note category="location">screens/intro.json /blocks/0/props/items/1/label</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Phishing at Quillon, in three numbers"</note>
+        <note category="max-length">140</note>
+      </notes>
+      <segment state="translated">
+        <source>of our security incidents began with an email</source>
+        <target>de nos incidents de sécurité ont commencé par un e-mail</target>
+      </segment>
+    </unit>
+    <unit id="block.intro-figures.items.block.figure">
+      <notes>
+        <note category="location">screens/intro.json /blocks/0/props/items/2/figure</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Phishing at Quillon, in three numbers"</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>11 min</source>
+        <target>11 min</target>
+      </segment>
+    </unit>
+    <unit id="block.intro-figures.items.block.label">
+      <notes>
+        <note category="location">screens/intro.json /blocks/0/props/items/2/label</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Phishing at Quillon, in three numbers"</note>
+        <note category="max-length">140</note>
+      </notes>
+      <segment state="translated">
+        <source>from the first report to a phish blocked for everyone</source>
+        <target>entre le premier signalement et le blocage pour tous</target>
+      </segment>
+    </unit>
+    <unit id="block.intro-figures.items.block.was">
+      <notes>
+        <note category="location">screens/intro.json /blocks/0/props/items/2/was</note>
+        <note category="format">text</note>
+        <note category="context">Key figures on screen "Phishing at Quillon, in three numbers"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>4 h 10 in 2022</source>
+        <target>4 h 10 en 2022</target>
+      </segment>
+    </unit>
+    <unit id="screen.origins.title">
+      <notes>
+        <note category="location">screens/origins.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Where attacks start</source>
+        <target>D’où viennent les attaques ?</target>
+      </segment>
+    </unit>
+    <unit id="screen.origins.narration.l1.text">
+      <notes>
+        <note category="location">screens/origins.json /narration/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l1 (guide) of screen "Where attacks start": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« email »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Where do our incidents start? Mostly in an <mrk id="w-email" type="elabora:anchor">email</mrk>.</source>
+        <target>Par où commencent la plupart de nos incidents ? Par un <mrk id="w-email" type="elabora:anchor">e-mail</mrk>.</target>
+      </segment>
+    </unit>
+    <unit id="screen.origins.narration.l2.text">
+      <notes>
+        <note category="location">screens/origins.json /narration/lines/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l2 (guide) of screen "Where attacks start": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« websites », « phone », « USB »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Far behind come fake <mrk id="w-websites" type="elabora:anchor">websites</mrk>, <mrk id="w-phone" type="elabora:anchor">phone</mrk> calls and <mrk id="w-usb" type="elabora:anchor">USB</mrk> sticks.</source>
+        <target>Loin derrière viennent les faux <mrk id="w-websites" type="elabora:anchor">sites web</mrk>, les appels <mrk id="w-phone" type="elabora:anchor">téléphoniques</mrk> et les clés <mrk id="w-usb" type="elabora:anchor">USB</mrk>.</target>
+      </segment>
+    </unit>
+    <unit id="block.origins-bars.takeaway">
+      <notes>
+        <note category="location">screens/origins.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where attacks start"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>Most of our incidents start with an email</source>
+        <target>La plupart de nos incidents commencent par un e-mail</target>
+      </segment>
+    </unit>
+    <unit id="block.origins-bars.context">
+      <notes>
+        <note category="location">screens/origins.json /blocks/0/props/context</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where attacks start"</note>
+        <note category="max-length">240</note>
+      </notes>
+      <segment state="translated">
+        <source>Share of the 74 security incidents of 2025, by first contact (3% other)</source>
+        <target>Origine des 74 incidents de sécurité de 2025 (autres origines : 3 %)</target>
+      </segment>
+    </unit>
+    <unit id="block.origins-bars.source">
+      <notes>
+        <note category="location">screens/origins.json /blocks/0/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where attacks start"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Security desk report 2025, Quillon Freight (internal report, fictional)</source>
+        <target>Rapport 2025 du service sécurité de Quillon Freight (données internes fictives)</target>
+      </segment>
+    </unit>
+    <unit id="block.origins-bars.rows.email.label">
+      <notes>
+        <note category="location">screens/origins.json /blocks/0/props/rows/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where attacks start"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Email</source>
+        <target>E-mail</target>
+      </segment>
+    </unit>
+    <unit id="block.origins-bars.rows.email.note">
+      <notes>
+        <note category="location">screens/origins.json /blocks/0/props/rows/0/note</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where attacks start"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>46 incidents</source>
+        <target>46 incidents</target>
+      </segment>
+    </unit>
+    <unit id="block.origins-bars.rows.web.label">
+      <notes>
+        <note category="location">screens/origins.json /blocks/0/props/rows/1/label</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where attacks start"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Website found by a search</source>
+        <target>Site trouvé via un moteur de recherche</target>
+      </segment>
+    </unit>
+    <unit id="block.origins-bars.rows.web.note">
+      <notes>
+        <note category="location">screens/origins.json /blocks/0/props/rows/1/note</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where attacks start"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>13 incidents</source>
+        <target>13 incidents</target>
+      </segment>
+    </unit>
+    <unit id="block.origins-bars.rows.phone.label">
+      <notes>
+        <note category="location">screens/origins.json /blocks/0/props/rows/2/label</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where attacks start"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Phone call</source>
+        <target>Appel téléphonique</target>
+      </segment>
+    </unit>
+    <unit id="block.origins-bars.rows.phone.note">
+      <notes>
+        <note category="location">screens/origins.json /blocks/0/props/rows/2/note</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where attacks start"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>9 incidents</source>
+        <target>9 incidents</target>
+      </segment>
+    </unit>
+    <unit id="block.origins-bars.rows.usb.label">
+      <notes>
+        <note category="location">screens/origins.json /blocks/0/props/rows/3/label</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where attacks start"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>USB stick</source>
+        <target>Clé USB</target>
+      </segment>
+    </unit>
+    <unit id="block.origins-bars.rows.usb.note">
+      <notes>
+        <note category="location">screens/origins.json /blocks/0/props/rows/3/note</note>
+        <note category="format">text</note>
+        <note category="context">Bars on screen "Where attacks start"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>4 incidents</source>
+        <target>4 incidents</target>
+      </segment>
+    </unit>
+    <unit id="screen.lures.title">
+      <notes>
+        <note category="location">screens/lures.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>What phishing looks like</source>
+        <target>À quoi ressemble un e-mail d’hameçonnage ?</target>
+      </segment>
+    </unit>
+    <unit id="screen.lures.narration.l1.text">
+      <notes>
+        <note category="location">screens/lures.json /narration/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l1 (guide) of screen "What phishing looks like": said by a voice in the translated course and shown as its captions</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>And what do these emails look like? Like our everyday work.</source>
+        <target>À quoi ressemblent ces e-mails ? Aux messages que vous recevez tous les jours au travail.</target>
+      </segment>
+    </unit>
+    <unit id="screen.lures.narration.l2.text">
+      <notes>
+        <note category="location">screens/lures.json /narration/lines/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l2 (guide) of screen "What phishing looks like": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« Delivery », « invoices », « password », « payroll », « others »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source><mrk id="w-delivery" type="elabora:anchor">Delivery</mrk> notices, then <mrk id="w-invoices" type="elabora:anchor">invoices</mrk>, <mrk id="w-password" type="elabora:anchor">password</mrk> resets, <mrk id="w-payroll" type="elabora:anchor">payroll</mrk> messages, and a few <mrk id="w-others" type="elabora:anchor">others</mrk>.</source>
+        <target>D’abord des avis de <mrk id="w-delivery" type="elabora:anchor">livraison</mrk>, puis des <mrk id="w-invoices" type="elabora:anchor">factures</mrk>, des réinitialisations de <mrk id="w-password" type="elabora:anchor">mot de passe</mrk>, des messages du service <mrk id="w-payroll" type="elabora:anchor">paie</mrk> et quelques <mrk id="w-others" type="elabora:anchor">autres</mrk> prétextes.</target>
+      </segment>
+    </unit>
+    <unit id="block.lures-donut.takeaway">
+      <notes>
+        <note category="location">screens/lures.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Part of a whole on screen "What phishing looks like"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>Most phishing dresses up as everyday work</source>
+        <target>Les e-mails d’hameçonnage imitent surtout les messages du quotidien</target>
+      </segment>
+    </unit>
+    <unit id="block.lures-donut.context">
+      <notes>
+        <note category="location">screens/lures.json /blocks/0/props/context</note>
+        <note category="format">text</note>
+        <note category="context">Part of a whole on screen "What phishing looks like"</note>
+        <note category="max-length">240</note>
+      </notes>
+      <segment state="translated">
+        <source>What the 1,840 phishing emails reported in 2025 pretended to be</source>
+        <target>Prétextes des 1 840 e-mails d’hameçonnage signalés en 2025</target>
+      </segment>
+    </unit>
+    <unit id="block.lures-donut.source">
+      <notes>
+        <note category="location">screens/lures.json /blocks/0/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Part of a whole on screen "What phishing looks like"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Security desk report 2025, Quillon Freight (internal report, fictional)</source>
+        <target>Rapport 2025 du service sécurité de Quillon Freight (données internes fictives)</target>
+      </segment>
+    </unit>
+    <unit id="block.lures-donut.parts.delivery.label">
+      <notes>
+        <note category="location">screens/lures.json /blocks/0/props/parts/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Part of a whole on screen "What phishing looks like"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Delivery notice</source>
+        <target>Avis de livraison</target>
+      </segment>
+    </unit>
+    <unit id="block.lures-donut.parts.invoice.label">
+      <notes>
+        <note category="location">screens/lures.json /blocks/0/props/parts/1/label</note>
+        <note category="format">text</note>
+        <note category="context">Part of a whole on screen "What phishing looks like"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Invoice or payment</source>
+        <target>Facture ou paiement</target>
+      </segment>
+    </unit>
+    <unit id="block.lures-donut.parts.password.label">
+      <notes>
+        <note category="location">screens/lures.json /blocks/0/props/parts/2/label</note>
+        <note category="format">text</note>
+        <note category="context">Part of a whole on screen "What phishing looks like"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Password reset</source>
+        <target>Réinitialisation du mot de passe</target>
+      </segment>
+    </unit>
+    <unit id="block.lures-donut.parts.payroll.label">
+      <notes>
+        <note category="location">screens/lures.json /blocks/0/props/parts/3/label</note>
+        <note category="format">text</note>
+        <note category="context">Part of a whole on screen "What phishing looks like"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>HR or payroll</source>
+        <target>RH ou paie</target>
+      </segment>
+    </unit>
+    <unit id="block.lures-donut.parts.other.label">
+      <notes>
+        <note category="location">screens/lures.json /blocks/0/props/parts/4/label</note>
+        <note category="format">text</note>
+        <note category="context">Part of a whole on screen "What phishing looks like"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Other</source>
+        <target>Autre</target>
+      </segment>
+    </unit>
+    <unit id="screen.funnel.title">
+      <notes>
+        <note category="location">screens/funnel.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>How a phish catches people</source>
+        <target>Comment un e-mail nous piège</target>
+      </segment>
+    </unit>
+    <unit id="screen.funnel.narration.l1.text">
+      <notes>
+        <note category="location">screens/funnel.json /narration/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l1 (guide) of screen "How a phish catches people": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« sent »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>In January, we <mrk id="w-sent" type="elabora:anchor">sent</mrk> everyone a fake password reset.</source>
+        <target>En janvier, nous vous avons <mrk id="w-sent" type="elabora:anchor">envoyé</mrk> à tous une fausse demande de réinitialisation de mot de passe.</target>
+      </segment>
+    </unit>
+    <unit id="screen.funnel.narration.l2.text">
+      <notes>
+        <note category="location">screens/funnel.json /narration/lines/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l2 (guide) of screen "How a phish catches people": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« opened », « clicked », « password »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Two in three <mrk id="w-opened" type="elabora:anchor">opened</mrk> it, one in three <mrk id="w-clicked" type="elabora:anchor">clicked</mrk>, and one in twelve typed a <mrk id="w-password" type="elabora:anchor">password</mrk>.</source>
+        <target>Deux personnes sur trois ont <mrk id="w-opened" type="elabora:anchor">ouvert</mrk> le message, une sur trois a <mrk id="w-clicked" type="elabora:anchor">cliqué</mrk> et une sur douze a saisi un <mrk id="w-password" type="elabora:anchor">mot de passe</mrk>.</target>
+      </segment>
+    </unit>
+    <unit id="screen.funnel.narration.l3.text">
+      <notes>
+        <note category="location">screens/funnel.json /narration/lines/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l3 (guide) of screen "How a phish catches people": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« told »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>And only one in seven <mrk id="w-told" type="elabora:anchor">told</mrk> the security desk.</source>
+        <target>Une personne sur sept seulement a <mrk id="w-told" type="elabora:anchor">prévenu</mrk> le service sécurité.</target>
+      </segment>
+    </unit>
+    <unit id="block.funnel-levels.takeaway">
+      <notes>
+        <note category="location">screens/funnel.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Funnel or pyramid on screen "How a phish catches people"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>One drill email in twelve got a password</source>
+        <target>Une personne sur douze a saisi son mot de passe lors de l’exercice</target>
+      </segment>
+    </unit>
+    <unit id="block.funnel-levels.source">
+      <notes>
+        <note category="location">screens/funnel.json /blocks/0/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Funnel or pyramid on screen "How a phish catches people"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Phishing drills 2025, Quillon Freight (internal report, fictional)</source>
+        <target>Simulations d’hameçonnage 2025 de Quillon Freight (données internes fictives)</target>
+      </segment>
+    </unit>
+    <unit id="block.funnel-levels.items.sent.label">
+      <notes>
+        <note category="location">screens/funnel.json /blocks/0/props/items/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Funnel or pyramid on screen "How a phish catches people"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Sent</source>
+        <target>E-mails envoyés</target>
+      </segment>
+    </unit>
+    <unit id="block.funnel-levels.items.opened.label">
+      <notes>
+        <note category="location">screens/funnel.json /blocks/0/props/items/1/label</note>
+        <note category="format">text</note>
+        <note category="context">Funnel or pyramid on screen "How a phish catches people"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Opened</source>
+        <target>Messages ouverts</target>
+      </segment>
+    </unit>
+    <unit id="block.funnel-levels.items.clicked.label">
+      <notes>
+        <note category="location">screens/funnel.json /blocks/0/props/items/2/label</note>
+        <note category="format">text</note>
+        <note category="context">Funnel or pyramid on screen "How a phish catches people"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Clicked the link</source>
+        <target>Clics sur le lien</target>
+      </segment>
+    </unit>
+    <unit id="block.funnel-levels.items.typed.label">
+      <notes>
+        <note category="location">screens/funnel.json /blocks/0/props/items/3/label</note>
+        <note category="format">text</note>
+        <note category="context">Funnel or pyramid on screen "How a phish catches people"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Typed a password</source>
+        <target>Mots de passe saisis</target>
+      </segment>
+    </unit>
+    <unit id="block.funnel-reported.takeaway">
+      <notes>
+        <note category="location">screens/funnel.json /blocks/1/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Proportion on screen "How a phish catches people"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>Only one in seven told us</source>
+        <target>Une personne sur sept seulement nous a prévenus</target>
+      </segment>
+    </unit>
+    <unit id="block.funnel-reported.source">
+      <notes>
+        <note category="location">screens/funnel.json /blocks/1/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Proportion on screen "How a phish catches people"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Phishing drills 2025, Quillon Freight (internal report, fictional)</source>
+        <target>Simulations d’hameçonnage 2025 de Quillon Freight (données internes fictives)</target>
+      </segment>
+    </unit>
+    <unit id="block.funnel-reported.figure">
+      <notes>
+        <note category="location">screens/funnel.json /blocks/1/props/figure</note>
+        <note category="format">text</note>
+        <note category="context">Proportion on screen "How a phish catches people"</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>1 in 7</source>
+        <target>1 sur 7</target>
+      </segment>
+    </unit>
+    <unit id="block.funnel-reported.label">
+      <notes>
+        <note category="location">screens/funnel.json /blocks/1/props/label</note>
+        <note category="format">text</note>
+        <note category="context">Proportion on screen "How a phish catches people"</note>
+        <note category="max-length">140</note>
+      </notes>
+      <segment state="translated">
+        <source>reported the drill email</source>
+        <target>a signalé l’e-mail de simulation</target>
+      </segment>
+    </unit>
+    <unit id="screen.lure-map.title">
+      <notes>
+        <note category="location">screens/lure-map.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>The lures that work</source>
+        <target>Les pièges les plus efficaces</target>
+      </segment>
+    </unit>
+    <unit id="screen.lure-map.narration.l1.text">
+      <notes>
+        <note category="location">screens/lure-map.json /narration/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l1 (guide) of screen "The lures that work": said by a voice in the translated course and shown as its captions</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Now place each lure: how often it comes, and how often people click.</source>
+        <target>Pour chaque prétexte, regardez deux choses : est-il fréquent ? Et fait-il souvent cliquer ?</target>
+      </segment>
+    </unit>
+    <unit id="screen.lure-map.narration.l2.text">
+      <notes>
+        <note category="location">screens/lure-map.json /narration/lines/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l2 (guide) of screen "The lures that work": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« Prize », « Delivery »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source><mrk id="w-prize" type="elabora:anchor">Prize</mrk> draws are rare and easy to spot. <mrk id="w-delivery" type="elabora:anchor">Delivery</mrk> notices are common, but rarely fool us.</source>
+        <target>Les <mrk id="w-prize" type="elabora:anchor">tirages au sort</mrk> sont rares et faciles à repérer. Les avis de <mrk id="w-delivery" type="elabora:anchor">livraison</mrk> sont fréquents, mais nous trompent rarement.</target>
+      </segment>
+    </unit>
+    <unit id="screen.lure-map.narration.l3.text">
+      <notes>
+        <note category="location">screens/lure-map.json /narration/lines/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l3 (guide) of screen "The lures that work": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« Payroll », « Password », « invoices »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source><mrk id="w-payroll" type="elabora:anchor">Payroll</mrk> messages are rare but convincing. <mrk id="w-password" type="elabora:anchor">Password</mrk> resets and <mrk id="w-invoices" type="elabora:anchor">invoices</mrk> are both.</source>
+        <target>Les messages du service <mrk id="w-payroll" type="elabora:anchor">paie</mrk> sont rares, mais convaincants. Les réinitialisations de <mrk id="w-password" type="elabora:anchor">mot de passe</mrk> et les <mrk id="w-invoices" type="elabora:anchor">factures</mrk> sont à la fois fréquentes et convaincantes.</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.takeaway">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>Invoices and password resets are the lures to watch first</source>
+        <target>Méfiez-vous surtout des factures et des réinitialisations de mot de passe</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.source">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/source</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Phishing drills 2025, Quillon Freight (internal report, fictional)</source>
+        <target>Simulations d’hameçonnage 2025 de Quillon Freight (données internes fictives)</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.x.label">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/x/label</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>How often it arrives</source>
+        <target>Fréquence des messages</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.x.low">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/x/low</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>Rarely</source>
+        <target>Rarement</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.x.high">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/x/high</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>Every day</source>
+        <target>Tous les jours</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.y.label">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/y/label</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>How often people click</source>
+        <target>Fréquence des clics</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.y.low">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/y/low</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>Rarely</source>
+        <target>Rarement</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.y.high">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/y/high</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>Often</source>
+        <target>Souvent</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.quadrants.topLeft">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/quadrants/topLeft</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">32</note>
+      </notes>
+      <segment state="translated">
+        <source>Rare but convincing</source>
+        <target>Rares mais convaincants</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.quadrants.topRight">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/quadrants/topRight</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">32</note>
+      </notes>
+      <segment state="translated">
+        <source>Watch first</source>
+        <target>À surveiller en priorité</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.quadrants.bottomLeft">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/quadrants/bottomLeft</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">32</note>
+      </notes>
+      <segment state="translated">
+        <source>Background noise</source>
+        <target>Peu de clics, peu de messages</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.quadrants.bottomRight">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/quadrants/bottomRight</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">32</note>
+      </notes>
+      <segment state="translated">
+        <source>Common, easy to spot</source>
+        <target>Fréquents, faciles à repérer</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.items.prize.label">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/items/0/label</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Prize draw</source>
+        <target>Tirage au sort</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.items.prize.text">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/items/0/text</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Too good to be true, and everyone knows it</source>
+        <target>Le gain promis est trop beau pour être vrai</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.items.delivery.label">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/items/1/label</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Delivery notice</source>
+        <target>Avis de livraison</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.items.delivery.text">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/items/1/text</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Daily, but the courier names give it away</source>
+        <target>On en reçoit tous les jours, mais le nom du transporteur éveille les soupçons</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.items.payroll.label">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/items/2/label</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Payroll message</source>
+        <target>Message du service paie</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.items.payroll.text">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/items/2/text</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Rare, but personal: people click</source>
+        <target>Rare, mais personnel : il incite à cliquer</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.items.password.label">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/items/3/label</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Password reset</source>
+        <target>Réinitialisation du mot de passe</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.items.password.text">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/items/3/text</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Looks like IT, and asks for the one thing it must not</source>
+        <target>Le message imite le service informatique et demande ce qu’il ne devrait jamais demander : votre mot de passe</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.items.invoice.label">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/items/4/label</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Invoice</source>
+        <target>Facture</target>
+      </segment>
+    </unit>
+    <unit id="block.lure-map-matrix.items.invoice.text">
+      <notes>
+        <note category="location">screens/lure-map.json /blocks/0/props/items/4/text</note>
+        <note category="format">text</note>
+        <note category="context">2 × 2 matrix on screen "The lures that work"</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Looks like real work, and asks for money</source>
+        <target>Une demande de paiement qui a tout d’une tâche ordinaire</target>
+      </segment>
+    </unit>
+    <unit id="screen.drills.title">
+      <notes>
+        <note category="location">screens/drills.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Your guess: a year of drills</source>
+        <target>Un an d’exercices : à vous d’estimer le résultat</target>
+      </segment>
+    </unit>
+    <unit id="screen.drills.narration.l1.text">
+      <notes>
+        <note category="location">screens/drills.json /narration/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l1 (guide) of screen "Your guess: a year of drills": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« January », « May »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>In <mrk id="w-january" type="elabora:anchor">January</mrk>, one in three clicked our drill. By <mrk id="w-may" type="elabora:anchor">May</mrk>, after monthly drills, one in five.</source>
+        <target>En <mrk id="w-january" type="elabora:anchor">janvier</mrk>, une personne sur trois a cliqué pendant l’exercice. En <mrk id="w-may" type="elabora:anchor">mai</mrk>, après plusieurs exercices mensuels, c’était une sur cinq.</target>
+      </segment>
+    </unit>
+    <unit id="screen.drills.narration.l2.text">
+      <notes>
+        <note category="location">screens/drills.json /narration/lines/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l2 (guide) of screen "Your guess: a year of drills": said by a voice in the translated course and shown as its captions</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Where were clicks by November, do you think? Draw the rest of the line.</source>
+        <target>À votre avis, où en était-on en novembre ? Prolongez la courbe.</target>
+      </segment>
+    </unit>
+    <unit id="screen.drills.narration.l3.text">
+      <notes>
+        <note category="location">screens/drills.json /narration/lines/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l3 (guide) of screen "Your guess: a year of drills": said by a voice in the translated course and shown as its captions</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Every team clicks less than in January.</source>
+        <target>Dans toutes les équipes, on clique moins qu’en janvier.</target>
+      </segment>
+    </unit>
+    <unit id="screen.drills.narration.l4.text">
+      <notes>
+        <note category="location">screens/drills.json /narration/lines/3/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l4 (guide) of screen "Your guess: a year of drills": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« Finance », « sales », « HR », « IT »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source><mrk id="w-finance" type="elabora:anchor">Finance</mrk>, <mrk id="w-sales" type="elabora:anchor">sales</mrk> and <mrk id="w-hr" type="elabora:anchor">HR</mrk> fell to 3 or 4 percent. <mrk id="w-it" type="elabora:anchor">IT</mrk> started low.</source>
+        <target>Aux <mrk id="w-finance" type="elabora:anchor">finances</mrk>, au service <mrk id="w-sales" type="elabora:anchor">commercial</mrk> et aux <mrk id="w-hr" type="elabora:anchor">ressources humaines</mrk>, le taux est descendu à 3 ou 4 %. En <mrk id="w-it" type="elabora:anchor">informatique</mrk>, il était déjà bas.</target>
+      </segment>
+    </unit>
+    <unit id="screen.drills.narration.l5.text">
+      <notes>
+        <note category="location">screens/drills.json /narration/lines/4/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l5 (guide) of screen "Your guess: a year of drills": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« warehouse »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>The <mrk id="w-warehouse" type="elabora:anchor">warehouse</mrk> started highest, at 41 percent, and still clicks most.</source>
+        <target>À l’<mrk id="w-warehouse" type="elabora:anchor">entrepôt</mrk>, le taux de départ était le plus élevé : 41 %. C’est encore là qu’on clique le plus.</target>
+      </segment>
+    </unit>
+    <unit id="block.drills-guess.takeaway">
+      <notes>
+        <note category="location">screens/drills.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "Your guess: a year of drills"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>Drills cut clicks, month after month</source>
+        <target>Au fil des exercices, le taux de clic diminue</target>
+      </segment>
+    </unit>
+    <unit id="block.drills-guess.source">
+      <notes>
+        <note category="location">screens/drills.json /blocks/0/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "Your guess: a year of drills"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Phishing drills 2025, Quillon Freight (internal report, fictional)</source>
+        <target>Simulations d’hameçonnage 2025 de Quillon Freight (données internes fictives)</target>
+      </segment>
+    </unit>
+    <unit id="block.drills-guess.points.0.x">
+      <notes>
+        <note category="location">screens/drills.json /blocks/0/props/points/0/x</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "Your guess: a year of drills"</note>
+      </notes>
+      <segment state="translated">
+        <source>Jan</source>
+        <target>Janv.</target>
+      </segment>
+    </unit>
+    <unit id="block.drills-guess.points.1.x">
+      <notes>
+        <note category="location">screens/drills.json /blocks/0/props/points/1/x</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "Your guess: a year of drills"</note>
+      </notes>
+      <segment state="translated">
+        <source>Mar</source>
+        <target>Mars</target>
+      </segment>
+    </unit>
+    <unit id="block.drills-guess.points.2.x">
+      <notes>
+        <note category="location">screens/drills.json /blocks/0/props/points/2/x</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "Your guess: a year of drills"</note>
+      </notes>
+      <segment state="translated">
+        <source>May</source>
+        <target>Mai</target>
+      </segment>
+    </unit>
+    <unit id="block.drills-guess.points.3.x">
+      <notes>
+        <note category="location">screens/drills.json /blocks/0/props/points/3/x</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "Your guess: a year of drills"</note>
+      </notes>
+      <segment state="translated">
+        <source>Jul</source>
+        <target>Juil.</target>
+      </segment>
+    </unit>
+    <unit id="block.drills-guess.points.4.x">
+      <notes>
+        <note category="location">screens/drills.json /blocks/0/props/points/4/x</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "Your guess: a year of drills"</note>
+      </notes>
+      <segment state="translated">
+        <source>Sep</source>
+        <target>Sept.</target>
+      </segment>
+    </unit>
+    <unit id="block.drills-guess.points.5.x">
+      <notes>
+        <note category="location">screens/drills.json /blocks/0/props/points/5/x</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "Your guess: a year of drills"</note>
+      </notes>
+      <segment state="translated">
+        <source>Nov</source>
+        <target>Nov.</target>
+      </segment>
+    </unit>
+    <unit id="block.drills-guess.predict.hint">
+      <notes>
+        <note category="location">screens/drills.json /blocks/0/props/predict/hint</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "Your guess: a year of drills"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Draw the line on to November</source>
+        <target>Prolongez la courbe jusqu’en novembre</target>
+      </segment>
+    </unit>
+    <unit id="block.drills-guess.predict.button">
+      <notes>
+        <note category="location">screens/drills.json /blocks/0/props/predict/button</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "Your guess: a year of drills"</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Show me</source>
+        <target>Voir le résultat</target>
+      </segment>
+    </unit>
+    <unit id="block.drills-guess.predict.close">
+      <notes>
+        <note category="location">screens/drills.json /blocks/0/props/predict/close</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "Your guess: a year of drills"</note>
+        <note category="max-length">240</note>
+      </notes>
+      <segment state="translated">
+        <source>Well seen: you said {guess}, and it fell to {actual}.</source>
+        <target>Bien vu ! Votre estimation : {guess}. Le taux est descendu à {actual}.</target>
+      </segment>
+    </unit>
+    <unit id="block.drills-guess.predict.far">
+      <notes>
+        <note category="location">screens/drills.json /blocks/0/props/predict/far</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "Your guess: a year of drills"</note>
+        <note category="max-length">240</note>
+      </notes>
+      <segment state="translated">
+        <source>You said {guess}; it fell to {actual}. Practice on safe fakes works, and fast.</source>
+        <target>Votre estimation : {guess}. Le taux est descendu à {actual}. S’entraîner sur de faux messages porte vite ses fruits.</target>
+      </segment>
+    </unit>
+    <unit id="block.teams-slope.takeaway">
+      <notes>
+        <note category="location">screens/drills.json /blocks/1/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Before and after on screen "Your guess: a year of drills"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>The warehouse still clicks most</source>
+        <target>C’est encore à l’entrepôt qu’on clique le plus</target>
+      </segment>
+    </unit>
+    <unit id="block.teams-slope.source">
+      <notes>
+        <note category="location">screens/drills.json /blocks/1/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Before and after on screen "Your guess: a year of drills"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Phishing drills 2025, Quillon Freight (internal report, fictional)</source>
+        <target>Simulations d’hameçonnage 2025 de Quillon Freight (données internes fictives)</target>
+      </segment>
+    </unit>
+    <unit id="block.teams-slope.beforeLabel">
+      <notes>
+        <note category="location">screens/drills.json /blocks/1/props/beforeLabel</note>
+        <note category="format">text</note>
+        <note category="context">Before and after on screen "Your guess: a year of drills"</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>January 2025</source>
+        <target>Janvier 2025</target>
+      </segment>
+    </unit>
+    <unit id="block.teams-slope.afterLabel">
+      <notes>
+        <note category="location">screens/drills.json /blocks/1/props/afterLabel</note>
+        <note category="format">text</note>
+        <note category="context">Before and after on screen "Your guess: a year of drills"</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>November 2025</source>
+        <target>Novembre 2025</target>
+      </segment>
+    </unit>
+    <unit id="block.teams-slope.items.finance.label">
+      <notes>
+        <note category="location">screens/drills.json /blocks/1/props/items/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Before and after on screen "Your guess: a year of drills"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Finance</source>
+        <target>Finances</target>
+      </segment>
+    </unit>
+    <unit id="block.teams-slope.items.sales.label">
+      <notes>
+        <note category="location">screens/drills.json /blocks/1/props/items/1/label</note>
+        <note category="format">text</note>
+        <note category="context">Before and after on screen "Your guess: a year of drills"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Sales</source>
+        <target>Commercial</target>
+      </segment>
+    </unit>
+    <unit id="block.teams-slope.items.hr.label">
+      <notes>
+        <note category="location">screens/drills.json /blocks/1/props/items/2/label</note>
+        <note category="format">text</note>
+        <note category="context">Before and after on screen "Your guess: a year of drills"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>HR</source>
+        <target>RH</target>
+      </segment>
+    </unit>
+    <unit id="block.teams-slope.items.it.label">
+      <notes>
+        <note category="location">screens/drills.json /blocks/1/props/items/3/label</note>
+        <note category="format">text</note>
+        <note category="context">Before and after on screen "Your guess: a year of drills"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>IT</source>
+        <target>Informatique</target>
+      </segment>
+    </unit>
+    <unit id="block.teams-slope.items.warehouse.label">
+      <notes>
+        <note category="location">screens/drills.json /blocks/1/props/items/4/label</note>
+        <note category="format">text</note>
+        <note category="context">Before and after on screen "Your guess: a year of drills"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Warehouse</source>
+        <target>Entrepôt</target>
+      </segment>
+    </unit>
+    <unit id="screen.reports.title">
+      <notes>
+        <note category="location">screens/reports.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>One click changed reporting</source>
+        <target>Un bouton qui change la donne</target>
+      </segment>
+    </unit>
+    <unit id="screen.reports.narration.l1.text">
+      <notes>
+        <note category="location">screens/reports.json /narration/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l1 (guide) of screen "One click changed reporting": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« Before », « month »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source><mrk id="w-before" type="elabora:anchor">Before</mrk> 2023, we got about 9 reports a <mrk id="w-month" type="elabora:anchor">month</mrk>.</source>
+        <target><mrk id="w-before" type="elabora:anchor">Avant</mrk> 2023, nous recevions environ neuf signalements par <mrk id="w-month" type="elabora:anchor">mois</mrk>.</target>
+      </segment>
+    </unit>
+    <unit id="screen.reports.narration.l2.text">
+      <notes>
+        <note category="location">screens/reports.json /narration/lines/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l2 (guide) of screen "One click changed reporting": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« button », « took off », « last year »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Then came the one-click Report <mrk id="w-button" type="elabora:anchor">button</mrk>, and reports <mrk id="w-took-off" type="elabora:anchor">took off</mrk>: 153 a month <mrk id="w-last-year" type="elabora:anchor">last year</mrk>.</source>
+        <target>Puis le <mrk id="w-button" type="elabora:anchor">bouton</mrk> « Signaler » est arrivé. Les signalements ont <mrk id="w-took-off" type="elabora:anchor">bondi</mrk> : 153 par mois <mrk id="w-last-year" type="elabora:anchor">l’an dernier</mrk>.</target>
+      </segment>
+    </unit>
+    <unit id="block.reports-trend.takeaway">
+      <notes>
+        <note category="location">screens/reports.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "One click changed reporting"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>Reports took off once reporting took one click</source>
+        <target>Depuis qu’un clic suffit, les signalements se multiplient</target>
+      </segment>
+    </unit>
+    <unit id="block.reports-trend.context">
+      <notes>
+        <note category="location">screens/reports.json /blocks/0/props/context</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "One click changed reporting"</note>
+        <note category="max-length">240</note>
+      </notes>
+      <segment state="translated">
+        <source>Reports to the security desk per month, yearly average</source>
+        <target>Signalements reçus chaque mois par le service sécurité, en moyenne sur l’année</target>
+      </segment>
+    </unit>
+    <unit id="block.reports-trend.source">
+      <notes>
+        <note category="location">screens/reports.json /blocks/0/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "One click changed reporting"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Security desk report 2025, Quillon Freight (internal report, fictional)</source>
+        <target>Rapport 2025 du service sécurité de Quillon Freight (données internes fictives)</target>
+      </segment>
+    </unit>
+    <unit id="block.reports-trend.note.text">
+      <notes>
+        <note category="location">screens/reports.json /blocks/0/props/note/text</note>
+        <note category="format">text</note>
+        <note category="context">Trend on screen "One click changed reporting"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>One-click Report button</source>
+        <target>Bouton « Signaler » en un clic</target>
+      </segment>
+    </unit>
+    <unit id="screen.rules.title">
+      <notes>
+        <note category="location">screens/rules.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Our rules, and why</source>
+        <target>D’où viennent nos règles ?</target>
+      </segment>
+    </unit>
+    <unit id="screen.rules.narration.l1.text">
+      <notes>
+        <note category="location">screens/rules.json /narration/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l1 (guide) of screen "Our rules, and why": said by a voice in the translated course and shown as its captions</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Each of our rules answered an attack.</source>
+        <target>Chacune de nos règles répond à une attaque que nous avons subie.</target>
+      </segment>
+    </unit>
+    <unit id="screen.rules.narration.l2.text">
+      <notes>
+        <note category="location">screens/rules.json /narration/lines/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l2 (guide) of screen "Our rules, and why": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« Two-step », « Report button »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source><mrk id="w-two-step" type="elabora:anchor">Two-step</mrk> sign-in in 2021. The <mrk id="w-report-button" type="elabora:anchor">Report button</mrk> in 2023.</source>
+        <target>La connexion en <mrk id="w-two-step" type="elabora:anchor">deux étapes</mrk> en 2021. Le <mrk id="w-report-button" type="elabora:anchor">bouton « Signaler »</mrk> en 2023.</target>
+      </segment>
+    </unit>
+    <unit id="screen.rules.narration.l3.text">
+      <notes>
+        <note category="location">screens/rules.json /narration/lines/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l3 (guide) of screen "Our rules, and why": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« call »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>After a fake invoice cost us 48,000 pounds, we <mrk id="w-call" type="elabora:anchor">call</mrk> suppliers back.</source>
+        <target>Une fausse facture nous a coûté 48 000 livres. Depuis, nous <mrk id="w-call" type="elabora:anchor">rappelons</mrk> les fournisseurs.</target>
+      </segment>
+    </unit>
+    <unit id="screen.rules.narration.l4.text">
+      <notes>
+        <note category="location">screens/rules.json /narration/lines/3/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l4 (guide) of screen "Our rules, and why": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« drills », « module »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Monthly <mrk id="w-drills" type="elabora:anchor">drills</mrk> in 2025. And this <mrk id="w-module" type="elabora:anchor">module</mrk>, today.</source>
+        <target>Les <mrk id="w-drills" type="elabora:anchor">exercices</mrk> mensuels en 2025. Et aujourd’hui, ce <mrk id="w-module" type="elabora:anchor">module</mrk>.</target>
+      </segment>
+    </unit>
+    <unit id="block.rules-timeline.takeaway">
+      <notes>
+        <note category="location">screens/rules.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Milestones on screen "Our rules, and why"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>Each of our rules answered an attack</source>
+        <target>À l’origine de chaque règle, il y a une attaque</target>
+      </segment>
+    </unit>
+    <unit id="block.rules-timeline.source">
+      <notes>
+        <note category="location">screens/rules.json /blocks/0/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Milestones on screen "Our rules, and why"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Information security policy, Quillon Freight (internal policy, fictional)</source>
+        <target>Politique de sécurité de l’information de Quillon Freight (document interne fictif)</target>
+      </segment>
+    </unit>
+    <unit id="block.rules-timeline.items.mfa.title">
+      <notes>
+        <note category="location">screens/rules.json /blocks/0/props/items/0/title</note>
+        <note category="format">text</note>
+        <note category="context">Milestones on screen "Our rules, and why"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Two-step sign-in</source>
+        <target>Connexion en deux étapes</target>
+      </segment>
+    </unit>
+    <unit id="block.rules-timeline.items.mfa.text">
+      <notes>
+        <note category="location">screens/rules.json /blocks/0/props/items/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Milestones on screen "Our rules, and why"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>After a stolen password opened a mailbox for a week.</source>
+        <target>Un mot de passe volé avait donné accès à une boîte mail pendant une semaine.</target>
+      </segment>
+    </unit>
+    <unit id="block.rules-timeline.items.button.title">
+      <notes>
+        <note category="location">screens/rules.json /blocks/0/props/items/1/title</note>
+        <note category="format">text</note>
+        <note category="context">Milestones on screen "Our rules, and why"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>One-click Report button</source>
+        <target>Bouton « Signaler » en un clic</target>
+      </segment>
+    </unit>
+    <unit id="block.rules-timeline.items.button.text">
+      <notes>
+        <note category="location">screens/rules.json /blocks/0/props/items/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Milestones on screen "Our rules, and why"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Reporting used to mean forwarding to an address few knew.</source>
+        <target>Il fallait auparavant transférer le message à une adresse que peu de gens connaissaient.</target>
+      </segment>
+    </unit>
+    <unit id="block.rules-timeline.items.callback.title">
+      <notes>
+        <note category="location">screens/rules.json /blocks/0/props/items/2/title</note>
+        <note category="format">text</note>
+        <note category="context">Milestones on screen "Our rules, and why"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Call suppliers back</source>
+        <target>Rappel des fournisseurs</target>
+      </segment>
+    </unit>
+    <unit id="block.rules-timeline.items.callback.text">
+      <notes>
+        <note category="location">screens/rules.json /blocks/0/props/items/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Milestones on screen "Our rules, and why"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Before any change of bank details, on the number already on file.</source>
+        <target>Avant tout changement de coordonnées bancaires, rappeler le fournisseur au numéro déjà enregistré.</target>
+      </segment>
+    </unit>
+    <unit id="block.rules-timeline.items.drills.title">
+      <notes>
+        <note category="location">screens/rules.json /blocks/0/props/items/3/title</note>
+        <note category="format">text</note>
+        <note category="context">Milestones on screen "Our rules, and why"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Monthly drills</source>
+        <target>Exercices mensuels</target>
+      </segment>
+    </unit>
+    <unit id="block.rules-timeline.items.drills.text">
+      <notes>
+        <note category="location">screens/rules.json /blocks/0/props/items/3/text</note>
+        <note category="format">text</note>
+        <note category="context">Milestones on screen "Our rules, and why"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>A safe fake every month, a one-screen debrief after a click.</source>
+        <target>Un faux message sans danger chaque mois. Si vous cliquez, un écran vous explique le piège.</target>
+      </segment>
+    </unit>
+    <unit id="block.rules-timeline.items.module.title">
+      <notes>
+        <note category="location">screens/rules.json /blocks/0/props/items/4/title</note>
+        <note category="format">text</note>
+        <note category="context">Milestones on screen "Our rules, and why"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>This module</source>
+        <target>Ce module</target>
+      </segment>
+    </unit>
+    <unit id="block.rules-timeline.items.module.text">
+      <notes>
+        <note category="location">screens/rules.json /blocks/0/props/items/4/text</note>
+        <note category="format">text</note>
+        <note category="context">Milestones on screen "Our rules, and why"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>For every employee, office and warehouse.</source>
+        <target>Pour tout le personnel, des bureaux à l’entrepôt.</target>
+      </segment>
+    </unit>
+    <unit id="screen.steps.title">
+      <notes>
+        <note category="location">screens/steps.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Pause, check, report</source>
+        <target>Faites une pause, vérifiez, signalez</target>
+      </segment>
+    </unit>
+    <unit id="screen.steps.narration.l1.text">
+      <notes>
+        <note category="location">screens/steps.json /narration/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l1 (guide) of screen "Pause, check, report": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« Pause »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>So, an email surprises you. <mrk id="w-pause" type="elabora:anchor">Pause</mrk>: don't click, reply or forward.</source>
+        <target>Un e-mail vous surprend ? Faites une <mrk id="w-pause" type="elabora:anchor">pause</mrk>. Ne cliquez pas, ne répondez pas et ne le transférez pas.</target>
+      </segment>
+    </unit>
+    <unit id="screen.steps.narration.l2.text">
+      <notes>
+        <note category="location">screens/steps.json /narration/lines/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l2 (guide) of screen "Pause, check, report": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« Check », « Report »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source><mrk id="w-check" type="elabora:anchor">Check</mrk> who really sent it, and where the link goes. Then press <mrk id="w-report" type="elabora:anchor">Report</mrk>.</source>
+        <target><mrk id="w-check" type="elabora:anchor">Vérifiez</mrk> qui l’a vraiment envoyé et où mène le lien. Puis cliquez sur « <mrk id="w-report" type="elabora:anchor">Signaler</mrk> ».</target>
+      </segment>
+    </unit>
+    <unit id="screen.steps.narration.l3.text">
+      <notes>
+        <note category="location">screens/steps.json /narration/lines/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l3 (guide) of screen "Pause, check, report": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« Clicked »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source><mrk id="w-clicked" type="elabora:anchor">Clicked</mrk>, or typed a password? Call the desk on 4444, straight away.</source>
+        <target>Vous avez <mrk id="w-clicked" type="elabora:anchor">cliqué</mrk> ou saisi un mot de passe ? Appelez tout de suite le service sécurité au 4444.</target>
+      </segment>
+    </unit>
+    <unit id="block.steps-process.takeaway">
+      <notes>
+        <note category="location">screens/steps.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Pause, check, report"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>Pause, check, report: one click does the rest</source>
+        <target>Faites une pause, vérifiez, signalez : un clic suffit</target>
+      </segment>
+    </unit>
+    <unit id="block.steps-process.source">
+      <notes>
+        <note category="location">screens/steps.json /blocks/0/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Pause, check, report"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Information security policy, Quillon Freight (internal policy, fictional)</source>
+        <target>Politique de sécurité de l’information de Quillon Freight (document interne fictif)</target>
+      </segment>
+    </unit>
+    <unit id="block.steps-process.items.pause.title">
+      <notes>
+        <note category="location">screens/steps.json /blocks/0/props/items/0/title</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Pause, check, report"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Pause</source>
+        <target>Faites une pause</target>
+      </segment>
+    </unit>
+    <unit id="block.steps-process.items.pause.text">
+      <notes>
+        <note category="location">screens/steps.json /blocks/0/props/items/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Pause, check, report"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Don't click, reply or forward.</source>
+        <target>Ne cliquez pas, ne répondez pas et ne transférez pas le message.</target>
+      </segment>
+    </unit>
+    <unit id="block.steps-process.items.check.title">
+      <notes>
+        <note category="location">screens/steps.json /blocks/0/props/items/1/title</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Pause, check, report"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Check</source>
+        <target>Vérifiez</target>
+      </segment>
+    </unit>
+    <unit id="block.steps-process.items.check.text">
+      <notes>
+        <note category="location">screens/steps.json /blocks/0/props/items/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Pause, check, report"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Who really sent it? Hover over the link: where does it go?</source>
+        <target>Qui vous écrit vraiment ? Survolez le lien sans cliquer : où mène-t-il ?</target>
+      </segment>
+    </unit>
+    <unit id="block.steps-process.items.report.title">
+      <notes>
+        <note category="location">screens/steps.json /blocks/0/props/items/2/title</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Pause, check, report"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Report</source>
+        <target>Signalez</target>
+      </segment>
+    </unit>
+    <unit id="block.steps-process.items.report.text">
+      <notes>
+        <note category="location">screens/steps.json /blocks/0/props/items/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Pause, check, report"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Press Report in Outlook. It goes to the desk and leaves your inbox.</source>
+        <target>Dans Outlook, cliquez sur « Signaler ». Le message quitte votre boîte de réception et parvient au service sécurité.</target>
+      </segment>
+    </unit>
+    <unit id="block.steps-process.items.call.title">
+      <notes>
+        <note category="location">screens/steps.json /blocks/0/props/items/3/title</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Pause, check, report"</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Clicked? Call 4444</source>
+        <target>Déjà cliqué ? Appelez le 4444</target>
+      </segment>
+    </unit>
+    <unit id="block.steps-process.items.call.text">
+      <notes>
+        <note category="location">screens/steps.json /blocks/0/props/items/3/text</note>
+        <note category="format">text</note>
+        <note category="context">Process on screen "Pause, check, report"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Typed a password or opened a file? Call the security desk at once.</source>
+        <target>Vous avez saisi un mot de passe ou ouvert un fichier ? Appelez immédiatement le service sécurité.</target>
+      </segment>
+    </unit>
+    <unit id="screen.clicked.title">
+      <notes>
+        <note category="location">screens/clicked.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Check: after a click</source>
+        <target>Après un clic, quel est le premier geste ?</target>
+      </segment>
+    </unit>
+    <unit id="screen.clicked.narration.l1.text">
+      <notes>
+        <note category="location">screens/clicked.json /narration/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l1 (guide) of screen "Check: after a click": said by a voice in the translated course and shown as its captions</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>A quick check. Say a fake gets past you. What do you do first?</source>
+        <target>Imaginez que vous soyez tombé dans le piège. Que faites-vous en premier ?</target>
+      </segment>
+    </unit>
+    <unit id="block.clicked-quiz.stem">
+      <notes>
+        <note category="location">screens/clicked.json /blocks/0/props/stem</note>
+        <note category="format">markdown</note>
+        <note category="context">Choice question on screen "Check: after a click"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>A fake delivery notice got you: you clicked its link and typed your password. What do you do first?</source>
+        <target>Vous avez cliqué sur le lien d’un faux avis de livraison et saisi votre mot de passe. Que faites-vous en premier ?</target>
+      </segment>
+    </unit>
+    <unit id="block.clicked-quiz.options.call.text">
+      <notes>
+        <note category="location">screens/clicked.json /blocks/0/props/options/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Choice question on screen "Check: after a click"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>Call the security desk on 4444</source>
+        <target>Appeler le service sécurité au 4444</target>
+      </segment>
+    </unit>
+    <unit id="block.clicked-quiz.options.call.feedback">
+      <notes>
+        <note category="location">screens/clicked.json /blocks/0/props/options/0/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Choice question on screen "Check: after a click"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Yes: the desk resets your password and closes the session before the attacker uses it. Minutes count; nobody is blamed for calling.</source>
+        <target>Oui. Le service sécurité réinitialise votre mot de passe et ferme la session avant que le fraudeur ne s’en serve. Chaque minute compte. Personne ne vous reprochera d’avoir appelé.</target>
+      </segment>
+    </unit>
+    <unit id="block.clicked-quiz.options.change.text">
+      <notes>
+        <note category="location">screens/clicked.json /blocks/0/props/options/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Choice question on screen "Check: after a click"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>Change your password, and say nothing</source>
+        <target>Changer de mot de passe sans rien dire</target>
+      </segment>
+    </unit>
+    <unit id="block.clicked-quiz.options.change.feedback">
+      <notes>
+        <note category="location">screens/clicked.json /blocks/0/props/options/1/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Choice question on screen "Check: after a click"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>A good reflex, but not enough: the attacker may already be signed in, and others got the same email. Call 4444 so the desk can close the session and block the email for everyone.</source>
+        <target>C’est un bon réflexe, mais il ne suffit pas : le fraudeur est peut-être déjà connecté et d’autres personnes ont reçu le même e-mail. Appelez le 4444 pour que le service ferme la session et bloque le message pour tous.</target>
+      </segment>
+    </unit>
+    <unit id="block.clicked-quiz.options.report.text">
+      <notes>
+        <note category="location">screens/clicked.json /blocks/0/props/options/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Choice question on screen "Check: after a click"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>Press Report, then carry on with your day</source>
+        <target>Cliquer sur « Signaler » et reprendre mon travail</target>
+      </segment>
+    </unit>
+    <unit id="block.clicked-quiz.options.report.feedback">
+      <notes>
+        <note category="location">screens/clicked.json /blocks/0/props/options/2/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Choice question on screen "Check: after a click"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Report is right before a click. After one, the desk needs to know at once that your password is out: call 4444.</source>
+        <target>Avant de cliquer sur le lien, signaler est le bon réflexe. Après le clic, le service sécurité doit savoir tout de suite que votre mot de passe est compromis. Appelez le 4444.</target>
+      </segment>
+    </unit>
+    <unit id="screen.after-report.title">
+      <notes>
+        <note category="location">screens/after-report.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>What your report sets off</source>
+        <target>Que se passe-t-il après votre signalement ?</target>
+      </segment>
+    </unit>
+    <unit id="screen.after-report.narration.l1.text">
+      <notes>
+        <note category="location">screens/after-report.json /narration/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l1 (guide) of screen "What your report sets off": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« report », « triages »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Your <mrk id="w-report" type="elabora:anchor">report</mrk> reaches the desk, where an analyst <mrk id="w-triages" type="elabora:anchor">triages</mrk> it within minutes.</source>
+        <target>Votre <mrk id="w-report" type="elabora:anchor">signalement</mrk> arrive au service sécurité. En quelques minutes, un analyste <mrk id="w-triages" type="elabora:anchor">examine</mrk> le message.</target>
+      </segment>
+    </unit>
+    <unit id="screen.after-report.narration.l2.text">
+      <notes>
+        <note category="location">screens/after-report.json /narration/lines/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l2 (guide) of screen "What your report sets off": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« block », « warn », « teach »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>We <mrk id="w-block" type="elabora:anchor">block</mrk> it in all 1,200 inboxes, <mrk id="w-warn" type="elabora:anchor">warn</mrk> those who got it, and <mrk id="w-teach" type="elabora:anchor">teach</mrk> it in a coming drill.</source>
+        <target>Nous le <mrk id="w-block" type="elabora:anchor">bloquons</mrk> dans les 1 200 boîtes mail, nous <mrk id="w-warn" type="elabora:anchor">prévenons</mrk> les destinataires et nous en faisons un <mrk id="w-teach" type="elabora:anchor">exercice</mrk> pour vous entraîner.</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.takeaway">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>One report protects 1,200 inboxes</source>
+        <target>Un signalement protège 1 200 boîtes mail</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.source">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Security desk report 2025, Quillon Freight (internal report, fictional)</source>
+        <target>Rapport 2025 du service sécurité de Quillon Freight (données internes fictives)</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.center.title">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/center/title</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>One report</source>
+        <target>Un signalement</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.center.text">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/center/text</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>From your inbox to every inbox</source>
+        <target>De votre boîte mail à celles de vos collègues</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.items.report.title">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/items/0/title</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>You report</source>
+        <target>Vous signalez</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.items.report.text">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/items/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>One click on Report sends the email to the desk.</source>
+        <target>Un clic sur « Signaler » transmet l’e-mail au service sécurité.</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.items.triage.title">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/items/1/title</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Triage</source>
+        <target>Analyse</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.items.triage.text">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/items/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>An analyst reads it and decides: phishing or not.</source>
+        <target>Un analyste lit le message : est-ce une tentative d’hameçonnage ?</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.items.block.title">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/items/2/title</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Block</source>
+        <target>Blocage</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.items.block.text">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/items/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Its sender and links are blocked in every inbox, typically 11 minutes after the first report.</source>
+        <target>L’expéditeur et les liens sont bloqués dans toutes les boîtes mail, en général onze minutes après le premier signalement.</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.items.warn.title">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/items/3/title</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Warn</source>
+        <target>Alerte</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.items.warn.text">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/items/3/text</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Those who got it hear what it was, and what to do.</source>
+        <target>Les destinataires sont informés du piège et de la marche à suivre.</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.items.teach.title">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/items/4/title</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Teach</source>
+        <target>Entraînement</target>
+      </segment>
+    </unit>
+    <unit id="block.after-report-cycle.items.teach.text">
+      <notes>
+        <note category="location">screens/after-report.json /blocks/0/props/items/4/text</note>
+        <note category="format">text</note>
+        <note category="context">Cycle on screen "What your report sets off"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>The lure becomes a safe fake in a coming drill.</source>
+        <target>Le même prétexte servira à créer une simulation sans danger pour un prochain exercice.</target>
+      </segment>
+    </unit>
+    <unit id="screen.flow.title">
+      <notes>
+        <note category="location">screens/flow.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>The path for a doubtful email</source>
+        <target>Face à un e-mail douteux</target>
+      </segment>
+    </unit>
+    <unit id="screen.flow.narration.l1.text">
+      <notes>
+        <note category="location">screens/flow.json /narration/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l1 (guide) of screen "The path for a doubtful email": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« surprises », « password »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>When an email <mrk id="w-surprises" type="elabora:anchor">surprises</mrk> you, ask: does it want a <mrk id="w-password" type="elabora:anchor">password</mrk>, money, or a file?</source>
+        <target>Un e-mail vous <mrk id="w-surprises" type="elabora:anchor">surprend</mrk> ? Vous demande-t-il un <mrk id="w-password" type="elabora:anchor">mot de passe</mrk>, de l’argent ou un fichier ?</target>
+      </segment>
+    </unit>
+    <unit id="screen.flow.narration.l2.text">
+      <notes>
+        <note category="location">screens/flow.json /narration/lines/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l2 (guide) of screen "The path for a doubtful email": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« sender », « report », « carry on »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>If so, or if the <mrk id="w-sender" type="elabora:anchor">sender</mrk> or the link looks wrong, <mrk id="w-report" type="elabora:anchor">report</mrk> it. If not, <mrk id="w-carry-on" type="elabora:anchor">carry on</mrk>.</source>
+        <target>Si oui, ou si l’<mrk id="w-sender" type="elabora:anchor">expéditeur</mrk> ou le lien vous paraît suspect, <mrk id="w-report" type="elabora:anchor">signalez</mrk> le message. Sinon, <mrk id="w-carry-on" type="elabora:anchor">poursuivez</mrk> votre travail.</target>
+      </segment>
+    </unit>
+    <unit id="screen.flow.narration.l3.text">
+      <notes>
+        <note category="location">screens/flow.json /narration/lines/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Narration line l3 (guide) of screen "The path for a doubtful email": said by a voice in the translated course and shown as its captions. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a block or an event waits for (« clicked », « call », « done »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Then, if you <mrk id="w-clicked" type="elabora:anchor">clicked</mrk>, <mrk id="w-call" type="elabora:anchor">call</mrk> the desk. If not, you're <mrk id="w-done" type="elabora:anchor">done</mrk>: we take it from here.</source>
+        <target>Si vous avez <mrk id="w-clicked" type="elabora:anchor">cliqué</mrk>, <mrk id="w-call" type="elabora:anchor">appelez</mrk> le service sécurité. Sinon, c’est <mrk id="w-done" type="elabora:anchor">terminé</mrk> : nous prenons le relais.</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.takeaway">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/takeaway</note>
+        <note category="format">text</note>
+        <note category="context">Diagram on screen "The path for a doubtful email"</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>When in doubt, report: it is never the wrong move</source>
+        <target>Dans le doute, signaler est toujours le bon réflexe</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.source">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/source</note>
+        <note category="format">text</note>
+        <note category="context">Diagram on screen "The path for a doubtful email"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Information security policy, Quillon Freight (internal policy, fictional)</source>
+        <target>Politique de sécurité de l’information de Quillon Freight (document interne fictif)</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.A">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/A</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>An unexpected email</source>
+        <target>Un e-mail inattendu</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.B">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/B</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Wants a password, money or a file?</source>
+        <target>Demande de mot de passe, d’argent ou de fichier ?</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.R">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/R</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Report it</source>
+        <target>Signalez le message</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.C">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/C</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Sender and link look right?</source>
+        <target>L’expéditeur et le lien semblent fiables ?</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.D">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/D</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Carry on</source>
+        <target>Poursuivez votre travail</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.E">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/E</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Clicked or typed anything?</source>
+        <target>Avez-vous cliqué ou saisi quelque chose ?</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.F">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/F</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Call 4444 now</source>
+        <target>Appelez le 4444 sans attendre</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.G">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/G</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Done: the desk takes over</source>
+        <target>Terminé : le service sécurité prend le relais</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.L_B_R_0">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/L_B_R_0</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Yes</source>
+        <target>Oui</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.L_B_C_0">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/L_B_C_0</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>No</source>
+        <target>Non</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.L_C_R_0">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/L_C_R_0</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>No</source>
+        <target>Non</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.L_C_D_0">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/L_C_D_0</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Yes</source>
+        <target>Oui</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.L_E_F_0">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/L_E_F_0</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Yes</source>
+        <target>Oui</target>
+      </segment>
+    </unit>
+    <unit id="block.flow-diagram.labels.L_E_G_0">
+      <notes>
+        <note category="location">screens/flow.json /blocks/0/props/labels/L_E_G_0</note>
+        <note category="format">text</note>
+        <note category="context">Words of a box or an arrow of a flowchart diagram (Diagram on screen "The path for a doubtful email")</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>No</source>
+        <target>Non</target>
+      </segment>
+    </unit>
+    <unit id="screen.practice.title">
+      <notes>
+        <note category="location">screens/practice.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Your turn: new bank details</source>
+        <target>À vous de jouer : un changement de coordonnées bancaires</target>
+      </segment>
+    </unit>
+    <unit id="screen.practice.layer.the-email.title">
+      <notes>
+        <note category="location">screens/practice.json /layers/0/title</note>
+        <note category="format">text</note>
+        <note category="context">Title of a layer of screen "Your turn: new bank details"</note>
+      </notes>
+      <segment state="translated">
+        <source>The email from Harlow Tyres</source>
+        <target>L’e-mail de Harlow Tyres</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.title">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/title</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>Your turn: the call from Harlow Tyres</source>
+        <target>À vous de jouer : l’appel de Harlow Tyres</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.call.lines.dana-call.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Line dana-call (guide) of node "call" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a gesture or an action of the dialogue waits for (« email », « rings »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Tuesday, 4:40 pm. This morning, Finance got an <mrk id="w-email" type="elabora:anchor">email</mrk> from Harlow Tyres. Now the phone <mrk id="w-rings" type="elabora:anchor">rings</mrk>.</source>
+        <target>Mardi, 16 h 40. Ce matin, le service financier a reçu un <mrk id="w-email" type="elabora:anchor">e-mail</mrk> de Harlow Tyres. Le téléphone <mrk id="w-rings" type="elabora:anchor">sonne</mrk>.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.call.lines.neil-hello.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/lines/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Line neil-hello (neil) of node "call" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Hi, it's Neil from accounts at Harlow Tyres. Did you get our email this morning?</source>
+        <target>Bonjour, c’est Neil, de la comptabilité de Harlow Tyres. Vous avez reçu notre e-mail de ce matin ?</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.call.lines.neil-bank.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/lines/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Line neil-bank (neil) of node "call" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Our bank's changed, so Friday's payment needs to go to the new account.</source>
+        <target>Nous avons changé de banque. Pour le règlement de vendredi, il faut faire le virement sur le nouveau compte.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.call.prompt">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/prompt</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">300</note>
+      </notes>
+      <segment state="translated">
+        <source>What do you say?</source>
+        <target>Que répondez-vous ?</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.call.options.a.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/options/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>I'll check it, then call Harlow back on the number we have on file.</source>
+        <target>Je vais vérifier en rappelant Harlow au numéro que nous avons dans nos dossiers.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.call.options.a.reply.neil-no-need.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/options/0/reply/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Line neil-no-need (neil) of node "call" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course. Text in square brackets, in markers &lt;mrk type="elabora:direction"&gt;, is a stage direction for the voice (how to say it, never shown): keep it in brackets where the delivery changes in your sentence, and translate or adapt it</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source><mrk id="d1" type="elabora:direction">[a little too quickly]</mrk> No need to call, you've got me right here. It takes two minutes.</source>
+        <target><mrk id="d1" type="elabora:direction">[un peu trop vite]</mrk> Inutile de rappeler, vous m’avez en ligne. Ça prend deux minutes.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.call.options.a.feedback">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/options/0/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>A change of bank details is checked by calling the supplier back on the number already on file, never a number from the email or the call.</source>
+        <target>Pour vérifier un changement de coordonnées bancaires, rappelez le fournisseur au numéro déjà enregistré. N’utilisez jamais celui du message ou celui que l’on vous donne au téléphone.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.call.options.b.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/options/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>Could you send us the change on Harlow's letterhead, signed?</source>
+        <target>Pourriez-vous m’envoyer un courrier signé sur papier à en-tête de Harlow ?</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.call.options.b.reply.neil-letter.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/options/1/reply/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Line neil-letter (neil) of node "call" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Of course. You'll have it in five minutes.</source>
+        <target>Bien sûr. Vous l’aurez dans cinq minutes.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.call.options.b.feedback">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/options/1/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>A letterhead is as easy to fake as an email. Only a call back on the number on file reaches the real Harlow.</source>
+        <target>Un papier à en-tête est aussi facile à imiter qu’un e-mail. Seul un rappel au numéro déjà enregistré vous permet de joindre le vrai fournisseur.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.call.options.c.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/options/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>No problem, I'll update it now. What are the new details?</source>
+        <target>D’accord, je fais le changement. Quelles sont les nouvelles coordonnées ?</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.call.options.c.reply.neil-iban.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/options/2/reply/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Line neil-iban (neil) of node "call" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Lovely. It's all in the email, just copy the account number across.</source>
+        <target>Parfait. Tout est dans l’e-mail : il suffit de recopier le numéro de compte.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.call.options.c.feedback">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/0/options/2/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Never change bank details on a caller's word: in 2024, a fake invoice cost us 48,000 pounds that way.</source>
+        <target>Ne modifiez jamais des coordonnées bancaires sur la seule parole d’un interlocuteur. En 2024, une fausse facture nous a ainsi coûté 48 000 livres.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.pressure.lines.neil-friday.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/1/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Line neil-friday (neil) of node "pressure" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course. Markers &lt;mrk type="elabora:anchor"&gt; wrap words a gesture or an action of the dialogue waits for (« Friday »): keep each marker, with its id, around the words of your language that say the same thing</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Look, if this isn't paid by <mrk id="w-friday" type="elabora:anchor">Friday</mrk>, our director stops your deliveries.</source>
+        <target>Écoutez, si le paiement n’arrive pas d’ici <mrk id="w-friday" type="elabora:anchor">vendredi</mrk>, notre directeur suspend vos livraisons.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.pressure.lines.neil-today.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/1/lines/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Line neil-today (neil) of node "pressure" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Can't you just change it today? I'll stay on the line.</source>
+        <target>Vous ne pouvez pas faire le changement aujourd’hui ? Je reste en ligne.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.pressure.prompt">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/1/prompt</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">300</note>
+      </notes>
+      <segment state="translated">
+        <source>How do you answer the deadline?</source>
+        <target>Que dites-vous face à cet ultimatum ?</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.pressure.options.a.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/1/options/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>I understand. Nothing changes until I've called Harlow back.</source>
+        <target>Je comprends. Je ne changerai rien avant d’avoir rappelé Harlow.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.pressure.options.a.reply.neil-fine.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/1/options/0/reply/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Line neil-fine (neil) of node "pressure" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course. Text in square brackets, in markers &lt;mrk type="elabora:direction"&gt;, is a stage direction for the voice (how to say it, never shown): keep it in brackets where the delivery changes in your sentence, and translate or adapt it</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source><mrk id="d1" type="elabora:direction">[sighs]</mrk> Fine. Don't blame me when your trucks stop.</source>
+        <target><mrk id="d1" type="elabora:direction">[soupire]</mrk> Très bien. Mais si vos camions restent à l’arrêt, il ne faudra pas m’en vouloir.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.pressure.options.a.feedback">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/1/options/0/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>The deadline is there to stop you checking. Holding the rule under pressure is exactly what the call-back is for.</source>
+        <target>Ce délai vise à vous empêcher de vérifier. C’est justement quand on vous met la pression qu’il faut tenir bon et rappeler le fournisseur.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.pressure.options.b.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/1/options/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>I'll ask my manager, then call you back on this number.</source>
+        <target>Je vais demander à ma responsable et vous rappeler à ce numéro.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.pressure.options.b.reply.neil-direct.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/1/options/1/reply/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Line neil-direct (neil) of node "pressure" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Perfect, it's my direct line. I'll wait for your call.</source>
+        <target>Parfait, c’est ma ligne directe. J’attends votre appel.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.pressure.options.b.feedback">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/1/options/1/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Asking is good, but calling him back reaches him again. Only the number already on file reaches the real Harlow.</source>
+        <target>Demander conseil est un bon réflexe, mais en rappelant ce numéro, vous retombez sur le même interlocuteur. Pour joindre Harlow, utilisez le numéro déjà enregistré.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.pressure.options.c.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/1/options/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>OK, as it's urgent, I'll change it now. Just this once.</source>
+        <target>Bon, puisque c’est urgent, je fais le changement. Juste cette fois.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.pressure.options.c.reply.neil-rolling.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/1/options/2/reply/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Line neil-rolling (neil) of node "pressure" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Brilliant. Your trucks will keep rolling, I promise.</source>
+        <target>Formidable. Vos camions continueront à rouler, c’est promis.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.pressure.options.c.feedback">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/1/options/2/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Urgency is the lure's oldest lever. Once the money has left, it is usually gone for good.</source>
+        <target>Jouer sur l’urgence est une vieille ficelle. Une fois le virement parti, il est généralement trop tard pour récupérer l’argent.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.inbox.lines.dana-hangs-up.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/2/lines/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Line dana-hangs-up (guide) of node "inbox" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Neil hangs up. His email is still in your inbox.</source>
+        <target>Neil raccroche. Son e-mail est toujours dans votre boîte de réception.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.inbox.prompt">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/2/prompt</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">300</note>
+      </notes>
+      <segment state="translated">
+        <source>What do you do with the email?</source>
+        <target>Que faites-vous de l’e-mail ?</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.inbox.options.a.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/2/options/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>Press Report, then call Harlow on the number on file.</source>
+        <target>Je clique sur « Signaler », puis je rappelle Harlow au numéro enregistré.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.inbox.options.a.reply.dana-blocked.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/2/options/0/reply/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Line dana-blocked (guide) of node "inbox" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>The real Harlow has never heard of Neil. Eleven minutes later, the desk blocks the sender in every inbox.</source>
+        <target>Chez Harlow, personne ne connaît Neil. Onze minutes plus tard, le service sécurité bloque l’expéditeur dans toutes les boîtes mail.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.inbox.options.a.feedback">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/2/options/0/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Report sends it to the desk, who block it for all 1,200 inboxes; the call back on file proves the change was fake.</source>
+        <target>Le bouton « Signaler » transmet le message au service sécurité, qui le bloque dans les 1 200 boîtes mail. Le rappel au numéro enregistré confirme la fraude.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.inbox.options.b.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/2/options/1/text</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>Forward it to my manager, so they can decide.</source>
+        <target>Je le transfère à ma responsable pour qu’elle décide.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.inbox.options.b.reply.dana-manager.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/2/options/1/reply/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Line dana-manager (guide) of node "inbox" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Between two meetings, your manager almost approves the new account.</source>
+        <target>Entre deux réunions, votre responsable a presque validé le nouveau compte.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.inbox.options.b.feedback">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/2/options/1/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Forwarding passes the lure to someone who can approve the payment. Report it: the desk checks it in minutes.</source>
+        <target>En transférant le message, vous exposez au piège une personne qui peut autoriser le paiement. Signalez-le : le service sécurité le vérifie en quelques minutes.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.inbox.options.c.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/2/options/2/text</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">500</note>
+      </notes>
+      <segment state="translated">
+        <source>Reply to the email and ask them to confirm the change.</source>
+        <target>Je réponds au message pour demander confirmation du changement.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.inbox.options.c.reply.dana-confirmed.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/2/options/2/reply/0/text</note>
+        <note category="format">text</note>
+        <note category="context">Line dana-confirmed (guide) of node "inbox" of dialogue "bank-call" on screen "Your turn: new bank details": shown in a bubble and said by a voice in the translated course</note>
+        <note category="max-length">2000</note>
+      </notes>
+      <segment state="translated">
+        <source>Ten minutes later, a cheerful answer arrives: confirmed, thanks, Neil.</source>
+        <target>Dix minutes plus tard, une réponse cordiale arrive : « Je vous confirme le changement. Merci ! Neil. »</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.nodes.inbox.options.c.feedback">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/nodes/2/options/2/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Your reply goes to the attacker, who gladly confirms. Report the email, then call back on the number on file.</source>
+        <target>C’est le fraudeur qui reçoit votre réponse. Bien sûr qu’il confirme ! Signalez l’e-mail, puis rappelez le fournisseur au numéro déjà enregistré.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.endings.stopped.title">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/endings/0/title</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Fraud stopped</source>
+        <target>Fraude déjouée</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.endings.stopped.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/endings/0/text</note>
+        <note category="format">markdown</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>You kept to the call-back rule under pressure, and your report protected 1,200 inboxes.</source>
+        <target>Malgré la pression, vous avez tenu à rappeler le fournisseur. Votre signalement a protégé 1 200 boîtes mail.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.endings.close-call.title">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/endings/1/title</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Close call</source>
+        <target>Fraude évitée de justesse</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.endings.close-call.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/endings/1/text</note>
+        <note category="format">markdown</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Nothing was paid, but one answer left a door open. Go back to the fair choice to hear the safer one.</source>
+        <target>Aucun virement n’a été effectué, mais l’une de vos réponses laissait une ouverture au fraudeur. Revenez à cette décision et essayez une réponse plus sûre.</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.endings.at-risk.title">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/endings/2/title</note>
+        <note category="format">text</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">80</note>
+      </notes>
+      <segment state="translated">
+        <source>Money at risk</source>
+        <target>Le paiement est en danger</target>
+      </segment>
+    </unit>
+    <unit id="block.bank-call.endings.at-risk.text">
+      <notes>
+        <note category="location">screens/practice.json /blocks/0/props/endings/2/text</note>
+        <note category="format">markdown</note>
+        <note category="context">Dialogue on screen "Your turn: new bank details"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>A fraudster needs only one yes. Replay the call: each mistake shows what it costs.</source>
+        <target>Un seul « oui » suffit au fraudeur. Rejouez l’appel pour voir les conséquences de chaque décision.</target>
+      </segment>
+    </unit>
+    <unit id="block.practice-email.title">
+      <notes>
+        <note category="location">screens/practice.json /layers/0/blocks/0/props/title</note>
+        <note category="format">text</note>
+        <note category="context">Callout on screen "Your turn: new bank details"</note>
+        <note category="max-length">120</note>
+      </notes>
+      <segment state="translated">
+        <source>New bank details before Friday’s payment</source>
+        <target>Nouvelles coordonnées bancaires pour le règlement de vendredi</target>
+      </segment>
+    </unit>
+    <unit id="block.practice-email.markdown">
+      <notes>
+        <note category="location">screens/practice.json /layers/0/blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Callout on screen "Your turn: new bank details"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>**From:** Accounts, Harlow Tyres `accounts@harlow-tyres-billing.com`
+
+Hello, our bank has changed. Please pay this week’s invoice (£18,400) to the account below and confirm today, so the payment is not delayed.
+
+IBAN: GB33 BUKB 2020 1555 5555 55</source>
+        <target>**De :** Service comptabilité, Harlow Tyres `accounts@harlow-tyres-billing.com`
+
+Bonjour,
+
+Nous avons changé de banque. Merci de régler la facture de cette semaine (18 400 £) sur le compte ci-dessous et de nous le confirmer aujourd’hui afin d’éviter tout retard de paiement.
+
+IBAN : GB33 BUKB 2020 1555 5555 55</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.callout.email.label">
+      <notes>
+        <note category="location">course.json /theme/styles/callout/email/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the callout style "email" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Email</source>
+        <target>E-mail</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.callout.email">
+      <notes>
+        <note category="location">course.json /theme/styles/callout/email/description</note>
+        <note category="format">text</note>
+        <note category="context">What the callout style "email" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>An email as the learner would read it in their inbox</source>
+        <target>Un e-mail tel qu’il se présente dans la boîte de réception</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.donut.aside.label">
+      <notes>
+        <note category="location">course.json /theme/styles/donut/aside/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the donut style "aside" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Takeaway beside</source>
+        <target>Message clé sur le côté</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.donut.aside">
+      <notes>
+        <note category="location">course.json /theme/styles/donut/aside/description</note>
+        <note category="format">text</note>
+        <note category="context">What the donut style "aside" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The takeaway beside the chart, for a chart taller than wide</source>
+        <target>Le message clé s’affiche à côté du graphique lorsque celui-ci est plus haut que large</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.matrix.aside.label">
+      <notes>
+        <note category="location">course.json /theme/styles/matrix/aside/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the matrix style "aside" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Takeaway beside</source>
+        <target>Message clé sur le côté</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.matrix.aside">
+      <notes>
+        <note category="location">course.json /theme/styles/matrix/aside/description</note>
+        <note category="format">text</note>
+        <note category="context">What the matrix style "aside" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The takeaway beside the chart, for a chart taller than wide</source>
+        <target>Le message clé s’affiche à côté du graphique lorsque celui-ci est plus haut que large</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.cycle.aside.label">
+      <notes>
+        <note category="location">course.json /theme/styles/cycle/aside/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the cycle style "aside" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Takeaway beside</source>
+        <target>Message clé sur le côté</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.cycle.aside">
+      <notes>
+        <note category="location">course.json /theme/styles/cycle/aside/description</note>
+        <note category="format">text</note>
+        <note category="context">What the cycle style "aside" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The takeaway beside the chart, for a chart taller than wide</source>
+        <target>Le message clé s’affiche à côté du graphique lorsque celui-ci est plus haut que large</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

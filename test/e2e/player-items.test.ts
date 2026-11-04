@@ -20,7 +20,7 @@ const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
 const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 const copyExample = (name = 'diagnostic-reseau') => copyCourse(path.join(ROOT, 'examples', name));
 
-async function player(dir: string, run: (page: Page, reload: () => Promise<void>) => Promise<void>, options: BuildOptions = {}) {
+async function player(dir: string, run: (page: Page, reload: () => Promise<void>) => Promise<void>, options: BuildOptions = {}, query = '') {
   const b = await build(dir, { emit: 'dir', out: tmp('elabora-items-'), writeLock: false, debug: true, ...options });
   assert.ok(b.ok && b.dirPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
   const server = await startServer();
@@ -32,7 +32,7 @@ async function player(dir: string, run: (page: Page, reload: () => Promise<void>
     page.on('pageerror', (error) => errors.push(error.message));
     await page.addInitScript(() => { (window as Window & { ELABORA_TEST?: unknown }).ELABORA_TEST = { virtualTime: true }; });
     const open = async () => {
-      await page.goto(`${server.base}/pkg/p/index.html`);
+      await page.goto(`${server.base}/pkg/p/index.html${query}`);
       await page.waitForFunction(() => (window as PlayerWindow).__elabora);
       await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
     };
@@ -234,6 +234,13 @@ test('« Langue » (D59): the learner switches in place, on the same screen with
     assert.equal(back.screen, before.screen);
     assert.equal(await page.evaluate(() => document.getElementById('elabora-app')?.dataset.textSize), 'large', 'the choice made in French, back after a reload');
   }, { target: 'web', web: { progress: 'local' }, languages: 'all' });
+});
+
+test('?lang= opens the course in the language a page asks for, when the course has it', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
+  const dir = copyExample('orbital-rendezvous');
+  const lang = (page: Page) => page.evaluate(() => document.documentElement.lang);
+  await player(dir, async (page) => { assert.equal(await lang(page), 'fr'); }, { target: 'web', languages: 'all' }, '?lang=fr');
+  await player(dir, async (page) => { assert.equal(await lang(page), 'en', 'a language the course lacks: its own'); }, { target: 'web', languages: 'all' }, '?lang=de');
 });
 
 test('« Très grande » in slides: the room reserved for a quiz\'s feedback is measured in the page\'s CSS px (as at normal size); answering moves nothing', { skip: NO_FFMPEG, timeout: 180000 }, async () => {

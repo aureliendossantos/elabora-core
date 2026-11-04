@@ -1,0 +1,142 @@
+{
+  "screen": "lure-map",
+  "line": "l2",
+  "language": "fr",
+  "textHash": "sha256:9fbd0589e5b77e11ac15a5538def821068703a8bec068eada3f50c6c00d6b3aa",
+  "duration": 7.03,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:97286d06ba8baa4f8373434726afa53355fcb4c5f09408cce824eb42e99b2f42",
+  "createdAt": "2026-11-04T22:18:54Z",
+  "take": 1,
+  "spokenHash": "sha256:9fbd0589e5b77e11ac15a5538def821068703a8bec068eada3f50c6c00d6b3aa",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Les tirages au sort sont rares et faciles à repérer. Les avis de livraison sont fréquents, mais nous trompent rarement.",
+  "mouth": "ccwwwwcssooowwwssooosssswwooooccsssooooosswwwwwoocoocwwwwcccwwwccccoooooooooocccooooossscccccccccccccccccccccccwwooowwwwcoossswwoooooowwoooooooossooossccwwwwcsswwoooocccccccccwwwoooocssssscccccsssswwwsscooossscc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Les",
+      "start": 0.06,
+      "end": 0.2,
+      "score": 0.994
+    },
+    {
+      "text": "tirages",
+      "start": 0.2,
+      "end": 0.601,
+      "score": 0.995
+    },
+    {
+      "text": "au",
+      "start": 0.601,
+      "end": 0.695,
+      "score": 1
+    },
+    {
+      "text": "sort",
+      "start": 0.761,
+      "end": 1.075,
+      "score": 1
+    },
+    {
+      "text": "sont",
+      "start": 1.122,
+      "end": 1.316,
+      "score": 1
+    },
+    {
+      "text": "rares",
+      "start": 1.342,
+      "end": 1.736,
+      "score": 1
+    },
+    {
+      "text": "et",
+      "start": 1.783,
+      "end": 1.897,
+      "score": 1
+    },
+    {
+      "text": "faciles",
+      "start": 1.943,
+      "end": 2.383,
+      "score": 0.994
+    },
+    {
+      "text": "à",
+      "start": 2.383,
+      "end": 2.457,
+      "score": 1
+    },
+    {
+      "text": "repérer",
+      "start": 2.484,
+      "end": 2.938,
+      "score": 1
+    },
+    {
+      "text": "Les",
+      "start": 3.685,
+      "end": 3.839,
+      "score": 1
+    },
+    {
+      "text": "avis",
+      "start": 3.906,
+      "end": 4.16,
+      "score": 1
+    },
+    {
+      "text": "de",
+      "start": 4.166,
+      "end": 4.246,
+      "score": 1
+    },
+    {
+      "text": "livraison",
+      "start": 4.246,
+      "end": 4.761,
+      "score": 0.997
+    },
+    {
+      "text": "sont",
+      "start": 4.827,
+      "end": 5.021,
+      "score": 0.998
+    },
+    {
+      "text": "fréquents",
+      "start": 5.027,
+      "end": 5.562,
+      "score": 0.979
+    },
+    {
+      "text": "mais",
+      "start": 5.788,
+      "end": 5.949,
+      "score": 0.958
+    },
+    {
+      "text": "nous",
+      "start": 5.949,
+      "end": 6.109,
+      "score": 0.976
+    },
+    {
+      "text": "trompent",
+      "start": 6.109,
+      "end": 6.503,
+      "score": 0.954
+    },
+    {
+      "text": "rarement",
+      "start": 6.509,
+      "end": 6.964,
+      "score": 1
+    }
+  ]
+}

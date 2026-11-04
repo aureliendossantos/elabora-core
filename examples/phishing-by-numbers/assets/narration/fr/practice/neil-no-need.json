@@ -1,0 +1,94 @@
+{
+  "screen": "practice",
+  "line": "neil-no-need",
+  "language": "fr",
+  "textHash": "sha256:6dbe7b45d6f798ddf91b0264016c73993e2a03361c9e9236a077336ceaa352c5",
+  "duration": 2.76,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:590f8b6d172845ea145c3a9ea22e5d8ffd13cbb6f28437da1797ba231f3b6c0a",
+  "createdAt": "2026-11-04T22:20:31Z",
+  "take": 1,
+  "spokenHash": "sha256:6dbe7b45d6f798ddf91b0264016c73993e2a03361c9e9236a077336ceaa352c5",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[un peu trop vite] Inutile de rappeler, vous m’avez en ligne. Ça prend deux minutes.",
+  "mouth": "cooowwwcooooowwwwwccssooosssssssoocwwoowwwwooooosssscccccccwwwcooooowwwcooooocccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Inutile",
+      "start": 0.04,
+      "end": 0.403,
+      "score": 1
+    },
+    {
+      "text": "de",
+      "start": 0.403,
+      "end": 0.497,
+      "score": 1
+    },
+    {
+      "text": "rappeler",
+      "start": 0.504,
+      "end": 0.86,
+      "score": 0.995
+    },
+    {
+      "text": "vous",
+      "start": 1.007,
+      "end": 1.148,
+      "score": 0.998
+    },
+    {
+      "text": "m’",
+      "start": 1.148,
+      "end": 1.189,
+      "score": 0.664
+    },
+    {
+      "text": "avez",
+      "start": 1.189,
+      "end": 1.384,
+      "score": 0.999
+    },
+    {
+      "text": "en",
+      "start": 1.39,
+      "end": 1.471,
+      "score": 1
+    },
+    {
+      "text": "ligne",
+      "start": 1.471,
+      "end": 1.726,
+      "score": 0.969
+    },
+    {
+      "text": "Ça",
+      "start": 1.954,
+      "end": 2.069,
+      "score": 0.982
+    },
+    {
+      "text": "prend",
+      "start": 2.075,
+      "end": 2.25,
+      "score": 0.998
+    },
+    {
+      "text": "deux",
+      "start": 2.257,
+      "end": 2.357,
+      "score": 1
+    },
+    {
+      "text": "minutes",
+      "start": 2.357,
+      "end": 2.713,
+      "score": 0.975
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "screen": "funnel",
+  "line": "l3",
+  "language": "fr",
+  "textHash": "sha256:3f4442529232ee889940ed13d4b3c13707540b819b80311c4503736c630f8b3a",
+  "duration": 3.84,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:b2187a04c1a967193cebd3d2b81113ac9ae9a5ce70fac07980dd495935d389af",
+  "createdAt": "2026-11-04T22:18:46Z",
+  "take": 1,
+  "spokenHash": "sha256:3f4442529232ee889940ed13d4b3c13707540b819b80311c4503736c630f8b3a",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Une personne sur sept seulement a prévenu le service sécurité.",
+  "mouth": "ccwwwwwccwwssssssssssoooooossscccwwwcccsssssssswwoooocwwoooocccwwwcccooooowwwoooooocwwoooooosssssssccooooooccooocccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Une",
+      "start": 0.06,
+      "end": 0.235,
+      "score": 0.999
+    },
+    {
+      "text": "personne",
+      "start": 0.261,
+      "end": 0.738,
+      "score": 0.985
+    },
+    {
+      "text": "sur",
+      "start": 0.744,
+      "end": 0.939,
+      "score": 0.981
+    },
+    {
+      "text": "sept",
+      "start": 1.046,
+      "end": 1.301,
+      "score": 0.999
+    },
+    {
+      "text": "seulement",
+      "start": 1.488,
+      "end": 1.964,
+      "score": 1
+    },
+    {
+      "text": "a",
+      "start": 2.111,
+      "end": 2.185,
+      "score": 0.998
+    },
+    {
+      "text": "prévenu",
+      "start": 2.252,
+      "end": 2.607,
+      "score": 0.98
+    },
+    {
+      "text": "le",
+      "start": 2.654,
+      "end": 2.748,
+      "score": 0.999
+    },
+    {
+      "text": "service",
+      "start": 2.795,
+      "end": 3.17,
+      "score": 0.994
+    },
+    {
+      "text": "sécurité",
+      "start": 3.197,
+      "end": 3.733,
+      "score": 0.999
+    }
+  ]
+}

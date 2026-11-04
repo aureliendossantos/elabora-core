@@ -1,0 +1,112 @@
+{
+  "screen": "intro",
+  "line": "l3",
+  "language": "fr",
+  "textHash": "sha256:f519ab7cae8fb3ced41d855e4ef7c3da953da5a232fe3d0eb41c2d32a5cd8aa6",
+  "duration": 5.7,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:551c619d4973287e84e3b3549817ad56069c748c3ed3625d7fbdd6d96e37c8ef",
+  "createdAt": "2026-11-04T22:18:23Z",
+  "take": 1,
+  "spokenHash": "sha256:f519ab7cae8fb3ced41d855e4ef7c3da953da5a232fe3d0eb41c2d32a5cd8aa6",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Grâce à vos signalements, nous bloquons ces e-mails en onze minutes, contre quatre heures auparavant.",
+  "mouth": "ccsssswwwwccwwooooossssswwwooowwcwwoossccccccccoooooocoooocccoosssssooossoowwcooooooocwwwwcccwwooooossscoooosscccsssccccccccwwwwsssooocccwwwwcsssswwooocssccccssooocoosssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Grâce",
+      "start": 0.08,
+      "end": 0.435,
+      "score": 0.998
+    },
+    {
+      "text": "à",
+      "start": 0.442,
+      "end": 0.516,
+      "score": 0.999
+    },
+    {
+      "text": "vos",
+      "start": 0.522,
+      "end": 0.676,
+      "score": 0.999
+    },
+    {
+      "text": "signalements",
+      "start": 0.682,
+      "end": 1.298,
+      "score": 0.968
+    },
+    {
+      "text": "nous",
+      "start": 1.566,
+      "end": 1.76,
+      "score": 0.99
+    },
+    {
+      "text": "bloquons",
+      "start": 1.766,
+      "end": 2.182,
+      "score": 0.964
+    },
+    {
+      "text": "ces",
+      "start": 2.228,
+      "end": 2.402,
+      "score": 0.813
+    },
+    {
+      "text": "e-mails",
+      "start": 2.449,
+      "end": 2.864,
+      "score": 0.681
+    },
+    {
+      "text": "en",
+      "start": 2.89,
+      "end": 2.984,
+      "score": 1
+    },
+    {
+      "text": "onze",
+      "start": 3.171,
+      "end": 3.426,
+      "score": 0.955
+    },
+    {
+      "text": "minutes",
+      "start": 3.432,
+      "end": 3.867,
+      "score": 1
+    },
+    {
+      "text": "contre",
+      "start": 4.115,
+      "end": 4.429,
+      "score": 0.934
+    },
+    {
+      "text": "quatre",
+      "start": 4.516,
+      "end": 4.831,
+      "score": 0.999
+    },
+    {
+      "text": "heures",
+      "start": 4.857,
+      "end": 5.118,
+      "score": 0.952
+    },
+    {
+      "text": "auparavant",
+      "start": 5.118,
+      "end": 5.654,
+      "score": 0.993
+    }
+  ]
+}

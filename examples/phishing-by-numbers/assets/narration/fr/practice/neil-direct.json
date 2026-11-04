@@ -1,0 +1,82 @@
+{
+  "screen": "practice",
+  "line": "neil-direct",
+  "language": "fr",
+  "textHash": "sha256:df825a836b04dbcae3c917c5fefd3e114c32761339a331f12ee1c9ad6b299d21",
+  "duration": 2.96,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:27abb0ac2d9a76685e85e975e39007a3e559d891bae207f6029bd5161fcda9e3",
+  "createdAt": "2026-11-04T22:20:45Z",
+  "take": 1,
+  "spokenHash": "sha256:df825a836b04dbcae3c917c5fefd3e114c32761339a331f12ee1c9ad6b299d21",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Parfait, c’est ma ligne directe. J’attends votre appel.",
+  "mouth": "ccooooccoooooccccccccccssooocwwwwoooocooooooooccccccccccccccccoowwsswwooosssooocccssssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Parfait",
+      "start": 0.02,
+      "end": 0.437,
+      "score": 0.999
+    },
+    {
+      "text": "c’",
+      "start": 0.765,
+      "end": 0.806,
+      "score": 0.506
+    },
+    {
+      "text": "est",
+      "start": 0.806,
+      "end": 0.926,
+      "score": 0.787
+    },
+    {
+      "text": "ma",
+      "start": 0.926,
+      "end": 1.021,
+      "score": 1
+    },
+    {
+      "text": "ligne",
+      "start": 1.027,
+      "end": 1.242,
+      "score": 0.951
+    },
+    {
+      "text": "directe",
+      "start": 1.269,
+      "end": 1.725,
+      "score": 0.967
+    },
+    {
+      "text": "J’",
+      "start": 2.074,
+      "end": 2.155,
+      "score": 0.505
+    },
+    {
+      "text": "attends",
+      "start": 2.155,
+      "end": 2.376,
+      "score": 0.996
+    },
+    {
+      "text": "votre",
+      "start": 2.376,
+      "end": 2.578,
+      "score": 0.999
+    },
+    {
+      "text": "appel",
+      "start": 2.578,
+      "end": 2.873,
+      "score": 1
+    }
+  ]
+}

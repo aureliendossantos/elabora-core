@@ -1,0 +1,112 @@
+{
+  "screen": "steps",
+  "line": "l2",
+  "language": "fr",
+  "textHash": "sha256:3ad58e38abd5a34d6ab4d123ea8ecff19d2d276b623b38b4d8768592d84f5a22",
+  "duration": 5.69,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:c27b9cee563012771001fa2cca288e69dbba2706c9ef5b9e6e1e06c9d3555800",
+  "createdAt": "2026-11-04T22:19:46Z",
+  "take": 1,
+  "spokenHash": "sha256:3ad58e38abd5a34d6ab4d123ea8ecff19d2d276b623b38b4d8768592d84f5a22",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Vérifiez qui l’a vraiment envoyé et où mène le lien. Puis cliquez sur « Signaler ».",
+  "mouth": "ccwwwwssssccssooooccccssoooowwwsssooowwcooooowwoooowwoooooooooccccwwwccccoossoocwwwwwwwooosssooooocccccccccccccccccsswwwcccssooccoooooooossoooooocccccccccsssswwwwwwssssscc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Vérifiez",
+      "start": 0.06,
+      "end": 0.595,
+      "score": 0.751
+    },
+    {
+      "text": "qui",
+      "start": 0.681,
+      "end": 0.855,
+      "score": 1
+    },
+    {
+      "text": "l’",
+      "start": 0.922,
+      "end": 0.962,
+      "score": 0.004
+    },
+    {
+      "text": "a",
+      "start": 0.962,
+      "end": 1.036,
+      "score": 1
+    },
+    {
+      "text": "vraiment",
+      "start": 1.102,
+      "end": 1.497,
+      "score": 0.971
+    },
+    {
+      "text": "envoyé",
+      "start": 1.543,
+      "end": 1.997,
+      "score": 0.976
+    },
+    {
+      "text": "et",
+      "start": 2.204,
+      "end": 2.318,
+      "score": 1
+    },
+    {
+      "text": "où",
+      "start": 2.464,
+      "end": 2.558,
+      "score": 0.5
+    },
+    {
+      "text": "mène",
+      "start": 2.605,
+      "end": 2.865,
+      "score": 0.991
+    },
+    {
+      "text": "le",
+      "start": 2.865,
+      "end": 2.979,
+      "score": 0.969
+    },
+    {
+      "text": "lien",
+      "start": 3.005,
+      "end": 3.26,
+      "score": 1
+    },
+    {
+      "text": "Puis",
+      "start": 3.787,
+      "end": 4.021,
+      "score": 0.999
+    },
+    {
+      "text": "cliquez",
+      "start": 4.047,
+      "end": 4.482,
+      "score": 0.713
+    },
+    {
+      "text": "sur",
+      "start": 4.568,
+      "end": 4.863,
+      "score": 1
+    },
+    {
+      "text": "Signaler",
+      "start": 5.109,
+      "end": 5.624,
+      "score": 0.885
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "screen": "after-report",
+  "line": "l2",
+  "language": "fr",
+  "textHash": "sha256:b398ca8fc9c8aed86b910977601133bc293f98ad4e1a751106e805d2e8dac53e",
+  "duration": 6.92,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:b2e521657ad698be5b987f983daf82c9a585ee7ed02374db1961bdfb7b83db52",
+  "createdAt": "2026-11-04T22:20:04Z",
+  "take": 1,
+  "spokenHash": "sha256:b398ca8fc9c8aed86b910977601133bc293f98ad4e1a751106e805d2e8dac53e",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Nous le bloquons dans les 1 200 boîtes mail, nous prévenons les destinataires et nous en faisons un exercice pour vous entraîner.",
+  "mouth": "cwwwwwwwooocwwwwccooossssswwoooowwwwwsssssoossssssssscwwwwcccoocoooooooccccccccccwwwwccssooossooowwwwwwwooocccooooossccoooooooocccccccwwwwoossssscccsssssooooowwwwssssssssccccoossssccwwooooooooooocssooossssscc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Nous",
+      "start": 0.04,
+      "end": 0.181,
+      "score": 0.999
+    },
+    {
+      "text": "le",
+      "start": 0.181,
+      "end": 0.295,
+      "score": 0.999
+    },
+    {
+      "text": "bloquons",
+      "start": 0.341,
+      "end": 0.796,
+      "score": 0.753
+    },
+    {
+      "text": "dans",
+      "start": 0.802,
+      "end": 0.963,
+      "score": 0.999
+    },
+    {
+      "text": "les",
+      "start": 0.963,
+      "end": 1.117,
+      "score": 0.997
+    },
+    {
+      "text": "1",
+      "start": 1.143,
+      "end": 1.358,
+      "score": 0
+    },
+    {
+      "text": "200",
+      "start": 1.404,
+      "end": 1.765,
+      "score": 0.598
+    },
+    {
+      "text": "boîtes",
+      "start": 1.765,
+      "end": 2.066,
+      "score": 0.697
+    },
+    {
+      "text": "mail",
+      "start": 2.066,
+      "end": 2.361,
+      "score": 0.928
+    },
+    {
+      "text": "nous",
+      "start": 2.708,
+      "end": 2.868,
+      "score": 1
+    },
+    {
+      "text": "prévenons",
+      "start": 2.868,
+      "end": 3.324,
+      "score": 0.998
+    },
+    {
+      "text": "les",
+      "start": 3.33,
+      "end": 3.45,
+      "score": 0.998
+    },
+    {
+      "text": "destinataires",
+      "start": 3.45,
+      "end": 4.326,
+      "score": 0.971
+    },
+    {
+      "text": "et",
+      "start": 4.473,
+      "end": 4.573,
+      "score": 1
+    },
+    {
+      "text": "nous",
+      "start": 4.573,
+      "end": 4.748,
+      "score": 0.999
+    },
+    {
+      "text": "en",
+      "start": 4.774,
+      "end": 4.868,
+      "score": 1
+    },
+    {
+      "text": "faisons",
+      "start": 4.894,
+      "end": 5.209,
+      "score": 0.999
+    },
+    {
+      "text": "un",
+      "start": 5.235,
+      "end": 5.349,
+      "score": 0.971
+    },
+    {
+      "text": "exercice",
+      "start": 5.416,
+      "end": 6.031,
+      "score": 0.992
+    },
+    {
+      "text": "pour",
+      "start": 6.038,
+      "end": 6.212,
+      "score": 1
+    },
+    {
+      "text": "vous",
+      "start": 6.218,
+      "end": 6.392,
+      "score": 1
+    },
+    {
+      "text": "entraîner",
+      "start": 6.419,
+      "end": 6.854,
+      "score": 0.954
+    }
+  ]
+}

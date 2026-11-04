@@ -1,0 +1,112 @@
+{
+  "screen": "practice",
+  "line": "neil-friday",
+  "language": "fr",
+  "textHash": "sha256:3396c6fb51c71943237d59592838f1eea9feffa99e2594e1cee7ade02493dd51",
+  "duration": 4.94,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:3615c836042d5c0bdc1f212c4c4f0864fb976490c5712e6e44dacf7a24233c39",
+  "createdAt": "2026-11-04T22:20:38Z",
+  "take": 1,
+  "spokenHash": "sha256:3396c6fb51c71943237d59592838f1eea9feffa99e2594e1cee7ade02493dd51",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Écoutez, si le paiement n’arrive pas d’ici vendredi, notre directeur suspend vos livraisons.",
+  "mouth": "coocooocwwwwcccccccccccssssswwwccwwwcwwoowwwoooccccwwwssssssssssooooowwwssooocccccccccccccooocsssssssswwwccwwwwssccoooosscccwwooooooooooooooosssssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Écoutez",
+      "start": 0.04,
+      "end": 0.395,
+      "score": 0.998
+    },
+    {
+      "text": "si",
+      "start": 0.783,
+      "end": 0.918,
+      "score": 1
+    },
+    {
+      "text": "le",
+      "start": 0.924,
+      "end": 1.038,
+      "score": 0.999
+    },
+    {
+      "text": "paiement",
+      "start": 1.064,
+      "end": 1.319,
+      "score": 1
+    },
+    {
+      "text": "n’",
+      "start": 1.325,
+      "end": 1.366,
+      "score": 0.657
+    },
+    {
+      "text": "arrive",
+      "start": 1.366,
+      "end": 1.661,
+      "score": 0.976
+    },
+    {
+      "text": "pas",
+      "start": 1.667,
+      "end": 1.807,
+      "score": 0.997
+    },
+    {
+      "text": "d’",
+      "start": 1.807,
+      "end": 1.868,
+      "score": 0.806
+    },
+    {
+      "text": "ici",
+      "start": 1.868,
+      "end": 2.082,
+      "score": 0.994
+    },
+    {
+      "text": "vendredi",
+      "start": 2.109,
+      "end": 2.564,
+      "score": 1
+    },
+    {
+      "text": "notre",
+      "start": 3.012,
+      "end": 3.247,
+      "score": 1
+    },
+    {
+      "text": "directeur",
+      "start": 3.273,
+      "end": 3.749,
+      "score": 1
+    },
+    {
+      "text": "suspend",
+      "start": 3.856,
+      "end": 4.291,
+      "score": 0.981
+    },
+    {
+      "text": "vos",
+      "start": 4.318,
+      "end": 4.438,
+      "score": 0.998
+    },
+    {
+      "text": "livraisons",
+      "start": 4.438,
+      "end": 4.914,
+      "score": 0.98
+    }
+  ]
+}

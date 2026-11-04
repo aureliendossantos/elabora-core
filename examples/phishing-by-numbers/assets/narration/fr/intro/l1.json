@@ -1,0 +1,106 @@
+{
+  "screen": "intro",
+  "line": "l1",
+  "language": "fr",
+  "textHash": "sha256:4f981bf87ff2263116a073ef9f7e9a3e0af482d142870a196881aec41dd7cb4f",
+  "duration": 5.24,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:c124721f8e30cc6a2a6cdca1fd65fe7b8e7bcd47ae951b93415b659815f6087d",
+  "createdAt": "2026-11-04T22:18:18Z",
+  "take": 1,
+  "spokenHash": "sha256:4f981bf87ff2263116a073ef9f7e9a3e0af482d142870a196881aec41dd7cb4f",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "L’an dernier, vous avez signalé 1 840 e-mails d’hameçonnage au service sécurité.",
+  "mouth": "ccwwwwwwwwoowwwwwwcccccccccooooowwssscccssoowwwwoosscccccccccssssssssscssooocwwwooooooccccooooocwwoooooooowwcssssoooooooooossscwwwsssssscccoocssoossscccoocccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "L’",
+      "start": 0.06,
+      "end": 0.121,
+      "score": 0.487
+    },
+    {
+      "text": "an",
+      "start": 0.121,
+      "end": 0.235,
+      "score": 0.5
+    },
+    {
+      "text": "dernier",
+      "start": 0.241,
+      "end": 0.616,
+      "score": 0.993
+    },
+    {
+      "text": "vous",
+      "start": 0.904,
+      "end": 1.058,
+      "score": 0.997
+    },
+    {
+      "text": "avez",
+      "start": 1.064,
+      "end": 1.299,
+      "score": 0.992
+    },
+    {
+      "text": "signalé",
+      "start": 1.325,
+      "end": 1.741,
+      "score": 0.999
+    },
+    {
+      "text": "1",
+      "start": 2.048,
+      "end": 2.162,
+      "score": 0
+    },
+    {
+      "text": "840",
+      "start": 2.168,
+      "end": 2.945,
+      "score": 0.983
+    },
+    {
+      "text": "e-mails",
+      "start": 3.052,
+      "end": 3.433,
+      "score": 0.681
+    },
+    {
+      "text": "d’",
+      "start": 3.433,
+      "end": 3.473,
+      "score": 0.515
+    },
+    {
+      "text": "hameçonnage",
+      "start": 3.473,
+      "end": 4.09,
+      "score": 0.749
+    },
+    {
+      "text": "au",
+      "start": 4.096,
+      "end": 4.19,
+      "score": 0.999
+    },
+    {
+      "text": "service",
+      "start": 4.216,
+      "end": 4.591,
+      "score": 0.978
+    },
+    {
+      "text": "sécurité",
+      "start": 4.618,
+      "end": 5.134,
+      "score": 0.996
+    }
+  ]
+}

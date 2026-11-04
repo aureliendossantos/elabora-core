@@ -1,0 +1,88 @@
+{
+  "screen": "practice",
+  "line": "dana-manager",
+  "language": "fr",
+  "textHash": "sha256:d1e14d554451d5e98e11534741f6dd3c779aa0bef5ae480b29cc90e6d981902d",
+  "duration": 4.88,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:7c2c3db9284132751ea0f64807d72ad76a742f1b208efbec521eabaddaeaeb11",
+  "createdAt": "2026-11-04T22:20:55Z",
+  "take": 1,
+  "spokenHash": "sha256:d1e14d554451d5e98e11534741f6dd3c779aa0bef5ae480b29cc90e6d981902d",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Entre deux réunions, votre responsable manque de valider le nouveau compte.",
+  "mouth": "ccwwwsssssooooooocooooowwwwoooosscccccccccwwwccoooooosssccooooccwwwcccoooowwcwwwwccccooossswwwooooooooooowwwwsssssccooooccccssccccccccccccccccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Entre",
+      "start": 0.06,
+      "end": 0.315,
+      "score": 0.959
+    },
+    {
+      "text": "deux",
+      "start": 0.402,
+      "end": 0.576,
+      "score": 1
+    },
+    {
+      "text": "réunions",
+      "start": 0.582,
+      "end": 1.118,
+      "score": 1
+    },
+    {
+      "text": "votre",
+      "start": 1.386,
+      "end": 1.641,
+      "score": 0.998
+    },
+    {
+      "text": "responsable",
+      "start": 1.687,
+      "end": 2.424,
+      "score": 1
+    },
+    {
+      "text": "manque",
+      "start": 2.51,
+      "end": 2.846,
+      "score": 1
+    },
+    {
+      "text": "de",
+      "start": 2.872,
+      "end": 2.966,
+      "score": 1
+    },
+    {
+      "text": "valider",
+      "start": 2.992,
+      "end": 3.408,
+      "score": 1
+    },
+    {
+      "text": "le",
+      "start": 3.414,
+      "end": 3.508,
+      "score": 1
+    },
+    {
+      "text": "nouveau",
+      "start": 3.535,
+      "end": 3.83,
+      "score": 0.966
+    },
+    {
+      "text": "compte",
+      "start": 3.856,
+      "end": 4.211,
+      "score": 0.997
+    }
+  ]
+}

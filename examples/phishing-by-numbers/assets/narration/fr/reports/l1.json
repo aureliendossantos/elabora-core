@@ -1,0 +1,76 @@
+{
+  "screen": "reports",
+  "line": "l1",
+  "language": "fr",
+  "textHash": "sha256:2711915f4b2a42bd5742702f3e01e512d3a85b3530b4ac05a9be9838d9637198",
+  "duration": 4.09,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:2ba53d3051e783df804f2e58ca72791dbc4f7f3ac460a234ddd823f878f73e23",
+  "createdAt": "2026-11-04T22:19:20Z",
+  "take": 1,
+  "spokenHash": "sha256:2711915f4b2a42bd5742702f3e01e512d3a85b3530b4ac05a9be9838d9637198",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Avant 2023, nous recevions environ neuf signalements par mois.",
+  "mouth": "ccwwwwooosssoowwwoooooooooccccwwwwsssccccwwwooooosssssscssswwooooooooosssssccccccccooooccccccssoooooocwwoooccoocooocoossscc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Avant",
+      "start": 0.08,
+      "end": 0.335,
+      "score": 0.914
+    },
+    {
+      "text": "2023",
+      "start": 0.341,
+      "end": 1.157,
+      "score": 0.954
+    },
+    {
+      "text": "nous",
+      "start": 1.383,
+      "end": 1.558,
+      "score": 0.965
+    },
+    {
+      "text": "recevions",
+      "start": 1.564,
+      "end": 2.079,
+      "score": 0.993
+    },
+    {
+      "text": "environ",
+      "start": 2.105,
+      "end": 2.5,
+      "score": 0.964
+    },
+    {
+      "text": "neuf",
+      "start": 2.767,
+      "end": 3.001,
+      "score": 1
+    },
+    {
+      "text": "signalements",
+      "start": 3.068,
+      "end": 3.589,
+      "score": 0.96
+    },
+    {
+      "text": "par",
+      "start": 3.589,
+      "end": 3.763,
+      "score": 1
+    },
+    {
+      "text": "mois",
+      "start": 3.809,
+      "end": 4.024,
+      "score": 0.999
+    }
+  ]
+}

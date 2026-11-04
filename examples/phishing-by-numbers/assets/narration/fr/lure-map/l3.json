@@ -1,0 +1,172 @@
+{
+  "screen": "lure-map",
+  "line": "l3",
+  "language": "fr",
+  "textHash": "sha256:df20ad45f2c3fd521851bf986b07a24343802a21256821544c3bbc9615c20faa",
+  "duration": 9.64,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:8663bdf9d2afb5c2e97e638e46ea61f1559105c11d40d81eec7806394b511724",
+  "createdAt": "2026-11-04T22:18:58Z",
+  "take": 1,
+  "spokenHash": "sha256:df20ad45f2c3fd521851bf986b07a24343802a21256821544c3bbc9615c20faa",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Les messages du service paie sont rares, mais convaincants. Les réinitialisations de mot de passe et les factures sont à la fois fréquentes et convaincantes.",
+  "mouth": "ccwwwwcoosssswwwwsssooooossswwoooooosssccccoooosssssoowwssswwwooosscssccccccccoooccwwwssssoosssooossccccccccccccccccccccccwwwooooooooossscsswwoooooowwwssssswwwoooocwwwsscccccwwwwsssssscwwwwwwcccwwwcccsssoooooocooccooooooooooowwwccccwwwwcccoooooccwwwooooccsscccooocccwwwooooosssoooossccssscc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Les",
+      "start": 0.06,
+      "end": 0.2,
+      "score": 1
+    },
+    {
+      "text": "messages",
+      "start": 0.2,
+      "end": 0.695,
+      "score": 1
+    },
+    {
+      "text": "du",
+      "start": 0.702,
+      "end": 0.816,
+      "score": 0.999
+    },
+    {
+      "text": "service",
+      "start": 0.862,
+      "end": 1.277,
+      "score": 0.998
+    },
+    {
+      "text": "paie",
+      "start": 1.383,
+      "end": 1.684,
+      "score": 0.246
+    },
+    {
+      "text": "sont",
+      "start": 1.684,
+      "end": 1.898,
+      "score": 0.999
+    },
+    {
+      "text": "rares",
+      "start": 1.904,
+      "end": 2.339,
+      "score": 0.999
+    },
+    {
+      "text": "mais",
+      "start": 2.565,
+      "end": 2.76,
+      "score": 1
+    },
+    {
+      "text": "convaincants",
+      "start": 2.766,
+      "end": 3.381,
+      "score": 0.994
+    },
+    {
+      "text": "Les",
+      "start": 4.069,
+      "end": 4.223,
+      "score": 0.994
+    },
+    {
+      "text": "réinitialisations",
+      "start": 4.229,
+      "end": 5.305,
+      "score": 0.973
+    },
+    {
+      "text": "de",
+      "start": 5.311,
+      "end": 5.425,
+      "score": 0.998
+    },
+    {
+      "text": "mot",
+      "start": 5.431,
+      "end": 5.586,
+      "score": 0.793
+    },
+    {
+      "text": "de",
+      "start": 5.592,
+      "end": 5.706,
+      "score": 0.652
+    },
+    {
+      "text": "passe",
+      "start": 5.732,
+      "end": 6.127,
+      "score": 0.974
+    },
+    {
+      "text": "et",
+      "start": 6.193,
+      "end": 6.293,
+      "score": 0.999
+    },
+    {
+      "text": "les",
+      "start": 6.293,
+      "end": 6.427,
+      "score": 0.914
+    },
+    {
+      "text": "factures",
+      "start": 6.433,
+      "end": 7.089,
+      "score": 0.999
+    },
+    {
+      "text": "sont",
+      "start": 7.215,
+      "end": 7.429,
+      "score": 1
+    },
+    {
+      "text": "à",
+      "start": 7.436,
+      "end": 7.51,
+      "score": 1
+    },
+    {
+      "text": "la",
+      "start": 7.516,
+      "end": 7.63,
+      "score": 1
+    },
+    {
+      "text": "fois",
+      "start": 7.656,
+      "end": 7.87,
+      "score": 1
+    },
+    {
+      "text": "fréquentes",
+      "start": 7.957,
+      "end": 8.612,
+      "score": 0.999
+    },
+    {
+      "text": "et",
+      "start": 8.698,
+      "end": 8.812,
+      "score": 1
+    },
+    {
+      "text": "convaincantes",
+      "start": 8.838,
+      "end": 9.594,
+      "score": 0.976
+    }
+  ]
+}

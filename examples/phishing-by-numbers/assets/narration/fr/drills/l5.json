@@ -1,0 +1,148 @@
+{
+  "screen": "drills",
+  "line": "l5",
+  "language": "fr",
+  "textHash": "sha256:1d30dc505973c138729c8f37eb0c0366122567fc35633fdbe010258a834b3d37",
+  "duration": 6.93,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:4a9e40d0d2c3d5a4cc761f388e42bbe26c30eaae732fe643db81bf25e6263d86",
+  "createdAt": "2026-11-04T22:19:16Z",
+  "take": 1,
+  "spokenHash": "sha256:1d30dc505973c138729c8f37eb0c0366122567fc35633fdbe010258a834b3d37",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "À l’entrepôt, le taux de départ était le plus élevé : 41 %. C’est encore là qu’on clique le plus.",
+  "mouth": "cwwwwwwwsssoooccccoooocccccccccwwwwccssoossoooooooccwwwwwssooocwwwwwwcccoooooooooooosssooocccccccccccccccwwwwwoooossswwwwwccoosssssooosscccccccccccccccccccooocwwwwcwwwwwoowwwwccoossssooocssooocccooooooocccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "À",
+      "start": 0.02,
+      "end": 0.094,
+      "score": 0.961
+    },
+    {
+      "text": "l’",
+      "start": 0.1,
+      "end": 0.2,
+      "score": 0.755
+    },
+    {
+      "text": "entrepôt",
+      "start": 0.2,
+      "end": 0.735,
+      "score": 0.999
+    },
+    {
+      "text": "le",
+      "start": 1.022,
+      "end": 1.136,
+      "score": 0.999
+    },
+    {
+      "text": "taux",
+      "start": 1.202,
+      "end": 1.396,
+      "score": 0.866
+    },
+    {
+      "text": "de",
+      "start": 1.402,
+      "end": 1.516,
+      "score": 1
+    },
+    {
+      "text": "départ",
+      "start": 1.542,
+      "end": 1.977,
+      "score": 1
+    },
+    {
+      "text": "était",
+      "start": 1.983,
+      "end": 2.203,
+      "score": 1
+    },
+    {
+      "text": "le",
+      "start": 2.203,
+      "end": 2.317,
+      "score": 1
+    },
+    {
+      "text": "plus",
+      "start": 2.363,
+      "end": 2.618,
+      "score": 1
+    },
+    {
+      "text": "élevé",
+      "start": 2.684,
+      "end": 2.998,
+      "score": 1
+    },
+    {
+      "text": "41",
+      "start": 3.465,
+      "end": 4.541,
+      "score": 0.991
+    },
+    {
+      "text": "C’",
+      "start": 5.127,
+      "end": 5.188,
+      "score": 0.709
+    },
+    {
+      "text": "est",
+      "start": 5.188,
+      "end": 5.322,
+      "score": 1
+    },
+    {
+      "text": "encore",
+      "start": 5.368,
+      "end": 5.662,
+      "score": 1
+    },
+    {
+      "text": "là",
+      "start": 5.668,
+      "end": 5.802,
+      "score": 0.998
+    },
+    {
+      "text": "qu’",
+      "start": 5.828,
+      "end": 5.929,
+      "score": 0.908
+    },
+    {
+      "text": "on",
+      "start": 5.929,
+      "end": 6.023,
+      "score": 0.969
+    },
+    {
+      "text": "clique",
+      "start": 6.029,
+      "end": 6.309,
+      "score": 0.706
+    },
+    {
+      "text": "le",
+      "start": 6.309,
+      "end": 6.423,
+      "score": 0.999
+    },
+    {
+      "text": "plus",
+      "start": 6.449,
+      "end": 6.744,
+      "score": 1
+    }
+  ]
+}

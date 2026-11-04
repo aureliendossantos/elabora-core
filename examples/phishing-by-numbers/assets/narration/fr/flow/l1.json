@@ -1,0 +1,118 @@
+{
+  "screen": "flow",
+  "line": "l1",
+  "language": "fr",
+  "textHash": "sha256:fa9ad5bedcf625dae7f5dc7b2b9416374c65ac6e23595799e7e4976981c60d37",
+  "duration": 4.5,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:44bca69fd3dee8018810c10203ca167c2bddd424bdd54f038c7162223f7455bc",
+  "createdAt": "2026-11-04T22:20:09Z",
+  "take": 1,
+  "spokenHash": "sha256:fa9ad5bedcf625dae7f5dc7b2b9416374c65ac6e23595799e7e4976981c60d37",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Un e-mail vous surprend ? Vous demande-t-il un mot de passe, de l’argent ou un fichier ?",
+  "mouth": "ccwwwwwwwcsssccooosssooocccssooocccccccccccccccccssooooocwwooocccoooooocooocccccwwoooocsssscoooooowwwsssssssoosssoooooowwwwccooooooooocc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Un",
+      "start": 0.06,
+      "end": 0.175,
+      "score": 1
+    },
+    {
+      "text": "e-mail",
+      "start": 0.201,
+      "end": 0.456,
+      "score": 0.401
+    },
+    {
+      "text": "vous",
+      "start": 0.502,
+      "end": 0.657,
+      "score": 0.947
+    },
+    {
+      "text": "surprend",
+      "start": 0.663,
+      "end": 1.099,
+      "score": 0.97
+    },
+    {
+      "text": "Vous",
+      "start": 1.647,
+      "end": 1.788,
+      "score": 0.998
+    },
+    {
+      "text": "demande-t-il",
+      "start": 1.788,
+      "end": 2.264,
+      "score": 0.963
+    },
+    {
+      "text": "un",
+      "start": 2.29,
+      "end": 2.371,
+      "score": 0.998
+    },
+    {
+      "text": "mot",
+      "start": 2.371,
+      "end": 2.505,
+      "score": 1
+    },
+    {
+      "text": "de",
+      "start": 2.511,
+      "end": 2.612,
+      "score": 0.919
+    },
+    {
+      "text": "passe",
+      "start": 2.612,
+      "end": 3.047,
+      "score": 0.984
+    },
+    {
+      "text": "de",
+      "start": 3.134,
+      "end": 3.248,
+      "score": 0.998
+    },
+    {
+      "text": "l’",
+      "start": 3.255,
+      "end": 3.335,
+      "score": 0.596
+    },
+    {
+      "text": "argent",
+      "start": 3.335,
+      "end": 3.71,
+      "score": 0.999
+    },
+    {
+      "text": "ou",
+      "start": 3.857,
+      "end": 3.951,
+      "score": 1
+    },
+    {
+      "text": "un",
+      "start": 4.018,
+      "end": 4.112,
+      "score": 1
+    },
+    {
+      "text": "fichier",
+      "start": 4.118,
+      "end": 4.454,
+      "score": 0.997
+    }
+  ]
+}

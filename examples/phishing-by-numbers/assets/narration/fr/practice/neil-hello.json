@@ -1,0 +1,130 @@
+{
+  "screen": "practice",
+  "line": "neil-hello",
+  "language": "fr",
+  "textHash": "sha256:bd8d21de17b2248ef5bc67dc768acc929474f82b1ab64e4435277d48daca7d82",
+  "duration": 5.44,
+  "provider": "elevenlabs",
+  "voice": "nXIYu9FT5meibkBbZFT7",
+  "generated": true,
+  "audioHash": "sha256:7da3fa81c356458974570824d773d09754cf566006b08a0f05aab5d41c6be7b5",
+  "createdAt": "2026-11-04T22:20:26Z",
+  "take": 1,
+  "spokenHash": "sha256:bd8d21de17b2248ef5bc67dc768acc929474f82b1ab64e4435277d48daca7d82",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : James (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Bonjour, c’est Neil, de la comptabilité de Harlow Tyres. Vous avez reçu notre e-mail de ce matin ?",
+  "mouth": "cccwwwoowwwwwwssccccsssswwooowwwwwoossccsssooooccoooccoooocooooccwwwwoosssswwwoooocccoooooossssccccccccccccccccccccssswwwwwooosscooooosssooocoooooosssooocccwwwssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Bonjour",
+      "start": 0.04,
+      "end": 0.476,
+      "score": 0.979
+    },
+    {
+      "text": "c’",
+      "start": 0.703,
+      "end": 0.763,
+      "score": 0.548
+    },
+    {
+      "text": "est",
+      "start": 0.763,
+      "end": 0.883,
+      "score": 0.799
+    },
+    {
+      "text": "Neil",
+      "start": 0.883,
+      "end": 1.158,
+      "score": 0.729
+    },
+    {
+      "text": "de",
+      "start": 1.385,
+      "end": 1.479,
+      "score": 0.999
+    },
+    {
+      "text": "la",
+      "start": 1.486,
+      "end": 1.6,
+      "score": 0.981
+    },
+    {
+      "text": "comptabilité",
+      "start": 1.606,
+      "end": 2.242,
+      "score": 0.986
+    },
+    {
+      "text": "de",
+      "start": 2.289,
+      "end": 2.383,
+      "score": 0.991
+    },
+    {
+      "text": "Harlow",
+      "start": 2.429,
+      "end": 2.744,
+      "score": 0.677
+    },
+    {
+      "text": "Tyres",
+      "start": 2.79,
+      "end": 3.246,
+      "score": 0.41
+    },
+    {
+      "text": "Vous",
+      "start": 3.814,
+      "end": 3.955,
+      "score": 0.999
+    },
+    {
+      "text": "avez",
+      "start": 3.955,
+      "end": 4.135,
+      "score": 1
+    },
+    {
+      "text": "reçu",
+      "start": 4.135,
+      "end": 4.37,
+      "score": 1
+    },
+    {
+      "text": "notre",
+      "start": 4.396,
+      "end": 4.577,
+      "score": 0.991
+    },
+    {
+      "text": "e-mail",
+      "start": 4.577,
+      "end": 4.852,
+      "score": 0.658
+    },
+    {
+      "text": "de",
+      "start": 4.858,
+      "end": 4.952,
+      "score": 0.994
+    },
+    {
+      "text": "ce",
+      "start": 4.978,
+      "end": 5.073,
+      "score": 1
+    },
+    {
+      "text": "matin",
+      "start": 5.079,
+      "end": 5.354,
+      "score": 1
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "screen": "practice",
+  "line": "dana-call",
+  "language": "fr",
+  "textHash": "sha256:210b59432b5f1f886748a3544d3f90c4fc7d3565ab180b2c8fe1d9c2e4d54316",
+  "duration": 7.83,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:fcc99782faef53bb54ef067278d816d534b9e794f6063c221c34929e084dd4d7",
+  "createdAt": "2026-11-04T22:20:22Z",
+  "take": 1,
+  "spokenHash": "sha256:210b59432b5f1f886748a3544d3f90c4fc7d3565ab180b2c8fe1d9c2e4d54316",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Mardi, 16 h 40. Ce matin, le service financier a reçu un e-mail de Harlow Tyres. Le téléphone sonne.",
+  "mouth": "ccccwwwwoossoocccccccccccccoooosswwwssccwwwwwsssccccccccccccccccccccccccsswwwcwwccwwooooocccoowwwwccwwwssssssscoooooooocssssswwooooosssssswwwwwwwwwcoooooooooooccwwwoooooocccoooooooosssooccccccccccccccccooooccoooooccwwwwwwwwssoosssssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Mardi",
+      "start": 0.08,
+      "end": 0.455,
+      "score": 0.808
+    },
+    {
+      "text": "16",
+      "start": 0.861,
+      "end": 1.081,
+      "score": 0.613
+    },
+    {
+      "text": "h",
+      "start": 1.081,
+      "end": 1.282,
+      "score": 0.991
+    },
+    {
+      "text": "40",
+      "start": 1.282,
+      "end": 1.736,
+      "score": 0.993
+    },
+    {
+      "text": "Ce",
+      "start": 2.403,
+      "end": 2.537,
+      "score": 1
+    },
+    {
+      "text": "matin",
+      "start": 2.563,
+      "end": 2.898,
+      "score": 0.999
+    },
+    {
+      "text": "le",
+      "start": 3.104,
+      "end": 3.218,
+      "score": 0.985
+    },
+    {
+      "text": "service",
+      "start": 3.284,
+      "end": 3.659,
+      "score": 1
+    },
+    {
+      "text": "financier",
+      "start": 3.665,
+      "end": 4.159,
+      "score": 1
+    },
+    {
+      "text": "a",
+      "start": 4.205,
+      "end": 4.279,
+      "score": 0.997
+    },
+    {
+      "text": "reçu",
+      "start": 4.306,
+      "end": 4.6,
+      "score": 1
+    },
+    {
+      "text": "un",
+      "start": 4.646,
+      "end": 4.76,
+      "score": 1
+    },
+    {
+      "text": "e-mail",
+      "start": 4.806,
+      "end": 5.101,
+      "score": 0.212
+    },
+    {
+      "text": "de",
+      "start": 5.147,
+      "end": 5.261,
+      "score": 0.996
+    },
+    {
+      "text": "Harlow",
+      "start": 5.307,
+      "end": 5.681,
+      "score": 0.959
+    },
+    {
+      "text": "Tyres",
+      "start": 5.707,
+      "end": 6.202,
+      "score": 0.75
+    },
+    {
+      "text": "Le",
+      "start": 6.749,
+      "end": 6.863,
+      "score": 0.9
+    },
+    {
+      "text": "téléphone",
+      "start": 6.889,
+      "end": 7.383,
+      "score": 0.957
+    },
+    {
+      "text": "sonne",
+      "start": 7.43,
+      "end": 7.744,
+      "score": 0.891
+    }
+  ]
+}

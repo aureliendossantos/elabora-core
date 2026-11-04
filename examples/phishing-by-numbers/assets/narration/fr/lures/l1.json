@@ -1,0 +1,112 @@
+{
+  "screen": "lures",
+  "line": "l1",
+  "language": "fr",
+  "textHash": "sha256:b0f6a0d7cc7a5740a803bd00ab9403a0fb821952add6be7d8f918d2b28359e63",
+  "duration": 4.65,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:c892ba6a97bec4c0ec00198d57bf5ec66e444f049ad522dd04bab994cbe9bd9a",
+  "createdAt": "2026-11-04T22:18:33Z",
+  "take": 1,
+  "spokenHash": "sha256:b0f6a0d7cc7a5740a803bd00ab9403a0fb821952add6be7d8f918d2b28359e63",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "À quoi ressemblent ces e-mails ? Aux messages que vous recevez tous les jours au travail.",
+  "mouth": "cooocccwwwcooosssccccwwwwssccoossooooocwwwoossccccccccccccccwwwwcooocwwwwwssscoooooooooosscwwoooooccccssssssoooooooooossssccoooossoooosscccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "À",
+      "start": 0.04,
+      "end": 0.114,
+      "score": 0.63
+    },
+    {
+      "text": "quoi",
+      "start": 0.16,
+      "end": 0.315,
+      "score": 0.979
+    },
+    {
+      "text": "ressemblent",
+      "start": 0.361,
+      "end": 0.916,
+      "score": 0.96
+    },
+    {
+      "text": "ces",
+      "start": 0.922,
+      "end": 1.076,
+      "score": 0.987
+    },
+    {
+      "text": "e-mails",
+      "start": 1.122,
+      "end": 1.557,
+      "score": 0.808
+    },
+    {
+      "text": "Aux",
+      "start": 1.984,
+      "end": 2.105,
+      "score": 0.78
+    },
+    {
+      "text": "messages",
+      "start": 2.105,
+      "end": 2.566,
+      "score": 0.927
+    },
+    {
+      "text": "que",
+      "start": 2.566,
+      "end": 2.686,
+      "score": 0.923
+    },
+    {
+      "text": "vous",
+      "start": 2.686,
+      "end": 2.84,
+      "score": 1
+    },
+    {
+      "text": "recevez",
+      "start": 2.846,
+      "end": 3.281,
+      "score": 1
+    },
+    {
+      "text": "tous",
+      "start": 3.387,
+      "end": 3.588,
+      "score": 1
+    },
+    {
+      "text": "les",
+      "start": 3.588,
+      "end": 3.742,
+      "score": 1
+    },
+    {
+      "text": "jours",
+      "start": 3.748,
+      "end": 4.009,
+      "score": 0.978
+    },
+    {
+      "text": "au",
+      "start": 4.009,
+      "end": 4.103,
+      "score": 1
+    },
+    {
+      "text": "travail",
+      "start": 4.109,
+      "end": 4.544,
+      "score": 0.972
+    }
+  ]
+}

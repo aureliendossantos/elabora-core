@@ -1,0 +1,106 @@
+{
+  "screen": "origins",
+  "line": "l2",
+  "language": "fr",
+  "textHash": "sha256:a9f1e725910862654ffb4b7ae28803b0f7fed90d617f1836872fce5b1d592986",
+  "duration": 5.52,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:0bd51b713c86fc505d6ccb550cb112302931ad6e6bfc1502e7e0d7db8a476b77",
+  "createdAt": "2026-11-04T22:18:29Z",
+  "take": 1,
+  "spokenHash": "sha256:a9f1e725910862654ffb4b7ae28803b0f7fed90d617f1836872fce5b1d592986",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Loin derrière viennent les faux sites web, les appels téléphoniques et les clés USB.",
+  "mouth": "cwwwwwwwoowwwssoowwwwoooocoocoossoowwwsswwoosscccoossssssscccoowwwwwwccccccccccoooooowwcccwwsscooooocccooowwooooccsssccccwwoooocccssooooocoooooosssssscccccccccccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Loin",
+      "start": 0.04,
+      "end": 0.275,
+      "score": 0.998
+    },
+    {
+      "text": "derrière",
+      "start": 0.301,
+      "end": 0.877,
+      "score": 1
+    },
+    {
+      "text": "viennent",
+      "start": 1.024,
+      "end": 1.405,
+      "score": 1
+    },
+    {
+      "text": "les",
+      "start": 1.405,
+      "end": 1.56,
+      "score": 0.956
+    },
+    {
+      "text": "faux",
+      "start": 1.566,
+      "end": 1.78,
+      "score": 0.247
+    },
+    {
+      "text": "sites",
+      "start": 1.787,
+      "end": 2.048,
+      "score": 0.965
+    },
+    {
+      "text": "web",
+      "start": 2.048,
+      "end": 2.362,
+      "score": 1
+    },
+    {
+      "text": "les",
+      "start": 2.65,
+      "end": 2.804,
+      "score": 1
+    },
+    {
+      "text": "appels",
+      "start": 2.85,
+      "end": 3.152,
+      "score": 0.962
+    },
+    {
+      "text": "téléphoniques",
+      "start": 3.152,
+      "end": 3.928,
+      "score": 0.999
+    },
+    {
+      "text": "et",
+      "start": 4.035,
+      "end": 4.155,
+      "score": 1
+    },
+    {
+      "text": "les",
+      "start": 4.155,
+      "end": 4.31,
+      "score": 0.956
+    },
+    {
+      "text": "clés",
+      "start": 4.316,
+      "end": 4.591,
+      "score": 0.847
+    },
+    {
+      "text": "USB",
+      "start": 4.657,
+      "end": 5.072,
+      "score": 0.995
+    }
+  ]
+}

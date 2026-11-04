@@ -1,0 +1,88 @@
+{
+  "screen": "drills",
+  "line": "l2",
+  "language": "fr",
+  "textHash": "sha256:ca6bc1fc5b62580bd07656e95361f62328a3d903ec1f9e9081828ed138fe3fad",
+  "duration": 3.84,
+  "provider": "elevenlabs",
+  "voice": "CvD6hF1BJzAFN428j1cO",
+  "generated": true,
+  "audioHash": "sha256:bb3624e1c17673e8cd21dc2be17cad9bc77fc7926ebf606ce763180a54f260bd",
+  "createdAt": "2026-11-04T22:19:07Z",
+  "take": 1,
+  "spokenHash": "sha256:ca6bc1fc5b62580bd07656e95361f62328a3d903ec1f9e9081828ed138fe3fad",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Kristen (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "À votre avis, où en était-on en novembre ? Prolongez la courbe.",
+  "mouth": "cwwoooocssssooooooooccccccccccssssooowwwwcwwwccoowwwwooooossssscccsscccccccccccccccccwwwooooosswwwwwwcccsssssscssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "À",
+      "start": 0.02,
+      "end": 0.094,
+      "score": 0.914
+    },
+    {
+      "text": "votre",
+      "start": 0.121,
+      "end": 0.356,
+      "score": 0.988
+    },
+    {
+      "text": "avis",
+      "start": 0.362,
+      "end": 0.677,
+      "score": 0.99
+    },
+    {
+      "text": "où",
+      "start": 1.005,
+      "end": 1.1,
+      "score": 0.998
+    },
+    {
+      "text": "en",
+      "start": 1.166,
+      "end": 1.26,
+      "score": 1
+    },
+    {
+      "text": "était-on",
+      "start": 1.287,
+      "end": 1.703,
+      "score": 0.982
+    },
+    {
+      "text": "en",
+      "start": 1.749,
+      "end": 1.843,
+      "score": 1
+    },
+    {
+      "text": "novembre",
+      "start": 1.85,
+      "end": 2.326,
+      "score": 0.999
+    },
+    {
+      "text": "Prolongez",
+      "start": 2.775,
+      "end": 3.257,
+      "score": 0.891
+    },
+    {
+      "text": "la",
+      "start": 3.257,
+      "end": 3.371,
+      "score": 1
+    },
+    {
+      "text": "courbe",
+      "start": 3.418,
+      "end": 3.774,
+      "score": 0.958
+    }
+  ]
+}
