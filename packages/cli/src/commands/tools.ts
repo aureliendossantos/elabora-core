@@ -12,16 +12,16 @@ import type { CommandGroup } from './command.ts';
 import { AGENT_GUIDE, agentGuideText } from '../agent-guide.ts';
 import { listSkills, readSkill } from '../skills.ts';
 
-const HELP = `  tools skills [<name> [<reference>]] [--json]         List bundled skills, or read one skill/on-demand recipe (no course needed)
-  tools guide [--json]                               Agent workflows, transport choices and human decisions (no course needed)
+const HELP = `  tools skills [<name> [<reference>]] [--json]        List the bundled skills, or read one skill or on-demand recipe (any folder)
+  tools guide [--json]                                Print the agent guide: workflows, transport choices, human decisions (any folder)
   tools list [<tool>] [--read-only] [--tools <name>,…] [--json]
-                                                      Discover agent operations and their JSON input schemas (no course needed)
+                                                      List the agent operations and their JSON input schemas (any folder)
   tools call <tool> [dir] [--args '<json>' | --from <arguments.json>|-] [--read-only] [--raw]
-                                                      Call the same operation as MCP, with the same validation. Arguments
+                                                      Call an operation as MCP does, with the same validation. Arguments
                                                       default to {}: --args takes them inline, --from from a file (- reads
                                                       stdin). Prints the tool's own JSON (its text when it answers in text);
                                                       images go to files under the course's .elabora/look/, their paths in
-                                                      "images". --raw prints the MCP result (content, isError) instead.
+                                                      "images". --raw prints the MCP result (content, isError).
                                                       Exit 0 success, 1 refused, 2 bad input`;
 
 const list = defineCommand({

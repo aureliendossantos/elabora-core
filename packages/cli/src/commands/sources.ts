@@ -9,14 +9,14 @@ import type { CommandGroup } from './command.ts';
 // The author's sources (docs/decisions.md D49): the files a module is made from, in sources/, never
 // published, and each one's readable version, which any agent can read.
 
-const HELP = `  sources list [dir] [--json]                         The author's sources (sources/: a brief, a deck, recordings; never
-                                                      published), each with its readable version: ready, partial (its
-                                                      transcript to come), stale, missing, failed, native (read as it
-                                                      is: images, text, a PDF) or unsupported
+const HELP = `  sources list [dir] [--json]                         List the author's sources (sources/: a brief, a deck, recordings),
+                                                      each with its readable version: ready, partial (its transcript to
+                                                      come), stale, missing, failed, native (read as it is: images, text,
+                                                      a PDF) or unsupported
   sources add [dir] <file|folder>… [--no-read] [--json]
-                                                      Copies files into sources/ (a file already there is not copied
-                                                      again, a name taken is numbered, one Windows refuses is made
-                                                      portable), then writes their readable versions (--no-read: later)
+                                                      Copies files into sources/ (a file already there is skipped, a
+                                                      name taken is numbered, a name Windows refuses is made portable),
+                                                      then writes their readable versions (--no-read: later)
   sources read [dir] <file> [--no-refresh] [--json]   A source's readable version (Markdown), written first when it is
                                                       missing or out of date: a Word document with its comments and
                                                       tracked changes, a deck's slides in reading order with their notes
@@ -152,7 +152,7 @@ const remove = defineCommand({
 });
 
 export const sourceCommands: CommandGroup = {
-  title: 'The author\'s sources (never published)',
+  title: 'The author\'s sources (private, kept out of packages)',
   help: HELP,
   commands: [list, add, read, refresh, remove],
   subcommandUsage: { sources: `Usage: elabora sources list|add|read|refresh|remove\n\n${HELP}` }

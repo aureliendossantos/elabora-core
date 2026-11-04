@@ -83,7 +83,7 @@ Generated from `packages/core/src/diagnostics/codes.ts` by `pnpm run docs`. Code
 | `E_FORBIDDEN_EXTENSION` | File type refused by the LMS | Remove server-side files from the package. | LMS-8 |
 | `E_STANDARD_NOT_SUPPORTED` | Target standard not supported by the LMS profile | Build SCORM 1.2 for this LMS. | LMS-9 |
 | `E_WEB_URL` | Web address not usable | Give the absolute address where the module's index.html will be served, with https:// (or http://): `elabora build --target web --url https://example.org/modules/gearset/`. |  |
-| `E_WEB_IMAGE` | Sharing image not usable | Give a PNG, JPEG or WebP file (1200×630 px reads well everywhere), a path in the course folder (assets/…) or an absolute path: `--image assets/images/cover.jpg`. |  |
+| `E_WEB_IMAGE` | Sharing image not usable | Give a PNG, JPEG or WebP file (1200×630 px reads well everywhere), an absolute path, or a path from the folder you run the command in (the course folder: `--image assets/images/cover.jpg`; through the MCP server, a path in the course folder). |  |
 | `E_WEB_REVIEW_ORIGIN` | Review page origin not usable | Give the origin of the review page that will show the module, https:// and its host, without a path: `elabora build --target web --review-origin https://revue.elabora.studio` (repeat it for a development page on http://localhost:&lt;port&gt;). |  |
 | `E_MANIFEST_NOT_AT_ROOT` | imsmanifest.xml is not at the root of the ZIP | Repackage with the manifest at the root. | LMS-8 |
 | `E_MANIFEST_INVALID` | imsmanifest.xml invalid | See the message; rebuild with elabora build. | LMS-8 |

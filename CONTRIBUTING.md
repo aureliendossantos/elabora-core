@@ -1,8 +1,10 @@
 # Contributing to Elabora core
 
-Thank you for looking at the code. This page says how to set up a checkout, what every change must keep true, and how the documentation stays in step with the code.
+Thank you for looking at the code. This page shows how to set up a checkout, run the tests and keep the docs in step.
 
 ## Set up
+
+You need Node 24 and pnpm 11 (`npm install -g pnpm`; `package.json` names the exact version).
 
 ```bash
 git clone https://github.com/aureliendossantos/elabora-core.git
@@ -11,43 +13,53 @@ pnpm install
 node bin/elabora.js help
 ```
 
-Node 24 or later runs the TypeScript sources directly: there is no build step. Dependencies install with pnpm 11 (`npm install -g pnpm`; `package.json` names the version), from `pnpm-lock.yaml`. ffmpeg is needed for media work and a browser for the browser suites; [Getting started](docs/getting-started.md) says where they are found.
+Node runs the TypeScript sources directly, so there is no build step. Media work needs ffmpeg, and the browser suites need Chrome, Edge or Chromium: [Getting started](docs/getting-started.md) says where Elabora finds them.
 
-[`AGENTS.md`](AGENTS.md) is the map of the repository, package by package, and the rules every change follows. It is written for coding agents and holds for people too: read it before a first change. [Architecture](docs/architecture.md) is the contract behind it.
+Read [`AGENTS.md`](AGENTS.md) before a first change. It maps the repository package by package and lists the rules every change follows. It is written for coding agents and holds for people too. [Architecture](docs/architecture.md) is the contract behind it.
 
 ## Tests
 
 ```bash
-pnpm run test:file -- test/unit/edit.test.ts   # one file while working, seconds
-pnpm test             # unit suite, two to five minutes
-pnpm run typecheck    # strict TypeScript, every package
-pnpm run test:e2e     # Chrome, tens of minutes
-pnpm run test:matrix  # the LMS matrix and the sample courses, a few minutes
-pnpm run test:all     # the three suites
-pnpm run test:affected  # typecheck, unit suite, and the e2e and matrix files of what changed
+pnpm run test:file -- test/unit/edit.test.ts   # one file, a few seconds
+pnpm test                # the unit suite, two to five minutes
+pnpm run typecheck       # strict TypeScript, every package
+pnpm run test:e2e        # in Chrome, tens of minutes
+pnpm run test:matrix     # the LMS matrix and the sample courses, a few minutes
+pnpm run test:all        # the three suites
+pnpm run test:affected   # typecheck, unit suite, and the e2e and matrix files of what you changed
 ```
 
-A change is finished when `pnpm run test:affected` passes: the typecheck, the unit suite, and the end-to-end and matrix files that cover the files it changed (`test/groups.ts`). The whole suites run on main and before a release.
+Run the test file of what you change while you work. Before you open a pull request, run `pnpm run test:affected`. It runs the typecheck, the unit suite, and the end-to-end and matrix files that cover your changes (mapped in `test/groups.ts`). The full suites run on main and before each release.
 
-The unit suite covers the schemas, the validator's rules, the plan, the state codec, the determinism of packages, the compiler, the status machine, edits and undo, LESSON.md, update diffs, the agent interfaces and these docs' links. The end-to-end suite runs the LMS emulator in Moodle with axe-core, checks that a package relying on `unload` is caught and that stuck runs and objects fail instead of hanging, runs the free-object gates (deliberately broken objects included), and checks slides: no layout shift when answering, contrast, captures, steps and resume. The matrix runs the other launch topologies (the SuccessFactors popup chain, Docebo's nested iframe), Chrome with `unload` deprecated and allowed, and the sample courses at desktop and phone widths.
+What each suite covers:
 
-Continuous integration (`.github/workflows/ci.yml`) runs the typecheck and the three suites on Linux for every push to `main` and every pull request, the typecheck and the unit suite on Windows, and everything on macOS weekly and on demand, with GPL builds of ffmpeg. `.github/workflows/docs.yml` checks the documentation on every pull request, including those that change only Markdown.
+- **Unit:** schemas, validation rules, the plan, the state codec, deterministic packages, the compiler, edits and undo, LESSON.md, update diffs, the agent interfaces and the links of these docs.
+- **End-to-end:** the LMS emulator in Moodle with axe-core, packages that rely on `unload`, runs and objects that get stuck, the free-object gates (with deliberately broken objects), and slides: layout shifts, contrast, captures, steps and resume.
+- **Matrix:** the other launch modes (the SuccessFactors popup chain, Docebo's nested iframe), Chrome with `unload` deprecated and allowed, and the sample courses at desktop and phone widths.
+
+Continuous integration (`.github/workflows/ci.yml`) runs the typecheck and the three suites on Linux for every push to `main` and every pull request. It runs the typecheck and the unit suite on Windows, and everything on macOS weekly and on demand, with GPL builds of ffmpeg. `.github/workflows/docs.yml` checks the docs on every pull request.
 
 ## Documentation
 
-The documentation is the Markdown of [`docs/`](docs/), plus [`SPEC.md`](SPEC.md) and the [changelog](CHANGELOG.md). There is one copy: GitHub shows it as it is, the site renders the same files at [elabora.studio/en/docs/developers](https://elabora.studio/en/docs/developers/), and `elabora docs` serves them to agents. So:
+The docs are the Markdown of [`docs/`](docs/), with [`SPEC.md`](SPEC.md) and the [changelog](CHANGELOG.md). One copy serves everyone: GitHub shows it, the site renders it at [elabora.studio/en/docs/developers](https://elabora.studio/en/docs/developers/), and `elabora docs` serves it to agents.
 
-- **[`docs/index.md`](docs/index.md) is the map.** A new page gets one line there, `- [Title](file.md): what it helps with.`, under its section; the site's navigation, its `llms.txt` and `elabora docs` read it. The test `every docs page is on the map` fails otherwise.
-- **Links are relative** (`[components](components.md)`, `[the schemas](../packages/format/schemas/0.1.11/)`): they work on GitHub, and the site turns them into its own pages or into GitHub links. The test `docs links resolve` checks every link and anchor, and every `docs/….md` path and `Dn` named in the code, the skills and the course rules.
-- **Generated pages say so in their first lines**: [blocks](docs/blocks.md), [diagnostics](docs/diagnostics.md), [LMS profiles](docs/lms-profiles.md), the [command line](docs/cli.md), the [agent tools](docs/mcp-tools.md) and the [decision index](docs/decisions.md). Change their source (schemas, the code catalogue, profiles, the help, the tools, a decision) and run `pnpm run docs`; CI fails when a generated page is out of date.
-- **A decision** is a new file `docs/decisions/Dnn.md` that starts with `# Dn. Title (date)`: what was decided, why, and *Revisit if:*. Run `pnpm run docs` to add it to the index. A decision that replaces or revises another says so in both. New runtime dependencies need one.
-- **Architecture** lives in [`docs/architecture.md`](docs/architecture.md) and one page per subsystem in [`docs/architecture/`](docs/architecture/). Code comments cite the page and section (`docs/architecture/media.md`).
-- Write for a reader who has only the repository: no private notes, people's names or tracker numbers; say what was measured and how instead.
+- **Add a new page to [`docs/index.md`](docs/index.md)**, under its section: `- [Title](file.md): what it helps with.` The site, its `llms.txt` and `elabora docs` read this map. The test `every docs page is on the map` checks it.
+- **Use relative links**, such as `[components](components.md)`. They work on GitHub and the site. The test `docs links resolve` checks every link and anchor, and every `docs/….md` path and decision number the code cites.
+- **Edit the source of a generated page**, then run `pnpm run docs`. Generated pages say so in their first lines: [blocks](docs/blocks.md), [diagnostics](docs/diagnostics.md), [LMS profiles](docs/lms-profiles.md), the [command line](docs/cli.md), the [agent tools](docs/mcp-tools.md) and the [decision index](docs/decisions.md). CI fails when one is out of date.
+- **Record a decision** in a new file `docs/decisions/Dnn.md` that starts with `# Dn. Title (date)`. Say what was decided, why, and *Revisit if:*. Then run `pnpm run docs` to add it to the index. A decision that revises another says so in both. A new runtime dependency needs one.
+- **Describe the architecture** in [`docs/architecture.md`](docs/architecture.md) and the pages of [`docs/architecture/`](docs/architecture/). Code comments cite the page (`docs/architecture/media.md`).
+- **Write for a reader who has only the repository.** Say what was measured and how. Leave out private notes, people's names and tracker numbers.
 
 ## Pull requests
 
-Keep a pull request to one change, with its tests and its docs. Add an English Sampo changeset for anything a user of the format, the command line or the agent tools would notice; [Core releases](docs/releases.md) explains the format and release PR workflow. Sampo generates the new version's [changelog](CHANGELOG.md). Interfaces recorded in `test/fixtures/` (the help and the agent tool catalogue) are updated with the interface.
+Keep each pull request to one change, with its tests and its docs. Add an English Sampo changeset when a user of the format, the command line or the agent tools would notice the change:
+
+```bash
+pnpm exec sampo add -p npm/elabora -p npm/@elabora/core -b patch -t Fixed -m "Explain the corrected behaviour."
+```
+
+[Core releases](docs/releases.md) explains changesets and releases. Sampo writes the [changelog](CHANGELOG.md) of each new version. When you change the help or the agent tools, update their recorded copies in `test/fixtures/`.
 
 ## Licence
 
-By contributing, you agree that your contribution is released under the Apache License 2.0 ([`LICENSE`](LICENSE)), like the code and the specification. The original content of the sample courses in [`examples/`](examples/) is released under CC0 1.0 ([D44](docs/decisions/D44.md)).
+By contributing, you agree to release your contribution under the Apache License 2.0 ([`LICENSE`](LICENSE)), like the code and the specification. The original content of the sample courses in [`examples/`](examples/) is CC0 1.0 ([D44](docs/decisions/D44.md)).

@@ -109,6 +109,18 @@ test('createModule with a charter: a module of the library in another module\'s 
   // A course folder too, and not both.
   const byFolder = await createModule({ title: 'Autre', language: 'fr', charter: path.join(EXAMPLES, 'phishing-by-numbers') });
   assert.equal(readJSON(byFolder.project.path, 'course.json').theme.tokens['color.primary'], readJSON(path.join(EXAMPLES, 'phishing-by-numbers'), 'course.json').theme.tokens['color.primary']);
+  // A folder relative to the current one (the path of a shell), not taken for a project id.
+  const here = process.cwd();
+  try {
+    process.chdir(EXAMPLES);
+    const relative = await createModule({ title: 'Relatif', language: 'fr', charter: 'phishing-by-numbers' });
+    assert.equal(relative.charter?.dir, path.join(EXAMPLES, 'phishing-by-numbers'));
+    const dotted = await createModule({ title: 'Pointé', language: 'fr', charter: './phishing-by-numbers/' });
+    assert.equal(dotted.charter?.dir, path.join(EXAMPLES, 'phishing-by-numbers'));
+    process.chdir(ROOT);
+    const nested = await createModule({ title: 'Imbriqué', language: 'fr', charter: 'examples/phishing-by-numbers' });
+    assert.equal(nested.charter?.dir, path.join(EXAMPLES, 'phishing-by-numbers'));
+  } finally { process.chdir(here); }
   await assert.rejects(createModule({ title: 'Les deux', template: 'organic', charter: first.project.id }), /template or from another module's charter/);
   await assert.rejects(createModule({ title: 'Aucun', charter: 'mod-inconnu' }));
 });

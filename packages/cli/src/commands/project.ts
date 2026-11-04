@@ -8,32 +8,32 @@ import { createFromTemplate, listModuleTemplates, moduleTemplate } from '@elabor
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import * as edit from '@elabora/node/edit';
 import { validateProject } from '@elabora/core/validate/index';
-import { defineCommand, printDiagnostics, printFormatMigration, printJson, reportingFailures, summaryErrors } from './command.ts';
+import { defineCommand, notACourseMessage, printDiagnostics, printFormatMigration, printJson, reportingFailures, summaryErrors, unknownProfileMessage } from './command.ts';
 import type { CommandGroup } from './command.ts';
 
-const HELP = `  init <dir> --id <id> --title <title> [--lang fr]   Scaffold a course project (course.json, plan.json, AGENTS.md)
-       [--audience <who>] [--business-goal <goal>]    What the author already said of it: the plan's audience, business goal and
-       [--duration 10-20|5|30+] [--presentation        duration in minutes, the presentation, the LMS, and notes for agents in
-       slides|scroll] [--lms a,b] [--notes <text>]    AGENTS.md (the tone, the brand wanted, what is left to the agent)
-       [--template <id>]                              Start from a module template (elabora templates): its charter and its
-                                                      screens with placeholder texts, in --lang when it is translated into it
-  templates [--json]                                  The module templates: a charter (theme, fonts, components, an animated
-                                                      backdrop and its variants) and 14 screens of placeholder texts each
-  validate [dir] [--profile a,b] [--release] [--json] Check format, plan conformity, pedagogy, accessibility, budgets
-  project [dir] [--client] [--screen <id>]            Markdown view of the course (agent map, or client review)
-  migrate [dir] [--dry-run] [--json]                  Write the course in the current format (older ones are read migrated): one
-                                                      change after a backup version, undone by elabora undo
+const HELP = `  init <dir> --id <id> --title <title> [--lang fr]    Create a course folder: course.json, plan.json, AGENTS.md
+       [--audience <who>] [--business-goal <goal>]    The brief so far: the plan's audience, business goal, duration in
+       [--duration 10-20|5|30+] [--presentation        minutes, presentation and LMS, and notes for agents in AGENTS.md
+       slides|scroll] [--lms a,b] [--notes <text>]    (the tone, the brand, what is left to the agent)
+       [--template <id>]                              Start from a module template (elabora templates): its charter and
+                                                      its screens with placeholder texts, in --lang when translated
+  templates [--json]                                  List the module templates: each has 14 placeholder screens and a
+                                                      charter (theme, fonts, components, animated backdrop and variants)
+  validate [dir] [--profile a,b] [--release] [--json] Check a course: format, plan, pedagogy, accessibility, budgets
+  project [dir] [--client] [--screen <id>]            Print the course as Markdown: a map for agents, or --client for review
+  migrate [dir] [--dry-run] [--json]                  Rewrite the course in the current format (older ones are read
+                                                      migrated): one change after a backup version; elabora undo reverts it
   rename [dir] <old-id> <new-id> [--json]             Rename a section, screen, layer, block or event: its references, the
                                                       screen file and the state lock follow (learner progress keeps its key)
-  ignore [dir] <code> <key> [--restore] [--json]      When the author asks: ignore a warning that has a key (elabora validate
-                                                      prints it), as « Ignorer » in the editor does (course.json ignored,
-                                                      D31); it comes back when what it found changes. --restore: back`;
+  ignore [dir] <code> <key> [--restore] [--json]      Ignore a warning by its key (elabora validate prints it) when the
+                                                      author asks, as « Ignorer » does in the editor (course.json ignored,
+                                                      D31). It returns when what it found changes; --restore brings it back`;
 
 const init = defineCommand({
   name: 'init',
   flags: { id: 'string', title: 'string', lang: 'string', audience: 'string', 'business-goal': 'string', duration: 'string', presentation: 'string', lms: 'list', notes: 'string', template: 'string' },
   async run({ positionals: [dir], flags }) {
-    if (!dir || !flags.id || !flags.title) { console.error('Usage: elabora init <dir> --id <id> --title <title> [--lang fr]'); return 2; }
+    if (!dir || !flags.id || !flags.title) { console.error('Usage: elabora init <dir> --id <id> --title <title> [--lang fr]\nExample: elabora init my-course --id my-course --title "My course" --lang en'); return 2; }
     const duration = flags.duration === undefined ? undefined : durationOf(flags.duration);
     if (duration === null) { console.error('--duration: minutes as 10-20, 5 or 30+'); return 2; }
     if (flags.presentation !== undefined && flags.presentation !== 'slides' && flags.presentation !== 'scroll') { console.error('--presentation: slides or scroll'); return 2; }
@@ -83,7 +83,12 @@ function durationOf(text: string): { min?: number; max?: number } | null {
 const validate = defineCommand({
   name: 'validate',
   flags: { profile: 'list', release: 'boolean', json: 'boolean' },
-  run({ positionals: [dir = '.'], flags }) {
+  async run({ positionals: [dir = '.'], flags }) {
+    const profileError = await unknownProfileMessage(flags.profile);
+    if (profileError) { console.error(profileError); return 2; }
+    // A folder without a course: one line (--json keeps its findings, for scripts).
+    const missing = flags.json ? null : notACourseMessage(dir);
+    if (missing) { console.error(missing); return 1; }
     const result = validateProject(loadProjectFromDir(dir), { profiles: flags.profile, release: flags.release });
     const { budget } = result.context;
     if (flags.json) printJson({ ok: result.ok, summary: result.summary, budget, diagnostics: result.diagnostics });
@@ -93,7 +98,7 @@ const validate = defineCommand({
       // theme still overrides their components (D32).
       for (const d of result.diagnostics) if (d.code === 'I_FORMAT_OUTDATED' || d.code === 'I_THEME_CASCADE_OLD') console.log(formatDiagnostic(d));
       const { summary } = result;
-      console.log(`\n${result.ok ? '✔' : '✘'} ${summary.errors} error(s), ${summary.warnings} warning(s)${summary.waived ? `, ${summary.waived} waived` : ''}${summary.ignored ? `, ${summary.ignored} ignored by the author` : ''}. suspend_data worst case ${budget?.worstCase ?? '?'} / ${budget?.limit ?? '?'} (${(budget?.profiles || []).join(', ')}).`);
+      console.log(`\n${result.ok ? '✔' : '✘'} ${summary.errors} error(s), ${summary.warnings} warning(s)${summary.waived ? `, ${summary.waived} waived` : ''}${summary.ignored ? `, ${summary.ignored} ignored by the author` : ''}.${budget?.worstCase === undefined ? '' : ` suspend_data worst case ${budget.worstCase} / ${budget.limit} (${(budget.profiles || []).join(', ')}).`}`);
     }
     return result.ok ? 0 : 1;
   }
@@ -103,6 +108,8 @@ const project = defineCommand({
   name: 'project',
   flags: { client: 'boolean', screen: 'string' },
   run({ positionals: [dir = '.'], flags }) {
+    const missing = notACourseMessage(dir);
+    if (missing) { console.error(missing); return 1; }
     console.log(projectMarkdown(loadProjectFromDir(dir), { audience: flags.client ? 'client' : 'agent', screen: flags.screen }));
     return 0;
   }

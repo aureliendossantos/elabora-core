@@ -390,10 +390,23 @@ export async function createModule(options: NewModuleOptions): Promise<NewModule
   return { project, template, charter: charter ? { dir: charter, title: readCourseInfo(charter).title } : null, language, languageFrom: options.language ? 'given' : 'app' };
 }
 
-// The course a charter is taken from: a project of the library by its id, or a course folder.
+// The course a charter is taken from: a project of the library by its id, or a course folder (absolute,
+// or relative to the current folder). A reference with a slash or starting with a dot is a folder; a
+// bare name is a project id first, and the folder of that name in the current folder otherwise.
 export function charterSource(reference: string): string {
-  if (path.isAbsolute(reference) && fs.existsSync(path.join(reference, 'course.json'))) return path.resolve(reference);
-  const dir = libraryProjectDir(resolveProjectId(reference));
+  const folder = path.resolve(reference);
+  const isFolder = fs.existsSync(path.join(folder, 'course.json'));
+  if (isFolder && (path.isAbsolute(reference) || /[\\/]|^\./.test(reference))) return folder;
+  let id: string | null = null;
+  try { id = resolveProjectId(reference); } catch (error) {
+    if (isFolder) return folder;
+    if (error instanceof LibraryError && error.code === 'E_PROJECT_NOT_FOUND') throw new LibraryError('E_PROJECT_NOT_FOUND', `${error.message} Nor a folder with a course.json at ${folder}.`);
+    throw error;
+  }
+  // Only a whole id beats the folder of that name: a prefix of an id is a shorthand, not a reason to leave it.
+  const wanted = reference.trim().toLowerCase();
+  if (isFolder && id !== wanted && id !== `mod-${wanted}`) return folder;
+  const dir = libraryProjectDir(id);
   if (!fs.existsSync(path.join(dir, 'course.json'))) throw new LibraryError('E_INVALID_ARGUMENT', `${reference}: not a module with a course.json.`);
   return dir;
 }

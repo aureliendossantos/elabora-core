@@ -2,7 +2,27 @@
   "name": "elabora",
   "version": "0.1.0",
   "private": true,
-  "description": "Open core of Elabora: an open e-learning source format, a validator, a SCORM 1.2 compiler with executable LMS profiles, a free-object contract, skills and an MCP server for AI agents.",
+  "description": "Open core of Elabora, the e-learning authoring tool where AI agents co-author: the course format, a validator, a SCORM 1.2 and web compiler, the elabora command line and an MCP server.",
+  "keywords": [
+    "e-learning",
+    "elearning",
+    "scorm",
+    "scorm-1.2",
+    "lms",
+    "course-authoring",
+    "mcp",
+    "mcp-server",
+    "ai-agents",
+    "accessibility"
+  ],
+  "homepage": "https://elabora.studio",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aureliendossantos/elabora-core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aureliendossantos/elabora-core/issues"
+  },
   "type": "module",
   "license": "Apache-2.0",
   "engines": {
@@ -11,6 +31,42 @@
   "bin": {
     "elabora": "bin/elabora.js"
   },
+  "files": [
+    "bin/",
+    "packages/cli/package.json",
+    "packages/cli/src/",
+    "packages/core/package.json",
+    "packages/core/src/",
+    "packages/engine/package.json",
+    "packages/engine/src/",
+    "packages/fonts/package.json",
+    "packages/fonts/src/",
+    "packages/format/package.json",
+    "packages/format/src/",
+    "packages/node/package.json",
+    "packages/node/src/",
+    "packages/player/package.json",
+    "packages/player/src/",
+    "packages/cli/bin/",
+    "packages/cli/skills/",
+    "packages/core/profiles/",
+    "packages/fonts/README.md",
+    "packages/fonts/catalogue.json",
+    "packages/fonts/files/",
+    "packages/format/schemas/",
+    "packages/node/emulator-harness/",
+    "packages/node/sounds/",
+    "packages/node/templates/",
+    "packages/node/vendor/",
+    "packages/node/voices/",
+    "templates/",
+    "docs/",
+    "!docs/images/",
+    "SPEC.md",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "NOTICE"
+  ],
   "scripts": {
     "test": "node --test --test-force-exit --test-global-setup=test/isolate.ts --test-concurrency=4 \"test/unit/*.test.ts\"",
     "test:file": "node --test --test-force-exit --test-global-setup=test/isolate.ts --import ./scripts/heavy-slots.ts",

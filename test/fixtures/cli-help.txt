@@ -1,36 +1,46 @@
-elabora <version> — open e-learning format, SCORM 1.2 compiler and checks for AI agents
+elabora <version> — turns a course folder into a SCORM 1.2 package for your LMS
+
+A course is plain files in an open format: agents write them, people review them, elabora checks and builds them.
 
 Usage: elabora <command> [options]
+       elabora <command> --help     show one command's options
+
+Start here (in a checkout of elabora-core)
+  elabora validate examples/canal-locks               Check a sample course
+  elabora build examples/canal-locks                  Make its SCORM 1.2 package in examples/canal-locks/dist/
+  elabora preview examples/canal-locks                Open it in a browser; pages reload when its files change
+  elabora init my-course --id my-course --title "My course" --lang en
+                                                      Create your own course, then check it with elabora validate my-course
 
 Project
-  init <dir> --id <id> --title <title> [--lang fr]   Scaffold a course project (course.json, plan.json, AGENTS.md)
-       [--audience <who>] [--business-goal <goal>]    What the author already said of it: the plan's audience, business goal and
-       [--duration 10-20|5|30+] [--presentation        duration in minutes, the presentation, the LMS, and notes for agents in
-       slides|scroll] [--lms a,b] [--notes <text>]    AGENTS.md (the tone, the brand wanted, what is left to the agent)
-       [--template <id>]                              Start from a module template (elabora templates): its charter and its
-                                                      screens with placeholder texts, in --lang when it is translated into it
-  templates [--json]                                  The module templates: a charter (theme, fonts, components, an animated
-                                                      backdrop and its variants) and 14 screens of placeholder texts each
-  validate [dir] [--profile a,b] [--release] [--json] Check format, plan conformity, pedagogy, accessibility, budgets
-  project [dir] [--client] [--screen <id>]            Markdown view of the course (agent map, or client review)
-  migrate [dir] [--dry-run] [--json]                  Write the course in the current format (older ones are read migrated): one
-                                                      change after a backup version, undone by elabora undo
+  init <dir> --id <id> --title <title> [--lang fr]    Create a course folder: course.json, plan.json, AGENTS.md
+       [--audience <who>] [--business-goal <goal>]    The brief so far: the plan's audience, business goal, duration in
+       [--duration 10-20|5|30+] [--presentation        minutes, presentation and LMS, and notes for agents in AGENTS.md
+       slides|scroll] [--lms a,b] [--notes <text>]    (the tone, the brand, what is left to the agent)
+       [--template <id>]                              Start from a module template (elabora templates): its charter and
+                                                      its screens with placeholder texts, in --lang when translated
+  templates [--json]                                  List the module templates: each has 14 placeholder screens and a
+                                                      charter (theme, fonts, components, animated backdrop and variants)
+  validate [dir] [--profile a,b] [--release] [--json] Check a course: format, plan, pedagogy, accessibility, budgets
+  project [dir] [--client] [--screen <id>]            Print the course as Markdown: a map for agents, or --client for review
+  migrate [dir] [--dry-run] [--json]                  Rewrite the course in the current format (older ones are read
+                                                      migrated): one change after a backup version; elabora undo reverts it
   rename [dir] <old-id> <new-id> [--json]             Rename a section, screen, layer, block or event: its references, the
                                                       screen file and the state lock follow (learner progress keeps its key)
-  ignore [dir] <code> <key> [--restore] [--json]      When the author asks: ignore a warning that has a key (elabora validate
-                                                      prints it), as « Ignorer » in the editor does (course.json ignored,
-                                                      D31); it comes back when what it found changes. --restore: back
+  ignore [dir] <code> <key> [--restore] [--json]      Ignore a warning by its key (elabora validate prints it) when the
+                                                      author asks, as « Ignorer » does in the editor (course.json ignored,
+                                                      D31). It returns when what it found changes; --restore brings it back
 
 Projects (the app's library: one plain folder per project; archives to exchange them)
   projects list [--json] [--validate]                 Projects of the library, newest first: title, course, date, size,
-                                                      validation, folder (--validate checks those not checked yet)
+                                                      validation, folder (--validate checks the unchecked ones)
   projects path [<id>] [--set <dir> [--move|--copy]]  Folder of the library, or of a project (id or its first characters).
                                                       --set: use another folder; --move takes the projects along; --copy
                                                       moves them by copying and checking every file (another disk)
-  projects create [<course-id>] --title <t> [--language fr] [--template <id> | --charter <id>]
+  projects create [<course-id>] --title <t> [--language fr] [--template <id> | --charter <id or folder>]
                                                       Create a course in the library, blank or from a module template
                                                       (elabora templates), or blank in another module's charter (its theme,
-                                                      fonts, components and backdrop; --charter: its project id or folder);
+                                                      fonts, components and backdrop; --charter: its project id, or its folder, absolute or relative to here);
                                                       the course id is the title's by default, the language the app's
   projects duplicate <id> [--title <t>]               Copy a project under a new id (same course id; the history stays)
   projects rename <id> --title <t>                    Change the title of a project (an undoable edit of course.json)
@@ -52,30 +62,30 @@ Projects (the app's library: one plain folder per project; archives to exchange 
                                                       choices to make); --choose takes one of its choices: presentation=scroll,
                                                       backgrounds=keep, timing=steps, fonts=theme, media-accessibility=errors
 
-History (changes made through Elabora tools and by agents; AI work is grouped in batches)
-  history [dir] [--limit 20] [--json]                 Changes grouped by batch of AI work: when, who, the request, what
+History (changes made through Elabora and by agents, in batches of AI work)
+  history [dir] [--limit 20] [--json]                 List the changes by batch of AI work: when, who, the request, what
                                                       changed, what was undone
-  history [dir] --chats [--limit 20] [--json]         The turns of Elabora's chat: the tools refused to the agent (file
+  history [dir] --chats [--limit 20] [--json]         List the turns of Elabora's chat: the tools refused to the agent (file
                                                       edits, shell), what it did instead, what each turn cost, and
                                                       whether refusals call for a new Elabora tool
   undo [dir]                                          Undo the last change made through Elabora tools or by an agent
-  undo [dir] --change <id|seq>                        Undo one change (an undo too: that redoes it)
-  undo [dir] --batch [<id>]                           Undo a batch of AI work (default: the last one). Whatever changed
-                                                      since is kept, and listed
+  undo [dir] --change <id|seq>                        Undo one change (undoing an undo redoes it)
+  undo [dir] --batch [<id>]                           Undo a batch of AI work (default: the last one). Later changes stay,
+                                                      and are listed
   mark [dir] "<request>" [--chat <id>]                Label the next batch of AI work with the request that starts it.
-                                                      --chat: a turn of Elabora's chat, whose agent's changes all join it
-                                                      Claude Code: a UserPromptSubmit hook running elabora mark --stdin
+                                                      --chat: a turn of Elabora's chat, whose agent's changes all join it.
+                                                      In Claude Code, a UserPromptSubmit hook running elabora mark --stdin
                                                       labels each batch with the prompt (read from the hook's JSON)
 
-The author's sources (never published)
-  sources list [dir] [--json]                         The author's sources (sources/: a brief, a deck, recordings; never
-                                                      published), each with its readable version: ready, partial (its
-                                                      transcript to come), stale, missing, failed, native (read as it
-                                                      is: images, text, a PDF) or unsupported
+The author's sources (private, kept out of packages)
+  sources list [dir] [--json]                         List the author's sources (sources/: a brief, a deck, recordings),
+                                                      each with its readable version: ready, partial (its transcript to
+                                                      come), stale, missing, failed, native (read as it is: images, text,
+                                                      a PDF) or unsupported
   sources add [dir] <file|folder>… [--no-read] [--json]
-                                                      Copies files into sources/ (a file already there is not copied
-                                                      again, a name taken is numbered, one Windows refuses is made
-                                                      portable), then writes their readable versions (--no-read: later)
+                                                      Copies files into sources/ (a file already there is skipped, a
+                                                      name taken is numbered, a name Windows refuses is made portable),
+                                                      then writes their readable versions (--no-read: later)
   sources read [dir] <file> [--no-refresh] [--json]   A source's readable version (Markdown), written first when it is
                                                       missing or out of date: a Word document with its comments and
                                                       tracked changes, a deck's slides in reading order with their notes
@@ -94,7 +104,7 @@ Media (video, audio and images of assets/)
   media import [dir] <file…> [--to <folder>] [--name <name>] [--no-wait] [--json]
                                                       Bring media into assets/ (video, audio, images): converted in the
                                                       background to web masters (MP4 H.264/AAC, M4A, WebP; SVG as is),
-                                                      metadata such as GPS positions removed, the original never copied.
+                                                      metadata such as GPS positions removed; only the master is copied.
                                                       Prints the paths at once, then waits (--no-wait: a worker goes on)
   media optimize [dir] [<path>…|--all] [--json]       Convert media of assets/ that are not masters (W_MEDIA_NOT_OPTIMIZED);
                                                       references follow a new extension, in one undoable change
@@ -171,7 +181,7 @@ Narration (the voice of narrated screens, and their timeline)
   narration keep [dir] <screen> <line> [--language <lang>] [--json]
                                                       The line's text was corrected (a checked transcription, a typo) and its
                                                       audio still says it: the audio stays up to date, its words follow
-  narration split [dir] <screen> <line> [--json]       Cut a step at a line (W_SEGMENT_TOO_LONG): the line and those after it in
+  narration split [dir] <screen> <line> [--json]      Cut a step at a line (W_SEGMENT_TOO_LONG): the line and those after it in
                                                       its step start the next step, so Continue paces them; later steps, their
                                                       blocks and the anchors that name them move one on, in one undoable change
   narration align [dir] [screen] [--line <ids>] [--language <lang>] [--force] [--json]
@@ -183,7 +193,7 @@ Narration (the voice of narrated screens, and their timeline)
                                                       already timed too. Says which words the voice may have swallowed
 
 Voices (generated narration)
-  voice list [--language <lang>] [--json]           The voices a narration line can be generated with: id, name, register
+  voice list [--language <lang>] [--json]             The voices a narration line can be generated with: id, name, register
                                                       and pace, licence of the recording it comes from, and whether its
                                                       model is on this computer (else the size downloaded on first use)
   voice models [--language <lang>] [--json]           The local voices by language and their model: on this computer (its
@@ -278,8 +288,8 @@ Dialogues (branching conversations held in a block)
 
 Optional downloads (models downloaded once per computer)
   downloads list [--kind <kind>] [--language <lang>] [--json]
-                                                      What Elabora downloads once per computer on first use (never in a
-                                                      course): the local voices and the word aligners, by language, what
+                                                      What Elabora downloads once per computer on first use (kept outside
+                                                      courses): the local voices and the word aligners, by language, what
                                                       each is for and what happens without it, on this computer (its size
                                                       on disk) or not (the size to download), being downloaded now (by
                                                       the app, a command or an agent) or in use
@@ -296,18 +306,19 @@ Build and test
   build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--media-quality high|medium|low] [--languages all] [--no-wait] [--json]
         [--target scorm12|web] [--progress local|none] [--navigation authored|free] [--noindex] [--url <address>] [--image <file>]
         [--review-origin <origin>]…
-                                                      Validate, then compile a deterministic SCORM 1.2 package + proof dossier.
-                                                      Media ship at delivery.mediaQuality (default high: the masters); lower
-                                                      qualities ship renditions, encoded once and cached. Waits for media
-                                                      jobs (--no-wait: refuses while they run).
+                                                      Validate, then make the SCORM 1.2 package and its proof dossier in
+                                                      dist/ (deterministic: same files, same bytes). Media ship at
+                                                      delivery.mediaQuality (default high: the masters); lower qualities
+                                                      ship renditions, encoded once and cached. Waits for running media
+                                                      jobs (--no-wait: fails while they run).
                                                       --languages all: one package of every language, the course's own
                                                       and each translation that is ready and approved; learners switch
                                                       from the player's « Langue » and keep their progress (D59).
-                                                      --target web: a module for a plain web server, no LMS (a folder to serve
-                                                      and its ZIP, <course>-<version>-web). --progress local (default: kept in
-                                                      the browser, resumed at the next visit) or none (nothing kept);
-                                                      --navigation authored (default: the course's rules) or free (every screen
-                                                      open, no lock); --noindex keeps search engines out; --url: the address
+                                                      --target web: a module for any web server, outside an LMS (a folder to
+                                                      serve and its ZIP, <course>-<version>-web). --progress local (default:
+                                                      kept in the browser, resumed at the next visit) or none (nothing kept);
+                                                      --navigation authored (default: the course's rules) or free (every
+                                                      screen open); --noindex keeps search engines out; --url: the address
                                                       of its index.html (canonical, sharing previews); --image: a PNG, JPEG or
                                                       WebP shown when the link is shared. A showcase: --progress none
                                                       --navigation free; a publication: the defaults.
@@ -317,22 +328,23 @@ Build and test
                                                       (elabora-review/1, docs/review-bridge.md) and talks to that page
                                                       only; progress none, navigation free and noindex by default
   test [dir] [--package <zip>] [--profile a,b|all] [--mode iframe,popup…] [--browser chromium,electron,chrome,msedge,playwright,firefox,webkit] [--parallel 4] [--no-a11y] [--json]
-                                                      Run the package in the LMS emulator (profiles × launch modes × browsers);
-                                                      4 runs side by side by default, fewer on a loaded machine
+                                                      Build, then run the package in the LMS emulator (profiles × launch modes
+                                                      × browsers). 4 runs side by side by default; fewer on a loaded machine
   preview [dir] [--port 4807] [--profile <id>] [--navigation authored|free]
-                                                      Live preview (standalone and in the LMS emulator): pages reload after each
-                                                      rebuild; free objects show in the in-app browsers of agent apps. The
-                                                      emulator plays the course's LMS (--profile: another); --navigation free
-                                                      opens every screen, whatever the course's rules
+                                                      Serve the course on this computer, alone and in the LMS emulator; pages
+                                                      reload when its files change. Free objects show in agent apps' in-app
+                                                      browsers. The emulator plays the course's LMS (--profile: another one);
+                                                      --navigation free opens every screen, whatever the course's rules
   look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|answered] [--step <n>] [--layer <id>]
        [--at <moment> | --sheet] [--scroll <px|N%|block>,…] [--block <id> [--scale 2] [--act <action>]…] [--viewport] [--motion]
        [--language <code>] [--controls] [--select <css>] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
-                                                      See a screen while designing, in well under a second: a look server kept warm
-                                                      for the course (one browser, no build) renders it from the files as they are,
-                                                      with the player's header and footer; free objects an edit did not touch keep
-                                                      running. JPEG (PNG: --out x.png), in .elabora/look/ by default. Says whether a
-                                                      slide fits. --url: a page that follows the looks and the files, for a browser
-                                                      pane. --stop: stop the server (it stops itself after 15 minutes without a look).
+                                                      Capture a screen while designing, in under a second: a look server kept warm
+                                                      for the course (one browser, no build) renders it from its files as they are,
+                                                      with the player's header and footer; free objects keep running across edits
+                                                      that leave them alone. JPEG (PNG: --out x.png), in .elabora/look/ by default.
+                                                      Says whether a slide fits. --url: a page that follows the looks and the files,
+                                                      for a browser pane. --stop: stop the server (it stops itself after 15 idle
+                                                      minutes).
                                                       --at: a timed screen at a moment, the window with its bar: l2 (a line starts,
                                                       its caption shown), l2:end, l2:imprimante (a word), l2:imprimante+0.3s,
                                                       1.5s@2, step2:end, 12.5 (seconds). --sheet: a contact sheet, one capture per
@@ -378,12 +390,12 @@ Build and test
                                                       the page and the player's bars that go onto two lines. --language: the
                                                       translation (--allow-missing: a draft, missing texts in the source language).
                                                       A screen unchanged since its last measure (its files, the theme, components,
-                                                      objects, Elabora, the browser) is not measured again: its fit is reused
-                                                      (--fresh measures every screen again)
+                                                      objects, Elabora, the browser) keeps its last fit (--fresh measures every
+                                                      screen again)
   inspect <package.zip>                               Read any SCORM package: manifest, files, size
   diff <old.report.json> <new.report.json> [--profile a,b]
                                                       What an update does to learners in progress, LMS by LMS
-  profiles [--json]                                   List executable LMS profiles
+  profiles [--json]                                   List the LMS profiles the emulator plays (ids for --profile)
 
 Hosting: account (elabora.studio)
   account login --email <address> [--device <name>] [--language fr|en] [--handle <name>] [--json]
@@ -529,7 +541,7 @@ Free objects
                                                       on one line). Then read the lines needed
   object test [dir] <id> [--update-snapshots] [--browser chromium|electron|chrome|msedge|playwright|firefox|webkit] [--only <test name>] [--force]
                                                       Gates 2–6 of the free-object contract (result kept in object.gates.json);
-                                                      an object unchanged since its last run here is not run again (--force runs it)
+                                                      an object unchanged since its last run here is skipped (--force runs it)
   object replay [dir] <id> [--test <name>] [--block <id> | --screen <id>] [--size 1600x900] [--out sheet.png] [--json]
                                                       Replay a test of object.tests.json in the built course, on the page that
                                                       places the object, in real time: a contact sheet of its snapshot steps,
@@ -581,31 +593,31 @@ Interoperability
   lesson-md import [dir] <lesson.md> --covers ITEM-n [--id <screen-id>] [--section <id>] [--after <screen-id>]
 
 Agents
-  mcp [dir…] [--read-only] [--tools <name>,…]          MCP server on stdio for a course folder; several folders, or a folder
-                                                      of courses, give a course argument to each operation; outside a
-                                                      course, only the docs, skills and library. No folder: every course
-                                                      Elabora knows (its library, the folders the app opened), read
-                                                      again at each call. --tools: only the named agent tools (unknown
-                                                      names are refused)
-  codes [--json]                                      Catalogue of diagnostic codes
-  docs [<page>] [--section <heading>] [--full]        The documentation as Markdown, without a checkout: the map of pages,
-                                                      a page (D29: a decision; a long one as its outline), or one section
-  rules [dir] [--json]                                The rules for agents of this elabora (what a course's AGENTS.md
-                                                      holds between its markers), and where the course's stand
-  rules update [dir] [--force] [--json]               Bring the course's AGENTS.md rules up to date (done by itself
-                                                      while nobody edits them); --force replaces edited ones, the
-                                                      notes after « elabora:rules end » kept. One undoable change
+  mcp [dir…] [--read-only] [--tools <name>,…]         Start the MCP server on stdio for a course folder. Several folders, or
+                                                      a folder of courses: each operation takes a course argument. Outside
+                                                      a course: the docs, skills and library. With no folder: every course
+                                                      Elabora knows (its library, the folders the app opened), read again
+                                                      at each call. --tools: only the named agent tools (unknown names are
+                                                      refused)
+  codes [--json]                                      List the diagnostic codes
+  docs [<page>] [--section <heading>] [--full]        Print the bundled documentation as Markdown: the map of pages, a page
+                                                      (D29: a decision; a long one as its outline), or one section
+  rules [dir] [--json]                                Print this elabora's rules for agents (what a course's AGENTS.md
+                                                      holds between its markers), and the state of the course's copy
+  rules update [dir] [--force] [--json]               Update the course's AGENTS.md rules (automatic while nobody edits
+                                                      them); --force replaces edited ones and keeps the notes after
+                                                      « elabora:rules end ». One undoable change
 
 Agent operations (shared with MCP)
-  tools skills [<name> [<reference>]] [--json]         List bundled skills, or read one skill/on-demand recipe (no course needed)
-  tools guide [--json]                               Agent workflows, transport choices and human decisions (no course needed)
+  tools skills [<name> [<reference>]] [--json]        List the bundled skills, or read one skill or on-demand recipe (any folder)
+  tools guide [--json]                                Print the agent guide: workflows, transport choices, human decisions (any folder)
   tools list [<tool>] [--read-only] [--tools <name>,…] [--json]
-                                                      Discover agent operations and their JSON input schemas (no course needed)
+                                                      List the agent operations and their JSON input schemas (any folder)
   tools call <tool> [dir] [--args '<json>' | --from <arguments.json>|-] [--read-only] [--raw]
-                                                      Call the same operation as MCP, with the same validation. Arguments
+                                                      Call an operation as MCP does, with the same validation. Arguments
                                                       default to {}: --args takes them inline, --from from a file (- reads
                                                       stdin). Prints the tool's own JSON (its text when it answers in text);
                                                       images go to files under the course's .elabora/look/, their paths in
-                                                      "images". --raw prints the MCP result (content, isError) instead.
+                                                      "images". --raw prints the MCP result (content, isError).
                                                       Exit 0 success, 1 refused, 2 bad input
 

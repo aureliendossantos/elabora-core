@@ -15,7 +15,7 @@ const HELP = `  object new [dir] <id> [--title <t>] [--objectives OBJ-1,OBJ-2 | 
                                                       on one line). Then read the lines needed
   object test [dir] <id> [--update-snapshots] [--browser chromium|electron|chrome|msedge|playwright|firefox|webkit] [--only <test name>] [--force]
                                                       Gates 2–6 of the free-object contract (result kept in object.gates.json);
-                                                      an object unchanged since its last run here is not run again (--force runs it)
+                                                      an object unchanged since its last run here is skipped (--force runs it)
   object replay [dir] <id> [--test <name>] [--block <id> | --screen <id>] [--size 1600x900] [--out sheet.png] [--json]
                                                       Replay a test of object.tests.json in the built course, on the page that
                                                       places the object, in real time: a contact sheet of its snapshot steps,

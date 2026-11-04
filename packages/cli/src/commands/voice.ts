@@ -9,7 +9,7 @@ import { defineCommand, printJson, reportingFailures } from './command.ts';
 import { uninstallCommand } from './downloads.ts';
 import type { CommandGroup } from './command.ts';
 
-const HELP = `  voice list [--language <lang>] [--json]           The voices a narration line can be generated with: id, name, register
+const HELP = `  voice list [--language <lang>] [--json]             The voices a narration line can be generated with: id, name, register
                                                       and pace, licence of the recording it comes from, and whether its
                                                       model is on this computer (else the size downloaded on first use)
   voice models [--language <lang>] [--json]           The local voices by language and their model: on this computer (its

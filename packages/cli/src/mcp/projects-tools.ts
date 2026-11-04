@@ -70,7 +70,7 @@ export const createProjectTool = defineTool({
     courseId: { ...SLUG, description: 'Its course id (an LMS tells courses by it). Default: the title\'s, numbered when the library has it.' },
     language: { ...LANGUAGE, description: 'The language of its texts, a BCP 47 tag: the author\'s, the one you talk with them in. Default: the app\'s (French or English).' },
     template: { type: 'string', description: 'A module template\'s id (elabora_templates). Default: a blank module.' },
-    charter: { type: 'string', description: 'Another module whose charter the new one takes, when the author wants the same look: its project id (elabora_projects_list) or its folder. Not with template.' },
+    charter: { type: 'string', description: 'Another module whose charter the new one takes, when the author wants the same look: its project id (elabora_projects_list) or its folder (absolute: a relative path is read from the server\'s folder). Not with template.' },
     request: { type: 'string', description: 'What the author asked for, in their words: kept in the module\'s notes for agents (its AGENTS.md), and the label of your work on it in its history.' }
   }, ['title']),
   async handler(args, context) {

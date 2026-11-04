@@ -1,42 +1,101 @@
 # Working on a course with an agent
 
-Elabora supports external coding agents, MCP clients and embedded integrations. They use the same course folders and domain services. Choose the transport available in the host; a course never depends on one AI provider.
+Coding agents, MCP clients and apps that embed Elabora all work on the same course folders, through the same operations. Pick the interface your host offers. A course works with any AI provider.
 
 ## Choosing an interface
 
-| Interface | Use it for | Tradeoffs |
+| Interface | Use it for | Good to know |
 |---|---|---|
-| Connected MCP server (`elabora mcp <course>`) | Discoverable operations with JSON input schemas; images returned with results; agents without a shell | The host must connect the server (the Claude desktop extension in `plugins/` does it). A server is scoped to the courses it was started on; it is not a filesystem sandbox. |
-| CLI agent operations (`elabora tools list`, `elabora tools call`) | The exact same schemas, handlers and results from a shell, script or plugin | JSON arguments come from a file or stdin. Image results contain base64; prefer `elabora look` or `screenshot` for files. |
-| Convenient CLI commands (`elabora validate`, `look`, `build`…) | Terminal work, CI, file outputs and advanced batch options | Commands have their own help and output. Use `--json` where supported; use `tools call` for a consistent tool result. |
-| Direct file editing | CSS, templates, generators, free-object code and ordinary screen authoring | Validate afterward. Use domain operations for renaming ids, importing media, translations and other edits that maintain references. |
+| MCP server (`elabora mcp <course>`) | Agents without a shell; operations with JSON input schemas; images returned with results | The host connects the server (the Claude desktop extension in `plugins/` does it). The server works on the courses it was started on; the host's own file access stays as it is. |
+| Agent operations from the shell (`elabora tools list`, `elabora tools call`) | The same schemas, handlers and results from a shell, a script or a plugin | Arguments come as JSON, inline, from a file or from stdin. Use `elabora look` or `screenshot` to get images as files. |
+| CLI commands (`elabora validate`, `look`, `build`…) | Terminal work, CI, file outputs, batch options | Each command has its own help and output. Many take `--json`; `tools call` gives a uniform tool result. |
+| Editing files | CSS, templates, generators, free-object code, screen JSON | Run `elabora validate` afterwards. Use the operations to rename ids, import media, translate, or anything else that must keep references in step. |
 
-Use connected MCP tools when available. Otherwise use the CLI; do not try to configure the user's agent settings yourself. Read the course's `AGENTS.md`, start with `elabora_overview` (or `elabora project .`), and inspect the relevant tool's schema. A tool can be called from the shell without starting an MCP server:
+Use connected MCP tools when the host has them, and the CLI otherwise. The user configures their own agent. Read the course's `AGENTS.md`, start with `elabora_overview` (or `elabora project .`), then read the schema of the tool you need.
+
+## Calling a tool from the shell
+
+Every MCP operation runs from the shell, with no server to start. From a course folder:
 
 ```sh
+cd examples/canal-locks
 elabora tools guide --json
 elabora tools list elabora_translate_text --json
-elabora tools call elabora_translation_table . --args '{"language": "en"}'
+elabora tools call elabora_translation_table . --args '{"language": "fr"}'
 elabora tools call elabora_translate_text . --from translations.json
 ```
 
-`--args` takes the arguments inline, `--from <file>` from a file and `--from -` from stdin. With neither it sends `{}`. `tools call` prints the tool's own JSON to stdout, or its text when the tool answers in text (`elabora_overview`, `elabora_docs`). Images are written to files under the course's `.elabora/look/`, and their paths are listed in `images`. A refusal is printed as the tool's error, usually `{ "error": … }`. `--raw` prints the MCP tool result itself instead: `content` with text and/or images, and `isError: true` for a failure, also set for results with `ok: false`. Rules notes go to stderr. Exit codes: 0 success, 1 refused/failed operation, 2 malformed command or unreadable/invalid JSON input. `--read-only` limits discovery and invocation to read tools and does not update course rules.
+Here `translations.json` holds the tool's arguments:
 
-## Workflow coverage and intentional differences
+```json
+{ "language": "fr", "texts": [{ "unit": "course.title", "target": "Comment marchent les écluses ?" }] }
+```
 
-Every listed MCP operation is available through `tools call` using its exact name and input schema. `tools list --json` and MCP `tools/list` are views of one catalogue; `@elabora/cli` exports `listAgentTools` and `callAgentTool` for local integrations. Pass the author's identity explicitly when embedding calls. Domain validation, locking, journaling and undo belong to the shared services, not the transport. Translation export/approval also go through that executor. The core refuses agent authors recording translated-plan approval, as it does for plan-version approval; a human-run script can identify its human author with `ELABORA_AUTHOR=human:<name>`. This attribution is not a security boundary against a host with arbitrary shell access.
+- **Arguments.** `--args` takes them inline, `--from <file>` from a file and `--from -` from stdin. With neither, the tool gets `{}`.
+- **Output.** `tools call` prints the tool's JSON to stdout, or its text for the tools that answer in text (`elabora_overview`, `elabora_docs`). Images go to the course's `.elabora/look/`, and `images` lists their paths. A refusal prints the tool's error, usually `{ "error": … }`. Notes on the course's rules go to stderr.
+- **`--raw`** prints the MCP result itself: `content` with text and images, and `isError: true` for a failure or a result with `ok: false`.
+- **Exit codes.** 0 for success, 1 for a refused or failed operation, 2 for a malformed command or unreadable JSON.
+- **`--read-only`** keeps to the read tools and leaves the course's rules as they are.
 
-`elabora_agent_guide` returns the same bootstrap/workflow data as `tools guide --json`, including tool names and human decisions. The exported `AGENT_GUIDE` also works in an embedded host without a course or MCP transport. It is a workflow index; load only the bundled skills relevant to the task. `elabora tools skills [<name> [<reference>]] [--json]` lists skills and their optional references, or reads one without a course. MCP serves the same text at `elabora://skills/<name>` and `elabora://skills/<name>/references/<reference>`, and `elabora_docs` (or `elabora docs`) at `skills`, `skills/<name>` and `skills/<name>/<reference>`, for a host that gives the model tools but does not show resources. The course's short `AGENTS.md` routes tasks to these skills; detailed recipes are loaded on demand.
+## Skills and the guide
 
-## Host integration
+`elabora tools guide --json` (MCP `elabora_agent_guide`) is the map of workflows: where to start, the tools for each task and the decisions that belong to people. The exported `AGENT_GUIDE` gives the same data to an embedded host, with no course or MCP needed.
 
-The current desktop app hands requests and the project folder to an external agent; it names its bundled CLI in the request and does not register MCP. A coding agent with a shell (Claude Code, Codex) needs nothing more: in the course's folder it reads `AGENTS.md` and runs `elabora`. Claude, the desktop app, has no shell: the extension `plugins/claude-desktop` ([`plugins/`](https://github.com/aureliendossantos/elabora-core/tree/main/plugins)) connects its chat. The app installs it (Réglages › Outils pour les IA › « Installer dans Claude »); `pnpm run mcpb` writes `dist/elabora.mcpb`. Its launcher finds the app (`/Applications` or `~/Applications` on macOS, `%LOCALAPPDATA%\Programs\elabora` on Windows) and starts its `elabora mcp` with no folder, on the courses Elabora knows: installing it asks nothing. It carries no copy of the skills: the server serves those of the installed Elabora, so they always match its rules.
+The skills hold the detailed recipes. The course's short `AGENTS.md` says which one a task needs. Load only that one:
 
-**Elabora's chat** (the app's own, reports/chat-agentique phase 2) runs an ACP agent with the course's MCP server, started with `ELABORA_AUTHOR=agent:<name>` and `ELABORA_CHAT=<conversation>` (letters, digits, `-` and `_`). Its instructions then tell the agent that its own file edits and shell are refused, so it writes through these tools. The host opens each turn with a mark carrying the conversation (engine `mark { request, chat }`, or `appendMark(dir, request, { chat })` of `@elabora/node/edit` from another process, or `elabora mark --chat <id>`): the mark's id is the turn's batch. Every change the server makes in that conversation joins it, undone at once, and the engine's `endTurn { turn }` closes it. When the host refuses one of the agent's own tools it calls `recordRefusal(root, { chat, mark?, tool, path?, command?, author })` from `@elabora/node/chats`: an activity line of family `refused` with the tool, the file (relative to the course, its name only outside it) or a shell's program name, never any content. The conversation's transcript, `.elabora/chats/<conversation>.jsonl`, is the app's; the course's MCP server adds `detour` lines to it, the Elabora operation that followed a refusal. `elabora history --chats [--json]` sums the turns up from the transcript and the journal: refusals, detours, changes, how each turn ended and its tokens, turns with a refusal against the others, the needs behind refusals (`generators/*.mjs`, `*.css`), and whether to open one with an Elabora tool (a turn in five, or one need behind most refusals, past five turns); `turnSummary(dir, chat, turn)` gives one turn.
+```sh
+elabora tools skills                                       # list the skills and their references
+elabora tools skills elabora-course-authoring               # read one
+elabora tools skills elabora-narration voice-and-timing     # read one of its references
+```
 
-`elabora mcp` takes one folder or several. With none, it serves the courses Elabora knows: its library and the folders the app opened in place (`elabora-app.json` in Elabora's data folder), read again at each call, so that a course created or opened since is served without restarting it; each keeps its name for the server's life. Before Elabora was ever opened on the computer, its tools say so in one sentence. A course folder is served as it is. A folder that is not a course serves the courses directly in it (the app's library, a folder of modules). With several courses, every course operation takes a `course` argument, their name as `elabora_courses` and the server's instructions give it, and each course's rules are `elabora://course/<name>/AGENTS.md`. Started on folders without any course, the server offers what needs none (`elabora_agent_guide`, `elabora_docs`, the library's tools), and its instructions say how to reach a course. `elabora_projects_create` starts a module in the library (blank or from a template of `elabora_templates`; the course id is the title's, the language the app's unless given), `elabora_projects_duplicate` copies one and `elabora_import` brings in an archive, a course folder or a Storyline or Rise module; each returns the module's folder and, served with no folder, the name it takes at the next call. They need no approval: they only add to the library, and the trash takes a module back. A course met inside a folder has its rules brought up to date when an operation first works on it, not when the server starts. A folder that is missing or unreadable is skipped and said; when it is the only one given, the server does not start. Follow the course instructions and use the CLI when no tools are connected. An embedded host can connect the stdio server or import the local API. No provider-specific setup is required in course files.
+MCP serves the same text as resources, `elabora://skills/<name>` and `elabora://skills/<name>/references/<reference>`. A host that shows tools only can read it with `elabora_docs` (or `elabora docs`) at `skills`, `skills/<name>` and `skills/<name>/<reference>`.
 
-Hosts can select operations with `elabora mcp <course> --tools elabora_overview,elabora_translation_table,elabora_translate_text` (repeat `--tools` or separate names with commas). Discovery and calls use the same allowlist; unknown names fail at startup, and `--read-only` intersects the selection. By default all operations are exposed. The local APIs accept `{ readOnly, tools: [names] }`; `tools: []` explicitly exposes nothing. `tools list --tools <names> --json` previews that catalogue. A new server connection is needed to change its selection. Include the checks/builds a supported workflow requires; the guide lists them. Tool selection limits exposure in that connection, not the host's OS permissions.
+## Hosts
+
+**Coding agents with a shell** (Claude Code, Codex) need nothing more. The Elabora desktop app opens them in the course's folder with a request that names its bundled `elabora` command. The agent reads `AGENTS.md` and runs `elabora`.
+
+**Claude, the desktop app**, has no shell. The extension in [`plugins/claude-desktop`](https://github.com/aureliendossantos/elabora-core/tree/main/plugins) connects its chat. Install it from the Elabora app (Réglages › Outils pour les IA › « Installer dans Claude »), or build it with `pnpm run mcpb` (it writes `dist/elabora.mcpb`). Its launcher finds the app (`/Applications` or `~/Applications` on macOS, `%LOCALAPPDATA%\Programs\elabora` on Windows) and starts its `elabora mcp` on the courses Elabora knows, so installing asks nothing. The skills come from the installed Elabora, so they always match its rules.
+
+**Elabora's chat**, inside the app, runs an ACP agent with the course's MCP server, started with `ELABORA_AUTHOR=agent:<name>` and `ELABORA_CHAT=<conversation>` (letters, digits, `-` and `_`). The server then tells the agent that its own file edits and shell are refused, so it writes through Elabora's tools.
+
+- **Turns.** The host opens each turn with a mark that carries the conversation: engine `mark { request, chat }`, `appendMark(dir, request, { chat })` from `@elabora/node/edit` in another process, or `elabora mark --chat <id>`. The mark's id is the turn's batch. Every change the server makes in that conversation joins it and is undone in one step. The engine's `endTurn { turn }` closes it.
+- **Refusals.** When the host refuses one of the agent's own tools, it calls `recordRefusal(root, { chat, mark?, tool, path?, command?, author })` from `@elabora/node/chats`. This writes an activity line of family `refused` with the tool and the file (relative to the course; its name alone outside it) or the shell's program name. Contents stay out of it.
+- **Transcript.** `.elabora/chats/<conversation>.jsonl` belongs to the app. The course's MCP server adds `detour` lines to it: the Elabora operation that followed a refusal.
+- **Summary.** `elabora history --chats [--json]` sums up the turns from the transcript and the journal: refusals, detours, changes, how each turn ended, its tokens, and the needs behind refusals (`generators/*.mjs`, `*.css`). It suggests a new Elabora tool when refusals are frequent (one turn in five, or one need behind most refusals, after five turns). `turnSummary(dir, chat, turn)` gives one turn.
+
+## Serving several courses
+
+`elabora mcp` takes one folder or several:
+
+- **A course folder** is served as it is.
+- **A folder of courses** (the app's library, a folder of modules) serves each course directly in it.
+- **No folder** serves the courses Elabora knows: its library and the folders the app opened in place (`elabora-app.json` in Elabora's data folder). It reads them again at each call, so a course created or opened since is served at once, and each keeps its name for the server's life. Before Elabora was ever opened on the computer, its tools say so in one sentence.
+
+With several courses, every course operation takes a `course` argument. `elabora_courses` and the server's instructions give each course's name, and each course's rules are at `elabora://course/<name>/AGENTS.md`. A course's rules are brought up to date the first time an operation works on it.
+
+With no course at all, the server offers what needs none (`elabora_agent_guide`, `elabora_docs`, the library's tools), and its instructions say how to reach a course. The library's tools add modules:
+
+- `elabora_projects_create` starts a module, blank or from a template of `elabora_templates`. The course id comes from the title, the language from the app unless given.
+- `elabora_projects_duplicate` copies one.
+- `elabora_import` brings in an archive, a course folder, or a Storyline or Rise module.
+
+Each returns the module's folder and, on a server started with no folder, the name it takes at the next call. They need no approval: they only add to the library, and the trash takes a module back.
+
+A missing or unreadable folder is skipped with a message. When it is the only folder given, the server stops.
+
+## Selecting tools
+
+A host can expose only some operations:
+
+```sh
+elabora mcp examples/canal-locks --tools elabora_overview,elabora_translation_table,elabora_translate_text
+elabora tools list --tools elabora_overview,elabora_translation_table --json     # preview that catalogue
+```
+
+Repeat `--tools` or separate names with commas. Discovery and calls use the same list, an unknown name stops the server at startup, and `--read-only` keeps the read tools of the list. By default every operation is exposed. Changing the list takes a new connection. Include the checks and builds the workflow needs: the guide lists them. The list limits what this connection offers; the host's own permissions stay as they are.
+
+From code, the local APIs take `{ readOnly, tools: [names] }`. `tools: []` exposes nothing.
 
 ```ts
 import { createMcpServer, listAgentTools, callAgentTool } from '@elabora/cli';
@@ -48,19 +107,27 @@ const result = await callAgentTool('elabora_translation_table', { language: 'de'
   { root: courseFolder, author: { kind: 'agent', name: 'my-plugin' } }, selection);
 ```
 
-| Workflow | Shared operations | Additional CLI capabilities / intentional differences |
+Pass the author explicitly when you embed calls.
+
+## One catalogue, every transport
+
+`tools list --json` and MCP `tools/list` are two views of one catalogue, and `tools call` takes each operation by its exact name and schema. Validation, locking, journaling and undo live in the shared services, so every transport gets them. Translation export and approval go through the same executor.
+
+Some decisions belong to people. The core refuses an agent author that records a plan version's approval or a translated plan's approval. A script a person runs can name its author with `ELABORA_AUTHOR=human:<name>`. This attribution records who acted. A host with full shell access can still act as anyone.
+
+| Workflow | Shared operations | What the CLI adds, and what stays human |
 |---|---|---|
-| Read and plan | Overview, sources, plan, schema, plan diff, write plan | Plan version creation and client approval are human decisions. |
-| Author | Screens, blocks, layers, events, variables, components, design files | Direct code/file edits remain supported. |
-| Media and narration | Import, captions, voice selection/generation, transcription, alignment, timing | CLI also exposes batch and maintenance commands. Paid services retain their approval requirements. |
-| Review and undo | History, undo, reviewers' comments | Publishing, sharing, replying and resolving remain author actions. |
-| Visual checks and delivery | Look, fit, screenshots, package build and tests | CLI supports capture batches, output paths and advanced test matrices. |
-| Translation | Bilingual table, validated batch translation, readiness; validation, look, fit, screenshot, build and test with `language` on the source server | `translate export/status/build/approve` remain convenient CLI commands; translated-plan approval is human. |
+| Read and plan | Overview, sources, plan, schema, plan diff, write plan | Creating plan versions and the client's approval are human decisions. |
+| Author | Screens, blocks, layers, events, variables, components, design files | Editing code and files directly works too. |
+| Media and narration | Import, captions, voice selection and generation, transcription, alignment, timing | Batch and maintenance commands. Paid services keep their approval rules. |
+| Review and undo | History, undo, reviewers' comments | Publishing, sharing, replying and resolving are the author's actions. |
+| Visual checks and delivery | Look, fit, screenshots, package build and tests | Capture batches, output paths and larger test matrices. |
+| Translation | Bilingual table, validated batch translation, readiness; validate, look, fit, screenshot, build and test with `language` on the source course | `translate export/status/build/approve`. Approving a translated plan is human. |
 
-Absence from MCP is not an authorization rule: an agent with shell access can reach the CLI. Respect the author's decisions regardless of transport. A read-only server limits that server's exposed operations, not other tools the host provides. Read tools may create derived caches or captures; they do not edit authored course content.
+An operation missing from MCP is still within reach of an agent with a shell, through the CLI. Respect the author's decisions whatever the transport. A read-only server limits that server's operations only. Read tools may write caches and captures; they leave the authored course as it is.
 
-After an edit, read its diagnostics. After visual edits, look; before delivery, validate, check fit, inspect screenshots and run package/object tests. Fix the source course, never a generated translation. Keep the author's later edits when undo reports skipped operations.
+After an edit, read its diagnostics. After a visual edit, look. Before delivery, validate, check fit, inspect screenshots and run the package and object tests. Make fixes in the source course: a built translation is generated from it. When undo reports skipped operations, keep the author's later edits.
 
 ## Maintaining the interfaces
 
-Add agent-facing operations to the shared catalogue, not a second CLI implementation. Keep domain rules in `@elabora/core` and `@elabora/node`. Retain convenient CLI commands when flags, batch execution or file outputs help. Aim for complete workflows rather than identical flags. Changes to schemas, names or exposure require a changelog entry, updated skills and interface fixtures; integration tests compare discovery, errors and undo across transports.
+Add an operation for agents to the shared catalogue, so the CLI and MCP get it together. Keep domain rules in `@elabora/core` and `@elabora/node`. Keep CLI commands where their flags, batches or file outputs help: aim for complete workflows, and let flags differ. A change of schemas, names or exposure needs a changelog entry, updated skills and updated interface fixtures. Integration tests compare discovery, errors and undo across transports.

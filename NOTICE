@@ -1,22 +1,56 @@
 Elabora core
 Copyright 2026 the Elabora authors.
 
-This product includes fonts under the SIL Open Font License 1.1 (packages/fonts/files/<id>/OFL.txt,
-with the copyright of each font), taken from the Fontsource npm packages: see packages/fonts/README.md.
+This product is licensed under the Apache License 2.0 (LICENSE). It includes the
+third-party components below, each under its own licence.
 
-This product includes three.js r186 (https://threejs.org), MIT License,
-Copyright © 2010-2026 three.js authors (vendor/three-LICENSE.txt).
+Included in this repository and in the npm package
+--------------------------------------------------
 
-The sample course examples/orbital-rendezvous includes the 3D simplex noise of webgl-noise
-(https://github.com/ashima/webgl-noise), MIT License, Copyright (C) 2011 by Ashima Arts (Simplex noise),
-Copyright (C) 2011-2016 by Stefan Gustavson (Classic noise and others): the notice and licence are in
-objects/phasing-lab/noise.js and at the end of the object's built object.js.
+three.js r186 (https://threejs.org), MIT License,
+Copyright © 2010-2026 three.js authors.
+Licence: packages/node/vendor/three-LICENSE.txt. Course packages that use it ship it as
+elabora/vendor/three-LICENSE.txt.
 
-The LMS emulator uses scorm-again (MIT) and playwright-core (Apache-2.0) at test time;
-accessibility checks use axe-core (MPL-2.0) at test time. They are not shipped in course packages.
+Fonts under the SIL Open Font License 1.1, taken from the Fontsource npm packages.
+Each font's copyright and licence: packages/fonts/files/<id>/OFL.txt. List: packages/fonts/README.md.
+The module templates in templates/ embed some of these fonts, with their OFL.txt beside them.
 
-The sample projects in examples/ are released under CC0 1.0 for their original content
-(texts, plans, figures, generators, components, objects): see examples/<id>/LICENSE.md, which lists
-what is not CC0. The narration of examples/diagnostic-reseau was made with Pocket TTS by Kyutai
-(model weights CC-BY 4.0, ONNX conversion by KevinAHM); the credit in each line's sidecar
-(assets/narration/**/*.json) travels with the audio.
+Voices for Pocket TTS (packages/node/voices/pocket-tts/), computed from recordings published by
+Kyutai (https://huggingface.co/kyutai/tts-voices): CC0 1.0, except the voice "Claire", from a
+CML-TTS recording under CC-BY 4.0. Each voice's source and credit: sources.json in that folder.
+
+Sounds (packages/node/sounds/ and packages/player/src/interface-sounds/): CC0 1.0 or public
+domain. No credit is owed. Their sources are listed in each folder's README.md or sources.json.
+
+Included in the sample courses only (examples/, not in the npm package)
+------------------------------------------------------------------------
+
+The original content of the sample courses is CC0 1.0. Each examples/<id>/LICENSE.md lists
+what keeps its own licence.
+
+examples/orbital-rendezvous includes the 3D simplex noise of webgl-noise
+(https://github.com/ashima/webgl-noise), MIT License, Copyright (C) 2011 by Ashima Arts
+(Simplex noise), Copyright (C) 2011-2016 by Stefan Gustavson (Classic noise and others).
+Notice and licence: objects/phasing-lab/noise.js, and the end of the object's built object.js.
+
+The narration of examples/diagnostic-reseau was made with Pocket TTS by Kyutai
+(model weights CC-BY 4.0, ONNX conversion by KevinAHM). The credit of each line travels with
+its audio, in its sidecar (assets/narration/**/*.json).
+
+Used, not included
+------------------
+
+ffmpeg and ffprobe (https://ffmpeg.org) encode media. Elabora runs the copy it finds through
+ELABORA_FFMPEG / ELABORA_FFPROBE or on the PATH, as a separate program. The continuous
+integration uses the GPL builds of BtbN/FFmpeg-Builds. ffmpeg is licensed under the LGPL 2.1
+or later, and its GPL builds under the GPL 2 or later.
+
+Pocket TTS (https://huggingface.co/kyutai/pocket-tts, CC-BY 4.0) and the speech models for word
+alignment and transcription are downloaded on first use. Their credits are recorded with the
+audio they make.
+
+npm dependencies keep their own licences (mostly MIT, ISC, BSD and Apache-2.0). Optional ones:
+scorm-again (MIT) and playwright-core (Apache-2.0) for the LMS emulator, axe-core (MPL-2.0) for
+accessibility checks, onnxruntime-node (MIT) for local voices. Of all these dependencies, course packages ship D3 (ISC) alone: it is
+bundled, with its notice, into a free object that imports it.
