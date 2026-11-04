@@ -156,6 +156,7 @@ math { font-family: "STIX Two Math", "Cambria Math", "Latin Modern Math", math; 
 /* A loop in a wide or bleed block fills it, as a wide image does (an animated image made a video). */
 :is(.t-w-wide, .t-w-bleed) > .t-figure--loop :is(.t-loop-frame, .t-loop) { width: 100%; }
 .t-w-bleed > .t-figure--loop .t-loop { border-radius: 0; }
+:is(.t-w-wide, .t-w-bleed) > .t-figure--loop .t-zoom { display: block; width: 100%; }
 @media (hover: hover) and (pointer: fine) {
   .t-loop-toggle { opacity: 0; transition: opacity 0.15s ease; }
   .t-loop-frame:hover .t-loop-toggle, .t-loop-toggle:focus-visible, .t-loop-toggle[data-state='paused'] { opacity: 1; }
@@ -1254,6 +1255,9 @@ details[data-t-details][open]::details-content { opacity: 1; }
 .t-lightbox[open] { display: flex; flex-direction: column; }
 .t-lightbox-stage { position: relative; flex: 1; min-height: 0; background: color-mix(in srgb, var(--t-text) 6%, var(--t-surface)); }
 .t-lightbox-image { position: absolute; inset: 0; width: 100%; height: 100%; padding: 1.5rem; object-fit: contain; }
+/* A loop zoomed (a video block's): it fills the stage as an image does, its pause button in a corner. */
+.t-lightbox-stage > .t-loop-frame { position: absolute; inset: 0; width: auto; max-width: none; }
+.t-lightbox-stage .t-loop-toggle { right: 1rem; bottom: 1rem; }
 .t-lightbox-foot { display: flex; align-items: center; gap: 0.5rem; flex: none; min-height: 4rem; padding: 0.625rem 0.75rem 0.625rem 1.5rem; color: var(--t-text); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--t-text) 10%, transparent); --t-pl-bottom-fg: var(--t-text); }
 .t-lightbox-caption { flex: 1; min-width: 0; margin: 0; color: var(--t-text); font-size: 0.9375rem; line-height: 1.45; }
 .t-lightbox-caption[hidden] { display: block !important; visibility: hidden; }

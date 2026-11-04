@@ -1,6 +1,6 @@
 # Elabora course format — specification 0.2
 
-**Status:** draft for implementation, 6 October 2026. **Format id:** `elabora/0.1`. **Licence of this text:** Apache-2.0. The JSON Schemas in [`packages/format/schemas/0.1.10/`](packages/format/schemas/0.1.10/) are normative; this document explains them. Where they disagree, the schemas win.
+**Status:** draft for implementation, 6 October 2026. **Format id:** `elabora/0.1`. **Licence of this text:** Apache-2.0. The JSON Schemas in [`packages/format/schemas/0.1.11/`](packages/format/schemas/0.1.11/) are normative; this document explains them. Where they disagree, the schemas win.
 
 The format describes an e-learning module as plain files that people, agents and other tools can read and write. It separates three layers with different rules:
 
@@ -34,7 +34,7 @@ Tools keep their own data beside these files, in `.elabora/` by default: the jou
 
 `sources/` is reserved: what it holds is never validated, built or published, and a course file that points into it is an error (`E_SOURCE_REFERENCED`). Tools may keep a readable version of each source beside it (`<file>.md`, whose first line is an `<!-- elabora:readable {…} -->` marker, and `<file>.files/`).
 
-All JSON files are UTF-8, and may carry `"$schema"` pointing to `https://elabora.studio/schemas/0.1.10/<name>.schema.json`. Tools write them with two-space indentation and a final newline.
+All JSON files are UTF-8, and may carry `"$schema"` pointing to `https://elabora.studio/schemas/0.1.11/<name>.schema.json`. Tools write them with two-space indentation and a final newline.
 
 ## 2. Identifiers
 

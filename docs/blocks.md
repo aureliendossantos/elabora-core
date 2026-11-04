@@ -1,6 +1,6 @@
-# Built-in block catalogue (format elabora/0.1, schemas 0.1.10)
+# Built-in block catalogue (format elabora/0.1, schemas 0.1.11)
 
-Generated from `packages/format/schemas/0.1.10/blocks/` and the built-in components (`packages/core/src/components/builtin/`). Agents: call `elabora_get_schema <type>` for the full schema; course components are listed by `elabora_list_components` (docs/components.md).
+Generated from `packages/format/schemas/0.1.11/blocks/` and the built-in components (`packages/core/src/components/builtin/`). Agents: call `elabora_get_schema <type>` for the full schema; course components are listed by `elabora_list_components` (docs/components.md).
 
 ## `heading` (content)
 
@@ -59,19 +59,21 @@ Template `packages/core/src/components/builtin/image.html`: fork it to change th
 
 A video file: played by the learner with its controls (captions and a transcript), or as a muted loop like an animated image (loop: true, with alt), or decorative.
 
-> Short segments controlled by the learner (E3), never autoplayed with sound. A video with sound needs captions (WebVTT) and a transcript (F3); a video without sound needs a transcript or alt. A short silent animation (a process, a gesture) plays as a loop: loop: true with alt saying what it shows. A video that carries no information (an ambiance, a background) is decorative: true. The validator reports what is missing.
+> Short segments controlled by the learner (E3), never autoplayed with sound. A video with sound needs captions (WebVTT) and a transcript (F3); a video without sound needs a transcript or alt. A short silent animation (a process, a gesture) plays as a loop: loop: true with alt saying what it shows; like an image, it may have a caption and zoom. A video that carries no information (an ambiance, a background) is decorative: true. The validator reports what is missing.
 
 Rendered by code: cannot be forked; place it in a component slot.
 
 | Prop | Type | Required | Description |
 |---|---|---|---|
 | `asset` | assetPath | yes | MP4 (H.264/AAC) or WebM file. |
-| `title` | string | yes | Shown under a video played with its controls, which it names for assistive technologies; names a loop in the editor. |
+| `title` | string | yes | Names a video played with its controls for assistive technologies, and shown under it unless it has a caption; names a loop in the editor. |
 | `captions` | assetPath |  | WebVTT captions file (.vtt). Required when the video is played with its sound. |
 | `transcript` | markdown |  | What is said and shown, for those who cannot watch or hear it. Required for a video played with its controls (a silent one may give alt instead). |
 | `loop` | boolean |  | Plays muted, in a loop, like an animated image: it starts by itself unless the learner prefers reduced motion, and a button pauses it. Its sound is never heard: no captions. Default false. |
 | `alt` | string |  | Text alternative of a loop or of a video without sound: what it shows. Required for a loop unless decorative. |
 | `decorative` | boolean |  | True only if the video carries no information: it plays as a loop, ignored by assistive technologies, with nothing to caption, transcribe or describe. Default false. |
+| `caption` | string |  | Shown under the video, as an image's caption (in place of the title under a video played with its controls). |
+| `zoom` | boolean |  | loop: the video opens at full size in the player's lightbox, with its caption, and loops there (a screen recording, a detailed animation). Default false. |
 | `poster` | assetPath |  |  |
 | `generated` | boolean |  |  Default false. |
 
@@ -735,7 +737,7 @@ Template `packages/core/src/components/builtin/hotspots.html`: fork it to change
 
 # Built-in screen layouts
 
-Generated from `packages/format/schemas/0.1.10/layouts/`. A screen uses one with `"layout": "<id>"` and its `layoutProps`; blocks choose a slot with `slot` (docs/components.md).
+Generated from `packages/format/schemas/0.1.11/layouts/`. A screen uses one with `"layout": "<id>"` and its `layoutProps`; blocks choose a slot with `slot` (docs/components.md).
 
 ## `opening` (layout)
 

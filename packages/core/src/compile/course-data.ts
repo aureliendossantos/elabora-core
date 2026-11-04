@@ -635,7 +635,8 @@ function resultsProps(props: Record<string, unknown>): ResultsProps {
 function videoProps(props: Record<string, unknown>, assetPath: (name: string) => string): VideoProps {
   return {
     src: assetPath(String(props.asset)), captions: props.captions ? assetPath(String(props.captions)) : undefined, poster: props.poster ? assetPath(String(props.poster)) : undefined,
-    title: textOf(props.title), transcriptHtml: renderMarkdown(props.transcript), alt: textOf(props.alt), loop: !!props.loop, decorative: !!props.decorative, generated: !!props.generated
+    title: textOf(props.title), caption: textOf(props.caption), transcriptHtml: renderMarkdown(props.transcript), alt: textOf(props.alt), loop: !!props.loop,
+    decorative: !!props.decorative, zoom: !!props.zoom, generated: !!props.generated
   };
 }
 

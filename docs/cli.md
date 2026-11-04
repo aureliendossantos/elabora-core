@@ -119,8 +119,8 @@ media captions [dir] <block> <file.vtt|.srt> [--name <name>] [--json]
 media to-video [dir] <block> [--json]              An image block whose file is animated (GIF, animated WebP or PNG)
                                                     made a video block that loops like it (loop: true), several
                                                     times lighter: an MP4 (H.264, no sound) and its first frame as
-                                                    poster; id, place, width, alt kept; its caption becomes the
-                                                    title. Centered or wide images only. One undoable change
+                                                    poster; id, place, width, alt, caption and zoom kept.
+                                                    Centered or wide images only. One undoable change
 media weights [dir] [--media-quality high|medium|low] [--all] [--json]
                                                     What the package weighs at each media quality, media by media,
                                                     heaviest first: kind, file, duration and size, what high, medium

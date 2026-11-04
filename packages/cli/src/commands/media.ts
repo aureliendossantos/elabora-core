@@ -31,8 +31,8 @@ const HELP = `  media import [dir] <file…> [--to <folder>] [--name <name>] [--
   media to-video [dir] <block> [--json]              An image block whose file is animated (GIF, animated WebP or PNG)
                                                       made a video block that loops like it (loop: true), several
                                                       times lighter: an MP4 (H.264, no sound) and its first frame as
-                                                      poster; id, place, width, alt kept; its caption becomes the
-                                                      title. Centered or wide images only. One undoable change
+                                                      poster; id, place, width, alt, caption and zoom kept.
+                                                      Centered or wide images only. One undoable change
   media weights [dir] [--media-quality high|medium|low] [--all] [--json]
                                                       What the package weighs at each media quality, media by media,
                                                       heaviest first: kind, file, duration and size, what high, medium
@@ -181,14 +181,13 @@ const toVideo = defineCommand({
     const touched = new Set(result.files);
     const own = result.diagnostics.filter((d) => d.severity !== 'info' && d.file !== undefined && touched.has(d.file));
     if (flags.json) {
-      printJson({ ok: true, block, screen: result.screen, video: result.video, poster: result.poster, removed: result.removed, title: result.title, lost: result.lost, bytes: result.bytes, change: result.change, undo: result.undo, files: result.files, diagnostics: own });
+      printJson({ ok: true, block, screen: result.screen, video: result.video, poster: result.poster, removed: result.removed, title: result.title, bytes: result.bytes, change: result.change, undo: result.undo, files: result.files, diagnostics: own });
       return 0;
     }
     printFormatMigration(result.formatMigration);
     const { image, video, poster } = result.bytes;
     console.log(`✔ ${block} is a video that loops: ${result.video} (${bytesText(video)}, and its poster ${bytesText(poster)}), for ${bytesText(image)} as an animated image.`);
     if (result.removed) console.log(`  ${result.removed} removed: nothing else named it.`);
-    for (const lost of result.lost) console.log(`  Not kept: ${lost}.`);
     printDiagnostics(own);
     if (result.change) console.log(`  Undo: elabora undo --change ${result.change.seq}`);
     return 0;

@@ -828,7 +828,7 @@ export function convertBlock(context: CommandContext, args: ConvertBlockArgs): C
 
 // Translation units follow their text to its new prop: block.<id>.<from> becomes block.<id>.<to> in
 // every translations/<lang>.xlf (their source text is the same, so their translation still holds).
-export function moveUnits(context: CommandContext, draft: Draft, blockId: string, moves: readonly [string, string][]): number {
+function moveUnits(context: CommandContext, draft: Draft, blockId: string, moves: readonly [string, string][]): number {
   const renames = moves.filter(([from, to]) => from !== to);
   if (!renames.length) return 0;
   let moved = 0;

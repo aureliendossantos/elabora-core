@@ -3,7 +3,6 @@ import type { Block, Project, Screen } from '../project/model.ts';
 import type { SourceFile } from '../project/files.ts';
 import { slugify } from '../util/slug.ts';
 import { CommandError, Draft, findBlock, listAt, type CommandContext, type CommandOutput } from './context.ts';
-import { moveUnits } from './convert.ts';
 
 // What follows the optimisation of media files whose extension changed (intro.mov → intro.mp4):
 // every reference to an old file names the new one (block props, course.json paths, stylesheet
@@ -131,14 +130,13 @@ export interface ImageToVideoResult {
   poster: string | null;
   removed: string | null; // the image's file, gone when nothing else names it
   title: string;
-  lost: string[];         // what the image had that a loop does not show, in a few words
-  translations: number;   // translation units moved (the caption's, which became the title)
 }
 
 // The image block becomes a video block that loops like it, in its place: its id, width, timing,
-// step and events stay; alt, decorative and generated carry over; a wide image is a wide block. Its
-// caption becomes the video's title (a loop shows none: the editor names it), else alt, else the
-// file's name. The image's file goes once nothing else names it. One change, one undo.
+// step and events stay; alt, decorative, caption, zoom and generated carry over (their translations
+// with them: the same units); a wide image is a wide block. Its title, which names it in the editor,
+// is its alt, else the file's name. The image's file goes once nothing else names it. One change, one
+// undo.
 export function imageToVideo(context: CommandContext, args: ImageToVideoArgs): CommandOutput<ImageToVideoResult> {
   const project = context.project();
   const source = animatedImageSource(project, args.block);
@@ -160,9 +158,7 @@ export function imageToVideo(context: CommandContext, args: ImageToVideoArgs): C
   for (const id of ids.slice(1)) {
     if (animatedImageSource(project, id).asset !== source.asset) throw new CommandError(`Block "${id}" does not show ${source.asset}: make it a video on its own.`);
   }
-  const lost: string[] = [];
   let title = '';
-  let translations = 0;
   for (const id of ids) {
     const place = findBlock(project, id);
     const screen = draft.json<Screen>(place.file);
@@ -172,11 +168,8 @@ export function imageToVideo(context: CommandContext, args: ImageToVideoArgs): C
     const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
     const caption = text(props.caption);
     const alt = text(props.alt);
-    const named = (caption || alt || source.base.replace(/[-_]+/g, ' ')).slice(0, 200);
+    const named = (alt || source.base.replace(/[-_]+/g, ' ')).slice(0, 200);
     if (id === args.block) title = named;
-    const of = ids.length > 1 ? `${id}: ` : '';
-    if (caption) lost.push(`${of}its caption, shown under it: now the title of the video, which a loop does not show`);
-    if (props.zoom) lost.push(`${of}its zoom: a video does not open in the lightbox`);
     const wide = props.presentation === 'wide' && (image.width === undefined || image.width === 'full');
     list[place.index] = {
       ...image,
@@ -188,17 +181,18 @@ export function imageToVideo(context: CommandContext, args: ImageToVideoArgs): C
         loop: true,
         ...(alt ? { alt } : {}),
         ...(props.decorative ? { decorative: true } : {}),
+        ...(caption ? { caption } : {}),
+        ...(props.zoom ? { zoom: true } : {}),
         ...(poster ? { poster: poster.slice('assets/'.length) } : {}),
         ...(props.generated ? { generated: true } : {})
       }
     } as Block;
     draft.writeJson(place.file, screen);
-    translations += moveUnits(context, draft, id, caption ? [['caption', 'title']] : []);
   }
 
   // The image's file goes when no other block, page or stylesheet names it any more.
   const named = [...rewriteAssetReferences(draft.files(), source.asset, `${source.asset}\u0000`).keys()].some((rel) => !CONTRACTS.test(rel) && !rel.startsWith('plan-versions/'));
   const removed = !named && draft.exists(source.asset) ? source.asset : null;
   if (removed) draft.remove(removed);
-  return { files: draft.files(), result: { block: args.block, blocks: ids, screen: source.screen, video, poster, removed, title, lost, translations } };
+  return { files: draft.files(), result: { block: args.block, blocks: ids, screen: source.screen, video, poster, removed, title } };
 }

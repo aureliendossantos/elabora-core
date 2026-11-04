@@ -28,6 +28,7 @@ import type {
 } from './course-data.ts';
 import type { ObjectContext, SafeArea } from './object-protocol.ts';
 import { createTranscriptBar } from './transcript.ts';
+import { createLoop } from './loop.ts';
 import type { TranscriptBar } from './transcript.ts';
 import type { Action } from './course-data.ts';
 import type { DialoguePresentation } from './dialogue/walk.ts';
@@ -850,14 +851,22 @@ export function createScreenView(options: ScreenViewOptions) {
       rooms.queue(wrap, block);
       return wrap;
     }
-    if (isVideo(block)) wrap.append(block.props.loop || block.props.decorative ? loopFigure(block) : videoFigure(block));
+    if (isVideo(block)) {
+      const loops = block.props.loop || block.props.decorative;
+      wrap.append(loops ? loopFigure(block) : videoFigure(block));
+      // A loop that zooms: the lightbox of the primitives, as an image's.
+      if (loops && block.props.zoom) {
+        behaviors.primitives(wrap, block);
+        cleanup(block.id, () => behaviors.release(wrap));
+      }
+    }
     else if (isAudio(block)) wrap.append(audioFigure(block));
     else if (isFreeObject(block)) wrap.append(objects.render(block));
     return wrap;
   }
 
-  // A video the learner plays: its captions, its transcript; a silent one described by its alt
-  // when it has no transcript.
+  // A video the learner plays: its captions, its transcript, under it its caption as an image's (else
+  // its title); a silent one described by its alt when it has no transcript.
   function videoFigure(block: VideoBlock): HTMLElement {
     const props = block.props;
     const described = !props.transcriptHtml && props.alt ? `t-alt-${block.id}` : undefined;
@@ -865,7 +874,7 @@ export function createScreenView(options: ScreenViewOptions) {
       listened(block, element('video', { controls: true, preload: 'metadata', poster: props.poster, title: props.title, 'aria-describedby': described },
         element('source', { src: props.src }),
         props.captions ? element('track', { kind: 'captions', src: props.captions, srclang: course.language, label: course.language, default: true }) : null)),
-      element('figcaption', { text: props.title }),
+      element('figcaption', { text: props.caption || props.title }),
       described ? element('p', { class: 't-sr-only', id: described, text: props.alt }) : null,
       props.generated ? element('p', { class: 't-genmark', text: labels.generated }) : null,
       transcript(props.transcriptHtml));
@@ -882,64 +891,15 @@ export function createScreenView(options: ScreenViewOptions) {
       props.decorative ? null : transcript(props.transcriptHtml));
   }
 
-  // A loop, like an animated image: muted, in a loop, inline, without controls; it starts by itself
-  // unless the learner prefers reduced motion (then it stays on its first frame, its poster), and
-  // follows that preference when it changes. Its button pauses it (WCAG 2.2.2: a loop moves for more
-  // than 5 s however short its file); a pointer that hovers sees it there, a keyboard on focus, a
-  // touch screen always, and anyone once the loop stands still. Its alt names it as an image; a
-  // decorative one is hidden from assistive technologies, its button is not.
+  // A loop, like an animated image (loop.ts), its caption under it as an image's. With zoom, the
+  // video is a button that opens it at full size in the lightbox (bound with the primitives, below).
   function loopFigure(block: VideoBlock): HTMLElement {
     const props = block.props;
-    const motion = typeof matchMedia === 'function' ? matchMedia('(prefers-reduced-motion: reduce)') : null;
-    const still = () => !!motion?.matches;
-    const video = element('video', {
-      class: 't-loop', muted: true, loop: true, playsinline: true, autoplay: !still(), preload: 'auto', poster: props.poster,
-      disablepictureinpicture: true, disableremoteplayback: true,
-      'aria-hidden': props.decorative ? 'true' : undefined, role: props.decorative ? undefined : 'img', 'aria-label': props.decorative ? undefined : props.alt || undefined
-    });
-    // Muted before its source is known: Safari on iOS plays by itself only a video muted from the
-    // start, and a muted attribute set by script does not mute an element already made.
-    video.defaultMuted = true;
-    video.muted = true;
-    video.append(element('source', { src: props.src }));
-    const toggle = element('button', { type: 'button', class: 't-loop-toggle' });
-    // The learner paused it: neither its data arriving nor a change of preference starts it again.
-    let held = false;
-    // In the window (as far as the observer below knows; without one, always).
-    let seen = typeof IntersectionObserver !== 'function';
-    const show = (state: 'playing' | 'paused') => {
-      toggle.dataset.state = state;
-      toggle.setAttribute('aria-label', state === 'paused' ? labels.playAnimation : labels.pauseAnimation);
-    };
-    const sync = () => show(video.paused ? 'paused' : 'playing');
-    const play = () => { void video.play().then(sync, sync); };
-    // What the button says, not video.paused: a loop that is still loading (or out of the window,
-    // where Chrome holds it) is paused until it starts by itself; « pause » then keeps it still.
-    toggle.addEventListener('click', () => {
-      held = toggle.dataset.state !== 'paused';
-      if (held) video.pause(); else play();
-      show(held ? 'paused' : 'playing');
-    });
-    video.addEventListener('play', sync);
-    video.addEventListener('pause', sync);
-    // Asked to play when it comes into the window, as browsers start such a video by themselves: one
-    // that declines (an iPhone in Low Power Mode) says so, and the button then offers to play it.
-    if (typeof IntersectionObserver === 'function') {
-      const observer = new IntersectionObserver((entries) => {
-        seen = entries.some((entry) => entry.isIntersecting);
-        if (seen && !still() && !held && video.paused) play();
-      });
-      observer.observe(video);
-      cleanup(block.id, () => observer.disconnect());
-    }
-    const onMotion = () => {
-      if (still()) { video.pause(); video.currentTime = 0; } else if (!held && seen) play();
-    };
-    motion?.addEventListener('change', onMotion);
-    cleanup(block.id, () => motion?.removeEventListener('change', onMotion));
-    show(still() ? 'paused' : 'playing');
+    const loop = createLoop({ src: props.src, poster: props.poster, alt: props.alt, decorative: props.decorative, zoom: props.zoom }, labels);
+    cleanup(block.id, loop.dispose);
     return element('figure', { class: 't-figure t-figure--loop' },
-      element('div', { class: 't-loop-frame' }, video, toggle),
+      loop.frame,
+      props.caption ? element('figcaption', { 'data-t-caption': true, text: props.caption }) : null,
       props.generated ? element('p', { class: 't-genmark', text: labels.generated }) : null);
   }
 

@@ -685,10 +685,12 @@ export interface VideoProps {
   captions?: string;
   poster?: string;
   title: string;
+  caption: string; // shown under it, as an image's (empty: none)
   transcriptHtml: string; // empty: none
   alt: string; // what a loop or a silent video shows
   loop: boolean; // muted, in a loop, like an animated image
   decorative: boolean; // a loop ignored by assistive technologies
+  zoom: boolean; // a loop opens at full size in the lightbox
   generated: boolean;
 }
 

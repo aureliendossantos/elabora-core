@@ -468,6 +468,55 @@ test('canvas: a looping video plays muted, inline, without controls, with a paus
   });
 });
 
+test('canvas: a video takes an image\'s caption, under it; a loop that zooms opens in the lightbox and loops there, with its own pause button', { timeout: 120000 }, async (t) => {
+  const dir = copyExample();
+  try {
+    fs.mkdirSync(path.join(dir, 'assets/video'), { recursive: true });
+    execFileSync('ffmpeg', ['-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=320x180:rate=25', '-t', '2', '-pix_fmt', 'yuv420p', '-c:v', 'libx264', path.join(dir, 'assets/video/voyant.mp4')]);
+  } catch {
+    return t.skip('ffmpeg with libx264 not found');
+  }
+  const project = withScreen(loadProjectFromDir(dir), 'chemin', (screen) => {
+    screen.blocks.push(
+      { id: 'chemin-voyant', type: 'video', width: 'wide', props: { asset: 'video/voyant.mp4', title: 'Le voyant', loop: true, alt: 'Le voyant du routeur clignote en orange.', caption: 'Un redémarrage prend une minute.', zoom: true } },
+      { id: 'chemin-clip', type: 'video', props: { asset: 'video/voyant.mp4', title: 'Redémarrer le routeur', caption: 'Le voyant passe au vert.', transcript: 'Le voyant passe à l’orange, puis au vert.' } },
+      { id: 'chemin-titre', type: 'video', props: { asset: 'video/voyant.mp4', title: 'Le routeur', transcript: 'Le voyant passe au vert.' } }
+    );
+  });
+  const context = createRenderContext(project);
+  await withCanvas(dir, context, async ({ page, show, errors }) => {
+    if (!(await playsMedia(page))) return t.skip(NO_MEDIA_CODECS);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await show(project, 'chemin');
+    // Under each, its caption as an image's; a video played with its controls and no caption, its title.
+    assert.deepEqual(await page.evaluate(() => ['chemin-voyant', 'chemin-clip', 'chemin-titre'].map((id) => document.querySelector(`[data-block="${id}"] figcaption`)?.textContent)),
+      ['Un redémarrage prend une minute.', 'Le voyant passe au vert.', 'Le routeur']);
+    // The loop is the button that enlarges it, named by its alt; its pause button beside it, not in it.
+    const zoom = '[data-block="chemin-voyant"] .t-zoom';
+    assert.deepEqual(await page.evaluate((selector) => {
+      const button = document.querySelector<HTMLElement>(selector)!;
+      return { video: !!button.querySelector('video.t-loop[role="img"]'), toggleInside: !!button.querySelector('.t-loop-toggle'), popup: button.getAttribute('aria-haspopup'), said: button.textContent?.trim(), wide: button.getBoundingClientRect().width === button.closest('.t-block')!.getBoundingClientRect().width };
+    }, zoom), { video: true, toggleInside: false, popup: 'dialog', said: 'Agrandir l’image', wide: true });
+    await page.click(zoom);
+    await page.waitForSelector('dialog.t-lightbox[open]');
+    const lightbox = () => page.evaluate(() => {
+      const dialog = document.querySelector<HTMLDialogElement>('dialog.t-lightbox')!;
+      const video = dialog.querySelector<HTMLVideoElement>('.t-lightbox-stage video')!;
+      return { label: dialog.getAttribute('aria-label'), caption: dialog.querySelector('.t-lightbox-caption')!.textContent, muted: video.muted, loop: video.loop, controls: video.controls, playsinline: video.hasAttribute('playsinline'), src: video.querySelector('source')!.src.endsWith('/assets/video/voyant.mp4'), toggle: dialog.querySelector('.t-loop-toggle')?.getAttribute('aria-label') };
+    });
+    assert.deepEqual(await lightbox(), { label: 'Le voyant du routeur clignote en orange.', caption: 'Un redémarrage prend une minute.', muted: true, loop: true, controls: false, playsinline: true, src: true, toggle: 'Mettre en pause l’animation' });
+    // It loops there; its button pauses it.
+    await page.waitForFunction(() => !document.querySelector<HTMLVideoElement>('dialog.t-lightbox video')!.paused);
+    await page.click('dialog.t-lightbox .t-loop-toggle');
+    assert.equal(await page.evaluate(() => document.querySelector<HTMLVideoElement>('dialog.t-lightbox video')!.paused), true);
+    // Escape closes it; focus back on the loop's button.
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.querySelector('dialog.t-lightbox'));
+    assert.equal(await page.evaluate(() => document.activeElement?.matches('[data-block="chemin-voyant"] .t-zoom')), true);
+    assert.deepEqual(errors, []);
+  });
+});
+
 test('canvas: a sound plays named by its title, with its transcript; a decorative one shows none', { timeout: 120000 }, async (t) => {
   const dir = copyExample();
   try {

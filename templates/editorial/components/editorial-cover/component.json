@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.10/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.11/component.schema.json",
   "id": "editorial-cover",
   "title": "Editorial cover",
   "description": "Opens and closes the module like a magazine cover: the large serif title, its standfirst and a short page on the left, every part's plate side by side on the right.",

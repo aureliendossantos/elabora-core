@@ -58,12 +58,12 @@ test('an animated image becomes a video that loops like it, in its place, lighte
     assert.match(result.poster ?? '', /^assets\/images\/spinner-poster\.(webp|jpg)$/);
     assert.equal(result.removed, 'assets/images/spinner.gif');
     assert.equal(fs.existsSync(path.join(dir, 'assets/images/spinner.gif')), false);
-    assert.deepEqual(result.lost.length, 2, 'the caption shown and the zoom');
-    // Its place, id, step and width (a wide image is a wide block); its alt and generated mark.
+    // Its place, id, step and width (a wide image is a wide block); its alt, its caption and zoom (a
+    // video is an illustration as an image is), its generated mark; named by its alt.
     assert.equal((readJSON(dir, 'screens/accueil.json').blocks as Block[]).findIndex((block) => block.id === 'spinner'), index);
     assert.deepEqual(blockOf(dir, 'spinner'), {
       id: 'spinner', type: 'video', step: 1, width: 'wide',
-      props: { asset: 'video/spinner.mp4', title: 'A restart takes a minute.', loop: true, alt: 'The router restarts.', poster: result.poster!.slice('assets/'.length), generated: true }
+      props: { asset: 'video/spinner.mp4', title: 'The router restarts.', loop: true, alt: 'The router restarts.', caption: 'A restart takes a minute.', zoom: true, poster: result.poster!.slice('assets/'.length), generated: true }
     });
     assert.deepEqual(result.diagnostics.filter((d) => d.severity === 'error'), []);
 
