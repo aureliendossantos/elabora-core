@@ -100,6 +100,9 @@ const app = document.getElementById('elabora-app') ?? document.body.appendChild(
 const token = new URLSearchParams(location.search).get('token');
 const chromeOption = new URLSearchParams(location.search).get('chrome');
 const chromeMode: 'none' | 'player' | 'live' = chromeOption === 'live' ? 'live' : chromeOption === 'player' ? 'player' : 'none';
+// scrollbars=none (the app's editor canvas): the page scrolls by wheel and trackpad without drawing its scrollbar,
+// whose 15 px (a mouse plugged in) would narrow the page the author designs on. A learner's player keeps its own.
+if (new URLSearchParams(location.search).get('scrollbars') === 'none') document.documentElement.style.scrollbarWidth = 'none';
 // The live bars' one tooltip, and the learner's display choices while the page lives.
 const tooltip: Tooltip | null = chromeMode === 'live' ? createTooltip(document.body) : null;
 const displayPrefs: DisplayPrefs = { text: 'normal', captions: false, interfaceSounds: true, music: true };
