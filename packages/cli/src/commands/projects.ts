@@ -25,7 +25,7 @@ const entry = (usage: string, ...description: string[]): string => {
 };
 
 const HELP = [
-  entry('projects list [--json] [--validate]', 'Projects of the library, newest first: title, course, date, size,', 'validation, folder (--validate checks those not checked yet)'),
+  entry('projects list [--json] [--validate]', 'Projects of the library, newest first: title, course, date, size,', 'validation, folder (--validate checks the unchecked ones)'),
   entry('projects path [<id>] [--set <dir> [--move|--copy]]', 'Folder of the library, or of a project (id or its first characters).', '--set: use another folder; --move takes the projects along; --copy', 'moves them by copying and checking every file (another disk)'),
   entry('projects create [<course-id>] --title <t> [--language fr] [--template <id> | --charter <id>]', 'Create a course in the library, blank or from a module template', '(elabora templates), or blank in another module\'s charter (its theme,', 'fonts, components and backdrop; --charter: its project id or folder);', 'the course id is the title\'s by default, the language the app\'s'),
   entry('projects duplicate <id> [--title <t>]', 'Copy a project under a new id (same course id; the history stays)'),

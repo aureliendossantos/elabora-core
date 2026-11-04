@@ -18,7 +18,7 @@ import { writeFileAtomic } from '@elabora/node/util/fs';
 import { readZip } from '@elabora/node/zip';
 import { isPresetName } from '@elabora/core/media/presets';
 import { isFinished } from '@elabora/node/media/jobs';
-import { defineCommand, errorMessage, printDiagnostics, printJson } from './command.ts';
+import { defineCommand, errorMessage, notACourseMessage, printDiagnostics, printJson, unknownProfileMessage } from './command.ts';
 import { mediaProgress } from '../media-progress.ts';
 import { look } from './look.ts';
 import { pendingMediaJobs, waitForMediaJobs } from './media.ts';
@@ -27,18 +27,19 @@ import type { CommandGroup } from './command.ts';
 const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--media-quality high|medium|low] [--languages all] [--no-wait] [--json]
         [--target scorm12|web] [--progress local|none] [--navigation authored|free] [--noindex] [--url <address>] [--image <file>]
         [--review-origin <origin>]…
-                                                      Validate, then compile a deterministic SCORM 1.2 package + proof dossier.
-                                                      Media ship at delivery.mediaQuality (default high: the masters); lower
-                                                      qualities ship renditions, encoded once and cached. Waits for media
-                                                      jobs (--no-wait: refuses while they run).
+                                                      Validate, then make the SCORM 1.2 package and its proof dossier in
+                                                      dist/ (deterministic: same files, same bytes). Media ship at
+                                                      delivery.mediaQuality (default high: the masters); lower qualities
+                                                      ship renditions, encoded once and cached. Waits for running media
+                                                      jobs (--no-wait: fails while they run).
                                                       --languages all: one package of every language, the course's own
                                                       and each translation that is ready and approved; learners switch
                                                       from the player's « Langue » and keep their progress (D59).
-                                                      --target web: a module for a plain web server, no LMS (a folder to serve
-                                                      and its ZIP, <course>-<version>-web). --progress local (default: kept in
-                                                      the browser, resumed at the next visit) or none (nothing kept);
-                                                      --navigation authored (default: the course's rules) or free (every screen
-                                                      open, no lock); --noindex keeps search engines out; --url: the address
+                                                      --target web: a module for any web server, outside an LMS (a folder to
+                                                      serve and its ZIP, <course>-<version>-web). --progress local (default:
+                                                      kept in the browser, resumed at the next visit) or none (nothing kept);
+                                                      --navigation authored (default: the course's rules) or free (every
+                                                      screen open); --noindex keeps search engines out; --url: the address
                                                       of its index.html (canonical, sharing previews); --image: a PNG, JPEG or
                                                       WebP shown when the link is shared. A showcase: --progress none
                                                       --navigation free; a publication: the defaults.
@@ -48,22 +49,23 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       (elabora-review/1, docs/review-bridge.md) and talks to that page
                                                       only; progress none, navigation free and noindex by default
   test [dir] [--package <zip>] [--profile a,b|all] [--mode iframe,popup…] [--browser chromium,electron,chrome,msedge,playwright,firefox,webkit] [--parallel 4] [--no-a11y] [--json]
-                                                      Run the package in the LMS emulator (profiles × launch modes × browsers);
-                                                      4 runs side by side by default, fewer on a loaded machine
+                                                      Build, then run the package in the LMS emulator (profiles × launch modes
+                                                      × browsers). 4 runs side by side by default; fewer on a loaded machine
   preview [dir] [--port 4807] [--profile <id>] [--navigation authored|free]
-                                                      Live preview (standalone and in the LMS emulator): pages reload after each
-                                                      rebuild; free objects show in the in-app browsers of agent apps. The
-                                                      emulator plays the course's LMS (--profile: another); --navigation free
-                                                      opens every screen, whatever the course's rules
+                                                      Serve the course on this computer, alone and in the LMS emulator; pages
+                                                      reload when its files change. Free objects show in agent apps' in-app
+                                                      browsers. The emulator plays the course's LMS (--profile: another one);
+                                                      --navigation free opens every screen, whatever the course's rules
   look [dir] [--screen <id>,…|all] [--size 1600x900,375x812] [--state initial|answered] [--step <n>] [--layer <id>]
        [--at <moment> | --sheet] [--scroll <px|N%|block>,…] [--block <id> [--scale 2] [--act <action>]…] [--viewport] [--motion]
        [--language <code>] [--controls] [--select <css>] [--out shot.jpg | --out-dir <dir>] [--json] | --url | --stop
-                                                      See a screen while designing, in well under a second: a look server kept warm
-                                                      for the course (one browser, no build) renders it from the files as they are,
-                                                      with the player's header and footer; free objects an edit did not touch keep
-                                                      running. JPEG (PNG: --out x.png), in .elabora/look/ by default. Says whether a
-                                                      slide fits. --url: a page that follows the looks and the files, for a browser
-                                                      pane. --stop: stop the server (it stops itself after 15 minutes without a look).
+                                                      Capture a screen while designing, in under a second: a look server kept warm
+                                                      for the course (one browser, no build) renders it from its files as they are,
+                                                      with the player's header and footer; free objects keep running across edits
+                                                      that leave them alone. JPEG (PNG: --out x.png), in .elabora/look/ by default.
+                                                      Says whether a slide fits. --url: a page that follows the looks and the files,
+                                                      for a browser pane. --stop: stop the server (it stops itself after 15 idle
+                                                      minutes).
                                                       --at: a timed screen at a moment, the window with its bar: l2 (a line starts,
                                                       its caption shown), l2:end, l2:imprimante (a word), l2:imprimante+0.3s,
                                                       1.5s@2, step2:end, 12.5 (seconds). --sheet: a contact sheet, one capture per
@@ -109,12 +111,12 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       the page and the player's bars that go onto two lines. --language: the
                                                       translation (--allow-missing: a draft, missing texts in the source language).
                                                       A screen unchanged since its last measure (its files, the theme, components,
-                                                      objects, Elabora, the browser) is not measured again: its fit is reused
-                                                      (--fresh measures every screen again)
+                                                      objects, Elabora, the browser) keeps its last fit (--fresh measures every
+                                                      screen again)
   inspect <package.zip>                               Read any SCORM package: manifest, files, size
   diff <old.report.json> <new.report.json> [--profile a,b]
                                                       What an update does to learners in progress, LMS by LMS
-  profiles [--json]                                   List executable LMS profiles`;
+  profiles [--json]                                   List the LMS profiles the emulator plays (ids for --profile)`;
 
 const buildCommand = defineCommand({
   name: 'build',
@@ -134,6 +136,11 @@ const buildCommand = defineCommand({
     const { progress: kept, navigation } = flags;
     if (kept !== undefined && !WEB_PROGRESS.some((value) => value === kept)) { console.error(`--progress is local or none (not "${kept}").`); return 2; }
     if (navigation !== undefined && !WEB_NAVIGATION.some((value) => value === navigation)) { console.error(`--navigation is authored or free (not "${navigation}").`); return 2; }
+    const profileError = await unknownProfileMessage(flags.profile);
+    if (profileError) { console.error(profileError); return 2; }
+    // A folder without a course: one line (--json keeps its findings, for scripts).
+    const missing = flags.json ? null : notACourseMessage(dir);
+    if (missing) { console.error(missing); return 1; }
     // A review build takes the review's defaults (progress none, navigation free, noindex) for what
     // is not said.
     const origins = flags['review-origin'];
@@ -181,6 +188,10 @@ const test = defineCommand({
   name: 'test',
   flags: { package: 'string', profile: 'list', mode: 'list', browser: 'list', parallel: 'string', 'no-a11y': 'boolean', out: 'string', json: 'boolean' },
   async run({ positionals: [dir = '.'], flags }) {
+    const profileError = await unknownProfileMessage(flags.profile);
+    if (profileError) { console.error(profileError); return 2; }
+    const missing = flags.package || flags.json ? null : notACourseMessage(dir);
+    if (missing) { console.error(missing); return 1; }
     const { testPackage, TIMED_OUT } = await import('@elabora/node/emulator/run');
     const runLine = (run: PackageRun) => `${run.ok ? '✔' : '✘'} ${run.profile.padEnd(15)} ${run.launch.padEnd(14)} ${run.browser}${run.retried ? ' (run again alone after a timeout)' : ''}${run.ok ? '' : `\n    ${run.failures.map((f) => `${f.code}: ${f.message}`).join('\n    ')}`}`;
     const onRun = flags.json ? undefined : (run: PackageRun) => console.log(runLine(run));
@@ -238,12 +249,25 @@ const previewCommand = defineCommand({
   async run({ positionals: [dir = '.'], flags }) {
     const { navigation } = flags;
     if (navigation !== undefined && !WEB_NAVIGATION.some((value) => value === navigation)) { console.error(`--navigation is authored or free (not "${navigation}").`); return 2; }
+    const profileError = await unknownProfileMessage(flags.profile === undefined ? undefined : [flags.profile], { all: false });
+    if (profileError) { console.error(profileError); return 2; }
+    const missing = notACourseMessage(dir);
+    if (missing) { console.error(missing); return 1; }
     const { preview } = await import('@elabora/node/preview');
     // The preview shows the course with the errors that only stop a delivery (accessibility, plan
     // coverage, package limits): they are still said.
     const codes = (result: BuildResult) => result.diagnostics.filter((d) => d.severity === 'error' && !d.waived).map((d) => d.code).join(', ');
     const onRebuild = (result: BuildResult) => console.log(result.ok ? `↻ rebuilt${codes(result) ? ` (errors to fix before a delivery: ${codes(result)})` : ''}` : `✘ ${result.summary.errors} error(s): ${codes(result)}`);
-    const session = await preview(dir, { port: Number(flags.port) || 4807, ...(flags.profile ? { profile: flags.profile } : {}), navigation: WEB_NAVIGATION.find((value) => value === navigation) ?? 'authored', onRebuild });
+    const port = Number(flags.port) || 4807;
+    let session: Awaited<ReturnType<typeof preview>>;
+    try {
+      session = await preview(dir, { port, ...(flags.profile ? { profile: flags.profile } : {}), navigation: WEB_NAVIGATION.find((value) => value === navigation) ?? 'authored', onRebuild });
+    } catch (error) {
+      // Another preview (or any server) holds the port: say so, and how to pick another.
+      if (!(error instanceof Error && 'code' in error && error.code === 'EADDRINUSE')) throw error;
+      console.error(`✘ Port ${port} is in use. Pick another one: elabora preview ${dir} --port ${port + 1}`);
+      return 1;
+    }
     if (session.result.summary.errors) printDiagnostics(session.result.diagnostics);
     console.log(`Preview (standalone): ${session.urls.standalone}\nPreview in the LMS emulator: ${session.urls.lms}\nWatching for changes. Ctrl+C to stop.`);
     await new Promise(() => {});

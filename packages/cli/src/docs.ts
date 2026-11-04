@@ -205,7 +205,7 @@ export function readDocs(request: DocsRequest, root = DOCS_ROOT): { ok: true; te
   if (!found) {
     const words = page.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
     const near = allPages(root).filter((entry) => words.some((word) => entry.id.includes(word) || entry.title.toLowerCase().includes(word))).slice(0, 8).map((entry) => entry.id);
-    return { ok: false, error: `No page « ${page} ».${near.length ? ` Maybe: ${near.join(', ')}.` : ''} elabora docs (no page) lists them.` };
+    return { ok: false, error: `No page « ${page} ».${near.length ? ` Did you mean ${near.join(', ')}?` : ''} Run elabora docs to list the pages.` };
   }
   return servePage(found.id, fs.readFileSync(path.join(root, found.file), 'utf8'), request);
 }

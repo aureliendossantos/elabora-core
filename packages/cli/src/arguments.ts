@@ -14,7 +14,25 @@ export interface ParsedArguments<Specs extends FlagSpecs> {
   flags: FlagValues<Specs>;
 }
 
-export class ArgumentError extends Error {}
+// hint: what to do instead (the flag it was close to), said after the message.
+export class ArgumentError extends Error {
+  hint?: string;
+  constructor(message: string, hint?: string) {
+    super(message);
+    this.hint = hint;
+  }
+}
+
+// Letters to add, remove or change to go from a to b (Levenshtein), for « did you mean ».
+export function editDistance(a: string, b: string): number {
+  let row = Array.from({ length: b.length + 1 }, (_, index) => index);
+  for (let i = 1; i <= a.length; i++) {
+    const next = [i];
+    for (let j = 1; j <= b.length; j++) next[j] = Math.min(row[j] + 1, next[j - 1] + 1, row[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    row = next;
+  }
+  return row[b.length];
+}
 
 export function parseArguments<Specs extends FlagSpecs>(argv: readonly string[], specs: Specs): ParsedArguments<Specs> {
   const positionals: string[] = [];
@@ -26,7 +44,10 @@ export function parseArguments<Specs extends FlagSpecs>(argv: readonly string[],
     const equals = argument.indexOf('=');
     const name = argument.slice(2, equals === -1 ? undefined : equals);
     const kind = Object.hasOwn(specs, name) ? specs[name] : undefined;
-    if (!kind) throw new ArgumentError(`Unknown option --${name}`);
+    if (!kind) {
+      const near = Object.keys(specs).find((known) => editDistance(name, known) <= (name.length > 5 ? 2 : 1));
+      throw new ArgumentError(`Unknown option --${name}`, near ? `Did you mean --${near}?` : undefined);
+    }
     if (kind === 'boolean') {
       if (equals !== -1) throw new ArgumentError(`--${name} takes no value`);
       values[name] = true;

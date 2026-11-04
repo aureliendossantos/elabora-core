@@ -7,8 +7,8 @@ import type { CommandGroup } from './command.ts';
 // course: listed, installed and removed here as in Elabora settings.
 
 const HELP = `  downloads list [--kind <kind>] [--language <lang>] [--json]
-                                                      What Elabora downloads once per computer on first use (never in a
-                                                      course): the local voices and the word aligners, by language, what
+                                                      What Elabora downloads once per computer on first use (kept outside
+                                                      courses): the local voices and the word aligners, by language, what
                                                       each is for and what happens without it, on this computer (its size
                                                       on disk) or not (the size to download), being downloaded now (by
                                                       the app, a command or an agent) or in use

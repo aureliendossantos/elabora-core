@@ -63,7 +63,7 @@ const HELP = `  timeline [dir] [screen] [--language <lang>] [--json]
   narration keep [dir] <screen> <line> [--language <lang>] [--json]
                                                       The line's text was corrected (a checked transcription, a typo) and its
                                                       audio still says it: the audio stays up to date, its words follow
-  narration split [dir] <screen> <line> [--json]       Cut a step at a line (W_SEGMENT_TOO_LONG): the line and those after it in
+  narration split [dir] <screen> <line> [--json]      Cut a step at a line (W_SEGMENT_TOO_LONG): the line and those after it in
                                                       its step start the next step, so Continue paces them; later steps, their
                                                       blocks and the anchors that name them move one on, in one undoable change
   narration align [dir] [screen] [--line <ids>] [--language <lang>] [--force] [--json]

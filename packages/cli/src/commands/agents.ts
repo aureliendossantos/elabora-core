@@ -2,30 +2,37 @@ import { CODES } from '@elabora/core/diagnostics/codes';
 import fs from 'node:fs';
 import path from 'node:path';
 import { ArgumentError } from '../arguments.ts';
-import { defineCommand, printJson, reportingFailures } from './command.ts';
+import { defineCommand, errorMessage, printJson, reportingFailures } from './command.ts';
 import type { CommandGroup } from './command.ts';
 
-const HELP = `  mcp [dir…] [--read-only] [--tools <name>,…]          MCP server on stdio for a course folder; several folders, or a folder
-                                                      of courses, give a course argument to each operation; outside a
-                                                      course, only the docs, skills and library. No folder: every course
-                                                      Elabora knows (its library, the folders the app opened), read
-                                                      again at each call. --tools: only the named agent tools (unknown
-                                                      names are refused)
-  codes [--json]                                      Catalogue of diagnostic codes
-  docs [<page>] [--section <heading>] [--full]        The documentation as Markdown, without a checkout: the map of pages,
-                                                      a page (D29: a decision; a long one as its outline), or one section
-  rules [dir] [--json]                                The rules for agents of this elabora (what a course's AGENTS.md
-                                                      holds between its markers), and where the course's stand
-  rules update [dir] [--force] [--json]               Bring the course's AGENTS.md rules up to date (done by itself
-                                                      while nobody edits them); --force replaces edited ones, the
-                                                      notes after « elabora:rules end » kept. One undoable change`;
+const HELP = `  mcp [dir…] [--read-only] [--tools <name>,…]         Start the MCP server on stdio for a course folder. Several folders, or
+                                                      a folder of courses: each operation takes a course argument. Outside
+                                                      a course: the docs, skills and library. With no folder: every course
+                                                      Elabora knows (its library, the folders the app opened), read again
+                                                      at each call. --tools: only the named agent tools (unknown names are
+                                                      refused)
+  codes [--json]                                      List the diagnostic codes
+  docs [<page>] [--section <heading>] [--full]        Print the bundled documentation as Markdown: the map of pages, a page
+                                                      (D29: a decision; a long one as its outline), or one section
+  rules [dir] [--json]                                Print this elabora's rules for agents (what a course's AGENTS.md
+                                                      holds between its markers), and the state of the course's copy
+  rules update [dir] [--force] [--json]               Update the course's AGENTS.md rules (automatic while nobody edits
+                                                      them); --force replaces edited ones and keeps the notes after
+                                                      « elabora:rules end ». One undoable change`;
 
 const mcp = defineCommand({
   name: 'mcp',
   flags: { 'read-only': 'boolean', tools: 'list' },
   async run({ positionals, flags }) {
     const { startMcpServer } = await import('../mcp.ts');
-    await startMcpServer(positionals.length === 1 ? positionals[0]! : positionals, { readOnly: flags['read-only'], tools: flags.tools });
+    // A folder it cannot read: one line, before the server starts.
+    try {
+      await startMcpServer(positionals.length === 1 ? positionals[0]! : positionals, { readOnly: flags['read-only'], tools: flags.tools });
+    } catch (error) {
+      const message = errorMessage(error);
+      console.error(`✘ ${message}.${/is not a folder this server can read/.test(message) ? ' Give a course folder, a folder of courses, or none (every course Elabora knows).' : ''}`);
+      return 1;
+    }
     return null; // keeps running
   }
 });
