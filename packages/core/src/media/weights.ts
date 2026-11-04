@@ -98,7 +98,7 @@ export function weightNotice(media: MediaWeight, info: FileMedia | undefined, qu
   const size = sizeText(at.bytes);
   const pixels = info.width && info.height ? `${info.width}×${info.height}` : '';
   if (info.kind === 'image' && info.animated) {
-    return { reason: 'animated', why: `An animated image of ${size}${pixels ? ` (${pixels}${info.duration ? `, ${durationText(info.duration)}` : ''})` : ''}: as a video (MP4) it would weigh several times less. Make it a video and show it in a video block.` };
+    return { reason: 'animated', why: `An animated image of ${size}${pixels ? ` (${pixels}${info.duration ? `, ${durationText(info.duration)}` : ''})` : ''}: as a video (MP4) it would weigh several times less. Make its image block a video that loops like it: elabora media to-video <block> (MCP elabora_image_to_video).` };
   }
   const reasons = info.reasons.filter((reason) => reason.fix === 'encode');
   if (!at.rendition && !info.conformant && reasons.length && (info.kind === 'video' || info.kind === 'image')) {

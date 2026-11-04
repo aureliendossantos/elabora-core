@@ -69,7 +69,7 @@ test('an animated image: noticed at every quality, its renditions are animated t
   const info = probe({ kind: 'image', container: 'webp', videoCodec: 'webp', width: 1280, height: 720, animated: true, duration: 12, size: 14 * MB });
   const animation = weight('image', 'assets/images/vider-la-file.webp', at(14, 9.8, 3.1));
   for (const quality of ['high', 'medium', 'low'] as const) assert.equal(weightNotice(animation, info, quality)?.reason, 'animated', quality);
-  assert.equal(weightNotice(animation, info, 'high')!.why, 'An animated image of 14.0 MB (1280×720, 12 s): as a video (MP4) it would weigh several times less. Make it a video and show it in a video block.');
+  assert.equal(weightNotice(animation, info, 'high')!.why, 'An animated image of 14.0 MB (1280×720, 12 s): as a video (MP4) it would weigh several times less. Make its image block a video that loops like it: elabora media to-video <block> (MCP elabora_image_to_video).');
 });
 
 test('a video not in its web format, shipped as it is at high', () => {

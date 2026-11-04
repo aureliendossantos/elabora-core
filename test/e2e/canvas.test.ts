@@ -375,18 +375,20 @@ test('canvas: a wheel passed on by the host scrolls what can still go that way u
   });
 });
 
-test('canvas: a looping video plays muted with a pause button, still for reduced motion; a decorative one is hidden from assistive technologies', { timeout: 120000 }, async (t) => {
+test('canvas: a looping video plays muted, inline, without controls, with a pause button seen when needed; still for reduced motion, as the preference changes; a decorative one is hidden from assistive technologies', { timeout: 120000 }, async (t) => {
   const dir = copyExample();
   try {
     fs.mkdirSync(path.join(dir, 'assets/video'), { recursive: true });
     execFileSync('ffmpeg', ['-loglevel', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=320x180:rate=25', '-t', '2', '-pix_fmt', 'yuv420p', '-c:v', 'libx264', path.join(dir, 'assets/video/voyant.mp4')]);
     fs.copyFileSync(path.join(dir, 'assets/video/voyant.mp4'), path.join(dir, 'assets/video/lent.mp4'));
+    fs.mkdirSync(path.join(dir, 'assets/images'), { recursive: true });
+    execFileSync('ffmpeg', ['-loglevel', 'error', '-i', path.join(dir, 'assets/video/voyant.mp4'), '-frames:v', '1', path.join(dir, 'assets/images/voyant-poster.jpg')]);
   } catch {
     return t.skip('ffmpeg with libx264 not found');
   }
   const project = withScreen(loadProjectFromDir(dir), 'chemin', (screen) => {
     screen.blocks.push(
-      { id: 'chemin-voyant', type: 'video', props: { asset: 'video/voyant.mp4', title: 'Le voyant', loop: true, alt: 'Le voyant du routeur clignote en orange.' } },
+      { id: 'chemin-voyant', type: 'video', props: { asset: 'video/voyant.mp4', title: 'Le voyant', loop: true, alt: 'Le voyant du routeur clignote en orange.', poster: 'images/voyant-poster.jpg' } },
       { id: 'chemin-fond', type: 'video', props: { asset: 'video/voyant.mp4', title: 'Fond', decorative: true } }
     );
   });
@@ -404,8 +406,28 @@ test('canvas: a looping video plays muted with a pause button, still for reduced
       { block: 'chemin-voyant', muted: true, loop: true, controls: false, paused: true, hidden: null, role: 'img', label: 'Le voyant du routeur clignote en orange.', button: 'Lire l’animation' },
       { block: 'chemin-fond', muted: true, loop: true, controls: false, paused: true, hidden: 'true', role: null, label: null, button: 'Lire l’animation' }
     ]);
+    // What every browser needs of a video that plays by itself like an image (iOS: muted, inline),
+    // and nothing that would draw a control over it.
+    assert.deepEqual(await page.evaluate(() => {
+      const video = document.querySelector<HTMLVideoElement>('[data-block="chemin-voyant"] video')!;
+      return { attributes: ['autoplay', 'muted', 'loop', 'playsinline', 'controls', 'disablepictureinpicture', 'disableremoteplayback'].filter((name) => video.hasAttribute(name)), defaultMuted: video.defaultMuted, poster: video.getAttribute('poster'), preload: video.preload };
+    }), { attributes: ['muted', 'loop', 'playsinline', 'disablepictureinpicture', 'disableremoteplayback'], defaultMuted: true, poster: 'assets/images/voyant-poster.jpg', preload: 'auto' });
+    // Still, its button shows; the mouse elsewhere, a playing loop's does not, until hovered or focused.
+    const shown = () => page.evaluate(() => getComputedStyle(document.querySelector('[data-block="chemin-voyant"] .t-loop-toggle')!).opacity);
+    await page.mouse.move(0, 0);
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('[data-block="chemin-voyant"] .t-loop-toggle')!).opacity === '1');
     await page.click('[data-block="chemin-voyant"] .t-loop-toggle');
     await page.waitForFunction(() => !document.querySelector<HTMLVideoElement>('[data-block="chemin-voyant"] video')!.paused);
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+    await page.mouse.move(0, 0);
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('[data-block="chemin-voyant"] .t-loop-toggle')!).opacity === '0');
+    await page.hover('[data-block="chemin-voyant"] video');
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('[data-block="chemin-voyant"] .t-loop-toggle')!).opacity === '1');
+    await page.mouse.move(0, 0);
+    await page.focus('[data-block="chemin-voyant"] .t-loop-toggle');
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    assert.equal(await shown(), '1');
     assert.equal(await page.getAttribute('[data-block="chemin-voyant"] .t-loop-toggle', 'aria-label'), 'Mettre en pause l’animation');
     // Without the preference, they start by themselves once in the window (Chrome holds a muted
     // video that plays by itself until it enters the window). The click scrolled to the first loop
@@ -415,6 +437,13 @@ test('canvas: a looping video plays muted with a pause button, still for reduced
     // (A new render of the loops: their props changed.)
     await show(withScreen(project, 'chemin', (screen) => { for (const block of screen.blocks) if (block.type === 'video') block.props.title = `${block.props.title}.`; }), 'chemin');
     await page.evaluate(() => document.querySelector('[data-block="chemin-fond"]')!.scrollIntoView({ block: 'center' }));
+    await page.waitForFunction(() => [...document.querySelectorAll<HTMLVideoElement>('.t-figure--loop video')].every((video) => !video.paused));
+    // The preference changes while they play: they go back to their first frame and stay there, then
+    // play again once it is gone.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.waitForFunction(() => [...document.querySelectorAll<HTMLVideoElement>('.t-figure--loop video')].every((video) => video.paused && video.currentTime === 0));
+    assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.t-loop-toggle')].map((toggle) => toggle.getAttribute('aria-label'))), ['Lire l’animation', 'Lire l’animation']);
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
     await page.waitForFunction(() => [...document.querySelectorAll<HTMLVideoElement>('.t-figure--loop video')].every((video) => !video.paused));
 
     // Pressed while the loop still loads (« Mettre en pause », the video not playing yet), the
@@ -427,7 +456,9 @@ test('canvas: a looping video plays muted with a pause button, still for reduced
       const video = document.querySelector<HTMLVideoElement>('[data-block="chemin-voyant"] video')!;
       return { paused: video.paused, ready: video.readyState, button: document.querySelector('[data-block="chemin-voyant"] .t-loop-toggle')!.getAttribute('aria-label') };
     });
-    assert.deepEqual(await slow(), { paused: true, ready: 0, button: 'Mettre en pause l’animation' });
+    // Asked to play as it comes into the window (paused or not yet, as the observer has run): it says
+    // « pause », what it will do once it has its data.
+    assert.deepEqual({ ...await slow(), paused: undefined }, { paused: undefined, ready: 0, button: 'Mettre en pause l’animation' });
     await page.click('[data-block="chemin-voyant"] .t-loop-toggle');
     assert.deepEqual(await slow(), { paused: true, ready: 0, button: 'Lire l’animation' });
     release();
