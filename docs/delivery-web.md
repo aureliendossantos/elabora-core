@@ -1,50 +1,65 @@
 # Delivery: the web target
 
-A module for a plain web server, without an LMS (docs/decisions.md D41): the course shown on a site, a review link, a publication on Elabora's servers. Hosting itself is not in the core.
+Build a module for a plain web server when there is no LMS: a course on a website, a review link, a publication on Elabora's hosting ([D41](decisions/D41.md)). Any static host can serve it. `elabora publish` sends it to Elabora's hosting ([Delivery targets and hosting](architecture/delivery.md)).
 
 ## Build
-`elabora build . --target web` writes, next to the SCORM packages:
 
-```
-dist/<id>-<version>-web/            the folder to serve, as it is
-dist/<id>-<version>-web.zip         the same files, deterministic (D8)
-dist/<id>-<version>-web.report.json the build report: target "web", web { progress, navigation, noindex, url, image }
-dist/<id>-<version>-web.proof.md    the proof dossier, with « Diffusion web »
+```bash
+cd examples/canal-locks
+elabora build . --target web
 ```
 
-The folder holds `index.html`, `elabora/` (player, compiled course, theme), `assets/`, `objects/` and, with `--image`, `share.png|jpg|webp`. No `imsmanifest.xml`; no LMS profile applies (`--profile` is refused).
+The build writes to the course's `dist/` folder:
 
-| Setting | Values | Default |
+```
+dist/<id>-<version>-web/             the folder to serve, as it is
+dist/<id>-<version>-web.zip          the same files, deterministic (D8)
+dist/<id>-<version>-web.report.json  the build report: target "web", web { progress, navigation, noindex, url, image }
+dist/<id>-<version>-web.proof.md     the proof dossier, with « Diffusion web »
+```
+
+The folder holds `index.html`, `elabora/` (the player, the compiled course and its theme), `assets/`, `theme/`, `components/`, `objects/` and, with `--image`, `share.png`, `share.jpg` or `share.webp`. LMS profiles apply to SCORM packages only, so the web target refuses `--profile`.
+
+| Option | Values | Default |
 |---|---|---|
-| `--progress` | `local`: the lesson location, status, score and suspend data in the browser's `localStorage` (`elabora:web:<course id>`), resumed at the next visit, across updates (the permanent keys of D4), and forgotten a year after the last visit; `none`: nothing kept anywhere, a reload starts again | `local` |
-| `--navigation` | `authored`: the course's navigation rules and locks; `free`: every screen open from the outline and Next, nothing to complete, hear or visit first, narrations seekable | `authored` |
-| `--noindex` | `<meta name="robots" content="noindex">` | indexable |
-| `--url <address>` | the absolute address of the module (`https://…/`): canonical link, `og:url`, the sharing image's address | none |
-| `--image <file>` | PNG, JPEG or WebP shown when the link is shared (1200×630 reads well everywhere): `og:image`, `twitter:card summary_large_image` | none |
-| `--review-origin <origin>` | repeatable: a module for the Revue, shown in an iframe by a page of that origin (`https://revue.elabora.studio`; `http://localhost:<port>` for development). It carries the review bridge, `elabora/review.js`, and speaks `elabora-review/1` with that page only ([review-bridge.md](review-bridge.md), D42); its defaults become `--progress none --navigation free --noindex` | none: no bridge, the module unchanged |
+| `--progress` | `local` keeps the lesson location, status, score and suspend data in the browser's `localStorage` (`elabora:web:<course id>`). The next visit resumes there, across updates of the course (its permanent keys, D4). The browser forgets it a year after the last visit. `none` keeps nothing: a reload starts again. | `local` |
+| `--navigation` | `authored` follows the course's navigation rules and locks. `free` opens every screen from the outline and Next, with nothing to complete, hear or visit first, and narrations seekable. | `authored` |
+| `--noindex` | Adds `<meta name="robots" content="noindex">`. | indexable |
+| `--url <address>` | The module's absolute address (`https://…/`): canonical link, `og:url` and the sharing image's address. | none |
+| `--image <file>` | A PNG, JPEG or WebP shown when the link is shared (1200×630 reads well everywhere): `og:image`, `twitter:card summary_large_image`. | none |
+| `--review-origin <origin>` | Repeatable. Builds a module for the Revue, shown in an iframe by a page of that origin (`https://revue.elabora.studio`, or `http://localhost:<port>` while developing). It adds the review bridge, `elabora/review.js`, which speaks `elabora-review/1` with that page only ([Review bridge](review-bridge.md), D42). Its defaults become `--progress none --navigation free --noindex`. | none: a plain module |
 
-The page's title is the course `title`, its description the course `description` (`course.json`). The course has no thumbnail of its own: give one with `--image` (an image of the course's `assets/`, or the app's project thumbnail).
+The page's title is the course's `title`, and its description the course's `description` (`course.json`). Give the sharing image with `--image`: an image of the course's `assets/`, or the app's project thumbnail. The command line reads `--image` from the current folder, so run these builds from the course folder.
 
-MCP: `elabora_build { target: "web", web: { progress, navigation, noindex, url, image, review: { origins } } }` (`image` relative to the course folder). Engine: the build request takes `target` and `web`, and returns `dir` beside `zip`.
+MCP: `elabora_build { target: "web", web: { progress, navigation, noindex, url, image, review: { origins } } }`, with `image` relative to the course folder. Engine: the build request takes `target` and `web`, and returns `dir` beside `zip`.
 
 ## Recipes
-- **A showcase** (the marketing site: a visitor goes where they like, nothing is kept):
-  `elabora build . --target web --progress none --navigation free --url https://elabora.studio/vitrine/<id>/ --image assets/images/cover.jpg`
-- **A publication** (learners on the web, resuming where they left, the course as designed):
-  `elabora build . --target web --url https://<host>/<id>/ --image assets/images/cover.jpg` (add `--release` for a client delivery: the plan must be approved)
-- **A private link** (a review before the review tools): `elabora build . --target web --navigation free --noindex`
-- **A link for the Revue** (reviewers comment in revue.elabora.studio, which shows the module in an iframe): `elabora build . --target web --review-origin https://revue.elabora.studio` (add `--review-origin http://localhost:5173` while the page is developed). Serve it with `Content-Security-Policy: frame-ancestors https://revue.elabora.studio` so no other site frames it.
 
-Then serve the folder over HTTPS, open the address, reload, and check the sharing preview (the pending gate of the proof dossier).
+Run these from the course folder.
+
+- **A showcase.** Visitors go where they like, and nothing is kept:
+  `elabora build . --target web --progress none --navigation free --url https://example.com/<id>/ --image assets/images/cover.jpg`
+- **A publication.** Learners resume where they left, and the course runs as designed:
+  `elabora build . --target web --url https://example.com/<id>/ --image assets/images/cover.jpg`
+  Add `--release` for a client delivery: it requires an approved plan.
+- **A private link** for a quick review: `elabora build . --target web --navigation free --noindex`
+- **A link for the Revue**, where reviewers comment on the module in an iframe of revue.elabora.studio:
+  `elabora build . --target web --review-origin https://revue.elabora.studio`
+  Add `--review-origin http://localhost:5173` while developing the review page. Serve the module with `Content-Security-Policy: frame-ancestors https://revue.elabora.studio`, so only the Revue can frame it.
+
+Then serve the folder over HTTPS, open the address, reload, and check the sharing preview. The proof dossier lists that check as pending until a person does it.
 
 ## Runtime
-- The player never looks for an LMS in a module for the web, and shows neither the preview's banner nor Quit. An event's `exit` action still ends the visit, with a message of the web's own: the progress is kept in this browser (`local`, label `webEndedKept`), or nothing is kept (`none`, `webEndedNotKept`).
-- Commits are those of a SCORM package (after each change, on `visibilitychange: hidden`, on `pagehide`, every `heartbeatSeconds`); with `local` each writes the kept elements to `localStorage`, dated (`savedAt`). A progress saved more than a year ago is removed when the module opens, and the visit starts afresh. A refused or full storage keeps the visit's progress in memory, never an error.
-- `none` writes nothing: no `localStorage`, no `sessionStorage` (the narration's preferences included), no cookie.
-- With `local` the learner is told where the progress is, and may clear it: the outline ends with « Votre progression reste dans ce navigateur. » and « Effacer ma progression » (also on the page an `exit` leaves), which asks once, then removes `elabora:web:<course id>` and starts the module again (labels `progressKept`, `clearProgress`, `clearProgressConfirm`, `clearProgressYes`, `cancel`; D41).
 
-## What the host must give
-- **One origin per publisher at least.** `localStorage` is per origin: two courses with the same id on one origin share their progress, and a course's pages can read another's storage.
-- **An origin that changes hands must start empty.** Whoever serves the module next at the same address runs their scripts on the same origin and could read what learners' browsers kept. Elabora's hosting clears the origin's storage in the browser (`Clear-Site-Data`) for a new owner of a handle, and a year after a learner's last visit (elabora-cloud C33).
-- HTTPS, the folder served as it is (relative paths), `index.html` for the folder's address.
-- For a whole publication out of search engines, `X-Robots-Tag: noindex` on every file: the free objects' frames are pages of their own, without the meta tag.
+- A web module runs on its own. The player skips the LMS search, the preview's banner and the Quit button.
+- An event's `exit` action still ends the visit, with a message for the web: the progress stays in this browser (`local`, label `webEndedKept`), or nothing is kept (`none`, `webEndedNotKept`).
+- The player commits as in a SCORM package: after each change, on `visibilitychange: hidden`, on `pagehide` and every `heartbeatSeconds`. With `local`, each commit writes the kept elements to `localStorage` with the date (`savedAt`). A progress saved more than a year ago is removed when the module opens, and the visit starts afresh. When storage is refused or full, the visit keeps its progress in memory and carries on.
+- `none` writes nothing to the browser: `localStorage`, `sessionStorage` (the narration's preferences included) and cookies stay empty.
+- With `local`, the learner sees where the progress is kept and can clear it. The outline ends with « Your progress stays in this browser. » and « Clear my progress », also shown on the page an `exit` leaves. The button asks once, then removes `elabora:web:<course id>` and starts the module again (labels `progressKept`, `clearProgress`, `clearProgressConfirm`, `clearProgressYes`, `cancel`; D41).
+
+## What the host must provide
+
+- **One origin per publisher, at least.** `localStorage` belongs to an origin: two courses with the same id on one origin share their progress, and one course's pages can read another's storage.
+- **A clean origin for each new owner.** Whoever serves a module next at the same address runs their scripts on that origin, and could read what learners' browsers kept. Elabora's hosting clears the origin's storage in the browser (`Clear-Site-Data`) when a handle changes owner, and a year after a learner's last visit.
+- **HTTPS**, the folder served as it is (it uses relative paths), and `index.html` at the folder's address.
+- **`X-Robots-Tag: noindex` on every file** to keep a whole publication out of search engines. Free objects run in frames that are pages of their own, and the meta tag covers `index.html` only.
