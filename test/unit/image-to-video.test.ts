@@ -108,6 +108,7 @@ test('an animated PNG becomes a video too; a file another block still shows stay
     assert.deepEqual([video.width, video.height], [160, 90]);
 
     await assert.rejects(imageToVideo(dir, { block: 'band' }, { tools }), /a video takes the place of a centered or a wide image only/);
+    await assert.rejects(imageToVideo(dir, { block: 'pulse-again', blocks: ['still'] }, { tools }), /does not show assets\/images\/pulse\.png/);
     await assert.rejects(imageToVideo(dir, { block: 'still' }, { tools }), /is not animated/);
     await assert.rejects(imageToVideo(dir, { block: 'pulse' }, { tools }), /is a video block/);
   } finally {
@@ -125,7 +126,11 @@ test('the engine runs image_to_video as a change of the app, one undo; undone, t
     const animated = async () => (await session.packageWeights()).media.find((media) => media.path === 'assets/images/spinner.gif')?.notice?.reason === 'animated';
     await session.flush();
     assert.equal(await animated(), true, 'noticed before');
-    const result = await session.run('image_to_video', { block: 'spinner' }, { kind: 'human' });
+    // Two blocks show it: one change makes both videos, one undo gives both back.
+    addBlocks(dir, { id: 'spinner-again', type: 'image', props: { asset: 'images/spinner.gif', alt: 'Again.' } } as Block);
+    await session.flush();
+    const result = await session.run('image_to_video', { block: 'spinner', blocks: ['spinner-again'] }, { kind: 'human' });
+    assert.equal(blockOf(dir, 'spinner-again').type, 'video');
     assert.deepEqual([...result.files].sort(), ['assets/images/spinner-poster.' + (tools.webp ? 'webp' : 'jpg'), 'assets/images/spinner.gif', 'assets/video/spinner.mp4', 'screens/accueil.json']);
     assert.equal(session.readFile('assets/video/spinner.mp4').kind, 'binary');
     assert.equal(blockOf(dir, 'spinner').type, 'video');
@@ -133,6 +138,7 @@ test('the engine runs image_to_video as a change of the app, one undo; undone, t
     assert.deepEqual(own.filter((finding) => finding.severity === 'error'), []);
     await session.undo();
     assert.equal(blockOf(dir, 'spinner').type, 'image');
+    assert.equal(blockOf(dir, 'spinner-again').type, 'image');
     assert.equal(fs.existsSync(path.join(dir, 'assets/images/spinner.gif')), true);
     // Back as it was: its probe's verdict with it, so that its weight's notice comes back.
     await session.flush();

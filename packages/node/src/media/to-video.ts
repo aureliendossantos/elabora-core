@@ -23,6 +23,7 @@ import type { MediaTools } from './tools.ts';
 
 export interface ImageToVideoRequest {
   block: string;
+  blocks?: string[]; // other image blocks showing the same file (the app's « Transformer en vidéo » of a media)
 }
 
 export interface ImageToVideoOptions extends EditOptions {
@@ -60,10 +61,11 @@ export async function imageToVideo(dir: string, args: ImageToVideoRequest, optio
     const sources = new Map<string, string>([[videoHash, video], [posterHash, poster]]);
     const result = runCommand(root, {
       name: 'image_to_video',
-      args: { block: args.block },
+      args: { block: args.block, ...(args.blocks?.length ? { blocks: args.blocks } : {}) },
       sources,
       run: (context) => imageToVideoCommand(context, {
         block: args.block,
+        ...(args.blocks?.length ? { blocks: args.blocks } : {}),
         // Names a media job will write (an import still running) are not free.
         reserved: readJobs(root).filter((job) => job.type !== 'rendition' && !isFinished(job.status)).map((job) => job.output),
         video: binaryFile(videoInfo.size, { hash: videoHash, media: fileMedia(videoInfo) }),

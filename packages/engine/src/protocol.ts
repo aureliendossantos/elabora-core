@@ -105,7 +105,7 @@ export interface CommandArgs {
   record_plan_send: RecordPlanSendArgs;
   set_captions: SetCaptionsArgs;
   // An animated image block made a video that loops like it (its MP4 and poster made first).
-  image_to_video: { block: string };
+  image_to_video: { block: string; blocks?: string[] };
   update_narration: UpdateNarrationArgs;
   add_narration_line: AddNarrationLineArgs;
   update_narration_line: UpdateNarrationLineArgs;
