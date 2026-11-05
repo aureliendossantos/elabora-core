@@ -9,7 +9,7 @@
   "layoutProps": {
     "arrangement": "top"
   },
-  "completeWhen": "action",
+  "completeWhen": "interactions-done",
   "continueRevealsSteps": false,
   "blocks": [
     {
@@ -99,9 +99,6 @@
         {
           "type": "hide-block",
           "block": "simulation-transmettre"
-        },
-        {
-          "type": "complete-screen"
         }
       ]
     }
