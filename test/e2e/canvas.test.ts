@@ -17,10 +17,10 @@ import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import type { RenderContext, RenderOptions } from '@elabora/core/render/screen';
 import type { CanvasApi } from '@elabora/player/canvas';
 import type { HostMessage, LayoutMessage } from '@elabora/player/canvas-protocol';
-import { EXAMPLE, NO_MEDIA_CODECS, ROOT, copyExample, playsMedia } from '../helpers.ts';
+import { EXAMPLE, GEARSET, NO_MEDIA_CODECS, ROOT, copyExample, playsMedia } from '../helpers.ts';
 
 type CanvasWindow = Window & typeof globalThis & { __elaboraCanvas: CanvasApi; mark?: unknown; kept?: unknown; seen?: Promise<number>; elaboraEdited?: string };
-const PLANETARY = path.join(ROOT, 'examples', 'planetary-gearset');
+const PLANETARY = GEARSET;
 
 // A screen file replaced in memory (an edit the engine applies), the rest of the project shared.
 function withScreen(project: Project, id: string, edit: (screen: Screen) => void): Project {

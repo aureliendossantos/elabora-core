@@ -26,7 +26,7 @@ import { ROOT, copyExample, readJSON, writeJSON } from '../helpers.ts';
 
 const BIN = path.join(ROOT, 'bin/elabora.js');
 const HELP = fs.readFileSync(path.join(ROOT, 'test/fixtures/cli-help.txt'), 'utf8').replace('<version>', ELABORA_VERSION);
-const COURSES = ['diagnostic-reseau', 'planetary-gearset', 'orbital-rendezvous'].map((name) => ({ name, dir: copyExample(path.join(ROOT, 'examples', name)) }));
+const COURSES = ['diagnostic-reseau', 'clockwork', 'orbital-rendezvous'].map((name) => ({ name, dir: copyExample(path.join(ROOT, 'examples', name)) }));
 after(() => { for (const { dir } of COURSES) fs.rmSync(dir, { recursive: true, force: true }); });
 
 interface Run {

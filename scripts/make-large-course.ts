@@ -1,4 +1,4 @@
-// Builds a large course for performance work: the planetary-gearset sample repeated to about 80
+// Builds a large course for performance work: the planetary-gearset fixture repeated to about 80
 // screens, with real H.264 videos (300 MB in total by default), the size of a typical module.
 // Usage: node scripts/make-large-course.ts <out-dir> [--screens 80] [--video-mb 300] [--videos 6]
 // The videos are encoded once with ffmpeg and cached in the system temp folder.
@@ -13,7 +13,7 @@ type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 type JsonObject = { [key: string]: Json };
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const SAMPLE = path.join(ROOT, 'examples/planetary-gearset');
+const SAMPLE = path.join(ROOT, 'test/fixtures/format-0.1/planetary-gearset');
 
 const args = process.argv.slice(2);
 const out = args[0];

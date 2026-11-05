@@ -52,7 +52,7 @@ export const groups: TestMap = {
     { name: 'canal-locks', files: ['examples/canal-locks/**'], checks: [matrix('canal-locks')] },
     { name: 'medieval-charts', files: ['examples/medieval-charts/**'], checks: [matrix('medieval')] },
     { name: 'phishing-by-numbers', files: ['examples/phishing-by-numbers/**'], checks: [matrix('phishing')] },
-    { name: 'planetary-gearset', files: ['examples/planetary-gearset/**'], checks: [matrix('planetary')] },
+    { name: 'clockwork', files: ['examples/clockwork/**'], checks: [matrix('clockwork')] },
     { name: 'diagnostic-reseau and orbital-rendezvous', files: ['examples/diagnostic-reseau/**', 'examples/orbital-rendezvous/**'], checks: [matrix('lms-matrix'), e2e('player')] }
   ]
 };

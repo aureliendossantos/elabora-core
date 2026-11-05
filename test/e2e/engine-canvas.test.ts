@@ -8,18 +8,18 @@ import type { Browser } from 'playwright-core';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import { openProject } from '@elabora/engine';
 import type { CanvasApi } from '@elabora/player/canvas';
-import { ROOT } from '../helpers.ts';
+import { ROOT, GEARSET } from '../helpers.ts';
 
 // The engine and its canvas in Chrome: an edit (a command of the app, an agent's own file write)
 // reaches the canvas page without a reload, the free object of the screen keeps running, view
 // changes go through requests. Timings from the edit to the text in the page's DOM are reported.
 // ELABORA_LARGE_COURSE=<folder> (scripts/make-large-course.ts) measures on a large course, copied
-// first; by default the planetary-gearset sample.
+// first; by default the planetary-gearset fixture.
 
 type CanvasWindow = Window & typeof globalThis & { __elaboraCanvas: CanvasApi; seen?: Promise<number>; mark?: string };
 
 function course(): string {
-  const source = process.env.ELABORA_LARGE_COURSE ?? path.join(ROOT, 'examples/planetary-gearset');
+  const source = process.env.ELABORA_LARGE_COURSE ?? GEARSET;
   const dir = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-engine-canvas-')), 'course');
   // Clones on APFS: a large course costs no copy.
   if (process.platform === 'darwin') execFileSync('cp', ['-c', '-R', source, dir]);

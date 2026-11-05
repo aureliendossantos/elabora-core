@@ -4,6 +4,7 @@ import type { ObjectTestStep } from '@elabora/format';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { GEARSET } from '../helpers.ts';
 import { drawnBeforeSnapshots, pruneSnapshots } from '@elabora/node/objects/test';
 
 test('a dry run of an object test draws the last step that runs frames before each snapshot', () => {
@@ -41,12 +42,12 @@ test('object map: the sections of the code with their lines and functions, the m
   assert.deepEqual(code.sections.map((section) => [section.title, section.from, section.to, section.functions.map((fn) => `${fn.name} ${fn.line}`)]), [
     ['(top)', 1, 3, ['mount 3']], ['State', 4, 6, ['ease 5', 'step 6']], ['Start', 7, 10, []]
   ]);
-  const map = objectMap(path.join(import.meta.dirname, '../../examples/planetary-gearset'), 'planetary-lab');
+  const map = objectMap(GEARSET, 'planetary-lab');
   assert.ok(!('error' in map), JSON.stringify(map));
   assert.equal(map.files[0].file, 'object.js');
   assert.ok(map.props.length > 2 && map.tests.length > 0 && map.events.length > 0, JSON.stringify(map));
   const text = objectMapText(map);
   assert.ok(text.length < 6000 && /^props: /m.test(text) && /^tests \(\d+\): /m.test(text), text);
-  const missing = objectMap(path.join(import.meta.dirname, '../../examples/planetary-gearset'), 'nowhere');
+  const missing = objectMap(GEARSET, 'nowhere');
   assert.ok('error' in missing && /Objects: planetary-lab/.test(missing.error));
 });

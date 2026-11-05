@@ -515,7 +515,7 @@ test('validateScreen: the findings of one screen; with the project checks, those
   s.blocks.push({ id: 'chemin-voir', type: 'button', props: { label: 'Voir' } });
   writeJSON(dir, 'screens/chemin.json', s);
   writeJSON(dir, 'screens/brouillon.json', { id: 'brouillon', title: 'Brouillon', covers: [], blocks: [{ id: 'brouillon-texte', type: 'text', props: {} }] });
-  for (const course of [dir, ...['planetary-gearset', 'orbital-rendezvous'].map((name) => copyExample(path.join(ROOT, 'examples', name)))]) {
+  for (const course of [dir, ...['clockwork', 'orbital-rendezvous'].map((name) => copyExample(path.join(ROOT, 'examples', name)))]) {
     const project = loadProjectFromDir(course);
     const context = createValidationContext(project);
     const parts = [...validateProjectChecks(context), ...[...project.screens.keys()].flatMap((id) => validateScreen(context, id))];

@@ -12,7 +12,7 @@ import { checkTemplate } from '@elabora/core/validate/components';
 import { createReporter } from '@elabora/core/diagnostics/index';
 import { exportLessonMd } from '@elabora/node/lesson-md';
 import type { Block, PlanItem, PlanQuestion, PlanQuestionOption } from '@elabora/format';
-import { ROOT, copyExample, readJSON, writeJSON, writeFixture as write, codes } from '../helpers.ts';
+import { ROOT, GEARSET, copyExample, readJSON, writeJSON, writeFixture as write, codes } from '../helpers.ts';
 import { build } from '@elabora/node/build';
 import * as edit from '@elabora/node/edit';
 
@@ -276,8 +276,8 @@ test('exports and the client view use the fallback', () => {
   assert.ok(r.losses.some((l) => /component key-card exported through its fallback/.test(l.loss)));
 });
 
-test('the planetary sample uses course components, a fork of quiz and screen layouts', () => {
-  const dir = path.join(ROOT, 'examples/planetary-gearset');
+test('a course with components, a fork of quiz and screen layouts validates without findings', () => {
+  const dir = GEARSET;
   const project = loadProjectFromDir(dir);
   const reg = getRegistry(project);
   assert.deepEqual([...project.components.keys()].sort(), ['config-quiz', 'figure-split', 'hero', 'ratio-card', 'stage']);

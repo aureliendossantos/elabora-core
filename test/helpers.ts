@@ -37,6 +37,8 @@ export const settled = (target: Locator): Promise<void> => target.evaluate((elem
 
 // Stable baseline: tests that reshape the course must not depend on later sample design edits.
 export const EXAMPLE = path.join(ROOT, 'test/fixtures/format-0.1/diagnostic-reseau');
+// A course with components, generators, a fork of quiz, screen layouts, layers, plan versions and a free 3D object (the former planetary-gearset sample).
+export const GEARSET = path.join(ROOT, 'test/fixtures/format-0.1/planetary-gearset');
 // URL of a source module of the repository, for import() in another process (Windows paths are not
 // URLs: D:\\… would be read as a scheme).
 export const moduleUrl = (rel: string) => pathToFileURL(path.join(ROOT, rel)).href;

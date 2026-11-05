@@ -8,7 +8,7 @@ import type { JsonSchema, SchemaName } from '@elabora/format';
 import { SCHEMAS } from '@elabora/format/schemas.generated';
 
 const ROOT = path.resolve(import.meta.dirname, '../..');
-const EXAMPLE = path.join(ROOT, 'examples/planetary-gearset');
+const EXAMPLE = path.join(ROOT, 'test/fixtures/format-0.1/planetary-gearset');
 const readJSON = (rel: string): any => JSON.parse(fs.readFileSync(path.join(EXAMPLE, rel), 'utf8'));
 // Entries of a sample folder, without OS files (.DS_Store) that a checkout may hold.
 const list = (rel: string) => (fs.existsSync(path.join(EXAMPLE, rel)) ? fs.readdirSync(path.join(EXAMPLE, rel)).filter((n) => !n.startsWith('.')).sort() : []);
@@ -40,7 +40,7 @@ test('format version and block catalogue follow the schemas', () => {
   assert.ok(!isBuiltinBlockType('ratio-card') && !isBuiltinBlockType(undefined));
 });
 
-test('the registry accepts the planetary-gearset course', () => {
+test('the registry accepts a course with components, objects, plan versions and screen layouts', () => {
   const files: [SchemaName, string][] = [['course', 'course.json'], ['plan', 'plan.json']];
   for (const f of list('screens')) files.push(['screen', `screens/${f}`]);
   for (const c of list('components')) files.push(['component', `components/${c}/component.json`]);

@@ -7,7 +7,7 @@ import type { Browser, Page } from 'playwright-core';
 import { startServer } from '@elabora/node/emulator/server';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import { validateDir, loadProjectFromDir } from '@elabora/node/project-reader';
-import { copyExample, readJSON, writeJSON, addExplorer, addLayerProbe, addViewProbe, addListProbe, LAYER_PROBE, VIEW_PROBE, LIST_PROBE } from '../helpers.ts';
+import { GEARSET, copyExample, readJSON, writeJSON, addExplorer, addLayerProbe, addViewProbe, addListProbe, LAYER_PROBE, VIEW_PROBE, LIST_PROBE } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { startCanvasHost } from '@elabora/node/canvas/host';
 import { renderScreen } from '@elabora/core/render/screen';
@@ -459,6 +459,52 @@ test('#elabora-app says where the screen stands in the course, backdrop or not: 
     assert.deepEqual(errors, []);
   });
 });
+
+// Slides: steps reveal with Continue, take the focus, keep their place while pending, and a screen counts as viewed
+// once its last step is shown; a visited screen shows every step (the former planetary sample, kept as a fixture).
+test('slides: steps reveal with Continue, and a visited screen shows every step', { timeout: 300000 }, async () => {
+  const src = GEARSET;
+  const b = await build(src, { emit: 'dir', out: tmp('elabora-e2e-'), writeLock: false });
+  assert.ok(b.ok && b.dirPath);
+  const server = await startServer();
+  server.addPackage('steps', b.dirPath);
+  const browser: Browser = await launchBrowser('chromium');
+  try {
+    const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+    await page.goto(`${server.base}/pkg/steps/index.html`);
+    await page.waitForFunction(() => (window as PlayerWindow).__elabora);
+    const state = () => page.evaluate(() => {
+      const t = (window as PlayerWindow).__elabora;
+      return {
+        screen: t.screen, step: t.step.revealed,
+        label: document.querySelector('.t-nav-btn--next .t-nav-label:not([aria-hidden])')!.textContent,
+        pending: [...document.querySelectorAll<HTMLElement>('[data-t-pending]')].map((n) => n.dataset.block),
+        viewed: t.engine.screenComplete(t.engine.screens[0]),
+        focus: (document.activeElement as HTMLElement | null)?.dataset?.block || null
+      };
+    });
+    let s = await state();
+    assert.deepEqual([s.screen, s.step, s.label, s.viewed], ['intro', 1, 'Continue', false]);
+    assert.deepEqual(s.pending, ['intro-reduce', 'intro-speed-up', 'intro-reverse']);
+    assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('[data-block="intro-reduce"]')!).visibility), 'hidden', 'slides keep the place of a pending step');
+    await page.click('.t-nav-btn--next');
+    s = await state();
+    assert.deepEqual([s.screen, s.step, s.label, s.viewed, s.focus], ['intro', 2, 'Next', true, 'intro-reduce']);
+    assert.deepEqual(s.pending, []);
+    await page.click('.t-nav-btn--next');
+    await page.click('.t-nav-btn--next');
+    await page.click('.t-nav-btn--next');
+    s = await state();
+    assert.deepEqual([s.screen, s.step, s.label], ['practice', 1, 'Continue']);
+    await page.click('.t-nav-btn--next');
+    // Last step of practice: its question must be answered first (lockUntilComplete).
+    assert.equal(await page.getAttribute('.t-nav-btn--next', 'aria-disabled'), 'true');
+    await page.click('.t-nav-btn--previous');
+    s = await state();
+    assert.deepEqual([s.screen, s.pending], ['anatomy', []], 'a visited screen shows every step');
+  } finally {
+    await browser.close();
+    await server.close();
 
 test('a click in the slide reveals the next step; back on the screen, the step reached', { timeout: 180000 }, async () => {
   const { dir } = slidesCopy();

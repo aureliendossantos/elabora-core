@@ -61,7 +61,7 @@ function readEverything(project: Project, shared: RenderContext): void {
 }
 
 test('every reader of a project survives documents that break their schema', () => {
-  const samples = ['diagnostic-reseau', 'planetary-gearset', 'orbital-rendezvous'].map((name) => readProjectFiles(copyExample(path.join(ROOT, 'examples', name))));
+  const samples = ['diagnostic-reseau', 'clockwork', 'orbital-rendezvous'].map((name) => readProjectFiles(copyExample(path.join(ROOT, 'examples', name))));
   const contexts = samples.map((sample) => createRenderContext(loadProject(sample.files, { root: sample.root, artefacts: sample.artefacts })));
   const random = seededRandom(SEED);
   for (let i = 0; i < MUTATIONS; i++) {
