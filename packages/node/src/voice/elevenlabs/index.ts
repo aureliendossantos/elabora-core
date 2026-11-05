@@ -397,26 +397,40 @@ export function splitDialogue(answer: SpeechAnswer, count: number, heard?: { sta
     }
     return best;
   };
-  // The middle of the first stretch without a voice (10 ms frames more than 14 dB under the exchange's loud
-  // part, 60 ms at least; failing that the longest, 30 ms at least) between two times, in samples: what the
-  // voice makes before the next turn's first word (a sigh, a breath) stays with that turn, and the room's
-  // noise, which is no silence for speechBounds, does not hide the gap.
-  const silenceBetween = (from: number, to: number): number => {
-    const size = Math.round(rate * 0.01);
-    const levels: number[] = [];
-    for (let at = 0; at + size <= all.length; at += size) { let sum = 0; for (let i = at; i < at + size; i++) sum += all[i] * all[i]; levels.push(10 * Math.log10(sum / size + 1e-12)); }
-    const loud = [...levels].sort((x, y) => x - y)[Math.floor(levels.length * 0.9)] ?? -100;
+  // The middle of a stretch without a voice between two times (a turn's last word and the next one's
+  // first), in samples. Without a voice: 10 ms frames within 12 dB of the quietest of the gap (never
+  // asked under -70 dB) and 14 dB under the exchange's loud part. Measured from the gap's own floor, a
+  // sigh or a breath is a sound, not silence: the exchange's loud part alone took a soft sigh (‑40 dB
+  // under speech at ‑17) for silence, and the cut fell in it (5 Nov. 2026, « [soupire] Deux minutes »).
+  // The room's noise, which is no silence for speechBounds, does not hide the gap either. Which stretch:
+  // the first of 60 ms at least, so that what the voice makes before the next turn's first word stays
+  // with that turn; the last when only the turn before ends with a direction (« … [rit] »), so that it
+  // keeps what follows its last word; the longest when both do. Failing one of 60 ms, the longest of
+  // 30 ms; failing that, the middle of the gap.
+  const levels: number[] = [];
+  const size = Math.round(rate * 0.01);
+  for (let at = 0; at + size <= all.length; at += size) { let sum = 0; for (let i = at; i < at + size; i++) sum += all[i] * all[i]; levels.push(10 * Math.log10(sum / size + 1e-12)); }
+  const loud = [...levels].sort((x, y) => x - y)[Math.floor(levels.length * 0.9)] ?? -100;
+  const silenceBetween = (from: number, to: number, prefer: 'first' | 'last' | 'longest'): number => {
+    const first = Math.floor(from * 100);
+    const last = Math.min(Math.ceil(to * 100), levels.length - 1);
+    const floor = Math.min(...levels.slice(first, last + 1));
+    const quiet = Math.min(loud - 14, Math.max(floor + 12, -70));
     const runs: { start: number; end: number }[] = [];
     let start = -1;
-    const last = Math.ceil(to * 100);
-    for (let k = Math.floor(from * 100); k <= last + 1; k++) {
-      if (k <= last && levels[k] !== undefined && levels[k] <= loud - 14) { if (start < 0) start = k; continue; }
+    for (let k = first; k <= last + 1; k++) {
+      if (k <= last && levels[k] !== undefined && levels[k] <= quiet) { if (start < 0) start = k; continue; }
       if (start >= 0) runs.push({ start, end: k });
       start = -1;
     }
-    const run = runs.find((candidate) => candidate.end - candidate.start >= 6) ?? runs.reduce<{ start: number; end: number } | null>((best, candidate) => (!best || candidate.end - candidate.start > best.end - best.start ? candidate : best), null);
-    return run && run.end - run.start >= 3 ? Math.round(((run.start + run.end) / 200) * rate) : Math.round(((from + to) / 2) * rate);
+    const length = (run: { start: number; end: number }) => run.end - run.start;
+    const longest = (candidates: typeof runs) => candidates.reduce<{ start: number; end: number } | null>((best, run) => (!best || length(run) > length(best) ? run : best), null);
+    const long = runs.filter((run) => length(run) >= 6);
+    const run = (prefer === 'first' ? long[0] : prefer === 'last' ? long[long.length - 1] : longest(long)) ?? longest(runs);
+    return run && length(run) >= 3 ? Math.round(((run.start + run.end) / 200) * rate) : Math.round(((from + to) / 2) * rate);
   };
+  // A turn's text as the service timed it, to know whether it opens or closes on a stage direction.
+  const textOf = (span: { from: number; to: number }) => (answer.alignment?.characters ?? []).slice(span.from, span.to).join('').trim();
   const cuts: number[] = [0];
   const overlaps: boolean[] = [];
   for (let index = 1; index < count; index++) {
@@ -424,7 +438,10 @@ export function splitDialogue(answer: SpeechAnswer, count: number, heard?: { sta
     const next = timed[index];
     const overlap = useHeard ? next.start < previous.end + 0.05 : next.start < previous.end - 0.05;
     overlaps.push(overlap);
-    const cut = overlap ? Math.round(next.start * rate) : useHeard ? silenceBetween(previous.end, next.start) : quietest(Math.round(((previous.end + next.start) / 2) * rate), Math.round(previous.start * rate), Math.round(next.end * rate));
+    const opens = textOf(spans[index]).startsWith('[');
+    const closes = textOf(spans[index - 1]).endsWith(']');
+    const prefer = opens === closes ? (opens ? 'longest' : 'first') : opens ? 'first' : 'last';
+    const cut = overlap ? Math.round(next.start * rate) : useHeard ? silenceBetween(previous.end, next.start, prefer) : quietest(Math.round(((previous.end + next.start) / 2) * rate), Math.round(previous.start * rate), Math.round(next.end * rate));
     cuts.push(Math.max(cuts[index - 1], cut));
   }
   cuts.push(all.length);
