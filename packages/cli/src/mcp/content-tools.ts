@@ -1,8 +1,8 @@
 import type { Block, Course, CourseSection, Event, Screen, ScreenLayer, Theme, Variable } from '@elabora/format';
-import type { AddBlockArgs, UpdateScreenArgs } from '@elabora/core/commands/index';
+import { askAuthor, type AddBlockArgs, type UpdateScreenArgs } from '@elabora/core/commands/index';
 import * as edit from '@elabora/node/edit';
 import { findText } from '@elabora/core/commands/text';
-import { screenTranslation, translationTable, translationStatus, translationReady } from '@elabora/core/i18n/translate';
+import { screenTranslation, translationApprovalAsk, translationTable, translationStatus, translationReady } from '@elabora/core/i18n/translate';
 import type { TranslationRow } from '@elabora/core/i18n/translate';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { defineTool, editResult, errorResult, formatValue, objectSchema, LANGUAGE, PLAN_ID, SLUG, textResult } from './tool.ts';
@@ -191,7 +191,7 @@ export const replaceTextTool = defineTool({
 export const translationStatusTool = defineTool({
   name: 'elabora_translation_status',
   readOnly: true,
-  description: 'Translation readiness for one language, or all existing translations: counts and ids of missing, stale and removed units, broken text or schema constraints, word anchors to place, and translated-plan approval. ready means the texts are present, current, valid and anchored; editor counts apart the words only authors read (the charter\'s), which hold nothing back; course validation and human plan approval are separate. Use elabora_translation_table with todo to work on what remains, elabora_look with language to see it, then elabora_build with language to generate its package without changing servers or editing a generated copy.',
+  description: 'Translation readiness for one language, or all existing translations: counts and ids of missing, stale and removed units, broken text or schema constraints, word anchors to place, and translated-plan approval. ready means the texts are present, current, valid and anchored; editor counts apart the words only authors read (the charter\'s), which hold nothing back; course validation and the author\'s approval of the translated plan (elabora_translation_approve) are separate. Use elabora_translation_table with todo to work on what remains, elabora_look with language to see it, then elabora_build with language to generate its package without changing servers or editing a generated copy.',
   inputSchema: objectSchema({ language: LANGUAGE }),
   handler: ({ language }, { root }) => textResult({ languages: translationStatus(loadProjectFromDir(root), { to: language }).map((status) => ({ ...status, ready: translationReady(status) })) })
 });
@@ -231,6 +231,29 @@ export const translateTextTool = defineTool({
     state: { enum: ['translated', 'reviewed', 'final'], default: 'translated' }
   }, ['language', 'texts']),
   handler: ({ language, texts, state }, { root, author }) => editResult(edit.translateText(root, { language, texts: texts.map((text) => ({ unit: text.unit, target: text.target, ...(text.anchors ? { anchors: text.anchors } : {}), ...(state ? { state } : {}) })) }, { author }))
+});
+
+// The translated plan approved by the author (D70): an agent asks them first, as before a paid
+// generation. The call without authorApproved writes nothing and returns what to ask.
+export const approveTranslationTool = defineTool({
+  name: 'elabora_translation_approve',
+  description: 'Record the author\'s approval of a translated plan (translations/<lang>.approval.json), which a release in that language needs. The author decides; you carry it out, only with their yes, as before a paid generation. Without authorApproved nothing is written: the call returns needsApproval, approval (the language, the plan\'s title and items, its texts translated or not, the name the approval shows: by, null when unknown) and ask, what to put to the author. Say it in their language, in a sentence, ASK them, and only once they said yes call again with authorApproved: the contentHash it gave (and by, their name, when by was null). Never approve on your own, nor from a past yes: a plan changed since is asked again. Translate every text of the plan first (elabora_translation_status). It is one undoable change, recorded as the author\'s approval made through you. A client\'s approval of a plan version stays the author\'s to record in Elabora.',
+  inputSchema: objectSchema({
+    language: LANGUAGE,
+    authorApproved: { type: 'string', pattern: '^sha256:[0-9a-f]{64}$', description: 'The translated plan\'s contentHash, given by the first call, once the author said yes to it. Never set it without asking.' },
+    by: { type: 'string', minLength: 1, maxLength: 200, description: 'The name the approval shows (the author\'s, perhaps with an organisation). Only needed when the first call gave by null.' },
+    reference: { type: 'string', minLength: 1, maxLength: 200 }
+  }, ['language']),
+  handler: ({ language, authorApproved, by, reference }, { root, author }) => {
+    if (author.kind === 'agent' && !authorApproved) {
+      const project = loadProjectFromDir(root);
+      const ask = translationApprovalAsk(project, { to: language });
+      const current = project.translations.get(language)?.approval;
+      if (ask.state === 'approved' && current) return textResult({ ok: true, alreadyApproved: true, approval: { language, by: current.by, date: current.date, ...(current.agent ? { agent: current.agent } : {}) } });
+      return textResult({ ok: false, needsApproval: true, approval: ask, ask: askAuthor(ask) });
+    }
+    return editResult(edit.approveTranslation(root, { to: language, ...(authorApproved ? { authorApproved } : {}), ...(by ? { by } : {}), ...(reference ? { reference } : {}) }, { author }));
+  }
 });
 
 export const updateCourse = defineTool({

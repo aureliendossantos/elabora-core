@@ -632,7 +632,10 @@ translate reuse [dir] --to <lang> --from <course or .xlf> [--json]
 translate build [dir] --to <lang> --out <dir> [--allow-missing] [--json]
                                                     Generate the translated course (then elabora build it as any course)
 translate approve [dir] --to <lang> --by "<name, organisation>" [--reference <ref>]
-                                                    Approve the translated plan (human decision, kept with the source)
+                                                    Approve the translated plan (the author's decision, kept with the source).
+                                                    An agent asks the author first: without --author-approved it writes
+                                                    nothing and says what to ask (exit code 3); with their yes,
+                                                    --author-approved <contentHash> records their approval, made through it
 ```
 
 ## Interoperability

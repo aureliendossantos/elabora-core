@@ -1,6 +1,6 @@
 # Agent tools
 
-Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 112 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
+Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 113 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
 
 ## Reading
 
@@ -85,7 +85,7 @@ A language of the course as a bilingual table: every text a learner (or the appr
 
 ### `elabora_translation_status`
 
-Translation readiness for one language, or all existing translations: counts and ids of missing, stale and removed units, broken text or schema constraints, word anchors to place, and translated-plan approval. ready means the texts are present, current, valid and anchored; editor counts apart the words only authors read (the charter's), which hold nothing back; course validation and human plan approval are separate. Use elabora_translation_table with todo to work on what remains, elabora_look with language to see it, then elabora_build with language to generate its package without changing servers or editing a generated copy.
+Translation readiness for one language, or all existing translations: counts and ids of missing, stale and removed units, broken text or schema constraints, word anchors to place, and translated-plan approval. ready means the texts are present, current, valid and anchored; editor counts apart the words only authors read (the charter's), which hold nothing back; course validation and the author's approval of the translated plan (elabora_translation_approve) are separate. Use elabora_translation_table with todo to work on what remains, elabora_look with language to see it, then elabora_build with language to generate its package without changing servers or editing a generated copy.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -681,6 +681,17 @@ Translate texts of the course into a language, in one undoable change (translati
 | `language` | string | yes | A BCP 47 tag: en, de, pt-BR. |
 | `texts` | object[] | yes |  |
 | `state` | "translated" \| "reviewed" \| "final" |  |  Default "translated". |
+
+### `elabora_translation_approve`
+
+Record the author's approval of a translated plan (translations/&lt;lang&gt;.approval.json), which a release in that language needs. The author decides; you carry it out, only with their yes, as before a paid generation. Without authorApproved nothing is written: the call returns needsApproval, approval (the language, the plan's title and items, its texts translated or not, the name the approval shows: by, null when unknown) and ask, what to put to the author. Say it in their language, in a sentence, ASK them, and only once they said yes call again with authorApproved: the contentHash it gave (and by, their name, when by was null). Never approve on your own, nor from a past yes: a plan changed since is asked again. Translate every text of the plan first (elabora_translation_status). It is one undoable change, recorded as the author's approval made through you. A client's approval of a plan version stays the author's to record in Elabora.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `language` | string | yes | A BCP 47 tag: en, de, pt-BR. |
+| `authorApproved` | string |  | The translated plan's contentHash, given by the first call, once the author said yes to it. Never set it without asking. |
+| `by` | string |  | The name the approval shows (the author's, perhaps with an organisation). Only needed when the first call gave by null. |
+| `reference` | string |  |  |
 
 ### `elabora_update_course`
 

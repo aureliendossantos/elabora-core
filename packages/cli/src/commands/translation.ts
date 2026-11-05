@@ -11,7 +11,10 @@ const HELP = `  translate export [dir] --to <lang>                  Create or up
   translate build [dir] --to <lang> --out <dir> [--allow-missing] [--json]
                                                       Generate the translated course (then elabora build it as any course)
   translate approve [dir] --to <lang> --by "<name, organisation>" [--reference <ref>]
-                                                      Approve the translated plan (human decision, kept with the source)`;
+                                                      Approve the translated plan (the author's decision, kept with the source).
+                                                      An agent asks the author first: without --author-approved it writes
+                                                      nothing and says what to ask (exit code 3); with their yes,
+                                                      --author-approved <contentHash> records their approval, made through it`;
 
 const exportCommand = defineCommand({
   name: 'translate export',
@@ -74,14 +77,27 @@ const buildCommand = defineCommand({
 
 const approve = defineCommand({
   name: 'translate approve',
-  flags: { to: 'string', by: 'string', reference: 'string', json: 'boolean' },
+  flags: { to: 'string', by: 'string', reference: 'string', 'author-approved': 'string', json: 'boolean' },
   run: ({ positionals: [dir = '.'], flags }) => reportingFailures(async () => {
     const { approveTranslation } = await import('@elabora/node/translate');
-    if (!flags.to) { console.error('Usage: elabora translate approve [dir] --to <lang> --by "<name, organisation>"'); return 2; }
-    // The core refuses a missing approver, with the message agents expect.
-    const approval = approveTranslation(dir, { to: flags.to, by: flags.by ?? '', reference: flags.reference });
+    if (!flags.to) { console.error('Usage: elabora translate approve [dir] --to <lang> --by "<name, organisation>" (an agent: --author-approved <contentHash>, with the author\'s yes)'); return 2; }
+    // The core refuses a missing approver, with the message agents expect; an agent without the
+    // author's yes gets what to ask them, and exit code 3 (D70).
+    let approval;
+    try {
+      approval = approveTranslation(dir, { to: flags.to, ...(flags.by !== undefined ? { by: flags.by } : {}), ...(flags.reference ? { reference: flags.reference } : {}), ...(flags['author-approved'] ? { authorApproved: flags['author-approved'] } : {}) });
+    } catch (error) {
+      if (!(error instanceof Error && 'code' in error && error.code === 'E_TRANSLATION_ASK_AUTHOR')) throw error;
+      if (flags.json) {
+        const [{ loadProjectFromDir }, { translationApprovalAsk }] = await Promise.all([import('@elabora/node/project-reader'), import('@elabora/core/i18n/translate')]);
+        let ask = null;
+        try { ask = translationApprovalAsk(loadProjectFromDir(dir), { to: flags.to }); } catch { /* the message says it */ }
+        printJson({ ok: false, code: 'E_TRANSLATION_ASK_AUTHOR', needsApproval: true, ...(ask ? { approval: ask } : {}), ask: error.message });
+      } else console.error(`✘ ${error.message}`);
+      return 3;
+    }
     if (flags.json) { printJson(approval); return 0; }
-    console.log(`✔ Translated plan (${approval.language}) approved by ${approval.by} on ${approval.date}, ${approval.contentHash.slice(0, 19)}…`);
+    console.log(`✔ Translated plan (${approval.language}) approved by ${approval.by}${approval.agent ? ` (recorded by ${approval.agent} on their yes)` : ''} on ${approval.date}, ${approval.contentHash.slice(0, 19)}…`);
     return 0;
   }, { json: flags.json })
 });

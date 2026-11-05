@@ -28,7 +28,7 @@ export const TOOL_ACTIVITY: Readonly<Record<string, ActivityFamily | null>> = {
   elabora_upsert_event: 'write-screen', elabora_remove_event: 'write-screen', elabora_set_timing: 'write-screen', elabora_set_dialogue_node: 'write-screen', elabora_remove_dialogue_node: 'write-screen',
   elabora_upsert_variable: 'write-course', elabora_rename_variable: 'write-course', elabora_remove_variable: 'write-course', elabora_replace_text: 'write-course', elabora_update_course: 'write-course',
   elabora_ignore_finding: 'write-course', elabora_rename: 'write-course', elabora_player: 'write-course',
-  elabora_translate_text: 'translate',
+  elabora_translate_text: 'translate', elabora_translation_approve: 'translate',
   elabora_source_add: 'media', elabora_media_import: 'media', elabora_set_captions: 'media', elabora_image_to_video: 'media', elabora_import_narration: 'media', elabora_sound_add: 'media',
   elabora_narration_line_from_audio: 'listen', elabora_narration_text_from_audio: 'listen', elabora_transcribe: 'listen', elabora_align_narration: 'listen',
   elabora_voice_generate: 'record', elabora_sound_generate: 'record',
@@ -66,7 +66,7 @@ export const COMMAND_ACTIVITY: Readonly<Record<string, ActivityFamily | null>> =
   'object new': 'write-object', 'object map': 'object', 'object test': 'try-object', 'object replay': 'try-object',
   'plan status': 'plan', 'plan write': 'write-plan', 'plan text': 'plan', 'plan voiceover': 'write-plan', 'plan diff': 'plan', 'plan revert': 'write-plan', 'plan note': 'write-plan',
   'plan version': null, 'plan approve': null, 'plan export': 'package',
-  'translate export': 'translations', 'translate status': 'translations', 'translate reuse': 'translate', 'translate build': 'package', 'translate approve': null,
+  'translate export': 'translations', 'translate status': 'translations', 'translate reuse': 'translate', 'translate build': 'package', 'translate approve': 'translate',
   'lesson-md export': 'package', 'lesson-md import': 'write-screen',
   // tools call: the tool it calls says itself (callAgentTool).
   mcp: null, codes: 'docs', docs: 'docs', rules: 'learn', 'rules update': null,

@@ -344,7 +344,7 @@ export function translationStatus(project: Project, { to }: { to?: string } = {}
   });
 }
 
-// Text readiness is separate from the human approval of the translated plan and the course's
+// Text readiness is separate from the author's approval of the translated plan and the course's
 // validation. Both CLI exit codes and agent status use this same definition.
 export function translationReady(status: TranslationStatus): boolean {
   return status.exists && !status.toTranslate && !status.stale && !status.problems.length && !status.anchors.toPlace.length;
@@ -507,7 +507,7 @@ function translatedFiles(project: Project, xliff: XliffDocument, language: strin
       const frozen = versionedPlan(plan);
       translated.files.set(planVersionFile(1), {
         $schema: schemaId('plan-version'), version: 1, date: approval.date, contentHash: planContentHash(frozen), plan: frozen,
-        validation: { by: approval.by, date: approval.date, ...(approval.reference ? { reference: approval.reference } : {}) }
+        validation: { by: approval.by, date: approval.date, ...(approval.reference ? { reference: approval.reference } : {}), ...(approval.agent ? { agent: approval.agent } : {}) }
       } satisfies PlanVersion);
     }
   }
@@ -535,15 +535,61 @@ export function translatedCourse(project: Project, { to, allowMissing = false, s
   return { files, plan, approved, units, missing, broken, unplaced, agentsNote };
 }
 
-// Approve the translated plan (a person who read it): stored with the source course, valid while the
-// translated plan, and so its source, keeps the same content. Returns the file to write.
-export function translationApproval(project: Project, { to, by, reference, date }: { to: string; by: string; reference?: string; date?: string }): { file: string; text: string; approval: TranslationApproval } {
+// Approve the translated plan: stored with the source course, valid while the translated plan, and so
+// its source, keeps the same content. Returns the file to write. agent: the agent that records it on the
+// author's word (D70), kept in the approval beside who decided.
+export function translationApproval(project: Project, { to, by, reference, date, agent }: { to: string; by: string; reference?: string; date?: string; agent?: string }): { file: string; text: string; approval: TranslationApproval } {
+  const { plan, source } = translatedPlanOf(project, to);
+  if (!by) throw new Error('--by "<name, organisation>" is required: who approves the translated plan.');
+  const approval: TranslationApproval = { language: to, by, date: date || localDay(), contentHash: planContentHash(plan), sourceContentHash: planContentHash(source), ...(reference ? { reference } : {}), ...(agent ? { agent } : {}) };
+  return { file: approvalPath(to), text: stringifyJSON(approval), approval };
+}
+
+function translatedPlanOf(project: Project, to: string): { plan: Plan; source: Plan } {
   checkLanguage(project, to);
-  if (!by) throw new Error('--by "<name, organisation>" is required: a person approves the translated plan.');
   const xliff = xliffOf(project, to);
   if (!xliff) throw new Error(`No translations/${to}.xlf.`);
   const { plan } = translatedFiles(project, xliff, to);
   if (!plan || !project.plan) throw new Error('The course has no plan.');
-  const approval: TranslationApproval = { language: to, by, date: date || localDay(), contentHash: planContentHash(plan), sourceContentHash: planContentHash(project.plan), ...(reference ? { reference } : {}) };
-  return { file: approvalPath(to), text: stringifyJSON(approval), approval };
+  return { plan, source: project.plan };
+}
+
+// What an agent puts to the author before it records their approval of a translated plan (D70), as
+// before a paid generation: nothing is written. contentHash names the translated plan the author says
+// yes to (the agent's second call gives it back: a plan changed in between is asked again). by: the
+// name the approval would show, the author's from an approval they made through an agent before;
+// null, the agent asks it. texts: the plan's own texts in that language.
+export interface TranslationApprovalAsk {
+  language: string;
+  contentHash: string;
+  plan: { title: string; objectives: number; items: number };
+  texts: { units: number; translated: number; toTranslate: number; stale: number; toReview: number };
+  ready: boolean; // every text of the language translated, current and whole (translationReady)
+  state: TranslatedPlanState;
+  by: string | null;
+}
+
+export function translationApprovalAsk(project: Project, { to }: { to: string }): TranslationApprovalAsk {
+  const { plan } = translatedPlanOf(project, to);
+  const xliff = xliffOf(project, to) as XliffDocument;
+  const units = extractUnits(project).filter((unit) => unit.file === 'plan.json');
+  const status = compare(units, xliff);
+  const toReview = status.translated.filter((id) => !['reviewed', 'final'].includes(xliff.units.get(id)?.state ?? '')).length;
+  const [whole] = translationStatus(project, { to });
+  return {
+    language: to,
+    contentHash: planContentHash(plan),
+    plan: { title: plan.title ?? '', objectives: plan.objectives?.length ?? 0, items: plan.items?.length ?? 0 },
+    texts: { units: units.length, translated: status.translated.length, toTranslate: status.fresh.length, stale: status.stale.length, toReview },
+    ready: !!whole && translationReady(whole),
+    state: translatedPlanState(project, xliff, to),
+    by: authorsName(project)
+  };
+}
+
+// The author's name as their own approvals show it: the latest one an agent recorded on their word
+// (a client's approval names the client).
+function authorsName(project: Project): string | null {
+  const theirs = [...project.translations.values()].flatMap((entry) => (entry.approval?.agent && entry.approval.by ? [entry.approval] : []));
+  return theirs.sort((a, b) => a.date.localeCompare(b.date)).at(-1)?.by ?? null;
 }

@@ -96,8 +96,9 @@ export async function withCourseLanguage<T>(dir: string, options: { language?: s
   } finally { fs.rmSync(work, { recursive: true, force: true }); }
 }
 
-// Approve the translated plan (a person who read it): stored with the source course.
-export function approveTranslation(dir: string, args: { to: string; by: string; reference?: string; date?: string }, options?: EditOptions) {
+// Approve the translated plan: stored with the source course. A person approves it; an agent, with the
+// author's yes (authorApproved, D70).
+export function approveTranslation(dir: string, args: commands.ApproveTranslationArgs, options?: EditOptions) {
   return runCommand(dir, { name: 'approve_translation', args, run: (context) => commands.approveTranslation(context, args) }, options).approval;
 }
 

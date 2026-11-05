@@ -843,13 +843,15 @@ export type PlanVersion = {
   notes?: PlanNote[];
   /** Each time the version was exported for the client: the day and the format. Exporting adds one; it never makes a version. */
   sends?: PlanSend[];
-  /** The client validated this version (elabora plan approve, the app's « Valider… »), never an agent. */
+  /** The client validated this version (elabora plan approve, the app's « Valider… »), never an agent; in a translated course, the approval of its translated plan (elabora translate approve), which the author may give through their agent (agent). */
   validation?: {
     /** Who validated (name and organisation). */
     by: string;
     date: CalendarDate;
     /** Where the validation is written (an email, minutes, a purchase order). */
     reference?: string;
+    /** The agent that recorded it on the author's yes: a translated plan the author approved through their agent (D70). A client's validation of a version never has one. */
+    agent?: string;
   };
 };
 

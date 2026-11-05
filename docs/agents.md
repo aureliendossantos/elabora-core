@@ -113,7 +113,11 @@ Pass the author explicitly when you embed calls.
 
 `tools list --json` and MCP `tools/list` are two views of one catalogue, and `tools call` takes each operation by its exact name and schema. Validation, locking, journaling and undo live in the shared services, so every transport gets them. Translation export and approval go through the same executor.
 
-Some decisions belong to people. The core refuses an agent author that records a plan version's approval or a translated plan's approval. A script a person runs can name its author with `ELABORA_AUTHOR=human:<name>`. This attribution records who acted. A host with full shell access can still act as anyone.
+Some decisions belong to people. The core refuses an agent author that makes a plan version or records the client's validation of one (`E_PLAN_PERSON_ONLY`).
+
+Others are the author's, and their agent carries them out once they said yes, as before a paid generation (D70). A translated plan is one: `elabora_translation_approve` (CLI `translate approve`) without `authorApproved` writes nothing and returns what to put to the author. Only with their yes does the agent call again with `authorApproved`, the translated plan's `contentHash` it was given; a plan changed in between is asked again (`E_TRANSLATION_ASK_AUTHOR`). The approval and the journal keep both: the author's name (`by`) and the agent's (`agent`, the journal's author).
+
+A script a person runs can name its author with `ELABORA_AUTHOR=human:<name>`. This attribution records who acted. A host with full shell access can still act as anyone.
 
 | Workflow | Shared operations | What the CLI adds, and what stays human |
 |---|---|---|
@@ -122,7 +126,7 @@ Some decisions belong to people. The core refuses an agent author that records a
 | Media and narration | Import, captions, voice selection and generation, transcription, alignment, timing | Batch and maintenance commands. Paid services keep their approval rules. |
 | Review and undo | History, undo, reviewers' comments | Publishing, sharing, replying and resolving are the author's actions. |
 | Visual checks and delivery | Look, fit, screenshots, package build and tests | Capture batches, output paths and larger test matrices. |
-| Translation | Bilingual table, validated batch translation, readiness; validate, look, fit, screenshot, build and test with `language` on the source course | `translate export/status/build/approve`. Approving a translated plan is human. |
+| Translation | Bilingual table, validated batch translation, readiness; validate, look, fit, screenshot, build and test with `language` on the source course | `translate export/status/build/approve`. The author approves a translated plan; the agent records it with their yes. |
 
 An operation missing from MCP is still within reach of an agent with a shell, through the CLI. Respect the author's decisions whatever the transport. A read-only server limits that server's operations only. Read tools may write caches and captures; they leave the authored course as it is.
 

@@ -12,6 +12,7 @@ import { readXliff, toXliff } from '@elabora/core/i18n/xliff';
 import { screenTranslation, translatedCourse, translationStatus } from '@elabora/core/i18n/translate';
 import { renderScreen } from '@elabora/core/render/screen';
 import type { Block } from '@elabora/format';
+import { callAgentTool } from '@elabora/cli';
 import { copyExample, readJSON, writeJSON } from '../helpers.ts';
 
 // The app's « Traduction » beyond its table: a screen's texts in a language with where the canvas
@@ -106,7 +107,7 @@ test('the translated plan approved as a change, undone like any other', () => {
   translateAll(dir, 'en');
   const before = translationStatus(loadProjectFromDir(dir), { to: 'en' })[0];
   assert.equal(before?.exists && before.plan, 'not approved');
-  assert.throws(() => edit.approveTranslation(dir, { to: 'en', by: 'Agent' }, { author: { kind: 'agent' } }), /Only a person/);
+  assert.throws(() => edit.approveTranslation(dir, { to: 'en', by: 'Agent' }, { author: { kind: 'agent' } }), (error: Error & { code?: string }) => error.code === 'E_TRANSLATION_ASK_AUTHOR' && /Ask the author first.*Nothing was written/s.test(error.message));
   const approved = edit.approveTranslation(dir, { to: 'en', by: 'Emma Collins, Hélios', date: '2026-10-08' }, { author: { kind: 'human' } });
   assert.equal(approved.op, 'approve_translation');
   assert.equal(readJSON(dir, 'translations/en.approval.json').by, 'Emma Collins, Hélios');
@@ -115,6 +116,49 @@ test('the translated plan approved as a change, undone like any other', () => {
   edit.undo(dir);
   assert.equal(fs.existsSync(path.join(dir, 'translations/en.approval.json')), false);
   assert.throws(() => edit.approveTranslation(dir, { to: 'en', by: '' }, { author: { kind: 'human' } }), /--by/);
+});
+
+// D70: an agent asks the author, then records their approval on their yes, with its name beside theirs.
+test('an agent approves a translated plan only with the author\'s yes to that plan', async () => {
+  const dir = copy();
+  translateAll(dir, 'en');
+  const agent = { kind: 'agent' as const, name: 'claude-code' };
+  const body = async (args: Record<string, unknown>) => JSON.parse(((await callAgentTool('elabora_translation_approve', args, { root: dir, author: agent })).content[0] as { text: string }).text);
+  const call = (args: Record<string, unknown>) => body({ language: 'en', ...args });
+  // The first call writes nothing and says what to ask.
+  const asked = await call({});
+  assert.equal(asked.needsApproval, true);
+  assert.match(asked.approval.contentHash, /^sha256:[0-9a-f]{64}$/);
+  assert.equal(asked.approval.by, null, 'no approval of the author\'s yet: their name is asked');
+  assert.equal(asked.approval.texts.toTranslate + asked.approval.texts.stale, 0);
+  assert.match(asked.ask, /Ask the author first/);
+  assert.equal(fs.existsSync(path.join(dir, 'translations/en.approval.json')), false);
+  // A yes to another plan, or with no name, writes nothing.
+  assert.match(JSON.stringify(await call({ authorApproved: `sha256:${'0'.repeat(64)}`, by: 'Aurélien' })), /changed since the author said yes/);
+  assert.match(JSON.stringify(await call({ authorApproved: asked.approval.contentHash })), /the name their approval shows/);
+  assert.equal(fs.existsSync(path.join(dir, 'translations/en.approval.json')), false);
+  // With the yes: the author's approval, made through the agent.
+  const done = await call({ authorApproved: asked.approval.contentHash, by: 'Aurélien' });
+  assert.ok(done.change);
+  const approval = readJSON(dir, 'translations/en.approval.json');
+  assert.equal(approval.by, 'Aurélien');
+  assert.equal(approval.agent, 'claude-code');
+  const status = translationStatus(loadProjectFromDir(dir), { to: 'en' })[0];
+  assert.equal(status?.exists && status.plan, 'approved');
+  const entry = readJournal(dir).at(-1)!;
+  assert.equal(entry.author?.kind, 'agent');
+  assert.equal(entry.author?.name, 'claude-code');
+  // Asked again: already approved. Another language knows the author's name now.
+  assert.equal((await call({})).alreadyApproved, true);
+  translateAll(dir, 'de');
+  assert.equal((await body({ language: 'de' })).approval.by, 'Aurélien');
+  // A changed plan is asked again.
+  const plan = readJSON(dir, 'plan.json');
+  writeJSON(dir, 'plan.json', { ...plan, title: `${plan.title} (2)` });
+  translateAll(dir, 'en');
+  const again = await call({});
+  assert.notEqual(again.approval.contentHash, asked.approval.contentHash);
+  assert.match(JSON.stringify(await call({ authorApproved: asked.approval.contentHash, by: 'Aurélien' })), /changed since/);
 });
 
 const QUIET: OpenOptions = { backups: { onOpen: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 };

@@ -39,7 +39,7 @@ export { proofMarkdown } from './compile/proof.ts';
 export type { BuildReport } from './compile/report.ts';
 export { listProfiles, getProfile, resolveProfiles, scorm12Limits } from './lms/profiles.ts';
 export type { LmsProfile, Scorm12Limits } from './lms/profiles.ts';
-export { translationExport, translationStatus, translatedCourse, translationApproval } from './i18n/translate.ts';
+export { translationExport, translationStatus, translatedCourse, translationApproval, translationApprovalAsk, type TranslationApprovalAsk } from './i18n/translate.ts';
 export { lessonMdExport, parseLessonMd, lessonToScreen } from './interop/lesson-md.ts';
 export { checkFormat, summarizeNotes, outdatedMessage, newerMessage, FORMAT_STEPS } from './format/migrations/index.ts';
 export type { FormatCheck, FormatMigration, FormatStep, MigrationNote } from './format/migrations/index.ts';

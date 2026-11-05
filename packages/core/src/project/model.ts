@@ -70,6 +70,8 @@ export interface TranslationApproval {
   contentHash: string;
   sourceContentHash: string;
   reference?: string;
+  // The agent that recorded it on the author's yes (D70): the author decided, the agent carried it out.
+  agent?: string;
 }
 
 // A project whose files are in an older format: loadProject read it migrated in memory

@@ -84,7 +84,7 @@ export function describeChange(change: ChangeLike): string {
       const texts = args && typeof args === 'object' && 'texts' in args && Array.isArray(args.texts) ? args.texts.length : null;
       return texts === null ? `translated ${of('unit')} into ${of('language')}` : `translated ${texts} text${texts === 1 ? '' : 's'} into ${of('language')}`;
     }
-    case 'approve_translation': return `recorded the approval of the ${of('to')} plan by ${of('by')}`;
+    case 'approve_translation': return args && typeof args === 'object' && 'authorApproved' in args ? `recorded the author's approval of the ${of('to')} plan, on their yes` : `recorded the approval of the ${of('to')} plan by ${of('by')}`;
     case 'update_course': return 'changed the course settings';
     case 'update_agent_rules': return `brought the rules for agents in AGENTS.md up to date (revision ${of('to')})`;
     case 'upgrade_theme': return 'put the theme under the components (cascade D32), its look kept';

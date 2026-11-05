@@ -522,9 +522,16 @@ test('translation CLI writes share the journal and human approval guard with emb
     const table = await callJSON(client, 'elabora_translation_table', { language: 'en' });
     await callJSON(client, 'elabora_translate_text', { language: 'en', texts: table.rows.map((row: { unit: string; source: string }) => ({ unit: row.unit, target: row.source })) });
     const refused = await elabora(['translate', 'approve', dir, '--to', 'en', '--by', 'Invented approver', '--json'], ROOT, { author: 'agent:translator' });
-    assert.equal(refused.status, 1);
-    assert.equal(JSON.parse(refused.stdout).ok, false);
-    assert.match(JSON.parse(refused.stdout).error, /Only a person/);
+    // An agent asks the author first (D70): exit code 3, what to ask, nothing written.
+    assert.equal(refused.status, 3, refused.stderr);
+    const asked = JSON.parse(refused.stdout);
+    assert.equal(asked.needsApproval, true);
+    assert.match(asked.ask, /Ask the author first/);
+    assert.equal(fs.existsSync(path.join(dir, 'translations/en.approval.json')), false);
+    const yes = await elabora(['translate', 'approve', dir, '--to', 'en', '--by', 'Aurélien', '--author-approved', asked.approval.contentHash, '--json'], ROOT, { author: 'agent:translator' });
+    assert.equal(yes.status, 0, yes.stderr);
+    assert.equal(JSON.parse(yes.stdout).agent, 'translator');
+    await callJSON(client, 'elabora_undo', { change: edit.history(dir).at(-1)!.seq });
     assert.equal(fs.existsSync(path.join(dir, 'translations/en.approval.json')), false);
     const human = await elabora(['translate', 'approve', dir, '--to', 'en', '--by', 'Actual approver', '--json'], ROOT, { author: 'human:Actual approver' });
     assert.equal(human.status, 0, human.stderr);

@@ -57,11 +57,12 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["by", "date"],
-      "description": "The client validated this version (elabora plan approve, the app's « Valider… »), never an agent.",
+      "description": "The client validated this version (elabora plan approve, the app's « Valider… »), never an agent; in a translated course, the approval of its translated plan (elabora translate approve), which the author may give through their agent (agent).",
       "properties": {
         "by": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Who validated (name and organisation)." },
         "date": { "$ref": "defs.schema.json#/$defs/date" },
-        "reference": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Where the validation is written (an email, minutes, a purchase order)." }
+        "reference": { "type": "string", "minLength": 1, "maxLength": 200, "description": "Where the validation is written (an email, minutes, a purchase order)." },
+        "agent": { "type": "string", "minLength": 1, "maxLength": 200, "description": "The agent that recorded it on the author's yes: a translated plan the author approved through their agent (D70). A client's validation of a version never has one." }
       }
     }
   },

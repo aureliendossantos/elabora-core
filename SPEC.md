@@ -68,7 +68,7 @@ Validated questions are choice questions (`mode` `single` or `multiple`, with `o
 
 **Notes for the client.** `plan-versions/notes.json` (schema `plan-notes`) holds the author's notes on changes in no version yet, one per change (`target`: its key in the diff, `item:ITEM-3`; `text`). The next version takes those whose change it holds and freezes them in its `notes[]`. The document shows them in its margin and Word as comments; packages never carry them.
 
-**Translated plans.** A translated course (§13) has its own plan, generated from the source plan; its `translationOf` records the source plan's id, content hash and language. It is approved on its own (`elabora translate approve`): the translated course holds the approval as its validated version V1 while the source plan and its translation keep their content.
+**Translated plans.** A translated course (§13) has its own plan, generated from the source plan; its `translationOf` records the source plan's id, content hash and language. It is approved on its own (`elabora translate approve`), by the author or by their agent with their yes (D70: the approval names who decided, `by`, and the agent that recorded it, `agent`): the translated course holds the approval as its validated version V1 while the source plan and its translation keep their content.
 
 **Coverage rules.** Every screen `covers` at least one plan item; every plan item is covered by at least one screen (`E_PLAN_ITEM_UNCOVERED`). A validated text is used through `textRef` on a screen covering its item; a validated question through `questionRef`. Copies are not accepted as uses.
 
