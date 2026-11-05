@@ -564,7 +564,6 @@ export interface TranslationApprovalAsk {
   contentHash: string;
   plan: { title: string; objectives: number; items: number };
   texts: { units: number; translated: number; toTranslate: number; stale: number; toReview: number };
-  ready: boolean; // every text of the language translated, current and whole (translationReady)
   state: TranslatedPlanState;
   by: string | null;
 }
@@ -575,14 +574,15 @@ export function translationApprovalAsk(project: Project, { to }: { to: string })
   const units = extractUnits(project).filter((unit) => unit.file === 'plan.json');
   const status = compare(units, xliff);
   const toReview = status.translated.filter((id) => !['reviewed', 'final'].includes(xliff.units.get(id)?.state ?? '')).length;
-  const [whole] = translationStatus(project, { to });
+  const contentHash = planContentHash(plan);
+  const approval = approvalOf(project, to);
+  const state: TranslatedPlanState = approval?.contentHash === contentHash ? 'approved' : hasFile(project.files, approvalPath(to)) ? 'approval outdated' : 'not approved';
   return {
     language: to,
-    contentHash: planContentHash(plan),
+    contentHash,
     plan: { title: plan.title ?? '', objectives: plan.objectives?.length ?? 0, items: plan.items?.length ?? 0 },
     texts: { units: units.length, translated: status.translated.length, toTranslate: status.fresh.length, stale: status.stale.length, toReview },
-    ready: !!whole && translationReady(whole),
-    state: translatedPlanState(project, xliff, to),
+    state,
     by: authorsName(project)
   };
 }
@@ -590,6 +590,7 @@ export function translationApprovalAsk(project: Project, { to }: { to: string })
 // The author's name as their own approvals show it: the latest one an agent recorded on their word
 // (a client's approval names the client).
 function authorsName(project: Project): string | null {
-  const theirs = [...project.translations.values()].flatMap((entry) => (entry.approval?.agent && entry.approval.by ? [entry.approval] : []));
-  return theirs.sort((a, b) => a.date.localeCompare(b.date)).at(-1)?.by ?? null;
+  // The files are read as they are: a value of another type is no name.
+  const theirs = [...project.translations.values()].flatMap((entry) => (typeof entry.approval?.agent === 'string' && typeof entry.approval.by === 'string' && entry.approval.by ? [entry.approval] : []));
+  return theirs.sort((a, b) => String(a.date).localeCompare(String(b.date))).at(-1)?.by ?? null;
 }
