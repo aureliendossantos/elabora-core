@@ -330,7 +330,7 @@ test('generators: provenance, stale inputs (the tokens it reads) and hand edits'
   assert.ok(c.includes('W_GENERATED_ASSET_STALE') && c.includes('W_GENERATED_ASSET_EDITED'));
 });
 
-test('the clockwork sample validates without errors and with no warning but its unset spacing (its plan approved)', () => {
+test('the clockwork sample validates without errors and with no warning but its unset spacing (its plan is approved)', () => {
   const r = validateDir(path.join(ROOT, 'examples/clockwork'), { profiles: ['moodle'] });
   const shown = JSON.stringify(r.diagnostics.filter((d) => d.severity !== 'info'), null, 1);
   assert.equal(r.summary.errors, 0, shown);
