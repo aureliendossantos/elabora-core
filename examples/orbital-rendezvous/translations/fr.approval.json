@@ -1,8 +1,7 @@
 {
   "language": "fr",
-  "by": "Sample approver (fictional), Aster Orbital Services",
-  "date": "2026-10-05",
-  "contentHash": "sha256:35808a130494f5cddf7cb78e2619f92e6275310f37fe3bbb94db13f3bb6e4ca2",
-  "sourceContentHash": "sha256:d9f9d8caaadeff2df1781aecd78cac85433539b2738606195e8b90a7f97a144c",
-  "reference": "elabora-core sample translation, not a real client approval"
+  "by": "Aurélien Dos Santos",
+  "date": "2026-11-05",
+  "contentHash": "sha256:dedf4f3a35a05eaf8620d105f8fa8bdaadd3a84f12bca35c200b22317ed3ee5f",
+  "sourceContentHash": "sha256:4dee0466d694d22404cea3abe736d9630b1fa1efcc0b373dfea3d3073158d674"
 }

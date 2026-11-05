@@ -1,0 +1,245 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/plan-version.schema.json",
+  "version": 2,
+  "date": "2026-11-05",
+  "contentHash": "sha256:4dee0466d694d22404cea3abe736d9630b1fa1efcc0b373dfea3d3073158d674",
+  "plan": {
+    "id": "PLAN-ASTER-RDV-V1",
+    "title": "Slow down to catch up",
+    "businessGoal": "Give every new team member of Aster Orbital Services (fictional client), whatever their background, the intuition behind a rendezvous before they join a satellite-servicing mission: braking to catch up, then pushing back at the same point.",
+    "audience": {
+      "role": "New team members of a satellite-servicing company: operators, technicians and support staff",
+      "priorKnowledge": "low",
+      "notes": "No physics needed: speed, distance and time are enough. Most expect that pushing towards a target brings them closer."
+    },
+    "sources": [
+      {
+        "id": "SRC-1",
+        "title": "Curtis, Orbital Mechanics for Engineering Students, 4th edition, chapters 2, 6 and 7 (circular orbits, phasing manoeuvres, relative motion)",
+        "type": "textbook"
+      },
+      {
+        "id": "SRC-2",
+        "title": "Fehse, Automated Rendezvous and Docking of Spacecraft, Cambridge University Press, 2003, chapter 3 (phasing and relative trajectories)",
+        "type": "textbook"
+      },
+      {
+        "id": "SRC-3",
+        "title": "NASA, Gemini program mission reports: Gemini 4 (June 1965) and Gemini 6A/7 (December 1965)",
+        "type": "historical record"
+      },
+      {
+        "id": "SRC-4",
+        "title": "AOS-FD-07, Aster Orbital Services flight dynamics handbook: phasing rules of thumb",
+        "type": "internal handbook (fictional)",
+        "version": "2026-06"
+      }
+    ],
+    "objectives": [
+      {
+        "id": "OBJ-1",
+        "short": "Predict a push",
+        "statement": "Predict whether pushing forwards or backwards brings a spacecraft closer to a satellite ahead of it on the same orbit, and say why.",
+        "bloom": "understand",
+        "criterion": "Correct prediction on a rendezvous situation",
+        "sources": [
+          "SRC-1",
+          "SRC-2"
+        ]
+      },
+      {
+        "id": "OBJ-2",
+        "short": "Size the burn",
+        "statement": "Size the first burn of a rendezvous with the rule of thumb: at 500 km, each m/s of braking gains about 17 km per lap.",
+        "bloom": "apply",
+        "criterion": "Burn within 5 % of the expected value",
+        "sources": [
+          "SRC-1",
+          "SRC-4"
+        ]
+      },
+      {
+        "id": "OBJ-3",
+        "short": "Plan a rendezvous",
+        "statement": "Plan a two-burn rendezvous that meets a distance, time and fuel requirement, and check it on a simulated orbit.",
+        "bloom": "analyze",
+        "criterion": "3 simulated rendezvous out of 3",
+        "sources": [
+          "SRC-2",
+          "SRC-4"
+        ]
+      }
+    ],
+    "items": [
+      {
+        "id": "ITEM-1",
+        "kind": "intro",
+        "title": "Slow down to catch up",
+        "objectives": [],
+        "sources": [
+          "SRC-3"
+        ],
+        "description": "The situation: a satellite 50 km ahead on the same orbit, and the question of how to catch it. The hook: in 1965, Gemini 4 pushed towards its target and lost it; Gemini 6A caught Gemini 7 from a lower, faster orbit.",
+        "lockedTexts": [
+          {
+            "id": "TXT-1",
+            "text": "In 1965, the crew of Gemini 4 pushed towards their target. It drifted further away with every push. Six months later, Gemini 6A flew below its target, on a faster orbit, and caught Gemini 7."
+          }
+        ]
+      },
+      {
+        "id": "ITEM-2",
+        "kind": "exposition",
+        "title": "Lower is faster",
+        "objectives": [
+          "OBJ-1"
+        ],
+        "sources": [
+          "SRC-1"
+        ],
+        "description": "Three orbits to scale, from the Space Station to geostationary satellites, shown one by one as the learner selects them: the closer to the Earth, the shorter the lap, and why.",
+        "lockedTexts": [
+          {
+            "id": "TXT-2",
+            "text": "Closer to the Earth, gravity pulls harder: you have to fly faster to stay up, and each lap is shorter."
+          }
+        ]
+      },
+      {
+        "id": "ITEM-4",
+        "kind": "practice",
+        "title": "The first push",
+        "objectives": [
+          "OBJ-1"
+        ],
+        "description": "Prediction before the explanation, unscored: the satellite is 50 km ahead; push forwards, backwards or down? A short feedback on each choice."
+      },
+      {
+        "id": "ITEM-3",
+        "kind": "demonstration",
+        "title": "Brake to move ahead",
+        "objectives": [
+          "OBJ-1",
+          "OBJ-2"
+        ],
+        "sources": [
+          "SRC-1",
+          "SRC-4"
+        ],
+        "description": "Once the learner has chosen, what braking does, drawn on the figure: the far side of the orbit dips, the lap gets shorter, the spacecraft gains on the satellite; a push forwards at the same point stops the drift.",
+        "lockedTexts": [
+          {
+            "id": "TXT-3",
+            "text": "1. You brake: the far side of your orbit dips.\n2. Lower is faster: your lap gets shorter.\n3. Back at 1, you are closer to the satellite. Push forwards just as hard, and you stop drifting."
+          }
+        ]
+      },
+      {
+        "id": "ITEM-5",
+        "kind": "scenario",
+        "title": "Catch the satellite",
+        "objectives": [
+          "OBJ-2",
+          "OBJ-3"
+        ],
+        "sources": [
+          "SRC-2",
+          "SRC-4"
+        ],
+        "description": "3D lab of a spacecraft and a satellite on a 500 km orbit, with the rule of thumb beside it: at 500 km, each m/s of braking gains about 17 km per lap. Three rendezvous in a row, each with one instruction and only the controls it needs: catch a satellite 51 km ahead in one lap (the burn alone); the same gap with 2.5 m/s of fuel, in up to three laps (the laps and the fuel appear); let a satellite 34 km behind catch up within two laps. The lab burns back at the same point. Scored.",
+        "lockedTexts": [
+          {
+            "id": "TXT-4",
+            "text": "At 500 km up, each m/s of braking gains about **17 km per lap**."
+          }
+        ]
+      },
+      {
+        "id": "ITEM-6",
+        "kind": "assessment",
+        "title": "Plan one yourself",
+        "objectives": [
+          "OBJ-1",
+          "OBJ-2"
+        ],
+        "questions": [
+          {
+            "id": "Q-1",
+            "mode": "numeric",
+            "objectives": [
+              "OBJ-2"
+            ],
+            "bloom": "apply",
+            "stem": "The satellite is **85 km ahead**, 500 km up. You take **two laps** to catch it. How hard do you brake, in m/s?",
+            "answer": 2.5,
+            "tolerance": {
+              "percent": 5
+            },
+            "unit": "m/s",
+            "feedback": {
+              "correct": "Right: $\\dfrac{85}{17 \\times 2} = 2.5$ m/s. Two laps later, push forwards 2.5 m/s and you stop drifting.",
+              "incorrect": "Each m/s gains about 17 km per lap: divide the gap by 17, then by the number of laps."
+            },
+            "misconceptions": [
+              {
+                "id": "one-lap",
+                "value": 5,
+                "tolerance": {
+                  "absolute": 0.1
+                },
+                "feedback": "That catches 85 km in one lap. Over two laps, half the burn is enough."
+              },
+              {
+                "id": "per-lap",
+                "value": 42.5,
+                "tolerance": {
+                  "absolute": 0.5
+                },
+                "feedback": "That is the distance to gain on each lap, in km. Divide it by 17 to get m/s."
+              }
+            ]
+          },
+          {
+            "id": "Q-2",
+            "mode": "single",
+            "objectives": [
+              "OBJ-1"
+            ],
+            "bloom": "understand",
+            "stem": "Two laps later, you are back where you braked, **300 m behind** the satellite. What now?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Push forwards as hard as you braked",
+                "correct": true,
+                "feedback": "Right: you are back on the satellite's orbit, and you stay 300 m behind it, ready for the final approach."
+              },
+              {
+                "id": "b",
+                "text": "Nothing: you are almost there",
+                "correct": false,
+                "feedback": "Your laps are still shorter: one lap later, you would be about 40 km ahead."
+              },
+              {
+                "id": "c",
+                "text": "Brake again to slow down",
+                "correct": false,
+                "feedback": "Your orbit would dip further, and you would shoot past the satellite."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "spacing": [
+      "D+3: two phasing calculations by email",
+      "D+10: one relative-motion plot to read",
+      "D+30: first simulator campaign debrief"
+    ],
+    "waivers": []
+  },
+  "validation": {
+    "by": "Aurélien Dos Santos",
+    "date": "2026-11-05"
+  }
+}

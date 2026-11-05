@@ -236,7 +236,7 @@ export function narrationLines(project: Project, screenId: string, language = pr
       duration: audioFile?.kind === 'binary' ? probed ?? sidecar?.duration ?? null : null,
       speakerVoice: speakerVoiceOf(speaker?.voices?.[language]),
       provider: sidecar?.provider ?? null, voice: sidecar?.voice ?? null, generated: sidecar?.generated ?? null, words: Array.isArray(sidecar?.words) ? sidecar.words : null, aligner: sidecar?.aligner ?? null,
-      take: sidecar?.take ?? null, credit: sidecar?.credit ?? null, model: sidecar?.model ?? null,
+      take: sidecar?.take ?? null, credit: typeof sidecar?.credit === 'string' ? sidecar.credit : null, model: sidecar?.model ?? null,
       mouth: typeof sidecar?.mouth === 'string' && isMouth(sidecar.mouth) ? sidecar.mouth : null
     };
   });
