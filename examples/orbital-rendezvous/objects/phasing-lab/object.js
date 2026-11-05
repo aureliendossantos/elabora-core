@@ -1,7 +1,8 @@
 // Free object « Phasing lab » — three.js r186, Elabora free-object contract 0.1.
-// The learner sets a first burn and a number of phasing orbits; the lab flies the manoeuvre around a
-// procedural Earth, burns back at the same point and measures the final gap to the client satellite,
-// requirement after requirement (three by default, a list prop).
+// The learner flies rendezvous around a procedural Earth, one at a time (three by default, a list
+// prop). Each shows its one instruction and only the controls it needs: the burn always, the laps when
+// it allows more than one, the fuel when it has a budget. The lab burns, flies the laps, burns back at
+// the same point and says where the satellite ends up; a rendezvous caught opens the next one.
 // Physics: orbit.js (two-body, shared with the course figures). Time: host.onFrame only.
 // The canvas is transparent: the scene sits on the course's own starfield, without a frame.
 import * as THREE from 'three';
@@ -12,63 +13,59 @@ const ALT = 500;                              // km, altitude of the circular or
 const R_ORBIT = RE + ALT;
 const RING = R_ORBIT / RE;                    // radius of the orbit in scene units (Earth radius = 1)
 const DV_MAX = 5;
-const MAX_REQUIREMENTS = 6;                   // most requirements the list may hold (manifest maxItems)
+const MAX_LAPS = 3;
+const MAX_REQUIREMENTS = 6;                   // most rendezvous the list may hold (manifest maxItems)
 const BURN_S = 0.6;                           // seconds on screen for each burn
-const HOLD_S = 1.8;                           // seconds the result stays before the next requirement
+const HOLD_S = 2.2;                           // seconds a result stays before the next rendezvous opens
 const IDLE_WARP = 240;                        // time warp while planning (the Earth turns slowly)
 const START = THREE.MathUtils.degToRad(246);  // burn point: front left of the Earth
 const SAMPLES_PER_ORBIT = 240;
 const NARROW = 760;                           // px of frame width under which the panel goes below the view
 const NARROW_VIEW = 340;
-const VIEWS = [{ az: 0, el: 0.36 }, { az: 0, el: 1.18 }];
+const VIEW = { az: 0, el: 0.36 };
 const SUN = new THREE.Vector3(1, 0.42, 0.62).normalize();
+const ICON_PAUSE = '<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg>';
+const ICON_PLAY = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2.5v11a1 1 0 0 0 1.5.86l9-5.5a1 1 0 0 0 0-1.72l-9-5.5A1 1 0 0 0 4 2.5z"/></svg>';
 
 export function mount(container, ctx) {
   const { host } = ctx;
   // Words come from the manifest strings, as worded (or translated) by the block: ctx.t(key, values).
   const t = ctx.t;
   const loc = ctx.locale || 'en';
-  const tx = {
-    reduced: t('reduced'), ready: t('ready'), burn: t('firstBurn'), retro: t('retrograde'), pro: t('prograde'), orbits: t('phasingOrbits'),
-    execute: t('execute'), running: t('running'), plot: t('plotTitle'), you: t('you'), clientTag: t('clientTag'), client: t('client'),
-    burn1: (dv) => t(dv < 0 ? 'burn1Retrograde' : dv > 0 ? 'burn1Prograde' : 'burn1None'),
-    gapText: (g, f) => (Math.abs(g) < 0.05 ? t('gapAlongside') : g > 0 ? t('gapAhead', { gap: f(g) }) : t('gapBehind', { gap: f(-g) })),
-    final: (where) => t('final', { where }), met: (i, where) => t('met', { i, where }), allDone: t('allDone'),
-    noBurn: t('whyNoBurn'), wrongWay: (dv) => t(dv > 0 ? 'whyPrograde' : 'whyRetrograde'), tooLittle: t('tooLittle'), tooMuch: t('tooMuch'), rule: t('rule'),
-    overBudget: (cost, budget) => t('overBudget', { cost, budget }), tooLong: (orbits) => t('tooLong', { orbits }),
-    coast: (lap, orbits) => t('coast', { lap, orbits }), burn2: t('burn2'),
-    explore: t('freeFlight'), req: (i, total) => t('requirement', { i, total }), done: t('allMet'), catchUp: t('catchUp'), letCatch: t('letCatch'),
-    freeBrief: t('freeBrief'), brief: (g, orbits, budget, f) => t(g >= 0 ? 'briefAhead' : 'briefBehind', { gap: f(Math.abs(g)), orbits, budget }),
-    dvText: (dv, f) => (dv < 0 ? t('burnRetrograde', { dv: f(-dv) }) : dv > 0 ? t('burnPrograde', { dv: f(dv) }) : t('burnNone')),
-    propellant: t('propellant'), of: (used, budget) => t('propellantUse', { used, budget }), both: t('bothBurns'),
-    predicted: (where) => t('predicted', { where }), play: t('resume'), pause: t('pause'), view: t('view'), viewNames: [t('view34'), t('viewAbove')],
-    scale: (k) => t('scale', { k }), along: t('plotAlong'), radial: t('plotAltitude')
-  };
-  const f1 = (v) => (Math.round(v * 10) / 10).toLocaleString(loc, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  // Numbers: a gap of 10 km or more to the km, a smaller one to a tenth (0.4 km ahead).
+  const fg = (v) => { const d = Math.abs(v) >= 9.95 ? 0 : 1; return v.toLocaleString(loc, { minimumFractionDigits: d, maximumFractionDigits: d }); };
   const fb = (v) => v.toLocaleString(loc, { maximumFractionDigits: 1 });
+  const where = (g) => (Math.abs(g) < 0.05 ? t('alongside') : g > 0 ? t('ahead', { gap: fg(g) }) : t('behind', { gap: fg(-g) }));
   const reduced = !!ctx.reducedMotion;
   let values = { ...ctx.props };                // as the block gives them; update() merges into them
   let props = withDefaults(values);
   // Part of the frame covered by the course layout (the brief floating over the stage).
   let safe = { top: 0, right: 0, bottom: 0, left: 0, ...(ctx.safeArea || {}) };
 
-  // step: index of the open requirement (their number once all are met); runs: manoeuvres flown
-  // for each, sized to the most requirements a list may hold.
+  // step: index of the open rendezvous (their number once all are caught); runs: manoeuvres flown for
+  // each, sized to the most rendezvous a list may hold. shown: the rendezvous the panel shows, which
+  // follows step once the learner has seen a catch.
   const state = { dv: 0, orbits: 1, step: 0, runs: Array(MAX_REQUIREMENTS).fill(0) };
-  let run = null;          // the manoeuvre being flown
+  let shown = 0;
+  let run = null;          // the manoeuvre being flown, then its result while it holds
   let paused = false;
-  let viewIndex = 0;
-  let az = VIEWS[0].az, elev = VIEWS[0].el, dist = 4;
+  let az = VIEW.az, elev = VIEW.el, dist = 4;
   let earthSpin = 0.6, cloudShift = 0;
   let narrow = false;
-  let message = reduced ? tx.reduced : tx.ready;
-  let messageKind = '';
+  let gapShown = null;     // the gap drawn while planning, eased towards the open rendezvous'
+  let message = '', messageKind = '';
 
   const reqs = () => props.requirements;
-  const current = () => (state.step < reqs().length ? reqs()[state.step] : { gap: reqs()[0].gap, orbits: 3, budget: 20, free: true });
+  const req = () => (shown < reqs().length ? reqs()[shown] : null);
+  const lapsOf = (r) => Math.min(MAX_LAPS, r.orbits);
+  const taskOf = (r) => {
+    if (r.instruction) return r.instruction;
+    const text = t(r.gap >= 0 ? 'taskAhead' : 'taskBehind', { gap: fb(Math.abs(r.gap)), orbits: r.orbits });
+    return r.budget ? `${text} ${t('taskFuel', { budget: fb(r.budget) })}` : text;
+  };
 
-  // ── DOM: transparent 3D view, glass control panel, relative-motion plot. The panel uses the Elabora
-  // UI kit (t-ui-* classes, --t-* variables), sizes in rem (1rem follows the course size class).
+  // ── DOM: transparent 3D view and one glass panel. The panel uses the Elabora UI kit (t-ui-*
+  // classes, --t-* variables), sizes in rem (1rem follows the course size class).
   container.innerHTML = '';
   container.className = 'pl-root t-ui';
   const css = document.createElement('style');
@@ -76,58 +73,55 @@ export function mount(container, ctx) {
   container.appendChild(css);
 
   const view = el('div', 'pl-view');
-  const panel = el('div', 'pl-panel pl-glass');
-  const hud = el('div', 'pl-hud pl-glass');
-  container.append(view, panel, hud);
+  const panel = el('div', 'pl-panel');
+  const pauseBtn = el('button', 'pl-pause'); pauseBtn.type = 'button';
+  container.append(view, panel, pauseBtn);
 
-  const instruction = el('p', 'pl-instruction t-ui-muted');
-  const card = el('div', 't-ui-card pl-card');
-  const cardEyebrow = el('p', 't-ui-eyebrow'), cardTitle = el('p', 't-ui-title'), cardText = el('p', 'pl-brief'), dots = el('div', 'pl-dots'); // one dot per requirement (refresh)
-  card.append(cardEyebrow, cardTitle, cardText, dots);
+  const dots = el('div', 'pl-dots'); dots.setAttribute('role', 'img');
+  const task = el('p', 'pl-task'); task.setAttribute('aria-live', 'polite');
+  const body = el('div', 'pl-body');
 
   const burnBox = el('div', 'pl-burn');
-  const burnHead = el('div', 'pl-burn-head');
-  const burnLabel = el('label', 'pl-label', tx.burn); burnLabel.htmlFor = 'pl-dv';
-  const burnValue = el('output', 'pl-dv'); burnValue.htmlFor = 'pl-dv';
+  const burnHead = el('div', 'pl-row');
+  const burnLabel = el('label', 'pl-label', t('burn')); burnLabel.htmlFor = 'pl-dv';
+  const burnValue = el('output', 'pl-value'); burnValue.htmlFor = 'pl-dv';
   burnHead.append(burnLabel, burnValue);
   const range = el('input', 'pl-range');
   Object.assign(range, { type: 'range', id: 'pl-dv', min: String(-DV_MAX), max: String(DV_MAX), step: '0.5', value: '0' });
-  const ends = el('div', 'pl-ends'); ends.append(el('span', '', tx.retro), el('span', '', tx.pro));
+  const ends = el('div', 'pl-ends'); ends.append(el('span', '', t('brake')), el('span', '', t('speedUp')));
   burnBox.append(burnHead, range, ends);
 
-  const seg = el('fieldset', 't-ui-seg');
-  const legend = el('legend', '', tx.orbits);
-  const segOptions = el('div', 't-ui-seg-options');
-  const orbitInputs = [1, 2, 3].map((n) => {
+  const lapsBox = el('fieldset', 't-ui-seg pl-laps');
+  const lapsOptions = el('div', 't-ui-seg-options');
+  const lapInputs = Array.from({ length: MAX_LAPS }, (_, i) => {
+    const n = i + 1;
     const label = el('label');
-    const input = el('input'); input.type = 'radio'; input.name = 'pl-orbits'; input.value = String(n);
+    const input = el('input'); input.type = 'radio'; input.name = 'pl-laps'; input.value = String(n);
     input.addEventListener('change', () => { if (input.checked) setOrbits(n); });
     label.append(input, document.createTextNode(String(n)));
-    segOptions.append(label);
+    lapsOptions.append(label);
     return input;
   });
-  seg.append(legend, segOptions);
+  lapsBox.append(el('legend', 'pl-label', t('laps')), lapsOptions);
 
-  const meters = el('div', 't-ui-meters');
-  const mFuel = el('div', 't-ui-meter'), mGap = el('div', 't-ui-meter');
-  meters.append(mFuel, mGap);
+  const fuelBox = el('div', 'pl-fuel');
+  const fuelHead = el('div', 'pl-row');
+  const fuelValue = el('span', 'pl-value');
+  fuelHead.append(el('span', 'pl-label', t('fuel')), fuelValue);
+  const gauge = el('div', 'pl-gauge'); gauge.setAttribute('aria-hidden', 'true');
+  const gaugeFill = el('i');
+  gauge.append(gaugeFill);
+  fuelBox.append(fuelHead, gauge);
+
   const predict = el('p', 'pl-predict');
-  const exec = el('button', 't-ui-btn t-ui-btn--primary pl-exec', tx.execute); exec.type = 'button';
+  const exec = el('button', 't-ui-btn t-ui-btn--primary pl-exec'); exec.type = 'button';
+  body.append(burnBox, lapsBox, fuelBox, predict, exec);
   const status = el('p', 't-ui-status pl-status'); status.setAttribute('role', 'status');
-  panel.append(instruction, card, burnBox, seg, meters, predict, exec, status);
+  panel.append(dots, task, body, status);
 
-  const hudHead = el('div', 'pl-hud-head');
-  const hudTitle = el('p', 't-ui-eyebrow', tx.plot);
-  const hudButtons = el('div', 'pl-hud-buttons');
-  const pauseBtn = el('button', 't-ui-btn t-ui-btn--ghost pl-small'); pauseBtn.type = 'button';
-  const viewBtn = el('button', 't-ui-btn t-ui-btn--ghost pl-small'); viewBtn.type = 'button';
-  hudButtons.append(pauseBtn, viewBtn);
-  hudHead.append(hudTitle, hudButtons);
-  const plot = makePlot();
-  const scaleNote = el('p', 'pl-scale t-ui-muted');
-  hud.append(hudHead, plot.svg, scaleNote);
-
-  const tags = { servicer: makeTag(tx.you, 'is-servicer'), client: makeTag(tx.clientTag, 'is-client') };
+  const tags = { servicer: makeTag('is-servicer'), client: makeTag('is-client') };
+  tags.servicer.name.textContent = t('you');
+  tags.client.name.textContent = t('satellite');
 
   // ── three.js scene ──
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: !!ctx.testMode });
@@ -181,7 +175,7 @@ export function mount(container, ctx) {
   const ringMat = new THREE.MeshBasicMaterial({ color: C.orbit, transparent: true, opacity: 0.6, depthWrite: false });
   const ring = new THREE.Mesh(ringGeo, ringMat);
   scene.add(ring);
-  const MAX_SAMPLES = 3 * SAMPLES_PER_ORBIT + 2;
+  const MAX_SAMPLES = MAX_LAPS * SAMPLES_PER_ORBIT + 2;
   const trailGeo = new THREE.BufferGeometry();
   trailGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(MAX_SAMPLES * 3), 3));
   trailGeo.setDrawRange(0, 0);
@@ -231,12 +225,12 @@ export function mount(container, ctx) {
     requestNarrowHeight();
     resize();
   }
-  // Narrow frames stack view, panel and plot: the object asks the host for the height of all three.
-  // Measured from the last child, not from the frame (whose height is the answer): no feedback loop.
+  // Narrow frames stack the view and the panel: the object asks the host for the height of both.
+  // Measured from the panel, not from the frame (whose height is the answer): no feedback loop.
   let requested = 0;
   function requestNarrowHeight() {
     if (!narrow) return;
-    const h = Math.ceil(hud.offsetTop + hud.offsetHeight + 12);
+    const h = Math.ceil(panel.offsetTop + panel.offsetHeight + 12);
     if (Math.abs(h - requested) > 1) { requested = h; host.requestHeight?.(h); }
   }
   function resize() {
@@ -260,13 +254,11 @@ export function mount(container, ctx) {
   const ro = new ResizeObserver(layout);
   ro.observe(container);
   ro.observe(panel);
-  ro.observe(hud);
 
   // ── interaction ──
   range.addEventListener('input', () => setDv(Number(range.value)));
   exec.addEventListener('click', execute);
   pauseBtn.addEventListener('click', togglePause);
-  viewBtn.addEventListener('click', () => { viewIndex = (viewIndex + 1) % VIEWS.length; az = VIEWS[viewIndex].az; elev = VIEWS[viewIndex].el; refresh(); });
   function onKey(e) {
     if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
     const k = e.key.toLowerCase();
@@ -274,9 +266,10 @@ export function mount(container, ctx) {
     else if (k === 'p') setDv(state.dv + 0.5);
     else if (k === '1' || k === '2' || k === '3') setOrbits(Number(k));
     else if (k === 'x') execute();
-    else if (k === ' ' && !(e.target instanceof HTMLButtonElement) && !(e.target instanceof HTMLInputElement)) { e.preventDefault(); togglePause(); }
+    else if (k === ' ' && flying() && !(e.target instanceof HTMLButtonElement) && !(e.target instanceof HTMLInputElement)) { e.preventDefault(); togglePause(); }
   }
   document.addEventListener('keydown', onKey);
+  // Dragging turns the camera around the Earth; nothing in the activity needs it.
   let drag = null;
   const canvas = renderer.domElement;
   canvas.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY, az, elev }; canvas.setPointerCapture?.(e.pointerId); });
@@ -289,69 +282,76 @@ export function mount(container, ctx) {
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
 
-  // Busy while a manoeuvre is flown; once it is over (result shown), the learner can plan the next one.
-  const busy = () => !!run && run.phase !== 'hold';
-  function endRun() { run = null; trailGeo.setDrawRange(0, 0); plot.setPath(null); }
+  // Flying: from the first burn to the second. Busy: flying, or holding a catch before the next
+  // rendezvous opens. After a miss the learner may plan again at once.
+  const flying = () => !!run && run.phase !== 'hold';
+  const busy = () => flying() || !!run?.met;
+  function endRun() {
+    if (!run) return;
+    gapShown = run.plan.finalGap;
+    if (run.met) { shown = state.step; state.dv = 0; state.orbits = 1; message = ''; messageKind = ''; renew(); }
+    run = null;
+    paused = false;
+    trailGeo.setDrawRange(0, 0);
+  }
   function setDv(v) {
-    if (busy()) return;
+    if (busy() || !req()) return;
     state.dv = THREE.MathUtils.clamp(Math.round(v * 2) / 2, -DV_MAX, DV_MAX);
-    if (run) endRun();
+    endRun();
     refresh();
   }
   function setOrbits(n) {
-    if (busy()) return;
-    state.orbits = THREE.MathUtils.clamp(n, 1, 3);
-    if (run) endRun();
+    const r = req();
+    if (busy() || !r) return;
+    state.orbits = THREE.MathUtils.clamp(n, 1, lapsOf(r));
+    endRun();
     refresh();
   }
-  function togglePause() { paused = !paused; refresh(); }
+  function togglePause() { if (flying()) { paused = !paused; refresh(); } }
 
   // ── the manoeuvre ──
   function execute() {
-    if (busy()) return;
-    if (run) endRun();
-    const req = current();
-    const plan = manoeuvre({ altitude: ALT, dv: state.dv, orbits: state.orbits, gap0: req.gap });
-    const n = state.orbits * SAMPLES_PER_ORBIT;
+    const r = req();
+    if (busy() || !r) return;
+    endRun();
+    const orbits = Math.min(state.orbits, lapsOf(r));
+    const plan = manoeuvre({ altitude: ALT, dv: state.dv, orbits, gap0: r.gap });
+    const n = orbits * SAMPLES_PER_ORBIT;
     const samples = Array.from({ length: n + 1 }, (_, i) => plan.at((plan.duration * i) / n));
-    run = { req, plan, samples, dv: state.dv, orbits: state.orbits, phase: 'burn1', time: 0, simT: 0, reported: false };
-    plot.setPath(samples);
+    run = { req: r, index: shown, plan, samples, dv: state.dv, orbits, phase: 'burn1', time: 0, simT: 0, met: false };
     if (reduced) { run.phase = 'hold'; run.simT = plan.duration; finish(); }
-    else say(tx.burn1(state.dv));
+    else say(t(state.dv < 0 ? 'braking' : state.dv > 0 ? 'speedingUp' : 'noBurn'));
     refresh();
   }
 
   function finish() {
-    const { req, plan, dv, orbits } = run;
-    run.reported = true;
+    const { req: r, plan, dv, orbits, index: i } = run;
     const fin = plan.finalGap;
-    const where = tx.gapText(fin, f1);
     const reach = Math.abs(fin) <= props.tolerance;
-    const inBudget = plan.cost <= req.budget + 1e-9;
-    const inTime = orbits <= req.orbits;
+    const inBudget = !r.budget || plan.cost <= r.budget + 1e-9;
+    const inTime = orbits <= r.orbits;
     const correct = dv !== 0 && reach && inBudget && inTime;
-    if (req.free) { say(tx.final(where), reach ? 'is-ok' : ''); return; }
-    const i = state.step;
     const count = reqs().length;
     state.runs[i] += 1;
     host.emit('manoeuvre', { requirement: i + 1, plan: `${dv > 0 ? '+' : ''}${dv.toFixed(1)}x${orbits}`, dv, orbits, finalGap: Math.round(fin * 10) / 10, correct });
     if (correct) {
+      run.met = true;
       host.emit('requirement_met', { requirement: i + 1, runs: state.runs[i] });
-      state.step += 1;
+      state.step = i + 1;
       if (state.step === count) {
-        const score = state.runs.slice(0, count).reduce((s, r) => s + Math.max(0.25, 1 - 0.25 * (r - 1)), 0) / count;
+        const score = state.runs.slice(0, count).reduce((s, n) => s + Math.max(0.25, 1 - 0.25 * (n - 1)), 0) / count;
         host.emit('completed', { score: Math.round(score * 100) / 100 });
-        say(`${tx.met(i + 1, where)} ${tx.allDone}`, 'is-ok');
-      } else say(tx.met(i + 1, where), 'is-ok');
+      }
+      say(t('caught', { where: where(fin) }), 'is-ok');
       return;
     }
+    const more = lapsOf(r) > 1 ? 'yes' : 'no';
     let why;
-    if (dv === 0) why = tx.noBurn;
-    else if (Math.sign(dv) === Math.sign(req.gap)) why = tx.wrongWay(dv);
-    else if (!reach) why = `${Math.sign(fin) === Math.sign(req.gap) ? tx.tooLittle : tx.tooMuch} ${tx.rule}`;
-    else if (!inBudget) why = tx.overBudget(fb(plan.cost), fb(req.budget));
-    else why = tx.tooLong(req.orbits);
-    say(`${tx.final(where)} ${why}`, 'is-ko');
+    if (dv === 0) why = t('whyNoBurn');
+    else if (Math.sign(dv) === Math.sign(r.gap)) why = t(dv > 0 ? 'whySpeedUp' : 'whyBrake');
+    else if (!reach) why = t(Math.sign(fin) === Math.sign(r.gap) ? 'tooLittle' : 'tooMuch', { laps: more });
+    else why = t('overBudget', { cost: fb(plan.cost), budget: fb(r.budget) });
+    say(`${t('ends', { where: where(fin) })} ${why}`, 'is-ko');
   }
 
   function say(text, kind = '') { message = text; messageKind = kind; status.textContent = text; status.className = `t-ui-status pl-status ${kind}`; }
@@ -372,8 +372,8 @@ export function mount(container, ctx) {
         simDt = Math.max(0, k * run.plan.duration - run.simT);
         run.simT = k * run.plan.duration;
         const lap = Math.min(run.orbits, Math.floor(k * run.orbits) + 1);
-        if (run.lap !== lap) { run.lap = lap; say(tx.coast(lap, run.orbits)); }
-        if (k >= 1) { run.phase = 'burn2'; run.time = 0; say(tx.burn2); }
+        if (run.lap !== lap) { run.lap = lap; say(t('lap', { lap, orbits: run.orbits })); }
+        if (k >= 1) { run.phase = 'burn2'; run.time = 0; say(t('burnBack')); }
       }
       if (run.phase === 'burn2' && run.time >= BURN_S) { run.phase = 'hold'; run.time = 0; finish(); refresh(); }
       if (run.phase === 'hold' && run.time >= HOLD_S) { endRun(); refresh(); }
@@ -382,7 +382,7 @@ export function mount(container, ctx) {
     cloudShift += simDt / (SIDEREAL_DAY * 4);
     earth.rotation.y = earthSpin;
     earthMat.uniforms.uCloudShift.value = cloudShift % 1;
-    placeCraft();
+    placeCraft(dt);
     camera.position.set(dist * Math.cos(elev) * Math.sin(az), dist * Math.sin(elev), dist * Math.cos(elev) * Math.cos(az));
     camera.lookAt(0, 0, 0);
     renderer.render(scene, camera);
@@ -392,11 +392,15 @@ export function mount(container, ctx) {
   });
 
   // Visual positions: the servicer at its true angle, its altitude offset magnified; the client placed
-  // from the servicer with the along-track gap magnified the same way (the plot keeps the true scale).
-  function placeCraft() {
+  // from the servicer with the along-track gap magnified the same way (the tags say the true distance).
+  // While planning, the satellite glides to the gap of the open rendezvous.
+  function placeCraft(dt) {
     const k = props.exaggeration;
-    const req = current();
-    const s = run ? run.plan.at(run.simT) : { servicer: { r: R_ORBIT, angle: 0 }, client: { r: R_ORBIT, angle: req.gap / R_ORBIT }, gap: req.gap, radial: 0 };
+    const r = req();
+    const target = r ? r.gap : 0;
+    if (gapShown === null || reduced) gapShown = target;
+    else gapShown += (target - gapShown) * Math.min(1, dt * 3.5);
+    const s = run ? run.plan.at(run.simT) : { servicer: { r: R_ORBIT, angle: 0 }, client: { r: R_ORBIT, angle: gapShown / R_ORBIT }, gap: gapShown, radial: 0 };
     const phiS = START + s.servicer.angle;
     servicer.position.copy(polar(RING + (k * s.radial) / RE, phiS));
     const rel = THREE.MathUtils.clamp(k * (s.client.angle - s.servicer.angle), -2.6, 2.6);
@@ -413,16 +417,16 @@ export function mount(container, ctx) {
       run.drawn = n;
       trailGeo.attributes.position.needsUpdate = true;
       trailGeo.setDrawRange(0, n);
-      plot.progress(n, s);
-      const live = tx.gapText(s.gap, f1);
-      if (live !== run.shown) { run.shown = live; meter(mGap, tx.client, live, ''); }
-    } else plot.idle(req.gap);
+    }
+    const gapNow = run ? s.gap : target;
+    const gapText = where(gapNow);
+    if (tags.client.gap.textContent !== gapText) tags.client.gap.textContent = gapText;
     // Arrows: velocity along the motion, thrust along or against it (or nothing without a burn).
     const tangent = new THREE.Vector3(-Math.sin(phiS), 0, -Math.cos(phiS));
     const outward = servicer.position.clone().normalize();
     const burning = run && (run.phase === 'burn1' || run.phase === 'burn2');
     const dv = run ? run.dv * (run.phase === 'burn2' ? -1 : 1) : state.dv;
-    const showThrust = dv !== 0 && (!run || burning);
+    const showThrust = dv !== 0 && (!run || burning) && !!r;
     thrust.group.visible = showThrust;
     if (showThrust) thrust.set(servicer.position, tangent.clone().multiplyScalar(Math.sign(dv)), 0.06 + 0.026 * Math.abs(dv));
     velocity.group.visible = !run;
@@ -435,8 +439,8 @@ export function mount(container, ctx) {
       flash.material.opacity = 0.9 * Math.sin(k2 * Math.PI);
     } else flash.material.opacity = 0;
     burnPoint.visible = !!run;
-    // Prediction (help prop): the phasing path, before executing.
-    preview.visible = !!props.showPrediction && !run && state.dv !== 0;
+    // Prediction (help prop): the phasing path, before flying.
+    preview.visible = !!props.showPrediction && !run && state.dv !== 0 && !!r;
     if (preview.visible) {
       const plan = manoeuvre({ altitude: ALT, dv: state.dv, orbits: 1, gap0: 0 });
       const arr = previewGeo.attributes.position.array;
@@ -450,51 +454,63 @@ export function mount(container, ctx) {
     }
   }
 
-  // ── panel text ──
+  // ── the panel: the open rendezvous, its controls, what happened ──
+  // A new rendezvous comes in softly: its instruction, then its controls (CSS animation, restarted).
+  function renew() {
+    panel.classList.remove('is-new');
+    void panel.offsetWidth;
+    panel.classList.add('is-new');
+  }
   function refresh() {
-    const req = current();
-    instruction.textContent = props.instruction;
-    cardEyebrow.textContent = req.free ? tx.explore : tx.req(state.step + 1, reqs().length);
-    cardTitle.textContent = req.free ? tx.done : req.gap >= 0 ? tx.catchUp : tx.letCatch;
-    cardText.textContent = req.free ? tx.freeBrief : tx.brief(req.gap, req.orbits, fb(req.budget), fb);
-    if (dots.children.length !== reqs().length) dots.replaceChildren(...reqs().map(() => el('i')));
-    [...dots.children].forEach((d, i) => { d.className = i < state.step ? 'on' : i === state.step ? 'cur' : ''; });
-    range.value = String(state.dv);
-    const dvText = tx.dvText(state.dv, f1);
-    burnValue.textContent = dvText;
-    range.setAttribute('aria-valuetext', dvText);
-    range.disabled = busy();
-    orbitInputs.forEach((input, i) => { input.checked = state.orbits === i + 1; input.disabled = busy(); });
-    const cost = 2 * Math.abs(state.dv);
-    meter(mFuel, tx.propellant, tx.of(fb(cost), fb(req.budget)), tx.both);
-    mFuel.classList.toggle('is-over', !req.free && cost > req.budget + 1e-9);
-    const gapNow = run ? run.plan.at(run.simT).gap : req.gap;
-    meter(mGap, tx.client, tx.gapText(gapNow, f1), '');
-    predict.hidden = !props.showPrediction || busy() || req.free;
-    if (!predict.hidden) predict.textContent = tx.predicted(tx.gapText(req.gap - driftPerOrbit(ALT, state.dv) * state.orbits, f1));
-    exec.setAttribute('aria-disabled', String(busy()));
-    exec.textContent = busy() ? tx.running : tx.execute;
-    pauseBtn.textContent = paused ? tx.play : tx.pause;
-    pauseBtn.setAttribute('aria-pressed', String(paused));
-    viewBtn.textContent = tx.viewNames[viewIndex];
-    viewBtn.setAttribute('aria-label', `${tx.view}: ${tx.viewNames[viewIndex]}`);
-    scaleNote.textContent = tx.scale(props.exaggeration);
+    const r = req();
+    const count = reqs().length;
+    if (dots.children.length !== count) dots.replaceChildren(...reqs().map(() => el('i')));
+    [...dots.children].forEach((d, i) => { d.className = i < shown || (i === shown && run?.met) ? 'on' : i === shown ? 'cur' : ''; });
+    dots.hidden = count < 2;
+    dots.setAttribute('aria-label', r ? t('progress', { i: shown + 1, total: count }) : t('allDone', { total: count }));
+    task.textContent = r ? taskOf(r) : t('allDone', { total: count });
+    body.hidden = !r;
+    if (r) {
+      const laps = lapsOf(r);
+      if (state.orbits > laps) state.orbits = laps;
+      range.value = String(state.dv);
+      const dvText = state.dv < 0 ? t('burnBrake', { dv: fb(-state.dv) }) : state.dv > 0 ? t('burnSpeedUp', { dv: fb(state.dv) }) : t('burnNone');
+      burnValue.textContent = dvText;
+      range.setAttribute('aria-valuetext', dvText);
+      range.disabled = busy();
+      lapsBox.hidden = laps < 2;
+      lapInputs.forEach((input, i) => { input.parentElement.hidden = i >= laps; input.checked = state.orbits === i + 1; input.disabled = busy(); });
+      fuelBox.hidden = !r.budget;
+      if (r.budget) {
+        const cost = 2 * Math.abs(state.dv);
+        fuelValue.textContent = t('fuelUse', { used: fb(cost), budget: fb(r.budget) });
+        gaugeFill.style.width = `${Math.min(100, (100 * cost) / r.budget)}%`;
+        fuelBox.classList.toggle('is-over', cost > r.budget + 1e-9);
+      }
+      predict.hidden = !props.showPrediction || busy();
+      if (!predict.hidden) predict.textContent = t('predicted', { where: where(r.gap - driftPerOrbit(ALT, state.dv) * state.orbits) });
+      exec.setAttribute('aria-disabled', String(busy()));
+      exec.textContent = flying() ? t('flying') : t('fly');
+    }
+    pauseBtn.hidden = !flying() || reduced;
+    pauseBtn.innerHTML = paused ? ICON_PLAY : ICON_PAUSE;
+    pauseBtn.setAttribute('aria-label', paused ? t('resume') : t('pause'));
     if (status.textContent !== message) say(message, messageKind);
     requestNarrowHeight();
   }
-  function meter(node, label, value, sub) {
-    node.replaceChildren(el('small', '', label), el('b', '', value), sub ? el('em', '', sub) : '');
-  }
 
   // ── tags over the craft (hidden when the Earth is in front) ──
-  function makeTag(text, cls) {
-    const tag = el('div', `pl-tag ${cls}`, text);
+  function makeTag(cls) {
+    const tag = el('div', `pl-tag ${cls}`);
     tag.setAttribute('aria-hidden', 'true');
+    const name = el('span', 'pl-tag-name');
+    const gap = el('span', 'pl-tag-gap');
+    tag.append(name, gap);
     view.appendChild(tag);
-    return tag;
+    return { tag, name, gap };
   }
   const ndc = new THREE.Vector3();
-  function placeTag(tag, pos, below = false) {
+  function placeTag({ tag }, pos, below = false) {
     ndc.copy(pos).project(camera);
     const w = view.clientWidth, h = view.clientHeight;
     const x = ((ndc.x + 1) / 2) * w, y = ((1 - ndc.y) / 2) * h;
@@ -509,69 +525,6 @@ export function mount(container, ctx) {
     if (disc < 0) return false;
     const s = (-b - Math.sqrt(disc)) / (2 * a);
     return s > 0 && s < 1;
-  }
-
-  // ── relative-motion plot (SVG, true scale) ──
-  function makePlot() {
-    const W = 320, H = 150, L = 34, R = 10, T = 14, B = 26;
-    const mk = (tag, attrs) => { const n = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); return n; };
-    const svg = mk('svg', { class: 'pl-plot', viewBox: `0 0 ${W} ${H}`, 'aria-hidden': 'true' });
-    const grid = mk('g', { class: 'pl-grid' });
-    const trace = mk('polyline', { class: 'pl-trace', fill: 'none' });
-    const clientMark = mk('path', { class: 'pl-cmark', d: 'M0 -5L5 0L0 5L-5 0Z' });
-    const dot = mk('circle', { class: 'pl-sdot', r: '4' });
-    const xLabel = mk('text', { class: 'pl-axis', x: String(W - R), y: String(H - 4), 'text-anchor': 'end' });
-    const yLabel = mk('text', { class: 'pl-axis', x: String(L), y: '9' });
-    xLabel.textContent = tx.along; yLabel.textContent = tx.radial;
-    svg.append(grid, trace, clientMark, dot, xLabel, yLabel);
-    let sx = (x) => x, sy = (y) => y, key = '';
-    function nice(range) {
-      const raw = range / 4, mag = 10 ** Math.floor(Math.log10(raw)), n = raw / mag;
-      return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * mag;
-    }
-    function setRange(x0, x1, yr) {
-      const k = `${x0.toFixed(2)}|${x1.toFixed(2)}|${yr.toFixed(2)}`;
-      if (k === key) return;
-      key = k;
-      sx = (x) => L + ((x - x0) / (x1 - x0)) * (W - L - R);
-      sy = (y) => T + ((yr - y) / (2 * yr)) * (H - T - B);
-      grid.replaceChildren();
-      const xs = nice(x1 - x0), ys = nice(2 * yr);
-      for (let x = Math.ceil(x0 / xs) * xs; x <= x1 + 1e-9; x += xs) {
-        grid.append(mk('line', { x1: sx(x), x2: sx(x), y1: T, y2: H - B, class: Math.abs(x) < 1e-9 ? 'pl-zero' : '' }));
-        const lab = mk('text', { x: sx(x), y: H - B + 11, 'text-anchor': 'middle' }); lab.textContent = fb(Math.round(x * 10) / 10); grid.append(lab);
-      }
-      for (let y = Math.ceil(-yr / ys) * ys; y <= yr + 1e-9; y += ys) {
-        grid.append(mk('line', { x1: L, x2: W - R, y1: sy(y), y2: sy(y), class: Math.abs(y) < 1e-9 ? 'pl-zero' : '' }));
-        const lab = mk('text', { x: L - 4, y: sy(y) + 3, 'text-anchor': 'end' }); lab.textContent = fb(Math.round(y * 10) / 10); grid.append(lab);
-      }
-      clientMark.setAttribute('transform', `translate(${sx(0)} ${sy(0)})`);
-    }
-    let path = null;
-    return {
-      svg,
-      idle(gap) {
-        const span = Math.max(10, Math.abs(gap) * 1.25);
-        setRange(-span, span, 5);
-        trace.setAttribute('points', '');
-        dot.setAttribute('cx', sx(-gap)); dot.setAttribute('cy', sy(0));
-      },
-      setPath(samples) {
-        path = samples;
-        if (!samples) return;
-        let x0 = 0, x1 = 0, y = 2;
-        for (const p of samples) { x0 = Math.min(x0, -p.gap); x1 = Math.max(x1, -p.gap); y = Math.max(y, Math.abs(p.radial)); }
-        const pad = Math.max(4, (x1 - x0) * 0.08);
-        setRange(x0 - pad, x1 + pad, y * 1.25);
-      },
-      progress(n, s) {
-        if (!path) return;
-        let pts = '';
-        for (let i = 0; i < n; i++) pts += `${sx(-path[i].gap).toFixed(1)},${sy(path[i].radial).toFixed(1)} `;
-        trace.setAttribute('points', pts);
-        dot.setAttribute('cx', sx(-s.gap)); dot.setAttribute('cy', sy(s.radial));
-      }
-    };
   }
 
   function applyColors() {
@@ -592,28 +545,32 @@ export function mount(container, ctx) {
   applyColors();
   layout();
   refresh();
-  say(message);
 
   return {
     update(next) {
       values = { ...values, ...next };
       props = withDefaults(values);
+      run = null;
+      trailGeo.setDrawRange(0, 0);
       state.step = Math.min(state.step, reqs().length);
-      endRun();
+      shown = state.step;
       applyColors(); layout(); refresh();
     },
     getState() { return { dv: state.dv, orbits: state.orbits, step: state.step, runs: state.runs.slice(0, reqs().length), running: busy() }; },
     setState(s) {
       if (!s) return;
-      endRun();
+      run = null;
+      trailGeo.setDrawRange(0, 0);
       if (Number.isFinite(s.dv)) state.dv = THREE.MathUtils.clamp(s.dv, -DV_MAX, DV_MAX);
-      if (Number.isInteger(s.orbits)) state.orbits = THREE.MathUtils.clamp(s.orbits, 1, 3);
+      if (Number.isInteger(s.orbits)) state.orbits = THREE.MathUtils.clamp(s.orbits, 1, MAX_LAPS);
       if (Number.isInteger(s.step)) state.step = THREE.MathUtils.clamp(s.step, 0, reqs().length);
       if (Array.isArray(s.runs)) state.runs = Array.from({ length: MAX_REQUIREMENTS }, (_, i) => Math.max(0, s.runs[i] | 0));
-      message = state.step >= reqs().length ? tx.allDone : tx.ready; messageKind = '';
+      shown = state.step;
+      gapShown = null;
+      message = ''; messageKind = '';
       refresh();
     },
-    pause() { paused = true; refresh(); },
+    pause() { if (flying()) { paused = true; refresh(); } },
     resume() { paused = false; refresh(); },
     dispose() {
       ro.disconnect();
@@ -632,17 +589,21 @@ export function mount(container, ctx) {
 }
 
 // ── Props ──
-// The requirements, a list of { gap, orbits, budget } (up to six): an item without its three numbers
-// is left out, numbers are brought within their bounds, and a list with none left gives the default
-// requirements. The other props are used as they are.
-const REQUIREMENTS = [{ gap: 51, orbits: 1, budget: 8 }, { gap: 51, orbits: 3, budget: 2.5 }, { gap: -34, orbits: 2, budget: 2.5 }];
+// The rendezvous, a list of { gap, orbits, budget?, instruction? } (up to six): an item without its gap
+// and its laps is left out, numbers are brought within their bounds, and a list with none left gives the
+// default rendezvous. The other props are used as they are.
+const REQUIREMENTS = [{ gap: 51, orbits: 1 }, { gap: 51, orbits: 3, budget: 2.5 }, { gap: -34, orbits: 2, budget: 2.5 }];
 function withDefaults(props = {}) {
   const { clamp } = THREE.MathUtils;
   const listed = (Array.isArray(props.requirements) ? props.requirements : [])
-    .filter((req) => req && Number.isFinite(req.gap) && Number.isFinite(req.orbits) && Number.isFinite(req.budget))
+    .filter((r) => r && Number.isFinite(r.gap) && Number.isFinite(r.orbits))
     .slice(0, MAX_REQUIREMENTS)
-    .map(({ gap, orbits, budget }) => ({ gap: clamp(gap, -150, 150), orbits: clamp(Math.round(orbits), 1, 3), budget: clamp(budget, 1, 20) }));
-  return { ...props, requirements: listed.length ? listed : REQUIREMENTS.map((req) => ({ ...req })) };
+    .map(({ gap, orbits, budget, instruction }) => ({
+      gap: clamp(gap, -150, 150), orbits: clamp(Math.round(orbits), 1, MAX_LAPS),
+      ...(Number.isFinite(budget) && budget > 0 ? { budget: clamp(budget, 1, 20) } : {}),
+      ...(typeof instruction === 'string' && instruction.trim() ? { instruction: instruction.trim() } : {})
+    }));
+  return { ...props, requirements: listed.length ? listed : REQUIREMENTS.map((r) => ({ ...r })) };
 }
 
 // Point of the orbital plane (XZ) at radius r and angle a, counter-clockwise seen from above.
@@ -822,54 +783,62 @@ void main(){
   }
 }`;
 
+// One glass panel at the right of the Earth (under it on narrow frames), soft and quiet: what the open
+// rendezvous asks, its controls, then what happened (the panel grows downwards, nothing above moves).
+// A new rendezvous comes in from a little below.
 const STYLE = `
 .pl-root{position:absolute;inset:0;overflow:hidden;color:var(--t-text)}
 .pl-view{position:absolute;inset:0;touch-action:none}
 .pl-view canvas{display:block;width:100%;height:100%;cursor:grab}
 .pl-view canvas:active{cursor:grabbing}
-.pl-glass{background:color-mix(in srgb,var(--t-color-panel,var(--t-surface)) 80%,transparent);border:1px solid color-mix(in srgb,var(--t-primary) 20%,transparent);border-radius:calc(var(--t-radius) + 6px);box-shadow:0 1.25rem 3rem rgba(0,0,0,.45);backdrop-filter:blur(10px)}
-.pl-panel{position:absolute;top:0.75rem;right:1.5rem;max-height:calc(100% - 1.5rem);width:21rem;display:flex;flex-direction:column;gap:0.625rem;padding:0.875rem 1rem;overflow:auto;overscroll-behavior:none;font-size:0.875rem}
-.pl-instruction{margin:0;font-size:0.8125rem;line-height:1.4}
-.pl-card{border-left-color:var(--pl-servicer,var(--t-accent));background:color-mix(in srgb,var(--t-primary) 8%,transparent)}
-.pl-card .t-ui-title{margin:0.125rem 0 0.25rem}
-.pl-brief{font-size:0.8125rem;line-height:1.4}
-.pl-dots{display:flex;gap:5px;margin-top:0.5rem}.pl-dots i{width:22px;height:5px;border-radius:3px;background:color-mix(in srgb,var(--t-text) 20%,transparent)}.pl-dots i.on{background:var(--t-success)}.pl-dots i.cur{background:var(--pl-servicer,var(--t-accent))}
-.pl-burn-head{display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem}
-.pl-label{font-weight:700;font-size:0.875rem}
-.pl-dv{font-variant-numeric:tabular-nums;font-weight:600;color:var(--pl-servicer,var(--t-accent));font-size:0.8125rem;text-align:right}
-.pl-range{-webkit-appearance:none;appearance:none;width:100%;height:2rem;margin:0.125rem 0 0;background:transparent;cursor:pointer}
-.pl-range::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,color-mix(in srgb,var(--pl-servicer,var(--t-accent)) 70%,transparent),color-mix(in srgb,var(--t-text) 22%,transparent) 50%,color-mix(in srgb,var(--t-primary) 70%,transparent))}
-.pl-range::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(90deg,color-mix(in srgb,var(--pl-servicer,var(--t-accent)) 70%,transparent),color-mix(in srgb,var(--t-text) 22%,transparent) 50%,color-mix(in srgb,var(--t-primary) 70%,transparent))}
-.pl-range::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:var(--t-text);border:3px solid var(--pl-servicer,var(--t-accent));box-shadow:0 0 12px color-mix(in srgb,var(--pl-servicer,var(--t-accent)) 60%,transparent)}
+.pl-panel{position:absolute;top:clamp(1rem,16%,8rem);right:1.5rem;width:19.5rem;max-height:calc(100% - 2rem);overflow:auto;overscroll-behavior:none;display:flex;flex-direction:column;gap:1.125rem;padding:1.25rem 1.375rem 1rem;border-radius:calc(var(--t-radius) + 10px);background:color-mix(in srgb,var(--t-color-panel,var(--t-surface)) 74%,transparent);border:1px solid color-mix(in srgb,var(--t-text) 10%,transparent);box-shadow:0 1.5rem 3.5rem rgba(0,0,0,.4);backdrop-filter:blur(14px)}
+.pl-root [hidden]{display:none!important}
+.pl-dots{display:flex;gap:6px}
+.pl-dots i{width:1.375rem;height:4px;border-radius:2px;background:color-mix(in srgb,var(--t-text) 18%,transparent);transition:background .5s ease}
+.pl-dots i.on{background:var(--t-success)}
+.pl-dots i.cur{background:var(--pl-servicer,var(--t-accent))}
+.pl-task{margin:0;font:500 1.0625rem/1.45 var(--t-font-body);text-wrap:pretty}
+.pl-body{display:flex;flex-direction:column;gap:1.125rem}
+.pl-row{display:flex;justify-content:space-between;align-items:baseline;gap:0.75rem}
+.pl-label{font-size:0.8125rem;font-weight:600;color:var(--t-muted)}
+.pl-value{font-variant-numeric:tabular-nums;font-weight:600;font-size:0.9375rem;text-align:right}
+.pl-burn .pl-value{color:var(--pl-servicer,var(--t-accent))}
+.pl-range{-webkit-appearance:none;appearance:none;display:block;width:100%;height:2rem;margin:0.125rem 0 0;background:transparent;cursor:pointer}
+.pl-range::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,color-mix(in srgb,var(--pl-servicer,var(--t-accent)) 75%,transparent),color-mix(in srgb,var(--t-text) 20%,transparent) 50%,color-mix(in srgb,var(--t-primary) 75%,transparent))}
+.pl-range::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(90deg,color-mix(in srgb,var(--pl-servicer,var(--t-accent)) 75%,transparent),color-mix(in srgb,var(--t-text) 20%,transparent) 50%,color-mix(in srgb,var(--t-primary) 75%,transparent))}
+.pl-range::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:var(--t-text);border:3px solid var(--pl-servicer,var(--t-accent));box-shadow:0 0 12px color-mix(in srgb,var(--pl-servicer,var(--t-accent)) 55%,transparent)}
 .pl-range::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--t-text);border:3px solid var(--pl-servicer,var(--t-accent))}
 .pl-range:focus-visible{outline:3px solid var(--t-focus);outline-offset:3px;border-radius:6px}
 .pl-range:disabled{opacity:.5;cursor:not-allowed}
-.pl-ends{display:flex;justify-content:space-between;font-size:0.6875rem;letter-spacing:.06em;text-transform:uppercase;color:var(--t-muted)}
-.pl-root .t-ui-seg label{min-height:36px;color:var(--t-text);border-color:color-mix(in srgb,var(--t-primary) 30%,transparent)}
-.pl-root .t-ui-seg label:has(input:checked){color:var(--t-on-primary)}
-.pl-root .t-ui-meter{background:color-mix(in srgb,var(--t-text) 6%,transparent)}
-.pl-root .t-ui-meter b{font-size:1rem}
-.pl-root .t-ui-meter.is-over b{color:var(--t-error)}
-.pl-predict{margin:0;font-size:0.8125rem;color:var(--t-muted)}
+.pl-ends{display:flex;justify-content:space-between;font-size:0.75rem;color:var(--t-muted)}
+.pl-root .pl-laps>legend{margin-bottom:0.5rem;font-size:0.8125rem;font-weight:600}
+.pl-root .t-ui-seg-options{grid-template-columns:repeat(auto-fit,minmax(3.5rem,1fr))}
+.pl-root .t-ui-seg label{min-height:40px;color:var(--t-text);border-width:1px;border-color:color-mix(in srgb,var(--t-text) 22%,transparent)}
+.pl-root .t-ui-seg label:has(input:checked){color:var(--t-on-primary);border-color:var(--t-primary)}
+.pl-gauge{height:6px;margin-top:0.5rem;border-radius:3px;overflow:hidden;background:color-mix(in srgb,var(--t-text) 12%,transparent)}
+.pl-gauge i{display:block;height:100%;width:0;border-radius:inherit;background:var(--t-primary);transition:width .25s ease,background .25s ease}
+.pl-fuel.is-over .pl-gauge i{background:var(--t-error)}
+.pl-fuel.is-over .pl-value{color:var(--t-error)}
+.pl-predict{margin:0;font-size:0.875rem;color:var(--t-muted)}
 .pl-exec{width:100%}.pl-exec[aria-disabled=true]{opacity:.6;cursor:progress}
-.pl-status{font-size:0.8125rem;line-height:1.4;min-height:2.8em}
-.pl-hud{position:absolute;left:3rem;bottom:0.75rem;width:21.5rem;padding:0.625rem 0.75rem 0.5rem}
-.pl-hud-head{display:flex;justify-content:space-between;align-items:center;gap:0.5rem}
-.pl-hud-buttons{display:flex;gap:0.25rem}
-.pl-small{min-height:32px;min-width:44px;padding:0 0.5rem;font-size:0.75rem;white-space:nowrap;border:1px solid color-mix(in srgb,var(--t-text) 22%,transparent)}
-.pl-plot{display:block;width:100%;height:auto;margin-top:0.25rem;font:0.5625rem var(--t-font-body);fill:var(--t-muted)}
-.pl-grid line{stroke:color-mix(in srgb,var(--t-text) 12%,transparent);stroke-width:1}
-.pl-grid line.pl-zero{stroke:color-mix(in srgb,var(--t-text) 35%,transparent)}
-.pl-axis{fill:var(--t-muted);font-size:0.5625rem}
-.pl-trace{stroke:var(--pl-servicer,var(--t-accent));stroke-width:2;stroke-linejoin:round}
-.pl-sdot{fill:var(--pl-servicer,var(--t-accent));stroke:var(--t-text);stroke-width:1.5}
-.pl-cmark{fill:var(--pl-client,var(--t-primary));stroke:var(--t-text);stroke-width:1}
-.pl-scale{margin:0.25rem 0 0;font-size:0.6875rem;line-height:1.3}
-.pl-tag{position:absolute;left:0;top:0;pointer-events:none;white-space:nowrap;padding:0.125rem 0.5rem;border-radius:999px;font:700 0.6875rem/1.4 var(--t-font-heading,inherit);letter-spacing:.06em;text-transform:uppercase;color:var(--t-surface);transition:opacity .2s}
-.pl-tag.is-servicer{background:var(--pl-servicer,var(--t-accent))}
-.pl-tag.is-client{background:var(--pl-client,var(--t-primary))}
+.pl-status{margin:0;font-size:0.875rem;line-height:1.45;color:color-mix(in srgb,var(--t-text) 86%,transparent)}
+.pl-status:empty{margin-top:-1.125rem}
+.pl-pause{position:absolute;right:1.5rem;bottom:1.25rem;display:grid;place-items:center;width:44px;height:44px;padding:0;border-radius:50%;border:1px solid color-mix(in srgb,var(--t-text) 22%,transparent);background:color-mix(in srgb,var(--t-color-panel,var(--t-surface)) 72%,transparent);color:var(--t-text);cursor:pointer;backdrop-filter:blur(10px)}
+.pl-pause svg{width:15px;height:15px;fill:currentColor}
+.pl-tag{position:absolute;left:0;top:0;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:0.1875rem;white-space:nowrap;transition:opacity .2s}
+.pl-tag-name{padding:0.125rem 0.5rem;border-radius:999px;font:600 0.75rem/1.4 var(--t-font-body);color:var(--t-surface)}
+.pl-tag-gap{font:500 0.75rem/1.2 var(--t-font-body);color:var(--t-text);font-variant-numeric:tabular-nums;text-shadow:0 1px 6px rgba(0,0,0,.8)}
+.pl-tag-gap:empty{display:none}
+.pl-tag.is-servicer .pl-tag-name{background:var(--pl-servicer,var(--t-accent))}
+.pl-tag.is-client .pl-tag-name{background:var(--pl-client,var(--t-primary))}
+@keyframes pl-in{from{opacity:0;translate:0 0.5rem}to{opacity:1;translate:0 0}}
+.pl-panel.is-new .pl-task,.pl-panel.is-new .pl-body>*{animation:pl-in .55s cubic-bezier(.2,.7,.2,1) both}
+.pl-panel.is-new .pl-body>:nth-child(1){animation-delay:.12s}
+.pl-panel.is-new .pl-body>:nth-child(2){animation-delay:.24s}
+.pl-panel.is-new .pl-body>:nth-child(3){animation-delay:.36s}
+.pl-panel.is-new .pl-body>:nth-child(n+4){animation-delay:.44s}
 .pl-root.is-narrow{position:static;display:flex;flex-direction:column;gap:0.75rem;overflow:visible}
 .is-narrow .pl-view{position:relative;height:${NARROW_VIEW}px;flex:none}
-.is-narrow .pl-panel,.is-narrow .pl-hud{position:static;width:auto;margin:0 0.5rem;overflow:visible}
-.is-narrow .pl-hud{margin-bottom:0.5rem}
+.is-narrow .pl-panel{position:static;width:auto;max-height:none;margin:0 0.5rem 0.5rem;overflow:visible}
+.is-narrow .pl-pause{top:${NARROW_VIEW - 56}px;right:0.75rem;bottom:auto}
 `;

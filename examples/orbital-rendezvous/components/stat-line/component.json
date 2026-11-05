@@ -1,0 +1,28 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/component.schema.json",
+  "id": "stat-line",
+  "title": "Figure in a line",
+  "description": "One figure that matters, large, with its unit and what it measures beside it. Lines follow one another in reading order; the marker number links a line to a numbered marker of the figure next to it.",
+  "instructions": "Keep the value to a number (formatted for the course language) and the label to a few words. Put the unit in unit, not in value. Use marker only when a figure on the same screen shows the same number. Lines revealed one by one read as a list that grows.",
+  "category": "content",
+  "version": "1.0.0",
+  "level": "block",
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["value", "label"],
+    "properties": {
+      "value": { "type": "string", "minLength": 1, "maxLength": 12, "x-translatable": true, "description": "The figure, formatted for the course language." },
+      "unit": { "type": "string", "maxLength": 16, "x-translatable": true, "description": "Unit shown after the figure." },
+      "label": { "type": "string", "minLength": 1, "maxLength": 64, "x-translatable": true, "description": "What the figure measures, in a few words." },
+      "marker": { "type": "string", "pattern": "^[1-9]$", "description": "Number of the matching marker in a figure on the same screen." },
+      "accent": { "type": "string", "x-kind": "token", "x-token-prefix": "color.", "x-advanced": true, "default": "color.orbit", "description": "Colour of the figure." }
+    }
+  },
+  "fallback": [
+    { "type": "text", "props": { "markdown": "**{{value}} {{unit}}**: {{label}}" } }
+  ],
+  "examples": [
+    { "title": "A lap", "props": { "marker": "1", "value": "1 h 33", "unit": "per lap", "label": "The Space Station, 420 km up", "accent": "color.servicer" } }
+  ]
+}

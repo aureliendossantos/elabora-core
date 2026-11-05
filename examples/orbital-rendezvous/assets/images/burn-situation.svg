@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" width="520" height="520">
+<defs>
+  <radialGradient id="bs-earth" cx="38%" cy="32%" r="78%"><stop offset="0" stop-color="#2965a3"/><stop offset=".55" stop-color="#0A2E57"/><stop offset="1" stop-color="#041A36"/></radialGradient>
+  <radialGradient id="bs-night" cx="78%" cy="80%" r="70%"><stop offset="0" stop-color="#060A16" stop-opacity=".8"/><stop offset="1" stop-color="#060A16" stop-opacity="0"/></radialGradient>
+  <filter id="bs-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="6"/></filter>
+  <marker id="bs-vel" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#9DAAC0"/></marker>
+</defs>
+<circle cx="260" cy="260" r="92" fill="none" stroke="#4FA8FF" stroke-width="7" opacity=".55" filter="url(#bs-glow)"/>
+  <circle cx="260" cy="260" r="88" fill="url(#bs-earth)"/>
+  <circle cx="260" cy="260" r="88" fill="url(#bs-night)"/>
+  <circle cx="260" cy="260" r="88.8" fill="none" stroke="#4FA8FF" stroke-width="1.4" opacity=".8"/>
+<circle cx="260" cy="260" r="176" fill="none" stroke="#8CCBFF" stroke-opacity=".55" stroke-width="1.6" stroke-dasharray="6 7"/>
+<path d="M260 84A176 176 0 0 0 182.8 101.8" fill="none" stroke="#B9A7FF" stroke-width="9" stroke-linecap="round" opacity=".3"/>
+<line x1="254" y1="64" x2="198" y2="64" stroke="#9DAAC0" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#bs-vel)"/>
+<circle cx="182.8" cy="101.8" r="7" fill="#B9A7FF" stroke="#060A16" stroke-width="2"/>
+<circle cx="260" cy="84" r="7" fill="#FFA24C" stroke="#060A16" stroke-width="2"/>
+</svg>

@@ -2,7 +2,7 @@
   "$schema": "https://elabora.studio/schemas/0.1.11/object-manifest.schema.json",
   "manifestVersion": "0.1",
   "id": "phasing-lab",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "title": "Phasing lab",
   "planRefs": {
     "objectives": [
@@ -20,28 +20,19 @@
   "props": {
     "type": "object",
     "properties": {
-      "instruction": {
-        "type": "string",
-        "maxLength": 200,
-        "default": "Choose the first burn and the number of phasing orbits, then execute. The lab burns back at the same point.",
-        "description": "Instruction shown at the top of the control panel",
-        "x-group": "Content",
-        "x-control": "textarea",
-        "x-translatable": true
-      },
       "requirements": {
         "type": "array",
-        "title": "Requirements",
+        "title": "Rendezvous",
         "minItems": 1,
         "maxItems": 6,
         "items": {
           "type": "object",
-          "title": "Requirement",
+          "title": "Rendezvous",
           "properties": {
             "gap": {
               "type": "number",
-              "title": "Distance to the client (km)",
-              "description": "Distance to the client in km (positive: the client is ahead; negative: it is behind)",
+              "title": "Distance to the satellite (km)",
+              "description": "Distance to the satellite in km (positive: it is ahead; negative: it is behind)",
               "minimum": -150,
               "maximum": 150,
               "multipleOf": 1,
@@ -50,8 +41,8 @@
             },
             "orbits": {
               "type": "integer",
-              "title": "Most phasing orbits",
-              "description": "Most phasing orbits allowed",
+              "title": "Most laps",
+              "description": "Most laps allowed: with more than one, the learner chooses how many",
               "minimum": 1,
               "maximum": 3,
               "default": 2,
@@ -59,26 +50,32 @@
             },
             "budget": {
               "type": "number",
-              "title": "Propellant (m/s)",
-              "description": "Propellant for both burns, in m/s",
+              "title": "Fuel (m/s)",
+              "description": "Fuel for both burns, in m/s: the fuel gauge shows only when there is a budget",
               "minimum": 1,
               "maximum": 20,
               "multipleOf": 0.5,
               "default": 4,
               "x-control": "number"
+            },
+            "instruction": {
+              "type": "string",
+              "title": "Instruction",
+              "description": "What the learner reads for this rendezvous; without one, a sentence made from its numbers",
+              "maxLength": 160,
+              "x-control": "textarea",
+              "x-translatable": true
             }
           },
           "required": [
             "gap",
-            "orbits",
-            "budget"
+            "orbits"
           ]
         },
         "default": [
           {
             "gap": 51,
-            "orbits": 1,
-            "budget": 8
+            "orbits": 1
           },
           {
             "gap": 51,
@@ -91,8 +88,8 @@
             "budget": 2.5
           }
         ],
-        "description": "The requirements to meet, in order (one to six), each a distance to the client, the most phasing orbits allowed and the propellant for both burns. When you change them, change the text version of the block too.",
-        "x-group": "Requirements",
+        "description": "The rendezvous to fly, in order (one to six). Each shows its instruction and only the controls it needs: the burn always, the laps when it allows more than one, the fuel when it has a budget. When you change one, change its instruction and the text version of the block too.",
+        "x-group": "Rendezvous",
         "x-control": "list"
       },
       "tolerance": {
@@ -101,14 +98,14 @@
         "maximum": 5,
         "multipleOf": 0.5,
         "default": 2,
-        "description": "Distance to the client, in km, at which the rendezvous counts as met",
-        "x-group": "Requirements",
+        "description": "Distance to the satellite, in km, at which the rendezvous counts as caught",
+        "x-group": "Rendezvous",
         "x-control": "slider"
       },
       "showPrediction": {
         "type": "boolean",
         "default": false,
-        "description": "Show the path and the predicted final gap before executing (for novices: it removes the need to calculate)",
+        "description": "Show the path and where the satellite ends before flying (for novices: it removes the need to work it out)",
         "x-group": "Help",
         "x-control": "toggle"
       },
@@ -117,9 +114,10 @@
         "minimum": 10,
         "maximum": 80,
         "default": 40,
-        "description": "How many times the distance between the two craft is magnified in the 3D view (the plot is at true scale)",
+        "description": "How many times the distance between the two craft is magnified in the 3D view (the tags say the true distance)",
         "x-group": "View",
-        "x-control": "slider"
+        "x-control": "slider",
+        "x-advanced": true
       },
       "secondsPerOrbit": {
         "type": "number",
@@ -127,7 +125,7 @@
         "maximum": 12,
         "multipleOf": 0.5,
         "default": 5,
-        "description": "Duration of one simulated orbit on screen, in seconds",
+        "description": "Duration of one simulated lap on screen, in seconds",
         "x-group": "Animation",
         "x-control": "slider"
       },
@@ -135,7 +133,7 @@
         "type": "string",
         "format": "color",
         "default": "#FFA24C",
-        "description": "Colour of your servicer and of its path",
+        "description": "Colour of your spacecraft and of its path",
         "x-group": "Style",
         "x-control": "color",
         "x-token": "color.servicer",
@@ -145,7 +143,7 @@
         "type": "string",
         "format": "color",
         "default": "#B9A7FF",
-        "description": "Colour of the client satellite",
+        "description": "Colour of the satellite",
         "x-group": "Style",
         "x-control": "color",
         "x-token": "color.client",
@@ -172,237 +170,164 @@
       }
     },
     "required": [
-      "instruction",
       "requirements"
     ]
   },
   "language": "en",
   "strings": {
-    "requirement": {
-      "text": "Requirement {i} of {total}",
-      "description": "Eyebrow of the mission card"
+    "taskAhead": {
+      "text": "The satellite is {gap} km ahead. Catch it {orbits, plural, one {in one lap} other {within # laps}}.",
+      "description": "Instruction of a rendezvous without its own, the satellite ahead (gap: a formatted number)"
     },
-    "allMet": {
-      "text": "All requirements met",
-      "description": "Title of the mission card once all are met"
+    "taskBehind": {
+      "text": "The satellite is {gap} km behind you. Let it catch up {orbits, plural, one {in one lap} other {within # laps}}.",
+      "description": "Instruction of a rendezvous without its own, the satellite behind"
     },
-    "freeFlight": {
-      "text": "Free flight",
-      "description": "Eyebrow of the mission card once all are met"
+    "taskFuel": {
+      "text": "You have {budget} m/s of fuel for both burns.",
+      "description": "Added to an instruction made from the numbers, when the rendezvous has a budget"
     },
-    "catchUp": {
-      "text": "Catch the client",
-      "description": "Title of a requirement where the client is ahead"
-    },
-    "letCatch": {
-      "text": "Let the client catch up",
-      "description": "Title of a requirement where the client is behind"
-    },
-    "briefAhead": {
-      "text": "The client is {gap} km ahead. Meet it within {orbits, plural, one {# orbit} other {# orbits}}, with at most {budget} m/s of propellant for both burns.",
-      "description": "Text of the mission card; gap and budget are formatted numbers"
-    },
-    "briefBehind": {
-      "text": "The client is {gap} km behind you. Let it catch up within {orbits, plural, one {# orbit} other {# orbits}}, with at most {budget} m/s of propellant for both burns.",
-      "description": "Text of the mission card"
-    },
-    "freeBrief": {
-      "text": "Try any manoeuvre: nothing is scored any more.",
-      "description": "Text of the mission card once all are met"
-    },
-    "firstBurn": {
-      "text": "First burn",
-      "description": "Label of the burn slider"
-    },
-    "burnRetrograde": {
-      "text": "{dv} m/s retrograde (braking)",
-      "description": "Value of the burn slider"
-    },
-    "burnPrograde": {
-      "text": "{dv} m/s prograde (accelerating)",
-      "description": "Value of the burn slider"
-    },
-    "burnNone": {
-      "text": "No burn",
-      "description": "Value of the burn slider at zero"
-    },
-    "retrograde": {
-      "text": "◀ Retrograde",
-      "description": "Left end of the burn slider (keep the arrow)",
-      "maxLength": 20
-    },
-    "prograde": {
-      "text": "Prograde ▶",
-      "description": "Right end of the burn slider (keep the arrow)",
-      "maxLength": 20
-    },
-    "phasingOrbits": {
-      "text": "Phasing orbits",
-      "description": "Legend of the orbit choice"
-    },
-    "propellant": {
-      "text": "Propellant",
-      "description": "Meter label"
-    },
-    "bothBurns": {
-      "text": "both burns",
-      "description": "Small text under the propellant meter"
-    },
-    "propellantUse": {
-      "text": "{used} of {budget} m/s",
-      "description": "Value of the propellant meter"
-    },
-    "client": {
-      "text": "Client",
-      "description": "Meter label: where the client is"
-    },
-    "gapAlongside": {
-      "text": "alongside",
-      "description": "Where the client is: next to you"
-    },
-    "gapAhead": {
-      "text": "{gap} km ahead",
-      "description": "Where the client is"
-    },
-    "gapBehind": {
-      "text": "{gap} km behind",
-      "description": "Where the client is"
-    },
-    "execute": {
-      "text": "Execute the manoeuvre",
-      "description": "Main button",
-      "maxLength": 32
-    },
-    "running": {
-      "text": "Manoeuvre in progress…",
-      "description": "Main button while flying",
-      "maxLength": 32
-    },
-    "ready": {
-      "text": "Set the first burn and the number of phasing orbits, then execute.",
-      "description": "Status line before a manoeuvre"
-    },
-    "reduced": {
-      "text": "Animation off (reduced motion): each manoeuvre shows its result at once.",
-      "description": "Status line under reduced motion"
-    },
-    "burn1Retrograde": {
-      "text": "Burn 1, retrograde: the far side of your orbit drops.",
-      "description": "Status line during the first burn"
-    },
-    "burn1Prograde": {
-      "text": "Burn 1, prograde: the far side of your orbit rises.",
-      "description": "Status line during the first burn"
-    },
-    "burn1None": {
-      "text": "No burn: you stay on the circular orbit.",
-      "description": "Status line when the burn is zero"
-    },
-    "coast": {
-      "text": "Phasing orbit {lap} of {orbits}.",
-      "description": "Status line while coasting"
-    },
-    "burn2": {
-      "text": "Burn 2 at the same point: back on the circular orbit.",
-      "description": "Status line during the second burn"
-    },
-    "met": {
-      "text": "Requirement {i} met: the client is {where} at the end.",
-      "description": "Result; where is a gapAhead, gapBehind or gapAlongside text"
-    },
-    "final": {
-      "text": "At the end the client is {where}.",
-      "description": "Result of a missed requirement, followed by the reason"
-    },
-    "whyNoBurn": {
-      "text": "Without a burn both craft keep the same period, so the gap does not change.",
-      "description": "Reason of a miss"
-    },
-    "whyPrograde": {
-      "text": "You burned prograde: you climbed, each lap took longer and the gap grew.",
-      "description": "Reason of a miss"
-    },
-    "whyRetrograde": {
-      "text": "You burned retrograde: you dropped, each lap took less time and you moved further ahead.",
-      "description": "Reason of a miss"
-    },
-    "tooLittle": {
-      "text": "Not enough drift: burn more, or fly more orbits.",
-      "description": "Reason of a miss, followed by the rule"
-    },
-    "tooMuch": {
-      "text": "Too much drift: you overshot. Burn less, or fly fewer orbits.",
-      "description": "Reason of a miss, followed by the rule"
-    },
-    "rule": {
-      "text": "At 500 km, each m/s gains about 17 km per orbit.",
-      "description": "Rule of thumb recalled after a miss"
-    },
-    "overBudget": {
-      "text": "You met the client, but the two burns cost {cost} m/s and the budget is {budget} m/s. Spread a smaller burn over more orbits.",
-      "description": "Reason of a miss"
-    },
-    "tooLong": {
-      "text": "You met the client, but this requirement allows at most {orbits, plural, one {# phasing orbit} other {# phasing orbits}}.",
-      "description": "Reason of a miss"
+    "progress": {
+      "text": "Rendezvous {i} of {total}",
+      "description": "Accessible name of the progress dots"
     },
     "allDone": {
-      "text": "Every requirement is met. The lab stays open: try any manoeuvre.",
-      "description": "Status line at the end"
+      "text": "{total, plural, one {Caught.} other {All # caught.}}",
+      "description": "What the panel says once every rendezvous is caught"
     },
-    "predicted": {
-      "text": "Predicted: the client {where} at the end.",
-      "description": "Prediction help (where is a gap text)"
+    "burn": {
+      "text": "Burn",
+      "description": "Label of the burn slider"
+    },
+    "brake": {
+      "text": "Brake",
+      "description": "Left end of the burn slider",
+      "maxLength": 16
+    },
+    "speedUp": {
+      "text": "Speed up",
+      "description": "Right end of the burn slider",
+      "maxLength": 16
+    },
+    "burnBrake": {
+      "text": "Brake {dv} m/s",
+      "description": "Value of the burn slider, braking"
+    },
+    "burnSpeedUp": {
+      "text": "Speed up {dv} m/s",
+      "description": "Value of the burn slider, speeding up"
+    },
+    "burnNone": {
+      "text": "None",
+      "description": "Value of the burn slider at zero"
+    },
+    "laps": {
+      "text": "Laps",
+      "description": "Legend of the choice of laps"
+    },
+    "fuel": {
+      "text": "Fuel",
+      "description": "Label of the fuel gauge"
+    },
+    "fuelUse": {
+      "text": "{used} of {budget} m/s",
+      "description": "Value of the fuel gauge (both burns)"
+    },
+    "fly": {
+      "text": "Fly",
+      "description": "Main button",
+      "maxLength": 24
+    },
+    "flying": {
+      "text": "Flying…",
+      "description": "Main button while a manoeuvre is flown",
+      "maxLength": 24
     },
     "pause": {
       "text": "Pause",
-      "description": "Button",
-      "maxLength": 12
+      "description": "Accessible name of the pause button"
     },
     "resume": {
       "text": "Resume",
-      "description": "Button",
-      "maxLength": 12
+      "description": "Accessible name of the pause button while paused"
     },
-    "view": {
-      "text": "View",
-      "description": "Accessible name of the view button, before the view name"
+    "braking": {
+      "text": "Braking: your orbit dips.",
+      "description": "Status during the first burn"
     },
-    "view34": {
-      "text": "3/4 view",
-      "description": "View button",
-      "maxLength": 14
+    "speedingUp": {
+      "text": "Speeding up: your orbit rises.",
+      "description": "Status during the first burn"
     },
-    "viewAbove": {
-      "text": "From above",
-      "description": "View button",
-      "maxLength": 14
+    "noBurn": {
+      "text": "No burn: you stay on the circle.",
+      "description": "Status when the burn is zero"
     },
-    "plotTitle": {
-      "text": "Relative position, true scale",
-      "description": "Title of the plot"
+    "lap": {
+      "text": "Lap {lap} of {orbits}.",
+      "description": "Status while flying the laps"
     },
-    "plotAlong": {
-      "text": "along the orbit, km",
-      "description": "Horizontal axis of the plot"
+    "burnBack": {
+      "text": "Second burn, the other way: back on the circle.",
+      "description": "Status during the second burn"
     },
-    "plotAltitude": {
-      "text": "altitude, km",
-      "description": "Vertical axis of the plot"
+    "caught": {
+      "text": "Caught! The satellite is {where}.",
+      "description": "Result of a rendezvous caught; where is an alongside, ahead or behind text"
+    },
+    "ends": {
+      "text": "The satellite ends {where}.",
+      "description": "Result of a miss, followed by the reason"
+    },
+    "whyNoBurn": {
+      "text": "With no burn, your lap stays the same as the satellite's.",
+      "description": "Reason of a miss"
+    },
+    "whySpeedUp": {
+      "text": "Speeding up made your laps longer: the gap grew.",
+      "description": "Reason of a miss: speeding up with the satellite ahead"
+    },
+    "whyBrake": {
+      "text": "Braking made your laps shorter: you pulled further ahead.",
+      "description": "Reason of a miss: braking with the satellite behind"
+    },
+    "tooLittle": {
+      "text": "{laps, select, yes {A little short: burn harder, or take more laps.} other {A little short: burn harder.}}",
+      "description": "Reason of a miss (laps: yes when the rendezvous lets the learner choose them)"
+    },
+    "tooMuch": {
+      "text": "{laps, select, yes {Too far: burn less, or take fewer laps.} other {Too far: burn less.}}",
+      "description": "Reason of a miss (laps: yes when the rendezvous lets the learner choose them)"
+    },
+    "overBudget": {
+      "text": "Both burns cost {cost} m/s: more than your {budget}. Burn less, over more laps.",
+      "description": "Reason of a miss"
+    },
+    "predicted": {
+      "text": "Predicted: the satellite ends {where}.",
+      "description": "Prediction help (where is an alongside, ahead or behind text)"
+    },
+    "alongside": {
+      "text": "alongside",
+      "description": "Where the satellite is: next to you"
+    },
+    "ahead": {
+      "text": "{gap} km ahead",
+      "description": "Where the satellite is"
+    },
+    "behind": {
+      "text": "{gap} km behind",
+      "description": "Where the satellite is"
     },
     "you": {
       "text": "You",
-      "description": "Tag of your servicer in 3D",
-      "maxLength": 10
+      "description": "Tag of your spacecraft in 3D",
+      "maxLength": 12
     },
-    "clientTag": {
-      "text": "Client",
-      "description": "Tag of the client satellite in 3D",
-      "maxLength": 10
-    },
-    "scale": {
-      "text": "In 3D, the distance between the craft is magnified {k} times.",
-      "description": "Note under the plot"
+    "satellite": {
+      "text": "Satellite",
+      "description": "Tag of the satellite in 3D",
+      "maxLength": 14
     }
   },
   "objects": [
@@ -413,12 +338,12 @@
     },
     {
       "id": "servicer",
-      "label": "Servicer (you)",
+      "label": "Your spacecraft",
       "selectable": true
     },
     {
       "id": "client",
-      "label": "Client satellite",
+      "label": "Satellite",
       "selectable": true
     }
   ],
@@ -435,13 +360,13 @@
         "type": "integer",
         "minimum": 1,
         "maximum": 3,
-        "description": "Phasing orbits selected"
+        "description": "Laps selected"
       },
       "step": {
         "type": "integer",
         "minimum": 0,
         "maximum": 6,
-        "description": "Index of the current requirement (the number of requirements once all are met)"
+        "description": "Index of the open rendezvous (their number once all are caught)"
       },
       "runs": {
         "type": "array",
@@ -449,12 +374,12 @@
           "type": "integer",
           "minimum": 0
         },
-        "description": "Manoeuvres executed for each requirement",
+        "description": "Manoeuvres flown for each rendezvous",
         "maxItems": 6
       },
       "running": {
         "type": "boolean",
-        "description": "A manoeuvre is being flown"
+        "description": "A manoeuvre is being flown, or a catch is shown before the next rendezvous"
       }
     },
     "required": [
@@ -472,7 +397,7 @@
   "events": [
     {
       "name": "manoeuvre",
-      "description": "A manoeuvre has been flown for an open requirement.",
+      "description": "A manoeuvre has been flown for an open rendezvous.",
       "payload": {
         "type": "object",
         "properties": {
@@ -515,7 +440,7 @@
     },
     {
       "name": "requirement_met",
-      "description": "A requirement is met; the next one opens.",
+      "description": "A rendezvous is caught; the next one opens.",
       "payload": {
         "type": "object",
         "properties": {
@@ -534,7 +459,7 @@
     },
     {
       "name": "completed",
-      "description": "Every requirement is met.",
+      "description": "Every rendezvous is caught.",
       "payload": {
         "type": "object",
         "properties": {
@@ -566,9 +491,9 @@
     "webglContexts": 1
   },
   "a11y": {
-    "description": "Three-quarter view of the Earth from space, with day and night sides, clouds and a thin atmosphere. A circular orbit 500 km up carries your servicer (orange) and the client satellite (violet). When you execute a manoeuvre, the servicer fires at the burn point, flies the phasing orbits below or above the circle, then fires again at the same point; a plot shows its true position relative to the client, along the orbit and in altitude.",
-    "keyboard": "Tab reaches the controls: the burn slider (arrow keys, 0.5 m/s steps), the orbits group (arrow keys) and Execute. Shortcuts: R adds 0.5 m/s retrograde, P adds 0.5 m/s prograde, 1 to 3 set the orbits, X executes, Space pauses.",
-    "dragAlternative": "Dragging the view turns the camera around the Earth; the View button switches between the same angles without dragging.",
+    "description": "Three-quarter view of the Earth from space, with day and night sides, clouds and a thin atmosphere. A circular orbit 500 km up carries your spacecraft (orange) and a satellite (violet), each with a tag; the satellite's tag says how far ahead or behind it is. When you fly a manoeuvre, your spacecraft burns at the burn point, flies its laps below or above the circle, then burns back at the same point. In 3D the distance between the two craft is magnified; the tag gives the true distance.",
+    "keyboard": "Tab reaches the controls of the open rendezvous: the burn slider (arrow keys, 0.5 m/s steps), the laps when there is a choice (arrow keys) and Fly. Shortcuts: R brakes 0.5 m/s more, P speeds up 0.5 m/s more, 1 to 3 set the laps, X flies, Space pauses a manoeuvre.",
+    "dragAlternative": "Dragging the view turns the camera around the Earth; nothing in the activity needs it.",
     "motion": {
       "pausable": true,
       "respectsReducedMotion": true

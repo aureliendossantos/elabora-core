@@ -1,15 +1,17 @@
-<!-- Reading order: title, lead, side column, cards. The planet, its glow and the sunrise are decoration. -->
+<!-- Reading order: title, then the text. The planet, its orbit with two craft and the sunrise are decoration. -->
 <section class="or-hero">
-  <div class="or-hero-grid">
-    <div class="or-hero-copy">
-      <div class="or-hero-title" data-title></div>
-      <div data-slot="lead"></div>
-    </div>
-    <div class="or-hero-side" data-slot="side"></div>
+  <div class="or-hero-copy">
+    <div class="or-hero-title" data-title></div>
+    <div class="or-hero-text" data-slot="lead"></div>
   </div>
-  <div class="or-hero-cards" data-slot="cards"></div>
   <div class="or-hero-planet" aria-hidden="true">
     <div class="or-hero-limb"></div>
     <div class="or-hero-sunrise"></div>
+    <div class="or-hero-orbit">
+      <div class="or-hero-pair">
+        <span class="or-hero-craft or-hero-craft--you"></span>
+        <span class="or-hero-craft or-hero-craft--ahead"></span>
+      </div>
+    </div>
   </div>
 </section>

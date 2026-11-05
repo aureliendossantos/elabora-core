@@ -14,6 +14,7 @@ import { compileCourseData } from '@elabora/core/compile/course-data';
 import { lessonMdExport } from '@elabora/core/interop/lesson-md';
 import { projectMarkdown } from '@elabora/core/project/markdown';
 import { extractUnits } from '@elabora/core/i18n/units';
+import { screenTranslation } from '@elabora/core/i18n/translate';
 import { labelsFor } from '@elabora/player/labels';
 import { copyExample, readJSON, writeJSON, writeFixture, codes } from '../helpers.ts';
 
@@ -136,6 +137,27 @@ test('opening: the build gives the player the page\'s reading time, and nothing 
     const labels = labelsFor(language);
     for (const key of ['readingTime', 'minutes', 'before', 'after', 'compare', 'compareValue'] as const) assert.ok(labels[key], `${language} ${key}`);
   }
+});
+
+test('starter blocks: a statement shows a validated text of the plan, checked as one written in place', () => {
+  const dir = course([]);
+  const chemin = readJSON(dir, 'screens/chemin.json');
+  const plan = readJSON(dir, 'plan.json');
+  const item = plan.items.find((entry: { id: string }) => entry.id === chemin.covers[0]);
+  item.lockedTexts = [...(item.lockedTexts ?? []), { id: 'TXT-90', text: 'Un seul équipement en panne suffit à **tout bloquer**.' }];
+  writeJSON(dir, 'plan.json', plan);
+  writeJSON(dir, 'screens/chemin.json', { ...chemin, blocks: [...chemin.blocks, { id: 'chemin-enonce', type: 'statement', props: { textRef: 'TXT-90', align: 'start' } }] });
+  const project = loadProjectFromDir(dir);
+  const { keys } = assignKeys(project, readLock(project), { dryRun: true });
+  const screen = compileCourseData(project, keys, { buildId: 'test' }).screens.find((entry) => entry.id === 'chemin')!;
+  assert.match(JSON.stringify(screen), /suffit à <strong>tout bloquer<\/strong>/, 'the plan\'s words, in the page');
+  assert.deepEqual(codes(findings(dir)).filter((code) => code === 'W_QUOTE_REPEATS' || code === 'E_BLOCK_TEXT_SOURCE'), []);
+  // Translated in context, the text is found where it shows: the statement's Markdown.
+  const row = screenTranslation(project, { screen: 'chemin', language: 'en' }).rows.find((entry) => entry.id === 'plan.text.TXT-90');
+  assert.deepEqual([row?.block, row?.field], ['chemin-enonce', 'markdown']);
+  // A text of the screen that says it too: the statement repeats it, as one written in place would.
+  writeJSON(dir, 'screens/chemin.json', { ...readJSON(dir, 'screens/chemin.json'), blocks: [...readJSON(dir, 'screens/chemin.json').blocks, { id: 'chemin-p', type: 'text', props: { markdown: 'Suivez le chemin dans l’ordre : un seul équipement en panne suffit à tout bloquer.' } }] });
+  assert.deepEqual(findings(dir).filter((d) => d.code === 'W_QUOTE_REPEATS').map((d) => d.target), ['chemin-enonce']);
 });
 
 test('starter blocks: a statement that repeats its screen, a hidden column, a comparison of three, images without alt', () => {

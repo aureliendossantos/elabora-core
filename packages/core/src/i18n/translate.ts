@@ -1,5 +1,5 @@
 import { schemaId } from '@elabora/format';
-import { planContentHash, planRefs, screenBlocks } from '../project/load.ts';
+import { MARKDOWN_TEXT_ROOTS, planContentHash, planRefs, screenBlocks } from '../project/load.ts';
 import { getRegistry } from '../components/registry.ts';
 import { hasFile, readText } from '../project/files.ts';
 import { stringifyJSON } from '../util/json.ts';
@@ -247,7 +247,7 @@ export function screenTranslation(project: Project, { screen, language }: { scre
     const root = descriptor?.root ?? block.type;
     const props = block.props ?? {};
     if (typeof props.textRef === 'string' && !where.has(`plan.text.${props.textRef}`)) {
-      where.set(`plan.text.${props.textRef}`, { block: block.id, field: root === 'heading' ? 'text' : root === 'text' || root === 'callout' ? 'markdown' : null });
+      where.set(`plan.text.${props.textRef}`, { block: block.id, field: root === 'heading' ? 'text' : MARKDOWN_TEXT_ROOTS.includes(root) ? 'markdown' : null });
     }
     if (typeof props.questionRef === 'string' && (root === 'quiz' || root === 'numeric')) {
       // The question's words become the block's props, in the same places (stem, options.1.text…).

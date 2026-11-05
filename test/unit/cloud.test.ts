@@ -11,7 +11,7 @@ import { cloudUrl, scrubSecrets, resolveCredential, verifySignIn, chooseHandle, 
   accountSessions, revokeSession, updateAccount, requestDeletionCode, deleteAccount, unpublish, renameReview, handleAvailable, revokeAiKey, setReviewNote } from '@elabora/node/cloud/index';
 import type { CloudReview, CommentsAnswer, ResolvedComments, SessionRecord } from '@elabora/node/cloud/index';
 import { createMcpServer } from '@elabora/cli/mcp';
-import { ROOT, copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, BILINGUAL, copyExample, readJSON, writeJSON } from '../helpers.ts';
 import { FakeCloud, FAKE_CODE } from '../cloud-fake.ts';
 
 // The core's client of Elabora's hosting (docs/decisions.md D43) against a fake of the API's protocol
@@ -247,7 +247,7 @@ test('publish: only what the space lacks is sent; publishing the same content ag
 
 test('publish --languages all: one package of every approved language, its languages in the publication; a review keeps one language', async () => {
   await signIn('lang-author');
-  const dir = copy(path.join(ROOT, 'examples/orbital-rendezvous'));
+  const dir = copy(BILINGUAL);
   const run = await elabora(['publish', dir, '--languages', 'all', '--json']);
   assert.equal(run.status, 0, run.stderr);
   const published = JSON.parse(run.stdout);

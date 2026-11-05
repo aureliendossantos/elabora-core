@@ -47,3 +47,8 @@ If `elabora` is not on PATH (on macOS, Elabora installs it from Réglages › Ou
 
 ## Notes for this course
 <!-- What agents should know about this course: its audience, its voice, decisions taken. Elabora never changes this part. -->
+- A sample of Elabora, read by visitors who know nothing of orbits: no formula, everyday words (push, brake, lap, fuel), one new idea per screen, short sentences. Words of the trade (prograde, phasing, Δv) stay out of the screens.
+- The one rule the module teaches: at 500 km, each m/s of braking gains about 17 km per lap; then push back as hard, at the same point.
+- Information comes in steps: the burns screen asks first and explains once answered; the lab shows one rendezvous at a time, with only its controls (phasing-lab).
+- Keep the starfield backdrop as it is. Colours: orange is you, violet the satellite, everywhere (figures, lab, intro).
+
