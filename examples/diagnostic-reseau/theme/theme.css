@@ -65,9 +65,9 @@ body { background: transparent; }
 
 /* Questions and the result on soft white cards, like the ticket. */
 .t-quiz { border: 0; background: var(--t-surface); box-shadow: var(--t-shadow-soft); padding: 1.25rem 1.5rem; }
-.t-option { background: var(--t-surface); border-color: var(--t-color-line); }
+.t-option:not(.is-correct, .is-wrong) { background: var(--t-surface); border-color: var(--t-color-line); }
 @media (hover: hover) and (pointer: fine) {
-  .t-option:hover { border-color: color-mix(in srgb, var(--t-primary) 40%, var(--t-color-line)); }
+  .t-option:not(.is-correct, .is-wrong):hover { border-color: color-mix(in srgb, var(--t-primary) 40%, var(--t-color-line)); }
 }
 .t-results {
   display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 2rem; row-gap: .375rem;
