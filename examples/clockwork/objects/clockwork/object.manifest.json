@@ -1,0 +1,387 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/object-manifest.schema.json",
+  "manifestVersion": "0.1",
+  "id": "clockwork",
+  "version": "1.0.0",
+  "title": "Clockwork",
+  "planRefs": {
+    "objectives": [
+      "OBJ-1",
+      "OBJ-2"
+    ],
+    "items": [
+      "ITEM-1",
+      "ITEM-2",
+      "ITEM-3",
+      "ITEM-4",
+      "ITEM-5",
+      "ITEM-6",
+      "ITEM-7"
+    ]
+  },
+  "pedagogicalRole": "demonstration",
+  "requires": {
+    "three": "r186"
+  },
+  "language": "en",
+  "props": {
+    "type": "object",
+    "properties": {
+      "stage": {
+        "type": "string",
+        "enum": [
+          "clock",
+          "pair",
+          "count",
+          "one-gear",
+          "train",
+          "centre",
+          "answer"
+        ],
+        "default": "clock",
+        "title": "Stage",
+        "description": "What the object shows and lets the learner do: the clock face, two gears, teeth that light up as they pass, one very large gear, the last gear to size, the last gear to roll back to the centre, or the dial seen through.",
+        "x-group": "Stage",
+        "x-control": "select",
+        "x-enum-labels": {
+          "clock": "Clock face",
+          "pair": "Two gears",
+          "count": "Count the teeth",
+          "one-gear": "One very large gear",
+          "train": "Size the last gear",
+          "centre": "Back to the centre",
+          "answer": "The dial seen through"
+        }
+      },
+      "bigTeeth": {
+        "type": "integer",
+        "minimum": 30,
+        "maximum": 150,
+        "default": 30,
+        "title": "Teeth of the large gear",
+        "description": "Stage « One very large gear »: how many teeth the large gear has. An event raises it to 120 once the learner has answered, and the gear grows to that size.",
+        "x-group": "Stage",
+        "x-control": "slider"
+      },
+      "minuteColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#EE8063",
+        "title": "Minute shaft",
+        "description": "The minute shaft, its small gear and the minute hand, which turn together.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-object-id": "small-gear"
+      },
+      "middleColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#F2C14E",
+        "title": "Middle gears",
+        "description": "The large gear and the small gear fixed on it, which turn together.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-object-id": "large-gear"
+      },
+      "hourColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#5DB8A6",
+        "title": "Hour wheel",
+        "description": "The last gear, its tube and the hour hand, which turn together.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-object-id": "last-gear"
+      },
+      "dialColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#FFFDF8",
+        "title": "Dial",
+        "description": "The face of the clock.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-object-id": "dial",
+        "x-advanced": true
+      },
+      "caseColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#E6E0D3",
+        "title": "Case",
+        "description": "The rim of the clock around the dial.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-advanced": true
+      },
+      "markColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#4E64B5",
+        "title": "Counted teeth",
+        "description": "The teeth that light up as they pass the meeting point.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-advanced": true
+      },
+      "inkColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#2A2824",
+        "title": "Outlines",
+        "description": "The ink of every outline, the dial's ticks and the labels' rims.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-token": "color.text",
+        "x-advanced": true
+      },
+      "hintColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#C2502E",
+        "title": "Gesture hints",
+        "description": "The curved arrows that show what can be turned or rolled, until the learner does it.",
+        "x-group": "Colours",
+        "x-control": "color",
+        "x-token": "color.accent",
+        "x-advanced": true
+      }
+    },
+    "required": [
+      "stage"
+    ]
+  },
+  "strings": {
+    "pause": {
+      "text": "Pause the gears",
+      "description": "Label of the round button that stops the gears turning."
+    },
+    "play": {
+      "text": "Turn the gears",
+      "description": "Label of the same button once the gears are stopped."
+    },
+    "dialLabel": {
+      "text": "Minute hand",
+      "description": "Name of the clock for screen readers: arrow keys move the minute hand."
+    },
+    "gearsLabel": {
+      "text": "Gears",
+      "description": "Name of the gears for screen readers: arrow keys turn them."
+    },
+    "rollLabel": {
+      "text": "Last gear, to roll back to the centre",
+      "description": "Name of the last gear before it is back at the centre: arrow keys roll it, Enter takes it all the way."
+    },
+    "rollValue": {
+      "text": "{percent}% of the way to the centre",
+      "description": "How far the last gear has rolled towards the centre."
+    },
+    "time": {
+      "text": "{hour}:{minute}",
+      "description": "The time the clock shows, for screen readers. minute has two digits."
+    },
+    "turns": {
+      "text": "{n, plural, one {# turn of the small gear} other {# turns of the small gear}}",
+      "description": "How far the gears have turned, for screen readers."
+    },
+    "teethPassed": {
+      "text": "{n} of {total} teeth",
+      "description": "Under the gears: how many teeth of this gear have passed the meeting point.",
+      "maxLength": 24
+    },
+    "sizerLabel": {
+      "text": "Last gear",
+      "description": "Name of the slider that sets the number of teeth of the last gear, for screen readers.",
+      "maxLength": 24
+    },
+    "teeth": {
+      "text": "{n} teeth",
+      "description": "Value of that slider.",
+      "maxLength": 12
+    },
+    "slower": {
+      "text": "{ratio} times slower",
+      "description": "How much slower the last gear turns than the minute shaft.",
+      "maxLength": 26
+    },
+    "xray": {
+      "text": "See through the dial",
+      "description": "Switch that makes the dial clear to show the gears behind it.",
+      "maxLength": 26
+    },
+    "docked": {
+      "text": "The last gear is on the minute shaft, at the centre.",
+      "description": "Said to screen readers when the last gear reaches the centre."
+    },
+    "matched": {
+      "text": "Twelve times slower: the size of a clock's hour wheel.",
+      "description": "Said to screen readers when the learner finds the right size."
+    }
+  },
+  "objects": [
+    {
+      "id": "minute-hand",
+      "label": "Minute hand",
+      "selectable": true
+    },
+    {
+      "id": "small-gear",
+      "label": "Small gear on the minute shaft",
+      "selectable": true
+    },
+    {
+      "id": "large-gear",
+      "label": "Large gear",
+      "selectable": true
+    },
+    {
+      "id": "last-gear",
+      "label": "Last gear (hour wheel)",
+      "selectable": true
+    },
+    {
+      "id": "dial",
+      "label": "Dial"
+    }
+  ],
+  "state": {
+    "type": "object",
+    "properties": {
+      "minute": {
+        "type": "number",
+        "description": "Angle of the minute shaft, in radians (negative: clockwise)"
+      },
+      "w2": {
+        "type": "integer",
+        "minimum": 16,
+        "maximum": 48,
+        "description": "Teeth chosen for the last gear"
+      },
+      "orbit": {
+        "type": "number",
+        "description": "Where the last gear stands around its small gear, in radians (π: at the centre)"
+      },
+      "docked": {
+        "type": "boolean",
+        "description": "The last gear has reached the centre"
+      },
+      "matched": {
+        "type": "boolean",
+        "description": "The learner has sized the last gear for twelve times slower"
+      },
+      "grown": {
+        "type": "boolean",
+        "description": "The 120-tooth gear has been shown"
+      },
+      "xray": {
+        "type": "boolean",
+        "description": "The dial is seen through"
+      }
+    },
+    "required": [
+      "minute",
+      "w2",
+      "orbit",
+      "docked",
+      "matched",
+      "grown",
+      "xray"
+    ]
+  },
+  "persistState": {
+    "enabled": true,
+    "maxLength": 160
+  },
+  "events": [
+    {
+      "name": "train_sized",
+      "description": "The learner lets go of the slider of the last gear.",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "teeth": {
+            "type": "integer"
+          },
+          "slower": {
+            "type": "number"
+          },
+          "correct": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "teeth",
+          "slower",
+          "correct"
+        ]
+      },
+      "tracking": {
+        "interaction": {
+          "type": "numeric",
+          "objective": "OBJ-2",
+          "responseField": "teeth",
+          "correctField": "correct"
+        }
+      }
+    },
+    {
+      "name": "train_matched",
+      "description": "The last gear has 32 teeth: the train turns twelve times slower.",
+      "payload": {
+        "type": "object",
+        "properties": {}
+      },
+      "tracking": {
+        "completion": true
+      }
+    },
+    {
+      "name": "docked",
+      "description": "The last gear has rolled back to the centre, onto the minute shaft.",
+      "payload": {
+        "type": "object",
+        "properties": {}
+      },
+      "tracking": {
+        "completion": true
+      }
+    },
+    {
+      "name": "gear_grown",
+      "description": "The large gear has grown to the size the learner was asked about.",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "teeth": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "teeth"
+        ]
+      }
+    }
+  ],
+  "budgets": {
+    "drawCallsMax": 150,
+    "trianglesMax": 300000,
+    "texturePxMax": 2048,
+    "assetsMbMax": 1,
+    "bootMsMax": 3000,
+    "fpsMin": 30,
+    "webglContexts": 1
+  },
+  "a11y": {
+    "description": "The gears behind a clock's dial, drawn in flat colours with dark outlines. The minute shaft, its small gear of 10 teeth and the minute hand are coral; a gear of 30 teeth and the gear of 8 fixed on it are yellow; the last gear of 32 teeth, its tube and the hour hand are green. Each screen shows one part of the mechanism: the dial, then two gears, then the whole train.",
+    "keyboard": "Tab reaches the gears, then the controls. On the gears, the arrow keys turn them, one tooth at a time (one minute on the dial); in the step where the last gear rolls back to the centre, the arrow keys roll it and Enter takes it there. Space pauses or restarts the motion.",
+    "dragAlternative": "Every drag has a keyboard path; a click on the last gear rolls it back to the centre, and the slider sizes it.",
+    "motion": {
+      "pausable": true,
+      "respectsReducedMotion": true
+    }
+  },
+  "sandbox": {
+    "network": "none",
+    "permissions": []
+  }
+}

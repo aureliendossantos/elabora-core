@@ -1,0 +1,73 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
+  "id": "centre",
+  "title": "Back to the centre",
+  "covers": [
+    "ITEM-6"
+  ],
+  "layout": "clock-stage",
+  "completeWhen": "interactions-done",
+  "continueRevealsSteps": false,
+  "blocks": [
+    {
+      "id": "centre-text",
+      "type": "text",
+      "props": {
+        "markdown": "The hour hand turns around the same point as the minute hand. So the last gear has to come back to the centre."
+      }
+    },
+    {
+      "id": "centre-hint",
+      "type": "text",
+      "props": {
+        "markdown": "Roll the last gear around its small gear, back to the centre."
+      },
+      "style": "hint"
+    },
+    {
+      "id": "centre-landed",
+      "type": "text",
+      "props": {
+        "markdown": "It lands there because both pairs span the same distance: 10 + 30 teeth on one side, 8 + 32 on the other. A tube carries it around the minute shaft, with the hour hand on top."
+      },
+      "step": 2
+    },
+    {
+      "id": "centre-clock",
+      "type": "free-object",
+      "slot": "stage",
+      "continuity": {
+        "key": "clockwork",
+        "duration": 1300
+      },
+      "props": {
+        "object": "clockwork",
+        "title": "The gear train, whose last gear you can roll back to the centre",
+        "aspectRatio": "fill",
+        "narrowAspectRatio": "1:1",
+        "minHeight": 420,
+        "props": {
+          "stage": "centre"
+        },
+        "textAlternative": "**Text version.** The green gear of 32 teeth stands beside the yellow gear of 8. Rolled around it, always in mesh, it travels back to the centre and sits in front of the coral gear, on a tube around the minute shaft. The view turns to show the layers: the minute shaft with the coral minute hand, and around it the green tube with the hour hand."
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "centre-landed-show",
+      "description": "Once the last gear is back at the centre, say why it fits there.",
+      "on": {
+        "type": "object.event",
+        "target": "centre-clock",
+        "name": "docked"
+      },
+      "do": [
+        {
+          "type": "reveal-step",
+          "step": 2
+        }
+      ]
+    }
+  ]
+}

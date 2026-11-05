@@ -116,7 +116,7 @@ export function filesIn(files: ProjectFiles, folder: string): string[] {
   return [...files.keys()].filter((p) => p.startsWith(prefix) && !p.includes('/', prefix.length)).map((p) => p.slice(prefix.length)).sort();
 }
 
-// Names of the folders directly in a folder ("objects" → "planetary-lab"…), sorted.
+// Names of the folders directly in a folder ("objects" → "clockwork"…), sorted.
 export function foldersIn(files: ProjectFiles, folder: string): string[] {
   const prefix = `${folder}/`;
   const names = new Set<string>();

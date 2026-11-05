@@ -1,0 +1,101 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/plan.schema.json",
+  "id": "PLAN-CLOCKWORK",
+  "title": "Why is the hour hand twelve times slower?",
+  "businessGoal": "Show visitors of Elabora, in a five-minute sample, how one 3D object can carry a whole explanation: it stays on the left from screen to screen, grows with the explanation and offers only the controls of the moment, while the right side says one thing at a time.",
+  "audience": {
+    "role": "Visitors of Elabora's showcase: curious adults and teenagers, no knowledge of mechanics",
+    "priorKnowledge": "low",
+    "notes": "Self-paced on the web, on a computer or a phone, with no voice-over. Short sentences in plain words; the object shows what the text says, and every manipulation has a keyboard path."
+  },
+  "sources": [],
+  "objectives": [
+    {
+      "id": "OBJ-1",
+      "short": "How two gears set their speeds",
+      "statement": "Explain why two meshing gears turn in opposite directions and why the one with more teeth turns more slowly, in the ratio of their numbers of teeth.",
+      "bloom": "understand",
+      "criterion": "Gives the number of teeth a gear needs to turn twelve times slower than a gear of 10 teeth."
+    },
+    {
+      "id": "OBJ-2",
+      "short": "How a clock slows its hour hand",
+      "statement": "Explain how the gears behind a clock's dial turn the hour hand twelve times slower than the minute hand: two pairs of gears multiply their slowdowns, and the last gear comes back around the minute shaft, so both hands turn around the same point and in the same direction.",
+      "bloom": "understand",
+      "criterion": "Sizes the last gear of the train for a slowdown of twelve, then brings it back to the centre of the dial."
+    }
+  ],
+  "items": [
+    {
+      "id": "ITEM-1",
+      "kind": "intro",
+      "title": "One shaft, two speeds",
+      "description": "The question, on a clock face. The minute hand runs fast enough to see the hour hand creep; the learner can drag the minute hand round and see the hour hand move one hour per turn. The text asks how a single shaft gives two speeds.",
+      "objectives": [
+        "OBJ-1",
+        "OBJ-2"
+      ]
+    },
+    {
+      "id": "ITEM-2",
+      "kind": "exposition",
+      "title": "Teeth that hold together",
+      "description": "The dial lifts away. Behind it, the minute shaft carries a small gear of 10 teeth meshing with a gear of 30. The learner turns either gear: their rims move together, tooth by tooth, and they turn in opposite directions.",
+      "objectives": [
+        "OBJ-1"
+      ]
+    },
+    {
+      "id": "ITEM-3",
+      "kind": "exposition",
+      "title": "Count the teeth",
+      "description": "The same pair. Each tooth lights up as it passes the meeting point, on both gears: one turn of the small gear lights 10 teeth on each, a third of the large gear. Two counters under the gears give the number of teeth passed.",
+      "objectives": [
+        "OBJ-1"
+      ]
+    },
+    {
+      "id": "ITEM-4",
+      "kind": "practice",
+      "title": "Twelve times in one pair?",
+      "description": "Numeric question: how many teeth would the large gear need to turn twelve times slower than the gear of 10? Once answered, the large gear grows to 120 teeth, far beyond the outline of the clock.",
+      "objectives": [
+        "OBJ-1"
+      ]
+    },
+    {
+      "id": "ITEM-5",
+      "kind": "practice",
+      "title": "Two pairs in a row",
+      "description": "A gear of 8 teeth is fixed on the gear of 30 and drives one more gear. The learner sizes that last gear with a slider until the whole train turns twelve times slower (32 teeth: three times, then four times).",
+      "objectives": [
+        "OBJ-2"
+      ]
+    },
+    {
+      "id": "ITEM-6",
+      "kind": "demonstration",
+      "title": "Back to the centre",
+      "description": "The learner rolls the last gear round its small gear until it settles at the centre, on a tube around the minute shaft; the view turns to show the layers and both hands appear. Then a sentence on the direction: two meshings reverse it twice, so both hands turn clockwise.",
+      "objectives": [
+        "OBJ-2"
+      ]
+    },
+    {
+      "id": "ITEM-7",
+      "kind": "summary",
+      "title": "Twelve times slower",
+      "description": "The dial comes back, seen through. The learner turns the minute hand and watches the whole train. The answer in three sentences: 10 to 30 is three times slower, 8 to 32 four times, and three times four is twelve.",
+      "objectives": [
+        "OBJ-1",
+        "OBJ-2"
+      ]
+    }
+  ],
+  "spacing": [],
+  "waivers": [],
+  "duration": {
+    "min": 5,
+    "max": 5
+  }
+}

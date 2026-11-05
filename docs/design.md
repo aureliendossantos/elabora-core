@@ -235,10 +235,10 @@ Check them at a glance with `elabora assets . --sheet assets.png` (MCP `elabora_
 Figures drawn by code live in `generators/<name>.mjs` (helpers: `generators/_<name>.mjs` or sub-folders):
 
 ```js
-import { gearset } from '../objects/planetary-lab/gear.js';           // share geometry with a free object
-export const meta = { description: 'Gearset illustrations' };
+import { gearOutline } from '../objects/clockwork/gear.js';           // share geometry with a free object
+export const meta = { description: 'Gear illustrations' };
 export default async function ({ tokens, course, plan, language, write, read }) {
-  write('images/gearset.svg', svgFrom(gearset('30-78'), tokens['color.copper']));
+  write('images/gear.svg', svgFrom(gearOutline(30).points, tokens['color.copper']));
 }
 ```
 

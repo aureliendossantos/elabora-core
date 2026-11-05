@@ -1,0 +1,3 @@
+The gears behind a clock's dial, in flat colours with outlines. One object carries the whole module: it stays on the left from screen to screen and changes with the explanation, from the clock face to two gears, to the gear train, and back to the dial seen through. Each screen offers only what its idea needs: turn the minute hand, turn a gear, watch the teeth that pass, size the last gear, roll it back to the centre.
+
+Colour means "turns together": coral for the minute shaft, its gear and the minute hand; yellow for the two middle gears on one axle; green for the hour wheel, its tube and the hour hand.

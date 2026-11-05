@@ -1,0 +1,47 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
+  "id": "two-steps",
+  "title": "Two steps",
+  "covers": [
+    "ITEM-5"
+  ],
+  "layout": "clock-stage",
+  "completeWhen": "interactions-done",
+  "blocks": [
+    {
+      "id": "two-steps-text",
+      "type": "text",
+      "props": {
+        "markdown": "So clocks slow down in two steps. A small gear of 8 teeth is fixed on the gear of 30 and turns with it. It drives one last gear.\n\nThe two slowdowns multiply: three times, then again."
+      }
+    },
+    {
+      "id": "two-steps-hint",
+      "type": "text",
+      "props": {
+        "markdown": "Size the last gear until the train turns twelve times slower."
+      },
+      "style": "hint"
+    },
+    {
+      "id": "two-steps-clock",
+      "type": "free-object",
+      "slot": "stage",
+      "continuity": {
+        "key": "clockwork",
+        "duration": 1300
+      },
+      "props": {
+        "object": "clockwork",
+        "title": "The gear train, whose last gear you can size",
+        "aspectRatio": "fill",
+        "narrowAspectRatio": "1:1",
+        "minHeight": 420,
+        "props": {
+          "stage": "train"
+        },
+        "textAlternative": "**Text version.** Seen from slightly above: the coral gear of 10 teeth drives the yellow gear of 30, three times slower. On the same axle, a yellow gear of 8 teeth drives a green gear. A slider sets the green gear's teeth from 16 to 48, and a label says how much slower it turns than the minute shaft. With 32 teeth, four times slower than the gear of 8, the whole train turns twelve times slower."
+      }
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+/* Theme "clockwork" — cascade layer elabora.theme.
+   Warm paper, ink outlines and three flat colours, one per set of parts that turn together:
+   coral for the minute shaft, yellow for the middle gears, green for the hour wheel. */
+html { background: var(--t-color-paper); min-height: 100%; }
+body { background: transparent; }

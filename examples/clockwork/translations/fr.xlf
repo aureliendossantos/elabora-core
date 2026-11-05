@@ -1,0 +1,3162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="fr">
+  <file id="f1" original="clockwork@0.1.0" xml:space="preserve">
+    <unit id="course.title">
+      <notes>
+        <note category="location">course.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Course title</note>
+      </notes>
+      <segment state="translated">
+        <source>Why is the hour hand twelve times slower?</source>
+        <target>Pourquoi l’aiguille des heures va-t-elle douze fois moins vite ?</target>
+      </segment>
+    </unit>
+    <unit id="course.description">
+      <notes>
+        <note category="location">course.json /description</note>
+        <note category="format">text</note>
+        <note category="context">Course description (catalogue)</note>
+      </notes>
+      <segment state="translated">
+        <source>A five-minute module for curious minds: open a clock, turn its gears one by one, and find out why the hour hand turns twelve times slower than the minute hand.</source>
+        <target>Un module de cinq minutes pour les curieux : ouvrez une horloge, faites tourner ses engrenages un à un et découvrez pourquoi l’aiguille des heures tourne douze fois moins vite que celle des minutes.</target>
+      </segment>
+    </unit>
+    <unit id="course.section.clockwork.title">
+      <notes>
+        <note category="location">course.json /sections/0/title</note>
+        <note category="format">text</note>
+        <note category="context">Section of the course outline</note>
+      </notes>
+      <segment state="translated">
+        <source>Clockwork</source>
+        <target>Les rouages</target>
+      </segment>
+    </unit>
+    <unit id="plan.title">
+      <notes>
+        <note category="location">plan.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Title of the validated plan</note>
+      </notes>
+      <segment state="translated">
+        <source>Why is the hour hand twelve times slower?</source>
+        <target>Pourquoi l’aiguille des heures va-t-elle douze fois moins vite ?</target>
+      </segment>
+    </unit>
+    <unit id="plan.businessGoal">
+      <notes>
+        <note category="location">plan.json /businessGoal</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Show visitors of Elabora, in a five-minute sample, how one 3D object can carry a whole explanation: it stays on the left from screen to screen, grows with the explanation and offers only the controls of the moment, while the right side says one thing at a time.</source>
+        <target>Montrer aux visiteurs d’Elabora, dans un exemple de cinq minutes, qu’un seul objet 3D peut porter toute une explication : il reste à gauche d’un écran à l’autre, grandit avec l’explication et n’offre que les commandes du moment, tandis que la droite dit une chose à la fois.</target>
+      </segment>
+    </unit>
+    <unit id="plan.audience.role">
+      <notes>
+        <note category="location">plan.json /audience/role</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Visitors of Elabora's showcase: curious adults and teenagers, no knowledge of mechanics</source>
+        <target>Visiteurs de la vitrine d’Elabora : adultes et adolescents curieux, sans connaissance en mécanique</target>
+      </segment>
+    </unit>
+    <unit id="plan.audience.notes">
+      <notes>
+        <note category="location">plan.json /audience/notes</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Self-paced on the web, on a computer or a phone, with no voice-over. Short sentences in plain words; the object shows what the text says, and every manipulation has a keyboard path.</source>
+        <target>En autonomie sur le web, sur ordinateur ou téléphone, sans voix off. Des phrases courtes en mots simples ; l’objet montre ce que dit le texte, et chaque manipulation se fait aussi au clavier.</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-1.statement">
+      <notes>
+        <note category="location">plan.json /objectives/0/statement</note>
+        <note category="format">text</note>
+        <note category="context">Learning objective</note>
+      </notes>
+      <segment state="translated">
+        <source>Explain why two meshing gears turn in opposite directions and why the one with more teeth turns more slowly, in the ratio of their numbers of teeth.</source>
+        <target>Expliquer pourquoi deux engrenages engrenés tournent en sens inverse, et pourquoi celui qui a le plus de dents tourne le plus lentement, dans le rapport de leurs nombres de dents.</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-1.short">
+      <notes>
+        <note category="location">plan.json /objectives/0/short</note>
+        <note category="format">text</note>
+        <note category="context">Short name of the learning objective, three to five words</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>How two gears set their speeds</source>
+        <target>Comment deux engrenages règlent leurs vitesses</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-1.criterion">
+      <notes>
+        <note category="location">plan.json /objectives/0/criterion</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Gives the number of teeth a gear needs to turn twelve times slower than a gear of 10 teeth.</source>
+        <target>Donne le nombre de dents qu’il faut à un engrenage pour tourner douze fois moins vite qu’un engrenage de 10 dents.</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-2.statement">
+      <notes>
+        <note category="location">plan.json /objectives/1/statement</note>
+        <note category="format">text</note>
+        <note category="context">Learning objective</note>
+      </notes>
+      <segment state="translated">
+        <source>Explain how the gears behind a clock's dial turn the hour hand twelve times slower than the minute hand: two pairs of gears multiply their slowdowns, and the last gear comes back around the minute shaft, so both hands turn around the same point and in the same direction.</source>
+        <target>Expliquer comment les engrenages derrière le cadran d’une horloge font tourner l’aiguille des heures douze fois moins vite que celle des minutes : deux paires d’engrenages multiplient leurs ralentissements, et le dernier engrenage revient autour de l’axe des minutes, si bien que les deux aiguilles tournent autour du même point et dans le même sens.</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-2.short">
+      <notes>
+        <note category="location">plan.json /objectives/1/short</note>
+        <note category="format">text</note>
+        <note category="context">Short name of the learning objective, three to five words</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>How a clock slows its hour hand</source>
+        <target>Comment une horloge ralentit son aiguille des heures</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-2.criterion">
+      <notes>
+        <note category="location">plan.json /objectives/1/criterion</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Sizes the last gear of the train for a slowdown of twelve, then brings it back to the centre of the dial.</source>
+        <target>Règle le dernier engrenage du train pour un ralentissement de douze, puis le ramène au centre du cadran.</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-1.title">
+      <notes>
+        <note category="location">plan.json /items/0/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>One shaft, two speeds</source>
+        <target>Un axe, deux vitesses</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-1.description">
+      <notes>
+        <note category="location">plan.json /items/0/description</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>The question, on a clock face. The minute hand runs fast enough to see the hour hand creep; the learner can drag the minute hand round and see the hour hand move one hour per turn. The text asks how a single shaft gives two speeds.</source>
+        <target>La question, sur un cadran. L’aiguille des minutes tourne assez vite pour qu’on voie avancer celle des heures ; l’apprenant peut faire tourner l’aiguille des minutes et voir celle des heures avancer d’une heure par tour. Le texte demande comment un seul axe donne deux vitesses.</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-2.title">
+      <notes>
+        <note category="location">plan.json /items/1/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Teeth that hold together</source>
+        <target>Des dents qui se tiennent</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-2.description">
+      <notes>
+        <note category="location">plan.json /items/1/description</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>The dial lifts away. Behind it, the minute shaft carries a small gear of 10 teeth meshing with a gear of 30. The learner turns either gear: their rims move together, tooth by tooth, and they turn in opposite directions.</source>
+        <target>Le cadran se soulève. Derrière, l’axe des minutes porte un petit engrenage de 10 dents, engrené avec un engrenage de 30. L’apprenant fait tourner l’un ou l’autre : leurs bords avancent ensemble, dent après dent, et ils tournent en sens inverse.</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-3.title">
+      <notes>
+        <note category="location">plan.json /items/2/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Count the teeth</source>
+        <target>Comptez les dents</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-3.description">
+      <notes>
+        <note category="location">plan.json /items/2/description</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>The same pair. Each tooth lights up as it passes the meeting point, on both gears: one turn of the small gear lights 10 teeth on each, a third of the large gear. Two counters under the gears give the number of teeth passed.</source>
+        <target>La même paire. Chaque dent s’allume en passant au point de rencontre, sur les deux engrenages : un tour du petit allume 10 dents sur chacun, soit un tiers du grand. Deux compteurs sous les engrenages donnent le nombre de dents passées.</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-4.title">
+      <notes>
+        <note category="location">plan.json /items/3/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Twelve times in one pair?</source>
+        <target>Douze fois avec une seule paire ?</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-4.description">
+      <notes>
+        <note category="location">plan.json /items/3/description</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Numeric question: how many teeth would the large gear need to turn twelve times slower than the gear of 10? Once answered, the large gear grows to 120 teeth, far beyond the outline of the clock.</source>
+        <target>Question numérique : combien de dents faudrait-il au grand engrenage pour tourner douze fois moins vite que celui de 10 ? Une fois la réponse donnée, le grand engrenage grandit jusqu’à 120 dents, bien au-delà du contour de l’horloge.</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-5.title">
+      <notes>
+        <note category="location">plan.json /items/4/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Two pairs in a row</source>
+        <target>Deux paires à la suite</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-5.description">
+      <notes>
+        <note category="location">plan.json /items/4/description</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>A gear of 8 teeth is fixed on the gear of 30 and drives one more gear. The learner sizes that last gear with a slider until the whole train turns twelve times slower (32 teeth: three times, then four times).</source>
+        <target>Un engrenage de 8 dents est fixé sur celui de 30 et entraîne un engrenage de plus. L’apprenant règle ce dernier engrenage avec un curseur, jusqu’à ce que tout le train tourne douze fois moins vite (32 dents : trois fois, puis quatre fois).</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-6.title">
+      <notes>
+        <note category="location">plan.json /items/5/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Back to the centre</source>
+        <target>Retour au centre</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-6.description">
+      <notes>
+        <note category="location">plan.json /items/5/description</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>The learner rolls the last gear round its small gear until it settles at the centre, on a tube around the minute shaft; the view turns to show the layers and both hands appear. Then a sentence on the direction: two meshings reverse it twice, so both hands turn clockwise.</source>
+        <target>L’apprenant fait rouler le dernier engrenage autour de son petit engrenage jusqu’au centre, sur un tube autour de l’axe des minutes ; la vue pivote pour montrer les étages et les deux aiguilles apparaissent. Puis une phrase sur le sens : deux engrènements l’inversent deux fois, et les deux aiguilles tournent dans le sens des aiguilles d’une montre.</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-7.title">
+      <notes>
+        <note category="location">plan.json /items/6/title</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>Twelve times slower</source>
+        <target>Douze fois moins vite</target>
+      </segment>
+    </unit>
+    <unit id="plan.item.ITEM-7.description">
+      <notes>
+        <note category="location">plan.json /items/6/description</note>
+        <note category="format">text</note>
+      </notes>
+      <segment state="translated">
+        <source>The dial comes back, seen through. The learner turns the minute hand and watches the whole train. The answer in three sentences: 10 to 30 is three times slower, 8 to 32 four times, and three times four is twelve.</source>
+        <target>Le cadran revient, transparent. L’apprenant fait tourner l’aiguille des minutes et regarde tout le train. La réponse en trois phrases : de 10 à 30, trois fois moins vite ; de 8 à 32, quatre fois ; trois fois quatre font douze.</target>
+      </segment>
+    </unit>
+    <unit id="screen.question.title">
+      <notes>
+        <note category="location">screens/question.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Two hands, one shaft</source>
+        <target>Deux aiguilles, un seul axe</target>
+      </segment>
+    </unit>
+    <unit id="block.question-text.markdown">
+      <notes>
+        <note category="location">screens/question.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Two hands, one shaft"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Turn the minute hand once around the dial: the hour hand moves on by just one hour.
+
+A single shaft, at the centre, drives them both. So how does one hand turn twelve times slower than the other?</source>
+        <target>Faites faire un tour de cadran à l’aiguille des minutes : celle des heures avance d’une heure seulement.
+
+Un seul axe, au centre, les entraîne toutes les deux. Alors comment une aiguille tourne-t-elle douze fois moins vite que l’autre ?</target>
+      </segment>
+    </unit>
+    <unit id="block.question-hint.markdown">
+      <notes>
+        <note category="location">screens/question.json /blocks/1/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Two hands, one shaft"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Drag the minute hand around the dial.</source>
+        <target>Faites glisser l’aiguille des minutes autour du cadran.</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.title">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/title</note>
+        <note category="format">text</note>
+        <note category="context">Free object on screen "Two hands, one shaft"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>A clock face whose minute hand you can turn</source>
+        <target>Un cadran dont vous pouvez tourner l’aiguille des minutes</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.textAlternative">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/textAlternative</note>
+        <note category="format">markdown</note>
+        <note category="context">Free object on screen "Two hands, one shaft"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>**Text version.** A round clock face with twelve marks. The coral minute hand runs fast; the green hour hand creeps forward. When the minute hand goes once around, the hour hand moves from one mark to the next: one hour.</source>
+        <target>**Version texte.** Un cadran rond à douze repères. L’aiguille des minutes, corail, tourne vite ; l’aiguille des heures, verte, avance doucement. Quand l’aiguille des minutes fait un tour, celle des heures passe d’un repère au suivant : une heure.</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.a11y.description">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/a11y/description</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: what the object shows, read by screen readers</note>
+      </notes>
+      <segment state="translated">
+        <source>The gears behind a clock's dial, drawn in flat colours with dark outlines. The minute shaft, its small gear of 10 teeth and the minute hand are coral; a gear of 30 teeth and the gear of 8 fixed on it are yellow; the last gear of 32 teeth, its tube and the hour hand are green. Each screen shows one part of the mechanism: the dial, then two gears, then the whole train.</source>
+        <target>Les engrenages derrière le cadran d’une horloge, dessinés en aplats de couleur aux contours sombres. L’axe des minutes, son petit engrenage de 10 dents et l’aiguille des minutes sont corail ; un engrenage de 30 dents et celui de 8 fixé dessus sont jaunes ; le dernier engrenage de 32 dents, son tube et l’aiguille des heures sont verts. Chaque écran montre une partie du mécanisme : le cadran, puis deux engrenages, puis tout le train.</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.a11y.keyboard">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/a11y/keyboard</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: how to use it with the keyboard</note>
+      </notes>
+      <segment state="translated">
+        <source>Tab reaches the gears, then the controls. On the gears, the arrow keys turn them, one tooth at a time (one minute on the dial); in the step where the last gear rolls back to the centre, the arrow keys roll it and Enter takes it there. Space pauses or restarts the motion.</source>
+        <target>Tab atteint les engrenages, puis les commandes. Sur les engrenages, les flèches les font tourner d’une dent à la fois (une minute sur le cadran) ; à l’étape où le dernier engrenage revient au centre, les flèches le font rouler et Entrée l’y amène. Espace arrête ou relance le mouvement.</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.pause">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/pause</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the round button that stops the gears turning. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Pause the gears</source>
+        <target>Arrêter les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.play">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/play</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the same button once the gears are stopped. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Turn the gears</source>
+        <target>Faire tourner les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.dialLabel">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/dialLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the clock for screen readers: arrow keys move the minute hand. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Minute hand</source>
+        <target>Aiguille des minutes</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.gearsLabel">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/gearsLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the gears for screen readers: arrow keys turn them. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Gears</source>
+        <target>Engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.rollLabel">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/rollLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the last gear before it is back at the centre: arrow keys roll it, Enter takes it all the way. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear, to roll back to the centre</source>
+        <target>Dernier engrenage, à ramener au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.rollValue">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/rollValue</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the last gear has rolled towards the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{percent}% of the way to the centre</source>
+        <target>{percent} % du chemin vers le centre</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.time">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/time</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: The time the clock shows, for screen readers. minute has two digits. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{hour}:{minute}</source>
+        <target>{hour} h {minute}</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.turns">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/turns</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the gears have turned, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{n, plural, one {# turn of the small gear} other {# turns of the small gear}}</source>
+        <target>{n, plural, one {# tour du petit engrenage} other {# tours du petit engrenage}}</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.teethPassed">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/teethPassed</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Under the gears: how many teeth of this gear have passed the meeting point. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} of {total} teeth</source>
+        <target>{n} dents sur {total}</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.sizerLabel">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/sizerLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the slider that sets the number of teeth of the last gear, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear</source>
+        <target>Dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.teeth">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/teeth</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Value of that slider. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">12</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} teeth</source>
+        <target>{n} dents</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.slower">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/slower</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How much slower the last gear turns than the minute shaft. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>{ratio} times slower</source>
+        <target>{ratio} fois moins vite</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.xray">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/xray</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Switch that makes the dial clear to show the gears behind it. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>See through the dial</source>
+        <target>Voir à travers le cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.docked">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/docked</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the last gear reaches the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>The last gear is on the minute shaft, at the centre.</source>
+        <target>Le dernier engrenage est sur l’axe des minutes, au centre.</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.strings.matched">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/strings/matched</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Twelve times slower: the size of a clock's hour wheel.</source>
+        <target>Douze fois moins vite : la taille de la roue des heures d’une horloge.</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.enumLabels.stage.clock">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/enumLabels/stage/clock</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "clock" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Clock face</source>
+        <target>Cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.enumLabels.stage.pair">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/enumLabels/stage/pair</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "pair" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Two gears</source>
+        <target>Deux engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.enumLabels.stage.count">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/enumLabels/stage/count</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "count" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Count the teeth</source>
+        <target>Comptez les dents</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.enumLabels.stage.one-gear">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/enumLabels/stage/one-gear</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "one-gear" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>One very large gear</source>
+        <target>Un très grand engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.enumLabels.stage.train">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/enumLabels/stage/train</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "train" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Size the last gear</source>
+        <target>Régler le dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.enumLabels.stage.centre">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/enumLabels/stage/centre</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "centre" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Back to the centre</source>
+        <target>Retour au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.question-clock.enumLabels.stage.answer">
+      <notes>
+        <note category="location">screens/question.json /blocks/2/props/enumLabels/stage/answer</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "answer" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>The dial seen through</source>
+        <target>Le cadran transparent</target>
+      </segment>
+    </unit>
+    <unit id="screen.teeth.title">
+      <notes>
+        <note category="location">screens/teeth.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Teeth that hold together</source>
+        <target>Des dents qui se tiennent</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-text.markdown">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Teeth that hold together"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Behind the dial, the minute shaft carries a small gear. Its teeth fit between the teeth of a larger gear, so where the two meet, their rims travel together, tooth by tooth.
+
+The large gear turns the other way.</source>
+        <target>Derrière le cadran, l’axe des minutes porte un petit engrenage. Ses dents se logent entre celles d’un engrenage plus grand : là où les deux se touchent, leurs bords avancent ensemble, dent après dent.
+
+Le grand engrenage tourne dans l’autre sens.</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-hint.markdown">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/1/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Teeth that hold together"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Turn either gear.</source>
+        <target>Faites tourner l’un ou l’autre engrenage.</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.title">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/title</note>
+        <note category="format">text</note>
+        <note category="context">Free object on screen "Teeth that hold together"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>Two gears in mesh, which you can turn</source>
+        <target>Deux engrenages engrenés, à faire tourner</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.textAlternative">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/textAlternative</note>
+        <note category="format">markdown</note>
+        <note category="context">Free object on screen "Teeth that hold together"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>**Text version.** The dial is lifted away. Behind it, a small coral gear on the minute shaft meshes with a large yellow gear. When the small gear turns clockwise, the large one turns counterclockwise, more slowly; at the point where they meet, their teeth move together.</source>
+        <target>**Version texte.** Le cadran est soulevé. Derrière, un petit engrenage corail, sur l’axe des minutes, s’engrène avec un grand engrenage jaune. Quand le petit tourne dans le sens des aiguilles d’une montre, le grand tourne dans l’autre sens, plus lentement ; au point où ils se touchent, leurs dents avancent ensemble.</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.a11y.description">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/a11y/description</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: what the object shows, read by screen readers</note>
+      </notes>
+      <segment state="translated">
+        <source>The gears behind a clock's dial, drawn in flat colours with dark outlines. The minute shaft, its small gear of 10 teeth and the minute hand are coral; a gear of 30 teeth and the gear of 8 fixed on it are yellow; the last gear of 32 teeth, its tube and the hour hand are green. Each screen shows one part of the mechanism: the dial, then two gears, then the whole train.</source>
+        <target>Les engrenages derrière le cadran d’une horloge, dessinés en aplats de couleur aux contours sombres. L’axe des minutes, son petit engrenage de 10 dents et l’aiguille des minutes sont corail ; un engrenage de 30 dents et celui de 8 fixé dessus sont jaunes ; le dernier engrenage de 32 dents, son tube et l’aiguille des heures sont verts. Chaque écran montre une partie du mécanisme : le cadran, puis deux engrenages, puis tout le train.</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.a11y.keyboard">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/a11y/keyboard</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: how to use it with the keyboard</note>
+      </notes>
+      <segment state="translated">
+        <source>Tab reaches the gears, then the controls. On the gears, the arrow keys turn them, one tooth at a time (one minute on the dial); in the step where the last gear rolls back to the centre, the arrow keys roll it and Enter takes it there. Space pauses or restarts the motion.</source>
+        <target>Tab atteint les engrenages, puis les commandes. Sur les engrenages, les flèches les font tourner d’une dent à la fois (une minute sur le cadran) ; à l’étape où le dernier engrenage revient au centre, les flèches le font rouler et Entrée l’y amène. Espace arrête ou relance le mouvement.</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.pause">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/pause</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the round button that stops the gears turning. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Pause the gears</source>
+        <target>Arrêter les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.play">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/play</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the same button once the gears are stopped. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Turn the gears</source>
+        <target>Faire tourner les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.dialLabel">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/dialLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the clock for screen readers: arrow keys move the minute hand. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Minute hand</source>
+        <target>Aiguille des minutes</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.gearsLabel">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/gearsLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the gears for screen readers: arrow keys turn them. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Gears</source>
+        <target>Engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.rollLabel">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/rollLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the last gear before it is back at the centre: arrow keys roll it, Enter takes it all the way. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear, to roll back to the centre</source>
+        <target>Dernier engrenage, à ramener au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.rollValue">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/rollValue</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the last gear has rolled towards the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{percent}% of the way to the centre</source>
+        <target>{percent} % du chemin vers le centre</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.time">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/time</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: The time the clock shows, for screen readers. minute has two digits. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{hour}:{minute}</source>
+        <target>{hour} h {minute}</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.turns">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/turns</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the gears have turned, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{n, plural, one {# turn of the small gear} other {# turns of the small gear}}</source>
+        <target>{n, plural, one {# tour du petit engrenage} other {# tours du petit engrenage}}</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.teethPassed">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/teethPassed</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Under the gears: how many teeth of this gear have passed the meeting point. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} of {total} teeth</source>
+        <target>{n} dents sur {total}</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.sizerLabel">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/sizerLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the slider that sets the number of teeth of the last gear, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear</source>
+        <target>Dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.teeth">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/teeth</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Value of that slider. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">12</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} teeth</source>
+        <target>{n} dents</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.slower">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/slower</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How much slower the last gear turns than the minute shaft. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>{ratio} times slower</source>
+        <target>{ratio} fois moins vite</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.xray">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/xray</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Switch that makes the dial clear to show the gears behind it. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>See through the dial</source>
+        <target>Voir à travers le cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.docked">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/docked</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the last gear reaches the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>The last gear is on the minute shaft, at the centre.</source>
+        <target>Le dernier engrenage est sur l’axe des minutes, au centre.</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.strings.matched">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/strings/matched</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Twelve times slower: the size of a clock's hour wheel.</source>
+        <target>Douze fois moins vite : la taille de la roue des heures d’une horloge.</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.enumLabels.stage.clock">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/enumLabels/stage/clock</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "clock" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Clock face</source>
+        <target>Cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.enumLabels.stage.pair">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/enumLabels/stage/pair</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "pair" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Two gears</source>
+        <target>Deux engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.enumLabels.stage.count">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/enumLabels/stage/count</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "count" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Count the teeth</source>
+        <target>Comptez les dents</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.enumLabels.stage.one-gear">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/enumLabels/stage/one-gear</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "one-gear" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>One very large gear</source>
+        <target>Un très grand engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.enumLabels.stage.train">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/enumLabels/stage/train</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "train" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Size the last gear</source>
+        <target>Régler le dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.enumLabels.stage.centre">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/enumLabels/stage/centre</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "centre" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Back to the centre</source>
+        <target>Retour au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.teeth-clock.enumLabels.stage.answer">
+      <notes>
+        <note category="location">screens/teeth.json /blocks/2/props/enumLabels/stage/answer</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "answer" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>The dial seen through</source>
+        <target>Le cadran transparent</target>
+      </segment>
+    </unit>
+    <unit id="screen.count.title">
+      <notes>
+        <note category="location">screens/count.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Count the teeth</source>
+        <target>Comptez les dents</target>
+      </segment>
+    </unit>
+    <unit id="block.count-text.markdown">
+      <notes>
+        <note category="location">screens/count.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Count the teeth"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>The small gear has 10 teeth, the large one 30. Each tooth that passes moves both gears on by one tooth.
+
+One turn of the small gear moves the large gear by 10 of its 30 teeth: a third of a turn.</source>
+        <target>Le petit engrenage a 10 dents, le grand 30. Chaque dent qui passe fait avancer les deux engrenages d’une dent.
+
+Un tour du petit engrenage fait avancer le grand de 10 de ses 30 dents : un tiers de tour.</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.title">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/title</note>
+        <note category="format">text</note>
+        <note category="context">Free object on screen "Count the teeth"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>The same two gears, their teeth lighting up as they pass</source>
+        <target>Les deux mêmes engrenages, dont les dents s’allument en passant</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.textAlternative">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/textAlternative</note>
+        <note category="format">markdown</note>
+        <note category="context">Free object on screen "Count the teeth"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>**Text version.** The small gear has 10 teeth and the large one 30. As they turn, each tooth lights up when it passes the point where the gears meet, on both gears at once. After one turn of the small gear, its 10 teeth are lit, and 10 teeth of the large gear: a third of it. Then the count starts again.</source>
+        <target>**Version texte.** Le petit engrenage a 10 dents, le grand 30. Quand ils tournent, chaque dent s’allume en passant au point où les engrenages se touchent, sur les deux à la fois. Après un tour du petit engrenage, ses 10 dents sont allumées, et 10 dents du grand : un tiers. Puis le compte recommence.</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.a11y.description">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/a11y/description</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: what the object shows, read by screen readers</note>
+      </notes>
+      <segment state="translated">
+        <source>The gears behind a clock's dial, drawn in flat colours with dark outlines. The minute shaft, its small gear of 10 teeth and the minute hand are coral; a gear of 30 teeth and the gear of 8 fixed on it are yellow; the last gear of 32 teeth, its tube and the hour hand are green. Each screen shows one part of the mechanism: the dial, then two gears, then the whole train.</source>
+        <target>Les engrenages derrière le cadran d’une horloge, dessinés en aplats de couleur aux contours sombres. L’axe des minutes, son petit engrenage de 10 dents et l’aiguille des minutes sont corail ; un engrenage de 30 dents et celui de 8 fixé dessus sont jaunes ; le dernier engrenage de 32 dents, son tube et l’aiguille des heures sont verts. Chaque écran montre une partie du mécanisme : le cadran, puis deux engrenages, puis tout le train.</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.a11y.keyboard">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/a11y/keyboard</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: how to use it with the keyboard</note>
+      </notes>
+      <segment state="translated">
+        <source>Tab reaches the gears, then the controls. On the gears, the arrow keys turn them, one tooth at a time (one minute on the dial); in the step where the last gear rolls back to the centre, the arrow keys roll it and Enter takes it there. Space pauses or restarts the motion.</source>
+        <target>Tab atteint les engrenages, puis les commandes. Sur les engrenages, les flèches les font tourner d’une dent à la fois (une minute sur le cadran) ; à l’étape où le dernier engrenage revient au centre, les flèches le font rouler et Entrée l’y amène. Espace arrête ou relance le mouvement.</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.pause">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/pause</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the round button that stops the gears turning. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Pause the gears</source>
+        <target>Arrêter les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.play">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/play</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the same button once the gears are stopped. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Turn the gears</source>
+        <target>Faire tourner les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.dialLabel">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/dialLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the clock for screen readers: arrow keys move the minute hand. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Minute hand</source>
+        <target>Aiguille des minutes</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.gearsLabel">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/gearsLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the gears for screen readers: arrow keys turn them. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Gears</source>
+        <target>Engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.rollLabel">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/rollLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the last gear before it is back at the centre: arrow keys roll it, Enter takes it all the way. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear, to roll back to the centre</source>
+        <target>Dernier engrenage, à ramener au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.rollValue">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/rollValue</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the last gear has rolled towards the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{percent}% of the way to the centre</source>
+        <target>{percent} % du chemin vers le centre</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.time">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/time</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: The time the clock shows, for screen readers. minute has two digits. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{hour}:{minute}</source>
+        <target>{hour} h {minute}</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.turns">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/turns</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the gears have turned, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{n, plural, one {# turn of the small gear} other {# turns of the small gear}}</source>
+        <target>{n, plural, one {# tour du petit engrenage} other {# tours du petit engrenage}}</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.teethPassed">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/teethPassed</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Under the gears: how many teeth of this gear have passed the meeting point. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} of {total} teeth</source>
+        <target>{n} dents sur {total}</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.sizerLabel">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/sizerLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the slider that sets the number of teeth of the last gear, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear</source>
+        <target>Dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.teeth">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/teeth</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Value of that slider. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">12</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} teeth</source>
+        <target>{n} dents</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.slower">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/slower</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How much slower the last gear turns than the minute shaft. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>{ratio} times slower</source>
+        <target>{ratio} fois moins vite</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.xray">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/xray</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Switch that makes the dial clear to show the gears behind it. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>See through the dial</source>
+        <target>Voir à travers le cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.docked">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/docked</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the last gear reaches the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>The last gear is on the minute shaft, at the centre.</source>
+        <target>Le dernier engrenage est sur l’axe des minutes, au centre.</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.strings.matched">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/strings/matched</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Twelve times slower: the size of a clock's hour wheel.</source>
+        <target>Douze fois moins vite : la taille de la roue des heures d’une horloge.</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.enumLabels.stage.clock">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/enumLabels/stage/clock</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "clock" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Clock face</source>
+        <target>Cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.enumLabels.stage.pair">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/enumLabels/stage/pair</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "pair" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Two gears</source>
+        <target>Deux engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.enumLabels.stage.count">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/enumLabels/stage/count</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "count" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Count the teeth</source>
+        <target>Comptez les dents</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.enumLabels.stage.one-gear">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/enumLabels/stage/one-gear</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "one-gear" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>One very large gear</source>
+        <target>Un très grand engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.enumLabels.stage.train">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/enumLabels/stage/train</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "train" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Size the last gear</source>
+        <target>Régler le dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.enumLabels.stage.centre">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/enumLabels/stage/centre</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "centre" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Back to the centre</source>
+        <target>Retour au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.count-clock.enumLabels.stage.answer">
+      <notes>
+        <note category="location">screens/count.json /blocks/1/props/enumLabels/stage/answer</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "answer" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>The dial seen through</source>
+        <target>Le cadran transparent</target>
+      </segment>
+    </unit>
+    <unit id="screen.one-gear.title">
+      <notes>
+        <note category="location">screens/one-gear.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Twelve times in one go?</source>
+        <target>Douze fois d’un coup ?</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-text.markdown">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Twelve times in one go?"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>The hour hand needs a gear that turns twelve times slower than the small gear of 10 teeth.</source>
+        <target>L’aiguille des heures a besoin d’un engrenage qui tourne douze fois moins vite que le petit engrenage de 10 dents.</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-question.stem">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/1/props/stem</note>
+        <note category="format">markdown</note>
+        <note category="context">Numeric question on screen "Twelve times in one go?"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>How many teeth would that gear need?</source>
+        <target>Combien de dents lui faudrait-il ?</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-question.unit">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/1/props/unit</note>
+        <note category="format">text</note>
+        <note category="context">Numeric question on screen "Twelve times in one go?"</note>
+        <note category="max-length">30</note>
+      </notes>
+      <segment state="translated">
+        <source>teeth</source>
+        <target>dents</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-question.feedback.correct">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/1/props/feedback/correct</note>
+        <note category="format">markdown</note>
+        <note category="context">Numeric question on screen "Twelve times in one go?"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Yes, 120: twelve turns of the small gear, 10 teeth each time. Look how large that gear is next to the clock.</source>
+        <target>Oui, 120 : douze tours du petit engrenage, 10 dents à chaque fois. Regardez la taille de cet engrenage à côté de l’horloge.</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-question.feedback.incorrect">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/1/props/feedback/incorrect</note>
+        <note category="format">markdown</note>
+        <note category="context">Numeric question on screen "Twelve times in one go?"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>It takes 120: twelve turns of the small gear, 10 teeth each time. Look how large that gear is next to the clock.</source>
+        <target>Il en faut 120 : douze tours du petit engrenage, 10 dents à chaque fois. Regardez la taille de cet engrenage à côté de l’horloge.</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-question.misconceptions.turns.feedback">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/1/props/misconceptions/0/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Numeric question on screen "Twelve times in one go?"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>12 is the number of turns of the small gear. Each turn moves 10 teeth, so the gear needs 120. Look how large it is next to the clock.</source>
+        <target>12, c’est le nombre de tours du petit engrenage. Chaque tour fait passer 10 dents : il en faut donc 120. Regardez sa taille à côté de l’horloge.</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-question.misconceptions.from-thirty.feedback">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/1/props/misconceptions/1/feedback</note>
+        <note category="format">markdown</note>
+        <note category="context">Numeric question on screen "Twelve times in one go?"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>That would be twelve times slower than the gear of 30. From the small gear of 10, it takes 120. Look how large it is next to the clock.</source>
+        <target>Ce serait douze fois moins vite que l’engrenage de 30. Depuis le petit engrenage de 10, il en faut 120. Regardez sa taille à côté de l’horloge.</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.title">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/title</note>
+        <note category="format">text</note>
+        <note category="context">Free object on screen "Twelve times in one go?"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>The small gear and a large gear, with the outline of the clock</source>
+        <target>Le petit engrenage et un grand engrenage, avec le contour de l’horloge</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.textAlternative">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/textAlternative</note>
+        <note category="format">markdown</note>
+        <note category="context">Free object on screen "Twelve times in one go?"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>**Text version.** The small gear of 10 teeth and the gear of 30, with the outline of the clock drawn as a dashed circle around the small gear. Once the question is answered, the large gear grows to 120 teeth: it reaches far beyond the outline of the clock.</source>
+        <target>**Version texte.** Le petit engrenage de 10 dents et celui de 30, avec le contour de l’horloge dessiné en pointillés autour du petit. Une fois la réponse donnée, le grand engrenage grandit jusqu’à 120 dents : il dépasse de loin le contour de l’horloge.</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.a11y.description">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/a11y/description</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: what the object shows, read by screen readers</note>
+      </notes>
+      <segment state="translated">
+        <source>The gears behind a clock's dial, drawn in flat colours with dark outlines. The minute shaft, its small gear of 10 teeth and the minute hand are coral; a gear of 30 teeth and the gear of 8 fixed on it are yellow; the last gear of 32 teeth, its tube and the hour hand are green. Each screen shows one part of the mechanism: the dial, then two gears, then the whole train.</source>
+        <target>Les engrenages derrière le cadran d’une horloge, dessinés en aplats de couleur aux contours sombres. L’axe des minutes, son petit engrenage de 10 dents et l’aiguille des minutes sont corail ; un engrenage de 30 dents et celui de 8 fixé dessus sont jaunes ; le dernier engrenage de 32 dents, son tube et l’aiguille des heures sont verts. Chaque écran montre une partie du mécanisme : le cadran, puis deux engrenages, puis tout le train.</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.a11y.keyboard">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/a11y/keyboard</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: how to use it with the keyboard</note>
+      </notes>
+      <segment state="translated">
+        <source>Tab reaches the gears, then the controls. On the gears, the arrow keys turn them, one tooth at a time (one minute on the dial); in the step where the last gear rolls back to the centre, the arrow keys roll it and Enter takes it there. Space pauses or restarts the motion.</source>
+        <target>Tab atteint les engrenages, puis les commandes. Sur les engrenages, les flèches les font tourner d’une dent à la fois (une minute sur le cadran) ; à l’étape où le dernier engrenage revient au centre, les flèches le font rouler et Entrée l’y amène. Espace arrête ou relance le mouvement.</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.pause">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/pause</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the round button that stops the gears turning. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Pause the gears</source>
+        <target>Arrêter les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.play">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/play</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the same button once the gears are stopped. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Turn the gears</source>
+        <target>Faire tourner les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.dialLabel">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/dialLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the clock for screen readers: arrow keys move the minute hand. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Minute hand</source>
+        <target>Aiguille des minutes</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.gearsLabel">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/gearsLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the gears for screen readers: arrow keys turn them. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Gears</source>
+        <target>Engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.rollLabel">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/rollLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the last gear before it is back at the centre: arrow keys roll it, Enter takes it all the way. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear, to roll back to the centre</source>
+        <target>Dernier engrenage, à ramener au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.rollValue">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/rollValue</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the last gear has rolled towards the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{percent}% of the way to the centre</source>
+        <target>{percent} % du chemin vers le centre</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.time">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/time</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: The time the clock shows, for screen readers. minute has two digits. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{hour}:{minute}</source>
+        <target>{hour} h {minute}</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.turns">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/turns</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the gears have turned, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{n, plural, one {# turn of the small gear} other {# turns of the small gear}}</source>
+        <target>{n, plural, one {# tour du petit engrenage} other {# tours du petit engrenage}}</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.teethPassed">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/teethPassed</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Under the gears: how many teeth of this gear have passed the meeting point. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} of {total} teeth</source>
+        <target>{n} dents sur {total}</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.sizerLabel">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/sizerLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the slider that sets the number of teeth of the last gear, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear</source>
+        <target>Dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.teeth">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/teeth</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Value of that slider. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">12</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} teeth</source>
+        <target>{n} dents</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.slower">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/slower</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How much slower the last gear turns than the minute shaft. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>{ratio} times slower</source>
+        <target>{ratio} fois moins vite</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.xray">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/xray</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Switch that makes the dial clear to show the gears behind it. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>See through the dial</source>
+        <target>Voir à travers le cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.docked">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/docked</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the last gear reaches the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>The last gear is on the minute shaft, at the centre.</source>
+        <target>Le dernier engrenage est sur l’axe des minutes, au centre.</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.strings.matched">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/strings/matched</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Twelve times slower: the size of a clock's hour wheel.</source>
+        <target>Douze fois moins vite : la taille de la roue des heures d’une horloge.</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.enumLabels.stage.clock">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/enumLabels/stage/clock</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "clock" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Clock face</source>
+        <target>Cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.enumLabels.stage.pair">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/enumLabels/stage/pair</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "pair" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Two gears</source>
+        <target>Deux engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.enumLabels.stage.count">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/enumLabels/stage/count</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "count" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Count the teeth</source>
+        <target>Comptez les dents</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.enumLabels.stage.one-gear">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/enumLabels/stage/one-gear</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "one-gear" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>One very large gear</source>
+        <target>Un très grand engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.enumLabels.stage.train">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/enumLabels/stage/train</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "train" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Size the last gear</source>
+        <target>Régler le dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.enumLabels.stage.centre">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/enumLabels/stage/centre</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "centre" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Back to the centre</source>
+        <target>Retour au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.one-gear-clock.enumLabels.stage.answer">
+      <notes>
+        <note category="location">screens/one-gear.json /blocks/2/props/enumLabels/stage/answer</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "answer" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>The dial seen through</source>
+        <target>Le cadran transparent</target>
+      </segment>
+    </unit>
+    <unit id="screen.two-steps.title">
+      <notes>
+        <note category="location">screens/two-steps.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Two steps</source>
+        <target>En deux étapes</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-text.markdown">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Two steps"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>So clocks slow down in two steps. A small gear of 8 teeth is fixed on the gear of 30 and turns with it. It drives one last gear.
+
+The two slowdowns multiply: three times, then again.</source>
+        <target>Les horloges ralentissent donc en deux étapes. Un petit engrenage de 8 dents est fixé sur celui de 30 et tourne avec lui. Il entraîne un dernier engrenage.
+
+Les deux ralentissements se multiplient : trois fois, puis encore.</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-hint.markdown">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/1/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Two steps"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Size the last gear until the train turns twelve times slower.</source>
+        <target>Réglez le dernier engrenage jusqu’à ce que le train tourne douze fois moins vite.</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.title">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/title</note>
+        <note category="format">text</note>
+        <note category="context">Free object on screen "Two steps"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>The gear train, whose last gear you can size</source>
+        <target>Le train d’engrenages, dont vous réglez le dernier</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.textAlternative">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/textAlternative</note>
+        <note category="format">markdown</note>
+        <note category="context">Free object on screen "Two steps"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>**Text version.** Seen from slightly above: the coral gear of 10 teeth drives the yellow gear of 30, three times slower. On the same axle, a yellow gear of 8 teeth drives a green gear. A slider sets the green gear's teeth from 16 to 48, and a label says how much slower it turns than the minute shaft. With 32 teeth, four times slower than the gear of 8, the whole train turns twelve times slower.</source>
+        <target>**Version texte.** Vu d’un peu au-dessus : l’engrenage corail de 10 dents entraîne l’engrenage jaune de 30, trois fois moins vite. Sur le même axe, un engrenage jaune de 8 dents entraîne un engrenage vert. Un curseur règle les dents de l’engrenage vert, de 16 à 48, et une étiquette dit combien de fois moins vite il tourne que l’axe des minutes. Avec 32 dents, quatre fois moins vite que l’engrenage de 8, tout le train tourne douze fois moins vite.</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.a11y.description">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/a11y/description</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: what the object shows, read by screen readers</note>
+      </notes>
+      <segment state="translated">
+        <source>The gears behind a clock's dial, drawn in flat colours with dark outlines. The minute shaft, its small gear of 10 teeth and the minute hand are coral; a gear of 30 teeth and the gear of 8 fixed on it are yellow; the last gear of 32 teeth, its tube and the hour hand are green. Each screen shows one part of the mechanism: the dial, then two gears, then the whole train.</source>
+        <target>Les engrenages derrière le cadran d’une horloge, dessinés en aplats de couleur aux contours sombres. L’axe des minutes, son petit engrenage de 10 dents et l’aiguille des minutes sont corail ; un engrenage de 30 dents et celui de 8 fixé dessus sont jaunes ; le dernier engrenage de 32 dents, son tube et l’aiguille des heures sont verts. Chaque écran montre une partie du mécanisme : le cadran, puis deux engrenages, puis tout le train.</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.a11y.keyboard">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/a11y/keyboard</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: how to use it with the keyboard</note>
+      </notes>
+      <segment state="translated">
+        <source>Tab reaches the gears, then the controls. On the gears, the arrow keys turn them, one tooth at a time (one minute on the dial); in the step where the last gear rolls back to the centre, the arrow keys roll it and Enter takes it there. Space pauses or restarts the motion.</source>
+        <target>Tab atteint les engrenages, puis les commandes. Sur les engrenages, les flèches les font tourner d’une dent à la fois (une minute sur le cadran) ; à l’étape où le dernier engrenage revient au centre, les flèches le font rouler et Entrée l’y amène. Espace arrête ou relance le mouvement.</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.pause">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/pause</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the round button that stops the gears turning. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Pause the gears</source>
+        <target>Arrêter les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.play">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/play</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the same button once the gears are stopped. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Turn the gears</source>
+        <target>Faire tourner les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.dialLabel">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/dialLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the clock for screen readers: arrow keys move the minute hand. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Minute hand</source>
+        <target>Aiguille des minutes</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.gearsLabel">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/gearsLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the gears for screen readers: arrow keys turn them. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Gears</source>
+        <target>Engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.rollLabel">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/rollLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the last gear before it is back at the centre: arrow keys roll it, Enter takes it all the way. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear, to roll back to the centre</source>
+        <target>Dernier engrenage, à ramener au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.rollValue">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/rollValue</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the last gear has rolled towards the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{percent}% of the way to the centre</source>
+        <target>{percent} % du chemin vers le centre</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.time">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/time</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: The time the clock shows, for screen readers. minute has two digits. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{hour}:{minute}</source>
+        <target>{hour} h {minute}</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.turns">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/turns</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the gears have turned, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{n, plural, one {# turn of the small gear} other {# turns of the small gear}}</source>
+        <target>{n, plural, one {# tour du petit engrenage} other {# tours du petit engrenage}}</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.teethPassed">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/teethPassed</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Under the gears: how many teeth of this gear have passed the meeting point. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} of {total} teeth</source>
+        <target>{n} dents sur {total}</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.sizerLabel">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/sizerLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the slider that sets the number of teeth of the last gear, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear</source>
+        <target>Dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.teeth">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/teeth</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Value of that slider. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">12</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} teeth</source>
+        <target>{n} dents</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.slower">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/slower</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How much slower the last gear turns than the minute shaft. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>{ratio} times slower</source>
+        <target>{ratio} fois moins vite</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.xray">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/xray</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Switch that makes the dial clear to show the gears behind it. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>See through the dial</source>
+        <target>Voir à travers le cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.docked">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/docked</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the last gear reaches the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>The last gear is on the minute shaft, at the centre.</source>
+        <target>Le dernier engrenage est sur l’axe des minutes, au centre.</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.strings.matched">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/strings/matched</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Twelve times slower: the size of a clock's hour wheel.</source>
+        <target>Douze fois moins vite : la taille de la roue des heures d’une horloge.</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.enumLabels.stage.clock">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/enumLabels/stage/clock</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "clock" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Clock face</source>
+        <target>Cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.enumLabels.stage.pair">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/enumLabels/stage/pair</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "pair" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Two gears</source>
+        <target>Deux engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.enumLabels.stage.count">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/enumLabels/stage/count</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "count" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Count the teeth</source>
+        <target>Comptez les dents</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.enumLabels.stage.one-gear">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/enumLabels/stage/one-gear</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "one-gear" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>One very large gear</source>
+        <target>Un très grand engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.enumLabels.stage.train">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/enumLabels/stage/train</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "train" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Size the last gear</source>
+        <target>Régler le dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.enumLabels.stage.centre">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/enumLabels/stage/centre</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "centre" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Back to the centre</source>
+        <target>Retour au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.two-steps-clock.enumLabels.stage.answer">
+      <notes>
+        <note category="location">screens/two-steps.json /blocks/2/props/enumLabels/stage/answer</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "answer" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>The dial seen through</source>
+        <target>Le cadran transparent</target>
+      </segment>
+    </unit>
+    <unit id="screen.centre.title">
+      <notes>
+        <note category="location">screens/centre.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Back to the centre</source>
+        <target>Retour au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-text.markdown">
+      <notes>
+        <note category="location">screens/centre.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Back to the centre"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>The hour hand turns around the same point as the minute hand. So the last gear has to come back to the centre.</source>
+        <target>L’aiguille des heures tourne autour du même point que celle des minutes. Le dernier engrenage doit donc revenir au centre.</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-hint.markdown">
+      <notes>
+        <note category="location">screens/centre.json /blocks/1/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Back to the centre"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Roll the last gear around its small gear, back to the centre.</source>
+        <target>Faites rouler le dernier engrenage autour de son petit engrenage, jusqu’au centre.</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-landed.markdown">
+      <notes>
+        <note category="location">screens/centre.json /blocks/2/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Back to the centre"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>It lands there because both pairs span the same distance: 10 + 30 teeth on one side, 8 + 32 on the other. A tube carries it around the minute shaft, with the hour hand on top.</source>
+        <target>Il tombe pile au centre, car les deux paires couvrent la même distance : 10 + 30 dents d’un côté, 8 + 32 de l’autre. Il tourne sur un tube enfilé autour de l’axe des minutes, et ce tube porte l’aiguille des heures.</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.title">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/title</note>
+        <note category="format">text</note>
+        <note category="context">Free object on screen "Back to the centre"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>The gear train, whose last gear you can roll back to the centre</source>
+        <target>Le train d’engrenages, dont vous ramenez le dernier au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.textAlternative">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/textAlternative</note>
+        <note category="format">markdown</note>
+        <note category="context">Free object on screen "Back to the centre"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>**Text version.** The green gear of 32 teeth stands beside the yellow gear of 8. Rolled around it, always in mesh, it travels back to the centre and sits in front of the coral gear, on a tube around the minute shaft. The view turns to show the layers: the minute shaft with the coral minute hand, and around it the green tube with the hour hand.</source>
+        <target>**Version texte.** L’engrenage vert de 32 dents se tient à côté de l’engrenage jaune de 8. En roulant autour de lui, toujours engrené, il revient au centre et se place devant l’engrenage corail, sur un tube autour de l’axe des minutes. La vue pivote pour montrer les étages : l’axe des minutes avec l’aiguille des minutes corail, et autour, le tube vert avec l’aiguille des heures.</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.a11y.description">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/a11y/description</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: what the object shows, read by screen readers</note>
+      </notes>
+      <segment state="translated">
+        <source>The gears behind a clock's dial, drawn in flat colours with dark outlines. The minute shaft, its small gear of 10 teeth and the minute hand are coral; a gear of 30 teeth and the gear of 8 fixed on it are yellow; the last gear of 32 teeth, its tube and the hour hand are green. Each screen shows one part of the mechanism: the dial, then two gears, then the whole train.</source>
+        <target>Les engrenages derrière le cadran d’une horloge, dessinés en aplats de couleur aux contours sombres. L’axe des minutes, son petit engrenage de 10 dents et l’aiguille des minutes sont corail ; un engrenage de 30 dents et celui de 8 fixé dessus sont jaunes ; le dernier engrenage de 32 dents, son tube et l’aiguille des heures sont verts. Chaque écran montre une partie du mécanisme : le cadran, puis deux engrenages, puis tout le train.</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.a11y.keyboard">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/a11y/keyboard</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: how to use it with the keyboard</note>
+      </notes>
+      <segment state="translated">
+        <source>Tab reaches the gears, then the controls. On the gears, the arrow keys turn them, one tooth at a time (one minute on the dial); in the step where the last gear rolls back to the centre, the arrow keys roll it and Enter takes it there. Space pauses or restarts the motion.</source>
+        <target>Tab atteint les engrenages, puis les commandes. Sur les engrenages, les flèches les font tourner d’une dent à la fois (une minute sur le cadran) ; à l’étape où le dernier engrenage revient au centre, les flèches le font rouler et Entrée l’y amène. Espace arrête ou relance le mouvement.</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.pause">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/pause</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the round button that stops the gears turning. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Pause the gears</source>
+        <target>Arrêter les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.play">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/play</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the same button once the gears are stopped. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Turn the gears</source>
+        <target>Faire tourner les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.dialLabel">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/dialLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the clock for screen readers: arrow keys move the minute hand. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Minute hand</source>
+        <target>Aiguille des minutes</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.gearsLabel">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/gearsLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the gears for screen readers: arrow keys turn them. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Gears</source>
+        <target>Engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.rollLabel">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/rollLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the last gear before it is back at the centre: arrow keys roll it, Enter takes it all the way. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear, to roll back to the centre</source>
+        <target>Dernier engrenage, à ramener au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.rollValue">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/rollValue</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the last gear has rolled towards the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{percent}% of the way to the centre</source>
+        <target>{percent} % du chemin vers le centre</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.time">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/time</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: The time the clock shows, for screen readers. minute has two digits. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{hour}:{minute}</source>
+        <target>{hour} h {minute}</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.turns">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/turns</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the gears have turned, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{n, plural, one {# turn of the small gear} other {# turns of the small gear}}</source>
+        <target>{n, plural, one {# tour du petit engrenage} other {# tours du petit engrenage}}</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.teethPassed">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/teethPassed</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Under the gears: how many teeth of this gear have passed the meeting point. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} of {total} teeth</source>
+        <target>{n} dents sur {total}</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.sizerLabel">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/sizerLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the slider that sets the number of teeth of the last gear, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear</source>
+        <target>Dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.teeth">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/teeth</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Value of that slider. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">12</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} teeth</source>
+        <target>{n} dents</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.slower">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/slower</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How much slower the last gear turns than the minute shaft. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>{ratio} times slower</source>
+        <target>{ratio} fois moins vite</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.xray">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/xray</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Switch that makes the dial clear to show the gears behind it. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>See through the dial</source>
+        <target>Voir à travers le cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.docked">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/docked</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the last gear reaches the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>The last gear is on the minute shaft, at the centre.</source>
+        <target>Le dernier engrenage est sur l’axe des minutes, au centre.</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.strings.matched">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/strings/matched</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Twelve times slower: the size of a clock's hour wheel.</source>
+        <target>Douze fois moins vite : la taille de la roue des heures d’une horloge.</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.enumLabels.stage.clock">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/enumLabels/stage/clock</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "clock" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Clock face</source>
+        <target>Cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.enumLabels.stage.pair">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/enumLabels/stage/pair</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "pair" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Two gears</source>
+        <target>Deux engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.enumLabels.stage.count">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/enumLabels/stage/count</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "count" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Count the teeth</source>
+        <target>Comptez les dents</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.enumLabels.stage.one-gear">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/enumLabels/stage/one-gear</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "one-gear" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>One very large gear</source>
+        <target>Un très grand engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.enumLabels.stage.train">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/enumLabels/stage/train</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "train" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Size the last gear</source>
+        <target>Régler le dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.enumLabels.stage.centre">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/enumLabels/stage/centre</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "centre" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Back to the centre</source>
+        <target>Retour au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.centre-clock.enumLabels.stage.answer">
+      <notes>
+        <note category="location">screens/centre.json /blocks/3/props/enumLabels/stage/answer</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "answer" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>The dial seen through</source>
+        <target>Le cadran transparent</target>
+      </segment>
+    </unit>
+    <unit id="screen.answer.title">
+      <notes>
+        <note category="location">screens/answer.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Screen title</note>
+      </notes>
+      <segment state="translated">
+        <source>Twelve times slower</source>
+        <target>Douze fois moins vite</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-text.markdown">
+      <notes>
+        <note category="location">screens/answer.json /blocks/0/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Twelve times slower"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Ten teeth drive thirty: three times slower. Eight teeth drive thirty-two: four times slower. Three times four makes twelve.
+
+Each pair reverses the direction, so after two pairs both hands turn clockwise.</source>
+        <target>Dix dents entraînent trente : trois fois moins vite. Huit dents entraînent trente-deux : quatre fois moins vite. Trois fois quatre font douze.
+
+Chaque paire inverse le sens de rotation : après deux paires, les deux aiguilles tournent dans le sens des aiguilles d’une montre.</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-hint.markdown">
+      <notes>
+        <note category="location">screens/answer.json /blocks/1/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Twelve times slower"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>Turn the minute hand, and watch the gears behind the dial.</source>
+        <target>Faites tourner l’aiguille des minutes et regardez les engrenages derrière le cadran.</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.title">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/title</note>
+        <note category="format">text</note>
+        <note category="context">Free object on screen "Twelve times slower"</note>
+        <note category="max-length">200</note>
+      </notes>
+      <segment state="translated">
+        <source>The whole clock, its dial seen through</source>
+        <target>Toute l’horloge, son cadran transparent</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.textAlternative">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/textAlternative</note>
+        <note category="format">markdown</note>
+        <note category="context">Free object on screen "Twelve times slower"</note>
+        <note category="max-length">20000</note>
+      </notes>
+      <segment state="translated">
+        <source>**Text version.** The clock again, seen slightly from the side, with a clear dial. Behind it, the coral gear of 10 teeth on the minute shaft drives the yellow gear of 30; the yellow gear of 8 on the same axle drives the green gear of 32, which carries the hour hand on its tube around the minute shaft. Turning the minute hand once around moves the hour hand by one hour. A switch makes the dial opaque or clear.</source>
+        <target>**Version texte.** L’horloge à nouveau, vue un peu de côté, avec un cadran transparent. Derrière, l’engrenage corail de 10 dents, sur l’axe des minutes, entraîne l’engrenage jaune de 30 ; l’engrenage jaune de 8, sur le même axe, entraîne l’engrenage vert de 32, qui porte l’aiguille des heures sur son tube autour de l’axe des minutes. Un tour de l’aiguille des minutes fait avancer l’aiguille des heures d’une heure. Un interrupteur rend le cadran opaque ou transparent.</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.a11y.description">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/a11y/description</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: what the object shows, read by screen readers</note>
+      </notes>
+      <segment state="translated">
+        <source>The gears behind a clock's dial, drawn in flat colours with dark outlines. The minute shaft, its small gear of 10 teeth and the minute hand are coral; a gear of 30 teeth and the gear of 8 fixed on it are yellow; the last gear of 32 teeth, its tube and the hour hand are green. Each screen shows one part of the mechanism: the dial, then two gears, then the whole train.</source>
+        <target>Les engrenages derrière le cadran d’une horloge, dessinés en aplats de couleur aux contours sombres. L’axe des minutes, son petit engrenage de 10 dents et l’aiguille des minutes sont corail ; un engrenage de 30 dents et celui de 8 fixé dessus sont jaunes ; le dernier engrenage de 32 dents, son tube et l’aiguille des heures sont verts. Chaque écran montre une partie du mécanisme : le cadran, puis deux engrenages, puis tout le train.</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.a11y.keyboard">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/a11y/keyboard</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: how to use it with the keyboard</note>
+      </notes>
+      <segment state="translated">
+        <source>Tab reaches the gears, then the controls. On the gears, the arrow keys turn them, one tooth at a time (one minute on the dial); in the step where the last gear rolls back to the centre, the arrow keys roll it and Enter takes it there. Space pauses or restarts the motion.</source>
+        <target>Tab atteint les engrenages, puis les commandes. Sur les engrenages, les flèches les font tourner d’une dent à la fois (une minute sur le cadran) ; à l’étape où le dernier engrenage revient au centre, les flèches le font rouler et Entrée l’y amène. Espace arrête ou relance le mouvement.</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.pause">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/pause</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the round button that stops the gears turning. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Pause the gears</source>
+        <target>Arrêter les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.play">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/play</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Label of the same button once the gears are stopped. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Turn the gears</source>
+        <target>Faire tourner les engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.dialLabel">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/dialLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the clock for screen readers: arrow keys move the minute hand. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Minute hand</source>
+        <target>Aiguille des minutes</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.gearsLabel">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/gearsLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the gears for screen readers: arrow keys turn them. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Gears</source>
+        <target>Engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.rollLabel">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/rollLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the last gear before it is back at the centre: arrow keys roll it, Enter takes it all the way. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear, to roll back to the centre</source>
+        <target>Dernier engrenage, à ramener au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.rollValue">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/rollValue</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the last gear has rolled towards the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{percent}% of the way to the centre</source>
+        <target>{percent} % du chemin vers le centre</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.time">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/time</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: The time the clock shows, for screen readers. minute has two digits. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{hour}:{minute}</source>
+        <target>{hour} h {minute}</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.turns">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/turns</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How far the gears have turned, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{n, plural, one {# turn of the small gear} other {# turns of the small gear}}</source>
+        <target>{n, plural, one {# tour du petit engrenage} other {# tours du petit engrenage}}</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.teethPassed">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/teethPassed</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Under the gears: how many teeth of this gear have passed the meeting point. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} of {total} teeth</source>
+        <target>{n} dents sur {total}</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.sizerLabel">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/sizerLabel</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Name of the slider that sets the number of teeth of the last gear, for screen readers. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
+      </notes>
+      <segment state="translated">
+        <source>Last gear</source>
+        <target>Dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.teeth">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/teeth</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Value of that slider. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">12</note>
+      </notes>
+      <segment state="translated">
+        <source>{n} teeth</source>
+        <target>{n} dents</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.slower">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/slower</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: How much slower the last gear turns than the minute shaft. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>{ratio} times slower</source>
+        <target>{ratio} fois moins vite</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.xray">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/xray</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Switch that makes the dial clear to show the gears behind it. (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">26</note>
+      </notes>
+      <segment state="translated">
+        <source>See through the dial</source>
+        <target>Voir à travers le cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.docked">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/docked</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the last gear reaches the centre. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>The last gear is on the minute shaft, at the centre.</source>
+        <target>Le dernier engrenage est sur l’axe des minutes, au centre.</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.strings.matched">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/strings/matched</note>
+        <note category="format">icu</note>
+        <note category="context">Clockwork: Said to screen readers when the learner finds the right size. (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Twelve times slower: the size of a clock's hour wheel.</source>
+        <target>Douze fois moins vite : la taille de la roue des heures d’une horloge.</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.enumLabels.stage.clock">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/enumLabels/stage/clock</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "clock" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Clock face</source>
+        <target>Cadran</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.enumLabels.stage.pair">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/enumLabels/stage/pair</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "pair" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Two gears</source>
+        <target>Deux engrenages</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.enumLabels.stage.count">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/enumLabels/stage/count</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "count" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Count the teeth</source>
+        <target>Comptez les dents</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.enumLabels.stage.one-gear">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/enumLabels/stage/one-gear</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "one-gear" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>One very large gear</source>
+        <target>Un très grand engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.enumLabels.stage.train">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/enumLabels/stage/train</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "train" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Size the last gear</source>
+        <target>Régler le dernier engrenage</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.enumLabels.stage.centre">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/enumLabels/stage/centre</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "centre" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Back to the centre</source>
+        <target>Retour au centre</target>
+      </segment>
+    </unit>
+    <unit id="block.answer-clock.enumLabels.stage.answer">
+      <notes>
+        <note category="location">screens/answer.json /blocks/2/props/enumLabels/stage/answer</note>
+        <note category="format">text</note>
+        <note category="context">Clockwork: value "answer" of the setting "Stage", as authors choose it in the editor</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>The dial seen through</source>
+        <target>Le cadran transparent</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.hint.label">
+      <notes>
+        <note category="location">course.json /theme/styles/text/hint/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the text style "hint" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Gesture</source>
+        <target>Geste</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.text.hint">
+      <notes>
+        <note category="location">course.json /theme/styles/text/hint/description</note>
+        <note category="format">text</note>
+        <note category="context">What the text style "hint" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>What to do with the object right now: a short line with a hand icon, under the explanation.</source>
+        <target>Ce qu’il faut faire avec l’objet à cet instant : une ligne courte après une petite main, sous l’explication.</target>
+      </segment>
+    </unit>
+    <unit id="component.clock-stage.title">
+      <notes>
+        <note category="location">components/clock-stage/component.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the course's screen layout "clock-stage" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Mechanism and explanation</source>
+        <target>Mécanisme et explication</target>
+      </segment>
+    </unit>
+    <unit id="component.clock-stage.description">
+      <notes>
+        <note category="location">components/clock-stage/component.json /description</note>
+        <note category="format">text</note>
+        <note category="context">What the course's screen layout "clock-stage" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The mechanism on the left, on the paper and without a frame; on the right, the screen's title and one explanation in large type, which fade in when the screen arrives. On narrow screens the mechanism comes first and the text follows.</source>
+        <target>Le mécanisme à gauche, sur le papier et sans cadre ; à droite, le titre de l’écran et une explication en grands caractères, qui apparaissent en fondu à l’arrivée de l’écran. Sur les écrans étroits, le mécanisme vient d’abord, puis le texte.</target>
+      </segment>
+    </unit>
+    <unit id="component.clock-stage.slot.text.label">
+      <notes>
+        <note category="location">components/clock-stage/component.json /slots/0/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "text" of the course's screen layout "clock-stage". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Explanation</source>
+        <target>Explication</target>
+      </segment>
+    </unit>
+    <unit id="component.clock-stage.slot.stage.label">
+      <notes>
+        <note category="location">components/clock-stage/component.json /slots/1/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the slot "stage" of the course's screen layout "clock-stage". Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Mechanism</source>
+        <target>Mécanisme</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.title">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /title</note>
+        <note category="format">text</note>
+        <note category="context">Name of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Clockwork</source>
+        <target>Les rouages</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.stage.title">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/stage/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "stage" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Stage</source>
+        <target>Étape</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.stage.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/stage/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "stage" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>What the object shows and lets the learner do: the clock face, two gears, teeth that light up as they pass, one very large gear, the last gear to size, the last gear to roll back to the centre, or the dial seen through.</source>
+        <target>Ce que l’objet montre et laisse faire : le cadran, deux engrenages, les dents qui s’allument en passant, un très grand engrenage, le dernier engrenage à régler, le dernier engrenage à ramener au centre, ou le cadran transparent.</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.stage.group">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/stage/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "stage" of the free object "clockwork" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Stage</source>
+        <target>Étape</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.bigTeeth.title">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/bigTeeth/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "bigTeeth" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Teeth of the large gear</source>
+        <target>Dents du grand engrenage</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.bigTeeth.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/bigTeeth/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "bigTeeth" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Stage « One very large gear »: how many teeth the large gear has. An event raises it to 120 once the learner has answered, and the gear grows to that size.</source>
+        <target>Étape « Un très grand engrenage » : le nombre de dents du grand engrenage. Un événement le porte à 120 une fois la réponse donnée, et l’engrenage grandit jusqu’à cette taille.</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.bigTeeth.group">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/bigTeeth/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "bigTeeth" of the free object "clockwork" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Stage</source>
+        <target>Étape</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.minuteColor.title">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/minuteColor/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "minuteColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Minute shaft</source>
+        <target>Axe des minutes</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.minuteColor.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/minuteColor/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "minuteColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The minute shaft, its small gear and the minute hand, which turn together.</source>
+        <target>L’axe des minutes, son petit engrenage et l’aiguille des minutes, qui tournent ensemble.</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.minuteColor.group">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/minuteColor/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "minuteColor" of the free object "clockwork" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colours</source>
+        <target>Couleurs</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.middleColor.title">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/middleColor/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "middleColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Middle gears</source>
+        <target>Engrenages du milieu</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.middleColor.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/middleColor/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "middleColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The large gear and the small gear fixed on it, which turn together.</source>
+        <target>Le grand engrenage et le petit fixé dessus, qui tournent ensemble.</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.middleColor.group">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/middleColor/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "middleColor" of the free object "clockwork" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colours</source>
+        <target>Couleurs</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.hourColor.title">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/hourColor/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "hourColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Hour wheel</source>
+        <target>Roue des heures</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.hourColor.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/hourColor/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "hourColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The last gear, its tube and the hour hand, which turn together.</source>
+        <target>Le dernier engrenage, son tube et l’aiguille des heures, qui tournent ensemble.</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.hourColor.group">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/hourColor/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "hourColor" of the free object "clockwork" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colours</source>
+        <target>Couleurs</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.dialColor.title">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/dialColor/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "dialColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Dial</source>
+        <target>Cadran</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.dialColor.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/dialColor/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "dialColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The face of the clock.</source>
+        <target>La face de l’horloge.</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.dialColor.group">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/dialColor/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "dialColor" of the free object "clockwork" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colours</source>
+        <target>Couleurs</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.caseColor.title">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/caseColor/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "caseColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Case</source>
+        <target>Boîtier</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.caseColor.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/caseColor/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "caseColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The rim of the clock around the dial.</source>
+        <target>Le bord de l’horloge autour du cadran.</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.caseColor.group">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/caseColor/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "caseColor" of the free object "clockwork" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colours</source>
+        <target>Couleurs</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.markColor.title">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/markColor/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "markColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Counted teeth</source>
+        <target>Dents comptées</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.markColor.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/markColor/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "markColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The teeth that light up as they pass the meeting point.</source>
+        <target>Les dents qui s’allument en passant au point de rencontre.</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.markColor.group">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/markColor/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "markColor" of the free object "clockwork" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colours</source>
+        <target>Couleurs</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.inkColor.title">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/inkColor/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "inkColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Outlines</source>
+        <target>Contours</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.inkColor.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/inkColor/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "inkColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The ink of every outline, the dial's ticks and the labels' rims.</source>
+        <target>L’encre de tous les contours, des repères du cadran et du bord des étiquettes.</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.inkColor.group">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/inkColor/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "inkColor" of the free object "clockwork" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colours</source>
+        <target>Couleurs</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.hintColor.title">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/hintColor/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "hintColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Gesture hints</source>
+        <target>Indices de geste</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.hintColor.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/hintColor/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "hintColor" of the free object "clockwork" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The curved arrows that show what can be turned or rolled, until the learner does it.</source>
+        <target>Les flèches courbes qui montrent ce qui peut tourner ou rouler, jusqu’à ce que l’apprenant le fasse.</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.prop.hintColor.group">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /props/properties/hintColor/x-group</note>
+        <note category="format">text</note>
+        <note category="context">The group the setting "hintColor" of the free object "clockwork" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Colours</source>
+        <target>Couleurs</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.event.train_sized.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /events/0/description</note>
+        <note category="format">text</note>
+        <note category="context">When the free object "clockwork" sends its event "train_sized" (the events of a screen). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The learner lets go of the slider of the last gear.</source>
+        <target>L’apprenant lâche le curseur du dernier engrenage.</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.event.train_matched.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /events/1/description</note>
+        <note category="format">text</note>
+        <note category="context">When the free object "clockwork" sends its event "train_matched" (the events of a screen). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The last gear has 32 teeth: the train turns twelve times slower.</source>
+        <target>Le dernier engrenage a 32 dents : le train tourne douze fois moins vite.</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.event.docked.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /events/2/description</note>
+        <note category="format">text</note>
+        <note category="context">When the free object "clockwork" sends its event "docked" (the events of a screen). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The last gear has rolled back to the centre, onto the minute shaft.</source>
+        <target>Le dernier engrenage est revenu au centre, sur l’axe des minutes.</target>
+      </segment>
+    </unit>
+    <unit id="object.clockwork.event.gear_grown.description">
+      <notes>
+        <note category="location">objects/clockwork/object.manifest.json /events/3/description</note>
+        <note category="format">text</note>
+        <note category="context">When the free object "clockwork" sends its event "gear_grown" (the events of a screen). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>The large gear has grown to the size the learner was asked about.</source>
+        <target>Le grand engrenage a pris la taille demandée dans la question.</target>
+      </segment>
+    </unit>
+  </file>
+</xliff>

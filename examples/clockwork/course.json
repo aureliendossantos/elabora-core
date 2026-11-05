@@ -1,0 +1,148 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/course.schema.json",
+  "format": "elabora/0.1",
+  "id": "clockwork",
+  "title": "Why is the hour hand twelve times slower?",
+  "language": "en",
+  "version": "0.1.0",
+  "sections": [
+    {
+      "id": "clockwork",
+      "title": "Clockwork",
+      "screens": [
+        "question",
+        "teeth",
+        "count",
+        "one-gear",
+        "two-steps",
+        "centre",
+        "answer"
+      ]
+    }
+  ],
+  "variables": [],
+  "theme": {
+    "cascade": "components-over-theme",
+    "fonts": [
+      {
+        "family": "Figtree",
+        "src": "theme/fonts/figtree/figtree-latin-wght-normal.woff2",
+        "weight": "300 900"
+      },
+      {
+        "family": "Figtree",
+        "src": "theme/fonts/figtree/figtree-latin-wght-italic.woff2",
+        "weight": "300 900",
+        "style": "italic"
+      },
+      {
+        "family": "Source Serif 4",
+        "src": "theme/fonts/source-serif-4/source-serif-4-latin-wght-normal.woff2",
+        "weight": "200 900"
+      },
+      {
+        "family": "Source Serif 4",
+        "src": "theme/fonts/source-serif-4/source-serif-4-latin-wght-italic.woff2",
+        "weight": "200 900",
+        "style": "italic"
+      }
+    ],
+    "tokens": {
+      "font.body": "\"Figtree\", \"Avenir Next\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "font.heading": "\"Figtree\", \"Avenir Next\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "color.primary": "#2A2824",
+      "color.onPrimary": "#FBF9F4",
+      "color.accent": "#C2502E",
+      "color.surface": "#FBF9F4",
+      "color.text": "#2A2824",
+      "color.muted": "#6A645A",
+      "color.success": "#2F7A5F",
+      "color.error": "#B03A2A",
+      "color.focus": "#2E6AA8",
+      "radius": 14,
+      "player.top.background": "#F6F2EA",
+      "player.top.text": "#2A2824",
+      "player.bottom.background": "#F6F2EA",
+      "player.bottom.text": "#2A2824",
+      "player.accent": "#2A2824",
+      "player.onAccent": "#FBF9F4",
+      "player.density": "compact"
+    },
+    "custom": {
+      "font.reading": "\"Source Serif 4\", \"Iowan Old Style\", Georgia, serif",
+      "color.paper": "#F6F2EA"
+    },
+    "stylesheet": "theme/theme.css",
+    "styles": {
+      "text": {
+        "hint": {
+          "label": "Gesture",
+          "description": "What to do with the object right now: a short line with a hand icon, under the explanation."
+        }
+      }
+    }
+  },
+  "navigation": {
+    "mode": "free",
+    "lockUntilComplete": false
+  },
+  "player": {
+    "top": {
+      "items": [
+        {
+          "id": "progress"
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "language"
+        },
+        {
+          "id": "credits"
+        },
+        {
+          "id": "exit"
+        }
+      ]
+    },
+    "bottom": {
+      "items": [
+        {
+          "id": "outline",
+          "options": {
+            "label": "screen"
+          }
+        },
+        {
+          "id": "spacer"
+        },
+        {
+          "id": "previous"
+        },
+        {
+          "id": "next"
+        }
+      ]
+    }
+  },
+  "completion": {
+    "reportAs": "completed-incomplete"
+  },
+  "tracking": {
+    "exitAfterCompletion": "suspend",
+    "recordInteractions": true,
+    "heartbeatSeconds": 60
+  },
+  "presentation": {
+    "mode": "slides",
+    "contentWidth": 720,
+    "wideWidth": 1440,
+    "fit": {
+      "reference": "1600x900",
+      "minimum": "1280x720"
+    }
+  },
+  "description": "A five-minute module for curious minds: open a clock, turn its gears one by one, and find out why the hour hand turns twelve times slower than the minute hand.",
+  "durationMinutes": 5
+}
