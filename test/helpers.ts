@@ -37,6 +37,9 @@ export const settled = (target: Locator): Promise<void> => target.evaluate((elem
 
 // Stable baseline: tests that reshape the course must not depend on later sample design edits.
 export const EXAMPLE = path.join(ROOT, 'test/fixtures/format-0.1/diagnostic-reseau');
+// A course of two languages, its French translation approved: tests of a package of several languages
+// read it, never the samples, whose words and approvals change with their design.
+export const BILINGUAL = path.join(ROOT, 'test/fixtures/format-0.1/orbital-rendezvous');
 // URL of a source module of the repository, for import() in another process (Windows paths are not
 // URLs: D:\\… would be read as a scheme).
 export const moduleUrl = (rel: string) => pathToFileURL(path.join(ROOT, rel)).href;

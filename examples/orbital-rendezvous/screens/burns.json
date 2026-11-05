@@ -1,16 +1,22 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
   "id": "burns",
-  "title": "Burn backwards to move forwards",
+  "title": "The first push",
   "covers": [
-    "ITEM-3",
-    "ITEM-4"
+    "ITEM-4",
+    "ITEM-3"
   ],
   "layout": "split",
   "layoutProps": {
-    "balance": "activity"
+    "balance": "activity",
+    "figure": "stack"
   },
   "completeWhen": "interactions-done",
+  "steps": {
+    "2": {
+      "opens": "answered"
+    }
+  },
   "blocks": [
     {
       "id": "burns-figure",
@@ -18,36 +24,31 @@
       "slot": "figure",
       "style": "bare",
       "props": {
-        "asset": "images/burn-phasing.svg",
-        "alt": "A circular orbit seen from above. The servicer fires backwards at the burn point (1); its new path dips inside the circle on the far side (2). The arc to the client just ahead (3) is the gap it closes in one orbit."
+        "asset": "images/burn-situation.svg",
+        "alt": "Your spacecraft and the satellite on the same circular orbit around the Earth, the satellite a little ahead of you.",
+        "caption": "You in orange, the satellite in violet. Both fly to the left."
       }
     },
     {
-      "id": "burns-legend",
-      "type": "text",
+      "id": "burns-path",
+      "type": "image",
       "slot": "figure",
-      "style": "legend",
+      "style": "trace",
+      "step": 2,
       "props": {
-        "markdown": "1. Retrograde burn at the burn point.\n2. The far side drops: lower, so faster.\n3. Back at 1 one orbit later, closer to the client."
+        "asset": "images/burn-path.svg",
+        "alt": "Your new path after braking at 1: it dips inside the circle on the far side (2), then comes back to 1, closer to the satellite (3)."
       }
     },
     {
-      "id": "burns-explain",
-      "type": "text",
+      "id": "burns-thrust",
+      "type": "image",
       "slot": "figure",
+      "style": "bare",
+      "step": 2,
       "props": {
-        "textRef": "TXT-3"
-      }
-    },
-    {
-      "id": "burns-rule",
-      "type": "callout",
-      "slot": "body",
-      "style": "rule",
-      "props": {
-        "variant": "important",
-        "title": "Phasing rule of thumb",
-        "textRef": "TXT-4"
+        "asset": "images/burn-thrust.svg",
+        "decorative": true
       }
     },
     {
@@ -55,34 +56,45 @@
       "type": "maneuver-quiz",
       "slot": "body",
       "props": {
-        "stem": "You fly **50 km behind** the client satellite, in the same circular orbit. Which first burn starts closing the gap?",
+        "stem": "The satellite is **50 km ahead**, on your orbit. Which way do you push?",
         "mode": "single",
         "scored": false,
         "attempts": 1,
+        "feedbackStyle": "compact",
         "objective": "OBJ-1",
         "options": [
           {
             "id": "a",
-            "text": "Prograde, towards the client",
+            "text": "Forwards, towards it",
             "correct": false,
             "figure": "images/burn-prograde.svg",
-            "feedback": "This is the instinct Gemini 4 followed. The far side rises, each lap takes longer and the client pulls further ahead: about 17 km more per orbit for each m/s."
+            "feedback": "That is what Gemini 4 did: you climb, your laps get longer, and the satellite pulls away."
           },
           {
             "id": "b",
-            "text": "Retrograde, away from the client",
+            "text": "Backwards, to brake",
             "correct": true,
             "figure": "images/burn-retrograde.svg",
-            "feedback": "Right: the far side drops, your laps get shorter and you gain on the client, about 17 km per orbit for each m/s at 500 km."
+            "feedback": "Yes: braking brings you closer."
           },
           {
             "id": "c",
-            "text": "Radial, down towards the Earth",
+            "text": "Down, towards the Earth",
             "correct": false,
             "figure": "images/burn-radial.svg",
-            "feedback": "A radial burn reshapes the orbit but leaves its period almost unchanged: you trace a loop and, one orbit later, you are back where you started, still 50 km behind."
+            "feedback": "Your lap stays as long: one lap later, you are still 50 km behind."
           }
         ]
+      }
+    },
+    {
+      "id": "burns-explain",
+      "type": "text",
+      "slot": "body",
+      "style": "legend",
+      "step": 2,
+      "props": {
+        "textRef": "TXT-3"
       }
     }
   ]

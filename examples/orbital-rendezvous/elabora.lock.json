@@ -16,12 +16,12 @@
     "visit:orbits-hot-3": "b"
   },
   "components": {
-    "cosmos-hero": "1.0.0",
+    "cosmos-hero": "2.0.0",
     "hotspot": "1.0.0",
-    "maneuver-quiz": "1.0.0",
+    "maneuver-quiz": "2.0.0",
     "mission": "1.0.0",
     "orbit-flight": "1.0.0",
-    "split": "1.1.0",
-    "stat-card": "1.0.0"
+    "split": "2.0.0",
+    "stat-line": "1.0.0"
   }
 }
