@@ -14,7 +14,7 @@ import { exportTranslation, translationStatus, buildTranslation, approveTranslat
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { validateDir } from '@elabora/node/project-reader';
 import type { Block } from '@elabora/format';
-import { ROOT, copyExample, readJSON, writeJSON, codes, NETWORK_SAMPLE } from '../helpers.ts';
+import { ROOT, BILINGUAL, copyExample, readJSON, writeJSON, codes, NETWORK_SAMPLE } from '../helpers.ts';
 
 test('messages: values, plurals and selects follow the language', () => {
   assert.equal(formatMessage('Requirement {i} of {n}', { i: 1, n: 3 }), 'Requirement 1 of 3');
@@ -205,7 +205,7 @@ test('translation: the names of the charter\'s styles and variants and of a comp
 });
 
 test('translation: the words only authors read hold no language back; missing, the translated course keeps the source\'s', () => {
-  const dir = copyExample(path.join(ROOT, 'examples/orbital-rendezvous'));
+  const dir = copyExample(BILINGUAL);
   const file = translationFile(dir, 'fr');
   const x = readXliff(fs.readFileSync(file, 'utf8'));
   const editor = /^(theme|component|object)\./;
@@ -377,8 +377,8 @@ test('translation units: the text of a Continue button that opens a step', () =>
 });
 
 test('translate reuse: the units another course translated are filled as one undoable edit; a unit whose maths would change is left', () => {
-  const memory = copyExample(path.join(ROOT, 'examples/orbital-rendezvous'));
-  const dir = copyExample(path.join(ROOT, 'examples/orbital-rendezvous'));
+  const memory = copyExample(BILINGUAL);
+  const dir = copyExample(BILINGUAL);
   fs.rmSync(path.join(dir, 'translations'), { recursive: true });
   const before = exportTranslation(dir, { to: 'fr' });
   assert.ok(before.toTranslate > 10);

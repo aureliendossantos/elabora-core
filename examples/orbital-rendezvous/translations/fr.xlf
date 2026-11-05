@@ -8,8 +8,8 @@
         <note category="context">Course title</note>
       </notes>
       <segment state="translated">
-        <source>Slow down to catch up: orbital rendezvous</source>
-        <target>Ralentir pour rattraper : le rendez-vous orbital</target>
+        <source>Slow down to catch up</source>
+        <target>Ralentir pour rattraper</target>
       </segment>
     </unit>
     <unit id="course.description">
@@ -19,8 +19,8 @@
         <note category="context">Course description (catalogue)</note>
       </notes>
       <segment state="translated">
-        <source>15-minute module for new mission operators: why lower orbits are faster, what a burn does to an orbit, the phasing rule of thumb, and a 3D phasing lab around the Earth.</source>
-        <target>Module de 15 minutes pour les nouveaux opérateurs de mission : pourquoi une orbite basse est plus rapide, ce qu’une poussée fait à une orbite, la règle pratique du phasage et un laboratoire de phasage en 3D autour de la Terre.</target>
+        <source>A 10-minute module: why a lower orbit is faster, why braking brings you closer to a satellite ahead, and three rendezvous to fly around the Earth in 3D.</source>
+        <target>Un module de 10 minutes : pourquoi une orbite basse est plus rapide, pourquoi freiner rapproche d’un satellite qui vous précède, et trois rendez-vous à piloter autour de la Terre en 3D.</target>
       </segment>
     </unit>
     <unit id="course.section.discover.title">
@@ -63,8 +63,8 @@
         <note category="context">Title of the validated plan</note>
       </notes>
       <segment state="translated">
-        <source>Slow down to catch up: orbital rendezvous</source>
-        <target>Ralentir pour rattraper : le rendez-vous orbital</target>
+        <source>Slow down to catch up</source>
+        <target>Ralentir pour rattraper</target>
       </segment>
     </unit>
     <unit id="plan.businessGoal">
@@ -73,8 +73,8 @@
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>Cut the phasing errors made by new mission operators of Aster Orbital Services (fictional client) in their first simulator campaign, before they assist the flight dynamics team on a satellite-servicing mission.</source>
-        <target>Réduire les erreurs de phasage des nouveaux opérateurs de mission d’Aster Orbital Services (client fictif) lors de leur première campagne sur simulateur, avant qu’ils assistent l’équipe de dynamique du vol sur une mission de maintenance de satellite.</target>
+        <source>Give every new team member of Aster Orbital Services (fictional client), whatever their background, the intuition behind a rendezvous before they join a satellite-servicing mission: braking to catch up, then pushing back at the same point.</source>
+        <target>Donner à chaque nouveau membre de l’équipe d’Aster Orbital Services (client fictif), quel que soit son parcours, l’intuition d’un rendez-vous avant qu’il rejoigne une mission de maintenance de satellite : freiner pour rattraper, puis repousser au même point.</target>
       </segment>
     </unit>
     <unit id="plan.audience.role">
@@ -83,8 +83,8 @@
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>New mission operators of a satellite-servicing company: engineers and technicians who will monitor rendezvous manoeuvres</source>
-        <target>Nouveaux opérateurs de mission d’une société de maintenance de satellites : ingénieurs et techniciens qui suivront des manœuvres de rendez-vous</target>
+        <source>New team members of a satellite-servicing company: operators, technicians and support staff</source>
+        <target>Nouveaux membres de l’équipe d’une société de maintenance de satellites : opérateurs, techniciens et équipes support</target>
       </segment>
     </unit>
     <unit id="plan.audience.notes">
@@ -93,8 +93,8 @@
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>Know speed, distance and time, and have seen a satellite orbit diagram. Have never planned an orbital manoeuvre; most expect that thrusting towards a target brings them closer.</source>
-        <target>Maîtrisent vitesse, distance et temps, et ont déjà vu un schéma d’orbite de satellite. N’ont jamais planifié de manœuvre orbitale ; la plupart pensent que pousser vers une cible en rapproche.</target>
+        <source>No physics needed: speed, distance and time are enough. Most expect that pushing towards a target brings them closer.</source>
+        <target>Aucune physique requise : vitesse, distance et temps suffisent. La plupart pensent que pousser vers une cible en rapproche.</target>
       </segment>
     </unit>
     <unit id="plan.objective.OBJ-1.statement">
@@ -104,8 +104,20 @@
         <note category="context">Learning objective</note>
       </notes>
       <segment state="translated">
-        <source>Predict how a prograde or a retrograde burn changes the altitude of the far side of the orbit, the period and the position relative to a spacecraft flying the same orbit.</source>
-        <target>Prédire comment une poussée prograde ou rétrograde modifie l’altitude du côté opposé de l’orbite, la période et la position par rapport à un engin qui vole sur la même orbite.</target>
+        <source>Predict whether pushing forwards or backwards brings a spacecraft closer to a satellite ahead of it on the same orbit, and say why.</source>
+        <target>Prédire si pousser vers l’avant ou vers l’arrière rapproche un engin d’un satellite qui le précède sur la même orbite, et dire pourquoi.</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-1.short">
+      <notes>
+        <note category="location">plan.json /objectives/0/short</note>
+        <note category="format">text</note>
+        <note category="context">Short name of the learning objective, three to five words</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Predict a push</source>
+        <target>Prédire une poussée</target>
       </segment>
     </unit>
     <unit id="plan.objective.OBJ-1.criterion">
@@ -125,8 +137,20 @@
         <note category="context">Learning objective</note>
       </notes>
       <segment state="translated">
-        <source>Calculate the burn of a phasing manoeuvre that closes a given along-track gap in a given number of orbits, with the rule of thumb Δx ≈ 3 T Δv.</source>
-        <target>Calculer la poussée d’une manœuvre de phasage qui comble un écart donné le long de l’orbite en un nombre d’orbites donné, avec la règle pratique Δx ≈ 3 T Δv.</target>
+        <source>Size the first burn of a rendezvous with the rule of thumb: at 500 km, each m/s of braking gains about 17 km per lap.</source>
+        <target>Dimensionner la première poussée d’un rendez-vous avec la règle pratique : à 500 km, chaque m/s de freinage fait gagner environ 17 km par tour.</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-2.short">
+      <notes>
+        <note category="location">plan.json /objectives/1/short</note>
+        <note category="format">text</note>
+        <note category="context">Short name of the learning objective, three to five words</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Size the burn</source>
+        <target>Dimensionner la poussée</target>
       </segment>
     </unit>
     <unit id="plan.objective.OBJ-2.criterion">
@@ -146,8 +170,20 @@
         <note category="context">Learning objective</note>
       </notes>
       <segment state="translated">
-        <source>Plan a two-burn phasing manoeuvre that meets a gap, time and propellant requirement, and check it on a simulated orbit.</source>
-        <target>Planifier une manœuvre de phasage à deux poussées qui respecte une exigence d’écart, de durée et d’ergols, et la vérifier sur une orbite simulée.</target>
+        <source>Plan a two-burn rendezvous that meets a distance, time and fuel requirement, and check it on a simulated orbit.</source>
+        <target>Planifier un rendez-vous à deux poussées qui respecte une exigence de distance, de durée et de carburant, et le vérifier sur une orbite simulée.</target>
+      </segment>
+    </unit>
+    <unit id="plan.objective.OBJ-3.short">
+      <notes>
+        <note category="location">plan.json /objectives/2/short</note>
+        <note category="format">text</note>
+        <note category="context">Short name of the learning objective, three to five words</note>
+        <note category="max-length">60</note>
+      </notes>
+      <segment state="translated">
+        <source>Plan a rendezvous</source>
+        <target>Planifier un rendez-vous</target>
       </segment>
     </unit>
     <unit id="plan.objective.OBJ-3.criterion">
@@ -156,8 +192,8 @@
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>3 simulated rendezvous requirements out of 3 met</source>
-        <target>3 exigences de rendez-vous simulées sur 3 remplies</target>
+        <source>3 simulated rendezvous out of 3</source>
+        <target>3 rendez-vous simulés sur 3</target>
       </segment>
     </unit>
     <unit id="plan.item.ITEM-1.title">
@@ -176,8 +212,8 @@
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>Hook: in 1965, Gemini 4 thrusted towards its rocket stage and watched it drift away; six months later Gemini 6A caught Gemini 7 from below. Goals of the module and three numbers that frame it.</source>
-        <target>Accroche : en 1965, Gemini 4 a poussé vers son étage de fusée et l’a vu s’éloigner ; six mois plus tard, Gemini 6A a rattrapé Gemini 7 par en dessous. Objectifs du module et trois chiffres qui le cadrent.</target>
+        <source>The situation: a satellite 50 km ahead on the same orbit, and the question of how to catch it. The hook: in 1965, Gemini 4 pushed towards its target and lost it; Gemini 6A caught Gemini 7 from a lower, faster orbit.</source>
+        <target>La situation : un satellite 50 km devant, sur la même orbite, et la question de savoir comment le rattraper. L’accroche : en 1965, Gemini 4 a poussé vers sa cible et l’a perdue ; Gemini 6A a rattrapé Gemini 7 depuis une orbite plus basse, plus rapide.</target>
       </segment>
     </unit>
     <unit id="plan.text.TXT-1">
@@ -187,8 +223,8 @@
         <note category="context">Locked text of the plan, shown as it is</note>
       </notes>
       <segment state="translated">
-        <source>In June 1965, Gemini 4 commander Jim McDivitt tried to fly alongside the rocket stage that had just released his capsule. He pointed at it and fired his thrusters towards it. The stage drifted away: every push made the gap wider, and the crew gave up to save propellant. Six months later, Gemini 6A caught Gemini 7 by doing the opposite: it flew **below** its target, where orbits are faster, and climbed only at the end.</source>
-        <target>En juin 1965, Jim McDivitt, commandant de Gemini 4, tente de voler aux côtés de l’étage de fusée qui vient de libérer sa capsule. Il le vise et allume ses propulseurs dans sa direction. L’étage s’éloigne : chaque poussée creuse l’écart, et l’équipage renonce pour économiser ses ergols. Six mois plus tard, Gemini 6A rattrape Gemini 7 en faisant l’inverse : il vole **sous** sa cible, là où les orbites sont plus rapides, et ne remonte qu’à la fin.</target>
+        <source>In 1965, the crew of Gemini 4 pushed towards their target. It drifted further away with every push. Six months later, Gemini 6A flew below its target, on a faster orbit, and caught Gemini 7.</source>
+        <target>En 1965, l’équipage de Gemini 4 pousse vers sa cible. À chaque poussée, elle s’éloigne un peu plus. Six mois plus tard, Gemini 6A vole sous sa cible, sur une orbite plus rapide, et rattrape Gemini 7.</target>
       </segment>
     </unit>
     <unit id="plan.item.ITEM-2.title">
@@ -207,8 +243,8 @@
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>Circular orbital speed and period as functions of the radius, with three reference orbits: the International Space Station (420 km), GPS (20,200 km) and geostationary (35,786 km).</source>
-        <target>Vitesse et période d’une orbite circulaire en fonction du rayon, avec trois orbites de référence : la Station spatiale internationale (420 km), le GPS (20 200 km) et l’orbite géostationnaire (35 786 km).</target>
+        <source>Three orbits to scale, from the Space Station to geostationary satellites, shown one by one as the learner selects them: the closer to the Earth, the shorter the lap, and why.</source>
+        <target>Trois orbites à l’échelle, de la Station spatiale aux satellites géostationnaires, montrées une à une quand l’apprenant les sélectionne : plus près de la Terre, le tour est plus court, et pourquoi.</target>
       </segment>
     </unit>
     <unit id="plan.text.TXT-2">
@@ -218,86 +254,63 @@
         <note category="context">Locked text of the plan, shown as it is</note>
       </notes>
       <segment state="translated">
-        <source>In a circular orbit, gravity alone sets your speed. The closer you are to the Earth, the faster you must fly to stay in orbit, and the shorter each lap:
-
-$$v = \sqrt{\frac{\mu}{r}} \qquad T = 2\pi\sqrt{\frac{a^{3}}{\mu}}$$
-
-$r$ is your distance from the centre of the Earth, $a$ the semi-major axis of the orbit (its radius, for a circle) and $\mu = 398\,600~\mathrm{km^3/s^2}$ the gravitational parameter of the Earth.</source>
-        <target>Sur une orbite circulaire, la gravité seule fixe votre vitesse. Plus vous êtes près de la Terre, plus vous devez voler vite pour rester en orbite, et plus chaque tour est court :
-
-$v = \sqrt{\frac{\mu}{r}} \qquad T = 2\pi\sqrt{\frac{a^{3}}{\mu}}$
-
-$r$ est votre distance au centre de la Terre, $a$ le demi-grand axe de l’orbite (son rayon, pour un cercle) et $\mu = 398\,600~\mathrm{km^3/s^2}$ le paramètre gravitationnel de la Terre.</target>
+        <source>Closer to the Earth, gravity pulls harder: you have to fly faster to stay up, and each lap is shorter.</source>
+        <target>Plus près de la Terre, la gravité tire plus fort : il faut voler plus vite pour rester en orbite, et chaque tour est plus court.</target>
       </segment>
     </unit>
-    <unit id="plan.item.ITEM-3.title">
+    <unit id="plan.item.ITEM-4.title">
       <notes>
         <note category="location">plan.json /items/2/title</note>
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>Burn backwards to move forwards</source>
-        <target>Freiner pour avancer</target>
+        <source>The first push</source>
+        <target>La première poussée</target>
       </segment>
     </unit>
-    <unit id="plan.item.ITEM-3.description">
+    <unit id="plan.item.ITEM-4.description">
       <notes>
         <note category="location">plan.json /items/2/description</note>
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>What a tangential burn does to the orbit (the far side moves, the period changes), the phasing rule of thumb Δx ≈ 3 T Δv and the second burn that stops the drift. Worked example: 1 m/s at 500 km gains about 17 km per orbit.</source>
-        <target>Ce qu’une poussée tangentielle fait à l’orbite (le côté opposé se déplace, la période change), la règle pratique du phasage Δx ≈ 3 T Δv et la seconde poussée qui arrête la dérive. Exemple : à 500 km, 1 m/s fait gagner environ 17 km par orbite.</target>
+        <source>Prediction before the explanation, unscored: the satellite is 50 km ahead; push forwards, backwards or down? A short feedback on each choice.</source>
+        <target>Une prédiction avant l’explication, non notée : le satellite est 50 km devant ; pousser vers l’avant, vers l’arrière ou vers le bas ? Une rétroaction courte pour chaque choix.</target>
       </segment>
     </unit>
-    <unit id="plan.text.TXT-3">
-      <notes>
-        <note category="location">plan.json /items/2/lockedTexts/0/text</note>
-        <note category="format">markdown</note>
-        <note category="context">Locked text of the plan, shown as it is</note>
-      </notes>
-      <segment state="translated">
-        <source>A burn changes the **far side** of your orbit, not the point where you are. Burn forwards (prograde): the far side rises, each lap takes longer and you drift **behind**. Burn backwards (retrograde): the far side drops, each lap takes less time and you drift **ahead**. One orbit later you are back at the burn point, at the same altitude, but no longer at the same place along the orbit.</source>
-        <target>Une poussée modifie le **côté opposé** de votre orbite, pas le point où vous êtes. Poussez vers l’avant (prograde) : le côté opposé monte, chaque tour dure plus longtemps et vous dérivez **en arrière**. Poussez vers l’arrière (rétrograde) : le côté opposé descend, chaque tour dure moins longtemps et vous dérivez **en avant**. Une orbite plus tard, vous revenez au point de poussée, à la même altitude, mais plus au même endroit de l’orbite.</target>
-      </segment>
-    </unit>
-    <unit id="plan.text.TXT-4">
-      <notes>
-        <note category="location">plan.json /items/2/lockedTexts/1/text</note>
-        <note category="format">markdown</note>
-        <note category="context">Locked text of the plan, shown as it is</note>
-      </notes>
-      <segment state="translated">
-        <source>In a near-circular orbit of period $T$, a retrograde burn $\Delta v$ moves you ahead of a neighbour by about
-
-$$\Delta x \approx 3\,T\,\Delta v \text{ per orbit}$$
-
-and a prograde burn moves you back by as much. At 500 km, where $T = 5\,676$ s, 1 m/s gains about 17 km per orbit. Once the gap is closed, burn the same $\Delta v$ the other way, at the same point: you are back on the circular orbit and the drift stops.</source>
-        <target>Sur une orbite quasi circulaire de période $T$, une poussée rétrograde $\Delta v$ vous fait avancer par rapport à un voisin d’environ
-
-$\Delta x \approx 3\,T\,\Delta v \text{ par orbite}$
-
-et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,676$ s, 1 m/s fait gagner environ 17 km par orbite. Une fois l’écart comblé, poussez du même $\Delta v$ dans l’autre sens, au même point : vous revenez sur l’orbite circulaire et la dérive s’arrête.</target>
-      </segment>
-    </unit>
-    <unit id="plan.item.ITEM-4.title">
+    <unit id="plan.item.ITEM-3.title">
       <notes>
         <note category="location">plan.json /items/3/title</note>
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>Your turn: the first burn</source>
-        <target>À vous : la première poussée</target>
+        <source>Brake to move ahead</source>
+        <target>Freiner pour avancer</target>
       </segment>
     </unit>
-    <unit id="plan.item.ITEM-4.description">
+    <unit id="plan.item.ITEM-3.description">
       <notes>
         <note category="location">plan.json /items/3/description</note>
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>Unscored practice right after the rule: the servicer flies 50 km behind the client satellite in the same circular orbit. Which first burn closes the gap? Prograde, retrograde or radial, with feedback on each.</source>
-        <target>Entraînement non noté juste après la règle : le véhicule de service vole 50 km derrière le satellite client, sur la même orbite circulaire. Quelle première poussée comble l’écart ? Prograde, rétrograde ou radiale, avec une rétroaction pour chacune.</target>
+        <source>Once the learner has chosen, what braking does, drawn on the figure: the far side of the orbit dips, the lap gets shorter, the spacecraft gains on the satellite; a push forwards at the same point stops the drift.</source>
+        <target>Une fois le choix fait, ce que fait un freinage, tracé sur la figure : le côté opposé de l’orbite s’abaisse, le tour raccourcit, l’engin gagne sur le satellite ; une poussée vers l’avant au même point arrête la dérive.</target>
+      </segment>
+    </unit>
+    <unit id="plan.text.TXT-3">
+      <notes>
+        <note category="location">plan.json /items/3/lockedTexts/0/text</note>
+        <note category="format">markdown</note>
+        <note category="context">Locked text of the plan, shown as it is</note>
+      </notes>
+      <segment state="translated">
+        <source>1. You brake: the far side of your orbit dips.
+2. Lower is faster: your lap gets shorter.
+3. Back at 1, you are closer to the satellite. Push forwards just as hard, and you stop drifting.</source>
+        <target>1. Vous freinez : le côté opposé de votre orbite s’abaisse.
+2. Plus bas, plus vite : votre tour raccourcit.
+3. De retour en 1, vous êtes plus près du satellite. Poussez vers l’avant tout autant, et vous cessez de dériver.</target>
       </segment>
     </unit>
     <unit id="plan.item.ITEM-5.title">
@@ -306,8 +319,8 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>Phasing lab</source>
-        <target>Laboratoire de phasage</target>
+        <source>Catch the satellite</source>
+        <target>Rattraper le satellite</target>
       </segment>
     </unit>
     <unit id="plan.item.ITEM-5.description">
@@ -316,8 +329,19 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>3D simulation of a servicer and a client satellite in a 500 km circular orbit. Three requirements in a row: close a 51 km gap in one orbit; close it again with less than 2.5 m/s of propellant; let a client 34 km behind catch up within 2 orbits on the same budget. The learner chooses the first burn and the number of phasing orbits, runs the manoeuvre and reads the final gap. Scored.</source>
-        <target>Simulation 3D d’un véhicule de service et d’un satellite client sur une orbite circulaire à 500 km. Trois exigences à la suite : combler un écart de 51 km en une orbite ; le combler de nouveau avec moins de 2,5 m/s d’ergols ; laisser un client situé 34 km derrière vous rattraper en 2 orbites avec le même budget. L’apprenant choisit la première poussée et le nombre d’orbites de phasage, lance la manœuvre et lit l’écart final. Noté.</target>
+        <source>3D lab of a spacecraft and a satellite on a 500 km orbit, with the rule of thumb beside it: at 500 km, each m/s of braking gains about 17 km per lap. Three rendezvous in a row, each with one instruction and only the controls it needs: catch a satellite 51 km ahead in one lap (the burn alone); the same gap with 2.5 m/s of fuel, in up to three laps (the laps and the fuel appear); let a satellite 34 km behind catch up within two laps. The lab burns back at the same point. Scored.</source>
+        <target>Laboratoire 3D d’un engin et d’un satellite sur une orbite à 500 km, avec la règle pratique à côté : à 500 km, chaque m/s de freinage fait gagner environ 17 km par tour. Trois rendez-vous à la suite, chacun avec une seule consigne et seulement les commandes dont il a besoin : rattraper un satellite 51 km devant en un tour (la poussée seule) ; le même écart avec 2,5 m/s de carburant, en trois tours au plus (les tours et le carburant apparaissent) ; laisser un satellite 34 km derrière vous rattraper en deux tours au plus. Le laboratoire repousse au même point. Noté.</target>
+      </segment>
+    </unit>
+    <unit id="plan.text.TXT-4">
+      <notes>
+        <note category="location">plan.json /items/4/lockedTexts/0/text</note>
+        <note category="format">markdown</note>
+        <note category="context">Locked text of the plan, shown as it is</note>
+      </notes>
+      <segment state="translated">
+        <source>At 500 km up, each m/s of braking gains about **17 km per lap**.</source>
+        <target>À 500 km d’altitude, chaque m/s de freinage fait gagner environ **17 km par tour**.</target>
       </segment>
     </unit>
     <unit id="plan.item.ITEM-6.title">
@@ -326,8 +350,8 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>Check your planning</source>
-        <target>Vérifiez votre planification</target>
+        <source>Plan one yourself</source>
+        <target>À vous de planifier</target>
       </segment>
     </unit>
     <unit id="plan.question.Q-1.stem">
@@ -337,8 +361,8 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="context">Validated question</note>
       </notes>
       <segment state="translated">
-        <source>The client satellite is **85 km ahead** of your servicer, in the same circular orbit at 500 km (period 94.6 min). You plan **two** phasing orbits. What retrograde burn must the first burn give, in m/s?</source>
-        <target>Le satellite client est **85 km devant** votre véhicule de service, sur la même orbite circulaire à 500 km (période 94,6 min). Vous prévoyez **deux** orbites de phasage. Quelle poussée rétrograde doit donner la première poussée, en m/s ?</target>
+        <source>The satellite is **85 km ahead**, 500 km up. You take **two laps** to catch it. How hard do you brake, in m/s?</source>
+        <target>Le satellite est **85 km devant**, à 500 km d’altitude. Vous prenez **deux tours** pour le rattraper. De combien freinez-vous, en m/s ?</target>
       </segment>
     </unit>
     <unit id="plan.question.Q-1.unit">
@@ -358,8 +382,8 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="format">markdown</note>
       </notes>
       <segment state="translated">
-        <source>Right: $\Delta v = \dfrac{\Delta x}{3\,T\,N} = \dfrac{85\,000}{3 \times 5\,676 \times 2} \approx 2.5$ m/s, retrograde. Two orbits later, at the same point, burn 2.5 m/s prograde to stop the drift.</source>
-        <target>Exact : $\Delta v = \dfrac{\Delta x}{3\,T\,N} = \dfrac{85\,000}{3 \times 5\,676 \times 2} \approx 2{,}5$ m/s, en rétrograde. Deux orbites plus tard, au même point, poussez de 2,5 m/s en prograde pour arrêter la dérive.</target>
+        <source>Right: $\dfrac{85}{17 \times 2} = 2.5$ m/s. Two laps later, push forwards 2.5 m/s and you stop drifting.</source>
+        <target>Exact : $\dfrac{85}{17 \times 2} = 2{,}5$ m/s. Deux tours plus tard, poussez de 2,5 m/s vers l’avant et vous cessez de dériver.</target>
       </segment>
     </unit>
     <unit id="plan.question.Q-1.feedback.incorrect">
@@ -368,38 +392,28 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="format">markdown</note>
       </notes>
       <segment state="translated">
-        <source>Start from $\Delta x \approx 3\,T\,\Delta v$ per orbit, in metres and seconds: over $N$ orbits, $\Delta v = \Delta x / (3\,T\,N)$.</source>
-        <target>Partez de $\Delta x \approx 3\,T\,\Delta v$ par orbite, en mètres et en secondes : sur $N$ orbites, $\Delta v = \Delta x / (3\,T\,N)$.</target>
+        <source>Each m/s gains about 17 km per lap: divide the gap by 17, then by the number of laps.</source>
+        <target>Chaque m/s fait gagner environ 17 km par tour : divisez l’écart par 17, puis par le nombre de tours.</target>
       </segment>
     </unit>
-    <unit id="plan.question.Q-1.misconception.no-factor-3.feedback">
+    <unit id="plan.question.Q-1.misconception.one-lap.feedback">
       <notes>
         <note category="location">plan.json /items/5/questions/0/misconceptions/0/feedback</note>
         <note category="format">markdown</note>
       </notes>
       <segment state="translated">
-        <source>You used $\Delta x = T\,\Delta v$. The drift per orbit is three times larger: in relative terms, a burn changes your period three times more than your speed, and the difference adds up over the whole orbit.</source>
-        <target>Vous avez utilisé $\Delta x = T\,\Delta v$. La dérive par orbite est trois fois plus grande : en relatif, une poussée change votre période trois fois plus que votre vitesse, et la différence s’accumule sur toute l’orbite.</target>
+        <source>That catches 85 km in one lap. Over two laps, half the burn is enough.</source>
+        <target>Cela rattrape 85 km en un seul tour. Sur deux tours, la moitié suffit.</target>
       </segment>
     </unit>
-    <unit id="plan.question.Q-1.misconception.one-orbit.feedback">
+    <unit id="plan.question.Q-1.misconception.per-lap.feedback">
       <notes>
         <note category="location">plan.json /items/5/questions/0/misconceptions/1/feedback</note>
         <note category="format">markdown</note>
       </notes>
       <segment state="translated">
-        <source>This burn closes 85 km in a single orbit. With two phasing orbits, each orbit only has to gain 42.5 km: divide by the number of orbits.</source>
-        <target>Cette poussée comble 85 km en une seule orbite. Avec deux orbites de phasage, chaque orbite n’a que 42,5 km à gagner : divisez par le nombre d’orbites.</target>
-      </segment>
-    </unit>
-    <unit id="plan.question.Q-1.misconception.minutes.feedback">
-      <notes>
-        <note category="location">plan.json /items/5/questions/0/misconceptions/2/feedback</note>
-        <note category="format">markdown</note>
-      </notes>
-      <segment state="translated">
-        <source>Write the period in seconds: 94.6 min = 5,676 s. The burn is in metres per second and the gap in metres.</source>
-        <target>Exprimez la période en secondes : 94,6 min = 5 676 s. La poussée est en mètres par seconde et l’écart en mètres.</target>
+        <source>That is the distance to gain on each lap, in km. Divide it by 17 to get m/s.</source>
+        <target>C’est la distance à gagner à chaque tour, en km. Divisez-la par 17 pour obtenir des m/s.</target>
       </segment>
     </unit>
     <unit id="plan.question.Q-2.stem">
@@ -409,8 +423,8 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="context">Validated question</note>
       </notes>
       <segment state="translated">
-        <source>After two phasing orbits on a lower orbit, your servicer is back at the burn point, **300 m behind** the client satellite. What do you do now?</source>
-        <target>Après deux orbites de phasage sur une orbite plus basse, votre véhicule de service revient au point de poussée, **300 m derrière** le satellite client. Que faites-vous maintenant ?</target>
+        <source>Two laps later, you are back where you braked, **300 m behind** the satellite. What now?</source>
+        <target>Deux tours plus tard, vous revenez là où vous avez freiné, **300 m derrière** le satellite. Et maintenant ?</target>
       </segment>
     </unit>
     <unit id="plan.question.Q-2.option.a.text">
@@ -419,8 +433,8 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>Burn prograde by as much as the first burn</source>
-        <target>Pousser en prograde d’autant que la première poussée</target>
+        <source>Push forwards as hard as you braked</source>
+        <target>Pousser vers l’avant autant que vous avez freiné</target>
       </segment>
     </unit>
     <unit id="plan.question.Q-2.option.a.feedback">
@@ -429,8 +443,8 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="format">markdown</note>
       </notes>
       <segment state="translated">
-        <source>Right: this raises the far side back to the client's altitude. Your period is the client's again, so the drift stops 300 m behind it, ready for the final approach.</source>
-        <target>Exact : le côté opposé remonte à l’altitude du client. Votre période redevient celle du client, la dérive s’arrête donc 300 m derrière lui, prêt pour l’approche finale.</target>
+        <source>Right: you are back on the satellite's orbit, and you stay 300 m behind it, ready for the final approach.</source>
+        <target>Exact : vous revenez sur l’orbite du satellite, et vous restez 300 m derrière lui, prêt pour l’approche finale.</target>
       </segment>
     </unit>
     <unit id="plan.question.Q-2.option.b.text">
@@ -439,8 +453,8 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>Do nothing: the gap is almost closed</source>
-        <target>Ne rien faire : l’écart est presque comblé</target>
+        <source>Nothing: you are almost there</source>
+        <target>Rien : vous y êtes presque</target>
       </segment>
     </unit>
     <unit id="plan.question.Q-2.option.b.feedback">
@@ -449,8 +463,8 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="format">markdown</note>
       </notes>
       <segment state="translated">
-        <source>On the lower orbit you keep gaining about $3\,T\,\Delta v$ per orbit: one orbit later you would be kilometres ahead of the client.</source>
-        <target>Sur l’orbite plus basse, vous continuez de gagner environ $3\,T\,\Delta v$ par orbite : une orbite plus tard, vous seriez des kilomètres devant le client.</target>
+        <source>Your laps are still shorter: one lap later, you would be about 40 km ahead.</source>
+        <target>Vos tours restent plus courts : un tour plus tard, vous seriez environ 40 km devant.</target>
       </segment>
     </unit>
     <unit id="plan.question.Q-2.option.c.text">
@@ -459,8 +473,8 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="format">text</note>
       </notes>
       <segment state="translated">
-        <source>Burn retrograde to brake before the client</source>
-        <target>Pousser en rétrograde pour freiner avant le client</target>
+        <source>Brake again to slow down</source>
+        <target>Freiner encore pour ralentir</target>
       </segment>
     </unit>
     <unit id="plan.question.Q-2.option.c.feedback">
@@ -469,8 +483,8 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="format">markdown</note>
       </notes>
       <segment state="translated">
-        <source>Braking lowers the far side even more and shortens your period: you would gain faster and overshoot the client.</source>
-        <target>Freiner abaisse encore le côté opposé et raccourcit votre période : vous gagneriez plus vite et dépasseriez le client.</target>
+        <source>Your orbit would dip further, and you would shoot past the satellite.</source>
+        <target>Votre orbite s’abaisserait encore, et vous dépasseriez le satellite.</target>
       </segment>
     </unit>
     <unit id="plan.spacing.0">
@@ -514,140 +528,16 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <target>Ralentir pour rattraper</target>
       </segment>
     </unit>
-    <unit id="block.intro-goals.title">
+    <unit id="block.intro-situation.markdown">
       <notes>
-        <note category="location">screens/intro.json /blocks/1/props/title</note>
-        <note category="format">text</note>
-        <note category="context">Callout on screen "Slow down to catch up"</note>
-        <note category="max-length">120</note>
-      </notes>
-      <segment state="translated">
-        <source>In the next 15 minutes</source>
-        <target>Dans les 15 prochaines minutes</target>
-      </segment>
-    </unit>
-    <unit id="block.intro-goals.markdown">
-      <notes>
-        <note category="location">screens/intro.json /blocks/1/props/markdown</note>
+        <note category="location">screens/intro.json /blocks/0/props/markdown</note>
         <note category="format">markdown</note>
-        <note category="context">Callout on screen "Slow down to catch up"</note>
+        <note category="context">Text on screen "Slow down to catch up"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>1. See why a lower orbit is a faster orbit.
-2. Predict what a burn does to your orbit, and size a phasing burn.
-3. Fly three rendezvous in a 3D lab around the Earth.</source>
-        <target>1. Comprendre pourquoi une orbite plus basse est une orbite plus rapide.
-2. Prédire ce qu’une poussée fait à votre orbite, et dimensionner une poussée de phasage.
-3. Réussir trois rendez-vous dans un laboratoire 3D autour de la Terre.</target>
-      </segment>
-    </unit>
-    <unit id="block.intro-iss.label">
-      <notes>
-        <note category="location">screens/intro.json /blocks/2/props/label</note>
-        <note category="format">text</note>
-        <note category="context">Stat card on screen "Slow down to catch up"</note>
-        <note category="max-length">48</note>
-      </notes>
-      <segment state="translated">
-        <source>Speed of the ISS</source>
-        <target>Vitesse de l’ISS</target>
-      </segment>
-    </unit>
-    <unit id="block.intro-iss.unit">
-      <notes>
-        <note category="location">screens/intro.json /blocks/2/props/unit</note>
-        <note category="format">text</note>
-        <note category="context">Stat card on screen "Slow down to catch up"</note>
-        <note category="max-length">16</note>
-      </notes>
-      <segment state="translated">
-        <source>km/s</source>
-        <target>km/s</target>
-      </segment>
-    </unit>
-    <unit id="block.intro-iss.body">
-      <notes>
-        <note category="location">screens/intro.json /blocks/2/props/body</note>
-        <note category="format">markdown</note>
-        <note category="context">Stat card on screen "Slow down to catch up"</note>
-        <note category="max-length">240</note>
-      </notes>
-      <segment state="translated">
-        <source>Fast enough to circle the Earth in 93 minutes.</source>
-        <target>Assez pour faire le tour de la Terre en 93 minutes.</target>
-      </segment>
-    </unit>
-    <unit id="block.intro-geo.label">
-      <notes>
-        <note category="location">screens/intro.json /blocks/3/props/label</note>
-        <note category="format">text</note>
-        <note category="context">Stat card on screen "Slow down to catch up"</note>
-        <note category="max-length">48</note>
-      </notes>
-      <segment state="translated">
-        <source>Speed of a geostationary satellite</source>
-        <target>Vitesse d’un satellite géostationnaire</target>
-      </segment>
-    </unit>
-    <unit id="block.intro-geo.unit">
-      <notes>
-        <note category="location">screens/intro.json /blocks/3/props/unit</note>
-        <note category="format">text</note>
-        <note category="context">Stat card on screen "Slow down to catch up"</note>
-        <note category="max-length">16</note>
-      </notes>
-      <segment state="translated">
-        <source>km/s</source>
-        <target>km/s</target>
-      </segment>
-    </unit>
-    <unit id="block.intro-geo.body">
-      <notes>
-        <note category="location">screens/intro.json /blocks/3/props/body</note>
-        <note category="format">markdown</note>
-        <note category="context">Stat card on screen "Slow down to catch up"</note>
-        <note category="max-length">240</note>
-      </notes>
-      <segment state="translated">
-        <source>Higher up, slower: one lap a day.</source>
-        <target>Plus haut, plus lent : un tour par jour.</target>
-      </segment>
-    </unit>
-    <unit id="block.intro-gain.label">
-      <notes>
-        <note category="location">screens/intro.json /blocks/4/props/label</note>
-        <note category="format">text</note>
-        <note category="context">Stat card on screen "Slow down to catch up"</note>
-        <note category="max-length">48</note>
-      </notes>
-      <segment state="translated">
-        <source>Gained per orbit</source>
-        <target>Gagnés par orbite</target>
-      </segment>
-    </unit>
-    <unit id="block.intro-gain.unit">
-      <notes>
-        <note category="location">screens/intro.json /blocks/4/props/unit</note>
-        <note category="format">text</note>
-        <note category="context">Stat card on screen "Slow down to catch up"</note>
-        <note category="max-length">16</note>
-      </notes>
-      <segment state="translated">
-        <source>km</source>
-        <target>km</target>
-      </segment>
-    </unit>
-    <unit id="block.intro-gain.body">
-      <notes>
-        <note category="location">screens/intro.json /blocks/4/props/body</note>
-        <note category="format">markdown</note>
-        <note category="context">Stat card on screen "Slow down to catch up"</note>
-        <note category="max-length">240</note>
-      </notes>
-      <segment state="translated">
-        <source>For each m/s of **braking**, 500 km up.</source>
-        <target>Pour chaque m/s de **freinage**, à 500 km.</target>
+        <source>A satellite flies 50 km ahead of you, on the same orbit. How do you catch it?</source>
+        <target>Un satellite vole 50 km devant vous, sur la même orbite. Comment le rattraper ?</target>
       </segment>
     </unit>
     <unit id="screen.orbits.title">
@@ -681,8 +571,8 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="max-length">300</note>
       </notes>
       <segment state="translated">
-        <source>Orbits to scale: select 1, 2, then 3. Arrows show the speed, trails one hour of flight.</source>
-        <target>Orbites à l’échelle : sélectionnez 1, 2, puis 3. Flèches : la vitesse ; traces : une heure de vol.</target>
+        <source>To scale. Each trail is one hour of flight.</source>
+        <target>À l’échelle. Chaque trace est une heure de vol.</target>
       </segment>
     </unit>
     <unit id="block.orbits-hot-1.label">
@@ -757,124 +647,124 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <target>Orbite 3, géostationnaire, est la plus lointaine. En une heure, elle parcourt un vingt-quatrième de tour, avec la flèche de vitesse la plus courte.</target>
       </segment>
     </unit>
-    <unit id="block.orbits-iss.label">
+    <unit id="block.orbits-ask.markdown">
       <notes>
-        <note category="location">screens/orbits.json /blocks/7/props/label</note>
-        <note category="format">text</note>
-        <note category="context">Stat card on screen "Lower is faster"</note>
-        <note category="max-length">48</note>
+        <note category="location">screens/orbits.json /blocks/7/props/markdown</note>
+        <note category="format">markdown</note>
+        <note category="context">Text on screen "Lower is faster"</note>
+        <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Space Station</source>
-        <target>Station spatiale</target>
+        <source>Three orbits, three heights. Which one goes round fastest? Select 1, 2, then 3.</source>
+        <target>Trois orbites, trois altitudes. Laquelle fait le tour le plus vite ? Sélectionnez 1, 2, puis 3.</target>
+      </segment>
+    </unit>
+    <unit id="block.orbits-iss.value">
+      <notes>
+        <note category="location">screens/orbits.json /blocks/8/props/value</note>
+        <note category="format">text</note>
+        <note category="context">Figure in a line on screen "Lower is faster"</note>
+        <note category="max-length">12</note>
+      </notes>
+      <segment state="translated">
+        <source>1 h 33</source>
+        <target>1 h 33</target>
       </segment>
     </unit>
     <unit id="block.orbits-iss.unit">
       <notes>
-        <note category="location">screens/orbits.json /blocks/7/props/unit</note>
+        <note category="location">screens/orbits.json /blocks/8/props/unit</note>
         <note category="format">text</note>
-        <note category="context">Stat card on screen "Lower is faster"</note>
+        <note category="context">Figure in a line on screen "Lower is faster"</note>
         <note category="max-length">16</note>
       </notes>
       <segment state="translated">
-        <source>km/s</source>
-        <target>km/s</target>
+        <source>per lap</source>
+        <target>par tour</target>
       </segment>
     </unit>
-    <unit id="block.orbits-iss.body">
-      <notes>
-        <note category="location">screens/orbits.json /blocks/7/props/body</note>
-        <note category="format">markdown</note>
-        <note category="context">Stat card on screen "Lower is faster"</note>
-        <note category="max-length">240</note>
-      </notes>
-      <segment state="translated">
-        <source>420 km up. One lap: 93 min.</source>
-        <target>À 420 km. Un tour : 93 min.</target>
-      </segment>
-    </unit>
-    <unit id="block.orbits-gps.label">
+    <unit id="block.orbits-iss.label">
       <notes>
         <note category="location">screens/orbits.json /blocks/8/props/label</note>
         <note category="format">text</note>
-        <note category="context">Stat card on screen "Lower is faster"</note>
-        <note category="max-length">48</note>
+        <note category="context">Figure in a line on screen "Lower is faster"</note>
+        <note category="max-length">64</note>
       </notes>
       <segment state="translated">
-        <source>GPS</source>
-        <target>GPS</target>
+        <source>The Space Station, 420 km up</source>
+        <target>La Station spatiale, à 420 km</target>
+      </segment>
+    </unit>
+    <unit id="block.orbits-gps.value">
+      <notes>
+        <note category="location">screens/orbits.json /blocks/9/props/value</note>
+        <note category="format">text</note>
+        <note category="context">Figure in a line on screen "Lower is faster"</note>
+        <note category="max-length">12</note>
+      </notes>
+      <segment state="translated">
+        <source>12 h</source>
+        <target>12 h</target>
       </segment>
     </unit>
     <unit id="block.orbits-gps.unit">
       <notes>
-        <note category="location">screens/orbits.json /blocks/8/props/unit</note>
+        <note category="location">screens/orbits.json /blocks/9/props/unit</note>
         <note category="format">text</note>
-        <note category="context">Stat card on screen "Lower is faster"</note>
+        <note category="context">Figure in a line on screen "Lower is faster"</note>
         <note category="max-length">16</note>
       </notes>
       <segment state="translated">
-        <source>km/s</source>
-        <target>km/s</target>
+        <source>per lap</source>
+        <target>par tour</target>
       </segment>
     </unit>
-    <unit id="block.orbits-gps.body">
-      <notes>
-        <note category="location">screens/orbits.json /blocks/8/props/body</note>
-        <note category="format">markdown</note>
-        <note category="context">Stat card on screen "Lower is faster"</note>
-        <note category="max-length">240</note>
-      </notes>
-      <segment state="translated">
-        <source>20,200 km up. One lap: 11 h 58 min.</source>
-        <target>À 20 200 km. Un tour : 11 h 58 min.</target>
-      </segment>
-    </unit>
-    <unit id="block.orbits-geo.label">
+    <unit id="block.orbits-gps.label">
       <notes>
         <note category="location">screens/orbits.json /blocks/9/props/label</note>
         <note category="format">text</note>
-        <note category="context">Stat card on screen "Lower is faster"</note>
-        <note category="max-length">48</note>
+        <note category="context">Figure in a line on screen "Lower is faster"</note>
+        <note category="max-length">64</note>
       </notes>
       <segment state="translated">
-        <source>Geostationary</source>
-        <target>Géostationnaire</target>
+        <source>GPS satellites, 20,200 km up</source>
+        <target>Les satellites GPS, à 20 200 km</target>
+      </segment>
+    </unit>
+    <unit id="block.orbits-geo.value">
+      <notes>
+        <note category="location">screens/orbits.json /blocks/10/props/value</note>
+        <note category="format">text</note>
+        <note category="context">Figure in a line on screen "Lower is faster"</note>
+        <note category="max-length">12</note>
+      </notes>
+      <segment state="translated">
+        <source>24 h</source>
+        <target>24 h</target>
       </segment>
     </unit>
     <unit id="block.orbits-geo.unit">
       <notes>
-        <note category="location">screens/orbits.json /blocks/9/props/unit</note>
+        <note category="location">screens/orbits.json /blocks/10/props/unit</note>
         <note category="format">text</note>
-        <note category="context">Stat card on screen "Lower is faster"</note>
+        <note category="context">Figure in a line on screen "Lower is faster"</note>
         <note category="max-length">16</note>
       </notes>
       <segment state="translated">
-        <source>km/s</source>
-        <target>km/s</target>
+        <source>per lap</source>
+        <target>par tour</target>
       </segment>
     </unit>
-    <unit id="block.orbits-geo.body">
+    <unit id="block.orbits-geo.label">
       <notes>
-        <note category="location">screens/orbits.json /blocks/9/props/body</note>
-        <note category="format">markdown</note>
-        <note category="context">Stat card on screen "Lower is faster"</note>
-        <note category="max-length">240</note>
-      </notes>
-      <segment state="translated">
-        <source>35,786 km up. One lap: 23 h 56 min.</source>
-        <target>À 35 786 km. Un tour : 23 h 56 min.</target>
-      </segment>
-    </unit>
-    <unit id="block.orbits-rule.title">
-      <notes>
-        <note category="location">screens/orbits.json /blocks/10/props/title</note>
+        <note category="location">screens/orbits.json /blocks/10/props/label</note>
         <note category="format">text</note>
-        <note category="context">Callout on screen "Lower is faster"</note>
-        <note category="max-length">120</note>
+        <note category="context">Figure in a line on screen "Lower is faster"</note>
+        <note category="max-length">64</note>
       </notes>
       <segment state="translated">
-        <source>Gravity sets the speed</source>
-        <target>La gravité fixe la vitesse</target>
+        <source>Geostationary satellites, 35,786 km up</source>
+        <target>Les satellites géostationnaires, à 35 786 km</target>
       </segment>
     </unit>
     <unit id="screen.burns.title">
@@ -884,132 +774,128 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="context">Screen title</note>
       </notes>
       <segment state="translated">
-        <source>Burn backwards to move forwards</source>
-        <target>Freiner pour avancer</target>
+        <source>The first push</source>
+        <target>La première poussée</target>
       </segment>
     </unit>
     <unit id="block.burns-figure.alt">
       <notes>
         <note category="location">screens/burns.json /blocks/0/props/alt</note>
         <note category="format">text</note>
-        <note category="context">Image on screen "Burn backwards to move forwards"</note>
+        <note category="context">Image on screen "The first push"</note>
         <note category="max-length">250</note>
       </notes>
       <segment state="translated">
-        <source>A circular orbit seen from above. The servicer fires backwards at the burn point (1); its new path dips inside the circle on the far side (2). The arc to the client just ahead (3) is the gap it closes in one orbit.</source>
-        <target>Une orbite circulaire vue de dessus. Le véhicule pousse vers l’arrière au point de poussée (1) ; sa nouvelle trajectoire passe sous le cercle du côté opposé (2). L’arc jusqu’au client, juste devant (3), est l’écart comblé en une orbite.</target>
+        <source>Your spacecraft and the satellite on the same circular orbit around the Earth, the satellite a little ahead of you.</source>
+        <target>Votre engin et le satellite sur la même orbite circulaire autour de la Terre, le satellite un peu devant vous.</target>
       </segment>
     </unit>
-    <unit id="block.burns-legend.markdown">
+    <unit id="block.burns-figure.caption">
       <notes>
-        <note category="location">screens/burns.json /blocks/1/props/markdown</note>
-        <note category="format">markdown</note>
-        <note category="context">Text on screen "Burn backwards to move forwards"</note>
-        <note category="max-length">20000</note>
-      </notes>
-      <segment state="translated">
-        <source>1. Retrograde burn at the burn point.
-2. The far side drops: lower, so faster.
-3. Back at 1 one orbit later, closer to the client.</source>
-        <target>1. Poussée rétrograde au point de poussée.
-2. Le côté opposé descend : plus bas, donc plus vite.
-3. Retour au point 1 une orbite plus tard, plus près du client.</target>
-      </segment>
-    </unit>
-    <unit id="block.burns-rule.title">
-      <notes>
-        <note category="location">screens/burns.json /blocks/3/props/title</note>
+        <note category="location">screens/burns.json /blocks/0/props/caption</note>
         <note category="format">text</note>
-        <note category="context">Callout on screen "Burn backwards to move forwards"</note>
-        <note category="max-length">120</note>
+        <note category="context">Image on screen "The first push"</note>
+        <note category="max-length">300</note>
       </notes>
       <segment state="translated">
-        <source>Phasing rule of thumb</source>
-        <target>Règle pratique du phasage</target>
+        <source>You in orange, the satellite in violet. Both fly to the left.</source>
+        <target>Vous en orange, le satellite en violet. Tous deux volent vers la gauche.</target>
+      </segment>
+    </unit>
+    <unit id="block.burns-path.alt">
+      <notes>
+        <note category="location">screens/burns.json /blocks/1/props/alt</note>
+        <note category="format">text</note>
+        <note category="context">Image on screen "The first push"</note>
+        <note category="max-length">250</note>
+      </notes>
+      <segment state="translated">
+        <source>Your new path after braking at 1: it dips inside the circle on the far side (2), then comes back to 1, closer to the satellite (3).</source>
+        <target>Votre nouvelle trajectoire après avoir freiné en 1 : elle passe sous le cercle du côté opposé (2), puis revient en 1, plus près du satellite (3).</target>
       </segment>
     </unit>
     <unit id="block.burns-practice.stem">
       <notes>
-        <note category="location">screens/burns.json /blocks/4/props/stem</note>
+        <note category="location">screens/burns.json /blocks/3/props/stem</note>
         <note category="format">markdown</note>
-        <note category="context">Manoeuvre question on screen "Burn backwards to move forwards"</note>
+        <note category="context">Manoeuvre question on screen "The first push"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>You fly **50 km behind** the client satellite, in the same circular orbit. Which first burn starts closing the gap?</source>
-        <target>Vous volez **50 km derrière** le satellite client, sur la même orbite circulaire. Quelle première poussée commence à combler l’écart ?</target>
+        <source>The satellite is **50 km ahead**, on your orbit. Which way do you push?</source>
+        <target>Le satellite est **50 km devant**, sur votre orbite. De quel côté poussez-vous ?</target>
       </segment>
     </unit>
     <unit id="block.burns-practice.options.a.text">
       <notes>
-        <note category="location">screens/burns.json /blocks/4/props/options/0/text</note>
+        <note category="location">screens/burns.json /blocks/3/props/options/0/text</note>
         <note category="format">text</note>
-        <note category="context">Manoeuvre question on screen "Burn backwards to move forwards"</note>
+        <note category="context">Manoeuvre question on screen "The first push"</note>
         <note category="max-length">500</note>
       </notes>
       <segment state="translated">
-        <source>Prograde, towards the client</source>
-        <target>Prograde, vers le client</target>
+        <source>Forwards, towards it</source>
+        <target>Vers l’avant, vers lui</target>
       </segment>
     </unit>
     <unit id="block.burns-practice.options.a.feedback">
       <notes>
-        <note category="location">screens/burns.json /blocks/4/props/options/0/feedback</note>
+        <note category="location">screens/burns.json /blocks/3/props/options/0/feedback</note>
         <note category="format">markdown</note>
-        <note category="context">Manoeuvre question on screen "Burn backwards to move forwards"</note>
+        <note category="context">Manoeuvre question on screen "The first push"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>This is the instinct Gemini 4 followed. The far side rises, each lap takes longer and the client pulls further ahead: about 17 km more per orbit for each m/s.</source>
-        <target>C’est l’instinct qu’a suivi Gemini 4. Le côté opposé monte, chaque tour dure plus longtemps et le client s’éloigne encore : environ 17 km de plus par orbite pour chaque m/s.</target>
+        <source>That is what Gemini 4 did: you climb, your laps get longer, and the satellite pulls away.</source>
+        <target>C’est ce qu’a fait Gemini 4 : vous montez, vos tours s’allongent et le satellite s’éloigne.</target>
       </segment>
     </unit>
     <unit id="block.burns-practice.options.b.text">
       <notes>
-        <note category="location">screens/burns.json /blocks/4/props/options/1/text</note>
+        <note category="location">screens/burns.json /blocks/3/props/options/1/text</note>
         <note category="format">text</note>
-        <note category="context">Manoeuvre question on screen "Burn backwards to move forwards"</note>
+        <note category="context">Manoeuvre question on screen "The first push"</note>
         <note category="max-length">500</note>
       </notes>
       <segment state="translated">
-        <source>Retrograde, away from the client</source>
-        <target>Rétrograde, à l’opposé du client</target>
+        <source>Backwards, to brake</source>
+        <target>Vers l’arrière, pour freiner</target>
       </segment>
     </unit>
     <unit id="block.burns-practice.options.b.feedback">
       <notes>
-        <note category="location">screens/burns.json /blocks/4/props/options/1/feedback</note>
+        <note category="location">screens/burns.json /blocks/3/props/options/1/feedback</note>
         <note category="format">markdown</note>
-        <note category="context">Manoeuvre question on screen "Burn backwards to move forwards"</note>
+        <note category="context">Manoeuvre question on screen "The first push"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Right: the far side drops, your laps get shorter and you gain on the client, about 17 km per orbit for each m/s at 500 km.</source>
-        <target>Exact : le côté opposé descend, vos tours raccourcissent et vous gagnez sur le client, environ 17 km par orbite pour chaque m/s à 500 km.</target>
+        <source>Yes: braking brings you closer.</source>
+        <target>Oui : freiner vous rapproche.</target>
       </segment>
     </unit>
     <unit id="block.burns-practice.options.c.text">
       <notes>
-        <note category="location">screens/burns.json /blocks/4/props/options/2/text</note>
+        <note category="location">screens/burns.json /blocks/3/props/options/2/text</note>
         <note category="format">text</note>
-        <note category="context">Manoeuvre question on screen "Burn backwards to move forwards"</note>
+        <note category="context">Manoeuvre question on screen "The first push"</note>
         <note category="max-length">500</note>
       </notes>
       <segment state="translated">
-        <source>Radial, down towards the Earth</source>
-        <target>Radiale, vers la Terre</target>
+        <source>Down, towards the Earth</source>
+        <target>Vers le bas, vers la Terre</target>
       </segment>
     </unit>
     <unit id="block.burns-practice.options.c.feedback">
       <notes>
-        <note category="location">screens/burns.json /blocks/4/props/options/2/feedback</note>
+        <note category="location">screens/burns.json /blocks/3/props/options/2/feedback</note>
         <note category="format">markdown</note>
-        <note category="context">Manoeuvre question on screen "Burn backwards to move forwards"</note>
+        <note category="context">Manoeuvre question on screen "The first push"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>A radial burn reshapes the orbit but leaves its period almost unchanged: you trace a loop and, one orbit later, you are back where you started, still 50 km behind.</source>
-        <target>Une poussée radiale déforme l’orbite sans presque changer sa période : vous décrivez une boucle et, une orbite plus tard, vous êtes revenu à votre point de départ, toujours 50 km derrière.</target>
+        <source>Your lap stays as long: one lap later, you are still 50 km behind.</source>
+        <target>Votre tour garde la même durée : un tour plus tard, vous êtes toujours 50 km derrière.</target>
       </segment>
     </unit>
     <unit id="screen.lab.title">
@@ -1019,79 +905,87 @@ et une poussée prograde vous fait reculer d’autant. À 500 km, où $T = 5\,6
         <note category="context">Screen title</note>
       </notes>
       <segment state="translated">
-        <source>Phasing lab</source>
-        <target>Laboratoire de phasage</target>
+        <source>Catch the satellite</source>
+        <target>Rattraper le satellite</target>
       </segment>
     </unit>
     <unit id="screen.lab.layer.lab-debrief.title">
       <notes>
         <note category="location">screens/lab.json /layers/0/title</note>
         <note category="format">text</note>
-        <note category="context">Title of a layer of screen "Phasing lab"</note>
+        <note category="context">Title of a layer of screen "Catch the satellite"</note>
       </notes>
       <segment state="translated">
-        <source>Three rendezvous, one rule</source>
-        <target>Trois rendez-vous, une règle</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-brief.markdown">
-      <notes>
-        <note category="location">screens/lab.json /blocks/0/props/markdown</note>
-        <note category="format">markdown</note>
-        <note category="context">Text on screen "Phasing lab"</note>
-        <note category="max-length">20000</note>
-      </notes>
-      <segment state="translated">
-        <source>Your servicer and the client fly the same circular orbit, 500 km up. For each requirement, **predict** the first burn and the number of phasing orbits with $\Delta x \approx 3\,T\,\Delta v$, then execute: the lab flies the manoeuvre and burns back at the same point. Aim to meet each requirement at the first try.</source>
-        <target>Votre véhicule de service et le client volent sur la même orbite circulaire, à 500 km d’altitude. Pour chaque exigence, **prédisez** la première poussée et le nombre d’orbites de phasage avec $\Delta x \approx 3\,T\,\Delta v$, puis exécutez : le laboratoire vole la manœuvre et repousse en sens inverse au même point. Visez chaque exigence du premier coup.</target>
+        <source>Time saves fuel</source>
+        <target>Le temps économise le carburant</target>
       </segment>
     </unit>
     <unit id="block.lab-sim.title">
       <notes>
         <note category="location">screens/lab.json /blocks/1/props/title</note>
         <note category="format">text</note>
-        <note category="context">Free object on screen "Phasing lab"</note>
+        <note category="context">Free object on screen "Catch the satellite"</note>
         <note category="max-length">200</note>
       </notes>
       <segment state="translated">
-        <source>3D phasing lab: your servicer and the client satellite in orbit around the Earth</source>
-        <target>Laboratoire de phasage en 3D : votre véhicule de service et le satellite client en orbite autour de la Terre</target>
+        <source>3D lab: your spacecraft and the satellite in orbit around the Earth</source>
+        <target>Laboratoire 3D : votre engin et le satellite en orbite autour de la Terre</target>
       </segment>
     </unit>
     <unit id="block.lab-sim.textAlternative">
       <notes>
         <note category="location">screens/lab.json /blocks/1/props/textAlternative</note>
         <note category="format">markdown</note>
-        <note category="context">Free object on screen "Phasing lab"</note>
+        <note category="context">Free object on screen "Catch the satellite"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>**Text version of the lab.** Your servicer and the client satellite fly the same circular orbit, 500 km up (period 5,676 s). You choose a first burn between 5 m/s retrograde and 5 m/s prograde, in steps of 0.5 m/s, and 1, 2 or 3 phasing orbits. The servicer burns, flies the phasing orbits, then burns the same amount the other way at the same point. Both burns count in the propellant used. The rendezvous is met when the client is within 2 km at the end.
+        <source>**Text version of the lab.** Your spacecraft and a satellite fly the same circular orbit, 500 km up. For each rendezvous you choose a burn, from braking 5 m/s to speeding up 5 m/s in steps of 0.5 m/s, and, when the rendezvous allows it, a number of laps. Your spacecraft burns, flies its laps, then burns the same amount the other way at the same point: both burns use fuel. The rendezvous is caught when the satellite is within 2 km at the end. At 500 km, each m/s of braking gains about 17 km per lap.
 
-For each requirement, write down your burn and your number of orbits, then check with $\Delta x \approx 3\,T\,\Delta v$ per orbit (about 17 km per orbit for each m/s).
+1. The satellite is 51 km ahead. Catch it in one lap.
+2. Same gap, with 2.5 m/s of fuel for both burns. Take up to three laps.
+3. Now the satellite is 34 km behind you. Let it catch up within two laps, with 2.5 m/s of fuel.</source>
+        <target>**Version texte du laboratoire.** Votre engin et un satellite volent sur la même orbite circulaire, à 500 km d’altitude. Pour chaque rendez-vous, vous choisissez une poussée, de freiner de 5 m/s à accélérer de 5 m/s par pas de 0,5 m/s, et, quand le rendez-vous le permet, un nombre de tours. Votre engin pousse, vole ses tours, puis pousse d’autant dans l’autre sens au même point : les deux poussées consomment du carburant. Le rendez-vous est réussi quand le satellite est à moins de 2 km à la fin. À 500 km, chaque m/s de freinage fait gagner environ 17 km par tour.
 
-1. The client is 51 km ahead. Meet it within 1 orbit, with at most 8 m/s of propellant.
-2. The client is 51 km ahead. Meet it within 3 orbits, with at most 2.5 m/s of propellant.
-3. The client is 34 km behind you. Let it catch up within 2 orbits, with at most 2.5 m/s of propellant.</source>
-        <target>**Version texte du laboratoire.** Votre véhicule de service et le satellite client volent sur la même orbite circulaire, à 500 km d’altitude (période 5 676 s). Vous choisissez une première poussée entre 5 m/s rétrograde et 5 m/s prograde, par pas de 0,5 m/s, et 1, 2 ou 3 orbites de phasage. Le véhicule pousse, vole les orbites de phasage, puis pousse d’autant dans l’autre sens au même point. Les deux poussées comptent dans les ergols consommés. Le rendez-vous est réussi si le client est à moins de 2 km à la fin.
-
-Pour chaque exigence, notez votre poussée et votre nombre d’orbites, puis vérifiez avec $\Delta x \approx 3\,T\,\Delta v$ par orbite (environ 17 km par orbite pour chaque m/s).
-
-1. Le client est 51 km devant. Rejoignez-le en 1 orbite au plus, avec au plus 8 m/s d’ergols.
-2. Le client est 51 km devant. Rejoignez-le en 3 orbites au plus, avec au plus 2,5 m/s d’ergols.
-3. Le client est 34 km derrière vous. Laissez-le vous rattraper en 2 orbites au plus, avec au plus 2,5 m/s d’ergols.</target>
+1. Le satellite est 51 km devant. Rattrapez-le en un tour.
+2. Même écart, avec 2,5 m/s de carburant pour les deux poussées. Prenez jusqu’à trois tours.
+3. Cette fois, le satellite est 34 km derrière vous. Laissez-le vous rattraper en deux tours au plus, avec 2,5 m/s de carburant.</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.props.instruction">
+    <unit id="block.lab-sim.props.requirements.0.instruction">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/props/instruction</note>
+        <note category="location">screens/lab.json /blocks/1/props/props/requirements/0/instruction</note>
         <note category="format">text</note>
-        <note category="context">Instruction shown at the top of the control panel</note>
-        <note category="max-length">200</note>
+        <note category="context">The rendezvous to fly, in order (one to six). Each shows its instruction and only the controls it needs: the burn always, the laps when it allows more than one, the fuel when it has a budget. When you change one, change its instruction and the text version of the block too.</note>
+        <note category="max-length">160</note>
       </notes>
       <segment state="translated">
-        <source>Choose the first burn and the number of phasing orbits, then execute. The lab burns back at the same point.</source>
-        <target>Choisissez la première poussée et le nombre d’orbites de phasage, puis exécutez. Le laboratoire repousse en sens inverse au même point.</target>
+        <source>The satellite is 51 km ahead. Catch it in one lap.</source>
+        <target>Le satellite est 51 km devant. Rattrapez-le en un tour.</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.props.requirements.1.instruction">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/props/requirements/1/instruction</note>
+        <note category="format">text</note>
+        <note category="context">The rendezvous to fly, in order (one to six). Each shows its instruction and only the controls it needs: the burn always, the laps when it allows more than one, the fuel when it has a budget. When you change one, change its instruction and the text version of the block too.</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>Same gap, with 2.5 m/s of fuel for both burns. Take up to three laps.</source>
+        <target>Même écart, avec 2,5 m/s de carburant pour les deux poussées. Prenez jusqu’à trois tours.</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.props.requirements.2.instruction">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/props/requirements/2/instruction</note>
+        <note category="format">text</note>
+        <note category="context">The rendezvous to fly, in order (one to six). Each shows its instruction and only the controls it needs: the burn always, the laps when it allows more than one, the fuel when it has a budget. When you change one, change its instruction and the text version of the block too.</note>
+        <note category="max-length">160</note>
+      </notes>
+      <segment state="translated">
+        <source>Now the satellite is 34 km behind you. Let it catch up within two laps.</source>
+        <target>Cette fois, le satellite est 34 km derrière vous. Laissez-le vous rattraper en deux tours au plus.</target>
       </segment>
     </unit>
     <unit id="block.lab-sim.a11y.description">
@@ -1101,8 +995,8 @@ Pour chaque exigence, notez votre poussée et votre nombre d’orbites, puis vé
         <note category="context">Phasing lab: what the object shows, read by screen readers</note>
       </notes>
       <segment state="translated">
-        <source>Three-quarter view of the Earth from space, with day and night sides, clouds and a thin atmosphere. A circular orbit 500 km up carries your servicer (orange) and the client satellite (violet). When you execute a manoeuvre, the servicer fires at the burn point, flies the phasing orbits below or above the circle, then fires again at the same point; a plot shows its true position relative to the client, along the orbit and in altitude.</source>
-        <target>Vue de trois quarts de la Terre depuis l’espace, avec sa face de jour et sa face de nuit, des nuages et une fine atmosphère. Une orbite circulaire à 500 km porte votre véhicule de service (orange) et le satellite client (violet). Quand vous exécutez une manœuvre, le véhicule pousse au point de poussée, vole les orbites de phasage sous ou au-dessus du cercle, puis pousse de nouveau au même point ; un graphique montre sa position réelle par rapport au client, le long de l’orbite et en altitude.</target>
+        <source>Three-quarter view of the Earth from space, with day and night sides, clouds and a thin atmosphere. A circular orbit 500 km up carries your spacecraft (orange) and a satellite (violet), each with a tag; the satellite's tag says how far ahead or behind it is. When you fly a manoeuvre, your spacecraft burns at the burn point, flies its laps below or above the circle, then burns back at the same point. In 3D the distance between the two craft is magnified; the tag gives the true distance.</source>
+        <target>La Terre vue de l’espace, de trois quarts, avec ses faces de jour et de nuit, ses nuages et une fine atmosphère. Une orbite circulaire à 500 km porte votre engin (orange) et un satellite (violet), chacun avec une étiquette ; celle du satellite dit à quelle distance il est devant ou derrière. Quand vous lancez une manœuvre, votre engin pousse au point de poussée, vole ses tours sous le cercle ou au-dessus, puis pousse en sens inverse au même point. En 3D, la distance entre les deux engins est agrandie ; l’étiquette donne la vraie distance.</target>
       </segment>
     </unit>
     <unit id="block.lab-sim.a11y.keyboard">
@@ -1112,129 +1006,120 @@ Pour chaque exigence, notez votre poussée et votre nombre d’orbites, puis vé
         <note category="context">Phasing lab: how to use it with the keyboard</note>
       </notes>
       <segment state="translated">
-        <source>Tab reaches the controls: the burn slider (arrow keys, 0.5 m/s steps), the orbits group (arrow keys) and Execute. Shortcuts: R adds 0.5 m/s retrograde, P adds 0.5 m/s prograde, 1 to 3 set the orbits, X executes, Space pauses.</source>
-        <target>Tab atteint les commandes : le curseur de poussée (flèches, pas de 0,5 m/s), le choix des orbites (flèches) et Exécuter. Raccourcis : R ajoute 0,5 m/s rétrograde, P ajoute 0,5 m/s prograde, 1 à 3 choisissent les orbites, X exécute, Espace met en pause.</target>
+        <source>Tab reaches the controls of the open rendezvous: the burn slider (arrow keys, 0.5 m/s steps), the laps when there is a choice (arrow keys) and Fly. Shortcuts: R brakes 0.5 m/s more, P speeds up 0.5 m/s more, 1 to 3 set the laps, X flies, Space pauses a manoeuvre.</source>
+        <target>Tab atteint les commandes du rendez-vous en cours : le curseur de poussée (flèches, pas de 0,5 m/s), les tours quand il y a un choix (flèches) et Lancer. Raccourcis : R freine de 0,5 m/s de plus, P accélère de 0,5 m/s de plus, 1 à 3 choisissent les tours, X lance, Espace met une manœuvre en pause.</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.requirement">
+    <unit id="block.lab-sim.strings.taskAhead">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/requirement</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/taskAhead</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Eyebrow of the mission card (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="context">Phasing lab: Instruction of a rendezvous without its own, the satellite ahead (gap: a formatted number) (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>Requirement {i} of {total}</source>
-        <target>Exigence {i} sur {total}</target>
+        <source>The satellite is {gap} km ahead. Catch it {orbits, plural, one {in one lap} other {within # laps}}.</source>
+        <target>Le satellite est {gap} km devant. Rattrapez-le {orbits, plural, one {en un tour} other {en # tours au plus}}.</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.allMet">
+    <unit id="block.lab-sim.strings.taskBehind">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/allMet</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/taskBehind</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Title of the mission card once all are met (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="context">Phasing lab: Instruction of a rendezvous without its own, the satellite behind (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>All requirements met</source>
-        <target>Toutes les exigences sont remplies</target>
+        <source>The satellite is {gap} km behind you. Let it catch up {orbits, plural, one {in one lap} other {within # laps}}.</source>
+        <target>Le satellite est {gap} km derrière vous. Laissez-le vous rattraper {orbits, plural, one {en un tour} other {en # tours au plus}}.</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.freeFlight">
+    <unit id="block.lab-sim.strings.taskFuel">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/freeFlight</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/taskFuel</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Eyebrow of the mission card once all are met (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="context">Phasing lab: Added to an instruction made from the numbers, when the rendezvous has a budget (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>Free flight</source>
-        <target>Vol libre</target>
+        <source>You have {budget} m/s of fuel for both burns.</source>
+        <target>Vous avez {budget} m/s de carburant pour les deux poussées.</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.catchUp">
+    <unit id="block.lab-sim.strings.progress">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/catchUp</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/progress</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Title of a requirement where the client is ahead (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="context">Phasing lab: Accessible name of the progress dots (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>Catch the client</source>
-        <target>Rattraper le client</target>
+        <source>Rendezvous {i} of {total}</source>
+        <target>Rendez-vous {i} sur {total}</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.letCatch">
+    <unit id="block.lab-sim.strings.allDone">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/letCatch</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/allDone</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Title of a requirement where the client is behind (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="context">Phasing lab: What the panel says once every rendezvous is caught (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>Let the client catch up</source>
-        <target>Se laisser rattraper</target>
+        <source>{total, plural, one {Caught.} other {All # caught.}}</source>
+        <target>{total, plural, one {Rattrapé.} other {Les # rendez-vous sont réussis.}}</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.briefAhead">
+    <unit id="block.lab-sim.strings.burn">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/briefAhead</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Text of the mission card; gap and budget are formatted numbers (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>The client is {gap} km ahead. Meet it within {orbits, plural, one {# orbit} other {# orbits}}, with at most {budget} m/s of propellant for both burns.</source>
-        <target>Le client est {gap} km devant vous. Rejoignez-le en {orbits, plural, one {# orbite} other {# orbites}} au plus, avec au plus {budget} m/s d’ergols pour les deux poussées.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.briefBehind">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/briefBehind</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Text of the mission card (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>The client is {gap} km behind you. Let it catch up within {orbits, plural, one {# orbit} other {# orbits}}, with at most {budget} m/s of propellant for both burns.</source>
-        <target>Le client est {gap} km derrière vous. Laissez-le vous rattraper en {orbits, plural, one {# orbite} other {# orbites}} au plus, avec au plus {budget} m/s d’ergols pour les deux poussées.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.freeBrief">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/freeBrief</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Text of the mission card once all are met (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Try any manoeuvre: nothing is scored any more.</source>
-        <target>Essayez toutes les manœuvres : plus rien n’est noté.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.firstBurn">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/firstBurn</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/burn</note>
         <note category="format">icu</note>
         <note category="context">Phasing lab: Label of the burn slider (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>First burn</source>
-        <target>Première poussée</target>
+        <source>Burn</source>
+        <target>Poussée</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.burnRetrograde">
+    <unit id="block.lab-sim.strings.brake">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/burnRetrograde</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/brake</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Value of the burn slider (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="context">Phasing lab: Left end of the burn slider (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">16</note>
       </notes>
       <segment state="translated">
-        <source>{dv} m/s retrograde (braking)</source>
-        <target>{dv} m/s rétrograde (freinage)</target>
+        <source>Brake</source>
+        <target>Freiner</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.burnPrograde">
+    <unit id="block.lab-sim.strings.speedUp">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/burnPrograde</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/speedUp</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Value of the burn slider (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="context">Phasing lab: Right end of the burn slider (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">16</note>
       </notes>
       <segment state="translated">
-        <source>{dv} m/s prograde (accelerating)</source>
-        <target>{dv} m/s prograde (accélération)</target>
+        <source>Speed up</source>
+        <target>Accélérer</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.strings.burnBrake">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/strings/burnBrake</note>
+        <note category="format">icu</note>
+        <note category="context">Phasing lab: Value of the burn slider, braking (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Brake {dv} m/s</source>
+        <target>Freiner de {dv} m/s</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.strings.burnSpeedUp">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/strings/burnSpeedUp</note>
+        <note category="format">icu</note>
+        <note category="context">Phasing lab: Value of the burn slider, speeding up (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Speed up {dv} m/s</source>
+        <target>Accélérer de {dv} m/s</target>
       </segment>
     </unit>
     <unit id="block.lab-sim.strings.burnNone">
@@ -1244,361 +1129,72 @@ Pour chaque exigence, notez votre poussée et votre nombre d’orbites, puis vé
         <note category="context">Phasing lab: Value of the burn slider at zero (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>No burn</source>
-        <target>Pas de poussée</target>
+        <source>None</source>
+        <target>Aucune</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.retrograde">
+    <unit id="block.lab-sim.strings.laps">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/retrograde</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/laps</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Left end of the burn slider (keep the arrow) (placeholders in braces stay, plural forms follow the target language)</note>
-        <note category="max-length">20</note>
+        <note category="context">Phasing lab: Legend of the choice of laps (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>◀ Retrograde</source>
-        <target>◀ Rétrograde</target>
+        <source>Laps</source>
+        <target>Tours</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.prograde">
+    <unit id="block.lab-sim.strings.fuel">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/prograde</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/fuel</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Right end of the burn slider (keep the arrow) (placeholders in braces stay, plural forms follow the target language)</note>
-        <note category="max-length">20</note>
+        <note category="context">Phasing lab: Label of the fuel gauge (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>Prograde ▶</source>
-        <target>Prograde ▶</target>
+        <source>Fuel</source>
+        <target>Carburant</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.phasingOrbits">
+    <unit id="block.lab-sim.strings.fuelUse">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/phasingOrbits</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/fuelUse</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Legend of the orbit choice (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Phasing orbits</source>
-        <target>Orbites de phasage</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.propellant">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/propellant</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Meter label (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Propellant</source>
-        <target>Ergols</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.bothBurns">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/bothBurns</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Small text under the propellant meter (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>both burns</source>
-        <target>deux poussées</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.propellantUse">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/propellantUse</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Value of the propellant meter (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="context">Phasing lab: Value of the fuel gauge (both burns) (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
         <source>{used} of {budget} m/s</source>
         <target>{used} sur {budget} m/s</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.client">
+    <unit id="block.lab-sim.strings.fly">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/client</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Meter label: where the client is (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Client</source>
-        <target>Client</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.gapAlongside">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/gapAlongside</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Where the client is: next to you (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>alongside</source>
-        <target>à vos côtés</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.gapAhead">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/gapAhead</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Where the client is (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>{gap} km ahead</source>
-        <target>{gap} km devant</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.gapBehind">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/gapBehind</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Where the client is (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>{gap} km behind</source>
-        <target>{gap} km derrière</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.execute">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/execute</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/fly</note>
         <note category="format">icu</note>
         <note category="context">Phasing lab: Main button (placeholders in braces stay, plural forms follow the target language)</note>
-        <note category="max-length">32</note>
+        <note category="max-length">24</note>
       </notes>
       <segment state="translated">
-        <source>Execute the manoeuvre</source>
-        <target>Exécuter la manœuvre</target>
+        <source>Fly</source>
+        <target>Lancer</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.running">
+    <unit id="block.lab-sim.strings.flying">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/running</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/flying</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Main button while flying (placeholders in braces stay, plural forms follow the target language)</note>
-        <note category="max-length">32</note>
+        <note category="context">Phasing lab: Main button while a manoeuvre is flown (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">24</note>
       </notes>
       <segment state="translated">
-        <source>Manoeuvre in progress…</source>
-        <target>Manœuvre en cours…</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.ready">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/ready</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Status line before a manoeuvre (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Set the first burn and the number of phasing orbits, then execute.</source>
-        <target>Réglez la première poussée et le nombre d’orbites de phasage, puis exécutez.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.reduced">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/reduced</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Status line under reduced motion (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Animation off (reduced motion): each manoeuvre shows its result at once.</source>
-        <target>Animation désactivée (mouvement réduit) : chaque manœuvre affiche son résultat aussitôt.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.burn1Retrograde">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/burn1Retrograde</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Status line during the first burn (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Burn 1, retrograde: the far side of your orbit drops.</source>
-        <target>Poussée 1, rétrograde : le côté opposé de votre orbite descend.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.burn1Prograde">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/burn1Prograde</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Status line during the first burn (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Burn 1, prograde: the far side of your orbit rises.</source>
-        <target>Poussée 1, prograde : le côté opposé de votre orbite monte.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.burn1None">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/burn1None</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Status line when the burn is zero (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>No burn: you stay on the circular orbit.</source>
-        <target>Pas de poussée : vous restez sur l’orbite circulaire.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.coast">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/coast</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Status line while coasting (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Phasing orbit {lap} of {orbits}.</source>
-        <target>Orbite de phasage {lap} sur {orbits}.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.burn2">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/burn2</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Status line during the second burn (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Burn 2 at the same point: back on the circular orbit.</source>
-        <target>Poussée 2 au même point : retour sur l’orbite circulaire.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.met">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/met</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Result; where is a gapAhead, gapBehind or gapAlongside text (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Requirement {i} met: the client is {where} at the end.</source>
-        <target>Exigence {i} remplie : à la fin, le client est {where}.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.final">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/final</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Result of a missed requirement, followed by the reason (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>At the end the client is {where}.</source>
-        <target>À la fin, le client est {where}.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.whyNoBurn">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/whyNoBurn</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Reason of a miss (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Without a burn both craft keep the same period, so the gap does not change.</source>
-        <target>Sans poussée, les deux engins gardent la même période : l’écart ne change pas.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.whyPrograde">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/whyPrograde</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Reason of a miss (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>You burned prograde: you climbed, each lap took longer and the gap grew.</source>
-        <target>Poussée prograde : vous êtes monté, chaque tour a duré plus longtemps et l’écart a grandi.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.whyRetrograde">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/whyRetrograde</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Reason of a miss (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>You burned retrograde: you dropped, each lap took less time and you moved further ahead.</source>
-        <target>Poussée rétrograde : vous êtes descendu, chaque tour a duré moins longtemps et vous êtes passé devant.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.tooLittle">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/tooLittle</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Reason of a miss, followed by the rule (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Not enough drift: burn more, or fly more orbits.</source>
-        <target>Dérive insuffisante : poussez plus fort, ou volez plus d’orbites.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.tooMuch">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/tooMuch</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Reason of a miss, followed by the rule (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Too much drift: you overshot. Burn less, or fly fewer orbits.</source>
-        <target>Trop de dérive : vous avez dépassé le client. Poussez moins, ou volez moins d’orbites.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.rule">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/rule</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Rule of thumb recalled after a miss (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>At 500 km, each m/s gains about 17 km per orbit.</source>
-        <target>À 500 km, chaque m/s fait gagner environ 17 km par orbite.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.overBudget">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/overBudget</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Reason of a miss (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>You met the client, but the two burns cost {cost} m/s and the budget is {budget} m/s. Spread a smaller burn over more orbits.</source>
-        <target>Vous avez rejoint le client, mais les deux poussées coûtent {cost} m/s pour un budget de {budget} m/s. Étalez une poussée plus faible sur plus d’orbites.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.tooLong">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/tooLong</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Reason of a miss (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>You met the client, but this requirement allows at most {orbits, plural, one {# phasing orbit} other {# phasing orbits}}.</source>
-        <target>Vous avez rejoint le client, mais cette exigence autorise au plus {orbits, plural, one {# orbite de phasage} other {# orbites de phasage}}.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.allDone">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/allDone</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Status line at the end (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Every requirement is met. The lab stays open: try any manoeuvre.</source>
-        <target>Toutes les exigences sont remplies. Le laboratoire reste ouvert : essayez toutes les manœuvres.</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.predicted">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/predicted</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Prediction help (where is a gap text) (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>Predicted: the client {where} at the end.</source>
-        <target>Prévision : à la fin, le client sera {where}.</target>
+        <source>Flying…</source>
+        <target>En vol…</target>
       </segment>
     </unit>
     <unit id="block.lab-sim.strings.pause">
       <notes>
         <note category="location">screens/lab.json /blocks/1/props/strings/pause</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Button (placeholders in braces stay, plural forms follow the target language)</note>
-        <note category="max-length">12</note>
+        <note category="context">Phasing lab: Accessible name of the pause button (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
         <source>Pause</source>
@@ -1609,139 +1205,234 @@ Pour chaque exigence, notez votre poussée et votre nombre d’orbites, puis vé
       <notes>
         <note category="location">screens/lab.json /blocks/1/props/strings/resume</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Button (placeholders in braces stay, plural forms follow the target language)</note>
-        <note category="max-length">12</note>
+        <note category="context">Phasing lab: Accessible name of the pause button while paused (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
         <source>Resume</source>
         <target>Reprendre</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.view">
+    <unit id="block.lab-sim.strings.braking">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/view</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/braking</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Accessible name of the view button, before the view name (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="context">Phasing lab: Status during the first burn (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>View</source>
-        <target>Vue</target>
+        <source>Braking: your orbit dips.</source>
+        <target>Freinage : votre orbite s’abaisse.</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.view34">
+    <unit id="block.lab-sim.strings.speedingUp">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/view34</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/speedingUp</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: View button (placeholders in braces stay, plural forms follow the target language)</note>
-        <note category="max-length">14</note>
+        <note category="context">Phasing lab: Status during the first burn (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>3/4 view</source>
-        <target>Vue 3/4</target>
+        <source>Speeding up: your orbit rises.</source>
+        <target>Accélération : votre orbite monte.</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.viewAbove">
+    <unit id="block.lab-sim.strings.noBurn">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/viewAbove</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/noBurn</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: View button (placeholders in braces stay, plural forms follow the target language)</note>
-        <note category="max-length">14</note>
+        <note category="context">Phasing lab: Status when the burn is zero (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>From above</source>
-        <target>Vue de dessus</target>
+        <source>No burn: you stay on the circle.</source>
+        <target>Sans poussée : vous restez sur le cercle.</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.plotTitle">
+    <unit id="block.lab-sim.strings.lap">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/plotTitle</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/lap</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Title of the plot (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="context">Phasing lab: Status while flying the laps (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>Relative position, true scale</source>
-        <target>Position relative, à l’échelle</target>
+        <source>Lap {lap} of {orbits}.</source>
+        <target>Tour {lap} sur {orbits}.</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.plotAlong">
+    <unit id="block.lab-sim.strings.burnBack">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/plotAlong</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/burnBack</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Horizontal axis of the plot (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="context">Phasing lab: Status during the second burn (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>along the orbit, km</source>
-        <target>le long de l’orbite, km</target>
+        <source>Second burn, the other way: back on the circle.</source>
+        <target>Seconde poussée, dans l’autre sens : retour sur le cercle.</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.plotAltitude">
+    <unit id="block.lab-sim.strings.caught">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/plotAltitude</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/caught</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Vertical axis of the plot (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="context">Phasing lab: Result of a rendezvous caught; where is an alongside, ahead or behind text (placeholders in braces stay, plural forms follow the target language)</note>
       </notes>
       <segment state="translated">
-        <source>altitude, km</source>
-        <target>altitude, km</target>
+        <source>Caught! The satellite is {where}.</source>
+        <target>Rattrapé ! Le satellite est {where}.</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.strings.ends">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/strings/ends</note>
+        <note category="format">icu</note>
+        <note category="context">Phasing lab: Result of a miss, followed by the reason (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>The satellite ends {where}.</source>
+        <target>À la fin, le satellite est {where}.</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.strings.whyNoBurn">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/strings/whyNoBurn</note>
+        <note category="format">icu</note>
+        <note category="context">Phasing lab: Reason of a miss (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>With no burn, your lap stays the same as the satellite's.</source>
+        <target>Sans poussée, votre tour reste celui du satellite.</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.strings.whySpeedUp">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/strings/whySpeedUp</note>
+        <note category="format">icu</note>
+        <note category="context">Phasing lab: Reason of a miss: speeding up with the satellite ahead (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Speeding up made your laps longer: the gap grew.</source>
+        <target>Accélérer a allongé vos tours : l’écart a grandi.</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.strings.whyBrake">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/strings/whyBrake</note>
+        <note category="format">icu</note>
+        <note category="context">Phasing lab: Reason of a miss: braking with the satellite behind (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Braking made your laps shorter: you pulled further ahead.</source>
+        <target>Freiner a raccourci vos tours : vous avez pris plus d’avance.</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.strings.tooLittle">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/strings/tooLittle</note>
+        <note category="format">icu</note>
+        <note category="context">Phasing lab: Reason of a miss (laps: yes when the rendezvous lets the learner choose them) (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{laps, select, yes {A little short: burn harder, or take more laps.} other {A little short: burn harder.}}</source>
+        <target>{laps, select, yes {Un peu court : poussez plus fort, ou prenez plus de tours.} other {Un peu court : poussez plus fort.}}</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.strings.tooMuch">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/strings/tooMuch</note>
+        <note category="format">icu</note>
+        <note category="context">Phasing lab: Reason of a miss (laps: yes when the rendezvous lets the learner choose them) (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{laps, select, yes {Too far: burn less, or take fewer laps.} other {Too far: burn less.}}</source>
+        <target>{laps, select, yes {Trop loin : poussez moins, ou prenez moins de tours.} other {Trop loin : poussez moins.}}</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.strings.overBudget">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/strings/overBudget</note>
+        <note category="format">icu</note>
+        <note category="context">Phasing lab: Reason of a miss (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Both burns cost {cost} m/s: more than your {budget}. Burn less, over more laps.</source>
+        <target>Les deux poussées coûtent {cost} m/s : plus que vos {budget}. Poussez moins, sur plus de tours.</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.strings.predicted">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/strings/predicted</note>
+        <note category="format">icu</note>
+        <note category="context">Phasing lab: Prediction help (where is an alongside, ahead or behind text) (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>Predicted: the satellite ends {where}.</source>
+        <target>Prévision : à la fin, le satellite sera {where}.</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.strings.alongside">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/strings/alongside</note>
+        <note category="format">icu</note>
+        <note category="context">Phasing lab: Where the satellite is: next to you (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>alongside</source>
+        <target>à vos côtés</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.strings.ahead">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/strings/ahead</note>
+        <note category="format">icu</note>
+        <note category="context">Phasing lab: Where the satellite is (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{gap} km ahead</source>
+        <target>{gap} km devant</target>
+      </segment>
+    </unit>
+    <unit id="block.lab-sim.strings.behind">
+      <notes>
+        <note category="location">screens/lab.json /blocks/1/props/strings/behind</note>
+        <note category="format">icu</note>
+        <note category="context">Phasing lab: Where the satellite is (placeholders in braces stay, plural forms follow the target language)</note>
+      </notes>
+      <segment state="translated">
+        <source>{gap} km behind</source>
+        <target>{gap} km derrière</target>
       </segment>
     </unit>
     <unit id="block.lab-sim.strings.you">
       <notes>
         <note category="location">screens/lab.json /blocks/1/props/strings/you</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Tag of your servicer in 3D (placeholders in braces stay, plural forms follow the target language)</note>
-        <note category="max-length">10</note>
+        <note category="context">Phasing lab: Tag of your spacecraft in 3D (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">12</note>
       </notes>
       <segment state="translated">
         <source>You</source>
         <target>Vous</target>
       </segment>
     </unit>
-    <unit id="block.lab-sim.strings.clientTag">
+    <unit id="block.lab-sim.strings.satellite">
       <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/clientTag</note>
+        <note category="location">screens/lab.json /blocks/1/props/strings/satellite</note>
         <note category="format">icu</note>
-        <note category="context">Phasing lab: Tag of the client satellite in 3D (placeholders in braces stay, plural forms follow the target language)</note>
-        <note category="max-length">10</note>
+        <note category="context">Phasing lab: Tag of the satellite in 3D (placeholders in braces stay, plural forms follow the target language)</note>
+        <note category="max-length">14</note>
       </notes>
       <segment state="translated">
-        <source>Client</source>
-        <target>Client</target>
-      </segment>
-    </unit>
-    <unit id="block.lab-sim.strings.scale">
-      <notes>
-        <note category="location">screens/lab.json /blocks/1/props/strings/scale</note>
-        <note category="format">icu</note>
-        <note category="context">Phasing lab: Note under the plot (placeholders in braces stay, plural forms follow the target language)</note>
-      </notes>
-      <segment state="translated">
-        <source>In 3D, the distance between the craft is magnified {k} times.</source>
-        <target>En 3D, la distance entre les engins est agrandie {k} fois.</target>
+        <source>Satellite</source>
+        <target>Satellite</target>
       </segment>
     </unit>
     <unit id="block.lab-summary.markdown">
       <notes>
         <note category="location">screens/lab.json /layers/0/blocks/0/props/markdown</note>
         <note category="format">markdown</note>
-        <note category="context">Text on screen "Phasing lab"</note>
+        <note category="context">Text on screen "Catch the satellite"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>| Requirement | First burn | Orbits | Propellant |
-|---|---|---|---|
-| 51 km ahead, 1 orbit | 3 m/s retrograde | 1 | 6 m/s |
-| 51 km ahead, 2.5 m/s | 1 m/s retrograde | 3 | 2 m/s |
-| 34 km behind, 2 orbits | 1 m/s prograde | 2 | 2 m/s |
-
-The same gap costs three times less propellant over three orbits than over one: **time buys propellant**. That is why real rendezvous take hours, sometimes days.</source>
-        <target>| Exigence | Première poussée | Orbites | Ergols |
-|---|---|---|---|
-| 51 km devant, 1 orbite | 3 m/s rétrograde | 1 | 6 m/s |
-| 51 km devant, 2,5 m/s | 1 m/s rétrograde | 3 | 2 m/s |
-| 34 km derrière, 2 orbites | 1 m/s prograde | 2 | 2 m/s |
-
-Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une : **le temps achète des ergols**. C’est pourquoi les vrais rendez-vous prennent des heures, parfois des jours.</target>
+        <source>The same 51 km took 6 m/s of fuel in one lap, and 2 m/s in three. That is why real rendezvous take their time: hours, sometimes days.</source>
+        <target>Les mêmes 51 km ont demandé 6 m/s de carburant en un tour, et 2 m/s en trois. C’est pourquoi les vrais rendez-vous prennent leur temps : des heures, parfois des jours.</target>
       </segment>
     </unit>
     <unit id="screen.assessment.title">
@@ -1751,32 +1442,32 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Screen title</note>
       </notes>
       <segment state="translated">
-        <source>Check your planning</source>
-        <target>Vérifiez votre planification</target>
+        <source>Plan one yourself</source>
+        <target>À vous de planifier</target>
       </segment>
     </unit>
     <unit id="block.assessment-results.passedMessage">
       <notes>
         <note category="location">screens/assessment.json /blocks/2/props/passedMessage</note>
         <note category="format">markdown</note>
-        <note category="context">Results on screen "Check your planning"</note>
+        <note category="context">Results on screen "Plan one yourself"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>You can size a phasing manoeuvre and predict what each burn does. Keep the rule handy: **brake to gain, then burn back at the same point.**</source>
-        <target>Vous savez dimensionner une manœuvre de phasage et prédire l’effet de chaque poussée. Gardez la règle sous la main : **freiner pour gagner, puis repousser au même point.**</target>
+        <source>You can plan a rendezvous: **brake to gain, then push back at the same point.**</source>
+        <target>Vous savez planifier un rendez-vous : **freiner pour gagner, puis repousser au même point.**</target>
       </segment>
     </unit>
     <unit id="block.assessment-results.failedMessage">
       <notes>
         <note category="location">screens/assessment.json /blocks/2/props/failedMessage</note>
         <note category="format">markdown</note>
-        <note category="context">Results on screen "Check your planning"</note>
+        <note category="context">Results on screen "Plan one yourself"</note>
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Go back to the rule of thumb and the lab, then try the questions again: brake to gain about $3\,T\,\Delta v$ per orbit, then burn back at the same point.</source>
-        <target>Revenez à la règle pratique et au laboratoire, puis refaites les questions : freinez pour gagner environ $3\,T\,\Delta v$ par orbite, puis repoussez en sens inverse au même point.</target>
+        <source>Go back to the lab, then try again: each m/s of braking gains about 17 km per lap.</source>
+        <target>Revenez au laboratoire, puis réessayez : chaque m/s de freinage fait gagner environ 17 km par tour.</target>
       </segment>
     </unit>
     <unit id="theme.style.text.lead.label">
@@ -1798,8 +1489,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">What the text style "lead" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Large introductory paragraph</source>
-        <target>Grand paragraphe d’introduction</target>
+        <source>Larger text: the situation, the question, the one thing to keep at hand</source>
+        <target>Texte plus grand : la situation, la question, ce qu’il faut garder sous la main</target>
       </segment>
     </unit>
     <unit id="theme.style.text.legend.label">
@@ -1825,52 +1516,6 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <target>Légende numérotée d’une figure (les numéros répondent aux repères)</target>
       </segment>
     </unit>
-    <unit id="theme.style.callout.rule.label">
-      <notes>
-        <note category="location">course.json /theme/styles/callout/rule/label</note>
-        <note category="format">text</note>
-        <note category="context">Name of the callout style "rule" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
-        <note category="max-length">40</note>
-      </notes>
-      <segment state="translated">
-        <source>Key rule</source>
-        <target>Règle clé</target>
-      </segment>
-    </unit>
-    <unit id="theme.style.callout.rule">
-      <notes>
-        <note category="location">course.json /theme/styles/callout/rule/description</note>
-        <note category="format">text</note>
-        <note category="context">What the callout style "rule" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
-      </notes>
-      <segment state="translated">
-        <source>The one rule to remember, on a glowing glass card</source>
-        <target>La seule règle à retenir, sur une carte de verre lumineuse</target>
-      </segment>
-    </unit>
-    <unit id="theme.style.callout.glass.label">
-      <notes>
-        <note category="location">course.json /theme/styles/callout/glass/label</note>
-        <note category="format">text</note>
-        <note category="context">Name of the callout style "glass" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
-        <note category="max-length">40</note>
-      </notes>
-      <segment state="translated">
-        <source>Glass</source>
-        <target>Verre</target>
-      </segment>
-    </unit>
-    <unit id="theme.style.callout.glass">
-      <notes>
-        <note category="location">course.json /theme/styles/callout/glass/description</note>
-        <note category="format">text</note>
-        <note category="context">What the callout style "glass" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
-      </notes>
-      <segment state="translated">
-        <source>Translucent panel that lets the starfield through</source>
-        <target>Un panneau translucide qui laisse passer le champ d’étoiles</target>
-      </segment>
-    </unit>
     <unit id="theme.style.image.bare.label">
       <notes>
         <note category="location">course.json /theme/styles/image/bare/label</note>
@@ -1894,6 +1539,29 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <target>Sans cadre : pour les figures dessinées sur le champ d’étoiles</target>
       </segment>
     </unit>
+    <unit id="theme.style.image.trace.label">
+      <notes>
+        <note category="location">course.json /theme/styles/image/trace/label</note>
+        <note category="format">text</note>
+        <note category="context">Name of the image style "trace" of the course's charter, as authors pick it (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="max-length">40</note>
+      </notes>
+      <segment state="translated">
+        <source>Drawn as flown</source>
+        <target>Tracé en vol</target>
+      </segment>
+    </unit>
+    <unit id="theme.style.image.trace">
+      <notes>
+        <note category="location">course.json /theme/styles/image/trace/description</note>
+        <note category="format">text</note>
+        <note category="context">What the image style "trace" of the course's charter is for (the Charte, the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>A path drawn around the Earth when its step opens, from the top, the way the craft fly</source>
+        <target>Une trajectoire tracée autour de la Terre quand son étape s’ouvre, depuis le haut, dans le sens où volent les engins</target>
+      </segment>
+    </unit>
     <unit id="component.cosmos-hero.title">
       <notes>
         <note category="location">components/cosmos-hero/component.json /title</note>
@@ -1912,8 +1580,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">What the course's screen layout "cosmos-hero" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Opening screen on the starfield: a very large title and a lead text, a side column for goals, a row of cards at the bottom, and the limb of a planet rising behind the cards with an orbital sunrise. Stacks on narrow screens.</source>
-        <target>Écran d’ouverture sur le champ d’étoiles : un très grand titre et un chapeau, une colonne latérale pour les objectifs, une rangée de cartes en bas, et le bord d’une planète qui se lève derrière les cartes avec un lever de soleil orbital. S’empile sur les écrans étroits.</target>
+        <source>Opening screen on the starfield: a very large title, then one column of text that comes in after it, and the limb of a planet rising at the bottom with an orbital sunrise and two craft gliding along their orbit. Stacks on narrow screens.</source>
+        <target>Écran d’ouverture sur le champ d’étoiles : un très grand titre, puis une colonne de texte qui arrive après lui, et le bord d’une planète qui se lève en bas, avec un lever de soleil orbital et deux engins qui glissent sur leur orbite. S’empile sur les écrans étroits.</target>
       </segment>
     </unit>
     <unit id="component.cosmos-hero.slot.lead.label">
@@ -1923,30 +1591,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Name of the slot "lead" of the course's screen layout "cosmos-hero". Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Lead text</source>
-        <target>Chapeau</target>
-      </segment>
-    </unit>
-    <unit id="component.cosmos-hero.slot.side.label">
-      <notes>
-        <note category="location">components/cosmos-hero/component.json /slots/1/label</note>
-        <note category="format">text</note>
-        <note category="context">Name of the slot "side" of the course's screen layout "cosmos-hero". Editor only: authors read it, learners never do</note>
-      </notes>
-      <segment state="translated">
-        <source>Side column</source>
-        <target>Colonne latérale</target>
-      </segment>
-    </unit>
-    <unit id="component.cosmos-hero.slot.cards.label">
-      <notes>
-        <note category="location">components/cosmos-hero/component.json /slots/2/label</note>
-        <note category="format">text</note>
-        <note category="context">Name of the slot "cards" of the course's screen layout "cosmos-hero". Editor only: authors read it, learners never do</note>
-      </notes>
-      <segment state="translated">
-        <source>Cards</source>
-        <target>Cartes</target>
+        <source>Text</source>
+        <target>Texte</target>
       </segment>
     </unit>
     <unit id="component.hotspot.title">
@@ -2044,8 +1690,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">What the course's block type "maneuver-quiz" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>A choice question whose options are burns, shown as cards with a diagram of the thrust direction. A fork of the quiz block: same scoring, feedback, saved state and SCORM records.</source>
-        <target>Une question à choix dont les options sont des poussées, montrées en cartes avec un schéma du sens de la poussée. Une variante du bloc question : même notation, mêmes retours, même état enregistré et mêmes données SCORM.</target>
+        <source>A choice question whose options are pushes, one under the other, each with a small diagram of the push. A fork of the quiz block: same scoring, feedback, saved state and SCORM records.</source>
+        <target>Une question à choix dont les options sont des poussées, l’une sous l’autre, chacune avec un petit schéma de la poussée. Une variante du bloc question : même notation, mêmes rétroactions, même sauvegarde et mêmes enregistrements SCORM.</target>
       </segment>
     </unit>
     <unit id="component.maneuver-quiz.prop.options.item.figure.description">
@@ -2198,8 +1844,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">What the course's screen layout "split" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>The title across the top, a figure column (figure, legend, short text) and an explanation column side by side. Stacks on narrow screens, figure first.</source>
-        <target>Le titre en haut, sur toute la largeur, une colonne de figure (figure, légende, texte court) et une colonne d’explication côte à côte. S’empile sur les écrans étroits, la figure d’abord.</target>
+        <source>The title, a figure column (a figure, its caption, a legend) and an explanation column that builds up beside it, one block under the other. Stacks on narrow screens, figure first.</source>
+        <target>Le titre, une colonne de figure (une figure, sa légende, une légende numérotée) et une colonne d’explication qui se construit à côté, un bloc sous l’autre. S’empile sur les écrans étroits, la figure d’abord.</target>
       </segment>
     </unit>
     <unit id="component.split.slot.figure.label">
@@ -2264,8 +1910,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Help of the setting "figure" of the course's screen layout "split" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>column: the figure's blocks one under the other; stack: drawn over each other in one square frame, for a figure built in steps (an image with its caption first, then orbit flights and hotspots).</source>
-        <target>column : les blocs de la figure l’un sous l’autre ; stack : dessinés les uns sur les autres dans un même cadre carré, pour une figure construite par étapes (une image avec sa légende d’abord, puis des vols en orbite et des repères).</target>
+        <source>column: the figure's blocks one under the other; stack: drawn over each other in one square frame, for a figure built in steps (an image with its caption first, then the layers each step adds).</source>
+        <target>column : les blocs de la figure l’un sous l’autre ; stack : dessinés les uns sur les autres dans un même cadre carré, pour une figure construite par étapes (une image avec sa légende d’abord, puis les calques qu’ajoute chaque étape).</target>
       </segment>
     </unit>
     <unit id="component.split.prop.figure.value.column">
@@ -2290,92 +1936,81 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <target>Superposés</target>
       </segment>
     </unit>
-    <unit id="component.stat-card.title">
+    <unit id="component.stat-line.title">
       <notes>
-        <note category="location">components/stat-card/component.json /title</note>
+        <note category="location">components/stat-line/component.json /title</note>
         <note category="format">text</note>
-        <note category="context">Name of the course's block type "stat-card" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
+        <note category="context">Name of the course's block type "stat-line" (the block picker, the layouts, the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Stat card</source>
-        <target>Carte de chiffre</target>
+        <source>Figure in a line</source>
+        <target>Chiffre en ligne</target>
       </segment>
     </unit>
-    <unit id="component.stat-card.description">
+    <unit id="component.stat-line.description">
       <notes>
-        <note category="location">components/stat-card/component.json /description</note>
+        <note category="location">components/stat-line/component.json /description</note>
         <note category="format">text</note>
-        <note category="context">What the course's block type "stat-card" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
+        <note category="context">What the course's block type "stat-line" is (the block picker, the layouts). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>One figure that matters, large, with its unit, a short label and an optional sentence. The marker number links the card to a numbered marker in a figure next to it.</source>
-        <target>Un chiffre qui compte, en grand, avec son unité, un court libellé et une phrase facultative. Le numéro de repère relie la carte à un repère numéroté d’une figure voisine.</target>
+        <source>One figure that matters, large, with its unit and what it measures beside it. Lines follow one another in reading order; the marker number links a line to a numbered marker of the figure next to it.</source>
+        <target>Un chiffre qui compte, en grand, avec son unité et ce qu’il mesure à côté. Les lignes se suivent dans l’ordre de lecture ; le numéro de repère relie une ligne au repère numéroté de la figure voisine.</target>
       </segment>
     </unit>
-    <unit id="component.stat-card.prop.label.description">
+    <unit id="component.stat-line.prop.value.description">
       <notes>
-        <note category="location">components/stat-card/component.json /props/properties/label/description</note>
+        <note category="location">components/stat-line/component.json /props/properties/value/description</note>
         <note category="format">text</note>
-        <note category="context">Help of the setting "label" of the course's block type "stat-card" (the inspector). Editor only: authors read it, learners never do</note>
-      </notes>
-      <segment state="translated">
-        <source>What the figure measures, in a few words.</source>
-        <target>Ce que mesure le chiffre, en quelques mots.</target>
-      </segment>
-    </unit>
-    <unit id="component.stat-card.prop.value.description">
-      <notes>
-        <note category="location">components/stat-card/component.json /props/properties/value/description</note>
-        <note category="format">text</note>
-        <note category="context">Help of the setting "value" of the course's block type "stat-card" (the inspector). Editor only: authors read it, learners never do</note>
+        <note category="context">Help of the setting "value" of the course's block type "stat-line" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
         <source>The figure, formatted for the course language.</source>
-        <target>Le chiffre, écrit selon la langue du cours.</target>
+        <target>Le chiffre, mis en forme pour la langue du cours.</target>
       </segment>
     </unit>
-    <unit id="component.stat-card.prop.unit.description">
+    <unit id="component.stat-line.prop.unit.description">
       <notes>
-        <note category="location">components/stat-card/component.json /props/properties/unit/description</note>
+        <note category="location">components/stat-line/component.json /props/properties/unit/description</note>
         <note category="format">text</note>
-        <note category="context">Help of the setting "unit" of the course's block type "stat-card" (the inspector). Editor only: authors read it, learners never do</note>
+        <note category="context">Help of the setting "unit" of the course's block type "stat-line" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
         <source>Unit shown after the figure.</source>
         <target>L’unité affichée après le chiffre.</target>
       </segment>
     </unit>
-    <unit id="component.stat-card.prop.body.description">
+    <unit id="component.stat-line.prop.label.description">
       <notes>
-        <note category="location">components/stat-card/component.json /props/properties/body/description</note>
+        <note category="location">components/stat-line/component.json /props/properties/label/description</note>
         <note category="format">text</note>
-        <note category="context">Help of the setting "body" of the course's block type "stat-card" (the inspector). Editor only: authors read it, learners never do</note>
+        <note category="context">Help of the setting "label" of the course's block type "stat-line" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>One short sentence of context.</source>
-        <target>Une courte phrase de contexte.</target>
+        <source>What the figure measures, in a few words.</source>
+        <target>Ce que mesure le chiffre, en quelques mots.</target>
       </segment>
     </unit>
-    <unit id="component.stat-card.prop.marker.description">
+    <unit id="component.stat-line.prop.marker.description">
       <notes>
-        <note category="location">components/stat-card/component.json /props/properties/marker/description</note>
+        <note category="location">components/stat-line/component.json /props/properties/marker/description</note>
         <note category="format">text</note>
-        <note category="context">Help of the setting "marker" of the course's block type "stat-card" (the inspector). Editor only: authors read it, learners never do</note>
+        <note category="context">Help of the setting "marker" of the course's block type "stat-line" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
         <source>Number of the matching marker in a figure on the same screen.</source>
-        <target>Le numéro du repère qui lui répond, dans une figure du même écran.</target>
+        <target>Le numéro du repère correspondant dans une figure du même écran.</target>
       </segment>
     </unit>
-    <unit id="component.stat-card.prop.accent.description">
+    <unit id="component.stat-line.prop.accent.description">
       <notes>
-        <note category="location">components/stat-card/component.json /props/properties/accent/description</note>
+        <note category="location">components/stat-line/component.json /props/properties/accent/description</note>
         <note category="format">text</note>
-        <note category="context">Help of the setting "accent" of the course's block type "stat-card" (the inspector). Editor only: authors read it, learners never do</note>
+        <note category="context">Help of the setting "accent" of the course's block type "stat-line" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Colour of the figure and of the glow.</source>
-        <target>Couleur du chiffre et de sa lueur.</target>
+        <source>Colour of the figure.</source>
+        <target>La couleur du chiffre.</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.title">
@@ -2389,28 +2024,6 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <target>Labo de phasage</target>
       </segment>
     </unit>
-    <unit id="object.phasing-lab.prop.instruction.description">
-      <notes>
-        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/instruction/description</note>
-        <note category="format">text</note>
-        <note category="context">Help of the setting "instruction" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
-      </notes>
-      <segment state="translated">
-        <source>Instruction shown at the top of the control panel</source>
-        <target>La consigne affichée en haut du panneau de commande</target>
-      </segment>
-    </unit>
-    <unit id="object.phasing-lab.prop.instruction.group">
-      <notes>
-        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/instruction/x-group</note>
-        <note category="format">text</note>
-        <note category="context">The group the setting "instruction" of the free object "phasing-lab" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
-      </notes>
-      <segment state="translated">
-        <source>Content</source>
-        <target>Contenu</target>
-      </segment>
-    </unit>
     <unit id="object.phasing-lab.prop.requirements.title">
       <notes>
         <note category="location">objects/phasing-lab/object.manifest.json /props/properties/requirements/title</note>
@@ -2418,8 +2031,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Label of the setting "requirements" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Requirements</source>
-        <target>Exigences</target>
+        <source>Rendezvous</source>
+        <target>Rendez-vous</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.requirements.description">
@@ -2429,8 +2042,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Help of the setting "requirements" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>The requirements to meet, in order (one to six), each a distance to the client, the most phasing orbits allowed and the propellant for both burns. When you change them, change the text version of the block too.</source>
-        <target>Les exigences à remplir, dans l’ordre (une à six) : pour chacune, une distance au client, le nombre maximal d’orbites de phasage et l’ergol des deux poussées. Si vous les changez, changez aussi la version texte du bloc.</target>
+        <source>The rendezvous to fly, in order (one to six). Each shows its instruction and only the controls it needs: the burn always, the laps when it allows more than one, the fuel when it has a budget. When you change one, change its instruction and the text version of the block too.</source>
+        <target>Les rendez-vous à piloter, dans l’ordre (un à six). Chacun montre sa consigne et seulement les commandes dont il a besoin : la poussée toujours, les tours quand il en permet plus d’un, le carburant quand il a un budget. Quand vous en changez un, changez aussi sa consigne et la version texte du bloc.</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.requirements.group">
@@ -2440,8 +2053,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">The group the setting "requirements" of the free object "phasing-lab" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Requirements</source>
-        <target>Exigences</target>
+        <source>Rendezvous</source>
+        <target>Rendez-vous</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.requirements.item.title">
@@ -2451,8 +2064,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Label of the setting "requirements[]" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Requirement</source>
-        <target>Exigence</target>
+        <source>Rendezvous</source>
+        <target>Rendez-vous</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.requirements.item.gap.title">
@@ -2462,8 +2075,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Label of the setting "requirements[].gap" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Distance to the client (km)</source>
-        <target>Distance au client (km)</target>
+        <source>Distance to the satellite (km)</source>
+        <target>Distance au satellite (km)</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.requirements.item.gap.description">
@@ -2473,8 +2086,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Help of the setting "requirements[].gap" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Distance to the client in km (positive: the client is ahead; negative: it is behind)</source>
-        <target>Distance au client, en km (positive : le client est devant ; négative : il est derrière)</target>
+        <source>Distance to the satellite in km (positive: it is ahead; negative: it is behind)</source>
+        <target>Distance au satellite, en km (positive : il est devant ; négative : il est derrière)</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.requirements.item.orbits.title">
@@ -2484,8 +2097,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Label of the setting "requirements[].orbits" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Most phasing orbits</source>
-        <target>Orbites de phasage au plus</target>
+        <source>Most laps</source>
+        <target>Tours au plus</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.requirements.item.orbits.description">
@@ -2495,8 +2108,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Help of the setting "requirements[].orbits" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Most phasing orbits allowed</source>
-        <target>Le nombre maximal d’orbites de phasage</target>
+        <source>Most laps allowed: with more than one, the learner chooses how many</source>
+        <target>Le nombre maximal de tours : au-delà d’un, l’apprenant choisit combien</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.requirements.item.budget.title">
@@ -2506,8 +2119,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Label of the setting "requirements[].budget" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Propellant (m/s)</source>
-        <target>Ergol (m/s)</target>
+        <source>Fuel (m/s)</source>
+        <target>Carburant (m/s)</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.requirements.item.budget.description">
@@ -2517,8 +2130,30 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Help of the setting "requirements[].budget" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Propellant for both burns, in m/s</source>
-        <target>L’ergol des deux poussées, en m/s</target>
+        <source>Fuel for both burns, in m/s: the fuel gauge shows only when there is a budget</source>
+        <target>Le carburant des deux poussées, en m/s : la jauge de carburant ne s’affiche qu’avec un budget</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.requirements.item.instruction.title">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/requirements/items/properties/instruction/title</note>
+        <note category="format">text</note>
+        <note category="context">Label of the setting "requirements[].instruction" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>Instruction</source>
+        <target>Consigne</target>
+      </segment>
+    </unit>
+    <unit id="object.phasing-lab.prop.requirements.item.instruction.description">
+      <notes>
+        <note category="location">objects/phasing-lab/object.manifest.json /props/properties/requirements/items/properties/instruction/description</note>
+        <note category="format">text</note>
+        <note category="context">Help of the setting "requirements[].instruction" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
+      </notes>
+      <segment state="translated">
+        <source>What the learner reads for this rendezvous; without one, a sentence made from its numbers</source>
+        <target>Ce que lit l’apprenant pour ce rendez-vous ; sans consigne, une phrase faite à partir de ses chiffres</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.tolerance.description">
@@ -2528,8 +2163,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Help of the setting "tolerance" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Distance to the client, in km, at which the rendezvous counts as met</source>
-        <target>La distance au client, en km, à laquelle le rendez-vous est réussi</target>
+        <source>Distance to the satellite, in km, at which the rendezvous counts as caught</source>
+        <target>La distance au satellite, en km, à laquelle le rendez-vous est réussi</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.tolerance.group">
@@ -2539,8 +2174,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">The group the setting "tolerance" of the free object "phasing-lab" is in (the inspector): the same words for every setting of the group. Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Requirements</source>
-        <target>Exigences</target>
+        <source>Rendezvous</source>
+        <target>Rendez-vous</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.showPrediction.description">
@@ -2550,8 +2185,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Help of the setting "showPrediction" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Show the path and the predicted final gap before executing (for novices: it removes the need to calculate)</source>
-        <target>Montrer la trajectoire et l’écart final prévu avant d’exécuter (pour les débutants : plus besoin de calculer)</target>
+        <source>Show the path and where the satellite ends before flying (for novices: it removes the need to work it out)</source>
+        <target>Montrer la trajectoire et où finit le satellite avant de lancer (pour les débutants : plus besoin de calculer)</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.showPrediction.group">
@@ -2572,8 +2207,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Help of the setting "exaggeration" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>How many times the distance between the two craft is magnified in the 3D view (the plot is at true scale)</source>
-        <target>Combien de fois la distance entre les deux engins est agrandie dans la vue 3D (le graphique est à l’échelle réelle)</target>
+        <source>How many times the distance between the two craft is magnified in the 3D view (the tags say the true distance)</source>
+        <target>Combien de fois la distance entre les deux engins est agrandie dans la vue 3D (les étiquettes donnent la vraie distance)</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.exaggeration.group">
@@ -2594,8 +2229,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Help of the setting "secondsPerOrbit" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Duration of one simulated orbit on screen, in seconds</source>
-        <target>La durée d’une orbite simulée à l’écran, en secondes</target>
+        <source>Duration of one simulated lap on screen, in seconds</source>
+        <target>La durée d’un tour simulé à l’écran, en secondes</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.secondsPerOrbit.group">
@@ -2616,8 +2251,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Help of the setting "servicerColor" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Colour of your servicer and of its path</source>
-        <target>La couleur de votre engin de service et de sa trajectoire</target>
+        <source>Colour of your spacecraft and of its path</source>
+        <target>La couleur de votre engin et de sa trajectoire</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.servicerColor.group">
@@ -2638,8 +2273,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">Help of the setting "clientColor" of the free object "phasing-lab" (the inspector). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Colour of the client satellite</source>
-        <target>La couleur du satellite client</target>
+        <source>Colour of the satellite</source>
+        <target>La couleur du satellite</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.prop.clientColor.group">
@@ -2704,8 +2339,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">When the free object "phasing-lab" sends its event "manoeuvre" (the events of a screen). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>A manoeuvre has been flown for an open requirement.</source>
-        <target>Une manœuvre a été effectuée pour une exigence en cours.</target>
+        <source>A manoeuvre has been flown for an open rendezvous.</source>
+        <target>Une manœuvre a été lancée pour un rendez-vous en cours.</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.event.requirement_met.description">
@@ -2715,8 +2350,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">When the free object "phasing-lab" sends its event "requirement_met" (the events of a screen). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>A requirement is met; the next one opens.</source>
-        <target>Une exigence est remplie ; la suivante s’ouvre.</target>
+        <source>A rendezvous is caught; the next one opens.</source>
+        <target>Un rendez-vous est réussi ; le suivant s’ouvre.</target>
       </segment>
     </unit>
     <unit id="object.phasing-lab.event.completed.description">
@@ -2726,8 +2361,8 @@ Le même écart coûte trois fois moins d’ergols sur trois orbites que sur une
         <note category="context">When the free object "phasing-lab" sends its event "completed" (the events of a screen). Editor only: authors read it, learners never do</note>
       </notes>
       <segment state="translated">
-        <source>Every requirement is met.</source>
-        <target>Toutes les exigences sont remplies.</target>
+        <source>Every rendezvous is caught.</source>
+        <target>Tous les rendez-vous sont réussis.</target>
       </segment>
     </unit>
   </file>

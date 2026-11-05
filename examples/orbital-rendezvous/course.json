@@ -2,11 +2,11 @@
   "$schema": "https://elabora.studio/schemas/0.1.11/course.schema.json",
   "format": "elabora/0.1",
   "id": "orbital-rendezvous",
-  "title": "Slow down to catch up: orbital rendezvous",
-  "description": "15-minute module for new mission operators: why lower orbits are faster, what a burn does to an orbit, the phasing rule of thumb, and a 3D phasing lab around the Earth.",
+  "title": "Slow down to catch up",
+  "description": "A 10-minute module: why a lower orbit is faster, why braking brings you closer to a satellite ahead, and three rendezvous to fly around the Earth in 3D.",
   "language": "en",
   "version": "1.0.0",
-  "durationMinutes": 15,
+  "durationMinutes": 10,
   "sections": [
     {
       "id": "discover",
@@ -91,27 +91,21 @@
       "text": {
         "lead": {
           "label": "Lead",
-          "description": "Large introductory paragraph"
+          "description": "Larger text: the situation, the question, the one thing to keep at hand"
         },
         "legend": {
           "label": "Legend",
           "description": "Numbered legend of a figure (numbers match the markers)"
         }
       },
-      "callout": {
-        "rule": {
-          "label": "Key rule",
-          "description": "The one rule to remember, on a glowing glass card"
-        },
-        "glass": {
-          "label": "Glass",
-          "description": "Translucent panel that lets the starfield through"
-        }
-      },
       "image": {
         "bare": {
           "label": "No frame",
           "description": "No frame: for figures drawn on the starfield"
+        },
+        "trace": {
+          "label": "Drawn as flown",
+          "description": "A path drawn around the Earth when its step opens, from the top, the way the craft fly"
         }
       }
     },

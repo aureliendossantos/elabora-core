@@ -1,0 +1,74 @@
+{
+  "object": "phasing-lab",
+  "version": "3.0.0",
+  "elabora": "0.1.0",
+  "at": "2026-10-07T17:31:56.386Z",
+  "ok": true,
+  "gates": {
+    "smoke": "passed",
+    "behaviour": "passed",
+    "budget": "passed",
+    "visual": "passed",
+    "accessibility": "passed"
+  },
+  "perf": {
+    "drawCalls": 11,
+    "triangles": 28306,
+    "textures": 3,
+    "geometries": 7,
+    "maxTextureSize": 8192,
+    "webglContexts": 1,
+    "bootMs": 636,
+    "bootSamples": [
+      554,
+      703,
+      636,
+      587,
+      658,
+      596,
+      652,
+      597,
+      672,
+      656
+    ]
+  },
+  "tests": [
+    {
+      "name": "Requirement 1 met at the first run",
+      "ok": true
+    },
+    {
+      "name": "Prograde towards a client ahead: the gap grows (Gemini 4)",
+      "ok": true
+    },
+    {
+      "name": "Three requirements with the cheapest manoeuvres: full score",
+      "ok": true
+    },
+    {
+      "name": "Two requirements in another order: the card, the state and the score follow the list",
+      "ok": true
+    },
+    {
+      "name": "Rendezvous over budget does not meet requirement 2",
+      "ok": true
+    },
+    {
+      "name": "Resume: saved progress is restored",
+      "ok": true
+    },
+    {
+      "name": "Settings and safe area apply without remounting, with the prediction help",
+      "ok": true
+    },
+    {
+      "name": "Reduced motion: the result is shown at once",
+      "ok": true
+    },
+    {
+      "name": "Phone width: panel under the view",
+      "ok": true
+    }
+  ],
+  "fingerprint": "sha256:36fe857e4b178cf3354e1aa79176d754bfaf28a42ddcc85dbf8d9e6ae7974720"
+}

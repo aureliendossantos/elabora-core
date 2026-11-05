@@ -37,11 +37,13 @@ export const settled = (target: Locator): Promise<void> => target.evaluate((elem
 
 // Stable baseline: tests that reshape the course must not depend on later sample design edits.
 export const EXAMPLE = path.join(ROOT, 'test/fixtures/format-0.1/diagnostic-reseau');
+// A course of two languages, its French translation approved: tests of a package of several languages
+// read it, never the samples, whose words and approvals change with their design.
+export const BILINGUAL = path.join(ROOT, 'test/fixtures/format-0.1/orbital-rendezvous');
 // The diagnostic-reseau sample as it was until its rework of 5 November 2026 (seven screens, a voiced
 // layer, its plan versions): the engine's tests that read a whole module, its narration or its
 // dialogue keep this copy, so that the sample can change without them.
 export const NETWORK_SAMPLE = path.join(ROOT, 'test/fixtures/diagnostic-reseau-v1');
-
 // URL of a source module of the repository, for import() in another process (Windows paths are not
 // URLs: D:\\… would be read as a scheme).
 export const moduleUrl = (rel: string) => pathToFileURL(path.join(ROOT, rel)).href;

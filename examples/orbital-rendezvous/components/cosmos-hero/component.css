@@ -3,28 +3,30 @@
 [data-presentation="slides"] .t-layout--cosmos-hero { flex: 1; display: flex; flex-direction: column; margin-block: 0; }
 .t-layout--cosmos-hero .or-hero {
   position: relative; isolation: isolate;
-  flex: 1; display: flex; flex-direction: column; justify-content: center;
-  padding: 2.5rem 3rem 3rem;
+  flex: 1; display: flex; flex-direction: column; justify-content: flex-start;
+  padding: clamp(2.5rem, 13vh, 8rem) 3rem 15rem;
 }
-.t-layout--cosmos-hero .or-hero-grid {
-  width: 100%; max-width: var(--t-wide-width); margin: 0 auto;
-  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 4.5fr); gap: 3.5rem; align-items: end;
-}
-/* The large title is in theme/theme.css: the theme styles every screen title and wins over
-   component stylesheets. */
-.t-layout--cosmos-hero .or-hero-copy .t-text { color: color-mix(in srgb, var(--t-text) 90%, transparent); }
-.t-layout--cosmos-hero .or-hero-cards {
-  width: 100%; max-width: var(--t-wide-width); margin: 2.75rem auto 0;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 1.25rem;
-}
-.t-layout--cosmos-hero .or-hero-cards > .t-block { height: 100%; }
+.t-layout--cosmos-hero .or-hero-copy { width: 100%; max-width: var(--t-wide-width); margin: 0 auto; }
+/* The large title is in theme/theme.css, with every screen title. */
+.t-layout--cosmos-hero .or-hero-text { display: flex; flex-direction: column; gap: 1.25rem; max-width: 40rem; }
+.t-layout--cosmos-hero .or-hero-text .t-block { margin: 0; }
+.t-layout--cosmos-hero .or-hero-text .t-s-lead .t-text { font-size: clamp(1.375rem, 1.9vw, 1.75rem); line-height: 1.4; color: var(--t-text); text-wrap: pretty; }
+.t-layout--cosmos-hero .or-hero-text > .t-block:not(.t-s-lead) .t-text { max-width: 34rem; font-size: 1.125rem; line-height: 1.6; color: color-mix(in srgb, var(--t-text) 80%, transparent); text-wrap: pretty; }
 
-/* The planet: a huge disc whose upper limb rises behind the cards, lit by a thin atmosphere. */
+/* The text comes in after the title: the situation first, then what follows, a moment later. */
+@keyframes or-hero-in { from { opacity: 0; translate: 0 calc(0.75rem * var(--t-move, 1)); } }
+@media (prefers-reduced-motion: no-preference) {
+  .t-layout--cosmos-hero .or-hero-text > .t-block { animation: or-hero-in 0.9s var(--t-ease-out, ease-out) 0.3s both; }
+  .t-layout--cosmos-hero .or-hero-text > .t-block:nth-child(2) { animation-delay: 1.5s; }
+  .t-layout--cosmos-hero .or-hero-text > .t-block:nth-child(3) { animation-delay: 2.5s; }
+}
+
+/* The planet: a huge disc whose upper limb rises at the bottom of the screen, lit by a thin atmosphere. */
 .t-layout--cosmos-hero .or-hero-planet {
   position: absolute; z-index: -1; pointer-events: none;
   left: 50%; top: 100%;
   width: max(190vw, 140rem); aspect-ratio: 1;
-  translate: -50% -15rem;
+  translate: -50% -11.5rem;
 }
 .t-layout--cosmos-hero .or-hero-limb {
   position: absolute; inset: 0; border-radius: 50%;
@@ -46,17 +48,40 @@
   filter: blur(2px);
   animation: or-hero-flare 12s ease-in-out infinite alternate;
 }
-@media (max-height: 760px) {
-  .t-layout--cosmos-hero .or-hero { padding-block: 1.75rem 2rem; }
-  .t-layout--cosmos-hero .or-hero-cards { margin-top: 2rem; }
+/* Their orbit, a little above the limb, and the two craft on it: you, and the satellite ahead. They
+   glide along it together (the gap stays the same), fading out at the end of the way and in again. */
+.t-layout--cosmos-hero .or-hero-orbit {
+  position: absolute; inset: -2.75rem; border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--t-color-orbit) 38%, transparent);
+}
+.t-layout--cosmos-hero .or-hero-pair { position: absolute; inset: 0; rotate: -2deg; }
+.t-layout--cosmos-hero .or-hero-craft { position: absolute; inset: 0; }
+.t-layout--cosmos-hero .or-hero-craft::before {
+  content: ""; position: absolute; left: 50%; top: 0; translate: -50% -50%;
+  width: 0.625rem; height: 0.625rem; border-radius: 50%;
+  background: var(--craft); box-shadow: 0 0 0.5rem 0.125rem color-mix(in srgb, var(--craft) 70%, transparent), 0 0 1.75rem color-mix(in srgb, var(--craft) 45%, transparent);
+}
+.t-layout--cosmos-hero .or-hero-craft--you { --craft: var(--t-color-servicer); }
+.t-layout--cosmos-hero .or-hero-craft--ahead { --craft: var(--t-color-client); rotate: 4.5deg; }
+.t-layout--cosmos-hero .or-hero-craft--ahead::before { width: 0.5rem; height: 0.5rem; }
+@media (prefers-reduced-motion: no-preference) {
+  .t-layout--cosmos-hero .or-hero-pair { animation: or-hero-glide 48s linear infinite; }
+}
+@keyframes or-hero-glide {
+  0% { rotate: -16deg; opacity: 0; }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { rotate: 12deg; opacity: 0; }
 }
 @keyframes or-hero-breathe { from { opacity: .82; } to { opacity: 1; } }
 @keyframes or-hero-flare { from { opacity: .55; transform: scaleX(.92); } to { opacity: .95; transform: scaleX(1.05); } }
 
+@media (max-height: 760px) {
+  .t-layout--cosmos-hero .or-hero { padding-block: 3.5rem 12rem; }
+  .t-layout--cosmos-hero .or-hero-planet { translate: -50% -9.5rem; }
+}
 @container (max-width: 820px) {
-  .t-layout--cosmos-hero .or-hero { padding: 2rem 1.125rem 9rem; }
-  .t-layout--cosmos-hero .or-hero-grid { grid-template-columns: 1fr; gap: 1.5rem; }
-  .t-layout--cosmos-hero .or-hero-cards { margin-top: 1.5rem; }
-  .t-layout--cosmos-hero .or-hero-planet { translate: -50% -8rem; }
+  .t-layout--cosmos-hero .or-hero { padding: 2rem 1.125rem 10rem; }
+  .t-layout--cosmos-hero .or-hero-planet { translate: -50% -7rem; }
   .t-layout--cosmos-hero .or-hero-sunrise { width: 26rem; }
 }

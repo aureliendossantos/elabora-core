@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120" width="200" height="120">
+<defs>
+  <marker id="bi-radial" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#FFA24C"/></marker>
+  <linearGradient id="bi-limb-radial" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4FA8FF" stop-opacity=".55"/><stop offset=".2" stop-color="#0A2E57"/><stop offset="1" stop-color="#041A36"/></linearGradient>
+</defs>
+<circle cx="100" cy="640" r="548" fill="url(#bi-limb-radial)"/>
+<circle cx="100" cy="640" r="585" fill="none" stroke="#8CCBFF" stroke-opacity=".5" stroke-width="1.4" stroke-dasharray="4 5"/>
+<line x1="-7.6" y1="65" x2="10.5" y2="61.9" stroke="#9DAAC0" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+<line x1="-37.6" y1="71.4" x2="-19.6" y2="67.4" stroke="#9DAAC0" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+<line x1="-67.1" y1="79.4" x2="-49.4" y2="74.4" stroke="#9DAAC0" stroke-width="2" stroke-linecap="round" opacity="0.2"/>
+<circle cx="161.1" cy="58.2" r="6" fill="#B9A7FF" stroke="#060A16" stroke-width="2"/>
+<line x1="59.8" y1="65.4" x2="61.3" y2="86.4" stroke="#FFA24C" stroke-width="5" stroke-linecap="round" marker-end="url(#bi-radial)"/>
+<g transform="translate(59.2 56.4) rotate(-4)"><rect x="-13" y="-2" width="8" height="4" rx="1" fill="#8CCBFF"/><rect x="5" y="-2" width="8" height="4" rx="1" fill="#8CCBFF"/><rect x="-5" y="-4.5" width="10" height="9" rx="2" fill="#E8EEF7"/></g>
+</svg>

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { ROOT, copyExample as copyCourse, readJSON, writeJSON, NETWORK_SAMPLE } from '../helpers.ts';
+import { ROOT, BILINGUAL, copyExample as copyCourse, readJSON, writeJSON, NETWORK_SAMPLE } from '../helpers.ts';
 import * as edit from '@elabora/node/edit';
 import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
 import { build } from '@elabora/node/build';
@@ -78,8 +78,8 @@ test('display and language: off in a new module, put back where Lin 44 draws the
   assert.deepEqual(after.top.items.find((item) => item.id === 'language'), { id: 'language', enabled: true, shows: false, why: 'one language in the package', options: {} });
   assert.equal(after.bottom.items.find((item) => item.id === 'display')?.shows, true);
   assert.deepEqual(ids(compiled(dir).player.bottom), ['outline', 'controls', 'spacer', 'display', 'previous', 'next']);
-  // The orbital sample has an approved French translation: a package of every language holds two.
-  assert.deepEqual(packageLanguages(loadProjectFromDir(path.join(ROOT, 'examples/orbital-rendezvous'))), ['en', 'fr']);
+  // A course with an approved French translation: a package of every language holds two.
+  assert.deepEqual(packageLanguages(loadProjectFromDir(BILINGUAL)), ['en', 'fr']);
 });
 
 test('resources: https links beside files, images among the files; refused when they would only be flagged', () => {
@@ -258,7 +258,7 @@ test('the language a learner chose is kept in suspend data, last, and costs its 
 });
 
 test('a package of every language (D59): the course data of each, the languages in the main one, the worst case counted', async () => {
-  const dir = copyExample('orbital-rendezvous');
+  const dir = copyCourse(BILINGUAL);
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-languages-'));
   const one = await build(dir, { out: path.join(out, 'one'), emit: 'dir', target: 'web', writeLock: false });
   const all = await build(dir, { out: path.join(out, 'all'), emit: 'dir', target: 'web', writeLock: false, languages: 'all' });
@@ -286,7 +286,7 @@ test('the canvas render data carries what the live bars need: the outline, the r
   for (const path of ['assets/images/logo-helios.svg', 'assets/resources/fiche-reflexe-impression.pdf', 'assets/resources/equipements-siege.csv']) assert.ok(files.includes(path), path);
   assert.equal(render.course.languages, undefined);
   // « Langue » enabled: the languages a package of every language would hold.
-  const orbital = copyExample('orbital-rendezvous');
+  const orbital = copyCourse(BILINGUAL);
   edit.updatePlayer(orbital, { enable: ['language'] });
   assert.deepEqual(renderScreen(loadProjectFromDir(orbital), 'intro', {}).course.languages, ['en', 'fr']);
 });
@@ -312,7 +312,7 @@ test('linking reads Markdown as the player does: case for acronyms, links, refer
 });
 
 test('linking and translations: the same link where the term is in an up-to-date translation, else the text said stale; a language left out of the package is named', async () => {
-  const dir = copyExample('orbital-rendezvous');
+  const dir = copyCourse(BILINGUAL);
   const unit = 'block.burns-practice.options.a.feedback';
   const course = readJSON(dir, 'course.json');
   // A name kept in every language: the French text has it too, and takes the same link.
@@ -394,7 +394,7 @@ test('a glossary entry removed takes its links: the words stay, placed or writte
 });
 
 test('a glossary entry removed: the translations that had its links up to date lose them and stay up to date', () => {
-  const dir = copyExample('orbital-rendezvous');
+  const dir = copyCourse(BILINGUAL);
   const unit = 'block.burns-practice.options.a.feedback';
   const course = readJSON(dir, 'course.json');
   edit.updatePlayer(dir, { glossary: [...(course.glossary ?? []), { id: 'gemini', term: 'Gemini', definition: 'The NASA programme of two-person spacecraft (1965–1966).', translate: false }] });

@@ -2,7 +2,7 @@
 // coloured from the theme tokens. No words inside: numbered markers here, labels in the blocks.
 import { RE, circularSpeed, period, phasingOrbit, onOrbit } from '../objects/phasing-lab/orbit.js';
 
-export const meta = { description: 'Orbits to scale in layers (the Earth, then each orbit with its craft and its one-hour trail), the phasing burn and the three burn directions of the practice question, without text.' };
+export const meta = { description: 'Orbits to scale in layers (the Earth, then each orbit with its craft and its one-hour trail), the first push in layers (the situation, the path, the push) and the three push directions of the question, without text.' };
 
 export default async function generate({ tokens, write }) {
   const C = palette(tokens);
@@ -12,7 +12,9 @@ export default async function generate({ tokens, write }) {
     write(`images/orbit-${o.n}-craft.svg`, o.craft);
     write(`images/orbit-${o.n}-trail.svg`, o.trail);
   }
-  write('images/burn-phasing.svg', burnPhasing(C));
+  write('images/burn-situation.svg', burnSituation(C));
+  write('images/burn-path.svg', burnPath(C));
+  write('images/burn-thrust.svg', burnThrust(C));
   for (const dir of ['prograde', 'retrograde', 'radial']) write(`images/burn-${dir}.svg`, burnIcon(C, dir));
 }
 
@@ -105,41 +107,68 @@ function orbitLayers(C) {
   return { earth: earthLayer, orbits };
 }
 
-// A retrograde burn at the burn point (1): the far side of the orbit drops (2) and, one orbit later,
-// the servicer is back at 1 having gained on the client (3). Radial offsets exaggerated to be seen.
-function burnPhasing(C) {
-  const W = 560, H = 500, cx = 280, cy = 262, R = 116, ring = 180;
+// The first push, in three layers drawn over each other in one square frame centred on the Earth (the
+// "trace" style of the theme uncovers a layer around that centre). The situation: your spacecraft at the
+// top, moving to the left (counter-clockwise), the satellite a little ahead on the same orbit. Then the
+// burn: a push backwards at the burn point (1). Then the path it opens: it dips inside the circle on the
+// far side (2) and comes back to the burn point (3), closer to the satellite. Radial offsets exaggerated.
+const BURN_FIG = { W: 520, c: 260, R: 88, ring: 176, clientAt: 26 };
+function burnFrame(C) {
+  const { c, R, ring, clientAt } = BURN_FIG;
+  const top = 90 * deg;
+  const [px, py] = pt(c, c, ring, top);
+  const [qx, qy] = pt(c, c, ring, top + clientAt * deg);
+  return { c, R, ring, top, px, py, qx, qy };
+}
+function burnSituation(C) {
+  const { W } = BURN_FIG;
+  const { c, R, ring, top, px, py, qx, qy } = burnFrame(C);
+  const defs = [earthDefs(C, 'bs'), arrowMarker('bs-vel', C.muted)];
+  const parts = [
+    earth(C, 'bs', c, c, R),
+    `<circle cx="${c}" cy="${c}" r="${ring}" fill="none" stroke="${C.orbit}" stroke-opacity=".55" stroke-width="1.6" stroke-dasharray="6 7"/>`,
+    `<path d="${arcPath(c, c, ring, top, top + BURN_FIG.clientAt * deg)}" fill="none" stroke="${C.client}" stroke-width="9" stroke-linecap="round" opacity=".3"/>`,
+    // Velocity: thin and dashed, along the motion (to the left at the top).
+    `<line x1="${f(px - 6)}" y1="${f(py - 20)}" x2="${f(px - 62)}" y2="${f(py - 20)}" stroke="${C.muted}" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#bs-vel)"/>`,
+    `<circle cx="${f(qx)}" cy="${f(qy)}" r="7" fill="${C.client}" stroke="${C.surface}" stroke-width="2"/>`,
+    `<circle cx="${f(px)}" cy="${f(py)}" r="7" fill="${C.servicer}" stroke="${C.surface}" stroke-width="2"/>`
+  ];
+  return svg(W, W, defs, parts);
+}
+function burnPath(C) {
+  const { W } = BURN_FIG;
+  const { c, ring, top } = burnFrame(C);
   const ph = phasingOrbit(RE + 500, -3);
   const drop = 2 * (RE + 500 - ph.a);
-  const k = 46 / drop;                       // px per km of radial offset
-  const top = 90 * deg;
+  const k = 62 / drop;                       // px per km of radial offset
   const path = [];
   for (let i = 0; i <= 180; i++) {
     const p = onOrbit(ph, (ph.T * i) / 180);
-    const [x, y] = pt(cx, cy, ring + k * (p.r - (RE + 500)), top + p.angle);
+    const [x, y] = pt(c, c, ring + k * (p.r - (RE + 500)), top + p.angle);
     path.push(`${i ? 'L' : 'M'}${f(x)} ${f(y)}`);
   }
-  const [px, py] = pt(cx, cy, ring, top);
-  const clientA = top + 26 * deg;
-  const [qx, qy] = pt(cx, cy, ring, clientA);
-  const defs = [earthDefs(C, 'bp'), arrowMarker('bp-thrust', C.servicer), arrowMarker('bp-vel', C.muted),
-    `<filter id="bp-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>`];
+  const [bx, by] = pt(c, c, ring - 31, top + 180 * deg);
+  const [ex, ey] = pt(c, c, ring + 32, top - 40 * deg);
+  const defs = [`<filter id="bp-soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>`];
   const parts = [
-    earth(C, 'bp', cx, cy, R),
-    `<circle cx="${cx}" cy="${cy}" r="${ring}" fill="none" stroke="${C.orbit}" stroke-opacity=".55" stroke-width="1.6" stroke-dasharray="6 7"/>`,
-    `<path d="${arcPath(cx, cy, ring, top, clientA)}" fill="none" stroke="${C.client}" stroke-width="9" stroke-linecap="round" opacity=".35"/>`,
     `<path d="${path.join('')}" fill="none" stroke="${C.servicer}" stroke-width="7" opacity=".25" filter="url(#bp-soft)"/>`,
     `<path d="${path.join('')}" fill="none" stroke="${C.servicer}" stroke-width="2.6"/>`,
-    // Velocity (thin, along the motion: to the left at the top) and retrograde thrust (thick, backwards).
-    `<line x1="${f(px - 4)}" y1="${f(py - 18)}" x2="${f(px - 62)}" y2="${f(py - 18)}" stroke="${C.muted}" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#bp-vel)"/>`,
-    `<line x1="${f(px + 9)}" y1="${f(py)}" x2="${f(px + 64)}" y2="${f(py)}" stroke="${C.servicer}" stroke-width="5" stroke-linecap="round" marker-end="url(#bp-thrust)"/>`,
-    `<circle cx="${f(qx)}" cy="${f(qy)}" r="7" fill="${C.client}" stroke="${C.surface}" stroke-width="2"/>`,
-    `<circle cx="${f(px)}" cy="${f(py)}" r="7" fill="${C.servicer}" stroke="${C.surface}" stroke-width="2"/>`,
-    badge(C, px + 22, py - 34, 1),
-    badge(C, cx, cy + ring + 2 + 26, 2),
-    badge(C, qx - 22, qy - 26, 3)
+    badge(C, bx, by, 2),
+    badge(C, ex, ey, 3)
   ];
-  return svg(W, H, defs, parts);
+  return svg(W, W, defs, parts);
+}
+function burnThrust(C) {
+  const { W } = BURN_FIG;
+  const { px, py } = burnFrame(C);
+  const defs = [arrowMarker('bt-thrust', C.servicer)];
+  const parts = [
+    // The push: thick, backwards (to the right at the top).
+    `<line x1="${f(px + 10)}" y1="${f(py)}" x2="${f(px + 64)}" y2="${f(py)}" stroke="${C.servicer}" stroke-width="5" stroke-linecap="round" marker-end="url(#bt-thrust)"/>`,
+    `<circle cx="${f(px)}" cy="${f(py)}" r="7" fill="${C.servicer}" stroke="${C.surface}" stroke-width="2"/>`,
+    badge(C, px + 24, py - 30, 1)
+  ];
+  return svg(W, W, defs, parts);
 }
 
 // Burn directions for the options of the practice question: the servicer on its orbit (moving to the

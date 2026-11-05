@@ -9,7 +9,7 @@ import { launchBrowser } from '@elabora/node/emulator/browser';
 import { build } from '@elabora/node/build';
 import type { BuildOptions } from '@elabora/node/build';
 import * as edit from '@elabora/node/edit';
-import { ROOT, copyExample as copyCourse, isClosed, NETWORK_SAMPLE } from '../helpers.ts';
+import { ROOT, BILINGUAL, copyExample as copyCourse, isClosed, NETWORK_SAMPLE } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { hasFfmpeg } from '../narration.ts';
 
@@ -183,7 +183,7 @@ test('« Affichage »: the screen\'s text larger in three steps without moving t
 });
 
 test('« Langue » (D59): the learner switches in place, on the same screen with the same progress, and comes back in that language', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
-  const dir = copyExample('orbital-rendezvous');
+  const dir = copyCourse(BILINGUAL);
   edit.updatePlayer(dir, { enable: ['language', 'display'] });
   await player(dir, async (page, reload) => {
     const hooks = () => page.evaluate(() => { const t = (window as PlayerWindow).__elabora; return { screen: t.screen, visited: [...t.engine.st.visited].length, lang: document.documentElement.lang, next: document.querySelector('.t-nav-btn--next')?.textContent?.trim() }; });
@@ -237,7 +237,7 @@ test('« Langue » (D59): the learner switches in place, on the same screen with
 });
 
 test('?lang= opens the course in the language a page asks for, when the course has it', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
-  const dir = copyExample('orbital-rendezvous');
+  const dir = copyCourse(BILINGUAL);
   const lang = (page: Page) => page.evaluate(() => document.documentElement.lang);
   await player(dir, async (page) => { assert.equal(await lang(page), 'fr'); }, { target: 'web', languages: 'all' }, '?lang=fr');
   await player(dir, async (page) => { assert.equal(await lang(page), 'en', 'a language the course lacks: its own'); }, { target: 'web', languages: 'all' }, '?lang=de');

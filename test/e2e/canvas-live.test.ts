@@ -11,7 +11,7 @@ import { renderScreen } from '@elabora/core/render/screen';
 import type { CanvasApi } from '@elabora/player/canvas';
 import { PLAYER_PREVIEW_PROTOCOL } from '@elabora/player/canvas-protocol';
 import type { CanvasMessage, HostMessage } from '@elabora/player/canvas-protocol';
-import { ROOT, copyExample, isClosed, settled, NETWORK_SAMPLE } from '../helpers.ts';
+import { ROOT, BILINGUAL, copyExample, isClosed, settled, NETWORK_SAMPLE } from '../helpers.ts';
 import { openProject } from '@elabora/engine';
 
 // The player's preview (the canvas with chrome=live, protocol elabora-player-preview/1): the bars
@@ -185,7 +185,7 @@ test('the canvas never takes focus from the host: not on an open, a push that mo
 });
 
 test('the live bars: « Langue » lists the languages a package of every language holds, and a choice goes to the host', { timeout: 180000 }, async () => {
-  const dir = copyExample(path.join(ROOT, 'examples/orbital-rendezvous'));
+  const dir = copyExample(BILINGUAL);
   edit.updatePlayer(dir, { enable: ['language'] });
   await withLive(dir, async ({ page, show, sent }) => {
     await show('intro', 1);
