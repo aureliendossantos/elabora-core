@@ -213,13 +213,13 @@ export function mount(container, ctx) {
   caseRing.setGeometry(cached('case', () => partGeometries(circle(CASE_R, 220), [circle(DIAL_R + 0.25, 220, true)], Z.case[0], Z.case[1])));
   world.add(caseRing.group);
   const handM = makePart('handM', props.minuteColor, 8);
-  handM.setGeometry(cached('handM', () => partGeometries(handOutline(34, 1.15, 6.5, 2.1), [], Z.minute[0], Z.minute[1])));
+  handM.setGeometry(cached('handM', () => partGeometries(handOutline(33, 2.6, 1.0, 2.2), [], Z.minute[0], Z.minute[1])));
   pivots.handM.add(handM.group);
   const cap = makePart('cap', props.minuteColor, 9, 0.78);
   cap.setGeometry(discGeo('cap', 1.6, Z.cap));
   pivots.handM.add(cap.group);
   const handH = makePart('handH', props.hourColor, 7);
-  handH.setGeometry(cached('handH', () => partGeometries(handOutline(23, 1.9, 5, 2.9), [], Z.hour[0], Z.hour[1])));
+  handH.setGeometry(cached('handH', () => partGeometries(handOutline(22, 3.6, 1.5, 3.0), [], Z.hour[0], Z.hour[1])));
   pivots.handH.add(handH.group);
 
   // The clock's outline, dashed, to compare a gear with the size of the clock (one-gear).
@@ -361,7 +361,7 @@ export function mount(container, ctx) {
     tween('xray', xrayMix, xr, duration * 0.6, duration * 0.4, (v) => { xrayMix = v; });
     // Gears that change size, and the hour wheel that rolls round its pinion.
     resizeW1(w1For(name), duration);
-    shownW2 = w2For(name);
+    resizeW2(w2For(name), vis.w2 > 0.01 && goals.w2 > 0 ? duration : 0);
     const orbit = orbitFor(name);
     if (vis.w2 > 0.01 && goals.w2 > 0) tween('orbit', orbitShown, orbit, duration, 0, (v) => { orbitShown = v; });
     else orbitShown = orbit;
@@ -384,6 +384,13 @@ export function mount(container, ctx) {
   function setW1(n) {
     shownW1 = n;
     w1.setGeometry(gearGeo(n, -shiftFor(TRAIN.p1), Z.w1, { bore: 0 }));
+  }
+  // The last gear takes the size of the stage (the learner's on train, 32 teeth elsewhere): at once
+  // while out of sight, a few teeth at a time while seen, so that it stays in mesh with its pinion.
+  function resizeW2(target, duration) {
+    cancel('w2size');
+    if (target === shownW2 || duration <= 0) { setW2(target); return; }
+    tween('w2size', shownW2, target, duration * 0.6, 0, (v) => setW2(Math.round(v / 2) * 2));
   }
   function setW2(n) {
     shownW2 = n;
@@ -805,6 +812,7 @@ export function mount(container, ctx) {
   function sizeTo(n) {
     state.w2 = clamp(Math.round(n / W2_STEP) * W2_STEP, W2_MIN, W2_MAX);
     range.value = String(state.w2);
+    cancel('w2size');
     setW2(state.w2);
     refreshTexts();
   }
@@ -994,19 +1002,15 @@ function enclose(circles) {
   return { x: cx, y: cy, r };
 }
 
-// A clock hand pointing up (+y): a straight blade with a round tip, a round hub and a short tail.
-function handOutline(length, width, tail, hub) {
-  const w = width / 2;
-  const h = Math.sqrt(hub * hub - w * w);
-  const low = Math.atan2(-h, w), up = Math.atan2(h, w);
+// A clock hand pointing up (+y): a blade that tapers from the hub to a round tip, without a tail
+// (a thin needle with a tail reads as a seconds hand, which this clock has none of).
+function handOutline(length, base, tip, hub) {
+  const b = base / 2, w = tip / 2;
+  const up = Math.atan2(Math.sqrt(hub * hub - b * b), b);
   const pts = [];
   const arc = (cx, cy, r, a0, a1, n) => { for (let i = 0; i <= n; i++) { const a = a0 + ((a1 - a0) * i) / n; pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]); } };
-  pts.push([w, -tail]);
-  arc(0, 0, hub, low, up, 18);                       // right half of the hub
-  arc(0, length - w, w, 0, Math.PI, 10);             // the blade's round tip
-  arc(0, 0, hub, Math.PI - up, Math.PI - low, 18);   // left half of the hub
-  arc(0, -tail, w, Math.PI, TAU, 10);                // the tail's round end
-  pts.pop();
+  arc(0, length - w, w, 0, Math.PI, 12);              // the round tip
+  arc(0, 0, hub, Math.PI - up, TAU + up, 36);         // the hub, round underneath
   return pts;
 }
 
