@@ -526,7 +526,7 @@ test('elevenlabs: a soft sigh before a line\'s first word stays with that line; 
   assert.ok(sigh[1].start <= 1.2, `Marc's line starts before his sigh: ${sigh[1].start}`);
   assert.ok(rms(sigh[1], 1.25, 1.55) > 0.003, 'the whole sigh is in his line');
   // A laugh after the last word, a silence, then the next line: the laugh stays with the line that says it.
-  const laugh = exchange([{ text: 'Bien sûr [rit]', words: [[0.1, 0.5], [0.55, 0.9]] }, { text: 'Merci.', words: [[1.6, 2.2]] }], [[1.0, 1.35]]);
+  const laugh = exchange([{ text: 'Bien sûr [rit].', words: [[0.1, 0.5], [0.55, 0.9]] }, { text: 'Merci.', words: [[1.6, 2.2]] }], [[1.0, 1.35]]);
   assert.ok(end(laugh[0]) >= 1.35, `the laugh is in the first line: ${end(laugh[0])}`);
   assert.ok(laugh[1].start >= 1.35, `the second line starts after it: ${laugh[1].start}`);
 });

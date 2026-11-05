@@ -407,13 +407,20 @@ export function splitDialogue(answer: SpeechAnswer, count: number, heard?: { sta
   // with that turn; the last when only the turn before ends with a direction (« … [rit] »), so that it
   // keeps what follows its last word; the longest when both do. Failing one of 60 ms, the longest of
   // 30 ms; failing that, the middle of the gap.
-  const levels: number[] = [];
-  const size = Math.round(rate * 0.01);
-  for (let at = 0; at + size <= all.length; at += size) { let sum = 0; for (let i = at; i < at + size; i++) sum += all[i] * all[i]; levels.push(10 * Math.log10(sum / size + 1e-12)); }
-  const loud = [...levels].sort((x, y) => x - y)[Math.floor(levels.length * 0.9)] ?? -100;
+  // The exchange's level every 10 ms, and its loud part: measured once, when a turn was heard.
+  let measured: { levels: number[]; loud: number } | null = null;
+  const measure = () => {
+    if (measured) return measured;
+    const levels: number[] = [];
+    const size = Math.round(rate * 0.01);
+    for (let at = 0; at + size <= all.length; at += size) { let sum = 0; for (let i = at; i < at + size; i++) sum += all[i] * all[i]; levels.push(10 * Math.log10(sum / size + 1e-12)); }
+    return (measured = { levels, loud: [...levels].sort((x, y) => x - y)[Math.floor(levels.length * 0.9)] ?? -100 });
+  };
   const silenceBetween = (from: number, to: number, prefer: 'first' | 'last' | 'longest'): number => {
+    const { levels, loud } = measure();
     const first = Math.floor(from * 100);
     const last = Math.min(Math.ceil(to * 100), levels.length - 1);
+    if (last < first) return Math.round(((from + to) / 2) * rate);
     const floor = Math.min(...levels.slice(first, last + 1));
     const quiet = Math.min(loud - 14, Math.max(floor + 12, -70));
     const runs: { start: number; end: number }[] = [];
@@ -429,8 +436,11 @@ export function splitDialogue(answer: SpeechAnswer, count: number, heard?: { sta
     const run = (prefer === 'first' ? long[0] : prefer === 'last' ? long[long.length - 1] : longest(long)) ?? longest(runs);
     return run && length(run) >= 3 ? Math.round(((run.start + run.end) / 200) * rate) : Math.round(((from + to) / 2) * rate);
   };
-  // A turn's text as the service timed it, to know whether it opens or closes on a stage direction.
-  const textOf = (span: { from: number; to: number }) => (answer.alignment?.characters ?? []).slice(span.from, span.to).join('').trim();
+  // Whether a turn opens or closes on a stage direction (its text as the service timed it), past a dash,
+  // quotes or punctuation: « — [soupire] Non », « Bien sûr [rit]. ».
+  const textOf = (span: { from: number; to: number }) => (answer.alignment?.characters ?? []).slice(span.from, span.to).join('');
+  const opensOnDirection = (text: string) => /^[\s\p{P}]*\[/u.test(text);
+  const closesOnDirection = (text: string) => /\][\s\p{P}]*$/u.test(text);
   const cuts: number[] = [0];
   const overlaps: boolean[] = [];
   for (let index = 1; index < count; index++) {
@@ -438,8 +448,8 @@ export function splitDialogue(answer: SpeechAnswer, count: number, heard?: { sta
     const next = timed[index];
     const overlap = useHeard ? next.start < previous.end + 0.05 : next.start < previous.end - 0.05;
     overlaps.push(overlap);
-    const opens = textOf(spans[index]).startsWith('[');
-    const closes = textOf(spans[index - 1]).endsWith(']');
+    const opens = opensOnDirection(textOf(spans[index]));
+    const closes = closesOnDirection(textOf(spans[index - 1]));
     const prefer = opens === closes ? (opens ? 'longest' : 'first') : opens ? 'first' : 'last';
     const cut = overlap ? Math.round(next.start * rate) : useHeard ? silenceBetween(previous.end, next.start, prefer) : quietest(Math.round(((previous.end + next.start) / 2) * rate), Math.round(previous.start * rate), Math.round(next.end * rate));
     cuts.push(Math.max(cuts[index - 1], cut));
