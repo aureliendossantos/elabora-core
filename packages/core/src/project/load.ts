@@ -221,8 +221,11 @@ export function planIndex(plan: Plan | null | undefined): PlanIndex {
 
 const str = (v: unknown): string | null => (typeof v === 'string' ? v : null);
 
+// The built-in roots whose Markdown a validated text of the plan may be (textRef → markdown).
+export const MARKDOWN_TEXT_ROOTS: readonly string[] = ['text', 'callout', 'statement'];
+
 // Resolve plan references of a block so renderers and projections see final content.
-// Built-in roots: textRef (text, callout, heading) and questionRef (quiz, numeric), also for their
+// Built-in roots: textRef (text, callout, statement, heading) and questionRef (quiz, numeric), also for their
 // forks. Component props of kind text or markdown may be { "textRef": "TXT-n" } anywhere.
 // With questionRef, a quiz may still give per-option presentation fields (an image, a code) keyed by
 // option id: the plan's text, correctness and feedback always win.
@@ -230,7 +233,7 @@ export function resolveBlockProps(block: { type: string; props?: Record<string, 
   const root = reg ? rootOf(reg, block.type) : block.type;
   const p: Record<string, unknown> = { ...(isRecord(block.props) ? block.props : {}) };
   const text = pidx.texts.get(str(p.textRef) ?? '');
-  if ((root === 'text' || root === 'callout') && p.textRef && text) p.markdown = text.text;
+  if (root && MARKDOWN_TEXT_ROOTS.includes(root) && p.textRef && text) p.markdown = text.text;
   if (root === 'heading' && p.textRef && text) p.text = text.text;
   const q = pidx.questions.get(str(p.questionRef) ?? '');
   if (root === 'numeric' && p.questionRef && q) {

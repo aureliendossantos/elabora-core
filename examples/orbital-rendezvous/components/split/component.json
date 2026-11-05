@@ -2,9 +2,9 @@
   "$schema": "https://elabora.studio/schemas/0.1.11/component.schema.json",
   "id": "split",
   "title": "Figure and explanation",
-  "description": "The title across the top, a figure column (figure, legend, short text) and an explanation column side by side. Stacks on narrow screens, figure first.",
+  "description": "The title, a figure column (a figure, its caption, a legend) and an explanation column that builds up beside it, one block under the other. Stacks on narrow screens, figure first.",
   "category": "layout",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "level": "screen",
   "props": {
     "type": "object",
@@ -28,7 +28,7 @@
           "stack"
         ],
         "default": "column",
-        "description": "column: the figure's blocks one under the other; stack: drawn over each other in one square frame, for a figure built in steps (an image with its caption first, then orbit flights and hotspots).",
+        "description": "column: the figure's blocks one under the other; stack: drawn over each other in one square frame, for a figure built in steps (an image with its caption first, then the layers each step adds).",
         "x-enum-labels": {
           "column": "One under the other",
           "stack": "Drawn over each other"

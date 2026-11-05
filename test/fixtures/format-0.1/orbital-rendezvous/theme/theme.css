@@ -1,0 +1,168 @@
+/* Aster Orbital Services theme for Elabora — cascade layer elabora.theme, after the player and the
+   component stylesheets: its rules win over both, whatever their specificity (docs/design.md).
+   Every colour is a token (course.json theme.tokens and theme.custom). No text in this file.
+   The starfield tiles come from generators/sky.mjs (seeded, coloured by the tokens). */
+
+/* ── Space background ─────────────────────────────────────────────────
+   The page is a deep gradient; the course backdrop (theme.backdrop) adds five layers behind every
+   screen: nebulae, far and near stars drifting at two speeds (parallax), and two sparse layers of
+   bright stars that glint out of phase. Only transform and opacity are animated, so the compositor
+   does the work; the player stops them for reduced motion. The nebulae drift a little at each
+   section, as if the camera moved on along the orbit. */
+html { background: linear-gradient(180deg, var(--t-surface) 0%, var(--t-color-void) 100%) var(--t-color-void); min-height: 100%; }
+body { background: transparent; font-feature-settings: "cv11", "ss01"; }
+.t-backdrop-layer { background-repeat: repeat; will-change: transform, opacity; }
+.t-backdrop-layer[data-layer="nebula"] {
+  inset: -8%;
+  background:
+    radial-gradient(ellipse 58% 48% at 84% 10%, color-mix(in srgb, var(--t-color-nebula) 42%, transparent), transparent 72%),
+    radial-gradient(ellipse 50% 44% at 6% 92%, color-mix(in srgb, var(--t-color-nebula-cool) 46%, transparent), transparent 72%),
+    radial-gradient(ellipse 36% 30% at 40% 4%, color-mix(in srgb, var(--t-color-nebula-warm) 20%, transparent), transparent 72%);
+  transition: translate 2.4s cubic-bezier(.3, .1, .2, 1), opacity 2.4s ease;
+}
+.t-backdrop[data-section="practise"] .t-backdrop-layer[data-layer="nebula"] { translate: -4% 3%; }
+.t-backdrop[data-section="prove"] .t-backdrop-layer[data-layer="nebula"] { translate: 3% -2%; opacity: .8; }
+.t-backdrop-layer[data-layer="far"] { right: -640px; background-image: url(../assets/images/sky-far.svg); background-size: 640px 640px; animation: or-drift-far 320s linear infinite; }
+.t-backdrop-layer[data-layer="near"] { right: -960px; background-image: url(../assets/images/sky-near.svg); background-size: 960px 960px; animation: or-drift-near 200s linear infinite; }
+.t-backdrop-layer[data-layer="glint-a"] { background-image: url(../assets/images/sky-glint-a.svg); background-size: 1100px 1100px; animation: or-glint 7s ease-in-out infinite alternate; }
+.t-backdrop-layer[data-layer="glint-b"] { background-image: url(../assets/images/sky-glint-b.svg); background-size: 1340px 1340px; background-position: 420px 260px; animation: or-glint 11s ease-in-out -5s infinite alternate; }
+@keyframes or-drift-far { to { transform: translateX(-640px); } }
+@keyframes or-drift-near { to { transform: translateX(-960px); } }
+@keyframes or-glint { from { opacity: .25; } to { opacity: 1; } }
+
+/* ── The player: its colours are the player.* tokens of course.json; here, glass over the sky ── */
+.t-bar { background: color-mix(in srgb, var(--t-player-top-background) 62%, transparent); backdrop-filter: blur(12px); }
+.t-course-title { font-family: var(--t-font-heading); font-weight: 600; letter-spacing: .01em; }
+.t-btn--secondary { background: color-mix(in srgb, var(--t-color-panel) 70%, transparent); }
+.t-btn--primary { box-shadow: 0 0 22px color-mix(in srgb, var(--t-primary) 35%, transparent); }
+.t-menu { background: var(--t-color-panel); box-shadow: var(--t-shadow-glow); }
+.t-dialog, .t-panel { background: var(--t-color-panel); color: var(--t-text); box-shadow: var(--t-shadow-glow); }
+.t-panel { border-color: color-mix(in srgb, var(--t-primary) 18%, transparent); }
+.t-dialog::backdrop { background: color-mix(in srgb, var(--t-color-void) 70%, transparent); backdrop-filter: blur(4px); }
+/* Native controls (radios, checkboxes) in the dark scheme, scoped to the activities: a dark scheme on
+   the root would make the browser paint an opaque backdrop behind the free-object frame. */
+.t-quiz, .t-decision, .t-menu, .t-dialog, .t-panel, .t-sheet, .t-viewer { color-scheme: dark; }
+
+/* ── Titles and text ────────────────────────────────────────────────── */
+h1, h2, h3, h4 { letter-spacing: -.018em; }
+.t-screen-title {
+  font-size: clamp(1.875rem, 3.4vw, 2.75rem);
+  line-height: 1.06;
+  margin-bottom: 1.125rem;
+  text-shadow: 0 0 2.5rem color-mix(in srgb, var(--t-primary) 35%, transparent);
+  text-wrap: balance;
+}
+/* Titles that a layout sets apart. The rule above wins over component stylesheets, so a layout's
+   own title is styled here: the large title of the cosmos hero, the title of the mission brief
+   floating over the scene, the split title spaced by the grid gap. */
+.t-layout--cosmos-hero .or-hero-title .t-screen-title {
+  margin: 0 0 1.5rem;
+  font-size: clamp(2.75rem, 5.6vw, 5rem);
+  line-height: .96;
+  letter-spacing: -.04em;
+  text-shadow: 0 0 3.5rem color-mix(in srgb, var(--t-primary) 45%, transparent);
+}
+.t-layout--mission .or-mission-head .t-screen-title { margin: 0 0 0.75rem; font-size: clamp(2rem, 3vw, 2.625rem); }
+.t-layout--split .or-split-title .t-screen-title { margin: 0; }
+.t-text { line-height: 1.6; }
+/* The sentence of a stat card stays compact. */
+.t-block--stat-card .or-stat-body { line-height: 1.45; }
+.t-text strong { color: var(--t-color-star); }
+.t-s-lead .t-text { font-size: clamp(1.125rem, 1.45vw, 1.3125rem); line-height: 1.58; }
+math { color: var(--t-color-star); }
+
+/* Numbered legend of a figure: the numbers match the markers drawn in it. */
+.t-s-legend ol { list-style: none; counter-reset: legend; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.t-s-legend li { counter-increment: legend; position: relative; padding-left: 2.25rem; min-height: 1.5rem; }
+.t-s-legend li::before {
+  content: counter(legend);
+  position: absolute; left: 0; top: 0.05rem;
+  width: 1.5rem; height: 1.5rem; border-radius: 50%;
+  display: grid; place-items: center;
+  font: 700 0.8125rem/1 var(--t-font-heading);
+  color: var(--t-surface); background: var(--t-text);
+}
+
+/* ── Glass cards: callouts, activities, results ─────────────────────── */
+.t-callout, .t-quiz, .t-decision, .t-results, .t-accordion details {
+  border: 1px solid color-mix(in srgb, var(--t-primary) 18%, transparent);
+  border-radius: calc(var(--t-radius) + 4px);
+  background: color-mix(in srgb, var(--t-color-panel) 86%, transparent);
+  box-shadow: var(--t-shadow-glow);
+}
+.t-callout { padding: 1rem 1.25rem; border-left: 1px solid color-mix(in srgb, var(--t-primary) 18%, transparent); }
+.t-callout-title { font-family: var(--t-font-heading); font-size: 1rem; letter-spacing: .02em; }
+.t-quiz, .t-decision { padding: 1.125rem 1.25rem; }
+.t-option { background: color-mix(in srgb, var(--t-text) 3%, transparent); border-color: color-mix(in srgb, var(--t-text) 16%, transparent); transition: border-color .15s ease, background .15s ease; }
+.t-option:hover { border-color: color-mix(in srgb, var(--t-primary) 55%, transparent); }
+.t-option:has(input:checked) { border-color: var(--t-primary); background: color-mix(in srgb, var(--t-primary) 10%, transparent); }
+.t-option:has(input:focus-visible) { outline: 3px solid var(--t-focus); outline-offset: 2px; }
+.t-option.is-correct { background: color-mix(in srgb, var(--t-success) 12%, transparent); }
+.t-option.is-wrong { background: color-mix(in srgb, var(--t-error) 10%, transparent); }
+.t-numeric-input { background: color-mix(in srgb, var(--t-color-void) 70%, transparent); border-color: color-mix(in srgb, var(--t-primary) 40%, transparent); }
+.t-numeric-input:focus { border-color: var(--t-primary); }
+.t-results { background: linear-gradient(120deg, color-mix(in srgb, var(--t-color-nebula) 40%, var(--t-color-panel)), color-mix(in srgb, var(--t-color-panel) 90%, transparent)); }
+
+/* The one rule to remember: glass card lit by a burn-coloured edge. */
+.t-s-rule .t-callout {
+  position: relative;
+  padding: 1.125rem 1.375rem;
+  border-color: color-mix(in srgb, var(--t-accent) 45%, transparent);
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--t-accent) 14%, transparent), transparent 60%),
+    color-mix(in srgb, var(--t-color-panel) 88%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--t-accent) 18%, transparent), 0 0 2.5rem color-mix(in srgb, var(--t-accent) 14%, transparent);
+}
+.t-s-rule .t-callout-title { color: var(--t-accent); text-transform: uppercase; letter-spacing: .1em; font-size: 0.8125rem; }
+.t-s-rule .t-math-display { margin: 0.25rem 0; padding: 0.375rem 0; }
+
+/* Translucent panel over the starfield. */
+.t-s-glass .t-callout { background: color-mix(in srgb, var(--t-color-panel) 55%, transparent); backdrop-filter: blur(8px); }
+
+/* Screens without a layout: the title lines up with the blocks instead of the reading column. */
+.t-screen:not(.t-layout) > .t-screen-title { max-width: none; }
+
+/* Results: a small satellite circles a ring in the corner of the card (decoration). */
+.t-results { position: relative; overflow: hidden; padding-right: 9rem; }
+/* Score, status and retry on one line, the message below: the card stays short in every language. */
+.t-results { display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; column-gap: 1.5rem; row-gap: 0.375rem; }
+.t-results .t-score, .t-results .t-status { margin: 0; }
+.t-results [data-t-message] { grid-column: 1 / -1; grid-row: 2; }
+.t-results .t-btn { grid-column: 4; grid-row: 1; justify-self: end; margin: 0; }
+.t-results::before, .t-results::after { content: ""; position: absolute; pointer-events: none; }
+.t-results::before {
+  right: 2rem; top: 50%; width: 5.5rem; height: 5.5rem; translate: 0 -50%;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--t-color-orbit) 45%, transparent);
+  background: radial-gradient(circle, color-mix(in srgb, var(--t-color-atmosphere) 60%, var(--t-color-ocean)) 0 22%, color-mix(in srgb, var(--t-color-atmosphere) 25%, transparent) 26%, transparent 32%);
+  box-shadow: 0 0 2rem color-mix(in srgb, var(--t-color-orbit) 18%, transparent);
+}
+.t-results::after {
+  right: calc(2rem + 2.75rem - 4px); top: calc(50% - 2.75rem - 4px); width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--t-color-servicer);
+  box-shadow: 0 0 10px var(--t-color-servicer);
+  transform-origin: 4px calc(2.75rem + 4px);
+  animation: or-orbit 12s linear infinite;
+}
+@keyframes or-orbit { to { rotate: -360deg; } }
+@container (max-width: 520px) { .t-results { padding-right: 1.25rem; } .t-results::before, .t-results::after { display: none; } }
+
+/* Figures drawn on the starfield. */
+.t-s-bare .t-figure img { border-radius: 0; }
+.t-figure figcaption { color: var(--t-muted); }
+
+/* ── Free objects: no frame. The canvas is transparent, so the scene sits on the course sky. ── */
+.t-object-frame { border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.t-text-alt summary { color: var(--t-muted); font-size: 0.875rem; font-weight: 500; }
+.t-text-alt[open] { padding: 0.75rem 1rem; border-radius: var(--t-radius); background: color-mix(in srgb, var(--t-color-panel) 92%, transparent); }
+
+/* Short windows (1280×720): tighter rule card and results, so answered slides keep their place. */
+@media (max-height: 760px) {
+  .t-s-rule .t-callout { padding: 0.75rem 1.125rem; }
+  .t-s-rule .t-math-display { margin: 0; padding: 0.125rem 0; }
+  .t-screen-title { margin-bottom: 0.75rem; }
+  .t-quiz, .t-decision { padding: 0.875rem 1.125rem; }
+  .t-results { padding: 0.75rem 1.25rem; }
+  .t-results::before, .t-results::after { display: none; }
+}

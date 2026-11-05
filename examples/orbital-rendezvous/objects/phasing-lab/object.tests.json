@@ -2,7 +2,7 @@
   "$schema": "https://elabora.studio/schemas/0.1.11/object-tests.schema.json",
   "tests": [
     {
-      "name": "Requirement 1 met at the first run",
+      "name": "Rendezvous 1 caught at the first try, then the second opens with its laps and its fuel",
       "safeArea": {
         "left": 300
       },
@@ -41,7 +41,7 @@
         },
         {
           "action": "key",
-          "key": "1"
+          "key": "3"
         },
         {
           "action": "expect-state",
@@ -76,6 +76,14 @@
           }
         },
         {
+          "action": "expect-event",
+          "name": "requirement_met",
+          "payload": {
+            "requirement": 1,
+            "runs": 1
+          }
+        },
+        {
           "action": "expect-state",
           "state": {
             "step": 1,
@@ -83,27 +91,45 @@
               1,
               0,
               0
-            ]
+            ],
+            "running": true
           }
         },
         {
           "action": "snapshot",
-          "name": "rendezvous"
+          "name": "caught"
         },
         {
           "action": "step",
-          "frames": 120
+          "frames": 150
         },
         {
           "action": "expect-state",
           "state": {
+            "step": 1,
+            "dv": 0,
+            "orbits": 1,
             "running": false
+          }
+        },
+        {
+          "action": "snapshot",
+          "name": "second"
+        },
+        {
+          "action": "key",
+          "key": "3"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "orbits": 3
           }
         }
       ]
     },
     {
-      "name": "Prograde towards a client ahead: the gap grows (Gemini 4)",
+      "name": "Speeding up with the satellite ahead: the gap grows (Gemini 4); a manoeuvre pauses",
       "steps": [
         {
           "action": "key",
@@ -116,6 +142,33 @@
         {
           "action": "key",
           "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 60
+        },
+        {
+          "action": "key",
+          "key": " "
+        },
+        {
+          "action": "step",
+          "frames": 400
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "running": true,
+            "runs": [
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "action": "key",
+          "key": " "
         },
         {
           "action": "step",
@@ -143,18 +196,19 @@
         },
         {
           "action": "step",
-          "frames": 120
+          "frames": 150
         },
         {
           "action": "expect-state",
           "state": {
-            "running": false
+            "running": false,
+            "dv": 1
           }
         }
       ]
     },
     {
-      "name": "Three requirements with the cheapest manoeuvres: full score",
+      "name": "Three rendezvous with the cheapest manoeuvres: full score",
       "props": {
         "secondsPerOrbit": 2
       },
@@ -185,7 +239,23 @@
         },
         {
           "action": "key",
-          "key": "1"
+          "key": "x"
+        },
+        {
+          "action": "step",
+          "frames": 340
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "r"
+        },
+        {
+          "action": "key",
+          "key": "3"
         },
         {
           "action": "key",
@@ -193,15 +263,7 @@
         },
         {
           "action": "step",
-          "frames": 300
-        },
-        {
-          "action": "key",
-          "key": "p"
-        },
-        {
-          "action": "key",
-          "key": "p"
+          "frames": 580
         },
         {
           "action": "key",
@@ -214,34 +276,6 @@
         {
           "action": "key",
           "key": "3"
-        },
-        {
-          "action": "key",
-          "key": "x"
-        },
-        {
-          "action": "step",
-          "frames": 560
-        },
-        {
-          "action": "key",
-          "key": "p"
-        },
-        {
-          "action": "key",
-          "key": "p"
-        },
-        {
-          "action": "key",
-          "key": "p"
-        },
-        {
-          "action": "key",
-          "key": "p"
-        },
-        {
-          "action": "key",
-          "key": "2"
         },
         {
           "action": "expect-state",
@@ -278,6 +312,10 @@
           }
         },
         {
+          "action": "step",
+          "frames": 150
+        },
+        {
           "action": "key",
           "key": "r"
         },
@@ -295,11 +333,18 @@
         },
         {
           "action": "expect-no-event"
+        },
+        {
+          "action": "expect-state",
+          "state": {
+            "step": 3,
+            "running": false
+          }
         }
       ]
     },
     {
-      "name": "Two requirements in another order: the card, the state and the score follow the list",
+      "name": "Two rendezvous in another order, instructions made from their numbers: the panel, the state and the score follow",
       "props": {
         "secondsPerOrbit": 2,
         "requirements": [
@@ -310,8 +355,7 @@
           },
           {
             "gap": 51,
-            "orbits": 1,
-            "budget": 8
+            "orbits": 1
           }
         ]
       },
@@ -322,7 +366,7 @@
         },
         {
           "action": "snapshot",
-          "name": "two-requirements"
+          "name": "two-rendezvous"
         },
         {
           "action": "key",
@@ -384,8 +428,8 @@
           }
         },
         {
-          "action": "key",
-          "key": "r"
+          "action": "step",
+          "frames": 150
         },
         {
           "action": "key",
@@ -413,11 +457,7 @@
         },
         {
           "action": "key",
-          "key": "r"
-        },
-        {
-          "action": "key",
-          "key": "1"
+          "key": "2"
         },
         {
           "action": "expect-state",
@@ -460,22 +500,11 @@
               1
             ]
           }
-        },
-        {
-          "action": "key",
-          "key": "x"
-        },
-        {
-          "action": "step",
-          "frames": 300
-        },
-        {
-          "action": "expect-no-event"
         }
       ]
     },
     {
-      "name": "Rendezvous over budget does not meet requirement 2",
+      "name": "A catch over the fuel budget does not count for rendezvous 2",
       "props": {
         "secondsPerOrbit": 2
       },
@@ -595,8 +624,7 @@
             "requirements": [
               {
                 "gap": 34,
-                "orbits": 1,
-                "budget": 8
+                "orbits": 1
               },
               {
                 "gap": 51,
@@ -703,7 +731,7 @@
         },
         {
           "action": "step",
-          "frames": 120
+          "frames": 150
         },
         {
           "action": "expect-state",

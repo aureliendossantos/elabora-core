@@ -13,7 +13,7 @@
 }
 /* The title of the brief is in theme/theme.css: the theme styles every screen title and wins over
    component stylesheets. */
-.t-layout--mission .or-mission-head .t-text { font-size: 0.9875rem; color: color-mix(in srgb, var(--t-text) 88%, transparent); }
+.t-layout--mission .or-mission-head .t-text { font-size: 1.25rem; line-height: 1.5; color: color-mix(in srgb, var(--t-text) 88%, transparent); text-wrap: pretty; }
 /* The stage tells its object which part the floating brief covers (safe area): 27rem + 3rem of padding. */
 .t-layout--mission .or-mission-stage { display: flex; flex-direction: column; min-height: 0; --t-safe-left: 30rem; }
 .t-layout--mission .or-mission-stage .t-object { position: relative; }
