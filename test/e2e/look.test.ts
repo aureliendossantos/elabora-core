@@ -342,6 +342,17 @@ test('look --act: a click by text inside a free object changes its state; a miss
   assert.ok(!alone.ok && /give block too/.test(alone.error), JSON.stringify(alone));
 });
 
+test('look --act drives a free object that carries on from another screen: its frame is in the keep layer (D65)', { timeout: 180000 }, async (t) => {
+  const dir = copyExample(path.join(ROOT, 'test/fixtures/continuity'));
+  const looker = await startLooker(dir, { live: false });
+  t.after(async () => { await looker.close(); fs.rmSync(dir, { recursive: true, force: true }); });
+  for (const [screen, block] of [['one', 'one-scene'], ['two', 'two-scene']]) {
+    const clicked = await looker.look({ screen, block, act: ['click:Probe'] });
+    assert.ok(clicked.ok && clicked.act, JSON.stringify(clicked));
+    assert.deepEqual(clicked.act.events, [{ name: 'probed', payload: { label: screen } }], screen);
+  }
+});
+
 test('look --act choose: a dialogue block at rest after its choices, the end of its thread in the window; a choice not offered says which were', { timeout: 180000 }, async (t) => {
   const dir = dialogueCourse({ presentation: 'scroll' });
   const looker = await startLooker(dir, { live: false });

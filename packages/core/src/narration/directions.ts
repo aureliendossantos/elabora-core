@@ -18,8 +18,11 @@ export interface Direction {
 export const DIRECTION_MAX = 80;
 const DIRECTION = /\[([^[\]\n]{1,80})\]/g;
 
+// A line whose text breaks its schema (not a string) has no directions and reads as nothing: the
+// validator reports it, and every reader of the course carries on.
 export function lineDirections(text: string): Direction[] {
   const out: Direction[] = [];
+  if (typeof text !== 'string') return out;
   for (const match of text.matchAll(DIRECTION)) {
     const inner = match[1].trim();
     if (inner) out.push({ text: inner, start: match.index ?? 0, end: (match.index ?? 0) + match[0].length });
@@ -32,6 +35,7 @@ export const hasDirections = (text: string): boolean => lineDirections(text).len
 // The text with each direction replaced by as many spaces: what words are read from, so that their
 // offsets stay those of the line's text (the editor underlines them in place).
 export function maskDirections(text: string): string {
+  if (typeof text !== 'string') return '';
   const directions = lineDirections(text);
   if (!directions.length) return text;
   let out = '';
@@ -47,6 +51,7 @@ export function maskDirections(text: string): string {
 // the space before it go (« mot [un temps], suite » reads « mot, suite »). The rest of the text keeps
 // its own typography: the space a French line puts before : ; ! ? stays (« étage : ni »).
 export function withoutDirections(text: string): string {
+  if (typeof text !== 'string') return '';
   if (!hasDirections(text)) return text;
   return text.replace(/[ \t]*\[([^[\]\n]{1,80})\]([ \t]*)/g, (whole: string, inner: string, after: string, offset: number, all: string) => {
     if (!inner.trim()) return whole;
