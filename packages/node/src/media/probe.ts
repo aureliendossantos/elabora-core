@@ -43,6 +43,9 @@ function* probeSteps(file: string, major: number | null): Generator<string[], Me
   try { raw = JSON.parse(output) as FfprobeOutput; } catch { throw new MediaProbeError(file, 'ffprobe gave no readable answer'); }
   const format = raw.format ?? {};
   const streams = raw.streams ?? [];
+  // FFmpeg 8 names an animated WebP's codec webp_anim (its demuxer too): the same WebP to a browser,
+  // animated as its frames say.
+  for (const stream of streams) if (stream.codec_name === 'webp_anim') stream.codec_name = 'webp';
   const formatName = format.format_name ?? '';
   const layout = /mp4|mov/.test(formatName) ? readMp4LayoutSync(file) : null;
   const brand = (layout?.brand ?? format.tags?.major_brand ?? '').trim();
