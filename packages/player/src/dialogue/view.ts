@@ -11,7 +11,8 @@
 //   room.ts   the room under the thread: a turn's controls, the options, the end and the debrief;
 //   moves.ts  every move of the learner or the screen: a new run, saved, the thread cut back to what
 //             it shares with the one shown, a path shown at once;
-//   modal.ts  a panel over the dialogue (the History, the debrief), the rest dimmed and inert.
+//   modal.ts  a panel over the dialogue (the History), the rest dimmed and inert; the debrief in
+//             slides is a modal dialog of the page (room.ts).
 //
 // Not part of the pure walk: the core never imports this file.
 

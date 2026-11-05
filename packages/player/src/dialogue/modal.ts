@@ -1,7 +1,8 @@
-// A panel over a dialogue (D61): the History over a scene, the debrief over the thread. While one is
-// open, the rest of the dialogue is dimmed under a veil and inert (nothing behind takes a click or the
-// focus); a click on the veil closes the panel, as does Échap, and the focus comes back where it was.
-// The page around the dialogue stays as it is. Not part of the pure walk.
+// A panel over a dialogue (D61): the History over a scene. While it is open, the rest of the dialogue
+// is dimmed under a veil and inert (nothing behind takes a click or the focus); a click on the veil
+// closes the panel, as does Échap, and the focus comes back where it was.
+// The page around the dialogue stays as it is. (The debrief is a modal dialog of the page: room.ts.)
+// Not part of the pure walk.
 
 import { element } from '../dom.ts';
 
@@ -37,6 +38,8 @@ export function createModal(root: HTMLElement) {
       root.setAttribute('data-t-modal', '');
       open = { close, inert, back };
     },
+    // The panel open closes, as its close button would (before the debrief opens over the page).
+    dismiss() { open?.close(); },
     // fallback: where the focus goes when where it was is gone (what opened the panel).
     hide(fallback: HTMLElement | null = null) {
       if (!open) return;

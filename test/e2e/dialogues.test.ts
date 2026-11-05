@@ -15,7 +15,7 @@ import { startCanvasHost } from '@elabora/node/canvas/host';
 import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import { loadAxe, axeViolations } from '@elabora/node/util/axe';
 import { dialogueCourse } from '../dialogue-fixture.ts';
-import { NO_MEDIA_CODECS, playsMedia } from '../helpers.ts';
+import { NO_MEDIA_CODECS, playsMedia, settled } from '../helpers.ts';
 import { voice, hasFfmpeg } from '../narration.ts';
 
 // The dialogue in the learner's player, in Chrome (docs/dialogues.md, D61): the thread (role=log,
@@ -235,23 +235,29 @@ test('messaging in a slide: the thread, whole bubbles, the ink on the clock, cue
     assert.equal(await wrap.locator('.t-dialogue-endbar .t-dialogue-action').filter({ hasText: /Revenir/ }).count(), 0);
     assert.equal(await wrap.locator('.t-dialogue-endbar .t-dialogue-action').filter({ hasText: 'Recommencer' }).count(), 1);
     assert.equal(await wrap.locator('.t-dialogue-resume:not([hidden])').count(), 0);
-    // The debrief is a panel over the thread at the end, the rest of the dialogue dimmed and inert; a
-    // click on the veil closes it, « Voir le bilan » opens it again, Échap closes it, and the focus
-    // comes back where it was.
+    // The debrief is a modal dialog over the whole screen at the end (the page under its backdrop takes
+    // no click), as tall as what it says within the window; a click on the backdrop closes it, « Voir le
+    // bilan » opens it again, Échap closes it, and the focus comes back where it was.
     const panel = () => page.evaluate(() => {
       const wrap = document.querySelector('[data-block="appel-marc"]')!;
-      const visible = (selector: string) => { const node = wrap.querySelector<HTMLElement>(selector); return !!node && !node.hidden && node.offsetParent !== null; };
-      return { debrief: visible('.t-dialogue-debrief-card'), veil: visible('.t-dialogue-veil'), inert: ['[data-t-log]', '[data-t-options]'].filter((selector) => (wrap.querySelector(selector) as HTMLElement).inert), focus: document.activeElement?.className ?? '' };
+      const dialog = wrap.querySelector<HTMLDialogElement>('dialog.t-dialogue-debrief');
+      const box = dialog?.getBoundingClientRect();
+      const inWindow = !!box && box.top >= 0 && box.bottom <= innerHeight && box.left >= 0 && box.right <= innerWidth;
+      return { debrief: !!dialog?.matches(':modal') && !!dialog.querySelector('.t-dialogue-debrief-card'), inWindow: !dialog?.open || inWindow, focus: document.activeElement?.className ?? '' };
     });
-    assert.deepEqual(await panel(), { debrief: true, veil: true, inert: ['[data-t-log]', '[data-t-options]'], focus: 't-dialogue-debrief' }, 'the focus was in the dialogue: it goes to the panel');
+    const modalFocus = 't-dialog t-dialogue-debrief t-dialogue-debrief--modal';
+    assert.deepEqual(await panel(), { debrief: true, inWindow: true, focus: modalFocus }, 'the focus was in the dialogue: it goes to the dialog');
     assert.equal(await wrap.locator('.t-dialogue-decision').count(), 3, 'one entry per decision of the path');
-    const veil = (await wrap.locator('.t-dialogue-veil').boundingBox())!;
-    await page.mouse.click(veil.x + veil.width / 2, veil.y + veil.height - 6);
-    assert.deepEqual(await panel(), { debrief: false, veil: false, inert: [], focus: (await panel()).focus });
+    // Centred in the window, not in the dialogue's box, once it has come in.
+    await settled(wrap.locator('dialog.t-dialogue-debrief'));
+    const over = (await wrap.locator('dialog.t-dialogue-debrief').boundingBox())!;
+    assert.ok(Math.abs(over.x + over.width / 2 - 1600 / 2) <= 1 && Math.abs(over.y + over.height / 2 - 900 / 2) <= 1, `centred: ${JSON.stringify(over)}`);
+    await page.mouse.click(Math.max(4, over.x - 40), over.y + over.height / 2);
+    assert.deepEqual(await panel(), { debrief: false, inWindow: true, focus: (await panel()).focus });
     await wrap.locator('.t-dialogue-debrief-toggle').click();
-    assert.deepEqual(await panel(), { debrief: true, veil: true, inert: ['[data-t-log]', '[data-t-options]'], focus: 't-dialogue-debrief' });
+    assert.deepEqual(await panel(), { debrief: true, inWindow: true, focus: modalFocus });
     await page.keyboard.press('Escape');
-    assert.deepEqual(await panel(), { debrief: false, veil: false, inert: [], focus: 't-dialogue-action t-dialogue-debrief-toggle' }, 'Échap: the focus back on « Voir le bilan »');
+    assert.deepEqual(await panel(), { debrief: false, inWindow: true, focus: 't-dialogue-action t-dialogue-debrief-toggle' }, 'Échap: the focus back on « Voir le bilan »');
     assert.deepEqual(await boxes(page, 'appel-marc'), first, 'nothing moved either');
   });
 });
@@ -748,6 +754,8 @@ test('the screen\'s actions on a dialogue, and its presentation replayed on a ne
     const ended = await until(page, 'rencontre-marc', 'ended');
     assert.equal(ended.node, 'fin');
     assert.equal(await page.evaluate(() => (window as DialogueWindow).__elabora.engine.getVar('bonsReflexes')), 1, 'dialogue.node with its node');
+    // The debrief over the screen at the end: closed before the screen's own button.
+    await page.keyboard.press('Escape');
     await page.locator('[data-block="rencontre-encore"] button').click();
     const again = await state(page, 'rencontre-marc');
     assert.deepEqual([again.phase, again.path.length, Array.isArray(again.scored)], ['playing', 0, true], 'started over, the scored run kept apart');
