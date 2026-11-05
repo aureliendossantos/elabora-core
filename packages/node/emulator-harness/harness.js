@@ -41,6 +41,8 @@
   api.cmi.core.lesson_mode = 'normal';
   api.cmi.core.credit = 'credit';
   if (mastery) api.cmi.student_data.mastery_score = mastery;
+  // The learner's preferred language, as an LMS that fills it gives it (D71; most leave it empty).
+  if (q.get('learnerLanguage')) api.cmi.student_preference.language = q.get('learnerLanguage');
   // What the LMS plays and what it gave back of the registration's last session.
   tell({
     kind: 'session',

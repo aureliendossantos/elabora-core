@@ -382,7 +382,7 @@ export interface BuildParams {
   name?: string;             // the publish version's name (default: the date in the course language, « Publié le 7 octobre 2026 »)
   target?: 'scorm12' | 'web'; // default scorm12; web: a folder to serve and its ZIP (D41)
   web?: WebBuildOptions;     // the web target's settings: progress local|none, navigation authored|free, noindex, url, image, review { origins } (D42)
-  languages?: 'all';         // one package of every approved language, switched in place by learners (D59)
+  languages?: 'all' | string[]; // the package's languages (D59, D71): all ready and approved, or those named; default: delivery.languages
 }
 
 export interface BuildView {

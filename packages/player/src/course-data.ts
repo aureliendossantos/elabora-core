@@ -18,6 +18,9 @@ export interface CourseData {
   // A package of several languages (D59): its languages, the course's own first; each has its
   // course data (elabora/course.<lang>.js for the others). Absent from a package of one language.
   languages?: string[];
+  // The language a learner starts in when they never chose one and their LMS gives no preference
+  // (D71), when it is not the course's own.
+  defaultLanguage?: string;
   version: string;
   // Overrides of the player labels, by label id.
   ui: Record<string, string>;

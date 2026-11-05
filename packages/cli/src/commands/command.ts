@@ -52,6 +52,14 @@ export function printFormatMigration(migration: FormatMigrationRef | undefined):
 }
 
 // What a command that needs a course says of a folder that holds none, in one line (null: a course).
+// --languages: all, or language tags separated by commas (en,fr,pt-BR); null: neither (D71).
+export function languagesFlag(value: string | undefined): 'all' | string[] | undefined | null {
+  if (value === undefined) return undefined;
+  if (value === 'all') return 'all';
+  const tags = value.split(',').map((tag) => tag.trim()).filter(Boolean);
+  return tags.length && tags.every((tag) => /^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$/.test(tag)) ? tags : null;
+}
+
 export function notACourseMessage(dir: string): string | null {
   const root = path.resolve(dir);
   if (fs.existsSync(path.join(root, 'course.json'))) return null;

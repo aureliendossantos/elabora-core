@@ -1770,8 +1770,8 @@ function buildOptions(params: BuildParams, validation: ValidationOptions = {}): 
   if (profiles !== undefined && !(Array.isArray(profiles) && profiles.every((id) => typeof id === 'string'))) throw new EngineError('bad-request', 'profiles is a list of LMS profile ids');
   if (name !== undefined && typeof name !== 'string') throw new EngineError('bad-request', 'name is a string');
   if (target !== undefined && target !== 'scorm12' && target !== 'web') throw new EngineError('bad-request', `target is scorm12 or web (not ${JSON.stringify(target)})`);
-  if (every !== undefined && every !== 'all') throw new EngineError('bad-request', `languages is "all" (not ${JSON.stringify(every)})`);
-  const languages = every === 'all' ? { languages: 'all' as const } : {};
+  if (every !== undefined && every !== 'all' && !(Array.isArray(every) && every.every((language) => typeof language === 'string'))) throw new EngineError('bad-request', `languages is "all" or a list of language tags (not ${JSON.stringify(every)})`);
+  const languages = every !== undefined ? { languages: every as 'all' | string[] } : {};
   if (target === 'web') {
     if (profiles !== undefined) throw new EngineError('bad-request', 'profiles are for the scorm12 target: a module for the web reports to no LMS');
     return { target, ...(mediaQuality !== undefined ? { mediaQuality } : {}), ...(web !== undefined ? { web: webOptions(web) } : {}), ...languages, release: release ?? validation.release ?? false };

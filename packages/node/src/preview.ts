@@ -55,7 +55,8 @@ export async function preview(dir: string, { port = 4807, profile, navigation: a
   // runs. Only a delivery writes the project's; without its own, a screen an agent adds between two
   // rebuilds would move the keys of those added before it, and the learner's place with them.
   const lock = readLock({ files: new Map(fs.existsSync(path.join(root, LOCK_FILE)) ? [[LOCK_FILE, textFile(fs.readFileSync(path.join(root, LOCK_FILE), 'utf8'))]] : []) });
-  const rebuild = () => build(root, { profiles: [lms], emit: 'dir', out, debug: true, writeLock: false, lock, media: 'link', preview: true, ...(navigation === 'free' ? { navigation } : {}) });
+  // Every translation the course has, approved or not, with « Langue » (D71): the author tries them.
+  const rebuild = () => build(root, { profiles: [lms], emit: 'dir', out, debug: true, writeLock: false, lock, media: 'link', preview: true, tryLanguages: true, ...(navigation === 'free' ? { navigation } : {}) });
   let last = await rebuild();
   const server = await startServer({ port, frames: true });
   const show = (result: BuildResult) => {
@@ -67,7 +68,7 @@ export async function preview(dir: string, { port = 4807, profile, navigation: a
   // A build that throws fails its caller only: the next one still runs.
   let queue = Promise.resolve(last);
   const again = () => (queue = queue.catch(() => last).then(async () => { last = await rebuild(); show(last); onRebuild?.(last); return last; }));
-  const watched = ['course.json', 'plan.json', 'screens', 'objects', 'components', 'theme', 'assets'].map((name) => path.join(root, name)).filter((file) => fs.existsSync(file));
+  const watched = ['course.json', 'plan.json', 'screens', 'objects', 'components', 'theme', 'assets', 'translations'].map((name) => path.join(root, name)).filter((file) => fs.existsSync(file));
   let timer: ReturnType<typeof setTimeout> | undefined;
   const watchers = watched.map((file) => fs.watch(file, { recursive: true }, () => {
     clearTimeout(timer);

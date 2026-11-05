@@ -5,6 +5,7 @@
 // - Skips SetValue calls that would not change anything, so commits stay idempotent.
 // - Logs every call with its result and error code, for the debugger and the LMS emulator.
 
+import { preferenceList } from './start-language.ts';
 import { isRecord } from './json.ts';
 
 declare global {
@@ -59,6 +60,9 @@ export interface LmsAdapter {
   finish(): boolean;
   // Standalone and web only: forget the data kept.
   reset?(): void;
+  // The learner's language preferences the LMS gives, in order (D71): SCORM 1.2's
+  // cmi.student_preference.language; none where the LMS has none (it is often empty).
+  preferredLanguages?(): string[];
 }
 
 // A cmi.interactions.n entry. SCORM 1.2 interactions are a write-only journal; responses use
@@ -190,6 +194,11 @@ export function createScorm12Adapter(found: FoundApi, { now = () => Date.now(), 
       const r = call('LMSFinish', '');
       phase = 'finished';
       return r.result === 'true';
+    },
+    preferredLanguages() {
+      if (phase !== 'initialized') return [];
+      const r = call('LMSGetValue', 'cmi.student_preference.language');
+      return r.error === '0' ? preferenceList(r.result) : [];
     }
   };
 }
