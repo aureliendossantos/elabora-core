@@ -1,0 +1,194 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/plan-version.schema.json",
+  "version": 3,
+  "date": "2026-11-05",
+  "contentHash": "sha256:be8472d3659a253c3697f0bcbb3b86ca8a9ffa3c1514f98e6ca20259c4abef26",
+  "plan": {
+    "id": "PLAN-HELIOS-NET-V1",
+    "title": "Diagnostiquer une panne d'impression réseau",
+    "businessGoal": "Réduire de 30 % les tickets « impression impossible » transférés du niveau 1 au niveau 2.",
+    "audience": {
+      "role": "Techniciens support de niveau 1",
+      "priorKnowledge": "low"
+    },
+    "sources": [
+      {
+        "id": "SRC-1",
+        "title": "Procédure interne SUP-NET-04 : diagnostic des pannes d'impression",
+        "type": "procédure interne",
+        "version": "2026-05"
+      }
+    ],
+    "objectives": [
+      {
+        "id": "OBJ-1",
+        "statement": "Identifier le rôle des cinq équipements du chemin d'impression : poste, commutateur, routeur, pare-feu et serveur d'impression.",
+        "bloom": "understand",
+        "sources": [
+          "SRC-1"
+        ]
+      },
+      {
+        "id": "OBJ-2",
+        "statement": "Localiser l'équipement défaillant en suivant le chemin des paquets dans l'ordre, en moins de trois tentatives.",
+        "bloom": "apply",
+        "criterion": "2 diagnostics réussis sur 3",
+        "sources": [
+          "SRC-1"
+        ]
+      }
+    ],
+    "items": [
+      {
+        "id": "ITEM-1",
+        "kind": "intro",
+        "title": "Le ticket de Marc",
+        "part": "La situation",
+        "objectives": [
+          "OBJ-1"
+        ],
+        "description": "L'ouverture du module : le ticket de Marc et la mission, à côté du réseau du siège en 3D. « Prendre le ticket » fait entrer dans le cas.",
+        "lockedTexts": [
+          {
+            "id": "TXT-1",
+            "text": "Trouvez où s'arrête l'impression de Marc, avant midi."
+          }
+        ]
+      },
+      {
+        "id": "ITEM-2",
+        "kind": "exposition",
+        "title": "Le chemin d'une impression",
+        "part": "La situation",
+        "objectives": [
+          "OBJ-1"
+        ],
+        "sources": [
+          "SRC-1"
+        ],
+        "description": "Claire décrit le chemin d'une impression pendant qu'il s'éclaire sur le réseau 3D, équipement par équipement, avec les deux réseaux. La règle de la procédure arrive à la fin.",
+        "lockedTexts": [
+          {
+            "id": "TXT-2",
+            "text": "**Partez du poste et contrôlez chaque équipement dans l'ordre**, même quand la cause semble évidente."
+          }
+        ]
+      },
+      {
+        "id": "ITEM-3",
+        "kind": "practice",
+        "title": "Premier réflexe",
+        "part": "Le diagnostic",
+        "objectives": [
+          "OBJ-2"
+        ],
+        "description": "L'appel de Marc : commencer par le poste, puis tenir l'ordre sous la pression. Le réseau 3D suit l'appel : le poste puis le commutateur y apparaissent contrôlés."
+      },
+      {
+        "id": "ITEM-4",
+        "kind": "scenario",
+        "title": "Trouver ce qui bloque",
+        "part": "Le diagnostic",
+        "objectives": [
+          "OBJ-2"
+        ],
+        "description": "Le diagnostic continue sur le réseau 3D, après le commutateur : une seule consigne, l'équipement suivant signalé après deux contrôles trop tôt. Une fois la panne trouvée, l'apprenant transmet le ticket et voit l'impression repartir."
+      },
+      {
+        "id": "ITEM-5",
+        "kind": "assessment",
+        "title": "Deux nouveaux tickets",
+        "part": "Le bilan",
+        "objectives": [
+          "OBJ-1",
+          "OBJ-2"
+        ],
+        "description": "Deux questions côte à côte, sur deux nouveaux tickets.",
+        "questions": [
+          {
+            "id": "Q-1",
+            "mode": "single",
+            "objectives": [
+              "OBJ-1"
+            ],
+            "bloom": "understand",
+            "stem": "**Ticket 4131.** Le poste de Sophie a une adresse IP valide, mais ses impressions restent bloquées à l'entrée du réseau des serveurs. Quel équipement filtre ce qui y entre ?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Le commutateur",
+                "correct": false,
+                "feedback": "Le commutateur relie les postes de l'étage : il reste dans le réseau des bureaux."
+              },
+              {
+                "id": "b",
+                "text": "Le pare-feu",
+                "correct": true,
+                "feedback": "Oui : le pare-feu applique les règles de filtrage entre les deux réseaux."
+              },
+              {
+                "id": "c",
+                "text": "Le routeur",
+                "correct": false,
+                "feedback": "Le routeur oriente les paquets d'un réseau à l'autre ; le filtrage revient au pare-feu."
+              }
+            ]
+          },
+          {
+            "id": "Q-2",
+            "mode": "single",
+            "objectives": [
+              "OBJ-2"
+            ],
+            "bloom": "apply",
+            "stem": "**Ticket 4132.** Chez Paul, le poste et le commutateur répondent. Quel équipement contrôlez-vous ensuite ?",
+            "options": [
+              {
+                "id": "a",
+                "text": "Le serveur d'impression",
+                "correct": false,
+                "feedback": "Le serveur vient en dernier : le contrôler maintenant ferait sauter deux équipements."
+              },
+              {
+                "id": "b",
+                "text": "Le routeur",
+                "correct": true,
+                "feedback": "Oui : le routeur suit le commutateur sur le chemin."
+              },
+              {
+                "id": "c",
+                "text": "Le pare-feu",
+                "correct": false,
+                "feedback": "Le pare-feu vient après le routeur : contrôlez d'abord le routeur."
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ITEM-6",
+        "kind": "summary",
+        "title": "Le résultat",
+        "part": "Le bilan",
+        "objectives": [],
+        "description": "Le résultat sous les deux questions, une fois répondues, et la fiche réflexe SUP-NET-04 dans les Ressources."
+      }
+    ],
+    "spacing": [
+      "J+2",
+      "J+7",
+      "J+30"
+    ],
+    "waivers": []
+  },
+  "notes": [
+    {
+      "target": "text:TXT-2",
+      "text": "Formulation plus directe ; la règle ne change pas."
+    }
+  ],
+  "validation": {
+    "by": "Claire Martin, Hélios Énergie (client fictif)",
+    "date": "2026-11-05"
+  }
+}
