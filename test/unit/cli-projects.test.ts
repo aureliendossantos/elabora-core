@@ -9,7 +9,7 @@ import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { createMcpServer } from '@elabora/cli/mcp';
 import { readJournal } from '@elabora/node/journal/index';
-import { ROOT, copyExample } from '../helpers.ts';
+import { ROOT, GEARSET, copyExample } from '../helpers.ts';
 
 // `elabora projects`, `elabora export` and `elabora import` as people and agents call them, each case on a
 // library of its own in a temp folder (ELABORA_LIBRARY): never the user's library.
@@ -23,7 +23,7 @@ const tempDir = (prefix: string): string => {
   return dir;
 };
 const example = (name = 'diagnostic-reseau'): string => {
-  const dir = copyExample(path.join(ROOT, 'examples', name));
+  const dir = copyExample(path.isAbsolute(name) ? name : path.join(ROOT, 'examples', name));
   temporary.push(dir);
   return dir;
 };
@@ -167,7 +167,7 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     assert.match((await ok(single, ['import', '--replace', archive])).stdout, /^✔ Replaced project [0-9a-z]{6} with "Diagnostiquer/);
 
     // A folder: always a new project.
-    const fromFolder = await ok(library, ['import', example('planetary-gearset')]);
+    const fromFolder = await ok(library, ['import', example(GEARSET)]);
     assert.match(fromFolder.stdout, /^✔ Imported "Planetary gearsets: one gearset, many ratios" \(planetary-gearset\) as project/);
     const folderReplace = await elabora(library, ['import', dir, '--replace']);
     assert.equal(folderReplace.status, 1);
@@ -199,7 +199,7 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
     assert.equal(JSON.parse(imported.stdout).status, 'imported');
     assert.match(imported.stderr, /^Extracting and checking: 100% /m);
     // Small projects: nothing on stderr.
-    const small = example('planetary-gearset');
+    const small = example(GEARSET);
     assert.equal((await ok(library, ['export', small])).stderr, '');
   });
 
@@ -235,7 +235,7 @@ describe('elabora projects, export and import', { concurrency: true }, () => {
 
   test('MCP: elabora_projects_list and elabora_projects_path find a project\'s folder, read only', async () => {
     const library = freshLibrary();
-    await ok(library, ['import', example('planetary-gearset')]);
+    await ok(library, ['import', example(GEARSET)]);
     await ok(library, ['import', example('diagnostic-reseau')]);
     const previous = process.env.ELABORA_LIBRARY;
     process.env.ELABORA_LIBRARY = library;

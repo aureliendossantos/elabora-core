@@ -330,9 +330,11 @@ test('generators: provenance, stale inputs (the tokens it reads) and hand edits'
   assert.ok(c.includes('W_GENERATED_ASSET_STALE') && c.includes('W_GENERATED_ASSET_EDITED'));
 });
 
-test('the planetary sample validates without errors or warnings', () => {
-  const r = validateDir(path.join(ROOT, 'examples/planetary-gearset'), { profiles: ['moodle'] });
-  assert.equal(r.summary.errors + r.summary.warnings, 0, JSON.stringify(r.diagnostics.filter((d) => d.severity !== 'info'), null, 1));
+test('the clockwork sample validates without errors and with no warning but its draft plan and unset spacing', () => {
+  const r = validateDir(path.join(ROOT, 'examples/clockwork'), { profiles: ['moodle'] });
+  const shown = JSON.stringify(r.diagnostics.filter((d) => d.severity !== 'info'), null, 1);
+  assert.equal(r.summary.errors, 0, shown);
+  assert.deepEqual([...new Set(r.diagnostics.filter((d) => d.severity === 'warning').map((d) => d.code))].sort(), ['W_PLAN_DRAFT', 'W_SPACING_MISSING'], shown);
 });
 
 test('free objects: relative imports are analysed with the same rules', () => {

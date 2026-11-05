@@ -128,7 +128,7 @@ function runCommand(files: ProjectFiles, run: Run): void {
 }
 
 test('commands refuse to edit what agents broke, never throw anything else', () => {
-  const samples = ['diagnostic-reseau', 'planetary-gearset', 'orbital-rendezvous'].map((name) => readProjectFiles(copyExample(path.join(ROOT, 'examples', name))));
+  const samples = ['diagnostic-reseau', 'clockwork', 'orbital-rendezvous'].map((name) => readProjectFiles(copyExample(path.join(ROOT, 'examples', name))));
   const templateDir = path.join(ROOT, 'packages/node/templates/object');
   const templates: ObjectTemplates = Object.fromEntries(commands.OBJECT_FILES.map((file) => [file, fs.readFileSync(path.join(templateDir, file), 'utf8')])) as Record<commands.ObjectFile, string>;
   const random = seededRandom(SEED);

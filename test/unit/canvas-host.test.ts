@@ -8,7 +8,7 @@ import { startCanvasHost } from '@elabora/node/canvas/host';
 import { byteRange, mimeType } from '@elabora/node/canvas/files';
 import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import type { HostMessage } from '@elabora/player/canvas-protocol';
-import { ROOT, copyExample } from '../helpers.ts';
+import { ROOT, GEARSET, copyExample } from '../helpers.ts';
 import { narrate, hasFfmpeg } from '../narration.ts';
 
 test('byte ranges: first, open, last bytes; several ranges serve the whole file', () => {
@@ -68,7 +68,7 @@ const get = (url: string) => new Promise<{ status: number; type: string; body: s
 });
 
 test('canvas host: render data pushed to pages, styles sent once, the page and the files it needs served', { timeout: 120000 }, async () => {
-  const project = loadProjectFromDir(path.join(ROOT, 'examples', 'planetary-gearset'));
+  const project = loadProjectFromDir(GEARSET);
   const context = createRenderContext(project);
   const host = await startCanvasHost({ root: project.root });
   const first = events(`${host.base}/canvas/elabora/events`);

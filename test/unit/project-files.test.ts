@@ -14,7 +14,7 @@ import { validateProject } from '@elabora/core/validate/index';
 import { generatorInputs, listGenerators } from '@elabora/core/project/generators';
 import { readProjectFiles, loadProjectFromDir, validateDir, HASH_CACHE_FILE } from '@elabora/node/project-reader';
 import { projectDataDir } from '@elabora/node/data-dir';
-import { ROOT, EXAMPLE, copyExample, codes } from '../helpers.ts';
+import { ROOT, EXAMPLE, GEARSET, copyExample, codes } from '../helpers.ts';
 
 test('sha256 gives the digests of node:crypto', () => {
   const ref = (d: string | Uint8Array) => crypto.createHash('sha256').update(d).digest('hex');
@@ -109,14 +109,13 @@ test('files left by sync services are reported, not loaded', () => {
 });
 
 test('generator inputs are found from the snapshot as esbuild finds them', () => {
-  for (const ex of ['planetary-gearset', 'orbital-rendezvous']) {
-    const dir = path.join(ROOT, 'examples', ex);
+  for (const dir of [GEARSET, path.join(ROOT, 'examples', 'orbital-rendezvous')]) {
     const { files } = readProjectFiles(dir);
     const generators = listGenerators({ files });
     assert.ok(generators.length);
     for (const g of generators) {
       const bundled = esbuild.buildSync({ entryPoints: [path.join(dir, g)], bundle: true, platform: 'node', format: 'esm', packages: 'external', write: false, metafile: true, logLevel: 'silent', absWorkingDir: dir });
-      assert.deepEqual(generatorInputs(files, g).inputs, Object.keys(bundled.metafile.inputs).sort(), `${ex}/${g}`);
+      assert.deepEqual(generatorInputs(files, g).inputs, Object.keys(bundled.metafile.inputs).sort(), `${path.basename(dir)}/${g}`);
     }
   }
   const files = createProjectFiles([['generators/a.mjs', "import { x } from './_lib';\nexport { y } from '../data/y.json';\nimport 'node:fs';\nimport three from 'three';\nexport default () => import('./missing.mjs');"], ['generators/_lib.js', 'export const x = 1;'], ['data/y.json', '{}']]);

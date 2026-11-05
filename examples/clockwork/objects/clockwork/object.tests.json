@@ -1,0 +1,95 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/object-tests.schema.json",
+  "tests": [
+    {
+      "name": "Clock: the minute hand turns, the hour hand follows",
+      "size": [880, 760],
+      "props": { "stage": "clock" },
+      "steps": [
+        { "action": "step", "frames": 20 },
+        { "action": "snapshot", "name": "clock" },
+        { "action": "expect-state", "state": { "docked": false, "matched": false, "grown": false } }
+      ]
+    },
+    {
+      "name": "From the dial to two gears: the dial lifts away",
+      "size": [880, 760],
+      "props": { "stage": "clock" },
+      "steps": [
+        { "action": "step", "frames": 10 },
+        { "action": "set-props", "props": { "stage": "pair" }, "transition": { "duration": 1300 } },
+        { "action": "step", "frames": 30 },
+        { "action": "snapshot", "name": "dial-lifting" },
+        { "action": "step", "frames": 60 },
+        { "action": "snapshot", "name": "pair" }
+      ]
+    },
+    {
+      "name": "Count: one turn of the small gear lights ten teeth on each gear",
+      "size": [880, 760],
+      "props": { "stage": "count" },
+      "steps": [
+        { "action": "step", "frames": 470 },
+        { "action": "snapshot", "name": "count-one-turn" }
+      ]
+    },
+    {
+      "name": "One gear: the large gear grows to 120 teeth",
+      "size": [880, 760],
+      "props": { "stage": "one-gear" },
+      "steps": [
+        { "action": "step", "frames": 10 },
+        { "action": "set-props", "props": { "bigTeeth": 120 } },
+        { "action": "expect-event", "name": "gear_grown", "payload": { "teeth": 120 } },
+        { "action": "step", "frames": 150 },
+        { "action": "snapshot", "name": "one-gear-120" },
+        { "action": "expect-state", "state": { "grown": true } }
+      ]
+    },
+    {
+      "name": "Train: the arrows size the last gear, 32 teeth make twelve times slower",
+      "size": [880, 760],
+      "props": { "stage": "train" },
+      "steps": [
+        { "action": "step", "frames": 10 },
+        { "action": "key", "key": "Tab" },
+        { "action": "key", "key": "Tab" },
+        { "action": "key", "key": "Tab" },
+        { "action": "key", "key": "ArrowRight" },
+        { "action": "expect-event", "name": "train_sized", "payload": { "teeth": 28, "correct": false } },
+        { "action": "key", "key": "ArrowRight" },
+        { "action": "expect-event", "name": "train_sized", "payload": { "teeth": 32, "correct": true } },
+        { "action": "expect-event", "name": "train_matched" },
+        { "action": "step", "frames": 60 },
+        { "action": "snapshot", "name": "train-32" },
+        { "action": "expect-state", "state": { "w2": 32, "matched": true } }
+      ]
+    },
+    {
+      "name": "Centre: a click on the last gear rolls it back to the centre",
+      "size": [880, 760],
+      "props": { "stage": "centre" },
+      "steps": [
+        { "action": "step", "frames": 20 },
+        { "action": "snapshot", "name": "centre-beside" },
+        { "action": "click", "object": "last-gear" },
+        { "action": "step", "frames": 40 },
+        { "action": "snapshot", "name": "centre-rolling" },
+        { "action": "step", "frames": 120 },
+        { "action": "expect-event", "name": "docked" },
+        { "action": "expect-state", "state": { "docked": true } },
+        { "action": "step", "frames": 90 },
+        { "action": "snapshot", "name": "centre-docked" }
+      ]
+    },
+    {
+      "name": "Answer: the dial seen through, on a phone",
+      "size": [375, 420],
+      "props": { "stage": "answer" },
+      "steps": [
+        { "action": "step", "frames": 20 },
+        { "action": "snapshot", "name": "answer-phone" }
+      ]
+    }
+  ]
+}

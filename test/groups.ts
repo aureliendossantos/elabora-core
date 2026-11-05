@@ -52,7 +52,7 @@ export const groups: TestMap = {
     { name: 'canal-locks', files: ['examples/canal-locks/**'], checks: [matrix('canal-locks')] },
     { name: 'medieval-charts', files: ['examples/medieval-charts/**'], checks: [matrix('medieval')] },
     { name: 'phishing-by-numbers', files: ['examples/phishing-by-numbers/**'], checks: [matrix('phishing')] },
-    { name: 'planetary-gearset', files: ['examples/planetary-gearset/**'], checks: [matrix('planetary')] },
+    { name: 'clockwork', files: ['examples/clockwork/**'], checks: [matrix('clockwork')] },
     { name: 'the network sample of the engine tests', files: ['test/fixtures/diagnostic-reseau-v1/**'], checks: [e2e('player'), e2e('canvas'), e2e('canvas-live'), e2e('timeline')] },
     { name: 'diagnostic-reseau and orbital-rendezvous', files: ['examples/diagnostic-reseau/**', 'examples/orbital-rendezvous/**'], checks: [matrix('lms-matrix'), e2e('player')] }
   ]

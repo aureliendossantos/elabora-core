@@ -17,7 +17,7 @@ import { projectDataDir, projectId } from '@elabora/node/data-dir';
 import { createZip, readZip } from '@elabora/node/zip';
 import { writeZip } from '@elabora/node/packaging/zip-writer';
 import { ZipReader, ZipFormatError } from '@elabora/node/packaging/zip-reader';
-import { ROOT, copyExample, moduleUrl } from '../helpers.ts';
+import { ROOT, GEARSET, copyExample, moduleUrl } from '../helpers.ts';
 import { isIgnoredPath } from '@elabora/node/project-files';
 
 // Every test works in its own library, in a temp folder (ELABORA_LIBRARY): never the user's.
@@ -38,7 +38,7 @@ function freshLibrary(): string {
   return root;
 }
 const example = (name: string): string => {
-  const dir = copyExample(path.join(ROOT, 'examples', name));
+  const dir = copyExample(path.isAbsolute(name) ? name : path.join(ROOT, 'examples', name));
   temporary.push(dir);
   return dir;
 };
@@ -178,7 +178,7 @@ test('library: projects that cannot be read are listed with their error, not hid
 
 test('archives: export without history holds the project files and a manifest', async () => {
   freshLibrary();
-  const dir = example('planetary-gearset');
+  const dir = example(GEARSET);
   fs.mkdirSync(path.join(dir, 'dist'), { recursive: true });
   fs.writeFileSync(path.join(dir, 'dist', 'old-build.zip'), 'build');
   fs.writeFileSync(path.join(dir, 'notes (conflicted copy 2026-10-06).md'), 'conflict');

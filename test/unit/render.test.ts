@@ -14,10 +14,10 @@ import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import type { RenderedScreen } from '@elabora/core/render/screen';
 import { rebaseUrls } from '@elabora/core/render/styles';
 import type { CourseData } from '@elabora/player/course-data';
-import { ROOT } from '../helpers.ts';
+import { ROOT, GEARSET } from '../helpers.ts';
 import { build } from '@elabora/node/build';
 
-const EXAMPLES = ['diagnostic-reseau', 'planetary-gearset', 'orbital-rendezvous', 'coffee-in-brief'];
+const EXAMPLES = ['diagnostic-reseau', 'clockwork', 'orbital-rendezvous', 'coffee-in-brief'];
 const COURSE_FIELDS = ['format', 'id', 'title', 'language', 'version', 'ui', 'navigation', 'completion', 'tracking', 'tokens', 'presentation', 'fonts', 'backdrop', 'variables'] as const;
 
 // A screen file of a project replaced in memory (an edit the engine would apply).
@@ -53,7 +53,7 @@ test('renderScreen gives each screen as the course data holds it, with the cours
       assert.deepEqual(renderScreen(project, screen.id), render);
     }
   }
-  const project = loadProjectFromDir(path.join(ROOT, 'examples', 'planetary-gearset'));
+  const project = loadProjectFromDir(GEARSET);
   assert.deepEqual(renderScreen(project, 'lab', { state: 'answered', step: 2, layer: 'lab-debrief' }).view, { state: 'answered', step: 2, layer: 'lab-debrief' });
   assert.throws(() => renderScreen(project, 'nowhere'), /Screen "nowhere" not found/);
 });
@@ -102,7 +102,7 @@ test('renderScreen: url() of stylesheets are rebased on the package root, commen
 });
 
 test('renderScreen: a screen edited since the context was made renders as with a fresh context', () => {
-  const project = loadProjectFromDir(path.join(ROOT, 'examples', 'planetary-gearset'));
+  const project = loadProjectFromDir(GEARSET);
   const context = createRenderContext(project);
   const fresh = (edited: Project, id: string) => renderScreen(edited, id, {}, createRenderContext(edited));
   // Text typed into a block.

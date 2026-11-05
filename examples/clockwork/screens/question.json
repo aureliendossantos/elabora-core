@@ -1,0 +1,47 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
+  "id": "question",
+  "title": "Two hands, one shaft",
+  "covers": [
+    "ITEM-1"
+  ],
+  "layout": "clock-stage",
+  "blocks": [
+    {
+      "id": "question-text",
+      "type": "text",
+      "props": {
+        "markdown": "Turn the minute hand once around the dial: the hour hand moves on by just 1 hour.\n\nA single shaft, at the centre, drives them both. So how does one hand turn 12 times slower than the other?"
+      }
+    },
+    {
+      "id": "question-hint",
+      "type": "text",
+      "props": {
+        "markdown": "Drag the minute hand around the dial."
+      },
+      "style": "hint"
+    },
+    {
+      "id": "question-clock",
+      "type": "free-object",
+      "slot": "stage",
+      "continuity": {
+        "key": "clockwork",
+        "duration": 1300
+      },
+      "props": {
+        "object": "clockwork",
+        "title": "A clock face whose minute hand you can turn",
+        "aspectRatio": "fill",
+        "narrowAspectRatio": "1:1",
+        "minHeight": 420,
+        "props": {
+          "stage": "clock"
+        },
+        "textAlternative": "**Text version.** A round clock face with 12 marks. The coral minute hand runs fast; the green hour hand creeps forward. When the minute hand goes once around, the hour hand moves on by 1 hour, from one mark to the next."
+      },
+      "optional": true
+    }
+  ]
+}

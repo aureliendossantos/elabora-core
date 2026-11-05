@@ -8,7 +8,7 @@ import { initProject } from '@elabora/node/scaffold';
 import { copyCharter } from '@elabora/node/charter';
 import { listModuleTemplates } from '@elabora/node/module-templates';
 import { createModule, libraryRoot } from '@elabora/node/library/index';
-import { ROOT } from '../helpers.ts';
+import { ROOT, GEARSET } from '../helpers.ts';
 
 // A course's charter taken by a new course (docs/decisions/D69.md): from every template and every
 // example, a blank course that validates, in their theme, fonts, components and backdrop, with none of
@@ -85,10 +85,10 @@ test('what a charter takes with its files: the stylesheet\'s pictures, the logo,
 test('the presentation the author chose stays; the rest of it is the charter\'s', () => {
   const made = path.join(tempDir('elabora-charter-'), 'course');
   initProject(made, { id: 'charter-test', title: 'Charter test', language: 'en', brief: { presentation: 'scroll' } });
-  copyCharter(path.join(EXAMPLES, 'planetary-gearset'), made, { presentation: 'scroll' });
+  copyCharter(GEARSET, made, { presentation: 'scroll' });
   const { presentation } = readJSON(made, 'course.json');
   assert.equal(presentation.mode, 'scroll');
-  assert.equal(presentation.contentWidth, readJSON(path.join(EXAMPLES, 'planetary-gearset'), 'course.json').presentation.contentWidth);
+  assert.equal(presentation.contentWidth, readJSON(GEARSET, 'course.json').presentation.contentWidth);
 });
 
 test('createModule with a charter: a module of the library in another module\'s charter, its note for agents, never with a template', async () => {

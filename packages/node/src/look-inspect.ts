@@ -68,7 +68,10 @@ export async function captureClip(page: Page, clip: LayoutRect, { scale = 1, typ
 export async function objectFrameOf(page: Page, block: string): Promise<Frame | string> {
   const node = await page.$(BLOCK(block));
   if (!node) return `No block "${block}" on the screen.`;
-  const iframe = await node.$('.t-object-frame iframe');
+  // A block that carries on from another screen (continuity, D65) has its frame in the page's keep
+  // layer: the block's frame names it with aria-owns.
+  const owned = await node.$eval('.t-object-frame', (element) => element.getAttribute('aria-owns')).catch(() => null);
+  const iframe = owned ? await page.$(`iframe[id="${owned}"]`) : await node.$('.t-object-frame iframe');
   const frame = iframe ? await iframe.contentFrame() : null;
   return frame ?? `Block "${block}" is not a free object: --act drives the controls of an object's frame.`;
 }

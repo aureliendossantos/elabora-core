@@ -8,7 +8,7 @@ import type { SourceFile } from '@elabora/core/project/files';
 import { validateProject } from '@elabora/core/validate/index';
 import type { Diagnostic } from '@elabora/core/diagnostics/index';
 import path from 'node:path';
-import { EXAMPLE, ROOT } from '../helpers.ts';
+import { EXAMPLE, GEARSET, ROOT } from '../helpers.ts';
 
 // The project and findings a session keeps up to date change by change must be those of loading and
 // validating the same files from scratch, whatever the order of the edits.
@@ -72,7 +72,7 @@ test('the project and findings kept incrementally equal a full load and validati
 });
 
 test('the same on a course with components, free objects and generators', () => {
-  const { files, artefacts } = readProjectFiles(path.join(ROOT, 'examples/planetary-gearset'));
+  const { files, artefacts } = readProjectFiles(GEARSET);
   const state = new ProjectState('planetary', files, artefacts);
   assertSame(state, 'open');
   const ids = [...state.project.screens.keys()];

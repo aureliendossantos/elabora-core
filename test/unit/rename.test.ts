@@ -8,7 +8,7 @@ import { build } from '@elabora/node/build';
 import { translationStatus } from '@elabora/node/translate';
 import * as edit from '@elabora/node/edit';
 import { diffReports } from '@elabora/core/update-impact';
-import { ROOT, copyExample, codes, readJSON, writeJSON, NETWORK_SAMPLE } from '../helpers.ts';
+import { ROOT, GEARSET, copyExample, codes, readJSON, writeJSON, NETWORK_SAMPLE } from '../helpers.ts';
 
 // elabora rename (docs/architecture/operations.md, Identifiers and format version): ids are permanent, renaming
 // is one explicit change that carries every reference and the state lock, so that a renamed
@@ -16,7 +16,7 @@ import { ROOT, copyExample, codes, readJSON, writeJSON, NETWORK_SAMPLE } from '.
 
 const temporary: string[] = [];
 after(() => { for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true }); });
-const example = (name: string) => { const dir = copyExample(name === 'diagnostic-reseau' ? NETWORK_SAMPLE : path.join(ROOT, 'examples', name)); temporary.push(dir); return dir; };
+const example = (name: string) => { const dir = copyExample(name === 'diagnostic-reseau' ? NETWORK_SAMPLE : path.isAbsolute(name) ? name : path.join(ROOT, 'examples', name)); temporary.push(dir); return dir; };
 const tempDir = () => { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-rename-')); temporary.push(dir); return dir; };
 const texts = (dir: string) => Object.fromEntries([...readProjectFiles(dir).files].filter(([, file]) => file.kind === 'text').map(([file, content]) => [file, content.kind === 'text' ? content.text : '']));
 
@@ -78,8 +78,8 @@ test('rename: translation units and stylesheet selectors follow (orbital-rendezv
   assert.deepEqual([status.translated, status.toTranslate, status.stale, status.removed], [status.units, 0, 0, 0], 'the translation still matches every unit');
 });
 
-test('rename: layers, a fork of quiz and a screen of planetary-gearset; elabora diff sees the same progress', async () => {
-  const dir = example('planetary-gearset');
+test('rename: layers, a fork of quiz and a screen of a course with components and layers; elabora diff sees the same progress', async () => {
+  const dir = example(GEARSET);
   await renameAndCheck(dir, 'hoist-bench-a', 'hoist-light-load', 'layer');
   await renameAndCheck(dir, 'assessment-q3', 'assessment-config', 'block');
   const first = await build(dir, { emit: 'dir', out: tempDir() });

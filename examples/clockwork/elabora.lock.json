@@ -1,0 +1,25 @@
+{
+  "format": "elabora-lock/1",
+  "next": 16,
+  "keys": {
+    "screen:question": "0",
+    "screen:teeth": "1",
+    "screen:count": "2",
+    "screen:one-gear": "3",
+    "screen:two-steps": "4",
+    "screen:centre": "5",
+    "screen:answer": "6",
+    "object:question-clock": "7",
+    "continuity:clockwork": "8",
+    "object:teeth-clock": "9",
+    "object:count-clock": "a",
+    "numeric:one-gear-question": "b",
+    "object:one-gear-clock": "c",
+    "object:two-steps-clock": "d",
+    "object:centre-clock": "e",
+    "object:answer-clock": "f"
+  },
+  "components": {
+    "clock-stage": "1.0.0"
+  }
+}

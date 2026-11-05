@@ -81,7 +81,7 @@ node bin/elabora.js test examples/canal-locks --profile moodle,successfactors
 | [`canal-locks`](../examples/canal-locks/) | English | A 3D free object reused on every slide, a dialogue, a French translation |
 | [`phishing-by-numbers`](../examples/phishing-by-numbers/) | English | The twelve [chart blocks](charts.md) on narrated slides, following the voice word by word |
 | [`coffee-in-brief`](../examples/coffee-in-brief/) | English | A scroll course that uses every [starter block](blocks.md) and each of its presentations |
-| [`planetary-gearset`](../examples/planetary-gearset/) | English | The [design layer](design.md) and [components](components.md): layouts, generated diagrams, maths, numeric questions, a 3D test bench |
+| [`clockwork`](../examples/clockwork/) | English | One 3D object that carries on from screen to screen ([continuity](free-object-contract.md)), controls that change with each screen, a numeric question, a French translation |
 | [`orbital-rendezvous`](../examples/orbital-rendezvous/) | English | Orbits on slides, with a 3D phasing lab |
 | [`medieval-charts`](../examples/medieval-charts/) | English | A scroll course on medieval sea charts |
 | [`diagnostic-reseau`](../examples/diagnostic-reseau/) | French | A plan, a decision, a 3D simulation, an assessment and three narrated screens |

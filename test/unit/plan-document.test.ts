@@ -24,7 +24,7 @@ import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { iterateBlocks } from '@elabora/core/project/load';
 import * as edit from '@elabora/node/edit';
 import { createMcpServer } from '@elabora/cli/mcp';
-import { ROOT, copyExample, readJSON, writeJSON, NETWORK_SAMPLE } from '../helpers.ts';
+import { ROOT, GEARSET, copyExample, readJSON, writeJSON, NETWORK_SAMPLE } from '../helpers.ts';
 
 // The plan's document (docs/decisions.md D48, D52): one model, read by the Word, HTML and PDF exports
 // and by the app. What the client reads and signs: a version of the plan or its working copy, the
@@ -44,7 +44,7 @@ const course = (source?: string): string => {
   temporary.push(dir);
   return dir;
 };
-const GEARS = path.join(ROOT, 'examples/planetary-gearset');
+const GEARS = GEARSET;
 const NETWORK = NETWORK_SAMPLE; // V1 sent, V2 validated, nine changes since
 const PERSON = { author: { kind: 'human' as const, name: 'Aurélien' } };
 const AGENT = { author: { kind: 'agent' as const, name: 'claude-code' } };

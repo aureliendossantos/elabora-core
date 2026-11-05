@@ -1,0 +1,47 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
+  "id": "teeth",
+  "title": "Teeth that hold together",
+  "covers": [
+    "ITEM-2"
+  ],
+  "layout": "clock-stage",
+  "blocks": [
+    {
+      "id": "teeth-text",
+      "type": "text",
+      "props": {
+        "markdown": "Behind the dial, the minute shaft carries a small gear. Its teeth fit between the teeth of a larger gear, so where the two meet, their rims travel together, tooth by tooth.\n\nThe large gear turns the other way."
+      }
+    },
+    {
+      "id": "teeth-hint",
+      "type": "text",
+      "props": {
+        "markdown": "Turn either gear."
+      },
+      "style": "hint"
+    },
+    {
+      "id": "teeth-clock",
+      "type": "free-object",
+      "slot": "stage",
+      "continuity": {
+        "key": "clockwork",
+        "duration": 1300
+      },
+      "props": {
+        "object": "clockwork",
+        "title": "Two gears in mesh, which you can turn",
+        "aspectRatio": "fill",
+        "narrowAspectRatio": "1:1",
+        "minHeight": 420,
+        "props": {
+          "stage": "pair"
+        },
+        "textAlternative": "**Text version.** The dial is lifted away. Behind it, a small coral gear on the minute shaft meshes with a large yellow gear. When the small gear turns clockwise, the large one turns counterclockwise, more slowly; at the point where they meet, their teeth move together."
+      },
+      "optional": true
+    }
+  ]
+}

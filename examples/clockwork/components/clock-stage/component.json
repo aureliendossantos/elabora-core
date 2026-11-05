@@ -1,0 +1,34 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/component.schema.json",
+  "id": "clock-stage",
+  "title": "Mechanism and explanation",
+  "description": "The mechanism on the left, on the paper and without a frame; on the right, one explanation in large type, which fades in when the screen arrives. The screen's title stays for the outline and screen readers, out of sight. On narrow screens the mechanism comes first and the text follows.",
+  "instructions": "Put one free object with aspectRatio fill in Mechanism, with the same continuity key on every screen, so that it stays from one screen to the next. Keep the explanation to two short paragraphs; a Gesture line (style hint) says what to do with the object.",
+  "category": "layout",
+  "version": "1.0.0",
+  "level": "screen",
+  "fullBleed": true,
+  "slots": [
+    {
+      "id": "text",
+      "label": "Explanation",
+      "default": true,
+      "accepts": [
+        "text",
+        "numeric",
+        "button",
+        "callout"
+      ],
+      "maxBlocks": 4
+    },
+    {
+      "id": "stage",
+      "label": "Mechanism",
+      "accepts": [
+        "free-object",
+        "image"
+      ],
+      "maxBlocks": 1
+    }
+  ]
+}

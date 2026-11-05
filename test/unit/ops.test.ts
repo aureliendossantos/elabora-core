@@ -9,7 +9,7 @@ import {
   type Files, type FileContent, type Json, type JsonObject, type Op, type Author, type JournalEntry, type ChangeEntry, type UndoEntry
 } from '@elabora/core/ops/index';
 import { computeDiff } from '@elabora/core/ops/diff';
-import { ROOT } from '../helpers.ts';
+import { ROOT, GEARSET } from '../helpers.ts';
 
 // ── tools ────────────────────────────────────────────────────────────
 
@@ -549,8 +549,7 @@ test('touchedFiles lists sources and destinations of moves', () => {
 const TEXT = /\.(json|md|css|html|js|mjs|svg|xlf|vtt|txt|csv|gitignore)$/i;
 
 // The example as a snapshot, its JSON formatted the way Elabora writes it.
-function loadExample(name: string): Map<string, FileContent> {
-  const root = path.join(ROOT, 'examples', name);
+function loadExample(name: string, root = path.join(ROOT, 'examples', name)): Map<string, FileContent> {
   const files = new Map<string, FileContent>();
   const walk = (abs: string, rel: string) => {
     for (const entry of fs.readdirSync(abs, { withFileTypes: true })) {
@@ -689,7 +688,7 @@ function realisticEdit(rng: Rng, project: Project, edit: Edit, fresh: () => stri
   }
 }
 
-for (const example of ['diagnostic-reseau', 'orbital-rendezvous', 'planetary-gearset']) {
+for (const example of ['diagnostic-reseau', 'orbital-rendezvous', 'clockwork']) {
   test(`examples/${example}: realistic edits diff, apply and invert exactly`, () => {
     const before = loadExample(example);
     const seen = new Map<Edit, number>();
@@ -710,8 +709,8 @@ for (const example of ['diagnostic-reseau', 'orbital-rendezvous', 'planetary-gea
   });
 }
 
-test('examples: a block moved to another screen is one move; a screen added is a write and an insert', () => {
-  const before = loadExample('planetary-gearset');
+test('a course with sections, layers and blocks: a block moved to another screen is one move; a screen added is a write and an insert', () => {
+  const before = loadExample('planetary-gearset', GEARSET);
   const project = projectOf(before);
   const intro = screen(project, 'screens/intro.json');
   const lab = screen(project, 'screens/lab.json');

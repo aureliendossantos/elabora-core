@@ -1,0 +1,39 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
+  "id": "count",
+  "title": "Count the teeth",
+  "covers": [
+    "ITEM-3"
+  ],
+  "layout": "clock-stage",
+  "blocks": [
+    {
+      "id": "count-text",
+      "type": "text",
+      "props": {
+        "markdown": "The small gear has 10 teeth, the large one 30. Each tooth that passes moves both gears on by a tooth.\n\nA full turn of the small gear moves the large one by 10 of its 30 teeth: a third of a turn."
+      }
+    },
+    {
+      "id": "count-clock",
+      "type": "free-object",
+      "slot": "stage",
+      "continuity": {
+        "key": "clockwork",
+        "duration": 1300
+      },
+      "props": {
+        "object": "clockwork",
+        "title": "The same two gears, their teeth lighting up as they pass",
+        "aspectRatio": "fill",
+        "narrowAspectRatio": "1:1",
+        "minHeight": 420,
+        "props": {
+          "stage": "count"
+        },
+        "textAlternative": "**Text version.** The small gear has 10 teeth and the large one 30. As they turn, each tooth lights up when it passes the point where the gears meet, on both gears at once. After a full turn of the small gear, its 10 teeth are lit, and 10 teeth of the large gear: a third of it. Then the count starts again."
+      },
+      "optional": true
+    }
+  ]
+}
