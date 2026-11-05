@@ -66,6 +66,31 @@
       ]
     },
     {
+      "name": "From one gear to two steps: the last gear arrives at the size it says, in mesh with its pinion",
+      "size": [880, 760],
+      "props": { "stage": "one-gear" },
+      "steps": [
+        { "action": "step", "frames": 10 },
+        { "action": "set-props", "props": { "stage": "train" }, "transition": { "duration": 1300 } },
+        { "action": "step", "frames": 100 },
+        { "action": "snapshot", "name": "train-arrived" },
+        { "action": "expect-state", "state": { "w2": 24 } }
+      ]
+    },
+    {
+      "name": "From two steps to the centre: a last gear left at 24 teeth grows back to 32, still in mesh",
+      "size": [880, 760],
+      "props": { "stage": "train" },
+      "steps": [
+        { "action": "step", "frames": 10 },
+        { "action": "set-props", "props": { "stage": "centre" }, "transition": { "duration": 1300 } },
+        { "action": "step", "frames": 30 },
+        { "action": "snapshot", "name": "centre-growing" },
+        { "action": "step", "frames": 80 },
+        { "action": "snapshot", "name": "centre-grown" }
+      ]
+    },
+    {
       "name": "Centre: a click on the last gear rolls it back to the centre",
       "size": [880, 760],
       "props": { "stage": "centre" },
