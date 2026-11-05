@@ -1,0 +1,82 @@
+{
+  "screen": "premier-reflexe",
+  "line": "leila-relais",
+  "language": "en",
+  "textHash": "sha256:2a0d9abf7354df3e70d2dd4d89a75049b3ce4e1036a114c2ea4f8eddb799b8bf",
+  "duration": 4.07,
+  "provider": "elevenlabs",
+  "voice": "WyFXw4PzMbRnp8iLMJwY",
+  "generated": true,
+  "audioHash": "sha256:8d78473cc0e2a79b5ca463ac4b60c1a557c6e232f92d76fa41d7bf4bc452c56d",
+  "createdAt": "2026-11-05T12:05:39Z",
+  "take": 1,
+  "spokenHash": "sha256:2a0d9abf7354df3e70d2dd4d89a75049b3ce4e1036a114c2ea4f8eddb799b8bf",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Juliet (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Computer and switch respond. I'll carry on checking in order.",
+  "mouth": "cwwooccccwwwwwwwwcoooocssssssooocsssooossccoocoosssssccccccccccccccccccccccwwwccoowwoooowwwwwwssssoocoooooooooooooooosssccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Computer",
+      "start": 0.02,
+      "end": 0.622,
+      "score": 0.982
+    },
+    {
+      "text": "and",
+      "start": 0.622,
+      "end": 0.802,
+      "score": 1
+    },
+    {
+      "text": "switch",
+      "start": 0.802,
+      "end": 1.223,
+      "score": 0.975
+    },
+    {
+      "text": "respond",
+      "start": 1.223,
+      "end": 1.796,
+      "score": 0.998
+    },
+    {
+      "text": "I'll",
+      "start": 2.486,
+      "end": 2.667,
+      "score": 0.989
+    },
+    {
+      "text": "carry",
+      "start": 2.667,
+      "end": 3.007,
+      "score": 0.999
+    },
+    {
+      "text": "on",
+      "start": 3.007,
+      "end": 3.168,
+      "score": 0.999
+    },
+    {
+      "text": "checking",
+      "start": 3.168,
+      "end": 3.569,
+      "score": 0.958
+    },
+    {
+      "text": "in",
+      "start": 3.569,
+      "end": 3.729,
+      "score": 0.991
+    },
+    {
+      "text": "order",
+      "start": 3.729,
+      "end": 4.07,
+      "score": 0.878
+    }
+  ]
+}

@@ -11,7 +11,7 @@ import { renderScreen } from '@elabora/core/render/screen';
 import type { CanvasApi } from '@elabora/player/canvas';
 import { PLAYER_PREVIEW_PROTOCOL } from '@elabora/player/canvas-protocol';
 import type { CanvasMessage, HostMessage } from '@elabora/player/canvas-protocol';
-import { ROOT, BILINGUAL, copyExample, isClosed, settled } from '../helpers.ts';
+import { ROOT, BILINGUAL, copyExample, isClosed, settled, NETWORK_SAMPLE } from '../helpers.ts';
 import { openProject } from '@elabora/engine';
 
 // The player's preview (the canvas with chrome=live, protocol elabora-player-preview/1): the bars
@@ -62,7 +62,7 @@ async function withLive(dir: string, run: (live: { page: Frame; host: Page; show
 }
 
 test('the live bars: panels, the outline, Previous and Next said to the host, the item clicked, highlight, open and close', { timeout: 180000 }, async () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const dir = copyExample(NETWORK_SAMPLE);
   edit.updatePlayer(dir, { enable: ['display'] });
   await withLive(dir, async ({ page, show, send, post, sent }) => {
     await show('chemin', 1);
@@ -133,7 +133,7 @@ test('the live bars: panels, the outline, Previous and Next said to the host, th
 });
 
 test('the live bars: a change of the player reaches the open canvas without a reload, the panel open stays open', { timeout: 180000 }, async () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const dir = copyExample(NETWORK_SAMPLE);
   await withLive(dir, async ({ page, show, post }) => {
     await show('accueil', 1);
     await page.evaluate(() => { (window as unknown as { kept: boolean }).kept = true; });
@@ -152,7 +152,7 @@ test('the live bars: a change of the player reaches the open canvas without a re
 });
 
 test('the canvas never takes focus from the host: not on an open, a push that mounts the course again, or a modal layer; a click inside does', { timeout: 180000 }, async () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const dir = copyExample(NETWORK_SAMPLE);
   const typing = (host: Page) => host.evaluate(() => document.activeElement?.id ?? document.activeElement?.tagName ?? null);
   await withLive(dir, async ({ page, host, show, post }) => {
     await show('accueil', 1);
@@ -219,7 +219,7 @@ test('an event that goes to the next screen names the screen after the one shown
 });
 
 test('the engine pushes the screen shown again when another screen changes what the bars show (a title in the outline)', { timeout: 180000 }, async () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const dir = copyExample(NETWORK_SAMPLE);
   const session = await openProject(dir, { backups: { enabled: false, prune: false }, media: { enabled: false }, rescanIntervalMs: 0 });
   const browser = await launchBrowser('chromium');
   try {

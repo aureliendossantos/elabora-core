@@ -10,7 +10,7 @@ import { build } from '@elabora/node/build';
 import { capture } from '@elabora/node/capture';
 import { narrationWords } from '@elabora/core/narration/words';
 import { narrationSidecarPath } from '@elabora/core/narration/narration';
-import { ROOT, copyExample, isClosed, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, copyExample, isClosed, readJSON, writeJSON, NETWORK_SAMPLE } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { narrate, hasFfmpeg } from '../narration.ts';
 
@@ -384,7 +384,7 @@ test('the editor\'s canvas renders a timed screen again as the first time: a blo
   const { renderScreen } = await import('@elabora/core/render/screen');
   type CanvasWindow = Window & typeof globalThis & { __elaboraCanvas: import('@elabora/player/canvas').CanvasApi };
   // The example: on « accueil » the ticket comes on « impression ».
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const dir = copyExample(NETWORK_SAMPLE);
   const host = await startCanvasHost({ root: dir });
   const browser = await launchBrowser('chromium');
   try {
@@ -421,7 +421,7 @@ test('the editor\'s canvas: the contents of a stack share one place, the size of
   const { loadProjectFromDir } = await import('@elabora/node/project-reader');
   const { renderScreen } = await import('@elabora/core/render/screen');
   type CanvasWindow = Window & typeof globalThis & { __elaboraCanvas: import('@elabora/player/canvas').CanvasApi };
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const dir = copyExample(NETWORK_SAMPLE);
   const host = await startCanvasHost({ root: dir });
   const browser = await launchBrowser('chromium');
   try {

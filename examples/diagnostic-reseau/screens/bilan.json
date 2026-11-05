@@ -1,41 +1,56 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
   "id": "bilan",
-  "title": "Le bilan du diagnostic",
+  "title": "Deux nouveaux tickets",
   "covers": [
+    "ITEM-5",
     "ITEM-6"
   ],
+  "style": "wide",
+  "completeWhen": "interactions-done",
+  "steps": {
+    "2": {
+      "opens": "answered"
+    }
+  },
   "blocks": [
     {
-      "id": "bilan-ticket",
-      "type": "text",
+      "id": "bilan-questions",
+      "type": "columns",
+      "width": "wide",
       "props": {
-        "markdown": "Dans le cas de Marc, la demande est bloquée par une règle du pare-feu. La panne est localisée : le ticket peut être transmis avec un diagnostic précis."
-      }
+        "count": 2
+      },
+      "blocks": [
+        {
+          "id": "bilan-q1",
+          "type": "quiz",
+          "slot": "first",
+          "props": {
+            "questionRef": "Q-1",
+            "feedbackStyle": "compact"
+          }
+        },
+        {
+          "id": "bilan-q2",
+          "type": "quiz",
+          "slot": "second",
+          "props": {
+            "questionRef": "Q-2",
+            "feedbackStyle": "compact"
+          }
+        }
+      ]
     },
     {
       "id": "bilan-resultat",
       "type": "results",
+      "width": "wide",
+      "step": 2,
       "props": {
         "allowRetry": true,
-        "passedMessage": "Vous savez localiser une panne en suivant le chemin des paquets.",
-        "failedMessage": "Reprenez la règle SUP-NET-04, puis retentez l'évaluation."
-      }
-    },
-    {
-      "id": "bilan-regle",
-      "type": "callout",
-      "props": {
-        "variant": "important",
-        "title": "Une seule règle",
-        "markdown": "Poste → commutateur → routeur → pare-feu → serveur d'impression. **Dans l'ordre, sans sauter d'étape.**"
-      }
-    },
-    {
-      "id": "bilan-suite",
-      "type": "text",
-      "props": {
-        "markdown": "Gardez la méthode à portée de main : ouvrez **Ressources**, puis la **Fiche réflexe : panne d’impression réseau**."
+        "passedMessage": "Vous savez localiser une panne en suivant le chemin des paquets. La fiche réflexe SUP-NET-04 vous attend dans **Ressources**.",
+        "failedMessage": "Reprenez le chemin depuis le poste, puis réessayez. La fiche réflexe SUP-NET-04 est dans **Ressources**."
       }
     }
   ]

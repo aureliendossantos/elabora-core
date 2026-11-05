@@ -1,0 +1,142 @@
+{
+  "screen": "chemin",
+  "line": "chemin-regle",
+  "language": "fr",
+  "textHash": "sha256:3f227965ede548f8d4d6ba4847059179ed9745904f4d1874df80faf6854c119f",
+  "duration": 5.854,
+  "provider": "pocket-tts",
+  "voice": "claire",
+  "generated": true,
+  "audioHash": "sha256:dcff2b2825ad9fcb4298a5a3ea209584710b997951e794f5489abeb460c5342f",
+  "createdAt": "2026-11-05T11:43:38Z",
+  "take": 1,
+  "spokenHash": "sha256:b3f164ae9a055e09a70d9c7ae724b182ca558876883aabc0c874d61ab132aa84",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Claire » d’après un enregistrement du corpus CML-TTS (Frederico S. Oliveira, Edresson Casanova, Arnaldo Candido Junior, Anderson S. Soares, Arlindo R. Galvão Filho ; CEIA, Université fédérale de Goiás), https://openslr.org/146/, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/) ; enregistrement nettoyé par Kyutai, puis transformé en voix de synthèse.",
+  "model": "pocket-tts/french_24l@d29db79",
+  "text": "Une panne peut se cacher à chacune de ces étapes. Pour la trouver, la procédure SUP-NET-04 a une règle simple.",
+  "mouth": "cccoooocccwwwooocwwwcoocwwwsssswwoooooccwwoooosssooooccwwwwcccccccccccccwwwwwsssooooooocccccccccccccwwwccoossooooossssssccccwwwssswwooocwwwwccccccoooooowwwwwwwsssssoocccccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Une",
+      "start": 0.1,
+      "end": 0.255,
+      "score": 0.999
+    },
+    {
+      "text": "panne",
+      "start": 0.281,
+      "end": 0.521,
+      "score": 0.952
+    },
+    {
+      "text": "peut",
+      "start": 0.521,
+      "end": 0.662,
+      "score": 0.999
+    },
+    {
+      "text": "se",
+      "start": 0.662,
+      "end": 0.776,
+      "score": 1
+    },
+    {
+      "text": "cacher",
+      "start": 0.802,
+      "end": 1.063,
+      "score": 0.998
+    },
+    {
+      "text": "à",
+      "start": 1.063,
+      "end": 1.137,
+      "score": 0.999
+    },
+    {
+      "text": "chacune",
+      "start": 1.143,
+      "end": 1.464,
+      "score": 0.992
+    },
+    {
+      "text": "de",
+      "start": 1.464,
+      "end": 1.558,
+      "score": 1
+    },
+    {
+      "text": "ces",
+      "start": 1.584,
+      "end": 1.718,
+      "score": 0.974
+    },
+    {
+      "text": "étapes",
+      "start": 1.744,
+      "end": 2.139,
+      "score": 0.999
+    },
+    {
+      "text": "Pour",
+      "start": 2.346,
+      "end": 2.486,
+      "score": 0.991
+    },
+    {
+      "text": "la",
+      "start": 2.486,
+      "end": 2.58,
+      "score": 1
+    },
+    {
+      "text": "trouver",
+      "start": 2.586,
+      "end": 2.901,
+      "score": 0.98
+    },
+    {
+      "text": "la",
+      "start": 3.348,
+      "end": 3.442,
+      "score": 0.999
+    },
+    {
+      "text": "procédure",
+      "start": 3.448,
+      "end": 3.883,
+      "score": 0.965
+    },
+    {
+      "text": "SUP-NET-04",
+      "start": 3.89,
+      "end": 4.806,
+      "score": 0.87
+    },
+    {
+      "text": "a",
+      "start": 4.832,
+      "end": 4.906,
+      "score": 0.941
+    },
+    {
+      "text": "une",
+      "start": 4.932,
+      "end": 5.052,
+      "score": 0.999
+    },
+    {
+      "text": "règle",
+      "start": 5.052,
+      "end": 5.307,
+      "score": 1
+    },
+    {
+      "text": "simple",
+      "start": 5.393,
+      "end": 5.768,
+      "score": 0.999
+    }
+  ]
+}

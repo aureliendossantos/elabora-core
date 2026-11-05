@@ -1,0 +1,202 @@
+{
+  "screen": "chemin",
+  "line": "chemin-serveurs",
+  "language": "fr",
+  "textHash": "sha256:e2ba0bfc52b9aa410d2af326adaf72f0385a16d54d52ed1f4951eb3f390b9aed",
+  "duration": 7.905,
+  "provider": "pocket-tts",
+  "voice": "claire",
+  "generated": true,
+  "audioHash": "sha256:606cec5ce8b19741c874d60f5e9bae612a44f55d6a38272c85cf97ef133bc076",
+  "createdAt": "2026-11-05T11:43:35Z",
+  "take": 1,
+  "spokenHash": "sha256:e2ba0bfc52b9aa410d2af326adaf72f0385a16d54d52ed1f4951eb3f390b9aed",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Pocket TTS de Kyutai (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), dans la conversion ONNX de KevinAHM. Voix « Claire » d’après un enregistrement du corpus CML-TTS (Frederico S. Oliveira, Edresson Casanova, Arnaldo Candido Junior, Anderson S. Soares, Arlindo R. Galvão Filho ; CEIA, Université fédérale de Goiás), https://openslr.org/146/, sous licence CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/) ; enregistrement nettoyé par Kyutai, puis transformé en voix de synthèse.",
+  "model": "pocket-tts/french_24l@d29db79",
+  "text": "Le routeur la fait passer dans le réseau des serveurs. Le pare-feu vérifie qu'elle a le droit d'entrer. Le serveur d'impression l'envoie enfin à l'imprimante.",
+  "mouth": "ccccccccccwwwwwwwcwwwwwwwccooccoosssoooooooooooowwwoosssoooooooooccccccccccccccwwwccsscccwwooowwwoooccsscwwwwoooooooooooocccssccccccccccccccccccccccccccccccccwwsssswwooowwwwwwwccoosssssooossccooooossswwwwccoooocccwwooooossccssoocssccccccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Le",
+      "start": 0.321,
+      "end": 0.435,
+      "score": 0.999
+    },
+    {
+      "text": "routeur",
+      "start": 0.441,
+      "end": 0.742,
+      "score": 0.979
+    },
+    {
+      "text": "la",
+      "start": 0.742,
+      "end": 0.857,
+      "score": 1
+    },
+    {
+      "text": "fait",
+      "start": 0.863,
+      "end": 1.003,
+      "score": 1
+    },
+    {
+      "text": "passer",
+      "start": 1.003,
+      "end": 1.264,
+      "score": 1
+    },
+    {
+      "text": "dans",
+      "start": 1.264,
+      "end": 1.364,
+      "score": 0.999
+    },
+    {
+      "text": "le",
+      "start": 1.364,
+      "end": 1.458,
+      "score": 1
+    },
+    {
+      "text": "réseau",
+      "start": 1.465,
+      "end": 1.685,
+      "score": 1
+    },
+    {
+      "text": "des",
+      "start": 1.685,
+      "end": 1.806,
+      "score": 1
+    },
+    {
+      "text": "serveurs",
+      "start": 1.806,
+      "end": 2.261,
+      "score": 0.974
+    },
+    {
+      "text": "Le",
+      "start": 2.628,
+      "end": 2.742,
+      "score": 0.999
+    },
+    {
+      "text": "pare-feu",
+      "start": 2.749,
+      "end": 3.084,
+      "score": 0.918
+    },
+    {
+      "text": "vérifie",
+      "start": 3.11,
+      "end": 3.431,
+      "score": 0.983
+    },
+    {
+      "text": "qu'",
+      "start": 3.431,
+      "end": 3.511,
+      "score": 0.894
+    },
+    {
+      "text": "elle",
+      "start": 3.511,
+      "end": 3.631,
+      "score": 0.95
+    },
+    {
+      "text": "a",
+      "start": 3.631,
+      "end": 3.672,
+      "score": 0.713
+    },
+    {
+      "text": "le",
+      "start": 3.672,
+      "end": 3.732,
+      "score": 0.999
+    },
+    {
+      "text": "droit",
+      "start": 3.732,
+      "end": 3.892,
+      "score": 1
+    },
+    {
+      "text": "d'",
+      "start": 3.892,
+      "end": 3.952,
+      "score": 0.882
+    },
+    {
+      "text": "entrer",
+      "start": 3.952,
+      "end": 4.247,
+      "score": 0.948
+    },
+    {
+      "text": "Le",
+      "start": 5.257,
+      "end": 5.371,
+      "score": 0.999
+    },
+    {
+      "text": "serveur",
+      "start": 5.417,
+      "end": 5.758,
+      "score": 1
+    },
+    {
+      "text": "d'",
+      "start": 5.758,
+      "end": 5.818,
+      "score": 0.975
+    },
+    {
+      "text": "impression",
+      "start": 5.818,
+      "end": 6.274,
+      "score": 0.999
+    },
+    {
+      "text": "l'",
+      "start": 6.44,
+      "end": 6.52,
+      "score": 0.945
+    },
+    {
+      "text": "envoie",
+      "start": 6.52,
+      "end": 6.815,
+      "score": 0.999
+    },
+    {
+      "text": "enfin",
+      "start": 6.922,
+      "end": 7.196,
+      "score": 0.992
+    },
+    {
+      "text": "à",
+      "start": 7.203,
+      "end": 7.263,
+      "score": 0.999
+    },
+    {
+      "text": "l'",
+      "start": 7.263,
+      "end": 7.323,
+      "score": 0.976
+    },
+    {
+      "text": "imprimante",
+      "start": 7.323,
+      "end": 7.838,
+      "score": 1
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "screen": "premier-reflexe",
+  "line": "appel.a",
+  "language": "fr",
+  "textHash": "sha256:4d494e0340bf3127fcde22cacda835d75eb323aaadecfe5527ac3ce2a2b02f14",
+  "duration": 2.96,
+  "provider": "elevenlabs",
+  "voice": "YxrwjAKoUKULGd0g8K9Y",
+  "generated": true,
+  "audioHash": "sha256:e639a06fa73ab5bffe236b25e395bc3fd8f5637492b21361449a882a6c6a3fdc",
+  "createdAt": "2026-10-23T23:41:44Z",
+  "take": 1,
+  "spokenHash": "sha256:4d494e0340bf3127fcde22cacda835d75eb323aaadecfe5527ac3ce2a2b02f14",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Lucie (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "On part de votre poste : l'intranet s'ouvre bien chez vous ?",
+  "mouth": "ccwwwcwwwoooooooocoooccoossssccccccccccccccccoowwwsscooowwwcsscoossssssscwwwwoooooooooocc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "On",
+      "start": 0.061,
+      "end": 0.155,
+      "score": 0.999
+    },
+    {
+      "text": "part",
+      "start": 0.161,
+      "end": 0.356,
+      "score": 0.74
+    },
+    {
+      "text": "de",
+      "start": 0.363,
+      "end": 0.443,
+      "score": 0.996
+    },
+    {
+      "text": "votre",
+      "start": 0.443,
+      "end": 0.678,
+      "score": 1
+    },
+    {
+      "text": "poste",
+      "start": 0.725,
+      "end": 1.081,
+      "score": 1
+    },
+    {
+      "text": "l'",
+      "start": 1.51,
+      "end": 1.591,
+      "score": 0.795
+    },
+    {
+      "text": "intranet",
+      "start": 1.591,
+      "end": 2.028,
+      "score": 0.861
+    },
+    {
+      "text": "s'",
+      "start": 2.054,
+      "end": 2.114,
+      "score": 0.697
+    },
+    {
+      "text": "ouvre",
+      "start": 2.114,
+      "end": 2.35,
+      "score": 1
+    },
+    {
+      "text": "bien",
+      "start": 2.376,
+      "end": 2.571,
+      "score": 1
+    },
+    {
+      "text": "chez",
+      "start": 2.598,
+      "end": 2.739,
+      "score": 0.981
+    },
+    {
+      "text": "vous",
+      "start": 2.739,
+      "end": 2.934,
+      "score": 0.988
+    }
+  ]
+}

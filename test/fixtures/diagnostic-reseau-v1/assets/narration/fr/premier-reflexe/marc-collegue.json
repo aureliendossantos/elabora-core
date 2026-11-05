@@ -1,0 +1,100 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-collegue",
+  "language": "fr",
+  "textHash": "sha256:db9b7c622aeca779e16f5649468e77d16d882cb8c4a894f56519cf000df7a102",
+  "duration": 3.14,
+  "provider": "elevenlabs",
+  "voice": "kENkNtk0xyzG09WW40xE",
+  "generated": true,
+  "audioHash": "sha256:6ddc35fb2d8d2671f2795e151380b0326f93cb6f75c11a563b569a1ecba72476",
+  "createdAt": "2026-10-23T23:42:08Z",
+  "take": 1,
+  "spokenHash": "sha256:db9b7c622aeca779e16f5649468e77d16d882cb8c4a894f56519cf000df7a102",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Marcel (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Ma collègue dit que c'est le serveur d'impression, comme en mars.",
+  "mouth": "cccwwwccwwwwwwwooossoooocwwwwccwwooosscwwoossooooooocccwwwssscooooocccccccwwccooooocooccssssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Ma",
+      "start": 0.061,
+      "end": 0.175,
+      "score": 1
+    },
+    {
+      "text": "collègue",
+      "start": 0.222,
+      "end": 0.618,
+      "score": 0.997
+    },
+    {
+      "text": "dit",
+      "start": 0.624,
+      "end": 0.819,
+      "score": 0.989
+    },
+    {
+      "text": "que",
+      "start": 0.825,
+      "end": 0.96,
+      "score": 0.999
+    },
+    {
+      "text": "c'",
+      "start": 0.966,
+      "end": 1.027,
+      "score": 0.823
+    },
+    {
+      "text": "est",
+      "start": 1.027,
+      "end": 1.127,
+      "score": 1
+    },
+    {
+      "text": "le",
+      "start": 1.127,
+      "end": 1.222,
+      "score": 1
+    },
+    {
+      "text": "serveur",
+      "start": 1.248,
+      "end": 1.61,
+      "score": 0.975
+    },
+    {
+      "text": "d'",
+      "start": 1.61,
+      "end": 1.691,
+      "score": 0.862
+    },
+    {
+      "text": "impression",
+      "start": 1.691,
+      "end": 2.188,
+      "score": 1
+    },
+    {
+      "text": "comme",
+      "start": 2.436,
+      "end": 2.657,
+      "score": 0.969
+    },
+    {
+      "text": "en",
+      "start": 2.657,
+      "end": 2.751,
+      "score": 1
+    },
+    {
+      "text": "mars",
+      "start": 2.758,
+      "end": 3.053,
+      "score": 0.997
+    }
+  ]
+}

@@ -17,7 +17,7 @@ import { lessonMdExport } from '@elabora/core/interop/lesson-md';
 import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import type { RenderContext } from '@elabora/core/render/screen';
 import type { Diagnostic } from '@elabora/core/diagnostics/index';
-import { ROOT, copyExample } from '../helpers.ts';
+import { ROOT, copyExample, NETWORK_SAMPLE } from '../helpers.ts';
 import { seededRandom, mutate } from '../mutations.ts';
 
 // Agents write broken JSON and the engine loads files being written: loading, validating, compiling
@@ -78,7 +78,7 @@ test('every reader of a project survives documents that break their schema', () 
 });
 
 test('a sidecar whose words are not a list (or hold a word that is not one) is read as untimed, never thrown on', () => {
-  const sample = readProjectFiles(copyExample(path.join(ROOT, 'examples', 'diagnostic-reseau')));
+  const sample = readProjectFiles(copyExample(NETWORK_SAMPLE));
   const files = new Map<string, SourceFile>(sample.files);
   const broken = (rel: string, words: unknown) => {
     const file = files.get(rel);

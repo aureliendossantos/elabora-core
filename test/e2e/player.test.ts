@@ -7,7 +7,7 @@ import type { Page } from 'playwright-core';
 import { startServer } from '@elabora/node/emulator/server';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import { build } from '@elabora/node/build';
-import { ROOT, copyExample as copyCourse, isClosed, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, copyExample as copyCourse, isClosed, readJSON, writeJSON, NETWORK_SAMPLE } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { hasFfmpeg } from '../narration.ts';
 
@@ -17,7 +17,7 @@ import { hasFfmpeg } from '../narration.ts';
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
 const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
 // The sample: three narrated screens after its title screen, a glossary its texts link to, a PDF among its resources.
-const copyExample = () => copyCourse(path.join(ROOT, 'examples/diagnostic-reseau'));
+const copyExample = () => copyCourse(NETWORK_SAMPLE);
 
 // clock: the page's timers on Playwright's clock, which only the test moves (a loaded computer cannot
 // run them out between two of its steps).

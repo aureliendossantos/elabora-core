@@ -1,8 +1,8 @@
 {
   "object": "diagnostic-reseau",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "elabora": "0.1.0",
-  "at": "2026-10-31T00:45:12.417Z",
+  "at": "2026-11-05T12:24:23.139Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -16,29 +16,38 @@
     "accessibility": "passed"
   },
   "perf": {
-    "drawCalls": 21,
-    "triangles": 2312,
-    "textures": 6,
-    "geometries": 8,
+    "drawCalls": 63,
+    "triangles": 34174,
+    "textures": 4,
+    "geometries": 34,
     "maxTextureSize": 8192,
     "webglContexts": 1,
     "contextLost": false,
-    "bootMs": 325,
+    "bootMs": 4596,
     "bootSamples": [
-      316,
-      325,
-      322,
-      330,
-      339
+      4596,
+      2898,
+      8417,
+      2834,
+      4666,
+      1881,
+      3534,
+      5661,
+      8138,
+      5500
     ]
   },
   "tests": [
     {
-      "name": "Diagnostic dans l'ordre : panne trouvée sans écart",
+      "name": "Après l'appel, la panne est trouvée sans écart",
       "ok": true
     },
     {
-      "name": "Hors procédure : indice après deux écarts",
+      "name": "Trop tôt deux fois : l'équipement suivant est signalé",
+      "ok": true
+    },
+    {
+      "name": "Au clavier, depuis le poste",
       "ok": true
     },
     {
@@ -48,7 +57,23 @@
     {
       "name": "Reprise : l'état sauvegardé est restauré",
       "ok": true
+    },
+    {
+      "name": "L'explication éclaire le chemin, puis les deux réseaux",
+      "ok": true
+    },
+    {
+      "name": "De l'appel au diagnostic, le plateau continue",
+      "ok": true
+    },
+    {
+      "name": "La panne réparée, l'impression sort",
+      "ok": true
+    },
+    {
+      "name": "Écran étroit",
+      "ok": true
     }
   ],
-  "fingerprint": "sha256:a1b5d7a90ca85eddfae012ea6ed53cf57af7ed7d44b2ed46a7118e3bd1793f89"
+  "fingerprint": "sha256:9ffe8aba3f5a5be773ac4d1c15f970f1ad0bc01c97772aa6f9fe5adf0c9b2db9"
 }

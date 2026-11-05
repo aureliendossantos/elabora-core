@@ -1,0 +1,82 @@
+{
+  "screen": "premier-reflexe",
+  "line": "appel.c",
+  "language": "en",
+  "textHash": "sha256:c8c1fee5522a4a26dbd35684a5a145639694f2005ae4f94fa49c261b10bed60e",
+  "duration": 3.87,
+  "provider": "elevenlabs",
+  "voice": "WyFXw4PzMbRnp8iLMJwY",
+  "generated": true,
+  "audioHash": "sha256:4cbf2dba944d33002df78d6ac1386a7ce790c09a2d91077589a019f5593fc358",
+  "createdAt": "2026-11-05T12:04:42Z",
+  "take": 1,
+  "spokenHash": "sha256:c8c1fee5522a4a26dbd35684a5a145639694f2005ae4f94fa49c261b10bed60e",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Juliet (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "I'll pass it to second line: with payroll, it's urgent.",
+  "mouth": "cwwwwccwwwwsssscooossswwwcoooooooosssssccccccccccccccccwwwwwccccwwwwwoooooooooooccccccooocsscccoooowwssooossscooccccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "I'll",
+      "start": 0.02,
+      "end": 0.201,
+      "score": 0.999
+    },
+    {
+      "text": "pass",
+      "start": 0.201,
+      "end": 0.441,
+      "score": 1
+    },
+    {
+      "text": "it",
+      "start": 0.441,
+      "end": 0.541,
+      "score": 0.991
+    },
+    {
+      "text": "to",
+      "start": 0.541,
+      "end": 0.682,
+      "score": 0.986
+    },
+    {
+      "text": "second",
+      "start": 0.682,
+      "end": 1.003,
+      "score": 0.998
+    },
+    {
+      "text": "line",
+      "start": 1.003,
+      "end": 1.335,
+      "score": 0.998
+    },
+    {
+      "text": "with",
+      "start": 1.845,
+      "end": 2.085,
+      "score": 0.947
+    },
+    {
+      "text": "payroll",
+      "start": 2.085,
+      "end": 2.659,
+      "score": 0.753
+    },
+    {
+      "text": "it's",
+      "start": 2.908,
+      "end": 3.16,
+      "score": 0.742
+    },
+    {
+      "text": "urgent",
+      "start": 3.269,
+      "end": 3.741,
+      "score": 0.985
+    }
+  ]
+}

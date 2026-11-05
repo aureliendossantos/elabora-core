@@ -1,0 +1,76 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-niveau2",
+  "language": "en",
+  "textHash": "sha256:e1797462f4fc726ab3a2902f846f66bb398034a3e86b4df1f9261cfc428d6d99",
+  "duration": 3.14,
+  "provider": "elevenlabs",
+  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "generated": true,
+  "audioHash": "sha256:f93cc3b0754f82842bc1ae36f795eaa91ae925fe40554751b5c927fb6879de7b",
+  "createdAt": "2026-11-05T12:04:44Z",
+  "take": 1,
+  "spokenHash": "sha256:e1797462f4fc726ab3a2902f846f66bb398034a3e86b4df1f9261cfc428d6d99",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[worried] Second line? And they'll call me back before noon?",
+  "mouth": "cccccsssoosssoosssssoooossccccccccccccccccccoooowwwssssoooocssscooooccssccwwwwooooowwwwwwwwcccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Second",
+      "start": 0.161,
+      "end": 0.523,
+      "score": 0.983
+    },
+    {
+      "text": "line",
+      "start": 0.523,
+      "end": 0.897,
+      "score": 0.915
+    },
+    {
+      "text": "And",
+      "start": 1.449,
+      "end": 1.53,
+      "score": 0.996
+    },
+    {
+      "text": "they'll",
+      "start": 1.53,
+      "end": 1.771,
+      "score": 0.975
+    },
+    {
+      "text": "call",
+      "start": 1.771,
+      "end": 1.953,
+      "score": 0.969
+    },
+    {
+      "text": "me",
+      "start": 1.953,
+      "end": 2.073,
+      "score": 0.999
+    },
+    {
+      "text": "back",
+      "start": 2.073,
+      "end": 2.295,
+      "score": 0.996
+    },
+    {
+      "text": "before",
+      "start": 2.295,
+      "end": 2.697,
+      "score": 0.992
+    },
+    {
+      "text": "noon",
+      "start": 2.697,
+      "end": 3.14,
+      "score": 0.755
+    }
+  ]
+}
