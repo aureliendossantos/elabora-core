@@ -175,42 +175,5 @@
     "J+7",
     "J+30"
   ],
-  "waivers": [],
-  "decided": [
-    {
-      "topic": "format",
-      "choice": "Cinq écrans, une mise en situation entrecoupée de deux instants pédagogiques",
-      "why": "Retour au concept d'origine : le ticket, le chemin expliqué, l'appel, le diagnostic sur le réseau 3D, puis deux nouveaux tickets. Chaque écran montre une chose que les autres ne montrent pas.",
-      "items": [
-        "ITEM-1",
-        "ITEM-2",
-        "ITEM-3",
-        "ITEM-4",
-        "ITEM-5",
-        "ITEM-6"
-      ]
-    },
-    {
-      "topic": "design",
-      "label": "Un réseau 3D du début à la fin",
-      "choice": "Le même plateau 3D suit tout le cas, de l'ouverture au diagnostic ; pendant l'activité, seuls la consigne et les équipements à contrôler restent à l'écran.",
-      "why": "Le décor reste le même pendant que l'histoire avance : l'apprenant retrouve le poste de Marc et ses contrôles d'un écran à l'autre."
-    },
-    {
-      "topic": "duration",
-      "choice": "Cible de 5 à 7 minutes",
-      "why": "Estimation à confirmer en usage."
-    },
-    {
-      "topic": "navigation",
-      "label": "Exploration de la démo",
-      "choice": "Export web en navigation libre, sans progression conservée",
-      "why": "Permettre l'accès direct aux fonctionnalités depuis le sommaire ; conserver les règles du parcours pédagogique dans le projet."
-    },
-    {
-      "topic": "voices",
-      "choice": "Marc et Leïla dans l'histoire, Claire pour le chemin",
-      "why": "Les voix de l'appel sont gardées ; Claire, hors de l'histoire, explique le chemin."
-    }
-  ]
+  "waivers": []
 }

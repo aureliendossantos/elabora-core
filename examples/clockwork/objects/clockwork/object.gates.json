@@ -1,8 +1,8 @@
 {
   "object": "clockwork",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "elabora": "0.1.0",
-  "at": "2026-11-05T12:40:42.835Z",
+  "at": "2026-11-05T14:44:08.454Z",
   "ok": true,
   "browser": {
     "engine": "electron",
@@ -17,22 +17,24 @@
   },
   "perf": {
     "drawCalls": 28,
-    "triangles": 8430,
+    "triangles": 8230,
     "textures": 0,
     "geometries": 23,
     "maxTextureSize": 8192,
     "webglContexts": 1,
     "contextLost": false,
-    "bootMs": 184,
+    "bootMs": 195,
     "bootSamples": [
-      167,
-      192,
-      185,
-      187,
-      203,
+      403,
+      195,
       171,
-      184,
-      170
+      171,
+      148,
+      199,
+      274,
+      497,
+      1188,
+      195
     ]
   },
   "tests": [
@@ -57,6 +59,14 @@
       "ok": true
     },
     {
+      "name": "From one gear to two steps: the last gear arrives at the size it says, in mesh with its pinion",
+      "ok": true
+    },
+    {
+      "name": "From two steps to the centre: a last gear left at 24 teeth grows back to 32, still in mesh",
+      "ok": true
+    },
+    {
       "name": "Centre: a click on the last gear rolls it back to the centre",
       "ok": true
     },
@@ -65,5 +75,5 @@
       "ok": true
     }
   ],
-  "fingerprint": "sha256:ef6f7f478145237e53520322dc8fae9331fcd255bbf54f1f5aa644c1421acbdc"
+  "fingerprint": "sha256:a2a31c078ea20dbb6e51e9b2ac8a162eecea010e01a2974f82e0e6b8e68f2a5b"
 }

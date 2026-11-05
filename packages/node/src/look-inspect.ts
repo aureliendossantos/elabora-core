@@ -23,11 +23,13 @@ function cdp(page: Page): Promise<CDPSession> {
 }
 
 // The block's box with a margin, inside the window (what of it the window shows), in px of the window;
-// null when the window shows none of it.
+// null when the window shows none of it. The whole window when the block has a modal dialog open.
 export async function closeUpClip(page: Page, block: string): Promise<LayoutRect | null> {
   return page.evaluate(({ selector, margin }) => {
     const node = document.querySelector(selector);
     if (!node) return null;
+    // A modal dialog of the block open over the page (a dialogue's debrief): the whole window.
+    if (node.querySelector('dialog:modal')) return { x: 0, y: 0, width: innerWidth, height: innerHeight };
     const box = node.getBoundingClientRect();
     const left = Math.max(0, Math.floor(box.left - margin));
     const top = Math.max(0, Math.floor(box.top - margin));

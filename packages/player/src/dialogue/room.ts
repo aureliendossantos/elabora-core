@@ -1,7 +1,7 @@
 // The room under a dialogue's thread (D61): a turn's controls while it plays, the options of the
-// decision waiting and the learner's choice, the end's controls and the debrief (a panel over the
-// thread in slides and scenes, under it in scroll pages). In slides the room keeps the height of the
-// tallest set of options, so that nothing moves the slide. Not part of the pure walk.
+// decision waiting and the learner's choice, the end's controls and the debrief (a modal dialog over
+// the screen in slides and scenes, under the thread in scroll pages). In slides the room keeps the
+// height of the tallest set of options, so that nothing moves the slide. Not part of the pure walk.
 
 import { element } from '../dom.ts';
 import { nodeOf, optionOf } from './walk.ts';
@@ -127,10 +127,24 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
   }
 
   // ── The debrief ──
-  // In slides (and scenes) the debrief is a panel over the thread, open at the end, the rest of the
-  // dialogue dimmed (modal.ts); « Voir le bilan » opens it again. In scroll pages, it comes under it.
+  // In slides (and scenes) the debrief is a modal dialog over the whole screen, open at the end: as
+  // tall as what it says, within the window, scrolling beyond; the page under its backdrop takes no
+  // click, a click on the backdrop or Échap closes it, « Voir le bilan » opens it again. A dialog of
+  // the page's top layer, not a panel over the thread: a dialogue in a narrow column leaves its thread
+  // too little room for it. It stays in the dialogue's markup (the theme's dialog.* tokens reach it).
+  // In scroll pages, the debrief comes under the thread, in the template's data-t-debrief.
   const overlaidDebrief = () => host().slides() || data.style === 'scene';
   const debriefToggle = () => room.querySelector<HTMLElement>('.t-dialogue-debrief-toggle');
+  let debriefDialog: HTMLDialogElement | null = null;
+  function overDialog(): HTMLDialogElement {
+    if (debriefDialog?.isConnected) return debriefDialog;
+    const dialog = element('dialog', { class: 't-dialog t-dialogue-debrief t-dialogue-debrief--modal', 'aria-label': labels.dialogueDebrief, tabindex: '-1' });
+    // Échap, and a click on the backdrop (the dialog's own box: what it shows is in its children).
+    dialog.addEventListener('cancel', (event) => { event.preventDefault(); setDebrief(false); });
+    dialog.addEventListener('click', (event) => { if (event.target === dialog) setDebrief(false); });
+    root.append(dialog);
+    return (debriefDialog = dialog);
+  }
   function setDebrief(open: boolean) {
     const was = root.hasAttribute('data-t-debrief-open');
     debriefOpen = open;
@@ -138,34 +152,46 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
     if (was && !open) parts.signal('debrief-close');
   }
   function renderDebrief(asked = false, live = true) {
-    const target = debriefHost;
     if (!data.debrief) return;
-    if (state.phase !== 'ended') { closeDebrief(); if (target) { target.replaceChildren(); target.hidden = true; } return; }
+    const over = overlaidDebrief() && !!debriefHost;
+    const target = over ? overDialog() : debriefHost;
+    if (state.phase !== 'ended') { closeDebrief(); if (debriefHost) { debriefHost.replaceChildren(); debriefHost.hidden = true; } debriefDialog?.replaceChildren(); return; }
     const card = debriefCard(thread, { ...debriefOf(), restart: canRestart(state.run) ? startOver : null });
     if (!target) {
       if (!log.querySelector('.t-dialogue-debrief-card')) box.insert(element('div', { class: 't-dialogue-row', 'data-role': 'debrief' }, card));
       return;
     }
-    const over = overlaidDebrief();
     const focused = target.contains(document.activeElement);
     target.replaceChildren(...(over ? [closeButton(thread, () => setDebrief(false))] : []), card);
     if (focused) target.focus({ preventScroll: true });
     if (!over) { target.hidden = false; return; }
-    // A panel that scrolls in its box: the keyboard reaches it.
-    target.tabIndex = 0;
-    target.setAttribute('role', 'dialog');
-    target.setAttribute('aria-label', labels.dialogueDebrief);
-    if (!debriefOpen) { closeDebrief(); target.hidden = true; return; }
-    target.hidden = false;
-    if (root.hasAttribute('data-t-debrief-open')) return;
+    if (debriefHost) debriefHost.hidden = true;
+    if (!debriefOpen) { closeDebrief(); return; }
+    // A dialogue its screen took out of the page opens nothing.
+    if (!root.isConnected) return;
+    const dialog = target as HTMLDialogElement;
+    // Opened once: it stays open while its contents change.
+    if (root.hasAttribute('data-t-debrief-open') && dialog.matches(':modal')) return;
+    // One panel at a time: the History closes first.
+    modal.dismiss();
     root.setAttribute('data-t-debrief-open', '');
-    modal.show({ keep: [target], close: () => setDebrief(false), focus: target, asked });
+    // Taken out of the page and put back, a dialog left open is no longer modal: opened again.
+    if (dialog.open) dialog.close();
+    dialog.showModal();
+    // The dialog itself takes the focus (not its close button): a screen reader starts from its title.
+    if (dialog.contains(document.activeElement) || asked) dialog.focus({ preventScroll: true });
     if (live) parts.signal('debrief-open');
   }
   function closeDebrief() {
     if (!root.hasAttribute('data-t-debrief-open')) return;
     root.removeAttribute('data-t-debrief-open');
-    modal.hide(debriefToggle());
+    const dialog = debriefDialog;
+    if (!dialog?.open) return;
+    const inside = !document.activeElement || document.activeElement === document.body || dialog.contains(document.activeElement);
+    dialog.close();
+    // The focus goes back where it was (the dialog's own restoring); gone, to « Voir le bilan ».
+    const active = document.activeElement;
+    if (inside && (!active || active === document.body || dialog.contains(active))) debriefToggle()?.focus({ preventScroll: true });
   }
   // The debrief of the run shown: the scored run's first choices (what counted), else the choices kept.
   function debriefOf() {
@@ -198,6 +224,7 @@ export function createRoom(parts: ViewParts, state: ViewState, { box, modal, mov
   function clearDebrief() {
     closeDebrief();
     if (debriefHost) { debriefHost.replaceChildren(); debriefHost.hidden = true; }
+    debriefDialog?.replaceChildren();
     for (const row of log.querySelectorAll('.t-dialogue-row[data-role="debrief"]')) row.remove();
     debriefOpen = true;
   }
