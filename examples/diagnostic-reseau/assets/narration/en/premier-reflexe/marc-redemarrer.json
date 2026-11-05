@@ -1,0 +1,52 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-redemarrer",
+  "language": "en",
+  "textHash": "sha256:93a3811712ed311da2ec9539ffa2a00fa2ed71178a9dab645b463230373a328d",
+  "duration": 1.37,
+  "provider": "elevenlabs",
+  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "generated": true,
+  "audioHash": "sha256:73403b0b03a75f223fbc39664072d866f197283188599b3e767eb408342f060e",
+  "createdAt": "2026-11-05T12:04:59Z",
+  "take": 1,
+  "spokenHash": "sha256:93a3811712ed311da2ec9539ffa2a00fa2ed71178a9dab645b463230373a328d",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Can't you just restart it?",
+  "mouth": "csswwoossssssssssssssssooooocooowwwwwwcccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Can't",
+      "start": 0.04,
+      "end": 0.262,
+      "score": 0.984
+    },
+    {
+      "text": "you",
+      "start": 0.262,
+      "end": 0.403,
+      "score": 1
+    },
+    {
+      "text": "just",
+      "start": 0.403,
+      "end": 0.685,
+      "score": 0.955
+    },
+    {
+      "text": "restart",
+      "start": 0.685,
+      "end": 1.209,
+      "score": 0.884
+    },
+    {
+      "text": "it",
+      "start": 1.209,
+      "end": 1.37,
+      "score": 0.994
+    }
+  ]
+}

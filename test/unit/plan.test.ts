@@ -9,7 +9,7 @@ import { planDiff, revertPlanChange } from '@elabora/core/project/plan-diff';
 import { planCourse } from '@elabora/core/project/plan-order';
 import type { Plan } from '@elabora/core/project/model';
 import { initProject } from '@elabora/node/scaffold';
-import { copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
+import { copyExample, readJSON, writeJSON, codes, NETWORK_SAMPLE } from '../helpers.ts';
 import * as edit from '@elabora/node/edit';
 
 // The plan's versions (docs/decisions.md D52): plan.json is the working copy, written at any time;
@@ -327,7 +327,7 @@ test('versions and notes stay with the course (its archive, its backups), never 
   const { createVersion } = await import('@elabora/node/backups/index');
   const { proofMarkdown } = await import('@elabora/core/compile/proof');
   const { ROOT } = await import('../helpers.ts');
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau')); // V2 validated, nine changes since, a note
+  const dir = copyExample(NETWORK_SAMPLE); // V2 validated, nine changes since, a note
   const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-versions-build-'));
   try {
     for (const options of [{ release: true }, { release: true, target: 'web' as const }]) {

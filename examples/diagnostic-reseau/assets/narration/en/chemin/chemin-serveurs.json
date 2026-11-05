@@ -1,0 +1,166 @@
+{
+  "screen": "chemin",
+  "line": "chemin-serveurs",
+  "language": "en",
+  "textHash": "sha256:c0628e510c862080698e05deec0dea17b56dc33204ae2b84793a7fb33267b366",
+  "duration": 7.638,
+  "provider": "pocket-tts",
+  "voice": "nora",
+  "generated": true,
+  "audioHash": "sha256:3ccea4a3bf9fa1c520bdd3adc8b5201811305ff14e3158b96ed5915cb72cd00a",
+  "createdAt": "2026-11-05T12:03:04Z",
+  "take": 1,
+  "spokenHash": "sha256:c0628e510c862080698e05deec0dea17b56dc33204ae2b84793a7fb33267b366",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kyutai’s Pocket TTS (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), in KevinAHM’s ONNX conversion. Voice “Nora” from a recording donated to Kyutai’s Unmute project (CC0), https://huggingface.co/kyutai/tts-voices.",
+  "model": "pocket-tts/english_2026-04",
+  "text": "The router takes it into the server network. The firewall checks it is allowed in. The print server finally sends it to the printer.",
+  "mouth": "cccwwwoooowwwwwwccssssccccoooccooossssssssssssssooooooocssoossccccccccccccccccccccccccccccccccssccwwwwwwwwwwwwcssooocccsscwwwwooooooooooosssssssscccccccccccccccccsscccwwwwcooowwwwwwwwccooooowwwwsssoooooooccccooocccoooocoossssscccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "The",
+      "start": 0.08,
+      "end": 0.221,
+      "score": 0.998
+    },
+    {
+      "text": "router",
+      "start": 0.221,
+      "end": 0.581,
+      "score": 0.974
+    },
+    {
+      "text": "takes",
+      "start": 0.581,
+      "end": 0.882,
+      "score": 0.993
+    },
+    {
+      "text": "it",
+      "start": 0.882,
+      "end": 1.042,
+      "score": 0.999
+    },
+    {
+      "text": "into",
+      "start": 1.042,
+      "end": 1.283,
+      "score": 0.998
+    },
+    {
+      "text": "the",
+      "start": 1.283,
+      "end": 1.383,
+      "score": 0.979
+    },
+    {
+      "text": "server",
+      "start": 1.383,
+      "end": 1.724,
+      "score": 0.947
+    },
+    {
+      "text": "network",
+      "start": 1.724,
+      "end": 2.137,
+      "score": 0.961
+    },
+    {
+      "text": "The",
+      "start": 3.107,
+      "end": 3.227,
+      "score": 0.991
+    },
+    {
+      "text": "firewall",
+      "start": 3.227,
+      "end": 3.709,
+      "score": 0.95
+    },
+    {
+      "text": "checks",
+      "start": 3.709,
+      "end": 4.081,
+      "score": 0.962
+    },
+    {
+      "text": "it",
+      "start": 4.089,
+      "end": 4.23,
+      "score": 0.987
+    },
+    {
+      "text": "is",
+      "start": 4.23,
+      "end": 4.33,
+      "score": 0.935
+    },
+    {
+      "text": "allowed",
+      "start": 4.33,
+      "end": 4.671,
+      "score": 0.989
+    },
+    {
+      "text": "in",
+      "start": 4.671,
+      "end": 4.843,
+      "score": 0.973
+    },
+    {
+      "text": "The",
+      "start": 5.392,
+      "end": 5.513,
+      "score": 0.993
+    },
+    {
+      "text": "print",
+      "start": 5.513,
+      "end": 5.773,
+      "score": 0.995
+    },
+    {
+      "text": "server",
+      "start": 5.773,
+      "end": 6.134,
+      "score": 0.978
+    },
+    {
+      "text": "finally",
+      "start": 6.134,
+      "end": 6.495,
+      "score": 0.994
+    },
+    {
+      "text": "sends",
+      "start": 6.495,
+      "end": 6.756,
+      "score": 0.968
+    },
+    {
+      "text": "it",
+      "start": 6.756,
+      "end": 6.856,
+      "score": 0.996
+    },
+    {
+      "text": "to",
+      "start": 6.856,
+      "end": 6.976,
+      "score": 0.986
+    },
+    {
+      "text": "the",
+      "start": 6.976,
+      "end": 7.096,
+      "score": 0.984
+    },
+    {
+      "text": "printer",
+      "start": 7.096,
+      "end": 7.529,
+      "score": 0.966
+    }
+  ]
+}

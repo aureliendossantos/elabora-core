@@ -2,11 +2,11 @@
   "$schema": "https://elabora.studio/schemas/0.1.11/component.schema.json",
   "id": "support-ticket",
   "title": "Ticket de support",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "level": "block",
   "category": "content",
-  "description": "Un ticket de support avec référence, priorité, objet, demandeur et échéance.",
-  "instructions": "Renseignez les champs du ticket. Le texte se réorganise automatiquement sur les petits écrans.",
+  "description": "Un ticket de support : référence, priorité, objet, demandeur avec son portrait, ouverture et échéance.",
+  "instructions": "Renseignez les champs du ticket. Le portrait est facultatif.",
   "props": {
     "type": "object",
     "additionalProperties": false,
@@ -52,6 +52,11 @@
         "minLength": 1,
         "maxLength": 200,
         "x-translatable": true
+      },
+      "photo": {
+        "type": "string",
+        "title": "Portrait du demandeur",
+        "x-kind": "asset"
       }
     }
   },
@@ -60,8 +65,8 @@
       "type": "callout",
       "props": {
         "variant": "info",
-        "title": "{{reference}}",
-        "markdown": "**{{priority}}**\n\n**{{subject}}**\n\n{{requester}}\n\n{{timing}}"
+        "title": "{{subject}}",
+        "markdown": "{{reference}} · {{priority}}\n\n{{requester}}\n\n{{timing}}"
       }
     }
   ],
@@ -69,11 +74,12 @@
     {
       "title": "Le ticket de Marc",
       "props": {
-        "reference": "Ticket n° 4127",
+        "reference": "Ticket 4127",
         "priority": "Priorité haute",
         "subject": "Impossible d'imprimer les bulletins de paie",
-        "requester": "Demandeur : Marc — service comptable, 2e étage",
-        "timing": "Ouvert lundi à 9 h 05 · Échéance : 12 h 00"
+        "requester": "Marc, comptabilité, 2e étage",
+        "timing": "Ouvert lundi à 9 h 05 · Avant midi",
+        "photo": "images/portrait-marc.svg"
       }
     }
   ]

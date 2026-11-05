@@ -9,7 +9,7 @@ import type { Block } from '@elabora/format';
 import { loadProject } from '@elabora/core/project/load';
 import { binaryFile, createProjectFiles, textFile } from '@elabora/core/project/files';
 import type { FileMedia } from '@elabora/core/media/conformance';
-import { ROOT, EXAMPLE, copyExample, readJSON, writeJSON, writeFixture, codes, addExplorer } from '../helpers.ts';
+import { ROOT, EXAMPLE, copyExample, readJSON, writeJSON, writeFixture, codes, addExplorer, NETWORK_SAMPLE } from '../helpers.ts';
 
 test('the example course has no error', () => {
   const r = validateDir(EXAMPLE, { profiles: ['moodle', 'successfactors'] });
@@ -330,7 +330,7 @@ test('range, vec2 and vec3 edit two or three numbers, a range on a scale, low fi
 });
 
 test('a style or a variant has a description and may have a name (schemas 0.1.6); a component\'s choices only word values of their enum (E_COMPONENT_SCHEMA)', () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const dir = copyExample(NETWORK_SAMPLE);
   const course = readJSON(dir, 'course.json');
   course.theme.styles = { text: { encadre: { label: 'Encadré', description: 'Un paragraphe sur un fond pâle' }, note: 'Une note en marge' } };
   course.theme.backdrop = { layers: ['fond'], variants: { calme: { label: 'Calme', description: 'Un fond plus calme' } } };

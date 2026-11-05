@@ -9,7 +9,7 @@ import { launchBrowser } from '@elabora/node/emulator/browser';
 import { build } from '@elabora/node/build';
 import type { BuildOptions } from '@elabora/node/build';
 import * as edit from '@elabora/node/edit';
-import { ROOT, copyExample as copyCourse, isClosed } from '../helpers.ts';
+import { ROOT, copyExample as copyCourse, isClosed, NETWORK_SAMPLE } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { hasFfmpeg } from '../narration.ts';
 
@@ -18,7 +18,7 @@ import { hasFfmpeg } from '../narration.ts';
 
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
 const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-const copyExample = (name = 'diagnostic-reseau') => copyCourse(path.join(ROOT, 'examples', name));
+const copyExample = (name = 'diagnostic-reseau') => copyCourse(name === 'diagnostic-reseau' ? NETWORK_SAMPLE : path.join(ROOT, 'examples', name));
 
 async function player(dir: string, run: (page: Page, reload: () => Promise<void>) => Promise<void>, options: BuildOptions = {}, query = '') {
   const b = await build(dir, { emit: 'dir', out: tmp('elabora-items-'), writeLock: false, debug: true, ...options });

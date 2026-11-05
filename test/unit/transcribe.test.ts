@@ -18,7 +18,7 @@ import { textOfPieces, withApostrophesOf, wordsOfPieces } from '@elabora/node/tr
 import { windows } from '@elabora/node/transcribe/parakeet';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { forgetQuota } from '@elabora/node/voice/elevenlabs/costs';
-import { copyExample, readJSON, ROOT } from '../helpers.ts';
+import { copyExample, readJSON, ROOT, NETWORK_SAMPLE } from '../helpers.ts';
 import { narrate, toneM4a, hasFfmpeg } from '../narration.ts';
 
 // Transcription (docs/decisions.md D46): what a recording says, a line made from a recording, a
@@ -280,7 +280,7 @@ test('elevenlabs: a recording transcribed with the author\'s key once its share 
 });
 
 test('the real model hears a recorded French line, punctuated (when ELABORA_TRANSCRIBER_MODELS_DIR has it installed)', { skip: !real && 'the transcription model is not installed (ELABORA_TRANSCRIBER_MODELS_DIR)' }, async () => {
-  const file = path.join(ROOT, 'examples/diagnostic-reseau/assets/narration/fr/chemin/chemin-reseaux.m4a');
+  const file = path.join(NETWORK_SAMPLE, 'assets/narration/fr/chemin/chemin-reseaux.m4a');
   const transcript = await transcribeAudio(file, 'fr');
   assert.equal(transcript.text, 'Le routeur dirige ensuite les paquets vers le réseau des serveurs. Le pare-feu décide quels flux peuvent passer. Le serveur d\'impression reçoit enfin la demande.');
   assert.equal(transcript.service, 'local');

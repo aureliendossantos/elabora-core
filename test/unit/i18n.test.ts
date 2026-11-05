@@ -14,7 +14,7 @@ import { exportTranslation, translationStatus, buildTranslation, approveTranslat
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { validateDir } from '@elabora/node/project-reader';
 import type { Block } from '@elabora/format';
-import { ROOT, copyExample, readJSON, writeJSON, codes } from '../helpers.ts';
+import { ROOT, copyExample, readJSON, writeJSON, codes, NETWORK_SAMPLE } from '../helpers.ts';
 
 test('messages: values, plurals and selects follow the language', () => {
   assert.equal(formatMessage('Requirement {i} of {n}', { i: 1, n: 3 }), 'Requirement 1 of 3');
@@ -139,7 +139,7 @@ test('translation: how a free object\'s choices read in the editor, translated i
 });
 
 test('translation: the words the editor shows of the course\'s design (styles, backdrop variants, components, placed objects), translated in their own files; not words learners find', () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const dir = copyExample(NETWORK_SAMPLE);
   const course = readJSON(dir, 'course.json');
   course.theme.styles = { text: { encadre: 'Un paragraphe sur un fond pâle' } };
   course.theme.backdrop = { layers: ['fond'], variants: { calme: 'Un fond plus calme, derrière les écrans chargés' } };
@@ -174,7 +174,7 @@ test('translation: the words the editor shows of the course\'s design (styles, b
 });
 
 test('translation: the names of the charter\'s styles and variants and of a component\'s choices (schemas 0.1.6), translated where they are written', () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const dir = copyExample(NETWORK_SAMPLE);
   const course = readJSON(dir, 'course.json');
   course.theme.styles = { text: { encadre: { label: 'Encadré', description: 'Un paragraphe sur un fond pâle' }, note: 'Une note en marge' } };
   course.theme.backdrop = { layers: ['fond'], variants: { calme: { label: 'Calme', description: 'Un fond plus calme, derrière les écrans chargés' } } };

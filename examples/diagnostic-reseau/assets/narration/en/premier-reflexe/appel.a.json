@@ -1,0 +1,88 @@
+{
+  "screen": "premier-reflexe",
+  "line": "appel.a",
+  "language": "en",
+  "textHash": "sha256:e3a62ccbd78524ef3389d329d1a4cd0fb07d41c38a361fd74f1210895cbd2605",
+  "duration": 3.57,
+  "provider": "elevenlabs",
+  "voice": "WyFXw4PzMbRnp8iLMJwY",
+  "generated": true,
+  "audioHash": "sha256:71b702844d09b66ddda0b966ea3c1f026e9df19b872dd41b3b517dc43e91c69a",
+  "createdAt": "2026-11-05T12:04:24Z",
+  "take": 1,
+  "spokenHash": "sha256:e3a62ccbd78524ef3389d329d1a4cd0fb07d41c38a361fd74f1210895cbd2605",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Juliet (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Let's start from your computer: does the intranet open for you?",
+  "mouth": "cwwwwcccccwwooosssoocwwooocoooocccoossssccccccccccccccccccwwwwcooooossswwwwssswwwooocsssssccwwwsssoooooooocc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Let's",
+      "start": 0.04,
+      "end": 0.281,
+      "score": 0.913
+    },
+    {
+      "text": "start",
+      "start": 0.281,
+      "end": 0.562,
+      "score": 1
+    },
+    {
+      "text": "from",
+      "start": 0.562,
+      "end": 0.702,
+      "score": 0.994
+    },
+    {
+      "text": "your",
+      "start": 0.702,
+      "end": 0.883,
+      "score": 0.997
+    },
+    {
+      "text": "computer",
+      "start": 0.883,
+      "end": 1.436,
+      "score": 0.991
+    },
+    {
+      "text": "does",
+      "start": 1.885,
+      "end": 2.106,
+      "score": 0.963
+    },
+    {
+      "text": "the",
+      "start": 2.106,
+      "end": 2.338,
+      "score": 0.949
+    },
+    {
+      "text": "intranet",
+      "start": 2.387,
+      "end": 2.94,
+      "score": 0.865
+    },
+    {
+      "text": "open",
+      "start": 2.948,
+      "end": 3.209,
+      "score": 1
+    },
+    {
+      "text": "for",
+      "start": 3.209,
+      "end": 3.349,
+      "score": 0.99
+    },
+    {
+      "text": "you",
+      "start": 3.349,
+      "end": 3.562,
+      "score": 1
+    }
+  ]
+}

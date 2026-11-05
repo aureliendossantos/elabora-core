@@ -1,0 +1,82 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-intranet",
+  "language": "fr",
+  "textHash": "sha256:c30ced67ac978ad6c31b922a7dd259a54a7a9859dbf7a2bd644f04c993e0e3e5",
+  "duration": 3.39,
+  "provider": "elevenlabs",
+  "voice": "kENkNtk0xyzG09WW40xE",
+  "generated": true,
+  "audioHash": "sha256:63861b4307296d205019f814fbbad93c9a1da24da3d067e3de33b2ba87561a99",
+  "createdAt": "2026-10-23T23:41:45Z",
+  "take": 1,
+  "spokenHash": "sha256:c30ced67ac978ad6c31b922a7dd259a54a7a9859dbf7a2bd644f04c993e0e3e5",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Marcel (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Oui, l'intranet s'ouvre. Et mes mails arrivent normalement.",
+  "mouth": "ccwwwwccccccccccccwwwwcsswwooooccccwwwsssssccccccccccccoooocwwoocooosssoocccwwwwwsssoooooocoosscsssccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Oui",
+      "start": 0.06,
+      "end": 0.215,
+      "score": 0.989
+    },
+    {
+      "text": "l'",
+      "start": 0.602,
+      "end": 0.662,
+      "score": 0.821
+    },
+    {
+      "text": "intranet",
+      "start": 0.662,
+      "end": 1.077,
+      "score": 0.801
+    },
+    {
+      "text": "s'",
+      "start": 1.123,
+      "end": 1.184,
+      "score": 0.983
+    },
+    {
+      "text": "ouvre",
+      "start": 1.184,
+      "end": 1.438,
+      "score": 1
+    },
+    {
+      "text": "Et",
+      "start": 1.846,
+      "end": 1.96,
+      "score": 1
+    },
+    {
+      "text": "mes",
+      "start": 1.966,
+      "end": 2.106,
+      "score": 0.671
+    },
+    {
+      "text": "mails",
+      "start": 2.106,
+      "end": 2.481,
+      "score": 0.708
+    },
+    {
+      "text": "arrivent",
+      "start": 2.548,
+      "end": 2.849,
+      "score": 0.764
+    },
+    {
+      "text": "normalement",
+      "start": 2.849,
+      "end": 3.324,
+      "score": 1
+    }
+  ]
+}

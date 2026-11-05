@@ -11,7 +11,7 @@ import { cloudUrl, scrubSecrets, resolveCredential, verifySignIn, chooseHandle, 
   accountSessions, revokeSession, updateAccount, requestDeletionCode, deleteAccount, unpublish, renameReview, handleAvailable, revokeAiKey, setReviewNote } from '@elabora/node/cloud/index';
 import type { CloudReview, CommentsAnswer, ResolvedComments, SessionRecord } from '@elabora/node/cloud/index';
 import { createMcpServer } from '@elabora/cli/mcp';
-import { ROOT, copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, copyExample, readJSON, writeJSON, NETWORK_SAMPLE } from '../helpers.ts';
 import { FakeCloud, FAKE_CODE } from '../cloud-fake.ts';
 
 // The core's client of Elabora's hosting (docs/decisions.md D43) against a fake of the API's protocol
@@ -312,10 +312,10 @@ test('publish: the API\'s refusals reach the author as their messages say (quota
   assert.ok(!fs.existsSync(process.env.ELABORA_CLOUD_SESSION_FILE!));
 });
 
-// A comment as the review page writes it, on a private publication of examples/diagnostic-reseau.
+// A comment as the review page writes it, on a private publication of the network sample.
 async function reviewedCourse(handle: string): Promise<{ dir: string; review: string; version: string }> {
   await signIn(handle);
-  const dir = copy(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const dir = copy(NETWORK_SAMPLE);
   const published = await publishCourse(dir, { visibility: 'private' });
   const { review } = await createReview(published.name);
   return { dir, review: review.id, version: published.version };
@@ -525,7 +525,7 @@ test('AI key: made with the session and kept in a 0600 file; agents read with it
 test('review create --note: a word to reviewers under the inviter\'s name', async () => {
   const author = 'note-author';
   await signIn(author);
-  const dir = copy(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const dir = copy(NETWORK_SAMPLE);
   await publishCourse(dir, { visibility: 'private' });
   const made = await elabora(['review', 'create', dir, '--note', 'Surtout les scènes 3 et 4. Merci d’ici vendredi !']);
   assert.equal(made.status, 0, made.stderr);
@@ -632,7 +632,7 @@ test('unpublish (« Retirer du web ») and a review\'s title', async () => {
 
 test('publish: red checks stop the web, never the reviewers; errors of the course stop both', async () => {
   await signIn('checks-author');
-  const dir = copy(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const dir = copy(NETWORK_SAMPLE);
   // An image without alt (a guardrail) and a plan item that does not exist (the delivery checklist).
   const screen = readJSON(dir, 'screens/chemin.json');
   screen.covers.push('ITEM-99');

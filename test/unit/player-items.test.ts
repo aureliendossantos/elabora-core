@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { ROOT, copyExample as copyCourse, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, copyExample as copyCourse, readJSON, writeJSON, NETWORK_SAMPLE } from '../helpers.ts';
 import * as edit from '@elabora/node/edit';
 import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
 import { build } from '@elabora/node/build';
@@ -24,7 +24,7 @@ import type { CourseData, PlayerBarData } from '@elabora/player/course-data';
 // 20 Oct 2026, and D59): the spacer, links among the resources, linking the glossary's terms to the
 // screens, the logo's plate and its check, the display and language items.
 
-const copyExample = (name = 'diagnostic-reseau') => copyCourse(path.join(ROOT, 'examples', name));
+const copyExample = (name = 'diagnostic-reseau') => copyCourse(name === 'diagnostic-reseau' ? NETWORK_SAMPLE : path.join(ROOT, 'examples', name));
 const compiled = (dir: string): CourseData => {
   const project = loadProjectFromDir(dir);
   const { keys } = assignKeys(project, readLock(project), { dryRun: true });

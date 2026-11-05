@@ -3,51 +3,33 @@
   "format": "elabora/0.1",
   "id": "diagnostic-reseau",
   "title": "Diagnostiquer une panne d'impression réseau",
-  "description": "Aidez Marc à localiser une panne d'impression réseau : un dialogue, une simulation 3D et deux questions pour suivre le chemin dans l'ordre.",
+  "description": "Lundi matin, la paie de Marc ne s'imprime plus. Suivez le chemin d'une impression, gardez le cap au téléphone et trouvez ce qui bloque sur un réseau en 3D.",
   "language": "fr",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "durationMinutes": 6,
   "sections": [
     {
-      "id": "decouvrir",
-      "title": "Découvrir",
+      "id": "situation",
+      "title": "La situation",
       "screens": [
-        "titre",
         "accueil",
         "chemin"
       ]
     },
     {
-      "id": "pratiquer",
-      "title": "Pratiquer",
+      "id": "diagnostic",
+      "title": "Le diagnostic",
       "screens": [
         "premier-reflexe",
         "simulation"
       ]
     },
     {
-      "id": "valider",
-      "title": "Valider",
+      "id": "cloture",
+      "title": "Le bilan",
       "screens": [
-        "evaluation",
         "bilan"
       ]
-    }
-  ],
-  "variables": [
-    {
-      "id": "bonsReflexes",
-      "type": "number",
-      "default": 0,
-      "minimum": 0,
-      "maximum": 10,
-      "description": "Nombre de bons réflexes choisis dans le scénario."
-    },
-    {
-      "id": "indiceVu",
-      "type": "boolean",
-      "default": false,
-      "description": "L'apprenant a eu besoin d'un indice dans la simulation."
     }
   ],
   "theme": {
@@ -55,12 +37,81 @@
     "tokens": {
       "color.primary": "#12355B",
       "color.onPrimary": "#FFFFFF",
-      "color.accent": "#C2410C",
+      "color.accent": "#B9500F",
       "color.surface": "#FFFFFF",
-      "color.text": "#1F2933",
-      "color.muted": "#52606D",
-      "color.focus": "#2563EB",
-      "radius": 8
+      "color.text": "#16263A",
+      "color.muted": "#55627A",
+      "color.success": "#2C7A4B",
+      "color.error": "#B3372F",
+      "color.focus": "#3651D4",
+      "radius": 14,
+      "font.body": "\"Figtree\", \"Avenir Next\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "font.heading": "\"Figtree\", \"Avenir Next\", system-ui, -apple-system, \"Segoe UI\", sans-serif",
+      "player.top.background": "#12355B",
+      "player.top.text": "#FFFFFF",
+      "player.bottom.background": "#F7F3EC",
+      "player.bottom.text": "#12355B",
+      "player.accent": "#12355B",
+      "player.onAccent": "#FFFFFF",
+      "player.radius": 999
+    },
+    "custom": {
+      "color.sky": "#E2EAF3",
+      "color.paper": "#F7F3EC",
+      "color.sand": "#EFE3CE",
+      "color.amber": "#F29F3A",
+      "color.navy-soft": "#1E4C7A",
+      "color.line": "#DCE3EC",
+      "shadow.soft": "0 1px 2px rgba(18,53,91,.06), 0 10px 30px rgba(18,53,91,.10)"
+    },
+    "stylesheet": "theme/theme.css",
+    "fonts": [
+      {
+        "family": "Figtree",
+        "src": "theme/fonts/figtree/figtree-latin-wght-normal.woff2",
+        "weight": "300 900"
+      },
+      {
+        "family": "Figtree",
+        "src": "theme/fonts/figtree/figtree-latin-wght-italic.woff2",
+        "weight": "300 900",
+        "style": "italic"
+      }
+    ],
+    "styles": {
+      "text": {
+        "lead": {
+          "label": "Chapeau",
+          "description": "Paragraphe d'ouverture, plus grand"
+        }
+      },
+      "button": {
+        "go": {
+          "label": "Suite",
+          "description": "Le bouton qui mène plus loin, avec une flèche"
+        }
+      },
+      "callout": {
+        "rule": {
+          "label": "Règle",
+          "description": "La règle à retenir, sur un fond ambré doux"
+        }
+      },
+      "screen": {
+        "wide": {
+          "label": "Large",
+          "description": "Le titre s'aligne sur les blocs larges"
+        }
+      }
+    }
+  },
+  "presentation": {
+    "mode": "slides",
+    "contentWidth": 640,
+    "wideWidth": 1200,
+    "fit": {
+      "reference": "1600x900",
+      "minimum": "1280x720"
     }
   },
   "navigation": {
@@ -76,9 +127,6 @@
             "asset": "images/logo-helios.svg",
             "alt": "Hélios"
           }
-        },
-        {
-          "id": "title"
         },
         {
           "id": "progress"
@@ -123,7 +171,7 @@
   "resources": [
     {
       "id": "fiche-reflexe",
-      "title": "Fiche réflexe : panne d'impression réseau",
+      "title": "Fiche réflexe : panne d'impression réseau",
       "description": "Les cinq équipements à vérifier, dans l'ordre, et qui appeler.",
       "asset": "resources/fiche-reflexe-impression.pdf"
     },
@@ -151,7 +199,7 @@
     {
       "id": "pare-feu",
       "term": "Pare-feu",
-      "definition": "Équipement qui filtre les flux entre réseaux selon des règles : une règle mal écrite peut bloquer l'impression.",
+      "definition": "Équipement qui filtre les flux entre réseaux selon des règles : une règle mal écrite peut bloquer l'impression.",
       "variants": [
         "firewall"
       ]
@@ -187,7 +235,7 @@
     }
   ],
   "credits": [
-    "Scénario, textes et illustrations : exemple Elabora, sous CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/"
+    "Scénario, textes et illustrations : exemple Elabora, sous CC0 1.0 https://creativecommons.org/publicdomain/zero/1.0/"
   ],
   "completion": {
     "reportAs": "passed-incomplete",
@@ -206,6 +254,10 @@
         "fr": {
           "provider": "pocket-tts",
           "voice": "claire"
+        },
+        "en": {
+          "provider": "pocket-tts",
+          "voice": "nora"
         }
       }
     },
@@ -217,6 +269,11 @@
           "provider": "elevenlabs",
           "voice": "kENkNtk0xyzG09WW40xE",
           "name": "Marcel - Warm and Conversational"
+        },
+        "en": {
+          "provider": "elevenlabs",
+          "voice": "RNnkVeW25AwKYxZgnHBH",
+          "name": "Luke - Calm, Warm and Conversational"
         }
       },
       "color": "color.primary",
@@ -236,6 +293,11 @@
           "provider": "elevenlabs",
           "voice": "YxrwjAKoUKULGd0g8K9Y",
           "name": "Lucie - Professional Customer Care Agent"
+        },
+        "en": {
+          "provider": "elevenlabs",
+          "voice": "WyFXw4PzMbRnp8iLMJwY",
+          "name": "Juliet - Customer Care: Professional, Empathetic"
         }
       }
     }

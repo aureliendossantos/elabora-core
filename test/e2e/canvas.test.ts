@@ -17,7 +17,7 @@ import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import type { RenderContext, RenderOptions } from '@elabora/core/render/screen';
 import type { CanvasApi } from '@elabora/player/canvas';
 import type { HostMessage, LayoutMessage } from '@elabora/player/canvas-protocol';
-import { EXAMPLE, NO_MEDIA_CODECS, ROOT, copyExample, playsMedia } from '../helpers.ts';
+import { EXAMPLE, NO_MEDIA_CODECS, ROOT, copyExample, playsMedia, NETWORK_SAMPLE } from '../helpers.ts';
 
 type CanvasWindow = Window & typeof globalThis & { __elaboraCanvas: CanvasApi; mark?: unknown; kept?: unknown; seen?: Promise<number>; elaboraEdited?: string };
 const PLANETARY = path.join(ROOT, 'examples', 'planetary-gearset');
@@ -226,7 +226,7 @@ test('canvas: steps, layers and the answered state as captures show them, kept a
 });
 
 test('canvas: a results screen shows before anything is answered (status « not attempted »)', { timeout: 120000 }, async () => {
-  const project = loadProjectFromDir(path.join(ROOT, 'examples', 'diagnostic-reseau'));
+  const project = loadProjectFromDir(NETWORK_SAMPLE);
   const context = createRenderContext(project);
   await withCanvas(project.root, context, async ({ page, show, errors }) => {
     await show(project, 'bilan');

@@ -2,7 +2,7 @@
   "$schema": "https://elabora.studio/schemas/0.1.11/plan.schema.json",
   "id": "PLAN-HELIOS-NET-V1",
   "title": "Diagnostiquer une panne d'impression réseau",
-  "businessGoal": "Réduire de 30 % les tickets « impression impossible » transférés du niveau 1 au niveau 2.",
+  "businessGoal": "Réduire de 30 % les tickets « impression impossible » transférés du niveau 1 au niveau 2.",
   "audience": {
     "role": "Techniciens support de niveau 1",
     "priorKnowledge": "low"
@@ -10,7 +10,7 @@
   "sources": [
     {
       "id": "SRC-1",
-      "title": "Procédure interne SUP-NET-04 : diagnostic des pannes d'impression",
+      "title": "Procédure interne SUP-NET-04 : diagnostic des pannes d'impression",
       "type": "procédure interne",
       "version": "2026-05"
     }
@@ -18,7 +18,7 @@
   "objectives": [
     {
       "id": "OBJ-1",
-      "statement": "Identifier le rôle des cinq équipements du chemin d'impression : poste, commutateur, routeur, pare-feu et serveur d'impression.",
+      "statement": "Identifier le rôle des cinq équipements du chemin d'impression : poste, commutateur, routeur, pare-feu et serveur d'impression.",
       "bloom": "understand",
       "sources": [
         "SRC-1"
@@ -36,74 +36,70 @@
   ],
   "items": [
     {
-      "id": "ITEM-7",
-      "kind": "intro",
-      "title": "Diagnostiquer une panne d'impression réseau",
-      "part": "Découvrir",
-      "objectives": [],
-      "description": "Couverture silencieuse : aider Marc à trouver ce qui bloque en suivant le chemin d’une impression. Entrée immédiate dans le cas avec le bouton Suivant du player."
-    },
-    {
       "id": "ITEM-1",
       "kind": "intro",
       "title": "Le ticket de Marc",
-      "objectives": [],
-      "description": "Le ticket présente le contexte et l’échéance. Marc expose le problème à l’oral ; Claire invite à repérer le trajet avant d’intervenir.",
+      "part": "La situation",
+      "objectives": [
+        "OBJ-1"
+      ],
+      "description": "L'ouverture du module : le ticket de Marc et la mission, à côté du réseau du siège en 3D. « Prendre le ticket » fait entrer dans le cas.",
       "lockedTexts": [
         {
           "id": "TXT-1",
-          "text": "Votre mission : trouver où la demande d'impression de Marc s'arrête, avec la procédure **SUP-NET-04**."
+          "text": "Trouvez où s'arrête l'impression de Marc, avant midi."
         }
-      ],
-      "part": "Découvrir"
+      ]
     },
     {
       "id": "ITEM-2",
       "kind": "exposition",
       "title": "Le chemin d'une impression",
+      "part": "La situation",
       "objectives": [
         "OBJ-1"
       ],
       "sources": [
         "SRC-1"
       ],
-      "description": "Le chemin des cinq équipements et la règle, avant la pratique. Schéma sans indice sur la panne ; explications synchronisées des deux réseaux ; rôle des équipements consultable à la demande.",
+      "description": "Claire décrit le chemin d'une impression pendant qu'il s'éclaire sur le réseau 3D, équipement par équipement, avec les deux réseaux. La règle de la procédure arrive à la fin.",
       "lockedTexts": [
         {
           "id": "TXT-2",
-          "text": "Suivez toujours le chemin dans l'ordre : **poste → commutateur → routeur → pare-feu → serveur d'impression**. N'en sautez aucune étape, même quand la cause vous paraît évidente."
+          "text": "**Partez du poste et contrôlez chaque équipement dans l'ordre**, même quand la cause semble évidente."
         }
-      ],
-      "part": "Découvrir"
+      ]
     },
     {
       "id": "ITEM-3",
       "kind": "practice",
       "title": "Premier réflexe",
+      "part": "Le diagnostic",
       "objectives": [
         "OBJ-2"
       ],
-      "description": "Deux décisions techniques : commencer par le poste, puis tenir l’ordre sous la pression de Marc. La communication de fin d’appel devient une conclusion non notée qui conduit à la simulation ; rappel conditionnel après un raccourci.",
-      "part": "Pratiquer"
+      "description": "L'appel de Marc : commencer par le poste, puis tenir l'ordre sous la pression. Le réseau 3D suit l'appel : le poste puis le commutateur y apparaissent contrôlés."
     },
     {
       "id": "ITEM-4",
       "kind": "scenario",
       "title": "Trouver ce qui bloque",
+      "part": "Le diagnostic",
       "objectives": [
         "OBJ-2"
       ],
-      "description": "Poursuivre le cas de Marc dans la simulation 3D : inspecter les équipements dans l’ordre pour localiser la panne. Une seule consigne et une explication brève après réussite ; indice, clavier et reprise conservés.",
-      "part": "Pratiquer"
+      "description": "Le diagnostic continue sur le réseau 3D, après le commutateur : une seule consigne, l'équipement suivant signalé après deux contrôles trop tôt. Une fois la panne trouvée, l'apprenant transmet le ticket et voit l'impression repartir."
     },
     {
       "id": "ITEM-5",
       "kind": "assessment",
-      "title": "Vérifier ses réflexes",
+      "title": "Deux nouveaux tickets",
+      "part": "Le bilan",
       "objectives": [
         "OBJ-1",
         "OBJ-2"
       ],
+      "description": "Deux questions côte à côte, sur deux nouveaux tickets.",
       "questions": [
         {
           "id": "Q-1",
@@ -112,25 +108,25 @@
             "OBJ-1"
           ],
           "bloom": "understand",
-          "stem": "Le poste de Marc obtient une adresse IP, mais aucune page ne sort. Quel équipement **filtre** les flux entre le réseau des bureaux et celui des serveurs ?",
+          "stem": "**Ticket 4131.** Le poste de Sophie a une adresse IP valide, mais ses impressions restent bloquées à l'entrée du réseau des serveurs. Quel équipement filtre ce qui y entre ?",
           "options": [
             {
               "id": "a",
               "text": "Le commutateur",
               "correct": false,
-              "feedback": "Le commutateur relie les postes d'un même étage ; il ne filtre pas les flux entre réseaux."
+              "feedback": "Le commutateur relie les postes de l'étage : il reste dans le réseau des bureaux."
             },
             {
               "id": "b",
               "text": "Le pare-feu",
               "correct": true,
-              "feedback": "Oui : le pare-feu applique les règles de filtrage entre le réseau des bureaux et celui des serveurs."
+              "feedback": "Oui : le pare-feu applique les règles de filtrage entre les deux réseaux."
             },
             {
               "id": "c",
               "text": "Le routeur",
               "correct": false,
-              "feedback": "Le routeur oriente les paquets entre réseaux, mais ce n'est pas lui qui applique les règles de filtrage."
+              "feedback": "Le routeur oriente les paquets d'un réseau à l'autre ; le filtrage revient au pare-feu."
             }
           ]
         },
@@ -141,39 +137,37 @@
             "OBJ-2"
           ],
           "bloom": "apply",
-          "stem": "Le poste et le commutateur répondent correctement. Selon la procédure, quel équipement contrôlez-vous ensuite ?",
+          "stem": "**Ticket 4132.** Chez Paul, le poste et le commutateur répondent. Quel équipement contrôlez-vous ensuite ?",
           "options": [
             {
               "id": "a",
               "text": "Le serveur d'impression",
               "correct": false,
-              "feedback": "C'est la dernière étape : contrôler le serveur maintenant ferait sauter deux équipements du chemin."
+              "feedback": "Le serveur vient en dernier : le contrôler maintenant ferait sauter deux équipements."
             },
             {
               "id": "b",
               "text": "Le routeur",
               "correct": true,
-              "feedback": "Oui : on suit le chemin dans l'ordre, et le routeur vient juste après le commutateur."
+              "feedback": "Oui : le routeur suit le commutateur sur le chemin."
             },
             {
               "id": "c",
               "text": "Le pare-feu",
               "correct": false,
-              "feedback": "Le pare-feu vient après le routeur : vérifiez d'abord le routeur pour ne sauter aucune étape."
+              "feedback": "Le pare-feu vient après le routeur : contrôlez d'abord le routeur."
             }
           ]
         }
-      ],
-      "description": "Deux questions inchangées, présentées successivement. Le passage à la seconde se fait après lecture du feedback de la première.",
-      "part": "Valider"
+      ]
     },
     {
       "id": "ITEM-6",
       "kind": "summary",
-      "title": "Le bilan du diagnostic",
+      "title": "Le résultat",
+      "part": "Le bilan",
       "objectives": [],
-      "description": "Refermer le cas sur la panne localisée, afficher le résultat et la règle mémorisable, orienter vers la fiche réflexe dans Ressources. Aucun envoi futur promis.",
-      "part": "Valider"
+      "description": "Le résultat sous les deux questions, une fois répondues, et la fiche réflexe SUP-NET-04 dans les Ressources."
     }
   ],
   "spacing": [
@@ -185,10 +179,9 @@
   "decided": [
     {
       "topic": "format",
-      "choice": "Sept écrans reliés par le ticket de Marc",
-      "why": "Réorganisation approuvée par l’auteur : couverture, trajet expliqué avant l’appel, simulation, vérification et bilan.",
+      "choice": "Cinq écrans, une mise en situation entrecoupée de deux instants pédagogiques",
+      "why": "Retour au concept d'origine : le ticket, le chemin expliqué, l'appel, le diagnostic sur le réseau 3D, puis deux nouveaux tickets. Chaque écran montre une chose que les autres ne montrent pas.",
       "items": [
-        "ITEM-7",
         "ITEM-1",
         "ITEM-2",
         "ITEM-3",
@@ -198,20 +191,26 @@
       ]
     },
     {
+      "topic": "design",
+      "label": "Un réseau 3D du début à la fin",
+      "choice": "Le même plateau 3D suit tout le cas, de l'ouverture au diagnostic ; pendant l'activité, seuls la consigne et les équipements à contrôler restent à l'écran.",
+      "why": "Le décor reste le même pendant que l'histoire avance : l'apprenant retrouve le poste de Marc et ses contrôles d'un écran à l'autre."
+    },
+    {
       "topic": "duration",
-      "choice": "Cible de 5 à 7 minutes, hors exploration des variantes",
-      "why": "Estimation à confirmer en usage ; deux décisions dans l’appel et détails techniques facultatifs."
+      "choice": "Cible de 5 à 7 minutes",
+      "why": "Estimation à confirmer en usage."
     },
     {
       "topic": "navigation",
       "label": "Exploration de la démo",
       "choice": "Export web en navigation libre, sans progression conservée",
-      "why": "Permettre l’accès direct aux fonctionnalités depuis le sommaire ; conserver les règles du parcours pédagogique dans le projet."
+      "why": "Permettre l'accès direct aux fonctionnalités depuis le sommaire ; conserver les règles du parcours pédagogique dans le projet."
     },
     {
       "topic": "voices",
-      "choice": "Couverture silencieuse ; voix existantes conservées",
-      "why": "Marc et Leïla dans l’histoire, Claire pour la méthode ; une courte conclusion de Leïla remplace la troisième décision."
+      "choice": "Marc et Leïla dans l'histoire, Claire pour le chemin",
+      "why": "Les voix de l'appel sont gardées ; Claire, hors de l'histoire, explique le chemin."
     }
   ]
 }

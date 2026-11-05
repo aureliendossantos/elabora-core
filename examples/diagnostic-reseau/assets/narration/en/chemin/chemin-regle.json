@@ -1,0 +1,136 @@
+{
+  "screen": "chemin",
+  "line": "chemin-regle",
+  "language": "en",
+  "textHash": "sha256:640a7f8c8285a79010130540db25607c0d771be468e0a3f721ebae3a7bb20dd0",
+  "duration": 8.081,
+  "provider": "pocket-tts",
+  "voice": "nora",
+  "generated": true,
+  "audioHash": "sha256:a5a7346f6ea8e15209995b08e7253afaf003dc5046428debd5afb2ae8c54c7db",
+  "createdAt": "2026-11-05T12:03:11Z",
+  "take": 1,
+  "spokenHash": "sha256:640a7f8c8285a79010130540db25607c0d771be468e0a3f721ebae3a7bb20dd0",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Kyutai’s Pocket TTS (Manu Orsini, Simon Rouard, Gabriel De Marmiesse, Václav Volhejn, Neil Zeghidour, Alexandre Défossez), https://huggingface.co/kyutai/pocket-tts, licensed CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/), in KevinAHM’s ONNX conversion. Voice “Nora” from a recording donated to Kyutai’s Unmute project (CC0), https://huggingface.co/kyutai/tts-voices.",
+  "model": "pocket-tts/english_2026-04",
+  "text": "A failure can hide at any of these steps. To find it, the SUP-NET-04 procedure has one simple rule.",
+  "mouth": "ccccccccwwwwwwwwwcssoossssssoooossscoooccooooowwwwwwccooosssscssssccccoooocccccccccccccccccccccccccccccccccccccccccccssssccoowwoooooooooocccccccccccccccccoossswwwcccwwoooccwwwwcccwwwwcccoooooooocooooooosssssssscoowwwwwssssscccwwwoooosssoossccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "A",
+      "start": 0.12,
+      "end": 0.221,
+      "score": 0.986
+    },
+    {
+      "text": "failure",
+      "start": 0.221,
+      "end": 0.602,
+      "score": 0.991
+    },
+    {
+      "text": "can",
+      "start": 0.602,
+      "end": 0.802,
+      "score": 1
+    },
+    {
+      "text": "hide",
+      "start": 0.802,
+      "end": 1.195,
+      "score": 0.999
+    },
+    {
+      "text": "at",
+      "start": 1.223,
+      "end": 1.415,
+      "score": 0.828
+    },
+    {
+      "text": "any",
+      "start": 1.444,
+      "end": 1.644,
+      "score": 0.988
+    },
+    {
+      "text": "of",
+      "start": 1.644,
+      "end": 1.765,
+      "score": 0.999
+    },
+    {
+      "text": "these",
+      "start": 1.765,
+      "end": 1.985,
+      "score": 0.991
+    },
+    {
+      "text": "steps",
+      "start": 1.985,
+      "end": 2.458,
+      "score": 0.965
+    },
+    {
+      "text": "To",
+      "start": 3.91,
+      "end": 4.071,
+      "score": 0.991
+    },
+    {
+      "text": "find",
+      "start": 4.071,
+      "end": 4.443,
+      "score": 1
+    },
+    {
+      "text": "it",
+      "start": 4.472,
+      "end": 4.664,
+      "score": 0.947
+    },
+    {
+      "text": "the",
+      "start": 5.114,
+      "end": 5.254,
+      "score": 0.997
+    },
+    {
+      "text": "SUP-NET-04",
+      "start": 5.254,
+      "end": 6.156,
+      "score": 0.684
+    },
+    {
+      "text": "procedure",
+      "start": 6.156,
+      "end": 6.79,
+      "score": 0.951
+    },
+    {
+      "text": "has",
+      "start": 6.818,
+      "end": 7.09,
+      "score": 0.923
+    },
+    {
+      "text": "one",
+      "start": 7.139,
+      "end": 7.319,
+      "score": 0.954
+    },
+    {
+      "text": "simple",
+      "start": 7.319,
+      "end": 7.66,
+      "score": 0.989
+    },
+    {
+      "text": "rule",
+      "start": 7.66,
+      "end": 8.053,
+      "score": 0.656
+    }
+  ]
+}

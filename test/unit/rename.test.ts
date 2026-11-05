@@ -8,7 +8,7 @@ import { build } from '@elabora/node/build';
 import { translationStatus } from '@elabora/node/translate';
 import * as edit from '@elabora/node/edit';
 import { diffReports } from '@elabora/core/update-impact';
-import { ROOT, copyExample, codes, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, copyExample, codes, readJSON, writeJSON, NETWORK_SAMPLE } from '../helpers.ts';
 
 // elabora rename (docs/architecture/operations.md, Identifiers and format version): ids are permanent, renaming
 // is one explicit change that carries every reference and the state lock, so that a renamed
@@ -16,7 +16,7 @@ import { ROOT, copyExample, codes, readJSON, writeJSON } from '../helpers.ts';
 
 const temporary: string[] = [];
 after(() => { for (const dir of temporary) fs.rmSync(dir, { recursive: true, force: true }); });
-const example = (name: string) => { const dir = copyExample(path.join(ROOT, 'examples', name)); temporary.push(dir); return dir; };
+const example = (name: string) => { const dir = copyExample(name === 'diagnostic-reseau' ? NETWORK_SAMPLE : path.join(ROOT, 'examples', name)); temporary.push(dir); return dir; };
 const tempDir = () => { const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-rename-')); temporary.push(dir); return dir; };
 const texts = (dir: string) => Object.fromEntries([...readProjectFiles(dir).files].filter(([, file]) => file.kind === 'text').map(([file, content]) => [file, content.kind === 'text' ? content.text : '']));
 
