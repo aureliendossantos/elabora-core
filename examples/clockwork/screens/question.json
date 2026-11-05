@@ -11,7 +11,7 @@
       "id": "question-text",
       "type": "text",
       "props": {
-        "markdown": "Turn the minute hand once around the dial: the hour hand moves on by just one hour.\n\nA single shaft, at the centre, drives them both. So how does one hand turn twelve times slower than the other?"
+        "markdown": "Turn the minute hand once around the dial: the hour hand moves on by just 1 hour.\n\nA single shaft, at the centre, drives them both. So how does one hand turn 12 times slower than the other?"
       }
     },
     {
@@ -39,7 +39,7 @@
         "props": {
           "stage": "clock"
         },
-        "textAlternative": "**Text version.** A round clock face with twelve marks. The coral minute hand runs fast; the green hour hand creeps forward. When the minute hand goes once around, the hour hand moves from one mark to the next: one hour."
+        "textAlternative": "**Text version.** A round clock face with 12 marks. The coral minute hand runs fast; the green hour hand creeps forward. When the minute hand goes once around, the hour hand moves on by 1 hour, from one mark to the next."
       },
       "optional": true
     }

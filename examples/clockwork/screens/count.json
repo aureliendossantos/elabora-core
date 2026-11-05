@@ -11,7 +11,7 @@
       "id": "count-text",
       "type": "text",
       "props": {
-        "markdown": "The small gear has 10 teeth, the large one 30. Each tooth that passes moves both gears on by one tooth.\n\nOne turn of the small gear moves the large gear by 10 of its 30 teeth: a third of a turn."
+        "markdown": "The small gear has 10 teeth, the large one 30. Each tooth that passes moves both gears on by a tooth.\n\nA full turn of the small gear moves the large one by 10 of its 30 teeth: a third of a turn."
       }
     },
     {
@@ -31,7 +31,7 @@
         "props": {
           "stage": "count"
         },
-        "textAlternative": "**Text version.** The small gear has 10 teeth and the large one 30. As they turn, each tooth lights up when it passes the point where the gears meet, on both gears at once. After one turn of the small gear, its 10 teeth are lit, and 10 teeth of the large gear: a third of it. Then the count starts again."
+        "textAlternative": "**Text version.** The small gear has 10 teeth and the large one 30. As they turn, each tooth lights up when it passes the point where the gears meet, on both gears at once. After a full turn of the small gear, its 10 teeth are lit, and 10 teeth of the large gear: a third of it. Then the count starts again."
       },
       "optional": true
     }

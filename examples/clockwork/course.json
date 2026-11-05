@@ -2,7 +2,7 @@
   "$schema": "https://elabora.studio/schemas/0.1.11/course.schema.json",
   "format": "elabora/0.1",
   "id": "clockwork",
-  "title": "Why is the hour hand twelve times slower?",
+  "title": "Why is the hour hand 12 times slower?",
   "language": "en",
   "version": "0.1.0",
   "sections": [
@@ -143,6 +143,6 @@
       "minimum": "1280x720"
     }
   },
-  "description": "A five-minute module for curious minds: open a clock, turn its gears one by one, and find out why the hour hand turns twelve times slower than the minute hand.",
+  "description": "A five-minute module for curious minds: open a clock, turn its gears one by one, and find out why the hour hand turns 12 times slower than the minute hand.",
   "durationMinutes": 5
 }

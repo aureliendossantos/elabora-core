@@ -1,7 +1,7 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
   "id": "answer",
-  "title": "Twelve times slower",
+  "title": "12 times slower",
   "covers": [
     "ITEM-7"
   ],
@@ -11,7 +11,7 @@
       "id": "answer-text",
       "type": "text",
       "props": {
-        "markdown": "Ten teeth drive thirty: three times slower. Eight teeth drive thirty-two: four times slower. Three times four makes twelve.\n\nEach pair reverses the direction, so after two pairs both hands turn clockwise."
+        "markdown": "The gear of 10 teeth drives the gear of 30, which turns 3 times slower. On the same axle, the gear of 8 drives the gear of 32, which turns 4 times slower. Together, 3 × 4 = 12.\n\nEach pair reverses the direction: after both, the hour hand turns clockwise, like the minute hand."
       }
     },
     {
@@ -39,7 +39,7 @@
         "props": {
           "stage": "answer"
         },
-        "textAlternative": "**Text version.** The clock again, seen slightly from the side, with a clear dial. Behind it, the coral gear of 10 teeth on the minute shaft drives the yellow gear of 30; the yellow gear of 8 on the same axle drives the green gear of 32, which carries the hour hand on its tube around the minute shaft. Turning the minute hand once around moves the hour hand by one hour. A switch makes the dial opaque or clear."
+        "textAlternative": "**Text version.** The clock again, seen slightly from the side, with a clear dial. Behind it, the coral gear of 10 teeth on the minute shaft drives the yellow gear of 30; the yellow gear of 8 on the same axle drives the green gear of 32, which carries the hour hand on its tube around the minute shaft. A full turn of the minute hand moves the hour hand by 1 hour. A switch makes the dial opaque or clear."
       },
       "optional": true
     }

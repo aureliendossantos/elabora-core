@@ -1,7 +1,7 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
   "id": "one-gear",
-  "title": "Twelve times in one go?",
+  "title": "12 times in one go?",
   "covers": [
     "ITEM-4"
   ],
@@ -12,7 +12,7 @@
       "id": "one-gear-text",
       "type": "text",
       "props": {
-        "markdown": "The hour hand needs a gear that turns twelve times slower than the small gear of 10 teeth."
+        "markdown": "The hour hand needs a gear that turns 12 times slower than the small gear of 10 teeth."
       }
     },
     {
@@ -27,19 +27,19 @@
         "attempts": 1,
         "showCorrectAnswer": true,
         "feedback": {
-          "correct": "Yes, 120: twelve turns of the small gear, 10 teeth each time. Look how large that gear is next to the clock.",
-          "incorrect": "It takes 120: twelve turns of the small gear, 10 teeth each time. Look how large that gear is next to the clock."
+          "correct": "Yes, it takes 120 teeth. The small gear makes 12 turns of 10 teeth each. Look how large that gear is next to the clock.",
+          "incorrect": "It takes 120 teeth. The small gear makes 12 turns of 10 teeth each. Look how large that gear is next to the clock."
         },
         "misconceptions": [
           {
             "id": "turns",
             "value": 12,
-            "feedback": "12 is the number of turns of the small gear. Each turn moves 10 teeth, so the gear needs 120. Look how large it is next to the clock."
+            "feedback": "That is the number of turns of the small gear. Each turn moves 10 teeth, so the gear needs 120. Look how large it is next to the clock."
           },
           {
             "id": "from-thirty",
             "value": 360,
-            "feedback": "That would be twelve times slower than the gear of 30. From the small gear of 10, it takes 120. Look how large it is next to the clock."
+            "feedback": "That would be 12 times slower than the gear of 30. From the small gear of 10, it takes 120. Look how large it is next to the clock."
           }
         ]
       }
@@ -61,7 +61,7 @@
         "props": {
           "stage": "one-gear"
         },
-        "textAlternative": "**Text version.** The small gear of 10 teeth and the gear of 30, with the outline of the clock drawn as a dashed circle around the small gear. Once the question is answered, the large gear grows to 120 teeth: it reaches far beyond the outline of the clock."
+        "textAlternative": "**Text version.** The small gear of 10 teeth and the gear of 30, with the outline of the clock drawn as a dashed circle around the small gear. Once the question is answered, the large gear grows to 120 teeth: it reaches far beyond the outline of the clock."
       },
       "optional": true
     }

@@ -505,6 +505,8 @@ test('slides: steps reveal with Continue, and a visited screen shows every step'
   } finally {
     await browser.close();
     await server.close();
+  }
+});
 
 test('a click in the slide reveals the next step; back on the screen, the step reached', { timeout: 180000 }, async () => {
   const { dir } = slidesCopy();

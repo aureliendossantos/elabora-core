@@ -17,11 +17,9 @@
   grid-area: column; align-self: center; position: relative; z-index: 1;
   width: 100%; max-width: 37rem; padding: 2.5rem 4.5rem 2.5rem 1.5rem;
 }
-.t-layout--clock-stage .ck-title .t-screen-title {
-  margin: 0 0 1.125rem; max-width: 18ch;
-  font: 650 2.125rem/1.12 var(--t-font-heading); letter-spacing: -0.018em; color: var(--t-text);
-  text-wrap: balance;
-}
+/* The screen's title names it in the outline and for screen readers; on screen, the explanation
+   speaks alone (a title over it would only sum it up). */
+.t-layout--clock-stage .ck-title { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .t-layout--clock-stage .ck-text { display: flex; flex-direction: column; gap: 1rem; }
 .t-layout--clock-stage .ck-text > .t-block { margin: 0; max-width: none; }
 .t-layout--clock-stage .ck-text .t-block--text:not(.t-s-hint) .t-text {
@@ -65,7 +63,6 @@
 
 /* Each screen's words fade in as it arrives; the mechanism carries on meanwhile. */
 @media (prefers-reduced-motion: no-preference) {
-  .t-layout--clock-stage .ck-title,
   .t-layout--clock-stage .ck-text > .t-block:not([data-t-pending]) { animation: ck-arrive .7s var(--t-ease-out) both; }
   .t-layout--clock-stage .ck-text > .t-block:nth-child(1) { animation-delay: .12s; }
   .t-layout--clock-stage .ck-text > .t-block:nth-child(2) { animation-delay: .24s; }
@@ -79,6 +76,5 @@
 @container (max-width: 820px) {
   .t-layout--clock-stage .ck-stage { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto; grid-template-areas: "scene" "column"; }
   .t-layout--clock-stage .ck-column { max-width: none; padding: 1.25rem 1.25rem 2rem; }
-  .t-layout--clock-stage .ck-title .t-screen-title { font-size: 1.75rem; }
   .t-layout--clock-stage .ck-text .t-block--text:not(.t-s-hint) .t-text { font-size: 1.25rem; }
 }

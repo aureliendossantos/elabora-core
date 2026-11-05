@@ -185,7 +185,7 @@
       "description": "How far the gears have turned, for screen readers."
     },
     "teethPassed": {
-      "text": "{n} of {total} teeth",
+      "text": "{n} of {total} teeth",
       "description": "Under the gears: how many teeth of this gear have passed the meeting point.",
       "maxLength": 24
     },
@@ -195,12 +195,12 @@
       "maxLength": 24
     },
     "teeth": {
-      "text": "{n} teeth",
+      "text": "{n} teeth",
       "description": "Value of that slider.",
       "maxLength": 12
     },
     "slower": {
-      "text": "{ratio} times slower",
+      "text": "{ratio} times slower",
       "description": "How much slower the last gear turns than the minute shaft.",
       "maxLength": 26
     },
@@ -214,7 +214,7 @@
       "description": "Said to screen readers when the last gear reaches the centre."
     },
     "matched": {
-      "text": "Twelve times slower: the size of a clock's hour wheel.",
+      "text": "That makes 12 times slower: the size of a clock's hour wheel.",
       "description": "Said to screen readers when the learner finds the right size."
     }
   },
@@ -267,7 +267,7 @@
       },
       "matched": {
         "type": "boolean",
-        "description": "The learner has sized the last gear for twelve times slower"
+        "description": "The learner has sized the last gear for 12 times slower"
       },
       "grown": {
         "type": "boolean",
@@ -326,7 +326,7 @@
     },
     {
       "name": "train_matched",
-      "description": "The last gear has 32 teeth: the train turns twelve times slower.",
+      "description": "The last gear has 32 teeth: the train turns 12 times slower.",
       "payload": {
         "type": "object",
         "properties": {}
