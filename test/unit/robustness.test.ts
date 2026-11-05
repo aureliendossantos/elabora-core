@@ -14,6 +14,7 @@ import { projectMarkdown } from '@elabora/core/project/markdown';
 import { extractUnits } from '@elabora/core/i18n/units';
 import { translationStatus } from '@elabora/core/i18n/translate';
 import { lessonMdExport } from '@elabora/core/interop/lesson-md';
+import { aboutCourse } from '@elabora/core/player/config';
 import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
 import type { RenderContext } from '@elabora/core/render/screen';
 import type { Diagnostic } from '@elabora/core/diagnostics/index';
@@ -90,4 +91,16 @@ test('a sidecar whose words are not a list (or hold a word that is not one) is r
   const project = loadProject(files, { root: sample.root, artefacts: sample.artefacts });
   const result = validateProject(project);
   assert.ok(!result.diagnostics.some((d: Diagnostic) => d.code === 'E_INTERNAL'), JSON.stringify(result.diagnostics.filter((d: Diagnostic) => d.severity === 'error')));
+});
+
+test('a narration sidecar whose credit is not a text is read without it: « IA et crédits » keeps texts only, never thrown on', () => {
+  const sample = readProjectFiles(copyExample(NETWORK_SAMPLE));
+  const files = new Map<string, SourceFile>(sample.files);
+  const rel = 'assets/narration/fr/premier-reflexe/leila-relais.json';
+  const file = files.get(rel);
+  assert.ok(file?.kind === 'text', rel);
+  const before = aboutCourse(loadProject(files, { root: sample.root, artefacts: sample.artefacts }), { language: 'fr' });
+  files.set(rel, textFile(JSON.stringify({ ...JSON.parse(file.text), credit: 5 })));
+  const after = aboutCourse(loadProject(files, { root: sample.root, artefacts: sample.artefacts }), { language: 'fr' });
+  assert.ok((after.credits ?? []).every((line) => typeof line === 'string' && (before.credits ?? []).includes(line)), JSON.stringify(after.credits));
 });

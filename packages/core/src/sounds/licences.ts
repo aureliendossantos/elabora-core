@@ -31,7 +31,7 @@ export function soundCredit(sidecar: Sound | null, language: string): string | n
   if (!sidecar) return null;
   const licence = classifyLicence(sidecar.license);
   if (!licence.ok || !licence.credit) return null;
-  if (sidecar.credit) return sidecar.credit;
+  if (typeof sidecar.credit === 'string' && sidecar.credit) return sidecar.credit;
   const changed = sidecar.modified?.some((change) => change !== 'converted') ? `, ${MODIFIED[language.split('-')[0].toLowerCase()] ?? MODIFIED.en}` : '';
   const head = [sidecar.title ? `“${sidecar.title}”` : null, sidecar.author || null].filter(Boolean).join(', ');
   return [head || null, `${licence.name}${changed}`, sidecar.url ?? null].filter(Boolean).join(' — ');
