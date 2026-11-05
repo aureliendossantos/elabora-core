@@ -17,7 +17,7 @@ This folder is an Elabora course (`elabora/0.1`). **Read this file and “Notes 
   
   Broaden only when a check reveals a problem. See screens and objects with `elabora look`, `elabora preview` or `elabora screenshot`, never a Playwright script of your own, and check fit before delivery. Never ignore a diagnostic on your own: explain keyed warnings and request author approval before `elabora ignore`.
 - **Dialogues.** Short lines; the consequence first, the trainer's feedback after, never in a character's mouth; about three options (good, ok, bad), plausible and of similar length; write the best path first; check with `elabora dialogue paths` and `elabora dialogue play` before saying a dialogue is done.
-- **Human and paid-service boundaries.** The author controls plan versions and their approval, publishing, sharing and review resolution. A translated plan is approved by the author: ask them, and record it only with their yes (`elabora-translation`). For paid narration/transcription, load `elabora-narration` and follow its quota-estimation and approval threshold; do not assume every paid call requires approval.
+- **Human and paid-service boundaries.** The author decides plan versions and approvals, publishing, sharing and reviews; a translated plan's approval needs their yes (`elabora-translation`). Paid narration or transcription follows the threshold of `elabora-narration`: not every call asks.
 
 ## Load only the guidance your task needs
 

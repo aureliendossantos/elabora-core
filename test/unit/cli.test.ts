@@ -690,7 +690,7 @@ test('MCP and CLI: the agent writes the plan at any time; a person makes and val
       assert.equal(readJSON(dir, 'plan.json').items[0].voiceover[0].text, 'Ce qui ne me tue pas me rend plus fort.');
       // No tool makes or validates a version.
       const { tools } = await client.listTools();
-      assert.deepEqual(tools.map((tool) => tool.name).filter((name) => /version|approve|validate_plan/.test(name)), []);
+      assert.deepEqual(tools.map((tool) => tool.name).filter((name) => /version|approve|validate_plan/.test(name)), ['elabora_translation_approve'], 'a plan\'s versions and validation have no tool; a translated plan\'s approval asks the author (D70)');
       // The CLI: a patch, the status; versions refused to an agent, a person's.
       fs.writeFileSync(path.join(root, 'patch.json'), JSON.stringify([{ op: 'add', path: '/spacing', value: ['J+2'] }]));
       const patched = await elabora(['plan', 'write', dir, '--patch', path.join(root, 'patch.json')], ROOT, { author: 'agent:claude-code' });
