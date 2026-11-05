@@ -47,7 +47,7 @@ If `elabora` is not on PATH (on macOS, Elabora installs it from Réglages › Ou
 
 ## Notes for this course
 <!-- What agents should know about this course: its audience, its voice, decisions taken. Elabora never changes this part. -->
-- **One question, one answer.** The whole module answers « why is the hour hand twelve times slower? ». Each screen brings one idea; none repeats another. Keep it that way: a new idea is a new screen, at its place in the answer.
+- **One question, one answer.** The whole module answers « why is the hour hand 12 times slower? ». Each screen brings one idea; none repeats another. Keep it that way: a new idea is a new screen, at its place in the answer.
 - **One object for every screen.** The blocks `*-clock` share the continuity key `clockwork`: the object `clockwork` stays on the left and only its `stage` changes. Its passages (camera, dial, parts that come and go, the last gear rolling) are in its code; the screen's words fade in through the layout `clock-stage`.
 - **Colour means "turns together".** Coral: the minute shaft, its gear and the minute hand. Yellow: the two middle gears on one axle. Green: the hour wheel, its tube and the hour hand. Name them by what they do, never by their colour alone, in the text.
 - **The right column holds one explanation**: two short paragraphs, then at most one gesture line (style `hint`) saying what to do with the object right now. The screen's title names it in the outline and for screen readers; the layout keeps it out of sight, so write it as a name, never as a summary to read. No card, no eyebrow, no list.
