@@ -8,7 +8,7 @@ import { execFile, spawnSync } from 'node:child_process';
 import { promisify } from 'node:util';
 import {
   PRESETS, presetHash, fitWithin, conformance, masterPlan, renditionPlan, canonicalPath, presetDimensions,
-  findMediaTools, MediaToolsError, probeMedia, probeProjectMedia, readMp4Layout, encodeAttempts, runFfmpeg,
+  findMediaTools, MediaToolsError, probeMedia, probeMediaSync, probeProjectMedia, readMp4Layout, encodeAttempts, runFfmpeg,
   importMedia, optimizeInPlace, ensureRendition, renditionPath, renditionsDir, MediaQueue, readJobs, jobsDir, probeCachePath
 } from '@elabora/node/media/index';
 import { projectDataDir } from '@elabora/node/data-dir';
@@ -194,6 +194,22 @@ test('probe: kinds, codecs, rotation, faststart, location; cached by path, size 
   assert.equal(((await probeProjectMedia(dir, ['clip.mp4'], { tools: broken })).get('clip.mp4') as MediaInfo).faststart, false);
   fs.utimesSync(path.join(dir, 'clip.mp4'), new Date(), new Date(Date.now() - 30_000));
   assert.ok((await probeProjectMedia(dir, ['clip.mp4'], { tools: broken })).get('clip.mp4') instanceof Error);
+  removeProject(dir);
+});
+
+test('probe: an animated WebP as FFmpeg 8 names it (webp_anim) is a WebP, animated, conformant', (t) => {
+  if (process.platform === 'win32') return t.skip('the fake ffprobe is a Node script with a shebang');
+  // A fake ffprobe answering as FFmpeg 8's does for an animated WebP: its demuxer and codec webp_anim,
+  // no frame count; 48 packets when they are counted.
+  const dir = project();
+  const ffprobe = path.join(dir, 'ffprobe');
+  const answer = { format: { format_name: 'webp_anim', size: '5089354' }, streams: [{ codec_type: 'video', codec_name: 'webp_anim', width: 481, height: 271, pix_fmt: 'yuva420p', disposition: { attached_pic: 0 } }] };
+  fs.writeFileSync(ffprobe, `#!/usr/bin/env node\nprocess.stdout.write(process.argv.includes('-count_packets') ? '48\\n' : ${JSON.stringify(JSON.stringify(answer))});\n`, { mode: 0o755 });
+  const file = path.join(dir, 'boucle.webp');
+  fs.writeFileSync(file, Buffer.from('RIFF\0\0\0\0WEBPVP8X'));
+  const info = probeMediaSync(file, { ffprobe, major: 8 });
+  assert.deepEqual([info.kind, info.container, info.videoCodec, info.animated], ['image', 'webp', 'webp', true]);
+  assert.ok(conformance(info).conformant, JSON.stringify(conformance(info).reasons));
   removeProject(dir);
 });
 
