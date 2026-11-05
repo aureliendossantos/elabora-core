@@ -1,0 +1,70 @@
+{
+  "screen": "premier-reflexe",
+  "line": "pression.a",
+  "language": "en",
+  "textHash": "sha256:fed42b2ceddbf01ba047620fe949c93125b4ba4b62e5bff8d7778bdd36438cde",
+  "duration": 2.905,
+  "provider": "elevenlabs",
+  "voice": "WyFXw4PzMbRnp8iLMJwY",
+  "generated": true,
+  "audioHash": "sha256:b903ef38be465ef6c5a8add71a85b8e86aae34215523baabdbca13a6ce570c0a",
+  "createdAt": "2026-11-05T12:05:08Z",
+  "take": 1,
+  "spokenHash": "sha256:fed42b2ceddbf01ba047620fe949c93125b4ba4b62e5bff8d7778bdd36438cde",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Juliet (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "I'll check your floor's switch first: two minutes.",
+  "mouth": "cwwwssoooocccwwwssssswwwwwoosssssooocooooooooccsssscccccccccccccccoowwwwcooooccccooocccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "I'll",
+      "start": 0.02,
+      "end": 0.18,
+      "score": 0.995
+    },
+    {
+      "text": "check",
+      "start": 0.18,
+      "end": 0.421,
+      "score": 1
+    },
+    {
+      "text": "your",
+      "start": 0.421,
+      "end": 0.581,
+      "score": 0.998
+    },
+    {
+      "text": "floor's",
+      "start": 0.581,
+      "end": 1.002,
+      "score": 0.749
+    },
+    {
+      "text": "switch",
+      "start": 1.002,
+      "end": 1.342,
+      "score": 0.986
+    },
+    {
+      "text": "first",
+      "start": 1.342,
+      "end": 1.775,
+      "score": 0.995
+    },
+    {
+      "text": "two",
+      "start": 2.204,
+      "end": 2.384,
+      "score": 0.939
+    },
+    {
+      "text": "minutes",
+      "start": 2.384,
+      "end": 2.797,
+      "score": 0.98
+    }
+  ]
+}

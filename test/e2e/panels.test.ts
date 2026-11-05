@@ -7,7 +7,7 @@ import type { Page } from 'playwright-core';
 import { startServer } from '@elabora/node/emulator/server';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import { build } from '@elabora/node/build';
-import { ROOT, copyExample, readJSON, writeJSON, writeFixture } from '../helpers.ts';
+import { ROOT, copyExample, readJSON, writeJSON, writeFixture, NETWORK_SAMPLE } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 
 // Panels, characters and the gallery's carousel (D63) in Chrome: the four presentations of the same
@@ -51,7 +51,7 @@ function panelsCourse({ slides = false }: { slides?: boolean } = {}): string {
   writeFixture(dir, 'assets/images/cable.svg', picture('#e5efe3', '#2f6b3a', 800, 1000));
   writeFixture(dir, 'assets/images/poste.svg', picture('#ece6f5', '#5b3c88', 1600, 900));
   // Characters: two drawn (the sample's), one without a look.
-  for (const who of ['marc', 'leila']) writeFixture(dir, `assets/personnages/${who}.svg`, fs.readFileSync(path.join(ROOT, `examples/diagnostic-reseau/assets/personnages/${who}.svg`), 'utf8'));
+  for (const who of ['marc', 'leila']) writeFixture(dir, `assets/personnages/${who}.svg`, fs.readFileSync(path.join(NETWORK_SAMPLE, `assets/personnages/${who}.svg`), 'utf8'));
   const course = readJSON(dir, 'course.json');
   course.speakers = [
     { id: 'guide', name: 'Claire, votre guide' },

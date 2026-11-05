@@ -1,6 +1,6 @@
 {
   "format": "elabora-lock/1",
-  "next": 35,
+  "next": 45,
   "keys": {
     "screen:accueil": "0",
     "screen:chemin": "1",
@@ -36,10 +36,20 @@
     "visit:chemin-roles#serveur": "v",
     "block:evaluation-q1": "w",
     "block:evaluation-suite": "x",
-    "visit:evaluation-suite": "y"
+    "visit:evaluation-suite": "y",
+    "visit:accueil-go": "z",
+    "object:accueil-reseau": "10",
+    "continuity:reseau": "11",
+    "object:chemin-reseau": "12",
+    "object:appel-reseau": "13",
+    "object:simulation-reseau": "14",
+    "block:simulation-transmettre": "15",
+    "visit:simulation-transmettre": "16",
+    "quiz:bilan-q1": "17",
+    "quiz:bilan-q2": "18"
   },
   "components": {
-    "network-path": "1.0.0",
-    "support-ticket": "1.0.0"
+    "stage": "1.0.0",
+    "support-ticket": "2.0.0"
   }
 }

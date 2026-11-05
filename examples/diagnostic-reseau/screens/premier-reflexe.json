@@ -1,7 +1,7 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
   "id": "premier-reflexe",
-  "title": "Premier réflexe",
+  "title": "Marc est toujours en ligne",
   "covers": [
     "ITEM-3"
   ],
@@ -21,24 +21,20 @@
         "nodes": [
           {
             "id": "appel",
-            "title": "Par où commencer ?",
+            "title": "Par où commencer ?",
             "lines": [
-              {
-                "id": "appel-situation",
-                "text": "Lundi, 9 h 10. Marc est toujours en ligne."
-              },
               {
                 "id": "marc-attente",
                 "speaker": "marc",
                 "expression": "inquiet",
-                "text": "[inquiet] Alors, vous voyez ce qui bloque ? La paie doit partir avant midi."
+                "text": "[inquiet] Alors, vous voyez ce qui bloque ? La paie doit partir avant midi."
               }
             ],
-            "prompt": "Par quoi commencez-vous ?",
+            "prompt": "Par quoi commencez-vous ?",
             "options": [
               {
                 "id": "a",
-                "text": "On part de votre poste : l'intranet s'ouvre bien chez vous ?",
+                "text": "On part de votre poste : l'intranet s'ouvre bien chez vous ?",
                 "quality": "good",
                 "reply": [
                   {
@@ -47,11 +43,11 @@
                     "text": "Oui, l'intranet s'ouvre. Et mes mails arrivent normalement."
                   }
                 ],
-                "feedback": "Bon réflexe : vous partez du début du chemin. Le poste joint le réseau, vous pouvez passer au commutateur."
+                "feedback": "Bon réflexe : vous partez du début du chemin. Le poste joint le réseau, vous pouvez passer au commutateur."
               },
               {
                 "id": "b",
-                "text": "Quel message s'affiche quand vous lancez l'impression ?",
+                "text": "Quel message s'affiche quand vous lancez l'impression ?",
                 "quality": "ok",
                 "reply": [
                   {
@@ -61,22 +57,22 @@
                     "text": "[agacé] Aucun. Le document part, et puis… plus rien."
                   }
                 ],
-                "feedback": "Utile, mais l'absence de message ne dit pas où la demande s'arrête. Partez du poste, puis remontez le chemin.",
+                "feedback": "Utile pour le ticket. Pour savoir où la demande s'arrête, partez du poste : le chemin commence là.",
                 "next": "retour-poste"
               },
               {
                 "id": "c",
-                "text": "Je transfère au niveau 2 : avec la paie, c'est urgent.",
+                "text": "Je transfère au niveau 2 : avec la paie, c'est urgent.",
                 "quality": "bad",
                 "reply": [
                   {
                     "id": "marc-niveau2",
                     "speaker": "marc",
                     "expression": "inquiet",
-                    "text": "[inquiet] Le niveau 2 ? Et ils me rappellent avant midi ?"
+                    "text": "[inquiet] Le niveau 2 ? Et ils me rappellent avant midi ?"
                   }
                 ],
-                "feedback": "Le niveau 2 vous renverra le ticket en demandant le diagnostic du chemin : une heure de perdue, et l'échéance de midi avec.",
+                "feedback": "Le niveau 2 vous renverra le ticket en demandant le diagnostic du chemin : une heure de perdue, et l'échéance de midi avec.",
                 "retry": true
               }
             ],
@@ -90,7 +86,7 @@
                 "id": "leila-poste",
                 "speaker": "leila",
                 "expression": "concentree",
-                "text": "Partons de votre poste, alors : l'intranet s'ouvre bien ?"
+                "text": "Partons de votre poste, alors : l'intranet s'ouvre bien ?"
               },
               {
                 "id": "marc-poste",
@@ -114,14 +110,14 @@
                 "id": "marc-redemarrer",
                 "speaker": "marc",
                 "expression": "inquiet",
-                "text": "Vous ne pouvez pas juste le redémarrer ?"
+                "text": "Vous ne pouvez pas juste le redémarrer ?"
               }
             ],
-            "prompt": "Que répondez-vous ?",
+            "prompt": "Que répondez-vous ?",
             "options": [
               {
                 "id": "a",
-                "text": "Je vérifie d'abord le commutateur de votre étage : deux minutes.",
+                "text": "Je vérifie d'abord le commutateur de votre étage : deux minutes.",
                 "quality": "good",
                 "reply": [
                   {
@@ -138,7 +134,7 @@
                     ]
                   }
                 ],
-                "feedback": "Vous gardez l'ordre du chemin et vous dites combien de temps il vous faut : Marc accepte d'attendre."
+                "feedback": "Vous gardez l'ordre du chemin et vous dites combien de temps il vous faut : Marc accepte d'attendre."
               },
               {
                 "id": "b",
@@ -147,16 +143,16 @@
                 "reply": [
                   {
                     "id": "serveur-console",
-                    "text": "La console du serveur s'ouvre : il est en ligne, et sa file d'attente est vide."
+                    "text": "La console du serveur s'ouvre : il est en ligne, et sa file d'attente est vide."
                   },
                   {
                     "id": "marc-temps",
                     "speaker": "marc",
                     "expression": "agace",
-                    "text": "Donc ce n'est pas lui ? On a perdu cinq minutes, là."
+                    "text": "Donc ce n'est pas lui ? On a perdu cinq minutes, là."
                   }
                 ],
-                "feedback": "Le serveur répond, mais vous ne savez toujours pas où la demande s'arrête : trois étapes sautées pour rien."
+                "feedback": "Le serveur répond : cinq minutes passées sur la dernière étape du chemin, et la panne reste à trouver."
               },
               {
                 "id": "c",
@@ -170,7 +166,7 @@
                     "text": "[inquiet] Attendez… plus personne n'imprime à l'étage, maintenant."
                   }
                 ],
-                "feedback": "Le redémarrage coupe les impressions de tout le bâtiment pendant cinq minutes, et la panne de Marc reste : quatre étapes sautées.",
+                "feedback": "Le redémarrage coupe les impressions de tout le bâtiment pendant cinq minutes, et la panne de Marc reste : quatre étapes sautées.",
                 "retry": true
               }
             ],
@@ -198,7 +194,7 @@
           {
             "id": "maitrise",
             "title": "Diagnostic bien parti",
-            "text": "Vous êtes parti du poste et avez tenu l’ordre malgré la pression. À vous de poursuivre le diagnostic dans la simulation.",
+            "text": "Vous êtes parti du poste et avez tenu l’ordre malgré la pression. Poursuivez le diagnostic sur le réseau.",
             "if": [
               {
                 "score": {
@@ -211,7 +207,7 @@
           {
             "id": "en-route",
             "title": "Sur la bonne voie",
-            "text": "Vous avez fait un détour. Reprenez le chemin depuis le poste, puis poursuivez le diagnostic dans la simulation.",
+            "text": "Vous avez fait un détour. Reprenez le chemin depuis le poste, puis poursuivez le diagnostic sur le réseau.",
             "if": [
               {
                 "score": {
@@ -224,107 +220,108 @@
           {
             "id": "a-revoir",
             "title": "À revoir",
-            "text": "Un raccourci a interrompu l’ordre du diagnostic. Écoutez le rappel, puis poursuivez dans la simulation. Vous pouvez aussi rejouer l’appel."
-          }
-        ]
-      }
-    }
-  ],
-  "layers": [
-    {
-      "id": "rappel-regle",
-      "title": "Rappel : la règle SUP-NET-04",
-      "narration": {
-        "lines": [
-          {
-            "id": "rappel-poste",
-            "speaker": "guide",
-            "text": "La règle SUP-NET-04, la voici : partez toujours du poste."
-          },
-          {
-            "id": "rappel-ordre",
-            "speaker": "guide",
-            "text": "Puis remontez le chemin dans l'ordre, sans sauter d'étape, même quand la cause vous paraît évidente."
+            "text": "Un raccourci a interrompu l’ordre du diagnostic. Rejouez l’appel, ou poursuivez le diagnostic sur le réseau en partant du poste."
           }
         ]
       },
-      "blocks": [
-        {
-          "id": "rappel-chemin",
-          "type": "network-path",
-          "props": {
-            "caption": "Du poste au serveur d'impression, dans l'ordre.",
-            "steps": [
-              {
-                "label": "Poste",
-                "detail": "on part d'ici",
-                "highlight": true
-              },
-              {
-                "label": "Commutateur"
-              },
-              {
-                "label": "Routeur"
-              },
-              {
-                "label": "Pare-feu"
-              },
-              {
-                "label": "Serveur",
-                "detail": "d'impression"
-              }
-            ]
-          },
-          "timing": {
-            "in": {
-              "at": {
-                "line": "rappel-poste",
-                "word": "voici"
-              },
-              "effect": "wipe",
-              "duration": 0.8
-            }
-          }
-        }
-      ]
+      "slot": "body"
+    },
+    {
+      "id": "appel-reseau",
+      "type": "free-object",
+      "slot": "scene",
+      "optional": true,
+      "continuity": {
+        "key": "reseau",
+        "duration": 1000
+      },
+      "props": {
+        "object": "diagnostic-reseau",
+        "title": "Le réseau du siège, qui suit l'appel",
+        "aspectRatio": "fill",
+        "narrowAspectRatio": "4:3",
+        "minHeight": 360,
+        "props": {
+          "mode": "display",
+          "checked": [],
+          "focus": "poste",
+          "reach": -1,
+          "showZones": false
+        },
+        "a11y": {
+          "description": "Le réseau du siège, à côté de l'appel : le poste de Marc puis le commutateur s'y marquent contrôlés quand Leïla les vérifie."
+        },
+        "textAlternative": "**Version texte de la scène.** Le réseau du siège, du poste de Marc à l'imprimante. Pendant l'appel, Leïla contrôle le poste de Marc (adresse IP valide), puis son port sur le [commutateur](glossary:commutateur) de l'étage (port actif)."
+      }
     }
   ],
   "events": [
     {
-      "id": "reflexe-bon",
-      "description": "Compter un bon réflexe quand le premier essai de l'appel est maîtrisé (le parcours noté : recommencer ne compte pas deux fois).",
+      "id": "appel-poste",
+      "description": "Marc confirme que son poste joint le réseau.",
       "on": {
-        "type": "dialogue.ended",
-        "target": "appel-marc"
+        "type": "dialogue.line",
+        "target": "appel-marc",
+        "line": "marc-intranet"
       },
       "do": [
         {
-          "type": "set-variable",
-          "variable": "bonsReflexes",
-          "value": 1
-        }
-      ],
-      "if": [
-        {
-          "dialogue": "appel-marc",
-          "ending": "maitrise"
+          "type": "set-object-props",
+          "block": "appel-reseau",
+          "props": {
+            "checked": [
+              "poste"
+            ],
+            "focus": "aucun"
+          }
         }
       ]
     },
     {
-      "id": "reflexe-serveur",
-      "description": "Rappeler la règle, de la voix de Claire, quand un choix de l'appel a sauté des étapes.",
+      "id": "appel-poste-retour",
+      "description": "Après un détour, Marc confirme que son poste joint le réseau.",
       "on": {
-        "type": "dialogue.ended",
+        "type": "dialogue.line",
         "target": "appel-marc",
-        "ending": "a-revoir"
+        "line": "marc-poste"
       },
       "do": [
         {
-          "type": "show-layer",
-          "layer": "rappel-regle"
+          "type": "set-object-props",
+          "block": "appel-reseau",
+          "props": {
+            "checked": [
+              "poste"
+            ],
+            "focus": "aucun"
+          }
+        }
+      ]
+    },
+    {
+      "id": "appel-commutateur",
+      "description": "Le port de Marc est actif sur le commutateur.",
+      "on": {
+        "type": "dialogue.line",
+        "target": "appel-marc",
+        "line": "commutateur-port"
+      },
+      "do": [
+        {
+          "type": "set-object-props",
+          "block": "appel-reseau",
+          "props": {
+            "checked": [
+              "poste",
+              "commutateur"
+            ]
+          }
         }
       ]
     }
-  ]
+  ],
+  "layout": "stage",
+  "layoutProps": {
+    "arrangement": "column"
+  }
 }

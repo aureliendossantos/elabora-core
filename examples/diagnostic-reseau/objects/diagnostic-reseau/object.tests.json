@@ -2,52 +2,117 @@
   "$schema": "https://elabora.studio/schemas/0.1.11/object-tests.schema.json",
   "tests": [
     {
-      "name": "Diagnostic dans l'ordre : panne trouvée sans écart",
+      "name": "Après l'appel, la panne est trouvée sans écart",
+      "props": { "mode": "diagnose", "checked": ["poste", "commutateur"] },
+      "safeArea": { "top": 104, "bottom": 136 },
       "steps": [
-        { "action": "step", "frames": 30 },
-        { "action": "snapshot", "name": "initial" },
-        { "action": "click", "object": "poste" },
-        { "action": "expect-event", "name": "device_inspected", "payload": { "device": "poste", "inOrder": true, "faulty": false } },
-        { "action": "click", "object": "commutateur" },
+        { "action": "step", "frames": 40 },
+        { "action": "snapshot", "name": "depart" },
         { "action": "click", "object": "routeur" },
+        { "action": "expect-event", "name": "device_checked", "payload": { "device": "routeur", "inOrder": true, "faulty": false } },
         { "action": "click", "object": "parefeu" },
         { "action": "expect-event", "name": "completed", "payload": { "score": 1, "attempts": 0 } },
-        { "action": "expect-state", "state": { "found": true, "attempts": 0, "inspected": ["poste", "commutateur", "routeur", "parefeu"] } },
-        { "action": "step", "frames": 30 },
+        { "action": "expect-state", "state": { "found": true, "attempts": 0, "checked": ["routeur", "parefeu"] } },
+        { "action": "step", "frames": 150 },
         { "action": "snapshot", "name": "panne-trouvee" }
       ]
     },
     {
-      "name": "Hors procédure : indice après deux écarts",
-      "props": { "hintAfterErrors": 2 },
+      "name": "Trop tôt deux fois : l'équipement suivant est signalé",
+      "props": { "mode": "diagnose", "checked": ["poste", "commutateur"], "hintAfterErrors": 2 },
+      "safeArea": { "top": 104, "bottom": 136 },
       "steps": [
         { "action": "click", "object": "serveur" },
-        { "action": "expect-event", "name": "device_inspected", "payload": { "device": "serveur", "inOrder": false } },
+        { "action": "expect-event", "name": "device_checked", "payload": { "device": "serveur", "inOrder": false, "faulty": false } },
         { "action": "expect-state", "state": { "attempts": 1, "hint": false, "found": false } },
-        { "action": "key", "key": "Tab" },
         { "action": "click", "object": "parefeu" },
         { "action": "expect-event", "name": "hint_shown" },
-        { "action": "expect-state", "state": { "attempts": 2, "hint": true, "found": false } }
+        { "action": "expect-state", "state": { "attempts": 2, "hint": true, "found": false, "checked": [] } },
+        { "action": "step", "frames": 30 },
+        { "action": "snapshot", "name": "indice" }
+      ]
+    },
+    {
+      "name": "Au clavier, depuis le poste",
+      "props": { "mode": "diagnose" },
+      "steps": [
+        { "action": "key", "key": "Tab" },
+        { "action": "key", "key": "Enter" },
+        { "action": "expect-event", "name": "device_checked", "payload": { "device": "poste", "inOrder": true, "faulty": false } },
+        { "action": "key", "key": "Tab" },
+        { "action": "key", "key": "Enter" },
+        { "action": "expect-state", "state": { "checked": ["poste", "commutateur"], "attempts": 0 } }
       ]
     },
     {
       "name": "Les réglages s'appliquent sans remontage",
+      "props": { "mode": "diagnose" },
       "steps": [
         { "action": "set-props", "props": { "failingDevice": "routeur", "showLabels": false } },
         { "action": "click", "object": "poste" },
         { "action": "click", "object": "commutateur" },
         { "action": "click", "object": "routeur" },
-        { "action": "expect-event", "name": "completed" },
+        { "action": "expect-event", "name": "completed", "payload": { "score": 1 } },
         { "action": "expect-state", "state": { "found": true } }
       ]
     },
     {
       "name": "Reprise : l'état sauvegardé est restauré",
+      "props": { "mode": "diagnose", "checked": ["poste", "commutateur"] },
       "steps": [
-        { "action": "set-state", "state": { "inspected": ["poste", "commutateur"], "attempts": 1, "found": false, "hint": false } },
-        { "action": "click", "object": "routeur" },
-        { "action": "expect-state", "state": { "inspected": ["poste", "commutateur", "routeur"], "attempts": 1 } },
+        { "action": "set-state", "state": { "checked": ["routeur"], "attempts": 1, "found": false, "hint": false } },
+        { "action": "click", "object": "parefeu" },
+        { "action": "expect-event", "name": "completed", "payload": { "score": 0.75, "attempts": 1 } },
+        { "action": "expect-state", "state": { "checked": ["routeur", "parefeu"], "attempts": 1, "found": true } }
+      ]
+    },
+    {
+      "name": "L'explication éclaire le chemin, puis les deux réseaux",
+      "props": { "mode": "explain", "reach": 2, "showZones": false },
+      "safeArea": { "top": 104, "bottom": 136 },
+      "steps": [
+        { "action": "step", "frames": 120 },
+        { "action": "snapshot", "name": "jusqu-au-routeur" },
+        { "action": "set-props", "props": { "reach": 5, "showZones": true } },
+        { "action": "step", "frames": 240 },
+        { "action": "snapshot", "name": "chemin-complet" },
         { "action": "expect-no-event", "name": "completed" }
+      ]
+    },
+    {
+      "name": "De l'appel au diagnostic, le plateau continue",
+      "props": { "mode": "display", "checked": ["poste", "commutateur"] },
+      "safeArea": { "left": 540 },
+      "steps": [
+        { "action": "step", "frames": 30 },
+        { "action": "snapshot", "name": "appel" },
+        { "action": "set-props", "props": { "mode": "diagnose" }, "transition": { "duration": 1000, "safeArea": { "left": 0, "top": 104, "bottom": 136 } } },
+        { "action": "step", "frames": 30 },
+        { "action": "snapshot", "name": "passage" },
+        { "action": "step", "frames": 60 },
+        { "action": "snapshot", "name": "diagnostic" }
+      ]
+    },
+    {
+      "name": "La panne réparée, l'impression sort",
+      "props": { "mode": "diagnose", "checked": ["poste", "commutateur"] },
+      "safeArea": { "top": 104, "bottom": 136 },
+      "steps": [
+        { "action": "click", "object": "routeur" },
+        { "action": "click", "object": "parefeu" },
+        { "action": "expect-event", "name": "completed" },
+        { "action": "set-props", "props": { "resolved": true } },
+        { "action": "step", "frames": 360 },
+        { "action": "snapshot", "name": "repare" }
+      ]
+    },
+    {
+      "name": "Écran étroit",
+      "props": { "mode": "diagnose", "checked": ["poste", "commutateur"] },
+      "size": [375, 300],
+      "steps": [
+        { "action": "step", "frames": 30 },
+        { "action": "snapshot", "name": "etroit" }
       ]
     }
   ]

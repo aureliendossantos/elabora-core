@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
 import { fitKey, screenRenders } from '@elabora/node/fit-cache';
-import { ROOT, copyExample, readJSON, writeJSON } from '../helpers.ts';
+import { ROOT, copyExample, readJSON, writeJSON, NETWORK_SAMPLE } from '../helpers.ts';
 
 // The keys of fit's measures, screen by screen: what changed is measured again, nothing else.
 const BROWSER = { engine: 'chromium', version: '154.0.1' };
@@ -16,7 +16,7 @@ function keys(dir: string, { code = '0.1.0+abc', browser = BROWSER, size = '1600
 const changed = (before: Map<string, string>, after: Map<string, string>) => [...before.keys()].filter((id) => before.get(id) !== after.get(id)).sort();
 
 test('fit keys: a screen file, a component, the object code and an image change the screens they touch; the theme, every screen', () => {
-  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const dir = copyExample(NETWORK_SAMPLE);
   const all = [...keys(dir).keys()].sort();
   let before = keys(dir);
   assert.deepEqual(changed(before, keys(dir)), [], 'the same course, the same keys');

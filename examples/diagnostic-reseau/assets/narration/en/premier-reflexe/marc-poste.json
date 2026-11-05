@@ -1,0 +1,58 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-poste",
+  "language": "en",
+  "textHash": "sha256:590842a9393708ee8133c2001cf6b909465b4b36cbb6efcc8d24bd5e59a4e1d2",
+  "duration": 2.49,
+  "provider": "elevenlabs",
+  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "generated": true,
+  "audioHash": "sha256:88e56c34ed030830ac93e6c164c6aaa62c3e7df7367bba971dfeff7ce3ee018d",
+  "createdAt": "2026-11-05T12:04:51Z",
+  "take": 1,
+  "spokenHash": "sha256:590842a9393708ee8133c2001cf6b909465b4b36cbb6efcc8d24bd5e59a4e1d2",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "Yes, no trouble. My emails too.",
+  "mouth": "cwwwwwssssscccccccccwwoosssswwwwccccccccccccccccccoooooocooooosscccwwoosscc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Yes",
+      "start": 0.04,
+      "end": 0.373,
+      "score": 0.946
+    },
+    {
+      "text": "no",
+      "start": 0.663,
+      "end": 0.843,
+      "score": 0.937
+    },
+    {
+      "text": "trouble",
+      "start": 0.843,
+      "end": 1.237,
+      "score": 1
+    },
+    {
+      "text": "My",
+      "start": 1.607,
+      "end": 1.799,
+      "score": 0.514
+    },
+    {
+      "text": "emails",
+      "start": 1.807,
+      "end": 2.169,
+      "score": 0.344
+    },
+    {
+      "text": "too",
+      "start": 2.169,
+      "end": 2.441,
+      "score": 0.958
+    }
+  ]
+}

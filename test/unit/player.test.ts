@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { ROOT, copyExample as copyCourse, readJSON, writeJSON, codes } from '../helpers.ts';
+import { ROOT, copyExample as copyCourse, readJSON, writeJSON, codes, NETWORK_SAMPLE } from '../helpers.ts';
 import * as edit from '@elabora/node/edit';
 import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
 import { readLock, assignKeys } from '@elabora/core/compile/state-model';
@@ -16,7 +16,7 @@ import type { CourseData, PlayerBarData } from '@elabora/player/course-data';
 // The learner's player (docs/decisions/D58.md): course.json player, its items and what they show.
 
 // The sample has a logo, resources, a glossary and credits (the test fixture has none).
-const copyExample = () => copyCourse(path.join(ROOT, 'examples/diagnostic-reseau'));
+const copyExample = () => copyCourse(NETWORK_SAMPLE);
 
 const compiled = (dir: string, options: Partial<Parameters<typeof compileCourseData>[2]> = {}): CourseData => {
   const project = loadProjectFromDir(dir);

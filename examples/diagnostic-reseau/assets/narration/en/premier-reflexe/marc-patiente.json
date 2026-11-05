@@ -1,0 +1,58 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-patiente",
+  "language": "en",
+  "textHash": "sha256:8d1a491e5958f32f739202c969b8964643184baf6afeceb3a63ce3f959baab43",
+  "duration": 3.795,
+  "provider": "elevenlabs",
+  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "generated": true,
+  "audioHash": "sha256:f0b52500021d56324c37bc820314a6f41433671f0e0fd1bf932d0ae0ffa2393a",
+  "createdAt": "2026-11-05T12:05:11Z",
+  "take": 1,
+  "spokenHash": "sha256:8d1a491e5958f32f739202c969b8964643184baf6afeceb3a63ce3f959baab43",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[sighs] Two minutes… All right, I'll wait.",
+  "mouth": "cccccccccccccccccccccccccssssscoooooosscssoooossooooocccccccccccccccccccccwwwwwwwwwwwcccccccccccccoooooowwwwsscccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Two",
+      "start": 0.843,
+      "end": 1.196,
+      "score": 0.394
+    },
+    {
+      "text": "minutes",
+      "start": 1.265,
+      "end": 1.759,
+      "score": 0.923
+    },
+    {
+      "text": "All",
+      "start": 2.47,
+      "end": 2.631,
+      "score": 0.968
+    },
+    {
+      "text": "right",
+      "start": 2.631,
+      "end": 2.943,
+      "score": 0.993
+    },
+    {
+      "text": "I'll",
+      "start": 3.273,
+      "end": 3.454,
+      "score": 0.858
+    },
+    {
+      "text": "wait",
+      "start": 3.454,
+      "end": 3.746,
+      "score": 0.97
+    }
+  ]
+}

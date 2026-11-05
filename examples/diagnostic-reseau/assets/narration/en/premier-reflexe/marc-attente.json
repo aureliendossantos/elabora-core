@@ -1,0 +1,112 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-attente",
+  "language": "en",
+  "textHash": "sha256:223e97864e9165800d7f4cd6d1d389b0070eeb244c441fc0d0a56c3725da7503",
+  "duration": 4.91,
+  "provider": "elevenlabs",
+  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "generated": true,
+  "audioHash": "sha256:72e4e826b2e4684d6971e853e884b77c1c56431ce64405c12359cdd2ac9d046a",
+  "createdAt": "2026-11-05T12:04:03Z",
+  "take": 1,
+  "spokenHash": "sha256:223e97864e9165800d7f4cd6d1d389b0070eeb244c441fc0d0a56c3725da7503",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[worried] So, can you see what's blocking it? The payroll has to go out before noon.",
+  "mouth": "cccccoossooosscccccccccccccssssoooooooossssssssscccooooosssoooooossscccccccccccccccccssccoowwwwwwooooooooooooocwwsswwwwwwwccccccwwwwwwwwoooooosssccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "So",
+      "start": 0.18,
+      "end": 0.473,
+      "score": 0.96
+    },
+    {
+      "text": "can",
+      "start": 0.882,
+      "end": 1.082,
+      "score": 0.95
+    },
+    {
+      "text": "you",
+      "start": 1.082,
+      "end": 1.223,
+      "score": 0.932
+    },
+    {
+      "text": "see",
+      "start": 1.223,
+      "end": 1.423,
+      "score": 1
+    },
+    {
+      "text": "what's",
+      "start": 1.423,
+      "end": 1.663,
+      "score": 0.976
+    },
+    {
+      "text": "blocking",
+      "start": 1.663,
+      "end": 2.124,
+      "score": 0.985
+    },
+    {
+      "text": "it",
+      "start": 2.124,
+      "end": 2.317,
+      "score": 0.938
+    },
+    {
+      "text": "The",
+      "start": 2.806,
+      "end": 2.926,
+      "score": 0.979
+    },
+    {
+      "text": "payroll",
+      "start": 2.926,
+      "end": 3.387,
+      "score": 0.727
+    },
+    {
+      "text": "has",
+      "start": 3.387,
+      "end": 3.688,
+      "score": 0.999
+    },
+    {
+      "text": "to",
+      "start": 3.688,
+      "end": 3.788,
+      "score": 0.999
+    },
+    {
+      "text": "go",
+      "start": 3.788,
+      "end": 3.948,
+      "score": 0.867
+    },
+    {
+      "text": "out",
+      "start": 3.948,
+      "end": 4.088,
+      "score": 0.995
+    },
+    {
+      "text": "before",
+      "start": 4.088,
+      "end": 4.469,
+      "score": 0.986
+    },
+    {
+      "text": "noon",
+      "start": 4.469,
+      "end": 4.902,
+      "score": 0.744
+    }
+  ]
+}

@@ -9,7 +9,7 @@ import { launchBrowser } from '@elabora/node/emulator/browser';
 import { build } from '@elabora/node/build';
 import type { BuildOptions } from '@elabora/node/build';
 import * as edit from '@elabora/node/edit';
-import { ROOT, copyExample as copyCourse } from '../helpers.ts';
+import { ROOT, copyExample as copyCourse, NETWORK_SAMPLE } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { execFileSync } from 'node:child_process';
 import { FFMPEG, hasFfmpeg } from '../narration.ts';
@@ -19,7 +19,7 @@ import { FFMPEG, hasFfmpeg } from '../narration.ts';
 
 const NO_FFMPEG = !hasFfmpeg() && 'ffmpeg and ffprobe not found';
 const tmp = (prefix: string) => fs.mkdtempSync(path.join(os.tmpdir(), prefix));
-const copyExample = (name: string) => copyCourse(path.join(ROOT, 'examples', name));
+const copyExample = (name: string) => copyCourse(name === 'diagnostic-reseau' ? NETWORK_SAMPLE : path.join(ROOT, 'examples', name));
 type Played = { kind: string; role?: string; sound?: string; src: string; heard: boolean };
 const soundsState = (page: Page) => page.evaluate(() => (window as PlayerWindow & { __elabora: { sounds: { state(): { context: string; interface: boolean; played: Played[] } } } }).__elabora.sounds.state());
 

@@ -1,0 +1,11 @@
+{
+  "format": "elabora-generated/1",
+  "assets": {
+    "images/portrait-marc.svg": {
+      "generator": "generators/portraits.mjs",
+      "inputsHash": "sha256:3261f6c16cd839bfde4f5a9314b72c8b0f2f972fd058035763b29d399523355a",
+      "outputHash": "sha256:44cdbc02d737544bdaad7bb4a8ef64e53e4d37f4655e4032ff66079d806e7821",
+      "tokens": []
+    }
+  }
+}

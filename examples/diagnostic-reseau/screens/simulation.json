@@ -1,69 +1,104 @@
 {
   "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
   "id": "simulation",
-  "title": "Trouver ce qui bloque",
+  "title": "Trouvez ce qui bloque",
   "covers": [
     "ITEM-4"
   ],
+  "layout": "stage",
+  "layoutProps": {
+    "arrangement": "top"
+  },
   "completeWhen": "interactions-done",
+  "continueRevealsSteps": false,
   "blocks": [
     {
-      "id": "simulation-scene",
+      "id": "simulation-reseau",
       "type": "free-object",
-      "width": "wide",
+      "slot": "scene",
+      "continuity": {
+        "key": "reseau",
+        "duration": 1000
+      },
       "props": {
         "object": "diagnostic-reseau",
-        "title": "Simulation du réseau de l'étage comptable",
-        "scored": true,
-        "weight": 2,
+        "title": "Le réseau du siège, à diagnostiquer",
+        "aspectRatio": "fill",
+        "narrowAspectRatio": "4:3",
+        "minHeight": 360,
         "props": {
-          "instruction": "Poursuivez le diagnostic de Marc dans l’ordre. Cliquez sur un équipement, ou utilisez Tab puis Entrée.",
+          "mode": "diagnose",
+          "checked": [
+            "poste",
+            "commutateur"
+          ],
           "failingDevice": "parefeu",
-          "packetSpeed": 1
+          "reach": 5,
+          "instruction": "Cliquez sur l'équipement à contrôler ensuite."
         },
-        "textAlternative": "**Version texte de la simulation.** Le poste de Marc a une adresse IP valide. Le voyant du port sur le commutateur est vert. Le routeur transmet les paquets vers le réseau des serveurs. Le journal du pare-feu montre des paquets rejetés à destination du port 9100 du serveur d'impression. Le serveur d'impression est en ligne mais ne reçoit rien. Quel équipement est en panne ? Réponse : le pare-feu, dont une règle bloque le port 9100.",
-        "narrowAspectRatio": "9:16"
+        "a11y": {
+          "description": "Le réseau du siège à diagnostiquer. Le poste de Marc et le commutateur sont déjà contrôlés. Chaque équipement est un bouton : contrôlez-les dans l'ordre du chemin."
+        },
+        "textAlternative": "**Version texte du diagnostic.** Le poste de Marc a une adresse IP valide et son port est actif sur le commutateur. Le [routeur](glossary:routeur) laisse passer les [paquets](glossary:paquet). Le journal du [pare-feu](glossary:pare-feu) montre des paquets refusés vers le port 9100 du serveur d'impression. Le [serveur d'impression](glossary:serveur-impression) est en ligne, mais ne reçoit rien. L'équipement en panne est le pare-feu : une de ses règles bloque le port 9100, celui des impressions.",
+        "scored": true,
+        "weight": 2
       }
     },
     {
-      "id": "simulation-bravo",
-      "type": "callout",
-      "hidden": true,
+      "id": "simulation-trouve",
+      "type": "text",
+      "slot": "note",
+      "step": 2,
       "props": {
-        "variant": "tip",
-        "title": "Panne trouvée",
-        "markdown": "Une règle du pare-feu bloque le port d’impression. Le diagnostic a localisé la panne sans redémarrer le serveur."
+        "markdown": "**Trouvé : une règle du pare-feu bloque le port des impressions.**"
+      }
+    },
+    {
+      "id": "simulation-transmettre",
+      "type": "button",
+      "slot": "note",
+      "step": 2,
+      "style": "go",
+      "props": {
+        "label": "Transmettre le ticket à l'équipe réseau",
+        "variant": "primary"
       }
     }
   ],
   "events": [
     {
-      "id": "simulation-indice",
-      "on": {
-        "type": "object.event",
-        "target": "simulation-scene",
-        "name": "hint_shown"
-      },
-      "do": [
-        {
-          "type": "set-variable",
-          "variable": "indiceVu",
-          "value": true
-        }
-      ]
-    },
-    {
       "id": "simulation-fin",
-      "description": "Afficher l'explication quand la panne est trouvée.",
+      "description": "La panne trouvée, la note et le bouton pour transmettre le ticket arrivent.",
       "on": {
         "type": "object.event",
-        "target": "simulation-scene",
+        "target": "simulation-reseau",
         "name": "completed"
       },
       "do": [
         {
-          "type": "show-block",
-          "block": "simulation-bravo"
+          "type": "reveal-step",
+          "step": 2
+        }
+      ]
+    },
+    {
+      "id": "simulation-reparation",
+      "description": "Le ticket transmis, la règle est corrigée : l'impression repart jusqu'à l'imprimante.",
+      "on": {
+        "type": "click",
+        "target": "simulation-transmettre"
+      },
+      "do": [
+        {
+          "type": "set-object-props",
+          "block": "simulation-reseau",
+          "props": {
+            "resolved": true
+          }
+        },
+        {
+          "type": "hide-block",
+          "block": "simulation-transmettre"
         }
       ]
     }

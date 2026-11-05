@@ -1,0 +1,68 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/component.schema.json",
+  "id": "stage",
+  "title": "Plateau du réseau",
+  "description": "Le réseau en 3D occupe toute la fenêtre. Le texte flotte à gauche : en grand pour ouvrir le module (Ouverture), en colonne (Colonne), ou réduit au titre pendant une activité (Titre en haut). Une note peut s'afficher par-dessus le bas de la scène.",
+  "instructions": "Un seul objet libre dans Scène, en aspectRatio fill. Colonne : un dialogue y tient. Titre en haut : le titre seul ; la note se place en bas, au centre. L'objet garde ses équipements hors de la partie que le texte couvre.",
+  "category": "layout",
+  "version": "1.0.0",
+  "level": "screen",
+  "fullBleed": true,
+  "props": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "arrangement": {
+        "type": "string",
+        "enum": [
+          "opening",
+          "column",
+          "top"
+        ],
+        "x-enum-labels": {
+          "opening": "Ouverture",
+          "column": "Colonne",
+          "top": "Titre en haut"
+        },
+        "default": "column",
+        "title": "Place du texte",
+        "description": "Ouverture : un grand titre dans une colonne centrée en hauteur. Colonne : le titre et le texte dans une colonne à gauche, depuis le haut. Titre en haut : le titre seul en haut à gauche, la scène prend le reste.",
+        "x-group": "design"
+      }
+    }
+  },
+  "slots": [
+    {
+      "id": "body",
+      "label": "Texte",
+      "default": true,
+      "accepts": [
+        "text",
+        "callout",
+        "button",
+        "dialogue",
+        "support-ticket"
+      ],
+      "maxBlocks": 4
+    },
+    {
+      "id": "scene",
+      "label": "Scène",
+      "accepts": [
+        "free-object",
+        "image"
+      ],
+      "maxBlocks": 1
+    },
+    {
+      "id": "note",
+      "label": "Note sur la scène",
+      "accepts": [
+        "text",
+        "callout",
+        "button"
+      ],
+      "maxBlocks": 3
+    }
+  ]
+}

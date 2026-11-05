@@ -1,0 +1,82 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-collegue",
+  "language": "en",
+  "textHash": "sha256:0fccc6bde1ebe5d3c671bdcec84fca4b4511e90aaca5c3282ffeff8a0d554591",
+  "duration": 3.37,
+  "provider": "elevenlabs",
+  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "generated": true,
+  "audioHash": "sha256:6cf15faf4b72bdc13def63114c317197ff8ce5d2ea9d4f0675ff28be54e2b315",
+  "createdAt": "2026-11-05T12:04:56Z",
+  "take": 1,
+  "spokenHash": "sha256:0fccc6bde1ebe5d3c671bdcec84fca4b4511e90aaca5c3282ffeff8a0d554591",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "My colleague says it's the print server, like in March.",
+  "mouth": "cccoooosswwwwwwwoooosswwwooooosssccsscccwwwoossssssoossssssccccccccccwwwwwcsssccccooooocwwwwsscssooccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "My",
+      "start": 0.04,
+      "end": 0.221,
+      "score": 1
+    },
+    {
+      "text": "colleague",
+      "start": 0.221,
+      "end": 0.662,
+      "score": 0.976
+    },
+    {
+      "text": "says",
+      "start": 0.662,
+      "end": 0.963,
+      "score": 0.999
+    },
+    {
+      "text": "it's",
+      "start": 0.963,
+      "end": 1.143,
+      "score": 0.913
+    },
+    {
+      "text": "the",
+      "start": 1.143,
+      "end": 1.304,
+      "score": 0.99
+    },
+    {
+      "text": "print",
+      "start": 1.304,
+      "end": 1.585,
+      "score": 0.968
+    },
+    {
+      "text": "server",
+      "start": 1.585,
+      "end": 1.978,
+      "score": 0.621
+    },
+    {
+      "text": "like",
+      "start": 2.287,
+      "end": 2.599,
+      "score": 1
+    },
+    {
+      "text": "in",
+      "start": 2.768,
+      "end": 2.889,
+      "score": 1
+    },
+    {
+      "text": "March",
+      "start": 2.889,
+      "end": 3.302,
+      "score": 0.998
+    }
+  ]
+}

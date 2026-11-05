@@ -2,56 +2,570 @@
   "$schema": "https://elabora.studio/schemas/0.1.11/object-manifest.schema.json",
   "manifestVersion": "0.1",
   "id": "diagnostic-reseau",
-  "version": "1.0.0",
-  "title": "Diagnostic réseau en 3D",
-  "planRefs": { "objectives": ["OBJ-2"], "items": ["ITEM-4"] },
+  "version": "2.0.0",
+  "title": "Le réseau du siège en 3D",
+  "language": "fr",
+  "planRefs": {
+    "objectives": [
+      "OBJ-1",
+      "OBJ-2"
+    ],
+    "items": [
+      "ITEM-1",
+      "ITEM-2",
+      "ITEM-3",
+      "ITEM-4"
+    ]
+  },
   "pedagogicalRole": "simulation-decision",
-  "requires": { "three": "r186" },
+  "requires": {
+    "three": "r186"
+  },
   "props": {
     "type": "object",
     "properties": {
-      "instruction": { "type": "string", "maxLength": 200, "default": "Repérez l'équipement qui bloque les paquets.", "description": "Consigne affichée au-dessus de la scène", "x-group": "Contenu", "x-control": "textarea", "x-translatable": true },
-      "failingDevice": { "type": "string", "enum": ["commutateur", "routeur", "parefeu", "serveur"], "x-enum-labels": { "commutateur": "Commutateur", "routeur": "Routeur", "parefeu": "Pare-feu", "serveur": "Serveur d'impression" }, "default": "parefeu", "description": "Équipement en panne dans ce scénario", "x-group": "Scénario", "x-control": "select" },
-      "packetSpeed": { "type": "number", "minimum": 0.25, "maximum": 2, "multipleOf": 0.25, "default": 1, "description": "Vitesse des paquets", "x-group": "Animation", "x-control": "slider" },
-      "accentColor": { "type": "string", "format": "color", "default": "#C2410C", "description": "Couleur d'accent (charte)", "x-group": "Style", "x-control": "color", "x-token": "color.accent" },
-      "primaryColor": { "type": "string", "format": "color", "default": "#12355B", "description": "Couleur des équipements (charte)", "x-group": "Style", "x-control": "color", "x-token": "color.primary" },
-      "showLabels": { "type": "boolean", "default": true, "description": "Afficher le nom des équipements", "x-group": "Aide", "x-control": "toggle" },
-      "hintAfterErrors": { "type": "integer", "minimum": 1, "maximum": 5, "default": 2, "description": "Nombre d'erreurs avant d'afficher un indice", "x-group": "Aide", "x-control": "number" },
-      "routerPosition": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3, "default": [0, 0, 0], "description": "Décalage du routeur dans la scène", "x-group": "Scène", "x-control": "vec3-gizmo", "x-object-id": "routeur" }
+      "mode": {
+        "type": "string",
+        "enum": [
+          "display",
+          "explain",
+          "diagnose"
+        ],
+        "x-enum-labels": {
+          "display": "Présentation",
+          "explain": "Explication",
+          "diagnose": "Diagnostic"
+        },
+        "default": "display",
+        "title": "Mode",
+        "description": "Présentation : le réseau au repos. Explication : le chemin s'éclaire équipement par équipement. Diagnostic : l'apprenant contrôle les équipements dans l'ordre.",
+        "x-group": "Scénario",
+        "x-control": "select"
+      },
+      "instruction": {
+        "type": "string",
+        "maxLength": 160,
+        "default": "Cliquez sur l'équipement à contrôler ensuite.",
+        "title": "Consigne",
+        "description": "La consigne du diagnostic, sous la scène, jusqu'à ce que la panne soit trouvée.",
+        "x-group": "Contenu",
+        "x-control": "textarea",
+        "x-translatable": true
+      },
+      "devices": {
+        "type": "array",
+        "x-control": "list",
+        "minItems": 5,
+        "maxItems": 5,
+        "title": "Équipements",
+        "description": "Le nom de chaque équipement et ce que montre son contrôle.",
+        "x-group": "Contenu",
+        "items": {
+          "type": "object",
+          "required": [
+            "id",
+            "label",
+            "ok"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "title": "Équipement",
+              "enum": [
+                "poste",
+                "commutateur",
+                "routeur",
+                "parefeu",
+                "serveur"
+              ],
+              "x-enum-labels": {
+                "poste": "Poste",
+                "parefeu": "Pare-feu",
+                "serveur": "Serveur d'impression"
+              }
+            },
+            "label": {
+              "type": "string",
+              "title": "Nom",
+              "maxLength": 40,
+              "x-translatable": true
+            },
+            "ok": {
+              "type": "string",
+              "title": "Contrôle réussi",
+              "maxLength": 60,
+              "x-translatable": true
+            },
+            "fault": {
+              "type": "string",
+              "title": "Contrôle en panne",
+              "maxLength": 60,
+              "x-translatable": true
+            }
+          }
+        },
+        "default": [
+          {
+            "id": "poste",
+            "label": "Poste de Marc",
+            "ok": "Adresse IP valide",
+            "fault": "Aucune adresse IP"
+          },
+          {
+            "id": "commutateur",
+            "label": "Commutateur",
+            "ok": "Port actif",
+            "fault": "Port éteint"
+          },
+          {
+            "id": "routeur",
+            "label": "Routeur",
+            "ok": "Les paquets passent",
+            "fault": "Route absente"
+          },
+          {
+            "id": "parefeu",
+            "label": "Pare-feu",
+            "ok": "Les paquets passent",
+            "fault": "Port 9100 bloqué"
+          },
+          {
+            "id": "serveur",
+            "label": "Serveur d'impression",
+            "ok": "En ligne",
+            "fault": "File d'attente bloquée"
+          }
+        ]
+      },
+      "printerLabel": {
+        "type": "string",
+        "maxLength": 40,
+        "default": "Imprimante",
+        "title": "Nom de l'imprimante",
+        "description": "L'imprimante, au bout du chemin.",
+        "x-group": "Contenu",
+        "x-translatable": true
+      },
+      "floorZone": {
+        "type": "string",
+        "maxLength": 40,
+        "default": "Réseau de l'étage",
+        "title": "Réseau des bureaux",
+        "description": "Le nom de la zone du poste et du commutateur.",
+        "x-group": "Contenu",
+        "x-translatable": true
+      },
+      "serverZone": {
+        "type": "string",
+        "maxLength": 40,
+        "default": "Réseau des serveurs",
+        "title": "Réseau des serveurs",
+        "description": "Le nom de la zone du pare-feu, du serveur et de l'imprimante.",
+        "x-group": "Contenu",
+        "x-translatable": true
+      },
+      "failingDevice": {
+        "type": "string",
+        "enum": [
+          "poste",
+          "commutateur",
+          "routeur",
+          "parefeu",
+          "serveur"
+        ],
+        "x-enum-labels": {
+          "poste": "Poste",
+          "parefeu": "Pare-feu",
+          "serveur": "Serveur d'impression"
+        },
+        "default": "parefeu",
+        "title": "Équipement en panne",
+        "description": "L'équipement qui bloque les paquets dans ce scénario.",
+        "x-group": "Scénario",
+        "x-control": "select"
+      },
+      "checked": {
+        "type": "array",
+        "x-control": "list",
+        "maxItems": 5,
+        "items": {
+          "type": "string",
+          "enum": [
+            "poste",
+            "commutateur",
+            "routeur",
+            "parefeu",
+            "serveur"
+          ],
+          "x-enum-labels": {
+            "poste": "Poste",
+            "parefeu": "Pare-feu",
+            "serveur": "Serveur d'impression"
+          }
+        },
+        "default": [],
+        "title": "Déjà contrôlés",
+        "description": "Les équipements déjà contrôlés, dans l'ordre, quand la scène commence.",
+        "x-group": "Scénario"
+      },
+      "reach": {
+        "type": "integer",
+        "minimum": -1,
+        "maximum": 5,
+        "default": 5,
+        "x-enum-labels": {
+          "-1": "Aucun",
+          "0": "Poste",
+          "1": "Commutateur",
+          "2": "Routeur",
+          "3": "Pare-feu",
+          "4": "Serveur d'impression",
+          "5": "Imprimante"
+        },
+        "title": "Chemin éclairé jusqu'à",
+        "description": "Explication : jusqu'où le chemin des paquets est éclairé.",
+        "x-group": "Scénario",
+        "x-control": "select",
+        "enum": [
+          -1,
+          0,
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "focus": {
+        "type": "string",
+        "enum": [
+          "aucun",
+          "poste",
+          "commutateur",
+          "routeur",
+          "parefeu",
+          "serveur",
+          "imprimante"
+        ],
+        "x-enum-labels": {
+          "parefeu": "Pare-feu",
+          "serveur": "Serveur d'impression"
+        },
+        "default": "aucun",
+        "title": "Équipement mis en avant",
+        "description": "Un anneau signale cet équipement.",
+        "x-group": "Scénario",
+        "x-control": "select"
+      },
+      "showZones": {
+        "type": "boolean",
+        "default": false,
+        "title": "Montrer les deux réseaux",
+        "description": "Teinte les zones des bureaux et des serveurs, avec leur nom.",
+        "x-group": "Aide",
+        "x-control": "toggle"
+      },
+      "resolved": {
+        "type": "boolean",
+        "default": false,
+        "title": "Panne réparée",
+        "description": "Les paquets passent jusqu'à l'imprimante, qui imprime.",
+        "x-group": "Scénario",
+        "x-control": "toggle"
+      },
+      "showLabels": {
+        "type": "boolean",
+        "default": true,
+        "title": "Noms des équipements",
+        "description": "Affiche le nom de chaque équipement au-dessus de lui.",
+        "x-group": "Aide",
+        "x-control": "toggle"
+      },
+      "hintAfterErrors": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 5,
+        "default": 2,
+        "title": "Indice après",
+        "description": "Nombre de contrôles trop tôt avant que l'équipement suivant soit signalé.",
+        "x-group": "Aide",
+        "x-control": "number"
+      },
+      "packetSpeed": {
+        "type": "number",
+        "minimum": 0.25,
+        "maximum": 2,
+        "multipleOf": 0.25,
+        "default": 1,
+        "title": "Vitesse des paquets",
+        "description": "La vitesse des paquets le long des câbles.",
+        "x-group": "Animation",
+        "x-control": "slider"
+      },
+      "accentColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#F29F3A",
+        "title": "Couleur des paquets",
+        "description": "Les paquets et les détails de la charte.",
+        "x-group": "Style",
+        "x-control": "color",
+        "x-token": "color.amber"
+      },
+      "primaryColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#12355B",
+        "title": "Couleur des équipements",
+        "description": "Le bleu de la charte, sur les équipements.",
+        "x-group": "Style",
+        "x-control": "color",
+        "x-token": "color.primary"
+      },
+      "okColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#2C7A4B",
+        "title": "Contrôle réussi",
+        "description": "L'anneau d'un équipement qui fonctionne.",
+        "x-group": "Style",
+        "x-control": "color",
+        "x-token": "color.success"
+      },
+      "faultColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#B3372F",
+        "title": "Panne",
+        "description": "L'anneau de l'équipement en panne.",
+        "x-group": "Style",
+        "x-control": "color",
+        "x-token": "color.error"
+      },
+      "plateColor": {
+        "type": "string",
+        "format": "color",
+        "default": "#EFE3CE",
+        "title": "Plateau",
+        "description": "La couleur du plateau qui porte le réseau.",
+        "x-group": "Style",
+        "x-control": "color",
+        "x-advanced": true
+      },
+      "routerPosition": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 3,
+        "maxItems": 3,
+        "default": [
+          0.6,
+          0,
+          1.35
+        ],
+        "title": "Place du routeur",
+        "description": "La position du routeur sur le plateau.",
+        "x-group": "Scène",
+        "x-control": "vec3-gizmo",
+        "x-object-id": "routeur",
+        "x-advanced": true
+      }
     },
-    "required": ["instruction", "failingDevice"]
+    "required": [
+      "mode"
+    ]
+  },
+  "strings": {
+    "check": {
+      "text": "Contrôler : {device}",
+      "description": "Nom, pour les lecteurs d'écran, du bouton d'un équipement pendant le diagnostic."
+    },
+    "tooEarly": {
+      "text": "Trop tôt",
+      "description": "Étiquette brève sous un équipement contrôlé avant son tour."
+    },
+    "tooEarlyStatus": {
+      "text": "{device} : trop tôt. À contrôler d'abord : {next}.",
+      "description": "Annonce pour les lecteurs d'écran quand un équipement est contrôlé avant son tour."
+    },
+    "hint": {
+      "text": "À contrôler",
+      "description": "Étiquette sous l'équipement à contrôler, une fois l'indice donné."
+    },
+    "statusOk": {
+      "text": "{device} : {finding}.",
+      "description": "Annonce d'un contrôle réussi."
+    },
+    "statusFault": {
+      "text": "{device} : {finding}. La panne est ici.",
+      "description": "Annonce de l'équipement en panne."
+    },
+    "statusResolved": {
+      "text": "La panne est réparée : l'impression sort.",
+      "description": "Annonce quand la panne est réparée."
+    },
+    "pause": {
+      "text": "Mettre en pause l'animation",
+      "description": "Bouton qui arrête les paquets."
+    },
+    "play": {
+      "text": "Reprendre l'animation",
+      "description": "Bouton qui relance les paquets."
+    }
   },
   "objects": [
-    { "id": "poste", "label": "Poste de Marc", "selectable": true },
-    { "id": "commutateur", "label": "Commutateur", "selectable": true },
-    { "id": "routeur", "label": "Routeur", "selectable": true },
-    { "id": "parefeu", "label": "Pare-feu", "selectable": true },
-    { "id": "serveur", "label": "Serveur d'impression", "selectable": true }
+    {
+      "id": "poste",
+      "label": "Poste de Marc",
+      "selectable": true
+    },
+    {
+      "id": "commutateur",
+      "label": "Commutateur",
+      "selectable": true
+    },
+    {
+      "id": "routeur",
+      "label": "Routeur",
+      "selectable": true
+    },
+    {
+      "id": "parefeu",
+      "label": "Pare-feu",
+      "selectable": true
+    },
+    {
+      "id": "serveur",
+      "label": "Serveur d'impression",
+      "selectable": true
+    },
+    {
+      "id": "imprimante",
+      "label": "Imprimante"
+    }
   ],
   "state": {
     "type": "object",
     "properties": {
-      "inspected": { "type": "array", "items": { "type": "string" }, "maxItems": 5, "description": "Équipements déjà contrôlés, dans l'ordre" },
-      "attempts": { "type": "integer", "minimum": 0, "description": "Équipements sains signalés à tort" },
-      "found": { "type": "boolean" },
-      "hint": { "type": "boolean" }
+      "checked": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "maxItems": 5,
+        "description": "Équipements contrôlés par l'apprenant, dans l'ordre."
+      },
+      "attempts": {
+        "type": "integer",
+        "minimum": 0,
+        "description": "Équipements contrôlés trop tôt."
+      },
+      "found": {
+        "type": "boolean"
+      },
+      "hint": {
+        "type": "boolean"
+      }
     },
-    "required": ["inspected", "attempts", "found", "hint"]
+    "required": [
+      "checked",
+      "attempts",
+      "found",
+      "hint"
+    ]
   },
-  "persistState": { "enabled": true, "maxLength": 160 },
+  "persistState": {
+    "enabled": true,
+    "maxLength": 160
+  },
   "events": [
-    { "name": "device_inspected", "description": "L'apprenant contrôle un équipement.", "payload": { "type": "object", "properties": { "device": { "type": "string" }, "inOrder": { "type": "boolean" }, "faulty": { "type": "boolean" } }, "required": ["device", "inOrder", "faulty"] },
-      "tracking": { "interaction": { "type": "choice", "objective": "OBJ-2", "responseField": "device", "correctField": "inOrder" } } },
-    { "name": "hint_shown", "description": "Un indice s'affiche après plusieurs erreurs.", "payload": { "type": "object", "properties": {} } },
-    { "name": "completed", "description": "L'équipement en panne est trouvé.", "payload": { "type": "object", "properties": { "score": { "type": "number", "minimum": 0, "maximum": 1 }, "attempts": { "type": "integer" } }, "required": ["score"] },
-      "tracking": { "score": { "field": "score" }, "completion": true } }
+    {
+      "name": "device_checked",
+      "description": "L'apprenant contrôle un équipement.",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "device": {
+            "type": "string"
+          },
+          "inOrder": {
+            "type": "boolean"
+          },
+          "faulty": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "device",
+          "inOrder",
+          "faulty"
+        ]
+      },
+      "tracking": {
+        "interaction": {
+          "type": "choice",
+          "objective": "OBJ-2",
+          "responseField": "device",
+          "correctField": "inOrder"
+        }
+      }
+    },
+    {
+      "name": "hint_shown",
+      "description": "L'équipement à contrôler est signalé, après plusieurs contrôles trop tôt.",
+      "payload": {
+        "type": "object",
+        "properties": {}
+      }
+    },
+    {
+      "name": "completed",
+      "description": "L'équipement en panne est trouvé.",
+      "payload": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "attempts": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "score"
+        ]
+      },
+      "tracking": {
+        "score": {
+          "field": "score"
+        },
+        "completion": true
+      }
+    }
   ],
-  "budgets": { "drawCallsMax": 150, "trianglesMax": 300000, "texturePxMax": 2048, "assetsMbMax": 8, "bootMsMax": 3000, "fpsMin": 30, "webglContexts": 1 },
-  "a11y": {
-    "description": "Schéma 3D d'un réseau de cinq équipements alignés : poste de Marc, commutateur, routeur, pare-feu et serveur d'impression. Des paquets lumineux circulent du poste vers le serveur et s'arrêtent à l'équipement en panne.",
-    "keyboard": "Tab parcourt les équipements dans l'ordre du chemin, Entrée ou Espace contrôle l'équipement sélectionné, P met l'animation en pause.",
-    "dragAlternative": "Aucun glisser-déposer : un clic ou Entrée suffit.",
-    "motion": { "pausable": true, "respectsReducedMotion": true }
+  "budgets": {
+    "drawCallsMax": 150,
+    "trianglesMax": 300000,
+    "texturePxMax": 2048,
+    "assetsMbMax": 8,
+    "bootMsMax": 3000,
+    "fpsMin": 30,
+    "webglContexts": 1
   },
-  "sandbox": { "network": "none", "permissions": [] }
+  "a11y": {
+    "description": "Un réseau d'entreprise en 3D, posé sur un plateau : le poste de Marc, le commutateur de l'étage, le routeur, le pare-feu, le serveur d'impression et l'imprimante, reliés par des câbles. Des paquets lumineux suivent les câbles aussi loin que l'impression passe.",
+    "keyboard": "Pendant le diagnostic, Tab parcourt les équipements dans l'ordre du chemin ; Entrée ou Espace contrôle l'équipement choisi.",
+    "dragAlternative": "Aucun glisser-déposer : un clic ou Entrée suffit.",
+    "motion": {
+      "pausable": true,
+      "respectsReducedMotion": true
+    }
+  },
+  "sandbox": {
+    "network": "none",
+    "permissions": []
+  }
 }

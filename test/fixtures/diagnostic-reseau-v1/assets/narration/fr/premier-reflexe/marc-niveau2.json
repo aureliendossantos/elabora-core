@@ -1,0 +1,76 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-niveau2",
+  "language": "fr",
+  "textHash": "sha256:7861b5da14029f9cf11862c1885c41e5d385635d8912c4cc44bd7e1857c4b965",
+  "duration": 2.385,
+  "provider": "elevenlabs",
+  "voice": "kENkNtk0xyzG09WW40xE",
+  "generated": true,
+  "audioHash": "sha256:3132ab59968f4e31afc77628d6fda3dee4a5259bd8bf120cf352a736753f709f",
+  "createdAt": "2026-10-23T23:41:58Z",
+  "take": 1,
+  "spokenHash": "sha256:7861b5da14029f9cf11862c1885c41e5d385635d8912c4cc44bd7e1857c4b965",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Voix de synthèse : Marcel (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[inquiet] Le niveau 2 ? Et ils me rappellent avant midi ?",
+  "mouth": "ccssoooooocooosscooosscccccccccccccooooowwcwwwwcccooooosswwwwcsscssscccc",
+  "aligner": "wav2vec2-large-xlsr-53-french@7c79e10 int8",
+  "words": [
+    {
+      "text": "Le",
+      "start": 0.04,
+      "end": 0.154,
+      "score": 1
+    },
+    {
+      "text": "niveau",
+      "start": 0.2,
+      "end": 0.515,
+      "score": 0.973
+    },
+    {
+      "text": "2",
+      "start": 0.521,
+      "end": 0.756,
+      "score": 0.923
+    },
+    {
+      "text": "Et",
+      "start": 1.163,
+      "end": 1.263,
+      "score": 0.969
+    },
+    {
+      "text": "ils",
+      "start": 1.263,
+      "end": 1.383,
+      "score": 0.678
+    },
+    {
+      "text": "me",
+      "start": 1.383,
+      "end": 1.497,
+      "score": 1
+    },
+    {
+      "text": "rappellent",
+      "start": 1.503,
+      "end": 1.824,
+      "score": 0.841
+    },
+    {
+      "text": "avant",
+      "start": 1.824,
+      "end": 1.998,
+      "score": 1
+    },
+    {
+      "text": "midi",
+      "start": 2.004,
+      "end": 2.279,
+      "score": 1
+    }
+  ]
+}

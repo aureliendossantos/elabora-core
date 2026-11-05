@@ -5,159 +5,213 @@
   "covers": [
     "ITEM-2"
   ],
+  "layout": "stage",
+  "layoutProps": {
+    "arrangement": "top"
+  },
   "blocks": [
     {
-      "id": "chemin-schema",
-      "type": "network-path",
-      "width": "wide",
-      "props": {
-        "caption": "Le chemin suivi par une demande d'impression.",
-        "steps": [
-          {
-            "label": "Poste",
-            "detail": "de Marc"
-          },
-          {
-            "label": "Commutateur"
-          },
-          {
-            "label": "Routeur"
-          },
-          {
-            "label": "Pare-feu"
-          },
-          {
-            "label": "Serveur",
-            "detail": "d'impression"
-          }
-        ]
+      "id": "chemin-reseau",
+      "type": "free-object",
+      "slot": "scene",
+      "optional": true,
+      "continuity": {
+        "key": "reseau",
+        "duration": 1000
       },
-      "timing": {
-        "in": {
-          "at": {
-            "line": "chemin-depart",
-            "word": "schéma"
-          },
-          "effect": "wipe",
-          "duration": 0.8
-        }
-      }
-    },
-    {
-      "id": "chemin-reseaux-pile",
-      "type": "stack",
       "props": {
-        "transition": "crossfade"
-      },
-      "blocks": [
-        {
-          "id": "chemin-etage",
-          "type": "callout",
-          "props": {
-            "variant": "info",
-            "title": "Réseau de l'étage",
-            "markdown": "Le **poste** de Marc et le **commutateur** de l'étage."
-          },
-          "timing": {
-            "in": {
-              "at": {
-                "line": "chemin-depart",
-                "word": "ordinateur"
-              },
-              "effect": "fade"
-            }
-          }
+        "object": "diagnostic-reseau",
+        "title": "Le chemin d'une impression, éclairé équipement par équipement",
+        "aspectRatio": "fill",
+        "narrowAspectRatio": "4:3",
+        "minHeight": 360,
+        "props": {
+          "mode": "explain",
+          "reach": 5,
+          "showZones": false
         },
-        {
-          "id": "chemin-serveurs",
-          "type": "callout",
-          "props": {
-            "variant": "info",
-            "title": "Réseau des serveurs",
-            "markdown": "Le **routeur**, le **pare-feu** et le **serveur d'impression**."
-          },
-          "timing": {
-            "in": {
-              "at": {
-                "line": "chemin-reseaux",
-                "word": "routeur"
-              },
-              "effect": "fade"
-            }
-          }
-        }
-      ]
+        "a11y": {
+          "description": "Le chemin d'une impression s'éclaire sur le réseau du siège, à mesure que Claire le décrit : le poste de Marc et le commutateur, dans le réseau de l'étage, puis le routeur, le pare-feu, le serveur d'impression et l'imprimante, dans le réseau des serveurs."
+        },
+        "textAlternative": "**Version texte du chemin.** Une demande d'impression part du poste de Marc. Le [commutateur](glossary:commutateur) de l'étage la relaie. Le [routeur](glossary:routeur) la fait passer dans le réseau des serveurs. Le [pare-feu](glossary:pare-feu) vérifie qu'elle a le droit d'entrer. Le [serveur d'impression](glossary:serveur-impression) l'envoie enfin à l'imprimante. Le poste et le commutateur forment le réseau de l'étage ; le pare-feu, le serveur et l'imprimante, le réseau des serveurs."
+      }
     },
     {
       "id": "chemin-regle",
       "type": "callout",
+      "slot": "note",
+      "style": "rule",
       "props": {
         "variant": "important",
-        "title": "La règle SUP-NET-04",
         "textRef": "TXT-2"
       },
       "timing": {
         "in": {
           "at": {
-            "line": "chemin-diagnostic",
-            "word": "contrôlez"
+            "line": "chemin-regle",
+            "word": "règle"
           },
-          "effect": "rise"
+          "effect": "rise",
+          "duration": 0.5
         }
       }
-    },
-    {
-      "id": "chemin-roles",
-      "type": "accordion",
-      "props": {
-        "items": [
-          {
-            "id": "poste",
-            "title": "Le poste",
-            "markdown": "L'ordinateur de Marc. Il doit être connecté au réseau et avoir une [adresse IP](glossary:adresse-ip) valide."
-          },
-          {
-            "id": "commutateur",
-            "title": "Le commutateur",
-            "markdown": "Il relie les postes d'un même étage. Un voyant éteint sur le port de Marc signale un câble débranché."
-          },
-          {
-            "id": "routeur",
-            "title": "Le routeur",
-            "markdown": "Il oriente les [paquets](glossary:paquet) entre le réseau des bureaux et celui des serveurs."
-          },
-          {
-            "id": "pare-feu",
-            "title": "Le pare-feu",
-            "markdown": "Il filtre les flux entre réseaux. Une règle mal configurée peut bloquer l'impression."
-          },
-          {
-            "id": "serveur",
-            "title": "Le serveur d'impression",
-            "markdown": "Il reçoit les demandes et les transmet à l'imprimante. Une [file d'attente](glossary:file-attente) bloquée arrête toutes les impressions."
-          }
-        ]
-      },
-      "optional": true
     }
   ],
   "narration": {
     "lines": [
       {
-        "id": "chemin-depart",
+        "id": "chemin-poste",
         "speaker": "guide",
-        "text": "Regardez le schéma de gauche à droite. La demande part de l'ordinateur de Marc. Le commutateur la fait circuler sur le réseau de l'étage."
+        "text": "Quand Marc lance une impression, sa demande part de son poste. Le commutateur de l'étage la relaie."
       },
       {
-        "id": "chemin-reseaux",
+        "id": "chemin-serveurs",
         "speaker": "guide",
-        "text": "Le routeur dirige ensuite les paquets vers le réseau des serveurs. Le pare-feu décide quels flux peuvent passer. Le serveur d'impression reçoit enfin la demande."
+        "text": "Le routeur la fait passer dans le réseau des serveurs. Le pare-feu vérifie qu'elle a le droit d'entrer. Le serveur d'impression l'envoie enfin à l'imprimante."
       },
       {
-        "id": "chemin-diagnostic",
+        "id": "chemin-regle",
         "speaker": "guide",
-        "text": "Pour trouver où la demande s'arrête, contrôlez chaque maillon en progressant depuis le poste. Même si vous avez une intuition, vérifiez les équipements qui le précèdent."
+        "text": "Une panne peut se cacher à chacune de ces étapes. Pour la trouver, la procédure SUP-NET-04 a une règle simple."
       }
     ]
-  }
+  },
+  "events": [
+    {
+      "id": "chemin-depart",
+      "description": "Dès les premiers mots, le chemin s'éteint : seul le poste reste éclairé.",
+      "on": {
+        "type": "timeline.reached",
+        "at": {
+          "line": "chemin-poste",
+          "word": "Marc"
+        }
+      },
+      "do": [
+        {
+          "type": "set-object-props",
+          "block": "chemin-reseau",
+          "props": {
+            "reach": 0,
+            "showZones": false
+          }
+        }
+      ]
+    },
+    {
+      "id": "chemin-commutateur",
+      "on": {
+        "type": "timeline.reached",
+        "at": {
+          "line": "chemin-poste",
+          "word": "commutateur"
+        }
+      },
+      "do": [
+        {
+          "type": "set-object-props",
+          "block": "chemin-reseau",
+          "props": {
+            "reach": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "chemin-routeur",
+      "on": {
+        "type": "timeline.reached",
+        "at": {
+          "line": "chemin-serveurs",
+          "word": "routeur"
+        }
+      },
+      "do": [
+        {
+          "type": "set-object-props",
+          "block": "chemin-reseau",
+          "props": {
+            "reach": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "chemin-reseaux",
+      "description": "Les deux réseaux se teintent quand Claire nomme celui des serveurs.",
+      "on": {
+        "type": "timeline.reached",
+        "at": {
+          "line": "chemin-serveurs",
+          "word": "réseau"
+        }
+      },
+      "do": [
+        {
+          "type": "set-object-props",
+          "block": "chemin-reseau",
+          "props": {
+            "showZones": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "chemin-pare-feu",
+      "on": {
+        "type": "timeline.reached",
+        "at": {
+          "line": "chemin-serveurs",
+          "word": "pare-feu"
+        }
+      },
+      "do": [
+        {
+          "type": "set-object-props",
+          "block": "chemin-reseau",
+          "props": {
+            "reach": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "chemin-serveur",
+      "on": {
+        "type": "timeline.reached",
+        "at": {
+          "line": "chemin-serveurs",
+          "word": "serveur"
+        }
+      },
+      "do": [
+        {
+          "type": "set-object-props",
+          "block": "chemin-reseau",
+          "props": {
+            "reach": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "chemin-imprimante",
+      "on": {
+        "type": "timeline.reached",
+        "at": {
+          "line": "chemin-serveurs",
+          "word": "imprimante"
+        }
+      },
+      "do": [
+        {
+          "type": "set-object-props",
+          "block": "chemin-reseau",
+          "props": {
+            "reach": 5
+          }
+        }
+      ]
+    }
+  ]
 }

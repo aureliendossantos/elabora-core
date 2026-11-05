@@ -1,0 +1,70 @@
+{
+  "screen": "premier-reflexe",
+  "line": "marc-etage",
+  "language": "en",
+  "textHash": "sha256:c639f56ac6ebc4daa3349aebf1a61cfeaf2353a2846e32601c239adf4e7a2103",
+  "duration": 2.8,
+  "provider": "elevenlabs",
+  "voice": "RNnkVeW25AwKYxZgnHBH",
+  "generated": true,
+  "audioHash": "sha256:6e75de0c39f6bdf71110f6fe9b306fac0ecd8a86d4f9eb62ed4f8629ad099f8d",
+  "createdAt": "2026-11-05T12:05:34Z",
+  "take": 1,
+  "spokenHash": "sha256:c639f56ac6ebc4daa3349aebf1a61cfeaf2353a2846e32601c239adf4e7a2103",
+  "settingsHash": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "credit": "Synthetic voice: Luke (ElevenLabs)",
+  "model": "elevenlabs/eleven_v4",
+  "text": "[worried] Wait… nobody on the floor can print now.",
+  "mouth": "cccoowwoosssccccccccccccccccccccoooocwwoooooooossccwwwwwwsswwwcoocwwwoocoowwwsssssccc",
+  "aligner": "wav2vec2-base-960h@a19f851 quantized",
+  "words": [
+    {
+      "text": "Wait",
+      "start": 0.081,
+      "end": 0.414,
+      "score": 0.952
+    },
+    {
+      "text": "nobody",
+      "start": 1.068,
+      "end": 1.41,
+      "score": 0.976
+    },
+    {
+      "text": "on",
+      "start": 1.41,
+      "end": 1.511,
+      "score": 0.998
+    },
+    {
+      "text": "the",
+      "start": 1.511,
+      "end": 1.652,
+      "score": 0.999
+    },
+    {
+      "text": "floor",
+      "start": 1.652,
+      "end": 1.914,
+      "score": 0.999
+    },
+    {
+      "text": "can",
+      "start": 1.914,
+      "end": 2.135,
+      "score": 1
+    },
+    {
+      "text": "print",
+      "start": 2.135,
+      "end": 2.458,
+      "score": 0.963
+    },
+    {
+      "text": "now",
+      "start": 2.458,
+      "end": 2.8,
+      "score": 0.667
+    }
+  ]
+}

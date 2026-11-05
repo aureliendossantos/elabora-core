@@ -48,5 +48,10 @@ If `elabora` is not on PATH (on macOS, Elabora installs it from Réglages › Ou
 ## Notes for this course
 <!-- What agents should know about this course: its audience, its voice, decisions taken. Elabora never changes this part. -->
 
-- Marc speaks with one voice in the whole module (ElevenLabs Marcel - Warm and Conversational), Leïla with ElevenLabs Lucie - Professional Customer Care Agent; Claire, the guide, keeps her local voice (Pocket TTS claire): she is outside the story.
-- « Premier réflexe » is the dialogue `appel-marc` (messaging, practice, scored by quality: one of the three diagnostics of OBJ-2's criterion). Its ending `a-revoir` opens the layer `rappel-regle`, which Claire says while the path appears on « voici »; `maitrise` on the scored run sets `bonsReflexes`.
+- A real case broken up by two short teaching moments: Marc's ticket, the path of a print job, his call, the diagnosis on the 3D network, two new tickets. Each screen shows one thing the others do not; keep it that way.
+- One free object, `diagnostic-reseau`, carries on from the cover to the diagnosis (continuity key `reseau`): `display` on the cover and during the call, `explain` on « Le chemin », `diagnose` on « Trouvez ce qui bloque ». During the diagnosis only the instruction and the devices show; earlier checks keep a check mark, only the latest one shows its finding.
+- « Le chemin » is driven by Claire's voice: `timeline.reached` cues on her words set the object's `reach` and `showZones`. The block's own props are the end state (what a learner who comes back sees).
+- « Trouvez ce qui bloque » completes when the fault is found (`interactions-done`); « Transmettre le ticket » only shows the repair. Keep it so: the LMS emulator (`elabora test`) never clicks a button that fires events, so a screen completed by that click would keep the locked course from going on.
+- The call (`appel-marc`, messaging, practice, scored by quality) ticks the computer and the switch on the network as Marc confirms them (`dialogue.line` events). The diagnosis starts from there (`checked`).
+- Marc speaks with ElevenLabs Marcel (fr) and Luke (en), Leïla with Lucie (fr) and Juliet (en); Claire, the guide, keeps a local voice (Pocket TTS claire in fr, nora in en): she is outside the story.
+- French texts use a narrow no-break space before ? ! ; : and inside « » (it does not make the audio stale).
