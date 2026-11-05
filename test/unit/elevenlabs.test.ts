@@ -485,6 +485,52 @@ test('elevenlabs: a dialogue heard by the aligner is cut in the silence after ea
   assert.deepEqual(splitDialogue(said, 3, [heard[0]]).lines.map((line) => line.start), unheard.map((line) => line.start), 'a heard list that does not fit the turns is ignored');
 });
 
+// The exchange of 5 November's diagnostic-reseau: Leïla, then « [soupire] Deux minutes… » by Marc. His
+// sigh, soft (‑40 dB where the voices are at ‑17), took the whole gap for one silence when silence was
+// 14 dB under the voices: the cut fell in the middle of the sigh, half of it at the end of Leïla's line.
+// Silence is now measured from the gap's own floor: the cut is in the silence before the sigh, which
+// stays with the line that says it; a line that ends on a direction (« [rit] ») keeps what follows its
+// last word.
+test('elevenlabs: a soft sigh before a line\'s first word stays with that line; a laugh after the last word stays with its line', () => {
+  let noise = 1;
+  const random = () => { noise = (noise * 1103515245 + 12345) % 2147483648; return noise / 2147483648 - 0.5; };
+  const exchange = (turns: { text: string; words: [number, number][] }[], sounds: [number, number][]) => {
+    const pcm = Buffer.alloc(Math.round(3 * RATE) * 2);
+    const characters: string[] = [];
+    const starts: number[] = [];
+    const ends: number[] = [];
+    const segments: unknown[] = [];
+    turns.forEach((turn, index) => {
+      for (const [from, to] of turn.words) for (let i = Math.round(from * RATE); i < Math.round(to * RATE); i++) pcm.writeInt16LE(Math.round(8000 * Math.sin((2 * Math.PI * 300 * i) / RATE)), i * 2);
+      const first = characters.length;
+      const [begin, end] = [turn.words[0][0], turn.words.at(-1)![1]];
+      [...turn.text].forEach((char, i) => { characters.push(char); starts.push(begin + ((end - begin) * i) / turn.text.length); ends.push(begin + ((end - begin) * (i + 1)) / turn.text.length); });
+      segments.push({ voice_id: `v${index}`, start_time_seconds: begin, end_time_seconds: end, character_start_index: first, character_end_index: characters.length, dialogue_input_index: index });
+    });
+    // A breathy sound: noise about 40 dB under full scale.
+    for (const [from, to] of sounds) for (let i = Math.round(from * RATE); i < Math.round(to * RATE); i++) pcm.writeInt16LE(Math.round(1200 * random()), i * 2);
+    const said = { audio_base64: pcm.toString('base64'), alignment: { characters, character_start_times_seconds: starts, character_end_times_seconds: ends }, voice_segments: segments as never };
+    return splitDialogue(said, turns.length, turns.map((turn) => ({ start: turn.words[0][0], end: turn.words.at(-1)![1] }))).lines;
+  };
+  const rms = (line: { samples: Float32Array; start: number }, from: number, to: number) => {
+    const a = Math.max(0, Math.round((from - line.start) * RATE));
+    const b = Math.min(line.samples.length, Math.round((to - line.start) * RATE));
+    let sum = 0;
+    for (let i = a; i < b; i++) sum += line.samples[i] * line.samples[i];
+    return b > a ? Math.sqrt(sum / (b - a)) : 0;
+  };
+  const end = (line: { samples: Float32Array; start: number }) => line.start + line.samples.length / RATE;
+  // Leïla to 1.0 s, silence to 1.2 s, Marc's sigh to 1.6 s, his first word.
+  const sigh = exchange([{ text: 'Deux minutes.', words: [[0.1, 0.5], [0.55, 1.0]] }, { text: '[soupire] Deux minutes.', words: [[1.6, 1.9], [1.95, 2.4]] }], [[1.2, 1.6]]);
+  assert.ok(end(sigh[0]) <= 1.2, `Leïla's line ends in the silence, before the sigh: ${end(sigh[0])}`);
+  assert.ok(sigh[1].start <= 1.2, `Marc's line starts before his sigh: ${sigh[1].start}`);
+  assert.ok(rms(sigh[1], 1.25, 1.55) > 0.003, 'the whole sigh is in his line');
+  // A laugh after the last word, a silence, then the next line: the laugh stays with the line that says it.
+  const laugh = exchange([{ text: 'Bien sûr [rit].', words: [[0.1, 0.5], [0.55, 0.9]] }, { text: 'Merci.', words: [[1.6, 2.2]] }], [[1.0, 1.35]]);
+  assert.ok(end(laugh[0]) >= 1.35, `the laugh is in the first line: ${end(laugh[0])}`);
+  assert.ok(laugh[1].start >= 1.35, `the second line starts after it: ${laugh[1].start}`);
+});
+
 test('quota: costs said as a share of the month, one threshold, an approval that covers its rounded figure', () => {
   assert.equal(APPROVAL_SHARE, 0.01);
   assert.deepEqual([0.000213, 0.0018, 0.0095, 0.0149, 0.026, 0.126, 0].map(quotaPercent), [0.02, 0.2, 1, 1, 3, 13, 0]);
