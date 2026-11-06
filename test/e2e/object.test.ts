@@ -9,6 +9,11 @@ import { replayObject } from '@elabora/node/replay';
 import { screenshot } from '@elabora/node/capture';
 import { testObject } from '@elabora/node/objects/test';
 import { launchBrowser } from '@elabora/node/emulator/browser';
+import { build } from '@elabora/node/build';
+import { loadProjectFromDir } from '@elabora/node/project-reader';
+import { startCanvasHost } from '@elabora/node/canvas/host';
+import { renderScreen, createRenderContext } from '@elabora/core/render/screen';
+import os from 'node:os';
 import type { DryFrames } from '@elabora/player/dry-frames';
 
 test('the example free object passes gates 2 to 6', { timeout: 180000 }, async () => {
@@ -404,4 +409,53 @@ test('--update-snapshots removes the baselines of states no test names, and none
   const broken = await testObject(dir, 'draw-probe', { updateSnapshots: true });
   assert.equal(broken.snapshots, undefined);
   assert.deepEqual(fs.readdirSync(snapshots), baselines);
+});
+
+// An image setting of a free object (x-control "asset" in its manifest; the founder, 6 Nov 2026): the
+// package ships the file it names; on the editor's canvas, which serves it, host.asset(value) reads it
+// as the object's own assets; a file no setting names stays out of reach.
+test('a free object reads the file an image setting names (host.asset)', { timeout: 180000 }, async () => {
+  const dir = copyExample();
+  const manifestFile = 'objects/diagnostic-reseau/object.manifest.json';
+  const manifest = readJSON(dir, manifestFile);
+  manifest.props.properties.poster = { type: 'string', default: '', title: 'Affiche', description: 'Une image montrée avant la scène.', 'x-control': 'asset' };
+  writeJSON(dir, manifestFile, manifest);
+  const screen = readJSON(dir, 'screens/simulation.json');
+  const scene = screen.blocks.find((block: { id: string }) => block.id === 'simulation-scene');
+  scene.props.props = { ...scene.props.props, poster: 'images/chemin-impression.svg' };
+  writeJSON(dir, 'screens/simulation.json', screen);
+  const built = await build(dir, { emit: 'dir', out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-object-asset-')), writeLock: false, debug: true });
+  assert.ok(built.ok && built.dirPath, JSON.stringify(built.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
+  assert.ok(fs.existsSync(path.join(built.dirPath!, 'assets/images/chemin-impression.svg')), 'the package ships it');
+  // The editor's canvas shows the screen: it serves the file, and the object's host reads it.
+  const project = loadProjectFromDir(dir);
+  const host = await startCanvasHost({ root: dir });
+  const browser = await launchBrowser('chromium');
+  try {
+    const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+    await page.goto(host.url);
+    await page.waitForFunction(() => (window as Window & { __elaboraCanvas?: unknown }).__elaboraCanvas);
+    host.push(renderScreen(project, 'simulation', {}, createRenderContext(project, { fields: true })), { id: 1 });
+    await page.waitForFunction(() => (window as Window & { __elaboraCanvas?: { screen: string } }).__elaboraCanvas?.screen === 'simulation');
+    const frameOf = () => page.frames().find((frame) => frame.url().includes('objects/diagnostic-reseau/frame.html'));
+    for (let tries = 0; tries < 100 && !frameOf(); tries++) await page.waitForTimeout(100);
+    const frame = frameOf();
+    assert.ok(frame, `the object's frame: ${page.frames().map((candidate) => candidate.url()).join(', ')}`);
+    // As the object's ctx.host.asset(id) does: a request to the host, its answer back in the frame.
+    const ask = (asset: string) => frame!.evaluate((id) => new Promise<{ bytes?: number; type?: string; error?: string }>((resolve) => {
+      const request = `probe-${Math.random()}`;
+      addEventListener('message', (event) => {
+        if (event.data?.id !== request) return;
+        resolve(event.data.result ? { bytes: (event.data.result.data as ArrayBuffer).byteLength, type: event.data.result.type } : { error: String(event.data.error?.message) });
+      });
+      parent.postMessage({ jsonrpc: '2.0', id: request, method: 'object/asset', params: { id } }, '*');
+    }), asset);
+    const poster = await ask('images/chemin-impression.svg');
+    assert.equal(poster.bytes, fs.statSync(path.join(dir, 'assets/images/chemin-impression.svg')).size, JSON.stringify(poster));
+    assert.equal(poster.type, 'file');
+    assert.match((await ask('images/ticket-marc.svg')).error ?? '', /Unknown asset/);
+  } finally {
+    await browser.close();
+    await host.close();
+  }
 });

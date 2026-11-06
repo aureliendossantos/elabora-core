@@ -279,6 +279,7 @@ export function createObjects({ main, course, courseState, labels, framesPort, r
     const place = () => entry.place;
     entry.host = createObjectHost({
       iframe, def: definition, props: props.props, strings: props.strings || {}, tokens: course.tokens, locale: course.language, fonts: course.fonts || [], rootSize: rootSize(),
+      files: () => entry.block.props.files,
       safeArea: () => { const shown = place(); const safe = shown?.safeProbe.isConnected ? shown.readSafe() : { top: 0, right: 0, bottom: 0, left: 0 }; if (shown) shown.safe = safe; return safe; },
       view: () => place()?.view() ?? null,
       reducedMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false,

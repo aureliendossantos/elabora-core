@@ -1077,7 +1077,7 @@ export function createScreenView(options: ScreenViewOptions) {
       const holder = element('div', { class: 't-backdrop-object', 'data-object': definition.id, 'data-state': 'starting' }, iframe);
       backdropElement.append(holder);
       backdropHost = createObjectHost({
-        iframe, def: definition, props: decoration.props, tokens: course.tokens, locale: course.language, fonts: course.fonts || [], rootSize: rootSize(),
+        iframe, def: definition, props: decoration.props, tokens: course.tokens, locale: course.language, fonts: course.fonts || [], rootSize: rootSize(), files: () => decoration.files,
         reducedMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false, decorative: true, context: backdropContext, seed: 1,
         safeArea: () => { const area = barsArea(); backdropArea = JSON.stringify(area); return area; },
         onReady: () => { holder.dataset.state = 'ready'; },

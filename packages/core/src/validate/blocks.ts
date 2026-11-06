@@ -6,6 +6,7 @@ import type { NumericTolerance } from '@elabora/format';
 import { mathErrors } from '../compile/markdown.ts';
 import { withinTolerance } from '@elabora/player/numeric';
 import { blockControls, CONTROL_NAME, NAMED_CONTROL_HOOKS } from '../components/controls.ts';
+import { objectAssets } from '../components/props.ts';
 import type { ComponentDescriptor } from '../components/registry.ts';
 import type { Block, Event, Plan } from '../project/model.ts';
 import { checkInstance, checkKinds, headingSequence } from './components.ts';
@@ -231,6 +232,8 @@ function checkBlock(ctx: CourseCheckContext, { block, component, path, file, scr
       const manifest = object.manifest;
       if (manifest?.props?.properties) {
         for (const error of objectPropErrors(manifest, props.props || {})) reporter.emit('E_OBJECT_PROP_VALUE', { file, path: at(`props${error.path}`), target: id, message: `Free object "${id}" (${manifest.id}): ${error.message}.` });
+        // The files of the course its settings name, as a block's media.
+        for (const found of objectAssets(manifest, props.props)) checkAsset(ctx, found.value, file, at(`props${found.path}`), id);
         // Text colours the block changes (the manifest's own are checked with the object).
         const values = fieldsOf(props.props);
         for (const found of textContrasts(manifest, values, resolveTokens(ctx.course))) {

@@ -10,6 +10,8 @@ import { normalize, join, dirname } from '../util/paths.ts';
 import { screenBlocks } from '../project/load.ts';
 import type { CheckContext, CourseCheckContext, ScreenFile } from './context.ts';
 import { list, fieldsOf, byId, hasId } from './guards.ts';
+import { checkAsset } from './blocks.ts';
+import { objectAssets } from '../components/props.ts';
 
 export const ALLOWED_THREE_ADDONS = ['loaders/GLTFLoader.js', 'controls/OrbitControls.js'];
 // Charts (D60): D3, bundled into the object, and the kit Elabora's charts are built with.
@@ -141,6 +143,7 @@ function checkBackdropObject(ctx: CourseCheckContext): void {
   if (!manifest) { ctx.reporter.emit('E_BACKDROP_OBJECT', { file: 'course.json', path: `${at}/id`, target: reference.id, message: `No free object "${reference.id}" in objects/.` }); return; }
   if (manifest.pedagogicalRole !== 'decoration') ctx.reporter.emit('E_BACKDROP_OBJECT', { file: 'course.json', path: `${at}/id`, target: reference.id, message: `"${reference.id}" has pedagogicalRole "${manifest.pedagogicalRole}": a backdrop object is a decoration.` });
   for (const error of objectPropErrors(manifest, reference.props || {})) ctx.reporter.emit('E_BACKDROP_OBJECT', { file: 'course.json', path: `${at}/props${error.path}`, target: reference.id, message: `Backdrop object ${reference.id}: ${error.message}.` });
+  for (const found of objectAssets(manifest, reference.props)) checkAsset(ctx, found.value, 'course.json', `${at}/props${found.path}`, reference.id);
 }
 
 // Neutral greys (lights, shadows) are not brand colours.
