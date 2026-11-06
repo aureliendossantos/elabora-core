@@ -195,7 +195,8 @@ test('a sound of the story: its part of the file, louder than recorded up to −
     await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().played.some((entry) => entry.sound === 'ring' && entry.heard), null, { timeout: 30000, polling: 20 });
     // The music and the ambiences (the café here) go down while it plays (12 dB: a quarter of their
     // level), and come back after it; a voice never does.
-    await page.waitForFunction(() => (window as unknown as { lowest: number }).lowest < 0.3, null, { timeout: 5000, polling: 20 });
+    // Both read the audio context's clock, which falls behind under load (Linux CI): 30 s at most.
+    await page.waitForFunction(() => (window as unknown as { lowest: number }).lowest < 0.3, null, { timeout: 30000, polling: 20 });
     const state = await fullState(page);
     const ring = state.played.find((entry) => entry.sound === 'ring')!;
     assert.deepEqual([ring.part, ring.fades, ring.duck], [{ offset: 0.5, length: 1.5 }, { in: 0, out: 0.4 }, 12]);
@@ -203,7 +204,7 @@ test('a sound of the story: its part of the file, louder than recorded up to −
     assert.ok(ring.gain! > 1.08 && ring.gain! < 1.25, `gain ${ring.gain}`);
     const cafe = state.played.find((entry) => entry.sound === 'cafe')!;
     assert.deepEqual([cafe.kind, cafe.part, cafe.fades?.out, cafe.gain], ['ambience', { offset: 1, length: 3 }, 1.5, 0.3]);
-    await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().musicLevel === 1, null, { timeout: 5000, polling: 20 });
+    await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().musicLevel === 1, null, { timeout: 30000, polling: 20 });
   });
 });
 

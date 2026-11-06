@@ -16,10 +16,11 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // or more, and a page of the sample then misses its 30 s to start or a gate its 60 s per step. They run on the weekly
 // macOS job and on a developer's machine.
 export const SKIP_3D_ON_CI_LINUX: string | false = process.env.CI && process.platform === 'linux' ? 'too slow on a CI Linux runner (software rendering)' : false;
-// A 3D object's boot budget, measured: it asks a real computer's speed. On GitHub's macOS runners (an M1
-// shared by three cores, software rendering) the chart table of medieval-charts boots in 20 s, over its
-// 10 s gate (6 Nov 2026). It runs on a developer's Mac only.
-export const SKIP_3D_BOOT_ON_CI: string | false = process.env.CI ? 'a 3D boot budget needs a real computer: CI runners render in software on shared cores' : false;
+// A 3D object's gates measure its boot and give each step 60 s: they ask a real computer's speed. On
+// GitHub's macOS runners (an M1 shared by three cores, software rendering) the chart table of
+// medieval-charts boots in 20 s, over its 10 s budget, and a step of the canal lock went past 60 s
+// (6 Nov 2026). They run on a developer's Mac only.
+export const SKIP_3D_GATES_ON_CI: string | false = process.env.CI ? 'a 3D object\'s gates need a real computer: CI runners render in software on shared cores' : false;
 
 // Courses' video is H.264 and their sound AAC (docs/architecture/media.md). Chrome, Edge and the app's
 // Electron play both; Playwright's own Chromium, the last browser the launcher tries, plays neither.

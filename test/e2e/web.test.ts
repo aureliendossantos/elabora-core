@@ -195,7 +195,16 @@ test('the pictures of a module for the web: sized by the build, a scroll page\'s
   try {
     browser = await launchBrowser('chromium');
     const fetched = (page: Page) => { const urls: string[] = []; page.on('request', (request) => urls.push(request.url())); return urls; };
-    const box = (page: Page) => page.evaluate(() => { const image = document.querySelector<HTMLImageElement>('img[src$="far.png"], img[data-t-src$="far.png"]')!; const { width, height, top } = image.getBoundingClientRect(); return { width: Math.round(width), height: Math.round(height), top: Math.round(top + window.scrollY) }; });
+    // The far picture's size, its place in the page, and its place under the block before it: what is
+    // higher up may still settle (the network's 3D object takes its height once ready, later on a slow
+    // runner: 361 px on GitHub's macOS, 6 Nov 2026), which the picture's own arrival must not do.
+    const box = (page: Page) => page.evaluate(() => {
+      const image = document.querySelector<HTMLImageElement>('img[src$="far.png"], img[data-t-src$="far.png"]')!;
+      const { width, height, top } = image.getBoundingClientRect();
+      const above = document.querySelector('[data-block="accueil-long-5"]')!.getBoundingClientRect().bottom;
+      return { width: Math.round(width), height: Math.round(height), top: Math.round(top + window.scrollY), under: Math.round(top - above) };
+    });
+    const still = ({ top, ...rest }: { top: number; width: number; height: number; under: number }) => rest;
 
     // ── scroll: the far picture waits, in its room, until the learner comes near ──
     const page = await browser.newPage({ viewport: { width: 1000, height: 500 } });
@@ -210,7 +219,7 @@ test('the pictures of a module for the web: sized by the build, a scroll page\'s
     await page.evaluate((top) => window.scrollTo(0, top - 1000), held.top);
     await page.waitForFunction(() => document.querySelector<HTMLImageElement>('img[src$="far.png"]')?.complete === true);
     assert.equal(urls.filter((url) => url.endsWith('far.png')).length, 1, 'loaded once the learner is near');
-    assert.deepEqual(await box(page), held, 'nothing moves when it arrives');
+    assert.deepEqual(still(await box(page)), still(held), 'nothing moves when it arrives');
     await page.close();
 
     // ── slides: the next screen's picture is there before the learner goes on ──

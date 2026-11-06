@@ -8,7 +8,7 @@ import { validateDir } from '@elabora/node/project-reader';
 import { testPackage } from '@elabora/node/emulator/run';
 import { fitDiagnostics, measureFit } from '@elabora/node/fit';
 import { testObject } from '@elabora/node/objects/test';
-import { SKIP_3D_ON_CI_LINUX, SKIP_3D_BOOT_ON_CI } from '../helpers.ts';
+import { SKIP_3D_ON_CI_LINUX, SKIP_3D_GATES_ON_CI } from '../helpers.ts';
 
 // The scroll sample (slow; pnpm run test:matrix): long pages with scroll-driven design, Continue
 // buttons in the page, steps that open once answered, Previous and Next at the end of the page,
@@ -40,7 +40,7 @@ test('the medieval-charts pages read well down their whole length, animations on
   assert.deepEqual(fitDiagnostics(fit).map((d) => `${d.code} ${d.message}`), []);
 });
 
-test('the chart table of medieval-charts passes its gates', { skip: SKIP_3D_BOOT_ON_CI, timeout: 400000 }, async () => {
+test('the chart table of medieval-charts passes its gates', { skip: SKIP_3D_GATES_ON_CI, timeout: 400000 }, async () => {
   const r = await testObject(copy(), 'chart-table');
   assert.ok(r.ok, JSON.stringify(r.diagnostics.filter((d) => d.severity === 'error'), null, 1));
 });

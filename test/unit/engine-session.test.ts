@@ -133,7 +133,8 @@ test('a file written as soon as the project is open is reported by the watcher, 
     const screen = readJSON(dir, 'screens/accueil.json');
     screen.title = `Écrit à l'ouverture ${i}`;
     fs.writeFileSync(path.join(dir, 'screens/accueil.json'), `${JSON.stringify(screen, null, 2)}\n`);
-    const changed = await waitFor(events, isChanged('watcher'), 3000);
+    // 10 s at most: a Windows runner under load once reported nothing in 3 s (6 Nov 2026).
+    const changed = await waitFor(events, isChanged('watcher'), 10000);
     assert.deepEqual(changed.change.files, ['screens/accueil.json']);
   }
 });
