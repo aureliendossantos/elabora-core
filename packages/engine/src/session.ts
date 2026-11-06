@@ -876,7 +876,7 @@ export class Session {
       return {
         ok: result.ok, zip, dir: result.ok && options.target === 'web' ? result.dirPath ?? null : null, size: zip ? result.report?.package.bytes ?? 0 : 0, report: result.ok ? result.reportPath : null, summary: result.summary,
         errors: result.diagnostics.filter((d) => d.severity === 'error' && !d.waived), warnings: result.diagnostics.filter((d) => d.severity === 'warning' && !d.waived && !d.ignored),
-        change: this.#changeView(seq), version
+        change: this.#changeView(seq), version, languages: result.ok ? result.report.languages ?? null : null
       };
     });
   }
@@ -1771,8 +1771,8 @@ function buildOptions(params: BuildParams, validation: ValidationOptions = {}): 
   if (profiles !== undefined && !(Array.isArray(profiles) && profiles.every((id) => typeof id === 'string'))) throw new EngineError('bad-request', 'profiles is a list of LMS profile ids');
   if (name !== undefined && typeof name !== 'string') throw new EngineError('bad-request', 'name is a string');
   if (target !== undefined && target !== 'web' && !isDeliveryFormat(target)) throw new EngineError('bad-request', `target is ${DELIVERY_FORMATS.join(', ')} or web (not ${JSON.stringify(target)})`);
-  if (every !== undefined && every !== 'all') throw new EngineError('bad-request', `languages is "all" (not ${JSON.stringify(every)})`);
-  const languages = every === 'all' ? { languages: 'all' as const } : {};
+  if (every !== undefined && every !== 'all' && !(Array.isArray(every) && every.every((language) => typeof language === 'string'))) throw new EngineError('bad-request', `languages is "all" or a list of language tags (not ${JSON.stringify(every)})`);
+  const languages = every !== undefined ? { languages: every as 'all' | string[] } : {};
   if (target === 'web') {
     if (profiles !== undefined) throw new EngineError('bad-request', 'profiles are for LMS packages: a module for the web reports to no LMS');
     return { target, ...(mediaQuality !== undefined ? { mediaQuality } : {}), ...(web !== undefined ? { web: webOptions(web) } : {}), ...languages, release: release ?? validation.release ?? false };

@@ -79,8 +79,10 @@ export interface CompileContext {
   // The player's bars as learners get them (D58), and the glossary its texts link to.
   player: PlayerData;
   glossary: GlossaryData[];
-  // A package of several languages (D59): its languages, the course's own first.
+  // A package of several languages (D59): its languages, the course's own first, and the one learners
+  // start in when they and their LMS chose none (D71), when it is not the course's own.
   languages?: string[];
+  defaultLanguage?: string;
   // elabora.lock.json as the project has it (or the lock a preview keeps): a dialogue's bit fields
   // count the keys of options removed since (dialogue/keys.ts).
   lock?: StateLock | null;
@@ -109,24 +111,29 @@ export interface CompileOptions {
   navigation?: 'authored' | 'free';
   // The lock the keys came from, when it is not elabora.lock.json (a preview's, BuildOptions.lock).
   lock?: StateLock;
-  // The languages of a package of several languages (D59): the language item shows with them.
+  // The languages of a package of several languages (D59): the language item shows with them; the
+  // one learners start in (D71); languageMenu: « Langue » shown whatever the player says (the Aperçu).
   languages?: string[];
+  defaultLanguage?: string;
+  languageMenu?: boolean;
   dialogueAudio?: PackagedLines;
   // The course's interface sounds (sounds/sounds.ts interfaceSounds), when the caller has them.
   interfaceSounds?: InterfaceSounds;
 }
 
-export function createCompileContext(project: Project, keys: StateKeys, { assetPath = defaultAssetPath, fields = false, narration, delivery, navigation: asked, lock, languages, dialogueAudio }: CompileOptions = {}): CompileContext {
+export function createCompileContext(project: Project, keys: StateKeys, { assetPath = defaultAssetPath, fields = false, narration, delivery, navigation: asked, lock, languages, defaultLanguage, languageMenu, dialogueAudio }: CompileOptions = {}): CompileContext {
   const course = project.course;
   if (!course) throw new Error('The project has no course.json to compile.');
   const sectionOf = new Map<string, string>();
   for (const { id, section } of screenOrder(project)) sectionOf.set(id, section);
   // Free navigation shows the outline (D41): every screen is open from it.
   const navigation = delivery?.navigation === 'free' || asked === 'free' ? 'free' : 'authored';
-  const config = navigation === 'free' ? withItemEnabled(playerConfig(course), 'outline') : playerConfig(course);
+  const authored = navigation === 'free' ? withItemEnabled(playerConfig(course), 'outline') : playerConfig(course);
   const several = languages && languages.length > 1 ? languages : undefined;
+  const config = languageMenu && several ? withItemEnabled(authored, 'language') : authored;
+  const start = several && defaultLanguage && defaultLanguage !== course.language && several.includes(defaultLanguage) ? { defaultLanguage } : {};
   const player = shownPlayer(config, playerContent(project, { web: !!delivery, languages: several?.length ?? 1 }), { assetPath });
-  return { course, registry: getRegistry(project), planIndex: planIndex(project.plan), tokens: withPlayerTokens(resolveTokens(course)), keys, lock: lock ?? readLock(project), sectionOf, assetPath, ...(fields ? { fields } : {}), ...(narration ? { narration } : {}), ...(delivery ? { delivery } : {}), navigation, player, glossary: glossaryOf(course), ...(several ? { languages: several } : {}), ...(dialogueAudio ? { dialogueAudio } : {}) };
+  return { course, registry: getRegistry(project), planIndex: planIndex(project.plan), tokens: withPlayerTokens(resolveTokens(course)), keys, lock: lock ?? readLock(project), sectionOf, assetPath, ...(fields ? { fields } : {}), ...(narration ? { narration } : {}), ...(delivery ? { delivery } : {}), navigation, player, glossary: glossaryOf(course), ...(several ? { languages: several, ...start } : {}), ...(dialogueAudio ? { dialogueAudio } : {}) };
 }
 
 // The course's glossary as the player reads it.
@@ -162,8 +169,8 @@ export interface CompiledScreen {
   objects: Map<string, ObjectDefinition>; // by object id
 }
 
-export function compileCourseData(project: Project, keys: StateKeys, { buildId, assetPath, narration, delivery, lms, navigation, lock, languages, dialogueAudio, interfaceSounds }: { buildId: string } & CompileOptions): CourseData {
-  const context = createCompileContext(project, keys, { assetPath, narration, delivery, navigation, ...(lock ? { lock } : {}), languages, dialogueAudio });
+export function compileCourseData(project: Project, keys: StateKeys, { buildId, assetPath, narration, delivery, lms, navigation, lock, languages, defaultLanguage, languageMenu, dialogueAudio, interfaceSounds }: { buildId: string } & CompileOptions): CourseData {
+  const context = createCompileContext(project, keys, { assetPath, narration, delivery, navigation, ...(lock ? { lock } : {}), languages, defaultLanguage, languageMenu, dialogueAudio });
   const usedObjects = new Map<string, ObjectDefinition>();
   // A listed screen without its file is reported by the validator (E_SCREEN_NOT_FOUND).
   const screens = screenOrder(project).filter(({ id }) => project.screens.has(id)).map(({ id }) => {
@@ -200,7 +207,7 @@ function creditsOf(credits: readonly (string | null | undefined)[]): { credits?:
 
 // The course-level fields of the course data that come before the backdrop, the sections and the
 // screens (the order of the course data). The canvas reduces a course to one screen around them.
-export type CourseHead = Pick<CourseData, 'format' | 'id' | 'title' | 'language' | 'languages' | 'version' | 'ui' | 'navigation' | 'player' | 'glossary' | 'completion' | 'tracking' | 'tokens' | 'presentation' | 'fonts'>;
+export type CourseHead = Pick<CourseData, 'format' | 'id' | 'title' | 'language' | 'languages' | 'defaultLanguage' | 'version' | 'ui' | 'navigation' | 'player' | 'glossary' | 'completion' | 'tracking' | 'tokens' | 'presentation' | 'fonts'>;
 
 export function courseHead(context: CompileContext): CourseHead {
   const course = context.course;
@@ -210,6 +217,7 @@ export function courseHead(context: CompileContext): CourseHead {
     title: course.title,
     language: course.language,
     ...(context.languages ? { languages: context.languages } : {}),
+    ...(context.defaultLanguage ? { defaultLanguage: context.defaultLanguage } : {}),
     version: course.version,
     ui: course.ui || {},
     navigation: { mode: course.navigation?.mode || 'linear', lockUntilComplete: course.navigation?.lockUntilComplete === true, ...(freeNavigation(context) ? { mode: 'free' as const, lockUntilComplete: false } : {}) },

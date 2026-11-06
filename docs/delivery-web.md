@@ -52,7 +52,7 @@ Then serve the folder over HTTPS, open the address, reload, and check the sharin
 ## Runtime
 
 - A web module runs on its own. The player skips the LMS search, the preview's banner and the Quit button.
-- A module of several languages (`--languages all`, D59) opens in the one its address asks for, `?lang=fr`, when it has it: a site that frames or links the module in its own language. The language the learner chose, kept with the progress, comes first.
+- A module of several languages (`delivery.languages`, `--languages en,fr`, D59, D71) opens in the one its address asks for, `?lang=fr`, when it has it: a site that frames or links the module in its own language. The language the learner chose, kept with the progress, comes first; the author's default (`delivery.defaultLanguage`) after.
 - An event's `exit` action still ends the visit, with a message for the web: the progress stays in this browser (`local`, label `webEndedKept`), or nothing is kept (`none`, `webEndedNotKept`).
 - The player commits as in a SCORM package: after each change, on `visibilitychange: hidden`, on `pagehide` and every `heartbeatSeconds`. With `local`, each commit writes the kept elements to `localStorage` with the date (`savedAt`). A progress saved more than a year ago is removed when the module opens, and the visit starts afresh. When storage is refused or full, the visit keeps its progress in memory and carries on.
 - `none` writes nothing to the browser: `localStorage`, `sessionStorage` (the narration's preferences included) and cookies stay empty.

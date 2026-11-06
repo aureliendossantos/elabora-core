@@ -48,6 +48,8 @@
     api.cmi.mode = 'normal';
     api.cmi.credit = 'credit';
     if (mastery) api.cmi.scaled_passing_score = String(Number(mastery) / 100);
+    // The learner's preferred language, as an LMS that fills it gives it (D71; most leave it empty).
+    if (q.get('learnerLanguage')) api.cmi.learner_preference.language = q.get('learnerLanguage');
   } else {
     if (saved) {
       api.loadFromJSON(saved);
@@ -62,6 +64,7 @@
     api.cmi.core.lesson_mode = 'normal';
     api.cmi.core.credit = 'credit';
     if (mastery) api.cmi.student_data.mastery_score = mastery;
+    if (q.get('learnerLanguage')) api.cmi.student_preference.language = q.get('learnerLanguage');
   }
   // What the LMS plays and what it gave back of the registration's last session (in SCORM 1.2's
   // words: SCORM 2004's two statuses as one).

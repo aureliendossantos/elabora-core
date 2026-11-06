@@ -385,7 +385,7 @@ export interface BuildParams {
   // delivery.format, else the best for its LMSs, docs/delivery.md); web: a folder to serve and its ZIP (D41).
   target?: DeliveryFormat | 'web';
   web?: WebBuildOptions;     // the web target's settings: progress local|none, navigation authored|free, noindex, url, image, review { origins } (D42)
-  languages?: 'all';         // one package of every approved language, switched in place by learners (D59)
+  languages?: 'all' | string[]; // the package's languages (D59, D71): all ready and approved, or those named; default: delivery.languages
 }
 
 export interface BuildView {
@@ -399,6 +399,7 @@ export interface BuildView {
   warnings: Diagnostic[];    // what the build found that did not stop it (W_PACKAGE_TOO_LARGE_FOR_SOME_LMS…), waived and ignored ones left out
   change: ChangeView | null; // elabora.lock.json as the build wrote it (new state keys), a system change
   version: string | null;    // the publish version (ok)
+  languages: string[] | null; // a package of several languages (D59, D71): its languages, the course's own first
 }
 
 // A language's package (the app's « Versions »): the translated course generated as `elabora translate

@@ -71,12 +71,13 @@ export interface PlayerConfig {
 
 // What a new course gets (Lin 44, approved on 20 October 2026). Top: the course's identity and where
 // the learner is, the spacer, then what they may open (as in the Lin pages 36 and 27: a title bar
-// with Ressources and Glossaire on its right); the logo waits for an image. Bottom: the outline, the
+// with Ressources and Glossaire on its right); the logo waits for an image, « Langue » for a package
+// of several languages (D71). Bottom: the outline, the
 // narration's controls, the spacer, Previous and Next (the players of Storyline and Rise).
 export const DEFAULT_PLAYER: Readonly<Record<BarName, Required<PlayerBar>>> = {
   top: {
     position: 'window',
-    items: [{ id: 'logo', enabled: false }, { id: 'title' }, { id: 'progress' }, { id: 'spacer' }, { id: 'resources' }, { id: 'glossary' }, { id: 'credits' }, { id: 'exit' }]
+    items: [{ id: 'logo', enabled: false }, { id: 'title' }, { id: 'progress' }, { id: 'spacer' }, { id: 'language' }, { id: 'resources' }, { id: 'glossary' }, { id: 'credits' }, { id: 'exit' }]
   },
   bottom: {
     position: 'window',
@@ -85,10 +86,9 @@ export const DEFAULT_PLAYER: Readonly<Record<BarName, Required<PlayerBar>>> = {
 };
 
 // Where an item that is in neither bar goes when it is enabled: its place in a new course, else the
-// place Lin 44 draws it (language after the top bar's spacer, display after the bottom bar's).
+// place Lin 44 draws it (display after the bottom bar's spacer).
 export const DEFAULT_PLACES: Readonly<Record<PlayerItemId, { bar: BarName; after: readonly PlayerItemId[] }>> = Object.fromEntries([
   ...BARS.flatMap((bar) => DEFAULT_PLAYER[bar].items.map((item, index, items) => [item.id, { bar, after: items.slice(0, index).map((before) => before.id).reverse() }])),
-  ['language', { bar: 'top', after: ['spacer', 'progress', 'title', 'logo'] }],
   ['display', { bar: 'bottom', after: ['spacer', 'controls', 'outline'] }]
 ]) as Record<PlayerItemId, { bar: BarName; after: readonly PlayerItemId[] }>;
 
@@ -287,13 +287,92 @@ export function aboutCourse(project: Project, { language, credits: authorCredits
   return { ...(ai ? { ai } : {}), ...(credits.length ? { credits } : {}) };
 }
 
-// The languages a package of every language would hold (elabora build --languages all, D59): the
-// course's own, then each translation whose texts are ready and whose translated plan is approved.
-export function packageLanguages(project: Project): string[] {
+// The languages a package of every language ready would hold (elabora build --languages all, D59):
+// the course's own, then each translation whose texts are ready and whose translated plan is approved.
+export function readyLanguages(project: Project): string[] {
   const own = project.course?.language;
   if (!own) return [];
   const approved = translationStatus(project).filter((status) => translationReady(status) && status.exists && status.plan === 'approved').map((status) => status.language).sort();
   return [own, ...approved.filter((language) => language !== own)];
+}
+
+// The course's own language, then every translation it has, whatever its state: the Aperçu's (D71).
+export function moduleLanguages(project: Project): string[] {
+  const own = project.course?.language;
+  if (!own) return [];
+  return [own, ...translationStatus(project).filter((status) => status.exists && status.language !== own).map((status) => status.language).sort()];
+}
+
+// What the languages of a package are asked as: every translation ready and approved (all), or the
+// languages named (the course's own always first, added when left out).
+export type PackageLanguagesAsked = 'all' | readonly string[];
+
+// A language of the package the build says something about (D71): asked but not translated
+// (unknown: refused), in the package with its translated plan not approved, with texts still in the
+// course's language (incomplete), or left out of all because it is not ready.
+export interface PackageLanguageNote {
+  language: string;
+  kind: 'unknown' | 'not approved' | 'incomplete' | 'left out';
+  // What it lacks, in words for the build's message (texts to translate, a plan not approved…).
+  lacks: string[];
+}
+
+// What a translation lacks to be ready and approved, in words.
+function lacksOf(status: Extract<ReturnType<typeof translationStatus>[number], { exists: true }>): { texts: string[]; plan: string | null } {
+  const texts = [
+    status.toTranslate ? `${status.toTranslate} text${status.toTranslate === 1 ? '' : 's'} to translate` : '',
+    status.stale ? `${status.stale} text${status.stale === 1 ? '' : 's'} out of date (the source changed since)` : '',
+    status.problems.length ? `${status.problems.length} translation${status.problems.length === 1 ? '' : 's'} refused (${status.problems[0].message})` : '',
+    status.anchors.toPlace.length ? `${status.anchors.toPlace.length} word anchor${status.anchors.toPlace.length === 1 ? '' : 's'} to place` : ''
+  ].filter(Boolean);
+  return { texts, plan: status.plan === 'approved' ? null : `its translated plan is ${status.plan}` };
+}
+
+// The languages a package holds (D59, D71), the course's own first: those asked (a build's option),
+// else course.json delivery.languages, else the course's own alone. all: every translation ready
+// and approved, the others said (left out). A list: those named, as they are: a translation not
+// approved or not complete goes in, said; a language without a translation is refused (unknown).
+export function packageLanguages(project: Project, asked?: PackageLanguagesAsked): { languages: string[]; notes: PackageLanguageNote[] } {
+  const own = project.course?.language;
+  if (!own) return { languages: [], notes: [] };
+  const wanted = asked ?? deliveryLanguages(project.course);
+  if (wanted === undefined) return { languages: [own], notes: [] };
+  const statuses = translationStatus(project);
+  const notes: PackageLanguageNote[] = [];
+  if (wanted === 'all') {
+    const languages = readyLanguages(project);
+    for (const status of statuses) {
+      if (!status.exists || languages.includes(status.language)) continue;
+      const lacks = lacksOf(status);
+      notes.push({ language: status.language, kind: 'left out', lacks: [...lacks.texts, ...(lacks.texts.length || !lacks.plan ? [] : [lacks.plan])] });
+    }
+    return { languages, notes };
+  }
+  const languages = [own];
+  for (const language of wanted) {
+    if (languages.includes(language)) continue;
+    const status = statuses.find((candidate) => candidate.language === language);
+    if (!status?.exists) { notes.push({ language, kind: 'unknown', lacks: [] }); continue; }
+    languages.push(language);
+    const lacks = lacksOf(status);
+    if (lacks.texts.length) notes.push({ language, kind: 'incomplete', lacks: lacks.texts });
+    if (lacks.plan) notes.push({ language, kind: 'not approved', lacks: [lacks.plan] });
+  }
+  return { languages, notes };
+}
+
+// course.json delivery.languages, read: all, a list of language tags, or nothing (the course's own).
+export function deliveryLanguages(course: Pick<Course, 'delivery'> | null | undefined): PackageLanguagesAsked | undefined {
+  const value: unknown = isRecord(course?.delivery) ? (course.delivery as Record<string, unknown>).languages : undefined;
+  if (value === 'all') return 'all';
+  return Array.isArray(value) ? value.filter((language): language is string => typeof language === 'string') : undefined;
+}
+
+// The language learners start in when neither they nor their LMS chose one (course.json
+// delivery.defaultLanguage, D71), when the package holds it; else the course's own.
+export function defaultLanguageOf(course: Pick<Course, 'delivery' | 'language'> | null | undefined, languages: readonly string[]): string | undefined {
+  const value: unknown = isRecord(course?.delivery) ? (course.delivery as Record<string, unknown>).defaultLanguage : undefined;
+  return typeof value === 'string' && languages.includes(value) ? value : course?.language;
 }
 
 // What the course has for the player's items.
@@ -327,8 +406,8 @@ export interface PlayerState {
   bottom: { position: 'window' | 'page'; shown: boolean; items: PlayerItemState[] };
   // Items in neither bar (not shown; --enable puts one back at its default place).
   unused: PlayerItemId[];
-  // What the items that need content have; languages: those a package of every language would hold
-  // (elabora build --languages all; the language item shows with more than one).
+  // What the items that need content have; languages: those the course's packages hold (course.json
+  // delivery.languages, D71; the language item shows with more than one).
   content: { timed: boolean; resources: number; glossary: number; ai: AboutData['ai'] | null; credits: number; languages: string[] };
   // The rules of the way through, kept in course.json navigation, which the editor shows with the
   // outline (mode) and Next (lockUntilComplete).
@@ -341,7 +420,7 @@ export const PLAYER_TOKENS = ['player.top.background', 'player.top.text', 'playe
 
 export function playerState(project: Project, { web = false, tokens }: { web?: boolean; tokens: (name: string) => string | number }): PlayerState {
   const config = playerConfig(project.course);
-  const languages = packageLanguages(project);
+  const languages = packageLanguages(project).languages;
   const content = playerContent(project, { web, languages: languages.length });
   const about = aboutCourse(project);
   const bar = (name: BarName) => {

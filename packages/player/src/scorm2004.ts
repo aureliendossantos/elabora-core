@@ -6,6 +6,7 @@
 // - Initialises once, never again after Terminate; skips SetValue calls that would change nothing;
 //   logs every call with its result and error code, for the debugger and the LMS emulator.
 
+import { preferenceList } from './start-language.ts';
 import { findLmsApi } from './scorm12.ts';
 import type { AdapterOptions, LmsAdapter, LmsCall, LmsPhase, Scorm2004Method } from './scorm12.ts';
 
@@ -200,6 +201,12 @@ export function createScorm2004Adapter(found: FoundScorm2004Api, { now = () => D
       const r = call('Terminate', '');
       phase = 'finished';
       return r.result === 'true';
+    },
+    // The learner's preferred language (D71): cmi.learner_preference.language, often empty.
+    preferredLanguages() {
+      if (phase !== 'initialized') return [];
+      const r = call('GetValue', 'cmi.learner_preference.language');
+      return r.error === '0' ? preferenceList(r.result) : [];
     }
   };
 }

@@ -26,6 +26,7 @@ import { loadTimelinePrefs } from './timeline.ts';
 import type { TimelinePrefs } from './timeline.ts';
 import { createSounds } from './sounds.ts';
 import type { InterfaceRole } from './sound-roles.ts';
+import { startLanguage } from './start-language.ts';
 import { alignToButton, applyDisplay, createDisplayMenu, createLanguageMenu, loadDisplayPrefs, saveDisplayPrefs } from './display.ts';
 import type { Popover } from './display.ts';
 import type { CourseData, ScreenData, TriggerType, VariableValue } from './course-data.ts';
@@ -588,8 +589,8 @@ function useCourse(data: CourseData) {
   const progress = courseState.encode();
   const status = courseState.lmsStatus;
   course = data;
+  // The language the learner chose travels in the progress (its "g").
   courseState = createCourseState(course, { suspendData: progress, initialStatus: status, onChange: () => syncSoon() });
-  courseState.st.language = data.language === initial.language ? undefined : data.language;
 }
 async function switchLanguage(code: string) {
   if (ended || code === course.language) return;
@@ -599,6 +600,9 @@ async function switchLanguage(code: string) {
   syncNow();
   unmount();
   useCourse(data);
+  // The learner's choice, kept even for the course's own language: a default or an LMS preference
+  // would otherwise open it in another next time (D71).
+  courseState.st.language = code;
   mountBars();
   mountView();
   current = -1;
@@ -793,10 +797,13 @@ const debugHooks = {
   }
 };
 type DebugHooks = typeof debugHooks;
-// The language it opens in: the learner's choice, kept with the progress; otherwise the one the page asks for
-// (?lang=fr, a site that frames the module in its own language), when the course has it.
-const asked = new URLSearchParams(location.search).get('lang');
-const chosen = courseState.st.language ?? asked;
-if (chosen && chosen !== course.language && initial.languages?.includes(chosen)) {
+// The language it opens in (start-language.ts, D59, D71): the learner's choice, kept with the
+// progress; else the one the page asks for (?lang=fr); else the learner's preference the LMS gives;
+// else the author's default; else the course's own. The LMS is asked only by a package of several.
+const chosen = initial.languages ? startLanguage({
+  languages: initial.languages, chosen: courseState.st.language, page: new URLSearchParams(location.search).get('lang'),
+  lms: lms.preferredLanguages?.() ?? [], fallback: initial.defaultLanguage
+}) : course.language;
+if (chosen !== course.language) {
   void courseIn(chosen).then((data) => { if (data) useCourse(data); boot(); });
 } else boot();

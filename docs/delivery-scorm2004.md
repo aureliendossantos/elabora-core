@@ -36,6 +36,7 @@ The player behaves as in SCORM 1.2 ([SCORM 1.2](delivery-scorm12.md#runtime-beha
 | responses `a,b`, `1.a,2.c` | responses `a[,]b`, `1[.]a[,]2[.]c` |
 | numeric pattern `5` | numeric pattern `5[:]5` |
 | `performance` (a free object's free answers) | `other` |
+| `cmi.student_preference.language` (the learner's language, read by a package of several languages, D71) | `cmi.learner_preference.language` |
 
 The status is read back as SCORM 1.2's: passed or failed when the success says so, else the completion. It never regresses, as in SCORM 1.2.
 
