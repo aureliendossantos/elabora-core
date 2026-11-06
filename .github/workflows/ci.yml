@@ -1,8 +1,13 @@
 name: CI
 
 # Linux and Windows on every push to main, every pull request and every release (Release core calls
-# this workflow); macOS (minutes count ten times on private repositories, and development happens on
-# a Mac) weekly and when CI itself is dispatched. Windows runs the typecheck and the unit suite.
+# this workflow); macOS as well weekly and when CI itself is dispatched. Each system's suites run as
+# parallel jobs, every one under 30 minutes: the typecheck and the unit suite, then the e2e suite and
+# the matrix, each in two halves (whole, they took macOS 21 and 26 min, 2 and 6 Nov 2026). Windows
+# runs the typecheck and the unit suite. macOS is not on every push: on GitHub's macOS runners eight
+# tests of animation, WebGL and timing fail (6 Nov 2026, two runs: design captures, continuity,
+# canal-locks' gates every time), where they pass on a Mac. The app's test:batch skips the core's
+# suites when this is green on main's commit (or the last one with the same code).
 on:
   push:
     branches: [main]
@@ -22,7 +27,7 @@ concurrency:
 
 jobs:
   test:
-    name: ${{ matrix.os }}
+    name: ${{ matrix.os }} ${{ matrix.suite }} ${{ matrix.shard }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
@@ -30,6 +35,15 @@ jobs:
       matrix:
         # github.workflow is the caller's name in a workflow_call: a dispatched release adds no macOS.
         os: ${{ fromJSON((github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.workflow == 'CI')) && '["ubuntu-latest","windows-latest","macos-latest"]' || '["ubuntu-latest","windows-latest"]') }}
+        suite: [unit, e2e, matrix]
+        shard: ['1/2', '2/2']
+        exclude:
+          # Windows: the browser suites pass on a Windows 11 machine (24 of 24 on 7 Oct 2026) but three
+          # canvas tests time out on GitHub's Windows runners: they run on Linux and macOS here.
+          - { os: windows-latest, suite: e2e }
+          - { os: windows-latest, suite: matrix }
+          # The unit suite and the typecheck whole, in one job.
+          - { suite: unit, shard: '2/2' }
     steps:
       - name: Keep line endings as committed
         run: git config --global core.autocrlf false
@@ -68,11 +82,13 @@ jobs:
       - run: ffmpeg -hide_banner -version
 
       - run: pnpm run typecheck
+        if: matrix.suite == 'unit'
       - run: pnpm run release:check
+        if: matrix.suite == 'unit'
       - run: pnpm test
-      # Windows: the browser suites pass on a Windows 11 machine (24 of 24 on 7 Oct 2026) but three
-      # canvas tests time out on GitHub's Windows runners: they run on Linux and macOS here.
-      - run: pnpm run test:e2e
-        if: runner.os != 'Windows'
-      - run: pnpm run test:matrix
-        if: runner.os != 'Windows'
+        if: matrix.suite == 'unit'
+      # pnpm run test:e2e and test:matrix by halves (package.json's commands): --test-shard goes before
+      # the files, where pnpm run cannot add it.
+      - name: pnpm run test:${{ matrix.suite }} (half ${{ matrix.shard }})
+        if: matrix.suite != 'unit'
+        run: node --test --test-shard=${{ matrix.shard }} --test-force-exit --test-global-setup=test/isolate.ts --import ./scripts/heavy-slots.ts --test-concurrency=2 "test/${{ matrix.suite }}/*.test.ts"
