@@ -1,8 +1,11 @@
 name: CI
 
-# Linux and Windows on every push to main, every pull request and every release (Release core calls
-# this workflow); macOS (minutes count ten times on private repositories, and development happens on
-# a Mac) weekly and when CI itself is dispatched. Windows runs the typecheck and the unit suite.
+# Linux, macOS and Windows on every push to main, every pull request and every release (Release core
+# calls this workflow); also weekly and on demand. The repository is public: minutes are free. Each
+# system's suites run as parallel jobs, every one under 30 minutes: the typecheck and the unit suite,
+# the e2e suite in two halves (macOS's took 21 min whole, 2 Nov 2026), the matrix. Windows runs the
+# typecheck and the unit suite. The app's test:batch skips the core's suites when this is green on
+# main's commit (or the last one with the same code).
 on:
   push:
     branches: [main]
@@ -22,14 +25,22 @@ concurrency:
 
 jobs:
   test:
-    name: ${{ matrix.os }}
+    name: ${{ matrix.os }} ${{ matrix.part }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        # github.workflow is the caller's name in a workflow_call: a dispatched release adds no macOS.
-        os: ${{ fromJSON((github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.workflow == 'CI')) && '["ubuntu-latest","windows-latest","macos-latest"]' || '["ubuntu-latest","windows-latest"]') }}
+        include:
+          - { os: ubuntu-latest, part: unit }
+          - { os: ubuntu-latest, part: e2e 1/2 }
+          - { os: ubuntu-latest, part: e2e 2/2 }
+          - { os: ubuntu-latest, part: matrix }
+          - { os: macos-latest, part: unit }
+          - { os: macos-latest, part: e2e 1/2 }
+          - { os: macos-latest, part: e2e 2/2 }
+          - { os: macos-latest, part: matrix }
+          - { os: windows-latest, part: unit }
     steps:
       - name: Keep line endings as committed
         run: git config --global core.autocrlf false
@@ -68,11 +79,16 @@ jobs:
       - run: ffmpeg -hide_banner -version
 
       - run: pnpm run typecheck
+        if: matrix.part == 'unit'
       - run: pnpm run release:check
+        if: matrix.part == 'unit'
       - run: pnpm test
+        if: matrix.part == 'unit'
       # Windows: the browser suites pass on a Windows 11 machine (24 of 24 on 7 Oct 2026) but three
       # canvas tests time out on GitHub's Windows runners: they run on Linux and macOS here.
-      - run: pnpm run test:e2e
-        if: runner.os != 'Windows'
+      # pnpm run test:e2e, by halves: --test-shard goes before the files, where pnpm cannot add it.
+      - name: pnpm run test:e2e (${{ matrix.part }})
+        if: startsWith(matrix.part, 'e2e')
+        run: node --test --test-shard=${{ matrix.part == 'e2e 1/2' && '1/2' || '2/2' }} --test-force-exit --test-global-setup=test/isolate.ts --import ./scripts/heavy-slots.ts --test-concurrency=2 "test/e2e/*.test.ts"
       - run: pnpm run test:matrix
-        if: runner.os != 'Windows'
+        if: matrix.part == 'matrix'

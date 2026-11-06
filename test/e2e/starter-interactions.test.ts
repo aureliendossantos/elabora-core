@@ -330,21 +330,23 @@ test('steps scroll follows the words: the figure changes once a step\'s words cr
       // By keyboard (a page down jumps across the middle) and by wheel, both ways.
       await place('hopper', 'words', 40);
       await frame.click(`${block} [data-t-reveal="hopper"] .t-steps-title`);
-      const scrolled = () => frame.evaluate(() => scrollY);
-      for (const key of ['PageDown', 'PageDown', 'ArrowDown', 'ArrowDown', 'PageDown', 'PageUp', 'ArrowUp', 'PageUp']) {
-        const before = await scrolled();
-        await page.keyboard.press(key);
-        await frame.waitForFunction((y) => scrollY !== y, before, { timeout: 10000 });
+      // Each key or wheel turn scrolls smoothly; the next waits for its scrollend. A key pressed while
+      // the scroll before it still moves can be lost on Linux (CI, 3 runs of 7 on 6 Nov 2026).
+      const scrolls = async (what: string, act: () => Promise<void>) => {
+        const before = await frame.evaluate(() => {
+          (window as unknown as { scrolled: Promise<number> }).scrolled = new Promise((resolve) => addEventListener('scrollend', () => resolve(scrollY), { once: true }));
+          return scrollY;
+        });
+        await act();
+        const after = await Promise.race([frame.evaluate(() => (window as unknown as { scrolled: Promise<number> }).scrolled), new Promise<null>((resolve) => setTimeout(() => resolve(null), 10000))]);
+        const y = await frame.evaluate(() => scrollY);
+        assert.ok(after !== null && y !== before, `${framed ? 'framed' : 'top'}, ${what} did not scroll: ${JSON.stringify({ before, after, y })}`);
         await followed();
-      }
+      };
+      for (const key of ['PageDown', 'PageDown', 'ArrowDown', 'ArrowDown', 'PageDown', 'PageUp', 'ArrowUp', 'PageUp']) await scrolls(key, () => page.keyboard.press(key));
       const list = (await frame.$eval(`${block} .t-steps-list`, (node) => { const r = node.getBoundingClientRect(); return { x: r.left + 20, y: 450 }; }));
       await page.mouse.move(list.x, list.y);
-      for (const delta of [240, 240, 240, 240, 240, -360, -360]) {
-        const before = await scrolled();
-        await page.mouse.wheel(0, delta);
-        await frame.waitForFunction((y) => scrollY !== y, before, { timeout: 10000 });
-        await followed();
-      }
+      for (const delta of [240, 240, 240, 240, 240, -360, -360]) await scrolls(`wheel ${delta}`, () => page.mouse.wheel(0, delta));
       assert.deepEqual(errors, []);
       await context.close();
     }
