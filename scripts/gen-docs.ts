@@ -28,13 +28,13 @@ d += '\n## Rules\n\nWhat each rule asks, as Elabora checks it (`packages/core/sr
 for (const [rule, text] of Object.entries(RULES)) d += `| ${rule} | ${cell(text)} | ${citing(rule).join(', ')} |\n`;
 fs.writeFileSync('docs/diagnostics.md', d);
 
-let p = '# LMS profiles\n\nGenerated from `profiles/*.json`. "?" = not documented: to be measured in a real instance (`toMeasure`). **Format**: the one Elabora picks for a module that names this LMS alone (course.json delivery.lms, delivery.format auto; [Delivery formats](delivery.md)).\n\n| Profile | Documented | Format | SCORM 1.2 | SCORM 2004 | cmi5 | xAPI | AICC | Launch | suspend_data 1.2 / 2004 | Package | Update |\n|---|---|---|---|---|---|---|---|---|---|---|---|\n';
+let p = '# LMS profiles\n\nGenerated from `profiles/*.json`. "?" = not documented: to be measured in a real instance (`toMeasure`). **Format**: the one Elabora picks for a module that names this LMS alone (course.json delivery.lms, delivery.format auto; [Delivery formats](delivery.md)).\n\n| Profile | Documented | Format | SCORM 1.2 | SCORM 2004 | cmi5 | xAPI | Launch | suspend_data 1.2 / 2004 | Package | Update |\n|---|---|---|---|---|---|---|---|---|---|---|\n';
 const yes = (value: unknown) => (value === true ? '✔' : value === false ? '✘' : value ?? '?');
 for (const x of listProfiles()) {
   const pk = [x.packaging?.maxZipMB ? `≤ ${x.packaging.maxZipMB} MB` : null, x.packaging?.maxUnzippedMB ? `≤ ${x.packaging.maxUnzippedMB} MB extracted` : null, x.packaging?.maxFiles ? `≤ ${x.packaging.maxFiles} files` : null, x.packaging?.maxCompressionRatio ? `ratio ≤ ${x.packaging.maxCompressionRatio}` : null].filter(Boolean).join(', ') || '?';
   const best = x.bestFormat ? formatName(x.bestFormat.format, x.bestFormat.edition) : 'SCORM 1.2';
   const sd = `${x.datamodel?.suspendDataMax?.scorm12 ?? '?'} / ${x.datamodel?.suspendDataMax?.scorm2004 ?? '?'}${x.datamodel?.suspendDataEnforcement ? ` (${x.datamodel.suspendDataEnforcement})` : ''}`;
-  p += `| **${x.id}** — ${cell(x.name)} | ${x.documentedAt} | ${best} | ${x.standards.scorm12 ? '✔' : '✘'} | ${x.standards.scorm2004 == null ? '?' : x.standards.scorm2004.length ? x.standards.scorm2004.join(', ') : '✘'} | ${yes(x.standards.cmi5)} | ${yes(x.standards.xapi)} | ${yes(x.standards.aicc)} | ${x.launch.modes.join(', ')} | ${sd} | ${pk} | ${x.update?.family ?? '?'} |\n`;
+  p += `| **${x.id}** — ${cell(x.name)} | ${x.documentedAt} | ${best} | ${x.standards.scorm12 ? '✔' : '✘'} | ${x.standards.scorm2004 == null ? '?' : x.standards.scorm2004.length ? x.standards.scorm2004.join(', ') : '✘'} | ${yes(x.standards.cmi5)} | ${yes(x.standards.xapi)} | ${x.launch.modes.join(', ')} | ${sd} | ${pk} | ${x.update?.family ?? '?'} |\n`;
 }
 p += '\n## Notes\n';
 for (const x of listProfiles()) if (x.notes?.length || x.bestFormat) p += `\n**${prose(x.name)}**\n${x.bestFormat ? `- Format: ${formatName(x.bestFormat.format, x.bestFormat.edition)}. ${prose(x.bestFormat.why)}\n` : ''}${(x.notes ?? []).map((n) => `- ${prose(n)}`).join('\n')}\n${x.sources.length ? `- Sources: ${x.sources.map((s) => `[${s.title}](${s.url})`).join(' · ')}\n` : ''}`;

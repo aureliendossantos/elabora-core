@@ -11,7 +11,8 @@
   const reg = q.get('reg') || 'reg-1';
   const mode = q.get('mode') || 'iframe';
   const mastery = q.get('mastery');
-  const format = q.get('format') === 'scorm2004' ? 'scorm2004' : 'scorm12';
+  const asked = q.get('format');
+  const format = asked === 'scorm2004' ? 'scorm2004' : 'scorm12';
   const scorm2004 = format === 'scorm2004';
   await new Promise((resolve, reject) => {
     const script = document.createElement('script');
@@ -21,6 +22,15 @@
     document.head.appendChild(script);
   });
   const profile = await fetch(`/lms/profile/${q.get('profile') || 'unknown'}`).then((r) => r.json());
+  const host = document.getElementById('frame-host');
+  // cmi5 and xAPI talk to the server's LRS (lrs.ts): the page only launches them
+  // with the parameters an LMS gives.
+  if (asked === 'cmi5' || asked === 'xapi') {
+    window.__lmsLog = [];
+    const params = await fetch(`/lms/launch-params/${reg}?format=${asked}&pkg=${encodeURIComponent(pkg)}`).then((r) => r.text());
+    launch(`/pkg/${pkg}/index.html?${params}`);
+    return;
+  }
   const saved = await fetch(`/lms/state/${reg}`).then((r) => r.json());
   const limit = (scorm2004 ? profile.datamodel?.suspendDataMax?.scorm2004 : profile.datamodel?.suspendDataMax?.scorm12) ?? (scorm2004 ? 64000 : 4096);
   const enforcement = profile.datamodel?.suspendDataEnforcement || 'reject';
@@ -106,24 +116,26 @@
   else window.API = exposed;
   window.__lmsApi = api;
 
-  const src = `/pkg/${pkg}/index.html`;
-  const host = document.getElementById('frame-host');
-  if (mode === 'iframe') {
-    const f = document.createElement('iframe');
-    f.src = src;
-    f.title = 'Course';
-    host.appendChild(f);
-  } else if (mode === 'nested-iframe') {
-    const f = document.createElement('iframe');
-    f.src = `/lms/wrapper.html?src=${encodeURIComponent(src)}`;
-    f.setAttribute('allow', profile.launch?.iframeAllow || '');
-    host.appendChild(f);
-  } else if (mode === 'popup' || mode === 'new-tab') {
-    window.__content = window.open(src, 'elabora-content');
-  } else if (mode === 'popup-chain') {
-    window.__structure = window.open(`/lms/popup.html?src=${encodeURIComponent(src)}`, 'elabora-structure');
+  launch(`/pkg/${pkg}/index.html`);
+  // The content in the profile's topology: a frame, a frame in a frame, a window or a chain of windows.
+  function launch(src) {
+    if (mode === 'iframe') {
+      const f = document.createElement('iframe');
+      f.src = src;
+      f.title = 'Course';
+      host.appendChild(f);
+    } else if (mode === 'nested-iframe') {
+      const f = document.createElement('iframe');
+      f.src = `/lms/wrapper.html?src=${encodeURIComponent(src)}`;
+      f.setAttribute('allow', profile.launch?.iframeAllow || '');
+      host.appendChild(f);
+    } else if (mode === 'popup' || mode === 'new-tab') {
+      window.__content = window.open(src, 'elabora-content');
+    } else if (mode === 'popup-chain') {
+      window.__structure = window.open(`/lms/popup.html?src=${encodeURIComponent(src)}`, 'elabora-structure');
+    }
+    window.__lmsReady = true;
   }
-  window.__lmsReady = true;
 
   // The course's window (same origin) and the player's hooks in it (window.__elabora).
   function hooks() {

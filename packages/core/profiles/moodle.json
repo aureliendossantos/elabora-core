@@ -24,8 +24,7 @@
     "multiSco": true,
     "cmi5": "plugin",
     "xapi": "plugin",
-    "lti13": true,
-    "aicc": true
+    "lti13": true
   },
   "bestFormat": {
     "format": "scorm12",
@@ -87,6 +86,7 @@
   "notes": [
     "scorm12standard = true by default: 4,096 characters of suspend_data enforced.",
     "Mastery score overrides lesson_status: send a score consistent with the status.",
-    "SCORM 2004 support is partial and marked won't fix: target SCORM 1.2."
+    "SCORM 2004 support is partial and marked won't fix: target SCORM 1.2.",
+    "cmi5 and xAPI only with plugins (mod_cmi5launch needs a CATAPULT player and an LRS)."
   ]
 }

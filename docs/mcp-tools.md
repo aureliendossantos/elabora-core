@@ -1035,7 +1035,7 @@ Validate and compile the package for the LMS and its proof dossier into dist/. I
 | `release` | boolean |  |  |
 | `mediaQuality` | "high" \| "medium" \| "low" |  |  |
 | `target` | "lms" \| "web" |  | lms (default): a package for LMSs. web: a module for a plain web server. |
-| `format` | "scorm12" \| "scorm2004" |  | The package's format for this build (lms target): scorm12, scorm2004. Default: the module's. |
+| `format` | "scorm12" \| "scorm2004" \| "cmi5" \| "xapi" |  | The package's format for this build (lms target): scorm12, scorm2004. Default: the module's. |
 | `web` | object |  | Settings of the web target (target "web" only). A publication: the defaults. A showcase: { progress: "none", navigation: "free" }. A review link: { review: { origins: ["https://revue.elabora.studio"] } }. |
 | `languages` | "all" |  | all: one package of every language (D59): the course's own and each translation that is ready and approved, which learners switch in place (the player's language item). Not with language. |
 

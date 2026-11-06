@@ -1,12 +1,13 @@
 import { escapeHtml } from '../util/html.ts';
 import type { Course } from '../project/model.ts';
 import type { DeliveryFormat, Scorm2004Edition } from '../lms/formats.ts';
+import { cmi5Manifest, tincanManifest } from './manifests-xapi.ts';
 
 // The files that say what a package is to its LMS, by format (docs/delivery.md). One SCO, no
 // sequencing beyond the simplest: what LMSs take alike. Identifiers derive from the course id only,
 // so content updates keep the same structure (what LMSs compare when a package is replaced).
 
-type ManifestCourse = Pick<Course, 'id' | 'title' | 'version' | 'completion'>;
+type ManifestCourse = Pick<Course, 'id' | 'title' | 'version' | 'completion'> & Partial<Pick<Course, 'description' | 'language' | 'delivery'>>;
 
 const fileList = (files: Iterable<string>) => [...files].sort().map((file) => `      <file href="${escapeHtml(file)}"/>`).join('\n');
 
@@ -87,10 +88,14 @@ export interface ManifestOptions {
 // The files a package of this format adds at its root, by name.
 export function packageManifests(format: DeliveryFormat, course: ManifestCourse, files: Iterable<string>, { edition }: ManifestOptions = {}): Map<string, string> {
   if (format === 'scorm2004') return new Map([['imsmanifest.xml', scorm2004Manifest(course, files, edition)]]);
+  const described = { ...course, language: course.language ?? 'en' };
+  if (format === 'cmi5') return new Map([['cmi5.xml', cmi5Manifest(described)]]);
+  if (format === 'xapi') return new Map([['tincan.xml', tincanManifest(described)]]);
   return new Map([['imsmanifest.xml', scorm12Manifest(course, files)]]);
 }
 
-// What LMSs compare on update: the format, identifiers, launch resource, mastery score. Another
+// What LMSs compare on update: the format, identifiers (cmi5 and xAPI: the activity), launch
+// resource, mastery score. Another
 // format is another course for an LMS: learners in progress lose their place.
 export interface StructureFingerprint {
   format: DeliveryFormat;

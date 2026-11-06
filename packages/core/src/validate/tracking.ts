@@ -75,11 +75,19 @@ export function checkTracking(ctx: CourseCheckContext): void {
     else if (profile.id !== 'unknown') reporter.emit('W_STANDARD_UNSURE', { ...where, profile: profile.id, message: `${lmsName(profile)} may not take ${formatName(format)} packages (${standardWords(profile, format)}): try the package in it before delivering.` });
     else reporter.emit('W_STANDARD_UNSURE', { ...where, profile: profile.id, message: `No LMS is chosen: check that the client's LMS takes ${formatName(format)} packages, or choose it (course.json delivery.lms).` });
   }
+  // xAPI records nothing without an LRS: the LMS's, when it launches xAPI packages, or delivery.lrs.
+  if (format === 'xapi' && !course.delivery?.lrs) {
+    const named = profiles.filter((profile) => profile.id !== 'unknown');
+    reporter.emit('W_XAPI_NEEDS_LRS', { file: 'course.json', path: '/delivery', message: named.length
+      ? `xAPI needs a learning record store: ${named.map(lmsName).join(', ')} must launch xAPI packages with its own, or set course.json delivery.lrs for a module outside an LMS.`
+      : 'xAPI needs a learning record store: an LMS that launches xAPI packages has its own; outside an LMS, set course.json delivery.lrs, or nothing is recorded.' });
+  }
 }
 
 // What a profile says of a format it may not take: a plugin, discouraged, in beta, or nothing.
 function standardWords(profile: LmsProfile, format: DeliveryFormat): string {
-  const value: unknown = format === 'scorm12' ? profile.standards.scorm12 : format === 'scorm2004' ? profile.standards.scorm2004 : null;
+  const standards = profile.standards;
+  const value: unknown = format === 'scorm12' ? standards.scorm12 : format === 'scorm2004' ? standards.scorm2004 : format === 'cmi5' ? standards.cmi5 : standards.xapi;
   if (value === 'plugin') return 'only with a plugin';
   if (value === 'discouraged') return 'the vendor discourages it';
   if (value === 'beta') return 'in beta';

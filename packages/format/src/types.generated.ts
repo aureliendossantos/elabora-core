@@ -340,10 +340,17 @@ export type Course = {
      */
     mediaQuality?: MediaQuality;
     /**
-     * The package's format for the LMS. auto: Elabora picks it, the best of the LMS's profile (delivery.lms), else SCORM 1.2, which every LMS takes. scorm12: SCORM 1.2, one SCO. scorm2004: SCORM 2004 4th edition (3rd for an LMS that stops there), one SCO without sequencing: completion and success apart, a scaled score, 64,000 characters of suspend data. elabora build --format overrides it for one build.
+     * The package's format for the LMS (docs/delivery.md). auto: Elabora picks it, the best of the LMS's profile (delivery.lms), else SCORM 1.2, which every LMS takes. scorm12: SCORM 1.2, one SCO. scorm2004: SCORM 2004 4th edition (3rd for an LMS that stops there), one SCO without sequencing: completion and success apart, a scaled score, 64,000 characters of suspend data. cmi5: xAPI with an LMS's rules (cmi5.xml, its LRS), for the few LMSs that import it. xapi: xAPI alone (tincan.xml): it needs an LRS, the LMS's or delivery.lrs. elabora build --format overrides it for one build.
      * @default 'auto'
      */
-    format?: 'auto' | 'scorm12' | 'scorm2004';
+    format?: 'auto' | 'scorm12' | 'scorm2004' | 'cmi5' | 'xapi';
+    /** cmi5 and xAPI: the course's activity, an IRI the client owns (https://client.example/courses/safety). Default urn:elabora:course:<id>. Keep it from one version to the next: an LRS adds the statements of every version up. */
+    activityId?: string;
+    /** xAPI outside an LMS: the learning record store statements go to when no LMS launches the package. Its key is never here (the project's history keeps this file): the build takes it from ELABORA_LRS_KEY and ELABORA_LRS_SECRET, or elabora build --lrs-key and --lrs-secret, and the package carries it (W_XAPI_KEY_IN_PACKAGE). */
+    lrs?: {
+      /** The LRS's xAPI address (https://lrs.example/xapi/). */
+      endpoint: string;
+    };
     /** The LMS the course is delivered to: ids of LMS profiles (elabora profiles lists them). elabora build, validate and test target them when no --profile is given: the package must fit their limits (size, files, suspend data). Without it the course targets an unknown LMS: the strictest documented behaviour, and package limits only warn, naming the LMSs that would refuse the package. */
     lms?: string[];
   };
@@ -3880,11 +3887,10 @@ export type LmsProfile = {
     cmi5?: boolean | 'plugin' | 'beta' | null;
     xapi?: boolean | 'plugin' | 'discouraged' | null;
     lti13?: boolean | 'partners-only' | null;
-    aicc?: boolean | null;
   };
   /** The delivery format Elabora picks for this LMS when the module names it alone (course.json delivery.lms) and leaves delivery.format to auto. Without it: SCORM 1.2. */
   bestFormat?: {
-    format: 'scorm12' | 'scorm2004';
+    format: 'scorm12' | 'scorm2004' | 'cmi5' | 'xapi';
     /** SCORM 2004: the edition the manifest declares (4th by default). */
     edition?: '3rd' | '4th';
     /** Why this format, from the sources. */

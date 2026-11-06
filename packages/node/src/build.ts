@@ -22,7 +22,7 @@ import { worstCaseLength } from '@elabora/player/state-codec';
 import { compileCourseData } from '@elabora/core/compile/course-data';
 import { packageManifests, structureFingerprint } from '@elabora/core/compile/manifests';
 import { listProfiles, resolveProfiles, deliveryLimits, targetProfileIds } from '@elabora/core/lms/profiles';
-import { DELIVERY_FORMATS, courseFormat, formatName, isDeliveryFormat } from '@elabora/core/lms/formats';
+import { DELIVERY_FORMATS, courseFormat, formatName, isDeliveryFormat, isHttpFormat } from '@elabora/core/lms/formats';
 import type { DeliveryFormat, FormatChoice } from '@elabora/core/lms/formats';
 import { packageBreaches, packageFileKind, packageLimitFindings } from '@elabora/core/lms/package-limits';
 import type { PackageFile } from '@elabora/core/lms/package-limits';
@@ -40,7 +40,7 @@ import { interfaceSounds, shippedPlayerSounds, soundCreditsText } from '@elabora
 import type { SoundsData } from '@elabora/player/course-data';
 import { getRegistry, componentHash } from '@elabora/core/components/registry';
 import type { Registry } from '@elabora/core/components/registry';
-import { runtimeFiles, reviewFiles, playerSoundFile, vendorThree, compileObjectCode, objectFrameHtml, bundleErrorMessage, ELABORA_VERSION } from './bundles.ts';
+import { runtimeFiles, lmsBootFile, reviewFiles, playerSoundFile, vendorThree, compileObjectCode, objectFrameHtml, bundleErrorMessage, ELABORA_VERSION } from './bundles.ts';
 import { planZip, writeZip, hashZip, ZipLimitError } from './packaging/zip-writer.ts';
 import type { ZipInput, ZipPlan } from './packaging/zip-writer.ts';
 import { packageMedia, packageSizes, mediaQualityOf } from './packaging/media.ts';
@@ -93,6 +93,9 @@ export interface BuildOptions {
   // from the outline and Next, nothing to do or hear first: the Aperçu's « Déverrouiller la
   // progression »). A module for the web says it in web.navigation.
   navigation?: WebNavigation;
+  // xAPI outside an LMS (course.json delivery.lrs): the LRS's key, never written in course.json.
+  // Default: ELABORA_LRS_KEY and ELABORA_LRS_SECRET.
+  lrs?: { key: string; secret: string };
   // 'all': one package of every language (D59): the course's own and each translation that is ready
   // and approved, which learners switch in place (the player's language item). Default: the course's
   // own language only.
@@ -129,6 +132,19 @@ function targetOf(options: BuildOptions): { format: DeliveryFormat | null; web: 
   if (!WEB_PROGRESS.includes(progress)) throw new TypeError(`web progress is local or none (not ${JSON.stringify(progress)})`);
   if (!WEB_NAVIGATION.includes(navigation)) throw new TypeError(`web navigation is authored or free (not ${JSON.stringify(navigation)})`);
   return { format: null, web: { progress, navigation, noindex: noindex === true, ...(url !== undefined ? { url } : {}), ...(image !== undefined ? { image } : {}), ...(review ? { review: { origins: [...review.origins] } } : {}) } };
+}
+
+// elabora/lrs.js: the LRS of an xAPI module outside an LMS and its key (Basic), from the build's
+// options or ELABORA_LRS_KEY and ELABORA_LRS_SECRET; without a key, nothing (W_XAPI_NO_LRS_KEY).
+function lrsFile(endpoint: string, given: BuildOptions['lrs'], reporter: Reporter): string | null {
+  const key = given?.key ?? process.env.ELABORA_LRS_KEY;
+  const secret = given?.secret ?? process.env.ELABORA_LRS_SECRET;
+  if (!key || !secret) {
+    reporter.emit('W_XAPI_NO_LRS_KEY', { file: 'course.json', path: '/delivery/lrs', message: `course.json names the LRS ${endpoint}, but the build has no key for it (ELABORA_LRS_KEY and ELABORA_LRS_SECRET, or --lrs-key and --lrs-secret): outside an LMS, the module records nothing.` });
+    return null;
+  }
+  reporter.emit('W_XAPI_KEY_IN_PACKAGE', { file: 'course.json', path: '/delivery/lrs', message: `The package carries the key of ${endpoint} (elabora/lrs.js): anyone who has it can send statements with it. Use a key that can only write statements.` });
+  return `window.ELABORA_LRS = ${JSON.stringify({ endpoint, auth: `Basic ${Buffer.from(`${key}:${secret}`).toString('base64')}` })};\n`;
 }
 
 // The build stopped (validation or packaging errors): nothing was written but the lock.
@@ -307,7 +323,13 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
 
   // A package for an LMS in another format than SCORM 1.2 says it in its course data (SCORM 1.2's
   // keeps its bytes).
-  const lmsData: LmsDelivery | undefined = choice && choice.format !== 'scorm12' ? { format: choice.format } : undefined;
+  const lmsData: LmsDelivery | undefined = choice && choice.format !== 'scorm12' ? { format: choice.format, ...((choice.format === 'cmi5' || choice.format === 'xapi') && course.delivery?.activityId ? { activityId: course.delivery.activityId } : {}) } : undefined;
+  // cmi5 and xAPI start with elabora/lms.js, which connects before the player; an xAPI package
+  // for an LRS outside an LMS carries the LRS and its key (elabora/lrs.js).
+  const http = !!choice && isHttpFormat(choice.format);
+  if (http) for (const [name, content] of Object.entries(await lmsBootFile({ debug: options.debug }))) files.set(name, Buffer.from(content));
+  const lrs = choice?.format === 'xapi' && course.delivery?.lrs ? lrsFile(course.delivery.lrs.endpoint, options.lrs, reporter) : null;
+  if (lrs) files.set('elabora/lrs.js', Buffer.from(lrs));
   const delivery: WebDelivery | undefined = web ? { target: 'web', progress: web.progress, navigation: web.navigation, ...(review ? { review } : {}) } : undefined;
   // A SCORM package with free navigation (the Aperçu unlocked); the web target's is in delivery.
   const free = !web && options.navigation === 'free' ? { navigation: 'free' as const } : {};
@@ -318,7 +340,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     screens: [...project.screens.entries()].sort(), objects: [...usedObjects].sort().map((id) => [id, project.objects.get(id)?.manifest, project.objects.get(id)?.code]),
     narration: tracks.size ? [...tracks.values()].map((track) => [track.name, track.key]) : undefined,
     dialogueLines: dialogueLines.lines.length ? dialogueLines.lines.map((line) => [line.path, line.hash, line.mouth]) : undefined,
-    delivery, ...free, ...(lmsData ? { lms: lmsData } : {}),
+    delivery, ...free, ...(lmsData ? { lms: lmsData } : {}), ...(lrs ? { lrs: sha256(lrs) } : {}),
     languages: others.length ? languages.map((language) => [language, fileHash(project.files, `translations/${language}.xlf`) ?? null, [...(otherTracks.get(language)?.values() ?? [])].map((track) => [track.name, track.key]), ...(otherLines.get(language)?.lines.length ? [otherLines.get(language)!.lines.map((line) => [line.path, line.hash, line.mouth])] : [])]) : undefined
   })).slice(0, 16);
   const several = others.length ? { languages } : {};
@@ -351,7 +373,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     files.set(`elabora/course.${other.language}.js`, Buffer.from(`(window.ELABORA_COURSES = window.ELABORA_COURSES || {})[${JSON.stringify(other.language)}] = ${JSON.stringify(translated)};\n`));
   }
   if (design.css) files.set('elabora/theme.css', Buffer.from(design.css));
-  files.set('index.html', Buffer.from(indexHtml(data, { themeCss: !!design.css, review: !!review, ...(share ? { web: { ...share.head, description: course.description } } : {}) })));
+  files.set('index.html', Buffer.from(indexHtml(data, { themeCss: !!design.css, review: !!review, http, lrs: !!lrs, ...(share ? { web: { ...share.head, description: course.description } } : {}) })));
   if (choice) for (const [name, text] of packageManifests(choice.format, course, [...files.keys(), ...media.keys()], { edition: choice.edition })) files.set(name, Buffer.from(text));
 
   // The author's sources are never published (D49). The validator refuses whatever points into
@@ -623,7 +645,7 @@ function webHead(data: CompiledCourse, web: WebHead): string {
   ].join('');
 }
 
-function indexHtml(data: CompiledCourse, { themeCss = false, web, review = false }: { themeCss?: boolean; web?: WebHead; review?: boolean } = {}): string {
+function indexHtml(data: CompiledCourse, { themeCss = false, web, review = false, http = false, lrs = false }: { themeCss?: boolean; web?: WebHead; review?: boolean; http?: boolean; lrs?: boolean } = {}): string {
   return `<!doctype html>
 <html lang="${escapeHtml(data.language)}">
 <head>
@@ -638,8 +660,8 @@ function indexHtml(data: CompiledCourse, { themeCss = false, web, review = false
 <body>
 <div id="elabora-app"></div>
 <noscript>${data.language.startsWith('fr') ? 'Ce module nécessite JavaScript.' : 'This course requires JavaScript.'}</noscript>
-<script src="elabora/course.js"></script>
-<script src="elabora/player.js"></script>${review ? '\n<script src="elabora/review.js"></script>' : ''}
+<script src="elabora/course.js"></script>${lrs ? '\n<script src="elabora/lrs.js"></script>' : ''}
+<script src="elabora/${http ? 'lms' : 'player'}.js"></script>${review ? '\n<script src="elabora/review.js"></script>' : ''}
 </body>
 </html>
 `;

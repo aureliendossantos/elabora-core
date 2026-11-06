@@ -57,6 +57,12 @@ export async function runtimeFiles({ debug = false }: { debug?: boolean } = {}):
   };
 }
 
+// elabora/lms.js (lms-boot.ts): the start of a cmi5 or xAPI package, which connects to the LMS
+// before it starts the player. Packages in other formats keep their bytes without it.
+export async function lmsBootFile({ debug = false }: { debug?: boolean } = {}): Promise<Record<string, string>> {
+  return { 'elabora/lms.js': `/* Elabora player ${ELABORA_VERSION} — Apache-2.0 */\n` + await bundle(path.join(RUNTIME, 'lms-boot.ts'), { minify: !debug }) };
+}
+
 // The player's interface sounds (packages/player/src/interface-sounds/, D67), by their path in the package
 // (elabora/sounds/<role>.m4a): a package ships those its course data names.
 export function playerSoundFile(name: string): Buffer {

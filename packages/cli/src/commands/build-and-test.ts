@@ -26,8 +26,8 @@ import { pendingMediaJobs, waitForMediaJobs } from './media.ts';
 import type { CommandGroup } from './command.ts';
 
 const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--media-quality high|medium|low] [--languages all] [--no-wait] [--json]
-        [--format scorm12|scorm2004] [--target web] [--progress local|none] [--navigation authored|free] [--noindex] [--url <address>]
-        [--image <file>] [--review-origin <origin>]…
+        [--format scorm12|scorm2004|cmi5|xapi] [--lrs-key <key> --lrs-secret <secret>] [--target web] [--progress local|none]
+        [--navigation authored|free] [--noindex] [--url <address>] [--image <file>] [--review-origin <origin>]…
                                                       Validate, then make the package for the LMS and its proof dossier in
                                                       dist/ (deterministic: same files, same bytes). Media ship at
                                                       delivery.mediaQuality (default high: the masters); lower qualities
@@ -35,7 +35,9 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       jobs (--no-wait: fails while they run).
                                                       The format: the module's (course.json delivery.format), else the best
                                                       for its LMSs (delivery.lms), else SCORM 1.2, which every LMS takes;
-                                                      --format scorm12|scorm2004 says it for this build.
+                                                      --format says it for this build. xAPI needs an LRS: the LMS's, or
+                                                      delivery.lrs with its key (--lrs-key and --lrs-secret, else
+                                                      ELABORA_LRS_KEY and ELABORA_LRS_SECRET), which the package carries.
                                                       --languages all: one package of every language, the course's own
                                                       and each translation that is ready and approved; learners switch
                                                       from the player's « Langue » and keep their progress (D59).
@@ -127,7 +129,7 @@ const buildCommand = defineCommand({
   name: 'build',
   flags: {
     profile: 'list', release: 'boolean', out: 'string', dir: 'boolean', debug: 'boolean', 'media-quality': 'string', languages: 'string', 'no-wait': 'boolean', json: 'boolean',
-    target: 'string', format: 'string', progress: 'string', navigation: 'string', noindex: 'boolean', url: 'string', image: 'string', 'review-origin': 'list'
+    target: 'string', format: 'string', 'lrs-key': 'string', 'lrs-secret': 'string', progress: 'string', navigation: 'string', noindex: 'boolean', url: 'string', image: 'string', 'review-origin': 'list'
   },
   async run({ positionals: [dir = '.'], flags }) {
     const quality = flags['media-quality'];
@@ -173,6 +175,7 @@ const buildCommand = defineCommand({
     const progress = mediaProgress();
     const result = await build(dir, {
       profiles: flags.profile, release: flags.release, out: flags.out, emit: flags.dir || web ? 'both' : 'zip', debug: flags.debug, ...(web ? { target: 'web' as const, web } : format ? { target: format } : {}),
+      ...(flags['lrs-key'] !== undefined || flags['lrs-secret'] !== undefined ? { lrs: { key: flags['lrs-key'] ?? '', secret: flags['lrs-secret'] ?? '' } } : {}),
       ...(quality ? { mediaQuality: quality } : {}),
       ...(flags.languages === 'all' ? { languages: 'all' as const } : {}),
       onMedia: ({ job }) => (isFinished(job.status) ? progress.complete(job) : progress.progress(job))

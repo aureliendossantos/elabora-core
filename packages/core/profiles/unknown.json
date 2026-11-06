@@ -11,8 +11,7 @@
     "multiSco": false,
     "cmi5": false,
     "xapi": false,
-    "lti13": false,
-    "aicc": null
+    "lti13": false
   },
   "bestFormat": {
     "format": "scorm12",

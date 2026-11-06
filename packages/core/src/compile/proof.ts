@@ -32,7 +32,7 @@ interface ProofWords {
 const WORDS: Record<'fr' | 'en', ProofWords> = {
   fr: {
     title: 'Dossier de preuve', colon: '\u202f: ', sep: '\u202f; ', course: 'Module', version: 'Version', build: 'Build', package: 'Paquet', generated: 'Généré par Elabora',
-    formatName: (delivery) => delivery.format === 'scorm2004' ? `SCORM 2004 (${delivery.edition === '3rd' ? '3e' : '4e'} édition)` : 'SCORM 1.2',
+    formatName: (delivery) => delivery.format === 'scorm2004' ? `SCORM 2004 (${delivery.edition === '3rd' ? '3e' : '4e'} édition)` : delivery.name,
     formatWhy: (delivery) => delivery.why === 'lms' ? `le meilleur pour ${delivery.lms.join(', ')}` : delivery.why === 'common' ? `commun à ${delivery.lms.join(', ')}` : delivery.why === 'safest' ? 'le plus sûr sans LMS choisi : tous les LMS le prennent' : 'choisi pour le module',
     plan: 'Plan', status: 'Statut', approvedBy: 'Validé par', hash: 'Empreinte du plan', approvalStates: { draft: 'aucune version validée', modified: 'modifié depuis sa version validée', approved: 'version validée' },
     validatedVersion: (version, by, date, reference) => `${version}, validée par ${by} le ${date}${reference ? ` (${reference})` : ''}`, changesSince: (version, count) => `${count} modification(s) depuis la ${version} validée, livrées sans validation du client`,

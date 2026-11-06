@@ -7,6 +7,8 @@ import { packageDir } from '../util/package-dir.ts';
 import { fieldOf } from '../util/values.ts';
 import { getProfile } from '@elabora/core/lms/profiles';
 import { MIME_TYPES, serveFile, servePlaceholder } from '../http/files.ts';
+import { createFakeLrs } from './lrs.ts';
+import type { FakeLrs, LrsCall, LrsRecord } from './lrs.ts';
 
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const HARNESS = path.join(PACKAGE_ROOT, 'emulator-harness');
@@ -39,6 +41,11 @@ export interface PackageOptions {
 
 export interface EmulatorServer {
   base: string; // http://127.0.0.1:<port>
+  // cmi5 and xAPI (the LMS's LRS, lrs.ts): what a registration's
+  // learner did, in SCORM 1.2's words, and the requests the content made.
+  httpRecord(reg: string): LrsRecord;
+  httpCalls(reg: string): LrsCall[];
+  lrs: FakeLrs;
   // The second port, serving the same, from which previews load object frames (null: none).
   framesPort: number | null;
   addPackage(name: string, dir: string, files?: PackageFiles, options?: PackageOptions): string;
@@ -62,6 +69,7 @@ export async function startServer({ port = 0, iisLike = false, frames = false }:
   const listeners = new Map<string, Set<ServerResponse>>();
   const registrations = new Map<string, Registration>();
   const routes = new Map<string, RouteHandler>();
+  const lrs = createFakeLrs();
 
   let framesPort: number | null = null;
   const handle = async (request: IncomingMessage, response: ServerResponse) => {
@@ -98,6 +106,16 @@ export async function startServer({ port = 0, iisLike = false, frames = false }:
       }
       // scorm-again's runtime of the package's format (the harness asks for one).
       if (pathname === '/lms/scorm-again/scorm12.js' || pathname === '/lms/scorm-again/scorm2004.js') return send(200, fs.readFileSync(path.join(packageDir('scorm-again') ?? '', `dist/${path.basename(pathname)}`)), TYPES['.js']);
+      // The launch of a cmi5 or xAPI package: its parameters, as the LMS puts them in the address.
+      if (pathname.startsWith('/lms/launch-params/')) {
+        const reg = pathname.split('/')[3]!;
+        const format = url.searchParams.get('format');
+        const dir = packages.get(url.searchParams.get('pkg') ?? '')?.dir;
+        if (!dir) return send(404, 'unknown package');
+        return send(200, launchParams(reg, format ?? '', dir), TYPES['.txt'] ?? 'text/plain');
+      }
+      const answered = await lrs.handle(request, pathname, url, () => readBody(request));
+      if (answered) return send(answered.status, answered.body, answered.type ?? 'text/plain; charset=utf-8');
       if (pathname.startsWith('/lms/profile/')) return send(200, JSON.stringify(getProfile(pathname.split('/')[3])), TYPES['.json']);
       if (pathname.startsWith('/lms/state/')) {
         const reg = pathname.split('/')[3];
@@ -129,6 +147,32 @@ export async function startServer({ port = 0, iisLike = false, frames = false }:
       send(500, String((error instanceof Error && error.stack) || error));
     }
   };
+  // The parameters an LMS gives a launch: cmi5's (endpoint, fetch, actor, registration, activityId,
+  // with LMS.LaunchData written for a new session), Tin Can's (endpoint, auth, actor, registration,
+  // activity_id).
+  const launchParams = (reg: string, format: string, dir: string): string => {
+    const actor = { objectType: 'Agent', name: 'Doe, Alex', account: { homePage: base, name: 'learner-1' } };
+    if (format === 'cmi5') {
+      const xml = fs.readFileSync(path.join(dir, 'cmi5.xml'), 'utf8');
+      const au = /<au\b[^>]*>/.exec(xml)?.[0] ?? '';
+      const attribute = (name: string) => new RegExp(`\\b${name}="([^"]*)"`).exec(au)?.[1];
+      const { sessionId } = lrs.launch(reg, { cmi5: true });
+      const mastery = attribute('masteryScore');
+      lrs.putState(reg, 'LMS.LaunchData', {
+        contextTemplate: { contextActivities: { grouping: [{ id: /<course\b[^>]*\bid="([^"]*)"/.exec(xml)?.[1] }] }, extensions: { 'https://w3id.org/xapi/cmi5/context/extensions/sessionid': sessionId } },
+        launchMode: 'Normal', launchMethod: attribute('launchMethod') ?? 'AnyWindow', moveOn: attribute('moveOn') ?? 'NotApplicable', ...(mastery ? { masteryScore: Number(mastery) } : {})
+      });
+      return new URLSearchParams({ endpoint: `${base}/lrs/`, fetch: `${base}/lms/cmi5/fetch/${reg}`, actor: JSON.stringify(actor), registration: reg, activityId: attribute('id') ?? '' }).toString();
+    }
+    if (format === 'xapi') {
+      const xml = fs.readFileSync(path.join(dir, 'tincan.xml'), 'utf8');
+      const auth = `Basic ${Buffer.from(`learner-1:${reg}`).toString('base64')}`;
+      lrs.launch(reg, { auth });
+      // Old Tin Can launches give the actor's name and mbox as lists.
+      return new URLSearchParams({ endpoint: `${base}/lrs/`, auth, actor: JSON.stringify({ name: ['Doe, Alex'], mbox: ['mailto:learner-1@example.com'] }), registration: reg, activity_id: /<activity\b[^>]*\bid="([^"]*)"/.exec(xml)?.[1] ?? '' }).toString();
+    }
+    return '';
+  };
   const listen = async (server: http.Server, wanted: number): Promise<number> => {
     await new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(wanted, '127.0.0.1', () => { server.off('error', reject); resolve(); }); });
     const address = server.address();
@@ -150,7 +194,10 @@ export async function startServer({ port = 0, iisLike = false, frames = false }:
       return `${base}/pkg/${name}/`;
     },
     registration(reg) { return registrations.get(reg) || null; },
-    resetRegistration(reg) { registrations.delete(reg); },
+    resetRegistration(reg) { registrations.delete(reg); lrs.reset(reg); },
+    httpRecord: (reg) => lrs.record(reg),
+    httpCalls: (reg) => lrs.calls(reg),
+    lrs,
     route(prefix, handler) { routes.set(prefix, handler); },
     async close() {
       for (const page of [...listeners.values()].flatMap((pages) => [...pages])) page.end();

@@ -8,6 +8,7 @@
 import { findScorm12API, createScorm12Adapter, createStandaloneAdapter, scorm12Duration, pad } from './scorm12.ts';
 import { createWebAdapter } from './web.ts';
 import { createScorm2004Adapter, findScorm2004API } from './scorm2004.ts';
+import { createXapiAdapter } from './xapi.ts';
 import type { Interaction, LmsAdapter } from './scorm12.ts';
 import { createCourseState, hasBehavior, flatBlocks } from './course-state.ts';
 import { createScreenView } from './screen-view.ts';
@@ -67,6 +68,10 @@ const keptHere = delivery?.progress === 'local';
 // A package in another format than SCORM 1.2 says it (course.lms): the player looks for that API.
 const lms: LmsAdapter = delivery ? createWebAdapter(packageId, { progress: delivery.progress }) : lmsAdapter();
 function lmsAdapter(): LmsAdapter {
+  // cmi5 and xAPI: elabora/lms.js connected before the player started (lms-boot.ts).
+  const connected = window.__elaboraLms;
+  if (connected) return createXapiAdapter(connected);
+  if (initial.lms && initial.lms.format !== 'scorm2004') return createStandaloneAdapter(packageId);
   if (initial.lms?.format === 'scorm2004') {
     const found = findScorm2004API(window);
     return found ? createScorm2004Adapter(found) : createStandaloneAdapter(packageId);
@@ -112,6 +117,8 @@ function syncNow() {
   }
   lms.set('cmi.core.exit', exitValue());
   lms.set('cmi.core.session_time', scorm12Duration(Date.now() - startedAt));
+  // SCORM 2004 4th edition shows how far the learner is (360Learning reads it while in progress).
+  if (lms.kind === 'scorm2004') lms.set('cmi.progress_measure', String(Math.round(progressShare() * 100) / 100));
   lms.commit();
   // (Not before the bars and the screen are mounted: a language loading at the start.)
   if (view) { updateProgress(); view.refreshResults(); }
@@ -405,10 +412,13 @@ function updateNav() {
   view.updateBackdrop();
 }
 
-function updateProgress() {
+// The share of the screens that count, completed (0 to 1).
+function progressShare(): number {
   const required = requiredScreens();
-  const done = required.filter((screen) => courseState.screenComplete(screen)).length;
-  const percent = required.length ? Math.round((100 * done) / required.length) : 100;
+  return required.length ? required.filter((screen) => courseState.screenComplete(screen)).length / required.length : 1;
+}
+function updateProgress() {
+  const percent = Math.round(100 * progressShare());
   chrome.setProgress(percent, percentText(percent, course.language));
   updateParts();
 }
