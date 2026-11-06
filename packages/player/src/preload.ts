@@ -2,7 +2,7 @@ import type { ScreenData } from './course-data.ts';
 
 // The pictures of the next screen, loaded ahead once the screen shown has its own (its pictures in the
 // window loaded, then a quiet moment): the next screen then shows whole at once, without a blank or a
-// shift. In slides every picture of the next screen loads; in a scroll page, only its first ones, and
+// shift. Its narration loads at that moment too (player.ts), so that it starts at once. In slides every picture of the next screen loads; in a scroll page, only its first ones, and
 // only when the learner nears the end of the page (the others load as the learner comes to them, by
 // the browser's lazy loading). Each picture is decoded and held until the screen after it is the next
 // one, so the browser keeps it ready.
@@ -70,17 +70,19 @@ export function createPreloader({ main, slides }: { main: () => HTMLElement; sli
     else setTimeout(resolve, 200);
   });
 
-  // Called each time a screen shows, with the one after it (undefined on the last screen).
-  function shown(next: ScreenData | undefined) {
+  // Called each time a screen shows, with the one after it (undefined on the last screen); ahead()
+  // loads what else the next screen needs (its narration), at the same moment.
+  function shown(next: ScreenData | undefined, ahead?: () => void) {
     const mine = ++generation;
     stopScroll?.();
     stopScroll = null;
     if (!next) { held = new Map(); return; }
     const sources = picturesOf(next);
-    if (!sources.length) return;
     requestAnimationFrame(() => {
       settled().then(quiet).then(() => {
         if (mine !== generation) return;
+        ahead?.();
+        if (!sources.length) return;
         if (slides()) { load(sources); return; }
         const near = () => window.scrollY + window.innerHeight * 2 >= document.documentElement.scrollHeight;
         if (near()) { load(sources.slice(0, SCROLL_FIRST)); return; }

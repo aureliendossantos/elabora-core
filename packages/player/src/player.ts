@@ -531,16 +531,16 @@ function go(index: number | undefined, { focus = true }: { focus?: boolean } = {
   // The sounds of the screen left stop before the new one's events play its own (D67).
   sounds.enterScreen(courseState.screens[index].id);
   view.show(courseState.screens[index]);
-  preloadNarration(courseState.screens[index + 1]);
-  if (!window.ELABORA_TEST?.virtualTime) preloader.shown(courseState.screens[index + 1]);
+  const next = courseState.screens[index + 1];
+  if (!window.ELABORA_TEST?.virtualTime) preloader.shown(next, () => preloadNarration(next));
   syncNow();
   updateNav();
   if (focus) main.querySelector('h1')?.focus();
   window.scrollTo?.(0, 0);
 }
 
-// The next screen's pictures load once this one has its own (preload.ts), and its narration while the
-// learner is on this one.
+// The next screen's pictures and narration load once this one has its own pictures and a quiet moment
+// (preload.ts): they do not compete with the screen shown, and are there when the learner goes on.
 const preloader = createPreloader({ main: () => main, slides });
 let preloaded: HTMLAudioElement | null = null;
 function preloadNarration(screen: ScreenData | undefined) {
