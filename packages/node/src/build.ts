@@ -20,17 +20,19 @@ import { readLock, assignKeys, buildStateModel, syncComponentVersions } from '@e
 import type { StateLock } from '@elabora/core/compile/state-model';
 import { worstCaseLength } from '@elabora/player/state-codec';
 import { compileCourseData } from '@elabora/core/compile/course-data';
-import { scorm12Manifest, structureFingerprint } from '@elabora/core/compile/scorm12-manifest';
-import { listProfiles, resolveProfiles, scorm12Limits, targetProfileIds } from '@elabora/core/lms/profiles';
+import { packageManifests, structureFingerprint } from '@elabora/core/compile/manifests';
+import { listProfiles, resolveProfiles, deliveryLimits, targetProfileIds } from '@elabora/core/lms/profiles';
+import { DELIVERY_FORMATS, courseFormat, formatName, isDeliveryFormat } from '@elabora/core/lms/formats';
+import type { DeliveryFormat, FormatChoice } from '@elabora/core/lms/formats';
 import { packageBreaches, packageFileKind, packageLimitFindings } from '@elabora/core/lms/package-limits';
 import type { PackageFile } from '@elabora/core/lms/package-limits';
-import type { Scorm12Limits } from '@elabora/core/lms/profiles';
+import type { DeliveryLimits } from '@elabora/core/lms/profiles';
 import { proofMarkdown } from '@elabora/core/compile/proof';
 import type { BuildReport, PlanCoverage, ReportPlan, ReportWeb } from '@elabora/core/compile/report';
 import type { BuildTarget } from '@elabora/core/validate/context';
 import type { WebBuildOptions, WebNavigation, WebProgress, WebReviewOptions } from './build-types.ts';
 import { reviewOrigin } from '@elabora/player/review-protocol';
-import type { WebDelivery } from '@elabora/player/course-data';
+import type { LmsDelivery, WebDelivery } from '@elabora/player/course-data';
 import { designStylesheets, rootStyle, usedTypes } from '@elabora/core/render/styles';
 import { readProvenance } from '@elabora/core/project/generators';
 import { isFontPath, fontLicenses } from '@elabora/core/project/fonts';
@@ -80,11 +82,13 @@ export interface BuildOptions {
   // it, since the course runs without what they ask; errors of the course itself (format,
   // references, components, objects) still do.
   preview?: boolean;
-  // What the build makes (docs/decisions.md D41): scorm12 (default), a SCORM 1.2 package for LMSs;
-  // web, a module for a plain web server (<course>-<version>-web/ and its ZIP): no imsmanifest.xml,
-  // no LMS profile or LMS rule, its own index.html (description, sharing image, noindex).
+  // What the build makes (docs/decisions.md D41, docs/delivery.md): a package for LMSs in a delivery
+  // format (default: the module's, course.json delivery.format, else the one Elabora picks for its
+  // LMSs, @elabora/core lms/formats.ts), or web, a module for a plain web server
+  // (<course>-<version>-web/ and its ZIP): no LMS file, profile or rule, its own index.html
+  // (description, sharing image, noindex).
   target?: BuildTarget;
-  web?: WebBuildOptions; // the web target's settings (refused with scorm12)
+  web?: WebBuildOptions; // the web target's settings (refused for an LMS package)
   // A SCORM package's navigation: authored (default, the course's rules) or free (every screen open
   // from the outline and Next, nothing to do or hear first: the Aperçu's « Déverrouiller la
   // progression »). A module for the web says it in web.navigation.
@@ -108,23 +112,23 @@ export const WEB_NAVIGATION: readonly WebNavigation[] = ['authored', 'free'];
 
 // The target and its settings, checked: a wrong value is a caller's mistake (the CLI, the MCP server
 // and the engine check what people and agents give them first).
-function targetOf(options: BuildOptions): { target: BuildTarget; web: Required<Pick<WebBuildOptions, 'progress' | 'navigation' | 'noindex'>> & Pick<WebBuildOptions, 'url' | 'image' | 'review'> | null } {
-  const target = options.target ?? 'scorm12';
-  if (target !== 'scorm12' && target !== 'web') throw new TypeError(`target is scorm12 or web (not ${JSON.stringify(target)})`);
+function targetOf(options: BuildOptions): { format: DeliveryFormat | null; web: Required<Pick<WebBuildOptions, 'progress' | 'navigation' | 'noindex'>> & Pick<WebBuildOptions, 'url' | 'image' | 'review'> | null } {
+  const target = options.target;
+  if (target !== undefined && target !== 'web' && !isDeliveryFormat(target)) throw new TypeError(`target is ${DELIVERY_FORMATS.join(', ')} or web (not ${JSON.stringify(target)})`);
   if (target !== 'web') {
     if (options.web !== undefined) throw new TypeError('web settings are for the web target (target: "web")');
     if (options.navigation !== undefined && !WEB_NAVIGATION.includes(options.navigation)) throw new TypeError(`navigation is authored or free (not ${JSON.stringify(options.navigation)})`);
-    return { target, web: null };
+    return { format: target ?? null, web: null };
   }
   if (options.navigation !== undefined) throw new TypeError('a module for the web says its navigation in web.navigation');
-  if (options.profiles?.length) throw new TypeError('LMS profiles are for the scorm12 target: a module for the web reports to no LMS');
+  if (options.profiles?.length) throw new TypeError('LMS profiles are for LMS packages: a module for the web reports to no LMS');
   const review = options.web?.review;
   if (review !== undefined && (typeof review !== 'object' || review === null || !Array.isArray(review.origins) || !review.origins.every((origin) => typeof origin === 'string'))) throw new TypeError('web review is { origins: string[] }');
   const defaults = review ? WEB_REVIEW_DEFAULTS : { ...WEB_DEFAULTS, noindex: false };
   const { progress = defaults.progress, navigation = defaults.navigation, noindex = defaults.noindex, url, image } = options.web ?? {};
   if (!WEB_PROGRESS.includes(progress)) throw new TypeError(`web progress is local or none (not ${JSON.stringify(progress)})`);
   if (!WEB_NAVIGATION.includes(navigation)) throw new TypeError(`web navigation is authored or free (not ${JSON.stringify(navigation)})`);
-  return { target, web: { progress, navigation, noindex: noindex === true, ...(url !== undefined ? { url } : {}), ...(image !== undefined ? { image } : {}), ...(review ? { review: { origins: [...review.origins] } } : {}) } };
+  return { format: null, web: { progress, navigation, noindex: noindex === true, ...(url !== undefined ? { url } : {}), ...(image !== undefined ? { image } : {}), ...(review ? { review: { origins: [...review.origins] } } : {}) } };
 }
 
 // The build stopped (validation or packaging errors): nothing was written but the lock.
@@ -161,9 +165,13 @@ export type BuildResult = BuildFailure | BuildSuccess;
 export type { BuildReport };
 
 export async function build(dir: string, options: BuildOptions = {}): Promise<BuildResult> {
-  const { target, web } = targetOf(options);
+  const { format: asked, web } = targetOf(options);
   const project = loadProjectFromDir(dir);
   const profiles = web ? [] : targetProfileIds(project.course, options.profiles);
+  // The package's format: the one asked for, else the module's (course.json delivery.format, else
+  // the best for its LMSs).
+  const choice: FormatChoice | null = web ? null : courseFormat(asked ? { delivery: { ...project.course?.delivery, format: asked } } : project.course, options.profiles);
+  const target: BuildTarget = choice ? choice.format : 'web';
   const validation = validateProject(project, { profiles, release: !!options.release, target });
   const { course, plan } = project;
   const stops = (items: readonly Diagnostic[]) => items.some((d) => d.severity === 'error' && !d.waived && !(options.preview && d.rule));
@@ -297,6 +305,9 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   // The review bridge ships in review builds only: every other build is the same, byte for byte.
   if (review) for (const [name, content] of Object.entries(await reviewFiles({ debug: options.debug }))) files.set(name, Buffer.from(content));
 
+  // A package for an LMS in another format than SCORM 1.2 says it in its course data (SCORM 1.2's
+  // keeps its bytes).
+  const lmsData: LmsDelivery | undefined = choice && choice.format !== 'scorm12' ? { format: choice.format } : undefined;
   const delivery: WebDelivery | undefined = web ? { target: 'web', progress: web.progress, navigation: web.navigation, ...(review ? { review } : {}) } : undefined;
   // A SCORM package with free navigation (the Aperçu unlocked); the web target's is in delivery.
   const free = !web && options.navigation === 'free' ? { navigation: 'free' as const } : {};
@@ -307,7 +318,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     screens: [...project.screens.entries()].sort(), objects: [...usedObjects].sort().map((id) => [id, project.objects.get(id)?.manifest, project.objects.get(id)?.code]),
     narration: tracks.size ? [...tracks.values()].map((track) => [track.name, track.key]) : undefined,
     dialogueLines: dialogueLines.lines.length ? dialogueLines.lines.map((line) => [line.path, line.hash, line.mouth]) : undefined,
-    delivery, ...free,
+    delivery, ...free, ...(lmsData ? { lms: lmsData } : {}),
     languages: others.length ? languages.map((language) => [language, fileHash(project.files, `translations/${language}.xlf`) ?? null, [...(otherTracks.get(language)?.values() ?? [])].map((track) => [track.name, track.key]), ...(otherLines.get(language)?.lines.length ? [otherLines.get(language)!.lines.map((line) => [line.path, line.hash, line.mouth])] : [])]) : undefined
   })).slice(0, 16);
   const several = others.length ? { languages } : {};
@@ -318,6 +329,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     return { dialogueAudio: (screen: string, line: string) => shipped.get(`${screen}/${line}`) };
   };
   const data: CompiledCourse = compileCourseData(project, keys, {
+    ...(lmsData ? { lms: lmsData } : {}),
     buildId, ...assetPathOf, interfaceSounds: interfaceSettings, ...linesOf(dialogueLines),
     ...(tracks.size ? { narration: (screen: string, layer?: string) => tracks.get(trackName(screen, layer ?? null))?.track } : {}),
     ...(delivery ? { delivery } : {}), ...free, ...ownLock, ...several
@@ -340,7 +352,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   }
   if (design.css) files.set('elabora/theme.css', Buffer.from(design.css));
   files.set('index.html', Buffer.from(indexHtml(data, { themeCss: !!design.css, review: !!review, ...(share ? { web: { ...share.head, description: course.description } } : {}) })));
-  if (!web) files.set('imsmanifest.xml', Buffer.from(scorm12Manifest(course, [...files.keys(), ...media.keys()])));
+  if (choice) for (const [name, text] of packageManifests(choice.format, course, [...files.keys(), ...media.keys()], { edition: choice.edition })) files.set(name, Buffer.from(text));
 
   // The author's sources are never published (D49). The validator refuses whatever points into
   // sources/; this holds whatever path a file took: no entry is under sources/, none is read there.
@@ -356,7 +368,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   // Package rules of the target profiles (checklist item 8). An LMS of delivery.lms that no profile
   // has (E_LMS_UNKNOWN) does not stop a preview: it is left out. A module for the web has none.
   const targets = web ? [] : resolveProfiles(profiles.filter((id) => id === 'all' || listProfiles().some((profile) => profile.id === id)));
-  const limits = scorm12Limits(targets);
+  const limits = deliveryLimits(targets, choice?.format ?? 'scorm12');
   for (const name of [...files.keys(), ...media.keys()]) {
     if (!PORTABLE.test(name)) reporter.emit('E_FILENAME_NOT_PORTABLE', { file: name, message: `File name "${name}" is not portable.` });
     const extension = path.extname(name).toLowerCase();
@@ -413,7 +425,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   const model = { ...buildStateModel(project, keys, lock), ...(others.length ? { languages } : {}) };
   const report = buildReport({
     dialogueVoices: dialogueLines.lines,
-    project, course, plan, registry, profiles: targets, keys: stateKeys, target, web: web && share ? { progress: web.progress, navigation: web.navigation, noindex: web.noindex, url: share.head.url ?? null, image: share.image?.path ?? null, ...(review ? { review: { origins: review.origins } } : {}) } : null, suspendDataWorstCase: worstCaseLength(model), data,
+    project, course, plan, registry, profiles: targets, keys: stateKeys, target, choice, web: web && share ? { progress: web.progress, navigation: web.navigation, noindex: web.noindex, url: share.head.url ?? null, image: share.image?.path ?? null, ...(review ? { review: { origins: review.origins } } : {}) } : null, suspendDataWorstCase: worstCaseLength(model), data,
     pkg: { sha256: packageHash, bytes: zipPlan.size, files: zipPlan.entries.length, uncompressedBytes: zipPlan.uncompressed },
     media: packaged.media.length ? { quality, files: packaged.media.map((m) => ({ asset: `assets/${m.name}`, path: m.path, bytes: m.file && fs.existsSync(m.file) ? fs.statSync(m.file).size : 0, rendition: m.rendition })) } : null,
     narration: narration.tracks.length || narration.silent.length || dialogueLines.lines.length ? (() => {
@@ -647,8 +659,9 @@ interface ReportInput {
   pkg: BuildReport['package'];
   media: BuildReport['media'] | null;
   narration: BuildReport['narration'] | null;
-  limits: Scorm12Limits;
+  limits: DeliveryLimits;
   target: BuildTarget;
+  choice: FormatChoice | null; // the package's format and why (none for the web target)
   web: ReportWeb | null;
   release: boolean;
   diagnostics: Diagnostic[];
@@ -669,7 +682,7 @@ function planValidation(project: Project): Pick<ReportPlan, 'validated' | 'chang
   };
 }
 
-function buildReport({ project, course, plan, registry, profiles, keys, suspendDataWorstCase, data, pkg, media, narration, limits, target, web, release, diagnostics, licenses, languages, dialogueVoices }: ReportInput): BuildReport {
+function buildReport({ project, course, plan, registry, profiles, keys, suspendDataWorstCase, data, pkg, media, narration, limits, target, choice, web, release, diagnostics, licenses, languages, dialogueVoices }: ReportInput): BuildReport {
   const flat = (blocks: CompiledBlock[] | undefined): CompiledBlock[] => (blocks || []).flatMap((block) => [block, ...flat(block.blocks)]);
   const uses = new Map<string, number>();
   for (const screen of data.screens) {
@@ -706,6 +719,7 @@ function buildReport({ project, course, plan, registry, profiles, keys, suspendD
     elabora: ELABORA_VERSION,
     target,
     ...(web ? { web } : {}),
+    ...(choice ? { delivery: { format: choice.format, ...(choice.edition ? { edition: choice.edition } : {}), name: formatName(choice.format, choice.edition), how: choice.how, why: choice.why, lms: choice.lms } } : {}),
     release,
     course: { id: data.id, title: data.title, version: data.version, language: data.language },
     ...(languages ? { languages } : {}),
@@ -713,7 +727,7 @@ function buildReport({ project, course, plan, registry, profiles, keys, suspendD
     package: pkg,
     ...(media ? { media } : {}),
     ...(narration ? { narration } : {}),
-    structure: structureFingerprint(course),
+    structure: structureFingerprint(course, choice?.format ?? 'scorm12', choice?.edition),
     stateKeys: keys,
     budget: web ? { suspendDataWorstCase, suspendDataLimit: null, source: web.progress === 'local' ? 'web: the browser\'s localStorage, no LMS limit' : 'web: nothing kept' } : { suspendDataWorstCase, suspendDataLimit: limits.suspendDataMax, source: limits.suspendDataSource },
     profiles: profiles.map((profile) => ({ id: profile.id, name: profile.name, documentedAt: profile.documentedAt, updateFamily: profile.update?.family ?? null, toMeasure: profile.toMeasure })),

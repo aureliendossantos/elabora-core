@@ -2,7 +2,7 @@
 
 ## Package
 
-`elabora build` writes three files to the course's `dist/` folder: `<id>-<version>-scorm12.zip`, its `.report.json` (the build report for tools) and its `.proof.md` (the proof dossier). The ZIP is deterministic. It holds:
+SCORM 1.2 is the format Elabora picks when the course names no LMS, and for Moodle, Totara and Teach Up ([Delivery formats](delivery.md)). `elabora build` writes three files to the course's `dist/` folder: `<id>-<version>-scorm12.zip`, its `.report.json` (the build report for tools) and its `.proof.md` (the proof dossier). The ZIP is deterministic. It holds:
 
 ```
 imsmanifest.xml               SCORM 1.2, one SCO, schemaversion 1.2, masteryscore when set
@@ -34,7 +34,7 @@ The last column gives the line of the [LMS checklist](diagnostics.md#rules) (LMS
 | Time | `cmi.core.session_time` (HHHH:MM:SS.SS) at every commit. | 14 |
 | State | Compact keyed JSON. The build checks its worst case against the strictest target profile. | 3, 7 |
 
-Version 0.1 delivers SCORM 1.2 only. `cmi.objectives` (SuccessFactors requires ids created beforehand), SCORM 2004, cmi5, xAPI, LTI and dispatch or proxy mode come later.
+Other formats: [Delivery formats](delivery.md) (SCORM 2004, and how Elabora picks a format). `cmi.objectives` (SuccessFactors requires ids created beforehand), LTI and dispatch or proxy mode come later.
 
 ## LMS profiles
 

@@ -332,13 +332,18 @@ export type Course = {
      */
     heartbeatSeconds?: number;
   };
-  /** How the SCORM package is delivered. */
+  /** How the package for the LMS is delivered: its format, its LMSs, the quality of its media. */
   delivery?: {
     /**
      * Preset of the video, audio and raster images shipped in the package (elabora build --media-quality overrides it for one build). high: the masters the project keeps (video H.264 long side ≤ 1920, CRF 21, ≤ 8 Mb/s, AAC 160 kb/s; audio AAC 160 kb/s; images long side ≤ 3200, WebP q 88). medium: renditions encoded from the masters (video ≤ 1280, CRF 24, ≤ 4 Mb/s, AAC 128 kb/s; audio AAC 128 kb/s; images ≤ 2400, q 80). low: smaller renditions for LMSs with tight size limits (video ≤ 854, CRF 27, ≤ 1.5 Mb/s, ≤ 30 fps, AAC 96 kb/s; audio AAC 96 kb/s; images ≤ 1600, q 72). A rendition that would be larger than its master ships the master; SVG images are never re-encoded. E_PACKAGE_TOO_LARGE says what the lower presets would weigh.
      * @default 'high'
      */
     mediaQuality?: MediaQuality;
+    /**
+     * The package's format for the LMS. auto: Elabora picks it, the best of the LMS's profile (delivery.lms), else SCORM 1.2, which every LMS takes. scorm12: SCORM 1.2, one SCO. scorm2004: SCORM 2004 4th edition (3rd for an LMS that stops there), one SCO without sequencing: completion and success apart, a scaled score, 64,000 characters of suspend data. elabora build --format overrides it for one build.
+     * @default 'auto'
+     */
+    format?: 'auto' | 'scorm12' | 'scorm2004';
     /** The LMS the course is delivered to: ids of LMS profiles (elabora profiles lists them). elabora build, validate and test target them when no --profile is given: the package must fit their limits (size, files, suspend data). Without it the course targets an unknown LMS: the strictest documented behaviour, and package limits only warn, naming the LMSs that would refuse the package. */
     lms?: string[];
   };
@@ -3876,6 +3881,14 @@ export type LmsProfile = {
     xapi?: boolean | 'plugin' | 'discouraged' | null;
     lti13?: boolean | 'partners-only' | null;
     aicc?: boolean | null;
+  };
+  /** The delivery format Elabora picks for this LMS when the module names it alone (course.json delivery.lms) and leaves delivery.format to auto. Without it: SCORM 1.2. */
+  bestFormat?: {
+    format: 'scorm12' | 'scorm2004';
+    /** SCORM 2004: the edition the manifest declares (4th by default). */
+    edition?: '3rd' | '4th';
+    /** Why this format, from the sources. */
+    why: string;
   };
   launch: {
     default: 'iframe' | 'popup' | 'popup-chain' | 'nested-iframe' | 'new-tab';

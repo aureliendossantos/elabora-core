@@ -84,7 +84,7 @@ export interface ValidationResult {
 // files (@elabora/node: validateDir for a folder).
 //   profiles: LMS profile ids the course targets (default: course.json delivery.lms, else ["unknown"], the strictest values)
 //   release:  true for client deliveries: the plan must be approved
-//   target:   scorm12 (default) or web: a module for the web is checked against no LMS (D41)
+//   target:   a delivery format (default: the module's, lms/formats.ts) or web: a module for the web is checked against no LMS (D41)
 export function validateProject(project: Project, options: ValidationOptions = {}): ValidationResult {
   // JavaScript callers may still pass a folder.
   if (typeof project === 'string') throw new TypeError('validateProject takes a loaded project: use validateDir or loadProjectFromDir from @elabora/node for a folder.');

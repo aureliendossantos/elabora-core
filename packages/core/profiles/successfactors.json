@@ -38,6 +38,11 @@
     "lti13": null,
     "aicc": true
   },
+  "bestFormat": {
+    "format": "scorm2004",
+    "edition": "4th",
+    "why": "SCORM 2004 2nd and 4th editions are documented (the 3rd only within the 2nd's features); 2004 reports completion and success apart, where SCORM 1.2 needs the item's status mapping (Passed/Failed or Complete/Failed)."
+  },
   "launch": {
     "default": "popup-chain",
     "modes": [

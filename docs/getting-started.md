@@ -37,7 +37,7 @@ node bin/elabora.js build examples/canal-locks --profile moodle,successfactors
 
 The build writes three files to the course's `dist/` folder:
 
-- `canal-locks-0.1.0-scorm12.zip`, the SCORM 1.2 package for your LMS;
+- `canal-locks-0.1.0-scorm12.zip`, the package for your LMS, in SCORM 1.2: the course names no LMS, and every LMS takes SCORM 1.2 ([Delivery formats](delivery.md): with `delivery.lms` set, Elabora picks the best format for that LMS);
 - `canal-locks-0.1.0-scorm12.report.json`, the build report for tools;
 - `canal-locks-0.1.0-scorm12.proof.md`, the proof dossier: plan coverage screen by screen, tracking, accessibility and the checks left to a person.
 
@@ -137,7 +137,7 @@ Elabora finds ffmpeg and ffprobe on the `PATH`. Set `ELABORA_FFMPEG` and `ELABOR
 
 ## What 0.1 does not do yet
 
-- Elabora delivers SCORM 1.2 for LMSs ([D2](decisions/D02.md)) and a web target for static hosting ([D41](decisions/D41.md)). cmi5, xAPI, LTI and dispatch come later.
+- Elabora delivers SCORM 1.2 and SCORM 2004 for LMSs ([D2](decisions/D02.md), [Delivery formats](delivery.md)) and a web target for static hosting ([D41](decisions/D41.md)). cmi5, xAPI, LTI and dispatch come later.
 - The emulator reproduces documented LMS behaviour on top of scorm-again. Before delivery, still run a smoke test in SCORM Cloud and a test learner in the client's LMS. Each profile lists the values still to measure.
 - Firefox and WebKit need their binaries: `pnpm exec playwright-core install firefox webkit`. WebKit passed the LMS and object probes on macOS, with snapshots that differ from Chromium's. On recent macOS, the protection of Firefox's app-data folder may block it at startup.
 - Storyline and Rise imports are in beta ([D47](decisions/D47.md)).

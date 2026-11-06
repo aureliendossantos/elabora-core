@@ -1025,7 +1025,7 @@ Write a dialogue block for the client to dist/&lt;course&gt;-&lt;block&gt;.&lt;t
 
 ### `elabora_build`
 
-Validate and compile the SCORM 1.2 package and its proof dossier into dist/. Waits for media jobs under way. mediaQuality (default: course.json delivery.mediaQuality, else high) ships renditions of the media below high, to fit LMS size limits (E_PACKAGE_TOO_LARGE gives the size at each quality). target "web": a module for a plain web server instead, without LMS (a folder to serve and its ZIP, dist/&lt;course&gt;-&lt;version&gt;-web), with the settings of web; profiles are refused there.
+Validate and compile the package for the LMS and its proof dossier into dist/. Its format: format, else the module's (course.json delivery.format), else the best for the module's LMSs (delivery.lms), else SCORM 1.2, which every LMS takes; the result says it (delivery). Waits for media jobs under way. mediaQuality (default: course.json delivery.mediaQuality, else high) ships renditions of the media below high, to fit LMS size limits (E_PACKAGE_TOO_LARGE gives the size at each quality). target "web": a module for a plain web server instead, without LMS (a folder to serve and its ZIP, dist/&lt;course&gt;-&lt;version&gt;-web), with the settings of web; profiles are refused there.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -1034,7 +1034,8 @@ Validate and compile the SCORM 1.2 package and its proof dossier into dist/. Wai
 | `profiles` | string[] |  | LMS profile ids (elabora_list_profiles). Default: course.json delivery.lms, else ["unknown"]: no LMS chosen, the strictest values, and package limits only warn. |
 | `release` | boolean |  |  |
 | `mediaQuality` | "high" \| "medium" \| "low" |  |  |
-| `target` | "scorm12" \| "web" |  | scorm12 (default): a package for LMSs. web: a module for a plain web server. |
+| `target` | "lms" \| "web" |  | lms (default): a package for LMSs. web: a module for a plain web server. |
+| `format` | "scorm12" \| "scorm2004" |  | The package's format for this build (lms target): scorm12, scorm2004. Default: the module's. |
 | `web` | object |  | Settings of the web target (target "web" only). A publication: the defaults. A showcase: { progress: "none", navigation: "free" }. A review link: { review: { origins: ["https://revue.elabora.studio"] } }. |
 | `languages` | "all" |  | all: one package of every language (D59): the course's own and each translation that is ready and approved, which learners switch in place (the player's language item). Not with language. |
 

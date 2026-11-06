@@ -433,7 +433,11 @@ test('suspend data budget follows the strictest selected profile', () => {
   for (let i = 0; i < 6; i++) course.variables.push({ id: `note${i}`, type: 'string', default: '', maxLength: 400 });
   writeJSON(dir, 'course.json', course);
   assert.ok(codes(validateDir(dir, { profiles: ['moodle'] }).diagnostics).includes('E_SUSPEND_DATA_BUDGET'));
-  assert.ok(!codes(validateDir(dir, { profiles: ['successfactors'] }).diagnostics).includes('E_SUSPEND_DATA_BUDGET'));
+  assert.ok(!codes(validateDir(dir, { profiles: ['successfactors'], target: 'scorm12' }).diagnostics).includes('E_SUSPEND_DATA_BUDGET'));
+  // SuccessFactors' SCORM 2004 (the format Elabora picks for it) documents 4,000 characters: the
+  // finding says SCORM 1.2 keeps 64,000 there.
+  const budget = validateDir(dir, { profiles: ['successfactors'] }).diagnostics.find((d) => d.code === 'E_SUSPEND_DATA_BUDGET');
+  assert.match(budget?.message ?? '', /accepts 4000 in SCORM 2004\. In SCORM 1\.2 it accepts 64000: set course\.json delivery\.format to scorm12\./);
 });
 
 test('waivers turn a pedagogical finding into an approved exception', () => {
