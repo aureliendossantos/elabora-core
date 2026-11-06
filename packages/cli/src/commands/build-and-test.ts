@@ -137,6 +137,7 @@ const buildCommand = defineCommand({
     const languages = languagesFlag(flags.languages);
     if (languages === null) { console.error(`--languages is all or a list of language tags such as en,fr (not "${flags.languages}").`); return 2; }
     if (flags.packages !== undefined && flags.packages !== 'one' && flags.packages !== 'each') { console.error(`--packages is one or each (not "${flags.packages}").`); return 2; }
+    if (flags.packages === 'each' && flags.target === 'web') { console.error('--packages each: one SCORM package per language; a module for the web holds every language in one.'); return 2; }
     const target = flags.target ?? 'scorm12';
     if (target !== 'scorm12' && target !== 'web') { console.error(`--target is scorm12 or web (not "${target}").`); return 2; }
     const webFlags = (['progress', 'navigation', 'url', 'image', 'review-origin'] as const).filter((name) => flags[name] !== undefined).map((name) => `--${name}`).concat(flags.noindex ? ['--noindex'] : []);

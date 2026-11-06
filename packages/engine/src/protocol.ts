@@ -396,6 +396,7 @@ export interface BuildView {
   warnings: Diagnostic[];    // what the build found that did not stop it (W_PACKAGE_TOO_LARGE_FOR_SOME_LMS…), waived and ignored ones left out
   change: ChangeView | null; // elabora.lock.json as the build wrote it (new state keys), a system change
   version: string | null;    // the publish version (ok)
+  languages: string[] | null; // a package of several languages (D59, D71): its languages, the course's own first
 }
 
 // A language's package (the app's « Versions »): the translated course generated as `elabora translate

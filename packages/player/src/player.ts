@@ -580,9 +580,8 @@ function useCourse(data: CourseData) {
   const progress = courseState.encode();
   const status = courseState.lmsStatus;
   course = data;
-  const kept = courseState.st.language;
+  // The language the learner chose travels in the progress (its "g").
   courseState = createCourseState(course, { suspendData: progress, initialStatus: status, onChange: () => syncSoon() });
-  courseState.st.language = kept;
 }
 async function switchLanguage(code: string) {
   if (ended || code === course.language) return;

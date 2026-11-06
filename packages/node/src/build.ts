@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Course, Diagnostic, LmsProfile, Plan, PlanWaiver } from '@elabora/format';
 import type { Project } from '@elabora/core/project/model';
-import { moduleLanguages, packageLanguages, startLanguage } from '@elabora/core/player/config';
+import { defaultLanguageOf, moduleLanguages, packageLanguages } from '@elabora/core/player/config';
 import type { PackageLanguagesAsked } from '@elabora/core/player/config';
 import { translatedProject } from '@elabora/core/render/screen';
 import { translationPath } from '@elabora/core/i18n/translate';
@@ -318,7 +318,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     languages: others.length ? languages.map((language) => [language, fileHash(project.files, `translations/${language}.xlf`) ?? null, [...(otherTracks.get(language)?.values() ?? [])].map((track) => [track.name, track.key]), ...(otherLines.get(language)?.lines.length ? [otherLines.get(language)!.lines.map((line) => [line.path, line.hash, line.mouth])] : [])]) : undefined
   })).slice(0, 16);
   // The language learners start in (D71); the Aperçu shows « Langue » whatever the player says.
-  const start = startLanguage(course, languages);
+  const start = defaultLanguageOf(course, languages);
   const several = others.length ? { languages, ...(start && start !== course.language ? { defaultLanguage: start } : {}), ...(options.tryLanguages ? { languageMenu: true } : {}) } : {};
   const assetPathOf = assetPaths.size ? { assetPath: (name: string) => assetPaths.get(name) ?? `assets/${name}` } : {};
   const linesOf = (made: DialogueLineAudio | undefined): { dialogueAudio?: PackagedLines } => {

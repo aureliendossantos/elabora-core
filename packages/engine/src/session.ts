@@ -875,7 +875,7 @@ export class Session {
       return {
         ok: result.ok, zip, dir: result.ok && options.target === 'web' ? result.dirPath ?? null : null, size: zip ? result.report?.package.bytes ?? 0 : 0, report: result.ok ? result.reportPath : null, summary: result.summary,
         errors: result.diagnostics.filter((d) => d.severity === 'error' && !d.waived), warnings: result.diagnostics.filter((d) => d.severity === 'warning' && !d.waived && !d.ignored),
-        change: this.#changeView(seq), version
+        change: this.#changeView(seq), version, languages: result.ok ? result.report.languages ?? null : null
       };
     });
   }

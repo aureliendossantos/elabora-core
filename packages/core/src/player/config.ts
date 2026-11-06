@@ -370,7 +370,7 @@ export function deliveryLanguages(course: Pick<Course, 'delivery'> | null | unde
 
 // The language learners start in when neither they nor their LMS chose one (course.json
 // delivery.defaultLanguage, D71), when the package holds it; else the course's own.
-export function startLanguage(course: Pick<Course, 'delivery' | 'language'> | null | undefined, languages: readonly string[]): string | undefined {
+export function defaultLanguageOf(course: Pick<Course, 'delivery' | 'language'> | null | undefined, languages: readonly string[]): string | undefined {
   const value: unknown = isRecord(course?.delivery) ? (course.delivery as Record<string, unknown>).defaultLanguage : undefined;
   return typeof value === 'string' && languages.includes(value) ? value : course?.language;
 }

@@ -50,11 +50,20 @@ export async function buildLanguagePackages(dir: string, options: BuildOptions =
       if (note.kind === 'not approved') reporter.emit('W_PACKAGE_LANGUAGE_NOT_APPROVED', { file: translationPath(language), target: language, ...(options.release ? { severity: 'error' as const } : {}), message: `The ${language} package is made, ${note.lacks.join('; ')}: tell the author, who approves it (Traduction › Versions, or through you with their yes).` });
       else if (note.kind === 'incomplete') reporter.emit('W_PACKAGE_LANGUAGE_INCOMPLETE', { file: translationPath(language), target: language, message: `The ${language} package is made with ${note.lacks.join('; ')}: learners read those texts in ${own}.` });
     }
-    await withCourseLanguage(dir, { language, allowMissing: true }, async (root, translation) => {
-      const result = await build(root, { ...each, out, languages: [] });
-      const diagnostics = [...reporter.items, ...result.diagnostics];
-      packages.push({ language, translation, result: { ...result, diagnostics, summary: summarize(diagnostics) } });
-    });
+    // A translation the core refuses (a text that loses its maths, a link…) stops its own package
+    // only: the others are made, and it says why.
+    // A release that needs this translation approved stops before anything is made.
+    if (reporter.items.some((d) => d.severity === 'error')) { packages.push({ language, translation: null, result: { ok: false, diagnostics: reporter.items, summary: summarize(reporter.items) } }); continue; }
+    try {
+      await withCourseLanguage(dir, { language, allowMissing: true }, async (root, translation) => {
+        const result = await build(root, { ...each, out, languages: [] });
+        const diagnostics = [...reporter.items, ...result.diagnostics];
+        packages.push({ language, translation, result: { ...result, diagnostics, summary: summarize(diagnostics) } });
+      });
+    } catch (error) {
+      reporter.emit('E_PACKAGE_LANGUAGE_REFUSED', { file: translationPath(language), target: language, message: `The ${language} package could not be made: ${error instanceof Error ? error.message : String(error)}` });
+      packages.push({ language, translation: null, result: { ok: false, diagnostics: reporter.items, summary: summarize(reporter.items) } });
+    }
   }
   return packages;
 }
