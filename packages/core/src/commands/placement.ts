@@ -13,8 +13,8 @@ export interface PlaceBlockArgs extends Placement {
   block: string;
   // Where it sits; null: back in the flow, at its anchor.
   place: Block['place'] | null;
-  // Its anchor's slot in the screen's layout (null: the layout's default slot); with after or
-  // position, its rank. Left out: the anchor stays.
+  // Its anchor's slot in the screen's layout (null: the layout's default slot); with after (null: first
+  // of the screen's list) or position, its rank. Left out: the anchor stays.
   slot?: string | null;
 }
 
@@ -26,7 +26,10 @@ export function placeBlock(context: CommandContext, args: PlaceBlockArgs): Comma
   if (anchored) {
     // In its list already: after itself means where it is.
     const after = args.after === args.block ? undefined : args.after;
-    const moved = moveBlock(context, { block: args.block, ...(after !== undefined ? { after } : {}), ...(args.position !== undefined ? { position: args.position } : {}), ...(after === undefined && args.position === undefined ? { after: previousOf(context.project().screens.get(found.screenId)!.data, args.block) } : {}), ...(args.slot !== undefined ? { slot: args.slot } : {}) });
+    // Without a rank, it keeps its own: after the block before it, or first (after null is the end).
+    const kept = after === undefined && args.position === undefined ? previousOf(context.project().screens.get(found.screenId)!.data, args.block) : undefined;
+    const rank = after ? { after } : after === null && args.position === undefined ? { position: 0 } : args.position !== undefined && args.position !== null ? { position: args.position } : kept ? { after: kept } : { position: 0 };
+    const moved = moveBlock(context, { block: args.block, ...rank, ...(args.slot !== undefined ? { slot: args.slot } : {}) });
     ops.push(...(moved.ops ?? []));
   }
   const file = found.file;

@@ -23,6 +23,8 @@ export interface PlacementRect { x: number; y: number; width: number; height: nu
 // each, where a block placed there would start (y, in px of the viewport).
 export interface FlowAnchors {
   slot: string | null;
+  // The layout's default slot: its blocks say no slot.
+  default?: true;
   rect: PlacementRect;
   // after: the block of the list the place follows (null: the start of the list).
   places: { after: string | null; y: number }[];
@@ -64,6 +66,7 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
   const [minWidth] = size(course.presentation?.fit?.minimum, [1280, 720]);
   const slides = () => app.dataset.presentation === 'slides';
   let places = new Map<string, PlaceData>();
+  let defaultSlot: string | null = null;
   const lifts = new Map<string, PlacementRect | { place: PlaceData }>();
   let on = false;
   let frameBox: PlacementRect | null = null;
@@ -81,6 +84,7 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
   const own = (node: HTMLElement) => !node.parentElement?.closest('.t-block[data-block]') && !node.closest('dialog');
 
   function sync(screen: ScreenData | undefined) {
+    defaultSlot = screen?.layout?.defaultSlot ?? null;
     places = new Map((screen?.blocks ?? []).filter((block): block is BlockData & { place: PlaceData } => !!block.place).map((block) => [block.id, block.place]));
     for (const node of main.querySelectorAll<HTMLElement>('.t-block[data-t-place]')) if (!places.has(node.dataset.block ?? '')) unmark(node);
     for (const id of [...lifts.keys()]) if (!nodeOf(id)) lifts.delete(id);
@@ -112,7 +116,8 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
     const index = node ? children.indexOf(node) : -1;
     const next = children.slice(index + 1).find(inFlow);
     if (next) return docBox(next).y - parseFloat(getComputedStyle(next).marginTop || '0');
-    const previous = children.slice(0, Math.max(0, index)).reverse().find(inFlow);
+    // The block itself, when it is in the flow (the place after it), else the one before it.
+    const previous = children.slice(0, index + 1).reverse().find(inFlow);
     if (previous) return docBox(previous).y + previous.offsetHeight + parseFloat(getComputedStyle(previous).marginBottom || '0') + rowGap(container);
     return docBox(container).y + container.clientTop + parseFloat(getComputedStyle(container).paddingTop || '0');
   }
@@ -197,7 +202,8 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
       const box = container.getBoundingClientRect();
       const places: FlowAnchors['places'] = [{ after: null, y: anchorY(container, null) }];
       for (const block of flow) places.push({ after: block.dataset.block ?? null, y: anchorY(container, block) });
-      return { slot: container.matches('.t-slot') ? container.dataset.slot ?? null : null, rect: { x: round(box.x), y: round(box.y), width: round(box.width), height: round(box.height) }, places: places.map((place) => ({ ...place, y: round(place.y - scrollY) })) };
+      const slot = container.matches('.t-slot') ? container.dataset.slot ?? null : null;
+      return { slot, ...(slot !== null && slot === defaultSlot ? { default: true as const } : {}), rect: { x: round(box.x), y: round(box.y), width: round(box.width), height: round(box.height) }, places: places.map((place) => ({ ...place, y: round(place.y - scrollY) })) };
     });
   }
 

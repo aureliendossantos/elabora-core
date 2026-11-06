@@ -346,9 +346,20 @@ function placedIssues(): { block: string; covers: string[]; overflow: number; ta
   const main = document.getElementById('t-main');
   const placed = main ? [...main.querySelectorAll<HTMLElement>('.t-block[data-t-place]')] : [];
   if (!main || !placed.length) return [];
-  const TEXT = 'h1, h2, h3, h4, h5, h6, p, li, figcaption, blockquote, td, th, dt, dd, label, button, summary, .t-statement-text';
   const drawn = (node: Element) => node.getClientRects().length > 0 && getComputedStyle(node).visibility !== 'hidden';
-  const texts = (node: Element) => [...node.querySelectorAll(TEXT)].filter((text) => text.textContent?.trim() && drawn(text)).map((text) => text.getBoundingClientRect());
+  // Its lines of text, not its boxes: a short line leaves the rest of a paragraph free.
+  const texts = (node: Element) => {
+    const rects: DOMRect[] = [];
+    const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+      const parent = text.parentElement;
+      if (!text.textContent?.trim() || !parent || !drawn(parent) || parent.closest('[aria-hidden="true"], .t-sr-only')) continue;
+      range.selectNodeContents(text);
+      rects.push(...range.getClientRects());
+    }
+    return rects;
+  };
   const blocks = [...main.querySelectorAll<HTMLElement>('.t-block[data-block]')].filter((node) => !node.parentElement?.closest('.t-block[data-block]') && drawn(node));
   const z = (node: Element) => Number(getComputedStyle(node).zIndex) || 0;
   const title = [...main.querySelectorAll<HTMLElement>('article.t-screen h1')].find((node) => !node.closest('.t-block') && drawn(node));
@@ -358,7 +369,7 @@ function placedIssues(): { block: string; covers: string[]; overflow: number; ta
   return placed.filter(drawn).map((node) => {
     const box = node.getBoundingClientRect();
     const covers = blocks.filter((other) => other !== node && (!other.hasAttribute('data-t-place') || z(other) < z(node)) && texts(other).some((text) => meets(text, box))).map((other) => other.dataset.block ?? '');
-    if (title && meets(title.getBoundingClientRect(), box)) covers.unshift('title');
+    if (title && texts(title).some((line) => meets(line, box))) covers.unshift('title');
     const past = node.hasAttribute('data-t-place-height') ? Math.max(0, node.scrollHeight - node.clientHeight) : 0;
     const overflow = Math.round(Math.max(past, slides ? box.bottom - area.bottom : 0));
     const button = node.matches('.t-block--button') ? [...node.querySelectorAll('button, a')].filter(drawn).map((control) => control.getBoundingClientRect()) : [];

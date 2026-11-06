@@ -34,7 +34,7 @@ import type { Tooltip } from './tooltip.ts';
 import type { DisplayPrefs } from './display.ts';
 import { pageFramesPort } from './frames.ts';
 import { isRecord } from './json.ts';
-import { blockLayouts, rectOf, round, scrollFrom, textLayouts } from './layout-report.ts';
+import { blockLayouts, coveredTexts, rectOf, round, scrollFrom, textLayouts } from './layout-report.ts';
 import { GLIDE } from './screen-objects.ts';
 import type { CourseData, ObjectDefinition, PlaceData, ScreenData } from './course-data.ts';
 import { PLAYER_PREVIEW_PROTOCOL } from './canvas-protocol.ts';
@@ -641,7 +641,8 @@ function layout(): LayoutMessage {
     const node = document.querySelector(`#t-main .t-block[data-block="${CSS.escape(block.id)}"]`);
     if (!node?.hasAttribute('data-t-place')) return block;
     const anchor = lifted.has(block.id) ? null : placement?.anchorOf(block.id);
-    return { ...block, ...(lifted.has(block.id) ? { lifted: true as const } : { placed: true as const }), ...(anchor ? { anchor } : {}) };
+    const covers = lifted.has(block.id) || !(node instanceof HTMLElement) ? [] : coveredTexts(node);
+    return { ...block, ...(lifted.has(block.id) ? { lifted: true as const } : { placed: true as const }), ...(anchor ? { anchor } : {}), ...(covers.length ? { covers } : {}) };
   });
   const article = document.querySelector('#t-main > article.t-screen');
   const frame = placement?.frame();

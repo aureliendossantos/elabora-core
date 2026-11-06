@@ -169,6 +169,8 @@ export interface BlockLayout {
   // (where it starts, across its slot), lifted: the editor drags it.
   placed?: true;
   anchor?: { x: number; y: number; width: number };
+  // What it lies over at this window: the blocks whose lines of text it covers ('title': the screen's).
+  covers?: string[];
   lifted?: true;
 }
 
@@ -176,6 +178,8 @@ export interface BlockLayout {
 // first block shown in the flow, then after each, where a block put there would start (D72).
 export interface FlowLayout {
   slot: string | null;
+  // The layout's default slot: its blocks say no slot.
+  default?: true;
   rect: LayoutRect;
   places: { after: string | null; y: number }[];
 }
