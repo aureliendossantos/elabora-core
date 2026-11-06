@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.11/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.12/component.schema.json",
   "id": "stat-line",
   "title": "Figure in a line",
   "description": "One figure that matters, large, with its unit and what it measures beside it. Lines follow one another in reading order; the marker number links a line to a numbered marker of the figure next to it.",

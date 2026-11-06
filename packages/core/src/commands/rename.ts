@@ -85,8 +85,14 @@ export function renameId(context: CommandContext, { from, to }: RenameArgs): Com
       if (kind === 'section' && section.id === from) section.id = to;
       if (kind === 'screen' && Array.isArray(section.screens)) section.screens = section.screens.map((id) => rename(id) ?? id);
     }
-    // The glossary's terms gathered from the screen (their source).
-    if (kind === 'screen') for (const entry of objectsIn(course.glossary)) if (isRecord(entry.source) && entry.source.kind === 'screen') entry.source.id = rename(entry.source.id) ?? entry.source.id;
+    // The glossary's terms gathered from the screen (their source), and the screens a term's link was
+    // removed from (unlinked).
+    if (kind === 'screen') {
+      for (const entry of objectsIn(course.glossary)) {
+        if (isRecord(entry.source) && entry.source.kind === 'screen') entry.source.id = rename(entry.source.id) ?? entry.source.id;
+        if (Array.isArray(entry.unlinked)) entry.unlinked = entry.unlinked.map((id) => rename(id) ?? id);
+      }
+    }
     draft.writeJson('course.json', course);
   }
 

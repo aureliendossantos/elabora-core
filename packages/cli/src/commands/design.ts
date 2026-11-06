@@ -18,7 +18,8 @@ const HELP = `  assets [dir] [--only <name>] [--sheet <file.png>]   Run generato
                                                       One undoable change
   player [dir] [--enable <items>] [--disable <items>] [--move <item:bar[:index]>] [--set <item.option=value>]
          [--position <bar=window|page>] [--token <player.name=value>] [--logo <asset|none>] [--reset]
-         [--link-terms [<ids>]] [--add-resource <file>…] [--title <t>] [--description <d>]
+         [--unlink-term <term:screen>] [--relink-term <term:screen>] [--add-resource <file>…] [--title <t>]
+         [--description <d>]
          [--target scorm12|web] [--json]
                                                       The learner's player (D58): its two bars of items (logo, title, progress,
                                                       spacer, outline, controls, resources, glossary, credits, display,
@@ -29,8 +30,10 @@ const HELP = `  assets [dir] [--only <name>] [--sheet <file.png>]   Run generato
                                                       controls.transcript=false, logo.plate=true, progress.parts=false,
                                                       progress.percent=false, glossary.linkTerms=false;
                                                       --token player.top.background=#FFFFFF (=default removes it).
-                                                      --link-terms links the glossary's terms (all, or the ids given) the
-                                                      first time each is in each screen. --add-resource copies any file into
+                                                      The glossary's terms are linked when the course is built, the first
+                                                      time each is in each screen: --unlink-term gateway:intro removes the
+                                                      term's link from that screen, --relink-term puts it back.
+                                                      --add-resource copies any file into
                                                       assets/resources/ and adds it to the resources, titled by --title,
                                                       else the PDF's own title, else its name (one undoable change each).
                                                       Resources, glossary, credits: elabora tools call elabora_player .
@@ -98,9 +101,16 @@ function parseMove(value: string): NonNullable<UpdatePlayerArgs['move']>[number]
   return { item, bar, ...(index !== undefined ? { index: Number(index) } : {}) } as NonNullable<UpdatePlayerArgs['move']>[number];
 }
 
+// --unlink-term gateway:intro: a term of the glossary and a screen.
+function termInScreen(flag: string, value: string): { term: string; screen: string } {
+  const match = /^([a-z][a-z0-9-]*):([a-z][a-z0-9-]*)$/.exec(value.trim());
+  if (!match) throw new ArgumentError(`${flag} ${value}: write term:screen (gateway:intro), the ids of a glossary entry and of a screen.`);
+  return { term: match[1], screen: match[2] };
+}
+
 const player = defineCommand({
   name: 'player',
-  flags: { enable: 'list', disable: 'list', move: 'list', set: 'list', position: 'list', token: 'list', logo: 'string', reset: 'boolean', 'link-terms': 'optional', 'add-resource': 'list', title: 'string', description: 'string', target: 'string', json: 'boolean' },
+  flags: { enable: 'list', disable: 'list', move: 'list', set: 'list', position: 'list', token: 'list', logo: 'string', reset: 'boolean', 'unlink-term': 'string', 'relink-term': 'string', 'add-resource': 'list', title: 'string', description: 'string', target: 'string', json: 'boolean' },
   run: ({ positionals: [dir = '.'], flags }) => reportingFailures(() => {
     const target = flags.target === 'web' ? 'web' : 'scorm12';
     const options = optionChanges(flags.set) ?? {};
@@ -114,7 +124,8 @@ const player = defineCommand({
       ...(flags.position ? { position: Object.fromEntries(flags.position.map((value) => value.split('='))) } : {}),
       ...(flags.token ? { tokens: Object.fromEntries(flags.token.map((value) => { const [name, raw = ''] = value.split('='); return [name, raw === 'default' || raw === '' ? null : /^\d+$/.test(raw) ? Number(raw) : raw]; })) } : {}),
       ...(flags.reset ? { reset: true } : {}),
-      ...(flags['link-terms'] ? { linkTerms: flags['link-terms'] === true ? true : flags['link-terms'].split(',').map((id) => id.trim()).filter(Boolean) } : {})
+      ...(flags['unlink-term'] ? { unlinkTerm: termInScreen('--unlink-term', flags['unlink-term']) } : {}),
+      ...(flags['relink-term'] ? { relinkTerm: termInScreen('--relink-term', flags['relink-term']) } : {})
     };
     // Files added to the resources first, one change each.
     const files = flags['add-resource'] ?? [];
@@ -122,18 +133,16 @@ const player = defineCommand({
     const added = files.map((file) => edit.addResource(dir, { path: file, ...(flags.title ? { title: flags.title } : {}), ...(flags.description ? { description: flags.description } : {}) }));
     const edited = Object.keys(changes).length ? edit.updatePlayer(dir, changes) : null;
     const report = playerReport(dir, target);
-    if (flags.json) { printJson(edited || added.length ? { added: added.map(({ change, resource, path, reused }) => ({ change, resource, path, reused })), ...(edited ? { change: edited.change, linked: edited.linked, unlinked: edited.unlinked, translations: edited.translations } : {}), player: report } : report); return 0; }
+    if (flags.json) { printJson(edited || added.length ? { added: added.map(({ change, resource, path, reused }) => ({ change, resource, path, reused })), ...(edited ? { change: edited.change, unlinked: edited.unlinked, translations: edited.translations } : {}), player: report } : report); return 0; }
     for (const resource of added) console.log(`✔ Added the resource « ${resource.resource.title} » (${resource.path}${resource.reused ? ', already in the course' : ''}). Undo: elabora undo --change ${resource.change?.seq ?? '?'}`);
     if (edited) {
       printFormatMigration(edited.formatMigration);
       console.log(`✔ Changed the player: ${edited.changed.join(', ')}. Undo: elabora undo --change ${edited.change?.seq ?? '?'}`);
       for (const link of edited.unlinked) console.log(`  ${link.screen}: « ${link.text} » no longer links to glossary:${link.term} (removed)`);
-      for (const link of edited.linked) console.log(`  ${link.screen}: « ${link.text} » → glossary:${link.term}`);
       for (const translation of edited.translations) {
-        const unlinked = translation.unlinked?.length ? `${translation.unlinked.length} translated text${translation.unlinked.length === 1 ? '' : 's'} unlinked too` : '';
-        const linked = translation.linked.length ? `${translation.linked.length} translated text${translation.linked.length === 1 ? '' : 's'} linked too` : '';
+        const unlinked = translation.unlinked.length ? `${translation.unlinked.length} translated text${translation.unlinked.length === 1 ? '' : 's'} unlinked too` : '';
         const stale = translation.stale.length ? `${translation.stale.length} to translate again (${translation.stale.join(', ')})` : '';
-        console.log(`  ${translation.language}: ${[unlinked, linked, stale].filter(Boolean).join('; ')}`);
+        console.log(`  ${translation.language}: ${[unlinked, stale].filter(Boolean).join('; ')}`);
       }
     }
     for (const name of ['top', 'bottom'] as const) {

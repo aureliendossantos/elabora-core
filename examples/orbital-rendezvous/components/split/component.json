@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.11/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.12/component.schema.json",
   "id": "split",
   "title": "Figure and explanation",
   "description": "The title, a figure column (a figure, its caption, a legend) and an explanation column that builds up beside it, one block under the other. Stacks on narrow screens, figure first.",

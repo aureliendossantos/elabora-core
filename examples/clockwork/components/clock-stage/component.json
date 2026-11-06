@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.11/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.12/component.schema.json",
   "id": "clock-stage",
   "title": "Mechanism and explanation",
   "description": "The mechanism on the left, on the paper and without a frame; on the right, one explanation in large type, which fades in when the screen arrives. The screen's title stays for the outline and screen readers, out of sight. On narrow screens the mechanism comes first and the text follows.",

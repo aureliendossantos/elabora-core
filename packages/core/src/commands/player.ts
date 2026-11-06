@@ -4,8 +4,8 @@ import { isRecord } from '../util/values.ts';
 import { DEFAULT_PLACES, DEFAULT_PLAYER, PLAYER_ITEMS, PLAYER_TOKENS, BARS, SPEEDS, OUTLINE_LABELS } from '../player/config.ts';
 import type { BarName, OutlineLabel } from '../player/config.ts';
 import { CommandError, Draft, type CommandContext, type CommandOutput } from './context.ts';
-import { linkGlossaryTerms, unlinkGlossaryTerms } from './glossary-links.ts';
-import type { LinkedTranslation, PlacedLink, RemovedLink } from './glossary-links.ts';
+import { unlinkGlossaryTerms } from './glossary-links.ts';
+import type { UnlinkedTranslation, RemovedLink } from './glossary-links.ts';
 import { isHttpsUrl } from '../compile/course-data.ts';
 
 export type CourseResource = NonNullable<Course['resources']>[number];
@@ -35,21 +35,20 @@ export interface UpdatePlayerArgs {
   resources?: CourseResource[];
   glossary?: CourseGlossary[];
   credits?: string[];
-  // « Relier les termes aux écrans » on demand: every term (true) or those named, the first time
-  // each is in each screen (glossary-links.ts). It also runs when the glossary option linkTerms is
-  // turned on (every term) and for terms the glossary gains while the option is on.
-  linkTerms?: true | string[];
+  // « Retirer ce lien »: the entry is no longer linked in that screen (its unlinked lists it), and the
+  // links written by hand to it there become their words, in the translations too.
+  unlinkTerm?: { term: string; screen: string };
+  // The entry linked again in that screen (the compiler places its link where it first is).
+  relinkTerm?: { term: string; screen: string };
 }
 
 const isItem = (value: unknown): value is PlayerItemId => typeof value === 'string' && (PLAYER_ITEMS as readonly string[]).includes(value);
 
-export function updatePlayer(context: CommandContext, args: UpdatePlayerArgs): CommandOutput<{ changed: string[]; linked: PlacedLink[]; unlinked: RemovedLink[]; translations: LinkedTranslation[] }> {
+export function updatePlayer(context: CommandContext, args: UpdatePlayerArgs): CommandOutput<{ changed: string[]; unlinked: RemovedLink[]; translations: UnlinkedTranslation[] }> {
   const draft = new Draft(context.files);
   const course = draft.json<Course>('course.json');
   const changed: string[] = [];
   const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
-  // The glossary option linkTerms before the change (on unless said otherwise).
-  const linkingBefore = BARS.some((bar) => (isRecord(course.player) && isRecord(course.player[bar]) && Array.isArray(course.player[bar].items) ? course.player[bar].items : []).some((item) => isRecord(item) && item.id === 'glossary' && isRecord(item.options) && item.options.linkTerms === false)) ? false : true;
   const glossaryBefore = new Set((Array.isArray(course.glossary) ? course.glossary : []).map((entry) => entry.id));
   // The bars as the player reads them (config.ts playerConfig): a bar without its own list of items
   // has the default items, less those the author placed in the other bar.
@@ -171,35 +170,46 @@ export function updatePlayer(context: CommandContext, args: UpdatePlayerArgs): C
     if (Array.isArray(value) && value.length) (course as Record<string, unknown>)[key] = value; else delete (course as Record<string, unknown>)[key];
     changed.push(key);
   }
-  // « Relier les termes aux écrans »: on demand; when the option is turned on (every term); for the
-  // terms the glossary gains while it is on. Never otherwise: a link the author removed stays removed.
-  const glossaryItem = BARS.flatMap((bar) => bars[bar].items ?? []).find((item) => item.id === 'glossary');
-  const linking = !(isRecord(glossaryItem?.options) && glossaryItem.options.linkTerms === false);
   const glossary = Array.isArray(course.glossary) ? course.glossary : [];
-  const toLink = args.linkTerms === true || (linking && !linkingBefore) ? glossary.map((entry) => entry.id)
-    : [...new Set([...(Array.isArray(args.linkTerms) ? args.linkTerms : []), ...(linking && args.glossary ? glossary.filter((entry) => !glossaryBefore.has(entry.id)).map((entry) => entry.id) : [])])];
-  if (Array.isArray(args.linkTerms)) for (const id of args.linkTerms) if (!glossary.some((entry) => entry.id === id)) throw new CommandError(`linkTerms: the glossary has no entry "${id}".`);
-  // Entries removed take their links with them, in the same change: each link to them in the screens
-  // becomes its words, and the translations that had those texts up to date lose the same links
+  // Entries removed take the links written by hand to them, in the same change: each becomes its
+  // words, and the translations that had those texts up to date lose the same links
   // (translations[].unlinked). A link left to an entry that is gone would stop the build.
   const removedTerms = args.glossary ? [...glossaryBefore].filter((id) => !glossary.some((entry) => entry.id === id)) : [];
-  const { removed: unlinked, translations: unlinkedTranslations } = removedTerms.length ? unlinkGlossaryTerms(context.project(), draft, removedTerms) : { removed: [], translations: [] };
-  if (unlinked.length) changed.push(`unlink removed terms (${unlinked.length} link${unlinked.length === 1 ? '' : 's'})`);
-  // The translations that had the texts linked up to date take the same links where the term's
-  // translation is; the others are said (translations[].stale).
-  const { placed: linked, translations: linkedTranslations } = toLink.length ? linkGlossaryTerms(context.project(), draft, glossary, toLink) : { placed: [], translations: [] };
-  if (args.linkTerms) changed.push(`link terms (${linked.length} link${linked.length === 1 ? '' : 's'})`);
-  if (!changed.length) throw new CommandError('Nothing to change: name items to enable, disable or move, options, positions, tokens, resources, glossary, credits or terms to link.');
+  const unlinked: RemovedLink[] = [];
+  const results: UnlinkedTranslation[][] = [];
+  if (removedTerms.length) {
+    const result = unlinkGlossaryTerms(context.project(), draft, removedTerms);
+    unlinked.push(...result.removed);
+    results.push(result.translations);
+    if (result.removed.length) changed.push(`unlink removed terms (${result.removed.length} link${result.removed.length === 1 ? '' : 's'})`);
+  }
+  // « Retirer ce lien » and its way back: the entry's unlinked, by screen.
+  for (const [key, take] of [['unlinkTerm', true], ['relinkTerm', false]] as const) {
+    const asked = args[key];
+    if (!asked) continue;
+    const entry = glossary.find((candidate) => candidate.id === asked.term);
+    if (!entry) throw new CommandError(`${key}: the glossary has no entry "${asked.term}".`);
+    if (!context.project().screens.has(asked.screen)) throw new CommandError(`${key}: the course has no screen "${asked.screen}".`);
+    const screens = new Set(Array.isArray(entry.unlinked) ? entry.unlinked : []);
+    if (take) screens.add(asked.screen); else screens.delete(asked.screen);
+    if (screens.size) entry.unlinked = [...screens]; else delete entry.unlinked;
+    if (take) {
+      const result = unlinkGlossaryTerms(context.project(), draft, [asked.term], { screens: [asked.screen] });
+      unlinked.push(...result.removed);
+      results.push(result.translations);
+    }
+    changed.push(`${take ? 'unlink' : 'link'} ${asked.term} in ${asked.screen}`);
+  }
+  if (!changed.length) throw new CommandError('Nothing to change: name items to enable, disable or move, options, positions, tokens, resources, glossary, credits, or a term to unlink or link again in a screen.');
   draft.writeJson('course.json', course);
-  // One entry per translation: what the links removed and placed did to it.
-  const translations: LinkedTranslation[] = [];
-  for (const entry of [...unlinkedTranslations, ...linkedTranslations]) {
+  // One entry per translation: what the links removed did to it.
+  const translations: UnlinkedTranslation[] = [];
+  for (const entry of results.flat()) {
     const known = translations.find((candidate) => candidate.language === entry.language);
-    if (!known) { translations.push({ ...entry, linked: [...entry.linked], stale: [...entry.stale], ...(entry.unlinked ? { unlinked: [...entry.unlinked] } : {}) }); continue; }
-    known.linked.push(...entry.linked);
+    if (!known) { translations.push({ language: entry.language, unlinked: [...entry.unlinked], stale: [...entry.stale] }); continue; }
+    known.unlinked.push(...entry.unlinked);
     known.stale = [...new Set([...known.stale, ...entry.stale])].sort();
-    if (entry.unlinked) known.unlinked = [...(known.unlinked ?? []), ...entry.unlinked];
   }
   translations.sort((a, b) => a.language.localeCompare(b.language));
-  return { files: draft.files(), result: { changed, linked, unlinked, translations } };
+  return { files: draft.files(), result: { changed, unlinked, translations } };
 }

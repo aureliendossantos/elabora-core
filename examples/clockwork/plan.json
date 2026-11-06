@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.11/plan.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.12/plan.schema.json",
   "id": "PLAN-CLOCKWORK",
   "title": "Why is the hour hand 12 times slower?",
   "businessGoal": "Show visitors of Elabora, in a five-minute sample, how one 3D object can carry a whole explanation: it stays on the left from screen to screen, grows with the explanation and offers only the controls of the moment, while the right side says one thing at a time.",

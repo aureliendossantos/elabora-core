@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.11/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.12/component.schema.json",
   "id": "stage",
   "title": "Plateau du réseau",
   "description": "Le réseau en 3D occupe toute la fenêtre. Le texte flotte à gauche : en grand pour ouvrir le module (Ouverture), en colonne (Colonne), ou réduit au titre pendant une activité (Titre en haut). Une note peut s'afficher par-dessus le bas de la scène.",

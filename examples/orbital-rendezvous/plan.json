@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.11/plan.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.12/plan.schema.json",
   "id": "PLAN-ASTER-RDV-V1",
   "title": "Slow down to catch up",
   "businessGoal": "Give every new team member of Aster Orbital Services (fictional client), whatever their background, the intuition behind a rendezvous before they join a satellite-servicing mission: braking to catch up, then pushing back at the same point.",

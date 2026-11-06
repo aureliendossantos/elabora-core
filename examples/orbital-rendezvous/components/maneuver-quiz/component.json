@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.11/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.12/component.schema.json",
   "id": "maneuver-quiz",
   "title": "Manoeuvre question",
   "description": "A choice question whose options are pushes, one under the other, each with a small diagram of the push. A fork of the quiz block: same scoring, feedback, saved state and SCORM records.",

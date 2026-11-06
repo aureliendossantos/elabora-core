@@ -207,6 +207,14 @@ export interface FieldLayout {
 // A text of the screen outside its blocks, as screen readers meet it: the screen's title (a layer's
 // when it is open), a text of its layout (data-t-field: a prop's path below layoutProps, duration:
 // the reading time) or a picture of its layout, its alternative as text.
+// A word linked to an entry of the glossary (its id), in a block; one rect per line it takes.
+export interface TermLayout {
+  term: string;
+  block: string;
+  words: string;
+  rects: LayoutRect[];
+}
+
 export interface TextLayout {
   kind: 'title' | 'field' | 'image';
   path: string | null;
@@ -239,6 +247,8 @@ export interface LayoutMessage {
   // The texts outside the blocks, in the order of the page: the reading order of the screen is
   // these and its blocks (the app's « Ordre de lecture »).
   texts?: TextLayout[];
+  // The words linked to the glossary that are drawn (D58): the editor offers « Retirer ce lien » on them.
+  terms?: TermLayout[];
   // Blocks placed by hand (D72): the frame and the flow's places, when the page places them.
   placing?: PlacingLayout;
   // Blocks gliding to where they now are (elabora/motion): their rects above are where they land; from:

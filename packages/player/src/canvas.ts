@@ -34,7 +34,7 @@ import type { Tooltip } from './tooltip.ts';
 import type { DisplayPrefs } from './display.ts';
 import { pageFramesPort } from './frames.ts';
 import { isRecord } from './json.ts';
-import { blockLayouts, coveredTexts, rectOf, round, scrollFrom, textLayouts } from './layout-report.ts';
+import { blockLayouts, coveredTexts, rectOf, round, scrollFrom, termLayouts, textLayouts } from './layout-report.ts';
 import { GLIDE } from './screen-objects.ts';
 import type { CourseData, ObjectDefinition, PlaceData, ScreenData } from './course-data.ts';
 import { PLAYER_PREVIEW_PROTOCOL } from './canvas-protocol.ts';
@@ -708,7 +708,7 @@ function measured(): LayoutMessage {
     type: 'elabora/layout', id: lastId, screen: view?.screen?.id ?? null,
     step: view?.revealed ?? 1, steps: [...(view?.steps ?? [])], layer: view?.layers[0] ?? null, state: mounted?.requested.state ?? 'initial', applyMs,
     viewport: { width: innerWidth, height: innerHeight, scrollX: round(scrollX), scrollY: round(scrollY) },
-    screenRect: article ? rectOf(article) : null, blocks, texts: textLayouts(),
+    screenRect: article ? rectOf(article) : null, blocks, texts: textLayouts(), terms: termLayouts(),
     ...(frame && placement ? { placing: { frame: { x: round(frame.x), y: round(frame.y), width: round(frame.width), height: round(frame.height) }, flows: placement.anchors(), columns: columnWidths() } } : {})
   };
 }

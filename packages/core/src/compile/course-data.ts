@@ -36,6 +36,7 @@ import { readText } from '../project/files.ts';
 import { pageMinutes } from '../project/duration.ts';
 import type { ScreenTimeline, TimelineMoment } from '../narration/timeline.ts';
 import { playerConfig, playerContent, shownPlayer, aboutCourse, withItemEnabled } from '../player/config.ts';
+import { linkedScreen } from './glossary-links.ts';
 import { compileSounds, soundAssets, soundLength } from '../sounds/sounds.ts';
 import type { InterfaceSounds } from '../sounds/sounds.ts';
 
@@ -247,8 +248,10 @@ export function sortedObjects(objects: ReadonlyMap<string, ObjectDefinition>): R
 }
 
 export function compileScreen(project: Project, screenId: string, context: CompileContext): CompiledScreen {
-  const screen = project.screens.get(screenId)?.data;
-  if (!screen) throw new Error(`Screen "${screenId}" not found (screens/${screenId}.json).`);
+  const source = project.screens.get(screenId)?.data;
+  if (!source) throw new Error(`Screen "${screenId}" not found (screens/${screenId}.json).`);
+  // Its texts with their links to the glossary, computed in the language compiled (D58).
+  const screen = linkedScreen(project, screenId, source);
   // The registry of the context: a screen edited since the context was made keeps its components.
   const layoutDescriptor = screen.layout ? context.registry.get(screen.layout) : undefined;
   const layout = layoutDescriptor?.level === 'screen' ? layoutDescriptor : null;

@@ -6,6 +6,7 @@ import { BARS, findItem, playerConfig, playerContent, hiddenBecause, aboutCourse
 import type { PlayerConfig } from '../player/config.ts';
 import type { PlayerItemId } from '@elabora/player/course-data';
 import { isHttpsUrl } from '../compile/course-data.ts';
+import { glossaryLinkSpans } from '../compile/glossary-links.ts';
 import { svgLogoContrast } from '../player/logo.ts';
 import { playerToken, resolveTokens, withPlayerTokens } from './theme.ts';
 
@@ -127,8 +128,10 @@ export function checkPlayer(ctx: CourseCheckContext): void {
     if (!screen) continue;
     for (const { block, path } of screenBlocks(screen.data, screen.file)) {
       for (const [pointer, text] of strings(block.props, `${path}/props`)) {
-        for (const match of text.matchAll(/\]\(glossary:([^)\s]*)\)/g)) {
-          if (!terms.has(match[1])) reporter.emit('E_GLOSSARY_TERM_UNKNOWN', { file: screen.file, path: pointer, target: block.id, message: `A text of block "${block.id}" links to glossary:${match[1]}, and course.json glossary has no entry "${match[1]}"${terms.size ? ` (${[...terms].slice(0, 12).join(', ')})` : ''}.` });
+        // Inline links, and the definitions links by reference use ([b]: glossary:box).
+        const named = new Set([...[...text.matchAll(/\]\(<?glossary:([^)\s>]*)>?/g)].map((match) => match[1]), ...glossaryLinkSpans(text).filter((span) => span.definition).map((span) => span.term)]);
+        for (const term of named) {
+          if (!terms.has(term)) reporter.emit('E_GLOSSARY_TERM_UNKNOWN', { file: screen.file, path: pointer, target: block.id, message: `A text of block "${block.id}" links to glossary:${term}, and course.json glossary has no entry "${term}"${terms.size ? ` (${[...terms].slice(0, 12).join(', ')})` : ''}.` });
         }
       }
     }

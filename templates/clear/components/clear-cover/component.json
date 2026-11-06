@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.11/component.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.12/component.schema.json",
   "id": "clear-cover",
   "title": "Clear cover",
   "description": "Opens and closes the module: the title and its lead on the left columns of the grid, the accent panel on the right.",

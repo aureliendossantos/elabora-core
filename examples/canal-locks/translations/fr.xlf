@@ -772,8 +772,8 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>**Text version of the scene.** A small [barge](glossary:barge) floats in the lower canal, in front of a [lock](glossary:lock): a stone [chamber](glossary:lock-chamber) closed at each end by a pair of black wooden [gates](glossary:gates) with white-tipped [balance beams](glossary:balance-beam). Beyond the far gates, the upper canal lies about 3 metres higher than the boat, behind a wall of stone.</source>
-        <target>**Version textuelle de la scène.** Une petite [péniche](glossary:barge) flotte dans le canal inférieur, devant une [écluse](glossary:lock) : un [sas](glossary:lock-chamber) en pierre fermé à chaque extrémité par une paire de [portes](glossary:gates) en bois noir, munies de [bras de manœuvre](glossary:balance-beam) aux bouts blancs. Au-delà des portes du fond, le canal supérieur se trouve environ 3 mètres plus haut que le bateau, derrière un mur de pierre.</target>
+        <source>**Text version of the scene.** A small barge floats in the lower canal, in front of a lock: a stone chamber closed at each end by a pair of black wooden gates with white-tipped balance beams. Beyond the far gates, the upper canal lies about 3 metres higher than the boat, behind a wall of stone.</source>
+        <target>**Version textuelle de la scène.** Une petite péniche flotte dans le canal inférieur, devant une écluse : un sas en pierre fermé à chaque extrémité par une paire de portes en bois noir, munies de bras de manœuvre aux bouts blancs. Au-delà des portes du fond, le canal supérieur se trouve environ 3 mètres plus haut que le bateau, derrière un mur de pierre.</target>
       </segment>
     </unit>
     <unit id="block.intro-scene.props.phases.0.title">
@@ -2403,9 +2403,9 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>**Text version of the simulation.** The [lock](glossary:lock) is a stone [chamber](glossary:lock-chamber) between two canals, closed at each end by a pair of [gates](glossary:gates). The upper canal is 3 m higher than the lower canal. Each pair of gates has **[paddles](glossary:paddle)**: small sluices you open to let water through.
+        <source>**Text version of the simulation.** The lock is a stone chamber between two canals, closed at each end by a pair of gates. The upper canal is 3 m higher than the lower canal. Each pair of gates has **paddles**: small sluices you open to let water through.
 
-At the start, your [barge](glossary:barge) is in the lower canal. The lower gates are open and the chamber is at the level of the lower canal; the upper gates and all the paddles are closed.
+At the start, your barge is in the lower canal. The lower gates are open and the chamber is at the level of the lower canal; the upper gates and all the paddles are closed.
 
 The lock follows four rules:
 
@@ -2415,9 +2415,9 @@ The lock follows four rules:
 - The boat floats: it rises and falls with the water of the chamber.
 
 Write down the manoeuvres that take the barge up to the upper canal, then compare with this order: sail into the chamber; close the lower gates; open the upper paddles and wait until the chamber is level with the upper canal; open the upper gates; sail out.</source>
-        <target>**Version textuelle de la simulation.** L’[écluse](glossary:lock) est un [sas](glossary:lock-chamber) en pierre entre deux canaux, fermé à chaque extrémité par une paire de [portes](glossary:gates). Le canal supérieur est 3 m plus haut que le canal inférieur. Chaque paire de portes possède des **[vannes](glossary:paddle)** : de petites ouvertures que l’on dégage pour laisser passer l’eau.
+        <target>**Version textuelle de la simulation.** L’écluse est un sas en pierre entre deux canaux, fermé à chaque extrémité par une paire de portes. Le canal supérieur est 3 m plus haut que le canal inférieur. Chaque paire de portes possède des **vannes** : de petites ouvertures que l’on dégage pour laisser passer l’eau.
 
-Au départ, votre [péniche](glossary:barge) est dans le canal inférieur. Les portes aval sont ouvertes et le sas est au niveau du canal inférieur ; les portes amont et toutes les vannes sont fermées.
+Au départ, votre péniche est dans le canal inférieur. Les portes aval sont ouvertes et le sas est au niveau du canal inférieur ; les portes amont et toutes les vannes sont fermées.
 
 L’écluse suit quatre règles :
 
@@ -4031,8 +4031,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Let's slice the [lock](glossary:lock) open and replay the climb, one moment at a time.</source>
-        <target>Ouvrons l’[écluse](glossary:lock) en coupe pour revoir la montée, un instant à la fois.</target>
+        <source>Let's slice the lock open and replay the climb, one moment at a time.</source>
+        <target>Ouvrons l’écluse en coupe pour revoir la montée, un instant à la fois.</target>
       </segment>
     </unit>
     <unit id="block.inside-the-lock-next.label">
@@ -4067,19 +4067,19 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>**Text version of the explanation.** The lock is shown cut along the canal: the lower canal on the left, the [chamber](glossary:lock-chamber) in the middle, the upper canal on the right, 3 m higher.
+        <source>**Text version of the explanation.** The lock is shown cut along the canal: the lower canal on the left, the chamber in the middle, the upper canal on the right, 3 m higher.
 
-1. **The [barge](glossary:barge) sails in.** The chamber is at the level of the lower canal, so its lower [gates](glossary:gates) stand open and the barge glides in.
+1. **The barge sails in.** The chamber is at the level of the lower canal, so its lower gates stand open and the barge glides in.
 2. **The gates close behind it.** With the lower gates shut, the chamber is a closed basin.
-3. **Water flows in from above.** The [paddles](glossary:paddle) of the upper gates open. Water runs downhill, from the upper canal into the chamber.
+3. **Water flows in from above.** The paddles of the upper gates open. Water runs downhill, from the upper canal into the chamber.
 4. **The boat floats up.** The chamber fills and its surface rises; the barge floats on it and rises too. Nothing pushes it up but the water beneath it.
 5. **Level water, open gates.** When the chamber is level with the upper canal, the water pushes equally on both sides of the upper gates, so they swing open.
 6. **On its way.** The barge sails out into the upper canal, 3 m higher than it started.</source>
-        <target>**Version textuelle de l’explication.** L’écluse est coupée dans le sens du canal : le canal inférieur à gauche, le [sas](glossary:lock-chamber) au milieu, le canal supérieur à droite, 3 m plus haut.
+        <target>**Version textuelle de l’explication.** L’écluse est coupée dans le sens du canal : le canal inférieur à gauche, le sas au milieu, le canal supérieur à droite, 3 m plus haut.
 
-1. **La [péniche](glossary:barge) entre.** Le sas est au niveau du canal inférieur : ses [portes](glossary:gates) aval sont donc ouvertes et la péniche y entre.
+1. **La péniche entre.** Le sas est au niveau du canal inférieur : ses portes aval sont donc ouvertes et la péniche y entre.
 2. **Les portes se ferment derrière elle.** Une fois les portes aval fermées, le sas devient un bassin clos.
-3. **L’eau arrive d’en haut.** Les [vannes](glossary:paddle) des portes amont s’ouvrent. L’eau descend du canal supérieur vers le sas.
+3. **L’eau arrive d’en haut.** Les vannes des portes amont s’ouvrent. L’eau descend du canal supérieur vers le sas.
 4. **Le bateau monte en flottant.** Le sas se remplit et sa surface monte ; la péniche flotte à sa surface et monte aussi. Seule l’eau sous sa coque la pousse vers le haut.
 5. **Niveaux égaux, portes ouvertes.** Lorsque le sas est au niveau du canal supérieur, l’eau pousse aussi fort des deux côtés des portes amont, qui s’ouvrent alors.
 6. **En route.** La péniche rejoint le canal supérieur, 3 m plus haut qu’au départ.</target>
@@ -5795,8 +5795,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Right. The higher water in the [chamber](glossary:lock-chamber) was pressing the lower [gates](glossary:gates) shut. Letting it run down to the lower canal brings both levels together.</source>
-        <target>Exact. L’eau plus haute dans le [sas](glossary:lock-chamber) maintenait les [portes](glossary:gates) aval fermées. En la laissant s’écouler vers le canal inférieur, on égalise les deux niveaux.</target>
+        <source>Right. The higher water in the chamber was pressing the lower gates shut. Letting it run down to the lower canal brings both levels together.</source>
+        <target>Exact. L’eau plus haute dans le sas maintenait les portes aval fermées. En la laissant s’écouler vers le canal inférieur, on égalise les deux niveaux.</target>
       </segment>
     </unit>
     <unit id="block.downhill-talk.nodes.arrival.options.b.label">
@@ -5855,8 +5855,8 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>Half right: the lower [paddles](glossary:paddle) let water out, but the upper ones keep refilling the chamber. Only the way down should be open.</source>
-        <target>À moitié juste : les [vannes](glossary:paddle) aval laissent sortir l’eau, mais celles d’amont continuent de remplir le sas. Seul le passage vers l’aval doit être ouvert.</target>
+        <source>Half right: the lower paddles let water out, but the upper ones keep refilling the chamber. Only the way down should be open.</source>
+        <target>À moitié juste : les vannes aval laissent sortir l’eau, mais celles d’amont continuent de remplir le sas. Seul le passage vers l’aval doit être ouvert.</target>
       </segment>
     </unit>
     <unit id="block.downhill-talk.nodes.arrival.options.c.label">
@@ -6143,18 +6143,18 @@ Notez les manœuvres qui amènent la péniche jusqu’au canal supérieur, puis 
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>**Text version of the scene.** The [barge](glossary:barge) floats in the lock chamber, which is full: its water is level with the upper canal, 3 m above the lower canal. Both pairs of gates are shut.
+        <source>**Text version of the scene.** The barge floats in the lock chamber, which is full: its water is level with the upper canal, 3 m above the lower canal. Both pairs of gates are shut.
 
-What each choice does to the [lock](glossary:lock):
+What each choice does to the lock:
 
 - **Open the lower paddles:** water runs from the chamber into the lower canal; the chamber empties and the barge goes down with it.
 - **Open both paddles:** water runs in at the top as fast as it leaves at the bottom; the level stops halfway.
 - **Push on the gates:** the lower gates strain but stay shut, held by the higher water in the chamber.
 - **Open the lower gates,** once the chamber is level with the lower canal: they swing open and the barge sails out.
 - **Open the upper gates** at that point: they stay shut, held by the higher water of the upper canal.</source>
-        <target>**Version textuelle de la scène.** La [péniche](glossary:barge) flotte dans le sas de l’écluse, qui est rempli : son eau est au niveau du canal supérieur, 3 m au-dessus du canal inférieur. Les deux paires de portes sont fermées.
+        <target>**Version textuelle de la scène.** La péniche flotte dans le sas de l’écluse, qui est rempli : son eau est au niveau du canal supérieur, 3 m au-dessus du canal inférieur. Les deux paires de portes sont fermées.
 
-L’effet de chaque choix sur l’[écluse](glossary:lock) :
+L’effet de chaque choix sur l’écluse :
 
 - **Ouvrir les vannes aval :** l’eau s’écoule du sas vers le canal inférieur ; le sas se vide et la péniche descend avec l’eau.
 - **Ouvrir les deux vannes :** l’eau entre en amont aussi vite qu’elle sort en aval ; le niveau s’arrête à mi-hauteur.

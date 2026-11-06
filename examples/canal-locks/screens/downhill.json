@@ -89,7 +89,7 @@
                     "text": "The level drops, and the barge sinks gently with it."
                   }
                 ],
-                "feedback": "Right. The higher water in the [chamber](glossary:lock-chamber) was pressing the lower [gates](glossary:gates) shut. Letting it run down to the lower canal brings both levels together."
+                "feedback": "Right. The higher water in the chamber was pressing the lower gates shut. Letting it run down to the lower canal brings both levels together."
               },
               {
                 "id": "b",
@@ -125,7 +125,7 @@
                     "text": "The level stops halfway. The lower gates still won't budge."
                   }
                 ],
-                "feedback": "Half right: the lower [paddles](glossary:paddle) let water out, but the upper ones keep refilling the chamber. Only the way down should be open."
+                "feedback": "Half right: the lower paddles let water out, but the upper ones keep refilling the chamber. Only the way down should be open."
               },
               {
                 "id": "c",
@@ -305,7 +305,7 @@
         "a11y": {
           "description": "The same lock, seen in three-quarter view. The barge floats in the full chamber, level with the upper canal; the lower gates are shut, with the lower canal 3 metres below. Each choice in the conversation operates the lock: paddles let water through, gates swing or strain, and the barge rises or sinks with the water."
         },
-        "textAlternative": "**Text version of the scene.** The [barge](glossary:barge) floats in the lock chamber, which is full: its water is level with the upper canal, 3 m above the lower canal. Both pairs of gates are shut.\n\nWhat each choice does to the [lock](glossary:lock):\n\n- **Open the lower paddles:** water runs from the chamber into the lower canal; the chamber empties and the barge goes down with it.\n- **Open both paddles:** water runs in at the top as fast as it leaves at the bottom; the level stops halfway.\n- **Push on the gates:** the lower gates strain but stay shut, held by the higher water in the chamber.\n- **Open the lower gates,** once the chamber is level with the lower canal: they swing open and the barge sails out.\n- **Open the upper gates** at that point: they stay shut, held by the higher water of the upper canal."
+        "textAlternative": "**Text version of the scene.** The barge floats in the lock chamber, which is full: its water is level with the upper canal, 3 m above the lower canal. Both pairs of gates are shut.\n\nWhat each choice does to the lock:\n\n- **Open the lower paddles:** water runs from the chamber into the lower canal; the chamber empties and the barge goes down with it.\n- **Open both paddles:** water runs in at the top as fast as it leaves at the bottom; the level stops halfway.\n- **Push on the gates:** the lower gates strain but stay shut, held by the higher water in the chamber.\n- **Open the lower gates,** once the chamber is level with the lower canal: they swing open and the barge sails out.\n- **Open the upper gates** at that point: they stay shut, held by the higher water of the upper canal."
       }
     },
     {

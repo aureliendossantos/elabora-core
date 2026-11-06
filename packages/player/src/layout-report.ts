@@ -2,7 +2,7 @@
 // page: shared by the editor canvas (canvas.ts, the app's selection) and the review bridge (review.ts,
 // the review page's pins and its comment mode).
 
-import type { BlockLayout, LayoutRect, TextLayout } from './canvas-protocol.ts';
+import type { BlockLayout, LayoutRect, TermLayout, TextLayout } from './canvas-protocol.ts';
 
 export const round = (value: number): number => Math.round(value * 100) / 100;
 export const rectOf = (node: Element): LayoutRect => { const box = node.getBoundingClientRect(); return { x: round(box.x), y: round(box.y), width: round(box.width), height: round(box.height) }; };
@@ -90,6 +90,19 @@ export function textLayouts(): TextLayout[] {
     });
   }
   return texts;
+}
+
+// The words linked to the glossary that are drawn, in the screen and its open layers, in the order of
+// the page.
+export function termLayouts(): TermLayout[] {
+  const terms: TermLayout[] = [];
+  for (const node of document.querySelectorAll<HTMLElement>('#t-main a.t-term[data-term], dialog.t-layer[open] a.t-term[data-term]')) {
+    const block = node.closest<HTMLElement>('.t-block[data-block]')?.dataset.block;
+    const rects = [...node.getClientRects()].filter((rect) => rect.width > 0 && rect.height > 0).map((rect) => ({ x: round(rect.x), y: round(rect.y), width: round(rect.width), height: round(rect.height) }));
+    if (!block || !rects.length || node.closest('[data-t-pending], [data-t-concealed], [data-t-timed]')) continue;
+    terms.push({ term: node.dataset.term ?? '', block, words: (node.textContent ?? '').replace(/\s+/g, ' ').trim(), rects });
+  }
+  return terms;
 }
 
 // What a wheel at that point would scroll: the nearest box under it that can still go that way,

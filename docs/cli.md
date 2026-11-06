@@ -525,7 +525,8 @@ theme upgrade [dir] [--dry-run] [--json]            Put the theme's rules under 
                                                     One undoable change
 player [dir] [--enable <items>] [--disable <items>] [--move <item:bar[:index]>] [--set <item.option=value>]
        [--position <bar=window|page>] [--token <player.name=value>] [--logo <asset|none>] [--reset]
-       [--link-terms [<ids>]] [--add-resource <file>…] [--title <t>] [--description <d>]
+       [--unlink-term <term:screen>] [--relink-term <term:screen>] [--add-resource <file>…] [--title <t>]
+       [--description <d>]
        [--target scorm12|web] [--json]
                                                     The learner's player (D58): its two bars of items (logo, title, progress,
                                                     spacer, outline, controls, resources, glossary, credits, display,
@@ -536,8 +537,10 @@ player [dir] [--enable <items>] [--disable <items>] [--move <item:bar[:index]>] 
                                                     controls.transcript=false, logo.plate=true, progress.parts=false,
                                                     progress.percent=false, glossary.linkTerms=false;
                                                     --token player.top.background=#FFFFFF (=default removes it).
-                                                    --link-terms links the glossary's terms (all, or the ids given) the
-                                                    first time each is in each screen. --add-resource copies any file into
+                                                    The glossary's terms are linked when the course is built, the first
+                                                    time each is in each screen: --unlink-term gateway:intro removes the
+                                                    term's link from that screen, --relink-term puts it back.
+                                                    --add-resource copies any file into
                                                     assets/resources/ and adds it to the resources, titled by --title,
                                                     else the PDF's own title, else its name (one undoable change each).
                                                     Resources, glossary, credits: elabora tools call elabora_player .

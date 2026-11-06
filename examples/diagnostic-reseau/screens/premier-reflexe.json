@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.12/screen.schema.json",
   "id": "premier-reflexe",
   "title": "Marc est toujours en ligne",
   "covers": [
@@ -251,7 +251,7 @@
         "a11y": {
           "description": "Le réseau du siège, à côté de l'appel : le poste de Marc puis le commutateur s'y marquent contrôlés quand Leïla les vérifie."
         },
-        "textAlternative": "**Version texte de la scène.** Le réseau du siège, du poste de Marc à l'imprimante. Pendant l'appel, Leïla contrôle le poste de Marc (adresse IP valide), puis son port sur le [commutateur](glossary:commutateur) de l'étage (port actif)."
+        "textAlternative": "**Version texte de la scène.** Le réseau du siège, du poste de Marc à l'imprimante. Pendant l'appel, Leïla contrôle le poste de Marc (adresse IP valide), puis son port sur le commutateur de l'étage (port actif)."
       }
     }
   ],

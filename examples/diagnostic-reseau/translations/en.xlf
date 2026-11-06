@@ -956,8 +956,8 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>**Version texte de la scène.** Le réseau du siège, posé sur un plateau : le poste de Marc, le [commutateur](glossary:commutateur) de l'étage, le [routeur](glossary:routeur), le [pare-feu](glossary:pare-feu), le [serveur d'impression](glossary:serveur-impression) et l'imprimante, reliés par des câbles dans cet ordre.</source>
-        <target>**Text version of the scene.** The head office network, laid out on a board: Marc's computer, the floor [switch](glossary:commutateur), the [router](glossary:routeur), the [firewall](glossary:pare-feu), the [print server](glossary:serveur-impression) and the printer, joined by cables in that order.</target>
+        <source>**Version texte de la scène.** Le réseau du siège, posé sur un plateau : le poste de Marc, le commutateur de l'étage, le routeur, le pare-feu, le serveur d'impression et l'imprimante, reliés par des câbles dans cet ordre.</source>
+        <target>**Text version of the scene.** The head office network, laid out on a board: Marc's computer, the floor switch, the router, the firewall, the print server and the printer, joined by cables in that order.</target>
       </segment>
     </unit>
     <unit id="block.accueil-reseau.props.instruction">
@@ -1629,8 +1629,8 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>**Version texte du chemin.** Une demande d'impression part du poste de Marc. Le [commutateur](glossary:commutateur) de l'étage la relaie. Le [routeur](glossary:routeur) la fait passer dans le réseau des serveurs. Le [pare-feu](glossary:pare-feu) vérifie qu'elle a le droit d'entrer. Le [serveur d'impression](glossary:serveur-impression) l'envoie enfin à l'imprimante. Le poste et le commutateur forment le réseau de l'étage ; le pare-feu, le serveur et l'imprimante, le réseau des serveurs.</source>
-        <target>**Text version of the path.** A print job leaves Marc's computer. The floor [switch](glossary:commutateur) passes it on. The [router](glossary:routeur) takes it into the server network. The [firewall](glossary:pare-feu) checks it is allowed in. The [print server](glossary:serveur-impression) finally sends it to the printer. The computer and the switch make up the floor network; the firewall, the server and the printer, the server network.</target>
+        <source>**Version texte du chemin.** Une demande d'impression part du poste de Marc. Le commutateur de l'étage la relaie. Le routeur la fait passer dans le réseau des serveurs. Le pare-feu vérifie qu'elle a le droit d'entrer. Le serveur d'impression l'envoie enfin à l'imprimante. Le poste et le commutateur forment le réseau de l'étage ; le pare-feu, le serveur et l'imprimante, le réseau des serveurs.</source>
+        <target>**Text version of the path.** A print job leaves Marc's computer. The floor switch passes it on. The router takes it into the server network. The firewall checks it is allowed in. The print server finally sends it to the printer. The computer and the switch make up the floor network; the firewall, the server and the printer, the server network.</target>
       </segment>
     </unit>
     <unit id="block.chemin-reseau.props.instruction">
@@ -2686,8 +2686,8 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>**Version texte de la scène.** Le réseau du siège, du poste de Marc à l'imprimante. Pendant l'appel, Leïla contrôle le poste de Marc (adresse IP valide), puis son port sur le [commutateur](glossary:commutateur) de l'étage (port actif).</source>
-        <target>**Text version of the scene.** The head office network, from Marc's computer to the printer. During the call, Leïla checks Marc's computer (valid IP address), then his port on the floor [switch](glossary:commutateur) (port active).</target>
+        <source>**Version texte de la scène.** Le réseau du siège, du poste de Marc à l'imprimante. Pendant l'appel, Leïla contrôle le poste de Marc (adresse IP valide), puis son port sur le commutateur de l'étage (port actif).</source>
+        <target>**Text version of the scene.** The head office network, from Marc's computer to the printer. During the call, Leïla checks Marc's computer (valid IP address), then his port on the floor switch (port active).</target>
       </segment>
     </unit>
     <unit id="block.appel-reseau.props.instruction">
@@ -3323,8 +3323,8 @@
         <note category="max-length">20000</note>
       </notes>
       <segment state="translated">
-        <source>**Version texte du diagnostic.** Le poste de Marc a une adresse IP valide et son port est actif sur le commutateur. Le [routeur](glossary:routeur) laisse passer les [paquets](glossary:paquet). Le journal du [pare-feu](glossary:pare-feu) montre des paquets refusés vers le port 9100 du serveur d'impression. Le [serveur d'impression](glossary:serveur-impression) est en ligne, mais ne reçoit rien. L'équipement en panne est le pare-feu : une de ses règles bloque le port 9100, celui des impressions.</source>
-        <target>**Text version of the diagnosis.** Marc's computer has a valid IP address and its port is active on the switch. The [router](glossary:routeur) lets the [packets](glossary:paquet) through. The [firewall](glossary:pare-feu) log shows packets refused on their way to port 9100 of the print server. The [print server](glossary:serveur-impression) is online, yet receives nothing. The failing device is the firewall: one of its rules blocks port 9100, the printing port.</target>
+        <source>**Version texte du diagnostic.** Le poste de Marc a une adresse IP valide et son port est actif sur le commutateur. Le routeur laisse passer les paquets. Le journal du pare-feu montre des paquets refusés vers le port 9100 du serveur d'impression. Le serveur d'impression est en ligne, mais ne reçoit rien. L'équipement en panne est le pare-feu : une de ses règles bloque le port 9100, celui des impressions.</source>
+        <target>**Text version of the diagnosis.** Marc's computer has a valid IP address and its port is active on the switch. The router lets the packets through. The firewall log shows packets refused on their way to port 9100 of the print server. The print server is online, yet receives nothing. The failing device is the firewall: one of its rules blocks port 9100, the printing port.</target>
       </segment>
     </unit>
     <unit id="block.simulation-reseau.props.instruction">

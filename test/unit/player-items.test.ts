@@ -9,12 +9,12 @@ import { loadProjectFromDir, validateDir } from '@elabora/node/project-reader';
 import { build } from '@elabora/node/build';
 import { readLock, assignKeys } from '@elabora/core/compile/state-model';
 import { compileCourseData } from '@elabora/core/compile/course-data';
-import { renderScreen } from '@elabora/core/render/screen';
+import { renderScreen, translatedProject } from '@elabora/core/render/screen';
 import { Renderer } from '@elabora/engine/render';
 import { extractUnits } from '@elabora/core/i18n/units';
 import { DEFAULT_PLAYER, packageLanguages, playerConfig } from '@elabora/core/player/config';
 import { svgLogoContrast, svgPaints } from '@elabora/core/player/logo';
-import { unlinkText } from '@elabora/core/commands/glossary-links';
+import { unlinkText } from '@elabora/core/compile/glossary-links';
 import { decodeState, emptyState, encodeState, worstCaseLength } from '@elabora/player/state-codec';
 import type { StateModel } from '@elabora/player/state-codec';
 import { playerReport } from '../../packages/cli/src/mcp/player-tools.ts';
@@ -163,55 +163,82 @@ test('the logo: its colours against the bar, the plate that lets it read', () =>
   assert.deepEqual(compiled(dir).player.top!.items[0], { id: 'logo', src: 'assets/images/logo-sombre.svg', alt: 'Hélios', plate: true });
 });
 
-test('« Relier les termes aux écrans »: the first time in each screen, deterministic, never in links, code or locked texts', () => {
+// The HTML of a block of the course data (its screens' and layers' blocks, nested ones too).
+const blockHtml = (data: CourseData, id: string): string => {
+  const find = (value: unknown): string | null => {
+    if (Array.isArray(value)) { for (const item of value) { const found = find(item); if (found !== null) return found; } return null; }
+    if (!value || typeof value !== 'object') return null;
+    const record = value as Record<string, unknown>;
+    if (record.id === id && typeof record.html === 'string') return record.html;
+    for (const item of Object.values(record)) { const found = find(item); if (found !== null) return found; }
+    return null;
+  };
+  return find(data.screens) ?? '';
+};
+const screenHtml = (data: CourseData, id: string): string => JSON.stringify(data.screens.find((screen) => screen.id === id));
+const termLinks = (html: string, term: string): string[] => [...html.matchAll(new RegExp(`<a href=\\\\?"#t-glossary-${term}\\\\?"[^>]*>(.*?)</a>`, 'g'))].map((match) => match[1]);
+// A text block of the author's, at the end of a screen.
+const addText = (dir: string, screen: string, id: string, markdown: string) => {
+  const data = readJSON(dir, `screens/${screen}.json`);
+  data.blocks.push({ id, type: 'text', props: { markdown } });
+  writeJSON(dir, `screens/${screen}.json`, data);
+};
+
+test('« Relier les termes aux écrans »: computed when a screen is compiled, the first time in each screen, never in links, code or locked texts; nothing written', () => {
   const dir = copyExample();
-  const accueil = readJSON(dir, 'screens/accueil.json');
-  const callout = accueil.blocks.find((block: { id: string }) => block.id === 'accueil-situation');
-  callout.props.markdown = 'Le `routeur` en code, [le routeur](https://example.com) en lien, <span title="routeur">x</span>, puis le Routeur du siège et un autre routeur.';
-  writeJSON(dir, 'screens/accueil.json', accueil);
-  const before = readJSON(dir, 'screens/chemin.json');
-  const first = edit.updatePlayer(dir, { linkTerms: ['routeur'] });
-  const text = readJSON(dir, 'screens/accueil.json').blocks.find((block: { id: string }) => block.id === 'accueil-situation').props.markdown;
-  assert.equal(text, 'Le `routeur` en code, [le routeur](https://example.com) en lien, <span title="routeur">x</span>, puis le [Routeur](glossary:routeur) du siège et un autre routeur.');
-  assert.deepEqual(first.linked.find((link) => link.screen === 'accueil'), { screen: 'accueil', term: 'routeur', text: 'Routeur', unit: 'block.accueil-situation.markdown' });
-  // Once per screen; a screen that already links the term is left as it is; the plan's locked text
-  // (accueil-situation, textRef) is not the screen's to change.
-  assert.equal(new Set(first.linked.map((link) => link.screen)).size, first.linked.length);
+  addText(dir, 'accueil', 'accueil-note', 'Le `routeur` en code, [le routeur](https://example.com) en lien, <span title="routeur">x</span>, puis le Routeur du siège et un autre routeur.');
+  const before = fs.readFileSync(path.join(dir, 'screens/accueil.json'), 'utf8');
+  const data = compiled(dir);
+  const html = blockHtml(data, 'accueil-note');
+  assert.deepEqual(termLinks(html, 'routeur'), ['Routeur'], html);
+  assert.match(html, /<code>routeur<\/code>/);
+  // Once per screen, every screen on its own; the files keep their words.
+  assert.deepEqual(termLinks(screenHtml(data, 'accueil'), 'routeur'), ['Routeur']);
+  assert.equal(fs.readFileSync(path.join(dir, 'screens/accueil.json'), 'utf8'), before);
+  // A text added before, with the term: the link moves to it at the next compile.
+  const screen = readJSON(dir, 'screens/accueil.json');
+  screen.blocks.splice(screen.blocks.length - 1, 0, { id: 'accueil-avant', type: 'text', props: { markdown: 'Le routeur du siège est neuf.' } });
+  writeJSON(dir, 'screens/accueil.json', screen);
+  const again = compiled(dir);
+  assert.deepEqual(termLinks(blockHtml(again, 'accueil-avant'), 'routeur'), ['routeur']);
+  assert.deepEqual(termLinks(blockHtml(again, 'accueil-note'), 'routeur'), []);
+  // A plan's locked text keeps the client's words: no link in it.
   assert.equal(readJSON(dir, 'screens/accueil.json').blocks[0].props.textRef, 'TXT-1');
-  // Run again: nothing more to link.
-  assert.deepEqual(edit.updatePlayer(dir, { linkTerms: ['routeur'] }).linked, []);
-  // All the terms: every screen gets each term once, the existing links kept.
-  const all = edit.updatePlayer(dir, { linkTerms: true });
-  const chemin = JSON.stringify(readJSON(dir, 'screens/chemin.json'));
-  assert.equal((chemin.match(/\]\(glossary:paquet\)/g) ?? []).length, (JSON.stringify(before).match(/\]\(glossary:paquet\)/g) ?? []).length, 'chemin already linked paquet');
-  assert.ok(all.linked.length > 0);
-  assert.ok(all.changed.some((change) => /^link terms \(\d+ links?\)$/.test(change)));
+  assert.doesNotMatch(blockHtml(again, 'accueil-situation'), /t-glossary/);
 });
 
-test('linking runs when the option is turned on and for a term added while it is on; a link the author removed stays removed', () => {
+test('a link written by hand wins in its screen; « Retirer ce lien » and its way back; the option off; a screen renamed or deleted', () => {
   const dir = copyExample();
+  addText(dir, 'accueil', 'accueil-note', 'Le routeur, puis [le routeur du siège](glossary:routeur).');
+  assert.deepEqual(termLinks(screenHtml(compiled(dir), 'accueil'), 'routeur'), ['le routeur du siège']);
+  // « Retirer ce lien »: no link in that screen, the one by hand gone too (its words kept); the others stay.
+  const removed = edit.updatePlayer(dir, { unlinkTerm: { term: 'routeur', screen: 'accueil' } });
+  assert.deepEqual(removed.unlinked.map((link) => [link.screen, link.text]), [['accueil', 'le routeur du siège']]);
+  assert.deepEqual(readJSON(dir, 'course.json').glossary.find((entry: { id: string }) => entry.id === 'routeur').unlinked, ['accueil']);
+  assert.equal(readJSON(dir, 'screens/accueil.json').blocks.at(-1).props.markdown, 'Le routeur, puis le routeur du siège.');
+  let data = compiled(dir);
+  assert.deepEqual(termLinks(screenHtml(data, 'accueil'), 'routeur'), []);
+  // The other screens keep theirs.
+  assert.equal(termLinks(screenHtml(data, 'chemin'), 'routeur').length, 1);
+  // A screen renamed: the entry follows it.
+  edit.rename(dir, { from: 'accueil', to: 'accueil-ticket' });
+  assert.deepEqual(readJSON(dir, 'course.json').glossary.find((entry: { id: string }) => entry.id === 'routeur').unlinked, ['accueil-ticket']);
+  assert.ok(!validateDir(dir).diagnostics.some((d) => d.severity === 'error'));
+  // Linked again: the first time in the screen.
+  edit.updatePlayer(dir, { relinkTerm: { term: 'routeur', screen: 'accueil-ticket' } });
+  assert.equal(readJSON(dir, 'course.json').glossary.find((entry: { id: string }) => entry.id === 'routeur').unlinked, undefined);
+  assert.deepEqual(termLinks(blockHtml(compiled(dir), 'accueil-note'), 'routeur'), ['routeur']);
+  assert.throws(() => edit.updatePlayer(dir, { unlinkTerm: { term: 'absent', screen: 'chemin' } }), /no entry "absent"/);
+  assert.throws(() => edit.updatePlayer(dir, { unlinkTerm: { term: 'routeur', screen: 'absent' } }), /no screen "absent"/);
+  // The option off: only the links written by hand.
+  edit.updatePlayer(dir, { unlinkTerm: { term: 'routeur', screen: 'simulation' } });
   edit.updatePlayer(dir, { options: { glossary: { linkTerms: false } } });
-  const course = readJSON(dir, 'course.json');
-  const imprimante = { id: 'imprimante', term: 'Imprimante', definition: 'Appareil qui imprime les documents envoyés par le serveur d\'impression.' };
-  // Off: a term added is not linked.
-  assert.deepEqual(edit.updatePlayer(dir, { glossary: [...course.glossary, imprimante] }).linked, []);
-  // Turned on: every term.
-  const on = edit.updatePlayer(dir, { options: { glossary: { linkTerms: null } } });
-  assert.ok(on.linked.some((link) => link.term === 'imprimante'));
-  assert.ok(on.linked.some((link) => link.term === 'routeur'));
-  // The author removes one link; other changes leave it removed.
-  const screen = on.linked.find((link) => link.term === 'imprimante')!.screen;
-  const file = `screens/${screen}.json`;
-  const unlinked = JSON.parse(JSON.stringify(readJSON(dir, file)).replace(/\[([^\]]+)\]\(glossary:imprimante\)/, '$1'));
-  writeJSON(dir, file, unlinked);
-  edit.updatePlayer(dir, { credits: ['Illustrations : Hélios'] });
-  assert.doesNotMatch(JSON.stringify(readJSON(dir, file)), /glossary:imprimante/);
-  // A term added while on: that term only.
-  const added = edit.updatePlayer(dir, { glossary: [...readJSON(dir, 'course.json').glossary, { id: 'poste', term: 'Poste', definition: 'L\'ordinateur de l\'utilisateur.' }] });
-  assert.ok(added.linked.length > 0);
-  assert.ok(added.linked.every((link) => link.term === 'poste'));
-  assert.doesNotMatch(JSON.stringify(readJSON(dir, file)), /glossary:imprimante/);
-  assert.throws(() => edit.updatePlayer(dir, { linkTerms: ['absent'] }), /no entry "absent"/);
+  data = compiled(dir);
+  assert.deepEqual(termLinks(screenHtml(data, 'chemin'), 'routeur'), []);
+  assert.ok(termLinks(screenHtml(data, 'chemin'), 'paquet').length > 0, 'chemin keeps its link to paquet written by hand');
+  // A screen deleted leaves the entries' lists.
+  edit.deleteScreen(dir, { id: 'simulation' });
+  assert.equal(readJSON(dir, 'course.json').glossary.find((entry: { id: string }) => entry.id === 'routeur').unlinked, undefined);
 });
 
 test('a glossary entry with translate: false keeps its term and variants in every language', () => {
@@ -297,47 +324,48 @@ test('the canvas render data carries what the live bars need: the outline, the r
 
 test('linking reads Markdown as the player does: case for acronyms, links, references, code, URLs; the longest term first, whatever the glossary\'s order', () => {
   const dir = copyExample();
-  const accueil = readJSON(dir, 'screens/accueil.json');
-  const callout = accueil.blocks.find((block: { id: string }) => block.id === 'accueil-situation');
-  callout.props.markdown = 'Si vous êtes prêt, le SI répond. Voir [le guide][routeur], [un [routeur] imbriqué](https://example.com) et https://example.com/routeur/doc.\n\n    routeur dans un bloc de code\n\nPuis le réseau privé virtuel, et le réseau.';
-  writeJSON(dir, 'screens/accueil.json', accueil);
+  addText(dir, 'accueil', 'accueil-note', 'Si vous êtes prêt, le SI répond. Voir [le guide][routeur], [un [routeur] imbriqué](https://example.com) et https://example.com/routeur/doc.\n\n    routeur dans un bloc de code\n\nPuis le réseau privé virtuel, et le réseau.\n\n[routeur]: https://example.com/guide');
   const course = readJSON(dir, 'course.json');
-  const glossary = [
+  edit.updatePlayer(dir, { glossary: [
     ...course.glossary,
     { id: 'si', term: 'SI', definition: 'Le système d\'information.' },
     { id: 'reseau', term: 'réseau', definition: 'Des équipements reliés.' },
     { id: 'rpv', term: 'réseau privé virtuel', definition: 'Un tunnel chiffré.' }
-  ];
-  edit.updatePlayer(dir, { options: { glossary: { linkTerms: false } } });
-  edit.updatePlayer(dir, { glossary });
-  edit.updatePlayer(dir, { linkTerms: ['si', 'routeur', 'reseau', 'rpv'] });
-  const text = readJSON(dir, 'screens/accueil.json').blocks.find((block: { id: string }) => block.id === 'accueil-situation').props.markdown;
-  assert.equal(text, 'Si vous êtes prêt, le [SI](glossary:si) répond. Voir [le guide][routeur], [un [routeur] imbriqué](https://example.com) et https://example.com/routeur/doc.\n\n    routeur dans un bloc de code\n\nPuis le [réseau privé virtuel](glossary:rpv), et le [réseau](glossary:reseau).');
+  ] });
+  const html = blockHtml(compiled(dir), 'accueil-note');
+  assert.deepEqual(termLinks(html, 'si'), ['SI']);
+  assert.deepEqual(termLinks(html, 'rpv'), ['réseau privé virtuel']);
+  assert.deepEqual(termLinks(html, 'reseau'), ['réseau']);
+  assert.deepEqual(termLinks(html, 'routeur'), [], html);
 });
 
-test('linking and translations: the same link where the term is in an up-to-date translation, else the text said stale; a language left out of the package is named', async () => {
+test('linking and translations: each language links its own words, a term with translate: false its own; nothing goes stale, the package keeps every language', async () => {
   const dir = copyCourse(BILINGUAL);
-  const unit = 'block.burns-practice.options.a.feedback';
+  const before = fs.readFileSync(path.join(dir, 'translations/fr.xlf'), 'utf8');
   const course = readJSON(dir, 'course.json');
-  // A name kept in every language: the French text has it too, and takes the same link.
-  const gemini = edit.updatePlayer(dir, { glossary: [...(course.glossary ?? []), { id: 'gemini', term: 'Gemini', definition: 'The NASA programme of two-person spacecraft (1965–1966).', translate: false }] });
-  assert.ok(gemini.linked.some((link) => link.unit === unit));
-  assert.deepEqual(gemini.translations, [{ language: 'fr', linked: [unit], stale: [] }]);
-  const xlf = fs.readFileSync(path.join(dir, 'translations/fr.xlf'), 'utf8');
-  assert.match(xlf, /<target>C’est l’instinct qu’a suivi \[Gemini\]\(glossary:gemini\) 4\./);
-  // A term whose translation the French has not got: its texts are said stale.
-  const client = edit.updatePlayer(dir, { glossary: [...readJSON(dir, 'course.json').glossary, { id: 'client', term: 'client', definition: 'The spacecraft to catch up with.' }] });
-  const french = client.translations.find((translation) => translation.language === 'fr')!;
-  assert.ok(french.stale.length > 0 && french.linked.length === 0, JSON.stringify(client.translations));
-  // The package of every language leaves French out, and says why.
-  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-left-out-'));
+  // A name kept in every language, and a term the French has not translated yet.
+  edit.updatePlayer(dir, { glossary: [...(course.glossary ?? []), { id: 'gemini', term: 'Gemini', definition: 'The NASA programme of two-person spacecraft (1965–1966).', translate: false }, { id: 'client', term: 'client', definition: 'The spacecraft to catch up with.' }] });
+  // The screens' texts and their translations are left as they are: only the glossary's own units are new.
+  const units = (xlf: string) => [...xlf.matchAll(/<unit id="([^"]+)">[\s\S]*?<\/unit>/g)].filter((match) => !match[1].startsWith('course.glossary.')).map((match) => match[0]).join('\n');
+  assert.equal(units(fs.readFileSync(path.join(dir, 'translations/fr.xlf'), 'utf8')), units(before));
+  // The new entries translated: the French is complete again.
+  edit.translateText(dir, { language: 'fr', texts: [
+    { unit: 'course.glossary.gemini.definition', target: 'Le programme de la NASA de vaisseaux à deux places (1965-1966).' },
+    { unit: 'course.glossary.client.term', target: 'client' },
+    { unit: 'course.glossary.client.definition', target: 'Le vaisseau à rattraper.' }
+  ] });
+  const project = loadProjectFromDir(dir);
+  const { keys } = assignKeys(project, readLock(project), { dryRun: true });
+  const english = compileCourseData(project, keys, { buildId: 'test' });
+  const french = compileCourseData(translatedProject(project, 'fr'), keys, { buildId: 'test' });
+  assert.deepEqual(termLinks(screenHtml(english, 'burns'), 'gemini'), ['Gemini']);
+  assert.deepEqual(termLinks(screenHtml(french, 'burns'), 'gemini'), ['Gemini']);
+  // The package of every language: French is up to date.
+  assert.deepEqual(packageLanguages(project, 'all').languages, ['en', 'fr']);
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-languages-'));
   const built = await build(dir, { out, emit: 'dir', target: 'web', writeLock: false, languages: 'all' });
   assert.ok(built.ok);
-  const left = built.diagnostics.filter((d) => d.code === 'W_PACKAGE_LANGUAGE_LEFT_OUT');
-  assert.equal(left.length, 1);
-  assert.equal(left[0].target, 'fr');
-  assert.match(left[0].message, /texts? to translate/);
-  assert.match(left[0].message, /out of date/);
+  assert.equal(built.diagnostics.filter((d) => d.code === 'W_PACKAGE_LANGUAGE_LEFT_OUT').length, 0);
   fs.rmSync(out, { recursive: true, force: true });
 });
 
@@ -370,31 +398,29 @@ test('the links to an entry, as the player\'s Markdown reads them: inline, by re
   assert.equal(unlinkText(result.text, new Set(['si', 'passerelle'])).text.split('\n')[0], 'Le routeur, le **SI**, la passerelle,');
 });
 
-test('a glossary entry removed takes its links: the words stay, placed or written by hand, in one change that undo takes back', () => {
+test('a glossary entry removed takes the links written by hand to it: the words stay, in one change that undo takes back', () => {
   const dir = copyExample();
-  edit.updatePlayer(dir, { linkTerms: true });
-  // A link written by hand, by reference, in a screen that has the term linked already.
-  const chemin = readJSON(dir, 'screens/chemin.json');
-  const intro = chemin.blocks.find((block: { id: string }) => block.id === 'chemin-regle');
-  intro.props.markdown = `${intro.props.markdown}\n\nVoir aussi [le routeur du siège][siege].\n\n[siege]: glossary:routeur`;
-  writeJSON(dir, 'screens/chemin.json', chemin);
+  // Links written by hand: inline in one screen, by reference in another.
+  addText(dir, 'accueil', 'accueil-note', 'Le [routeur](glossary:routeur) du siège.');
+  addText(dir, 'chemin', 'chemin-note', 'Voir aussi [le routeur du siège][siege].\n\n[siege]: glossary:routeur');
   const screens = () => fs.readdirSync(path.join(dir, 'screens')).map((name) => fs.readFileSync(path.join(dir, 'screens', name), 'utf8')).join('\n');
   const before = (screens().match(/glossary:routeur/g) ?? []).length;
-  assert.ok(before >= 3, `${before} links to routeur`);
+  assert.equal(before, 2);
   const glossary = readJSON(dir, 'course.json').glossary.filter((entry: { id: string }) => entry.id !== 'routeur');
   const removed = edit.updatePlayer(dir, { glossary });
   assert.doesNotMatch(screens(), /glossary:routeur/);
-  // The inline links, and the link by reference (its definition is the other mention).
-  assert.equal(removed.unlinked.length, before, `${removed.unlinked.length} links, ${before} mentions`);
-  assert.equal(removed.unlinked.filter((link) => link.text === 'le routeur du siège').length, 1);
-  assert.ok(removed.unlinked.every((link) => link.term === 'routeur' && link.text.length > 0));
-  assert.ok(removed.changed.includes(`unlink removed terms (${removed.unlinked.length} links)`), removed.changed.join(', '));
-  assert.match(readJSON(dir, 'screens/chemin.json').blocks.find((block: { id: string }) => block.id === 'chemin-regle').props.markdown, /Voir aussi le routeur du siège\.$/);
+  assert.deepEqual(removed.unlinked.map((link) => link.text).sort(), ['le routeur du siège', 'routeur']);
+  assert.ok(removed.changed.includes('unlink removed terms (2 links)'), removed.changed.join(', '));
+  assert.equal(readJSON(dir, 'screens/chemin.json').blocks.at(-1).props.markdown, 'Voir aussi le routeur du siège.');
   assert.equal(validateDir(dir).diagnostics.some((d) => d.code === 'E_GLOSSARY_TERM_UNKNOWN'), false);
   // One change: undone, the entry and its links come back.
   edit.undo(dir);
   assert.equal((screens().match(/glossary:routeur/g) ?? []).length, before);
   assert.ok(readJSON(dir, 'course.json').glossary.some((entry: { id: string }) => entry.id === 'routeur'));
+  // A link to an entry that is not in the glossary, inline or by reference, stops the build.
+  addText(dir, 'chemin', 'chemin-faux', 'La [box][b] et le [switch](glossary:switch).\n\n[b]: glossary:box');
+  const unknown = validateDir(dir).diagnostics.filter((d) => d.code === 'E_GLOSSARY_TERM_UNKNOWN').map((d) => d.message);
+  assert.equal(unknown.length, 2, unknown.join('\n'));
 });
 
 test('a glossary entry removed: the translations that had its links up to date lose them and stay up to date', () => {
@@ -402,14 +428,23 @@ test('a glossary entry removed: the translations that had its links up to date l
   const unit = 'block.burns-practice.options.a.feedback';
   const course = readJSON(dir, 'course.json');
   edit.updatePlayer(dir, { glossary: [...(course.glossary ?? []), { id: 'gemini', term: 'Gemini', definition: 'The NASA programme of two-person spacecraft (1965–1966).', translate: false }] });
-  assert.match(fs.readFileSync(path.join(dir, 'translations/fr.xlf'), 'utf8'), /\[Gemini\]\(glossary:gemini\)/);
+  // A link written by hand in the English text and in its French translation.
+  const project = loadProjectFromDir(dir);
+  const found = extractUnits(project).find((candidate) => candidate.id === unit)!;
+  const screen = readJSON(dir, found.file);
+  const english = String(found.text).replace('Gemini', '[Gemini](glossary:gemini)');
+  const at = found.pointer.split('/').slice(1);
+  let target: Record<string, unknown> = screen;
+  for (const key of at.slice(0, -1)) target = target[key] as Record<string, unknown>;
+  target[at.at(-1)!] = english;
+  writeJSON(dir, found.file, screen);
+  edit.translateText(dir, { language: 'fr', texts: [{ unit, target: 'C’est l’instinct qu’a suivi [Gemini](glossary:gemini) 4. Le côté opposé monte, chaque tour dure plus longtemps et le client s’éloigne encore : environ 17 km de plus par orbite pour chaque m/s.' }] });
   const removed = edit.updatePlayer(dir, { glossary: course.glossary ?? [] });
   assert.ok(removed.unlinked.some((link) => link.unit === unit && link.text === 'Gemini'));
-  assert.deepEqual(removed.translations, [{ language: 'fr', linked: [], stale: [], unlinked: [...new Set(removed.unlinked.map((link) => link.unit))].filter((id) => id === unit) }]);
+  assert.deepEqual(removed.translations, [{ language: 'fr', unlinked: [unit], stale: [] }]);
   const xlf = fs.readFileSync(path.join(dir, 'translations/fr.xlf'), 'utf8');
   assert.doesNotMatch(xlf, /glossary:gemini/);
   assert.match(xlf, /<target>C’est l’instinct qu’a suivi Gemini 4\./);
-  // Still a package of every language: French is up to date.
   assert.deepEqual(packageLanguages(loadProjectFromDir(dir), 'all').languages, ['en', 'fr']);
 });
 

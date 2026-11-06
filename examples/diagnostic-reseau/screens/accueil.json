@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.12/screen.schema.json",
   "id": "accueil",
   "title": "Diagnostiquer une panne d'impression réseau",
   "covers": [
@@ -63,7 +63,7 @@
         "a11y": {
           "description": "Le réseau du siège sur un plateau : le poste de Marc, mis en avant, le commutateur de l'étage, le routeur, le pare-feu, le serveur d'impression et l'imprimante, reliés par des câbles."
         },
-        "textAlternative": "**Version texte de la scène.** Le réseau du siège, posé sur un plateau : le poste de Marc, le [commutateur](glossary:commutateur) de l'étage, le [routeur](glossary:routeur), le [pare-feu](glossary:pare-feu), le [serveur d'impression](glossary:serveur-impression) et l'imprimante, reliés par des câbles dans cet ordre."
+        "textAlternative": "**Version texte de la scène.** Le réseau du siège, posé sur un plateau : le poste de Marc, le commutateur de l'étage, le routeur, le pare-feu, le serveur d'impression et l'imprimante, reliés par des câbles dans cet ordre."
       }
     }
   ],

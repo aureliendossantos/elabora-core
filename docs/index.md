@@ -18,7 +18,7 @@ Read these pages on GitHub, on [elabora.studio/en/docs/developers](https://elabo
 - [Charts and diagrams](charts.md): chart blocks that each say one thing, follow the voice and let learners predict; Mermaid diagrams; custom charts with D3.
 - [Design layer](design.md): free stylesheets, layouts and generated figures around structured content; window sizes, slides and steps; checks on the rendered course.
 - [Free-object contract](free-object-contract.md): custom code such as three.js scenes and mini-games, sandboxed, testable and editable by authors: manifest, protocol, gates, objects that carry on across screens (§4e) and the backdrop's decoration (§4c).
-- [JSON Schemas](../packages/format/schemas/0.1.11/): the normative schemas of format 0.1, also served at `https://elabora.studio/schemas/0.1.11/`.
+- [JSON Schemas](../packages/format/schemas/0.1.12/): the normative schemas of format 0.1, also served at `https://elabora.studio/schemas/0.1.12/`.
 
 ## Delivery
 

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
+  "$schema": "https://elabora.studio/schemas/0.1.12/screen.schema.json",
   "id": "chemin",
   "title": "Le chemin d'une impression",
   "covers": [
@@ -33,7 +33,7 @@
         "a11y": {
           "description": "Le chemin d'une impression s'éclaire sur le réseau du siège, à mesure que Claire le décrit : le poste de Marc et le commutateur, dans le réseau de l'étage, puis le routeur, le pare-feu, le serveur d'impression et l'imprimante, dans le réseau des serveurs."
         },
-        "textAlternative": "**Version texte du chemin.** Une demande d'impression part du poste de Marc. Le [commutateur](glossary:commutateur) de l'étage la relaie. Le [routeur](glossary:routeur) la fait passer dans le réseau des serveurs. Le [pare-feu](glossary:pare-feu) vérifie qu'elle a le droit d'entrer. Le [serveur d'impression](glossary:serveur-impression) l'envoie enfin à l'imprimante. Le poste et le commutateur forment le réseau de l'étage ; le pare-feu, le serveur et l'imprimante, le réseau des serveurs."
+        "textAlternative": "**Version texte du chemin.** Une demande d'impression part du poste de Marc. Le commutateur de l'étage la relaie. Le routeur la fait passer dans le réseau des serveurs. Le pare-feu vérifie qu'elle a le droit d'entrer. Le serveur d'impression l'envoie enfin à l'imprimante. Le poste et le commutateur forment le réseau de l'étage ; le pare-feu, le serveur et l'imprimante, le réseau des serveurs."
       }
     },
     {

@@ -137,6 +137,12 @@ export function deleteScreen(context: CommandContext, { id }: { id: string }): C
   const sections = sectionsOf(course);
   for (const s of sections) s.screens = screensOf(s).filter((x) => x !== id);
   if (sections.some((s) => !s.screens.length)) throw new CommandError('Deleting this screen would leave a section empty: remove or merge the section first.');
+  // A glossary term no longer unlinked in a screen that is gone (a new screen of that id is linked).
+  for (const entry of Array.isArray(course.glossary) ? course.glossary : []) {
+    if (!Array.isArray(entry.unlinked) || !entry.unlinked.includes(id)) continue;
+    entry.unlinked = entry.unlinked.filter((screen) => screen !== id);
+    if (!entry.unlinked.length) delete entry.unlinked;
+  }
   draft.writeJson('course.json', course);
   draft.remove(screenFile(id));
   return { files: draft.files(), result: {} };
