@@ -1,5 +1,5 @@
 import type {
-  CourseData, WebDelivery, PlayerData, ResourceData, GlossaryData, AboutData, ScreenData, ScreenLayout, BlockData, EventData, Condition as ConditionData, Action as ActionData, Backdrop, ObjectDefinition, TokenValues,
+  CourseData, WebDelivery, LmsDelivery, PlayerData, ResourceData, GlossaryData, AboutData, ScreenData, ScreenLayout, BlockData, EventData, Condition as ConditionData, Action as ActionData, Backdrop, ObjectDefinition, TokenValues,
   QuizProps, NumericProps, NumericTolerance, FillInProps, SortProps, ReflectionProps, DecisionProps, DialogueProps, ObjectBlockProps, ResultsProps, SpeechProps, VideoProps, AudioProps, AspectRatio, NarrationData, MomentData, TimingData, ContinuityData
 } from '@elabora/player/course-data';
 import type { DataSchema, DataType } from '@elabora/player/data-schema';
@@ -70,6 +70,8 @@ export interface CompileContext {
   narration?: (screenId: string, layer?: string) => NarrationTrack | undefined;
   // The web target's settings (D41): said in the course data.
   delivery?: WebDelivery;
+  // A package for an LMS in another format than SCORM 1.2: said in the course data.
+  lms?: LmsDelivery;
   // Free navigation opens the navigation rules (mode free, no lock until complete), the narrations'
   // seek "seen" and the outline: the web target's navigation free (D41), or a preview's « Déverrouiller
   // la progression ».
@@ -104,6 +106,7 @@ export interface CompileOptions {
   fields?: boolean;
   narration?: (screenId: string, layer?: string) => NarrationTrack | undefined;
   delivery?: WebDelivery;
+  lms?: LmsDelivery;
   // free: every screen open, nothing to do or hear first (the web target says it in delivery).
   navigation?: 'authored' | 'free';
   // The lock the keys came from, when it is not elabora.lock.json (a preview's, BuildOptions.lock).
@@ -166,7 +169,7 @@ export interface CompiledScreen {
   objects: Map<string, ObjectDefinition>; // by object id
 }
 
-export function compileCourseData(project: Project, keys: StateKeys, { buildId, assetPath, narration, delivery, navigation, lock, languages, defaultLanguage, languageMenu, dialogueAudio, interfaceSounds }: { buildId: string } & CompileOptions): CourseData {
+export function compileCourseData(project: Project, keys: StateKeys, { buildId, assetPath, narration, delivery, lms, navigation, lock, languages, defaultLanguage, languageMenu, dialogueAudio, interfaceSounds }: { buildId: string } & CompileOptions): CourseData {
   const context = createCompileContext(project, keys, { assetPath, narration, delivery, navigation, ...(lock ? { lock } : {}), languages, defaultLanguage, languageMenu, dialogueAudio });
   const usedObjects = new Map<string, ObjectDefinition>();
   // A listed screen without its file is reported by the validator (E_SCREEN_NOT_FOUND).
@@ -190,6 +193,7 @@ export function compileCourseData(project: Project, keys: StateKeys, { buildId, 
     ...(about.ai || about.credits ? { about } : {}),
     ...(sounds ? { sounds } : {}),
     ...(delivery ? { delivery } : {}),
+    ...(lms ? { lms } : {}),
     build: { id: buildId }
   };
 }

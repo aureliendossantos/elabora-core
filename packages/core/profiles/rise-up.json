@@ -23,6 +23,11 @@
     "lti13": true,
     "aicc": null
   },
+  "bestFormat": {
+    "format": "scorm2004",
+    "edition": "4th",
+    "why": "Rise Up reads cmi.score.scaled in SCORM 2004 and documents the 2nd to 4th editions; one SCO, as it refuses multi-SCO packages."
+  },
   "launch": {
     "default": "iframe",
     "modes": [

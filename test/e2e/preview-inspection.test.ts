@@ -48,7 +48,7 @@ test('preview in a frame: no band, the LMS session, calls, course, state and eve
   await page.setContent(`<!doctype html><body style="margin:0"><iframe style="border:0;width:1200px;height:800px" src="${session.urls.lms.replace('reg=preview', 'reg=essai')}"></iframe>
 <script>window.received = []; addEventListener('message', (event) => { if (event.data && event.data.type === 'elabora/lms') window.received.push(event.data); });</script></body>`);
   const sessionMessage = await until(page, (all) => all.find((message) => message.kind === 'session')?.session as Record<string, unknown> | undefined, 'session');
-  assert.deepEqual(sessionMessage, { reg: 'essai', mode: 'iframe', limit: 4096, enforcement: 'reject', entry: 'ab-initio', profile: { id: 'moodle', name: 'Moodle 4.5–5.2 (mod_scorm)', launch: 'iframe' }, saved: null });
+  assert.deepEqual(sessionMessage, { reg: 'essai', mode: 'iframe', format: 'scorm12', limit: 4096, enforcement: 'reject', entry: 'ab-initio', profile: { id: 'moodle', name: 'Moodle 4.5–5.2 (mod_scorm)', launch: 'iframe' }, saved: null });
   const data = await until(page, (all) => all.find((message) => message.kind === 'course')?.course as { navigation: unknown; variables: { id: string }[] } | undefined, 'course');
   assert.deepEqual(data.navigation, { mode: 'linear', lockUntilComplete: true });
   assert.deepEqual(data.variables.map((variable) => variable.id), ['bonsReflexes', 'indiceVu']);

@@ -19,6 +19,7 @@ export type { DataSchema, DataType } from './data-schema.ts';
 export { createObjectHost } from './object-host.ts';
 export type { ObjectHost, ObjectHostDefinition, ObjectHostOptions } from './object-host.ts';
 export { findScorm12API, createScorm12Adapter, createStandaloneAdapter, scorm12Duration } from './scorm12.ts';
+export { findScorm2004API, createScorm2004Adapter, scorm2004Duration, scorm2004Response, scorm2004Timestamp } from './scorm2004.ts';
 export type { Interaction, LmsAdapter, LmsCall, LmsPhase, Scorm12Api } from './scorm12.ts';
 export { createWebAdapter, webStorageKey } from './web.ts';
 export type { WebProgress, WebStorage, WebAdapterOptions } from './web.ts';

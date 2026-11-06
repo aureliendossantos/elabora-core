@@ -35,10 +35,12 @@ export interface FoundApi {
 }
 
 export type Scorm12Method = 'LMSInitialize' | 'LMSFinish' | 'LMSGetValue' | 'LMSSetValue' | 'LMSCommit';
+// SCORM 2004's API (scorm2004.ts).
+export type Scorm2004Method = 'Initialize' | 'Terminate' | 'GetValue' | 'SetValue' | 'Commit';
 
 export interface LmsCall {
   t: number;
-  method: Scorm12Method;
+  method: Scorm12Method | Scorm2004Method;
   args: string[];
   result: string;
   error: string;
@@ -48,7 +50,10 @@ export type LmsPhase = 'none' | 'initialized' | 'finished';
 
 // What the player uses of the LMS, found or not.
 export interface LmsAdapter {
-  kind: 'scorm12' | 'standalone' | 'web'; // web: the web target's (web.ts)
+  // The LMS it talks to: SCORM 1.2 (here), SCORM 2004 (scorm2004.ts), none (standalone: a preview's
+  // data in the tab) or the web target's (web.ts). The player talks to all of them in SCORM 1.2's
+  // data model: the others translate it.
+  kind: 'scorm12' | 'scorm2004' | 'standalone' | 'web';
   where: string;
   log: LmsCall[];
   readonly phase: LmsPhase;
@@ -61,7 +66,8 @@ export interface LmsAdapter {
   // Standalone and web only: forget the data kept.
   reset?(): void;
   // The learner's language preferences the LMS gives, in order (D71): SCORM 1.2's
-  // cmi.student_preference.language; none where the LMS has none (it is often empty).
+  // cmi.student_preference.language, SCORM 2004's cmi.learner_preference.language; none where the
+  // LMS has none (it is often empty).
   preferredLanguages?(): string[];
 }
 
@@ -84,17 +90,18 @@ function safe<T>(read: () => T): T | undefined {
   try { return read(); } catch { return undefined; }
 }
 
-// Only LMSInitialize is checked: the adapter catches the failures of the other calls.
-function isScorm12Api(value: unknown): value is Scorm12Api {
-  return (typeof value === 'object' || typeof value === 'function') && value !== null && 'LMSInitialize' in value && typeof value.LMSInitialize === 'function';
+// An API object of the LMS, under its name (API for SCORM 1.2, API_1484_11 for SCORM 2004), with
+// its first function: the adapters catch the failures of the others.
+function hasFunction(value: unknown, name: string): boolean {
+  return (typeof value === 'object' || typeof value === 'function') && value !== null && name in value && typeof (value as Record<string, unknown>)[name] === 'function';
 }
 
-function findInParents(start: Window): FoundApi | null {
+function findInParents<T>(start: Window, read: (win: Window) => T | null): { api: T; where: string } | null {
   let current: Window | null = start;
   for (let depth = 0; current && depth <= MAX_PARENT_DEPTH; depth++) {
     const win: Window = current;
-    const api = safe(() => win.API);
-    if (api && isScorm12Api(api)) return { api, where: depth === 0 ? 'self' : `parent^${depth}` };
+    const api = safe(() => read(win));
+    if (api) return { api, where: depth === 0 ? 'self' : `parent^${depth}` };
     const parent = safe(() => win.parent);
     if (!parent || parent === win) break;
     current = parent;
@@ -102,19 +109,24 @@ function findInParents(start: Window): FoundApi | null {
   return null;
 }
 
-export function findScorm12API(win: Window): FoundApi | null {
-  const direct = findInParents(win);
+// Parent frames (up to 12 levels), then the opener chain: top.opener, then top.opener.opener (and
+// their parents).
+export function findLmsApi<T>(win: Window, read: (win: Window) => T | null): { api: T; where: string } | null {
+  const direct = findInParents(win, read);
   if (direct) return direct;
-  // Opener chain: top.opener, then top.opener.opener (and their parents).
   let top: Window = safe(() => win.top) || win;
   for (let depth = 1; depth <= 3; depth++) {
     const opener: Window | null | undefined = safe(() => top.opener);
     if (!opener) break;
-    const found = findInParents(opener);
+    const found = findInParents(opener, read);
     if (found) return { api: found.api, where: `${'opener.'.repeat(depth)}${found.where}` };
     top = safe(() => opener.top) || opener;
   }
   return null;
+}
+
+export function findScorm12API(win: Window): FoundApi | null {
+  return findLmsApi(win, (candidate) => (hasFunction(candidate.API, 'LMSInitialize') ? candidate.API as Scorm12Api : null));
 }
 
 export function pad(value: number, width: number): string { return String(value).padStart(width, '0'); }

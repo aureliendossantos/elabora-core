@@ -27,6 +27,10 @@
     "lti13": true,
     "aicc": true
   },
+  "bestFormat": {
+    "format": "scorm12",
+    "why": "SCORM 2004 support is partial and closed as won't fix: SCORM 1.2, which Moodle passes the ADL conformance tests for."
+  },
   "launch": {
     "default": "iframe",
     "modes": [

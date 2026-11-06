@@ -1,5 +1,6 @@
-// Fake LMS page: scorm-again's Scorm12API configured from an executable profile, plus the quirks
-// that profiles document (suspend_data limit and enforcement, mastery override, launch topology).
+// Fake LMS page: scorm-again's Scorm12API or Scorm2004API (the package's format: ?format=scorm12 or
+// scorm2004) configured from an executable profile, plus the quirks that profiles document
+// (suspend_data limit and enforcement, mastery override, launch topology).
 // Shown in a frame (the desktop app's Aperçu), it tells that page what the LMS receives and what the
 // course does, and sets a variable when asked: messages { type: 'elabora/lms', kind, … } to the
 // parent (session, call, course, state, events; docs/delivery-scorm12.md), and
@@ -10,75 +11,102 @@
   const reg = q.get('reg') || 'reg-1';
   const mode = q.get('mode') || 'iframe';
   const mastery = q.get('mastery');
+  const format = q.get('format') === 'scorm2004' ? 'scorm2004' : 'scorm12';
+  const scorm2004 = format === 'scorm2004';
+  await new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = `/lms/scorm-again/${format}.js`;
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
   const profile = await fetch(`/lms/profile/${q.get('profile') || 'unknown'}`).then((r) => r.json());
   const saved = await fetch(`/lms/state/${reg}`).then((r) => r.json());
-  const limit = profile.datamodel?.suspendDataMax?.scorm12 ?? 4096;
+  const limit = (scorm2004 ? profile.datamodel?.suspendDataMax?.scorm2004 : profile.datamodel?.suspendDataMax?.scorm12) ?? (scorm2004 ? 64000 : 4096);
   const enforcement = profile.datamodel?.suspendDataEnforcement || 'reject';
   const autocommit = profile.harness?.autocommitSeconds || 0;
   const parent = window.parent !== window ? window.parent : null;
   const tell = (message) => { if (parent) parent.postMessage({ type: 'elabora/lms', ...message }, '*'); };
 
-  const api = new window.Scorm12API({
+  const settings = {
     lmsCommitUrl: `/lms/commit/${reg}`,
     autocommit: autocommit > 0,
     autocommitSeconds: autocommit || 60,
     dataCommitFormat: 'json',
     useAsynchronousCommits: profile.harness?.syncCommits === false,
     asyncModeBeaconBehavior: 'never',
-    mastery_override: profile.datamodel?.masteryOverridesStatus === true,
     logLevel: 5
-  });
-  if (saved) {
-    api.loadFromJSON(saved);
-    const wasSuspended = saved.core?.exit === 'suspend';
-    api.cmi.core.entry = wasSuspended ? 'resume' : '';
-    api.cmi.core.exit = '';
+  };
+  const api = scorm2004 ? new window.Scorm2004API(settings) : new window.Scorm12API({ ...settings, mastery_override: profile.datamodel?.masteryOverridesStatus === true });
+  let entry;
+  if (scorm2004) {
+    if (saved) api.loadFromJSON(saved);
+    entry = saved ? (saved.exit === 'suspend' ? 'resume' : '') : 'ab-initio';
+    api.cmi.entry = entry;
+    api.cmi.learner_id = 'learner-1';
+    api.cmi.learner_name = 'Doe, Alex';
+    api.cmi.mode = 'normal';
+    api.cmi.credit = 'credit';
+    if (mastery) api.cmi.scaled_passing_score = String(Number(mastery) / 100);
+    // The learner's preferred language, as an LMS that fills it gives it (D71; most leave it empty).
+    if (q.get('learnerLanguage')) api.cmi.learner_preference.language = q.get('learnerLanguage');
   } else {
-    api.cmi.core.entry = 'ab-initio';
+    if (saved) {
+      api.loadFromJSON(saved);
+      api.cmi.core.entry = saved.core?.exit === 'suspend' ? 'resume' : '';
+      api.cmi.core.exit = '';
+    } else {
+      api.cmi.core.entry = 'ab-initio';
+    }
+    entry = api.cmi.core.entry;
+    api.cmi.core.student_id = 'learner-1';
+    api.cmi.core.student_name = 'Doe, Alex';
+    api.cmi.core.lesson_mode = 'normal';
+    api.cmi.core.credit = 'credit';
+    if (mastery) api.cmi.student_data.mastery_score = mastery;
+    if (q.get('learnerLanguage')) api.cmi.student_preference.language = q.get('learnerLanguage');
   }
-  api.cmi.core.student_id = 'learner-1';
-  api.cmi.core.student_name = 'Doe, Alex';
-  api.cmi.core.lesson_mode = 'normal';
-  api.cmi.core.credit = 'credit';
-  if (mastery) api.cmi.student_data.mastery_score = mastery;
-  // The learner's preferred language, as an LMS that fills it gives it (D71; most leave it empty).
-  if (q.get('learnerLanguage')) api.cmi.student_preference.language = q.get('learnerLanguage');
-  // What the LMS plays and what it gave back of the registration's last session.
+  // What the LMS plays and what it gave back of the registration's last session (in SCORM 1.2's
+  // words: SCORM 2004's two statuses as one).
+  const savedStatus = () => (scorm2004 ? (saved.success_status === 'passed' || saved.success_status === 'failed' ? saved.success_status : saved.completion_status === 'unknown' ? '' : saved.completion_status || '') : saved.core?.lesson_status || '');
   tell({
     kind: 'session',
     session: {
-      reg, mode, limit, enforcement, entry: api.cmi.core.entry,
+      reg, mode, format, limit, enforcement, entry,
       profile: { id: profile.id, name: profile.name, launch: profile.launch?.default || 'iframe' },
-      saved: saved ? { location: saved.core?.lesson_location || '', status: saved.core?.lesson_status || '', suspendData: saved.suspend_data || '' } : null
+      saved: saved ? { location: (scorm2004 ? saved.location : saved.core?.lesson_location) || '', status: savedStatus(), suspendData: saved.suspend_data || '' } : null
     }
   });
 
   const log = [];
   window.__lmsLog = log;
   let quirkError = null;
+  const names = scorm2004
+    ? { set: 'SetValue', lastError: 'GetLastError', errorString: 'GetErrorString', diagnostic: 'GetDiagnostic', commit: 'Commit', finish: 'Terminate', all: ['Initialize', 'Terminate', 'GetValue', 'SetValue', 'Commit', 'GetLastError', 'GetErrorString', 'GetDiagnostic'] }
+    : { set: 'LMSSetValue', lastError: 'LMSGetLastError', errorString: 'LMSGetErrorString', diagnostic: 'LMSGetDiagnostic', commit: 'LMSCommit', finish: 'LMSFinish', all: ['LMSInitialize', 'LMSFinish', 'LMSGetValue', 'LMSSetValue', 'LMSCommit', 'LMSGetLastError', 'LMSGetErrorString', 'LMSGetDiagnostic'] };
   const wrap = (name, fn) => (...args) => {
     let result;
-    if (name === 'LMSSetValue' && args[0] === 'cmi.suspend_data' && String(args[1]).length > limit) {
+    if (name === names.set && args[0] === 'cmi.suspend_data' && String(args[1]).length > limit) {
       if (enforcement === 'truncate') result = fn(args[0], String(args[1]).slice(0, limit));
-      else if (enforcement === 'reject') { quirkError = '405'; result = 'false'; }
+      else if (enforcement === 'reject') { quirkError = scorm2004 ? '406' : '405'; result = 'false'; }
       else result = fn(...args);
-    } else if (name === 'LMSGetLastError' && quirkError) {
+    } else if (name === names.lastError && quirkError) {
       result = quirkError;
     } else {
-      if (name !== 'LMSGetLastError' && name !== 'LMSGetErrorString' && name !== 'LMSGetDiagnostic') quirkError = null;
+      if (name !== names.lastError && name !== names.errorString && name !== names.diagnostic) quirkError = null;
       result = fn(...args);
     }
     const call = { t: Date.now(), method: name, args, result: String(result) };
     log.push(call);
     tell({ kind: 'call', call });
     // Every change of the course is committed at once: its state then is the course's.
-    if (name === 'LMSCommit' || name === 'LMSFinish') tellState();
+    if (name === names.commit || name === names.finish) tellState();
     return result;
   };
-  window.API = {};
-  for (const m of ['LMSInitialize', 'LMSFinish', 'LMSGetValue', 'LMSSetValue', 'LMSCommit', 'LMSGetLastError', 'LMSGetErrorString', 'LMSGetDiagnostic']) {
-    window.API[m] = wrap(m, api[m].bind(api));
-  }
+  const exposed = {};
+  for (const m of names.all) exposed[m] = wrap(m, api[m].bind(api));
+  if (scorm2004) window.API_1484_11 = exposed;
+  else window.API = exposed;
   window.__lmsApi = api;
 
   const src = `/pkg/${pkg}/index.html`;

@@ -21,6 +21,11 @@
     "lti13": true,
     "aicc": true
   },
+  "bestFormat": {
+    "format": "scorm2004",
+    "edition": "3rd",
+    "why": "SCORM 2004 3rd edition, without sequencing, with 64,000 characters of suspend_data instead of SCORM 1.2's 4,096."
+  },
   "launch": {
     "default": "nested-iframe",
     "modes": [

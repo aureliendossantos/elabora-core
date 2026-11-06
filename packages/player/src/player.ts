@@ -7,6 +7,7 @@
 
 import { findScorm12API, createScorm12Adapter, createStandaloneAdapter, scorm12Duration, pad } from './scorm12.ts';
 import { createWebAdapter } from './web.ts';
+import { createScorm2004Adapter, findScorm2004API } from './scorm2004.ts';
 import type { Interaction, LmsAdapter } from './scorm12.ts';
 import { createCourseState, hasBehavior, flatBlocks } from './course-state.ts';
 import { createScreenView } from './screen-view.ts';
@@ -64,8 +65,16 @@ const app = document.getElementById('elabora-app') as HTMLElement; // index.html
 const delivery = course.delivery;
 // A module for the web that keeps its progress in the browser says so, and lets the learner clear it.
 const keptHere = delivery?.progress === 'local';
-const found = delivery ? null : findScorm12API(window);
-const lms: LmsAdapter = delivery ? createWebAdapter(packageId, { progress: delivery.progress }) : found ? createScorm12Adapter(found) : createStandaloneAdapter(packageId);
+// A package in another format than SCORM 1.2 says it (course.lms): the player looks for that API.
+const lms: LmsAdapter = delivery ? createWebAdapter(packageId, { progress: delivery.progress }) : lmsAdapter();
+function lmsAdapter(): LmsAdapter {
+  if (initial.lms?.format === 'scorm2004') {
+    const found = findScorm2004API(window);
+    return found ? createScorm2004Adapter(found) : createStandaloneAdapter(packageId);
+  }
+  const found = findScorm12API(window);
+  return found ? createScorm12Adapter(found) : createStandaloneAdapter(packageId);
+}
 const startedAt = Date.now();
 lms.initialize();
 const suspendData = lms.get('cmi.suspend_data');

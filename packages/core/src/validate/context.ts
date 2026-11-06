@@ -7,16 +7,20 @@ import { planIndex, iterateBlocks, screenOrder } from '../project/load.ts';
 import type { PlanIndex, BlockLocation } from '../project/load.ts';
 import { list } from './guards.ts';
 import { targetProfileIds } from '../lms/profiles.ts';
+import { courseFormat } from '../lms/formats.ts';
+import type { DeliveryFormat } from '../lms/formats.ts';
 
 export interface ValidationOptions {
   profiles?: readonly string[]; // LMS profile ids the course targets (default: course.json delivery.lms, else ["unknown"], the strictest values)
   release?: boolean; // client delivery: the plan must be approved
-  // What the build makes (default scorm12). web (D41): no LMS, so no LMS profile, suspend data
-  // budget or package rule of an LMS applies.
+  // What the build makes (default: the format of the module, course.json delivery.format, else the
+  // one Elabora picks for its LMSs: lms/formats.ts). web (D41): no LMS, so no LMS profile, suspend
+  // data budget or package rule of an LMS applies.
   target?: BuildTarget;
 }
 
-export type BuildTarget = 'scorm12' | 'web';
+// A package for an LMS in one of the delivery formats, or a module for the web.
+export type BuildTarget = DeliveryFormat | 'web';
 
 // A screen file with its id (the file name).
 export interface ScreenFile extends ScreenEntry {
@@ -113,7 +117,7 @@ export function createValidationContext(project: Project, options: ValidationOpt
   return {
     project,
     course: project.course,
-    options: { profiles: options.target === 'web' ? [] : targetProfileIds(project.course, options.profiles), release: !!options.release, target: options.target ?? 'scorm12' },
+    options: { profiles: options.target === 'web' ? [] : targetProfileIds(project.course, options.profiles), release: !!options.release, target: options.target ?? courseFormat(project.course, options.profiles).format },
     registry: getRegistry(project),
     planIndex: planIndex(project.plan),
     order,

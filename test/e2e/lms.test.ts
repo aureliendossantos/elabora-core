@@ -24,6 +24,22 @@ test('the example passes the LMS emulator in Moodle (iframe and popup), with axe
   assert.equal(r.accessibility.violations, 0, JSON.stringify(r.accessibility.details));
 });
 
+// SCORM 2004 (docs/delivery-scorm2004.md): the course names SCORM Cloud, Elabora picks the 4th
+// edition, and the emulator plays scorm-again's Scorm2004API as API_1484_11; --package reads the
+// format from the manifest.
+test('a course for SCORM Cloud is built in SCORM 2004 and passes the emulator in it (iframe and popup)', { timeout: 300000 }, async () => {
+  const dir = copyExample();
+  const b = await build(dir, { profiles: ['scorm-cloud'], emit: 'both', out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-e2e-')) });
+  assert.ok(b.ok && b.dirPath && b.zipPath);
+  assert.equal(b.report.delivery?.format, 'scorm2004');
+  const r = await testPackage({ dir: b.dirPath, profiles: ['scorm-cloud'], unloadVariants: false });
+  assert.deepEqual(r.runs.filter((x) => !x.ok).map((x) => `${x.profile}/${x.launch}/${x.browser}: ${x.failures.map((f) => `${f.code} ${f.message}`).join(',')}`), []);
+  assert.deepEqual(r.runs.map((x) => x.launch), ['iframe', 'popup']);
+  assert.ok(r.runs.every((run) => run.checks.some((check) => check.name === 'final-status' && check.ok)));
+  const zip = await testPackage({ zip: b.zipPath, profiles: ['scorm-cloud'], modes: ['iframe'], unloadVariants: false });
+  assert.ok(zip.ok, JSON.stringify(zip.diagnostics));
+});
+
 // A deliberately bad SCORM 1.2 package: it only saves in unload, like many legacy wrappers.
 function badPackage() {
   const manifest = `<?xml version="1.0"?><manifest identifier="bad" xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2" xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"><metadata><schema>ADL SCORM</schema><schemaversion>1.2</schemaversion></metadata><organizations default="o"><organization identifier="o"><title>Bad</title><item identifier="i" identifierref="r"><title>Bad</title></item></organization></organizations><resources><resource identifier="r" type="webcontent" adlcp:scormtype="sco" href="index.html"><file href="index.html"/></resource></resources></manifest>`;

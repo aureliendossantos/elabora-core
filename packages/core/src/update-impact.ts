@@ -1,7 +1,7 @@
 import { resolveProfiles } from './lms/profiles.ts';
 import type { LmsProfile } from './lms/profiles.ts';
 import type { PlanCoverage } from './compile/report.ts';
-import type { StructureFingerprint } from './compile/scorm12-manifest.ts';
+import type { StructureFingerprint } from './compile/manifests.ts';
 import type { StateKeys } from './compile/state-model.ts';
 
 // Compares two build reports (previous delivery → new build, as parsed from their

@@ -14,6 +14,10 @@
     "lti13": false,
     "aicc": null
   },
+  "bestFormat": {
+    "format": "scorm12",
+    "why": "No LMS chosen: SCORM 1.2, the one format every LMS takes."
+  },
   "launch": {
     "default": "iframe",
     "modes": [

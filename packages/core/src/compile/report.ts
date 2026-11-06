@@ -2,9 +2,10 @@ import type { Diagnostic, Summary } from '../diagnostics/index.ts';
 import type { PlanApprovalState } from '../project/plan-versions.ts';
 import type { PlanChange } from '../project/plan-diff.ts';
 import type { Plan, PlanItem, PlanObjective, PlanWaiver, ObjectManifest, LmsProfile } from '@elabora/format';
-import type { StructureFingerprint } from './scorm12-manifest.ts';
+import type { StructureFingerprint } from './manifests.ts';
 import type { StateKeys } from './state-model.ts';
 import type { BuildTarget } from '../validate/context.ts';
+import type { DeliveryFormat, Scorm2004Edition } from '../lms/formats.ts';
 
 // <package>.report.json: what a build delivered and what is left to check. @elabora/node writes it
 // (build.ts), `elabora test` adds the trials (tests); the proof dossier (proof.ts) and `elabora diff`
@@ -14,8 +15,12 @@ export interface BuildReport {
   format: 'elabora-build-report/1';
   elabora: string; // version of Elabora that built the package
   target: BuildTarget;
-  // The web target's settings (D41); absent in a SCORM package's report.
+  // The web target's settings (D41); absent in an LMS package's report.
   web?: ReportWeb;
+  // An LMS package's format (docs/delivery.md): which, how it was chosen (auto: Elabora picked it;
+  // forced: the module or the build said it), why (the LMS it is the best for, a format the LMSs share,
+  // the safest without an LMS, or forced) and for which LMSs. Absent for the web target.
+  delivery?: ReportDelivery;
   release: boolean;
   course: { id: string; title: string; version: string; language: string };
   // A package of every language (D59): the languages learners switch between, the course's own
@@ -51,6 +56,15 @@ export interface BuildReport {
   // Human gates, as ids (accessibility-manual, sme-review, lms-smoke, object-review:<id>): the
   // dossier words them in the course language.
   pending: string[];
+}
+
+export interface ReportDelivery {
+  format: DeliveryFormat;
+  edition?: Scorm2004Edition;
+  name: string; // SCORM 1.2, SCORM 2004 (4th edition)…
+  how: 'auto' | 'forced';
+  why: 'lms' | 'common' | 'safest' | 'forced';
+  lms: string[];
 }
 
 // A module for the web: where its progress stays, how it is navigated, whether search engines may

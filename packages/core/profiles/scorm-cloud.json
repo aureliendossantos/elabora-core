@@ -31,6 +31,11 @@
     "lti13": true,
     "aicc": true
   },
+  "bestFormat": {
+    "format": "scorm2004",
+    "edition": "4th",
+    "why": "The reference implementation of every SCORM edition: the 4th edition tests completion and success apart."
+  },
   "launch": {
     "default": "iframe",
     "modes": [

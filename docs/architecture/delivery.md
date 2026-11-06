@@ -1,6 +1,6 @@
 # Delivery targets and hosting
 
-The SCORM 1.2 and web targets of one build, and the core as the client of Elabora's hosting. Part of the [architecture](../architecture.md), the contract every change follows.
+The LMS formats (SCORM 1.2, SCORM 2004: [Delivery formats](../delivery.md)) and the web target of one build, and the core as the client of Elabora's hosting. Part of the [architecture](../architecture.md), the contract every change follows.
 
 ## Delivery targets (D41)
 
@@ -12,7 +12,7 @@ One build, two targets (`BuildOptions.target`, `elabora build --target`, MCP `el
 | Files | `imsmanifest.xml`, `index.html`, `elabora/`, `assets/`, `objects/` | the same without `imsmanifest.xml`; `share.<ext>` with `--image` |
 | Checks | LMS profiles (`delivery.lms`, `--profile`): suspend data budget, package limits, forbidden extensions | no LMS (`validateProject` `target: 'web'`); portable file names |
 | `index.html` | title | title, description, Open Graph and Twitter card, `robots` (`noindex`), canonical (`url`), sharing image |
-| Player | SCORM 1.2 adapter when an LMS is found, else the preview's standalone adapter (sessionStorage, banner) | web adapter (`web.ts`): `progress` `local` (localStorage, `elabora:web:<course id>`) or `none`; no banner, no Quit, no LMS search |
+| Player | the adapter of the package's format (SCORM 1.2, SCORM 2004) when its LMS API is found, else the preview's standalone adapter (sessionStorage, banner) | web adapter (`web.ts`): `progress` `local` (localStorage, `elabora:web:<course id>`) or `none`; no banner, no Quit, no LMS search |
 | Navigation | the course's rules | `navigation` `authored` (the course's rules) or `free`, applied by the compiler in the course data (`mode: free`, no `lockUntilComplete`, outline shown, narration `seek` `seen` → `free`) |
 
 The settings live in the build, not in `course.json`: the same course is published as a showcase, a review and a publication. The compiled course says them in `delivery` (`{ target: 'web', progress, navigation }`), the build report in `web` (with `noindex`, `url`, `image`), and the proof dossier in « Diffusion web ». `docs/delivery-web.md` gives the recipes.

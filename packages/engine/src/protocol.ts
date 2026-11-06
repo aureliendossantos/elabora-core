@@ -1,6 +1,7 @@
 import type { Diagnostic, Summary } from '@elabora/core/diagnostics/index';
 import type { Author, Op, SkippedOp } from '@elabora/core/ops/types';
 import type { BatchSummary } from '@elabora/core/ops/batch';
+import type { DeliveryFormat } from '@elabora/core/lms/formats';
 import type { Screen, Variable } from '@elabora/core/project/model';
 import type { Anchor } from '@elabora/format';
 import type { PlanApprovalState, PlanDiffView, PlanVersionsView } from '@elabora/core/project/plan-versions';
@@ -378,9 +379,11 @@ export interface FormatMigrationView {
 export interface BuildParams {
   mediaQuality?: PresetName; // overrides course.json delivery.mediaQuality
   release?: boolean;         // client delivery: the plan must be approved (default: the session's validation option)
-  profiles?: string[];       // target LMS profiles (default: the session's validation option, else the strictest values); scorm12 only
+  profiles?: string[];       // target LMS profiles (default: the session's validation option, else the strictest values); LMS packages only
   name?: string;             // the publish version's name (default: the date in the course language, « Publié le 7 octobre 2026 »)
-  target?: 'scorm12' | 'web'; // default scorm12; web: a folder to serve and its ZIP (D41)
+  // A delivery format (scorm12, scorm2004…) or web. Default: the module's format (course.json
+  // delivery.format, else the best for its LMSs, docs/delivery.md); web: a folder to serve and its ZIP (D41).
+  target?: DeliveryFormat | 'web';
   web?: WebBuildOptions;     // the web target's settings: progress local|none, navigation authored|free, noindex, url, image, review { origins } (D42)
   languages?: 'all' | string[]; // the package's languages (D59, D71): all ready and approved, or those named; default: delivery.languages
 }

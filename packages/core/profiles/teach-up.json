@@ -19,6 +19,10 @@
     "lti13": null,
     "aicc": null
   },
+  "bestFormat": {
+    "format": "scorm12",
+    "why": "Only SCORM imports are documented, without an edition of SCORM 2004: SCORM 1.2."
+  },
   "launch": {
     "default": "new-tab",
     "modes": [
