@@ -45,6 +45,9 @@ import { runtimeFiles, lmsBootFile, reviewFiles, playerSoundFile, vendorThree, c
 import { planZip, writeZip, hashZip, ZipLimitError } from './packaging/zip-writer.ts';
 import type { ZipInput, ZipPlan } from './packaging/zip-writer.ts';
 import { packageMedia, packageSizes, mediaQualityOf } from './packaging/media.ts';
+import { packagedPictureSize } from './packaging/image-sizes.ts';
+import { sizeImages } from '@elabora/core/render/image-sizes';
+import type { PictureSize } from '@elabora/core/render/image-sizes';
 import { isMediaAsset, shippedAssets } from './packaging/assets.ts';
 import type { MediaProgress } from './packaging/media.ts';
 import type { PresetName } from '@elabora/core/media/presets';
@@ -365,7 +368,15 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     ...(tracks.size ? { narration: (screen: string, layer?: string) => tracks.get(trackName(screen, layer ?? null))?.track } : {}),
     ...(delivery ? { delivery } : {}), ...free, ...ownLock, ...several
   });
-  files.set('elabora/course.js', Buffer.from(`window.ELABORA_COURSE = ${JSON.stringify(data)};\n`));
+  // Each <img> of the pages takes the size of the picture the package ships: its room is kept before it
+  // arrives, and the browser loads the pictures as the learner comes to them (core/render/image-sizes.ts).
+  const sizes = new Map<string, PictureSize | null>();
+  const sizeOf = (src: string) => {
+    if (!sizes.has(src)) sizes.set(src, files.has(src) || media.has(src) ? packagedPictureSize(src, { text: files.get(src), file: media.get(src) }) : null);
+    return sizes.get(src)!;
+  };
+  const sized = (_key: string, value: unknown) => (typeof value === 'string' ? sizeImages(value, sizeOf) : value);
+  files.set('elabora/course.js', Buffer.from(`window.ELABORA_COURSE = ${JSON.stringify(data, sized)};\n`));
   // The player's interface sounds the course data names, and what every sound is, for the LMS's
   // administrators (D67).
   for (const name of shippedPlayerSounds(data.sounds)) files.set(name, playerSoundFile(name));
@@ -379,7 +390,7 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
       ...(own?.size ? { narration: (screen: string, layer?: string) => own.get(trackName(screen, layer ?? null))?.track } : {}),
       ...(delivery ? { delivery } : {}), ...free, ...ownLock, ...several
     });
-    files.set(`elabora/course.${other.language}.js`, Buffer.from(`(window.ELABORA_COURSES = window.ELABORA_COURSES || {})[${JSON.stringify(other.language)}] = ${JSON.stringify(translated)};\n`));
+    files.set(`elabora/course.${other.language}.js`, Buffer.from(`(window.ELABORA_COURSES = window.ELABORA_COURSES || {})[${JSON.stringify(other.language)}] = ${JSON.stringify(translated, sized)};\n`));
   }
   if (design.css) files.set('elabora/theme.css', Buffer.from(design.css));
   files.set('index.html', Buffer.from(indexHtml(data, { themeCss: !!design.css, review: !!review, http, lrs: !!lrs, ...(share ? { web: { ...share.head, description: course.description } } : {}) })));

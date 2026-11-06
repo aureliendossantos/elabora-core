@@ -4,12 +4,13 @@ import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
+import zlib from 'node:zlib';
 import type { AddressInfo } from 'node:net';
 import { build } from '@elabora/node/build';
 import type { WebBuildOptions } from '@elabora/node/build';
 import { launchBrowser } from '@elabora/node/emulator/browser';
 import type { Browser, Page } from 'playwright-core';
-import { copyExample } from '../helpers.ts';
+import { copyExample, readJSON, writeJSON } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { labelsFor } from '@elabora/player/labels';
 
@@ -141,6 +142,93 @@ test('a module for the web on a static server: local progress survives a reload,
     await tour.waitForFunction((id) => (window as PlayerWindow).__elabora.screen === id, last);
     assert.equal(await screenOf(tour), last);
     await free.close();
+  } finally {
+    await browser?.close();
+    await server.close();
+    fs.rmSync(out, { recursive: true, force: true });
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+// A PNG of the given size, one colour (for the pictures the build sizes and the page holds).
+function png(width: number, height: number): Buffer {
+  const chunk = (type: string, data: Buffer) => {
+    const body = Buffer.concat([Buffer.from(type, 'ascii'), data]);
+    const out = Buffer.alloc(12 + data.length);
+    out.writeUInt32BE(data.length, 0);
+    body.copy(out, 4);
+    out.writeUInt32BE(zlib.crc32(body), 8 + data.length);
+    return out;
+  };
+  const header = Buffer.alloc(13);
+  header.writeUInt32BE(width, 0); header.writeUInt32BE(height, 4); header[8] = 8; header[9] = 2;
+  const row = Buffer.concat([Buffer.from([0]), Buffer.alloc(width * 3, 0x88)]);
+  return Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), chunk('IHDR', header), chunk('IDAT', zlib.deflateSync(Buffer.concat(Array(height).fill(row)))), chunk('IEND', Buffer.alloc(0))]);
+}
+
+test('the pictures of a module for the web: sized by the build, a scroll page\'s far ones loaded as the learner comes near, the next slide\'s loaded ahead', { timeout: 240000 }, async () => {
+  const dir = copyExample();
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-web-pictures-'));
+  fs.writeFileSync(path.join(dir, 'assets/images/far.png'), png(1200, 800));
+  fs.writeFileSync(path.join(dir, 'assets/images/next.png'), png(600, 300));
+  // The first screen grows long, the far picture at its end; the second screen has the next one.
+  const accueil = readJSON(dir, 'screens/accueil.json');
+  const words = 'Le chemin d\'une impression passe par le poste, le commutateur, le routeur et le serveur. '.repeat(12);
+  for (let i = 0; i < 6; i++) accueil.blocks.push({ id: `accueil-long-${i}`, type: 'callout', props: { variant: 'info', markdown: words } });
+  accueil.blocks.push({ id: 'accueil-far', type: 'image', props: { asset: 'images/far.png', alt: 'Une image loin dans la page.' } });
+  writeJSON(dir, 'screens/accueil.json', accueil);
+  const chemin = readJSON(dir, 'screens/chemin.json');
+  chemin.blocks.push({ id: 'chemin-next', type: 'image', props: { asset: 'images/next.png', alt: 'Une image de l\'écran suivant.' } });
+  writeJSON(dir, 'screens/chemin.json', chemin);
+  const made: Record<string, string> = {};
+  for (const mode of ['scroll', 'slides']) {
+    const course = readJSON(dir, 'course.json');
+    writeJSON(dir, 'course.json', { ...course, presentation: { ...course.presentation, mode } });
+    const built = await build(dir, { target: 'web', web: { progress: 'none', navigation: 'free' }, out: path.join(out, mode), writeLock: false });
+    assert.ok(built.ok && built.dirPath, JSON.stringify(built.diagnostics.filter((d) => d.severity === 'error').slice(0, 3)));
+    made[mode] = built.dirPath;
+  }
+  const data = fs.readFileSync(path.join(made.scroll, 'elabora/course.js'), 'utf8');
+  assert.match(data, /<img width=\\"1200\\" height=\\"800\\"[^>]*far\.png/, 'the build writes the size of the PNG');
+  const server = await staticServer(made);
+  let browser: Browser | null = null;
+  try {
+    browser = await launchBrowser('chromium');
+    const fetched = (page: Page) => { const urls: string[] = []; page.on('request', (request) => urls.push(request.url())); return urls; };
+    const box = (page: Page) => page.evaluate(() => { const image = document.querySelector<HTMLImageElement>('img[src$="far.png"], img[data-t-src$="far.png"]')!; const { width, height, top } = image.getBoundingClientRect(); return { width: Math.round(width), height: Math.round(height), top: Math.round(top + window.scrollY) }; });
+
+    // ── scroll: the far picture waits, in its room, until the learner comes near ──
+    const page = await browser.newPage({ viewport: { width: 1000, height: 500 } });
+    const urls = fetched(page);
+    await page.goto(`${server.base}/scroll/index.html`);
+    await player(page);
+    await page.waitForLoadState('networkidle');
+    assert.equal(urls.filter((url) => url.endsWith('far.png')).length, 0, 'the far picture is not loaded with the page');
+    const held = await box(page);
+    assert.ok(held.top > 1500, `the picture is far down the page (${held.top} px)`);
+    assert.ok(held.width > 0 && Math.abs(held.height - held.width * 800 / 1200) <= 1, `its room is kept: ${held.width}×${held.height}`);
+    await page.evaluate((top) => window.scrollTo(0, top - 1000), held.top);
+    await page.waitForFunction(() => document.querySelector<HTMLImageElement>('img[src$="far.png"]')?.complete === true);
+    assert.equal(urls.filter((url) => url.endsWith('far.png')).length, 1, 'loaded once the learner is near');
+    assert.deepEqual(await box(page), held, 'nothing moves when it arrives');
+    await page.close();
+
+    // ── slides: the next screen's picture is there before the learner goes on ──
+    const slides = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+    const asked = fetched(slides);
+    await slides.goto(`${server.base}/slides/index.html`);
+    await player(slides);
+    await slides.waitForFunction(() => performance.getEntriesByType('resource').some((entry) => entry.name.endsWith('next.png') && (entry as PerformanceResourceTiming).responseEnd > 0), undefined, { timeout: 15000 });
+    assert.equal(await screenOf(slides), 'accueil', 'still on the first screen');
+    const shown = await slides.evaluate(() => {
+      const t = (window as PlayerWindow).__elabora;
+      t.go(t.engine.screens[1].id);
+      const image = document.querySelector<HTMLImageElement>('img[src$="next.png"]');
+      return { found: !!image, complete: !!image?.complete && image.naturalWidth > 0 };
+    });
+    assert.deepEqual(shown, { found: true, complete: true }, 'the next screen shows its picture at once');
+    assert.equal(asked.filter((url) => url.endsWith('next.png')).length, 1, 'asked for once');
+    await slides.close();
   } finally {
     await browser?.close();
     await server.close();

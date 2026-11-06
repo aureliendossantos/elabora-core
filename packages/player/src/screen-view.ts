@@ -34,6 +34,7 @@ import type { TranscriptBar } from './transcript.ts';
 import type { Action } from './course-data.ts';
 import type { DialoguePresentation } from './dialogue/walk.ts';
 import type { Sounds } from './sounds.ts';
+import { holdPictures } from './held-pictures.ts';
 
 
 // What a control left to explore is, for the words that say what is left (D63): a card to turn
@@ -109,6 +110,8 @@ export interface ScreenViewOptions {
   // canvas and looks show one screen): the backdrop's context counts its ranks there. Default: the
   // course's screens.
   order?(): { id: string; section: string | null }[] | null;
+  // The player: a scroll page's lazy pictures load as the learner comes to them (held-pictures.ts).
+  holdPictures?: boolean;
 }
 
 export type ScreenView = ReturnType<typeof createScreenView>;
@@ -352,6 +355,8 @@ export function createScreenView(options: ScreenViewOptions) {
   // next screen (D65).
   function leave() {
     depart();
+    held?.dispose();
+    held = null;
     objects.park();
     behaviors.dialogues.dispose();
     transcriptBar?.dispose();
@@ -365,6 +370,7 @@ export function createScreenView(options: ScreenViewOptions) {
     undoCleanups();
     for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog.t-layer')) dialog.close();
   }
+  let held: ReturnType<typeof holdPictures> | null = null;
   function show(next: ScreenData) {
     screen = next;
     steps = stepsOf(next);
@@ -376,6 +382,8 @@ export function createScreenView(options: ScreenViewOptions) {
     renderScreen(next);
     placement.sync(next);
     applySteps();
+    held?.dispose();
+    held = options.holdPictures && !slides() ? holdPictures(main) : null;
     courseState.visit(next, { allSteps: revealed === lastStep() && !(next.narration && options.timeline) });
     arrive(next);
     startTimeline(next);
@@ -1269,6 +1277,7 @@ export function createScreenView(options: ScreenViewOptions) {
     get layers() { return [...document.querySelectorAll<HTMLDialogElement>('dialog.t-layer')].map((dialog) => dialog.dataset.layer ?? ''); },
     // Everything the view put in the page goes (the canvas mounts a course again).
     destroy() {
+      held?.dispose();
       behaviors.dialogues.dispose();
       transcriptBar?.dispose();
       disposeHosts();
@@ -1288,6 +1297,7 @@ export function createScreenView(options: ScreenViewOptions) {
     // screenshots and fit checks wait for it instead of a fixed delay.
     async ready(timeout = 20000) {
       const begin = Date.now();
+      held?.releaseAll();
       const images = [...document.querySelectorAll<HTMLImageElement>('#t-main img, dialog img')];
       for (const image of images) image.loading = 'eager';
       await Promise.all(images.map((image) => (image.complete ? null : new Promise((resolve) => { image.addEventListener('load', resolve, { once: true }); image.addEventListener('error', resolve, { once: true }); setTimeout(resolve, timeout); }))));

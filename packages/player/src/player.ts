@@ -12,6 +12,7 @@ import { createXapiAdapter } from './xapi.ts';
 import type { Interaction, LmsAdapter } from './scorm12.ts';
 import { createCourseState, hasBehavior, flatBlocks } from './course-state.ts';
 import { createScreenView } from './screen-view.ts';
+import { createPreloader } from './preload.ts';
 import { labelsFor, formatLabel } from './labels.ts';
 import { element } from './dom.ts';
 import { icon } from './icons.ts';
@@ -531,13 +532,16 @@ function go(index: number | undefined, { focus = true }: { focus?: boolean } = {
   sounds.enterScreen(courseState.screens[index].id);
   view.show(courseState.screens[index]);
   preloadNarration(courseState.screens[index + 1]);
+  if (!window.ELABORA_TEST?.virtualTime) preloader.shown(courseState.screens[index + 1]);
   syncNow();
   updateNav();
   if (focus) main.querySelector('h1')?.focus();
   window.scrollTo?.(0, 0);
 }
 
-// The next screen's narration loads while the learner is on this one.
+// The next screen's pictures load once this one has its own (preload.ts), and its narration while the
+// learner is on this one.
+const preloader = createPreloader({ main: () => main, slides });
 let preloaded: HTMLAudioElement | null = null;
 function preloadNarration(screen: ScreenData | undefined) {
   const src = screen?.narration?.src;
@@ -557,6 +561,7 @@ function mountView() {
   sounds.setData(course.sounds);
   view = createScreenView({
     app, main, course, courseState, labels, formatLabel: format, announce, recordInteraction, syncSoon, framesPort: pageFramesPort('meta'), tooltip,
+    holdPictures: true,
     timeline: {
       host: chrome.controls, autoplay: true, virtual: window.ELABORA_TEST?.virtualTime === true, tooltip, sheetHost: app,
       prefs: timelinePrefs, onVolume: () => sounds.update(),
