@@ -1037,7 +1037,7 @@ export type Block = {
     out?: Moment;
   };
   /**
-   * Layout hint in the default column layout: full (the reading column), wide (the wide column), half (two consecutive half blocks sit side by side on wide screens and stack on small ones), bleed (edge to edge of the window in scroll presentation, of the slide in slides; the text inside keeps the reading width). Inside a layout slot, the layout CSS decides: bleed fills the slot.
+   * Layout hint in the default column layout: full (the default: the width of the text column, the reading width; the window's whole width is bleed), wide (the wide column), half (two consecutive half blocks sit side by side on wide screens and stack on small ones), bleed (edge to edge of the window in scroll presentation, of the slide in slides; the text inside keeps the reading width). Inside a layout slot, the layout CSS decides: bleed fills the slot.
    * @default 'full'
    */
   width?: 'full' | 'wide' | 'half' | 'bleed';

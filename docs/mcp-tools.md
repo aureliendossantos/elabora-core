@@ -493,7 +493,7 @@ Edit a block by id (anywhere, slots included): props are merged (a prop set to n
 | `block` | string | yes |  |
 | `props` | object |  |  |
 | `hidden` | boolean |  |  |
-| `width` | "full" \| "wide" \| "half" \| "bleed" |  |  |
+| `width` | "full" \| "wide" \| "half" \| "bleed" |  | In the screen's column: half (two side by side on wide screens), full (the default: the width of the text column), wide (wider than the text), bleed (edge to edge of the window, of the slide in slides). |
 | `note` | string |  |  |
 | `optional` | boolean |  |  |
 | `slot` | string \| null |  |  |

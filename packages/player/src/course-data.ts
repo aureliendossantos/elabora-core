@@ -316,6 +316,16 @@ export interface ScreenLayout {
   // What its layout hook shows (D63), when its template has it: the page's reading time in minutes
   // (data-t-duration).
   minutes?: number;
+  // The app's canvas only (fields): its slots, their names and what they take (component.json), for
+  // the zones it reports to the editor (placing.flows).
+  slots?: SlotRule[];
+}
+
+export interface SlotRule {
+  id: string;
+  label: string;
+  accepts?: string[];
+  maxBlocks?: number;
 }
 
 export interface LayerData {

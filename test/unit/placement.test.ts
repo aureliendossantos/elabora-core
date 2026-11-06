@@ -4,6 +4,8 @@ import path from 'node:path';
 import { validateDir, loadProjectFromDir } from '@elabora/node/project-reader';
 import { readLock, assignKeys } from '@elabora/core/compile/state-model';
 import { compileCourseData } from '@elabora/core/compile/course-data';
+import { createRenderContext, renderScreen } from '@elabora/core/render/screen';
+import { refusedBy } from '@elabora/player/placement';
 import * as edit from '@elabora/node/edit';
 import { ROOT, codes, copyExample, readJSON, writeJSON } from '../helpers.ts';
 
@@ -85,4 +87,35 @@ test('arrange_screen: every block placed by hand back in the flow at its anchor,
   edit.undo(dir);
   assert.ok(placeOf(dir, 'sketch-keep') && placeOf(dir, 'sketch-figure'));
   assert.throws(() => edit.arrangeScreen(dir, { screen: 'sketch', blocks: ['sketch-intro'] }), /Not placed by hand/);
+});
+
+// A zone of a layout offers its places to the blocks it takes (the founder, 6 Nov 2026): on the example
+// diagnostic-reseau's « accueil », « Scène » takes an object or an image, once. The editor's render
+// gives the canvas each slot's name and rules; the player's rule says what the validator says, block by
+// block and slot by slot.
+test('zones: each slot\'s name and rules on the editor\'s canvas, the blocks it refuses as the validator does', () => {
+  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const project = loadProjectFromDir(dir);
+  const layout = renderScreen(project, 'accueil', {}, createRenderContext(project, { fields: true })).course.screens[0]!.layout!;
+  assert.deepEqual(layout.slots!.map((slot) => [slot.id, slot.label]), [['body', 'Texte'], ['scene', 'Scène'], ['note', 'Note sur la scène']]);
+  const { keys } = assignKeys(project, readLock(project), { dryRun: true });
+  assert.equal(compileCourseData(project, keys, { buildId: 'test' }).screens.find((screen) => screen.id === 'accueil')!.layout!.slots, undefined, 'a package carries none');
+  const screen = readJSON(dir, 'screens/accueil.json');
+  const blocks = screen.blocks as { id: string; type: string; slot?: string }[];
+  assert.deepEqual(refusedBy(layout.slots!.find((slot) => slot.id === 'scene')!, blocks, layout.defaultSlot), ['accueil-mission', 'accueil-ticket', 'accueil-go']);
+  assert.deepEqual(refusedBy(layout.slots!.find((slot) => slot.id === 'body')!, blocks, layout.defaultSlot), ['accueil-reseau']);
+  for (const slot of layout.slots!) {
+    const refused = refusedBy(slot, blocks, layout.defaultSlot);
+    for (const block of blocks) {
+      const moved = structuredClone(screen);
+      moved.blocks.find((candidate: { id: string }) => candidate.id === block.id).slot = slot.id;
+      writeJSON(dir, 'screens/accueil.json', moved);
+      const wrong = validateDir(dir).diagnostics.some((d) => d.code === 'E_COMPONENT_SLOT');
+      assert.equal(wrong, refused.includes(block.id), `${block.id} in ${slot.id}`);
+    }
+  }
+  // Full: a slot of one block refuses a second, never the one it holds.
+  assert.deepEqual(refusedBy({ id: 'scene', label: 'Scène', accepts: ['image', 'text'], maxBlocks: 1 }, [{ id: 'a', type: 'text', slot: 'scene' }, { id: 'b', type: 'text' }], 'body'), ['b']);
+  // A fork is taken where its parent is.
+  assert.deepEqual(refusedBy({ id: 'scene', label: 'Scène', accepts: ['image'] }, [{ id: 'a', type: 'photo', lineage: ['photo', 'image'] }], 'body'), []);
 });

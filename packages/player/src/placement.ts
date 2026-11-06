@@ -15,7 +15,7 @@
 // -width, -height; player.css), measured from the boxes of the page: every read first, then every
 // write. A block the editor lifts (its drag) is placed the same way at a box of the viewport.
 
-import type { BlockData, CourseData, PlaceData, ScreenData } from './course-data.ts';
+import type { BlockData, CourseData, PlaceData, ScreenData, SlotRule } from './course-data.ts';
 
 export interface PlacementRect { x: number; y: number; width: number; height: number }
 
@@ -25,9 +25,25 @@ export interface FlowAnchors {
   slot: string | null;
   // The layout's default slot: its blocks say no slot.
   default?: true;
+  // Its name, and the blocks of the screen it refuses (refusedBy).
+  label?: string;
+  refuses?: string[];
   rect: PlacementRect;
   // after: the block of the list the place follows (null: the start of the list).
   places: { after: string | null; y: number }[];
+}
+
+// The blocks of a screen a slot of its layout takes no more of: a type it does not accept (a fork where
+// its parent is accepted is accepted), or the slot full without the block. The validator's rules
+// (E_COMPONENT_SLOT), asked for each block as if it were moved there.
+export function refusedBy(rule: SlotRule, blocks: readonly Pick<BlockData, 'id' | 'type' | 'lineage' | 'slot'>[], defaultSlot: string | null): string[] {
+  const inSlot = (block: Pick<BlockData, 'slot'>) => (block.slot || defaultSlot) === rule.id;
+  const held = blocks.filter(inSlot).length;
+  return blocks.filter((block) => {
+    const lineage = block.lineage ?? [block.type];
+    if (rule.accepts && !lineage.some((type) => rule.accepts!.includes(type))) return true;
+    return !!rule.maxBlocks && held - (inSlot(block) ? 1 : 0) >= rule.maxBlocks;
+  }).map((block) => block.id);
 }
 
 export interface Placement {
@@ -69,6 +85,8 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
   const slides = () => app.dataset.presentation === 'slides';
   let places = new Map<string, PlaceData>();
   let defaultSlot: string | null = null;
+  let rules = new Map<string, SlotRule>();
+  let blocks: BlockData[] = [];
   const lifts = new Map<string, PlacementRect | { place: PlaceData }>();
   // A block lifted from the flow leaves a stand-in of its size where it was (.t-lift-trace): nothing
   // around it moves while it is dragged; the flow changes once it is let go.
@@ -90,6 +108,8 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
 
   function sync(screen: ScreenData | undefined) {
     defaultSlot = screen?.layout?.defaultSlot ?? null;
+    rules = new Map((screen?.layout?.slots ?? []).map((rule) => [rule.id, rule]));
+    blocks = screen?.blocks ?? [];
     places = new Map((screen?.blocks ?? []).filter((block): block is BlockData & { place: PlaceData } => !!block.place).map((block) => [block.id, block.place]));
     for (const node of main.querySelectorAll<HTMLElement>('.t-block[data-t-place]')) if (!places.has(node.dataset.block ?? '')) unmark(node);
     for (const id of [...lifts.keys()]) if (!nodeOf(id)) lifts.delete(id);
@@ -240,7 +260,9 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
         else if (child.matches('.t-lift-trace')) places.push({ after: last, y: anchorY(container, child) });
       }
       const slot = container.matches('.t-slot') ? container.dataset.slot ?? null : null;
-      return { slot, ...(slot !== null && slot === defaultSlot ? { default: true as const } : {}), rect: { x: round(box.x), y: round(box.y), width: round(box.width), height: round(box.height) }, places: places.map((place) => ({ ...place, y: round(place.y - scrollY) })) };
+      const rule = slot !== null ? rules.get(slot) : undefined;
+      const refuses = rule ? refusedBy(rule, blocks, defaultSlot) : [];
+      return { slot, ...(slot !== null && slot === defaultSlot ? { default: true as const } : {}), ...(rule ? { label: rule.label } : {}), ...(refuses.length ? { refuses } : {}), rect: { x: round(box.x), y: round(box.y), width: round(box.width), height: round(box.height) }, places: places.map((place) => ({ ...place, y: round(place.y - scrollY) })) };
     });
   }
 

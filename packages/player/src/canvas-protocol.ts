@@ -182,6 +182,11 @@ export interface FlowLayout {
   slot: string | null;
   // The layout's default slot: its blocks say no slot.
   default?: true;
+  // Its name in the layout (component.json's slot label).
+  label?: string;
+  // The blocks of the screen it takes no more of: a type it does not accept, or full without them
+  // (E_COMPONENT_SLOT's rules). Its places are for the others.
+  refuses?: string[];
   rect: LayoutRect;
   places: { after: string | null; y: number }[];
 }
