@@ -4,7 +4,7 @@ import type { Project, Screen } from '../project/model.ts';
 import { loadProject, resolveBlockProps, screenBlocks } from '../project/load.ts';
 import { createProjectFiles, fileHash, pathsUnder, projectPath, textFile } from '../project/files.ts';
 import type { SourceFile } from '../project/files.ts';
-import { valuesOfKind } from '../components/props.ts';
+import { objectAssets, valuesOfKind } from '../components/props.ts';
 import { compileBackdrop, compileScreen, courseHead, courseVariables, createCompileContext, resourcesOf, sortedObjects } from '../compile/course-data.ts';
 import { aboutCourse, itemEnabled, packageLanguages, playerConfig, playerContent, shownPlayer } from '../player/config.ts';
 import type { CompileContext, CourseHead } from '../compile/course-data.ts';
@@ -235,8 +235,14 @@ function screenFiles(project: Project, screen: Screen, compile: CompileContext, 
   const asset = (value: unknown) => add(typeof value === 'string' ? projectPath(`assets/${value}`) : null, 'asset');
   for (const { block } of screenBlocks(screen)) {
     const descriptor = registry.get(block.type);
-    if (descriptor) for (const found of valuesOfKind(descriptor.schema, resolveBlockProps(block, planIndex, registry), 'asset')) asset(found.value);
+    if (!descriptor) continue;
+    const props = resolveBlockProps(block, planIndex, registry);
+    for (const found of valuesOfKind(descriptor.schema, props, 'asset')) asset(found.value);
+    // A free object's settings name files of the course too (x-control "asset").
+    if (descriptor.lineage.includes('free-object')) for (const found of objectAssets(project.objects.get(String(props.object))?.manifest, props.props)) asset(found.value);
   }
+  const backdrop = project.course?.theme?.backdrop?.object;
+  if (backdrop) for (const found of objectAssets(project.objects.get(backdrop.id)?.manifest, backdrop.props)) asset(found.value);
   const layout = typeof screen.layout === 'string' ? registry.get(screen.layout) : undefined;
   if (layout && screen.layoutProps) for (const found of valuesOfKind(layout.schema, screen.layoutProps, 'asset')) asset(found.value);
   for (const definition of Object.values(objects)) {

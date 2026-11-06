@@ -36,6 +36,9 @@ export interface ObjectHostOptions {
   testMode?: boolean;
   // Prefix of package URLs (fonts, assets), for pages that do not sit at the package root.
   baseUrl?: string;
+  // The course files the object's settings name (x-control "asset"), by value: their package path.
+  // host.asset(value) reads them as it reads the object's own assets. A getter: the props may change.
+  files?: () => Readonly<Record<string, string>> | undefined;
   fonts?: FontData[];
   // 1rem of the page in px (the object test page gives none: the frame keeps its own).
   rootSize?: number;
@@ -87,7 +90,7 @@ function loadFonts(fonts: readonly FontData[] | undefined, baseUrl: string): Pro
   })).then((list) => list.filter((font): font is FontPayload => font !== null));
 }
 
-export function createObjectHost({ iframe, def, props, strings = {}, tokens, locale, reducedMotion, savedState, safeArea, decorative = false, context = null, view = null, seed = 1, testMode = false, baseUrl = '', fonts = [], rootSize, onEvent, onError, onReady, onLog, onResize }: ObjectHostOptions): ObjectHost {
+export function createObjectHost({ iframe, def, props, strings = {}, tokens, locale, reducedMotion, savedState, safeArea, decorative = false, context = null, view = null, seed = 1, testMode = false, baseUrl = '', fonts = [], rootSize, files, onEvent, onError, onReady, onLog, onResize }: ObjectHostOptions): ObjectHost {
   const pending = new Map<string, { resolve: (result: unknown) => void; reject: (error: Error) => void }>();
   let ready = false;
   let disposed = false;
@@ -160,13 +163,16 @@ export function createObjectHost({ iframe, def, props, strings = {}, tokens, loc
       case 'object/asset': {
         const assetId = fieldOf(params, 'id');
         const asset = (def.assets || []).find((candidate) => candidate.id === assetId);
-        if (!asset) { post({ id, error: { code: -32602, message: `Unknown asset ${String(assetId)}` } }); break; }
+        // Else a file of the course one of its settings names (its value).
+        const file = !asset && typeof assetId === 'string' ? files?.()?.[assetId] : undefined;
+        if (!asset && !file) { post({ id, error: { code: -32602, message: `Unknown asset ${String(assetId)}` } }); break; }
         try {
-          const response = await fetch(`${baseUrl}${def.dir}/${asset.file}`);
+          const response = await fetch(asset ? `${baseUrl}${def.dir}/${asset.file}` : `${baseUrl}${file}`);
+          if (file && !response.ok) throw new Error(`HTTP ${response.status}`);
           const data = await response.arrayBuffer();
-          post({ id, result: { id: asset.id, type: asset.type, data } }, [data]);
+          post({ id, result: { id: asset?.id ?? assetId, type: asset?.type ?? 'file', data } }, [data]);
         } catch (error) {
-          post({ id, error: { code: -32000, message: `Asset ${asset.id} could not be loaded: ${(error as Error).message}` } });
+          post({ id, error: { code: -32000, message: `Asset ${asset?.id ?? String(assetId)} could not be loaded: ${(error as Error).message}` } });
         }
         break;
       }

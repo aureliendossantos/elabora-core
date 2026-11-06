@@ -31,16 +31,26 @@ export interface KindValue {
 }
 
 // Every value of a given kind (asset, token, markdown, tex…) with its JSON pointer below props.
-export function valuesOfKind(schema: SchemaNode, value: unknown, kinds: string | readonly string[], base = ''): KindValue[] {
+// kind: what a schema node holds (a component's x-kind; a free object's x-control, objectAssets).
+export function valuesOfKind(schema: SchemaNode, value: unknown, kinds: string | readonly string[], base = '', kind: (schema: SchemaNode) => string = kindOf): KindValue[] {
   const want = new Set(Array.isArray(kinds) ? kinds : [kinds]);
   const out: KindValue[] = [];
   const walk = (s: SchemaNode, v: unknown, p: string): void => {
     if (v === undefined || v === null) return;
-    const k = kindOf(s);
+    const k = kind(s);
     if (want.has(k) && typeof v !== 'object') { out.push({ kind: k, value: v, path: p, schema: s }); return; }
     if (Array.isArray(v)) return v.forEach((x, i) => walk(itemSchema(s), x, `${p}/${i}`));
     if (typeof v === 'object' && propertiesOf(s)) for (const [key, x] of Object.entries(v)) walk(propertiesOf(s)?.[key], x, `${p}/${key}`);
   };
   walk(schema, value, base);
   return out;
+}
+
+// The course files a free object's settings name: a prop, or a field of a list's items, whose manifest
+// control is x-control "asset" (a file of assets/, as a block's media is). The paths are below the
+// object's props.
+export function objectAssets(manifest: { props?: unknown } | null | undefined, values: unknown): KindValue[] {
+  if (!manifest?.props || typeof manifest.props !== 'object') return [];
+  const control = (schema: SchemaNode) => (schema && typeof schema === 'object' && (schema as Record<string, unknown>)['x-control'] === 'asset' ? 'asset' : kindOf(schema));
+  return valuesOfKind(manifest.props as SchemaNode, values, 'asset', '', control).filter((found) => typeof found.value === 'string' && found.value !== '');
 }
