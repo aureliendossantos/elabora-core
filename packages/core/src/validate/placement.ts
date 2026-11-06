@@ -23,7 +23,7 @@ export function checkScreenPlacement(ctx: CourseCheckContext, screen: ScreenFile
     const outside = place.x < -0.001 || right > 1.001 || (slides && (place.y < -0.001 || bottom > 1.001));
     if (outside) {
       const edges = [place.x < -0.001 && 'left', right > 1.001 && 'right', slides && place.y < -0.001 && 'top', slides && bottom > 1.001 && 'bottom'].filter(Boolean).join(', ');
-      reporter.emit('W_PLACED_OUTSIDE', { ...at, message: `"${block.id}" goes past the ${edges} of the frame (x ${place.x}, width ${place.width}${slides ? `, y ${place.y}${place.height !== undefined ? `, height ${place.height}` : ''}` : ''}): the slide keeps it inside, out of the place it was given.` });
+      reporter.emit('W_PLACED_OUTSIDE', { ...at, message: `"${block.id}" goes past the ${edges} of the frame (x ${place.x}, width ${place.width}${slides ? `, y ${place.y}${place.height !== undefined ? `, height ${place.height}` : ''}` : ''}): ${slides ? 'the slide keeps it inside, out of the place it was given' : 'its part past the edge leaves the page'}.` });
     }
   }
   if (placed.length) reporter.emit('I_BLOCK_PLACED', { file: screen.file, target: screen.id, message: `Screen "${screen.id}": ${placed.length} block${placed.length > 1 ? 's' : ''} placed by hand (${placed.join(', ')}). A layout of the course would hold them where they are at every window.` });

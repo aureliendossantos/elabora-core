@@ -130,7 +130,7 @@ function post(message: CanvasMessage) {
 // ── Receiving ─────────────────────────────────────────────────────────
 function receive(message: HostMessage) {
   // A wheel passed on: nothing to render; the scroll reports where the blocks went.
-  if (message.type === 'elabora/scroll') { scrollFrom(message.by, message.at); return; }
+  if (message.type === 'elabora/scroll') { scrollUnderLift(message.by, message.at); return; }
   if (message.type === 'elabora/focus') { focusLive(message.block, message.x, message.y); return; }
   if (message.type === 'elabora/motion') { armMotion(); return; }
   if (message.type === 'elabora/lift') { liftBlock(message.block, message.at, message.release); return; }
@@ -219,6 +219,17 @@ function releaseLifts() {
   for (const id of pending.ids) placement?.lift(id, null);
   scheduleLayout();
 }
+// A block held down a page follows the pointer, and the page under it scrolls to its own end: the held
+// block, lower each time, would make room for a scroll without end.
+function scrollUnderLift(by: { x: number; y: number }, at?: { x: number; y: number }) {
+  const lifted = [...document.querySelectorAll<HTMLElement>('[data-t-lifted]')];
+  if (!lifted.length || by.y <= 0) { scrollFrom(by, at); return; }
+  const shown = lifted.map((node) => node.style.getPropertyValue('display'));
+  for (const node of lifted) node.style.setProperty('display', 'none');
+  const end = document.documentElement.scrollHeight - innerHeight;
+  lifted.forEach((node, index) => { if (shown[index]) node.style.setProperty('display', shown[index]!); else node.style.removeProperty('display'); });
+  scrollFrom({ x: by.x, y: Math.max(0, Math.min(by.y, end - scrollY)) }, at);
+}
 function liftBlock(blockId: string | null, at: LayoutRect | { place: PlaceData } | null, release?: 'render') {
   const placement = mounted?.view.placement;
   if (!placement) return;
@@ -235,12 +246,13 @@ function liftBlock(blockId: string | null, at: LayoutRect | { place: PlaceData }
   scheduleLayout();
 }
 // The boxes before a change the host announced (elabora/motion), until the next render or lift: what
-// moved glides from there (FLIP, the player's --t-ease-in-out), what changed size grows to it.
+// moved glides from there (FLIP, the player's --t-ease-in-out), what changed size grows to it; the
+// screen's title too, which a slide centred in its height moves with its blocks.
 let motion: { boxes: Map<Element, DOMRect>; until: number } | null = null;
 const MOTION_MS = 240;
 function armMotion() {
   const boxes = new Map<Element, DOMRect>();
-  for (const node of document.querySelectorAll('#t-main .t-block[data-block], #t-main .t-slot')) boxes.set(node, node.getBoundingClientRect());
+  for (const node of document.querySelectorAll('#t-main .t-screen-title, #t-main .t-block[data-block], #t-main .t-slot')) boxes.set(node, node.getBoundingClientRect());
   motion = { boxes, until: performance.now() + 1500 };
 }
 function playMotion() {
