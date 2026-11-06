@@ -251,14 +251,17 @@ test('in an LMS: the learner\'s language preference, else the author\'s default,
   edit.updateCourseSettings(dir, { delivery: { languages: ['en', 'fr'], defaultLanguage: 'fr' } });
   const french = await build(dir, { emit: 'dir', out: tmp('elabora-lms-language-'), writeLock: false, debug: true });
   assert.ok(french.ok && french.dirPath);
+  const scorm2004 = await build(dir, { emit: 'dir', out: tmp('elabora-lms-language-'), writeLock: false, debug: true, target: 'scorm2004' });
+  assert.ok(scorm2004.ok && scorm2004.dirPath);
   const server = await startServer();
   server.addPackage('both', b.dirPath);
   server.addPackage('fr', french.dirPath);
+  server.addPackage('s2004', scorm2004.dirPath);
   const browser = await launchBrowser('chromium');
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 860 }, reducedMotion: 'reduce' });
-    const open = async (pkg: string, reg: string, learnerLanguage = '') => {
-      await page.goto(`${server.base}/lms/launch.html?pkg=${pkg}&profile=moodle&mode=iframe&reg=${reg}${learnerLanguage ? `&learnerLanguage=${learnerLanguage}` : ''}`);
+    const open = async (pkg: string, reg: string, learnerLanguage = '', format = 'scorm12') => {
+      await page.goto(`${server.base}/lms/launch.html?pkg=${pkg}&profile=${format === 'scorm2004' ? 'scorm-cloud' : 'moodle'}&mode=iframe&reg=${reg}&format=${format}${learnerLanguage ? `&learnerLanguage=${learnerLanguage}` : ''}`);
       await page.waitForFunction(() => (window as Window & { __lmsReady?: boolean }).__lmsReady === true);
       let frame;
       for (let i = 0; i < 100 && !frame; i++) { frame = page.frames().find((candidate) => /\/pkg\//.test(candidate.url())); if (!frame) await page.waitForTimeout(100); }
@@ -272,6 +275,8 @@ test('in an LMS: the learner\'s language preference, else the author\'s default,
     assert.equal(await lang(await open('both', 'b', 'fr_FR')), 'fr', 'an LMS that gives fr_FR: French');
     assert.equal(await lang(await open('fr', 'c')), 'fr', 'the author\'s default');
     assert.equal(await lang(await open('fr', 'd', 'en-GB')), 'en', 'the learner\'s preference before the author\'s default');
+    assert.equal(await lang(await open('s2004', 'f', 'en', 'scorm2004')), 'en', 'SCORM 2004: cmi.learner_preference.language');
+    assert.equal(await lang(await open('s2004', 'g', '', 'scorm2004')), 'fr', 'SCORM 2004 without a preference: the author\'s default');
     // The learner chooses English in a package that starts in French: kept, even for the course's own.
     const again = await open('fr', 'e');
     assert.equal(await lang(again), 'fr');
