@@ -78,6 +78,17 @@ test('a free object carries on: the same frame, never loaded again, with the arr
     const hit = await page.evaluate(() => { const box = document.querySelector('[data-block="one-scene"] .t-object-frame')!.getBoundingClientRect(); return document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)?.tagName; });
     assert.equal(hit, 'IFRAME', 'a click on the block reaches the object');
     assert.deepEqual((await probe(page)).mounts, 1);
+    // The glides started on the frame, recorded as they start: one of 900 ms is over before a slow
+    // runner looks (GitHub's macOS, 6 Nov 2026).
+    await page.evaluate(() => {
+      const w = window as unknown as { glides: number[] };
+      w.glides = [];
+      const animate = Element.prototype.animate;
+      Element.prototype.animate = function (this: Element, ...args: Parameters<Element['animate']>) {
+        if (this.classList.contains('t-keep-frame')) w.glides.push(Number((args[1] as KeyframeAnimationOptions | undefined)?.duration ?? 0));
+        return animate.apply(this, args);
+      };
+    });
 
     await go(page, 'two');
     assert.equal(await page.evaluate(() => (document.querySelector('.t-keep-frame iframe') as HTMLIFrameElement & { mark?: number }).mark), 7, 'the same frame');
@@ -91,7 +102,7 @@ test('a free object carries on: the same frame, never loaded again, with the arr
     const iframe = await page.evaluate(() => { const node = document.querySelector('.t-keep-frame iframe')!; return { title: node.getAttribute('title'), described: document.getElementById(node.getAttribute('aria-describedby')!)?.textContent }; });
     assert.deepEqual(iframe, { title: 'The scene, second', described: 'The scene described on screen two.' });
     assert.match(await page.textContent('[data-block="two-scene"] .t-text-alt') ?? '', /Text version two/);
-    assert.equal(await page.evaluate(() => document.querySelector('.t-keep-frame')!.getAnimations().length), 1, 'the frame glides to its new box');
+    assert.deepEqual(await page.evaluate(() => (window as unknown as { glides: number[] }).glides), [900], 'the frame glides to its new box');
     // Its events are the arriving block's.
     await probeFrame(page).click('button');
     await page.waitForFunction(() => (window as PlayerWindow).__elabora.engine.getVar('probed') === 1);
