@@ -1,8 +1,9 @@
 // The language a package of several languages opens in (D59, D71), first found of:
 // 1. the learner's own choice, kept with their progress (suspend data, or the browser on the web);
 // 2. the language the page asks for (?lang=fr: a site that frames the module in its language);
-// 3. the learner's preference the LMS gives (cmi.student_preference.language in SCORM 1.2; most
-//    LMSs leave it empty, Moodle among them);
+// 3. the learner's preference the LMS gives (cmi.student_preference.language in SCORM 1.2,
+//    cmi.learner_preference.language in SCORM 2004, languagePreference in cmi5; most LMSs leave it
+//    empty, Moodle among them);
 // 4. the author's default (course.json delivery.defaultLanguage);
 // 5. the course's own.
 // The browser's language is not read: in a company's LMS it says little about the learner (D59).

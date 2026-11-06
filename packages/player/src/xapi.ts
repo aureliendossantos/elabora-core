@@ -53,6 +53,8 @@ export interface XapiSession {
   activityId: string;
   progress: XapiProgress | null; // the state document at launch (null: a first launch)
   cmi5?: Cmi5Launch;
+  // cmi5: the learner's languagePreference (cmi5LearnerPreferences, RFC 5646 tags in order), read at launch.
+  languages?: string[];
   where: string; // how it was launched: cmi5, tincan, lrs (the LRS set at build time)
 }
 
@@ -244,6 +246,8 @@ export function createXapiAdapter(session: XapiSession, { now = () => Date.now()
   return {
     kind: session.format,
     where: session.where,
+    // The learner's preferred languages (D71): cmi5's languagePreference; plain xAPI gives none.
+    preferredLanguages: () => session.languages ?? [],
     log,
     get phase() { return phase; },
     initialize() {

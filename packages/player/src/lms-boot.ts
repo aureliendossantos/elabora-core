@@ -6,6 +6,7 @@
 
 import { PROGRESS_STATE, stateUrl, xapiHeaders } from './xapi.ts';
 import { activityIdOf } from './activity-id.ts';
+import { preferenceList } from './start-language.ts';
 import type { Cmi5Launch, XapiAgent, XapiProgress, XapiSession } from './xapi.ts';
 import type { CourseData } from './course-data.ts';
 
@@ -55,10 +56,12 @@ export async function connectCmi5(search: URLSearchParams, { fetcher = fetch, st
     try { storage.setItem(key, token); } catch { /* storage refused */ }
   }
   const base = { endpoint: withSlash(endpoint), auth: `Basic ${token}`, actor, registration, activityId };
-  // cmi5 asks the AU to read the learner's preferences (language, audio) before initialized; an LMS
-  // refuses its statements otherwise (SCORM Cloud: 403). Elabora keeps its own display choices.
+  // cmi5 asks the AU to read the learner's preferences before initialized (section 11); an LMS
+  // refuses its statements otherwise (SCORM Cloud: 403). Their languagePreference (RFC 5646 tags,
+  // comma-separated, in order) is the language the learner starts in (D71); 404: none.
   const preferences = await fetcher(`${base.endpoint}agents/profile?${new URLSearchParams({ agent: JSON.stringify(actor), profileId: 'cmi5LearnerPreferences' })}`, { headers: xapiHeaders(base.auth, false) });
   if (!preferences.ok && preferences.status !== 404) throw new Error(`cmi5 learner preferences: HTTP ${preferences.status}`);
+  const languages = preferences.ok ? preferenceList(parseJson<{ languagePreference?: string }>(await preferences.text())?.languagePreference) : [];
   const launch = await readState<{ contextTemplate?: Record<string, unknown>; launchMode?: Cmi5Launch['launchMode']; moveOn?: string; masteryScore?: number }>(fetcher, base, 'LMS.LaunchData');
   if (!launch) throw new Error('cmi5: no LMS.LaunchData for this registration');
   const extensions = (launch.contextTemplate?.extensions ?? {}) as Record<string, unknown>;
@@ -69,7 +72,7 @@ export async function connectCmi5(search: URLSearchParams, { fetcher = fetch, st
     ...(launch.moveOn ? { moveOn: launch.moveOn } : {}),
     ...(typeof launch.masteryScore === 'number' ? { masteryScore: launch.masteryScore } : {})
   };
-  return { format: 'cmi5', ...base, cmi5, progress: await readState<XapiProgress>(fetcher, base, PROGRESS_STATE), where: 'cmi5' };
+  return { format: 'cmi5', ...base, cmi5, ...(languages.length ? { languages } : {}), progress: await readState<XapiProgress>(fetcher, base, PROGRESS_STATE), where: 'cmi5' };
 }
 
 // A visitor outside an LMS: an anonymous account kept in the browser.

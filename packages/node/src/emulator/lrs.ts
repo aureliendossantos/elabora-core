@@ -25,6 +25,7 @@ interface Registration {
   sessionId: string;
   terminated: boolean; // cmi5: the session ended; nothing more is accepted for it
   cmi5: boolean; // a cmi5 launch: its rules are checked
+  language?: string; // cmi5LearnerPreferences' languagePreference
   preferences: boolean; // the AU read the learner's preferences in this launch (cmi5: before initialized)
 }
 
@@ -42,7 +43,8 @@ const SESSION = 'https://w3id.org/xapi/cmi5/context/extensions/sessionid';
 
 export interface FakeLrs {
   // A launch of a registration: its token and its cmi5 session (a new one each launch).
-  launch(reg: string, options?: { cmi5?: boolean; auth?: string }): { token: string; sessionId: string };
+  // language: cmi5's languagePreference for this learner (cmi5LearnerPreferences), none by default.
+  launch(reg: string, options?: { cmi5?: boolean; auth?: string; language?: string }): { token: string; sessionId: string };
   handle(request: IncomingMessage, pathname: string, url: URL, body: () => Promise<string>): Promise<{ status: number; body: string; type?: string } | null>;
   calls(reg: string): LrsCall[];
   statements(reg: string): Record<string, unknown>[];
@@ -111,7 +113,7 @@ export function createFakeLrs(): FakeLrs {
   }
 
   return {
-    launch(reg, { cmi5 = false, auth } = {}) {
+    launch(reg, { cmi5 = false, auth, language } = {}) {
       const entry = ofReg(reg);
       // The token as cmi5's fetch gives it, sent as Basic <token>; a Tin Can launch's auth is that header.
       entry.token = auth ? auth.replace(/^Basic\s+/i, '') : `tok-${randomUUID()}`;
@@ -120,6 +122,7 @@ export function createFakeLrs(): FakeLrs {
       entry.terminated = false;
       entry.cmi5 = cmi5;
       entry.preferences = false;
+      entry.language = language;
       return { token: entry.token, sessionId: entry.sessionId };
     },
     async handle(request, pathname, url, body) {
@@ -138,10 +141,11 @@ export function createFakeLrs(): FakeLrs {
       if (!pathname.startsWith('/lrs/')) return null;
       const version = request.headers['x-experience-api-version'];
       const route = pathname.slice('/lrs/'.length);
-      // The Agent Profile API: the learner's cmi5 preferences (none here: 404), read before initialized.
+      // The Agent Profile API: the learner's cmi5 preferences, read before initialized (404: none).
       if (route === 'agents/profile' && request.method === 'GET') {
-        for (const [reg, entry] of registrations) if (entry.token && auth === `Basic ${entry.token}`) { entry.preferences = true; log(reg, { method: 'preferences', args: [url.searchParams.get('profileId') ?? ''], result: 'true', error: '0' }); }
-        return { status: 404, body: '' };
+        let language: string | undefined;
+        for (const [reg, entry] of registrations) if (entry.token && auth === `Basic ${entry.token}`) { entry.preferences = true; language = entry.language; log(reg, { method: 'preferences', args: [url.searchParams.get('profileId') ?? ''], result: 'true', error: '0' }); }
+        return language ? { status: 200, body: JSON.stringify({ languagePreference: language }), type: 'application/json' } : { status: 404, body: '' };
       }
       if (route === 'activities/state') {
         const reg = regOf(url, auth);

@@ -112,7 +112,7 @@ export async function startServer({ port = 0, iisLike = false, frames = false }:
         const format = url.searchParams.get('format');
         const dir = packages.get(url.searchParams.get('pkg') ?? '')?.dir;
         if (!dir) return send(404, 'unknown package');
-        return send(200, launchParams(reg, format ?? '', dir), TYPES['.txt'] ?? 'text/plain');
+        return send(200, launchParams(reg, format ?? '', dir, url.searchParams.get('learnerLanguage') ?? undefined), TYPES['.txt'] ?? 'text/plain');
       }
       const answered = await lrs.handle(request, pathname, url, () => readBody(request));
       if (answered) return send(answered.status, answered.body, answered.type ?? 'text/plain; charset=utf-8');
@@ -150,13 +150,13 @@ export async function startServer({ port = 0, iisLike = false, frames = false }:
   // The parameters an LMS gives a launch: cmi5's (endpoint, fetch, actor, registration, activityId,
   // with LMS.LaunchData written for a new session), Tin Can's (endpoint, auth, actor, registration,
   // activity_id).
-  const launchParams = (reg: string, format: string, dir: string): string => {
+  const launchParams = (reg: string, format: string, dir: string, language?: string): string => {
     const actor = { objectType: 'Agent', name: 'Doe, Alex', account: { homePage: base, name: 'learner-1' } };
     if (format === 'cmi5') {
       const xml = fs.readFileSync(path.join(dir, 'cmi5.xml'), 'utf8');
       const au = /<au\b[^>]*>/.exec(xml)?.[0] ?? '';
       const attribute = (name: string) => new RegExp(`\\b${name}="([^"]*)"`).exec(au)?.[1];
-      const { sessionId } = lrs.launch(reg, { cmi5: true });
+      const { sessionId } = lrs.launch(reg, { cmi5: true, ...(language ? { language } : {}) });
       const mastery = attribute('masteryScore');
       lrs.putState(reg, 'LMS.LaunchData', {
         contextTemplate: { contextActivities: { grouping: [{ id: /<course\b[^>]*\bid="([^"]*)"/.exec(xml)?.[1] }] }, extensions: { 'https://w3id.org/xapi/cmi5/context/extensions/sessionid': sessionId } },

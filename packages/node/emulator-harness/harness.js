@@ -27,7 +27,7 @@
   // with the parameters an LMS gives.
   if (asked === 'cmi5' || asked === 'xapi') {
     window.__lmsLog = [];
-    const params = await fetch(`/lms/launch-params/${reg}?format=${asked}&pkg=${encodeURIComponent(pkg)}`).then((r) => r.text());
+    const params = await fetch(`/lms/launch-params/${reg}?format=${asked}&pkg=${encodeURIComponent(pkg)}${q.get('learnerLanguage') ? `&learnerLanguage=${encodeURIComponent(q.get('learnerLanguage'))}` : ''}`).then((r) => r.text());
     launch(`/pkg/${pkg}/index.html?${params}`);
     return;
   }
