@@ -549,7 +549,7 @@ async function elaboraScenario(run: RunContext, { accessibility }: { accessibili
 // Answers every activity of the current screen through the real UI and the behaviour hooks
 // (data-t-…), whatever the component that renders it: built-in blocks and their forks; then explores
 // what the primitives show one at a time.
-async function answerScreen(frame: Frame): Promise<void> {
+export async function answerScreen(frame: Frame): Promise<void> {
   await frame.evaluate(async () => {
     const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
     const elabora = window.__elabora;

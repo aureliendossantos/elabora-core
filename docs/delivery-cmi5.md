@@ -26,11 +26,11 @@ The player behaves as in every format ([Delivery formats](delivery.md#one-player
 
 | Step | What the package does |
 |---|---|
-| Launch | `elabora/lms.js` reads `endpoint`, `fetch`, `actor`, `registration` and `activityId` from the address; POSTs the fetch URL once for the token (kept for the tab: a reload goes on with it); reads `LMS.LaunchData` (context template, launch mode, moveOn, mastery score) and the learner's last progress; then starts the player. No synchronous request. |
+| Launch | `elabora/lms.js` reads `endpoint`, `fetch`, `actor`, `registration` and `activityId` from the address; POSTs the fetch URL once for the token (kept for the tab: a reload goes on with it); reads `LMS.LaunchData` (context template, launch mode, moveOn, mastery score), the learner's preferences (`cmi5LearnerPreferences`, which a cmi5 LMS requires before `initialized`) and the learner's last progress; then starts the player. No synchronous request. |
 | Start | `initialized`, with the context template (the session id), the registration and the cmi5 category. |
 | Progress | The place, the suspend data, the status and the score in one State API document (`stateId` `elabora-progress`), written after each change that matters, as SCORM commits: a relaunch reads it back. |
 | Completion | `completed` (result `completion`, `duration`) once per registration, with the moveOn category, when the course is complete (or passed or failed: the learner went through it). |
-| Success | `passed` or `failed` (result `success`, `score.scaled`, `raw`, `min`, `max`, `duration`), with the moveOn category. Passed once; never failed after passed. The LMS's `masteryScore` decides the success when it gives one. |
+| Success | `passed` or `failed` (result `success`, `score.scaled`, `raw`, `min`, `max`, `duration`), with the moveOn category and, when the LMS gives a `masteryScore`, the `https://w3id.org/xapi/cmi5/context/extensions/masteryscore` extension (required by cmi5). Passed once; never failed after passed. The LMS's `masteryScore` decides the success when it gives one. |
 | Answers | `answered`, one per answer, on `<activity>/interactions/<id>` (`cmi.interaction`, the same responses as SCORM 2004's: `a[,]b`, `1[.]a`), with the objective. |
 | End | `terminated` (result `duration`) on Quit, or when the page goes away (`pagehide`, with `keepalive`). Nothing after it. |
 | Browse, Review | No `completed`, `passed` or `failed`. |
@@ -46,7 +46,7 @@ cmi5 sets no limit: the state document holds what the player keeps. The build ch
 
 ## Emulator (`elabora test`)
 
-The emulator plays an LMS with an LRS (`packages/node/src/emulator/lrs.ts`): it writes `LMS.LaunchData` (a new session each launch), gives the token once, keeps the state documents and the statements, and refuses what an LMS refuses: a second fetch, a statement of another session, before `initialized` or after `terminated`, a second `completed` or `passed` in the registration, `failed` after `passed`, a request without the token or without `X-Experience-API-Version`. Then the scenario of every format: navigation, an abrupt close (the place and the suspend data in the state document), the relaunch on the same screen, completion with the right status and a score of 100, Quit sending `terminated`, no request refused, a review session without regression.
+The emulator plays an LMS with an LRS (`packages/node/src/emulator/lrs.ts`): it writes `LMS.LaunchData` (a new session each launch), gives the token once, keeps the state documents and the statements, and refuses what an LMS refuses: a second fetch, `initialized` before the learner's preferences are read, `passed` or `failed` without the masteryscore extension, a statement of another session, before `initialized` or after `terminated`, a second `completed` or `passed` in the registration, `failed` after `passed`, a request without the token or without `X-Experience-API-Version`. Then the scenario of every format: navigation, an abrupt close (the place and the suspend data in the state document), the relaunch on the same screen, completion with the right status and a score of 100, Quit sending `terminated`, no request refused, a review session without regression.
 
 ```bash
 elabora test examples/diagnostic-reseau --format cmi5 --profile scorm-cloud
@@ -57,4 +57,4 @@ elabora test --package course-cmi5.zip --profile 360learning
 
 - **Few LMSs take it.** 360Learning imports cmi5 but cannot preview it; TalentLMS (in beta in 2025), Bridge, the LMSs built on Rustici Engine and SCORM Cloud take it; Moodle needs a plugin and an LRS of its own; SAP SuccessFactors, Workday, Cornerstone and Docebo document none.
 - **Financing in France.** 360Learning leaves xAPI courses out of its OPCO reports. Whether cmi5 courses are in them is not documented: ask before delivering a module that an OPCO finances.
-- **Try it in SCORM Cloud** (cmi5 is in its free account), then with a test learner in the client's LMS.
+- **SCORM Cloud** (6 Nov 2026, `scripts/scorm-cloud-trial.ts`): `diagnostic-reseau` imported, launched, closed abruptly, relaunched on the same screen, completed: COMPLETED, PASSED, score 100, no statement refused. SCORM Cloud refused the two rules the emulator now checks (the preferences read before `initialized`, the masteryscore extension). Then try it with a test learner in the client's LMS.

@@ -2,9 +2,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createXapiAdapter, stateUrl } from '@elabora/player/xapi';
 import type { Fetcher, XapiSession } from '@elabora/player/xapi';
-import { connectCmi5, connectXapi } from '@elabora/player/lms-boot';
+import { connectCmi5, connectXapi, tincanActor } from '@elabora/player/lms-boot';
 import { cmi5Manifest, cmi5MoveOn, tincanManifest } from '@elabora/core/compile/manifests-xapi';
-import { createFakeLrs } from '@elabora/node/emulator/lrs';
+import { agentProblem, createFakeLrs } from '@elabora/node/emulator/lrs';
 import type { IncomingMessage } from 'node:http';
 
 // The formats that talk to their LMS over HTTP (docs/delivery-cmi5.md, delivery-xapi.md): the
@@ -36,6 +36,7 @@ test('cmi5: the token is fetched once and kept for the tab, then LMS.LaunchData 
   const search = new URLSearchParams({ endpoint: 'https://lms.example/lrs', fetch: 'https://lms.example/fetch/1', actor: JSON.stringify(ACTOR), registration: 'reg-1', activityId: 'urn:elabora:course:c/au' });
   const fetcher = fakeFetch({
     'POST /fetch/1': { body: { 'auth-token': 'T0K' } },
+    'GET /lrs/agents/profile': { status: 404 },
     'GET /lrs/activities/state#LMS.LaunchData': { body: { contextTemplate: { extensions: { 'https://w3id.org/xapi/cmi5/context/extensions/sessionid': 's-1' } }, launchMode: 'Normal', moveOn: 'Passed', masteryScore: 0.8 } },
     'GET /lrs/activities/state#elabora-progress': { body: { location: 'k2', suspendData: 'v1', status: 'incomplete', exit: 'suspend' } }
   });
@@ -44,6 +45,7 @@ test('cmi5: the token is fetched once and kept for the tab, then LMS.LaunchData 
   assert.ok(session);
   assert.deepEqual([session.format, session.endpoint, session.auth, session.cmi5?.sessionId, session.cmi5?.masteryScore, session.progress?.location], ['cmi5', 'https://lms.example/lrs/', 'Basic T0K', 's-1', 0.8, 'k2']);
   assert.equal(fetcher.sent.filter((call) => call.url.endsWith('/fetch/1')).length, 1);
+  assert.ok(fetcher.sent.some((call) => call.url.includes('agents/profile?') && call.url.includes('cmi5LearnerPreferences')), 'the learner preferences read');
   assert.ok(fetcher.sent.every((call) => call.method === 'POST' || call.headers['X-Experience-API-Version'] === '1.0.3'));
   // A reload in the same tab goes on with the token.
   await connectCmi5(search, { fetcher: fetcher as unknown as typeof fetch, storage });
@@ -145,6 +147,15 @@ test('xAPI alone: the Tin Can launch of an LMS, else the LRS set at build time w
   assert.ok(statementsOf(sent.sent).every((statement) => !statement.context.contextActivities.category && statement.context.registration === 'r-9'));
 });
 
+test('a Tin Can actor in xAPI 0.95 form becomes an xAPI 1.0.3 agent', () => {
+  const old = { name: ['Alex'], account: [{ accountServiceHomePage: 'http://cloud.scorm.com', accountName: 'a1|b2' }], objectType: 'Agent' };
+  assert.deepEqual(tincanActor(old), { objectType: 'Agent', name: 'Alex', account: { homePage: 'http://cloud.scorm.com', name: 'a1|b2' } });
+  // The emulator's LRS refuses the old form, as SCORM Cloud's does.
+  assert.match(agentProblem(JSON.stringify(old)) ?? '', /list/);
+  assert.match(agentProblem(JSON.stringify({ account: { accountServiceHomePage: 'h', accountName: 'n' } })) ?? '', /homePage and name/);
+  assert.equal(agentProblem(JSON.stringify(tincanActor(old))), null);
+});
+
 test('the cmi5 and Tin Can course files', () => {
   const course = { id: 'canal', title: 'Écluses & ponts', description: 'Comment passer une écluse.', language: 'fr', completion: { reportAs: 'passed-failed' as const, masteryScore: 80 } };
   const cmi5 = cmi5Manifest(course);
@@ -173,6 +184,8 @@ test('the emulator\'s LRS refuses what a cmi5 LMS refuses', async () => {
   assert.match(await fetch(), /error-code/);
   assert.equal(await call('POST', '/lrs/statements', [statement('completed')]), 400, 'before initialized');
   assert.equal(await call('POST', '/lrs/statements', [statement('initialized')], 'Basic nope'), 401);
+  assert.equal(await call('POST', '/lrs/statements', [statement('initialized')]), 400, 'before the learner preferences');
+  assert.equal(await call('GET', '/lrs/agents/profile?profileId=cmi5LearnerPreferences', null), 404);
   assert.equal(await call('POST', '/lrs/statements', [statement('initialized', 'another')]), 400, 'another session');
   assert.equal(await call('POST', '/lrs/statements', [statement('initialized')]), 200);
   assert.equal(await call('POST', '/lrs/statements', [statement('completed')]), 200);
@@ -180,7 +193,9 @@ test('the emulator\'s LRS refuses what a cmi5 LMS refuses', async () => {
   assert.equal(await call('POST', '/lrs/statements', [statement('passed')]), 200);
   assert.equal(await call('POST', '/lrs/statements', [statement('failed')]), 400, 'failed after passed');
   assert.equal(await call('PUT', '/lrs/activities/state?activityId=urn:a/au&registration=r1&stateId=elabora-progress', { location: 'k' }, 'Basic nope'), 401);
-  assert.equal(await call('PUT', '/lrs/activities/state?activityId=urn:a/au&registration=r1&stateId=elabora-progress', { location: 'k' }), 204);
+  const agent = encodeURIComponent(JSON.stringify(ACTOR));
+  assert.equal(await call('PUT', `/lrs/activities/state?activityId=urn:a/au&agent=${encodeURIComponent(JSON.stringify({ name: ['Alex'], mbox: ['mailto:a@b'] }))}&registration=r1&stateId=elabora-progress`, { location: 'k' }), 400, 'an agent in xAPI 0.95 form');
+  assert.equal(await call('PUT', `/lrs/activities/state?activityId=urn:a/au&agent=${agent}&registration=r1&stateId=elabora-progress`, { location: 'k' }), 204);
   assert.equal(await call('POST', '/lrs/statements', [statement('terminated')]), 200);
   assert.equal(await call('POST', '/lrs/statements', [statement('answered', sessionId, false)]), 400, 'after terminated');
   assert.deepEqual(lrs.record('r1'), { location: 'k', suspendData: undefined, exit: undefined, status: 'passed', scoreRaw: undefined });

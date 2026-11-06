@@ -49,6 +49,19 @@ The player talks to every LMS through the same data model, SCORM 1.2's: an adapt
 
 `elabora test --format <format>` tests another format than the module's.
 
+### In SCORM Cloud
+
+`scripts/scorm-cloud-trial.ts` plays the same round in a real LMS, SCORM Cloud, for one package: it builds an example of the core in a format, imports it, launches it in the installed Chromium, closes it abruptly, relaunches it, checks the resume, completes it and Quits, then reads the registration (completion, success, score, runtime data) and deletes the course with its registrations.
+
+```bash
+node scripts/scorm-cloud-trial.ts --example diagnostic-reseau --format cmi5 --out ../scratch/scorm-cloud
+```
+
+- It reads the API key (`{ "appId", "secretKey" }`) from `~/.config/elabora/scorm-cloud.json` when it runs, and prints nothing of it. Without the file it says so and stops.
+- It goes through the network: no test suite runs it.
+- Only the core's examples (CC0) and test packages: what it imports is stored at Rustici.
+- SCORM Cloud's free account holds 3 courses and 10 registrations: the script deletes its course at the end (`--keep` keeps it), and stops if SCORM Cloud refuses the deletion.
+
 ## Changing the format of a module already delivered
 
 Another format is another course for an LMS: learners in progress lose their place, and the LMS usually asks for a new course. `elabora diff` says so (the structure changed).

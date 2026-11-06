@@ -20,7 +20,7 @@ The activity id is `urn:elabora:course:<id>`, or `course.json` `delivery.activit
 
 ## Where the statements go
 
-- **An LMS that launches xAPI packages** gives `endpoint`, `auth`, `actor`, `registration` and `activity_id` in the address (the Tin Can launch): the statements go to its LRS, as that learner.
+- **An LMS that launches xAPI packages** gives `endpoint`, `auth`, `actor`, `registration` and `activity_id` in the address (the Tin Can launch): the statements go to its LRS, as that learner. Some LMSs (SCORM Cloud) give the actor in xAPI 0.95's form, its fields as lists and its account as `accountServiceHomePage` and `accountName`: `elabora/lms.js` turns it into an xAPI 1.0.3 agent, which their LRS asks for.
 - **Outside an LMS**, `course.json` `delivery.lrs.endpoint` names the LRS (its xAPI address, `https://…/xapi/`), and the build takes its key from `ELABORA_LRS_KEY` and `ELABORA_LRS_SECRET` (or `elabora build --lrs-key <key> --lrs-secret <secret>`): never from course.json, which lands in the project's history. The package then carries the key in `elabora/lrs.js` (W_XAPI_KEY_IN_PACKAGE): anyone who has the package can send statements with it. Use a key that can only write statements, for this module. The learner is anonymous: an account named at random and kept in the browser.
 - **Neither**: the player runs alone, as a SCORM package without its LMS.
 
@@ -30,7 +30,7 @@ As in cmi5 ([cmi5](delivery-cmi5.md#runtime-behaviour)), without cmi5's rules: `
 
 ## Emulator (`elabora test`)
 
-The emulator's LRS (`packages/node/src/emulator/lrs.ts`) plays an LMS that launches Tin Can packages, with the checks of cmi5 that xAPI shares (the key of the launch, `X-Experience-API-Version`, statements with an actor, a verb and an object), and the scenario of every format.
+The emulator's LRS (`packages/node/src/emulator/lrs.ts`) plays an LMS that launches Tin Can packages, with the checks of cmi5 that xAPI shares (the key of the launch, `X-Experience-API-Version`, statements with an actor, a verb and an object, an xAPI 1.0.3 agent), launches with an actor in xAPI 0.95's form as SCORM Cloud does,, and the scenario of every format.
 
 ```bash
 elabora test examples/diagnostic-reseau --format xapi --profile scorm-cloud
@@ -39,6 +39,7 @@ elabora test examples/diagnostic-reseau --format xapi --profile scorm-cloud
 ## Beyond the emulator
 
 - **An LRS is needed.** Without one, nothing is recorded.
-- **Financing in France.** 360Learning leaves xAPI courses out of the OPCO reports it makes: deliver SCORM or cmi5 to a client whose training an OPCO finances.
+- **Financing in France.** 360Learning leaves xAPI courses out of the OPCO reports it makes: deliver SCORM to a client whose training an OPCO finances (for cmi5, ask the LMS first: [cmi5](delivery-cmi5.md#beyond-the-emulator)).
 - **Reporting.** An LMS that takes xAPI packages may show only completion and score; the statements are in its LRS, which few LMSs let clients read.
 - **Keys in the package.** A key for a module outside an LMS is in the package: rent or set up a key that only writes.
+- **SCORM Cloud** (6 Nov 2026, `scripts/scorm-cloud-trial.ts`): `diagnostic-reseau` imported as a Tin Can package, launched, closed abruptly, relaunched on the same screen, completed: COMPLETED, PASSED, score 100, no request refused. Its launch gives the actor in xAPI 0.95's form, which its LRS then refuses (the package turns it into an xAPI 1.0.3 agent; the emulator now launches the same way).

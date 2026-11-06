@@ -68,6 +68,7 @@ const VERBS: Record<string, string> = {
 };
 const CMI5_CATEGORY = 'https://w3id.org/xapi/cmi5/context/categories/cmi5';
 const MOVEON_CATEGORY = 'https://w3id.org/xapi/cmi5/context/categories/moveon';
+const MASTERY_EXTENSION = 'https://w3id.org/xapi/cmi5/context/extensions/masteryscore';
 
 export function xapiHeaders(auth: string, json = true): Record<string, string> {
   return { Authorization: auth, 'X-Experience-API-Version': XAPI_VERSION, ...(json ? { 'Content-Type': 'application/json' } : {}) };
@@ -121,8 +122,9 @@ export function createXapiAdapter(session: XapiSession, { now = () => Date.now()
   // (a request waiting for the one before would never leave).
   const request = (method: string, args: string[], url: string, init: RequestInit) => {
     const t = now();
+    // A refusal keeps what the LRS said (its reason, for the debugger and the trials).
     const done = (sent: Promise<Awaited<ReturnType<Fetcher>>>) => sent
-      .then((response) => record({ t, method: method as LmsCall['method'], args, result: response.ok ? 'true' : 'false', error: response.ok ? '0' : String(response.status) }))
+      .then(async (response) => record({ t, method: method as LmsCall['method'], args, result: response.ok ? 'true' : 'false', error: response.ok ? '0' : `${response.status} ${(await response.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 300)}`.trim() }))
       .catch((error: unknown) => record({ t, method: method as LmsCall['method'], args, result: 'false', error: `exception: ${error instanceof Error ? error.message : String(error)}` }));
     if (hidden()) {
       const leaving = done(send(url, { ...init, keepalive: true }));
@@ -174,7 +176,13 @@ export function createXapiAdapter(session: XapiSession, { now = () => Date.now()
       const verdict = success(status);
       // Passed is final; failed may come again until then, never after.
       if (sent.passed || (verdict === 'failed' && sent.failed)) return;
-      statements.push(defined(verdict, { result: { success: verdict === 'passed', duration: sessionTime, ...scoreResult() } }, true));
+      const verdictStatement = defined(verdict, { result: { success: verdict === 'passed', duration: sessionTime, ...scoreResult() } }, true);
+      // cmi5: a verdict says the mastery score the LMS gave (SCORM Cloud refuses it otherwise).
+      if (cmi5?.masteryScore !== undefined) {
+        const own = verdictStatement.context as { extensions?: Record<string, unknown> };
+        verdictStatement.context = { ...own, extensions: { ...(own.extensions ?? {}), [MASTERY_EXTENSION]: cmi5.masteryScore } };
+      }
+      statements.push(verdictStatement);
       sent[verdict] = true;
     }
   };

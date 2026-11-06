@@ -29,7 +29,7 @@ const withSlash = (url: string) => (url.endsWith('/') ? url : `${url}/`);
 async function readState<T>(fetcher: Fetch, session: Pick<XapiSession, 'endpoint' | 'activityId' | 'actor' | 'registration' | 'auth'>, stateId: string): Promise<T | null> {
   const response = await fetcher(stateUrl(session, stateId), { headers: xapiHeaders(session.auth, false) });
   if (response.status === 404) return null;
-  if (!response.ok) throw new Error(`state ${stateId}: HTTP ${response.status}`);
+  if (!response.ok) throw new Error(`state ${stateId}: HTTP ${response.status} ${(await response.text().catch(() => '')).slice(0, 300)}`.trim());
   return parseJson<T>(await response.text());
 }
 
@@ -55,6 +55,10 @@ export async function connectCmi5(search: URLSearchParams, { fetcher = fetch, st
     try { storage.setItem(key, token); } catch { /* storage refused */ }
   }
   const base = { endpoint: withSlash(endpoint), auth: `Basic ${token}`, actor, registration, activityId };
+  // cmi5 asks the AU to read the learner's preferences (language, audio) before initialized; an LMS
+  // refuses its statements otherwise (SCORM Cloud: 403). Elabora keeps its own display choices.
+  const preferences = await fetcher(`${base.endpoint}agents/profile?${new URLSearchParams({ agent: JSON.stringify(actor), profileId: 'cmi5LearnerPreferences' })}`, { headers: xapiHeaders(base.auth, false) });
+  if (!preferences.ok && preferences.status !== 404) throw new Error(`cmi5 learner preferences: HTTP ${preferences.status}`);
   const launch = await readState<{ contextTemplate?: Record<string, unknown>; launchMode?: Cmi5Launch['launchMode']; moveOn?: string; masteryScore?: number }>(fetcher, base, 'LMS.LaunchData');
   if (!launch) throw new Error('cmi5: no LMS.LaunchData for this registration');
   const extensions = (launch.contextTemplate?.extensions ?? {}) as Record<string, unknown>;
@@ -79,16 +83,27 @@ function anonymousActor(homePage: string, storage: Pick<Storage, 'getItem' | 'se
   return { objectType: 'Agent', account: { homePage, name } };
 }
 
+// Old Tin Can launches (SCORM Cloud's among them) give the actor in xAPI 0.95's form: its fields as
+// lists, an account as accountServiceHomePage and accountName. An xAPI 1.0.3 LRS wants one value
+// each, an account as homePage and name.
+export function tincanActor(param: Record<string, unknown>): XapiAgent {
+  const one = (value: unknown) => (Array.isArray(value) ? value[0] : value);
+  const actor: Record<string, unknown> = { objectType: 'Agent' };
+  for (const [field, value] of Object.entries(param)) actor[field] = one(value);
+  const account = actor.account as { accountServiceHomePage?: string; accountName?: string; homePage?: string; name?: string } | undefined;
+  if (account) actor.account = { homePage: account.homePage ?? account.accountServiceHomePage, name: account.name ?? account.accountName };
+  return actor as unknown as XapiAgent;
+}
+
 // xAPI alone (docs/delivery-xapi.md): the Tin Can launch of an LMS (endpoint, auth, actor,
 // registration, activity_id), else the LRS set at build time with an anonymous learner.
 export async function connectXapi(search: URLSearchParams, activityId: string, { fetcher = fetch, lrs = typeof window !== 'undefined' ? window.ELABORA_LRS : undefined, storage = typeof localStorage !== 'undefined' ? localStorage : null }: { fetcher?: Fetch; lrs?: { endpoint: string; auth: string }; storage?: Pick<Storage, 'getItem' | 'setItem'> | null } = {}): Promise<XapiSession | null> {
   const endpoint = search.get('endpoint');
   const auth = search.get('auth');
-  const actorParam = parseJson<XapiAgent | (XapiAgent & { mbox?: string[]; name?: string[] })>(search.get('actor'));
+  const actorParam = parseJson<Record<string, unknown>>(search.get('actor'));
   let base: Pick<XapiSession, 'endpoint' | 'auth' | 'actor' | 'activityId' | 'where'> & { registration?: string };
   if (endpoint && auth && actorParam) {
-    // Old Tin Can launches give the actor's mbox and name as lists.
-    const actor: XapiAgent = { objectType: 'Agent', ...Object.fromEntries(Object.entries(actorParam).map(([field, value]) => [field, Array.isArray(value) ? value[0] : value])) };
+    const actor = tincanActor(actorParam);
     const registration = search.get('registration');
     base = { endpoint: withSlash(endpoint), auth, actor, activityId: search.get('activity_id') || activityId, where: 'tincan', ...(registration ? { registration } : {}) };
   } else if (lrs?.endpoint) {

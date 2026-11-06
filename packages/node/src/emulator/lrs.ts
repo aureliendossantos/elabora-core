@@ -25,6 +25,7 @@ interface Registration {
   sessionId: string;
   terminated: boolean; // cmi5: the session ended; nothing more is accepted for it
   cmi5: boolean; // a cmi5 launch: its rules are checked
+  preferences: boolean; // the AU read the learner's preferences in this launch (cmi5: before initialized)
 }
 
 export interface LrsRecord {
@@ -53,13 +54,25 @@ export interface FakeLrs {
   reset(reg: string): void;
 }
 
+// What an xAPI 1.0.3 LRS refuses in an agent (null when it takes it).
+export function agentProblem(text: string | null): string | null {
+  let agent: Record<string, unknown>;
+  try { agent = JSON.parse(text ?? ''); } catch { return 'the agent is not JSON'; }
+  if (!agent || typeof agent !== 'object' || Array.isArray(agent)) return 'the agent is not an object';
+  for (const [field, value] of Object.entries(agent)) if (Array.isArray(value)) return `the agent's ${field} is a list (xAPI 0.95)`;
+  const account = agent.account as Record<string, unknown> | undefined;
+  if (account && (typeof account.homePage !== 'string' || typeof account.name !== 'string')) return "the agent's account needs homePage and name";
+  if (!['mbox', 'mbox_sha1sum', 'openid', 'account'].some((field) => agent[field] !== undefined)) return 'the agent has no identifier';
+  return null;
+}
+
 export function createFakeLrs(): FakeLrs {
   const registrations = new Map<string, Registration>();
   // State documents by registration (or the activity and agent outside one), then stateId.
   const states = new Map<string, Map<string, string>>();
   const ofReg = (reg: string): Registration => {
     let entry = registrations.get(reg);
-    if (!entry) { entry = { token: null, fetched: false, statements: [], calls: [], sessionId: '', terminated: false, cmi5: false }; registrations.set(reg, entry); }
+    if (!entry) { entry = { token: null, fetched: false, statements: [], calls: [], sessionId: '', terminated: false, cmi5: false, preferences: false }; registrations.set(reg, entry); }
     return entry;
   };
   // Which registration a request is about: its registration parameter, else the token's.
@@ -74,7 +87,7 @@ export function createFakeLrs(): FakeLrs {
   const log = (reg: string, call: Omit<LrsCall, 't'>) => ofReg(reg).calls.push({ t: Date.now(), ...call });
 
   // cmi5's rules an LMS checks on what an AU sends in a session (cmi5 spec §9).
-  function refusal(entry: Registration, statement: Record<string, unknown>, cmi5: boolean): string | null {
+  function refusal(reg: string, entry: Registration, statement: Record<string, unknown>, cmi5: boolean): string | null {
     if (!statement.actor || !statement.verb || !(statement.object as { id?: string } | undefined)?.id) return 'a statement needs an actor, a verb and an object';
     if (!cmi5) return null;
     const context = (statement.context ?? {}) as { extensions?: Record<string, unknown>; contextActivities?: { category?: { id: string }[] } };
@@ -90,6 +103,10 @@ export function createFakeLrs(): FakeLrs {
     if (verb === 'passed' && all.includes('passed')) return 'passed twice in a registration';
     if (verb === 'failed' && all.includes('passed')) return 'failed after passed';
     if (verb === 'initialized' && sent.includes('initialized')) return 'initialized twice in a session';
+    const launch = states.get(reg)?.get('LMS.LaunchData');
+    const mastery = launch ? (JSON.parse(launch) as { masteryScore?: number }).masteryScore : undefined;
+    if ((verb === 'passed' || verb === 'failed') && mastery !== undefined && context.extensions?.['https://w3id.org/xapi/cmi5/context/extensions/masteryscore'] !== mastery) return `${verb} without the masteryscore extension of the launch (${mastery})`;
+    if (verb === 'initialized' && !entry.preferences) return 'the AU must read the learner preferences (agents/profile cmi5LearnerPreferences) before initialized';
     return null;
   }
 
@@ -102,6 +119,7 @@ export function createFakeLrs(): FakeLrs {
       entry.sessionId = randomUUID();
       entry.terminated = false;
       entry.cmi5 = cmi5;
+      entry.preferences = false;
       return { token: entry.token, sessionId: entry.sessionId };
     },
     async handle(request, pathname, url, body) {
@@ -120,6 +138,11 @@ export function createFakeLrs(): FakeLrs {
       if (!pathname.startsWith('/lrs/')) return null;
       const version = request.headers['x-experience-api-version'];
       const route = pathname.slice('/lrs/'.length);
+      // The Agent Profile API: the learner's cmi5 preferences (none here: 404), read before initialized.
+      if (route === 'agents/profile' && request.method === 'GET') {
+        for (const [reg, entry] of registrations) if (entry.token && auth === `Basic ${entry.token}`) { entry.preferences = true; log(reg, { method: 'preferences', args: [url.searchParams.get('profileId') ?? ''], result: 'true', error: '0' }); }
+        return { status: 404, body: '' };
+      }
       if (route === 'activities/state') {
         const reg = regOf(url, auth);
         const stateId = url.searchParams.get('stateId') ?? '';
@@ -129,6 +152,12 @@ export function createFakeLrs(): FakeLrs {
         if (auth !== 'lms' && (!reg || !known?.token || auth !== `Basic ${known.token}`)) {
           if (reg) log(reg, { method: 'state', args: [stateId], result: 'false', error: '401' });
           return { status: 401, body: 'unauthorized' };
+        }
+        // An xAPI 1.0.3 agent, as SCORM Cloud's LRS wants it: one value per field, an account as homePage and name.
+        const wrong = agentProblem(url.searchParams.get('agent'));
+        if (wrong && auth !== 'lms') {
+          if (reg) log(reg, { method: 'state', args: [stateId], result: 'false', error: `400 ${wrong}` });
+          return { status: 400, body: wrong };
         }
         const documents = states.get(key) ?? new Map<string, string>();
         states.set(key, documents);
@@ -165,7 +194,7 @@ export function createFakeLrs(): FakeLrs {
         }
         const cmi5 = entry.cmi5;
         for (const statement of statements) {
-          const why = refusal(entry, statement, cmi5);
+          const why = refusal(reg, entry, statement, cmi5);
           log(reg, { method: VERB(statement), args: [JSON.stringify(statement.result ?? {})], result: why ? 'false' : 'true', error: why ?? '0' });
           if (why) return { status: 400, body: why };
           entry.statements.push(statement);

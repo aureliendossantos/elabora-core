@@ -168,8 +168,9 @@ export async function startServer({ port = 0, iisLike = false, frames = false }:
       const xml = fs.readFileSync(path.join(dir, 'tincan.xml'), 'utf8');
       const auth = `Basic ${Buffer.from(`learner-1:${reg}`).toString('base64')}`;
       lrs.launch(reg, { auth });
-      // Old Tin Can launches give the actor's name and mbox as lists.
-      return new URLSearchParams({ endpoint: `${base}/lrs/`, auth, actor: JSON.stringify({ name: ['Doe, Alex'], mbox: ['mailto:learner-1@example.com'] }), registration: reg, activity_id: /<activity\b[^>]*\bid="([^"]*)"/.exec(xml)?.[1] ?? '' }).toString();
+      // Old Tin Can launches give the actor in xAPI 0.95's form, as SCORM Cloud does: its fields as
+      // lists, an account as accountServiceHomePage and accountName.
+      return new URLSearchParams({ endpoint: `${base}/lrs/`, auth, actor: JSON.stringify({ objectType: 'Agent', name: ['Doe, Alex'], account: [{ accountServiceHomePage: base, accountName: 'learner-1' }] }), registration: reg, activity_id: /<activity\b[^>]*\bid="([^"]*)"/.exec(xml)?.[1] ?? '' }).toString();
     }
     return '';
   };
