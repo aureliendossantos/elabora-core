@@ -288,8 +288,8 @@ test('build --target web: a wrong address or image stops it, an image without ad
   await assert.rejects(build(dir, { target: 'web', web: { progress: 'session' as 'local' } }), /progress is local or none/);
   await assert.rejects(build(dir, { target: 'web', web: { navigation: 'open' as 'free' } }), /navigation is authored or free/);
   await assert.rejects(build(dir, { web: { progress: 'none' } }), /for the web target/);
-  await assert.rejects(build(dir, { target: 'web', profiles: ['moodle'] }), /LMS profiles are for the scorm12 target/);
-  await assert.rejects(build(dir, { target: 'xapi' as 'web' }), /target is scorm12 or web/);
+  await assert.rejects(build(dir, { target: 'web', profiles: ['moodle'] }), /LMS profiles are for LMS packages/);
+  await assert.rejects(build(dir, { target: 'xapi' as 'web' }), /target is scorm12, scorm2004 or web/);
 });
 
 function elabora(args: string[]): Promise<{ status: number | null; stdout: string; stderr: string }> {

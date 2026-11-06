@@ -23,6 +23,10 @@
     "lti13": null,
     "aicc": true
   },
+  "bestFormat": {
+    "format": "scorm12",
+    "why": "Totara does not support SCORM 2004's run-time environment: SCORM 1.2."
+  },
   "launch": {
     "default": "iframe",
     "modes": [

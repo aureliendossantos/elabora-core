@@ -49,7 +49,15 @@ export interface CourseData {
   // Built for the web target (docs/decisions.md D41): no LMS, progress kept or not; absent in SCORM
   // packages, previews and the canvas.
   delivery?: WebDelivery;
+  // The LMS format of a package other than SCORM 1.2 (docs/delivery.md): the player talks to the LMS
+  // in it. Absent in SCORM 1.2 packages, previews, the canvas and the web target.
+  lms?: LmsDelivery;
   build: { id: string };
+}
+
+// The format a package for an LMS was built in, when it is not SCORM 1.2.
+export interface LmsDelivery {
+  format: 'scorm2004';
 }
 
 // The web target's settings, as the build wrote them. navigation free: the compiler has already

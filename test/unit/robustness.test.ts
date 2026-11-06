@@ -9,7 +9,7 @@ import type { Project } from '@elabora/core/project/model';
 import { validateProject, validateScreen, validateProjectChecks, createValidationContext } from '@elabora/core/validate/index';
 import { readLock, assignKeys, buildStateModel, syncComponentVersions } from '@elabora/core/compile/state-model';
 import { compileCourseData, compileScreen, createCompileContext } from '@elabora/core/compile/course-data';
-import { scorm12Manifest } from '@elabora/core/compile/scorm12-manifest';
+import { scorm12Manifest } from '@elabora/core/compile/manifests';
 import { projectMarkdown } from '@elabora/core/project/markdown';
 import { extractUnits } from '@elabora/core/i18n/units';
 import { translationStatus } from '@elabora/core/i18n/translate';

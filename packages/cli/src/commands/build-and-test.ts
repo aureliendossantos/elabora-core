@@ -3,6 +3,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { proofMarkdown } from '@elabora/core/compile/proof';
 import { listProfiles } from '@elabora/core/lms/profiles';
+import { DELIVERY_FORMATS, formatReason, isDeliveryFormat } from '@elabora/core/lms/formats';
 import { screenOrder } from '@elabora/core/project/load';
 import type { BuildReport } from '@elabora/core/compile/report';
 import type { UpdateReport } from '@elabora/core/update-impact';
@@ -25,13 +26,16 @@ import { pendingMediaJobs, waitForMediaJobs } from './media.ts';
 import type { CommandGroup } from './command.ts';
 
 const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--media-quality high|medium|low] [--languages all] [--no-wait] [--json]
-        [--target scorm12|web] [--progress local|none] [--navigation authored|free] [--noindex] [--url <address>] [--image <file>]
-        [--review-origin <origin>]…
-                                                      Validate, then make the SCORM 1.2 package and its proof dossier in
+        [--format scorm12|scorm2004] [--target web] [--progress local|none] [--navigation authored|free] [--noindex] [--url <address>]
+        [--image <file>] [--review-origin <origin>]…
+                                                      Validate, then make the package for the LMS and its proof dossier in
                                                       dist/ (deterministic: same files, same bytes). Media ship at
                                                       delivery.mediaQuality (default high: the masters); lower qualities
                                                       ship renditions, encoded once and cached. Waits for running media
                                                       jobs (--no-wait: fails while they run).
+                                                      The format: the module's (course.json delivery.format), else the best
+                                                      for its LMSs (delivery.lms), else SCORM 1.2, which every LMS takes;
+                                                      --format scorm12|scorm2004 says it for this build.
                                                       --languages all: one package of every language, the course's own
                                                       and each translation that is ready and approved; learners switch
                                                       from the player's « Langue » and keep their progress (D59).
@@ -48,9 +52,10 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       on localhost for development): it carries the review bridge
                                                       (elabora-review/1, docs/review-bridge.md) and talks to that page
                                                       only; progress none, navigation free and noindex by default
-  test [dir] [--package <zip>] [--profile a,b|all] [--mode iframe,popup…] [--browser chromium,electron,chrome,msedge,playwright,firefox,webkit] [--parallel 4] [--no-a11y] [--json]
+  test [dir] [--package <zip>] [--profile a,b|all] [--format <format>] [--mode iframe,popup…] [--browser chromium,electron,chrome,msedge,playwright,firefox,webkit] [--parallel 4] [--no-a11y] [--json]
                                                       Build, then run the package in the LMS emulator (profiles × launch modes
-                                                      × browsers). 4 runs side by side by default; fewer on a loaded machine
+                                                      × browsers), in the package's format (--package: any package, its format
+                                                      read from its files). 4 runs side by side by default; fewer on a loaded machine
   preview [dir] [--port 4807] [--profile <id>] [--navigation authored|free]
                                                       Serve the course on this computer, alone and in the LMS emulator; pages
                                                       reload when its files change. Free objects show in agent apps' in-app
@@ -122,16 +127,21 @@ const buildCommand = defineCommand({
   name: 'build',
   flags: {
     profile: 'list', release: 'boolean', out: 'string', dir: 'boolean', debug: 'boolean', 'media-quality': 'string', languages: 'string', 'no-wait': 'boolean', json: 'boolean',
-    target: 'string', progress: 'string', navigation: 'string', noindex: 'boolean', url: 'string', image: 'string', 'review-origin': 'list'
+    target: 'string', format: 'string', progress: 'string', navigation: 'string', noindex: 'boolean', url: 'string', image: 'string', 'review-origin': 'list'
   },
   async run({ positionals: [dir = '.'], flags }) {
     const quality = flags['media-quality'];
     if (quality !== undefined && !isPresetName(quality)) { console.error(`--media-quality is high, medium or low (not "${quality}").`); return 2; }
     if (flags.languages !== undefined && flags.languages !== 'all') { console.error(`--languages is all (not "${flags.languages}"): one package of every approved language.`); return 2; }
-    const target = flags.target ?? 'scorm12';
-    if (target !== 'scorm12' && target !== 'web') { console.error(`--target is scorm12 or web (not "${target}").`); return 2; }
+    // --format: the package's format for the LMS (default: the module's, course.json delivery.format,
+    // else the best for its LMSs); --target web: a module for the web; --target <format> says --format.
+    const target = flags.target;
+    if (target !== undefined && target !== 'web' && !isDeliveryFormat(target)) { console.error(`--target is web or a format, ${DELIVERY_FORMATS.join(', ')} (not "${target}").`); return 2; }
+    const format = flags.format ?? (target !== 'web' ? target : undefined);
+    if (format !== undefined && !isDeliveryFormat(format)) { console.error(`--format is ${DELIVERY_FORMATS.join(', ')} (not "${format}").`); return 2; }
+    if (format !== undefined && target === 'web') { console.error('--format: a module for the web has no LMS format.'); return 2; }
     const webFlags = (['progress', 'navigation', 'url', 'image', 'review-origin'] as const).filter((name) => flags[name] !== undefined).map((name) => `--${name}`).concat(flags.noindex ? ['--noindex'] : []);
-    if (target === 'scorm12' && webFlags.length) { console.error(`${webFlags.join(', ')}: for --target web only.`); return 2; }
+    if (target !== 'web' && webFlags.length) { console.error(`${webFlags.join(', ')}: for --target web only.`); return 2; }
     if (target === 'web' && flags.profile) { console.error('--profile: LMS profiles are for SCORM packages; a module for the web reports to no LMS.'); return 2; }
     const { progress: kept, navigation } = flags;
     if (kept !== undefined && !WEB_PROGRESS.some((value) => value === kept)) { console.error(`--progress is local or none (not "${kept}").`); return 2; }
@@ -162,7 +172,7 @@ const buildCommand = defineCommand({
     }
     const progress = mediaProgress();
     const result = await build(dir, {
-      profiles: flags.profile, release: flags.release, out: flags.out, emit: flags.dir || web ? 'both' : 'zip', debug: flags.debug, ...(web ? { target, web } : {}),
+      profiles: flags.profile, release: flags.release, out: flags.out, emit: flags.dir || web ? 'both' : 'zip', debug: flags.debug, ...(web ? { target: 'web' as const, web } : format ? { target: format } : {}),
       ...(quality ? { mediaQuality: quality } : {}),
       ...(flags.languages === 'all' ? { languages: 'all' as const } : {}),
       onMedia: ({ job }) => (isFinished(job.status) ? progress.complete(job) : progress.progress(job))
@@ -173,7 +183,7 @@ const buildCommand = defineCommand({
       const { report, zipPath, reportPath } = result;
       const tracking = report?.web
         ? `\n  folder to serve: ${result.dirPath}\n  progress ${report.web.progress}, navigation ${report.web.navigation}${report.web.noindex ? ', noindex' : ''}${report.web.url ? `, at ${report.web.url}` : ''}${report.web.review ? `\n  review bridge for ${report.web.review.origins.join(', ')}` : ''}`
-        : `\n  suspend_data worst case ${report?.budget.suspendDataWorstCase} / ${report?.budget.suspendDataLimit}`;
+        : `\n  ${report?.delivery ? `${report.delivery.name}, ${formatReason(report.delivery)}\n  ` : ''}suspend_data worst case ${report?.budget.suspendDataWorstCase} / ${report?.budget.suspendDataLimit}`;
       if (result.ok && report && zipPath) console.log(`\n✔ ${zipPath}\n  ${report.package.files} files, ${(report.package.bytes / 1024).toFixed(0)} KB, sha256 ${report.package.sha256.slice(0, 16)}…${report.media ? `\n  media at the ${report.media.quality} quality: ${report.media.files.length} file(s)${report.media.files.some((f) => f.rendition) ? `, ${report.media.files.filter((f) => f.rendition).length} rendition(s)` : ''}` : ''}${tracking}\n  proof dossier: ${reportPath.replace(/\.report\.json$/, '.proof.md')}`);
       else console.log(`\n✘ Build stopped: ${result.summary.errors} error(s).`);
     }
@@ -186,7 +196,7 @@ type PackageTestWithFit = PackageTestResult & { fit?: FitResult };
 
 const test = defineCommand({
   name: 'test',
-  flags: { package: 'string', profile: 'list', mode: 'list', browser: 'list', parallel: 'string', 'no-a11y': 'boolean', out: 'string', json: 'boolean' },
+  flags: { package: 'string', profile: 'list', mode: 'list', browser: 'list', parallel: 'string', 'no-a11y': 'boolean', out: 'string', format: 'string', json: 'boolean' },
   async run({ positionals: [dir = '.'], flags }) {
     const profileError = await unknownProfileMessage(flags.profile);
     if (profileError) { console.error(profileError); return 2; }
@@ -214,14 +224,16 @@ const test = defineCommand({
     if (flags.package) {
       return report(await testPackage({ zip: path.resolve(flags.package), profiles: flags.profile, browsers: flags.browser, modes: flags.mode, accessibility: false, onRun, parallel }), null);
     }
-    const built = await build(dir, { profiles: flags.profile, emit: 'both', out: flags.out });
+    const format = flags.format;
+    if (format !== undefined && !isDeliveryFormat(format)) { console.error(`--format is ${DELIVERY_FORMATS.join(', ')} (not "${format}").`); return 2; }
+    const built = await build(dir, { profiles: flags.profile, emit: 'both', out: flags.out, ...(format ? { target: format } : {}) });
     if (!built.ok || !built.dirPath || !built.zipPath) {
       printDiagnostics(built.diagnostics, { json: flags.json });
       console.log('✘ Build failed: fix the errors before testing.');
       return 1;
     }
     const { dirPath, reportPath } = built;
-    if (!flags.json) console.log(`Built ${path.basename(built.zipPath)}. Running it in the LMS emulator…`);
+    if (!flags.json) console.log(`Built ${path.basename(built.zipPath)}${built.report.delivery ? ` (${built.report.delivery.name}, ${formatReason(built.report.delivery)})` : ''}. Running it in the LMS emulator…`);
     // The LMSs the build targeted: --profile, else course.json delivery.lms, else the unknown LMS.
     const tested = await testPackage({ dir: dirPath, profiles: flags.profile ?? built.report.profiles.map((profile) => profile.id), browsers: flags.browser, modes: flags.mode, accessibility: !flags['no-a11y'], onRun, parallel });
     const result: PackageTestWithFit = { ...tested, diagnostics: [...tested.diagnostics] };

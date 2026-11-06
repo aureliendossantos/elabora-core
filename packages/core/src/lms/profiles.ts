@@ -33,6 +33,8 @@ export type { LmsProfile };
 
 // SCORM 1.2 specification values, used when a profile does not document a limit.
 export const SCORM12_SPEC = { suspendDataMax: 4096, lessonLocationMax: 255 };
+// SCORM 2004 3rd and 4th editions (cmi.suspend_data 64,000 characters, cmi.location 1,000).
+export const SCORM2004_SPEC = { suspendDataMax: 64000, lessonLocationMax: 1000 };
 
 let cache: LmsProfile[] | undefined;
 export function listProfiles(): LmsProfile[] {
@@ -70,7 +72,10 @@ export function lmsName(profile: Pick<LmsProfile, 'name'>): string {
   return profile.name.replace(/\s*(\(|—).*$/, '').trim() || profile.name;
 }
 
-export interface Scorm12Limits {
+// The formats whose limits a profile records (formats.ts has them all).
+export type LimitedFormat = 'scorm12' | 'scorm2004';
+
+export interface DeliveryLimits {
   suspendDataMax: number;
   suspendDataSource: string;
   lessonLocationMax: number;
@@ -81,21 +86,24 @@ export interface Scorm12Limits {
   forbiddenExtensions: string[];
 }
 
-// Compile towards the strictest constraint of the selected profiles (checklist item 3).
-export function scorm12Limits(profiles: readonly LmsProfile[]): Scorm12Limits {
+// Compile towards the strictest constraint of the selected profiles (checklist item 3), for the
+// package's format: SCORM 1.2 by default.
+export function deliveryLimits(profiles: readonly LmsProfile[], format: LimitedFormat = 'scorm12'): DeliveryLimits {
   const pick = (vals: (number | null | undefined)[], fallback: number) => {
     const known = vals.filter((v): v is number => typeof v === 'number');
     return { value: known.length ? Math.min(...known, ...(vals.some((v) => v == null) ? [fallback] : [])) : fallback, unknown: vals.some((v) => v == null) };
   };
-  const sd = pick(profiles.map((p) => p.datamodel?.suspendDataMax?.scorm12), SCORM12_SPEC.suspendDataMax);
-  const loc = pick(profiles.map((p) => p.datamodel?.lessonLocationMax), SCORM12_SPEC.lessonLocationMax);
+  const spec = format === 'scorm2004' ? SCORM2004_SPEC : SCORM12_SPEC;
+  const sd = pick(profiles.map((p) => p.datamodel?.suspendDataMax?.[format]), spec.suspendDataMax);
+  // Profiles record SCORM 1.2's lesson_location; SCORM 2004's cmi.location is the specification's.
+  const loc = format === 'scorm2004' ? { value: spec.lessonLocationMax } : pick(profiles.map((p) => p.datamodel?.lessonLocationMax), spec.lessonLocationMax);
   const numbers = (vals: (number | null | undefined)[]) => vals.filter((v): v is number => typeof v === 'number');
   const zip = numbers(profiles.map((p) => p.packaging?.maxZipMB));
   const files = numbers(profiles.map((p) => p.packaging?.maxFiles));
   const ratio = numbers(profiles.map((p) => p.packaging?.maxCompressionRatio));
   return {
     suspendDataMax: sd.value,
-    suspendDataSource: profiles.map((p) => `${p.id}:${p.datamodel?.suspendDataMax?.scorm12 ?? 'unknown→spec 4096'}`).join(', '),
+    suspendDataSource: profiles.map((p) => `${p.id}:${p.datamodel?.suspendDataMax?.[format] ?? `unknown→spec ${spec.suspendDataMax}`}`).join(', '),
     lessonLocationMax: loc.value,
     maxZipMB: zip.length ? Math.min(...zip) : null,
     maxFiles: files.length ? Math.min(...files) : null,

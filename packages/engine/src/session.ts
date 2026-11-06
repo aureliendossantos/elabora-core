@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { DELIVERY_FORMATS, isDeliveryFormat } from '@elabora/core/lms/formats';
 import type { Author, ChangeLike, JournalEntry, MarkEntry, Op } from '@elabora/core/ops/types';
 import { readChat } from '@elabora/node/chats';
 import { diffFiles } from '@elabora/core/ops/diff';
@@ -1769,16 +1770,17 @@ function buildOptions(params: BuildParams, validation: ValidationOptions = {}): 
   if (release !== undefined && typeof release !== 'boolean') throw new EngineError('bad-request', 'release is true or false');
   if (profiles !== undefined && !(Array.isArray(profiles) && profiles.every((id) => typeof id === 'string'))) throw new EngineError('bad-request', 'profiles is a list of LMS profile ids');
   if (name !== undefined && typeof name !== 'string') throw new EngineError('bad-request', 'name is a string');
-  if (target !== undefined && target !== 'scorm12' && target !== 'web') throw new EngineError('bad-request', `target is scorm12 or web (not ${JSON.stringify(target)})`);
+  if (target !== undefined && target !== 'web' && !isDeliveryFormat(target)) throw new EngineError('bad-request', `target is ${DELIVERY_FORMATS.join(', ')} or web (not ${JSON.stringify(target)})`);
   if (every !== undefined && every !== 'all') throw new EngineError('bad-request', `languages is "all" (not ${JSON.stringify(every)})`);
   const languages = every === 'all' ? { languages: 'all' as const } : {};
   if (target === 'web') {
-    if (profiles !== undefined) throw new EngineError('bad-request', 'profiles are for the scorm12 target: a module for the web reports to no LMS');
+    if (profiles !== undefined) throw new EngineError('bad-request', 'profiles are for LMS packages: a module for the web reports to no LMS');
     return { target, ...(mediaQuality !== undefined ? { mediaQuality } : {}), ...(web !== undefined ? { web: webOptions(web) } : {}), ...languages, release: release ?? validation.release ?? false };
   }
   if (web !== undefined) throw new EngineError('bad-request', 'web settings are for the web target (target: "web")');
   const targets = profiles ?? validation.profiles;
   return {
+    ...(target !== undefined ? { target } : {}),
     ...(mediaQuality !== undefined ? { mediaQuality } : {}),
     ...(targets?.length ? { profiles: [...targets] } : {}),
     ...languages,

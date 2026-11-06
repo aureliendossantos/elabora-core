@@ -23,6 +23,11 @@
     "lti13": true,
     "aicc": true
   },
+  "bestFormat": {
+    "format": "scorm2004",
+    "edition": "4th",
+    "why": "SCORM 2004 2nd to 4th editions are processed and suspend_data is kept as sent (64,000 characters in the 3rd and 4th). cmi5, which the vendor recommends, cannot be previewed, and xAPI courses are left out of OPCO reports."
+  },
   "launch": {
     "default": "iframe",
     "modes": [

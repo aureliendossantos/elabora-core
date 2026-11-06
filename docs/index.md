@@ -1,6 +1,6 @@
 # Elabora core documentation
 
-> The open core of Elabora: a course format that AI agents write and people review, a validator with stable codes, a SCORM 1.2 and web compiler tested against documented LMS behaviour, and a contract that keeps custom code testable.
+> The open core of Elabora: a course format that AI agents write and people review, a validator with stable codes, a compiler for LMSs (SCORM 1.2, SCORM 2004) and the web, tested against documented LMS behaviour, and a contract that keeps custom code testable.
 
 Read these pages on GitHub, on [elabora.studio/en/docs/developers](https://elabora.studio/en/docs/developers/), or from the command line with `elabora docs` (MCP tool `elabora_docs`). Pages marked *generated* come from the code: run `pnpm run docs` after changing it.
 
@@ -22,7 +22,9 @@ Read these pages on GitHub, on [elabora.studio/en/docs/developers](https://elabo
 
 ## Delivery
 
+- [Delivery formats](delivery.md): the formats of a package for an LMS, and how Elabora picks one for the module's LMS.
 - [SCORM 1.2 and the LMS emulator](delivery-scorm12.md): what a package holds, how the player behaves in an LMS, and what the emulator checks.
+- [SCORM 2004](delivery-scorm2004.md): the 4th edition package, what the player sends, and the emulator's SCORM 2004 runs.
 - [Web target](delivery-web.md): a module for any web server, with recipes and what the host must provide.
 - [LMS profiles](lms-profiles.md): what each documented LMS accepts, with sources and the values still to measure (generated).
 - [Review bridge](review-bridge.md): the `postMessage` protocol between a module built for review and the review page that shows it.

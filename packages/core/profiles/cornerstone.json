@@ -30,6 +30,11 @@
     "lti13": "partners-only",
     "aicc": true
   },
+  "bestFormat": {
+    "format": "scorm2004",
+    "edition": "3rd",
+    "why": "The general requirements name SCORM 2004 3rd edition and recommend it; the 4th edition runtime arrived with release 26.2 (September 2026). One SCO without sequencing calls the same API in both."
+  },
   "launch": {
     "default": "iframe",
     "modes": [

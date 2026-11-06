@@ -19,7 +19,7 @@ pnpm workspaces in `packages/`, TypeScript run directly by Node 24 (type strippi
 | Package | Role | May import |
 |---|---|---|
 | `@elabora/format` | Normative JSON Schemas (published spec), generated TypeScript types, format version, schema registry (ajv) | nothing from Elabora |
-| `@elabora/player` | Browser runtime shipped in every package (player, course state, SCORM 1.2, standalone and web adapters, behaviours, free-object host and frame; the review bridge in review builds) | nothing from Elabora |
+| `@elabora/player` | Browser runtime shipped in every package (player, course state, SCORM 1.2 and SCORM 2004, standalone and web adapters, behaviours, free-object host and frame; the review bridge in review builds) | nothing from Elabora |
 | `@elabora/fonts` | The vetted free fonts courses embed (WOFF2 files of the latin and latin-ext subsets, with their unicode ranges, next to their licence) and their catalogue as data, refreshed from npm by `pnpm run fonts` | nothing from Elabora |
 | `@elabora/core` | Logic without I/O: project model, validation, components and templates, compilation plan, operations and diffs, screen rendering, i18n, interop, diagnostics | format, player |
 | `@elabora/node` | Node services: file store, project lock, journal, build and packaging, bundling (esbuild), generators, component migrations, media (ffmpeg), fonts, backups, LMS emulator, free-object gates, preview and captures, scaffolding, the hosting's client (`cloud/`, D43) | format, player, fonts, core |

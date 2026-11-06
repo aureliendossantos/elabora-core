@@ -326,13 +326,16 @@ is downloads uninstall voices-<lang>).
 
 ```text
 build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--media-quality high|medium|low] [--languages all] [--no-wait] [--json]
-      [--target scorm12|web] [--progress local|none] [--navigation authored|free] [--noindex] [--url <address>] [--image <file>]
-      [--review-origin <origin>]…
-                                                    Validate, then make the SCORM 1.2 package and its proof dossier in
+      [--format scorm12|scorm2004] [--target web] [--progress local|none] [--navigation authored|free] [--noindex] [--url <address>]
+      [--image <file>] [--review-origin <origin>]…
+                                                    Validate, then make the package for the LMS and its proof dossier in
                                                     dist/ (deterministic: same files, same bytes). Media ship at
                                                     delivery.mediaQuality (default high: the masters); lower qualities
                                                     ship renditions, encoded once and cached. Waits for running media
                                                     jobs (--no-wait: fails while they run).
+                                                    The format: the module's (course.json delivery.format), else the best
+                                                    for its LMSs (delivery.lms), else SCORM 1.2, which every LMS takes;
+                                                    --format scorm12|scorm2004 says it for this build.
                                                     --languages all: one package of every language, the course's own
                                                     and each translation that is ready and approved; learners switch
                                                     from the player's « Langue » and keep their progress (D59).
@@ -349,9 +352,10 @@ build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--m
                                                     on localhost for development): it carries the review bridge
                                                     (elabora-review/1, docs/review-bridge.md) and talks to that page
                                                     only; progress none, navigation free and noindex by default
-test [dir] [--package <zip>] [--profile a,b|all] [--mode iframe,popup…] [--browser chromium,electron,chrome,msedge,playwright,firefox,webkit] [--parallel 4] [--no-a11y] [--json]
+test [dir] [--package <zip>] [--profile a,b|all] [--format <format>] [--mode iframe,popup…] [--browser chromium,electron,chrome,msedge,playwright,firefox,webkit] [--parallel 4] [--no-a11y] [--json]
                                                     Build, then run the package in the LMS emulator (profiles × launch modes
-                                                    × browsers). 4 runs side by side by default; fewer on a loaded machine
+                                                    × browsers), in the package's format (--package: any package, its format
+                                                    read from its files). 4 runs side by side by default; fewer on a loaded machine
 preview [dir] [--port 4807] [--profile <id>] [--navigation authored|free]
                                                     Serve the course on this computer, alone and in the LMS emulator; pages
                                                     reload when its files change. Free objects show in agent apps' in-app

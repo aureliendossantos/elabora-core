@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { DELIVERY_FORMATS } from '@elabora/core/lms/formats';
 import { listProfiles as lmsProfiles } from '@elabora/core/lms/profiles';
 import { build as buildCourse } from '@elabora/node/build';
 import { withCourseLanguage } from '@elabora/node/translate';
@@ -40,19 +41,20 @@ const WEB = {
 
 export const build = defineTool({
   name: 'elabora_build',
-  description: 'Validate and compile the SCORM 1.2 package and its proof dossier into dist/. Waits for media jobs under way. mediaQuality (default: course.json delivery.mediaQuality, else high) ships renditions of the media below high, to fit LMS size limits (E_PACKAGE_TOO_LARGE gives the size at each quality). target "web": a module for a plain web server instead, without LMS (a folder to serve and its ZIP, dist/<course>-<version>-web), with the settings of web; profiles are refused there.',
-  inputSchema: objectSchema({ ...TRANSLATION, profiles: PROFILES, release: { type: 'boolean' }, mediaQuality: { enum: ['high', 'medium', 'low'] }, target: { enum: ['scorm12', 'web'], description: 'scorm12 (default): a package for LMSs. web: a module for a plain web server.' }, web: WEB, languages: { enum: ['all'], description: 'all: one package of every language (D59): the course\'s own and each translation that is ready and approved, which learners switch in place (the player\'s language item). Not with language.' } }),
+  description: 'Validate and compile the package for the LMS and its proof dossier into dist/. Its format: format, else the module\'s (course.json delivery.format), else the best for the module\'s LMSs (delivery.lms), else SCORM 1.2, which every LMS takes; the result says it (delivery). Waits for media jobs under way. mediaQuality (default: course.json delivery.mediaQuality, else high) ships renditions of the media below high, to fit LMS size limits (E_PACKAGE_TOO_LARGE gives the size at each quality). target "web": a module for a plain web server instead, without LMS (a folder to serve and its ZIP, dist/<course>-<version>-web), with the settings of web; profiles are refused there.',
+  inputSchema: objectSchema({ ...TRANSLATION, profiles: PROFILES, release: { type: 'boolean' }, mediaQuality: { enum: ['high', 'medium', 'low'] }, target: { enum: ['lms', 'web'], description: 'lms (default): a package for LMSs. web: a module for a plain web server.' }, format: { enum: [...DELIVERY_FORMATS], description: 'The package\'s format for this build (lms target): scorm12, scorm2004. Default: the module\'s.' }, web: WEB, languages: { enum: ['all'], description: 'all: one package of every language (D59): the course\'s own and each translation that is ready and approved, which learners switch in place (the player\'s language item). Not with language.' } }),
   async handler(args, { root }) {
     const web = args.target === 'web';
     if (!web && args.web) return errorResult({ error: 'web settings are for target "web".' });
-    if (web && args.profiles) return errorResult({ error: 'profiles are for SCORM packages: a module for the web reports to no LMS.' });
+    if (web && args.profiles) return errorResult({ error: 'profiles are for LMS packages: a module for the web reports to no LMS.' });
+    if (web && args.format) return errorResult({ error: 'format is for LMS packages: a module for the web has no LMS format.' });
     if (args.languages && args.language) return errorResult({ error: 'languages "all" builds the course with its translations: leave language out.' });
     const pending = readJobs(root).filter((job) => job.type !== 'rendition' && !isFinished(job.status));
     if (pending.length) await new MediaQueue(root).wait(pending.map((job) => job.id));
     return withCourseLanguage(root, args, async (dir, translation) => {
-      const result = await buildCourse(dir, { profiles: args.profiles, release: args.release, ...(translation ? { out: path.join(root, 'dist') } : {}), ...(args.mediaQuality ? { mediaQuality: args.mediaQuality } : {}), ...(web ? { target: 'web' as const, web: args.web ?? {} } : {}), ...(args.languages ? { languages: 'all' as const } : {}) });
+      const result = await buildCourse(dir, { profiles: args.profiles, release: args.release, ...(translation ? { out: path.join(root, 'dist') } : {}), ...(args.mediaQuality ? { mediaQuality: args.mediaQuality } : {}), ...(web ? { target: 'web' as const, web: args.web ?? {} } : args.format ? { target: args.format } : {}), ...(args.languages ? { languages: 'all' as const } : {}) });
       return textResult({
-        ok: result.ok, zip: result.zipPath, ...(web ? { dir: result.dirPath, web: result.report?.web } : { budget: result.report?.budget }), report: result.reportPath, package: result.report?.package,
+        ok: result.ok, zip: result.zipPath, ...(web ? { dir: result.dirPath, web: result.report?.web } : { delivery: result.report?.delivery, budget: result.report?.budget }), report: result.reportPath, package: result.report?.package,
         ...(translation ? { translation: { language: translation.language, units: translation.units, untranslated: translation.untranslated, unplaced: translation.unplaced, plan: translation.plan } } : {}),
         media: result.report?.media && { quality: result.report.media.quality, files: result.report.media.files.length }, summary: result.summary, diagnostics: agentFindings(result.diagnostics)
       });

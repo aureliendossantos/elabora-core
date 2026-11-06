@@ -51,7 +51,7 @@ export interface EmulatorServer {
 // Local server for previews and the LMS emulator.
 //   /pkg/<name>/…            files of a registered package folder (streamed, with range requests)
 //   /preview-events/<name>   a preview's pages listen here (server-sent events) to reload
-//   /lms/launch.html         fake LMS page (scorm-again Scorm12API + profile quirks)
+//   /lms/launch.html         fake LMS page (scorm-again Scorm12API or Scorm2004API, ?format=, + profile quirks)
 //   /lms/state/<reg>         stored CMI of a registration (GET), /lms/commit/<reg> (POST)
 //   /lms/profile/<id>        profile JSON
 //   iisLike: only the MIME types of a default IIS, as some LMS servers have
@@ -96,7 +96,8 @@ export async function startServer({ port = 0, iisLike = false, frames = false }:
         request.on('close', () => pages.delete(response));
         return;
       }
-      if (pathname === '/lms/scorm-again.js') return send(200, fs.readFileSync(path.join(packageDir('scorm-again') ?? '', 'dist/scorm12.js')), TYPES['.js']);
+      // scorm-again's runtime of the package's format (the harness asks for one).
+      if (pathname === '/lms/scorm-again/scorm12.js' || pathname === '/lms/scorm-again/scorm2004.js') return send(200, fs.readFileSync(path.join(packageDir('scorm-again') ?? '', `dist/${path.basename(pathname)}`)), TYPES['.js']);
       if (pathname.startsWith('/lms/profile/')) return send(200, JSON.stringify(getProfile(pathname.split('/')[3])), TYPES['.json']);
       if (pathname.startsWith('/lms/state/')) {
         const reg = pathname.split('/')[3];

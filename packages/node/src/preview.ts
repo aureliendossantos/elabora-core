@@ -55,7 +55,10 @@ export async function preview(dir: string, { port = 4807, profile, navigation: a
   // runs. Only a delivery writes the project's; without its own, a screen an agent adds between two
   // rebuilds would move the keys of those added before it, and the learner's place with them.
   const lock = readLock({ files: new Map(fs.existsSync(path.join(root, LOCK_FILE)) ? [[LOCK_FILE, textFile(fs.readFileSync(path.join(root, LOCK_FILE), 'utf8'))]] : []) });
-  const rebuild = () => build(root, { profiles: [lms], emit: 'dir', out, debug: true, writeLock: false, lock, media: 'link', preview: true, ...(navigation === 'free' ? { navigation } : {}) });
+  // The preview plays SCORM 1.2 whatever the module's format: the player talks the same data model
+  // to every format, and the app's Aperçu reads the emulator's calls by SCORM 1.2's names
+  // (docs/delivery-scorm12.md, « Preview »). elabora test runs the package's own format.
+  const rebuild = () => build(root, { target: 'scorm12', profiles: [lms], emit: 'dir', out, debug: true, writeLock: false, lock, media: 'link', preview: true, ...(navigation === 'free' ? { navigation } : {}) });
   let last = await rebuild();
   const server = await startServer({ port, frames: true });
   const show = (result: BuildResult) => {
