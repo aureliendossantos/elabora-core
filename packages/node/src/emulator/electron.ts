@@ -108,7 +108,7 @@ export async function launchElectron(playwright: typeof import('playwright-core'
     let application: ElectronApplication;
     try {
       application = await playwright._electron.launch({ executablePath: runtime.executable,
-        args: [...workerArgs(runtime), ...args, ...(options.reducedMotion === 'reduce' ? ['--force-prefers-reduced-motion'] : [])], env, timeout: 30000,
+        args: [...workerArgs(runtime), ...(options.reducedMotion === 'reduce' ? args.map((arg) => arg === '--force-prefers-no-reduced-motion' ? '--force-prefers-reduced-motion' : arg) : args)], env, timeout: 30000,
         colorScheme: options.colorScheme, locale: options.locale,
         // Accepted unless refused, as in a context of Playwright's Chromium: Electron's own default is a
         // save dialog, which a hidden window never shows, and the page's download never comes.

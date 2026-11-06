@@ -9,8 +9,9 @@ import { testPackage } from '@elabora/node/emulator/run';
 
 // The LMS matrix (slow; pnpm run test:matrix): every launch mode of the profiles with unusual
 // topologies, and Chrome with unload deprecated and allowed (a browser setting, the same for every
-// LMS, checked on one). The everyday suite runs Moodle once (test/e2e/lms.test.js).
-test('the example passes the LMS emulator: SuccessFactors popup chain, Docebo nested iframe, Chrome with unload deprecated and allowed', { timeout: 300000 }, async () => {
+// LMS, checked on one). The everyday suite runs Moodle once (test/e2e/lms.test.js). Its runs take 3 to
+// 4 minutes on a Mac under load, more on GitHub's macOS runners: 10 minutes at most.
+test('the example passes the LMS emulator: SuccessFactors popup chain, Docebo nested iframe, Chrome with unload deprecated and allowed', { timeout: 600000 }, async () => {
   const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
   const b = await build(dir, { profiles: ['moodle', 'successfactors', 'docebo'], emit: 'dir', out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-e2e-')) });
   assert.ok(b.ok && b.dirPath);
