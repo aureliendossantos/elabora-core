@@ -47,7 +47,7 @@ export async function buildLanguagePackages(dir: string, options: BuildOptions =
   for (const language of languages.slice(1)) {
     const reporter = createReporter();
     for (const note of notes.filter((candidate) => candidate.language === language)) {
-      if (note.kind === 'not approved') reporter.emit('W_PACKAGE_LANGUAGE_NOT_APPROVED', { file: translationPath(language), target: language, message: `The ${language} package is made, ${note.lacks.join('; ')}: tell the author, who approves it (Traduction › Versions, or through you with their yes).` });
+      if (note.kind === 'not approved') reporter.emit('W_PACKAGE_LANGUAGE_NOT_APPROVED', { file: translationPath(language), target: language, ...(options.release ? { severity: 'error' as const } : {}), message: `The ${language} package is made, ${note.lacks.join('; ')}: tell the author, who approves it (Traduction › Versions, or through you with their yes).` });
       else if (note.kind === 'incomplete') reporter.emit('W_PACKAGE_LANGUAGE_INCOMPLETE', { file: translationPath(language), target: language, message: `The ${language} package is made with ${note.lacks.join('; ')}: learners read those texts in ${own}.` });
     }
     await withCourseLanguage(dir, { language, allowMissing: true }, async (root, translation) => {

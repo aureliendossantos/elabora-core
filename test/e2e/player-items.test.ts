@@ -243,6 +243,50 @@ test('?lang= opens the course in the language a page asks for, when the course h
   await player(dir, async (page) => { assert.equal(await lang(page), 'en', 'a language the course lacks: its own'); }, { target: 'web', languages: 'all' }, '?lang=de');
 });
 
+test('in an LMS: the learner\'s language preference, else the author\'s default, else the course\'s own; the learner\'s choice wins after (D71)', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
+  const dir = copyCourse(BILINGUAL);
+  edit.updateCourseSettings(dir, { delivery: { languages: ['en', 'fr'] } });
+  const b = await build(dir, { emit: 'dir', out: tmp('elabora-lms-language-'), writeLock: false, debug: true });
+  assert.ok(b.ok && b.dirPath);
+  edit.updateCourseSettings(dir, { delivery: { languages: ['en', 'fr'], defaultLanguage: 'fr' } });
+  const french = await build(dir, { emit: 'dir', out: tmp('elabora-lms-language-'), writeLock: false, debug: true });
+  assert.ok(french.ok && french.dirPath);
+  const server = await startServer();
+  server.addPackage('both', b.dirPath);
+  server.addPackage('fr', french.dirPath);
+  const browser = await launchBrowser('chromium');
+  try {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 860 }, reducedMotion: 'reduce' });
+    const open = async (pkg: string, reg: string, learnerLanguage = '') => {
+      await page.goto(`${server.base}/lms/launch.html?pkg=${pkg}&profile=moodle&mode=iframe&reg=${reg}${learnerLanguage ? `&learnerLanguage=${learnerLanguage}` : ''}`);
+      await page.waitForFunction(() => (window as Window & { __lmsReady?: boolean }).__lmsReady === true);
+      let frame;
+      for (let i = 0; i < 100 && !frame; i++) { frame = page.frames().find((candidate) => /\/pkg\//.test(candidate.url())); if (!frame) await page.waitForTimeout(100); }
+      assert.ok(frame);
+      await frame.waitForFunction(() => (window as PlayerWindow).__elabora);
+      await frame.evaluate(() => (window as PlayerWindow).__elabora.ready());
+      return frame;
+    };
+    const lang = async (frame: Awaited<ReturnType<typeof open>>) => frame.evaluate(() => document.documentElement.lang);
+    assert.equal(await lang(await open('both', 'a')), 'en', 'Moodle gives no preference: the course\'s own');
+    assert.equal(await lang(await open('both', 'b', 'fr_FR')), 'fr', 'an LMS that gives fr_FR: French');
+    assert.equal(await lang(await open('fr', 'c')), 'fr', 'the author\'s default');
+    assert.equal(await lang(await open('fr', 'd', 'en-GB')), 'en', 'the learner\'s preference before the author\'s default');
+    // The learner chooses English in a package that starts in French: kept, even for the course's own.
+    const again = await open('fr', 'e');
+    assert.equal(await lang(again), 'fr');
+    await again.click('.t-language-btn');
+    await again.getByRole('menuitemradio', { name: 'English' }).click();
+    await again.waitForFunction(() => document.documentElement.lang === 'en');
+    await again.evaluate(() => (window as unknown as { __elabora: { quit(): void } }).__elabora.quit());
+    await page.waitForTimeout(300);
+    assert.equal(await lang(await open('fr', 'e')), 'en', 'the learner\'s choice of the course\'s own language, kept');
+  } finally {
+    await browser.close();
+    await server.close();
+  }
+});
+
 test('« Très grande » in slides: the room reserved for a quiz\'s feedback is measured in the page\'s CSS px (as at normal size); answering moves nothing', { skip: NO_FFMPEG, timeout: 180000 }, async () => {
   const dir = copyExample();
   const course = JSON.parse(fs.readFileSync(path.join(dir, 'course.json'), 'utf8'));
