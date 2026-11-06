@@ -1,7 +1,7 @@
 import { createRenderContext, renderChrome, renderScreen as renderCoreScreen } from '@elabora/core/render/screen';
 import type { RenderChrome, RenderContext, RenderedScreen } from '@elabora/core/render/screen';
 import type { Project } from '@elabora/core/project/model';
-import type { RenderScreenParams, CanvasMoment } from './protocol.ts';
+import type { RenderScreenParams, CanvasMoment, CanvasPreview } from './protocol.ts';
 import { screenTimeline, anchorTime } from '@elabora/core/narration/timeline';
 import type { Anchor } from '@elabora/format';
 import { EngineError } from './errors.ts';
@@ -93,6 +93,41 @@ export class Renderer {
     }
     for (const [key, memo] of this.#memo) if (affects(memo.dependencies, paths)) this.#memo.delete(key);
     return false;
+  }
+
+  // A screen with a change shown before it is made (canvasView preview, D72): rendered without memo,
+  // with the context of the project as it is.
+  preview(project: Project, params: RenderScreenParams, preview: CanvasPreview): RenderedScreen {
+    const entry = project.screens.get(params.screen);
+    if (!project.course || !entry) return this.render(project, params);
+    const screen = structuredClone(entry.data);
+    const patch = (blocks: unknown) => {
+      for (const block of Array.isArray(blocks) ? blocks as Record<string, unknown>[] : []) {
+        const fields = preview.blocks?.[String(block.id)];
+        if (fields) {
+          if (fields.width !== undefined) block.width = fields.width;
+          if (fields.place === null) delete block.place; else if (fields.place) block.place = fields.place;
+          if (fields.props) {
+            const props = { ...(block.props as Record<string, unknown> ?? {}) };
+            for (const [key, value] of Object.entries(fields.props)) { if (value === null) delete props[key]; else props[key] = value; }
+            block.props = props;
+          }
+        }
+        patch(block.blocks);
+      }
+    };
+    patch(screen.blocks);
+    if (preview.layoutProps) {
+      const props: Record<string, unknown> = { ...(screen.layoutProps ?? {}) };
+      for (const [key, value] of Object.entries(preview.layoutProps)) { if (value === null) delete props[key]; else props[key] = value; }
+      screen.layoutProps = props;
+    }
+    const screens = new Map(project.screens);
+    screens.set(params.screen, { ...entry, data: screen });
+    const shown: Project = { ...project, screens };
+    const render = renderCoreScreen(shown, params.screen, { state: params.state, step: params.step, layer: params.layer, language: params.language, chrome: this.chrome(project, params.language) }, this.#context(project, params.language));
+    const at = params.at ? momentTime(project, params.screen, params.at, params.language, params.layer) : null;
+    return at || params.ghost || params.dialogue ? { ...render, view: { ...render.view, ...(at ? { at } : {}), ...(params.ghost ? { ghost: true } : {}), ...(params.dialogue ? { dialogue: params.dialogue } : {}) } } : render;
   }
 
   #context(project: Project, language: string | undefined): RenderContext {

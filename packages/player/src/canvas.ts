@@ -16,7 +16,8 @@
 // so a slide has the room it has in a package (elabora look); chrome=live shows them working, the
 // player's preview of the app's « Lecteur » tab (canvas-live.ts, protocol elabora-player-preview/1);
 // frames=<port> loads the frames of free objects from that port of the same host (frames.ts), for
-// browser panes that refuse frames of an opaque origin.
+// browser panes that refuse frames of an opaque origin. placing=editor (the app's editor canvas)
+// shows blocks placed by hand (D72) at their place at any width but a phone's.
 
 import { forgetThemeKeyframes } from './timed-blocks.ts';
 import { createCourseState, flatBlocks, hasBehavior } from './course-state.ts';
@@ -33,11 +34,11 @@ import type { Tooltip } from './tooltip.ts';
 import type { DisplayPrefs } from './display.ts';
 import { pageFramesPort } from './frames.ts';
 import { isRecord } from './json.ts';
-import { blockLayouts, rectOf, round, scrollFrom, textLayouts } from './layout-report.ts';
+import { blockLayouts, coveredTexts, rectOf, round, scrollFrom, textLayouts } from './layout-report.ts';
 import { GLIDE } from './screen-objects.ts';
-import type { CourseData, ObjectDefinition, ScreenData } from './course-data.ts';
+import type { CourseData, ObjectDefinition, PlaceData, ScreenData } from './course-data.ts';
 import { PLAYER_PREVIEW_PROTOCOL } from './canvas-protocol.ts';
-import type { BlockLayout, CanvasMessage, HostMessage, LayoutMessage, PreviewHostMessage, PreviewPanel, RenderFile, RenderOutline, RenderSheet, RenderView, ScreenRender } from './canvas-protocol.ts';
+import type { BlockLayout, CanvasMessage, HostMessage, LayoutMessage, LayoutRect, PreviewHostMessage, PreviewPanel, RenderFile, RenderOutline, RenderSheet, RenderView, ScreenRender } from './canvas-protocol.ts';
 import type { PlayerItemId } from './course-data.ts';
 
 export interface CanvasApi {
@@ -103,6 +104,8 @@ const chromeMode: 'none' | 'player' | 'live' = chromeOption === 'live' ? 'live' 
 // scrollbars=none (the app's editor canvas): the page scrolls by wheel and trackpad without drawing its scrollbar,
 // whose 15 px (a mouse plugged in) would narrow the page the author designs on. A learner's player keeps its own.
 if (new URLSearchParams(location.search).get('scrollbars') === 'none') document.documentElement.style.scrollbarWidth = 'none';
+// Blocks placed by hand at their place at any width but a phone's (D72): the editor's canvas.
+const placingOption = new URLSearchParams(location.search).get('placing') === 'editor' ? 'editor' as const : undefined;
 // The live bars' one tooltip, and the learner's display choices while the page lives.
 const tooltip: Tooltip | null = chromeMode === 'live' ? createTooltip(document.body) : null;
 const displayPrefs: DisplayPrefs = { text: 'normal', captions: false, interfaceSounds: true, music: true };
@@ -127,14 +130,17 @@ function post(message: CanvasMessage) {
 // ── Receiving ─────────────────────────────────────────────────────────
 function receive(message: HostMessage) {
   // A wheel passed on: nothing to render; the scroll reports where the blocks went.
-  if (message.type === 'elabora/scroll') { scrollFrom(message.by, message.at); return; }
+  if (message.type === 'elabora/scroll') { scrollUnderLift(message.by, message.at); return; }
   if (message.type === 'elabora/focus') { focusLive(message.block, message.x, message.y); return; }
+  if (message.type === 'elabora/motion') { armMotion(); return; }
+  if (message.type === 'elabora/lift') { liftBlock(message.block, message.at, message.release); return; }
   if (message.type === 'elabora/highlight' || message.type === 'elabora/open' || message.type === 'elabora/close') { preview(message); return; }
   const started = performance.now();
   const id = message.id ?? null;
   try {
-    if (message.type === 'elabora/render') { endLiveFocus(); render(message.render); }
+    if (message.type === 'elabora/render') { endLiveFocus(); render(message.render); releaseLifts(); }
     else if (mounted) applyView(mounted, { ...mounted.requested, ...message.view }, false);
+    playMotion();
     // Blocks rendered anew (and layers opened) ask for the changed files with their hash.
     versionUrls();
     lastId = id;
@@ -153,6 +159,11 @@ window.addEventListener('message', (event) => {
   else if (data.type === 'elabora/view' && isRecord(data.view)) receive({ type: 'elabora/view', id: idOf(data.id), view: viewOf(data.view) });
   else if (data.type === 'elabora/scroll' && isPoint(data.by)) receive({ type: 'elabora/scroll', by: data.by, ...(isPoint(data.at) ? { at: data.at } : {}) });
   else if (data.type === 'elabora/focus' && typeof data.block === 'string' && typeof data.x === 'number' && typeof data.y === 'number') receive({ type: 'elabora/focus', block: data.block, x: data.x, y: data.y });
+  else if (data.type === 'elabora/motion') receive({ type: 'elabora/motion' });
+  else if (data.type === 'elabora/lift' && (typeof data.block === 'string' || data.block === null)) {
+    const at = liftOf(data.at);
+    if (at !== undefined) receive({ type: 'elabora/lift', block: data.block as string | null, at, ...(data.release === 'render' && at === null ? { release: 'render' as const } : {}) });
+  }
   else if (data.type === 'elabora/highlight' || data.type === 'elabora/open' || data.type === 'elabora/close') {
     const message = previewMessage(data);
     if (message) receive(message);
@@ -180,6 +191,93 @@ function endLiveFocus() {
     ['--focus-x', '--focus-y'].forEach((name, i) => (values[i] ? element.style.setProperty(name, values[i]) : element.style.removeProperty(name)));
   }
   liveFocus.clear();
+}
+
+// ── Placed by hand (D72): the editor's drag and its motion ─────────────
+// A box of the viewport, or a place in the frame; null; undefined when malformed.
+function liftOf(value: unknown): { x: number; y: number; width: number; height: number } | { place: PlaceData } | null | undefined {
+  if (value === null) return null;
+  if (!isRecord(value)) return undefined;
+  const finite = (key: string, from: Record<string, unknown> = value) => typeof from[key] === 'number' && Number.isFinite(from[key]);
+  if (isRecord(value.place)) {
+    const place = value.place;
+    if (!finite('x', place) || !finite('y', place) || !finite('width', place) || (place.width as number) <= 0) return undefined;
+    return { place: { x: place.x as number, y: place.y as number, width: place.width as number, ...(finite('height', place) && (place.height as number) > 0 ? { height: place.height as number } : {}) } };
+  }
+  if (!finite('x') || !finite('y') || !finite('width') || (value.width as number) <= 0) return undefined;
+  return { x: value.x as number, y: value.y as number, width: value.width as number, height: finite('height') ? value.height as number : 0 };
+}
+// Dropped (release 'render'): the block stays lifted until the render of the change arrives, then
+// takes its new place from where it was let go; within 1.5 s at most (a change refused, or none).
+let releasing: { ids: Set<string>; timer: ReturnType<typeof setTimeout> } | null = null;
+function releaseLifts() {
+  const pending = releasing;
+  if (!pending) return;
+  releasing = null;
+  clearTimeout(pending.timer);
+  const placement = mounted?.view.placement;
+  for (const id of pending.ids) placement?.lift(id, null);
+  scheduleLayout();
+}
+// A block held down a page follows the pointer, and the page under it scrolls to its own end: the held
+// block, lower each time, would make room for a scroll without end.
+function scrollUnderLift(by: { x: number; y: number }, at?: { x: number; y: number }) {
+  const lifted = [...document.querySelectorAll<HTMLElement>('[data-t-lifted]')];
+  if (!lifted.length || by.y <= 0) { scrollFrom(by, at); return; }
+  const shown = lifted.map((node) => node.style.getPropertyValue('display'));
+  for (const node of lifted) node.style.setProperty('display', 'none');
+  const end = document.documentElement.scrollHeight - innerHeight;
+  lifted.forEach((node, index) => { if (shown[index]) node.style.setProperty('display', shown[index]!); else node.style.removeProperty('display'); });
+  scrollFrom({ x: by.x, y: Math.max(0, Math.min(by.y, end - scrollY)) }, at);
+}
+function liftBlock(blockId: string | null, at: LayoutRect | { place: PlaceData } | null, release?: 'render') {
+  const placement = mounted?.view.placement;
+  if (!placement) return;
+  if (at === null && release === 'render') {
+    const ids = new Set(blockId === null ? placement.lifted() : [blockId]);
+    if (releasing) { clearTimeout(releasing.timer); for (const id of releasing.ids) ids.add(id); }
+    releasing = { ids, timer: setTimeout(() => { releaseLifts(); playMotion(); }, 1500) };
+    return;
+  }
+  if (blockId === null) { for (const id of placement.lifted()) placement.lift(id, null); }
+  else if (!document.querySelector(`[data-block="${CSS.escape(blockId)}"]`)) { post({ type: 'elabora/error', id: null, message: `elabora/lift: no block "${blockId}" on the screen shown.` }); return; }
+  else placement.lift(blockId, at);
+  playMotion();
+  scheduleLayout();
+}
+// The boxes before a change the host announced (elabora/motion), until the next render or lift: what
+// moved glides from there (FLIP, the player's --t-ease-in-out), what changed size grows to it; the
+// screen's title too, which a slide centred in its height moves with its blocks.
+let motion: { boxes: Map<Element, DOMRect>; until: number } | null = null;
+const MOTION_MS = 240;
+function armMotion() {
+  const boxes = new Map<Element, DOMRect>();
+  for (const node of document.querySelectorAll('#t-main .t-screen-title, #t-main .t-block[data-block], #t-main .t-slot')) boxes.set(node, node.getBoundingClientRect());
+  motion = { boxes, until: performance.now() + 1500 };
+}
+function playMotion() {
+  const armed = motion;
+  if (!armed) return;
+  motion = null;
+  if (performance.now() > armed.until || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const moves: { node: HTMLElement; from: DOMRect; to: DOMRect }[] = [];
+  for (const [node, from] of armed.boxes) {
+    if (!(node instanceof HTMLElement) || !node.isConnected || node.hasAttribute('data-t-lifted')) continue;
+    // A block inside one that moves goes with it.
+    if (node.parentElement?.closest('.t-block[data-block]') && armed.boxes.has(node.parentElement.closest('.t-block[data-block]')!)) continue;
+    const to = node.getBoundingClientRect();
+    if (!to.width || !to.height || (Math.abs(from.left - to.left) < 0.5 && Math.abs(from.top - to.top) < 0.5 && Math.abs(from.width - to.width) < 0.5 && Math.abs(from.height - to.height) < 0.5)) continue;
+    moves.push({ node, from, to });
+  }
+  for (const { node, from, to } of moves) {
+    const sx = from.width / to.width;
+    const sy = from.height / to.height;
+    node.animate([
+      { transformOrigin: 'top left', transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${sx}, ${sy})` },
+      { transformOrigin: 'top left', transform: 'none' }
+    ], { duration: MOTION_MS, easing: 'cubic-bezier(.23, 1, .32, 1)', id: GLIDE });
+  }
+  if (moves.length) landing();
 }
 
 // ── The player's preview (chrome=live, elabora-player-preview/1) ──────
@@ -354,6 +452,7 @@ function mount(data: ScreenRender, screen: ScreenData) {
     // One screen at a time: the backdrop counts its ranks in the outline the canvas has now.
     order: () => (mounted?.outline ?? outline)?.sections.flatMap((section) => section.screens.map((entry) => ({ id: entry.id, section: section.id }))) ?? null,
     afterEvents: () => scheduleLayout(), afterReveal: () => scheduleLayout(),
+    placing: placingOption, afterPlacement: () => scheduleLayout(),
     // next and previous are the screens around the one the event is on, in the outline the canvas
     // has now (the view outlives renders of other screens, and the outline changes with the course).
     navigate: (target, from) => post({ type: 'elabora/navigate', screen: around(mounted?.outline ?? null, from.id, target) }),
@@ -548,14 +647,38 @@ function timedOf(id: string): { timed?: NonNullable<BlockLayout['timed']> } {
 
 function layout(): LayoutMessage {
   const view = mounted?.view;
-  const blocks = blockLayouts(timedOf);
+  const placement = view?.placement;
+  const lifted = new Set(placement?.lifted() ?? []);
+  const blocks = blockLayouts(timedOf).map((block) => {
+    const node = document.querySelector(`#t-main .t-block[data-block="${CSS.escape(block.id)}"]`);
+    if (!node?.hasAttribute('data-t-place')) return block;
+    const anchor = lifted.has(block.id) ? null : placement?.anchorOf(block.id);
+    const covers = lifted.has(block.id) || !(node instanceof HTMLElement) ? [] : coveredTexts(node);
+    return { ...block, ...(lifted.has(block.id) ? { lifted: true as const } : { placed: true as const }), ...(anchor ? { anchor } : {}), ...(covers.length ? { covers } : {}) };
+  });
   const article = document.querySelector('#t-main > article.t-screen');
+  const frame = placement?.frame();
   return {
     type: 'elabora/layout', id: lastId, screen: view?.screen?.id ?? null,
     step: view?.revealed ?? 1, steps: [...(view?.steps ?? [])], layer: view?.layers[0] ?? null, state: mounted?.requested.state ?? 'initial', applyMs,
     viewport: { width: innerWidth, height: innerHeight, scrollX: round(scrollX), scrollY: round(scrollY) },
-    screenRect: article ? rectOf(article) : null, blocks, texts: textLayouts()
+    screenRect: article ? rectOf(article) : null, blocks, texts: textLayouts(),
+    ...(frame && placement ? { placing: { frame: { x: round(frame.x), y: round(frame.y), width: round(frame.width), height: round(frame.height) }, flows: placement.anchors(), columns: columnWidths() } } : {})
   };
+}
+// What a block of the screen's default column measures at each width (D72: the handles' steps), from
+// the column itself: half (two side by side), full (the reading width), wide, bleed (the screen's).
+function columnWidths(): { half: number; full: number; wide: number; bleed: number } | null {
+  const column = document.querySelector<HTMLElement>('#t-main > article.t-screen > .t-blocks');
+  const main = document.getElementById('t-main');
+  if (!column || !main) return null;
+  const style = getComputedStyle(column);
+  const inner = column.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+  const gap = parseFloat(style.columnGap) || 0;
+  const rem = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  const content = parseFloat(getComputedStyle(main).getPropertyValue('--t-content-width')) || 47.5;
+  const contentPx = /rem/.test(getComputedStyle(main).getPropertyValue('--t-content-width')) ? content * rem : content;
+  return { half: round((inner - gap) / 2), full: round(Math.min(inner, contentPx)), wide: round(inner), bleed: round(main.clientWidth) };
 }
 
 // Reported once per frame at most, when something moved.

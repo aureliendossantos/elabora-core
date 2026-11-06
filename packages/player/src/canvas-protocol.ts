@@ -10,6 +10,12 @@
 //                                             would have under the pointer
 //     { type: 'elabora/focus', block, x, y }   a block's focal point for the moment (the inspector's
 //                                             drag): its pictures' crop follows, without a render
+//     { type: 'elabora/lift', block, at }       the editor's drag (D72): the block shown at that box,
+//                                             out of the flow, or at a place in the frame; at null:
+//                                             back where its data puts it
+//     { type: 'elabora/motion' }                the next render (or lift) moves what changes place or
+//                                             size from where it was (the drop of a drag, a step of
+//                                             a handle), on the player's curve
 //   canvas → host   window.parent.postMessage, and window.__elaboraCanvas.onMessage listeners
 //     { type: 'elabora/ready', chrome, protocol? }  the canvas listens
 //     { type: 'elabora/layout', … }             where every block is (selection and handles)
@@ -116,6 +122,15 @@ export type HostMessage =
   // The focal point being dragged in the inspector (D63): x and y from 0 to 1 become the block's
   // --focus-x and --focus-y (object-position) until the next render gives the saved one.
   | { type: 'elabora/focus'; token?: string; block: string; x: number; y: number }
+  // The editor's drag (D72): the block shown out of the flow at a box of the canvas viewport (CSS px:
+  // it stays there when the page scrolls under it), or at a place in the frame (a handle's preview);
+  // null puts it back where its data puts it. block null: every lifted block back.
+  // release 'render' (with at null): the block stays where it was let go until the render of the
+  // change arrives (the drop of a drag), then takes its place, gliding when elabora/motion came first.
+  | { type: 'elabora/lift'; token?: string; block: string | null; at: LayoutRect | { place: { x: number; y: number; width: number; height?: number } } | null; release?: 'render' }
+  // The next render or lift applied within 1.5 s is shown moving from what the page shows now: the
+  // blocks and slots that change place or size glide to their new box (less motion: at once).
+  | { type: 'elabora/motion'; token?: string }
   | PreviewHostMessage;
 
 // The host's messages of the player's preview (chrome=live).
@@ -150,6 +165,31 @@ export interface BlockLayout {
   // Its texts the author can point at (data-t-field of the render): the prop's path below props
   // (options.1.label) and where it is. Not those of the blocks in its slots.
   fields?: FieldLayout[];
+  // Placed by hand (D72) and lifted out of the flow at this window; anchor: its place in the flow
+  // (where it starts, across its slot), lifted: the editor drags it.
+  placed?: true;
+  anchor?: { x: number; y: number; width: number };
+  // What it lies over at this window: the blocks whose lines of text it covers ('title': the screen's).
+  covers?: string[];
+  lifted?: true;
+}
+
+// A list of the screen's flow (the screen's column, or a slot of its layout) and its places: before its
+// first block shown in the flow, then after each, where a block put there would start (D72).
+export interface FlowLayout {
+  slot: string | null;
+  // The layout's default slot: its blocks say no slot.
+  default?: true;
+  rect: LayoutRect;
+  places: { after: string | null; y: number }[];
+}
+
+// The placement frame (D72) and the widths of the default column's blocks (half, full, wide, bleed), in
+// CSS px of the canvas viewport: what the editor's handles step through.
+export interface PlacingLayout {
+  frame: LayoutRect;
+  flows: FlowLayout[];
+  columns: { half: number; full: number; wide: number; bleed: number } | null;
 }
 
 export interface FieldLayout {
@@ -192,6 +232,8 @@ export interface LayoutMessage {
   // The texts outside the blocks, in the order of the page: the reading order of the screen is
   // these and its blocks (the app's « Ordre de lecture »).
   texts?: TextLayout[];
+  // Blocks placed by hand (D72): the frame and the flow's places, when the page places them.
+  placing?: PlacingLayout;
 }
 
 export type CanvasMessage =

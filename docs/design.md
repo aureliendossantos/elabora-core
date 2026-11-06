@@ -143,6 +143,10 @@ Sizes are written in **rem**, and 1rem follows the window. The reference window 
 - Free objects: the host sets 1rem in the frame to 1rem of the page and updates it when the window changes class. Write the object's own UI in rem (the UI kit already is).
 - Layouts still adapt with container queries in px (`@container (max-width: 820px)`): queries cannot read the page's rem.
 
+### Blocks placed by hand (D72)
+
+An author may drag a block out of the layout and drop it where they want it: `block.place`, in shares of the placement frame (SPEC §4.3). It is a sketch, not a layout. Read it as the author's intent (what goes together, what is large, what is read first) and give it a layout of the module whose zones answer it, or a new one with sizes in shares and rem: the app's « Mettre au propre » asks exactly that, naming the other screens with placed blocks so that they share one layout and the same tokens. Then remove each `place` (`elabora_update_block` `place: null`) and look at 1600×900, 1280×720 and 375 px. Placing a block by hand yourself is for a sketch you show the author, or a mark over a picture; `I_BLOCK_PLACED` reminds you of them. A layout that should fold a zone emptied by placed blocks styles `.t-slot[data-t-placed-only]`.
+
 ### Presentation: scroll or slides
 - **scroll**: a screen is a page (a lesson, as in Rise); long content scrolls. Nothing has to fit (see *Scroll pages* below).
 - **slides**: a screen is one view. `presentation.fit` names the windows it must fit: `reference` (default `1600x900`; an overflow is a warning, `W_SLIDE_OVERFLOW`) and `minimum` (default `1280x720`; slides may scroll a little there, reported as info, `I_SLIDE_OVERFLOW_MINIMUM`). Below the minimum and on phones, slides read as a scrolling page. A slide is never scaled down as a picture.

@@ -20,6 +20,7 @@ import { checkThemeFiles, checkFontLicenses, checkFigures, checkGenerators } fro
 import { checkComponents, checkComponentUsage, checkScreenComponents, checkThemeStyles } from './components.ts';
 import { checkMedia } from './media.ts';
 import { checkContinuity } from './continuity.ts';
+import { checkScreenPlacement } from './placement.ts';
 import { checkSounds } from './sounds.ts';
 import { list } from './guards.ts';
 
@@ -50,6 +51,7 @@ export const COURSE_CHECKS: readonly Check<CourseCheckContext>[] = [
   { name: 'narration', scope: 'screen', run: checkScreenNarration },
   { name: 'narration-audio', scope: 'project', readsScreens: true, run: checkNarrationAudio },
   { name: 'timeline', scope: 'screen', run: checkScreenTiming },
+  { name: 'placement', scope: 'screen', run: checkScreenPlacement },
   { name: 'timeline-times', scope: 'project', readsScreens: true, run: checkTimelineTimes },
   { name: 'screen-objects', scope: 'screen', readsOtherScreens: true, run: checkScreenObjects },
   { name: 'screen-backdrop', scope: 'screen', screens: 'all', run: checkScreenBackdrop },

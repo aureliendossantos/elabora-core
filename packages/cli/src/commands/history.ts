@@ -68,6 +68,8 @@ export function describeChange(change: ChangeLike): string {
     case 'set_narration_audio': return `set the voice of narration line ${of('line')} of ${of('screen')}`;
     case 'remove_block': return `removed block ${of('block')}`;
     case 'move_block': return `moved block ${of('block')}`;
+    case 'place_block': return typeof args === 'object' && args !== null && Reflect.get(args, 'place') === null ? `put block ${of('block')} back in the flow` : `placed block ${of('block')} by hand`;
+    case 'arrange_screen': return `put the blocks placed by hand on ${of('screen')} back in the flow`;
     case 'duplicate_block': return `duplicated block ${of('block')}`;
     case 'detach_block': return `detached block ${of('block')} from its component`;
     case 'convert_block': return `converted block ${of('block')} into ${of('to', 'type')}${field(args, 'to', 'presentation') ? ` (${of('to', 'presentation')})` : ''}`;

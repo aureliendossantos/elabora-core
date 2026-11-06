@@ -43,7 +43,8 @@ export function placeInPlace(context: PlacingContext, previous: ScreenData, next
   const kept = new Set<string>();
   // Where a block goes (its slot) and when (its step) do not change its node: placing and
   // applySteps take care of them, so a block moved to another slot keeps running.
-  const rendering = (block: BlockData, children = true) => ({ ...block, slot: undefined, step: undefined, timing: undefined, ...(children ? {} : { blocks: undefined }) });
+  // Nor where it is placed by hand (D72): placement.ts places it again.
+  const rendering = (block: BlockData, children = true) => ({ ...block, slot: undefined, step: undefined, timing: undefined, place: undefined, ...(children ? {} : { blocks: undefined }) });
   const planOf = (block: BlockData) => {
     const old = before.get(block.id);
     const reusable = !!old && nodes.has(block.id) && !dirty.has(block.id);

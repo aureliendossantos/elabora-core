@@ -475,7 +475,8 @@ export class Session {
         return {
           id, title: typeof entry?.data?.title === 'string' ? entry.data.title : null, file: entry?.file ?? `screens/${id}.json`,
           errors: findings.filter((d) => d.severity === 'error').length, warnings: findings.filter((d) => d.severity === 'warning').length,
-          seconds: estimates.get(id)?.seconds ?? 0
+          seconds: estimates.get(id)?.seconds ?? 0,
+          ...placedOn(entry?.data)
         };
       })
     }));
@@ -1835,4 +1836,10 @@ function diagnosticsEvent(delta: DiagnosticsDelta): EngineEvent {
 
 function backupSummary(version: VersionSummary): BackupSummary {
   return { ...version };
+}
+
+// Its blocks placed by hand (D72), when it has some: « Mettre au propre » names the other screens.
+function placedOn(screen: { blocks?: unknown } | undefined): { placed?: number } {
+  const count = Array.isArray(screen?.blocks) ? screen.blocks.filter((block) => !!block && typeof block === 'object' && 'place' in block && !!(block as { place?: unknown }).place).length : 0;
+  return count ? { placed: count } : {};
 }

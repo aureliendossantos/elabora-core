@@ -29,6 +29,39 @@ export function blockLayouts(timedOf: (id: string) => Pick<BlockLayout, 'timed'>
   return blocks;
 }
 
+// What a block placed by hand (D72) lies over: the blocks of the screen whose lines of text it covers
+// (drawn under it: the flow, or a placed block lower in the stack), and 'title' for the screen's title.
+// Lines, not boxes: a short line leaves the rest of its paragraph's box free.
+export function coveredTexts(node: HTMLElement): string[] {
+  const main = node.closest('#t-main');
+  if (!main) return [];
+  const box = node.getBoundingClientRect();
+  const z = (element: Element) => Number(getComputedStyle(element).zIndex) || 0;
+  const meets = (rect: DOMRect) => Math.min(rect.right, box.right) - Math.max(rect.left, box.left) > 4 && Math.min(rect.bottom, box.bottom) - Math.max(rect.top, box.top) > 4;
+  const lines = (root: Element) => {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+      if (!text.textContent?.trim() || node.contains(text)) continue;
+      const parent = text.parentElement;
+      if (!parent || getComputedStyle(parent).visibility === 'hidden' || parent.closest('[aria-hidden="true"], .t-sr-only')) continue;
+      range.selectNodeContents(text);
+      for (const rect of range.getClientRects()) if (meets(rect)) return true;
+    }
+    return false;
+  };
+  const out: string[] = [];
+  const title = [...main.querySelectorAll<HTMLElement>('article.t-screen h1')].find((heading) => !heading.closest('.t-block'));
+  if (title && title.getClientRects().length && lines(title)) out.push('title');
+  for (const other of main.querySelectorAll<HTMLElement>('.t-block[data-block]')) {
+    if (other === node || other.contains(node) || node.contains(other) || other.parentElement?.closest('.t-block[data-block]') || !other.getClientRects().length) continue;
+    if (other.hasAttribute('data-t-place') && z(other) >= z(node)) continue;
+    if (other.closest('[data-t-pending], [data-t-concealed], [data-t-timed]')) continue;
+    if (lines(other)) out.push(other.dataset.block ?? '');
+  }
+  return out;
+}
+
 // The texts of the screen and of the open layers outside their blocks, in the order of the page: the
 // title of the screen (or of a layer), the texts and pictures of its layout. Their place among the
 // blocks is the first block after them.

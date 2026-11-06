@@ -1041,6 +1041,19 @@ export type Block = {
    * @default 'full'
    */
   width?: 'full' | 'wide' | 'half' | 'bleed';
+  /** Placed by hand (D72): the block leaves the flow of its layout and sits where the author put it, in shares of the placement frame. The frame is the reference window (presentation.fit.reference, 1600×900 by default) at the width of the screen's area (at most the reference width, centred beyond it). In slides, y is measured from the top of the frame, centred in the slide; in scroll presentation, from the block's place in the page (its anchor), so that it moves with the text before it. The anchor is the block's slot and its rank in its list: its reading order and focus order, and where it goes below presentation.fit.minimum, on phones and when the learner enlarges the text. Only for blocks of the screen itself, not those of a layer or of a component's slots. Prefer a layout: removing place puts the block back in the flow at its anchor. */
+  place?: {
+    /** Left edge, as a share of the frame's width (0: its left edge, 0.5: its middle). */
+    x: number;
+    /** Top edge, as a share of the frame's height: from the top of the frame in slides (0 to 1 stays in the slide), from the block's anchor in scroll presentation (negative: above it). */
+    y: number;
+    /** Width, as a share of the frame's width. */
+    width: number;
+    /** Height, as a share of the frame's height. Without it, the block takes the height of its content (a picture, its proportions). */
+    height?: number;
+    /** Stacking among the screen's placed blocks: higher is in front. Placed blocks are drawn over the flow. */
+    z?: number;
+  };
   /** Slot that receives this block: a slot of the screen layout for blocks of the screen, a slot of the component instance for blocks inside its blocks. Reading order follows the template, then the block order. */
   slot?: Slug;
   /** Named style declared for this type: in course.json theme.styles.<type> or in the component's styles (also those of its parents). */

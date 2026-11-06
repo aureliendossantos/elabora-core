@@ -23,7 +23,7 @@ import type { NarrationPeaks, ImportedFile, LineFromAudioFileArgs, TextFromAudio
 import type { AddSoundArgs, GenerateSoundParams, GeneratedSound, SoundEstimate, SoundFound, SoundSearchParams } from '@elabora/node/sounds/types';
 import type { CourseSound } from '@elabora/core/sounds/sounds';
 import type {
-  CreateScreenArgs, UpdateScreenArgs, MoveScreenArgs, AddBlockArgs, ConvertBlockArgs, ConvertTarget, UpdateBlockArgs, MoveBlockArgs, DuplicateBlockArgs, UpdateCourseArgs, UpdatePlayerArgs, IgnoreFindingsArgs,
+  CreateScreenArgs, UpdateScreenArgs, MoveScreenArgs, AddBlockArgs, ConvertBlockArgs, ConvertTarget, UpdateBlockArgs, MoveBlockArgs, PlaceBlockArgs, ArrangeScreenArgs, DuplicateBlockArgs, UpdateCourseArgs, UpdatePlayerArgs, IgnoreFindingsArgs,
   CreateObjectArgs, WriteObjectFileArgs, CreateComponentArgs, ForkComponentArgs,
   WriteComponentFileArgs, MigrateComponentsArgs, AddLibraryComponentArgs, CommandDiagnostic, AddFontArgs, FontRequest, SettleImportReportArgs, AddResourceRequest,
   SetCaptionsArgs, UpsertLayerArgs, UpsertEventArgs, RenameArgs, DuplicateScreenArgs,
@@ -60,6 +60,10 @@ export interface CommandArgs {
   update_block: UpdateBlockArgs;
   remove_block: { block: string };
   move_block: MoveBlockArgs;
+  // Placed by hand (D72): where it sits and its anchor, in one change; arrange_screen (« Ranger »)
+  // puts a screen's placed blocks back in the flow, each at its anchor.
+  place_block: PlaceBlockArgs;
+  arrange_screen: ArrangeScreenArgs;
   duplicate_block: DuplicateBlockArgs;
   detach_block: { block: string };
   // « Transformer en… » (D63): the block becomes another type or presentation, its id and its items'
@@ -190,6 +194,8 @@ export interface ScreenOutline {
   warnings: number;
   // How long a learner spends on it, estimated from what it holds (@elabora/core project/duration, D50).
   seconds: number;
+  // Its blocks placed by hand (D72), when it has some.
+  placed?: number;
 }
 
 // The format of the course's files against the one this Elabora writes. outdated: read migrated in
@@ -456,6 +462,15 @@ export interface CanvasView {
   // A dialogue of the screen (D61) after these choices (option ids from its start), at rest, or at a
   // node; null: each dialogue at its start.
   dialogue?: CanvasDialogue | null;
+  // A change shown before it is made (D72: the steps of a canvas handle while it is dragged): the
+  // screen shown rendered with these fields of its blocks (props merged, a key set to null removed)
+  // and of its layout's props, nothing written. null: the screen as it is.
+  preview?: CanvasPreview | null;
+}
+
+export interface CanvasPreview {
+  blocks?: Record<string, { width?: 'full' | 'wide' | 'half' | 'bleed'; place?: { x: number; y: number; width: number; height?: number; z?: number } | null; props?: Record<string, unknown> }>;
+  layoutProps?: Record<string, unknown>;
 }
 
 export interface CanvasDialogue {

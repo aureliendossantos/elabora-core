@@ -393,7 +393,7 @@ function layoutFacts(project: Project, screenId: string, html: string): Pick<Scr
 }
 
 // A block shown empty: the player renders its html (none), whatever its type.
-function emptyBlock(block: Block, placement: Partial<Pick<BlockData, 'hidden' | 'step' | 'slot' | 'style' | 'optional'>>): BlockData {
+function emptyBlock(block: Block, placement: Partial<Pick<BlockData, 'hidden' | 'step' | 'slot' | 'style' | 'optional' | 'place'>>): BlockData {
   return { id: textOf(block.id), type: textOf(block.type), width: block.width || 'full', ...placement, html: '' };
 }
 
@@ -425,7 +425,9 @@ function compileBlock(block: Block, scope: ScreenScope): BlockData {
     // Extra the learner may skip: not waited for by steps that open once explored nor by interactions-done (D63).
     ...(block.optional === true ? { optional: true as const } : {}),
     // Continuity between screens (D65); a free object's state is the chain's.
-    ...(scope.inLayer ? {} : continuityOf(block, context.keys))
+    ...(scope.inLayer ? {} : continuityOf(block, context.keys)),
+    // Placed by hand (D72): the player lifts a block of the screen into the placement frame.
+    ...(block.place && !scope.inLayer ? { place: block.place } : {})
   };
   // A block the player cannot show (unknown type: E_COMPONENT_UNKNOWN) compiles to an empty block, so
   // a screen being written still renders.

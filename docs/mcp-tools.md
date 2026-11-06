@@ -1,6 +1,6 @@
 # Agent tools
 
-Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 113 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
+Generated from the agent operation catalogue (`packages/cli/src/agent-tools.ts`) by `pnpm run docs`. The same 114 operations are MCP tools (`elabora mcp <course>`) and shell calls (`elabora tools call <tool> <course> --args '<json>'`); [Working with an agent](agents.md) says how to choose. Read tools change nothing in the course; every write is journaled and undoable and returns the diagnostics it caused.
 
 ## Reading
 
@@ -486,7 +486,7 @@ Add a block {id, type, props} (built-in type or course component) to a screen, o
 
 ### `elabora_update_block`
 
-Edit a block by id (anywhere, slots included): props are merged (a prop set to null is removed); also hidden, width, note, optional (true: extra the learner may skip, not waited for by steps that open once explored nor by interactions-done), slot and style (null removes), step (a block of the screen itself: the step that reveals it; null or 1: from the start), and continuity ({ key, duration? }: blocks of other screens with the same key carry on from one screen to the next, D65; null removes it; elabora_set_continuity links two blocks for you). For free-object blocks, props.props holds the declared prop values.
+Edit a block by id (anywhere, slots included): props are merged (a prop set to null is removed); also hidden, width, note, optional (true: extra the learner may skip, not waited for by steps that open once explored nor by interactions-done), slot and style (null removes), step (a block of the screen itself: the step that reveals it; null or 1: from the start), and continuity ({ key, duration? }: blocks of other screens with the same key carry on from one screen to the next, D65; null removes it; elabora_set_continuity links two blocks for you), and place (a block of the screen itself placed by hand, D72: { x, y, width, height?, z? } in shares of the placement frame, the reference window at the screen's width; in slides y from the frame's top, in scroll pages from the block's place in the page; null puts it back in the flow at its slot and rank; prefer a layout). For free-object blocks, props.props holds the declared prop values.
 
 | Argument | Type | Required | Description |
 |---|---|---|---|
@@ -500,6 +500,7 @@ Edit a block by id (anywhere, slots included): props are merged (a prop set to n
 | `style` | string \| null |  |  |
 | `step` | integer \| null |  |  |
 | `continuity` | object \| null |  |  |
+| `place` | object \| null |  |  |
 
 ### `elabora_remove_block`
 
@@ -522,6 +523,15 @@ Move a block within its screen, to another screen, into a layer, or into a slot 
 | `slot` | string \| null |  |  |
 | `after` | string |  |  |
 | `position` | integer |  |  |
+
+### `elabora_arrange_screen`
+
+Put the blocks of a screen placed by hand (D72, block place) back in the flow, each at its anchor (its slot and its rank in the list), in one undoable change: « Ranger » in the app. blocks: only these. To keep the look the author sketched, prefer a layout: read the places, put the blocks in the slots of a layout of the course (or a new one) and set its props, then remove each place.
+
+| Argument | Type | Required | Description |
+|---|---|---|---|
+| `screen` | string | yes |  |
+| `blocks` | string[] |  |  |
 
 ### `elabora_duplicate_block`
 

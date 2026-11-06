@@ -54,6 +54,9 @@ export interface ScreenFit {
   // On a phone: the player's bars whose items go onto a second line (the Next button under the
   // others), by their class (t-bar--top, t-bar--bottom, t-bar--controls).
   wrapped?: string[];
+  // Blocks placed by hand (D72), at this window: the blocks whose text they cover (title: the screen's
+  // title), the px of their content past their height or past the slide, a button under 44 px.
+  placed?: { block: string; covers: string[]; overflow: number; target?: number }[];
   // Unchanged since it was measured at this date (ISO): the fit kept then (fit-cache.ts).
   reused?: string;
 }
@@ -108,7 +111,9 @@ async function fitScreens(dir: string | null, { pkgDir, sizes, screens, fresh = 
   }
   const mode = course.presentation.mode || 'scroll';
   const fitSizes = { ...FIT_DEFAULTS, ...(course.presentation.fit || {}) };
-  const fit: FitSize[] = sizes ? [...sizes] : mode === 'slides' ? [{ role: 'reference', size: fitSizes.reference }, { role: 'minimum', size: fitSizes.minimum }] : [{ role: 'reference', size: fitSizes.reference }];
+  // Pages with blocks placed by hand (D72) are measured at the minimum too: below it, they read in the flow.
+  const placing = !!project && [...project.screens.values()].some((entry) => (entry.data.blocks ?? []).some((block) => block && typeof block === 'object' && 'place' in block && block.place));
+  const fit: FitSize[] = sizes ? [...sizes] : mode === 'slides' || placing ? [{ role: 'reference', size: fitSizes.reference }, { role: 'minimum', size: fitSizes.minimum }] : [{ role: 'reference', size: fitSizes.reference }];
   const phoneSize = phone === undefined ? (sizes ? null : FIT_PHONE) : phone || null;
   if (phoneSize && !fit.some((size) => size.role === 'phone')) fit.push({ role: 'phone', size: phoneSize });
   const unknown = (only ?? []).filter((id) => !course.ids.includes(id));
@@ -254,6 +259,8 @@ async function measureScreen(page: Page, id: string, size: FitSize, mode: string
       .map((node) => node.dataset.block) : [];
     return { screen: window.__elabora.screen, overflow, spare: overflow ? 0 : Math.max(0, Math.round(room - (main.querySelector<HTMLElement>('.t-screen')?.offsetHeight ?? 0))), below, windows: Math.round((root.scrollHeight / innerHeight) * 10) / 10 };
   });
+  const placed = size.role === 'phone' ? [] : await page.evaluate(placedIssues);
+  if (placed.length) Object.assign(initial, { placed });
   if (size.role === 'phone') {
     const contrast = await measureContrast(page, true);
     const wrapped = await page.evaluate(wrappedBars);
@@ -332,6 +339,45 @@ function wrappedBars(): string[] {
   return out;
 }
 
+// In the page: what each block placed by hand (D72) covers, what it cannot hold, a button too small.
+// A block covers the text of another when it is drawn over it (placed blocks are over the flow; among
+// themselves, the higher z) and overlaps one of its texts by more than 4 px each way.
+function placedIssues(): { block: string; covers: string[]; overflow: number; target?: number }[] {
+  const main = document.getElementById('t-main');
+  const placed = main ? [...main.querySelectorAll<HTMLElement>('.t-block[data-t-place]')] : [];
+  if (!main || !placed.length) return [];
+  const drawn = (node: Element) => node.getClientRects().length > 0 && getComputedStyle(node).visibility !== 'hidden';
+  // Its lines of text, not its boxes: a short line leaves the rest of a paragraph free.
+  const texts = (node: Element) => {
+    const rects: DOMRect[] = [];
+    const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+      const parent = text.parentElement;
+      if (!text.textContent?.trim() || !parent || !drawn(parent) || parent.closest('[aria-hidden="true"], .t-sr-only')) continue;
+      range.selectNodeContents(text);
+      rects.push(...range.getClientRects());
+    }
+    return rects;
+  };
+  const blocks = [...main.querySelectorAll<HTMLElement>('.t-block[data-block]')].filter((node) => !node.parentElement?.closest('.t-block[data-block]') && drawn(node));
+  const z = (node: Element) => Number(getComputedStyle(node).zIndex) || 0;
+  const title = [...main.querySelectorAll<HTMLElement>('article.t-screen h1')].find((node) => !node.closest('.t-block') && drawn(node));
+  const area = main.getBoundingClientRect();
+  const slides = document.getElementById('elabora-app')?.dataset.presentation === 'slides';
+  const meets = (a: DOMRect, b: DOMRect) => Math.min(a.right, b.right) - Math.max(a.left, b.left) > 4 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 4;
+  return placed.filter(drawn).map((node) => {
+    const box = node.getBoundingClientRect();
+    const covers = blocks.filter((other) => other !== node && (!other.hasAttribute('data-t-place') || z(other) < z(node)) && texts(other).some((text) => meets(text, box))).map((other) => other.dataset.block ?? '');
+    if (title && texts(title).some((line) => meets(line, box))) covers.unshift('title');
+    const past = node.hasAttribute('data-t-place-height') ? Math.max(0, node.scrollHeight - node.clientHeight) : 0;
+    const overflow = Math.round(Math.max(past, slides ? box.bottom - area.bottom : 0));
+    const button = node.matches('.t-block--button') ? [...node.querySelectorAll('button, a')].filter(drawn).map((control) => control.getBoundingClientRect()) : [];
+    const small = button.length ? Math.round(Math.min(...button.map((control) => Math.min(control.width, control.height)))) : null;
+    return { block: node.dataset.block ?? '', covers, overflow, ...(small !== null && small < 44 ? { target: small } : {}) };
+  }).filter((issue) => issue.covers.length || issue.overflow > 1 || issue.target !== undefined);
+}
+
 // In the page: positions of the blocks of the screen (fit: what moves once activities are answered).
 function blockBoxes(): Record<string, { y: number; h: number }> {
   const out: Record<string, { y: number; h: number }> = {};
@@ -354,6 +400,12 @@ export function fitDiagnostics(fit: FitResult | null | undefined): Diagnostic[] 
     const phone = size.role === 'phone' ? ` on a phone (${size.size.replace('x', '×')})` : '';
     for (const contrast of size.role !== 'minimum' ? screen.contrast || [] : []) {
       out.push({ code: 'W_TEXT_CONTRAST_MEASURED', severity: 'warning', target: screen.screen, message: `Screen "${screen.screen}"${contrast.block ? `, ${contrast.block}` : ''}: "${contrast.text}" reaches ${contrast.ratio}:1 against what is behind it (needs ${contrast.need}:1)${phone}${contrast.scrolled ? ', as the page scrolls, with its animations' : ''}.`, rule: 'F1' });
+    }
+    const at = size.size.replace('x', '×');
+    for (const issue of screen.placed || []) {
+      if (issue.covers.length) out.push({ code: 'W_PLACED_OVERLAP', severity: 'warning', target: issue.block, message: `Screen "${screen.screen}": "${issue.block}", placed by hand, covers the text of ${issue.covers.map((id) => (id === 'title' ? 'the title' : `"${id}"`)).join(', ')} at ${at}.`, rule: 'F1' });
+      if (issue.overflow > 1) out.push({ code: 'W_PLACED_OVERFLOW', severity: 'warning', target: issue.block, message: `Screen "${screen.screen}": "${issue.block}", placed by hand, goes ${issue.overflow} px past ${fit.mode === 'slides' ? 'its height or the slide' : 'its height'} at ${at}.`, rule: 'F1' });
+      if (issue.target !== undefined) out.push({ code: 'W_PLACED_TARGET', severity: 'warning', target: issue.block, message: `Screen "${screen.screen}": the button "${issue.block}", placed by hand, is ${issue.target} px at ${at} (44 px at least).`, rule: 'F1' });
     }
     for (const bar of screen.wrapped || []) {
       out.push({ code: 'W_PLAYER_BAR_WRAPS', severity: 'warning', target: screen.screen, message: `Screen "${screen.screen}": the player's bar ${bar} goes onto two lines${phone}; give it fewer items (elabora player) or shorter labels.`, rule: 'F1' });

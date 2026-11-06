@@ -75,3 +75,4 @@ Generated from `docs/decisions/` by `pnpm run docs`. One file per decision: what
 | [D69](decisions/D69.md) | A new module in another module's charter: the design layer copied, one screen to start | 3 Nov 2026 |
 | [D70](decisions/D70.md) | The author approves a translated plan through their agent, who asks first | 5 Nov 2026 |
 | [D71](decisions/D71.md) | The package's languages are the author's choice; a translation not approved goes in with a warning | 6 Nov 2026 |
+| [D72](decisions/D72.md) | Blocks placed by hand: the flow first, a place where the author drops it, back in the flow below the minimum window | 6 Nov 2026 |
