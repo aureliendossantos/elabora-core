@@ -325,7 +325,7 @@ is downloads uninstall voices-<lang>).
 ## Build and test
 
 ```text
-build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--media-quality high|medium|low] [--languages all] [--no-wait] [--json]
+build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--media-quality high|medium|low] [--languages all|<a,b>] [--packages one|each] [--no-wait] [--json]
       [--format scorm12|scorm2004|cmi5|xapi] [--lrs-key <key> --lrs-secret <secret>] [--target web] [--progress local|none]
       [--navigation authored|free] [--noindex] [--url <address>] [--image <file>] [--review-origin <origin>]…
                                                     Validate, then make the package for the LMS and its proof dossier in
@@ -338,9 +338,15 @@ build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--m
                                                     --format says it for this build. xAPI needs an LRS: the LMS's, or
                                                     delivery.lrs with its key (--lrs-key and --lrs-secret, else
                                                     ELABORA_LRS_KEY and ELABORA_LRS_SECRET), which the package carries.
-                                                    --languages all: one package of every language, the course's own
-                                                    and each translation that is ready and approved; learners switch
-                                                    from the player's « Langue » and keep their progress (D59).
+                                                    --languages en,fr: the package's languages (default: course.json
+                                                    delivery.languages, else the course's own), which learners switch
+                                                    from the player's « Langue », keeping their progress (D59). Each is
+                                                    put in as it is: a translation not approved or with texts still to
+                                                    translate goes in with a warning (D71). --languages all: the
+                                                    course's own and each translation ready and approved.
+                                                    --packages each: one package per language instead (default:
+                                                    course.json delivery.languagePackages), for LMSs that manage the
+                                                    language versions of a course themselves (Docebo, SuccessFactors).
                                                     --target web: a module for any web server, outside an LMS (a folder to
                                                     serve and its ZIP, <course>-<version>-web). --progress local (default:
                                                     kept in the browser, resumed at the next visit) or none (nothing kept);
@@ -461,7 +467,7 @@ account ai-key revoke <aik_…> [--json]              Revokes an AI key at once 
 
 ```text
 publish [dir] [--private] [--name <publication>] [--image <file>] [--index] [--progress local|none]
-        [--navigation authored|free] [--languages all] [--review-origin <origin>] [--json]
+        [--navigation authored|free] [--languages all|<a,b>] [--review-origin <origin>] [--json]
                                                     Builds the course for the web and publishes it in your space; only
                                                     the files the space lacks are sent (a second publication of the
                                                     same content sends nothing). Public: https://<space>.elabora.page/
@@ -469,8 +475,9 @@ publish [dir] [--private] [--name <publication>] [--image <file>] [--index] [--p
                                                     --private: a review build (<id>-review by default) that only a
                                                     review shows; a new version goes to its open reviews, even with
                                                     red checks (listed: they stop the web, not reviewers).
-                                                    --languages all: one package of every approved language, which
-                                                    learners switch in the player (D59; public only). A folder
+                                                    --languages en,fr: the module's languages (default: course.json
+                                                    delivery.languages), which learners switch in the player (D59, D71;
+                                                    public only); all: every translation ready and approved. A folder
                                                     elabora build --target web wrote is published as it is
 publication versions <publication> [--json]         The versions the hosting keeps of a publication (the current one
                                                     marked): older ones stay at their pinned addresses

@@ -10,7 +10,7 @@ import {
 import type { CloudReview, PublishCheck, PublishProgress, PublishResult, ResolvedComment, ResolvedComments } from '@elabora/node/cloud/index';
 import type { WebNavigation, WebProgress } from '@elabora/node/build';
 import { loadProjectFromDir } from '@elabora/node/project-reader';
-import { defineCommand, errorMessage, printJson } from './command.ts';
+import { defineCommand, errorMessage, languagesFlag, printJson } from './command.ts';
 import { pendingMediaJobs, waitForMediaJobs } from './media.ts';
 import type { CommandGroup, ExitCode } from './command.ts';
 
@@ -48,7 +48,7 @@ const ACCOUNT_HELP = `  account login --email <address> [--device <name>] [--lan
   account ai-key revoke <aik_…> [--json]              Revokes an AI key at once (and forgets it here if kept)`;
 
 const PUBLISH_HELP = `  publish [dir] [--private] [--name <publication>] [--image <file>] [--index] [--progress local|none]
-          [--navigation authored|free] [--languages all] [--review-origin <origin>] [--json]
+          [--navigation authored|free] [--languages all|<a,b>] [--review-origin <origin>] [--json]
                                                       Builds the course for the web and publishes it in your space; only
                                                       the files the space lacks are sent (a second publication of the
                                                       same content sends nothing). Public: https://<space>.elabora.page/
@@ -56,8 +56,9 @@ const PUBLISH_HELP = `  publish [dir] [--private] [--name <publication>] [--imag
                                                       --private: a review build (<id>-review by default) that only a
                                                       review shows; a new version goes to its open reviews, even with
                                                       red checks (listed: they stop the web, not reviewers).
-                                                      --languages all: one package of every approved language, which
-                                                      learners switch in the player (D59; public only). A folder
+                                                      --languages en,fr: the module's languages (default: course.json
+                                                      delivery.languages), which learners switch in the player (D59, D71;
+                                                      public only); all: every translation ready and approved. A folder
                                                       elabora build --target web wrote is published as it is
   publication versions <publication> [--json]         The versions the hosting keeps of a publication (the current one
                                                       marked): older ones stay at their pinned addresses
@@ -357,8 +358,9 @@ const publish = defineCommand({
   flags: { private: 'boolean', name: 'string', image: 'string', index: 'boolean', progress: 'string', navigation: 'string', languages: 'string', 'review-origin': 'list', json: 'boolean' },
   run: ({ positionals, flags }) => cloudFailures(flags.json, async () => {
     const [dir = '.', ...extra] = positionals;
-    if (extra.length) { console.error('Usage: elabora publish [dir] [--private] [--name <publication>] [--image <file>] [--index] [--progress local|none] [--navigation authored|free] [--languages all] [--review-origin <origin>] [--json]'); return 2; }
-    if (flags.languages !== undefined && flags.languages !== 'all') { console.error(`--languages is all (not "${flags.languages}"): one package of every approved language.`); return 2; }
+    if (extra.length) { console.error('Usage: elabora publish [dir] [--private] [--name <publication>] [--image <file>] [--index] [--progress local|none] [--navigation authored|free] [--languages all|<a,b>] [--review-origin <origin>] [--json]'); return 2; }
+    const asked = languagesFlag(flags.languages);
+    if (asked === null) { console.error(`--languages is all or a list of language tags such as en,fr (not "${flags.languages}").`); return 2; }
     if (flags.languages && flags.private) { console.error('✘ --languages: a review shows one language per build; publish the review without it.'); return 2; }
     if (flags.name !== undefined && !isPublicationName(flags.name)) { console.error(`✘ --name: lowercase letters, digits and hyphens, 1 to 64 characters (not "${flags.name}").`); return 2; }
     const progressValue = flags.progress;
@@ -376,13 +378,13 @@ const publish = defineCommand({
         if (pending.length) await waitForMediaJobs(dir, pending.map((job) => job.id));
         const published = await publishCourse(dir, {
           visibility, ...(flags.name ? { name: flags.name } : {}), ...(flags.image ? { image: path.resolve(flags.image) } : {}), index: flags.index,
-          ...(progressValue ? { progress: progressValue as WebProgress } : {}), ...(navigation ? { navigation: navigation as WebNavigation } : {}), ...(flags.languages === 'all' ? { languages: 'all' as const } : {}),
+          ...(progressValue ? { progress: progressValue as WebProgress } : {}), ...(navigation ? { navigation: navigation as WebNavigation } : {}), ...(asked ? { languages: asked } : {}),
           ...(flags['review-origin'] ? { reviewOrigins: flags['review-origin'] } : {}), onProgress: (p) => progress.report(p)
         });
         result = published;
         languages = published.report.languages;
       } else if (fs.existsSync(path.join(dir, 'index.html'))) {
-        if (flags.image || flags.index || progressValue || navigation || flags.languages || flags['review-origin']) { console.error('✘ A built folder is published as it is: --image, --index, --progress, --navigation, --languages and --review-origin are for a course folder (build it with --languages all).'); return 2; }
+        if (flags.image || flags.index || progressValue || navigation || flags.languages || flags['review-origin']) { console.error('✘ A built folder is published as it is: --image, --index, --progress, --navigation, --languages and --review-origin are for a course folder (build it with --languages).'); return 2; }
         if (!flags.name) { console.error('✘ --name: the publication\'s name, for a folder already built.'); return 2; }
         result = await publishBuiltFolder(dir, { name: flags.name, visibility, onProgress: (p) => progress.report(p) });
       } else { console.error(`✘ ${path.resolve(dir)} is neither a course (course.json) nor a module built for the web (index.html).`); return 1; }

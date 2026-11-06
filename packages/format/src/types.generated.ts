@@ -353,6 +353,15 @@ export type Course = {
     };
     /** The LMS the course is delivered to: ids of LMS profiles (elabora profiles lists them). elabora build, validate and test target them when no --profile is given: the package must fit their limits (size, files, suspend data). Without it the course targets an unknown LMS: the strictest documented behaviour, and package limits only warn, naming the LMSs that would refuse the package. */
     lms?: string[];
+    /** The languages the course's packages hold (D59, D71), which learners switch in place from the player's « Langue »: "all" (the course's own and every translation whose texts are ready and whose translated plan is approved), or a list of language tags (the course's own is always in, first). A translation named goes in as it is: not approved, or with texts still to translate (they show in the course's language), the build says it (W_PACKAGE_LANGUAGE_NOT_APPROVED, W_PACKAGE_LANGUAGE_INCOMPLETE). elabora build --languages overrides it for one build. Absent: the course's own language only. */
+    languages?: 'all' | Language[];
+    /** The language a learner starts in when they never chose one and their LMS gives no language preference (D71), one of the package's languages. Absent, or not in the package: the course's own. */
+    defaultLanguage?: Language;
+    /**
+     * one: one package that holds every language of delivery.languages, switched in place (D59). each: one package per language, for LMSs that manage the language versions of a course themselves (Docebo, SuccessFactors, Cornerstone): elabora build makes the course's own package and one for each other language, as elabora translate build would (D71).
+     * @default 'one'
+     */
+    languagePackages?: 'one' | 'each';
   };
   /** Overrides for player labels, keyed by label id (see docs). Example: {"next": "Continuer"}. */
   ui?: { [key: string]: string };

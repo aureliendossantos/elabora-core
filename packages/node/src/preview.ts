@@ -58,7 +58,8 @@ export async function preview(dir: string, { port = 4807, profile, navigation: a
   // The preview plays SCORM 1.2 whatever the module's format: the player talks the same data model
   // to every format, and the app's Aperçu reads the emulator's calls by SCORM 1.2's names
   // (docs/delivery-scorm12.md, « Preview »). elabora test runs the package's own format.
-  const rebuild = () => build(root, { target: 'scorm12', profiles: [lms], emit: 'dir', out, debug: true, writeLock: false, lock, media: 'link', preview: true, ...(navigation === 'free' ? { navigation } : {}) });
+  // Every translation the course has, approved or not, with « Langue » (D71): the author tries them.
+  const rebuild = () => build(root, { target: 'scorm12', profiles: [lms], emit: 'dir', out, debug: true, writeLock: false, lock, media: 'link', preview: true, tryLanguages: true, ...(navigation === 'free' ? { navigation } : {}) });
   let last = await rebuild();
   const server = await startServer({ port, frames: true });
   const show = (result: BuildResult) => {
@@ -70,7 +71,7 @@ export async function preview(dir: string, { port = 4807, profile, navigation: a
   // A build that throws fails its caller only: the next one still runs.
   let queue = Promise.resolve(last);
   const again = () => (queue = queue.catch(() => last).then(async () => { last = await rebuild(); show(last); onRebuild?.(last); return last; }));
-  const watched = ['course.json', 'plan.json', 'screens', 'objects', 'components', 'theme', 'assets'].map((name) => path.join(root, name)).filter((file) => fs.existsSync(file));
+  const watched = ['course.json', 'plan.json', 'screens', 'objects', 'components', 'theme', 'assets', 'translations'].map((name) => path.join(root, name)).filter((file) => fs.existsSync(file));
   let timer: ReturnType<typeof setTimeout> | undefined;
   const watchers = watched.map((file) => fs.watch(file, { recursive: true }, () => {
     clearTimeout(timer);

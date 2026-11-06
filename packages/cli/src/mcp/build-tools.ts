@@ -1,3 +1,4 @@
+import { buildLanguagePackages, languagePackagesOf } from '@elabora/node/language-packages';
 import path from 'node:path';
 import { DELIVERY_FORMATS } from '@elabora/core/lms/formats';
 import { listProfiles as lmsProfiles } from '@elabora/core/lms/profiles';
@@ -39,20 +40,42 @@ const WEB = {
   }
 } as const;
 
+// The package's languages (D59, D71), as elabora build --languages takes them.
+const LANGUAGES = {
+  description: 'The package\'s languages, which learners switch in place (the player\'s « Langue »). "all": the course\'s own and each translation ready and approved. A list of language tags: those, the course\'s own always in, each as it is: a translation not approved or with texts to translate goes in, and the diagnostics say it (W_PACKAGE_LANGUAGE_NOT_APPROVED, W_PACKAGE_LANGUAGE_INCOMPLETE): tell the author, who approves it. Default: course.json delivery.languages, else the course\'s own. Not with language.',
+  type: ['string', 'array'], items: { type: 'string' }
+} as const;
+
+// The languages asked: "all" or a list of tags; anything else is refused.
+export function languagesAsked(value: string | string[] | undefined): 'all' | string[] | undefined | { error: string } {
+  if (value === undefined || value === 'all' || Array.isArray(value)) return value as 'all' | string[] | undefined;
+  return { error: `languages is "all" or a list of language tags (["en", "fr"]), not ${JSON.stringify(value)}.` };
+}
+
 export const build = defineTool({
   name: 'elabora_build',
   description: 'Validate and compile the package for the LMS and its proof dossier into dist/. Its format: format, else the module\'s (course.json delivery.format), else the best for the module\'s LMSs (delivery.lms), else SCORM 1.2, which every LMS takes; the result says it (delivery). Waits for media jobs under way. mediaQuality (default: course.json delivery.mediaQuality, else high) ships renditions of the media below high, to fit LMS size limits (E_PACKAGE_TOO_LARGE gives the size at each quality). target "web": a module for a plain web server instead, without LMS (a folder to serve and its ZIP, dist/<course>-<version>-web), with the settings of web; profiles are refused there.',
-  inputSchema: objectSchema({ ...TRANSLATION, profiles: PROFILES, release: { type: 'boolean' }, mediaQuality: { enum: ['high', 'medium', 'low'] }, target: { enum: ['lms', 'web'], description: 'lms (default): a package for LMSs. web: a module for a plain web server.' }, format: { enum: [...DELIVERY_FORMATS], description: 'The package\'s format for this build (lms target): scorm12, scorm2004. Default: the module\'s.' }, web: WEB, languages: { enum: ['all'], description: 'all: one package of every language (D59): the course\'s own and each translation that is ready and approved, which learners switch in place (the player\'s language item). Not with language.' } }),
+  inputSchema: objectSchema({ ...TRANSLATION, profiles: PROFILES, release: { type: 'boolean' }, mediaQuality: { enum: ['high', 'medium', 'low'] }, target: { enum: ['lms', 'web'], description: 'lms (default): a package for LMSs. web: a module for a plain web server.' }, format: { enum: [...DELIVERY_FORMATS], description: 'The package\'s format for this build (lms target): scorm12, scorm2004, cmi5 or xapi (which needs an LRS). Default: the module\'s.' }, web: WEB, languages: LANGUAGES, packages: { enum: ['one', 'each'], description: 'each: one LMS package per language instead of one of every language (default: course.json delivery.languagePackages), for LMSs that manage a course\'s language versions themselves (Docebo, SuccessFactors, Cornerstone). Not with language or target web.' } }),
   async handler(args, { root }) {
     const web = args.target === 'web';
     if (!web && args.web) return errorResult({ error: 'web settings are for target "web".' });
     if (web && args.profiles) return errorResult({ error: 'profiles are for LMS packages: a module for the web reports to no LMS.' });
     if (web && args.format) return errorResult({ error: 'format is for LMS packages: a module for the web has no LMS format.' });
-    if (args.languages && args.language) return errorResult({ error: 'languages "all" builds the course with its translations: leave language out.' });
+    if (args.languages && args.language) return errorResult({ error: 'languages builds the course with its translations: leave language out.' });
+    const languages = languagesAsked(args.languages);
+    if (languages && typeof languages === 'object' && 'error' in languages) return errorResult(languages);
     const pending = readJobs(root).filter((job) => job.type !== 'rendition' && !isFinished(job.status));
     if (pending.length) await new MediaQueue(root).wait(pending.map((job) => job.id));
+    // One package per language (D71).
+    if (!web && !args.language && (args.packages ?? languagePackagesOf(root)) === 'each') {
+      const made = await buildLanguagePackages(root, { profiles: args.profiles, release: args.release, ...(args.format ? { target: args.format } : {}), ...(args.mediaQuality ? { mediaQuality: args.mediaQuality } : {}), ...(languages ? { languages } : {}) });
+      return textResult({
+        ok: made.every((one) => one.result.ok),
+        packages: made.map(({ language, result, translation }) => ({ language, ok: result.ok, zip: result.zipPath, report: result.reportPath, package: result.report?.package, budget: result.report?.budget, ...(translation ? { translation: { units: translation.units, untranslated: translation.untranslated, plan: translation.plan } } : {}), summary: result.summary, diagnostics: agentFindings(result.diagnostics) }))
+      });
+    }
     return withCourseLanguage(root, args, async (dir, translation) => {
-      const result = await buildCourse(dir, { profiles: args.profiles, release: args.release, ...(translation ? { out: path.join(root, 'dist') } : {}), ...(args.mediaQuality ? { mediaQuality: args.mediaQuality } : {}), ...(web ? { target: 'web' as const, web: args.web ?? {} } : args.format ? { target: args.format } : {}), ...(args.languages ? { languages: 'all' as const } : {}) });
+      const result = await buildCourse(dir, { profiles: args.profiles, release: args.release, ...(translation ? { out: path.join(root, 'dist') } : {}), ...(args.mediaQuality ? { mediaQuality: args.mediaQuality } : {}), ...(web ? { target: 'web' as const, web: args.web ?? {} } : args.format ? { target: args.format } : {}), ...(languages ? { languages } : {}) });
       return textResult({
         ok: result.ok, zip: result.zipPath, ...(web ? { dir: result.dirPath, web: result.report?.web } : { delivery: result.report?.delivery, budget: result.report?.budget }), report: result.reportPath, package: result.report?.package,
         ...(translation ? { translation: { language: translation.language, units: translation.units, untranslated: translation.untranslated, unplaced: translation.unplaced, plan: translation.plan } } : {}),

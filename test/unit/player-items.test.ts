@@ -34,7 +34,7 @@ const ids = (bar: PlayerBarData | null) => bar?.items.map((item) => item.id) ?? 
 const listed = (dir: string, bar: 'top' | 'bottom') => (readJSON(dir, 'course.json').player[bar].items as { id: string }[]).map((item) => item.id);
 
 test('the spacer: one per bar, always on, moved within its bar; a bar of only a spacer is removed', () => {
-  assert.deepEqual(DEFAULT_PLAYER.top.items.map((item) => item.id), ['logo', 'title', 'progress', 'spacer', 'resources', 'glossary', 'credits', 'exit']);
+  assert.deepEqual(DEFAULT_PLAYER.top.items.map((item) => item.id), ['logo', 'title', 'progress', 'spacer', 'language', 'resources', 'glossary', 'credits', 'exit']);
   assert.deepEqual(DEFAULT_PLAYER.bottom.items.map((item) => item.id), ['outline', 'controls', 'spacer', 'previous', 'next']);
   const dir = copyExample();
   // A course written before the spacer keeps the implicit rule: no spacer is added.
@@ -78,8 +78,10 @@ test('display and language: off in a new module, put back where Lin 44 draws the
   assert.deepEqual(after.top.items.find((item) => item.id === 'language'), { id: 'language', enabled: true, shows: false, why: 'one language in the package', options: {} });
   assert.equal(after.bottom.items.find((item) => item.id === 'display')?.shows, true);
   assert.deepEqual(ids(compiled(dir).player.bottom), ['outline', 'controls', 'spacer', 'display', 'previous', 'next']);
-  // A course with an approved French translation: a package of every language holds two.
-  assert.deepEqual(packageLanguages(loadProjectFromDir(BILINGUAL)), ['en', 'fr']);
+  // A course with an approved French translation: its packages hold English alone until they are
+  // asked for more (D71); every language ready and approved is two.
+  assert.deepEqual(packageLanguages(loadProjectFromDir(BILINGUAL)).languages, ['en']);
+  assert.deepEqual(packageLanguages(loadProjectFromDir(BILINGUAL), 'all').languages, ['en', 'fr']);
 });
 
 test('resources: https links beside files, images among the files; refused when they would only be flagged', () => {
@@ -285,9 +287,11 @@ test('the canvas render data carries what the live bars need: the outline, the r
   const files = render.files.map((file) => file.path);
   for (const path of ['assets/images/logo-helios.svg', 'assets/resources/fiche-reflexe-impression.pdf', 'assets/resources/equipements-siege.csv']) assert.ok(files.includes(path), path);
   assert.equal(render.course.languages, undefined);
-  // « Langue » enabled: the languages a package of every language would hold.
+  // « Langue » enabled: the languages the course's packages hold (delivery.languages, D71).
   const orbital = copyCourse(BILINGUAL);
   edit.updatePlayer(orbital, { enable: ['language'] });
+  assert.equal(renderScreen(loadProjectFromDir(orbital), 'intro', {}).course.languages, undefined);
+  edit.updateCourseSettings(orbital, { delivery: { languages: ['en', 'fr'] } });
   assert.deepEqual(renderScreen(loadProjectFromDir(orbital), 'intro', {}).course.languages, ['en', 'fr']);
 });
 
@@ -406,7 +410,7 @@ test('a glossary entry removed: the translations that had its links up to date l
   assert.doesNotMatch(xlf, /glossary:gemini/);
   assert.match(xlf, /<target>C’est l’instinct qu’a suivi Gemini 4\./);
   // Still a package of every language: French is up to date.
-  assert.deepEqual(packageLanguages(loadProjectFromDir(dir)), ['en', 'fr']);
+  assert.deepEqual(packageLanguages(loadProjectFromDir(dir), 'all').languages, ['en', 'fr']);
 });
 
 test('the engine\'s renders carry the bars of the course as it is now: another screen renamed', () => {

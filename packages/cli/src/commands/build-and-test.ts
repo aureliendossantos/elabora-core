@@ -9,6 +9,7 @@ import type { BuildReport } from '@elabora/core/compile/report';
 import type { UpdateReport } from '@elabora/core/update-impact';
 import { stringifyJSON } from '@elabora/core/util/json';
 import { build, WEB_DEFAULTS, WEB_NAVIGATION, WEB_PROGRESS } from '@elabora/node/build';
+import { buildLanguagePackages, languagePackagesOf } from '@elabora/node/language-packages';
 import type { BuildResult, WebBuildOptions } from '@elabora/node/build';
 import type { PackageRun, PackageTestResult } from '@elabora/node/emulator/run';
 import type { FitResult, FitSize } from '@elabora/node/fit';
@@ -19,13 +20,13 @@ import { writeFileAtomic } from '@elabora/node/util/fs';
 import { readZip } from '@elabora/node/zip';
 import { isPresetName } from '@elabora/core/media/presets';
 import { isFinished } from '@elabora/node/media/jobs';
-import { defineCommand, errorMessage, notACourseMessage, printDiagnostics, printJson, unknownProfileMessage } from './command.ts';
+import { defineCommand, errorMessage, languagesFlag, notACourseMessage, printDiagnostics, printJson, unknownProfileMessage } from './command.ts';
 import { mediaProgress } from '../media-progress.ts';
 import { look } from './look.ts';
 import { pendingMediaJobs, waitForMediaJobs } from './media.ts';
 import type { CommandGroup } from './command.ts';
 
-const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--media-quality high|medium|low] [--languages all] [--no-wait] [--json]
+const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--media-quality high|medium|low] [--languages all|<a,b>] [--packages one|each] [--no-wait] [--json]
         [--format scorm12|scorm2004|cmi5|xapi] [--lrs-key <key> --lrs-secret <secret>] [--target web] [--progress local|none]
         [--navigation authored|free] [--noindex] [--url <address>] [--image <file>] [--review-origin <origin>]…
                                                       Validate, then make the package for the LMS and its proof dossier in
@@ -38,9 +39,15 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
                                                       --format says it for this build. xAPI needs an LRS: the LMS's, or
                                                       delivery.lrs with its key (--lrs-key and --lrs-secret, else
                                                       ELABORA_LRS_KEY and ELABORA_LRS_SECRET), which the package carries.
-                                                      --languages all: one package of every language, the course's own
-                                                      and each translation that is ready and approved; learners switch
-                                                      from the player's « Langue » and keep their progress (D59).
+                                                      --languages en,fr: the package's languages (default: course.json
+                                                      delivery.languages, else the course's own), which learners switch
+                                                      from the player's « Langue », keeping their progress (D59). Each is
+                                                      put in as it is: a translation not approved or with texts still to
+                                                      translate goes in with a warning (D71). --languages all: the
+                                                      course's own and each translation ready and approved.
+                                                      --packages each: one package per language instead (default:
+                                                      course.json delivery.languagePackages), for LMSs that manage the
+                                                      language versions of a course themselves (Docebo, SuccessFactors).
                                                       --target web: a module for any web server, outside an LMS (a folder to
                                                       serve and its ZIP, <course>-<version>-web). --progress local (default:
                                                       kept in the browser, resumed at the next visit) or none (nothing kept);
@@ -128,13 +135,16 @@ const HELP = `  build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir
 const buildCommand = defineCommand({
   name: 'build',
   flags: {
-    profile: 'list', release: 'boolean', out: 'string', dir: 'boolean', debug: 'boolean', 'media-quality': 'string', languages: 'string', 'no-wait': 'boolean', json: 'boolean',
+    profile: 'list', release: 'boolean', out: 'string', dir: 'boolean', debug: 'boolean', 'media-quality': 'string', languages: 'string', packages: 'string', 'no-wait': 'boolean', json: 'boolean',
     target: 'string', format: 'string', 'lrs-key': 'string', 'lrs-secret': 'string', progress: 'string', navigation: 'string', noindex: 'boolean', url: 'string', image: 'string', 'review-origin': 'list'
   },
   async run({ positionals: [dir = '.'], flags }) {
     const quality = flags['media-quality'];
     if (quality !== undefined && !isPresetName(quality)) { console.error(`--media-quality is high, medium or low (not "${quality}").`); return 2; }
-    if (flags.languages !== undefined && flags.languages !== 'all') { console.error(`--languages is all (not "${flags.languages}"): one package of every approved language.`); return 2; }
+    const languages = languagesFlag(flags.languages);
+    if (languages === null) { console.error(`--languages is all or a list of language tags such as en,fr (not "${flags.languages}").`); return 2; }
+    if (flags.packages !== undefined && flags.packages !== 'one' && flags.packages !== 'each') { console.error(`--packages is one or each (not "${flags.packages}").`); return 2; }
+    if (flags.packages === 'each' && flags.target === 'web') { console.error('--packages each: one LMS package per language; a module for the web holds every language in one.'); return 2; }
     // --format: the package's format for the LMS (default: the module's, course.json delivery.format,
     // else the best for its LMSs); --target web: a module for the web; --target <format> says --format.
     const target = flags.target;
@@ -173,11 +183,32 @@ const buildCommand = defineCommand({
       await waitForMediaJobs(dir, pending.map((job) => job.id));
     }
     const progress = mediaProgress();
+    // One package per language (delivery.languagePackages "each", or --packages each; D71): LMS packages only.
+    const each = target !== 'web' && (flags.packages ?? languagePackagesOf(dir)) === 'each';
+    if (each) {
+      const made = await buildLanguagePackages(dir, {
+        profiles: flags.profile, release: flags.release, out: flags.out, emit: flags.dir ? 'both' : 'zip', debug: flags.debug,
+        ...(format ? { target: format } : {}), ...(quality ? { mediaQuality: quality } : {}), ...(languages ? { languages } : {}),
+        onMedia: ({ job }) => (isFinished(job.status) ? progress.complete(job) : progress.progress(job))
+      });
+      const ok = made.every((one) => one.result.ok);
+      if (flags.json) printJson({ ok, packages: made.map(({ language, result, translation }) => ({ language, ok: result.ok, summary: result.summary, zip: result.zipPath, dir: result.dirPath, report: result.reportPath, package: result.report?.package, budget: result.report?.budget, ...(translation ? { translation: { units: translation.units, untranslated: translation.untranslated, plan: translation.plan } } : {}), diagnostics: result.diagnostics })) });
+      else {
+        for (const { language, result } of made) {
+          console.log(`\n${language}`);
+          printDiagnostics(result.diagnostics);
+          if (result.ok && result.zipPath && result.report) console.log(`✔ ${result.zipPath}\n  ${result.report.package.files} files, ${(result.report.package.bytes / 1024).toFixed(0)} KB`);
+          else console.log(`✘ Build stopped: ${result.summary.errors} error(s).`);
+        }
+        console.log(`\n${ok ? '✔' : '✘'} ${made.filter((one) => one.result.ok).length}/${made.length} packages, one per language: ${made.map((one) => one.language).join(', ')}.`);
+      }
+      return ok ? 0 : 1;
+    }
     const result = await build(dir, {
       profiles: flags.profile, release: flags.release, out: flags.out, emit: flags.dir || web ? 'both' : 'zip', debug: flags.debug, ...(web ? { target: 'web' as const, web } : format ? { target: format } : {}),
       ...(flags['lrs-key'] !== undefined || flags['lrs-secret'] !== undefined ? { lrs: { key: flags['lrs-key'] ?? '', secret: flags['lrs-secret'] ?? '' } } : {}),
       ...(quality ? { mediaQuality: quality } : {}),
-      ...(flags.languages === 'all' ? { languages: 'all' as const } : {}),
+      ...(languages ? { languages } : {}),
       onMedia: ({ job }) => (isFinished(job.status) ? progress.complete(job) : progress.progress(job))
     });
     if (flags.json) printJson({ ok: result.ok, summary: result.summary, zip: result.zipPath, dir: result.dirPath, report: result.reportPath, package: result.report?.package, media: result.report?.media, budget: result.report?.budget, ...(result.report?.web ? { web: result.report.web } : {}), diagnostics: result.diagnostics });

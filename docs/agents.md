@@ -115,7 +115,7 @@ Pass the author explicitly when you embed calls.
 
 Some decisions belong to people. The core refuses an agent author that makes a plan version or records the client's validation of one (`E_PLAN_PERSON_ONLY`).
 
-Others are the author's, and their agent carries them out once they said yes, as before a paid generation (D70). A translated plan is one: `elabora_translation_approve` (CLI `translate approve`) without `authorApproved` writes nothing and returns what to put to the author. Only with their yes does the agent call again with `authorApproved`, the translated plan's `contentHash` it was given; a plan changed in between is asked again (`E_TRANSLATION_ASK_AUTHOR`). The approval and the journal keep both: the author's name (`by`) and the agent's (`agent`, the journal's author).
+Others are the author's, and their agent carries them out once they said yes, as before a paid generation (D70). A translated plan is one: `elabora_translation_approve` (CLI `translate approve`) without `authorApproved` writes nothing and returns what to put to the author. Only with their yes does the agent call again with `authorApproved`, the translated plan's `contentHash` it was given; a plan changed in between is asked again (`E_TRANSLATION_ASK_AUTHOR`). The approval and the journal keep both: the author's name (`by`) and the agent's (`agent`, the journal's author). Building with a translation not approved is not one of those: the package holds the languages asked, each as it is (D71); the agent says `W_PACKAGE_LANGUAGE_NOT_APPROVED` to the author in a sentence, with the way to approve it.
 
 A script a person runs can name its author with `ELABORA_AUTHOR=human:<name>`. This attribution records who acted. A host with full shell access can still act as anyone.
 

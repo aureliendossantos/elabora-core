@@ -245,7 +245,7 @@ test('publish: only what the space lacks is sent; publishing the same content ag
   assert.equal(changed.previous, published.version);
 });
 
-test('publish --languages all: one package of every approved language, its languages in the publication; a review keeps one language', async () => {
+test('publish --languages all or named: one package of those languages, its languages in the publication; a review keeps one language', async () => {
   await signIn('lang-author');
   const dir = copy(BILINGUAL);
   const run = await elabora(['publish', dir, '--languages', 'all', '--json']);
@@ -259,7 +259,10 @@ test('publish --languages all: one package of every approved language, its langu
   // A review shows one language per build: refused, by the API and the command.
   await assert.rejects(publishCourse(dir, { visibility: 'private', languages: 'all' }), { code: 'E_CLOUD_PRIVATE_LANGUAGES' });
   assert.equal((await elabora(['publish', dir, '--private', '--languages', 'all'])).status, 2);
-  assert.equal((await elabora(['publish', dir, '--languages', 'fr'])).status, 2);
+  assert.equal((await elabora(['publish', dir, '--languages', 'fr;de'])).status, 2, 'neither all nor language tags');
+  // Named, French goes in as it is (D71): the same publication, nothing new to send.
+  const named = JSON.parse((await elabora(['publish', dir, '--languages', 'fr', '--json'])).stdout);
+  assert.deepEqual(named.languages, ['en', 'fr']);
   // Without it, the course's own language.
   const single = JSON.parse((await elabora(['publish', dir, '--name', 'orbital-en', '--json'])).stdout);
   assert.equal(single.languages, undefined);

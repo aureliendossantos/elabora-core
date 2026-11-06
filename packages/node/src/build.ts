@@ -2,9 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { Course, Diagnostic, LmsProfile, Plan, PlanWaiver } from '@elabora/format';
 import type { Project } from '@elabora/core/project/model';
-import { packageLanguages } from '@elabora/core/player/config';
+import { defaultLanguageOf, moduleLanguages, packageLanguages } from '@elabora/core/player/config';
+import type { PackageLanguagesAsked } from '@elabora/core/player/config';
 import { translatedProject } from '@elabora/core/render/screen';
-import { translationPath, translationReady, translationStatus } from '@elabora/core/i18n/translate';
+import { translationPath } from '@elabora/core/i18n/translate';
 import { planContentHash, iterateBlocks, screenOrder } from '@elabora/core/project/load';
 import { latestValidated, planState, versionLabel } from '@elabora/core/project/plan-versions';
 import { planDiff } from '@elabora/core/project/plan-diff';
@@ -96,10 +97,14 @@ export interface BuildOptions {
   // xAPI outside an LMS (course.json delivery.lrs): the LRS's key, never written in course.json.
   // Default: ELABORA_LRS_KEY and ELABORA_LRS_SECRET.
   lrs?: { key: string; secret: string };
-  // 'all': one package of every language (D59): the course's own and each translation that is ready
-  // and approved, which learners switch in place (the player's language item). Default: the course's
-  // own language only.
-  languages?: 'all';
+  // The package's languages (D59, D71), which learners switch in place (the player's language item):
+  // 'all', the course's own and each translation that is ready and approved; or the languages named
+  // (the course's own always in), each as it is, the build saying a translation not approved or not
+  // complete. Default: course.json delivery.languages, else the course's own language only.
+  languages?: PackageLanguagesAsked;
+  // The Aperçu (elabora preview, D71): the course's own and every translation it has, as far as each
+  // goes, with « Langue » shown, whatever delivery.languages and the player say.
+  tryLanguages?: boolean;
 }
 
 export type { WebBuildOptions, WebNavigation, WebProgress, WebReviewOptions } from './build-types.ts';
@@ -237,23 +242,25 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
   for (const failure of dialogueLines.failures) reporter.emit('E_NARRATION_TRACK', { file: `screens/${failure.screen}.json`, target: failure.screen, message: `The audio of dialogue line "${failure.line}" of screen "${failure.screen}" could not be packaged: ${failure.message}` });
   for (const line of dialogueLines.lines) media.set(line.path, line.file);
 
-  // A package of several languages (D59): the course in each translation that is ready and approved,
-  // with its own narration tracks (narration/<lang>/).
-  const languages = options.languages === 'all' ? packageLanguages(project) : [course.language];
-  // A translation the package leaves out is said, with what it lacks: a link of the glossary placed
-  // since, a text edited, a plan not approved make a language go without a word otherwise.
-  if (options.languages === 'all') {
-    for (const status of translationStatus(project)) {
-      if (!status.exists || languages.includes(status.language)) continue;
-      const lacks = [
-        status.toTranslate ? `${status.toTranslate} text${status.toTranslate === 1 ? '' : 's'} to translate` : '',
-        status.stale ? `${status.stale} text${status.stale === 1 ? '' : 's'} out of date (the source changed since)` : '',
-        status.problems.length ? `${status.problems.length} translation${status.problems.length === 1 ? '' : 's'} refused (${status.problems[0].message})` : '',
-        status.anchors.toPlace.length ? `${status.anchors.toPlace.length} word anchor${status.anchors.toPlace.length === 1 ? '' : 's'} to place` : '',
-        translationReady(status) && status.plan !== 'approved' ? `its translated plan is ${status.plan}` : ''
-      ].filter(Boolean);
-      reporter.emit('W_PACKAGE_LANGUAGE_LEFT_OUT', { file: translationPath(status.language), target: status.language, message: `The ${status.language} translation is not in the package of every language: ${lacks.join('; ') || 'it is not ready'}.` });
+  // A package of several languages (D59, D71): the course in each language asked (or delivery.languages
+  // says), with its own narration tracks (narration/<lang>/). What a language lacks is said: a link of
+  // the glossary placed since, a text edited, a plan not approved make a language go (or go in)
+  // without a word otherwise.
+  const languagesAsked = options.tryLanguages ? moduleLanguages(project) : options.languages;
+  const { languages, notes } = packageLanguages(project, languagesAsked);
+  if (!options.tryLanguages) {
+    for (const note of notes) {
+      const file = translationPath(note.language);
+      if (note.kind === 'unknown') reporter.emit('W_PACKAGE_LANGUAGE_UNKNOWN', { file: 'course.json', target: note.language, message: `The package asks for ${note.language}, which the course has no translation in, and leaves it out: add it (elabora translate export . --to ${note.language}) or leave it out of the package's languages.` });
+      else if (note.kind === 'left out') reporter.emit('W_PACKAGE_LANGUAGE_LEFT_OUT', { file, target: note.language, message: `The ${note.language} translation is not in the package of every language: ${note.lacks.join('; ') || 'it is not ready'}.` });
+      else if (note.kind === 'incomplete') reporter.emit('W_PACKAGE_LANGUAGE_INCOMPLETE', { file, target: note.language, message: `The ${note.language} translation is in the package with ${note.lacks.join('; ')}: learners who choose ${note.language} read those texts in ${course.language}.` });
+      // A client delivery (--release) holds approved plans only, the source's and each translation's.
+      else reporter.emit('W_PACKAGE_LANGUAGE_NOT_APPROVED', { file, target: note.language, ...(options.release ? { severity: 'error' as const } : {}), message: `The ${note.language} translation is in the package, ${note.lacks.join('; ')}: ${options.release ? 'a release build needs it approved; ' : ''}tell the author, who approves it (Traduction › Versions, or through you with their yes).` });
     }
+    // Not said of a package asked in the course's own language alone (a review, a package per language).
+    const alone = Array.isArray(options.languages) && options.languages.every((language) => language === course.language);
+    const start = course.delivery?.defaultLanguage;
+    if (start && !alone && !languages.includes(start)) reporter.emit('W_PACKAGE_DEFAULT_LANGUAGE', { file: 'course.json', target: start, message: `delivery.defaultLanguage is ${start}, which the package does not hold (${languages.join(', ')}): learners start in ${course.language}.` });
   }
   const others = languages.slice(1).map((language) => ({ language, project: translatedProject(project, language) }));
   const otherTracks = new Map<string, Map<string, (typeof narration.tracks)[number]>>();
@@ -340,10 +347,12 @@ export async function build(dir: string, options: BuildOptions = {}): Promise<Bu
     screens: [...project.screens.entries()].sort(), objects: [...usedObjects].sort().map((id) => [id, project.objects.get(id)?.manifest, project.objects.get(id)?.code]),
     narration: tracks.size ? [...tracks.values()].map((track) => [track.name, track.key]) : undefined,
     dialogueLines: dialogueLines.lines.length ? dialogueLines.lines.map((line) => [line.path, line.hash, line.mouth]) : undefined,
-    delivery, ...free, ...(lmsData ? { lms: lmsData } : {}), ...(lrs ? { lrs: sha256(lrs) } : {}),
+    delivery, ...free, ...(lmsData ? { lms: lmsData } : {}), ...(lrs ? { lrs: sha256(lrs) } : {}), ...(options.tryLanguages ? { tryLanguages: true } : {}),
     languages: others.length ? languages.map((language) => [language, fileHash(project.files, `translations/${language}.xlf`) ?? null, [...(otherTracks.get(language)?.values() ?? [])].map((track) => [track.name, track.key]), ...(otherLines.get(language)?.lines.length ? [otherLines.get(language)!.lines.map((line) => [line.path, line.hash, line.mouth])] : [])]) : undefined
   })).slice(0, 16);
-  const several = others.length ? { languages } : {};
+  // The language learners start in (D71); the Aperçu shows « Langue » whatever the player says.
+  const start = defaultLanguageOf(course, languages);
+  const several = others.length ? { languages, ...(start && start !== course.language ? { defaultLanguage: start } : {}), ...(options.tryLanguages ? { languageMenu: true } : {}) } : {};
   const assetPathOf = assetPaths.size ? { assetPath: (name: string) => assetPaths.get(name) ?? `assets/${name}` } : {};
   const linesOf = (made: DialogueLineAudio | undefined): { dialogueAudio?: PackagedLines } => {
     if (!made?.lines.length) return {};

@@ -124,8 +124,8 @@ export function renderChrome(project: Project, { language: asked }: { language?:
   const language = asked || sourceLanguage;
   const shared = context && context.language === language ? context : createRenderContext(project, { language: asked });
   const target = shared.source === project ? shared.project : language !== sourceLanguage && language ? translatedProject(project, language) : project;
-  // « Langue » enabled: the languages a package of every language would hold (D59).
-  const languages = itemEnabled(playerConfig(project.course), 'language') ? packageLanguages(project) : undefined;
+  // « Langue » enabled: the languages the course's packages hold (D59, D71).
+  const languages = itemEnabled(playerConfig(project.course), 'language') ? packageLanguages(project).languages : undefined;
   const several = languages && languages.length > 1 ? languages : undefined;
   const player = shownPlayer(playerConfig(target.course), playerContent(target, { languages: several?.length ?? 1 }), { assetPath: shared.compile.assetPath });
   return { outline: outlineOf(shared, target), player, about: aboutCourse(target), ...(several ? { languages: several } : {}) };

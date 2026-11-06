@@ -1,3 +1,4 @@
+import type { PackageLanguagesAsked } from '@elabora/core/player/config';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -175,9 +176,10 @@ export interface PublishCourseOptions {
   progress?: WebProgress;
   navigation?: WebNavigation;
   index?: boolean; // ask to be indexed by search engines (only accounts allowed to; noindex otherwise)
-  // One package of every approved language, switched in place by learners (D59), for a public
-  // publication; a review shows one language per build (D42), so a private one refuses it.
-  languages?: 'all';
+  // The module's languages, switched in place by learners (D59, D71; default: course.json
+  // delivery.languages), for a public publication; a review shows one language per build (D42), so a
+  // private one refuses it and holds the course's own language alone.
+  languages?: PackageLanguagesAsked;
   reviewOrigins?: string[]; // more review pages (development); https://revue.elabora.studio always
   api?: string;
   onProgress?: (progress: PublishProgress) => void;
@@ -217,7 +219,7 @@ export async function publishCourse(courseDir: string, options: PublishCourseOpt
     const web = visibility === 'private'
       ? { review: { origins: [REVIEW_PAGE_ORIGIN, ...(options.reviewOrigins ?? [])] }, ...(options.progress ? { progress: options.progress } : {}), ...(options.navigation ? { navigation: options.navigation } : {}) }
       : { noindex, url: publicationUrl(connection.space, name), ...(options.image ? { image: options.image } : {}), ...(options.progress ? { progress: options.progress } : {}), ...(options.navigation ? { navigation: options.navigation } : {}) };
-    const built = await build(courseDir, { target: 'web', web, out, emit: 'dir', ...(visibility === 'private' ? { preview: true } : {}), ...(options.languages ? { languages: options.languages } : {}) });
+    const built = await build(courseDir, { target: 'web', web, out, emit: 'dir', ...(visibility === 'private' ? { preview: true, languages: [] } : options.languages ? { languages: options.languages } : {}) });
     if (!built.ok || !built.dirPath) {
       const errors = built.diagnostics.filter((d) => d.severity === 'error' && !d.waived);
       throw new CloudError(0, 'E_CLOUD_BUILD', `The course does not build for the web (${errors.length} error(s)): ${errors.slice(0, 3).map((d) => `${d.code} ${d.message}`).join('; ')}${errors.length > 3 ? '…' : ''}. elabora validate lists them.`, { diagnostics: errors });
