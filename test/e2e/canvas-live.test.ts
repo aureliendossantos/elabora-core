@@ -184,9 +184,11 @@ test('the canvas never takes focus from the host: not on an open, a push that mo
   });
 });
 
-test('the live bars: « Langue » lists the languages a package of every language holds, and a choice goes to the host', { timeout: 180000 }, async () => {
+test('the live bars: « Langue » lists the languages of the package, and a choice goes to the host', { timeout: 180000 }, async () => {
   const dir = copyExample(BILINGUAL);
   edit.updatePlayer(dir, { enable: ['language'] });
+  // The package's languages, as Publier checks them (D71).
+  edit.updateCourseSettings(dir, { delivery: { languages: ['en', 'fr'] } });
   await withLive(dir, async ({ page, show, sent }) => {
     await show('intro', 1);
     await page.click('.t-language-btn');
