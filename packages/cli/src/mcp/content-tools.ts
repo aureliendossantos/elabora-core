@@ -9,7 +9,7 @@ import { defineTool, editResult, errorResult, formatValue, objectSchema, LANGUAG
 
 // A block's width in the screen's column (the app says Moitié · Standard · Large · Bord à bord):
 // full is the width of the text column, the default, not the window's.
-const BLOCK_WIDTH = { enum: ['full', 'wide', 'half', 'bleed'], description: 'In the screen\'s column: half (two side by side on wide screens), full (the default: the width of the text column), wide (wider than the text), bleed (edge to edge of the window, of the slide in slides).' };
+const BLOCK_WIDTH = { enum: ['full', 'wide', 'half', 'bleed'], description: 'In the screen\'s column: half (two side by side on wide screens), full (the default: the width of the text column), wide (wider than the text), bleed (edge to edge of the window, of the slide in slides).' } as const;
 
 // Blocks given whole, checked by the edit against the format.
 const BLOCKS = { type: 'array', items: formatValue<Block>()({ type: 'object' }) } as const;
