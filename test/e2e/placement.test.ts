@@ -202,3 +202,33 @@ test('the editor canvas: placed at any width but a phone\'s, the frame and the f
     await host.close();
   }
 });
+
+// A layout's zones on the editor's canvas: their names, and the blocks each refuses (the founder, 6 Nov
+// 2026): on diagnostic-reseau's « accueil », « Scène » offers its places to its object only.
+test('the editor canvas: each zone named by its layout, the blocks it refuses reported', async () => {
+  const dir = copyExample(path.join(ROOT, 'examples/diagnostic-reseau'));
+  const project = loadProjectFromDir(dir);
+  const host = await startCanvasHost({ root: dir });
+  const browser = await launchBrowser('chromium');
+  try {
+    const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto(`${host.url}&placing=editor`);
+    await page.waitForFunction(() => (window as CanvasWindow).__elaboraCanvas);
+    host.push(renderScreen(project, 'accueil', {}, createRenderContext(project, { fields: true })), { id: 1 });
+    await page.waitForFunction(() => (window as CanvasWindow).__elaboraCanvas.screen === 'accueil');
+    await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.ready());
+    const shown = await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.layout()) as LayoutMessage;
+    const flows = Object.fromEntries(shown.placing!.flows.map((flow) => [flow.slot, flow]));
+    assert.equal(flows.body?.label, 'Texte');
+    assert.equal(flows.body?.default, true);
+    assert.deepEqual(flows.body?.refuses, ['accueil-reseau']);
+    assert.equal(flows.scene?.label, 'Scène');
+    assert.deepEqual(flows.scene?.refuses, ['accueil-mission', 'accueil-ticket', 'accueil-go']);
+    assert.deepEqual(errors, []);
+  } finally {
+    await browser.close();
+    await host.close();
+  }
+});

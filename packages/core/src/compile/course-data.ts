@@ -383,7 +383,11 @@ function compileSteps(steps: NonNullable<Screen['steps']>): NonNullable<ScreenDa
 function compileLayout(project: Project, screenId: string, screen: Screen, layout: ComponentDescriptor, template: ParsedTemplate, context: CompileContext): ScreenLayout {
   const props = applyDefaults(layout.schema, resolveTextRefs(screen.layoutProps || {}, context.planIndex));
   const html = renderTemplate(template, { props, schema: layout.schema, id: screen.id, language: context.course.language, assetPath: context.assetPath, fields: context.fields }).html;
-  return { id: layout.id, lineage: layout.lineage, fullBleed: layout.fullBleed, defaultSlot: layout.defaultSlot, html, ...layoutFacts(project, screenId, html) };
+  // The app's canvas: the zones' names and rules, for the places it offers a dragged block (D72).
+  const slots = context.fields && layout.slots.length
+    ? { slots: layout.slots.map(({ id, label, accepts, maxBlocks }) => ({ id, label, ...(Array.isArray(accepts) ? { accepts } : {}), ...(maxBlocks ? { maxBlocks } : {}) })) }
+    : {};
+  return { id: layout.id, lineage: layout.lineage, fullBleed: layout.fullBleed, defaultSlot: layout.defaultSlot, html, ...layoutFacts(project, screenId, html), ...slots };
 }
 
 // What the layout hook of a screen shows (D63), when its template has it: the page's reading time
