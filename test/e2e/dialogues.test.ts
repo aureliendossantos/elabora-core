@@ -398,9 +398,7 @@ test('« Reprendre d\'ici » moves nothing, on a phone as on a wide screen', { t
         return [...document.querySelectorAll<HTMLElement>('[data-block="appel-marc"] .t-dialogue-resume:not([hidden])')].map((button) => { const r = button.getBoundingClientRect(); return r.left >= log.left && r.right <= log.right; });
       });
       assert.ok(tools.length >= 2 && tools.every(Boolean), `${width}: « Reprendre d'ici » shown, inside the thread (${JSON.stringify(tools)})`);
-      // Within a pixel: a height of 67.5 px rounds either way (67 or 68 on Linux CI, 6 Nov 2026).
-      const after = (await answers()).slice(0, before.length);
-      assert.ok(after.length === before.length && after.every((answer, index) => answer.split(',').every((value, at) => Math.abs(Number(value) - Number(before[index]!.split(',')[at])) <= 1)), `${width}: the answers keep their width and place: ${JSON.stringify({ before, after })}`);
+      assert.deepEqual((await answers()).slice(0, before.length), before, `${width}: the answers keep their width and place`);
     });
   }
 });
