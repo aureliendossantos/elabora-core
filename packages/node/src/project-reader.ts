@@ -7,6 +7,7 @@ import type { FileMedia } from '@elabora/core/media/conformance';
 import { loadProject } from '@elabora/core/project/load';
 import type { Project } from '@elabora/core/project/model';
 import { validateProject } from '@elabora/core/validate/index';
+import type { ValidationOptions } from '@elabora/core/validate/context';
 import { listProjectFiles } from './project-files.ts';
 import type { FileInfo } from './project-files.ts';
 import { projectDataDir } from './data-dir.ts';
@@ -71,7 +72,7 @@ export function loadProjectFromDir(dir: string): Project {
 }
 
 // validateProject for a folder (CLI, MCP, tests).
-export function validateDir(dir: string, options: { profiles?: string[]; release?: boolean } = {}) {
+export function validateDir(dir: string, options: ValidationOptions = {}) {
   return validateProject(loadProjectFromDir(dir), options);
 }
 

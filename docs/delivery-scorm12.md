@@ -82,7 +82,7 @@ When the emulator's page runs in a frame (the desktop app's Aperçu), it tells i
 
 | `kind` | When | What |
 |---|---|---|
-| `session` | the page starts | `session`: the registration, launch mode, profile (`id`, `name`, its own launch mode), `suspend_data` limit and enforcement, `entry` (`ab-initio` or `resume`) and what the LMS gave back (`location`, `status`, `suspendData`, or `null`) |
+| `session` | the page starts | `session`: the registration, launch mode, format (`scorm12` in a preview), profile (`id`, `name`, its own launch mode), `suspend_data` limit and enforcement, `entry` (`ab-initio` or `resume`) and what the LMS gave back (`location`, `status`, `suspendData`, or `null`) |
 | `call` | every API call | `call`: its time, method, arguments and result, as `window.__lmsLog` keeps them |
 | `course` | each course the page shows | `course`: the course data (`window.__elabora.course`) |
 | `state` | every commit, and on request | `state`: `window.__elabora.state()` (screen, step, status, score, `suspendData`, the variables' values) |

@@ -103,7 +103,7 @@ test('a course for SCORM Cloud is built in SCORM 2004; course.json delivery.form
 // A fake SCORM 2004 API: what the content set, and what it reads back.
 function fakeApi(values: Record<string, string> = {}): Scorm2004Api & { values: Record<string, string>; calls: string[] } {
   const api = {
-    values: { 'cmi.completion_status': 'unknown', 'cmi.success_status': 'unknown', ...values },
+    values: { 'cmi.completion_status': 'unknown', 'cmi.success_status': 'unknown', ...values } as Record<string, string>,
     calls: [] as string[],
     Initialize: () => 'true',
     Terminate: () => 'true',
