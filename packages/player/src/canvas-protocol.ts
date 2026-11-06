@@ -172,6 +172,8 @@ export interface BlockLayout {
   // What it lies over at this window: the blocks whose lines of text it covers ('title': the screen's).
   covers?: string[];
   lifted?: true;
+  // Lifted from the flow: where it was, its room kept until it is let go (viewport px).
+  home?: LayoutRect;
 }
 
 // A list of the screen's flow (the screen's column, or a slot of its layout) and its places: before its
@@ -234,6 +236,9 @@ export interface LayoutMessage {
   texts?: TextLayout[];
   // Blocks placed by hand (D72): the frame and the flow's places, when the page places them.
   placing?: PlacingLayout;
+  // Blocks gliding to where they now are (elabora/motion): their rects above are where they land; from:
+  // where each glide began, ms long on this curve, elapsed ms of it gone: the host's marks run the same.
+  glide?: { ms: number; elapsed: number; easing: string; from: Record<string, LayoutRect> };
 }
 
 export type CanvasMessage =

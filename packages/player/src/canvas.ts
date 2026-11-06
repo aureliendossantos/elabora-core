@@ -249,6 +249,8 @@ function liftBlock(blockId: string | null, at: LayoutRect | { place: PlaceData }
 // moved glides from there (FLIP, the player's --t-ease-in-out), what changed size grows to it; the
 // screen's title too, which a slide centred in its height moves with its blocks.
 let motion: { boxes: Map<Element, DOMRect>; until: number } | null = null;
+// Where each glide started: the host's marks run the same glide (LayoutMessage.glide).
+const starts = new WeakMap<Element, DOMRect>();
 const MOTION_MS = 240;
 function armMotion() {
   const boxes = new Map<Element, DOMRect>();
@@ -270,6 +272,7 @@ function playMotion() {
     moves.push({ node, from, to });
   }
   for (const { node, from, to } of moves) {
+    starts.set(node, from);
     const sx = from.width / to.width;
     const sy = from.height / to.height;
     node.animate([
@@ -645,7 +648,49 @@ function timedOf(id: string): { timed?: NonNullable<BlockLayout['timed']> } {
   return { timed: { state, ...(progress !== null ? { progress } : {}) } };
 }
 
+// While blocks glide (elabora/motion), the layout says where they land: each glide is set a hair
+// before its end for the reading, then put back. glide.from: where each block moved started (a block in
+// one that moves, with it), elapsed: how far the glides are, so that the host runs the same ones.
+function landed<T>(read: () => T): { value: T; glide?: LayoutMessage['glide'] } {
+  // Paused too: a film holds the page's clock and steps its animations (demo-placement).
+  const running = (document.getAnimations?.() ?? []).filter((animation) => animation.id === GLIDE && (animation.playState === 'running' || animation.playState === 'paused'));
+  if (!running.length) return { value: read() };
+  const nodes = [...document.querySelectorAll<HTMLElement>('#t-main .t-block[data-block]')];
+  const now = new Map(nodes.map((node) => [node, node.getBoundingClientRect()]));
+  const times = running.map((animation) => Number(animation.currentTime ?? 0));
+  const ends = running.map((animation) => Number(animation.effect?.getComputedTiming().endTime ?? MOTION_MS));
+  const movers = new Set(running.map((animation) => (animation.effect as KeyframeEffect | null)?.target).filter((target): target is Element => !!target && starts.has(target)));
+  running.forEach((animation, index) => { animation.currentTime = ends[index]! - 0.01; });
+  try {
+    const value = read();
+    const from: Record<string, LayoutRect> = {};
+    for (const node of nodes) {
+      const was = now.get(node)!;
+      const box = node.getBoundingClientRect();
+      let mover: Element | null = node;
+      while (mover && !movers.has(mover)) mover = mover.parentElement?.closest('.t-block[data-block]') ?? null;
+      const start = mover ? starts.get(mover)! : null;
+      const moverNow = mover ? now.get(mover as HTMLElement) : null;
+      const began = !start || !moverNow ? was : mover === node ? start : new DOMRect(was.x + start.x - moverNow.x, was.y + start.y - moverNow.y, was.width, was.height);
+      if (Math.abs(began.left - box.left) > 0.5 || Math.abs(began.top - box.top) > 0.5 || Math.abs(began.width - box.width) > 0.5 || Math.abs(began.height - box.height) > 0.5) {
+        from[node.dataset.block ?? ''] = { x: round(began.x), y: round(began.y), width: round(began.width), height: round(began.height) };
+      }
+    }
+    // Glides of the page's own (a counterpart's, D65) are taken where they are, for what is left of them.
+    const ours = running.every((animation) => movers.has((animation.effect as KeyframeEffect | null)?.target as Element));
+    const elapsed = ours ? Math.max(...times) : 0;
+    const ms = ours ? Math.max(...ends) : Math.max(0, ...running.map((animation, index) => ends[index]! - times[index]!));
+    return { value, ...(Object.keys(from).length ? { glide: { ms: Math.round(ms), elapsed: Math.round(elapsed), easing: 'cubic-bezier(.23, 1, .32, 1)', from } } : {}) };
+  } finally {
+    running.forEach((animation, index) => { animation.currentTime = times[index]!; });
+  }
+}
+
 function layout(): LayoutMessage {
+  const { value, glide } = landed(measured);
+  return glide ? { ...value, glide } : value;
+}
+function measured(): LayoutMessage {
   const view = mounted?.view;
   const placement = view?.placement;
   const lifted = new Set(placement?.lifted() ?? []);
@@ -654,7 +699,8 @@ function layout(): LayoutMessage {
     if (!node?.hasAttribute('data-t-place')) return block;
     const anchor = lifted.has(block.id) ? null : placement?.anchorOf(block.id);
     const covers = lifted.has(block.id) || !(node instanceof HTMLElement) ? [] : coveredTexts(node);
-    return { ...block, ...(lifted.has(block.id) ? { lifted: true as const } : { placed: true as const }), ...(anchor ? { anchor } : {}), ...(covers.length ? { covers } : {}) };
+    const home = lifted.has(block.id) ? placement?.homeOf(block.id) : null;
+    return { ...block, ...(lifted.has(block.id) ? { lifted: true as const } : { placed: true as const }), ...(anchor ? { anchor } : {}), ...(covers.length ? { covers } : {}), ...(home ? { home } : {}) };
   });
   const article = document.querySelector('#t-main > article.t-screen');
   const frame = placement?.frame();

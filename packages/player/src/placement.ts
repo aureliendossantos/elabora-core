@@ -47,6 +47,8 @@ export interface Placement {
   // its data puts it). A preview of a place in the frame (shares) works the same way.
   lift(id: string, at: PlacementRect | { place: PlaceData } | null): void;
   lifted(): string[];
+  // Where a block lifted from the flow was: its place kept while it is dragged, in px of the viewport.
+  homeOf(id: string): PlacementRect | null;
   dispose(): void;
 }
 
@@ -68,6 +70,9 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
   let places = new Map<string, PlaceData>();
   let defaultSlot: string | null = null;
   const lifts = new Map<string, PlacementRect | { place: PlaceData }>();
+  // A block lifted from the flow leaves a stand-in of its size where it was (.t-lift-trace): nothing
+  // around it moves while it is dragged; the flow changes once it is let go.
+  const traces = new Map<string, HTMLElement>();
   let on = false;
   let frameBox: PlacementRect | null = null;
 
@@ -88,7 +93,34 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
     places = new Map((screen?.blocks ?? []).filter((block): block is BlockData & { place: PlaceData } => !!block.place).map((block) => [block.id, block.place]));
     for (const node of main.querySelectorAll<HTMLElement>('.t-block[data-t-place]')) if (!places.has(node.dataset.block ?? '')) unmark(node);
     for (const id of [...lifts.keys()]) if (!nodeOf(id)) lifts.delete(id);
+    keepTraces();
     layout();
+  }
+  // Its box as the flow lays it out, before it is lifted: the stand-in takes the same room.
+  function trace(id: string, node: HTMLElement) {
+    if (traces.has(id) || node.hasAttribute('data-t-place') || !node.parentElement) return;
+    const style = getComputedStyle(node);
+    const stand = document.createElement('div');
+    stand.className = 't-lift-trace';
+    stand.setAttribute('aria-hidden', 'true');
+    stand.dataset.traceOf = id;
+    Object.assign(stand.style, {
+      width: `${node.offsetWidth}px`, height: `${node.offsetHeight}px`, boxSizing: 'border-box',
+      marginTop: style.marginTop, marginRight: style.marginRight, marginBottom: style.marginBottom, marginLeft: style.marginLeft,
+      gridColumnStart: style.gridColumnStart, gridColumnEnd: style.gridColumnEnd, gridRowStart: style.gridRowStart, gridRowEnd: style.gridRowEnd,
+      justifySelf: style.justifySelf, alignSelf: style.alignSelf, flex: 'none', order: style.order
+    });
+    node.before(stand);
+    traces.set(id, stand);
+  }
+  // Stand-ins of blocks no longer lifted, or rendered anew, go; one whose block moved follows it.
+  function keepTraces() {
+    for (const [id, stand] of traces) {
+      const node = nodeOf(id);
+      const lift = lifts.get(id);
+      if (!node || !lift || 'place' in lift) { stand.remove(); traces.delete(id); continue; }
+      if (node.previousElementSibling !== stand) node.before(stand);
+    }
   }
   function unmark(node: HTMLElement) {
     node.removeAttribute('data-t-place');
@@ -197,11 +229,16 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
       ...[...main.querySelectorAll<HTMLElement>(':scope > article.t-screen .t-slot')].filter((slot) => !slot.parentElement?.closest('.t-block[data-block]'))
     ];
     return containers.filter((container) => container.getClientRects().length > 0).map((container) => {
-      const blocks = [...container.children].filter((child): child is HTMLElement => child instanceof HTMLElement && child.matches('.t-block[data-block]'));
-      const flow = blocks.filter(inFlow);
       const box = container.getBoundingClientRect();
       const places: FlowAnchors['places'] = [{ after: null, y: anchorY(container, null) }];
-      for (const block of flow) places.push({ after: block.dataset.block ?? null, y: anchorY(container, block) });
+      // After each block of the flow; a stand-in (a block being dragged) gives one more place, under it,
+      // after the same block as the place over it: both are where the block was.
+      let last: string | null = null;
+      for (const child of container.children) {
+        if (!(child instanceof HTMLElement) || !inFlow(child)) continue;
+        if (child.matches('.t-block[data-block]')) { last = child.dataset.block ?? null; places.push({ after: last, y: anchorY(container, child) }); }
+        else if (child.matches('.t-lift-trace')) places.push({ after: last, y: anchorY(container, child) });
+      }
       const slot = container.matches('.t-slot') ? container.dataset.slot ?? null : null;
       return { slot, ...(slot !== null && slot === defaultSlot ? { default: true as const } : {}), rect: { x: round(box.x), y: round(box.y), width: round(box.width), height: round(box.height) }, places: places.map((place) => ({ ...place, y: round(place.y - scrollY) })) };
     });
@@ -238,12 +275,20 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
     frame: () => (on ? frameBox : null),
     anchorOf, anchors,
     lift(id, at) {
-      if (at) lifts.set(id, at); else lifts.delete(id);
       const node = nodeOf(id);
+      if (at && !('place' in at) && node && own(node)) trace(id, node);
+      if (at) lifts.set(id, at); else lifts.delete(id);
+      keepTraces();
       if (!at && node && !places.has(id)) unmark(node);
       layout();
     },
     lifted: () => [...lifts.keys()],
+    homeOf(id) {
+      const stand = traces.get(id);
+      if (!stand?.isConnected) return null;
+      const box = stand.getBoundingClientRect();
+      return { x: round(box.x), y: round(box.y), width: round(box.width), height: round(box.height) };
+    },
     dispose() {
       resized?.disconnect();
       watchArticle.disconnect();
