@@ -41,7 +41,7 @@ export const groups: TestMap = {
     { name: 'media', files: ['packages/core/src/media/**', 'packages/node/src/media/**', 'packages/node/src/blobs.ts', 'packages/node/src/file-hash.ts', 'packages/node/src/assets-sheet.ts'], checks: [e2e('media')] },
     { name: 'fonts', files: ['packages/fonts/**', 'packages/node/src/fonts/**', 'scripts/fonts.ts'], checks: [e2e('fonts')] },
     { name: 'LMS and packages', files: ['packages/core/profiles/**', 'packages/node/emulator-harness/**', 'packages/player/src/scorm12.ts', 'packages/player/src/scorm2004.ts', 'packages/player/src/xapi.ts', 'packages/player/src/lms-boot.ts', 'packages/player/src/activity-id.ts', 'packages/core/src/lms/**', 'packages/core/src/interop/**', 'packages/node/src/emulator/**', 'packages/node/src/packaging/**', 'packages/node/src/package-folder.ts', 'packages/node/src/zip.ts'], checks: [e2e('lms'), e2e('edge'), e2e('capture-width'), matrix('lms-matrix')] },
-    // The pictures of a page: their sizes, written by the build, and when they load (D41).
+    // The pictures of a page: their sizes, written by the build, and when they load.
     { name: 'pictures', files: ['packages/player/src/held-pictures.ts', 'packages/player/src/preload.ts', 'packages/core/src/render/image-sizes.ts', 'packages/node/src/packaging/image-sizes.ts'], checks: [e2e('web'), e2e('player')] },
     { name: 'web and review', files: ['packages/player/src/web.ts', 'packages/player/src/review*.ts', 'packages/core/src/web-globals.d.ts', 'packages/node/src/cloud/**', 'packages/node/src/http/**'], checks: [e2e('web'), e2e('review')] },
     // The browsers every look, fit, capture, object test and package test is drawn in, and how they close.

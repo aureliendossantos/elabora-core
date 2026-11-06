@@ -10,12 +10,19 @@ import type { ScreenData } from './course-data.ts';
 const SETTLE_TIMEOUT = 8000; // ms: a picture of the screen shown that never arrives does not hold the next one back
 const SCROLL_FIRST = 2; // pictures of the next page loaded near the end of a scroll page
 
+// An attribute's value as the page reads it (its character references decoded).
+function decoded(value: string): string {
+  const area = document.createElement('textarea');
+  area.innerHTML = value;
+  return area.value;
+}
+
 export function picturesOf(screen: ScreenData): string[] {
   const found = new Set<string>();
   const walk = (value: unknown) => {
     if (typeof value === 'string') {
       if (!value.includes('<img')) return;
-      for (const match of value.matchAll(/<img\b[^>]*?\ssrc="([^"]+)"/g)) found.add(match[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"'));
+      for (const match of value.matchAll(/<img\b[^>]*?\ssrc="([^"]+)"/g)) found.add(match[1].includes('&') ? decoded(match[1]) : match[1]);
     } else if (Array.isArray(value)) value.forEach(walk);
     else if (value && typeof value === 'object') for (const item of Object.values(value)) walk(item);
   };

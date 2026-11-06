@@ -161,7 +161,7 @@ math { font-family: "STIX Two Math", "Cambria Math", "Latin Modern Math", math; 
 .t-figure { margin: 0; }
 /* A picture the build sized (width and height of its file, core/render/image-sizes.ts) keeps its room
    before it arrives; its height follows the width the page gives it, as an unsized one's does. */
-:where(img[width][height]) { height: auto; }
+:where(img[data-t-sized]) { height: auto; }
 /* A picture held until the learner comes near (held-pictures.ts): its room only, its text alternative
    unseen (an image without its address shows it, and a long one would grow the room). */
 img[data-t-src] { overflow: hidden; color: transparent; }

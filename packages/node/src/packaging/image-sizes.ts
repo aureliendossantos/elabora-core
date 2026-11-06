@@ -12,16 +12,22 @@ import { HEADER_BYTES, imageSize } from '../sources/image-size.ts';
 export function packagedPictureSize(path: string, { text, file }: { text?: Buffer; file?: string | null }): PictureSize | null {
   if (/\.svg$/i.test(path)) return text ? svgSize(text.toString('utf8')) : null;
   if (!/\.(png|jpe?g|gif|webp)$/i.test(path)) return null;
-  const head = text ? text.subarray(0, HEADER_BYTES) : file ? readHead(file) : null;
-  return head ? displayedSize(head) : null;
+  if (text) return displayedSize(text.subarray(0, HEADER_BYTES));
+  if (!file) return null;
+  // The first 64 KB hold a picture's header but for a JPEG with a large EXIF block: then up to 1 MB.
+  const head = readHead(file, 64 * 1024);
+  const size = head && displayedSize(head);
+  if (size || !head || head.length < 64 * 1024) return size;
+  const more = readHead(file, HEADER_BYTES);
+  return more ? displayedSize(more) : null;
 }
 
-function readHead(file: string): Buffer | null {
+function readHead(file: string, bytes: number): Buffer | null {
   let fd: number | null = null;
   try {
     fd = fs.openSync(file, 'r');
-    const head = Buffer.alloc(HEADER_BYTES);
-    return head.subarray(0, fs.readSync(fd, head, 0, HEADER_BYTES, 0));
+    const head = Buffer.allocUnsafe(bytes);
+    return head.subarray(0, fs.readSync(fd, head, 0, bytes, 0));
   } catch {
     return null;
   } finally {

@@ -7,18 +7,19 @@ import { decodeEntities } from '../import/xml.ts';
 // empty at first, the page is short, and the browser finds them all near the window.
 //
 // Only an <img> without width or height takes them: a component that sizes its pictures keeps its own.
-// The player's stylesheet keeps the height following the width (`height: auto`), so a picture that the
-// page narrows keeps its proportions.
+// The sized ones are marked data-t-sized: the player's stylesheet keeps their height following the
+// width (`height: auto`), so a picture that the page narrows keeps its proportions.
 
 export interface PictureSize { width: number; height: number }
 
 export function sizeImages(html: string, sizeOf: (src: string) => PictureSize | null): string {
   if (!html.includes('<img')) return html;
   return html.replace(/<img\b[^>]*>/g, (img) => {
-    if (/\s(width|height)\s*=/i.test(img)) return img;
+    // The attribute names only: a text alternative may say "width=".
+    if (/\s(width|height)\s*=/i.test(img.replace(/"[^"]*"|'[^']*'/g, '""'))) return img;
     const src = /\ssrc="([^"]*)"/.exec(img);
     const size = src ? sizeOf(decodeEntities(src[1])) : null;
-    return size ? img.replace(/^<img\b/, `<img width="${size.width}" height="${size.height}"`) : img;
+    return size ? img.replace(/^<img\b/, `<img width="${size.width}" height="${size.height}" data-t-sized`) : img;
   });
 }
 

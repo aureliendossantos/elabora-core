@@ -9,8 +9,9 @@ import { displayedSize } from '@elabora/node/packaging/image-sizes';
 test('sizeImages writes the size of each known picture on its <img>, and leaves the others as they are', () => {
   const sizes: Record<string, { width: number; height: number }> = { 'assets/a.png': { width: 1200, height: 800 }, 'assets/b & c.svg': { width: 10, height: 20 } };
   const sizeOf = (src: string) => sizes[src] ?? null;
-  assert.equal(sizeImages('<p><img src="assets/a.png" alt="A" loading="lazy"></p>', sizeOf), '<p><img width="1200" height="800" src="assets/a.png" alt="A" loading="lazy"></p>');
-  assert.equal(sizeImages('<img class="x" src="assets/b &amp; c.svg" alt="">', sizeOf), '<img width="10" height="20" class="x" src="assets/b &amp; c.svg" alt="">', 'the address is read decoded');
+  assert.equal(sizeImages('<p><img src="assets/a.png" alt="A" loading="lazy"></p>', sizeOf), '<p><img width="1200" height="800" data-t-sized src="assets/a.png" alt="A" loading="lazy"></p>');
+  assert.equal(sizeImages('<img class="x" src="assets/b &amp; c.svg" alt="">', sizeOf), '<img width="10" height="20" data-t-sized class="x" src="assets/b &amp; c.svg" alt="">', 'the address is read decoded');
+  assert.equal(sizeImages('<img src="assets/a.png" alt="a table, width=3">', sizeOf), '<img width="1200" height="800" data-t-sized src="assets/a.png" alt="a table, width=3">', 'words of the text alternative are not attributes');
   assert.equal(sizeImages('<img src="assets/a.png" width="40">', sizeOf), '<img src="assets/a.png" width="40">', 'a size given by the component stays');
   assert.equal(sizeImages('<img src="assets/unknown.png" data-width="3">', sizeOf), '<img src="assets/unknown.png" data-width="3">');
   assert.equal(sizeImages('no picture', sizeOf), 'no picture');

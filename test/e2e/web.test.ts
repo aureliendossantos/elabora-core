@@ -189,7 +189,7 @@ test('the pictures of a module for the web: sized by the build, a scroll page\'s
     made[mode] = built.dirPath;
   }
   const data = fs.readFileSync(path.join(made.scroll, 'elabora/course.js'), 'utf8');
-  assert.match(data, /<img width=\\"1200\\" height=\\"800\\"[^>]*far\.png/, 'the build writes the size of the PNG');
+  assert.match(data, /<img width=\\"1200\\" height=\\"800\\" data-t-sized[^>]*far\.png/, 'the build writes the size of the PNG');
   const server = await staticServer(made);
   let browser: Browser | null = null;
   try {
