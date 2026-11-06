@@ -1,16 +1,20 @@
 import type { Project, Screen } from '../project/model.ts';
 import { extractUnits, setAt, valueAt } from '../i18n/units.ts';
 import { parseMarkdown } from './markdown.ts';
-import { objectsIn } from '../util/values.ts';
+import { isRecord, objectsIn } from '../util/values.ts';
+import { MARKDOWN_TEXT_ROOTS, planIndex, screenBlocks } from '../project/load.ts';
+import type { PlanIndex } from '../project/load.ts';
+import { getRegistry, rootOf } from '../components/registry.ts';
 import { findItem, playerConfig } from '../player/config.ts';
 
 // The links of a screen's texts to the glossary (docs/decisions.md D58, revised on 7 Nov 2026).
 // They are computed when a screen is compiled (the package, the editor's canvas, the Aperçu), in the
 // language compiled, and never written into the texts: the first time a term of the glossary, or one
 // of its variants, is in a screen's texts becomes a link to its entry, [mot](glossary:<id>). The
-// screens' own Markdown texts in reading order (the order of the translation units); the plan's
-// locked texts and validated questions keep the client's words as they are, and nothing inside a
-// link, code, maths, a URL or an HTML tag is touched (protectedRanges). A link written by hand wins:
+// screens' Markdown texts in reading order: their own (the order of the translation units) and the
+// plan's locked texts a text, callout or statement shows (textRef), linked where they are shown, their
+// words unchanged in the plan; validated questions are left as they are (a definition would answer
+// them), and nothing inside a link, code, maths, a URL or an HTML tag is touched (protectedRanges). A link written by hand wins:
 // a screen that has one to a term takes no other to it. An entry's `unlinked` lists the screens where
 // the author removed its link (« Retirer ce lien »); the glossary option linkTerms false links nothing
 // (the links written by hand stay).
@@ -311,24 +315,54 @@ function projectMatcher(project: Project, entries: readonly { id: string; term: 
 export function linkedScreen(project: Project, screenId: string, screen: Screen): Screen {
   const entries = objectsIn(project.course?.glossary).filter((entry) => typeof entry.id === 'string' && typeof entry.term === 'string');
   if (!entries.length || !linking(project)) return screen;
-  const file = project.screens.get(screenId)?.file;
-  const pointers = typeof file === 'string' ? pointersOf(project, file) : [];
-  if (!pointers.length) return screen;
   const wanted = new Set(entries.filter((entry) => !(Array.isArray(entry.unlinked) && entry.unlinked.includes(screenId))).map((entry) => entry.id));
-  if (!wanted.size) return screen;
-  const matcher = projectMatcher(project, entries);
+  const matcher = wanted.size ? projectMatcher(project, entries) : null;
   if (!matcher) return screen;
-  const texts = pointers.map((pointer) => valueAt(screen, pointer)).filter((text): text is string => typeof text === 'string');
+  const file = project.screens.get(screenId)?.file;
+  const texts = textsOf(project, typeof file === 'string' ? file : null, screen);
+  if (!texts.length) return screen;
   // A link written by hand wins: the screen takes no other to that entry.
-  const taken = new Set(texts.flatMap(linkedTerms));
+  const taken = new Set(texts.flatMap((text) => linkedTerms(text.text)));
   let copy: Screen | null = null;
-  for (const pointer of pointers) {
-    const text = valueAt(copy ?? screen, pointer);
-    if (typeof text !== 'string') continue;
-    const result = linkText(text, matcher, wanted, taken);
+  for (const text of texts) {
+    const result = linkText(text.text, matcher, wanted, taken);
     if (!result.placed.length) continue;
     copy ??= structuredClone(screen);
-    setAt(copy, pointer, result.text);
+    if (text.pointer !== null) { setAt(copy, text.pointer, result.text); continue; }
+    // A text of the plan: the compiled copy of its block shows the plan's words with their links (the
+    // plan and the screen keep theirs).
+    const props = valueAt(copy, `${text.block}/props`) as Record<string, unknown>;
+    delete props.textRef;
+    props.markdown = result.text;
   }
   return copy ?? screen;
 }
+
+// The Markdown texts of a screen in reading order: its own (the translation units' pointers) and, for a
+// text, callout or statement that shows a text of the plan (textRef), that text, where its block is.
+type ScreenText = { text: string; pointer: string; block?: undefined } | { text: string; pointer: null; block: string };
+function textsOf(project: Project, file: string | null, screen: Screen): ScreenText[] {
+  const pointers = file ? pointersOf(project, file) : [];
+  const registry = getRegistry(project);
+  const plan = planOf(project);
+  const blocks = [...screenBlocks(screen)].map(({ block, path }) => ({ block, path }));
+  // The block a pointer belongs to: the deepest whose path holds it (nested blocks come after their parent).
+  const blockOf = (pointer: string) => blocks.reduce((found, { path }, index) => (pointer.startsWith(`${path}/`) && (found < 0 || path.length > blocks[found]!.path.length) ? index : found), -1);
+  const ordered: { at: number; rank: number; text: ScreenText }[] = [];
+  pointers.forEach((pointer, rank) => {
+    const text = valueAt(screen, pointer);
+    if (typeof text === 'string') ordered.push({ at: blockOf(pointer), rank, text: { text, pointer } });
+  });
+  blocks.forEach(({ block, path }, at) => {
+    const ref = isRecord(block.props) ? block.props.textRef : undefined;
+    const text = typeof ref === 'string' ? plan.texts.get(ref)?.text : undefined;
+    if (typeof text === 'string' && MARKDOWN_TEXT_ROOTS.includes(rootOf(registry, block.type) ?? block.type)) ordered.push({ at, rank: -1, text: { text, pointer: null, block: path } });
+  });
+  return ordered.sort((a, b) => a.at - b.at || a.rank - b.rank).map(({ text }) => text);
+}
+
+const plans = new WeakMap<Project, PlanIndex>();
+const planOf = (project: Project): PlanIndex => {
+  if (!plans.has(project)) plans.set(project, planIndex(project.plan));
+  return plans.get(project)!;
+};

@@ -184,7 +184,7 @@ const addText = (dir: string, screen: string, id: string, markdown: string) => {
   writeJSON(dir, `screens/${screen}.json`, data);
 };
 
-test('« Relier les termes aux écrans »: computed when a screen is compiled, the first time in each screen, never in links, code or locked texts; nothing written', () => {
+test('« Relier les termes aux écrans »: computed when a screen is compiled, the first time in each screen, the plan\'s texts too, never in links or code; nothing written', () => {
   const dir = copyExample();
   addText(dir, 'accueil', 'accueil-note', 'Le `routeur` en code, [le routeur](https://example.com) en lien, <span title="routeur">x</span>, puis le Routeur du siège et un autre routeur.');
   const before = fs.readFileSync(path.join(dir, 'screens/accueil.json'), 'utf8');
@@ -202,9 +202,20 @@ test('« Relier les termes aux écrans »: computed when a screen is compiled, t
   const again = compiled(dir);
   assert.deepEqual(termLinks(blockHtml(again, 'accueil-avant'), 'routeur'), ['routeur']);
   assert.deepEqual(termLinks(blockHtml(again, 'accueil-note'), 'routeur'), []);
-  // A plan's locked text keeps the client's words: no link in it.
+  // A text of the plan (textRef) is linked where it is shown, its words unchanged in the plan and the
+  // screen keeping its reference.
+  const planned = readJSON(dir, 'plan.json');
+  const locked = planned.items.flatMap((item: { lockedTexts?: { id: string; text: string }[] }) => item.lockedTexts ?? []).find((text: { id: string }) => text.id === 'TXT-1');
+  locked.text = 'Votre mission : vérifier le pare-feu du siège, avec la procédure **SUP-NET-04**.';
+  writeJSON(dir, 'plan.json', planned);
+  const plan = fs.readFileSync(path.join(dir, 'plan.json'), 'utf8');
+  assert.deepEqual(termLinks(blockHtml(compiled(dir), 'accueil-situation'), 'pare-feu'), ['pare-feu']);
   assert.equal(readJSON(dir, 'screens/accueil.json').blocks[0].props.textRef, 'TXT-1');
-  assert.doesNotMatch(blockHtml(again, 'accueil-situation'), /t-glossary/);
+  assert.equal(fs.readFileSync(path.join(dir, 'plan.json'), 'utf8'), plan);
+  // « Retirer ce lien » applies there too.
+  edit.updatePlayer(dir, { unlinkTerm: { term: 'pare-feu', screen: 'accueil' } });
+  assert.deepEqual(termLinks(blockHtml(compiled(dir), 'accueil-situation'), 'pare-feu'), []);
+  assert.equal(fs.readFileSync(path.join(dir, 'plan.json'), 'utf8'), plan);
 });
 
 test('a link written by hand wins in its screen; « Retirer ce lien » and its way back; the option off; a screen renamed or deleted', () => {
