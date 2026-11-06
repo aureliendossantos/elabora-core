@@ -132,6 +132,8 @@ dialog .t-block[data-t-concealed] { display: none; } /* layers scroll inside: no
 .t-block[data-t-place-height] > .t-figure img { width: 100%; height: 100%; max-height: none; object-fit: cover; object-position: calc(var(--focus-x, .5) * 100%) calc(var(--focus-y, .5) * 100%); }
 /* The editor's canvas lifts the block it drags (canvas.ts): over everything, under the pointer. */
 .t-block[data-t-lifted] { z-index: 60; pointer-events: none; }
+/* The editor's drag: the room of a block lifted from the flow, kept until it is let go (its trace is the editor's). */
+.t-lift-trace { display: block; pointer-events: none; }
 
 /* Layouts: the template places the slots; inside a slot, blocks stack and fill its width. */
 .t-layout { position: relative; }
