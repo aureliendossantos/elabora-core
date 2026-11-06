@@ -385,7 +385,9 @@ test('« Reprendre d\'ici » moves nothing, on a phone as on a wide screen', { t
   for (const width of [390, 1600]) {
     await player({ open: true, width, height: width < 500 ? 844 : 900 }, async (page) => {
       await page.evaluate(() => (window as DialogueWindow).__elabora.go('appel'));
-      const answers = () => page.evaluate(() => [...document.querySelectorAll('[data-block="appel-marc"] .t-dialogue-row[data-role="learner"] .t-dialogue-bubble')].map((bubble) => { const r = bubble.getBoundingClientRect(); return [Math.round(r.right), Math.round(r.width), Math.round(r.height)].join(','); }));
+      // Their layout's size (offsetWidth, offsetHeight), not the box an entrance still running scales by
+      // half a pixel (one run in two measured 46 then 47).
+      const answers = () => page.evaluate(() => [...document.querySelectorAll<HTMLElement>('[data-block="appel-marc"] .t-dialogue-row[data-role="learner"] .t-dialogue-bubble')].map((bubble) => { const r = bubble.getBoundingClientRect(); return [Math.round(r.right), bubble.offsetWidth, bubble.offsetHeight].join(','); }));
       for (const option of ['a', 'a']) { await until(page, 'appel-marc', 'choosing'); await choose(page, 'appel-marc', option); }
       await until(page, 'appel-marc', 'choosing');
       const before = await answers();
