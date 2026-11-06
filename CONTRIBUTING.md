@@ -37,7 +37,7 @@ What each suite covers:
 - **End-to-end:** the LMS emulator in Moodle with axe-core, packages that rely on `unload`, runs and objects that get stuck, the free-object gates (with deliberately broken objects), and slides: layout shifts, contrast, captures, steps and resume.
 - **Matrix:** the other launch modes (the SuccessFactors popup chain, Docebo's nested iframe), Chrome with `unload` deprecated and allowed, and the sample courses at desktop and phone widths.
 
-Continuous integration (`.github/workflows/ci.yml`) runs the typecheck and the three suites on Linux and macOS for every push to `main` and every pull request, as parallel jobs (the unit suite; the e2e suite and the matrix, each in two halves), with GPL builds of ffmpeg. It runs the typecheck and the unit suite on Windows. The app's batch run skips the core's suites on a commit where it is green. `.github/workflows/docs.yml` checks the docs on every pull request.
+Continuous integration (`.github/workflows/ci.yml`) runs the typecheck and the three suites on Linux for every push to `main` and every pull request, as parallel jobs (the unit suite; the e2e suite and the matrix, each in two halves), with GPL builds of ffmpeg. It runs the typecheck and the unit suite on Windows, and everything on macOS weekly and on demand. The app's batch run skips the core's suites on a commit where it is green. `.github/workflows/docs.yml` checks the docs on every pull request.
 
 ## Documentation
 
