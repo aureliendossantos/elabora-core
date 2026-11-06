@@ -31,8 +31,7 @@
         "multiSco": { "type": ["boolean", "null"] },
         "cmi5": { "enum": [true, false, "plugin", "beta", null] },
         "xapi": { "enum": [true, false, "plugin", "discouraged", null] },
-        "lti13": { "enum": [true, false, "partners-only", null] },
-        "aicc": { "type": ["boolean", "null"] }
+        "lti13": { "enum": [true, false, "partners-only", null] }
       }
     },
     "bestFormat": {
@@ -41,7 +40,7 @@
       "required": ["format", "why"],
       "description": "The delivery format Elabora picks for this LMS when the module names it alone (course.json delivery.lms) and leaves delivery.format to auto. Without it: SCORM 1.2.",
       "properties": {
-        "format": { "enum": ["scorm12", "scorm2004"] },
+        "format": { "enum": ["scorm12", "scorm2004", "cmi5", "xapi"] },
         "edition": { "enum": ["3rd", "4th"], "description": "SCORM 2004: the edition the manifest declares (4th by default)." },
         "why": { "type": "string", "description": "Why this format, from the sources." }
       }

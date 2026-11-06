@@ -1035,7 +1035,7 @@ Validate and compile the package for the LMS and its proof dossier into dist/. I
 | `release` | boolean |  |  |
 | `mediaQuality` | "high" \| "medium" \| "low" |  |  |
 | `target` | "lms" \| "web" |  | lms (default): a package for LMSs. web: a module for a plain web server. |
-| `format` | "scorm12" \| "scorm2004" |  | The package's format for this build (lms target): scorm12, scorm2004. Default: the module's. |
+| `format` | "scorm12" \| "scorm2004" \| "cmi5" \| "xapi" |  | The package's format for this build (lms target): scorm12, scorm2004, cmi5 or xapi (which needs an LRS). Default: the module's. |
 | `web` | object |  | Settings of the web target (target "web" only). A publication: the defaults. A showcase: { progress: "none", navigation: "free" }. A review link: { review: { origins: ["https://revue.elabora.studio"] } }. |
 | `languages` | string \| array |  | The package's languages, which learners switch in place (the player's « Langue »). "all": the course's own and each translation ready and approved. A list of language tags: those, the course's own always in, each as it is: a translation not approved or with texts to translate goes in, and the diagnostics say it (W_PACKAGE_LANGUAGE_NOT_APPROVED, W_PACKAGE_LANGUAGE_INCOMPLETE): tell the author, who approves it. Default: course.json delivery.languages, else the course's own. Not with language. |
 | `packages` | "one" \| "each" |  | each: one LMS package per language instead of one of every language (default: course.json delivery.languagePackages), for LMSs that manage a course's language versions themselves (Docebo, SuccessFactors, Cornerstone). Not with language or target web. |

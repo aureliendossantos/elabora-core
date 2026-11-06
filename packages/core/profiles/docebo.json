@@ -16,10 +16,9 @@
     ],
     "sequencing": false,
     "multiSco": null,
-    "cmi5": false,
+    "cmi5": null,
     "xapi": true,
-    "lti13": true,
-    "aicc": true
+    "lti13": true
   },
   "bestFormat": {
     "format": "scorm2004",
@@ -89,6 +88,8 @@
   "notes": [
     "Theater and inline modes add one iframe level; every ancestor iframe needs allow=\"clipboard-read; clipboard-write\" for clipboard access.",
     "Single completion update.",
-    "No file count limit: Docebo \"strongly suggests\" at most 15,000 files, it does not refuse more."
+    "No file count limit: Docebo \"strongly suggests\" at most 15,000 files, it does not refuse more.",
+    "cmi5: no help article mentions it (search of October 2026): not documented, which is not a refusal.",
+    "xAPI: \"Tin Can Standard 1.0\"; the package needs a tincan.xml for the LRS to know its activity ids."
   ]
 }

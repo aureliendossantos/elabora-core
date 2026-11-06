@@ -20,8 +20,7 @@
     "multiSco": null,
     "cmi5": null,
     "xapi": "plugin",
-    "lti13": null,
-    "aicc": true
+    "lti13": null
   },
   "bestFormat": {
     "format": "scorm12",

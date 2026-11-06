@@ -15,6 +15,10 @@
     {
       "title": "Modify an online course",
       "url": "https://help.csod.com/help/csod_0/Content/Content/Content_Uploader/Online_Course_Versioning/Modify_an_Online_Course.htm"
+    },
+    {
+      "title": "Cornerstone xAPI Package Support",
+      "url": "https://help.csod.com/help/csod_0/Content/Catalog/xAPI_Package_Support/xAPI_Support.htm"
     }
   ],
   "standards": {
@@ -27,8 +31,7 @@
     "multiSco": true,
     "cmi5": false,
     "xapi": true,
-    "lti13": "partners-only",
-    "aicc": true
+    "lti13": "partners-only"
   },
   "bestFormat": {
     "format": "scorm2004",
@@ -87,6 +90,7 @@
   ],
   "notes": [
     "Third-party cookies must be allowed on *.csod.com: test with cookies blocked and document the iOS / private browsing risk.",
-    "One standard per ZIP."
+    "One standard per ZIP.",
+    "xAPI (tincan.xml): launched in an iframe by default (\"Launch xAPI Course in iFrame\"); its JWT token lasts 1,440 minutes at most."
   ]
 }

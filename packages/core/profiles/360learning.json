@@ -20,8 +20,7 @@
     "multiSco": false,
     "cmi5": true,
     "xapi": "discouraged",
-    "lti13": true,
-    "aicc": true
+    "lti13": true
   },
   "bestFormat": {
     "format": "scorm2004",
@@ -79,6 +78,8 @@
     "xAPI courses are excluded from OPCO funding reports: deliver SCORM or cmi5 to French clients.",
     "cmi5 recommended by the vendor but without preview; launchMethod AnyWindow.",
     "Connected (dispatch) packages refused.",
-    "Package limits: 4 GB once extracted, 50,000 files, compression ratio 200; no limit on the size of the ZIP itself."
+    "Package limits: 4 GB once extracted, 50,000 files, compression ratio 200; no limit on the size of the ZIP itself.",
+    "xAPI is supported but discouraged.",
+    "SCORM 2004 4th edition: cmi.progress_measure shows the progress of an attempt in progress; completion needs cmi.completion_status completed."
   ]
 }

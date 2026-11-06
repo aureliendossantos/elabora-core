@@ -30,7 +30,7 @@ Media need ffmpeg. Previews, looks and LMS tests need Chrome, Edge or Chromium. 
 
 - **An open format.** A plan, screens of blocks, components, themes and free objects, in JSON, CSS and templates. Every value is checked against a schema. [Specification](SPEC.md)
 - **Checks with stable codes.** Plan coverage, questions, feedback, accessibility, LMS limits. Each finding has a code agents can act on and a fix people can follow. [Diagnostic codes](docs/diagnostics.md)
-- **Same sources, same bytes.** A build gives a package for the LMS, in the format Elabora picks for it (SCORM 1.2 or SCORM 2004), or a module for any web server, with a proof dossier: plan coverage, tracking, accessibility, and the checks left to people. [Delivery formats](docs/delivery.md)
+- **Same sources, same bytes.** A build gives a package for the LMS, in the format Elabora picks for it (SCORM 1.2 or SCORM 2004, or cmi5 and xAPI when asked), or a module for any web server, with a proof dossier: plan coverage, tracking, accessibility, and the checks left to people. [Delivery formats](docs/delivery.md)
 - **Tested against real LMS behaviour.** Eleven LMS profiles and an emulator that replays their launch modes, abrupt closes and resume. [LMS profiles](docs/lms-profiles.md)
 - **Custom code, kept safe.** three.js scenes and mini-games run sandboxed, with a manifest, tests and settings authors edit without code. [Free-object contract](docs/free-object-contract.md)
 - **Made for agents.** Every edit is journaled and can be undone, from MCP tools or the shell. Short skills and rules ship with every course. [Working with an agent](docs/agents.md)
@@ -73,7 +73,7 @@ dist/*.zip           elabora test runs it in the LMS emulator, then it goes to t
 |---|---|
 | learn the format | [Specification](SPEC.md) · [Built-in blocks](docs/blocks.md) · [Components](docs/components.md) · [Design layer](docs/design.md) |
 | write with an agent | [Working with an agent](docs/agents.md) · [Agent tools](docs/mcp-tools.md) · [Command line](docs/cli.md) |
-| deliver to an LMS or the web | [Delivery formats](docs/delivery.md) · [SCORM 1.2 and the emulator](docs/delivery-scorm12.md) · [SCORM 2004](docs/delivery-scorm2004.md) · [LMS profiles](docs/lms-profiles.md) · [Web target](docs/delivery-web.md) |
+| deliver to an LMS or the web | [Delivery formats](docs/delivery.md) · [SCORM 1.2 and the emulator](docs/delivery-scorm12.md) · [SCORM 2004](docs/delivery-scorm2004.md) · [cmi5](docs/delivery-cmi5.md) · [xAPI](docs/delivery-xapi.md) · [LMS profiles](docs/lms-profiles.md) · [Web target](docs/delivery-web.md) |
 | change the code | [Contributing](CONTRIBUTING.md) · [Architecture](docs/architecture.md) · [Decisions](docs/decisions.md) |
 
 [`docs/index.md`](docs/index.md) maps every page. The site renders the same pages at [elabora.studio/en/docs/developers](https://elabora.studio/en/docs/developers/).
@@ -94,7 +94,7 @@ A pnpm workspace in strict TypeScript:
 
 ## Status
 
-Version 0.1, October 2026, format `elabora/0.1`. Targets: SCORM 1.2, SCORM 2004 and the web. Storyline and Rise imports are in beta. [Limits of 0.1](docs/getting-started.md#what-01-does-not-do-yet) · [Changelog](CHANGELOG.md)
+Version 0.1, October 2026, format `elabora/0.1`. Targets: SCORM 1.2, SCORM 2004, cmi5, xAPI and the web. Storyline and Rise imports are in beta. [Limits of 0.1](docs/getting-started.md#what-01-does-not-do-yet) · [Changelog](CHANGELOG.md)
 
 ## Licence
 

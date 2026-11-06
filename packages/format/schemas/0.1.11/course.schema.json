@@ -386,9 +386,23 @@
           "description": "Preset of the video, audio and raster images shipped in the package (elabora build --media-quality overrides it for one build). high: the masters the project keeps (video H.264 long side ≤ 1920, CRF 21, ≤ 8 Mb/s, AAC 160 kb/s; audio AAC 160 kb/s; images long side ≤ 3200, WebP q 88). medium: renditions encoded from the masters (video ≤ 1280, CRF 24, ≤ 4 Mb/s, AAC 128 kb/s; audio AAC 128 kb/s; images ≤ 2400, q 80). low: smaller renditions for LMSs with tight size limits (video ≤ 854, CRF 27, ≤ 1.5 Mb/s, ≤ 30 fps, AAC 96 kb/s; audio AAC 96 kb/s; images ≤ 1600, q 72). A rendition that would be larger than its master ships the master; SVG images are never re-encoded. E_PACKAGE_TOO_LARGE says what the lower presets would weigh."
         },
         "format": {
-          "enum": ["auto", "scorm12", "scorm2004"],
+          "enum": ["auto", "scorm12", "scorm2004", "cmi5", "xapi"],
           "default": "auto",
-          "description": "The package's format for the LMS. auto: Elabora picks it, the best of the LMS's profile (delivery.lms), else SCORM 1.2, which every LMS takes. scorm12: SCORM 1.2, one SCO. scorm2004: SCORM 2004 4th edition (3rd for an LMS that stops there), one SCO without sequencing: completion and success apart, a scaled score, 64,000 characters of suspend data. elabora build --format overrides it for one build."
+          "description": "The package's format for the LMS (docs/delivery.md). auto: Elabora picks it, the best of the LMS's profile (delivery.lms), else SCORM 1.2, which every LMS takes. scorm12: SCORM 1.2, one SCO. scorm2004: SCORM 2004 4th edition (3rd for an LMS that stops there), one SCO without sequencing: completion and success apart, a scaled score, 64,000 characters of suspend data. cmi5: xAPI with an LMS's rules (cmi5.xml, its LRS), for the few LMSs that import it. xapi: xAPI alone (tincan.xml): it needs an LRS, the LMS's or delivery.lrs. elabora build --format overrides it for one build."
+        },
+        "activityId": {
+          "type": "string",
+          "pattern": "^[A-Za-z][A-Za-z0-9+.-]*:\\S+$",
+          "description": "cmi5 and xAPI: the course's activity, an IRI the client owns (https://client.example/courses/safety). Default urn:elabora:course:<id>. Keep it from one version to the next: an LRS adds the statements of every version up."
+        },
+        "lrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["endpoint"],
+          "description": "xAPI outside an LMS: the learning record store statements go to when no LMS launches the package. Its key is never here (the project's history keeps this file): the build takes it from ELABORA_LRS_KEY and ELABORA_LRS_SECRET, or elabora build --lrs-key and --lrs-secret, and the package carries it (W_XAPI_KEY_IN_PACKAGE).",
+          "properties": {
+            "endpoint": { "type": "string", "pattern": "^https?://\\S+$", "description": "The LRS's xAPI address (https://lrs.example/xapi/)." }
+          }
         },
         "lms": {
           "type": "array",

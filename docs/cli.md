@@ -326,8 +326,8 @@ is downloads uninstall voices-<lang>).
 
 ```text
 build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--media-quality high|medium|low] [--languages all|<a,b>] [--packages one|each] [--no-wait] [--json]
-      [--format scorm12|scorm2004] [--target web] [--progress local|none] [--navigation authored|free] [--noindex] [--url <address>]
-      [--image <file>] [--review-origin <origin>]…
+      [--format scorm12|scorm2004|cmi5|xapi] [--lrs-key <key> --lrs-secret <secret>] [--target web] [--progress local|none]
+      [--navigation authored|free] [--noindex] [--url <address>] [--image <file>] [--review-origin <origin>]…
                                                     Validate, then make the package for the LMS and its proof dossier in
                                                     dist/ (deterministic: same files, same bytes). Media ship at
                                                     delivery.mediaQuality (default high: the masters); lower qualities
@@ -335,7 +335,9 @@ build [dir] [--profile a,b|all] [--release] [--out <dir>] [--dir] [--debug] [--m
                                                     jobs (--no-wait: fails while they run).
                                                     The format: the module's (course.json delivery.format), else the best
                                                     for its LMSs (delivery.lms), else SCORM 1.2, which every LMS takes;
-                                                    --format scorm12|scorm2004 says it for this build.
+                                                    --format says it for this build. xAPI needs an LRS: the LMS's, or
+                                                    delivery.lrs with its key (--lrs-key and --lrs-secret, else
+                                                    ELABORA_LRS_KEY and ELABORA_LRS_SECRET), which the package carries.
                                                     --languages en,fr: the package's languages (default: course.json
                                                     delivery.languages, else the course's own), which learners switch
                                                     from the player's « Langue », keeping their progress (D59). Each is

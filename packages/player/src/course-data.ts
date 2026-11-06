@@ -58,9 +58,11 @@ export interface CourseData {
   build: { id: string };
 }
 
-// The format a package for an LMS was built in, when it is not SCORM 1.2.
+// The format a package for an LMS was built in, when it is not SCORM 1.2, and for cmi5 and xAPI the
+// course's activity when course.json names one (else urn:elabora:course:<id>).
 export interface LmsDelivery {
-  format: 'scorm2004';
+  format: 'scorm2004' | 'cmi5' | 'xapi';
+  activityId?: string;
 }
 
 // The web target's settings, as the build wrote them. navigation free: the compiler has already

@@ -38,9 +38,12 @@ export type Scorm12Method = 'LMSInitialize' | 'LMSFinish' | 'LMSGetValue' | 'LMS
 // SCORM 2004's API (scorm2004.ts).
 export type Scorm2004Method = 'Initialize' | 'Terminate' | 'GetValue' | 'SetValue' | 'Commit';
 
+// The formats over HTTP (xapi.ts): their requests, by what they send.
+export type HttpMethod = 'statements' | 'state';
+
 export interface LmsCall {
   t: number;
-  method: Scorm12Method | Scorm2004Method;
+  method: Scorm12Method | Scorm2004Method | HttpMethod;
   args: string[];
   result: string;
   error: string;
@@ -50,10 +53,10 @@ export type LmsPhase = 'none' | 'initialized' | 'finished';
 
 // What the player uses of the LMS, found or not.
 export interface LmsAdapter {
-  // The LMS it talks to: SCORM 1.2 (here), SCORM 2004 (scorm2004.ts), none (standalone: a preview's
-  // data in the tab) or the web target's (web.ts). The player talks to all of them in SCORM 1.2's
-  // data model: the others translate it.
-  kind: 'scorm12' | 'scorm2004' | 'standalone' | 'web';
+  // The LMS it talks to: SCORM 1.2 (here), SCORM 2004 (scorm2004.ts), cmi5 and xAPI (xapi.ts), none
+  // (standalone: a preview's data in the tab) or the web target's (web.ts). The player
+  // talks to all of them in SCORM 1.2's data model: the others translate it.
+  kind: 'scorm12' | 'scorm2004' | 'cmi5' | 'xapi' | 'standalone' | 'web';
   where: string;
   log: LmsCall[];
   readonly phase: LmsPhase;

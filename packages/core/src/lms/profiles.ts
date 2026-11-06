@@ -72,8 +72,9 @@ export function lmsName(profile: Pick<LmsProfile, 'name'>): string {
   return profile.name.replace(/\s*(\(|—).*$/, '').trim() || profile.name;
 }
 
-// The formats whose limits a profile records (formats.ts has them all).
-export type LimitedFormat = 'scorm12' | 'scorm2004';
+// The delivery formats (formats.ts): profiles record the limits of SCORM's; cmi5 and xAPI keep the
+// state in a document without a limit, counted as SCORM 2004's 64,000 so a module can change format.
+export type LimitedFormat = 'scorm12' | 'scorm2004' | 'cmi5' | 'xapi';
 
 export interface DeliveryLimits {
   suspendDataMax: number;
@@ -93,17 +94,18 @@ export function deliveryLimits(profiles: readonly LmsProfile[], format: LimitedF
     const known = vals.filter((v): v is number => typeof v === 'number');
     return { value: known.length ? Math.min(...known, ...(vals.some((v) => v == null) ? [fallback] : [])) : fallback, unknown: vals.some((v) => v == null) };
   };
-  const spec = format === 'scorm2004' ? SCORM2004_SPEC : SCORM12_SPEC;
-  const sd = pick(profiles.map((p) => p.datamodel?.suspendDataMax?.[format]), spec.suspendDataMax);
+  const spec = format === 'scorm12' ? SCORM12_SPEC : SCORM2004_SPEC;
+  const recorded = format === 'scorm12' || format === 'scorm2004' ? format : null;
+  const sd = recorded ? pick(profiles.map((p) => p.datamodel?.suspendDataMax?.[recorded]), spec.suspendDataMax) : { value: spec.suspendDataMax, unknown: false };
   // Profiles record SCORM 1.2's lesson_location; SCORM 2004's cmi.location is the specification's.
-  const loc = format === 'scorm2004' ? { value: spec.lessonLocationMax } : pick(profiles.map((p) => p.datamodel?.lessonLocationMax), spec.lessonLocationMax);
+  const loc = format === 'scorm12' ? pick(profiles.map((p) => p.datamodel?.lessonLocationMax), spec.lessonLocationMax) : { value: spec.lessonLocationMax };
   const numbers = (vals: (number | null | undefined)[]) => vals.filter((v): v is number => typeof v === 'number');
   const zip = numbers(profiles.map((p) => p.packaging?.maxZipMB));
   const files = numbers(profiles.map((p) => p.packaging?.maxFiles));
   const ratio = numbers(profiles.map((p) => p.packaging?.maxCompressionRatio));
   return {
     suspendDataMax: sd.value,
-    suspendDataSource: profiles.map((p) => `${p.id}:${p.datamodel?.suspendDataMax?.[format] ?? `unknown→spec ${spec.suspendDataMax}`}`).join(', '),
+    suspendDataSource: recorded ? profiles.map((p) => `${p.id}:${p.datamodel?.suspendDataMax?.[recorded] ?? `unknown→spec ${spec.suspendDataMax}`}`).join(', ') : `${format}: ${spec.suspendDataMax}`,
     lessonLocationMax: loc.value,
     maxZipMB: zip.length ? Math.min(...zip) : null,
     maxFiles: files.length ? Math.min(...files) : null,

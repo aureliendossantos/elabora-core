@@ -137,7 +137,7 @@ Elabora finds ffmpeg and ffprobe on the `PATH`. Set `ELABORA_FFMPEG` and `ELABOR
 
 ## What 0.1 does not do yet
 
-- Elabora delivers SCORM 1.2 and SCORM 2004 for LMSs ([D2](decisions/D02.md), [Delivery formats](delivery.md)) and a web target for static hosting ([D41](decisions/D41.md)). cmi5, xAPI, LTI and dispatch come later.
+- Elabora delivers SCORM 1.2, SCORM 2004, cmi5 and xAPI for LMSs ([D2](decisions/D02.md), [Delivery formats](delivery.md)) and a web target for static hosting ([D41](decisions/D41.md)). LTI and dispatch come later.
 - The emulator reproduces documented LMS behaviour on top of scorm-again. Before delivery, still run a smoke test in SCORM Cloud and a test learner in the client's LMS. Each profile lists the values still to measure.
 - Firefox and WebKit need their binaries: `pnpm exec playwright-core install firefox webkit`. WebKit passed the LMS and object probes on macOS, with snapshots that differ from Chromium's. On recent macOS, the protection of Firefox's app-data folder may block it at startup.
 - Storyline and Rise imports are in beta ([D47](decisions/D47.md)).

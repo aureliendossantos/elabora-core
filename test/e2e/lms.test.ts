@@ -40,6 +40,45 @@ test('a course for SCORM Cloud is built in SCORM 2004 and passes the emulator in
   assert.ok(zip.ok, JSON.stringify(zip.diagnostics));
 });
 
+// The formats over HTTP (docs/delivery-cmi5.md, delivery-xapi.md): the emulator's LRS plays the
+// LMS's; the scenario is every format's.
+async function passesOverHttp(format: 'cmi5' | 'xapi', profile: string) {
+  const dir = copyExample();
+  const b = await build(dir, { profiles: [profile], target: format, emit: 'both', out: fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-e2e-')) });
+  assert.ok(b.ok && b.dirPath && b.zipPath, JSON.stringify(b.diagnostics.filter((d) => d.severity === 'error')));
+  assert.equal(b.report.delivery?.format, format);
+  const r = await testPackage({ dir: b.dirPath, profiles: [profile], unloadVariants: false });
+  assert.deepEqual(r.runs.filter((x) => !x.ok).map((x) => `${x.profile}/${x.launch}/${x.browser}: ${x.failures.map((f) => `${f.code} ${f.message}`).join(',')}`), []);
+  assert.ok(r.runs.every((run) => ['api-found', 'data-survives-close', 'resume', 'final-status', 'single-initialize', 'no-regression'].every((name) => run.checks.some((one) => one.name === name && one.ok))), JSON.stringify(r.runs.map((run) => run.checks)));
+  // --package reads the format from the package's files.
+  const zip = await testPackage({ zip: b.zipPath, profiles: [profile], modes: ['iframe'], unloadVariants: false });
+  assert.ok(zip.ok, JSON.stringify(zip.diagnostics));
+}
+
+test('a cmi5 package passes the emulator\'s LMS and LRS: fetch once, launch data, statements in cmi5\'s rules (iframe and popup)', { timeout: 300000 }, async () => {
+  await passesOverHttp('cmi5', 'scorm-cloud');
+});
+
+test('an xAPI package passes the emulator\'s Tin Can launch; outside an LMS it carries the LRS set at build time', { timeout: 300000 }, async () => {
+  await passesOverHttp('xapi', 'scorm-cloud');
+  // Outside an LMS: course.json delivery.lrs and the key given to the build, never in course.json.
+  const dir = copyExample();
+  const file = path.join(dir, 'course.json');
+  const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+  fs.writeFileSync(file, JSON.stringify({ ...data, delivery: { ...data.delivery, format: 'xapi', lrs: { endpoint: 'https://lrs.example/xapi/' } } }));
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-e2e-'));
+  const bare = await build(dir, { emit: 'dir', out, writeLock: false });
+  assert.ok(bare.ok && bare.diagnostics.some((d) => d.code === 'W_XAPI_NO_LRS_KEY') && !bare.files.has('elabora/lrs.js'));
+  const keyed = await build(dir, { emit: 'dir', out, writeLock: false, lrs: { key: 'k', secret: 's' } });
+  assert.ok(keyed.ok && keyed.diagnostics.some((d) => d.code === 'W_XAPI_KEY_IN_PACKAGE'));
+  assert.equal(keyed.files.get('elabora/lrs.js')?.toString(), `window.ELABORA_LRS = {"endpoint":"https://lrs.example/xapi/","auth":"Basic ${Buffer.from('k:s').toString('base64')}"};\n`);
+  assert.match(keyed.files.get('index.html')!.toString(), /<script src="elabora\/lrs\.js"><\/script>\n<script src="elabora\/lms\.js"><\/script>/);
+  assert.doesNotMatch(fs.readFileSync(file, 'utf8'), /"k:s"|Basic/);
+  // Without an LRS, the build says xAPI needs one.
+  fs.writeFileSync(file, JSON.stringify({ ...data, delivery: { ...data.delivery, format: 'xapi' } }));
+  assert.ok((await build(dir, { emit: 'dir', out, writeLock: false })).diagnostics.some((d) => d.code === 'W_XAPI_NEEDS_LRS'));
+});
+
 // A deliberately bad SCORM 1.2 package: it only saves in unload, like many legacy wrappers.
 function badPackage() {
   const manifest = `<?xml version="1.0"?><manifest identifier="bad" xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2" xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2"><metadata><schema>ADL SCORM</schema><schemaversion>1.2</schemaversion></metadata><organizations default="o"><organization identifier="o"><title>Bad</title><item identifier="i" identifierref="r"><title>Bad</title></item></organization></organizations><resources><resource identifier="r" type="webcontent" adlcp:scormtype="sco" href="index.html"><file href="index.html"/></resource></resources></manifest>`;

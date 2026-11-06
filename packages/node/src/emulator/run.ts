@@ -89,7 +89,7 @@ export async function testPackage(options: TestPackageOptions): Promise<PackageT
   if (!dir && options.zip) {
     extracted = fs.mkdtempSync(path.join(os.tmpdir(), 'elabora-pkg-'));
     const { files } = readZip(fs.readFileSync(options.zip));
-    if (!files.has('imsmanifest.xml')) {
+    if (!PACKAGE_FILES.some((name) => [...files.keys()].some((file) => (name.startsWith('.') ? !file.includes('/') && file.toLowerCase().endsWith(name) : file === name)))) {
       const reporter = createReporter();
       reporter.emit('E_MANIFEST_NOT_AT_ROOT', { file: path.basename(options.zip) });
       fs.rmSync(extracted, { recursive: true, force: true });
@@ -104,8 +104,8 @@ export async function testPackage(options: TestPackageOptions): Promise<PackageT
   }
   if (!dir) throw new Error('testPackage: give dir (a package folder) or zip (a package file)');
   const packageDir = dir;
-  const manifest = fs.readFileSync(path.join(packageDir, 'imsmanifest.xml'), 'utf8');
-  const mastery = /<adlcp:masteryscore>(\d+)<\/adlcp:masteryscore>/.exec(manifest)?.[1];
+  const manifestFile = path.join(packageDir, 'imsmanifest.xml');
+  const mastery = fs.existsSync(manifestFile) ? /<adlcp:masteryscore>(\d+)<\/adlcp:masteryscore>/.exec(fs.readFileSync(manifestFile, 'utf8'))?.[1] : undefined;
   const protocol = PROTOCOLS[packageFormat(packageDir)];
   const isElabora = fs.existsSync(path.join(packageDir, 'elabora/player.js'));
 
@@ -265,6 +265,8 @@ interface Launch {
   context: BrowserContext;
   page: Page;
   content: Frame;
+  reg: string;
+  from: number; // the HTTP formats' requests of the registration before this launch
 }
 
 async function openLaunch(run: RunContext, reg: string, extra = ''): Promise<Launch> {
@@ -275,6 +277,7 @@ async function openLaunch(run: RunContext, reg: string, extra = ''): Promise<Lau
   run.contexts.push(context);
   await context.addInitScript(INSTRUMENT);
   const page = await context.newPage();
+  const from = protocol.http ? server.httpCalls(reg).length : 0;
   const url = `${server.base}/lms/launch.html?pkg=${pkgName}&profile=${profile.id}&mode=${mode}&reg=${reg}&format=${protocol.format}${mastery ? `&mastery=${mastery}` : ''}${extra}`;
   const contentPage = ['popup', 'new-tab', 'popup-chain'].includes(mode) ? waitForContentPage(context) : null;
   await page.goto(url);
@@ -284,7 +287,7 @@ async function openLaunch(run: RunContext, reg: string, extra = ''): Promise<Lau
     await page.waitForFunction(() => window.__lmsReady === true);
     content = await waitForFrame(page);
   }
-  return { context, page, content };
+  return { context, page, content, reg, from };
 }
 
 function waitForContentPage(context: BrowserContext): Promise<Frame> {
@@ -305,14 +308,26 @@ async function waitForFrame(page: Page): Promise<Frame> {
   throw new Error('content frame not found');
 }
 
-const lmsLog = (page: Page): Promise<LmsCall[]> => page.evaluate(() => window.__lmsLog || []).catch(() => []);
+const pageLog = (page: Page): Promise<LmsCall[]> => page.evaluate(() => window.__lmsLog || []).catch(() => []);
+// What the content asked of the LMS in a launch: the SCORM API's calls the fake LMS page logged, or
+// the requests the server's LRS received (cmi5, xAPI).
+const lmsLog = async (run: RunContext, launch: Launch): Promise<LmsCall[]> => {
+  const http = run.protocol.http;
+  if (!http) return pageLog(launch.page);
+  return run.server.httpCalls(launch.reg).slice(launch.from).map((call) => ({ ...call, method: call.method as LmsCall['method'] }));
+};
 
 // A value of the CMI the fake LMS stored (scorm-again's JSON, as the content committed it).
 const cmiValue = (cmi: unknown, ...keys: string[]): unknown => keys.reduce(fieldOf, cmi);
 
+// The files that say a package's format to its LMS, at its root.
+const PACKAGE_FILES = ['imsmanifest.xml', 'cmi5.xml', 'tincan.xml'];
+
 // The format of a package folder, from the files that say it to the LMS.
-export type PackageFormat = 'scorm12' | 'scorm2004';
+export type PackageFormat = 'scorm12' | 'scorm2004' | 'cmi5' | 'xapi';
 export function packageFormat(dir: string): PackageFormat {
+  if (fs.existsSync(path.join(dir, 'cmi5.xml'))) return 'cmi5';
+  if (fs.existsSync(path.join(dir, 'tincan.xml'))) return 'xapi';
   const manifest = path.join(dir, 'imsmanifest.xml');
   if (fs.existsSync(manifest) && /<schemaversion>\s*(CAM\s*1\.3|2004)/i.test(fs.readFileSync(manifest, 'utf8'))) return 'scorm2004';
   return 'scorm12';
@@ -328,24 +343,37 @@ interface LmsRecord {
   scoreRaw: unknown;
 }
 
-// How a format talks to the LMS: its API's names (for the messages and the log) and the record.
+// How a format talks to the LMS: its API's names (for the messages and the log), how its record is
+// read, and which requests were refused.
 interface Protocol {
   format: PackageFormat;
   kind: string; // the player's adapter (window.__elabora.lms.kind)
+  http?: 'cmi5' | 'xapi'; // over HTTP: the server's LRS keeps the record and the requests
   names: { initialize: string; finish: string; set: string; exit: string; status: string; location: string };
-  record(cmi: unknown): LmsRecord;
+  record(server: EmulatorServer, reg: string): LmsRecord;
+  rejected(log: LmsCall[]): LmsCall[];
 }
+
+const scormRecord = (read: (cmi: unknown) => LmsRecord) => (server: EmulatorServer, reg: string) => read(server.registration(reg)?.cmi);
+const httpProtocol = (format: 'cmi5' | 'xapi'): Protocol => ({
+  format, kind: format, http: format,
+  names: { initialize: 'initialized', finish: 'terminated', set: 'request', exit: 'the progress document\'s exit', status: 'statements', location: 'the progress document\'s location' },
+  record: (server, reg) => server.httpRecord(reg),
+  rejected: (log) => log.filter((call) => call.result === 'false')
+});
 
 const PROTOCOLS: Record<PackageFormat, Protocol> = {
   scorm12: {
     format: 'scorm12', kind: 'scorm12',
     names: { initialize: 'LMSInitialize', finish: 'LMSFinish', set: 'LMSSetValue', exit: 'cmi.core.exit', status: 'lesson_status', location: 'lesson_location' },
-    record: (cmi) => ({ location: cmiValue(cmi, 'core', 'lesson_location'), suspendData: cmiValue(cmi, 'suspend_data'), exit: cmiValue(cmi, 'core', 'exit'), status: cmiValue(cmi, 'core', 'lesson_status'), scoreRaw: cmiValue(cmi, 'core', 'score', 'raw') })
+    record: scormRecord((cmi) => ({ location: cmiValue(cmi, 'core', 'lesson_location'), suspendData: cmiValue(cmi, 'suspend_data'), exit: cmiValue(cmi, 'core', 'exit'), status: cmiValue(cmi, 'core', 'lesson_status'), scoreRaw: cmiValue(cmi, 'core', 'score', 'raw') })),
+    rejected: (log) => log.filter((call) => call.method === 'LMSSetValue' && call.result === 'false')
   },
   scorm2004: {
     format: 'scorm2004', kind: 'scorm2004',
     names: { initialize: 'Initialize', finish: 'Terminate', set: 'SetValue', exit: 'cmi.exit', status: 'completion_status and success_status', location: 'location' },
-    record: (cmi) => {
+    rejected: (log) => log.filter((call) => call.method === 'SetValue' && call.result === 'false'),
+    record: scormRecord((cmi) => {
       const success = cmiValue(cmi, 'success_status');
       const completion = cmiValue(cmi, 'completion_status');
       return {
@@ -353,8 +381,10 @@ const PROTOCOLS: Record<PackageFormat, Protocol> = {
         status: success === 'passed' || success === 'failed' ? success : completion,
         scoreRaw: cmiValue(cmi, 'score', 'raw')
       };
-    }
-  }
+    })
+  },
+  cmi5: httpProtocol('cmi5'),
+  xapi: httpProtocol('xapi')
 };
 
 async function elaboraScenario(run: RunContext, { accessibility }: { accessibility: AccessibilityReport | null }): Promise<void> {
@@ -363,7 +393,7 @@ async function elaboraScenario(run: RunContext, { accessibility }: { accessibili
   const reg = `r${Math.random().toString(36).slice(2, 9)}`;
   const check = (name: string, ok: boolean, code: string, message: string) => { run.result.checks.push({ name, ok }); if (!ok) reporter.emit(code, { profile: profile.id, message }); };
   // The learner's record as the LMS keeps it.
-  const record = () => protocol.record(server.registration(reg)?.cmi);
+  const record = () => protocol.record(server, reg);
 
   // 1. First launch: API found, initialised once, no unload listener, no sync XHR.
   let launch = await openLaunch(run, reg);
@@ -496,10 +526,10 @@ async function elaboraScenario(run: RunContext, { accessibility }: { accessibili
     await launch.content.evaluate(() => (window.__elabora as unknown as { quit(): void }).quit());
   }
   await sleep(200);
-  const log = await lmsLog(launch.page);
+  const log = await lmsLog(run, launch);
   check('quit-finishes', log.some((call) => call.method === names.finish), 'E_LMS_NO_FINISH_ON_QUIT', `Quit did not call ${names.finish}.`);
-  const rejected = log.filter((call) => call.method === names.set && call.result === 'false');
-  for (const call of rejected.slice(0, 5)) reporter.emit('E_LMS_SET_VALUE_REJECTED', { profile: profile.id, message: `${names.set}(${call.args[0]}${call.args[1] !== undefined && call.args[0] !== 'cmi.suspend_data' ? `, ${JSON.stringify(String(call.args[1]).slice(0, 80))}` : ''}) rejected${call.args[0] === 'cmi.suspend_data' ? ` (${String(call.args[1]).length} characters)` : ''}.` });
+  const rejected = protocol.rejected(log);
+  for (const call of rejected.slice(0, 5)) reporter.emit('E_LMS_SET_VALUE_REJECTED', { profile: profile.id, message: `${call.method}(${call.args[0]}${call.args[1] !== undefined && call.args[0] !== 'cmi.suspend_data' ? `, ${JSON.stringify(String(call.args[1]).slice(0, 80))}` : ''}) rejected${call.args[0] === 'cmi.suspend_data' ? ` (${String(call.args[1]).length} characters)` : ''}.` });
   const initializations = log.filter((call) => call.method === names.initialize).length;
   check('single-initialize', initializations === 1, 'E_LMS_INITIALIZE_TWICE', `${names.initialize} called ${initializations} times in one session.`);
   await closeAll(launch);
@@ -519,7 +549,7 @@ async function elaboraScenario(run: RunContext, { accessibility }: { accessibili
 // Answers every activity of the current screen through the real UI and the behaviour hooks
 // (data-t-…), whatever the component that renders it: built-in blocks and their forks; then explores
 // what the primitives show one at a time.
-async function answerScreen(frame: Frame): Promise<void> {
+export async function answerScreen(frame: Frame): Promise<void> {
   await frame.evaluate(async () => {
     const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
     const elabora = window.__elabora;
@@ -685,11 +715,12 @@ async function closeAll(launch: Launch): Promise<void> {
 }
 
 async function genericScenario(run: RunContext): Promise<void> {
-  const { reporter, server, profile, protocol: { names } } = run;
+  const { reporter, server, profile, protocol } = run;
+  const { names } = protocol;
   const reg = `g${Math.random().toString(36).slice(2, 9)}`;
   const launch = await openLaunch(run, reg);
   await sleep(4000);
-  const log = await lmsLog(launch.page);
+  const log = await lmsLog(run, launch);
   const initializations = log.filter((call) => call.method === names.initialize).length;
   if (!initializations) reporter.emit('E_LMS_API_NOT_FOUND', { profile: profile.id, message: `Launch "${run.mode}": the package never called ${names.initialize}.` });
   const frames = launch.page.frames().filter((frame) => /\/pkg\//.test(frame.url()));
@@ -697,9 +728,8 @@ async function genericScenario(run: RunContext): Promise<void> {
     const counts = await frame.evaluate(() => ({ unload: window.__unloadListeners || 0, syncXHR: window.__syncXHR || 0 })).catch(() => ({ unload: 0, syncXHR: 0 }));
     if (counts.unload) reporter.emit('E_LMS_UNLOAD_LISTENER', { profile: profile.id, message: `${counts.unload} unload/beforeunload listener(s) in ${new URL(frame.url()).pathname}: progress may be lost in Chrome and Edge.` });
   }
-  const rejected = log.filter((call) => call.method === names.set && call.result === 'false');
-  for (const call of rejected.slice(0, 5)) reporter.emit('E_LMS_SET_VALUE_REJECTED', { profile: profile.id, message: `${names.set}(${call.args[0]}) rejected.` });
-  const committedBefore = server.registration(reg)?.commits?.length || 0;
+  for (const call of protocol.rejected(log).slice(0, 5)) reporter.emit('E_LMS_SET_VALUE_REJECTED', { profile: profile.id, message: `${call.method}(${call.args[0]}) rejected.` });
+  const committedBefore = protocol.http ? log.filter((call) => call.method === 'state').length : server.registration(reg)?.commits?.length || 0;
   await closeAll(launch);
   await sleep(300);
   if (initializations && !committedBefore) reporter.emit('E_LMS_DATA_LOST_ON_CLOSE', { profile: profile.id, message: 'Nothing was committed before the window closed: everything after the last commit is lost in Chrome/Edge without unload.' });

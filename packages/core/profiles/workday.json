@@ -24,8 +24,7 @@
     "multiSco": null,
     "cmi5": false,
     "xapi": false,
-    "lti13": false,
-    "aicc": true
+    "lti13": false
   },
   "bestFormat": {
     "format": "scorm2004",
@@ -88,7 +87,8 @@
   ],
   "notes": [
     "Three statuses: Not Started, In Progress, Completed; grade only if Provide Course Grade.",
-    "SCORM is not cross-domain (only AICC HACP is).",
-    "Uploads are limited to 2 GB by default for new tenants. With Increase Maximum Upload Size (Edit Tenant Setup - HCM), a ZIP of up to 4 GB goes through Drive or the Learning file picker and up to 20 GB through the Media Import service, but uploads over 2 GB are not scanned for viruses."
+    "SCORM is not cross-domain: Workday hosts the package.",
+    "Uploads are limited to 2 GB by default for new tenants. With Increase Maximum Upload Size (Edit Tenant Setup - HCM), a ZIP of up to 4 GB goes through Drive or the Learning file picker and up to 20 GB through the Media Import service, but uploads over 2 GB are not scanned for viruses.",
+    "cmi5 and xAPI are not documented; Skilljar lists Workday among the LMSs its xAPI and cmi5 launches do not support."
   ]
 }

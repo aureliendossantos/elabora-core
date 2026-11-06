@@ -8,7 +8,10 @@ import { listProfiles, lmsName, resolveProfiles, targetProfileIds } from './prof
 //   scorm2004  SCORM 2004 (4th edition, or 3rd for LMSs that stop there): one SCO, no sequencing
 //              beyond the simplest; completion and success apart, a scaled score, 64,000 characters of
 //              suspend data.
-export const DELIVERY_FORMATS = ['scorm12', 'scorm2004'] as const;
+//   cmi5       xAPI with an LMS's rules: cmi5.xml, the LMS's launch and LRS. Few LMSs import it.
+//   xapi       xAPI alone (Tin Can): tincan.xml; it needs an LRS, the LMS's or one set at build time.
+// Elabora picks SCORM 1.2 or SCORM 2004 by itself; cmi5 and xAPI only when the module asks for them.
+export const DELIVERY_FORMATS = ['scorm12', 'scorm2004', 'cmi5', 'xapi'] as const;
 export type DeliveryFormat = (typeof DELIVERY_FORMATS)[number];
 // What course.json delivery.format says: a format, or auto (Elabora picks).
 export type FormatSetting = DeliveryFormat | 'auto';
@@ -25,10 +28,20 @@ export function formatSupport(profile: LmsProfile, format: DeliveryFormat): Form
   if (profile.id === 'unknown') return format === 'scorm12' ? 'yes' : 'unsure';
   const standards = profile.standards;
   if (format === 'scorm12') return standards.scorm12 ? 'yes' : 'no';
-  const editions = standards.scorm2004;
-  if (editions == null) return 'unsure';
-  return editions.includes('4th') || editions.includes('3rd') ? 'yes' : 'no';
+  if (format === 'scorm2004') {
+    const editions = standards.scorm2004;
+    if (editions == null) return 'unsure';
+    return editions.includes('4th') || editions.includes('3rd') ? 'yes' : 'no';
+  }
+  // A plugin, a format the vendor discourages, a beta or nothing documented: not sure.
+  const value = format === 'cmi5' ? standards.cmi5 : standards.xapi;
+  return value === true ? 'yes' : value === false ? 'no' : 'unsure';
 }
+
+// The formats that talk to the LMS over HTTP: their package starts with elabora/lms.js, which
+// connects before the player (no synchronous request).
+export const HTTP_FORMATS: readonly DeliveryFormat[] = ['cmi5', 'xapi'];
+export const isHttpFormat = (format: DeliveryFormat): boolean => HTTP_FORMATS.includes(format);
 
 // The SCORM 2004 edition a package declares for these LMSs: the 4th, unless one of them documents
 // the 3rd and not the 4th (Docebo). One SCO without sequencing calls the same API in both.
@@ -79,6 +92,8 @@ function autoFormat(named: readonly LmsProfile[]): FormatChoice['auto'] {
 // The format's name, as authors and LMS screens write it.
 export function formatName(format: DeliveryFormat, edition?: Scorm2004Edition): string {
   if (format === 'scorm2004') return edition === '3rd' ? 'SCORM 2004 (3rd edition)' : edition === '4th' ? 'SCORM 2004 (4th edition)' : 'SCORM 2004';
+  if (format === 'cmi5') return 'cmi5';
+  if (format === 'xapi') return 'xAPI (Tin Can)';
   return 'SCORM 1.2';
 }
 

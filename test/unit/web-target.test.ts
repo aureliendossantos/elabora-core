@@ -289,7 +289,7 @@ test('build --target web: a wrong address or image stops it, an image without ad
   await assert.rejects(build(dir, { target: 'web', web: { navigation: 'open' as 'free' } }), /navigation is authored or free/);
   await assert.rejects(build(dir, { web: { progress: 'none' } }), /for the web target/);
   await assert.rejects(build(dir, { target: 'web', profiles: ['moodle'] }), /LMS profiles are for LMS packages/);
-  await assert.rejects(build(dir, { target: 'xapi' as 'web' }), /target is scorm12, scorm2004 or web/);
+  await assert.rejects(build(dir, { target: 'lti' as 'web' }), /target is scorm12, scorm2004, cmi5, xapi or web/);
 });
 
 function elabora(args: string[]): Promise<{ status: number | null; stdout: string; stderr: string }> {
@@ -310,7 +310,7 @@ test('elabora build --target web: the settings as flags, checked before building
   const out = tmp('elabora-w6-');
   const refused = await Promise.all([
     elabora(['build', dir, '--progress', 'none']), elabora(['build', dir, '--target', 'web', '--profile', 'moodle']), elabora(['build', dir, '--target', 'web', '--progress', 'session']),
-    elabora(['build', dir, '--target', 'web', '--navigation', 'open']), elabora(['build', dir, '--target', 'cmi5']), elabora(['build', dir, '--noindex'])
+    elabora(['build', dir, '--target', 'web', '--navigation', 'open']), elabora(['build', dir, '--target', 'lti']), elabora(['build', dir, '--noindex'])
   ]);
   assert.deepEqual(refused.map((run) => run.status), [2, 2, 2, 2, 2, 2], refused.map((run) => run.stderr).join(''));
   assert.match(refused[0].stderr, /--progress: for --target web only/);
@@ -352,7 +352,7 @@ test('MCP elabora_build target web, and the engine build request with web settin
     assert.match(fs.readFileSync(path.join(view.dir, 'index.html'), 'utf8'), /noindex/);
     const scorm = await session.handle({ kind: 'request', id: 'w2', type: 'build', params: {} }) as ResponseMessage;
     assert.equal(scorm.ok && (scorm.result as BuildView).dir, null);
-    for (const params of [{ target: 'xapi' }, { target: 'web', profiles: ['moodle'] }, { web: { progress: 'none' } }, { target: 'web', web: { progress: 'session' } }, { target: 'web', web: { navigation: 1 } }, { target: 'web', web: { noindex: 'yes' } }, { target: 'web', web: { colour: 'red' } }, { target: 'web', web: 'free' }]) {
+    for (const params of [{ target: 'lti' }, { target: 'web', profiles: ['moodle'] }, { web: { progress: 'none' } }, { target: 'web', web: { progress: 'session' } }, { target: 'web', web: { navigation: 1 } }, { target: 'web', web: { noindex: 'yes' } }, { target: 'web', web: { colour: 'red' } }, { target: 'web', web: 'free' }]) {
       const refused = await session.handle({ kind: 'request', id: 'w3', type: 'build', params }) as ResponseMessage;
       assert.equal(refused.ok, false, JSON.stringify(params));
       if (!refused.ok) assert.equal(refused.error.kind, 'bad-request', JSON.stringify(params));
