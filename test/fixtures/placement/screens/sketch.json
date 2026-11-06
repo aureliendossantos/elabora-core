@@ -1,0 +1,12 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
+  "id": "sketch",
+  "title": "Winds around a low",
+  "covers": ["ITEM-1"],
+  "blocks": [
+    { "id": "sketch-intro", "type": "text", "props": { "markdown": "Around a low, the wind turns counterclockwise in the northern hemisphere and crosses the isobars toward the centre." } },
+    { "id": "sketch-keep", "type": "callout", "props": { "variant": "tip", "markdown": "The lower the pressure, the stronger the wind." }, "place": { "x": 0.62, "y": 0.6, "width": 0.3 } },
+    { "id": "sketch-figure", "type": "image", "props": { "asset": "images/wind.svg", "alt": "Arrows turning around a low" }, "place": { "x": 0.06, "y": 0.5, "width": 0.25, "height": 0.3, "z": 1 } },
+    { "id": "sketch-more", "type": "text", "props": { "markdown": "Near the ground, friction slows the wind and bends it toward the low." } }
+  ]
+}

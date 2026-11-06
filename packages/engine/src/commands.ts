@@ -22,6 +22,8 @@ export const COMMANDS: { readonly [Name in CommandName]: Runner<Name> } = {
   update_block: edit.updateBlock,
   remove_block: edit.removeBlock,
   move_block: edit.moveBlock,
+  place_block: edit.placeBlock,
+  arrange_screen: edit.arrangeScreen,
   duplicate_block: edit.duplicateBlock,
   detach_block: edit.detachBlock,
   convert_block: edit.convertBlock,

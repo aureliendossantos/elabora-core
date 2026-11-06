@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import * as commands from '@elabora/core/commands/index';
 import type {
-  CreateScreenArgs, UpdateScreenArgs, MoveScreenArgs, AddBlockArgs, UpdateBlockArgs, MoveBlockArgs, DuplicateBlockArgs, UpdateCourseArgs, IgnoreFindingsArgs, CreateObjectArgs,
+  CreateScreenArgs, UpdateScreenArgs, MoveScreenArgs, AddBlockArgs, UpdateBlockArgs, MoveBlockArgs, PlaceBlockArgs, ArrangeScreenArgs, DuplicateBlockArgs, UpdateCourseArgs, IgnoreFindingsArgs, CreateObjectArgs,
   WriteObjectFileArgs, ObjectTemplates, CreateComponentArgs, ForkComponentArgs, WriteComponentFileArgs,
   MigrateComponentsArgs, AddLibraryComponentArgs, RenameArgs, AddFontArgs, SetCaptionsArgs, ConvertBlockArgs, UpsertLayerArgs, UpsertEventArgs, DuplicateScreenArgs, ReplaceTextArgs, ExportTranslationArgs, TranslateUnitArgs, ApproveTranslationArgs, SettleImportReportArgs
 } from '@elabora/core/commands/index';
@@ -69,6 +69,16 @@ export function removeBlock(dir: string, args: { block: string }, options?: Edit
 // component instance (parent; slot picks the slot, null clears it).
 export function moveBlock(dir: string, args: MoveBlockArgs, options?: EditOptions) {
   return runCommand(dir, { name: 'move_block', args, run: (context) => commands.moveBlock(context, args) }, options);
+}
+
+// Placed by hand (D72): where the block sits (null: back in the flow) and its anchor, in one change.
+export function placeBlock(dir: string, args: PlaceBlockArgs, options?: EditOptions) {
+  return runCommand(dir, { name: 'place_block', args, run: (context) => commands.placeBlock(context, args) }, options);
+}
+
+// « Ranger »: the screen's placed blocks (or those named) back in the flow, each at its anchor.
+export function arrangeScreen(dir: string, args: ArrangeScreenArgs, options?: EditOptions) {
+  return runCommand(dir, { name: 'arrange_screen', args, run: (context) => commands.arrangeScreen(context, args) }, options);
 }
 
 export function duplicateBlock(dir: string, args: DuplicateBlockArgs, options?: EditOptions) {

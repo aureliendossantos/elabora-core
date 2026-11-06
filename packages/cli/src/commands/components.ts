@@ -20,6 +20,10 @@ const HELP = `  component list [dir]                                Block types 
                                                       Continuity between screens (D65): the block carries on from a block of
                                                       another screen (a free object keeps running, another block glides), or
                                                       no longer does; --duration: the passage to it (default 700)
+  block place [dir] <block> --x <share> --y <share> --width <share> [--height <share>] [--z <n>] | --flow
+                                                      Placed by hand (D72): where the block sits in the frame (shares of the
+                                                      reference window at the screen's width), or back in the flow
+  screen arrange [dir] <screen> [--block <id>,…]      « Ranger »: the screen's blocks placed by hand back in the flow
   convert [dir] <screen> <block> --to <type>[:<presentation>] [--dry-run] [--lang fr] [--json]
                                                       « Transformer en… »: the block as another type or presentation, its id,
                                                       items and translations kept; without --to, the possible targets`;
@@ -170,6 +174,37 @@ const carryOn = defineCommand({
   })
 });
 
+// Placed by hand (D72): --x --y --width [--height] [--z] in shares of the placement frame, or --flow
+// back in the flow at its anchor.
+const place = defineCommand({
+  name: 'block place',
+  flags: { x: 'string', y: 'string', width: 'string', height: 'string', z: 'string', flow: 'boolean' },
+  run: ({ positionals, flags }) => reportingFailures(() => {
+    const { dir, rest: [block] } = folderAndArguments(positionals, 1);
+    const number = (value: string | undefined) => (value === undefined ? undefined : Number(value));
+    const [x, y, width, height, z] = [flags.x, flags.y, flags.width, flags.height, flags.z].map(number);
+    const given = [x, y, width].every((value) => value !== undefined && Number.isFinite(value)) && [height, z].every((value) => value === undefined || Number.isFinite(value));
+    if (!block || (flags.flow ? flags.x !== undefined : !given)) {
+      console.error('Usage: elabora block place [dir] <block> --x <share> --y <share> --width <share> [--height <share>] [--z <n>] | --flow');
+      return 2;
+    }
+    const result = edit.placeBlock(dir, { block, place: flags.flow ? null : { x: x as number, y: y as number, width: width as number, ...(height !== undefined ? { height } : {}), ...(z !== undefined ? { z } : {}) } });
+    return reportEdit(result, flags.flow ? `${block} is back in the flow at its anchor.` : `${block} placed by hand.`);
+  })
+});
+
+// « Ranger » (D72): the screen's blocks placed by hand back in the flow, each at its anchor.
+const arrange = defineCommand({
+  name: 'screen arrange',
+  flags: { block: 'list' },
+  run: ({ positionals, flags }) => reportingFailures(() => {
+    const { dir, rest: [screen] } = folderAndArguments(positionals, 1);
+    if (!screen) { console.error('Usage: elabora screen arrange [dir] <screen> [--block <id>,…]'); return 2; }
+    const result = edit.arrangeScreen(dir, { screen, ...(flags.block?.length ? { blocks: flags.block } : {}) });
+    return reportEdit(result, result.blocks.length ? `Back in the flow: ${result.blocks.join(', ')}.` : `No block placed by hand on ${screen}.`);
+  })
+});
+
 // « Transformer en… » (D63): accordion:cards, steps, sort:pairs… Without --to, the targets and the refused ones.
 const convert = defineCommand({
   name: 'convert',
@@ -202,9 +237,10 @@ const convert = defineCommand({
 export const componentCommands: CommandGroup = {
   title: 'Components',
   help: HELP,
-  commands: [list, create, fork, preview, migrate, add, publish, duplicate, detach, carryOn, convert],
+  commands: [list, create, fork, preview, migrate, add, publish, duplicate, detach, carryOn, place, arrange, convert],
   subcommandUsage: {
     component: 'Usage: elabora component list|new|fork|preview|migrate|add|publish …',
-    block: 'Usage: elabora block duplicate|detach|continue [dir] <block>'
+    block: 'Usage: elabora block duplicate|detach|continue|place [dir] <block>',
+    screen: 'Usage: elabora screen arrange [dir] <screen>'
   }
 };

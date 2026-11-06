@@ -117,6 +117,22 @@ dialog .t-block[data-t-concealed] { display: none; } /* layers scroll inside: no
 .t-w-half { grid-column: span 1; max-width: none; }
 @media (max-width: 760px) { .t-w-half { grid-column: 1 / -1; } .t-main { padding: 1.25rem 0.875rem 2rem; } }
 
+/* Placed by hand (D72): out of the flow, in the placement frame where placement.ts puts it (custom
+   properties in px of its containing block), drawn over the flow. Its place in the page stays its
+   anchor: what it is read after, where the focus goes, where it reads on phones. A slot that holds
+   only placed blocks says so ([data-t-placed-only]): a layout may fold it. */
+.t-block[data-t-place] {
+  position: absolute !important; z-index: calc(2 + var(--t-place-z, 0)); left: var(--t-place-left, 0px); top: var(--t-place-top, 0px);
+  width: var(--t-place-width, auto) !important; max-width: none !important; margin: 0 !important; justify-self: auto !important; grid-column: auto !important;
+}
+.t-block[data-t-place-height] { height: var(--t-place-height); }
+/* A picture placed with a height fills it, cropped around its focal point. */
+.t-block[data-t-place-height] > .t-figure { display: flex; flex-direction: column; height: 100%; }
+.t-block[data-t-place-height] > .t-figure > :is(.t-media, .t-zoom) { display: block; flex: 1; min-height: 0; }
+.t-block[data-t-place-height] > .t-figure img { width: 100%; height: 100%; max-height: none; object-fit: cover; object-position: calc(var(--focus-x, .5) * 100%) calc(var(--focus-y, .5) * 100%); }
+/* The editor's canvas lifts the block it drags (canvas.ts): over everything, under the pointer. */
+.t-block[data-t-lifted] { z-index: 60; pointer-events: none; }
+
 /* Layouts: the template places the slots; inside a slot, blocks stack and fill its width. */
 .t-layout { position: relative; }
 .t-slot { display: flex; flex-direction: column; gap: 1.25rem; min-width: 0; }

@@ -51,11 +51,16 @@ export interface UpdateBlockArgs {
   // Continuity between screens (D65): the key it shares with blocks of other screens, and the length
   // of the passage to it; null removes it.
   continuity?: Block['continuity'] | null;
+  // Placed by hand (D72): where it sits in the placement frame; null puts it back in the flow at its
+  // anchor (its slot and rank). Only for a block of the screen itself.
+  place?: Block['place'] | null;
 }
 
 export function updateBlock(context: CommandContext, args: UpdateBlockArgs): CommandOutput<{ screen: string }> {
   const place = findBlock(context.project(), args.block);
-  if (args.step !== undefined && (place.list.length !== 1 || place.list[0] !== 'blocks')) throw new CommandError(`Block "${args.block}" is in a layer or a component instance: only blocks of the screen itself have a step.`);
+  const own = place.list.length === 1 && place.list[0] === 'blocks';
+  if (args.step !== undefined && !own) throw new CommandError(`Block "${args.block}" is in a layer or a component instance: only blocks of the screen itself have a step.`);
+  if (args.place && !own) throw new CommandError(`Block "${args.block}" is in a layer or a component instance: only blocks of the screen itself are placed by hand.`);
   const draft = new Draft(context.files);
   const screen = draft.json<Screen>(place.file);
   const block = listAt(screen, place.list)[place.index];
@@ -75,8 +80,21 @@ export function updateBlock(context: CommandContext, args: UpdateBlockArgs): Com
   else if (args.step !== undefined) block.step = args.step;
   if (args.continuity === null) delete block.continuity;
   else if (args.continuity !== undefined) block.continuity = args.continuity;
+  if (args.place === null) delete block.place;
+  else if (args.place !== undefined) block.place = roundPlace(args.place);
   draft.writeJson(place.file, screen);
   return { files: draft.files(), result: { screen: place.screenId } };
+}
+
+// Shares of the placement frame, to four decimals (0.1 px at the reference width): what a drag
+// writes stays readable in the JSON.
+export function roundPlace(place: NonNullable<Block['place']>): NonNullable<Block['place']> {
+  const round = (value: number) => Math.round(value * 10_000) / 10_000;
+  return {
+    x: round(place.x), y: round(place.y), width: round(place.width),
+    ...(place.height !== undefined ? { height: round(place.height) } : {}),
+    ...(place.z !== undefined && place.z > 0 ? { z: Math.round(place.z) } : {})
+  };
 }
 
 function mergeProps(base: Props, patch: Props): Props {

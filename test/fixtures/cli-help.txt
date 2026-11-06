@@ -539,6 +539,10 @@ Components
                                                       Continuity between screens (D65): the block carries on from a block of
                                                       another screen (a free object keeps running, another block glides), or
                                                       no longer does; --duration: the passage to it (default 700)
+  block place [dir] <block> --x <share> --y <share> --width <share> [--height <share>] [--z <n>] | --flow
+                                                      Placed by hand (D72): where the block sits in the frame (shares of the
+                                                      reference window at the screen's width), or back in the flow
+  screen arrange [dir] <screen> [--block <id>,…]      « Ranger »: the screen's blocks placed by hand back in the flow
   convert [dir] <screen> <block> --to <type>[:<presentation>] [--dry-run] [--lang fr] [--json]
                                                       « Transformer en… »: the block as another type or presentation, its id,
                                                       items and translations kept; without --to, the possible targets

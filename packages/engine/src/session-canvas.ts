@@ -44,7 +44,9 @@ export class SessionCanvas {
     const id = `view-${++canvas.views}`;
     canvas.view = view;
     if (view.screen === null) return { id, pages: canvas.host.pages, view: { ...view } };
-    if (!canvas.shown || view.screen !== before.screen || view.language !== before.language) {
+    // A change shown before it is made (D72), or the screen as it is again: a render of the screen.
+    if (!canvas.shown || view.screen !== before.screen || view.language !== before.language || JSON.stringify(view.preview ?? null) !== JSON.stringify(before.preview ?? null)) {
+      if (view.screen !== before.screen && change.preview === undefined) view.preview = null;
       try {
         this.#pushCanvas(id, true);
       } catch (error) {
@@ -73,8 +75,9 @@ export class SessionCanvas {
     if (!canvas?.view.screen) return;
     let render: RenderedScreen;
     try {
-      const { screen, state, step, layer, language, at, ghost, dialogue } = canvas.view;
-      render = this.#renderer.render(this.#project(), { screen: screen as string, state, step: step ?? undefined, layer: layer ?? undefined, language: language ?? undefined, ...(at ? { at } : {}), ...(ghost ? { ghost } : {}), ...(dialogue ? { dialogue } : {}) });
+      const { screen, state, step, layer, language, at, ghost, dialogue, preview } = canvas.view;
+      const params = { screen: screen as string, state, step: step ?? undefined, layer: layer ?? undefined, language: language ?? undefined, ...(at ? { at } : {}), ...(ghost ? { ghost } : {}), ...(dialogue ? { dialogue } : {}) };
+      render = preview ? this.#renderer.preview(this.#project(), params, preview) : this.#renderer.render(this.#project(), params);
     } catch (error) {
       if (thrown) throw error;
       this.#reportError(error, 'rendering the screen shown on the canvas');

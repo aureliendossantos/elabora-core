@@ -1,0 +1,12 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/plan.schema.json",
+  "id": "PLAN-PLACEMENT",
+  "title": "Blocks placed by hand",
+  "businessGoal": "",
+  "audience": { "role": "", "priorKnowledge": "low" },
+  "sources": [],
+  "objectives": [{ "id": "OBJ-1", "statement": "Read a sketched screen." }],
+  "items": [{ "id": "ITEM-1", "kind": "exposition", "title": "The sketch", "objectives": ["OBJ-1"] }],
+  "spacing": [],
+  "waivers": []
+}

@@ -1,0 +1,12 @@
+{
+  "$schema": "https://elabora.studio/schemas/0.1.11/screen.schema.json",
+  "id": "page",
+  "title": "A page with a note beside it",
+  "covers": ["ITEM-1"],
+  "blocks": [
+    { "id": "page-one", "type": "text", "props": { "markdown": "A first paragraph, long enough to take a few lines of the reading column at every window." } },
+    { "id": "page-two", "type": "text", "props": { "markdown": "A second paragraph: the note placed by hand sits beside it, and moves with it when the text before it grows." } },
+    { "id": "page-note", "type": "callout", "props": { "variant": "info", "markdown": "A note in the margin." }, "place": { "x": 0.76, "y": 0, "width": 0.18 } },
+    { "id": "page-three", "type": "text", "props": { "markdown": "A third paragraph closes the page." } }
+  ]
+}

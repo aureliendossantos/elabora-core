@@ -391,6 +391,9 @@ export interface BlockBase {
   // the learner; duration (ms) of the passage to it; state: for a free object, the key of the chain's
   // saved state in the learner state (one for every block of the key).
   continuity?: ContinuityData;
+  // Placed by hand (D72): where it sits in the placement frame (placement.ts), in shares of the
+  // reference window at the width of the screen's area; its anchor is its slot and rank.
+  place?: PlaceData;
   // Key of its visibility in the learner state, when events show or hide it.
   vkey?: string;
   // Rendered template (blocks rendered by a template).
@@ -406,6 +409,14 @@ export interface BlockBase {
   defaultSlot?: string | null;
   // Blocks placed in the slots of this component instance.
   blocks?: BlockData[];
+}
+
+export interface PlaceData {
+  x: number;
+  y: number;
+  width: number;
+  height?: number;
+  z?: number;
 }
 
 export interface ContinuityData {

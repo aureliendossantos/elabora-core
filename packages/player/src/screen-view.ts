@@ -13,6 +13,7 @@ import { createObjects, glideFrom, rootSize } from './screen-objects.ts';
 import type { Departure } from './screen-objects.ts';
 import { createRooms } from './screen-rooms.ts';
 import { placeInPlace } from './screen-update.ts';
+import { createPlacement } from './placement.ts';
 import type { ObjectHost } from './object-host.ts';
 import type { Labels } from './labels.ts';
 import type { Interaction } from './scorm12.ts';
@@ -100,6 +101,10 @@ export interface ScreenViewOptions {
   // The player's sounds (D67): a question's feedback makes the interface sound of a dialogue's
   // (none in the editor's canvas).
   sounds?: Sounds | null;
+  // Blocks placed by hand (D72, placement.ts): editor, the editor's canvas (placed at any width but a
+  // phone's); afterPlacement, they were placed again (the canvas reports the layout).
+  placing?: 'editor';
+  afterPlacement?(): void;
   // The course's screens in order, with their sections, when the view holds fewer (the editor's
   // canvas and looks show one screen): the backdrop's context counts its ranks there. Default: the
   // course's screens.
@@ -226,6 +231,8 @@ export function createScreenView(options: ScreenViewOptions) {
     syncContinue();
     // Kept frames follow their blocks (D65).
     objects.place();
+    // Placed blocks follow their anchors (D72): a step shown in a page moves what comes after it.
+    placement.layout();
   }
   // Scroll presentation: the next step opens with a Continue button in the page, where the shown
   // content ends (the continue dividers of Rise); in slides the page's Next button does it. With
@@ -367,6 +374,7 @@ export function createScreenView(options: ScreenViewOptions) {
     revealed = saved != null ? reachedStep(saved) : courseState.isVisited(next) ? lastStep() : steps[0];
     courseState.saveStep(next, revealed, lastStep());
     renderScreen(next);
+    placement.sync(next);
     applySteps();
     courseState.visit(next, { allSteps: revealed === lastStep() && !(next.narration && options.timeline) });
     arrive(next);
@@ -919,6 +927,10 @@ export function createScreenView(options: ScreenViewOptions) {
     return html ? element('details', { class: 't-transcript' }, element('summary', { text: labels.transcript }), element('div', { class: 't-text', html })) : null;
   }
 
+  // ── Placed by hand (D72) ──────────────────────────────────────────────
+  // Blocks lifted out of the flow into the placement frame (placement.ts).
+  const placement = createPlacement({ app, main, course, editor: options.placing === 'editor', changed: () => options.afterPlacement?.() });
+
   // ── Free objects ──────────────────────────────────────────────────────
   // Their frames, hosts and events (screen-objects.ts).
   const objects = createObjects({ main, course, courseState, labels, framesPort, recordInteraction, syncSoon: options.syncSoon, trigger, cleanup });
@@ -1158,6 +1170,7 @@ export function createScreenView(options: ScreenViewOptions) {
       forgetThemeKeyframes();
       startTimedBlocks(next);
     }
+    placement.sync(next);
     applySteps();
     objects.settle({ screen: next.id, index: screenIndex(next.id) }, null, reducedMotion());
     updateBackdrop();
@@ -1182,6 +1195,7 @@ export function createScreenView(options: ScreenViewOptions) {
       updateBackdrop();
     },
     get timeline() { return timeline; },
+    placement,
     // A narrated screen as it is when a line starts (or ends): its step reached, its caption shown
     // (captions on); nothing fires. False without that line.
     showLine(line: string, { edge = 'start', captions = true }: { edge?: 'start' | 'end'; captions?: boolean } = {}): boolean {
@@ -1267,6 +1281,7 @@ export function createScreenView(options: ScreenViewOptions) {
       for (const property of ['--t-screen-index', '--t-section-index', '--t-section-count']) app.style.removeProperty(property);
       for (const dialog of document.querySelectorAll<HTMLDialogElement>('dialog.t-layer')) dialog.remove();
       window.removeEventListener('resize', onResize);
+      placement.dispose();
     },
     // Resolves when the fonts are loaded, the images of the screen decoded and its free objects
     // answered (or failed), and the layout has settled (reserved rooms measured again): previews,
