@@ -194,6 +194,8 @@ export interface ScreenOutline {
   warnings: number;
   // How long a learner spends on it, estimated from what it holds (@elabora/core project/duration, D50).
   seconds: number;
+  // Its blocks placed by hand (D72), when it has some.
+  placed?: number;
 }
 
 // The format of the course's files against the one this Elabora writes. outdated: read migrated in
