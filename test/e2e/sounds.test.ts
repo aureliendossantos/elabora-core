@@ -13,6 +13,8 @@ import { ROOT, copyExample as copyCourse, NETWORK_SAMPLE } from '../helpers.ts';
 import type { PlayerWindow } from '../helpers.ts';
 import { execFileSync } from 'node:child_process';
 import { FFMPEG, hasFfmpeg } from '../narration.ts';
+import { DUCK_RELEASE, duckGainAt } from '@elabora/player/sound-mix';
+import type { Duck } from '@elabora/player/sound-mix';
 
 // The player's sounds (D67) in Chrome: one context made at the learner's first gesture, the interface
 // sounds of a question's feedback, « Sons de l'interface » in « Affichage ».
@@ -110,7 +112,7 @@ const sound = (dir: string, id: string, seconds: number, extra: Record<string, u
   flac(path.join(dir, `assets/sounds/${id}.flac`), seconds, 660, louder);
   fs.writeFileSync(path.join(dir, `assets/sounds/${id}.json`), `${JSON.stringify({ license: 'CC0-1.0', duration: seconds, ...extra }, null, 2)}\n`);
 };
-type FullState = { context: string; music: boolean; ducked: boolean; musicLevel: number; playing: { sound: string; kind: string }[]; played: (Played & { part?: { offset: number; length: number }; gain?: number; fades?: { in: number; out: number }; duck?: number })[] };
+type FullState = { context: string; music: boolean; ducked: boolean; musicLevel: number; ducks: Duck[]; clock: number; playing: { sound: string; kind: string }[]; played: (Played & { part?: { offset: number; length: number }; gain?: number; fades?: { in: number; out: number }; duck?: number })[] };
 const fullState = (page: Page) => page.evaluate(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state());
 
 test('sounds of the story, ambiences and music: played after the first gesture, stopped at the end of their screen or range, « Musique et ambiances » off', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
@@ -183,20 +185,19 @@ test('a sound of the story: its part of the file, louder than recorded up to −
   edit.updatePlayer(dir, { enable: ['display'] });
   await player(dir, async (page) => {
     await page.mouse.click(5, 450);
-    // The lowest music level, read at every frame: the ring plays 1.5 s, which a test that looks once
-    // it is heard can miss (Linux CI, 6 Nov 2026).
-    await page.evaluate(() => {
-      const w = window as unknown as { lowest: number; __elabora: { sounds: { state(): FullState } } };
-      w.lowest = 1;
-      const read = () => { w.lowest = Math.min(w.lowest, w.__elabora.sounds.state().musicLevel); requestAnimationFrame(read); };
-      requestAnimationFrame(read);
-    });
     await page.evaluate(() => (window as PlayerWindow).__elabora.go('green-coffee'));
     await page.waitForFunction(() => (window as unknown as { __elabora: { sounds: { state(): FullState } } }).__elabora.sounds.state().played.some((entry) => entry.sound === 'ring' && entry.heard), null, { timeout: 30000, polling: 20 });
     // The music and the ambiences (the café here) go down while it plays (12 dB: a quarter of their
-    // level), and come back after it; a voice never does.
-    // Both read the audio context's clock, which falls behind under load (Linux CI): 30 s at most.
-    await page.waitForFunction(() => (window as unknown as { lowest: number }).lowest < 0.3, null, { timeout: 30000, polling: 20 });
+    // level), and come back after it; a voice never does. What lowers them is read as planned on the
+    // audio clock: where no sound card is, that clock advances by large steps, past the 1.5 s of the
+    // ring between two looks (GitHub's macOS runners, 6 Nov 2026).
+    const planned = await fullState(page);
+    assert.equal(planned.ducks.length, 1, JSON.stringify(planned.ducks));
+    const [duck] = planned.ducks;
+    assert.deepEqual([duck.length, duck.depth], [1.5, 12]);
+    assert.ok(duckGainAt(planned.ducks, duck.at + duck.length / 2) < 0.3, 'a quarter of their level while it plays');
+    assert.ok(duckGainAt(planned.ducks, duck.at + duck.length + DUCK_RELEASE) > 0.999, 'as they were once it is done');
+    assert.equal(planned.musicLevel, duckGainAt(planned.ducks, planned.clock), 'the level follows that plan on the audio clock');
     const state = await fullState(page);
     const ring = state.played.find((entry) => entry.sound === 'ring')!;
     assert.deepEqual([ring.part, ring.fades, ring.duck], [{ offset: 0.5, length: 1.5 }, { in: 0, out: 0.4 }, 12]);
