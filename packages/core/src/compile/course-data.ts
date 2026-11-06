@@ -15,7 +15,7 @@ import { getRegistry } from '../components/registry.ts';
 import type { Registry, ComponentDescriptor } from '../components/registry.ts';
 import { renderTemplate, defaultAssetPath } from '../components/template.ts';
 import type { ParsedTemplate } from '../components/template.ts';
-import { applyDefaults } from '../components/props.ts';
+import { applyDefaults, objectAssets } from '../components/props.ts';
 import { controlsOf, controlEntity } from '../components/controls.ts';
 import { activityEntity, readLock } from './state-model.ts';
 import { continuityDuration, continuityEntity, continuityKey } from '../project/continuity.ts';
@@ -639,8 +639,16 @@ function objectBlockProps(props: Record<string, unknown>, scope: ScreenScope): O
     textAlternativeHtml: renderMarkdown(props.textAlternative), scored: !!props.scored, weight: numberOr(props.weight, 1),
     ...(isObjectA11y(a11y) ? { a11y } : {}),
     // Words of the object: manifest strings, reworded or translated by the block.
-    strings: { ...manifestStrings(manifest), ...stringsOf(props.strings) }
+    strings: { ...manifestStrings(manifest), ...stringsOf(props.strings) },
+    ...objectFiles(manifest, props.props, scope.context.assetPath)
   };
+}
+
+// The course files a free object's settings name (x-control "asset"), by value: where the package has
+// them (a lower media quality may ship another rendition), for host.asset(value).
+function objectFiles(manifest: ObjectManifest, values: unknown, assetPath: (name: string) => string): { files?: Record<string, string> } {
+  const found = objectAssets(manifest, values);
+  return found.length ? { files: Object.fromEntries(found.map(({ value }) => [String(value), assetPath(String(value))])) } : {};
 }
 
 function resultsProps(props: Record<string, unknown>): ResultsProps {
@@ -670,7 +678,7 @@ export function compileBackdrop(project: Project, context: CompileContext, usedO
   const manifest = source.object && project.objects.get(source.object.id)?.manifest;
   if (source.object && manifest) {
     usedObjects.set(manifest.id, objectDefinition(manifest));
-    backdrop.object = { object: manifest.id, props: jsonObjectOf({ ...objectPropDefaults(manifest, context.tokens), ...(source.object.props || {}) }) };
+    backdrop.object = { object: manifest.id, props: jsonObjectOf({ ...objectPropDefaults(manifest, context.tokens), ...(source.object.props || {}) }), ...objectFiles(manifest, source.object.props, context.assetPath) };
   }
   return backdrop;
 }

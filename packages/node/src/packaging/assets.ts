@@ -4,7 +4,7 @@ import { iterateBlocks, screenOrder, resolveBlockProps, planIndex } from '@elabo
 import { interfaceSounds, soundAssets, soundUses } from '@elabora/core/sounds/sounds';
 import { getRegistry } from '@elabora/core/components/registry';
 import type { Registry } from '@elabora/core/components/registry';
-import { valuesOfKind } from '@elabora/core/components/props';
+import { objectAssets, valuesOfKind } from '@elabora/core/components/props';
 import { MEDIA_EXTENSIONS, extensionOf } from '@elabora/core/media/conformance';
 import type { MediaUse } from '@elabora/core/media/weights';
 
@@ -31,8 +31,14 @@ export function assetUses(project: Project, registry: Registry = getRegistry(pro
   for (const { screen, layer, block } of iterateBlocks(project)) {
     const descriptor = registry.get(block.type);
     if (!descriptor) continue;
-    for (const found of valuesOfKind(descriptor.schema, resolveBlockProps(block, planLookup, registry), 'asset')) ship(found.value, { screen: screen.id, ...(typeof block.id === 'string' ? { block: block.id } : {}), ...(typeof layer?.id === 'string' ? { layer: layer.id } : {}) });
+    const props = resolveBlockProps(block, planLookup, registry);
+    const use = { screen: screen.id, ...(typeof block.id === 'string' ? { block: block.id } : {}), ...(typeof layer?.id === 'string' ? { layer: layer.id } : {}) };
+    for (const found of valuesOfKind(descriptor.schema, props, 'asset')) ship(found.value, use);
+    // A free object's settings name files of the course too (x-control "asset").
+    if (descriptor.lineage.includes('free-object')) for (const found of objectAssets(project.objects.get(String(props.object))?.manifest, props.props)) ship(found.value, use);
   }
+  const backdrop = course.theme?.backdrop?.object;
+  if (backdrop) for (const found of objectAssets(project.objects.get(backdrop.id)?.manifest, backdrop.props)) ship(found.value, { screen: null });
   for (const { id } of screenOrder(project)) {
     const screen = project.screens.get(id)?.data;
     const layout = screen?.layout ? registry.get(screen.layout) : null;

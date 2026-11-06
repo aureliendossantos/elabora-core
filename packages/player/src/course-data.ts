@@ -202,7 +202,7 @@ export interface Backdrop {
   variants: string[];
   // The variant of screens that pick none (theme.backdrop.default).
   default?: string;
-  object?: { object: string; props: JsonObject };
+  object?: { object: string; props: JsonObject; files?: Record<string, string> };
 }
 
 export interface SectionData {
@@ -702,6 +702,9 @@ export interface ObjectBlockProps {
   a11y?: { description?: string; keyboard?: string };
   // Words of the object: manifest strings, reworded or translated by the block.
   strings: Record<string, string>;
+  // The course files its settings name (x-control "asset"), by value: their path in the package, which
+  // host.asset(value) reads.
+  files?: Record<string, string>;
 }
 
 export interface ResultsProps {
