@@ -216,7 +216,8 @@ test('the pictures of a module for the web: sized by the build, a scroll page\'s
     const held = await box(page);
     assert.ok(held.top > 1500, `the picture is far down the page (${held.top} px)`);
     assert.ok(held.width > 0 && Math.abs(held.height - held.width * 800 / 1200) <= 1, `its room is kept: ${held.width}×${held.height}`);
-    await page.evaluate((top) => window.scrollTo(0, top - 1000), held.top);
+    // Near it where it is now: what is higher up may have settled since (see box).
+    await page.evaluate(() => window.scrollTo(0, document.querySelector('img[data-t-src$="far.png"], img[src$="far.png"]')!.getBoundingClientRect().top + window.scrollY - 1000));
     await page.waitForFunction(() => document.querySelector<HTMLImageElement>('img[src$="far.png"]')?.complete === true);
     assert.equal(urls.filter((url) => url.endsWith('far.png')).length, 1, 'loaded once the learner is near');
     assert.deepEqual(still(await box(page)), still(held), 'nothing moves when it arrives');
