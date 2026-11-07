@@ -437,6 +437,8 @@ test('MCP: the author\'s AI reads reviews and placed comments; no tool publishes
     assert.deepEqual(cloud.map((tool) => [tool.name, tool.annotations?.readOnlyHint, tool.annotations?.openWorldHint]), [['elabora_review_list', true, true], ['elabora_review_comments', true, true]]);
     assert.ok(!tools.some((tool) => /^elabora_(publish(?!_component)|share|account|review_(create|reply|resolve|reopen|open|close|delete|link))/.test(tool.name)), tools.map((tool) => tool.name).join());
     const list = JSON.parse(((await client.callTool({ name: 'elabora_review_list', arguments: {} })).content as { text: string }[])[0].text);
+    // What the tool said, when it is not the list (a Windows runner, twice on 6 Nov 2026).
+    assert.ok(Array.isArray(list.reviews), `elabora_review_list (readOnly ${readOnly}): ${JSON.stringify(list)}`);
     assert.deepEqual([list.space, list.course, list.reviews.map((r: { id: string }) => r.id)], ['mcp-author', 'diagnostic-reseau', [review]]);
     const answer = JSON.parse(((await client.callTool({ name: 'elabora_review_comments', arguments: { state: 'open' } })).content as { text: string }[])[0].text);
     const [comment] = answer.reviews[0].comments;
