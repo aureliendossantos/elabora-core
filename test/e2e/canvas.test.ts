@@ -69,7 +69,9 @@ test('canvas: a block edited in memory shows without a reload, the free object o
   const context = createRenderContext(project);
   await withCanvas(project.root, context, async ({ host, page, errors, frames, show }) => {
     await show(project, 'lab');
-    const ready = await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.ready());
+    // Its 3D object ready: 60 s at most, as it boots in 20 s or more on GitHub's macOS runners (software
+    // rendering on shared cores, 6 Nov 2026), past ready()'s 20 s.
+    const ready = await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.ready(60000));
     assert.deepEqual(ready, { images: 0, objects: [{ block: 'lab-bench', ready: true, failed: false }] });
     assert.equal(frames(), 1);
     // The same player, templates and stylesheets as a package: the layout and theme apply.

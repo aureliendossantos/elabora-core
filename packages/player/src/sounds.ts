@@ -56,6 +56,11 @@ export interface SoundsState {
   music: boolean; // music and ambiences on for this learner
   ducked: boolean; // a voice speaks: music and ambiences lowered
   musicLevel: number; // the music and ambiences' gain under the sounds that lower them (1: as they are)
+  // What lowers them, on the audio context's clock (seconds), and that clock: musicLevel is
+  // duckGainAt(ducks, clock). A test reads the plan rather than catching it in flight, as the clock
+  // advances by large steps where no sound card is (GitHub's macOS runners, 6 Nov 2026).
+  ducks: Duck[];
+  clock: number;
   playing: { sound: string; kind: 'story' | 'ambience' | 'background' }[];
   played: PlayedSound[];
 }
@@ -465,7 +470,7 @@ export function createSounds(options: SoundsOptions) {
     get hasMusic() { return !!data?.music; },
     state(): SoundsState {
       return {
-        context: context ? context.state : 'none', interface: interfaceOn(), music: prefs.music, ducked: voices.size > 0, musicLevel: context && ducks.length ? duckGainAt(ducks, context.currentTime) : 1,
+        context: context ? context.state : 'none', interface: interfaceOn(), music: prefs.music, ducked: voices.size > 0, musicLevel: context && ducks.length ? duckGainAt(ducks, context.currentTime) : 1, ducks: ducks.map((duck) => ({ ...duck })), clock: context ? context.currentTime : 0,
         playing: [...[...shots].map((shot) => ({ sound: shot.sound, kind: 'story' as const })), ...[...loops.values()].map((loop) => ({ sound: loop.sound, kind: loop.kind }))],
         played: played.map((entry) => ({ ...entry }))
       };

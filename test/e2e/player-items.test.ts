@@ -361,7 +361,20 @@ test('the progress in parts: a segment per section, the part shown, Tab and the 
     assert.deepEqual(await box(page, '.t-item--progress'), before, 'nothing moves from one part to the next');
     // The pointer going from part to part without leaving the bar: the tooltip follows it with each
     // part's name, and never goes in between.
-    const centres = await page.$$eval('.t-part', (nodes) => nodes.map((node) => { const r = node.getBoundingClientRect(); return [r.x + r.width / 2, r.y + r.height / 2]; }));
+    const rects = await page.$$eval('.t-part', (nodes) => nodes.map((node) => { const r = node.getBoundingClientRect(); return { left: r.left, right: r.right, y: r.y + r.height / 2 }; }));
+    const centres = rects.map((r) => [(r.left + r.right) / 2, r.y]);
+    // Along the bar, every point the pointer stops at on a part: the 3 px between two parts are
+    // crossed within one move, as a hand does, never stopped on for longer than the tooltip's 120 ms
+    // of grace (which a slow runner did between two steps, GitHub's macOS, 6 Nov 2026).
+    const along = async (from: number, to: number) => {
+      const way = Math.sign(to - from);
+      for (let at = from; at !== to; at += way) {
+        const [here, next] = [rects[at]!, rects[at + way]!];
+        await page.mouse.move(way > 0 ? here.right - 2 : here.left + 2, here.y, { steps: 4 });
+        await page.mouse.move(way > 0 ? next.left + 2 : next.right - 2, next.y);
+      }
+      await page.mouse.move(centres[to]![0]!, centres[to]![1]!, { steps: 4 });
+    };
     await page.mouse.move(centres[0][0], centres[0][1]);
     await waitTip(page, 'Découvrir');
     await page.evaluate(() => {
@@ -369,8 +382,10 @@ test('the progress in parts: a segment per section, the part shown, Tab and the 
       tip.dataset.gone = '0';
       new MutationObserver(() => { if (tip.hidden) tip.dataset.gone = String(Number(tip.dataset.gone) + 1); }).observe(tip, { attributes: true, attributeFilter: ['hidden'] });
     });
+    let at = 0;
     for (const [index, title] of [[1, 'Pratiquer'], [2, 'Valider'], [1, 'Pratiquer'], [0, 'Découvrir'], [2, 'Valider']] as const) {
-      await page.mouse.move(centres[index][0], centres[index][1], { steps: 8 });
+      await along(at, index);
+      at = index;
       await waitTip(page, title);
     }
     assert.equal(await page.evaluate(() => document.getElementById('t-tip')!.dataset.gone), '0', 'the tooltip never goes from one part to the next');
