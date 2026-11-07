@@ -477,7 +477,9 @@ test('going back from the debrief: where the thread goes on, the choice taken ba
     await until(page, 'appel-marc', 'ended');
     await wrap.locator('.t-dialogue-change').nth(1).click();
     await until(page, 'appel-marc', 'choosing');
-    await page.waitForTimeout(300);
+    // The marker of the new try fades, then leaves the thread: 10 s at most, as a slow runner was still
+    // fading it 300 ms later (GitHub's macOS, 7 Nov 2026).
+    await page.waitForFunction(() => document.querySelectorAll('[data-block="appel-marc"] .t-dialogue-marker').length === 1, null, { timeout: 10000 }).catch(() => {});
     assert.deepEqual(await wrap.locator('.t-dialogue-marker').allInnerTexts(), ['Vous reprenez ici']);
   });
   // The History of a scene: opened and closed.
