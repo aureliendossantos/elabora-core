@@ -740,25 +740,38 @@ export class ProtocolRequestError extends Error {
 //   const client = new ProtocolClient((message) => port.postMessage(message));
 //   port.onmessage = ({ data }) => client.receive(data);
 //   const summary = await client.request('summary', {});
+// close(): the connection went (the module closed, the engine stopped). Every request still waiting
+// is rejected as closed, later ones at once, and an answer that comes after is ignored. It does not
+// close the engine's session: that is the transport's (the engine finishes its writes and versions).
 export class ProtocolClient {
   readonly #send: (message: RequestMessage) => void;
   readonly #pending = new Map<string, { resolve: (result: unknown) => void; reject: (error: Error) => void }>();
   readonly #listeners = new Set<(event: EngineEvent) => void>();
   #next = 0;
+  #closed: ProtocolError | null = null;
 
   constructor(send: (message: RequestMessage) => void) {
     this.#send = send;
   }
 
+  get closed(): boolean { return this.#closed !== null; }
+
   request<Type extends RequestType>(type: Type, params: RequestParams<Type>): Promise<RequestResult<Type>> {
+    if (this.#closed) return Promise.reject(new ProtocolRequestError(this.#closed));
     const id = `r${++this.#next}`;
     return new Promise((resolve, reject) => {
       this.#pending.set(id, { resolve: resolve as (result: unknown) => void, reject });
-      this.#send({ kind: 'request', id, type, params } as RequestMessage);
+      try {
+        this.#send({ kind: 'request', id, type, params } as RequestMessage);
+      } catch (error) {
+        this.#pending.delete(id);
+        reject(new ProtocolRequestError({ kind: 'closed', message: `The connection to the engine cannot send any more (${error instanceof Error ? error.message : String(error)}).` }));
+      }
     });
   }
 
   receive(message: ResponseMessage | EventMessage): void {
+    if (this.#closed) return;
     if (message.kind === 'event') {
       for (const listener of this.#listeners) listener(message.event);
       return;
@@ -768,6 +781,14 @@ export class ProtocolClient {
     this.#pending.delete(message.id);
     if (message.ok) pending.resolve(message.result);
     else pending.reject(new ProtocolRequestError(message.error));
+  }
+
+  close(message = 'The connection to the engine closed.'): void {
+    if (this.#closed) return;
+    this.#closed = { kind: 'closed', message };
+    const waiting = [...this.#pending.values()];
+    this.#pending.clear();
+    for (const { reject } of waiting) reject(new ProtocolRequestError(this.#closed));
   }
 
   subscribe(listener: (event: EngineEvent) => void): () => void {
