@@ -119,6 +119,12 @@ export class SessionVoice {
     });
   }
 
+  // The session closing: every voice job stops (the lines said so far stay), before the session's
+  // last writes and its close version.
+  close(): void {
+    for (const job of this.#voiceJobs) if (!job.controller.signal.aborted) job.controller.abort();
+  }
+
   cancelVoice(screen?: string): { cancelled: number } {
     this.#assertOpen();
     let cancelled = 0;

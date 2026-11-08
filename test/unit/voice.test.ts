@@ -403,6 +403,34 @@ test('engine: a narrated screen as the app shows it, generation stopped midway, 
   }
 });
 
+test('engine: the module closed while its lines are being said stops the voices, keeps what was said and takes the close version', { skip: NO_FFMPEG }, async () => {
+  const { openProject } = await import('@elabora/engine');
+  type EngineEvent = import('@elabora/engine').EngineEvent;
+  const dir = narrated();
+  const session = await openProject(dir, { backups: { onOpen: false, prune: false }, rescanIntervalMs: 0, media: { enabled: false } });
+  const events: EngineEvent[] = [];
+  session.subscribe(({ event }) => events.push(event));
+  try {
+    await session.setSpeakerVoice({ speaker: 'leila', voice: 'tone-a' });
+    await session.setSpeakerVoice({ speaker: 'marc', voice: 'tone-b' });
+    process.env.ELABORA_VOICE_TONE_SECONDS = '0.6';
+    const running = session.generateVoice({ screen: 'accueil' });
+    const first = Date.now();
+    while (!events.some((event) => event.type === 'changed' && event.change.files.some((file) => file.endsWith('l1.m4a'))) && Date.now() - first < 10_000) await new Promise((resolve) => setTimeout(resolve, 20));
+    // The author goes home: the session closes under the generation.
+    const closing = session.close();
+    const stopped = await running;
+    assert.equal(stopped.cancelled, true);
+    assert.ok(stopped.lines.length < 3, `${stopped.lines.length} lines said after the close`);
+    const { version } = await closing;
+    assert.ok(version, 'the close version is taken');
+    assert.ok(fs.existsSync(path.join(dir, 'assets/narration/fr/accueil/l1.m4a')), 'the line said stays');
+  } finally {
+    delete process.env.ELABORA_VOICE_TONE_SECONDS;
+    await session.close();
+  }
+});
+
 test('pocket-tts: a real voice says a line, the same take for the same seed (when the French model is installed)', { skip: !(process.env.ELABORA_VOICE_MODELS_DIR && isInstalled(BUNDLES[0])) && 'french_24l not installed (ELABORA_VOICE_MODELS_DIR)' }, async () => {
   const { pocketProvider } = await import('@elabora/node/voice/pocket/index');
   try {

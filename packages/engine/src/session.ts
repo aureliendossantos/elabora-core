@@ -303,10 +303,13 @@ export class Session {
     }
   }
 
-  // Ends the session: reconciles what changed last, closes the open AI batch, takes the close
-  // version, prunes the project's data if the session has not yet. Requests fail afterwards.
+  // Ends the session: stops the voices' jobs (what they said stays), reconciles what changed last,
+  // closes the open AI batch, takes the close version, prunes the project's data if the session has
+  // not yet. Requests fail afterwards.
   close(options: CloseOptions = {}): Promise<{ version: string | null }> {
     this.#closing ??= (async () => {
+      // The voices stop first: a line being said when the author leaves is not paid for nothing.
+      this.#voice.close();
       this.#monitor.stop();
       this.#activity.stop();
       for (const timer of [...this.#timers, this.#batchTimer, this.#versionTimer]) if (timer) clearTimeout(timer);
