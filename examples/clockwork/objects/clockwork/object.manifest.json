@@ -101,8 +101,7 @@
         "description": "The face of the clock.",
         "x-group": "Colours",
         "x-control": "color",
-        "x-object-id": "dial",
-        "x-advanced": true
+        "x-object-id": "dial"
       },
       "caseColor": {
         "type": "string",
@@ -111,8 +110,7 @@
         "title": "Case",
         "description": "The rim of the clock around the dial.",
         "x-group": "Colours",
-        "x-control": "color",
-        "x-advanced": true
+        "x-control": "color"
       },
       "markColor": {
         "type": "string",
@@ -121,8 +119,7 @@
         "title": "Counted teeth",
         "description": "The teeth that light up as they pass the meeting point.",
         "x-group": "Colours",
-        "x-control": "color",
-        "x-advanced": true
+        "x-control": "color"
       },
       "inkColor": {
         "type": "string",
@@ -132,8 +129,7 @@
         "description": "The ink of every outline, the dial's ticks and the labels' rims.",
         "x-group": "Colours",
         "x-control": "color",
-        "x-token": "color.text",
-        "x-advanced": true
+        "x-token": "color.text"
       },
       "hintColor": {
         "type": "string",
@@ -143,8 +139,7 @@
         "description": "The curved arrows that show what can be turned or rolled, until the learner does it.",
         "x-group": "Colours",
         "x-control": "color",
-        "x-token": "color.accent",
-        "x-advanced": true
+        "x-token": "color.accent"
       }
     },
     "required": [

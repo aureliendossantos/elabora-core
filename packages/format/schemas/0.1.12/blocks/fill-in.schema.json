@@ -31,7 +31,6 @@
       "items": { "type": "string", "minLength": 1, "maxLength": 60, "x-translatable": true }
     },
     "ignoreAccents": {
-      "x-advanced": true,
       "type": "boolean",
       "default": false,
       "description": "typed: accept an answer written without its accents (« eleve » for « élève »). Case, spaces around the word and the form of quotes and apostrophes never count."
@@ -39,8 +38,8 @@
     "feedback": { "$ref": "../defs.schema.json#/$defs/activityFeedback" },
     "objective": { "x-group": "scoring", "$ref": "../defs.schema.json#/$defs/planId", "description": "Plan objective measured." },
     "scored": { "x-group": "scoring", "type": "boolean", "default": true, "description": "Counts in the course score (the share of its blanks right)." },
-    "weight": { "x-group": "scoring", "x-advanced": true, "type": "number", "minimum": 0.1, "maximum": 10, "default": 1 },
+    "weight": { "x-group": "scoring", "type": "number", "minimum": 0.1, "maximum": 10, "default": 1 },
     "attempts": { "x-group": "scoring", "type": "integer", "minimum": 1, "maximum": 5, "default": 1, "description": "Tries before the answers are final." },
-    "showCorrectAnswer": { "x-group": "scoring", "x-advanced": true, "type": "boolean", "default": true, "description": "After the last try, show the right answer in each wrong blank." }
+    "showCorrectAnswer": { "x-group": "scoring", "type": "boolean", "default": true, "description": "After the last try, show the right answer in each wrong blank." }
   }
 }

@@ -102,7 +102,6 @@
     },
     "decimals": {
       "x-group": "data",
-      "x-advanced": true,
       "type": "integer",
       "minimum": 0,
       "maximum": 3,
@@ -111,7 +110,6 @@
     },
     "showDrops": {
       "x-group": "data",
-      "x-advanced": true,
       "type": "boolean",
       "default": true,
       "description": "A funnel with values: the drop from one row to the next (« −34 % ») beside the silhouette. false leaves the values alone."

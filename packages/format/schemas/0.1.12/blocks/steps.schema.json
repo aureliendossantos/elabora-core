@@ -48,7 +48,6 @@
       }
     },
     "intro": {
-      "x-advanced": true,
       "type": "object",
       "additionalProperties": false,
       "required": ["title"],
@@ -61,7 +60,6 @@
       }
     },
     "summary": {
-      "x-advanced": true,
       "type": "object",
       "additionalProperties": false,
       "required": ["title"],

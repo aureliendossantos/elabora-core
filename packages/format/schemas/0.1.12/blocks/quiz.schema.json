@@ -42,9 +42,9 @@
     },
     "objective": { "x-group": "scoring", "$ref": "../defs.schema.json#/$defs/planId", "description": "Plan objective measured. Taken from the plan question when questionRef is used." },
     "scored": { "x-group": "scoring", "type": "boolean", "default": true, "description": "Counts in the course score." },
-    "weight": { "x-group": "scoring", "x-advanced": true, "type": "number", "minimum": 0.1, "maximum": 10, "default": 1 },
+    "weight": { "x-group": "scoring", "type": "number", "minimum": 0.1, "maximum": 10, "default": 1 },
     "attempts": { "x-group": "scoring", "type": "integer", "minimum": 1, "maximum": 5, "default": 1, "description": "Tries before the answer is final." },
-    "showCorrectAnswer": { "x-group": "scoring", "x-advanced": true, "type": "boolean", "default": true, "description": "After the last try, highlight the correct options." },
-    "feedbackStyle": { "x-group": "scoring", "x-advanced": true, "enum": ["full", "compact"], "default": "full", "description": "How the feedback of the options chosen is shown under the question. full: each option's text in bold, then its feedback. compact: its feedback only, the option being marked where it is (screen readers still hear its text first): about half the room an answered question reserves on a slide, so that two questions fit side by side. With several options' feedback at once (multiple choice), each keeps its text." }
+    "showCorrectAnswer": { "x-group": "scoring", "type": "boolean", "default": true, "description": "After the last try, highlight the correct options." },
+    "feedbackStyle": { "x-group": "scoring", "enum": ["full", "compact"], "default": "full", "description": "How the feedback of the options chosen is shown under the question. full: each option's text in bold, then its feedback. compact: its feedback only, the option being marked where it is (screen readers still hear its text first): about half the room an answered question reserves on a slide, so that two questions fit side by side. With several options' feedback at once (multiple choice), each keeps its text." }
   }
 }

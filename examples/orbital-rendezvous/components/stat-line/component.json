@@ -16,7 +16,7 @@
       "unit": { "type": "string", "maxLength": 16, "x-translatable": true, "description": "Unit shown after the figure." },
       "label": { "type": "string", "minLength": 1, "maxLength": 64, "x-translatable": true, "description": "What the figure measures, in a few words." },
       "marker": { "type": "string", "pattern": "^[1-9]$", "description": "Number of the matching marker in a figure on the same screen." },
-      "accent": { "type": "string", "x-kind": "token", "x-token-prefix": "color.", "x-advanced": true, "default": "color.orbit", "description": "Colour of the figure." }
+      "accent": { "type": "string", "x-kind": "token", "x-token-prefix": "color.", "default": "color.orbit", "description": "Colour of the figure." }
     }
   },
   "fallback": [

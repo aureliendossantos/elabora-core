@@ -349,8 +349,7 @@
         "title": "Plateau",
         "description": "La couleur du plateau qui porte le réseau.",
         "x-group": "Style",
-        "x-control": "color",
-        "x-advanced": true
+        "x-control": "color"
       },
       "routerPosition": {
         "type": "array",
@@ -368,8 +367,7 @@
         "description": "La position du routeur sur le plateau.",
         "x-group": "Scène",
         "x-control": "vec3-gizmo",
-        "x-object-id": "routeur",
-        "x-advanced": true
+        "x-object-id": "routeur"
       }
     },
     "required": [
