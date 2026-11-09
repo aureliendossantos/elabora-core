@@ -75,7 +75,6 @@
     },
     "decimals": {
       "x-group": "data",
-      "x-advanced": true,
       "type": "integer",
       "minimum": 0,
       "maximum": 3,
@@ -84,7 +83,6 @@
     },
     "valueLabels": {
       "x-group": "data",
-      "x-advanced": true,
       "enum": [
         "ends",
         "end",
@@ -95,13 +93,11 @@
     },
     "yMin": {
       "x-group": "data",
-      "x-advanced": true,
       "type": "number",
       "description": "Bottom of the scale. Default 0."
     },
     "yMax": {
       "x-group": "data",
-      "x-advanced": true,
       "type": "number",
       "description": "Top of the scale. Default a little above the largest value."
     },

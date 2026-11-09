@@ -26,8 +26,7 @@
         "x-token-prefix": "color.",
         "default": "color.shape-1",
         "title": "Colour",
-        "description": "The colour of the shape (a theme token). The number stays in the ink colour: keep to the light shape colours.",
-        "x-advanced": true
+        "description": "The colour of the shape (a theme token). The number stays in the ink colour: keep to the light shape colours."
       }
     }
   },

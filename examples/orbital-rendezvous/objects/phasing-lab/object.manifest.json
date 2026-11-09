@@ -116,8 +116,7 @@
         "default": 40,
         "description": "How many times the distance between the two craft is magnified in the 3D view (the tags say the true distance)",
         "x-group": "View",
-        "x-control": "slider",
-        "x-advanced": true
+        "x-control": "slider"
       },
       "secondsPerOrbit": {
         "type": "number",

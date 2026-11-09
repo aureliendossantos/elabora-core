@@ -25,7 +25,7 @@ components/ratio-card/
     "label":  { "type": "string", "maxLength": 40, "x-translatable": true },
     "value":  { "type": "string", "maxLength": 16, "x-translatable": true },
     "body":   { "type": "string", "x-kind": "markdown", "x-translatable": true },
-    "accent": { "type": "string", "x-kind": "token", "x-token-prefix": "color.", "x-advanced": true, "default": "color.copper" }
+    "accent": { "type": "string", "x-kind": "token", "x-token-prefix": "color.", "default": "color.copper" }
   } },
   "fallback": [ { "type": "text", "props": { "markdown": "**{{label}}: {{value}}**\n\n{{body}}" } } ],
   "examples": [ { "title": "Reduction", "props": { "label": "Reduce", "value": "÷ 3.6", "body": "Ring held, the sun drives the carrier." } } ]
@@ -47,7 +47,6 @@ Mark text `x-translatable`. What authors read in the editor is translated with t
 The inspector lays the settings out from the schema:
 
 - `x-group` names a setting's section, in the course's language (`"x-group": "Figure"`). Make one section for each distinct meaning that covers two settings or more, and never two sections for the same thing. Most components need none: their settings go under « Content ». Sections are translated with the course (units `component.<id>.prop.<setting>.group`).
-- `x-advanced: true` marks a setting authors rarely change (a ratio, a colour that follows the charter). It waits under « More settings » while it has its default.
 - An enum holds values for the template (`stack`, `split`). `x-enum-labels` says how each reads in the inspector, in the course's language, on a setting or on a field of a list's items: `"arrangement": { "enum": ["stack", "split"], "x-enum-labels": { "stack": "Stacked", "split": "Page on the right" }, … }`. Its keys are values of the enum (`E_COMPONENT_SCHEMA`). A value without a label shows capitalised, so label them all. They are translated with the course (units `component.<id>.prop.<setting>.value.<value>`).
 - The editor picks each setting's control from its schema. `x-control` asks for one, as in free-object manifests: `textarea` (a few lines of text), `slider` (a number with `minimum` and `maximum`), `range` (a low and a high number: an array of two numbers whose items have `minimum` and `maximum`), `vec2` and `vec3` (an array of two or three numbers, X, Y and Z on one row), `color` (a string of `format: "color"`).
 

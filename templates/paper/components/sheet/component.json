@@ -24,8 +24,7 @@
         "x-token-prefix": "color.",
         "default": "color.paper",
         "title": "Paper",
-        "description": "The colour of the sheet (a theme token). The text stays in ink: keep to the light papers.",
-        "x-advanced": true
+        "description": "The colour of the sheet (a theme token). The text stays in ink: keep to the light papers."
       },
       "tilt": {
         "type": "string",

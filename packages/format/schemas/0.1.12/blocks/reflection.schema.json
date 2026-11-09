@@ -20,20 +20,19 @@
       "description": "The question, tied to the learner's own experience."
     },
     "maxLength": {
-      "x-advanced": true,
       "type": "integer",
       "minimum": 20,
       "maximum": 2000,
       "default": 500,
       "description": "text: the longest answer, in characters. The build counts it in the LMS's saved data as a persisted string variable."
     },
-    "rows": { "x-advanced": true, "type": "integer", "minimum": 2, "maximum": 12, "default": 4, "description": "text: the height of the field, in lines." },
+    "rows": { "type": "integer", "minimum": 2, "maximum": 12, "default": 4, "description": "text: the height of the field, in lines." },
     "model": {
       "$ref": "../defs.schema.json#/$defs/markdown",
       "x-translatable": true,
       "description": "An expert's answer, shown once the learner has saved theirs, to compare with."
     },
-    "download": { "x-advanced": true, "type": "boolean", "default": false, "description": "Offer « Mes réponses »: a text file of every reflection of the course and the learner's answers, made in the browser (nothing is sent)." },
+    "download": { "type": "boolean", "default": false, "description": "Offer « Mes réponses »: a text file of every reflection of the course and the learner's answers, made in the browser (nothing is sent)." },
     "scale": {
       "type": "object",
       "additionalProperties": false,

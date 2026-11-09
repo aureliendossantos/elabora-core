@@ -33,7 +33,7 @@
         }
       }
     },
-    "allowMultiple": { "x-advanced": true, "type": "boolean", "default": true, "description": "accordion: allow several panels open at once." },
-    "hint": { "x-advanced": true, "type": "boolean", "default": true, "description": "cards and stack: show « Turn the card over » on each card (else only its button's name says it, for screen readers)." }
+    "allowMultiple": { "type": "boolean", "default": true, "description": "accordion: allow several panels open at once." },
+    "hint": { "type": "boolean", "default": true, "description": "cards and stack: show « Turn the card over » on each card (else only its button's name says it, for screen readers)." }
   }
 }
