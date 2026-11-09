@@ -344,19 +344,19 @@ const shown = (page: Page) => page.evaluate(() => (window as PlayerWindow).__ela
 test('the progress in parts: a segment per section, the part shown, Tab and the arrows, a part\'s first screen, a part not open yet refused (Next\'s reason when it follows the screen)', { skip: NO_FFMPEG, timeout: 240000 }, async () => {
   // Scroll presentation, linear, locked until complete; three sections (a title screen first).
   await player(copyExample(), async (page) => {
-    assert.match(await page.locator('.t-item--progress[data-parts="3"] .t-parts[role="toolbar"]').getAttribute('aria-label') ?? '', /^Progression : \d+ %$/);
+    assert.match(await page.locator('.t-item--progress[data-parts="3"] .t-parts[role="toolbar"]').getAttribute('aria-label') ?? '', /^Progression\s: \d+ %$/);
     assert.deepEqual((await parts(page)).map((part) => [part.label, part.tab]), [
-      ['Partie 1 sur 3 : Découvrir, en cours, 1 page complétée sur 3', '0'],
-      ['Partie 2 sur 3 : Pratiquer, pas encore disponible', '-1'],
-      ['Partie 3 sur 3 : Valider, pas encore disponible', '-1']
+      ['Partie 1 sur 3\u00a0: Découvrir, en cours, 1 page complétée sur 3', '0'],
+      ['Partie 2 sur 3\u00a0: Pratiquer, pas encore disponible', '-1'],
+      ['Partie 3 sur 3\u00a0: Valider, pas encore disponible', '-1']
     ]);
     const before = await box(page, '.t-item--progress');
     await complete(page, ['accueil', 'chemin']);
     await go(page, 'premier-reflexe');
     assert.deepEqual(await parts(page), [
-      { label: 'Partie 1 sur 3 : Découvrir, terminée', tab: '-1', current: false, done: true, locked: false, fill: '100' },
-      { label: 'Partie 2 sur 3 : Pratiquer, en cours', tab: '0', current: true, done: false, locked: false, fill: '0' },
-      { label: 'Partie 3 sur 3 : Valider, pas encore disponible', tab: '-1', current: false, done: false, locked: true, fill: '0' }
+      { label: 'Partie 1 sur 3\u00a0: Découvrir, terminée', tab: '-1', current: false, done: true, locked: false, fill: '100' },
+      { label: 'Partie 2 sur 3\u00a0: Pratiquer, en cours', tab: '0', current: true, done: false, locked: false, fill: '0' },
+      { label: 'Partie 3 sur 3\u00a0: Valider, pas encore disponible', tab: '-1', current: false, done: false, locked: true, fill: '0' }
     ]);
     assert.deepEqual(await box(page, '.t-item--progress'), before, 'nothing moves from one part to the next');
     // The pointer going from part to part without leaving the bar: the tooltip follows it with each
@@ -394,7 +394,7 @@ test('the progress in parts: a segment per section, the part shown, Tab and the 
     // One stop for Tab, at the part shown; the arrows go from part to part with their tooltip.
     await page.focus('.t-skip');
     await page.keyboard.press('Tab');
-    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-label')), 'Partie 2 sur 3 : Pratiquer, en cours');
+    assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-label')), 'Partie 2 sur 3\u00a0: Pratiquer, en cours');
     await waitTip(page, 'Pratiquer');
     await page.keyboard.press('ArrowLeft');
     await waitTip(page, 'Découvrir');
@@ -430,7 +430,7 @@ test('the progress in parts: a segment per section, the part shown, Tab and the 
     await page.click('.t-part:nth-child(3)');
     await page.evaluate(() => (window as PlayerWindow).__elabora.ready());
     assert.equal(await shown(page), 'evaluation');
-    assert.equal((await parts(page))[1].label, 'Partie 2 sur 3 : Pratiquer, terminée');
+    assert.equal((await parts(page))[1].label, 'Partie 2 sur 3\u00a0: Pratiquer, terminée');
   });
 });
 
@@ -478,10 +478,10 @@ test('the progress in one piece for a course without parts, or with options.prog
     assert.match(await page.locator('.t-item--progress:not([data-parts]) .t-progress[role="progressbar"]').getAttribute('aria-valuetext') ?? '', /^\d+ %$/);
     const label = () => page.evaluate(() => [document.querySelector('.t-outline-label')!.textContent, document.querySelector('.t-outline-btn')!.getAttribute('aria-label'), Math.round(document.querySelector('.t-outline-btn')!.getBoundingClientRect().width)]);
     const first = await label();
-    assert.deepEqual(first.slice(0, 2), ['Découvrir', 'Sommaire : Découvrir']);
+    assert.deepEqual(first.slice(0, 2), ['Découvrir', 'Sommaire\u00a0: Découvrir']);
     await complete(page, ['accueil', 'chemin']);
     await go(page, 'premier-reflexe');
-    assert.deepEqual(await label(), ['Pratiquer', 'Sommaire : Pratiquer', first[2]]);
+    assert.deepEqual(await label(), ['Pratiquer', 'Sommaire\u00a0: Pratiquer', first[2]]);
   });
 });
 

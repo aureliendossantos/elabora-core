@@ -190,7 +190,7 @@ test('messaging in a slide: the thread, whole bubbles, the ink on the clock, cue
     assert.equal(await wrap.locator('[data-option="c"]').getAttribute('aria-disabled'), 'true');
     // The note shows its quality, in words, not only in colour; screen readers hear whose note it is.
     assert.equal(await wrap.locator('.t-dialogue-row[data-role="note"] .t-dialogue-note-head').first().innerText(), 'Choix à éviter');
-    assert.equal(await wrap.locator('.t-dialogue-row[data-role="note"] .t-sr-only').first().textContent(), 'Note du formateur : ');
+    assert.equal(await wrap.locator('.t-dialogue-row[data-role="note"] .t-sr-only').first().textContent(), 'Note du formateur\u00a0: ');
 
     // b, then the common way (ticket).
     await choose(page, 'appel-marc', 'b');
@@ -228,7 +228,7 @@ test('messaging in a slide: the thread, whole bubbles, the ink on the clock, cue
     assert.ok(lines.length >= 8, `${lines.length} bubbles`);
     const now = await wrap.locator('.t-dialogue-row[data-role="character"] .t-sr-only').evaluateAll((nodes) => nodes.map((node) => node.textContent ?? ''));
     for (const text of now) assert.ok(lines.some((row) => row.text === text), `inserted whole: ${text}`);
-    assert.ok(inserted.filter((row) => row.role === 'character').every((row) => /^(Marc|Leïla) : /.test(row.text)), 'screen readers hear « Marc : … »');
+    assert.ok(inserted.filter((row) => row.role === 'character').every((row) => /^(Marc|Leïla)\s: /.test(row.text)), 'screen readers hear « Marc : … »');
 
     // The end: endings found, the debrief; past a final decision, no going back, but starting over (a new run).
     assert.equal(await wrap.locator('.t-dialogue-count').innerText(), '1 fin découverte sur 2');

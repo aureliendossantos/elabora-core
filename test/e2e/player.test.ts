@@ -178,7 +178,7 @@ test('modal dialogs: a term in a layer shows its definition over it, and the PDF
     assert.ok(await tipOnTop(page), 'over the dialog');
     // A click keeps the definition there (the glossary's panel would open under the dialog).
     await term.click();
-    assert.match(await tip(page) ?? '', /^Routeur : Équipement/);
+    assert.match(await tip(page) ?? '', /^Routeur\s: Équipement/);
     assert.ok(await isClosed(page.locator('[data-sheet="glossary"]')));
     await page.keyboard.press('Escape');
     await page.keyboard.press('Escape');
