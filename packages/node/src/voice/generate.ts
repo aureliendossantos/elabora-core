@@ -59,7 +59,9 @@ export interface GenerateOptions {
 export interface VoiceWriter {
   project(): Project;
   setNarrationAudio(args: NarrationAudioArgs): Promise<{ audio?: string; seq: number | null; alignmentError?: string }>;
-  updateSpeakers(speakers: Speaker[]): Promise<number | null>;
+  // A speaker's voice in a language, set on course.json as it is when it is written (update_course's
+  // patch): its other fields, changed meanwhile, stay.
+  setSpeakerVoice(speaker: string, language: string, voice: NonNullable<Speaker['voices']>[string]): Promise<number | null>;
   // A line's pause before it (a dialogue's rhythm); a writer without it leaves the pauses.
   updateLinePause?(screen: string, line: string, pause: number): Promise<number | null>;
 }
@@ -71,8 +73,8 @@ export function folderWriter(dir: string, editOptions?: EditOptions): VoiceWrite
       const written = await setNarrationAudio(dir, args, editOptions);
       return { audio: written.audio, seq: written.change?.seq ?? null, ...(written.alignmentError ? { alignmentError: written.alignmentError } : {}) };
     },
-    async updateSpeakers(speakers) {
-      const written = await updateCourseSettings(dir, { speakers } as Parameters<typeof updateCourseSettings>[1], editOptions);
+    async setSpeakerVoice(speaker, language, voice) {
+      const written = await updateCourseSettings(dir, { patch: { speakers: { [speaker]: { voices: { [language]: voice } } } } }, editOptions);
       return written.change?.seq ?? null;
     },
     async updateLinePause(screen, line, pause) {
@@ -556,18 +558,12 @@ export async function setSpeakerVoice(dir: string, { speaker, voice, provider, l
   if (!speaks(info, lang)) throw new VoiceError('E_VOICE_LANGUAGE', `The voice "${info.id}" speaks ${info.language}, not ${lang}.`);
   const speakers = (Array.isArray(course.speakers) ? course.speakers : []) as Speaker[];
   if (!speakers.some((s) => s.id === speaker)) throw new VoiceError('E_VOICE_SPEAKERS', `No speaker "${speaker}" in course.json speakers (${speakers.map((s) => s.id).join(', ') || 'none'}).`);
-  let changed = false;
-  const next = speakers.map((s) => {
-    if (s.id !== speaker) return s;
-    const before = s.voices?.[lang];
-    const keep = settings ?? (before?.provider === info.provider && before?.settings ? before.settings : undefined);
-    const label = voiceProvider(info.provider).paid ? { name: (name || info.name).slice(0, 120) } : {};
-    const entry = { provider: info.provider, voice: info.id, ...label, ...(keep && Object.keys(keep).length ? { settings: keep } : {}) };
-    changed = JSON.stringify(before ?? null) !== JSON.stringify(entry);
-    return { ...s, voices: { ...(s.voices ?? {}), [lang]: entry } };
-  });
-  if (!changed) return null;
-  return writer.updateSpeakers(next);
+  const before = speakers.find((s) => s.id === speaker)!.voices?.[lang];
+  const keep = settings ?? (before?.provider === info.provider && before?.settings ? before.settings : undefined);
+  const label = voiceProvider(info.provider).paid ? { name: (name || info.name).slice(0, 120) } : {};
+  const entry = { provider: info.provider, voice: info.id, ...label, ...(keep && Object.keys(keep).length ? { settings: keep } : {}) };
+  if (JSON.stringify(before ?? null) === JSON.stringify(entry)) return null;
+  return writer.setSpeakerVoice(speaker, lang, entry);
 }
 
 export type { NarrationLineInfo };

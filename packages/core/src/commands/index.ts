@@ -6,7 +6,7 @@ export { addBlock, updateBlock, removeBlock, moveBlock, duplicateBlock, detachBl
 export { placeBlock, arrangeScreen, type PlaceBlockArgs, type ArrangeScreenArgs } from './placement.ts';
 export { upsertLayer, removeLayer, upsertEvent, removeEvent, upsertVariable, removeVariable } from './layers-events-variables.ts';
 export type { UpsertLayerArgs, UpsertEventArgs } from './layers-events-variables.ts';
-export { updateCourseSettings, ignoreFindings, COURSE_FIELDS, type UpdateCourseArgs, type IgnoreFindingsArgs } from './course.ts';
+export { updateCourseSettings, ignoreFindings, COURSE_FIELDS, type UpdateCourseArgs, type SpeakerPatch, type IgnoreFindingsArgs } from './course.ts';
 export { createObject, writeObjectFile, writeDesignFile, OBJECT_FILES, type ObjectFile, type ObjectTemplates, type CreateObjectArgs, type WriteObjectFileArgs } from './objects-design.ts';
 export {
   writePlan, setPlanText, setPlanVoiceover, revertPlanChange, createPlanVersion, approvePlan, recordPlanSend, setPlanNote,

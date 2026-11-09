@@ -151,7 +151,7 @@ export class SessionVoice {
         return { audio: typeof written.result.audio === 'string' ? written.result.audio : undefined, seq: written.change?.seq ?? null,
           ...(typeof written.result.alignmentError === 'string' ? { alignmentError: written.result.alignmentError } : {}) };
       },
-      updateSpeakers: async (speakers) => (await this.#run('update_course', { speakers } as CommandArgs['update_course'], author)).change?.seq ?? null,
+      setSpeakerVoice: async (speaker, language, voice) => (await this.#run('update_course', { patch: { speakers: { [speaker]: { voices: { [language]: voice } } } } }, author)).change?.seq ?? null,
       updateLinePause: async (screen, line, pause) => (await this.#run('update_narration_line', { screen, line, pauseBefore: pause } as CommandArgs['update_narration_line'], author)).change?.seq ?? null
     };
   }

@@ -113,3 +113,44 @@ test('a layer retitled: its blocks edited meanwhile stay', async () => {
   found = session.project.screens.get('chemin')!.data.layers!.find((each) => each.id === layer)!;
   assert.equal('presentation' in found, false);
 });
+
+// The theme's colours and the speakers, changed one by one too: two colours picked close together
+// both stay; a character's colour and its voice, changed close together, both stay.
+test('two theme colours changed close together: both stay, null removes one', async () => {
+  const session = await open();
+  await session.run('update_course', { patch: { 'theme.tokens': { 'color.accent': '#aa0000' } } });
+  await session.run('update_course', { patch: { 'theme.tokens': { 'color.primary': '#0000aa' } } });
+  const theme = session.project.course!.theme as { tokens?: Record<string, unknown> } & Record<string, unknown>;
+  assert.equal(theme.tokens?.['color.accent'], '#aa0000');
+  assert.equal(theme.tokens?.['color.primary'], '#0000aa');
+  const before = Object.keys(theme).filter((key) => key !== 'tokens');
+  await session.run('update_course', { patch: { 'theme.tokens': { 'color.accent': null } } });
+  const after = session.project.course!.theme as { tokens?: Record<string, unknown> } & Record<string, unknown>;
+  assert.equal('color.accent' in (after.tokens ?? {}), false);
+  assert.deepEqual(Object.keys(after).filter((key) => key !== 'tokens'), before);
+  const wrong = await refusal(session.run('update_course', { patch: { 'title.x': { a: 1 } } as never }));
+  assert.match(wrong?.message ?? '', /not a setting changed key by key/);
+});
+
+test('speakers changed one by one: a colour and a voice close together both stay', async () => {
+  const session = await open();
+  await session.run('update_course', { speakers: [{ id: 'marc', name: 'Marc', voices: { fr: { provider: 'pocket-tts', voice: 'jean' } } }] });
+  const first = session.project.course!.speakers![0]!;
+  await session.run('update_course', { patch: { speakers: { [first.id]: { color: 'color.accent' } } } });
+  await session.run('update_course', { patch: { speakers: { [first.id]: { voices: { de: { provider: 'pocket-tts', voice: 'anna' } } } } } });
+  let speaker = session.project.course!.speakers!.find((each) => each.id === first.id)!;
+  assert.equal(speaker.color, 'color.accent');
+  assert.equal(speaker.name, first.name);
+  assert.deepEqual(speaker.voices?.de, { provider: 'pocket-tts', voice: 'anna' });
+  for (const [language, voice] of Object.entries(first.voices ?? {})) assert.deepEqual(speaker.voices?.[language], voice);
+  await session.run('update_course', { patch: { speakers: { [first.id]: { color: null, voices: { de: null } } } } });
+  speaker = session.project.course!.speakers!.find((each) => each.id === first.id)!;
+  assert.equal('color' in speaker, false);
+  assert.equal('de' in (speaker.voices ?? {}), false);
+  // Two new speakers asked close together: both join, at the end.
+  await session.run('update_course', { patch: { speakers: { lea: { name: 'Léa' } } } });
+  await session.run('update_course', { patch: { speakers: { paul: { name: 'Paul' } } } });
+  assert.deepEqual(session.project.course!.speakers!.slice(-2).map((each) => each.id), ['lea', 'paul']);
+  assert.match((await refusal(session.run('update_course', { patch: { speakers: { zoe: { color: 'color.accent' } } } })))?.message ?? '', /needs its name/);
+  assert.match((await refusal(session.run('update_course', { patch: { speakers: { [first.id]: { name: null } } } })))?.message ?? '', /needs its name/);
+});
