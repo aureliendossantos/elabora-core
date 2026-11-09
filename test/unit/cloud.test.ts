@@ -10,6 +10,8 @@ import { narrationWords } from '@elabora/core/narration/words';
 import { cloudUrl, scrubSecrets, resolveCredential, verifySignIn, chooseHandle, publishCourse, createReview, resolveComments, defaultDevice, CloudError, accountStatus, readSession, setSessionStore, signOut,
   accountSessions, revokeSession, updateAccount, requestDeletionCode, deleteAccount, unpublish, renameReview, handleAvailable, revokeAiKey, setReviewNote } from '@elabora/node/cloud/index';
 import type { CloudReview, CommentsAnswer, ResolvedComments, SessionRecord } from '@elabora/node/cloud/index';
+import { guard } from '@elabora/node/cloud/account';
+import { updateSessionHandle } from '@elabora/node/cloud/credentials';
 import { createMcpServer } from '@elabora/cli/mcp';
 import { ROOT, BILINGUAL, copyExample, readJSON, writeJSON, NETWORK_SAMPLE } from '../helpers.ts';
 import { FakeCloud, FAKE_CODE } from '../cloud-fake.ts';
@@ -107,6 +109,33 @@ test('account login: the code is read from the input, the session kept in a 0600
   assert.equal(logout.status, 0, logout.stderr);
   assert.ok(!fs.existsSync(file), 'the session file is forgotten');
   assert.ok(!fake.tokens.has(kept.token), 'the session ended on the server');
+});
+
+// A request made with a session the author has since left (I07): its 401 or its answer touches only
+// that session, never the one kept now.
+test('an old session\'s refusal or answer leaves the session signed in since as it is', async () => {
+  const held: { kept: SessionRecord | null } = { kept: null };
+  setSessionStore({ read: () => held.kept, write: (record) => { held.kept = record; }, remove: () => { const had = held.kept !== null; held.kept = null; return had; } });
+  try {
+    await verifySignIn('old@example.org', FAKE_CODE, { device: 'Elabora · macOS' });
+    const old = resolveCredential()!;
+    await verifySignIn('new@example.org', FAKE_CODE, { device: 'Elabora · macOS' });
+    const now = held.kept!.token;
+    assert.notEqual(now, old.token);
+    // The old session's request comes back refused: the new session stays, and is not said ended.
+    await assert.rejects(guard(old, async () => { throw new CloudError(401, 'unauthorized', 'gone'); }), (error: CloudError) => error.code !== 'session-ended');
+    assert.equal(held.kept?.token, now);
+    // Its answer names its own account's address: written only to its own session.
+    updateSessionHandle('old-author', old.token);
+    assert.equal(held.kept?.handle ?? null, null);
+    updateSessionHandle('new-author', now);
+    assert.equal(held.kept?.handle, 'new-author');
+    // The current session refused: forgotten and said ended, as before.
+    await assert.rejects(guard(resolveCredential()!, async () => { throw new CloudError(401, 'unauthorized', 'gone'); }), (error: CloudError) => error.code === 'session-ended');
+    assert.equal(held.kept, null);
+  } finally {
+    setSessionStore(null);
+  }
 });
 
 test('setSessionStore: the session lives where the app keeps it, never in the file; read, updated and forgotten there', async () => {

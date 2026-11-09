@@ -1,6 +1,6 @@
 import os from 'node:os';
 import { CloudClient, CloudError, cloudUrl, segment } from './client.ts';
-import { readAiKey, removeAiKey, removeInvitation, removeSession, removeSessionFile, requireCredential, statusOf, updateSessionHandle, writeAiKey, writeInvitation, writeSession, isInvitationKey, isSessionToken, isSpaceName } from './credentials.ts';
+import { readAiKey, readSession, removeAiKey, removeInvitation, removeSession, removeSessionFile, requireCredential, statusOf, updateSessionHandle, writeAiKey, writeInvitation, writeSession, isInvitationKey, isSessionToken, isSpaceName } from './credentials.ts';
 import type { Credential, CredentialStatus } from './credentials.ts';
 import type { AccountErased, AccountLimits, AccountSession, AccountUsage, CloudAccount, CloudAiKey, CloudPublication, CloudReview } from './types.ts';
 
@@ -81,7 +81,7 @@ export async function connect(api: string = cloudUrl(), { readOnly = false }: { 
     // A handle chosen elsewhere (the app, another computer) since this session was kept.
     const { account } = await guard(credential, () => client.request<{ account: CloudAccount }>('GET', '/v1/account'));
     space = account.handle;
-    if (space && keptSession(credential)) updateSessionHandle(space);
+    if (space && keptSession(credential)) updateSessionHandle(space, credential.token);
   }
   if (!space) throw new CloudError(0, 'E_CLOUD_HANDLE_REQUIRED', 'Your account has no address yet: choose it once with elabora account handle <name> (it becomes https://<name>.elabora.page/ and never changes).');
   return { client, credential, space };
@@ -97,11 +97,16 @@ export async function guard<T>(credential: Credential, call: () => Promise<T>): 
     if (error instanceof CloudError && error.status === 403 && error.code === 'read-only-key') throw sessionRequired(credential);
     if (error instanceof CloudError && error.status === 401 && error.code === 'unauthorized') {
       if (keptSession(credential)) {
-        removeSession();
-        throw new CloudError(401, 'session-ended', 'Your session with Elabora\'s hosting has ended (signed out elsewhere, expired or the account closed): elabora account login.');
+        // Only the session that was refused is forgotten (I07); one signed in since stays.
+        const current = readSession()?.token;
+        if (current === undefined || current === credential.token) {
+          removeSession(credential.token);
+          throw new CloudError(401, 'session-ended', 'Your session with Elabora\'s hosting has ended (signed out elsewhere, expired or the account closed): elabora account login.');
+        }
+        throw new CloudError(401, 'session-replaced', 'This was asked with a session you have since left: ask again.');
       }
       if (credential.kind === 'ai') {
-        if (credential.source === 'ai-key-file') removeAiKey();
+        if (credential.source === 'ai-key-file') removeAiKey(credential.token);
         throw new CloudError(401, 'ai-key-ended', 'The hosting refused the read-only AI key (revoked, or the account closed): the author creates a new one in Elabora\'s settings, or with elabora account ai-key create.');
       }
       throw new CloudError(401, 'unauthorized', `The hosting refused your ${credential.kind === 'invitation' ? 'invitation key (revoked?)' : 'token'}: elabora account logout forgets it.`);
@@ -132,7 +137,7 @@ export async function accountStatus(api: string = cloudUrl()): Promise<AccountVi
   const client = new CloudClient(api, credential.token);
   if (credential.kind === 'session') {
     const view = await guard(credential, () => client.request<{ account: CloudAccount; limits: AccountLimits; usage: AccountUsage; next: 'choose-handle' | null }>('GET', '/v1/account'));
-    if (view.account.handle && view.account.handle !== credential.space && keptSession(credential)) updateSessionHandle(view.account.handle);
+    if (view.account.handle && view.account.handle !== credential.space && keptSession(credential)) updateSessionHandle(view.account.handle, credential.token);
     return { credential: statusOf({ ...credential, space: view.account.handle }), space: view.account.handle, account: view.account, limits: view.limits, usage: view.usage, next: view.next, publications: null, reviews: null };
   }
   if (credential.kind === 'ai') {
@@ -166,7 +171,7 @@ const accountCall = <T>(credential: Credential, method: string, path: string, js
 export async function chooseHandle(handle: string, { displayName, api = cloudUrl() }: { displayName?: string; api?: string } = {}): Promise<CloudAccount> {
   const credential = sessionCredential(api);
   const { account } = await accountCall<{ account: CloudAccount }>(credential, 'PATCH', '/v1/account', { handle, ...(displayName !== undefined ? { displayName } : {}) });
-  if (account.handle && keptSession(credential)) updateSessionHandle(account.handle);
+  if (account.handle && keptSession(credential)) updateSessionHandle(account.handle, credential.token);
   return account;
 }
 
@@ -189,7 +194,7 @@ export async function revokeSession(id: string, api: string = cloudUrl()): Promi
   if (!/^ses_[0-9a-f]{20}$/.test(id)) throw new CloudError(0, 'E_CLOUD_SESSION_ID', `${JSON.stringify(id)} is not a session's id (ses_ and 20 hex digits).`);
   const credential = sessionCredential(api);
   const answer = await accountCall<{ revoked: boolean; session: string; current: boolean }>(credential, 'DELETE', `/v1/account/sessions/${segment(id)}`);
-  const forgotten = answer.current && keptSession(credential) ? removeSession() : false;
+  const forgotten = answer.current && keptSession(credential) ? removeSession(credential.token) : false;
   return { ...answer, forgotten };
 }
 
@@ -205,7 +210,7 @@ export async function requestDeletionCode(api: string = cloudUrl()): Promise<{ s
 export async function deleteAccount(confirm: string, code: string, api: string = cloudUrl()): Promise<AccountErased & { forgotten: boolean }> {
   const credential = sessionCredential(api);
   const erased = await accountCall<AccountErased>(credential, 'DELETE', '/v1/account', { confirm, code: code.replace(/[\s-]/g, '') });
-  return { ...erased, forgotten: keptSession(credential) ? removeSession() : false };
+  return { ...erased, forgotten: keptSession(credential) ? removeSession(credential.token) : false };
 }
 
 // Ends the session on the server, then forgets it here; an invitation key is only forgotten here
@@ -223,7 +228,7 @@ export async function signOut(api: string = cloudUrl()): Promise<{ kind: Credent
       } else endedOnServer = true; // already over
     }
   }
-  const forgotten = keptSession(credential) ? removeSession() : credential.source === 'invitation-file' ? removeInvitation() : credential.source === 'ai-key-file' ? removeAiKey() : false;
+  const forgotten = keptSession(credential) ? removeSession(credential.token) : credential.source === 'invitation-file' ? removeInvitation() : credential.source === 'ai-key-file' ? removeAiKey(credential.token) : false;
   return { kind: credential.kind, source: credential.source, endedOnServer, forgotten };
 }
 

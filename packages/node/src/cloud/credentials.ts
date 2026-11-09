@@ -155,9 +155,11 @@ export function writeSession(record: Omit<SessionRecord, 'format'>): string | nu
   return sessionInFile() ? sessionFile() : null;
 }
 
-export function updateSessionHandle(handle: string): void {
+// token: the session the answer came for (I07): an answer for a session the author has since left
+// changes nothing of the one kept now.
+export function updateSessionHandle(handle: string, token?: string): void {
   const session = readSession();
-  if (session) sessionStore.write({ ...session, handle });
+  if (session && (token === undefined || session.token === token)) sessionStore.write({ ...session, handle });
 }
 
 export function writeInvitation(record: Omit<InvitationRecord, 'format'>): string {
@@ -172,11 +174,13 @@ export function writeAiKey(record: Omit<AiKeyRecord, 'format'>): string {
   return writeSecretFile(aiKeyFile(), { format: AI_KEY_FORMAT, ...record });
 }
 
-export const removeSession = (): boolean => sessionStore.remove();
+// token: forget the session only while it is still the one that token names (I07): a refusal for a
+// session left since leaves the one signed in after it.
+export const removeSession = (token?: string): boolean => (token === undefined || readSession()?.token === token ? sessionStore.remove() : false);
 // The session file itself, whatever the store: what createAiKey's forgetSessionFile removes.
 export const removeSessionFile = (): boolean => remove(sessionFile());
 export const removeInvitation = (): boolean => remove(invitationFile());
-export const removeAiKey = (): boolean => remove(aiKeyFile());
+export const removeAiKey = (key?: string): boolean => (key === undefined || readAiKey()?.key === key ? remove(aiKeyFile()) : false);
 function remove(file: string): boolean {
   try { fs.rmSync(file); return true; } catch { return false; }
 }
