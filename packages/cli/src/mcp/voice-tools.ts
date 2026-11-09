@@ -1,6 +1,6 @@
 import { listVoices, voiceProvider, voiceProviders, generateNarration, estimateNarration, setSpeakerVoice, voiceTakes } from '@elabora/node/voice/index';
 import type { VoiceEstimate, VoiceQuery } from '@elabora/node/voice/index';
-import { defineTool, errorResult, objectSchema, SLUG, textResult } from './tool.ts';
+import { defineTool, errorResult, LINE_ID, objectSchema, SLUG, textResult } from './tool.ts';
 
 // Generated narration (docs/decisions.md D25, D29): the voices, a speaker's voice, the lines said by it.
 // The model of a language's local voices is downloaded once per computer, on first use. ElevenLabs
@@ -44,7 +44,7 @@ export const generateVoiceTool = defineTool({
   description: 'Generates the narration lines of a screen with their speaker\'s voice (course.json speakers[].voices[<lang>]): by default the lines whose audio is missing or out of date (W_NARRATION_AUDIO_MISSING, W_NARRATION_AUDIO_STALE); lines: those; all: every line. Each generation is a new take, written to assets/narration/<lang>/<screen>/<line>.m4a with its sidecar (generated voice, take, credit for the module credits): one undoable change per line. The text said is the line\'s, after the pronunciations of the line and of the course (course.json pronunciations { "<lang>": [{ text, say }] }: add one when a word is said wrong, then generate again). voice: set that voice for the speaker of the lines first. take: put back an earlier take of one line (elabora_voice_takes). Local voices are free: the first use of a language downloads its model once (fr 354 MB, en 126 MB); a line takes a few seconds. ElevenLabs voices spend the author\'s monthly quota, which Elabora always says as a share of it, never in credits: under 1 % of the quota (a line is about 0.07 % of a Starter plan; a screen of a few lines is under it, a long script is not: elabora_voice_estimate says) generate without asking. From 1 % the call spends nothing and returns needsApproval with the estimate: tell the author « ~N % of your monthly ElevenLabs quota » (estimate.percent), ASK them, and only with their agreement call again with approvedPercent: N. A generation stops by itself if the service charges far more than allowed (overBudget). A line out of date gets back an earlier take of the same text, voice and delivery at no cost. dialogue: lines of several ElevenLabs speakers that follow each other in a step are said as one exchange (turns, interruptions written with « — »), then cut into lines, the pauses between them taken from it. Stage directions in square brackets in a line ([chuchote], [rit], [un temps]) are played by Eleven v4 and never shown nor counted as words.',
   inputSchema: objectSchema({
     screen: SLUG,
-    lines: { type: 'array', items: SLUG, description: 'Line ids (narration.lines[].id). Default: those missing or out of date.' },
+    lines: { type: 'array', items: LINE_ID, description: 'Line ids, as elabora_voice_estimate lists them (narration.lines[].id, a dialogue\'s line, <node>.<option> for an answer the learner\'s voice says). Default: those missing or out of date.' },
     all: { type: 'boolean', description: 'Every line of the screen, a new take each.' },
     voice: { type: 'string', description: 'Set this voice (elabora_voice_list) for the speaker of the lines first.' },
     language: LANGUAGE,
@@ -74,7 +74,7 @@ export const estimateVoiceTool = defineTool({
   description: 'What elabora_voice_generate would make and cost, spending nothing: per line its voice, characters and credits (about, and at most: the list price), the lines a local voice makes free, those given back an earlier take, and the runs said as one exchange (dialogue); in total, the share of the author\'s monthly ElevenLabs quota (percent) and whether that needs their approval (needsApproval: from 1 %). Speak to the author in shares of their quota, never in credits; under 1 % generate without asking.',
   inputSchema: objectSchema({
     screen: SLUG,
-    lines: { type: 'array', items: SLUG },
+    lines: { type: 'array', items: LINE_ID },
     all: { type: 'boolean' },
     dialogue: { type: 'boolean' },
     language: LANGUAGE
@@ -125,7 +125,7 @@ export const voiceTakesTool = defineTool({
   name: 'elabora_voice_takes',
   readOnly: true,
   description: 'The takes of a generated narration line kept on this computer (never in the course): which one is the line\'s audio (current), which can be put back with elabora_voice_generate { take } (usable: same text, voice and delivery).',
-  inputSchema: objectSchema({ screen: SLUG, line: SLUG, language: LANGUAGE }, ['screen', 'line']),
+  inputSchema: objectSchema({ screen: SLUG, line: LINE_ID, language: LANGUAGE }, ['screen', 'line']),
   handler(args, { root }) {
     try {
       const result = voiceTakes(root, { screen: args.screen, line: args.line, ...(args.language ? { language: args.language } : {}) });

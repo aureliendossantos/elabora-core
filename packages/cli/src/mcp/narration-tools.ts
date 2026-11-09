@@ -8,7 +8,7 @@ import { addNarrationLineFromAudio, setNarrationTextFromAudio, transcribeNarrati
 import { timelineReport, formatTimeline, narratedScreens, formatNarratedScreens } from '@elabora/core/narration/report';
 import { setBlockTiming } from '@elabora/node/edit';
 import type { MomentPatch } from '@elabora/core/commands/index';
-import { defineTool, editResult, errorResult, formatValue, objectSchema, SLUG, textResult } from './tool.ts';
+import { defineTool, editResult, errorResult, formatValue, LINE_ID, objectSchema, SLUG, textResult } from './tool.ts';
 
 // Narration (docs/decisions.md D24): the timeline of a narrated screen as text, a recorded voice for
 // a line, and lines made from recordings (D46). The script itself is the screen's narration.lines,
@@ -39,7 +39,7 @@ export const importNarrationTool = defineTool({
   description: 'A recorded human voice for one narration line: the file (an absolute path; any audio ffmpeg reads) is converted to M4A (AAC, mono), its silence at both ends trimmed, and written to assets/narration/<language>/<screen>/<line>.m4a with its sidecar (the hash of the text it says, its length, provider "recording"), in one undoable change. Answers W_NARRATION_AUDIO_MISSING and W_NARRATION_AUDIO_STALE. Never write these files by hand. A generated voice comes from the voice tools.',
   inputSchema: objectSchema({
     screen: SLUG,
-    line: { ...SLUG, description: 'The line (narration.lines[].id).' },
+    line: { ...LINE_ID, description: 'The line (narration.lines[].id, or <node>.<option> for an answer the learner\'s voice says).' },
     file: { type: 'string', description: 'Absolute path of the recording.' },
     language: LANGUAGE,
     keepSilence: { type: 'boolean', description: 'Keep the silence at both ends (default: trimmed to 0.1 s; pauses between lines come from pauseBefore).' }
@@ -54,7 +54,7 @@ export const alignNarrationTool = defineTool({
   description: 'When each word of the voiced lines is said (forced alignment, run on this computer): their words and times are written into the lines\' sidecars, one undoable change per line, and word anchors ({ "line": "l2", "word": "imprimante" }) take their real times instead of times estimated from the text (I_TIMELINE_WORDS_ESTIMATED). screen: one screen (default: every narrated screen); lines: some of its lines; force: lines already timed too. The first use of a language downloads its word aligner once (fr 355 MB, en 95 MB); afterwards lines generated or imported are timed at once. doubtful lists words the voice may have swallowed (a low score): listen to the line and make another take (elabora_voice_generate with lines).',
   inputSchema: objectSchema({
     screen: { ...SLUG, description: 'A narrated screen (default: every narrated screen).' },
-    lines: { type: 'array', items: SLUG, description: 'Line ids of the screen (narration.lines[].id).' },
+    lines: { type: 'array', items: LINE_ID, description: 'Line ids of the screen, as elabora_voice_estimate lists them.' },
     language: LANGUAGE,
     force: { type: 'boolean', description: 'Time lines already timed by the same aligner again.' }
   }),
@@ -146,7 +146,7 @@ export const textFromAudioTool = defineTool({
   description: `A recorded line whose recording says something else than its text (the actor changed words, the script was rewritten after the recording): the line's text becomes what the recording says, in one undoable change; the recording stays, up to date, its words timed again; anchors follow their words (those whose words are gone are listed as lost), and the line's translations become « changed since ». preview: only what the recording says beside the text now, written nowhere (show both to the author when the change is theirs to decide). text: the text checked, to write instead of transcribing again. Refused for a line said by a generated voice (it says its text). ${TRANSCRIBED}`,
   inputSchema: objectSchema({
     screen: SLUG,
-    line: { ...SLUG, description: 'The line (narration.lines[].id).' },
+    line: { ...LINE_ID, description: 'The line (narration.lines[].id, or <node>.<option> for an answer the learner\'s voice says).' },
     preview: { type: 'boolean', description: 'Say what the recording says, beside the text now, without writing.' },
     text: { type: 'string', description: 'The text to write (what the recording says, checked).' },
     language: LANGUAGE,
