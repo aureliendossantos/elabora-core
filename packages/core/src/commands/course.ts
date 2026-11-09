@@ -2,11 +2,16 @@ import type { Course } from '../project/model.ts';
 import { CommandError, Draft, type CommandContext, type CommandOutput } from './context.ts';
 import { codeInfo } from '../diagnostics/codes.ts';
 import { keySubject } from '../diagnostics/index.ts';
+import { isRecord } from '../util/values.ts';
 
 // Settings of course.json that update_course replaces (sections included: reorders become moves).
 export const COURSE_FIELDS = ['title', 'description', 'version', 'durationMinutes', 'theme', 'presentation', 'navigation', 'completion', 'tracking', 'delivery', 'ui', 'sections', 'speakers', 'pronunciations', 'narration', 'sounds'] as const;
 // A field left out stays as it is; null removes it (the last pronunciation, the sounds), never one a course needs.
-export type UpdateCourseArgs = { [K in (typeof COURSE_FIELDS)[number]]?: Course[K] | null };
+export type UpdateCourseArgs = { [K in (typeof COURSE_FIELDS)[number]]?: Course[K] | null } & {
+  // Settings of delivery changed one by one, on course.json as it is when the change is written (null
+  // removes one): two settings changed in turn both stay, whatever the window had read before.
+  deliveryPatch?: Record<string, unknown>;
+};
 const REQUIRED: ReadonlySet<string> = new Set(['title', 'version', 'sections']);
 
 export function updateCourseSettings(context: CommandContext, fields: UpdateCourseArgs): CommandOutput<Record<string, never>> {
@@ -19,6 +24,16 @@ export function updateCourseSettings(context: CommandContext, fields: UpdateCour
     if (value !== null) record[key] = value;
     else if (REQUIRED.has(key)) throw new CommandError(`${key}: a course needs it, so it cannot be removed (null).`);
     else delete record[key];
+  }
+  if (fields.deliveryPatch !== undefined) {
+    if (!isRecord(fields.deliveryPatch)) throw new CommandError('deliveryPatch: the settings of delivery to change, by name (null removes one).');
+    const delivery: Record<string, unknown> = isRecord(record.delivery) ? { ...record.delivery } : {};
+    for (const [key, value] of Object.entries(fields.deliveryPatch)) {
+      if (value === null) delete delivery[key];
+      else delivery[key] = value;
+    }
+    if (Object.keys(delivery).length) record.delivery = delivery;
+    else delete record.delivery;
   }
   draft.writeJson('course.json', course);
   return { files: draft.files(), result: {} };

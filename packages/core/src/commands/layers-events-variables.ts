@@ -22,12 +22,31 @@ function editScreen(context: CommandContext, screenId: string, change: (screen: 
 // Without an id, the layer or event is new and gets a free one (<screen>-layer, <screen>-event,
 // then -2, -3…), returned as layer or event. The blocks of a layer without an id get one too
 // (<layer>-<type>).
+// A layer written whole (with its blocks), or an existing layer's fields changed one by one (without
+// blocks: its title, its presentation…, null removing one), on the layer as it is when the change is
+// written: its blocks and its narration, edited meanwhile, stay as they are.
+type LayerFields = { [K in keyof Omit<ScreenLayer, 'id' | 'blocks'>]?: ScreenLayer[K] | null };
 export interface UpsertLayerArgs {
   screen: string;
-  layer: Omit<ScreenLayer, 'id' | 'blocks'> & { id?: string; blocks: (Omit<Block, 'id'> & { id?: string })[] };
+  layer: (Omit<ScreenLayer, 'id' | 'blocks'> & { id?: string; blocks: (Omit<Block, 'id'> & { id?: string })[] }) | (LayerFields & { id: string; blocks?: undefined });
 }
 
 export function upsertLayer(context: CommandContext, { screen, layer }: UpsertLayerArgs): CommandOutput<{ layer: string }> {
+  if (layer.blocks === undefined) {
+    if (!layer.id) throw new CommandError('upsert_layer: a new layer comes with its blocks; without them, name the layer to change (id).');
+    const out = editScreen(context, screen, (s, file) => {
+      const list = listIn<ScreenLayer>(s, 'layers', file, { create: true });
+      const found = list.find((candidate) => isRecord(candidate) && candidate.id === layer.id);
+      if (!found) throw new CommandError(`No layer "${layer.id}" on screen "${screen}"`);
+      const record = found as Record<string, unknown>;
+      for (const [key, value] of Object.entries(layer)) {
+        if (key === 'id' || key === 'blocks') continue;
+        if (value === null) delete record[key];
+        else if (value !== undefined) record[key] = value;
+      }
+    });
+    return { ...out, result: { layer: layer.id } };
+  }
   const ids = allIds(context.project());
   const id = layer.id || freshId(ids, `${screen}-layer`);
   const blocks = (Array.isArray(layer.blocks) ? layer.blocks : []).map((block) => (isRecord(block) && !block.id ? { ...block, id: freshId(ids, `${id}-${block.type}`) } : block));
