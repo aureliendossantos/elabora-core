@@ -133,18 +133,20 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
     node.before(stand);
     traces.set(id, stand);
   }
-  // Stand-ins of blocks no longer lifted, or rendered anew, go; one whose block moved follows it.
+  // Stand-ins of blocks no longer lifted, or rendered anew, go; one whose block moved follows it. A block
+  // of the flow sized by hand (a handle with the key: a place lift) keeps its room too, until let go.
   function keepTraces() {
     for (const [id, stand] of traces) {
       const node = nodeOf(id);
       const lift = lifts.get(id);
-      if (!node || !lift || 'place' in lift) { stand.remove(); traces.delete(id); continue; }
+      if (!node || !lift) { stand.remove(); traces.delete(id); continue; }
       if (node.previousElementSibling !== stand) node.before(stand);
     }
   }
   function unmark(node: HTMLElement) {
     node.removeAttribute('data-t-place');
     node.removeAttribute('data-t-lifted');
+    node.removeAttribute('data-t-dragged');
     node.removeAttribute('data-t-place-height');
     for (const name of ['--t-place-left', '--t-place-top', '--t-place-width', '--t-place-height', '--t-place-z']) node.style.removeProperty(name);
   }
@@ -204,6 +206,8 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
       if (!at && (!place || !placing && !lift)) { unmark(node); continue; }
       node.setAttribute('data-t-place', '');
       node.toggleAttribute('data-t-lifted', !!lift);
+      // Dragged (held at a box, not sized at a place): seen through, the page under it readable.
+      node.toggleAttribute('data-t-dragged', !!at);
       shown.push({ node, place, at });
     }
     if (!shown.length) { changed?.(); return; }
@@ -298,7 +302,7 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
     anchorOf, anchors,
     lift(id, at) {
       const node = nodeOf(id);
-      if (at && !('place' in at) && node && own(node)) trace(id, node);
+      if (at && node && own(node)) trace(id, node);
       if (at) lifts.set(id, at); else lifts.delete(id);
       keepTraces();
       if (!at && node && !places.has(id)) unmark(node);

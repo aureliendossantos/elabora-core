@@ -248,14 +248,15 @@ function liftBlock(blockId: string | null, at: LayoutRect | { place: PlaceData }
 // The boxes before a change the host announced (elabora/motion), until the next render or lift: what
 // moved glides from there (FLIP, the player's --t-ease-in-out), what changed size grows to it; the
 // screen's title too, which a slide centred in its height moves with its blocks.
-let motion: { boxes: Map<Element, DOMRect>; until: number } | null = null;
+// The blocks dragged when it was armed come back opaque on the same curve (data-t-dragged, player.css).
+let motion: { boxes: Map<Element, DOMRect>; dragged: Set<Element>; until: number } | null = null;
 // Where each glide started: the host's marks run the same glide (LayoutMessage.glide).
 const starts = new WeakMap<Element, DOMRect>();
 const MOTION_MS = 240;
 function armMotion() {
   const boxes = new Map<Element, DOMRect>();
   for (const node of document.querySelectorAll('#t-main .t-screen-title, #t-main .t-block[data-block], #t-main .t-slot')) boxes.set(node, node.getBoundingClientRect());
-  motion = { boxes, until: performance.now() + 1500 };
+  motion = { boxes, dragged: new Set(document.querySelectorAll('#t-main .t-block[data-t-dragged]')), until: performance.now() + 1500 };
 }
 function playMotion() {
   const armed = motion;
@@ -271,15 +272,19 @@ function playMotion() {
     if (!to.width || !to.height || (Math.abs(from.left - to.left) < 0.5 && Math.abs(from.top - to.top) < 0.5 && Math.abs(from.width - to.width) < 0.5 && Math.abs(from.height - to.height) < 0.5)) continue;
     moves.push({ node, from, to });
   }
+  const seen = (node: Element) => (armed.dragged.has(node) && !node.hasAttribute('data-t-dragged') ? [{ opacity: 0.6 }, { opacity: 1 }] : [{}, {}]);
   for (const { node, from, to } of moves) {
     starts.set(node, from);
     const sx = from.width / to.width;
     const sy = from.height / to.height;
+    const [fromSeen, toSeen] = seen(node);
     node.animate([
-      { transformOrigin: 'top left', transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${sx}, ${sy})` },
-      { transformOrigin: 'top left', transform: 'none' }
+      { transformOrigin: 'top left', transform: `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${sx}, ${sy})`, ...fromSeen },
+      { transformOrigin: 'top left', transform: 'none', ...toSeen }
     ], { duration: MOTION_MS, easing: 'cubic-bezier(.23, 1, .32, 1)', id: GLIDE });
   }
+  // Let go where it was: nothing glides, it comes back opaque.
+  for (const node of armed.dragged) if (node.isConnected && !node.hasAttribute('data-t-dragged') && !moves.some((move) => move.node === node)) node.animate(seen(node), { duration: MOTION_MS, easing: 'ease', id: GLIDE });
   if (moves.length) landing();
 }
 

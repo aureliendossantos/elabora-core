@@ -183,6 +183,17 @@ test('the editor canvas: placed at any width but a phone\'s, the frame and the f
     near(shown.blocks.find((block) => block.id === 'sketch-more')!.rect.y, before.y, 'the next block stays');
     near(lifted.home!.y, was.y, 'its home where it was');
     near(lifted.home!.height, was.height, 'its room kept');
+    // Dragged (held at a box): seen through (data-t-dragged, player.css).
+    assert.equal(await page.evaluate(() => getComputedStyle(document.querySelector('.t-block[data-block="sketch-intro"]')!).opacity), '0.6');
+    // Sized by hand from the flow (a place lift, a handle with the key): its room kept too, not seen
+    // through; the flow closes once it is let go (the founder, 9 Nov 2026).
+    await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.receive({ type: 'elabora/lift', block: 'sketch-more', at: { place: { x: 0.1, y: 0.1, width: 0.2 } } }));
+    const sized = await layout();
+    near(sized.blocks.find((block) => block.id === 'sketch-more')!.rect.x, 160, 'sized at its place');
+    assert.equal(await page.evaluate(() => document.querySelector('.t-block[data-block="sketch-more"]')!.hasAttribute('data-t-dragged')), false);
+    assert.equal(await page.locator('.t-lift-trace[data-trace-of="sketch-more"]').count(), 1, 'its room kept');
+    await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.receive({ type: 'elabora/lift', block: 'sketch-more', at: null }));
+    assert.equal(await page.locator('.t-lift-trace[data-trace-of="sketch-more"]').count(), 0, 'let go: its room given back');
     // Let go until the render of the change: it stays where it is, then takes its new place.
     await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.receive({ type: 'elabora/lift', block: 'sketch-intro', at: null, release: 'render' }));
     assert.equal((await layout()).blocks.find((block) => block.id === 'sketch-intro')!.lifted, true, 'held until the render');
