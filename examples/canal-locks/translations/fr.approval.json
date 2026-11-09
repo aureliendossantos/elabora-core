@@ -1,8 +1,8 @@
 {
   "language": "fr",
-  "by": "Sample approver (fictional)",
-  "date": "2026-11-03",
-  "contentHash": "sha256:d522bcfdfb373184753b1f913996ab99187c72f2f5c21e2b5fc53cb1f8055c16",
-  "sourceContentHash": "sha256:1453a86f4f72f83d76ff5c4ca08cab4dbfe127ac548d10d28a4f7f5365f08390",
-  "reference": "elabora-core sample translation, not a real client approval"
+  "by": "Aurélien Dos Santos",
+  "date": "2026-11-09",
+  "contentHash": "sha256:74527c386904659c44643257624a223a7866a814c3c8565e72d53ac5c172f737",
+  "sourceContentHash": "sha256:1c5654b4ae3cb9a0b1f88906147ac5e63a8b72ce8e1b2150cf3e05ce4512a5a7",
+  "agent": "claude-code"
 }
