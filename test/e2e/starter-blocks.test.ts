@@ -151,7 +151,7 @@ test('compare: a range named by the two captions, moved by the keyboard, clips t
   await player(starterCourse(), async (page) => {
     const range = page.locator('[data-block="chemin-avant-apres"] input.t-compare-range');
     assert.equal(await range.count(), 1);
-    assert.equal(await range.getAttribute('aria-label'), 'Comparer : Avant la panne ou Après la panne');
+    assert.equal(await range.getAttribute('aria-label'), 'Comparer\u00a0: Avant la panne ou Après la panne');
     const state = () => page.evaluate(() => {
       const box = document.querySelector<HTMLElement>('[data-block="chemin-avant-apres"] [data-t-compare]')!;
       const input = box.querySelector('input')!;
@@ -180,8 +180,8 @@ test('opening: nothing above its title, the reading time named for screen reader
     assert.equal(await page.$eval('.t-opening-copy', (node) => node.firstElementChild?.classList.contains('t-opening-title')), true);
     assert.doesNotMatch(await page.$eval('.t-opening-copy', (node) => node.textContent ?? ''), /Leçon \d+ sur \d+/);
     const duration = await page.$eval('[data-t-duration]', (node) => ({ text: node.textContent, hidden: node.querySelector('.t-sr-only')?.textContent }));
-    assert.match(duration.text ?? '', /^Temps de lecture : \d+ min$/);
-    assert.equal(duration.hidden, 'Temps de lecture : ');
+    assert.match(duration.text ?? '', /^Temps de lecture\s: \d+ min$/);
+    assert.equal(duration.hidden, 'Temps de lecture\u00a0: ');
     assert.equal(await page.$eval('.t-opening h1', (node) => node.classList.contains('t-screen-title')), true);
   });
 });

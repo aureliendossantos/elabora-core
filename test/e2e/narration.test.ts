@@ -217,7 +217,7 @@ test('the bar: an APG seek slider at the keyboard, shortcuts with modifiers, cap
     await page.keyboard.press('Home');
     await page.keyboard.press('Control+Alt+KeyC');
     assert.equal(await page.locator('.t-timeline-captions').getAttribute('aria-pressed'), 'true');
-    assert.equal((await state(page)).timeline?.caption, 'Narratrice : Bonjour, voici le ticket de Marc.');
+    assert.equal((await state(page)).timeline?.caption, 'Narratrice\u00a0: Bonjour, voici le ticket de Marc.');
     assert.ok(await page.locator('.t-timeline-band').isVisible());
     // Play, then Ctrl+Alt+P pauses anywhere.
     await page.click('.t-timeline-play');
@@ -238,7 +238,7 @@ test('the bar: an APG seek slider at the keyboard, shortcuts with modifiers, cap
     // The transcript: the script with its speakers.
     await page.click('.t-timeline-transcript-btn');
     const lines = await page.locator('.t-timeline-transcript .t-timeline-line').allTextContents();
-    assert.deepEqual(lines, ['Narratrice : Bonjour, voici le ticket de Marc.', "Narratrice : Il n'arrive plus à imprimer les bulletins de paie.", 'Marc : Ça bloque toute la comptabilité !', 'Narratrice : Voyons comment l’aider.']);
+    assert.deepEqual(lines, ['Narratrice\u00a0: Bonjour, voici le ticket de Marc.', "Narratrice\u00a0: Il n'arrive plus à imprimer les bulletins de paie.", 'Marc\u00a0: Ça bloque toute la comptabilité !', 'Narratrice\u00a0: Voyons comment l’aider.']);
     assert.deepEqual(await page.locator('.t-timeline-transcript-step h3').allTextContents(), ['Étape 1', 'Étape 2', 'Étape 3']);
     // The voice's AI mention and the credits of the screen's voices stay with the transcript; the
     // module's are in « IA et crédits » (D58).

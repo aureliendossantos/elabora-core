@@ -22,7 +22,7 @@ node bin/elabora.js build examples/canal-locks
 node bin/elabora.js preview examples/canal-locks
 ```
 
-`build` writes a SCORM 1.2 package (the format every LMS takes, when the course names no LMS) and its proof dossier to `examples/canal-locks/dist/`. `preview` prints a local address: open it to play the course, alone or in the LMS emulator. It rebuilds the course when a file changes.
+`build` writes a package and its proof dossier to `examples/canal-locks/dist/`. The package follows the LMS the course names, and defaults to SCORM 1.2, which every LMS takes. `preview` prints a local address: open it to play the course, alone or in the LMS emulator. It rebuilds the course when a file changes.
 
 Media need ffmpeg. Previews, looks and LMS tests need Chrome, Edge or Chromium. [Getting started](docs/getting-started.md) has the details and walks through the samples.
 
@@ -30,7 +30,7 @@ Media need ffmpeg. Previews, looks and LMS tests need Chrome, Edge or Chromium. 
 
 - **An open format.** A plan, screens of blocks, components, themes and free objects, in JSON, CSS and templates. Every value is checked against a schema. [Specification](SPEC.md)
 - **Checks with stable codes.** Plan coverage, questions, feedback, accessibility, LMS limits. Each finding has a code agents can act on and a fix people can follow. [Diagnostic codes](docs/diagnostics.md)
-- **Same sources, same bytes.** A build gives a package for the LMS, in the format Elabora picks for it (SCORM 1.2 or SCORM 2004, or cmi5 and xAPI when asked), or a module for any web server, with a proof dossier: plan coverage, tracking, accessibility, and the checks left to people. [Delivery formats](docs/delivery.md)
+- **Same sources, same bytes.** A build gives a package for the LMS, in the format Elabora picks for it (SCORM 1.2 or SCORM 2004, or cmi5 and xAPI when asked), or a web version for any web server, with a proof dossier: plan coverage, tracking, accessibility, and the checks left to people. [Delivery formats](docs/delivery.md)
 - **Tested against real LMS behaviour.** Eleven LMS profiles and an emulator that replays their launch modes, abrupt closes and resume. [LMS profiles](docs/lms-profiles.md)
 - **Custom code, kept safe.** three.js scenes and mini-games run sandboxed, with a manifest, tests and settings authors edit without code. [Free-object contract](docs/free-object-contract.md)
 - **Made for agents.** Every edit is journaled and can be undone, from MCP tools or the shell. Short skills and rules ship with every course. [Working with an agent](docs/agents.md)
@@ -49,7 +49,7 @@ Or call the same operations from a shell:
 node bin/elabora.js tools list
 ```
 
-A coding agent such as Claude Code or Codex needs nothing more. Open it in a course folder: it reads the course's `AGENTS.md` and runs `elabora`. For Claude Desktop, the [extension](plugins/README.md) connects the server to the courses you pick.
+With a coding agent such as Claude Code or Codex, open it in a course folder: it reads the course's `AGENTS.md` and runs `elabora`. For Claude Desktop, the [extension](plugins/README.md) connects the server to the courses you pick.
 
 Agents start with the `elabora_overview` tool. Their edits are grouped in batches: `elabora undo --batch` takes back a whole batch and keeps what people changed since. Plan versions, client approval, publishing and paid services stay with people. [Agent tools](docs/mcp-tools.md)
 
@@ -99,8 +99,8 @@ Version 0.1, October 2026, format `elabora/0.1`. Targets: SCORM 1.2, SCORM 2004,
 ## Licence
 
 - **Code, specification, schemas and docs:** Apache-2.0 ([`LICENSE`](LICENSE)).
-- **Sample courses** in [`examples/`](examples/) **and module templates** in [`templates/`](templates/): their original content is CC0 1.0. Each one's `LICENSE.md` lists what keeps its own licence, such as fonts under the SIL OFL.
+- **Sample courses** in [`examples/`](examples/) **and course templates** in [`templates/`](templates/): their original content is CC0 1.0. Each one's `LICENSE.md` lists what keeps its own licence, such as fonts under the SIL OFL.
 - **Bundled components:** three.js r186 (MIT), fonts (SIL OFL 1.1), voices and sounds (CC0, one voice CC-BY 4.0). [`NOTICE`](NOTICE) lists them with their sources.
-- **ffmpeg** is used, not bundled: Elabora runs the copy on your system. Its builds are LGPL or GPL.
+- **ffmpeg** stays on your system: Elabora runs that copy. Its builds are LGPL or GPL.
 
 See [D44](docs/decisions/D44.md) for the reasons.

@@ -340,7 +340,7 @@ test('speech: the name written once and said with each line, a portrait at rest 
     assert.equal((await speech('s-leila')).direction, 'row-reverse');
     assert.deepEqual({ ...(await speech('s-guide')), lines: [] }, { name: 'Claire, votre guide', lines: [], svg: false, initial: 'C', hidden: 'true', still: true, moving: 0, direction: 'row' });
     const tree = await page.locator('[data-block="s-marc"]').ariaSnapshot();
-    assert.match(tree, /Marc : Bonjour/);
+    assert.match(tree, /Marc\s: Bonjour/);
     assert.doesNotMatch(tree, /^- paragraph: Marc$/m, 'the visible name is not read twice');
   });
 });

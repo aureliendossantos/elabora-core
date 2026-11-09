@@ -169,7 +169,7 @@ test('dragging the playhead: the screen follows, a tooltip quotes the words, pla
     assert.equal(during.state.playing, false, 'held while dragged');
     assert.equal(during.state.dragging, true);
     assert.equal(bubble.hidden, false);
-    assert.match(bubble.text ?? '', /^Narratrice : « …imprimante, ni le partage de… »$/, bubble.text ?? '');
+    assert.match(bubble.text ?? '', /^Narratrice\s: «\s…imprimante, ni le partage de…\s»$/, bubble.text ?? '');
     assert.equal((await blockAt(page, 'accueil-illustration')).timed, null, 'the screen follows: the ticket is there');
     await page.mouse.up();
     const after = await timeline(page);

@@ -138,7 +138,7 @@ test('predict, then reveal: the learner draws or sets the end, the real line com
     assert.match(await chart.locator('.t-trend-guess-label').textContent() ?? '', /Votre estimation · 10 %/);
     await button.click();
     await page.waitForFunction(() => document.querySelector('.t-block[data-block="clics"] .t-trend-feedback')?.textContent !== '', null, { timeout: 30000 });
-    assert.equal(await chart.locator('.t-trend-feedback').textContent(), 'Vous aviez dit 10 % ; c’était 5 %.');
+    assert.equal(await chart.locator('.t-trend-feedback').textContent(), 'Vous aviez dit 10 %\u00a0; c’était 5 %.');
     assert.equal(await button.isHidden(), true);
     assert.match(await page.evaluate(() => (window as PlayerWindow).__elabora.state().suspendData), /"n":\{"\w+":"10\|1"\}/, 'kept like a numeric answer');
     // Back on the screen: shown revealed, with its feedback.
@@ -146,7 +146,7 @@ test('predict, then reveal: the learner draws or sets the end, the real line com
     await go(page, 'premier-reflexe');
     const again = page.locator('.t-block[data-block="clics"] .t-chart');
     assert.equal(await again.getAttribute('class').then((value) => value?.includes('is-revealed')), true);
-    assert.equal(await again.locator('.t-trend-feedback').textContent(), 'Vous aviez dit 10 % ; c’était 5 %.');
+    assert.equal(await again.locator('.t-trend-feedback').textContent(), 'Vous aviez dit 10 %\u00a0; c’était 5 %.');
   });
 });
 

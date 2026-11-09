@@ -71,7 +71,7 @@ async function tabTo(page: Page, selector: string) {
 }
 const feedbackOf = (page: Page, block: string) => page.locator(`[data-block="${block}"] [data-t-feedback]`).innerText();
 // What the live regions say (the player's, emptied then filled).
-const hears = (page: Page, text: string) => page.waitForFunction((words) => [...document.querySelectorAll('[aria-live]')].some((node) => node.textContent?.includes(words)), text, { timeout: 30000, polling: 50 }).catch(async (error) => { throw new Error(`${error.message}: the live regions say ${JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('[aria-live]')].map((node) => node.textContent)))}`); });
+const hears = (page: Page, text: string) => page.waitForFunction((words) => [...document.querySelectorAll('[aria-live]')].some((node) => node.textContent?.replace(/\u00a0/g, ' ').includes(words)), text, { timeout: 30000, polling: 50 }).catch(async (error) => { throw new Error(`${error.message}: the live regions say ${JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('[aria-live]')].map((node) => node.textContent)))}`); });
 
 test('fill-in: typed, menus and words to place, with the keyboard only; screen readers hear each blank; a reload resumes them', { timeout: 240000 }, async () => {
   const { out } = await built();
@@ -115,7 +115,7 @@ test('fill-in: typed, menus and words to place, with the keyboard only; screen r
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('[data-block="trous-mots"] .t-word[data-test-word="imprimante"]').getAttribute('aria-pressed'), 'false');
     await place('câble', 1);
-    assert.equal(await page.locator('[data-block="trous-mots"] [data-t-blank="1"] button').getAttribute('aria-label'), 'Trou 1 : câble');
+    assert.equal(await page.locator('[data-block="trous-mots"] [data-t-blank="1"] button').getAttribute('aria-label'), 'Trou 1\u00a0: câble');
     await place('imprimante', 2);
     await place('passerelle', 3);
     // The bank keeps the room of placed words: nothing moves.
@@ -123,7 +123,7 @@ test('fill-in: typed, menus and words to place, with the keyboard only; screen r
     await tabTo(page, '[data-block="trous-mots"] [data-t-submit]');
     await page.keyboard.press('Enter');
     const feedback = await feedbackOf(page, 'trous-mots');
-    assert.match(feedback, /Il vous reste 1 essai\.[\s\S]*Trous justes : 2 sur 3\./);
+    assert.match(feedback, /Il vous reste 1 essai\.[\s\S]*Trous justes\s: 2 sur 3\./);
     assert.deepEqual(await page.locator('[data-block="trous-mots"] .t-blank').evaluateAll((nodes) => nodes.map((node) => node.className)), ['t-blank is-filled is-correct', 't-blank is-filled is-wrong', 't-blank is-filled is-correct']);
     assert.equal((await page.locator('[data-block="trous-mots"] .t-bank').boundingBox())!.height, bank!.height);
     // The second try: the wrong word back to the bank by its blank, the right one placed.
@@ -181,7 +181,7 @@ test('sort: pairs, categories and order with the keyboard only; names of items, 
     for (const [item, target] of [['routeur', 'materiel'], ['pilote', 'logiciel'], ['cable', 'materiel'], ['dhcp', 'materiel']]) await placePair('classer-categories', item, target);
     await tabTo(page, '[data-block="classer-categories"] [data-t-submit]');
     await page.keyboard.press('Enter');
-    assert.match(await feedbackOf(page, 'classer-categories'), /Bien placés : 3 sur 4\./);
+    assert.match(await feedbackOf(page, 'classer-categories'), /Bien placés\s: 3 sur 4\./);
     assert.equal(await page.locator('[data-block="classer-categories"] [data-t-sort-item="dhcp"]').getAttribute('class'), 't-sort-item is-wrong');
     assert.match(await page.locator('[data-block="classer-categories"] [data-t-sort-item="dhcp"]').innerText(), /Mal placé/);
     await placePair('classer-categories', 'dhcp', 'logiciel');
