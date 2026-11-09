@@ -3451,7 +3451,7 @@ export type ComponentManifest = {
     version: string;
     hash: string;
   };
-  /** JSON Schema of the props (type object, properties, required). Strings take x-kind: text (default), markdown (Elabora Markdown, maths included), tex (LaTeX equation), asset (file in assets/), token (name of a theme token, rendered as var(--t-…)). Mark text x-translatable. x-group names a setting's section in the inspector, in the course's language, for a distinct meaning of two settings or more (most components need none); x-advanced: true keeps a setting authors rarely change under More settings while it has its default. An enum holds values for the template (stack, split); x-enum-labels says how each reads in the inspector, in the course's language ({ "stack": "Stacked", "split": "Side by side" }, keys are values of the enum, on a prop or on a field of a list's items): a value without words shows capitalised. They are translated with the course. Text and Markdown props accept { "textRef": "TXT-n" } in instances (locked plan texts). */
+  /** JSON Schema of the props (type object, properties, required). Strings take x-kind: text (default), markdown (Elabora Markdown, maths included), tex (LaTeX equation), asset (file in assets/), token (name of a theme token, rendered as var(--t-…)). Mark text x-translatable. x-group names a setting's section in the inspector, in the course's language, for a distinct meaning of two settings or more (most components need none); An enum holds values for the template (stack, split); x-enum-labels says how each reads in the inspector, in the course's language ({ "stack": "Stacked", "split": "Side by side" }, keys are values of the enum, on a prop or on a field of a list's items): a value without words shows capitalised. They are translated with the course. Text and Markdown props accept { "textRef": "TXT-n" } in instances (locked plan texts). */
   props?: { [key: string]: unknown };
   /** Forks only: schema merged into the parent's props schema (add a property, a field to list items…). */
   propsExtend?: { [key: string]: unknown };
@@ -3656,8 +3656,6 @@ export type PropSchema = {
   maxItems?: number;
   /** Panel group, for example Content, Animation, Style, Scene, Help. */
   'x-group'?: string;
-  /** A setting authors rarely change: the inspector keeps it under « More settings » while it has its default value. */
-  'x-advanced'?: boolean;
   /** @default 'author' */
   'x-editable-by'?: 'author' | 'developer';
   /** Editor control. list: a prop of type array, edited as rows (one per item, one field per item field). range: two numbers (a low and a high value) between the items' minimum and maximum, edited with a two-handle slider. vec2, vec3: two or three numbers (x, y and z) edited on one row. */

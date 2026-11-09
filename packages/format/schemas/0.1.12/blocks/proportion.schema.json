@@ -77,7 +77,6 @@
     },
     "columns": {
       "x-group": "data",
-      "x-advanced": true,
       "type": "integer",
       "minimum": 5,
       "maximum": 25,

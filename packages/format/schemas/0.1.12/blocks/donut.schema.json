@@ -87,7 +87,6 @@
     },
     "decimals": {
       "x-group": "data",
-      "x-advanced": true,
       "type": "integer",
       "minimum": 0,
       "maximum": 3,

@@ -55,7 +55,6 @@
     },
     "weight": {
       "x-group": "scoring",
-      "x-advanced": true,
       "type": "number",
       "minimum": 0.1,
       "maximum": 10,
@@ -71,7 +70,6 @@
     },
     "showCorrectAnswer": {
       "x-group": "scoring",
-      "x-advanced": true,
       "type": "boolean",
       "default": true,
       "description": "After the last try, show the expected value."

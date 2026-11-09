@@ -35,7 +35,7 @@
     },
     "columns": { "type": "integer", "minimum": 2, "maximum": 4, "default": 3, "description": "grid and mosaic: columns on wide screens (fewer on narrow ones)." },
     "ratio": { "enum": ["4:3", "1:1", "3:2", "16:9", "3:4"], "default": "4:3", "description": "grid: the shape every image is cropped to, around its focus; carousel: the frame every image is shown whole in." },
-    "zoom": { "x-advanced": true, "type": "boolean", "default": false, "description": "grid, mosaic and carousel: each image opens at full size in the player's lightbox, with its caption, and previous and next between the images." },
+    "zoom": { "type": "boolean", "default": false, "description": "grid, mosaic and carousel: each image opens at full size in the player's lightbox, with its caption, and previous and next between the images." },
     "caption": { "type": "string", "maxLength": 300, "x-translatable": true, "description": "A caption for the whole gallery." },
     "generated": { "type": "boolean", "default": false, "description": "True if images of the gallery were produced by an AI model; the player shows a mark and the build report lists it." }
   }

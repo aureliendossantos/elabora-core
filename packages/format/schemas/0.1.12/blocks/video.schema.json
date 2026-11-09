@@ -16,9 +16,9 @@
     "loop": { "type": "boolean", "default": false, "description": "Plays muted, in a loop, like an animated image: it starts by itself unless the learner prefers reduced motion, and a button pauses it. Its sound is never heard: no captions." },
     "alt": { "type": "string", "maxLength": 250, "description": "Text alternative of a loop or of a video without sound: what it shows. Required for a loop unless decorative.", "x-translatable": true },
     "decorative": { "type": "boolean", "default": false, "description": "True only if the video carries no information: it plays as a loop, ignored by assistive technologies, with nothing to caption, transcribe or describe." },
-    "caption": { "x-advanced": true, "type": "string", "maxLength": 300, "description": "Shown under the video, as an image's caption (in place of the title under a video played with its controls).", "x-translatable": true },
-    "zoom": { "x-advanced": true, "type": "boolean", "default": false, "description": "loop, unless decorative: the video opens at full size in the player's lightbox, with its caption, and loops there (a screen recording, a detailed animation)." },
-    "poster": { "x-advanced": true, "$ref": "../defs.schema.json#/$defs/assetPath" },
+    "caption": { "type": "string", "maxLength": 300, "description": "Shown under the video, as an image's caption (in place of the title under a video played with its controls).", "x-translatable": true },
+    "zoom": { "type": "boolean", "default": false, "description": "loop, unless decorative: the video opens at full size in the player's lightbox, with its caption, and loops there (a screen recording, a detailed animation)." },
+    "poster": { "$ref": "../defs.schema.json#/$defs/assetPath" },
     "generated": { "type": "boolean", "default": false }
   }
 }
