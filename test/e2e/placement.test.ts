@@ -169,7 +169,7 @@ test('the editor canvas: placed at any width but a phone\'s, the frame and the f
     assert.equal((await layout()).blocks.find((block) => block.id === 'sketch-keep')!.placed, undefined, 'a phone: in the flow');
     await page.setViewportSize({ width: 1600, height: 900 });
     // A text of the flow lifted: out of the flow at the box asked, its room kept (nothing around it moves
-    // until it is let go), its home reported, the flow's place over it and under it both « where it was ».
+    // until it is let go), its home reported, one place of the flow where it was (over its stand-in).
     const before = shown.blocks.find((block) => block.id === 'sketch-more')!.rect;
     const was = shown.blocks.find((block) => block.id === 'sketch-intro')!.rect;
     await page.evaluate(() => (window as CanvasWindow).__elaboraCanvas.receive({ type: 'elabora/lift', block: 'sketch-intro', at: { x: 700, y: 300, width: 500, height: 0 } }));
@@ -179,7 +179,7 @@ test('the editor canvas: placed at any width but a phone\'s, the frame and the f
     near(lifted.rect.x, 700, 'lifted at x');
     near(lifted.rect.y, 300, 'lifted at y');
     near(lifted.rect.width, 500, 'its width');
-    assert.deepEqual(shown.placing!.flows.find((flow) => flow.slot === null)!.places.map((place) => place.after), [null, null, 'sketch-more']);
+    assert.deepEqual(shown.placing!.flows.find((flow) => flow.slot === null)!.places.map((place) => place.after), [null, 'sketch-more']);
     near(shown.blocks.find((block) => block.id === 'sketch-more')!.rect.y, before.y, 'the next block stays');
     near(lifted.home!.y, was.y, 'its home where it was');
     near(lifted.home!.height, was.height, 'its room kept');

@@ -255,13 +255,10 @@ export function createPlacement({ app, main, course, editor = false, changed }: 
     return containers.filter((container) => container.getClientRects().length > 0).map((container) => {
       const box = container.getBoundingClientRect();
       const places: FlowAnchors['places'] = [{ after: null, y: anchorY(container, null) }];
-      // After each block of the flow; a stand-in (a block being dragged) gives one more place, under it,
-      // after the same block as the place over it: both are where the block was.
-      let last: string | null = null;
+      // After each block of the flow. A stand-in (a block being dragged) gives none: the place over it is
+      // where the block was, and one under it would be that place again (the founder, 10 Nov 2026).
       for (const child of container.children) {
-        if (!(child instanceof HTMLElement) || !inFlow(child)) continue;
-        if (child.matches('.t-block[data-block]')) { last = child.dataset.block ?? null; places.push({ after: last, y: anchorY(container, child) }); }
-        else if (child.matches('.t-lift-trace')) places.push({ after: last, y: anchorY(container, child) });
+        if (child instanceof HTMLElement && inFlow(child) && child.matches('.t-block[data-block]')) places.push({ after: child.dataset.block ?? null, y: anchorY(container, child) });
       }
       const slot = container.matches('.t-slot') ? container.dataset.slot ?? null : null;
       const rule = slot !== null ? rules.get(slot) : undefined;
